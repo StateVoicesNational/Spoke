@@ -1403,7 +1403,7 @@ describe.only("mutations.updateQuestionResponses", () => {
         question_response
       JOIN
         interaction_step ON interaction_step.id = question_response.interaction_step_id
-      RIGHT JOIN
+      JOIN
         interaction_step as child ON child.parent_interaction_id = interaction_step.id and question_response.value = child.answer_option
       WHERE
         question_response.campaign_contact_id = ?;
