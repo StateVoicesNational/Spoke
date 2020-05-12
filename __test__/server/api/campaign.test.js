@@ -32,7 +32,8 @@ import {
   getCampaignContact,
   sendMessage,
   bulkSendMessages,
-  runGql
+  runGql,
+  createStartedCampaign
 } from "../../test_helpers";
 
 let testAdminUser;
@@ -196,7 +197,9 @@ it("save campaign interaction steps, edit it, make sure the last value is set", 
   );
   interactionStepsClone1.interactionSteps[0].script =
     "second save before campaign start";
-  await createScript(testAdminUser, testCampaign, interactionStepsClone1);
+  await createScript(testAdminUser, testCampaign, {
+    interactionSteps: interactionStepsClone1
+  });
 
   campaignDataResults = await runComponentGql(
     AdminCampaignEditQuery,
@@ -211,7 +214,9 @@ it("save campaign interaction steps, edit it, make sure the last value is set", 
     campaignDataResults.data.campaign.interactionSteps
   );
   interactionStepsClone2.script = "Hi {firstName}, please autorespond";
-  await createScript(testAdminUser, testCampaign, interactionStepsClone2);
+  await createScript(testAdminUser, testCampaign, {
+    interactionSteps: interactionStepsClone2
+  });
 
   campaignDataResults = await runComponentGql(
     AdminCampaignEditQuery,
@@ -258,7 +263,9 @@ it("save campaign interaction steps, edit it, make sure the last value is set", 
     "third save after campaign start";
   interactionStepsClone3.interactionSteps[0].questionText =
     "hmm1 after campaign start";
-  await createScript(testAdminUser, testCampaign, interactionStepsClone3);
+  await createScript(testAdminUser, testCampaign, {
+    interactionSteps: interactionStepsClone3
+  });
 
   campaignDataResults = await runComponentGql(
     AdminCampaignEditQuery,
@@ -1079,11 +1086,9 @@ describe("all interaction steps fields travel round trip", () => {
   });
 
   it("works", async () => {
-    const createScriptResult = await createScript(
-      testAdminUser,
-      testCampaign,
+    const createScriptResult = await createScript(testAdminUser, testCampaign, {
       interactionSteps
-    );
+    });
 
     expect(createScriptResult.data.editCampaign).toEqual({
       id: testCampaign.id
@@ -1128,7 +1133,7 @@ describe("all interaction steps fields travel round trip", () => {
     let variables;
 
     beforeEach(async () => {
-      await createScript(testAdminUser, testCampaign, interactionSteps);
+      await createScript(testAdminUser, testCampaign, { interactionSteps });
 
       query = gql`
         query assignment($id: String!) {
@@ -1199,5 +1204,236 @@ describe("all interaction steps fields travel round trip", () => {
         ]);
       });
     });
+  });
+});
+
+describe.only("mutations.updateQuestionResponses", () => {
+  let adminUser;
+  let campaign;
+  let texterUser;
+  let contacts;
+  let assignment;
+  let interactionSteps;
+  let returnedInteractionSteps;
+  let colorInteractionSteps;
+  let redInteractionStep;
+  let shadesOfRedInteractionSteps;
+
+  beforeEach(async () => {
+    const startedCampaign = await createStartedCampaign();
+
+    ({
+      testAdminUser: adminUser,
+      testCampaign: campaign,
+      testTexterUser: texterUser,
+      testContacts: contacts,
+      assignment
+    } = startedCampaign);
+
+    interactionSteps = [
+      {
+        id: "new_1",
+        questionText: "What is your favorite color",
+        script: "Hello {firstName}. Let's talk about your favorite color.",
+        answerOption: "",
+        answerActions: "",
+        answerActionsData: "",
+        parentInteractionId: null,
+        isDeleted: false,
+        interactionSteps: [
+          {
+            id: "new_2",
+            questionText: "What is your favorite shade of red?",
+            script: "Red is an awesome color, {firstName}!",
+            answerOption: "Red",
+            answerActions: "",
+            answerActionsData: "",
+            parentInteractionId: "new_1",
+            isDeleted: false,
+            interactionSteps: [
+              {
+                id: "new_21",
+                questionText: "",
+                script: "Crimson is a rad shade of red, {firstName}",
+                answerOption: "Crimson",
+                answerActions: "",
+                answerActionsData: "",
+                parentInteractionId: "new_2",
+                isDeleted: false,
+                interactionSteps: []
+              },
+              {
+                id: "new_22",
+                questionText: "",
+                script: "Firebrick is a rad shade of red, {firstName}",
+                answerOption: "Firebrick",
+                answerActions: "",
+                answerActionsData: "",
+                parentInteractionId: "new_2",
+                isDeleted: false,
+                interactionSteps: []
+              }
+            ]
+          },
+          {
+            id: "new_3",
+            questionText: "",
+            script: "Purple is an awesome color, {firstName}!",
+            answerOption: "Purple",
+            answerActions: "",
+            answerActionsData: "",
+            parentInteractionId: "new_1",
+            isDeleted: false,
+            interactionSteps: []
+          }
+        ]
+      }
+    ];
+
+    returnedInteractionSteps = (
+      await createScript(adminUser, campaign, {
+        interactionSteps: interactionSteps[0],
+        campaignGqlFragment: `
+        interactionSteps {
+          id
+          questionText
+          script
+          answerOption
+          answerActions
+          answerActionsData
+          parentInteractionId
+          isDeleted
+        }
+      `
+      })
+    ).data.editCampaign.interactionSteps;
+
+    colorInteractionSteps = returnedInteractionSteps.filter(
+      interactionStep =>
+        interactionStep.parentInteractionId === returnedInteractionSteps[0].id
+    );
+
+    redInteractionStep = colorInteractionSteps.find(
+      colorInteractionStep => colorInteractionStep.answerOption === "Red"
+    );
+
+    shadesOfRedInteractionSteps = returnedInteractionSteps.filter(
+      interactionStep =>
+        interactionStep.parentInteractionId === redInteractionStep.id
+    );
+
+    const promises = contacts.slice(0, 2).map(contact => {
+      return sendMessage(contact.id, texterUser, {
+        text: returnedInteractionSteps[0].script,
+        contactNumber: contact.cell,
+        assignmentId: assignment.id,
+        userId: texterUser.id.toString()
+      });
+    });
+
+    const sendResults = await Promise.all(promises);
+
+    expect(sendResults).toHaveLength(2);
+    expect(sendResults[0].data.sendMessage.messageStatus).toEqual("messaged");
+    expect(sendResults[1].data.sendMessage.messageStatus).toEqual("messaged");
+  });
+
+  it("records answers for a contact", async () => {
+    const updateQuestionResponseGql = `
+      mutation updateQuestionResponses($qr: [QuestionResponseInput], $ccid: String!) {
+        updateQuestionResponses(questionResponses: $qr, campaignContactId: $ccid) {
+          id
+          messageStatus
+          questionResponseValues {
+            interactionStepId
+            value
+          }
+        }
+      }
+    `;
+
+    const variables = {
+      ccid: contacts[0].id,
+      qr: [
+        {
+          campaignContactId: contacts[0].id,
+          interactionStepId: returnedInteractionSteps[0].id,
+          value: colorInteractionSteps[0].answerOption
+        },
+        {
+          campaignContactId: contacts[0].id.toString(),
+          interactionStepId: redInteractionStep.id,
+          value: shadesOfRedInteractionSteps[0].answerOption
+        }
+      ]
+    };
+
+    const updateQuestionResponseResult = await runGql(
+      updateQuestionResponseGql,
+      variables,
+      texterUser
+    );
+
+    expect(updateQuestionResponseResult.data.updateQuestionResponses).toEqual({
+      id: contacts[0].id.toString(),
+      messageStatus: "messaged",
+      questionResponseValues: [
+        {
+          interactionStepId: Number(returnedInteractionSteps[0].id),
+          value: colorInteractionSteps[0].answerOption
+        },
+        {
+          interactionStepId: Number(colorInteractionSteps[0].id),
+          value: shadesOfRedInteractionSteps[0].answerOption
+        }
+      ]
+    });
+
+    const databaseQuery = `
+      SELECT
+        child.answer_option,
+        child.id as child_id,
+        child.parent_interaction_id,
+        interaction_step.campaign_id,
+        interaction_step.question,
+        interaction_step.script,
+        child.answer_actions,
+        question_response.value
+      FROM
+        question_response
+      JOIN
+        interaction_step ON interaction_step.id = question_response.interaction_step_id
+      RIGHT JOIN
+        interaction_step as child ON child.parent_interaction_id = interaction_step.id and question_response.value = child.answer_option
+      WHERE
+        question_response.campaign_contact_id = ?;
+      `;
+
+    const { rows: databaseQueryResults } = await r.knex.raw(databaseQuery, [
+      contacts[0].id
+    ]);
+
+    expect(databaseQueryResults).toEqual([
+      {
+        answer_option: "Red",
+        child_id: 2,
+        parent_interaction_id: 1,
+        campaign_id: 2,
+        question: "What is your favorite color",
+        script: "Hello {firstName}. Let's talk about your favorite color.",
+        answer_actions: "",
+        value: "Red"
+      },
+      {
+        answer_option: "Crimson",
+        child_id: 3,
+        parent_interaction_id: 2,
+        campaign_id: 2,
+        question: "What is your favorite shade of red?",
+        script: "Red is an awesome color, {firstName}!",
+        answer_actions: "",
+        value: "Crimson"
+      }
+    ]);
   });
 });
