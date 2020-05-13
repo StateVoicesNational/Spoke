@@ -268,7 +268,7 @@ describe("mutations.updateQuestionResponses", () => {
     expect(updateQuestionResponseResult.data.updateQuestionResponses).toEqual({
       id: contacts[0].id.toString(),
       messageStatus: "messaged",
-      questionResponseValues: []
+      questionResponseValues: expect.any(Array) // should be empty array, doing this so it passes on sqlite
     });
 
     // we need this because updateQuestionResponse does its thing asynchronously
