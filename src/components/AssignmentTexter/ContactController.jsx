@@ -37,7 +37,15 @@ export class ContactController extends React.Component {
   }
 
   componentWillMount() {
-    this.updateCurrentContactIndex(0);
+    let startIndex = 0;
+    const contactId = String(document.location).match(/contact=(\d+)/);
+    if (contactId) {
+      startIndex = this.props.contacts.findIndex(c => c.id == contactId[1]);
+      if (startIndex === -1) {
+        startIndex = 0;
+      }
+    }
+    this.updateCurrentContactIndex(startIndex);
   }
 
   componentWillUpdate(nextProps, nextState) {
