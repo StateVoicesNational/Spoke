@@ -273,7 +273,7 @@ describe("mutations.updateQuestionResponses", () => {
 
     // we need this because updateQuestionResponse does its thing asynchronously
     // the sleep gives it a chance to finish before we start expecting outcomes
-    await sleep(1000);
+    await sleep(100);
 
     const {
       rows: databaseQueryResults
