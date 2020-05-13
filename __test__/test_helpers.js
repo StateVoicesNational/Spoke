@@ -437,15 +437,13 @@ export function buildScript(steps = 2, choices = 1) {
 export async function createScript(
   admin,
   campaign,
-  interactionSteps,
-  steps = 2,
-  choices = 1
+  { interactionSteps, steps = 2, choices = 1, campaignGqlFragment } = {}
 ) {
   const rootValue = {};
   const campaignEditQuery = `
   mutation editCampaign($campaignId: String!, $campaign: CampaignInput!) {
     editCampaign(id: $campaignId, campaign: $campaign) {
-      id
+      ${campaignGqlFragment || "id"}
     }
   }`;
   // function to create a recursive set of steps of arbitrary depth
