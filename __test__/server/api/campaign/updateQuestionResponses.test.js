@@ -4,7 +4,8 @@ import {
   createStartedCampaign,
   runGql,
   sendMessage,
-  setupTest
+  setupTest,
+  sleep
 } from "../../../test_helpers";
 
 import { r } from "../../../../src/server/models";
@@ -179,6 +180,7 @@ describe("mutations.updateQuestionResponses", () => {
       ]
     };
 
+    // this returns immediately before doing any updates
     const updateQuestionResponseResult = await runGql(
       updateQuestionResponseGql,
       variables,
@@ -188,17 +190,12 @@ describe("mutations.updateQuestionResponses", () => {
     expect(updateQuestionResponseResult.data.updateQuestionResponses).toEqual({
       id: contacts[0].id.toString(),
       messageStatus: "messaged",
-      questionResponseValues: [
-        {
-          interactionStepId: Number(returnedInteractionSteps[0].id),
-          value: colorInteractionSteps[0].answerOption
-        },
-        {
-          interactionStepId: Number(colorInteractionSteps[0].id),
-          value: shadesOfRedInteractionSteps[0].answerOption
-        }
-      ]
+      questionResponseValues: []
     });
+
+    // we need this because updateQuestionResponse does its thing asynchronously
+    // the sleep gives it a chance to finish before we start expecting outcomes
+    await sleep(1000);
 
     const databaseQuery = `
       SELECT
