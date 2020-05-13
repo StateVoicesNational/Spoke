@@ -94,12 +94,18 @@ const questionResponseCache = {
             .filter(id => !(id in newIds));
           deletes.push(...updateStepIds);
           if (deletes.length) {
-            await deleteQuery.whereIn("interaction_step_id", deletes);
+            await deleteQuery
+              .transacting(trx)
+              .whereIn("interaction_step_id", deletes);
           }
           if (insertQuestionResponses.length) {
-            await r.knex("question_response").insert(insertQuestionResponses);
+            await r
+              .knex("question_response")
+              .transacting(trx)
+              .insert(insertQuestionResponses);
           }
         });
+        trx.commit();
       } catch (error) {
         console.log("questionResponse cache transaction error", error);
       }
