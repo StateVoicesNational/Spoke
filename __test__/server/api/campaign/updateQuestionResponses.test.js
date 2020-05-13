@@ -222,11 +222,11 @@ describe("mutations.updateQuestionResponses", () => {
         question_response.id;
       `;
 
-    const { rows: databaseQueryResults } = await r.knex.raw(databaseQuery, [
+    const databaseQueryResults = await r.knex.raw(databaseQuery, [
       contacts[0].id
     ]);
-
-    expect(databaseQueryResults).toEqual([
+    // WTF: sqlite returns result directly, while postgres in a .rows key
+    expect(databaseQueryResults.rows || databaseQueryResults).toEqual([
       {
         answer_option: "Red",
         child_id: Number(colorInteractionSteps[0].id),
