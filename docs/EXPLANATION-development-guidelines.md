@@ -105,6 +105,9 @@ Sqlite does not support knex's `returning()` method.  This affects running `r.kn
     See for example: https://github.com/MoveOnOrg/Spoke/issues/817
     One solution is to use r.table(...).getAll which WILL convert them.
     Otherwise, make sure your code does the conversion when necessary.
+* Knex also has different behavior between database backends for `knex.raw()` queries.
+  Sqlite will return the results directly, while Postgres will return the data in a sub-field, `.rows`.
+
 
 ### Schema changes
 
