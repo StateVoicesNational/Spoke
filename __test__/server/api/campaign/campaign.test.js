@@ -1,17 +1,16 @@
-/* eslint-disable no-unused-expressions, consistent-return */
 import gql from "graphql-tag";
-import { r } from "../../../src/server/models/";
-import { dataQuery as TexterTodoListQuery } from "../../../src/containers/TexterTodoList";
-import { dataQuery as TexterTodoQuery } from "../../../src/containers/TexterTodo";
-import { campaignDataQuery as AdminCampaignEditQuery } from "../../../src/containers/AdminCampaignEdit";
-import { campaignsQuery } from "../../../src/containers/PaginatedCampaignsRetriever";
+import { r } from "../../../../src/server/models";
+import { dataQuery as TexterTodoListQuery } from "../../../../src/containers/TexterTodoList";
+import { dataQuery as TexterTodoQuery } from "../../../../src/containers/TexterTodo";
+import { campaignDataQuery as AdminCampaignEditQuery } from "../../../../src/containers/AdminCampaignEdit";
+import { campaignsQuery } from "../../../../src/containers/PaginatedCampaignsRetriever";
 
 import {
   bulkReassignCampaignContactsMutation,
   reassignCampaignContactsMutation
-} from "../../../src/containers/AdminIncomingMessageList";
+} from "../../../../src/containers/AdminIncomingMessageList";
 
-import { makeTree } from "../../../src/lib";
+import { makeTree } from "../../../../src/lib";
 
 import {
   setupTest,
@@ -33,7 +32,7 @@ import {
   sendMessage,
   bulkSendMessages,
   runGql
-} from "../../test_helpers";
+} from "../../../test_helpers";
 
 let testAdminUser;
 let testInvite;
@@ -93,7 +92,7 @@ afterEach(async () => {
 }, global.DATABASE_SETUP_TEARDOWN_TIMEOUT);
 
 it("allow supervolunteer to retrieve campaign data", async () => {
-  let campaignDataResults = await runComponentGql(
+  const campaignDataResults = await runComponentGql(
     AdminCampaignEditQuery,
     { campaignId: testCampaign.id },
     testSuperVolunteerUser
@@ -196,7 +195,9 @@ it("save campaign interaction steps, edit it, make sure the last value is set", 
   );
   interactionStepsClone1.interactionSteps[0].script =
     "second save before campaign start";
-  await createScript(testAdminUser, testCampaign, interactionStepsClone1);
+  await createScript(testAdminUser, testCampaign, {
+    interactionSteps: interactionStepsClone1
+  });
 
   campaignDataResults = await runComponentGql(
     AdminCampaignEditQuery,
@@ -211,7 +212,9 @@ it("save campaign interaction steps, edit it, make sure the last value is set", 
     campaignDataResults.data.campaign.interactionSteps
   );
   interactionStepsClone2.script = "Hi {firstName}, please autorespond";
-  await createScript(testAdminUser, testCampaign, interactionStepsClone2);
+  await createScript(testAdminUser, testCampaign, {
+    interactionSteps: interactionStepsClone2
+  });
 
   campaignDataResults = await runComponentGql(
     AdminCampaignEditQuery,
@@ -258,7 +261,9 @@ it("save campaign interaction steps, edit it, make sure the last value is set", 
     "third save after campaign start";
   interactionStepsClone3.interactionSteps[0].questionText =
     "hmm1 after campaign start";
-  await createScript(testAdminUser, testCampaign, interactionStepsClone3);
+  await createScript(testAdminUser, testCampaign, {
+    interactionSteps: interactionStepsClone3
+  });
 
   campaignDataResults = await runComponentGql(
     AdminCampaignEditQuery,
@@ -307,8 +312,8 @@ it("save campaign interaction steps, edit it, make sure the last value is set", 
   expect(copiedCampaign1.data.copyCampaign.id).not.toEqual(testCampaign.id);
 
   const prevCampaignIsteps = campaignDataResults.data.campaign.interactionSteps;
-  const compareToLater = async (campaignId, prevCampaignIsteps) => {
-    const campaignDataResults = await runComponentGql(
+  const compareToLater = async (campaignId, innerPrevCampaignIsteps) => {
+    campaignDataResults = await runComponentGql(
       AdminCampaignEditQuery,
       { campaignId },
       testAdminUser
@@ -327,10 +332,10 @@ it("save campaign interaction steps, edit it, make sure the last value is set", 
     // make sure the copied steps are new ones
     expect(
       Number(campaignDataResults.data.campaign.interactionSteps[0].id)
-    ).toBeGreaterThan(Number(prevCampaignIsteps[1].id));
+    ).toBeGreaterThan(Number(innerPrevCampaignIsteps[1].id));
     expect(
       Number(campaignDataResults.data.campaign.interactionSteps[1].id)
-    ).toBeGreaterThan(Number(prevCampaignIsteps[1].id));
+    ).toBeGreaterThan(Number(innerPrevCampaignIsteps[1].id));
     return campaignDataResults;
   };
   const campaign1Results = await compareToLater(
@@ -415,18 +420,14 @@ describe("Caching", async () => {
       await startCampaign(testAdminUser, testCampaign);
 
       queryLog = [];
-      console.log("STARTING TEXTING");
+      console.log("STARTING TEXTING"); // eslint-disable-line no-console
       for (let i = 0; i < 5; i++) {
-        const messageResult = await sendMessage(
-          testContacts[i].id,
-          testTexterUser,
-          {
-            userId: testTexterUser.id,
-            contactNumber: testContacts[i].cell,
-            text: "test text",
-            assignmentId
-          }
-        );
+        await sendMessage(testContacts[i].id, testTexterUser, {
+          userId: testTexterUser.id,
+          contactNumber: testContacts[i].cell,
+          text: "test text",
+          assignmentId
+        });
       }
       // should only have done updates and inserts
       expect(
@@ -484,16 +485,12 @@ describe("Reassignments", async () => {
     );
     // send some texts
     for (let i = 0; i < 5; i++) {
-      const messageResult = await sendMessage(
-        testContacts[i].id,
-        testTexterUser,
-        {
-          userId: testTexterUser.id,
-          contactNumber: testContacts[i].cell,
-          text: "test text",
-          assignmentId
-        }
-      );
+      await sendMessage(testContacts[i].id, testTexterUser, {
+        userId: testTexterUser.id,
+        contactNumber: testContacts[i].cell,
+        text: "test text",
+        assignmentId
+      });
     }
     // TEXTER 1 (95 needsMessage, 5 needsResponse)
     texterCampaignDataResults = await runComponentGql(
@@ -571,13 +568,13 @@ describe("Reassignments", async () => {
     expect(texterCampaignDataResults.data.assignment.allContactsCount).toEqual(
       20
     );
-    let assignmentContacts2 =
+    const assignmentContacts2 =
       texterCampaignDataResults.data.assignment.contacts;
     for (let i = 0; i < 5; i++) {
       const contact = testContacts.filter(
-        c => assignmentContacts2[i].id == c.id
+        c => assignmentContacts2[i].id === c.id.toString()
       )[0];
-      const messageResult = await sendMessage(contact.id, testTexterUser2, {
+      await sendMessage(contact.id, testTexterUser2, {
         userId: testTexterUser2.id,
         contactNumber: contact.cell,
         text: "test text autorespond",
@@ -622,11 +619,15 @@ describe("Reassignments", async () => {
     expect(texterCampaignDataResults.data.assignment.allContactsCount).toEqual(
       20
     );
+    const makeFilterFunction = contactToMatch => contactToTest =>
+      contactToMatch.id === contactToTest.id.toString();
     for (let i = 0; i < 3; i++) {
       const contact = testContacts.filter(
-        c => texterCampaignDataResults.data.assignment.contacts[i].id == c.id
+        makeFilterFunction(
+          texterCampaignDataResults.data.assignment.contacts[i]
+        )
       )[0];
-      const messageResult = await sendMessage(contact.id, testTexterUser2, {
+      await sendMessage(contact.id, testTexterUser2, {
         userId: testTexterUser2.id,
         contactNumber: contact.cell,
         text: "keep talking",
@@ -1005,7 +1006,6 @@ describe("Bulk Send", async () => {
 
 describe("campaigns query", async () => {
   let testCampaign2;
-  let testCampaign3;
 
   const cursor = {
     offset: 0,
@@ -1014,7 +1014,7 @@ describe("campaigns query", async () => {
 
   beforeEach(async () => {
     testCampaign2 = await createCampaign(testAdminUser, testOrganization);
-    testCampaign3 = await createCampaign(testAdminUser, testOrganization);
+    await createCampaign(testAdminUser, testOrganization);
   });
 
   it("correctly filters by a single campaign id", async () => {
@@ -1079,11 +1079,9 @@ describe("all interaction steps fields travel round trip", () => {
   });
 
   it("works", async () => {
-    const createScriptResult = await createScript(
-      testAdminUser,
-      testCampaign,
+    const createScriptResult = await createScript(testAdminUser, testCampaign, {
       interactionSteps
-    );
+    });
 
     expect(createScriptResult.data.editCampaign).toEqual({
       id: testCampaign.id
@@ -1128,7 +1126,7 @@ describe("all interaction steps fields travel round trip", () => {
     let variables;
 
     beforeEach(async () => {
-      await createScript(testAdminUser, testCampaign, interactionSteps);
+      await createScript(testAdminUser, testCampaign, { interactionSteps });
 
       query = gql`
         query assignment($id: String!) {
