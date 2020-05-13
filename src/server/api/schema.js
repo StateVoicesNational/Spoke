@@ -22,7 +22,6 @@ import {
   JobRequest,
   Message,
   Organization,
-  QuestionResponse,
   Tag,
   UserOrganization,
   r,
@@ -55,6 +54,7 @@ import { resolvers as organizationResolvers } from "./organization";
 import { GraphQLPhone } from "./phone";
 import { resolvers as questionResolvers } from "./question";
 import { resolvers as questionResponseResolvers } from "./question-response";
+import updateQuestionResponses from "./mutations/updateQuestionResponses";
 import { getTags, resolvers as tagResolvers } from "./tag";
 import { getUsers, resolvers as userResolvers } from "./user";
 import { change } from "../local-auth-helpers";
@@ -1106,94 +1106,12 @@ const rootMutations = {
       { questionResponses, campaignContactId },
       { loaders, user }
     ) => {
-      const contact = await loaders.campaignContact.load(campaignContactId);
-      const campaign = await loaders.campaign.load(contact.campaign_id);
-      await assignmentRequiredOrAdminRole(
-        user,
-        campaign.organization_id,
-        contact.assignment_id,
-        contact
+      return updateQuestionResponses(
+        questionResponses,
+        campaignContactId,
+        loaders,
+        user
       );
-
-      cacheableData.questionResponse
-        .save(campaignContactId, questionResponses)
-        .then(async () => {
-          // The rest is for ACTION_HANDLERS
-          const organization = await loaders.organization.load(
-            campaign.organization_id
-          );
-
-          const actionHandlersConfigured = !!ActionHandlers.rawAllActionHandlers();
-          if (actionHandlersConfigured) {
-            const interactionSteps =
-              campaign.interactionSteps ||
-              (await cacheableData.campaign.dbInteractionSteps(campaign.id));
-
-            const getAndProcessAction = questionResponse => {
-              const { interactionStepId, value } = questionResponse;
-
-              const interactionStepResult = interactionSteps.filter(
-                is =>
-                  is.answer_actions &&
-                  is.answer_option === value &&
-                  is.parent_interaction_id === Number(interactionStepId)
-              );
-
-              const interactionStepAction =
-                interactionStepResult.length &&
-                interactionStepResult[0].answer_actions;
-
-              if (!interactionStepAction) {
-                return;
-              }
-
-              // run interaction step handler
-              ActionHandlers.getActionHandler(
-                interactionStepAction,
-                organization,
-                user
-              )
-                .then(handler => {
-                  if (!handler) {
-                    throw new Error("Handler not available");
-                  }
-
-                  handler
-                    .processAction(
-                      questionResponse,
-                      interactionStepResult[0],
-                      campaignContactId,
-                      contact,
-                      campaign,
-                      organization
-                    )
-                    .catch(err => {
-                      log.error(
-                        `Error executing handler for InteractionStep ${interactionStepId} InteractionStepAction ${interactionStepAction} error ${err}`
-                      );
-                    });
-                })
-                .catch(err => {
-                  log.error(
-                    `Error loading handler for InteractionStep ${interactionStepId} InteractionStepAction ${interactionStepAction} error ${err}`
-                  );
-                });
-            };
-
-            const promises = questionResponses.map(getAndProcessAction);
-            await Promise.all(promises);
-          }
-          return Promise.resolve();
-        })
-        .catch(err => {
-          log.error(
-            `Error saving updated QuestionResponse for campaignContactID ${campaignContactId} questionResponses ${JSON.stringify(
-              questionResponses
-            )} error ${err}`
-          );
-        });
-
-      return contact;
     },
     reassignCampaignContacts: async (
       _,
