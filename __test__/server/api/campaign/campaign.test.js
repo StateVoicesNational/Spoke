@@ -595,6 +595,10 @@ describe("Reassignments", async () => {
       },
       testTexterUser2
     );
+    console.log(
+      "campaign.test texterCampaignDataResults.data needsMessage",
+      JSON.stringify(texterCampaignDataResults.data, null, 2)
+    );
     expect(texterCampaignDataResults.data.assignment.contacts.length).toEqual(
       15
     );
@@ -613,6 +617,11 @@ describe("Reassignments", async () => {
       },
       testTexterUser2
     );
+    console.log(
+      "campaign.test texterCampaignDataResults.data needsResponse",
+      JSON.stringify(texterCampaignDataResults.data, null, 2)
+    );
+    // often is sometimes 4 instead of 5 in test results.  WHY?!!?!?
     expect(texterCampaignDataResults.data.assignment.contacts.length).toEqual(
       5
     );
