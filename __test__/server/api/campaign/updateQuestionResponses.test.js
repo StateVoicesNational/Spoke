@@ -7,8 +7,7 @@ import {
   createStartedCampaign,
   runGql,
   sendMessage,
-  setupTest,
-  sleep
+  setupTest
 } from "../../../test_helpers";
 
 const UpdateQuestionResponses = require("../../../../src/server/api/mutations/updateQuestionResponses");
@@ -50,6 +49,7 @@ describe("mutations.updateQuestionResponses", () => {
   }, global.DATABASE_SETUP_TEARDOWN_TIMEOUT);
 
   beforeEach(async () => {
+    // use this to ensure we're calling updateQuestionResponses as expected
     jest.spyOn(UpdateQuestionResponses, "updateQuestionResponses");
 
     questionResponseValuesDatabaseSql = `
@@ -162,20 +162,32 @@ describe("mutations.updateQuestionResponses", () => {
       })
     ).data.editCampaign.interactionSteps;
 
+    // we've created a script with this outline:
+    // What's your favorite color?
+    // Answer: Red
+    //   What's your favorite shade of red?
+    //     Answer: firebrick
+    //     Answer: crimson
+    // Answer: Purple
+
+    // these are the answers to the question "what's your favorite color?"
     colorInteractionSteps = returnedInteractionSteps.filter(
       interactionStep =>
         interactionStep.parentInteractionId === returnedInteractionSteps[0].id
     );
 
+    // this is the interaction step representing the answer "Red"
     redInteractionStep = colorInteractionSteps.find(
       colorInteractionStep => colorInteractionStep.answerOption === "Red"
     );
 
+    // these are the answers to the question "what's your favorite shade of red"
     shadesOfRedInteractionSteps = returnedInteractionSteps.filter(
       interactionStep =>
         interactionStep.parentInteractionId === redInteractionStep.id
     );
 
+    // send initial messages to 2 contacts
     const promises = contacts.slice(0, 2).map(contact => {
       return sendMessage(contact.id, texterUser, {
         text: returnedInteractionSteps[0].script,
@@ -245,6 +257,7 @@ describe("mutations.updateQuestionResponses", () => {
       texterUser
     );
 
+    // verify that updateQuestionResponses was called as expected
     expect(UpdateQuestionResponses.updateQuestionResponses.mock.calls).toEqual([
       [
         [
@@ -265,20 +278,28 @@ describe("mutations.updateQuestionResponses", () => {
       ]
     ]);
 
+    // verify that updateQuestionResponses returns what we expect
     expect(updateQuestionResponseResult.data.updateQuestionResponses).toEqual({
       id: contacts[0].id.toString(),
       messageStatus: "messaged",
-      questionResponseValues: expect.any(Array)
+      questionResponseValues: [
+        {
+          interactionStepId: 1,
+          value: "Red"
+        },
+        {
+          interactionStepId: 2,
+          value: "Crimson"
+        }
+      ]
     });
-
-    // we need this because updateQuestionResponse does its thing asynchronously
-    // the sleep gives it a chance to finish before we start expecting outcomes
-    await sleep(100);
 
     const databaseQueryResults = await r.knex.raw(
       questionResponseValuesDatabaseSql,
       [contacts[0].id]
     );
+
+    // verify that updateQuestionResponses really updated the question_responses
 
     // databaseQueryResults.rows will be truthy if we're using postgres
     // and short circuit, otherwise for sqlite databaseQueryResults will
