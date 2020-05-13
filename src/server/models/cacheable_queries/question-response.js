@@ -104,8 +104,8 @@ const questionResponseCache = {
               .transacting(trx)
               .insert(insertQuestionResponses);
           }
+          await trx.commit();
         });
-        trx.commit();
       } catch (error) {
         console.log("questionResponse cache transaction error", error);
       }
