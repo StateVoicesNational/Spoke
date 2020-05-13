@@ -268,18 +268,22 @@ describe("mutations.updateQuestionResponses", () => {
     expect(updateQuestionResponseResult.data.updateQuestionResponses).toEqual({
       id: contacts[0].id.toString(),
       messageStatus: "messaged",
-      questionResponseValues: expect.any(Array) // should be empty array, doing this so it passes on sqlite
+      questionResponseValues: expect.any(Array)
     });
 
     // we need this because updateQuestionResponse does its thing asynchronously
     // the sleep gives it a chance to finish before we start expecting outcomes
     await sleep(100);
 
-    const {
-      rows: databaseQueryResults
-    } = await r.knex.raw(questionResponseValuesDatabaseSql, [contacts[0].id]);
+    const databaseQueryResults = await r.knex.raw(
+      questionResponseValuesDatabaseSql,
+      [contacts[0].id]
+    );
 
-    expect(databaseQueryResults).toEqual([
+    // databaseQueryResults.rows will be truthy if we're using postgres
+    // and short circuit, otherwise for sqlite databaseQueryResults will
+    // contain the rows
+    expect(databaseQueryResults.rows || databaseQueryResults).toEqual([
       {
         answer_option: "Red",
         child_id: Number(colorInteractionSteps[0].id),
