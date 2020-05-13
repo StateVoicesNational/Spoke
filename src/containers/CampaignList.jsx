@@ -1,5 +1,4 @@
 import gql from "graphql-tag";
-import SpeakerNotesIcon from "material-ui/svg-icons/action/speaker-notes";
 import PropTypes from "prop-types";
 import React from "react";
 import { withRouter } from "react-router";
@@ -31,7 +30,7 @@ const campaignInfoFragment = `
   }
 `;
 
-let ROW_SIZES = [50, 10, 25, 100];
+const ROW_SIZES = [50, 10, 25, 100];
 const INITIAL_ROW_SIZE = ROW_SIZES[0];
 ROW_SIZES.sort((a, b) => a - b);
 
@@ -95,9 +94,19 @@ export class CampaignList extends React.Component {
   };
 
   handleRowSizeChanged = (index, value) => {
-    console.log("rowsizechanged", index, value);
+    console.log("rowsizechanged", index, value); // eslint-disable-line no-console
     this.changePage(0, value);
     this.setState({ pageSize: value });
+  };
+
+  handleArchiveCampaign = async campaignId => {
+    await this.props.mutations.archiveCampaign(campaignId);
+    this.props.data.refetch();
+  };
+
+  handleUnarchiveCampaign = async campaignId => {
+    await this.props.mutations.unarchiveCampaign(campaignId);
+    this.props.data.refetch();
   };
 
   render() {
@@ -114,6 +123,8 @@ export class CampaignList extends React.Component {
         selectMultiple={this.props.selectMultiple}
         organizationId={this.props.organizationId}
         handleChecked={this.props.handleChecked}
+        archiveCampaign={this.handleArchiveCampaign}
+        unarchiveCampaign={this.handleUnarchiveCampaign}
       />
     );
   }
