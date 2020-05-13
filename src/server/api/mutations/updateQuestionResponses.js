@@ -3,7 +3,7 @@ import { assignmentRequiredOrAdminRole } from "../errors";
 import { cacheableData } from "../../models";
 const ActionHandlers = require("../../../integrations/action-handlers");
 
-const updateQuestionResponses = async (
+export const updateQuestionResponses = async (
   questionResponses,
   campaignContactId,
   loaders,

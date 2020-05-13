@@ -54,12 +54,13 @@ import { resolvers as organizationResolvers } from "./organization";
 import { GraphQLPhone } from "./phone";
 import { resolvers as questionResolvers } from "./question";
 import { resolvers as questionResponseResolvers } from "./question-response";
-import updateQuestionResponses from "./mutations/updateQuestionResponses";
 import { getTags, resolvers as tagResolvers } from "./tag";
 import { getUsers, resolvers as userResolvers } from "./user";
 import { change } from "../local-auth-helpers";
 import { symmetricEncrypt } from "./lib/crypto";
 import Twilio from "twilio";
+
+const UpdateQuestionResponses = require("./mutations/updateQuestionResponses");
 
 import {
   sendMessage,
@@ -1106,7 +1107,7 @@ const rootMutations = {
       { questionResponses, campaignContactId },
       { loaders, user }
     ) => {
-      return updateQuestionResponses(
+      return UpdateQuestionResponses.updateQuestionResponses(
         questionResponses,
         campaignContactId,
         loaders,
