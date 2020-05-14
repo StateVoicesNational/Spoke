@@ -24,6 +24,17 @@ const MAX_TWILIO_MESSAGE_VALIDITY = 14400;
 const DISABLE_DB_LOG = getConfig("DISABLE_DB_LOG");
 const TWILIO_SKIP_VALIDATION = getConfig("TWILIO_SKIP_VALIDATION");
 
+async function getTwilio(organization) {
+  const {
+    authToken,
+    accountSid
+  } = await cacheableData.organization.getTwilioAuth(organization);
+  if (accountSid && authToken) {
+    return Twilio(accountSid, authToken);
+  }
+  return null;
+}
+
 const headerValidator = () => {
   if (!!TWILIO_SKIP_VALIDATION) return (req, res, next) => next();
 
@@ -421,7 +432,8 @@ async function handleIncomingMessage(message) {
 /**
  * Create a new Twilio messaging service
  */
-async function createMessagingService(friendlyName) {
+async function createMessagingService(organization, friendlyName) {
+  const twilio = await getTwilio(organization);
   return await twilio.messaging.services.create({
     friendlyName,
     statusCallback: process.env.TWILIO_STATUS_CALLBACK_URL,
@@ -432,7 +444,8 @@ async function createMessagingService(friendlyName) {
 /**
  * Fetch Phone Numbers assigned to Messaging Service
  */
-async function getPhoneNumbersForService(messagingServiceSid) {
+async function getPhoneNumbersForService(organization, messagingServiceSid) {
+  const twilio = await getTwilio(organization);
   return await twilio.messaging
     .services(messagingServiceSid)
     .phoneNumbers.list({ limit: 400 });

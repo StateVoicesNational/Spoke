@@ -490,6 +490,7 @@ export const resolvers = {
     },
     phoneNumbers: async campaign => {
       const phoneNumbers = await twilio.getPhoneNumbersForService(
+        campaign.organization,
         campaign.messageservice_sid
       );
       return phoneNumbers.map(phoneNumber => phoneNumber.phoneNumber);
