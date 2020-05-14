@@ -848,6 +848,7 @@ const rootMutations = {
         if (campaign.messageservice_sid == undefined) {
           const friendlyName = `Campaign: ${campaign.title} (${campaign.id}) [${process.env.BASE_URL}]`;
           const messagingService = await twilio.createMessagingService(
+            organization,
             friendlyName
           );
           campaign.messageservice_sid = messagingService.sid;
