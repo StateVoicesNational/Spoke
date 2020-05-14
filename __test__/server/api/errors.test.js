@@ -48,6 +48,46 @@ describe("errors.js", () => {
     });
   });
 
+  describe("#accessRequired", () => {
+    it("accessRequired fails with missing orgId", async () => {
+      let errored = false;
+      try {
+        await accessRequired(
+          startedCampaign.testTexterUser,
+          "", // missing orgId
+          "TEXTER"
+        );
+      } catch (err) {
+        errored = err;
+      }
+      expect(errored).toBeTruthy();
+
+      errored = false;
+      try {
+        await accessRequired(
+          startedCampaign.testTexterUser,
+          null, // missing orgId
+          "TEXTER"
+        );
+      } catch (err) {
+        errored = err;
+      }
+      expect(errored).toBeTruthy();
+
+      errored = false;
+      try {
+        await accessRequired(
+          startedCampaign.testTexterUser,
+          null, // missing orgId
+          "OWNER"
+        );
+      } catch (err) {
+        errored = err;
+      }
+      expect(errored).toBeTruthy();
+    });
+  });
+
   describe("#assignmentRequired", () => {
     it("returns truthy when a texter user has the assignment", async () => {
       const assignment = await assignmentRequired(
