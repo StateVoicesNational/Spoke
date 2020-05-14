@@ -1052,18 +1052,19 @@ describe("campaigns query", async () => {
 
 describe("useOwnMessagingService", async () => {
   it("uses default messaging service when false", async () => {
+    await startCampaign(testAdminUser, testCampaign);
+
     const campaignDataResults = await runComponentGql(
       AdminCampaignEditQuery,
       { campaignId: testCampaign.id },
       testAdminUser
     );
 
-    await startCampaign(testAdminUser, testCampaign);
     expect(campaignDataResults.data.campaign.useOwnMessagingService).toEqual(
       false
     );
     expect(campaignDataResults.data.campaign.messageserviceSid).toEqual(
-      process.env.TWILIO_MESSAGE_SERVICE_SID
+      global.TWILIO_MESSAGE_SERVICE_SID
     );
   });
   it("creates new messaging service when true", async () => {
