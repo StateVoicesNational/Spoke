@@ -254,7 +254,7 @@ export const resolvers = {
         "primaryColor",
         "logoImageUrl",
         "useOwnMessagingService",
-        "messagingServiceSid",
+        "messageserviceSid",
         "overrideOrganizationTextingHours",
         "textingHoursEnforced",
         "textingHoursStart",
@@ -490,7 +490,7 @@ export const resolvers = {
     },
     phoneNumbers: async campaign => {
       const phoneNumbers = await twilio.getPhoneNumbersForService(
-        campaign.messaging_service_sid
+        campaign.messageservice_sid
       );
       return phoneNumbers.map(phoneNumber => phoneNumber.phoneNumber);
     },

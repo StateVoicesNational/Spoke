@@ -23,23 +23,6 @@ Follow up instructions located [here](https://github.com/MoveOnOrg/Spoke/blob/ma
 
 Please let us know if you deployed by filling out this form [here](https://act.moveon.org/survey/tech/)
 
-## IMPORTANT
-
-This fork contains a new feature around allowing each campaign to have a new messaging service. If you are going to use this fork, make sure you run the below SQL to backfill in data for the older campaigns:
-
-`UPDATE campaign SET messaging_service_sid = '<change me, messaging service sid>' where messaging_service_sid IS null;`
-
-## Buying Phone Numbers
-
-This fork contains a feature to allow you to buy phone numbers for campaigns from certain area codes. To buy numbers run the command on the server where spoke has been deployed (for example: Your Heroku instance console):
-
-`npm run buy-numbers -- --messagingServiceSid <messagingServiceSid> --areaCode <areaCode> --limit <limit>`
-
-Variables:
-- `messagingServiceSid`: Messaging Service SID with which the bought phone numbers should be associated with. Can be gotten from the Campaign Messaging Service details page
-- `areaCode`: Area Code from which you want to buy the phone numbers
-- `limit`: How many phone numbers to buy, default limit is 1. Max recommended limit is 100. The buying works in batches of 30.
-
 ## Getting started
 
 ### Downloading

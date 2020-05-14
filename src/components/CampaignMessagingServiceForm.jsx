@@ -10,7 +10,7 @@ import cloneDeep from "lodash/cloneDeep";
 export default class CampaignMessagingServiceForm extends React.Component {
   formSchema = yup.object({
     useOwnMessagingService: yup.boolean(),
-    messagingServiceSid: yup
+    messageserviceSid: yup
       .string()
       .transform(value => (!value ? null : value))
       .nullable()
@@ -57,7 +57,7 @@ export default class CampaignMessagingServiceForm extends React.Component {
         {this.props.formValues.useOwnMessagingService ? (
           <div>
             <Form.Field
-              name="messagingServiceSid"
+              name="messageserviceSid"
               label="Messaging Service SID"
               fullWidth
             />

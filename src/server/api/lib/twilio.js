@@ -84,9 +84,17 @@ function parseMessageText(message) {
   return params;
 }
 
-async function getMessagingServiceSid(contact) {
-  const campaign = await Campaign.get(contact.campaign_id);
-  return campaign.messaging_service_sid;
+async function getMessagingServiceSid(organization, contact, message) {
+  const campaign = cacheableData.campaign;
+  if (campaign.messageservice_sid != undefined) {
+    return campaign.messageservice_sid;
+  } else {
+    return await cacheableData.organization.getMessageServiceSid(
+      organization,
+      contact,
+      message.text
+    );
+  }
 }
 
 async function sendMessage(message, contact, trx, organization) {
@@ -118,7 +126,11 @@ async function sendMessage(message, contact, trx, organization) {
   }
 
   // Note organization won't always be available, so then contact can trace to it
-  const messagingServiceSid = await getMessagingServiceSid(contact);
+  const messagingServiceSid = await getMessagingServiceSid(
+    organization,
+    contact,
+    message
+  );
 
   return new Promise((resolve, reject) => {
     if (message.service !== "twilio") {
@@ -418,47 +430,6 @@ async function createMessagingService(friendlyName) {
 }
 
 /**
- * Search for phone numbers available for purchase
- */
-async function searchForAvailableNumbers(areaCode, limit) {
-  const count = Math.min(limit, 30); // Twilio limit
-  return await twilio
-    .availablePhoneNumbers(process.env.PHONE_NUMBER_COUNTRY)
-    .local.list({
-      areaCode,
-      limit: count,
-      capabilities: ["SMS", "MMS"]
-    });
-}
-
-/**
- * Buy a phone number
- */
-async function buyNumber(phoneNumber) {
-  const response = await twilio.incomingPhoneNumbers.create({
-    phoneNumber,
-    friendlyName: `Managed by Spoke: ${phoneNumber}`
-  });
-  if (response.error) {
-    throw new Error(`Error buying twilio number: ${response.error}`);
-  }
-  log.debug(`Bought number ${phoneNumber} [${response.sid}]`);
-  return response.sid;
-}
-
-/**
- * Add bought phone number to a messging service
- */
-async function addNumberToMessagingService(
-  phoneNumberSid,
-  messagingServiceSid
-) {
-  return twilio.messaging
-    .services(messagingServiceSid)
-    .phoneNumbers.create({ phoneNumberSid });
-}
-
-/**
  * Fetch Phone Numbers assigned to Messaging Service
  */
 async function getPhoneNumbersForService(messagingServiceSid) {
@@ -476,8 +447,5 @@ export default {
   handleIncomingMessage,
   parseMessageText,
   createMessagingService,
-  buyNumber,
-  addNumberToMessagingService,
-  searchForAvailableNumbers,
   getPhoneNumbersForService
 };

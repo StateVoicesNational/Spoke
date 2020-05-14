@@ -86,7 +86,7 @@ async function editCampaign(id, campaign, loaders, user, origCampaignRecord) {
     introHtml,
     primaryColor,
     useOwnMessagingService,
-    messagingServiceSid,
+    messageserviceSid,
     overrideOrganizationTextingHours,
     textingHoursEnforced,
     textingHoursStart,
@@ -116,7 +116,7 @@ async function editCampaign(id, campaign, loaders, user, origCampaignRecord) {
     texting_hours_start: textingHoursStart,
     texting_hours_end: textingHoursEnd,
     use_own_messaging_service: useOwnMessagingService,
-    messaging_service_sid: messagingServiceSid,
+    messageservice_sid: messageserviceSid,
     timezone
   };
 
@@ -845,15 +845,15 @@ const rootMutations = {
       );
 
       if (campaign.use_own_messaging_service) {
-        if (campaign.messaging_service_sid == undefined) {
+        if (campaign.messageservice_sid == undefined) {
           const friendlyName = `Campaign: ${campaign.title} (${campaign.id}) [${process.env.BASE_URL}]`;
           const messagingService = await twilio.createMessagingService(
             friendlyName
           );
-          campaign.messaging_service_sid = messagingService.sid;
+          campaign.messageservice_sid = messagingService.sid;
         }
       } else {
-        campaign.messaging_service_sid = await cacheableData.organization.getMessageServiceSid(
+        campaign.messageservice_sid = await cacheableData.organization.getMessageServiceSid(
           organization
         );
       }
