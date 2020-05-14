@@ -115,7 +115,7 @@ const rootSchema = gql`
     cannedResponses: [CannedResponseInput]
     useOwnMessagingService: Boolean
     phoneNumbers: [String]
-    messagingServiceSid: String
+    messageserviceSid: String
     overrideOrganizationTextingHours: Boolean
     textingHoursEnforced: Boolean
     textingHoursStart: Int

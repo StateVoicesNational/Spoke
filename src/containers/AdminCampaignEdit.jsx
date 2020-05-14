@@ -41,7 +41,7 @@ const campaignInfoFragment = `
   introHtml
   primaryColor
   useOwnMessagingService
-  messagingServiceSid
+  messageserviceSid
   overrideOrganizationTextingHours
   textingHoursEnforced
   textingHoursStart
@@ -408,11 +408,11 @@ class AdminCampaignEdit extends React.Component {
         expandableBySuperVolunteers: false
       }
     ];
-    if (window.TWILIO_PER_CAMPAIGN_MESSAGING_SERVICE) {
+    if (window.EXPERIMENTAL_TWILIO_PER_CAMPAIGN_MESSAGING_SERVICE) {
       finalSections.push({
         title: "Messaging Service",
         content: CampaignMessagingServiceForm,
-        keys: ["useOwnMessagingService", "messagingServiceSid"],
+        keys: ["useOwnMessagingService", "messageserviceSid"],
         checkCompleted: () => true,
         blocksStarting: false,
         expandAfterCampaignStarts: false,

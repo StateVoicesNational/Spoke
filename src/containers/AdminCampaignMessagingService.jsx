@@ -24,7 +24,7 @@ const styles = StyleSheet.create({
 class AdminCampaignMessagingService extends React.Component {
   render() {
     const campaign = this.props.data.campaign;
-    const messagingServiceUrl = `https://www.twilio.com/console/sms/services/${campaign.messagingServiceSid}/`;
+    const messagingServiceUrl = `https://www.twilio.com/console/sms/services/${campaign.messageserviceSid}/`;
     return (
       <div>
         <div className={css(styles.header)}>
@@ -72,7 +72,7 @@ const mapQueriesToProps = ({ ownProps }) => ({
         campaign(id: $campaignId) {
           id
           title
-          messagingServiceSid
+          messageserviceSid
           phoneNumbers
         }
       }

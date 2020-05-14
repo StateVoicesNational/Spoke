@@ -29,7 +29,7 @@ const Campaign = thinky.createModel(
       intro_html: type.string(),
       primary_color: type.string(),
       use_own_messaging_service: type.boolean().required(),
-      messaging_service_sid: type.string().required(),
+      messageservice_sid: type.string().required(),
       override_organization_texting_hours: type
         .boolean()
         .required()

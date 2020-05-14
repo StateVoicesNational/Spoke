@@ -1062,7 +1062,7 @@ describe("useOwnMessagingService", async () => {
     expect(campaignDataResults.data.campaign.useOwnMessagingService).toEqual(
       false
     );
-    expect(campaignDataResults.data.campaign.messagingServiceSid).toEqual(
+    expect(campaignDataResults.data.campaign.messageserviceSid).toEqual(
       process.env.TWILIO_MESSAGE_SERVICE_SID
     );
   });
@@ -1079,7 +1079,7 @@ describe("useOwnMessagingService", async () => {
         campaign(id: $campaignId) {
           id
           useOwnMessagingService
-          messagingServiceSid
+          messageserviceSid
         }
       }
     `;
@@ -1099,7 +1099,7 @@ describe("useOwnMessagingService", async () => {
     expect(campaignDataResults.data.campaign.useOwnMessagingService).toEqual(
       true
     );
-    expect(campaignDataResults.data.campaign.messagingServiceSid).toEqual(
+    expect(campaignDataResults.data.campaign.messageserviceSid).toEqual(
       "testTWILIOsid"
     );
   });
