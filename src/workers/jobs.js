@@ -1138,10 +1138,10 @@ export async function buyPhoneNumbers(job) {
     );
     log.info(`Bought ${totalPurchased} number(s)`, {
       status: "COMPLETE",
-      "Area Code": areaCode,
-      "Total Requested": limit,
-      "Total Purchased": totalPurchased,
-      "Requested By": job.userId
+      areaCode,
+      limit,
+      totalPurchased,
+      organization_id: job.organization_id
     });
   } catch (err) {
     log.error(`JOB ${job.id} FAILED: ${err.message}`, err);
