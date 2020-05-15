@@ -143,7 +143,6 @@ export async function getUsers(
   if (cursor) {
     usersQuery = usersQuery.limit(cursor.limit).offset(cursor.offset);
     const users = await usersQuery;
-
     const usersCountQuery = buildUsersQuery(
       organizationId,
       role,

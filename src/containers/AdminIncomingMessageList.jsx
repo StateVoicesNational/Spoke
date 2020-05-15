@@ -82,6 +82,7 @@ export class AdminIncomingMessageList extends Component {
   }
 
   shouldComponentUpdate = (dummy, nextState) => {
+    console.log("shouldComponentUpdate", nextState.needsRender);
     if (
       !nextState.needsRender &&
       _.isEqual(this.state.contactsFilter, nextState.contactsFilter) &&
@@ -90,6 +91,7 @@ export class AdminIncomingMessageList extends Component {
     ) {
       return false;
     }
+    console.log("shouldComponentUpdate updating");
     return true;
   };
 
@@ -199,6 +201,7 @@ export class AdminIncomingMessageList extends Component {
   };
 
   handleCampaignTextersReceived = async campaignTexters => {
+    console.log("handleCampaignTextersReceived", campaignTexters.length);
     this.setState({ campaignTexters, needsRender: true });
   };
 

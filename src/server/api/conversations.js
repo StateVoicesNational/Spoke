@@ -9,19 +9,24 @@ function getConversationsJoinsAndWhereClause(
   organizationId,
   campaignsFilter,
   assignmentsFilter,
-  contactsFilter
+  contactsFilter,
+  forData
 ) {
-  let query = queryParam
-    .leftJoin("campaign_contact", "campaign.id", "campaign_contact.campaign_id")
-    .leftJoin("assignment", "campaign_contact.assignment_id", "assignment.id")
-    .leftJoin("user", "assignment.user_id", "user.id")
-    .where({ "campaign.organization_id": organizationId });
+  let query = queryParam.leftJoin(
+    "campaign_contact",
+    "campaign.id",
+    "campaign_contact.campaign_id"
+  );
 
-  query = buildCampaignQuery(query, organizationId, campaignsFilter);
+  query = buildCampaignQuery(query, organizationId, campaignsFilter, true);
 
-  if (assignmentsFilter) {
-    if ("texterId" in assignmentsFilter && assignmentsFilter.texterId !== null)
-      query = query.where({ "assignment.user_id": assignmentsFilter.texterId });
+  if (assignmentsFilter && assignmentsFilter.texterId) {
+    query = query.where({ "assignment.user_id": assignmentsFilter.texterId });
+  }
+  if (forData || (assignmentsFilter && assignmentsFilter.texterId)) {
+    query = query
+      .leftJoin("assignment", "campaign_contact.assignment_id", "assignment.id")
+      .leftJoin("user", "assignment.user_id", "user.id");
   }
 
   query = addWhereClauseForContactsFilterMessageStatusIrrespectiveOfPastDue(
@@ -30,15 +35,7 @@ function getConversationsJoinsAndWhereClause(
   );
 
   if (contactsFilter && "isOptedOut" in contactsFilter) {
-    const subQuery = r.knex
-      .select("cell")
-      .from("opt_out")
-      .whereRaw("opt_out.cell=campaign_contact.cell");
-    if (contactsFilter.isOptedOut) {
-      query = query.whereExists(subQuery);
-    } else {
-      query = query.whereNotExists(subQuery);
-    }
+    query = query.where("is_opted_out", contactsFilter.isOptedOut);
   }
 
   return query;
@@ -52,13 +49,16 @@ results, replacing keys in the fields map with the original column name, so the
 results can be consumed by downstream resolvers.
  */
 function mapQueryFieldsToResolverFields(queryResult, fieldsMap) {
-  return _.mapKeys(queryResult, (value, key) => {
+  console.log("getConversations mapQueryFieldsToResolverFields", fieldsMap);
+  const data = _.mapKeys(queryResult, (value, key) => {
     const newKey = fieldsMap[key];
     if (newKey) {
       return newKey;
     }
     return key;
   });
+  console.log("getConversations mapQueryFieldsToResolverFields data", data);
+  return data;
 }
 
 export async function getConversations(
@@ -71,6 +71,7 @@ export async function getConversations(
 ) {
   /* Query #1 == get campaign_contact.id for all the conversations matching
    * the criteria with offset and limit. */
+  const starttime = new Date();
   let offsetLimitQuery = r.knex.select("campaign_contact.id as cc_id");
 
   offsetLimitQuery = getConversationsJoinsAndWhereClause(
@@ -82,11 +83,22 @@ export async function getConversations(
   );
 
   offsetLimitQuery = offsetLimitQuery
-    .orderBy("campaign_contact.updated_at")
+    .orderBy("campaign_contact.updated_at", "desc")
     .orderBy("cc_id");
   offsetLimitQuery = offsetLimitQuery.limit(cursor.limit).offset(cursor.offset);
-
+  console.log(
+    "getConversations sql",
+    cursor,
+    assignmentsFilter,
+    offsetLimitQuery.toString()
+  );
   const ccIdRows = await offsetLimitQuery;
+
+  console.log(
+    "getConversations contact ids",
+    Number(new Date()) - Number(starttime),
+    ccIdRows.length
+  );
   const ccIds = ccIdRows.map(ccIdRow => {
     return ccIdRow.cc_id;
   });
@@ -102,7 +114,6 @@ export async function getConversations(
     "campaign_contact.is_opted_out",
     "campaign_contact.updated_at",
     "assignment.id as assignment_id",
-    "opt_out.cell as opt_out_cell",
     "user.id as u_id",
     "user.first_name as u_first_name",
     "user.last_name as u_last_name",
@@ -123,7 +134,8 @@ export async function getConversations(
     organizationId,
     campaignsFilter,
     assignmentsFilter,
-    contactsFilter
+    contactsFilter,
+    true
   );
 
   query = query.whereIn("campaign_contact.id", ccIds);
@@ -133,17 +145,16 @@ export async function getConversations(
   });
 
   query = query
-    .leftJoin("opt_out", table => {
-      table
-        .on("opt_out.organization_id", "=", "campaign.organization_id")
-        .andOn("campaign_contact.cell", "opt_out.cell");
-    })
-    .orderBy("campaign_contact.updated_at")
+    .orderBy("campaign_contact.updated_at", "desc")
     .orderBy("cc_id")
     .orderBy("message.created_at");
-
+  console.log("getConversations query2", query);
   const conversationRows = await query;
-
+  console.log(
+    "getConversations query2 result",
+    Number(new Date()) - Number(starttime),
+    conversationRows.length
+  );
   /* collapse the rows to produce an array of objects, with each object
    * containing the fields for one conversation, each having an array of
    * message objects */
@@ -175,18 +186,41 @@ export async function getConversations(
 
   /* Query #3 -- get the count of all conversations matching the criteria.
    * We need this to show total number of conversations to support paging */
-  const countQuery = r.knex.count("*");
-  const conversationsCountArray = await getConversationsJoinsAndWhereClause(
+  const countQuery = r.knex.count("*").timeout(4000, { cancel: true });
+  console.log(
+    "getConversations query3",
+    Number(new Date()) - Number(starttime)
+  );
+  const conversationsCountQuery = getConversationsJoinsAndWhereClause(
     countQuery,
     organizationId,
     campaignsFilter,
     assignmentsFilter,
     contactsFilter
   );
+  console.log(
+    "getConversations query3 sql",
+    conversationsCountQuery.toString()
+  );
+  let conversationCountArray;
+  try {
+    conversationCountArray = await conversationsCountQuery;
+  } catch (err) {
+    // default fake value that means 'a lot'
+    conversationCountArray = [{ count: 9999 }];
+    console.log("getConversations timeout", err);
+  }
+
+  console.log(
+    "getConversations query3 result",
+    Number(new Date()) - Number(starttime),
+    conversationCountArray,
+    conversations
+  );
   const pageInfo = {
     limit: cursor.limit,
     offset: cursor.offset,
-    total: conversationsCountArray[0].count
+    total: conversationCountArray[0].count
   };
 
   return {
@@ -326,6 +360,10 @@ export async function reassignConversations(
 export const resolvers = {
   PaginatedConversations: {
     conversations: queryResult => {
+      console.log(
+        "getConversations paginatedconversations conversations",
+        queryResult.conversations
+      );
       return queryResult.conversations;
     },
     pageInfo: queryResult => {
@@ -338,6 +376,7 @@ export const resolvers = {
   },
   Conversation: {
     texter: queryResult => {
+      console.log("getConversation texter");
       return mapQueryFieldsToResolverFields(queryResult, {
         u_id: "id",
         u_first_name: "first_name",
@@ -345,14 +384,15 @@ export const resolvers = {
       });
     },
     contact: queryResult => {
+      console.log("getConversation contact", queryResult);
       return mapQueryFieldsToResolverFields(queryResult, {
         cc_id: "id",
         cc_first_name: "first_name",
-        cc_last_name: "last_name",
-        opt_out_cell: "opt_out_cell"
+        cc_last_name: "last_name"
       });
     },
     campaign: queryResult => {
+      console.log("getConversation campaign");
       return mapQueryFieldsToResolverFields(queryResult, { cmp_id: "id" });
     }
   }
