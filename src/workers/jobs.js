@@ -1125,16 +1125,21 @@ export async function buyPhoneNumbers(job) {
       throw Error("organization_id is required");
     }
     const payload = JSON.parse(job.payload);
-    const { areaCode, limit } = payload;
+    const { areaCode, limit, messagingServiceSid } = payload;
     if (!areaCode || !limit) {
       throw new Error("areaCode and limit are required");
     }
     const organization = await Organization.get(job.organization_id);
     const service = serviceMap[getConfig("DEFAULT_SERVICE", organization)];
+    const opts = {};
+    if (messagingServiceSid) {
+      opts.messagingServiceSid = messagingServiceSid;
+    }
     const totalPurchased = await service.buyNumbersInAreaCode(
       organization,
       areaCode,
-      limit
+      limit,
+      opts
     );
     log.info(`Bought ${totalPurchased} number(s)`, {
       status: "COMPLETE",

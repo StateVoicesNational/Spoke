@@ -13,7 +13,7 @@ import Form from "react-formal";
 import theme from "../styles/theme";
 import { dataTest } from "../lib/attributes";
 import loadData from "./hoc/load-data";
-import { CircularProgress, FlatButton } from "material-ui";
+import { CircularProgress, FlatButton, Toggle } from "material-ui";
 
 const inlineStyles = {
   column: {
@@ -38,7 +38,7 @@ const inlineStyles = {
 
 class AdminPhoneNumberInventory extends React.Component {
   static propTypes = {
-    organizationData: PropTypes.object,
+    data: PropTypes.object,
     mutations: PropTypes.object
   };
 
@@ -46,7 +46,10 @@ class AdminPhoneNumberInventory extends React.Component {
     super(props);
 
     this.state = {
-      buyNumbersDialogOpen: false
+      buyNumbersDialogOpen: false,
+      buyNumbersFormValues: {
+        addToOrganizationMessagingService: false
+      }
     };
   }
 
@@ -61,7 +64,8 @@ class AdminPhoneNumberInventory extends React.Component {
         .number()
         .required()
         .max(window.MAX_NUMBERS_PER_BUY_JOB)
-        .min(1)
+        .min(1),
+      addToOrganizationMessagingService: yup.bool()
     });
   }
 
@@ -77,18 +81,38 @@ class AdminPhoneNumberInventory extends React.Component {
     });
   };
 
-  handleBuyNumbersSubmit = async formData => {
+  handleFormChange = formValues => {
+    this.setState({
+      buyNumbersFormValues: {
+        ...this.state.buyNumbersFormValues,
+        ...formValues
+      }
+    });
+  };
+
+  handleBuyNumbersSubmit = async () => {
+    const {
+      areaCode,
+      limit,
+      addToOrganizationMessagingService
+    } = this.state.buyNumbersFormValues;
     await this.props.mutations.buyPhoneNumbers(
-      formData.areaCode,
-      formData.limit
+      areaCode,
+      limit,
+      addToOrganizationMessagingService
     );
     this.setState({
-      buyNumbersDialogOpen: false
+      buyNumbersDialogOpen: false,
+      buyNumbersFormValues: {
+        areaCode: null,
+        limit: null,
+        addToOrganizationMessagingService: false
+      }
     });
   };
 
   tableColumns() {
-    const { pendingPhoneNumberJobs } = this.props.organizationData.organization;
+    const { pendingPhoneNumberJobs } = this.props.data.organization;
     return [
       {
         key: "areaCode",
@@ -124,21 +148,32 @@ class AdminPhoneNumberInventory extends React.Component {
       <GSForm
         schema={this.buyNumbersFormSchema()}
         onSubmit={this.handleBuyNumbersSubmit}
+        value={this.state.buyNumbersFormValues}
+        onChange={this.handleFormChange}
         {...dataTest("buyNumbersForm")}
       >
         <div style={inlineStyles.dialogFields}>
           <Form.Field
             label="Area Code"
             name="areaCode"
-            value=""
             {...dataTest("areaCode")}
           />
-          <Form.Field
-            label="Limit"
-            name="limit"
-            value={0}
-            {...dataTest("limit")}
-          />
+          <Form.Field label="Limit" name="limit" {...dataTest("limit")} />
+          {this.props.data.organization.twilioMessageServiceSid ? (
+            <Form.Field
+              label="Add to Organization Messaging Service"
+              name="addToOrganizationMessagingService"
+              type={Toggle}
+              style={{
+                marginTop: 30
+              }}
+              onToggle={(_, toggled) => {
+                this.handleFormChange({
+                  addToOrganizationMessagingService: toggled
+                });
+              }}
+            />
+          ) : null}
         </div>
         <div style={inlineStyles.dialogActions}>
           <FlatButton
@@ -157,7 +192,7 @@ class AdminPhoneNumberInventory extends React.Component {
     const {
       phoneNumberCounts,
       pendingPhoneNumberJobs
-    } = this.props.organizationData.organization;
+    } = this.props.data.organization;
 
     // Push rows for pending jobs as a simple visual indication that counts are
     // being updated.
@@ -204,11 +239,12 @@ class AdminPhoneNumberInventory extends React.Component {
 }
 
 const mapQueriesToProps = ({ ownProps }) => ({
-  organizationData: {
+  data: {
     query: gql`
       query getOrganizationData($organizationId: String!) {
         organization(id: $organizationId) {
           id
+          twilioMessageServiceSid
           phoneNumberCounts {
             areaCode
             availableCount
@@ -234,17 +270,19 @@ const mapQueriesToProps = ({ ownProps }) => ({
 });
 
 const mapMutationsToProps = ({ ownProps }) => ({
-  buyPhoneNumbers: (areaCode, limit) => ({
+  buyPhoneNumbers: (areaCode, limit, addToOrganizationMessagingService) => ({
     mutation: gql`
       mutation buyPhoneNumbers(
         $organizationId: ID!
         $areaCode: String!
         $limit: Int!
+        $addToOrganizationMessagingService: Boolean
       ) {
         buyPhoneNumbers(
           organizationId: $organizationId
           areaCode: $areaCode
           limit: $limit
+          addToOrganizationMessagingService: $addToOrganizationMessagingService
         ) {
           id
         }
@@ -253,9 +291,10 @@ const mapMutationsToProps = ({ ownProps }) => ({
     variables: {
       organizationId: ownProps.params.organizationId,
       areaCode,
-      limit
+      limit,
+      addToOrganizationMessagingService
     },
-    refetchQueries: ["getOrganizationData"]
+    refetchQueries: ["getdata"]
   })
 });
 

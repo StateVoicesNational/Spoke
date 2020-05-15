@@ -1302,7 +1302,7 @@ const rootMutations = {
     },
     buyPhoneNumbers: async (
       _,
-      { organizationId, areaCode, limit },
+      { organizationId, areaCode, limit, addToOrganizationMessagingService },
       { loaders, user }
     ) => {
       await accessRequired(user, organizationId, "OWNER");
@@ -1317,6 +1317,18 @@ const rootMutations = {
           `Service ${serviceName} does not support phone number buying`
         );
       }
+
+      let messagingServiceSid;
+      if (addToOrganizationMessagingService) {
+        const msgSrv = JSON.parse(org.features || "{}")
+          .TWILIO_MESSAGE_SERVICE_SID;
+        if (serviceName !== "twilio" || !msgSrv) {
+          throw new Error(
+            "This organization is not configured to use its own Twilio Messaging Service"
+          );
+        }
+        messagingServiceSid = msgSrv;
+      }
       const job = await JobRequest.save({
         queue_name: `${organizationId}:buy_phone_numbers`,
         organization_id: organizationId,
@@ -1325,7 +1337,8 @@ const rootMutations = {
         assigned: JOBS_SAME_PROCESS,
         payload: JSON.stringify({
           areaCode,
-          limit
+          limit,
+          messagingServiceSid
         })
       });
       if (JOBS_SAME_PROCESS) {

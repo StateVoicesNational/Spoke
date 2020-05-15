@@ -357,6 +357,7 @@ const rootSchema = gql`
       organizationId: ID!
       areaCode: String!
       limit: Int!
+      addToOrganizationMessagingService: Boolean
     ): JobRequest
   }
 

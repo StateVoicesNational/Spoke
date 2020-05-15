@@ -12,7 +12,8 @@ import fakeservice from "./fakeservice";
 // addExpressEndpoints(app) -> void
 
 // For phone number inventory management:
-// async buyNumbersInAreaCode(organization, areaCode, limit) -> Count of successfully purchased numbers
+// async buyNumbersInAreaCode(organization, areaCode, limit, opts) -> Count of successfully purchased numbers
+// where the `opts` parameter can include service specific options
 
 const serviceMap = {
   nexmo,
