@@ -161,7 +161,7 @@ class AdminPhoneNumberInventory extends React.Component {
           <Form.Field label="Limit" name="limit" {...dataTest("limit")} />
           {this.props.data.organization.twilioMessageServiceSid ? (
             <Form.Field
-              label="Add to Organization Messaging Service"
+              label="Add to this organization's Messaging Service"
               name="addToOrganizationMessagingService"
               type={Toggle}
               style={{
