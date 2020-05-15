@@ -367,7 +367,7 @@ export class AssignmentTexterContact extends React.Component {
         ? OldControls
         : Controls;
     return (
-      <div>
+      <div {...dataTest("assignmentTexterContactFirstDiv")}>
         {this.state.disabled ? (
           <div className={css(styles.overlay)}>
             <CircularProgress size={0.5} />
@@ -431,7 +431,7 @@ AssignmentTexterContact.propTypes = {
   messageStatusFilter: PropTypes.string
 };
 
-const mapMutationsToProps = () => ({
+export const mapMutationsToProps = () => ({
   createOptOut: (optOut, campaignContactId) => ({
     mutation: gql`
       mutation createOptOut(

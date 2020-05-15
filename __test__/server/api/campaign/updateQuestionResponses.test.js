@@ -16,14 +16,24 @@ import { r, loaders } from "../../../../src/server/models";
 
 // for testing with AssignmentTexterContact
 import React from "react";
-import { mount } from "enzyme";
+import { shallow, mount } from "enzyme";
 import MuiThemeProvider from "material-ui/styles/MuiThemeProvider";
+import { createMemoryHistory } from "react-router";
+import { wrapMutations } from "../../../../src/containers/hoc/wrap-mutations";
+import loadData from "../../../../src/containers/hoc/load-data";
+import Store from "../../../../src/store";
+import ApolloClientSingleton from "../../../../src/network/apollo-client-singleton";
+import { ApolloProvider } from "react-apollo";
 import { StyleSheetTestUtils } from "aphrodite";
-import { AssignmentTexterContact } from "../../../../src/containers/AssignmentTexterContact";
+import AssignmentTexterContact, {
+  mapMutationsToProps
+} from "../../../../src/containers/AssignmentTexterContact";
+import { AssignmentTexterContactControls } from "../../../../src/components/AssignmentTexter/Controls";
 import {
   dataQueryString as assignmentQueryString,
   contactDataFragment
 } from "../../../../src/containers/TexterTodo";
+import { connect } from "react-apollo";
 
 describe("mutations.updateQuestionResponses", () => {
   let adminUser;
@@ -41,6 +51,7 @@ describe("mutations.updateQuestionResponses", () => {
 
   beforeEach(async () => {
     await setupTest();
+    jest.restoreAllMocks();
   }, global.DATABASE_SETUP_TEARDOWN_TIMEOUT);
 
   afterEach(async () => {
@@ -332,6 +343,7 @@ describe("mutations.updateQuestionResponses", () => {
     let updatedCampaign;
     let updatedContacts;
     let updatedAssignment;
+    let store;
 
     beforeEach(async () => {
       const variables = {
@@ -376,6 +388,8 @@ describe("mutations.updateQuestionResponses", () => {
       ({
         data: { getAssignmentContacts: updatedContacts }
       } = retrievedContacts);
+
+      store = new Store(createMemoryHistory("/")).data;
     });
 
     it("calls the resolver", async () => {
@@ -387,18 +401,92 @@ describe("mutations.updateQuestionResponses", () => {
         currentIndex: 1
       };
       StyleSheetTestUtils.suppressStyleInjection();
-      const component = mount(
-        <MuiThemeProvider>
-          <AssignmentTexterContact
-            texter={texterUser}
-            campaign={updatedCampaign}
-            assignment={updatedAssignment}
-            refreshData={jest.fn()}
-            contact={updatedContacts[0]}
-            navigationToolbarChildren={navigationToolbarChildren}
-          />
-        </MuiThemeProvider>
+
+      // const Component = loadData(
+      //   <AssignmentTexterContact
+      //     mutations={mapMutationsToProps()}
+      //     texter={texterUser}
+      //     campaign={updatedCampaign}
+      //     assignment={updatedAssignment}
+      //     refreshData={jest.fn()}
+      //     contact={updatedContacts[0]}
+      //     navigationToolbarChildren={navigationToolbarChildren}
+      //   />
+      // );
+      //
+      // console.log("component", Component);
+
+      const component = await mount(
+        <ApolloProvider store={store} client={ApolloClientSingleton}>
+          <MuiThemeProvider>
+            <AssignmentTexterContact
+              find-me="here"
+              texter={{ ...texterUser }}
+              campaign={{ ...updatedCampaign }}
+              assignment={{ ...updatedAssignment }}
+              refreshData={jest.fn()}
+              contact={{ ...updatedContacts[0] }}
+              navigationToolbarChildren={navigationToolbarChildren}
+            />
+          </MuiThemeProvider>
+        </ApolloProvider>
       );
+
+      // const assignmentTexterContactWrapper = component.find(
+      //   AssignmentTexterContact
+      // );
+
+      // const assignmentTexterContactWrapper = component.find(
+      //   "submitContactsCsvUpload"
+      // );
+
+      // const assignmentTexterContactWrapper = component.findWhere(node => {
+      //   return node.prop("data-test") === "assignmentTexterContactFirstDiv"
+      // });
+
+      const assignmentTexterContactWrapper = component.findWhere(
+        node => node.prop("find-me") === "here"
+      );
+
+      const assignmentTexterContact = assignmentTexterContactWrapper
+        .last()
+        .instance();
+
+      //console.log('assignmentTexterContact', assignmentTexterContact);
+
+      // const forChild = child => {
+      //   if (child.name() === "div") {
+      //     console.log(child.props());
+      //   }
+      //   console.log(child.name());
+      //   child.children().forEach(forChild);
+      // };
+      // assignmentTexterContactWrapper.children().forEach(forChild);
+
+      const controlsWrapper = assignmentTexterContactWrapper.find(
+        AssignmentTexterContactControls
+      );
+
+      const controls = controlsWrapper.instance();
+
+      controls.handleQuestionResponseChange({
+        interactionStep: returnedInteractionSteps[0],
+        questionResponseValue: "Red"
+      });
+
+      //console.log('assignmentTexterContact.state()', assignmentTexterContactWrapper.last().state());
+
+      //console.log('assignmentTexterContact', assignmentTexterContact);
+      //console.log('assignmentTexterContact', assignmentTexterContact.handleSubmitSurveys);
+      await assignmentTexterContact.handleSubmitSurveys();
+
+      const databaseQueryResults = await r.knex.raw(
+        questionResponseValuesDatabaseSql,
+        [updatedContacts[0].id]
+      );
+
+      console.log("databaseQueryResults", databaseQueryResults);
+      expect(databaseQueryResults.rows || databaseQueryResults).toEqual([]);
     });
   });
 
