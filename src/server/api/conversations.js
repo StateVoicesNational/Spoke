@@ -82,9 +82,7 @@ export async function getConversations(
     contactsFilter
   );
 
-  offsetLimitQuery = offsetLimitQuery
-    .orderBy("campaign_contact.updated_at", "desc")
-    .orderBy("cc_id");
+  offsetLimitQuery = offsetLimitQuery.orderBy("cc_id");
   offsetLimitQuery = offsetLimitQuery.limit(cursor.limit).offset(cursor.offset);
   console.log(
     "getConversations sql",
@@ -144,10 +142,7 @@ export async function getConversations(
     table.on("message.campaign_contact_id", "=", "campaign_contact.id");
   });
 
-  query = query
-    .orderBy("campaign_contact.updated_at", "desc")
-    .orderBy("cc_id")
-    .orderBy("message.created_at");
+  query = query.orderBy("cc_id").orderBy("message.created_at");
   console.log("getConversations query2", query);
   const conversationRows = await query;
   console.log(
