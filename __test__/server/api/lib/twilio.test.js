@@ -42,6 +42,8 @@ function spokeDbListener(data) {
   }
 }
 
+const mockAddNumberToMessagingService = jest.fn();
+
 jest.mock("twilio", () => {
   const uuid = require("uuid");
   return jest.fn().mockImplementation(() => ({
@@ -62,6 +64,13 @@ jest.mock("twilio", () => {
     incomingPhoneNumbers: {
       create: () => ({
         sid: `PNTEST${uuid.v4()}`
+      })
+    },
+    messaging: {
+      services: () => ({
+        phoneNumbers: {
+          create: mockAddNumberToMessagingService
+        }
       })
     }
   }));
@@ -399,14 +408,37 @@ it("orgs should have separate twilio credentials", async () => {
   expect(org2Auth.accountSid).toBe("test_twilio_account_sid");
 });
 
-it("Buys numbers in batches from twilio", async () => {
-  const org2 = await cacheableData.organization.load(organizationId2);
-  await twilio.buyNumbersInAreaCode(org2, "212", 35);
-  const inventoryCount = await r.getCount(
-    r.knex("owned_phone_number").where("area_code", "212")
-  );
+describe("Number buying", () => {
+  it("buys numbers in batches from twilio", async () => {
+    const org2 = await cacheableData.organization.load(organizationId2);
+    await twilio.buyNumbersInAreaCode(org2, "212", 35);
+    const inventoryCount = await r.getCount(
+      r.knex("owned_phone_number").where({
+        area_code: "212",
+        organization_id: organizationId2,
+        allocated_to: null
+      })
+    );
 
-  expect(inventoryCount).toEqual(35);
+    expect(inventoryCount).toEqual(35);
+  });
+
+  it("optionally adds them to a messaging service", async () => {
+    const org2 = await cacheableData.organization.load(organizationId2);
+    await twilio.buyNumbersInAreaCode(org2, "917", 12, {
+      messagingServiceSid: "MG123FAKE"
+    });
+    const inventoryCount = await r.getCount(
+      r.knex("owned_phone_number").where({
+        area_code: "917",
+        organization_id: organizationId2,
+        allocated_to: "messaging_service",
+        allocated_to_id: "MG123FAKE"
+      })
+    );
+    expect(mockAddNumberToMessagingService).toHaveBeenCalledTimes(12);
+    expect(inventoryCount).toEqual(12);
+  });
 });
 
 // FUTURE

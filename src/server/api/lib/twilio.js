@@ -423,9 +423,22 @@ async function searchForAvailableNumbers(twilioInstance, areaCode, limit) {
 }
 
 /**
+ * Add bought phone number to a Messaging Service
+ */
+async function addNumberToMessagingService(
+  twilioInstance,
+  phoneNumberSid,
+  messagingServiceSid
+) {
+  return await twilioInstance.messaging
+    .services(messagingServiceSid)
+    .phoneNumbers.create({ phoneNumberSid });
+}
+
+/**
  * Buy a phone number and add it to the owned_phone_number table
  */
-async function buyNumber(organization, twilioInstance, phoneNumber) {
+async function buyNumber(organization, twilioInstance, phoneNumber, opts = {}) {
   const response = await twilioInstance.incomingPhoneNumbers.create({
     phoneNumber,
     friendlyName: `Managed by Spoke [${process.env.BASE_URL}]: ${phoneNumber}`,
@@ -435,16 +448,31 @@ async function buyNumber(organization, twilioInstance, phoneNumber) {
     throw new Error(`Error buying twilio number: ${response.error}`);
   }
   log.debug(`Bought number ${phoneNumber} [${response.sid}]`);
-  const formatted = getFormattedPhoneNumber(phoneNumber);
+  let allocationFields = {};
+  const messagingServiceSid = opts && opts.messagingServiceSid;
+  if (messagingServiceSid) {
+    await addNumberToMessagingService(
+      twilioInstance,
+      response.sid,
+      messagingServiceSid
+    );
+    allocationFields = {
+      allocated_to: "messaging_service",
+      allocated_to_id: messagingServiceSid,
+      allocated_at: new Date()
+    };
+  }
   // Note: relies on the fact that twilio returns E. 164 formatted numbers
   //  and only works in the US
   const areaCode = phoneNumber.slice(2, 5);
+
   return await r.knex("owned_phone_number").insert({
     organization_id: organization.id,
     area_code: areaCode,
-    phone_number: formatted,
+    phone_number: phoneNumber,
     service: "twilio",
-    service_id: response.sid
+    service_id: response.sid,
+    ...allocationFields
   });
 }
 
@@ -460,7 +488,7 @@ async function bulkRequest(array, fn) {
 /**
  * Buy up to <limit> numbers in <areaCode>
  */
-async function buyNumbersInAreaCode(organization, areaCode, limit) {
+async function buyNumbersInAreaCode(organization, areaCode, limit, opts = {}) {
   const twilioInstance = await getTwilio(organization);
   async function buyBatch(size) {
     let successCount = 0;
@@ -473,7 +501,7 @@ async function buyNumbersInAreaCode(organization, areaCode, limit) {
     );
 
     await bulkRequest(response, async item => {
-      await buyNumber(organization, twilioInstance, item.phoneNumber);
+      await buyNumber(organization, twilioInstance, item.phoneNumber, opts);
       successCount++;
     });
 
