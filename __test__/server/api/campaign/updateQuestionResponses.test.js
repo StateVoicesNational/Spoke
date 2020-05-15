@@ -14,18 +14,12 @@ const UpdateQuestionResponses = require("../../../../src/server/api/mutations/up
 
 import { r, loaders } from "../../../../src/server/models";
 
-// for testing with AssignmentTexterContact
 import React from "react";
-import { shallow, mount } from "enzyme";
+import { mount } from "enzyme";
 import MuiThemeProvider from "material-ui/styles/MuiThemeProvider";
-import { createMemoryHistory } from "react-router";
-import { wrapMutations } from "../../../../src/containers/hoc/wrap-mutations";
-import loadData from "../../../../src/containers/hoc/load-data";
-import Store from "../../../../src/store";
-import ApolloClientSingleton from "../../../../src/network/apollo-client-singleton";
-import { ApolloProvider } from "react-apollo";
 import { StyleSheetTestUtils } from "aphrodite";
-import AssignmentTexterContact, {
+import {
+  AssignmentTexterContact,
   mapMutationsToProps
 } from "../../../../src/containers/AssignmentTexterContact";
 import { AssignmentTexterContactControls } from "../../../../src/components/AssignmentTexter/Controls";
@@ -33,7 +27,6 @@ import {
   dataQueryString as assignmentQueryString,
   contactDataFragment
 } from "../../../../src/containers/TexterTodo";
-import { connect } from "react-apollo";
 
 describe("mutations.updateQuestionResponses", () => {
   let adminUser;
@@ -343,7 +336,6 @@ describe("mutations.updateQuestionResponses", () => {
     let updatedCampaign;
     let updatedContacts;
     let updatedAssignment;
-    let store;
 
     beforeEach(async () => {
       const variables = {
@@ -388,8 +380,6 @@ describe("mutations.updateQuestionResponses", () => {
       ({
         data: { getAssignmentContacts: updatedContacts }
       } = retrievedContacts);
-
-      store = new Store(createMemoryHistory("/")).data;
     });
 
     it("calls the resolver", async () => {
@@ -402,66 +392,47 @@ describe("mutations.updateQuestionResponses", () => {
       };
       StyleSheetTestUtils.suppressStyleInjection();
 
-      // const Component = loadData(
-      //   <AssignmentTexterContact
-      //     mutations={mapMutationsToProps()}
-      //     texter={texterUser}
-      //     campaign={updatedCampaign}
-      //     assignment={updatedAssignment}
-      //     refreshData={jest.fn()}
-      //     contact={updatedContacts[0]}
-      //     navigationToolbarChildren={navigationToolbarChildren}
-      //   />
-      // );
-      //
-      // console.log("component", Component);
+      const mutations = mapMutationsToProps();
+
+      const makeRunnableMutations = (mutationsToWrap, user) => {
+        const newMutations = {};
+
+        Object.keys(mutationsToWrap).forEach(k => {
+          newMutations[k] = async (...args) => {
+            // TODO validate received args against args in the schema
+            const toWrap = mutationsToWrap[k](...args);
+            return runGql(
+              toWrap.mutation.loc.source.body,
+              toWrap.variables,
+              user
+            );
+          };
+        });
+        return newMutations;
+      };
+
+      const wrappedMutations = makeRunnableMutations(mutations, texterUser);
 
       const component = await mount(
-        <ApolloProvider store={store} client={ApolloClientSingleton}>
-          <MuiThemeProvider>
-            <AssignmentTexterContact
-              find-me="here"
-              texter={{ ...texterUser }}
-              campaign={{ ...updatedCampaign }}
-              assignment={{ ...updatedAssignment }}
-              refreshData={jest.fn()}
-              contact={{ ...updatedContacts[0] }}
-              navigationToolbarChildren={navigationToolbarChildren}
-            />
-          </MuiThemeProvider>
-        </ApolloProvider>
+        <MuiThemeProvider>
+          <AssignmentTexterContact
+            mutations={wrappedMutations}
+            find-me="here"
+            texter={{ ...texterUser }}
+            campaign={{ ...updatedCampaign }}
+            assignment={{ ...updatedAssignment }}
+            refreshData={jest.fn()}
+            contact={{ ...updatedContacts[0] }}
+            navigationToolbarChildren={navigationToolbarChildren}
+          />
+        </MuiThemeProvider>
       );
 
-      // const assignmentTexterContactWrapper = component.find(
-      //   AssignmentTexterContact
-      // );
-
-      // const assignmentTexterContactWrapper = component.find(
-      //   "submitContactsCsvUpload"
-      // );
-
-      // const assignmentTexterContactWrapper = component.findWhere(node => {
-      //   return node.prop("data-test") === "assignmentTexterContactFirstDiv"
-      // });
-
-      const assignmentTexterContactWrapper = component.findWhere(
-        node => node.prop("find-me") === "here"
+      const assignmentTexterContactWrapper = component.find(
+        AssignmentTexterContact
       );
 
-      const assignmentTexterContact = assignmentTexterContactWrapper
-        .last()
-        .instance();
-
-      //console.log('assignmentTexterContact', assignmentTexterContact);
-
-      // const forChild = child => {
-      //   if (child.name() === "div") {
-      //     console.log(child.props());
-      //   }
-      //   console.log(child.name());
-      //   child.children().forEach(forChild);
-      // };
-      // assignmentTexterContactWrapper.children().forEach(forChild);
+      const assignmentTexterContact = assignmentTexterContactWrapper.instance();
 
       const controlsWrapper = assignmentTexterContactWrapper.find(
         AssignmentTexterContactControls
@@ -474,10 +445,6 @@ describe("mutations.updateQuestionResponses", () => {
         questionResponseValue: "Red"
       });
 
-      //console.log('assignmentTexterContact.state()', assignmentTexterContactWrapper.last().state());
-
-      //console.log('assignmentTexterContact', assignmentTexterContact);
-      //console.log('assignmentTexterContact', assignmentTexterContact.handleSubmitSurveys);
       await assignmentTexterContact.handleSubmitSurveys();
 
       const databaseQueryResults = await r.knex.raw(
@@ -485,8 +452,18 @@ describe("mutations.updateQuestionResponses", () => {
         [updatedContacts[0].id]
       );
 
-      console.log("databaseQueryResults", databaseQueryResults);
-      expect(databaseQueryResults.rows || databaseQueryResults).toEqual([]);
+      expect(databaseQueryResults.rows || databaseQueryResults).toEqual([
+        {
+          answer_actions: "",
+          answer_option: "Red",
+          campaign_id: 1,
+          child_id: 2,
+          parent_interaction_id: 1,
+          question: "What is your favorite color",
+          script: "Hello {firstName}. Let's talk about your favorite color.",
+          value: "Red"
+        }
+      ]);
     });
   });
 
