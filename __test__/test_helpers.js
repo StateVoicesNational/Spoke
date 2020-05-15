@@ -28,42 +28,42 @@ export function getContext(context) {
     loaders: createLoaders()
   };
 }
-// import loadData from "../src/containers/hoc/load-data";
-// jest.mock("../src/containers/hoc/load-data");
-// #<{(| Used to get graphql queries from components.
-// *  Because of some limitations with the jest require cache that
-// *  I can't find a way of getting around, it should only be called once
-// *  per test.
-//
-// *  The query it returns will be that of the requested component, but
-// *  the mutations will be merged from the component and its children.
-// |)}>#
-// export function getGql(componentPath, props, dataKey = "data") {
-//   require(componentPath); // eslint-disable-line
-//   const { mapQueriesToProps } = _.last(loadData.mock.calls)[1];
-//
-//   const mutations = loadData.mock.calls.reduce((acc, mapping) => {
-//     if (!mapping[1].mapMutationsToProps) return acc;
-//     return {
-//       ...acc,
-//       ..._.mapValues(
-//         mapping[1].mapMutationsToProps({ ownProps: props }),
-//         mutation => (...params) => {
-//           const m = mutation(...params);
-//           return [m.mutation.loc.source.body, m.variables];
-//         }
-//       )
-//     };
-//   }, {});
-//
-//   let query;
-//   if (mapQueriesToProps) {
-//     const data = mapQueriesToProps({ ownProps: props });
-//     query = [data[dataKey].query.loc.source.body, data[dataKey].variables];
-//   }
-//
-//   return { query, mutations };
-// }
+import loadData from "../src/containers/hoc/load-data";
+jest.mock("../src/containers/hoc/load-data");
+/* Used to get graphql queries from components.
+*  Because of some limitations with the jest require cache that
+*  I can't find a way of getting around, it should only be called once
+*  per test.
+
+*  The query it returns will be that of the requested component, but
+*  the mutations will be merged from the component and its children.
+*/
+export function getGql(componentPath, props, dataKey = "data") {
+  require(componentPath); // eslint-disable-line
+  const { mapQueriesToProps } = _.last(loadData.mock.calls)[1];
+
+  const mutations = loadData.mock.calls.reduce((acc, mapping) => {
+    if (!mapping[1].mapMutationsToProps) return acc;
+    return {
+      ...acc,
+      ..._.mapValues(
+        mapping[1].mapMutationsToProps({ ownProps: props }),
+        mutation => (...params) => {
+          const m = mutation(...params);
+          return [m.mutation.loc.source.body, m.variables];
+        }
+      )
+    };
+  }, {});
+
+  let query;
+  if (mapQueriesToProps) {
+    const data = mapQueriesToProps({ ownProps: props });
+    query = [data[dataKey].query.loc.source.body, data[dataKey].variables];
+  }
+
+  return { query, mutations };
+}
 
 export async function createUser(
   userInfo = {},
