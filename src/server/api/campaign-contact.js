@@ -82,38 +82,39 @@ export const resolvers = {
       if ("messages" in campaignContact) {
         return campaignContact.messages;
       }
-
+      console.log(
+        "getConversations oh now!!!! a message query",
+        campaignContact
+      );
       const messages = cacheableData.message.query({
         campaignContactId: campaignContact.id
       });
       return messages;
     },
     optOut: async (campaignContact, _, { loaders }) => {
-      if ("opt_out_cell" in campaignContact) {
-        return {
-          cell: campaignContact.opt_out_cell
-        };
+      let isOptedOut = null;
+      if (typeof campaignContact.is_opted_out !== "undefined") {
+        isOptedOut = campaignContact.is_opted_out;
       } else {
-        let isOptedOut = null;
-        if (typeof campaignContact.is_opted_out !== "undefined") {
-          isOptedOut = campaignContact.is_opted_out;
-        } else {
-          let organizationId = campaignContact.organization_id;
-          if (!organizationId) {
-            const campaign = await loaders.campaign.load(
-              campaignContact.campaign_id
-            );
-            organizationId = campaign.organization_id;
-          }
-
-          const isOptedOut = await cacheableData.optOut.query({
-            cell: campaignContact.cell,
-            organizationId
-          });
+        console.log(
+          "getConversations oh now!!!! an optout query",
+          campaignContact
+        );
+        let organizationId = campaignContact.organization_id;
+        if (!organizationId) {
+          const campaign = await loaders.campaign.load(
+            campaignContact.campaign_id
+          );
+          organizationId = campaign.organization_id;
         }
-        // fake ID so we don't need to look up existance
-        return isOptedOut ? { id: "optout" } : null;
+
+        const isOptedOut = await cacheableData.optOut.query({
+          cell: campaignContact.cell,
+          organizationId
+        });
       }
+      // fake ID so we don't need to look up existance
+      return isOptedOut ? { id: "optout" } : null;
     }
   }
 };

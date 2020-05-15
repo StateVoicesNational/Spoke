@@ -1385,9 +1385,15 @@ const rootResolvers = {
       },
       { user }
     ) => {
+      console.log(
+        "getConversations root resolver",
+        cursor,
+        organizationId,
+        contactsFilter
+      );
       await accessRequired(user, organizationId, "SUPERVOLUNTEER", true);
-
-      return getConversations(
+      console.log("getConversations root post access", organizationId);
+      const data = await getConversations(
         cursor,
         organizationId,
         campaignsFilter,
@@ -1395,6 +1401,8 @@ const rootResolvers = {
         contactsFilter,
         utc
       );
+      console.log("getConversations root post data", data);
+      return data;
     },
     campaigns: async (
       _,

@@ -56,20 +56,18 @@ export function buildCampaignQuery(
   queryParam,
   organizationId,
   campaignsFilter,
-  addFromClause = true
+  noAdmin
 ) {
-  let query = queryParam;
-
-  if (addFromClause) {
-    query = query.from("campaign");
-  }
+  let query = queryParam.from("campaign");
 
   query = query.where("campaign.organization_id", organizationId);
-  query = query.leftJoin(
-    "campaign_admin",
-    "campaign_admin.campaign_id",
-    "campaign.id"
-  );
+  if (!noAdmin) {
+    query = query.leftJoin(
+      "campaign_admin",
+      "campaign_admin.campaign_id",
+      "campaign.id"
+    );
+  }
   query = addCampaignsFilterToQuery(query, campaignsFilter);
 
   return query;
@@ -384,6 +382,11 @@ export const resolvers = {
     },
     interactionSteps: async (campaign, _, { user }) => {
       await accessRequired(user, campaign.organization_id, "TEXTER", true);
+      console.log(
+        "campaign.interactionSteps",
+        campaign.id,
+        campaign.interactionSteps
+      );
       return (
         campaign.interactionSteps ||
         cacheableData.campaign.dbInteractionSteps(campaign.id)

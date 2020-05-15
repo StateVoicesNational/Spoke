@@ -18,7 +18,11 @@ export class PaginatedUsersRetriever extends Component {
   }
 
   handleUsersReceived() {
-    if (!this.props.users || this.props.users.loading) {
+    if (
+      !this.props.users ||
+      this.props.users.loading ||
+      !this.props.users.people
+    ) {
       return;
     }
 
