@@ -16,7 +16,12 @@ exports.up = async knex => {
       .string("area_code")
       .notNullable()
       .index();
-    table.string("status").notNullable();
+
+    // organization_messaging_service, global_messaging_service, etc..
+    table.string("allocated_to").nullable();
+    table.string("allocated_to_id").nullable();
+    table.timestamp("allocated_at").nullable();
+
     table.timestamp("created_at").defaultTo(knex.fn.now());
     table.unique(["service", "service_id"]);
   });

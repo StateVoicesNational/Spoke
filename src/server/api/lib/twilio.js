@@ -443,7 +443,6 @@ async function buyNumber(organization, twilioInstance, phoneNumber) {
     organization_id: organization.id,
     area_code: areaCode,
     phone_number: formatted,
-    status: "AVAILABLE",
     service: "twilio",
     service_id: response.sid
   });

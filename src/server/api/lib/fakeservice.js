@@ -98,7 +98,6 @@ async function buyNumbersInAreaCode(organization, areaCode, limit) {
       organization_id: organization.id,
       area_code: areaCode,
       phone_number: `+1${areaCode}XYZ${last4}`,
-      status: "AVAILABLE",
       service: "fakeservice",
       service_id: uuid.v4()
     });
