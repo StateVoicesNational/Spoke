@@ -11,6 +11,7 @@ import {
 import { log } from "../../../lib";
 import { saveNewIncomingMessage } from "./message-sending";
 import { getConfig } from "./config";
+import urlJoin from "url-join";
 
 // TWILIO error_codes:
 // > 1 (i.e. positive) error_codes are reserved for Twilio error codes
@@ -97,7 +98,7 @@ function parseMessageText(message) {
 
 async function getMessagingServiceSid(organization, contact, message) {
   const campaign = cacheableData.campaign;
-  if (campaign.messageservice_sid != undefined) {
+  if (campaign.messageservice_sid) {
     return campaign.messageservice_sid;
   } else {
     return await cacheableData.organization.getMessageServiceSid(
@@ -434,10 +435,15 @@ async function handleIncomingMessage(message) {
  */
 async function createMessagingService(organization, friendlyName) {
   const twilio = await getTwilio(organization);
+  const twilioBaseUrl = getConfig("TWILIO_BASE_CALLBACK_URL", organization);
   return await twilio.messaging.services.create({
     friendlyName,
-    statusCallback: process.env.TWILIO_STATUS_CALLBACK_URL,
-    inboundRequestUrl: process.env.TWILIO_INBOUND_URL
+    statusCallback: urlJoin(twilioBaseUrl, "twilio-message-report"),
+    inboundRequestUrl: urlJoin(
+      twilioBaseUrl,
+      "twilio",
+      organization.id.toString()
+    )
   });
 }
 
