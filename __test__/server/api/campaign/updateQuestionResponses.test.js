@@ -12,7 +12,8 @@ import {
 
 const UpdateQuestionResponses = require("../../../../src/server/api/mutations/updateQuestionResponses");
 
-import { r, loaders } from "../../../../src/server/models";
+import { r, loaders, cacheableData } from "../../../../src/server/models";
+const errors = require("../../../../src/server/api/errors");
 
 import React from "react";
 import { mount } from "enzyme";
@@ -41,6 +42,7 @@ describe("mutations.updateQuestionResponses", () => {
   let shadesOfRedInteractionSteps;
   let questionResponses;
   let questionResponseValuesDatabaseSql;
+  let organization;
 
   beforeEach(async () => {
     await setupTest();
@@ -81,6 +83,9 @@ describe("mutations.updateQuestionResponses", () => {
     const startedCampaign = await createStartedCampaign();
 
     ({
+      testOrganization: {
+        data: { createOrganization: organization }
+      },
       testAdminUser: adminUser,
       testCampaign: campaign,
       testTexterUser: texterUser,
@@ -202,9 +207,22 @@ describe("mutations.updateQuestionResponses", () => {
     });
 
     await Promise.all(promises);
+
+    questionResponses = [
+      {
+        campaignContactId: contacts[0].id,
+        interactionStepId: returnedInteractionSteps[0].id,
+        value: colorInteractionSteps[0].answerOption
+      },
+      {
+        campaignContactId: contacts[0].id.toString(),
+        interactionStepId: redInteractionStep.id,
+        value: shadesOfRedInteractionSteps[0].answerOption
+      }
+    ];
   });
 
-  it("records answers for a contact", async () => {
+  it("called through the mutation, it records answers for a contact", async () => {
     // verify that contacts have messageStatus === 'messaged'
     const results = await r
       .knex("campaign_contact")
@@ -235,19 +253,6 @@ describe("mutations.updateQuestionResponses", () => {
         }
       }
     `;
-
-    questionResponses = [
-      {
-        campaignContactId: contacts[0].id,
-        interactionStepId: returnedInteractionSteps[0].id,
-        value: colorInteractionSteps[0].answerOption
-      },
-      {
-        campaignContactId: contacts[0].id.toString(),
-        interactionStepId: redInteractionStep.id,
-        value: shadesOfRedInteractionSteps[0].answerOption
-      }
-    ];
 
     const variables = {
       ccid: contacts[0].id,
@@ -332,7 +337,7 @@ describe("mutations.updateQuestionResponses", () => {
     ]);
   });
 
-  describe("when updated from the UI", () => {
+  describe("called through the UI, it updates answers for a contact", () => {
     let updatedCampaign;
     let updatedContacts;
     let updatedAssignment;
@@ -382,7 +387,7 @@ describe("mutations.updateQuestionResponses", () => {
       } = retrievedContacts);
     });
 
-    it("calls the resolver", async () => {
+    it("causes the database to be updated correctly", async () => {
       const navigationToolbarChildren = {
         onNext: jest.fn(),
         onPrevious: jest.fn(),
@@ -468,8 +473,32 @@ describe("mutations.updateQuestionResponses", () => {
   });
 
   describe("#updateQuestionResponses", () => {
-    it("does a thing", async () => {
-      expect(true).toBeTruthy();
+    beforeEach(async () => {
+      jest.spyOn(loaders.campaignContact, "load");
+      jest.spyOn(loaders.campaign, "load");
+      jest.spyOn(errors, "assignmentRequiredOrAdminRole");
+      jest.spyOn(cacheableData.questionResponse, "save");
+    });
+    it("delegates to its dependencies", async () => {
+      await UpdateQuestionResponses.updateQuestionResponses(
+        questionResponses,
+        contacts[0].id,
+        loaders,
+        texterUser
+      );
+      expect(loaders.campaignContact.load.mock.calls).toEqual([[1], [1]]);
+      expect(loaders.campaign.load.mock.calls).toEqual([[contacts[0].id]]);
+      expect(errors.assignmentRequiredOrAdminRole.mock.calls).toEqual([
+        [
+          texterUser,
+          Number(organization.id),
+          Number(assignment.id),
+          expect.objectContaining({ id: contacts[0].id })
+        ]
+      ]);
+      expect(cacheableData.questionResponse.save.mock.calls).toEqual([
+        [1, questionResponses]
+      ]);
     });
   });
 });
