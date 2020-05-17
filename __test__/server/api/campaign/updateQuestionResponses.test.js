@@ -908,25 +908,27 @@ describe("mutations.updateQuestionResponses", () => {
 
             expect(
               ComplexTestActionHandler.processAction
-            ).toHaveBeenCalledTimes(1);
-            expect(ComplexTestActionHandler.processAction.mock.calls).toEqual([
-              [
-                expect.objectContaining(questionResponses[2]),
-                expect.objectWithId(shadesOfRedInteractionSteps[0]),
-                Number(contacts[0].id),
-                expect.objectWithId(contacts[0]),
-                expect.objectWithId(campaign),
-                expect.objectWithId(organization)
-              ],
-              [
-                expect.objectContaining(questionResponses[1]),
-                expect.objectWithId(shadesOfRedInteractionSteps[0]),
-                Number(contacts[0].id),
-                expect.objectWithId(contacts[0]),
-                expect.objectWithId(campaign),
-                expect.objectWithId(organization)
-              ]
-            ]);
+            ).toHaveBeenCalledTimes(2);
+            expect(ComplexTestActionHandler.processAction.mock.calls).toEqual(
+              expect.arrayContaining([
+                [
+                  expect.objectContaining(questionResponses[0]),
+                  expect.objectWithId(colorInteractionSteps[0]),
+                  Number(contacts[0].id),
+                  expect.objectWithId(contacts[0]),
+                  expect.objectWithId(campaign),
+                  expect.objectWithId(organization)
+                ],
+                [
+                  expect.objectContaining(questionResponses[1]),
+                  expect.objectWithId(shadesOfRedInteractionSteps[0]),
+                  Number(contacts[0].id),
+                  expect.objectWithId(contacts[0]),
+                  expect.objectWithId(campaign),
+                  expect.objectWithId(organization)
+                ]
+              ])
+            );
 
             done();
           });
