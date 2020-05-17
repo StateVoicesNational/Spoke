@@ -7,8 +7,7 @@ export const updateQuestionResponses = async (
   questionResponses,
   campaignContactId,
   loaders,
-  user,
-  done
+  user
 ) => {
   let contact = await loaders.campaignContact.load(campaignContactId);
   const campaign = await loaders.campaign.load(contact.campaign_id);
@@ -32,16 +31,29 @@ export const updateQuestionResponses = async (
   contact = await loaders.campaignContact.load(campaignContactId);
 
   // The rest is for ACTION_HANDLERS
-  const actionHandlersConfigured = !!ActionHandlers.rawAllActionHandlers();
-  if (actionHandlersConfigured) {
-    const interactionSteps =
-      campaign.interactionSteps ||
-      (await cacheableData.campaign.dbInteractionSteps(campaign.id));
+  const interactionSteps = await cacheableData.campaign.dbInteractionSteps(
+    campaign.id
+  );
 
+  const stepsWithActions = interactionSteps.filter(
+    interactionStep => interactionStep.answer_actions
+  );
+
+  const actionHandlersConfigured =
+    Object.keys(ActionHandlers.rawAllActionHandlers()).length > 0;
+
+  if (stepsWithActions.length && !actionHandlersConfigured) {
+    log.error(
+      "Encountered one or more interaction steps with an action handler but no action handlers are configured"
+    );
+    return contact;
+  }
+
+  if (stepsWithActions.length && actionHandlersConfigured) {
     const getAndProcessAction = async questionResponse => {
       const { interactionStepId, value } = questionResponse;
 
-      const interactionStepResult = interactionSteps.filter(
+      const questionResponseInteractionStep = interactionSteps.find(
         is =>
           is.answer_actions &&
           is.answer_option === value &&
@@ -49,7 +61,8 @@ export const updateQuestionResponses = async (
       );
 
       const interactionStepAction =
-        interactionStepResult.length && interactionStepResult[0].answer_actions;
+        questionResponseInteractionStep &&
+        questionResponseInteractionStep.answer_actions;
 
       if (!interactionStepAction) {
         return;
@@ -73,13 +86,13 @@ export const updateQuestionResponses = async (
         );
       }
       if (!handler) {
-        throw new Error("Handler not available");
+        return;
       }
 
       try {
         await handler.processAction(
           questionResponse,
-          interactionStepResult[0],
+          questionResponseInteractionStep,
           campaignContactId,
           contact,
           campaign,
@@ -94,9 +107,6 @@ export const updateQuestionResponses = async (
 
     const promises = questionResponses.map(getAndProcessAction);
     await Promise.all(promises);
-    if (done && done instanceof Function) {
-      done();
-    }
   }
 
   return contact;
