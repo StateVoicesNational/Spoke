@@ -230,11 +230,7 @@ async function handleIncomingMessage(message) {
   let parentId = "";
   if (isConcat) {
     log.info(
-      `Incoming message part (${message["concat-part"]} of ${
-        message["concat-total"]
-      } for ref ${
-        message["concat-ref"]
-      }) from ${contactNumber} to ${userNumber}`
+      `Incoming message part (${message["concat-part"]} of ${message["concat-total"]} for ref ${message["concat-ref"]}) from ${contactNumber} to ${userNumber}`
     );
     parentId = message["concat-ref"];
   } else {

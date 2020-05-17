@@ -3,7 +3,7 @@ import React from "react";
 import loadData from "./hoc/load-data";
 import wrapMutations from "./hoc/wrap-mutations";
 import gql from "graphql-tag";
-
+import { withRouter } from "react-router";
 import GSForm from "../components/forms/GSForm";
 import Form from "react-formal";
 import yup from "yup";
@@ -14,12 +14,22 @@ import { StyleSheet, css } from "aphrodite";
 import { dataTest } from "../lib/attributes";
 
 const styles = StyleSheet.create({
-  buttons: {
-    display: "flex"
-  },
   container: {
     display: "inline-block",
-    marginRight: 20,
+    marginTop: 25
+  },
+  buttons: {
+    display: "flex",
+    marginTop: 25
+  },
+  fields: {
+    display: "flex",
+    flexDirection: "column"
+  },
+  submit: {
+    marginRight: 8
+  },
+  cancel: {
     marginTop: 15
   }
 });
@@ -36,6 +46,7 @@ class UserEdit extends React.Component {
     this.handleClose = this.handleClose.bind(this);
     this.openSuccessDialog = this.openSuccessDialog.bind(this);
     this.buildFormSchema = this.buildFormSchema.bind(this);
+    this.handleCancel = this.handleCancel.bind(this);
   }
 
   async componentWillMount() {
@@ -90,6 +101,10 @@ class UserEdit extends React.Component {
     }
   }
 
+  handleCancel() {
+    this.props.router.goBack();
+  }
+
   openSuccessDialog() {
     this.setState({ successDialog: true });
   }
@@ -127,6 +142,7 @@ class UserEdit extends React.Component {
       userFields = {
         firstName: yup.string().required(),
         lastName: yup.string().required(),
+        alias: yup.string().nullable(),
         cell: yup.string().required()
       };
     }
@@ -154,10 +170,12 @@ class UserEdit extends React.Component {
           onSubmit={this.handleSave}
           defaultValue={user}
           className={style}
+          {...dataTest("userEditForm")}
+          data
         >
           <Form.Field label="Email" name="email" {...dataTest("email")} />
           {(!authType || authType === "signup") && (
-            <span>
+            <span className={css(styles.fields)}>
               <Form.Field
                 label="First name"
                 name="firstName"
@@ -167,6 +185,11 @@ class UserEdit extends React.Component {
                 label="Last name"
                 name="lastName"
                 {...dataTest("lastName")}
+              />
+              <Form.Field
+                label="Texting Alias (optional)"
+                name="alias"
+                {...dataTest("alias")}
               />
               <Form.Field
                 label="Cell Number"
@@ -192,17 +215,29 @@ class UserEdit extends React.Component {
               type="password"
             />
           )}
+          {authType !== "change" && userId && userId === data.currentUser.id && (
+            <div className={css(styles.container)}>
+              <RaisedButton
+                onTouchTap={this.handleClick}
+                label="Change password"
+                variant="outlined"
+              />
+            </div>
+          )}
           <div className={css(styles.buttons)}>
-            {authType !== "change" && userId && userId === data.currentUser.id && (
-              <div className={css(styles.container)}>
-                <RaisedButton
-                  onTouchTap={this.handleClick}
-                  label="Change password"
-                  variant="outlined"
-                />
-              </div>
+            <Form.Button
+              className={css(styles.submit)}
+              type="submit"
+              label={saveLabel || "Save"}
+            />
+            {!authType && (
+              <RaisedButton
+                className={css(styles.cancel)}
+                label="Cancel"
+                variant="outlined"
+                onClick={this.handleCancel}
+              />
             )}
-            <Form.Button type="submit" label={saveLabel || "Save"} />
           </div>
         </GSForm>
         <div>
@@ -263,6 +298,11 @@ const mapQueriesToProps = ({ ownProps }) => {
           query getCurrentUser {
             currentUser {
               id
+              firstName
+              email
+              lastName
+              alias
+              cell
             }
           }
         `
@@ -285,6 +325,7 @@ export const editUserMutation = `
       id
       firstName
       lastName
+      alias
       cell
       email
     }
@@ -323,7 +364,7 @@ const mapMutationsToProps = ({ ownProps }) => {
   }
 };
 
-export default loadData(wrapMutations(UserEdit), {
+export default loadData(withRouter(wrapMutations(UserEdit)), {
   mapQueriesToProps,
   mapMutationsToProps
 });

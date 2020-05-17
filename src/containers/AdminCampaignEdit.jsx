@@ -9,6 +9,7 @@ import Avatar from "material-ui/Avatar";
 import theme from "../styles/theme";
 import CircularProgress from "material-ui/CircularProgress";
 import { Card, CardHeader, CardText, CardActions } from "material-ui/Card";
+import { Link } from "react-router";
 import gql from "graphql-tag";
 import loadData from "./hoc/load-data";
 import wrapMutations from "./hoc/wrap-mutations";
@@ -74,6 +75,13 @@ const campaignInfoFragment = `
   }
   ingestMethod {
     name
+    success
+    result
+    reference
+    contactsCount
+    deletedOptouts
+    deletedDupes
+    updatedAt
   }
   editors
 `;
@@ -321,11 +329,13 @@ class AdminCampaignEdit extends React.Component {
           contactsCount: this.props.campaignData.campaign.contactsCount,
           ingestMethodChoices:
             this.props.campaignData.campaign.ingestMethodsAvailable || "",
+          pastIngestMethod:
+            this.props.campaignData.campaign.ingestMethod || null,
           jobResultMessage:
             (
-              this.props.pendingJobsData.campaign.pendingJobs.filter(job =>
-                /contacts/.test(job.jobType)
-              )[0] || {}
+              this.props.pendingJobsData.campaign.pendingJobs
+                .filter(job => /ingest/.test(job.jobType))
+                .reverse()[0] || {}
             ).resultMessage || ""
         }
       },
@@ -527,6 +537,9 @@ class AdminCampaignEdit extends React.Component {
       // Supervolunteers don't have access to start the campaign or un/archive it
       return null;
     }
+    const orgConfigured = this.props.organizationData.organization
+      .fullyConfigured;
+    const settingsLink = `/admin/${this.props.organizationData.organization.id}/settings`;
     let isCompleted =
       this.props.pendingJobsData.campaign.pendingJobs.filter(job =>
         /Error/.test(job.resultMessage || "")
@@ -551,9 +564,17 @@ class AdminCampaignEdit extends React.Component {
             ...theme.layouts.multiColumn.flexColumn
           }}
         >
-          {isCompleted
-            ? "Your campaign is all good to go! >>>>>>>>>"
-            : "You need to complete all the sections below before you can start this campaign"}
+          {!orgConfigured ? (
+            <span>
+              Your organization is missing required configuration. Please{" "}
+              <Link to={settingsLink}>update your settings</Link> or contact an
+              adminstrator
+            </span>
+          ) : !isCompleted ? (
+            "You need to complete all the sections below before you can start this campaign"
+          ) : (
+            "Your campaign is all good to go! >>>>>>>>>"
+          )}
           {this.renderCurrentEditors()}
         </div>
         <div>
@@ -580,8 +601,11 @@ class AdminCampaignEdit extends React.Component {
             {...dataTest("startCampaign")}
             primary
             label="Start This Campaign!"
-            disabled={!isCompleted}
+            disabled={!isCompleted || !orgConfigured}
             onTouchTap={async () => {
+              if (!isCompleted || !orgConfigured) {
+                return;
+              }
               this.setState({
                 startingCampaign: true
               });
@@ -728,6 +752,7 @@ const mapQueriesToProps = ({ ownProps }) => ({
         organization(id: $organizationId) {
           id
           uuid
+          fullyConfigured
           texters: people {
             id
             firstName

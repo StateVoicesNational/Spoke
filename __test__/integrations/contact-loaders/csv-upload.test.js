@@ -5,11 +5,15 @@ import {
   getClientChoiceData,
   processContactLoad
 } from "../../../src/integrations/contact-loaders/csv-upload";
-import { CampaignContactsForm } from "../../../src/integrations/contact-loaders/csv-upload/react-component";
+import {
+  ensureCamelCaseRequiredHeaders,
+  CampaignContactsForm
+} from "../../../src/integrations/contact-loaders/csv-upload/react-component";
 
 // csv-upload libs for validation
 import { unzipPayload } from "../../../src/workers/jobs";
-import { parseCSV, gzip } from "../../../src/lib";
+import { gzip } from "../../../src/lib";
+const srcLib = require("../../../src/lib/parse_csv");
 
 // server-testing libs
 import { r } from "../../../src/server/models/";
@@ -21,7 +25,8 @@ import {
   createInvite,
   createOrganization,
   createCampaign,
-  saveCampaign
+  saveCampaign,
+  sleep
 } from "../../test_helpers";
 
 // client-testing libs
@@ -31,10 +36,6 @@ import MuiThemeProvider from "material-ui/styles/MuiThemeProvider";
 import { StyleSheetTestUtils } from "aphrodite";
 import CampaignContactsChoiceForm from "../../../src/components/CampaignContactsChoiceForm";
 import { icons } from "../../../src/components/CampaignContactsChoiceForm";
-
-function sleep(ms) {
-  return new Promise(resolve => setTimeout(resolve, ms));
-}
 
 const contacts = [
   {
@@ -100,6 +101,7 @@ describe("ingest-contact-loader method: csv-upload backend", async () => {
     const job = {
       payload: await gzip(JSON.stringify({ contacts })),
       campaign_id: testCampaign.id,
+      job_type: "ingest.csv-upload",
       id: 1
     };
     await processContactLoad(job);
@@ -115,13 +117,20 @@ describe("ingest-contact-loader method: csv-upload backend", async () => {
     const job = {
       payload: await gzip(JSON.stringify({ contacts: dupeContacts })),
       campaign_id: testCampaign.id,
+      job_type: "ingest.csv-upload",
       id: 1
     };
     await processContactLoad(job);
     const dbContacts = await r
       .knex("campaign_contact")
       .where("campaign_id", testCampaign.id);
+    const adminResult = await r
+      .knex("campaign_admin")
+      .where("campaign_id", testCampaign.id)
+      .first();
     expect(dbContacts.length).toBe(1);
+    expect(adminResult.duplicate_contacts_count).toBe(1);
+    expect(adminResult.contacts_count).toBe(1);
     expect(dbContacts[0].first_name).toBe("fdsa");
     expect(dbContacts[0].last_name).toBe("yyyy");
     expect(dbContacts[0].custom_fields).toBe('{"custom1": "xyz"}');
@@ -155,6 +164,10 @@ describe("ingest-contact-loader method: csv-upload frontend", async () => {
       />
     );
     component = wrapper.instance();
+  });
+
+  afterEach(async () => {
+    jest.restoreAllMocks();
   });
 
   it("csv-upload:component updates onChange on upload", async () => {
@@ -229,5 +242,42 @@ describe("ingest-contact-loader method: csv-upload frontend", async () => {
     expect(choiceComponent.getCurrentMethod().name).toBe("csv-upload");
     const contactsForm = choiceWrapper.find(CampaignContactsForm);
     expect(contactsForm.props().saveLabel).toBe("Save");
+  });
+  it("csv-upload:component passes headerTransformer to Papa.parse", async () => {
+    didSubmit = false;
+    changeData = null;
+    jest.spyOn(srcLib, "parseCSV");
+    const csvData =
+      "firstName,lastName,cell,zip,custom_foo,custom_xxx" +
+      "\nDolores,Huerta,2095550100,95201,bar,yyy";
+    component.handleUpload({
+      target: { files: [csvData] },
+      preventDefault: () => null
+    });
+    await sleep(5);
+    expect(srcLib.parseCSV.mock.calls[0][2]).toHaveProperty(
+      "headerTransformer"
+    );
+  });
+});
+
+describe("ensureCamelCaseRequiredHeaders", () => {
+  it("translates snake_case to camelCase for required fields firstName and lastName", () => {
+    expect(ensureCamelCaseRequiredHeaders("first_name")).toEqual("firstName");
+    expect(ensureCamelCaseRequiredHeaders("last_name")).toEqual("lastName");
+  });
+
+  it("does not translate one-word required fields (specifically, zip) at all", () => {
+    expect(ensureCamelCaseRequiredHeaders("zip")).toEqual("zip");
+  });
+
+  it("does not translate any other column headers", () => {
+    expect(ensureCamelCaseRequiredHeaders("van_id")).toEqual("van_id");
+    expect(ensureCamelCaseRequiredHeaders("district")).toEqual("district");
+  });
+
+  it("translates CamelCaps to camelCase for required fields firstName and lastName", () => {
+    expect(ensureCamelCaseRequiredHeaders("FirstName")).toEqual("firstName");
+    expect(ensureCamelCaseRequiredHeaders("LastName")).toEqual("lastName");
   });
 });

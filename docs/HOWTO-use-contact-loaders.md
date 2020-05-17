@@ -74,3 +74,34 @@ Then you'll want to implement `react-component.js`. This file is passed whatever
 `getClientChoiceData()` in the backend, along with some context for the component. It will be loaded
 when the campaign admin chooses your ingest method (set it first in the list of CONTACT_LOADERS env
 var to be listed first).
+
+### Using addServerEndpoints
+
+There are a couple use-cases for addServerEndpoints where you add extra url paths
+to the base Spoke application.  In all of these cases, it's important to be mindful of
+security -- it's a powerful option, but also a dangerous one.
+
+*Some use cases:*
+
+* Supporting asynchronous webhook apis (where e.g. processContactLoad sends a request for data and needs to set an endpoint where the other host sends the data back in)
+* Start campaign links triggered from a different web site
+* A side-channel for very interactive steps in the react component with an api.
+
+Start your paths with either `/int*` (for integration) or `/sign*` (for signup) --
+using these starting points will ensure that your endpoints will not (nor in the future)
+conflict with application endpoints.  Also try to include your contact-loader's name
+somewhere in the endpoints so different contact loaders are unlikely to collide.
+
+*Security*
+
+If the endpoint is connected used by a user, use `req.isAuthenticated()` and `req.user` to
+test permissions and login state.  If they are not logged-in, then
+<code>res.redirect(`/login?nextUrl=${encodeURIComponent(req.url)}`)</code> force a login and
+revisit.
+
+If the endpoint is connected to from another server, make sure you validate it in some way.
+If you cannot whitelist specific host names/ip-addresses, then try to use a shared secret.
+Ideally, you should be able to cheaply validate the request without making requests or
+database lookups.
+
+

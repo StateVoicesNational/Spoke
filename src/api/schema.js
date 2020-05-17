@@ -50,6 +50,7 @@ import {
   schema as cannedResponseSchema,
   resolvers as cannedResponseResolvers
 } from "./canned-response";
+import { schema as tagSchema } from "./tag";
 import { schema as inviteSchema, resolvers as inviteResolvers } from "./invite";
 
 const rootSchema = gql`
@@ -137,6 +138,7 @@ const rootSchema = gql`
     id: String
     firstName: String!
     lastName: String!
+    alias: String
     email: String!
     cell: String!
     oldPassword: String
@@ -171,6 +173,15 @@ const rootSchema = gql`
     assignmentId: String!
   }
 
+  input TagInput {
+    id: String
+    name: String!
+    group: String
+    description: String!
+    isDeleted: Boolean
+    organizationId: String
+  }
+
   type Action {
     name: String
     display_name: String
@@ -200,6 +211,14 @@ const rootSchema = gql`
     OLDEST
   }
 
+  enum SortCampaignsBy {
+    DUE_DATE_ASC
+    DUE_DATE_DESC
+    ID_ASC
+    ID_DESC
+    TITLE
+  }
+
   type RootQuery {
     currentUser: User
     organization(id: String!, utc: String): Organization
@@ -220,6 +239,7 @@ const rootSchema = gql`
       organizationId: String!
       cursor: OffsetLimitCursor
       campaignsFilter: CampaignsFilter
+      sortBy: SortCampaignsBy
     ): CampaignsReturn
     people(
       organizationId: String!
@@ -228,6 +248,7 @@ const rootSchema = gql`
       role: String
       sortBy: SortPeopleBy
     ): UsersReturn
+    tags(organizationId: String!): TagsList
   }
 
   type RootMutation {
@@ -243,7 +264,10 @@ const rootSchema = gql`
       userId: String!
       inviteId: String!
     ): Organization
-    joinOrganization(organizationUuid: String!): Organization
+    joinOrganization(
+      organizationUuid: String!
+      queryParams: String
+    ): Organization
     editOrganizationRoles(
       organizationId: String!
       userId: String!
@@ -265,6 +289,12 @@ const rootSchema = gql`
     updateOptOutMessage(
       organizationId: String!
       optOutMessage: String!
+    ): Organization
+    updateTwilioAuth(
+      organizationId: String!
+      twilioAccountSid: String
+      twilioAuthToken: String
+      twilioMessageServiceSid: String
     ): Organization
     bulkSendMessages(assignmentId: Int!): [CampaignContact]
     sendMessage(
@@ -304,6 +334,7 @@ const rootSchema = gql`
     assignUserToCampaign(
       organizationUuid: String!
       campaignId: String!
+      queryParams: String
     ): Campaign
     userAgreeTerms(userId: String!): User
     reassignCampaignContacts(
@@ -319,6 +350,9 @@ const rootSchema = gql`
       newTexterUserId: String!
     ): [CampaignIdAssignmentId]
     importCampaignScript(campaignId: String!, url: String!): Int
+    createTag(organizationId: String!, tagData: TagInput!): Tag
+    editTag(organizationId: String!, id: String!, tagData: TagInput!): Tag
+    deleteTag(organizationId: String!, id: String!): Tag
   }
 
   schema {
@@ -344,5 +378,6 @@ export const schema = [
   questionResponseSchema,
   questionSchema,
   inviteSchema,
-  conversationSchema
+  conversationSchema,
+  tagSchema
 ];
