@@ -20,9 +20,15 @@ import CreateOrganization from "./containers/CreateOrganization";
 import JoinTeam from "./containers/JoinTeam";
 import Home from "./containers/Home";
 import Settings from "./containers/Settings";
+import Tags from "./containers/Tags";
 import UserEdit from "./containers/UserEdit";
 import TexterFaqs from "./components/TexterFrequentlyAskedQuestions";
 import FAQs from "./lib/faqs";
+import {
+  DemoTexterNeedsMessage,
+  DemoTexterNeedsResponse,
+  DemoTexterNeedsResponse2ndQuestion
+} from "./components/DemoTexterAssignment";
 
 export default function makeRoutes(requireAuth = () => {}) {
   return (
@@ -43,6 +49,7 @@ export default function makeRoutes(requireAuth = () => {}) {
           <Route path="people" component={AdminPersonList} />
           <Route path="optouts" component={AdminOptOutList} />
           <Route path="incoming" component={AdminIncomingMessageList} />
+          <Route path="tags" component={Tags} />
           <Route path="settings" component={Settings} />
         </Route>
       </Route>
@@ -162,6 +169,29 @@ export default function makeRoutes(requireAuth = () => {}) {
         component={JoinTeam}
         onEnter={requireAuth}
       />
+      <Route path="demo" component={TexterDashboard}>
+        <Route
+          path="text"
+          components={{
+            main: props => <DemoTexterNeedsMessage {...props} />,
+            topNav: null
+          }}
+        />
+        <Route
+          path="reply"
+          components={{
+            main: props => <DemoTexterNeedsResponse {...props} />,
+            topNav: null
+          }}
+        />
+        <Route
+          path="reply2"
+          components={{
+            main: props => <DemoTexterNeedsResponse2ndQuestion {...props} />,
+            topNav: null
+          }}
+        />
+      </Route>
     </Route>
   );
 }

@@ -17,6 +17,10 @@ export async function cleanupTest() {
   await dropTables();
 }
 
+export function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 export function getContext(context) {
   return {
     ...context,
@@ -156,10 +160,50 @@ export async function createOrganization(user, invite) {
   return await graphql(mySchema, orgQuery, rootValue, context, variables);
 }
 
+export async function setTwilioAuth(user, organization) {
+  const rootValue = {};
+  const accountSid = "test_twilio_account_sid";
+  const authToken = "test_twlio_auth_token";
+  const messageServiceSid = "test_message_service";
+  const orgId = organization.data.createOrganization.id;
+
+  const context = getContext({ user });
+
+  const twilioQuery = `
+      mutation updateTwilioAuth(
+        $twilioAccountSid: String
+        $twilioAuthToken: String
+        $twilioMessageServiceSid: String
+        $organizationId: String!
+      ) {
+        updateTwilioAuth(
+          twilioAccountSid: $twilioAccountSid
+          twilioAuthToken: $twilioAuthToken
+          twilioMessageServiceSid: $twilioMessageServiceSid
+          organizationId: $organizationId
+        ) {
+          id
+          twilioAccountSid
+          twilioAuthToken
+          twilioMessageServiceSid
+        }
+      }`;
+
+  const variables = {
+    organizationId: orgId,
+    twilioAccountSid: accountSid,
+    twilioAuthToken: authToken,
+    twilioMessageServiceSid: messageServiceSid
+  };
+
+  return await graphql(mySchema, twilioQuery, rootValue, context, variables);
+}
+
 export async function createCampaign(
   user,
   organization,
-  title = "test campaign"
+  title = "test campaign",
+  args = {}
 ) {
   const rootValue = {};
   const description = "test description";
@@ -175,7 +219,8 @@ export async function createCampaign(
     input: {
       title,
       description,
-      organizationId
+      organizationId,
+      ...args
     }
   };
   const ret = await graphql(
@@ -304,7 +349,7 @@ export async function sendMessage(campaignContactId, user, message) {
           }
         }
       }`;
-  const context = getContext({ user: user });
+  const context = getContext({ user });
   const variables = {
     message,
     campaignContactId
@@ -443,3 +488,154 @@ export async function getCampaignContact(id) {
     .where({ id })
     .first();
 }
+
+export async function getOptOut(assignmentId, cell) {
+  return await r
+    .knex("opt_out")
+    .where({
+      cell,
+      assignment_id: assignmentId
+    })
+    .first();
+}
+
+export async function createStartedCampaign() {
+  const testAdminUser = await createUser();
+  const testInvite = await createInvite();
+  const testOrganization = await createOrganization(testAdminUser, testInvite);
+  const organizationId = testOrganization.data.createOrganization.id;
+  const testCampaign = await createCampaign(testAdminUser, testOrganization);
+  const testContacts = await createContacts(testCampaign, 100);
+  const testTexterUser = await createTexter(testOrganization);
+  const testTexterUser2 = await createTexter(testOrganization);
+  await startCampaign(testAdminUser, testCampaign);
+
+  await assignTexter(testAdminUser, testTexterUser, testCampaign);
+  const dbCampaignContact = await getCampaignContact(testContacts[0].id);
+  const assignmentId = dbCampaignContact.assignment_id;
+  const assignment = (await r.knex("assignment").where("id", assignmentId))[0];
+
+  const testSuperAdminUser = await createUser(
+    {
+      auth0_id: "2024561111",
+      first_name: "super",
+      last_name: "admin",
+      cell: "202-456-1111",
+      email: "superadmin@example.com",
+      is_superadmin: true
+    },
+    organizationId,
+    "ADMIN"
+  );
+
+  return {
+    testAdminUser,
+    testInvite,
+    testOrganization,
+    testCampaign,
+    testTexterUser,
+    testTexterUser2,
+    testContacts,
+    assignmentId,
+    assignment,
+    testSuperAdminUser,
+    organizationId,
+    dbCampaignContact
+  };
+}
+
+export const getConversations = async (
+  user,
+  organizationId,
+  contactsFilter,
+  campaignsFilter,
+  assignmentsFilter
+) => {
+  const cursor = {
+    offset: 0,
+    limit: 1000
+  };
+  const variables = {
+    cursor,
+    organizationId,
+    contactsFilter,
+    campaignsFilter,
+    assignmentsFilter
+  };
+
+  const conversationsQuery = `
+    query Q(
+          $organizationId: String!
+          $cursor: OffsetLimitCursor!
+          $contactsFilter: ContactsFilter
+          $campaignsFilter: CampaignsFilter
+          $assignmentsFilter: AssignmentsFilter
+          $utc: String
+        ) {
+          conversations(
+            cursor: $cursor
+            organizationId: $organizationId
+            campaignsFilter: $campaignsFilter
+            contactsFilter: $contactsFilter
+            assignmentsFilter: $assignmentsFilter
+            utc: $utc
+          ) {
+            pageInfo {
+              limit
+              offset
+              total
+            }
+            conversations {
+              texter {
+                id
+                displayName
+              }
+              contact {
+                id
+                assignmentId
+                firstName
+                lastName
+                cell
+                messageStatus
+                messages {
+                  id
+                  text
+                  isFromContact
+                }
+                optOut {
+                  cell
+                }
+              }
+              campaign {
+                id
+                title
+              }
+            }
+          }
+        }
+      `;
+
+  const result = await runGql(conversationsQuery, variables, user);
+  return result;
+};
+
+export const createJob = async (campaign, overrides) => {
+  const job = {
+    campaign_id: campaign.id,
+    payload: "fake_payload",
+    queue_name: "1:fake_queue_name",
+    job_type: "fake_job_type",
+    locks_queue: true,
+    assigned: true,
+    status: 0,
+    ...(overrides && overrides)
+  };
+
+  const [job_id] = await r
+    .knex("job_request")
+    .returning("id")
+    .insert(job);
+  job.id = job_id;
+
+  return job;
+};

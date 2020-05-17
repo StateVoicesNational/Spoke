@@ -8,6 +8,8 @@ import {
   getMethodChoiceData
 } from "../../integrations/contact-loaders";
 
+const title = 'lower("campaign"."title")';
+
 export function addCampaignsFilterToQuery(queryParam, campaignsFilter) {
   let query = queryParam;
 
@@ -28,6 +30,17 @@ export function addCampaignsFilterToQuery(queryParam, campaignsFilter) {
       campaignsFilter.campaignIds.length > 0
     ) {
       query = query.whereIn("campaign.id", campaignsFilter.campaignIds);
+    }
+
+    if ("searchString" in campaignsFilter && campaignsFilter.searchString) {
+      const searchStringWithPercents = (
+        "%" +
+        campaignsFilter.searchString +
+        "%"
+      ).toLocaleLowerCase();
+      query = query.andWhere(
+        r.knex.raw(`${title} like ?`, [searchStringWithPercents])
+      );
     }
 
     if (resultSize && !pageSize) {
@@ -53,18 +66,71 @@ export function buildCampaignQuery(
   }
 
   query = query.where("campaign.organization_id", organizationId);
+  query = query.leftJoin(
+    "campaign_admin",
+    "campaign_admin.campaign_id",
+    "campaign.id"
+  );
   query = addCampaignsFilterToQuery(query, campaignsFilter);
 
   return query;
 }
 
-export async function getCampaigns(organizationId, cursor, campaignsFilter) {
+const id = '"campaign"."id"';
+const dueDate = '"campaign"."due_by"';
+
+const asc = column => `${column} ASC`;
+const desc = column => `${column} DESC`;
+
+const buildOrderByClause = (query, sortBy) => {
+  let fragmentArray = undefined;
+  switch (sortBy) {
+    case "DUE_DATE_ASC":
+      fragmentArray = [asc(dueDate), asc(id)];
+      break;
+    case "DUE_DATE_DESC":
+      fragmentArray = [desc(dueDate), asc(id)];
+      break;
+    case "TITLE":
+      fragmentArray = [title];
+      break;
+    case "ID_DESC":
+      fragmentArray = [desc(id)];
+      break;
+    case "ID_ASC":
+    default:
+      fragmentArray = [asc(id)];
+      break;
+  }
+  return query.orderByRaw(fragmentArray.join(", "));
+};
+
+const buildSelectClause = sortBy => {
+  const fragmentArray = [
+    "campaign.*",
+    "campaign_admin.contacts_count",
+    "campaign_admin.ingest_success"
+  ];
+
+  if (sortBy === "TITLE") {
+    fragmentArray.push(title);
+  }
+
+  return r.knex.select(r.knex.raw(fragmentArray.join(", ")));
+};
+
+export async function getCampaigns(
+  organizationId,
+  cursor,
+  campaignsFilter,
+  sortBy
+) {
   let campaignsQuery = buildCampaignQuery(
-    r.knex.select("*"),
+    buildSelectClause(sortBy),
     organizationId,
     campaignsFilter
   );
-  campaignsQuery = campaignsQuery.orderBy("due_by", "desc").orderBy("id");
+  campaignsQuery = buildOrderByClause(campaignsQuery, sortBy);
 
   if (cursor) {
     campaignsQuery = campaignsQuery.limit(cursor.limit).offset(cursor.offset);
@@ -241,10 +307,49 @@ export const resolvers = {
       );
     },
     ingestMethod: async (campaign, _, { user, loaders }) => {
-      // FUTURE: which ingestMethod was used and status
-      // try { ... for SUPERVOLUNTEER
-      // await accessRequired(user, campaign.organization_id, "ADMIN", true);
-      return null;
+      try {
+        await accessRequired(user, campaign.organization_id, "ADMIN", true);
+      } catch (err) {
+        return null; // for SUPERVOLUNTEERS
+      }
+      if (campaign.hasOwnProperty("contacts_count")) {
+        return {
+          contactsCount: campaign.contacts_count,
+          success: campaign.ingest_success || null
+        };
+      }
+
+      const status =
+        campaign.campaignAdmin ||
+        (await r
+          .knex("campaign_admin")
+          .where("campaign_id", campaign.id)
+          .first());
+      if (!status || !status.ingest_method) {
+        return null;
+      }
+      return {
+        name: status.ingest_method,
+        success: status.ingest_success,
+        result: status.ingest_result,
+        reference: status.ingest_data_reference,
+        contactsCount: status.contacts_count,
+        deletedOptouts: status.deleted_optouts_count,
+        deletedDupes: status.duplicate_contacts_count,
+        updatedAt: status.updated_at ? new Date(status.updated_at) : null
+      };
+    },
+    completionStats: async campaign => {
+      // must be cache-loaded or bust:
+      const stats = await cacheableData.campaign.completionStats(campaign.id);
+      return {
+        contactsCount: campaign.contactsCount || stats.contactsCount || null,
+        // 0 should still diffrentiate from null
+        assignedCount: stats.assignedCount > -1 ? stats.assignedCount : null,
+        // messagedCount won't be defined until some messages are sent
+        messagedCount: stats.assignedCount ? stats.messagedCount || 0 : null,
+        errorCount: stats.errorCount || null
+      };
     },
     texters: async (campaign, _, { user }) => {
       await accessRequired(
@@ -330,6 +435,10 @@ export const resolvers = {
         "SUPERVOLUNTEER",
         true
       );
+      const stats = await cacheableData.campaign.completionStats(campaign.id);
+      if (stats.assignedCount && campaign.contactsCount) {
+        return Number(campaign.contactsCount) - Number(stats.assignedCount) > 0;
+      }
       const contacts = await r
         .knex("campaign_contact")
         .select("id")
@@ -344,6 +453,10 @@ export const resolvers = {
         "SUPERVOLUNTEER",
         true
       );
+      const stats = await cacheableData.campaign.completionStats(campaign.id);
+      if (stats.messagedCount && campaign.contactsCount) {
+        return Number(campaign.contactsCount) - Number(stats.messagedCount) > 0;
+      }
       const contacts = await r
         .knex("campaign_contact")
         .select("id")

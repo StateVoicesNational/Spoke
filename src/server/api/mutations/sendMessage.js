@@ -1,7 +1,7 @@
 import { GraphQLError } from "graphql/error";
 
 import { log } from "../../../lib";
-import { Message, r } from "../../models";
+import { Message, r, cacheableData } from "../../models";
 import serviceMap from "../lib/services";
 
 import { getSendBeforeTimeUtc } from "../../../lib/timezones";
@@ -16,41 +16,34 @@ export const sendMessage = async (
   loaders,
   user
 ) => {
-  const contact = await loaders.campaignContact.load(campaignContactId);
+  let contact = await loaders.campaignContact.load(campaignContactId);
   const campaign = await loaders.campaign.load(contact.campaign_id);
   if (
     contact.assignment_id !== parseInt(message.assignmentId) ||
     campaign.is_archived
   ) {
+    console.error("Error: assignment changed");
     throw new GraphQLError({
       status: 400,
       message: "Your assignment has changed"
     });
   }
-  const organization = await r
-    .table("campaign")
-    .get(contact.campaign_id)
-    .eqJoin("organization_id", r.table("organization"))("right");
-
+  const organization = await loaders.organization.load(
+    campaign.organization_id
+  );
   const orgFeatures = JSON.parse(organization.features || "{}");
 
-  const optOut = await r
-    .table("opt_out")
-    .getAll(contact.cell, {
-      index: "cell"
-    })
-    .filter({
-      organization_id: organization.id
-    })
-    .limit(1)(0)
-    .default(null);
+  const optOut = await cacheableData.optOut.query({
+    cell: contact.cell,
+    organizationId: campaign.organization_id
+  });
+
   if (optOut) {
     throw new GraphQLError({
       status: 400,
       message: "Skipped sending because this contact was already opted out"
     });
   }
-
   // const zipData = await r.table('zip_code')
   //   .get(contact.zip)
   //   .default(null)
@@ -105,7 +98,6 @@ export const sendMessage = async (
   );
 
   const sendBeforeDate = sendBefore ? sendBefore.toDate() : null;
-
   if (sendBeforeDate && sendBeforeDate <= Date.now()) {
     throw new GraphQLError({
       status: 400,
@@ -133,28 +125,20 @@ export const sendMessage = async (
     send_before: sendBeforeDate
   });
 
-  await messageInstance.save();
-
-  contact.updated_at = new Date();
   const initialMessageStatus = contact.message_status;
 
-  if (
-    contact.message_status === "needsResponse" ||
-    contact.message_status === "convo"
-  ) {
-    contact.message_status = "convo";
-  } else {
-    contact.message_status = "messaged";
-  }
-
-  await contact.save();
+  const saveResult = await cacheableData.message.save({
+    messageInstance,
+    contact
+  });
+  contact.message_status = saveResult.contactStatus;
 
   // log.info(
   //   `Sending (${serviceName}): ${messageInstance.user_number} -> ${messageInstance.contact_number}\nMessage: ${messageInstance.text}`
   // );
-
   //NO AWAIT: pro=return before api completes, con=context needs to stay alive
-  service.sendMessage(messageInstance, contact, organization);
+  service.sendMessage(saveResult.message, contact, null, organization);
+
   if (initialMessageStatus === "needsMessage") {
     // don't both requerying the messages list on the response
     contact.messages = [

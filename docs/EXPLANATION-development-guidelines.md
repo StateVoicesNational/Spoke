@@ -45,7 +45,7 @@ enviornment variable:
 * For any variables that enable features that should not be enabled (for legal reasons) in the United States, always ALSO test for `process.env.NOT_IN_USA` -- this ensures that the code self-documents the context these features will be available (and not available in).
 
 
-## Understanding DB/.[ORM].(https://stackoverflow.com/questions/1279613/what-is-an-orm-and-where-can-i-learn-more-about-it) calls
+## Understanding DB/[ORM](https://stackoverflow.com/questions/1279613/what-is-an-orm-and-where-can-i-learn-more-about-it) calls
 
 ###TLDR
 
@@ -79,15 +79,21 @@ current layout:
   `r.knex(...)...` is using standard knex queries.
 * Rethink had an object model where you could get an 'instance', modify fields, and then run `instance.save()`.
   You will still see this in some code, and some places, it arguably makes the code more readable.
-  If it does NOT make the code more readable, please change it to use `r.knex`!
+  Generally, we should move toward r.knex(...) calls
 * When switching between the legacy and knex, be careful about query results meant to get back a single record/value.
   In knex, a good pattern is to use `.first()`
   to make sure you get the first object immediately, instead of needing to access the first result as `queryResult[0]`.
 * This is especially unintuitive and error-prone with count. So much so, we ask that you use
   a custom helper method `r.getCount` which will look like this:
-  `const actualCountResult = await r.getCount(r.knex(<table>).where(.....))`
+  `const actualCountResult = await r.getCount(r.knex(<table>).where(.....))` (note: there is NO await inside the parens, just outside)
   The reason, is that different databases return the key differently in knex (so e.g. in postgres,
   it's 'count' but in sqlite it's 'count(*)'.
+* When loading data by id, try to use `loaders.<object>.load(id)` which will load the data from
+  either local in-memory cache, redis cache, if available, or fallback to the database.
+  However, if you have just updated the value in the same code path, it's better to use `cacheableData.<object>.load(id)`.
+  That's because the `loaders` data will be stale -- cacheableData will load the data and update the the local in-memory cache.
+* If available, use the `cacheableData.<object>.query({})` interfaces, which will leverage fast cache data over the database.
+  There is more information and discussion in the [src/server/models/cacheable_queries/README.md](../src/server/models/cacheable_queries/README.md).
 * Make sure you make queries and code that supports, at least, PostgreSQL and Sqlite.  For *Date queries* this
   can be tricky.  One successful pattern is to calculate the javascript Date object locally, and then
   query with a greater/less-than, like so:

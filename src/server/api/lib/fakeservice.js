@@ -1,5 +1,5 @@
 import { getLastMessage } from "./message-sending";
-import { Message, PendingMessagePart, r } from "../../models";
+import { Message, PendingMessagePart, r, cacheableData } from "../../models";
 import { log } from "../../../lib";
 
 // This 'fakeservice' allows for fake-sending messages
@@ -25,18 +25,19 @@ async function sendMessage(message, contact, trx, organization) {
 
   if (contact && /autorespond/.test(message.text)) {
     // We can auto-respond to the the user if they include the text 'autorespond' in their message
-    await Message.save({
-      ...message,
-      ...changes,
-      // just flip/renew the vars for the contact
-      id: undefined,
-      service_id: `mockedresponse${Math.random()}`,
-      is_from_contact: true,
-      text: `responding to ${message.text}`,
-      send_status: "DELIVERED"
+    await cacheableData.message.save({
+      contact: contact,
+      messageInstance: new Message({
+        ...message,
+        ...changes,
+        // just flip/renew the vars for the contact
+        id: undefined,
+        service_id: `mockedresponse${Math.random()}`,
+        is_from_contact: true,
+        text: `responding to ${message.text}`,
+        send_status: "DELIVERED"
+      })
     });
-    contact.message_status = "needsResponse";
-    await contact.save();
   }
 }
 
