@@ -49,7 +49,6 @@ results, replacing keys in the fields map with the original column name, so the
 results can be consumed by downstream resolvers.
  */
 function mapQueryFieldsToResolverFields(queryResult, fieldsMap) {
-  console.log("getConversations mapQueryFieldsToResolverFields", fieldsMap);
   const data = _.mapKeys(queryResult, (value, key) => {
     const newKey = fieldsMap[key];
     if (newKey) {
@@ -57,7 +56,6 @@ function mapQueryFieldsToResolverFields(queryResult, fieldsMap) {
     }
     return key;
   });
-  console.log("getConversations mapQueryFieldsToResolverFields data", data);
   return data;
 }
 
@@ -72,141 +70,136 @@ export async function getConversations(
 ) {
   /* Query #1 == get campaign_contact.id for all the conversations matching
    * the criteria with offset and limit. */
-  try {
-    const starttime = new Date();
-    let offsetLimitQuery = r.knex.select("campaign_contact.id as cc_id");
+  const starttime = new Date();
+  let offsetLimitQuery = r.knex.select("campaign_contact.id as cc_id");
 
-    offsetLimitQuery = getConversationsJoinsAndWhereClause(
-      offsetLimitQuery,
-      organizationId,
-      campaignsFilter,
-      assignmentsFilter,
-      contactsFilter
-    );
+  offsetLimitQuery = getConversationsJoinsAndWhereClause(
+    offsetLimitQuery,
+    organizationId,
+    campaignsFilter,
+    assignmentsFilter,
+    contactsFilter
+  );
 
-    offsetLimitQuery = offsetLimitQuery.orderBy("cc_id");
-    offsetLimitQuery = offsetLimitQuery
-      .limit(cursor.limit)
-      .offset(cursor.offset);
-    console.log(
-      "getConversations sql",
-      awsContext && awsContext.awsRequestId,
-      cursor,
-      assignmentsFilter,
-      offsetLimitQuery.toString()
-    );
-    const ccIdRows = await offsetLimitQuery;
+  offsetLimitQuery = offsetLimitQuery.orderBy("cc_id");
+  offsetLimitQuery = offsetLimitQuery.limit(cursor.limit).offset(cursor.offset);
+  console.log(
+    "getConversations sql",
+    awsContext && awsContext.awsRequestId,
+    cursor,
+    assignmentsFilter,
+    offsetLimitQuery.toString()
+  );
 
-    console.log(
-      "getConversations contact ids",
-      awsContext && awsContext.awsRequestId,
-      Number(new Date()) - Number(starttime),
-      ccIdRows.length
-    );
-    const ccIds = ccIdRows.map(ccIdRow => {
-      return ccIdRow.cc_id;
-    });
+  const ccIdRows = await offsetLimitQuery;
 
-    /* Query #2 -- get all the columns we need, including messages, using the
-     * cc_ids from Query #1 to scope the results to limit, offset */
-    let query = r.knex.select(
-      "campaign_contact.id as cc_id",
-      "campaign_contact.first_name as cc_first_name",
-      "campaign_contact.last_name as cc_last_name",
-      "campaign_contact.cell",
-      "campaign_contact.message_status",
-      "campaign_contact.is_opted_out",
-      "campaign_contact.updated_at",
-      "assignment.id as assignment_id",
-      "user.id as u_id",
-      "user.first_name as u_first_name",
-      "user.last_name as u_last_name",
-      "campaign.id as cmp_id",
-      "campaign.title",
-      "campaign.due_by",
-      "assignment.id as ass_id",
-      "message.id as mess_id",
-      "message.text",
-      "message.user_number",
-      "message.contact_number",
-      "message.created_at",
-      "message.is_from_contact"
-    );
+  console.log(
+    "getConversations contact ids",
+    awsContext && awsContext.awsRequestId,
+    Number(new Date()) - Number(starttime),
+    ccIdRows.length
+  );
+  const ccIds = ccIdRows.map(ccIdRow => {
+    return ccIdRow.cc_id;
+  });
 
-    query = getConversationsJoinsAndWhereClause(
-      query,
-      organizationId,
-      campaignsFilter,
-      assignmentsFilter,
-      contactsFilter,
-      true
-    );
+  /* Query #2 -- get all the columns we need, including messages, using the
+   * cc_ids from Query #1 to scope the results to limit, offset */
+  let query = r.knex.select(
+    "campaign_contact.id as cc_id",
+    "campaign_contact.first_name as cc_first_name",
+    "campaign_contact.last_name as cc_last_name",
+    "campaign_contact.cell",
+    "campaign_contact.message_status",
+    "campaign_contact.is_opted_out",
+    "campaign_contact.updated_at",
+    "assignment.id as assignment_id",
+    "user.id as u_id",
+    "user.first_name as u_first_name",
+    "user.last_name as u_last_name",
+    "campaign.id as cmp_id",
+    "campaign.title",
+    "campaign.due_by",
+    "assignment.id as ass_id",
+    "message.id as mess_id",
+    "message.text",
+    "message.user_number",
+    "message.contact_number",
+    "message.created_at",
+    "message.is_from_contact"
+  );
 
-    query = query.whereIn("campaign_contact.id", ccIds);
+  query = getConversationsJoinsAndWhereClause(
+    query,
+    organizationId,
+    campaignsFilter,
+    assignmentsFilter,
+    contactsFilter,
+    true
+  );
 
-    query = query.leftJoin("message", table => {
-      table.on("message.campaign_contact_id", "=", "campaign_contact.id");
-    });
+  query = query.whereIn("campaign_contact.id", ccIds);
 
-    query = query.orderBy("cc_id").orderBy("message.created_at");
-    console.log(
-      "getConversations query2",
-      awsContext && awsContext.awsRequestId,
-      query
-    );
-    const conversationRows = await query;
-    console.log(
-      "getConversations query2 result",
-      awsContext && awsContext.awsRequestId,
-      Number(new Date()) - Number(starttime),
-      conversationRows.length
-    );
-    /* collapse the rows to produce an array of objects, with each object
-     * containing the fields for one conversation, each having an array of
-     * message objects */
-    const messageFields = [
-      "mess_id",
-      "text",
-      "user_number",
-      "contact_number",
-      "created_at",
-      "is_from_contact"
-    ];
+  query = query.leftJoin("message", table => {
+    table.on("message.campaign_contact_id", "=", "campaign_contact.id");
+  });
 
-    let ccId = undefined;
-    let conversation = undefined;
-    const conversations = [];
-    for (const conversationRow of conversationRows) {
-      if (ccId !== conversationRow.cc_id) {
-        ccId = conversationRow.cc_id;
-        conversation = _.omit(conversationRow, messageFields);
-        conversation.messages = [];
-        conversations.push(conversation);
-      }
-      conversation.messages.push(
-        mapQueryFieldsToResolverFields(_.pick(conversationRow, messageFields), {
-          mess_id: "id"
-        })
-      );
+  query = query.orderBy("cc_id").orderBy("message.created_at");
+  console.log(
+    "getConversations query2",
+    awsContext && awsContext.awsRequestId,
+    query
+  );
+  const conversationRows = await query;
+  console.log(
+    "getConversations query2 result",
+    awsContext && awsContext.awsRequestId,
+    Number(new Date()) - Number(starttime),
+    conversationRows.length
+  );
+  /* collapse the rows to produce an array of objects, with each object
+   * containing the fields for one conversation, each having an array of
+   * message objects */
+  const messageFields = [
+    "mess_id",
+    "text",
+    "user_number",
+    "contact_number",
+    "created_at",
+    "is_from_contact"
+  ];
+
+  let ccId = undefined;
+  let conversation = undefined;
+  const conversations = [];
+  for (const conversationRow of conversationRows) {
+    if (ccId !== conversationRow.cc_id) {
+      ccId = conversationRow.cc_id;
+      conversation = _.omit(conversationRow, messageFields);
+      conversation.messages = [];
+      conversations.push(conversation);
     }
-
-    /* Query #3 -- get the count of all conversations matching the criteria.
-     * We need this to show total number of conversations to support paging */
-    const countQuery = r.knex.count("*").timeout(4000, { cancel: true });
-    console.log(
-      "getConversations query3",
-      Number(new Date()) - Number(starttime)
+    conversation.messages.push(
+      mapQueryFieldsToResolverFields(_.pick(conversationRow, messageFields), {
+        mess_id: "id"
+      })
     );
-    const conversationsCountQuery = getConversationsJoinsAndWhereClause(
-      countQuery,
-      organizationId,
-      campaignsFilter,
-      assignmentsFilter,
-      contactsFilter
-    );
-  } catch (err) {
-    console.log("getConversations top-part error", err);
   }
+
+  /* Query #3 -- get the count of all conversations matching the criteria.
+   * We need this to show total number of conversations to support paging */
+  const countQuery = r.knex.count("*").timeout(4000, { cancel: true });
+  console.log(
+    "getConversations query3",
+    Number(new Date()) - Number(starttime)
+  );
+  const conversationsCountQuery = getConversationsJoinsAndWhereClause(
+    countQuery,
+    organizationId,
+    campaignsFilter,
+    assignmentsFilter,
+    contactsFilter
+  );
   console.log(
     "getConversations query3 sql",
     conversationsCountQuery.toString()
