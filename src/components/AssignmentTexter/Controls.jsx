@@ -739,7 +739,7 @@ export class AssignmentTexterContactControls extends React.Component {
         return label ? label[1] : answerValue;
       };
       currentQuestionOptions = currentQuestion.answerOptions.map(answer => {
-        let label = shorener(answer.value);
+        let label = shortener(answer.value);
         if (label in dupeTester) {
           dupeTester.FAIL = true;
         } else {
