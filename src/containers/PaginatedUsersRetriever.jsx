@@ -26,12 +26,13 @@ export class PaginatedUsersRetriever extends Component {
       return;
     }
 
-    if (
-      this.props.users.people.users.length ===
+    console.log(
+      "PaginatedUsersRetriever.handleUsersReceived",
+      this.props.users.people.users.length,
       this.props.users.people.pageInfo.total
-    ) {
-      this.props.onUsersReceived(this.props.users.people.users);
-    }
+    );
+    // we don't wait until it's complete, we can refresh each partial load
+    this.props.onUsersReceived(this.props.users.people.users);
 
     const newOffset =
       this.props.users.people.pageInfo.offset + this.props.pageSize;
