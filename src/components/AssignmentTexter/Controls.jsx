@@ -732,17 +732,27 @@ export class AssignmentTexterContactControls extends React.Component {
     if (currentInteractionStep) {
       currentQuestion = currentInteractionStep.question;
       currentQuestionAnswered = questionResponses[currentInteractionStep.id];
-      currentQuestionOptions = currentQuestion.answerOptions.map(answer => {
+      const dupeTester = {};
+      const shortener = answerValue => {
         // label is for one-word values or e.g. "Yes: ...."
-        const label = answer.value.match(/^(\w+)([^\s\w]|$)/);
+        const label = answerValue.match(/^(\w+)([^\s\w]|$)/);
+        return label ? label[1] : answerValue;
+      };
+      currentQuestionOptions = currentQuestion.answerOptions.map(answer => {
+        let label = shorener(answer.value);
+        if (label in dupeTester) {
+          dupeTester.FAIL = true;
+        } else {
+          dupeTester[label] = 1;
+        }
         return {
-          answer: answer,
-          label: label ? label[1] : answer.value
+          answer,
+          label
         };
       });
       joinedLength = currentQuestionOptions.map(o => o.label).join("__").length;
-      if (joinedLength > 30) {
-        // too many/long options
+      if (joinedLength > 30 || dupeTester.FAIL) {
+        // too many/long options or duplicates
         currentQuestionOptions = [];
         joinedLength = 0;
       }
