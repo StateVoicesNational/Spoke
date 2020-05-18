@@ -1,6 +1,5 @@
 import { mapFieldsToModel } from "./lib/utils";
 import { r, User, cacheableData } from "../models";
-import { addCampaignsFilterToQuery } from "./campaign";
 
 const firstName = '"user"."first_name"';
 const lastName = '"user"."last_name"';

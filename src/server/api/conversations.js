@@ -1,7 +1,7 @@
 import _ from "lodash";
 import { Assignment, r, cacheableData, loaders } from "../models";
 import { addWhereClauseForContactsFilterMessageStatusIrrespectiveOfPastDue } from "./assignment";
-import { buildCampaignQuery } from "./campaign";
+import { addCampaignsFitlerToQuery } from "./campaign";
 import { log } from "../../lib";
 
 function getConversationsJoinsAndWhereClause(
@@ -12,13 +12,11 @@ function getConversationsJoinsAndWhereClause(
   contactsFilter,
   forData
 ) {
-  let query = queryParam.leftJoin(
-    "campaign_contact",
-    "campaign.id",
-    "campaign_contact.campaign_id"
-  );
+  let query = queryParam
+    .from("campaign_contact")
+    .join("campaign", "campaign.id", "campaign_contact.campaign_id");
 
-  query = buildCampaignQuery(query, organizationId, campaignsFilter, true);
+  query = addCampaignsFitlerToQuery(query, campaignsFilter, organizationId);
 
   if (assignmentsFilter && assignmentsFilter.texterId) {
     query = query.where({ "assignment.user_id": assignmentsFilter.texterId });
@@ -81,7 +79,7 @@ export async function getConversations(
     contactsFilter
   );
 
-  offsetLimitQuery = offsetLimitQuery.orderBy("cc_id");
+  offsetLimitQuery = offsetLimitQuery.orderBy("cc_id", "desc");
   offsetLimitQuery = offsetLimitQuery.limit(cursor.limit).offset(cursor.offset);
   console.log(
     "getConversations sql",
@@ -144,7 +142,7 @@ export async function getConversations(
     table.on("message.campaign_contact_id", "=", "campaign_contact.id");
   });
 
-  query = query.orderBy("cc_id").orderBy("message.created_at");
+  query = query.orderBy("cc_id", "desc").orderBy("message.id");
   console.log(
     "getConversations query2",
     awsContext && awsContext.awsRequestId,

@@ -9,8 +9,16 @@ import {
 
 const title = 'lower("campaign"."title")';
 
-export function addCampaignsFilterToQuery(queryParam, campaignsFilter) {
+export function addCampaignsFilterToQuery(
+  queryParam,
+  campaignsFilter,
+  organizationId
+) {
   let query = queryParam;
+
+  if (organizationId) {
+    query = query.where("campaign.organization_id", organizationId);
+  }
 
   if (campaignsFilter) {
     const resultSize = campaignsFilter.listSize ? campaignsFilter.listSize : 0;
@@ -55,20 +63,17 @@ export function addCampaignsFilterToQuery(queryParam, campaignsFilter) {
 export function buildCampaignQuery(
   queryParam,
   organizationId,
-  campaignsFilter,
-  noAdmin
+  campaignsFilter
 ) {
   let query = queryParam.from("campaign");
 
-  query = query.where("campaign.organization_id", organizationId);
-  if (!noAdmin) {
-    query = query.leftJoin(
-      "campaign_admin",
-      "campaign_admin.campaign_id",
-      "campaign.id"
-    );
-  }
-  query = addCampaignsFilterToQuery(query, campaignsFilter);
+  query = query.leftJoin(
+    "campaign_admin",
+    "campaign_admin.campaign_id",
+    "campaign.id"
+  );
+
+  query = addCampaignsFilterToQuery(query, campaignsFilter, organizationId);
 
   return query;
 }
