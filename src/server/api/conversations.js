@@ -1,7 +1,7 @@
 import _ from "lodash";
 import { Assignment, r, cacheableData, loaders } from "../models";
 import { addWhereClauseForContactsFilterMessageStatusIrrespectiveOfPastDue } from "./assignment";
-import { addCampaignsFitlerToQuery } from "./campaign";
+import { addCampaignsFilterToQuery } from "./campaign";
 import { log } from "../../lib";
 
 function getConversationsJoinsAndWhereClause(
@@ -16,7 +16,7 @@ function getConversationsJoinsAndWhereClause(
     .from("campaign_contact")
     .join("campaign", "campaign.id", "campaign_contact.campaign_id");
 
-  query = addCampaignsFitlerToQuery(query, campaignsFilter, organizationId);
+  query = addCampaignsFilterToQuery(query, campaignsFilter, organizationId);
 
   if (assignmentsFilter && assignmentsFilter.texterId) {
     query = query.where({ "assignment.user_id": assignmentsFilter.texterId });
@@ -186,13 +186,12 @@ export async function getConversations(
 
   /* Query #3 -- get the count of all conversations matching the criteria.
    * We need this to show total number of conversations to support paging */
-  const countQuery = r.knex.count("*").timeout(4000, { cancel: true });
   console.log(
     "getConversations query3",
     Number(new Date()) - Number(starttime)
   );
   const conversationsCountQuery = getConversationsJoinsAndWhereClause(
-    countQuery,
+    r.knex,
     organizationId,
     campaignsFilter,
     assignmentsFilter,
@@ -202,25 +201,27 @@ export async function getConversations(
     "getConversations query3 sql",
     conversationsCountQuery.toString()
   );
-  let conversationCountArray;
+  let conversationCount;
   try {
-    conversationCountArray = await conversationsCountQuery;
+    conversationCount = await r.getCount(
+      conversationsCountQuery.timeout(4000, { cancel: true })
+    );
   } catch (err) {
     // default fake value that means 'a lot'
-    conversationCountArray = [{ count: 9999 }];
+    conversationCount = 9999;
     console.log("getConversations timeout", err);
   }
 
   console.log(
     "getConversations query3 result",
     Number(new Date()) - Number(starttime),
-    conversationCountArray,
+    conversationCount,
     conversations
   );
   const pageInfo = {
     limit: cursor.limit,
     offset: cursor.offset,
-    total: conversationCountArray[0].count
+    total: conversationCount
   };
 
   return {

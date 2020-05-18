@@ -139,8 +139,7 @@ export async function processContactLoad(job, maxContacts, organization) {
       campaign_id: campaignId
     });
   }
-
-  await r.knex("campaign_contact").insert(newContacts);
+  await r.knex.batchInsert("campaign_contact", newContacts, 100);
 
   await completeContactLoad(
     job,
