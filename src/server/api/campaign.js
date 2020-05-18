@@ -138,18 +138,14 @@ export async function getCampaigns(
     campaignsQuery = campaignsQuery.limit(cursor.limit).offset(cursor.offset);
     const campaigns = await campaignsQuery;
 
-    const campaignsCountQuery = buildCampaignQuery(
-      r.knex.count("*"),
-      organizationId,
-      campaignsFilter
+    const campaignsCount = await r.getCount(
+      buildCampaignQuery(r.knex, organizationId, campaignsFilter)
     );
-
-    const campaignsCountArray = await campaignsCountQuery;
 
     const pageInfo = {
       limit: cursor.limit,
       offset: cursor.offset,
-      total: campaignsCountArray[0].count
+      total: campaignsCount
     };
     return {
       campaigns,
