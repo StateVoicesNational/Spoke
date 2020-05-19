@@ -13,6 +13,8 @@ export function addWhereClauseForContactsFilterMessageStatusIrrespectiveOfPastDu
   let query = queryParameter;
   if (messageStatusFilter === "needsMessageOrResponse") {
     query.whereIn("message_status", ["needsResponse", "needsMessage"]);
+  } else if (messageStatusFilter === "allReplies") {
+    query.whereNotIn("message_status", ["messaged", "needsMessage"]);
   } else {
     query = query.whereIn("message_status", messageStatusFilter.split(","));
   }
