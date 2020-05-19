@@ -89,18 +89,21 @@ describe("End-to-end campaign flow", () => {
           "Hi Contactfirst1 this is Texter1first, how are you?"
         );
       });
-      cy.get("button[data-test=send]").click();
-      // wait advance to next contact
-      cy.wait(200);
-      cy.get("textArea[name=messageText]").then(el => {
-        expect(el).to.have.text(
-          "Hi Contactfirst2 this is Texter1first, how are you?"
-        );
-      });
-      cy.get("button[data-test=send]").click();
-      // Go back to TODOS
-      cy.wait(200);
-      cy.url().should("include", "/todos");
+
+      if (Cypress.env("DEFAULT_SERVICE") === "fakeservice") {
+        cy.get("button[data-test=send]").click();
+        // wait advance to next contact
+        cy.wait(200);
+        cy.get("textArea[name=messageText]").then(el => {
+          expect(el).to.have.text(
+            "Hi Contactfirst2 this is Texter1first, how are you?"
+          );
+        });
+        cy.get("button[data-test=send]").click();
+        // Go back to TODOS
+        cy.wait(200);
+        cy.url().should("include", "/todos");
+      }
     });
   });
 });
