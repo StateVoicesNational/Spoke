@@ -43,7 +43,9 @@ describe("ConversationPreviewModal", async () => {
     jest.restoreAllMocks();
     startedCampaign = await createStartedCampaign();
 
-    optOutContact = startedCampaign.testContacts[0];
+    // last contact, since conversations now are shown last-contact first
+    optOutContact =
+      startedCampaign.testContacts[startedCampaign.testContacts.length - 1];
 
     const message = {
       assignmentId: startedCampaign.assignmentId,

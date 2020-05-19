@@ -43,7 +43,9 @@ const dbInteractionSteps = async id => {
     .getAll(id, { index: "campaign_id" })
     .filter({ is_deleted: false })
     .orderBy("id");
-  return assembleAnswerOptions(allSteps);
+  const data = assembleAnswerOptions(allSteps);
+  console.log("cacheabledata.campaign.dbInteractionSteps", id, data);
+  return data;
 };
 
 const dbContactTimezones = async id =>

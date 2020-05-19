@@ -705,9 +705,7 @@ export class AssignmentTexterContactControls extends React.Component {
           </span>
         ) : (
           <span>
-            <span className={css(flexStyles.flatButtonLabelMobile)}>
-              What was their reply to:{" "}
-            </span>
+            <span className={css(flexStyles.flatButtonLabelMobile)}>Q: </span>
             <b>{currentQuestion.text}</b>
           </span>
         )}
@@ -732,17 +730,29 @@ export class AssignmentTexterContactControls extends React.Component {
     if (currentInteractionStep) {
       currentQuestion = currentInteractionStep.question;
       currentQuestionAnswered = questionResponses[currentInteractionStep.id];
-      currentQuestionOptions = currentQuestion.answerOptions.map(answer => {
+      const dupeTester = {};
+      const shortener = answerValue => {
         // label is for one-word values or e.g. "Yes: ...."
-        const label = answer.value.match(/^(\w+)([^\s\w]|$)/);
-        return {
-          answer: answer,
-          label: label ? label[1] : answer.value
-        };
-      });
+        const label = answerValue.match(/^(\w+)([^\s\w]|$)/);
+        return label ? label[1] : answerValue;
+      };
+      currentQuestionOptions = currentQuestion.answerOptions
+        .filter(answer => answer.value[0] != "-")
+        .map(answer => {
+          let label = shortener(answer.value);
+          if (label in dupeTester) {
+            dupeTester.FAIL = true;
+          } else {
+            dupeTester[label] = 1;
+          }
+          return {
+            answer,
+            label
+          };
+        });
       joinedLength = currentQuestionOptions.map(o => o.label).join("__").length;
-      if (joinedLength > 30) {
-        // too many/long options
+      if (joinedLength > 36 || dupeTester.FAIL) {
+        // too many/long options or duplicates
         currentQuestionOptions = [];
         joinedLength = 0;
       }
@@ -755,10 +765,10 @@ export class AssignmentTexterContactControls extends React.Component {
     if (!currentInteractionStep || joinedLength !== 0) {
       shortCannedResponses = assignment.campaignCannedResponses
         .filter(
-          // allow for "Wrong Number"
+          // allow for "Wrong Number", prefixes of + or - can force add or remove
           script =>
-            (script.title.length < 13 || script.title[0] === ":") &&
-            script.title[script.title.length - 1] !== "."
+            (script.title.length < 13 || script.title[0] === "+") &&
+            script.title[0] !== "-"
         )
         .filter(script => {
           if (joinedLength + 1 + script.title.length < 80) {
@@ -806,7 +816,7 @@ export class AssignmentTexterContactControls extends React.Component {
         {shortCannedResponses.map(script => (
           <FlatButton
             key={`shortcutScript_${script.id}`}
-            label={script.title.replace(/^:/, "")}
+            label={script.title.replace(/^(\+|\-)/, "")}
             onTouchTap={evt => {
               this.handleCannedResponseChange(script);
             }}

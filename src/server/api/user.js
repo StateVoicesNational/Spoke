@@ -1,6 +1,5 @@
 import { mapFieldsToModel } from "./lib/utils";
 import { r, User, cacheableData } from "../models";
-import { addCampaignsFilterToQuery } from "./campaign";
 
 const firstName = '"user"."first_name"';
 const lastName = '"user"."last_name"';
@@ -143,7 +142,6 @@ export async function getUsers(
   if (cursor) {
     usersQuery = usersQuery.limit(cursor.limit).offset(cursor.offset);
     const users = await usersQuery;
-
     const usersCountQuery = buildUsersQuery(
       organizationId,
       role,
