@@ -66,7 +66,8 @@ import Twilio from "twilio";
 import {
   sendMessage,
   bulkSendMessages,
-  findNewCampaignContact
+  findNewCampaignContact,
+  buyPhoneNumbers
 } from "./mutations";
 
 const ActionHandlers = require("../../integrations/action-handlers");
@@ -320,6 +321,7 @@ async function updateInteractionSteps(
 
 const rootMutations = {
   RootMutation: {
+    buyPhoneNumbers,
     userAgreeTerms: async (_, { userId }, { user, loaders }) => {
       if (user.id === Number(userId)) {
         return user.terms ? user : null;

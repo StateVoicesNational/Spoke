@@ -30,6 +30,7 @@ import {
   DemoTexterNeedsResponse,
   DemoTexterNeedsResponse2ndQuestion
 } from "./components/AssignmentTexter/Demo";
+import AdminPhoneNumberInventory from "./containers/AdminPhoneNumberInventory";
 
 export default function makeRoutes(requireAuth = () => {}) {
   return (
@@ -56,6 +57,7 @@ export default function makeRoutes(requireAuth = () => {}) {
           <Route path="incoming" component={AdminIncomingMessageList} />
           <Route path="tags" component={Tags} />
           <Route path="settings" component={Settings} />
+          <Route path="phone-numbers" component={AdminPhoneNumberInventory} />
         </Route>
       </Route>
       <Route path="app" component={TexterDashboard} onEnter={requireAuth}>

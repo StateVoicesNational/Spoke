@@ -61,6 +61,7 @@ const tableList = [
   "question_response",
   "tag",
   "tag_campaign_contact",
+  "owned_phone_number",
   "user_cell",
   "user_organization",
   "zip_code" // good candidate (or by contact)?
