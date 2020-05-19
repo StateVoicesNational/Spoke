@@ -413,9 +413,14 @@ async function handleIncomingMessage(message) {
 /**
  * Search for phone numbers available for purchase
  */
-async function searchForAvailableNumbers(twilioInstance, areaCode, limit) {
+async function searchForAvailableNumbers(
+  twilioInstance,
+  countryCode,
+  areaCode,
+  limit
+) {
   const count = Math.min(limit, 30); // Twilio limit
-  return twilioInstance.availablePhoneNumbers("US").local.list({
+  return twilioInstance.availablePhoneNumbers(countryCode).local.list({
     areaCode,
     limit: count,
     capabilities: ["SMS", "MMS"]
@@ -490,12 +495,14 @@ async function bulkRequest(array, fn) {
  */
 async function buyNumbersInAreaCode(organization, areaCode, limit, opts = {}) {
   const twilioInstance = await getTwilio(organization);
+  const countryCode = getConfig("PHONE_NUMBER_COUNTRY ", organization) || "US";
   async function buyBatch(size) {
     let successCount = 0;
     log.debug(`Attempting to buy batch of ${size} numbers`);
 
     const response = await searchForAvailableNumbers(
       twilioInstance,
+      countryCode,
       areaCode,
       size
     );

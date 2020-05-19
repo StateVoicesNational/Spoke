@@ -1129,7 +1129,9 @@ export async function buyPhoneNumbers(job) {
     if (!areaCode || !limit) {
       throw new Error("areaCode and limit are required");
     }
-    const organization = await Organization.get(job.organization_id);
+    const organization = await cacheableData.organization.load(
+      job.organization_id
+    );
     const service = serviceMap[getConfig("DEFAULT_SERVICE", organization)];
     const opts = {};
     if (messagingServiceSid) {
