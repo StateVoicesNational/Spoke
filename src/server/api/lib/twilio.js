@@ -5,11 +5,13 @@ import {
   Message,
   PendingMessagePart,
   r,
-  cacheableData
+  cacheableData,
+  Campaign
 } from "../../models";
 import { log } from "../../../lib";
 import { saveNewIncomingMessage } from "./message-sending";
 import { getConfig } from "./config";
+import urlJoin from "url-join";
 
 // TWILIO error_codes:
 // > 1 (i.e. positive) error_codes are reserved for Twilio error codes
@@ -22,6 +24,17 @@ const MESSAGE_VALIDITY_PADDING_SECONDS = 30;
 const MAX_TWILIO_MESSAGE_VALIDITY = 14400;
 const DISABLE_DB_LOG = getConfig("DISABLE_DB_LOG");
 const TWILIO_SKIP_VALIDATION = getConfig("TWILIO_SKIP_VALIDATION");
+
+async function getTwilio(organization) {
+  const {
+    authToken,
+    accountSid
+  } = await cacheableData.organization.getTwilioAuth(organization);
+  if (accountSid && authToken) {
+    return Twilio(accountSid, authToken);
+  }
+  return null;
+}
 
 const headerValidator = () => {
   if (!!TWILIO_SKIP_VALIDATION) return (req, res, next) => next();
@@ -83,6 +96,19 @@ function parseMessageText(message) {
   return params;
 }
 
+async function getMessagingServiceSid(organization, contact, message) {
+  const campaign = cacheableData.campaign;
+  if (campaign.messageservice_sid) {
+    return campaign.messageservice_sid;
+  } else {
+    return await cacheableData.organization.getMessageServiceSid(
+      organization,
+      contact,
+      message.text
+    );
+  }
+}
+
 async function sendMessage(message, contact, trx, organization) {
   const {
     authToken,
@@ -112,11 +138,12 @@ async function sendMessage(message, contact, trx, organization) {
   }
 
   // Note organization won't always be available, so then contact can trace to it
-  const messagingServiceSid = await cacheableData.organization.getMessageServiceSid(
+  const messagingServiceSid = await getMessagingServiceSid(
     organization,
     contact,
-    message.text
+    message
   );
+
   return new Promise((resolve, reject) => {
     if (message.service !== "twilio") {
       log.warn("Message not marked as a twilio message", message.id);
@@ -403,6 +430,33 @@ async function handleIncomingMessage(message) {
   }
 }
 
+/**
+ * Create a new Twilio messaging service
+ */
+async function createMessagingService(organization, friendlyName) {
+  const twilio = await getTwilio(organization);
+  const twilioBaseUrl = getConfig("TWILIO_BASE_CALLBACK_URL", organization);
+  return await twilio.messaging.services.create({
+    friendlyName,
+    statusCallback: urlJoin(twilioBaseUrl, "twilio-message-report"),
+    inboundRequestUrl: urlJoin(
+      twilioBaseUrl,
+      "twilio",
+      organization.id.toString()
+    )
+  });
+}
+
+/**
+ * Fetch Phone Numbers assigned to Messaging Service
+ */
+async function getPhoneNumbersForService(organization, messagingServiceSid) {
+  const twilio = await getTwilio(organization);
+  return await twilio.messaging
+    .services(messagingServiceSid)
+    .phoneNumbers.list({ limit: 400 });
+}
+
 export default {
   syncMessagePartProcessing: !!process.env.JOBS_SAME_PROCESS,
   headerValidator,
@@ -410,5 +464,7 @@ export default {
   sendMessage,
   handleDeliveryReport,
   handleIncomingMessage,
-  parseMessageText
+  parseMessageText,
+  createMessagingService,
+  getPhoneNumbersForService
 };

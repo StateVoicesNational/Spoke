@@ -11,6 +11,7 @@ import {
 } from "../../../../src/containers/AdminIncomingMessageList";
 
 import { makeTree } from "../../../../src/lib";
+import twilio from "../../../../src/server/api/lib/twilio";
 
 import {
   setupTest,
@@ -33,6 +34,8 @@ import {
   bulkSendMessages,
   runGql
 } from "../../../test_helpers";
+
+jest.mock("../../../../src/server/api/lib/twilio");
 
 let testAdminUser;
 let testInvite;
@@ -1206,5 +1209,61 @@ describe("all interaction steps fields travel round trip", () => {
         ]);
       });
     });
+  });
+});
+
+describe("useOwnMessagingService", async () => {
+  it("uses default messaging service when false", async () => {
+    await startCampaign(testAdminUser, testCampaign);
+
+    const campaignDataResults = await runComponentGql(
+      AdminCampaignEditQuery,
+      { campaignId: testCampaign.id },
+      testAdminUser
+    );
+
+    expect(campaignDataResults.data.campaign.useOwnMessagingService).toEqual(
+      false
+    );
+    expect(campaignDataResults.data.campaign.messageserviceSid).toEqual(
+      global.TWILIO_MESSAGE_SERVICE_SID
+    );
+  });
+  it("creates new messaging service when true", async () => {
+    await saveCampaign(
+      testAdminUser,
+      { id: testCampaign.id, organizationId },
+      "test campaign new title",
+      true
+    );
+
+    const getCampaignsQuery = `
+      query getCampaign($campaignId: String!) {
+        campaign(id: $campaignId) {
+          id
+          useOwnMessagingService
+          messageserviceSid
+        }
+      }
+    `;
+
+    const variables = {
+      campaignId: testCampaign.id
+    };
+
+    await startCampaign(testAdminUser, testCampaign);
+
+    const campaignDataResults = await runGql(
+      getCampaignsQuery,
+      variables,
+      testAdminUser
+    );
+
+    expect(campaignDataResults.data.campaign.useOwnMessagingService).toEqual(
+      true
+    );
+    expect(campaignDataResults.data.campaign.messageserviceSid).toEqual(
+      "testTWILIOsid"
+    );
   });
 });

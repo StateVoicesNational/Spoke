@@ -93,6 +93,8 @@ export default function renderIndex(html, css, assetMap, store) {
         .CONVERSATION_LIST_ROW_SIZES || ""}"
       window.CORE_BACKGROUND_COLOR="${process.env.CORE_BACKGROUND_COLOR || ""}"
       window.CAN_GOOGLE_IMPORT=${canGoogleImport}
+      window.EXPERIMENTAL_TWILIO_PER_CAMPAIGN_MESSAGING_SERVICE=${process.env
+        .EXPERIMENTAL_TWILIO_PER_CAMPAIGN_MESSAGING_SERVICE || false}
       window.EXPERIMENTAL_TAGS=${process.env.EXPERIMENTAL_TAGS || false}
       window.TWILIO_MULTI_ORG=${process.env.TWILIO_MULTI_ORG || false}
       window.DEPRECATED_TEXTERUI="${process.env.DEPRECATED_TEXTERUI || ""}"
