@@ -70,9 +70,9 @@ export const tests = {
     navigationToolbarChildren: {
       onNext: logFunction,
       onPrevious: logFunction,
-      title: "42 of 88",
-      total: 88,
-      currentIndex: 42
+      title: "12012 of 18000",
+      total: 18000,
+      currentIndex: 12012
     },
     assignment: {
       campaign: {
