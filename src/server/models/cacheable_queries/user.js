@@ -31,7 +31,13 @@ const userRoleKey = userId =>
 const userAuthKey = authId =>
   `${process.env.CACHE_PREFIX || ""}texterauth-${authId}`;
 
-export const accessHierarchy = ["TEXTER", "SUPERVOLUNTEER", "ADMIN", "OWNER"];
+export const accessHierarchy = [
+  "SUSPENDED",
+  "TEXTER",
+  "SUPERVOLUNTEER",
+  "ADMIN",
+  "OWNER"
+];
 
 const getHighestRolesPerOrg = userOrgs => {
   const highestRolesPerOrg = {};

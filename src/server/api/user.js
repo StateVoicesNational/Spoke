@@ -57,11 +57,13 @@ export function buildUsersQuery(
 ) {
   const queryParam = buildSelect(sortBy);
   const roleFilter = role ? { role } : {};
+  const suspendedFilter = role === "SUSPENDED" ? {} : { role: "SUSPENDED" };
 
   let query = queryParam
     .from("user_organization")
     .innerJoin("user", "user_organization.user_id", "user.id")
     .where(roleFilter)
+    .whereNot(suspendedFilter)
     .whereRaw('"user_organization"."organization_id" = ?', organizationId)
     .distinct();
 
