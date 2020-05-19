@@ -10,7 +10,8 @@ import {
   handleIncomingMessageParts,
   fixOrgless,
   clearOldJobs,
-  importScript
+  importScript,
+  buyPhoneNumbers
 } from "./jobs";
 import { setupUserNotificationObservers } from "../server/notifications";
 
@@ -28,7 +29,8 @@ export { seedZipCodes } from "../server/seeds/seed-zip-codes";
 const jobMap = {
   export: exportCampaign,
   assign_texters: assignTexters,
-  import_script: importScript
+  import_script: importScript,
+  buy_phone_numbers: buyPhoneNumbers
 };
 
 export async function processJobs() {

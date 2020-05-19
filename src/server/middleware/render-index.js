@@ -98,6 +98,8 @@ export default function renderIndex(html, css, assetMap, store) {
       window.EXPERIMENTAL_TAGS=${process.env.EXPERIMENTAL_TAGS || false}
       window.TWILIO_MULTI_ORG=${process.env.TWILIO_MULTI_ORG || false}
       window.DEPRECATED_TEXTERUI="${process.env.DEPRECATED_TEXTERUI || ""}"
+      window.MAX_NUMBERS_PER_BUY_JOB=${getConfig("MAX_NUMBERS_PER_BUY_JOB") ||
+        100};
     </script>
     <script src="${assetMap["bundle.js"]}"></script>
   </body>
