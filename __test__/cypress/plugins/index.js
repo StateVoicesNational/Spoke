@@ -6,9 +6,7 @@ require("babel-register");
 require("babel-polyfill");
 
 if (process.env.DEFAULT_SERVICE !== "fakeservice") {
-  throw Error(
-    "Running Cypress tests against Twilio is not currently supported"
-  );
+  console.log("Not using fakeservice, some tests will be disabled");
 }
 
 if (process.env.DB_TYPE !== "pg") {
@@ -32,5 +30,10 @@ module.exports = async (on, config) => {
     config.env.TEST_ORGANIZATION_ID = await utils.getOrCreateTestOrganization();
   }
 
+  // TODO: use the API to determine what service is being used rather
+  //   than relying on .env.
+  config.env.DEFAULT_SERVICE = process.env.DEFAULT_SERVICE;
   on("task", makeTasks(config));
+
+  return config;
 };
