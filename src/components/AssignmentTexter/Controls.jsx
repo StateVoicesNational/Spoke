@@ -308,11 +308,13 @@ export class AssignmentTexterContactControls extends React.Component {
     // note: key*down* is necessary to stop propagation of keyup for the textarea element
     document.body.addEventListener("keydown", this.onEnter);
     window.addEventListener("resize", this.onResize);
+    window.addEventListener("orientationchange", this.onResize);
   }
 
   componentWillUnmount() {
     document.body.removeEventListener("keydown", this.onEnter);
     window.removeEventListener("resize", this.onResize);
+    window.removeEventListener("orientationchange", this.onResize);
   }
 
   getStartingMessageText() {
@@ -695,6 +697,9 @@ export class AssignmentTexterContactControls extends React.Component {
   }
 
   renderMessagingRowCurrentQuestion(currentQuestion, currentQuestionAnswered) {
+    if (!currentQuestion || !currentQuestion.text) {
+      return null;
+    }
     return (
       <div
         className={css(flexStyles.subSubButtonsAnswerButtonsCurrentQuestion)}
@@ -727,7 +732,12 @@ export class AssignmentTexterContactControls extends React.Component {
     let currentQuestionAnswered = null;
     let currentQuestionOptions = [];
     // 1. Current Interaction Step Shortcuts
-    if (currentInteractionStep) {
+    const currentStepHasAnswerOptions =
+      currentInteractionStep &&
+      currentInteractionStep.question &&
+      currentInteractionStep.question.answerOptions &&
+      currentInteractionStep.question.answerOptions.length;
+    if (currentStepHasAnswerOptions) {
       currentQuestion = currentInteractionStep.question;
       currentQuestionAnswered = questionResponses[currentInteractionStep.id];
       const dupeTester = {};
@@ -762,7 +772,7 @@ export class AssignmentTexterContactControls extends React.Component {
     // If there's a current interaction step but we aren't showing choices
     // then don't show canned response shortcuts either or it can
     // cause confusion.
-    if (!currentInteractionStep || joinedLength !== 0) {
+    if (!currentStepHasAnswerOptions || joinedLength !== 0) {
       shortCannedResponses = assignment.campaignCannedResponses
         .filter(
           // allow for "Wrong Number", prefixes of + or - can force add or remove
@@ -835,7 +845,13 @@ export class AssignmentTexterContactControls extends React.Component {
     );
   }
 
-  renderMessagingRowReplyButtons(availableSteps) {
+  renderMessagingRowReplyButtons(availableSteps, campaignCannedResponses) {
+    const disabled =
+      !campaignCannedResponses.length &&
+      availableSteps.length === 1 &&
+        (!availableSteps[0].question ||
+          !availableSteps[0].question.answerOptions ||
+          !availableSteps[0].question.answerOptions.length);
     return (
       <div className={css(flexStyles.subButtonsExitButtons)}>
         <FlatButton
@@ -844,13 +860,13 @@ export class AssignmentTexterContactControls extends React.Component {
               All Responses <DownIcon style={{ verticalAlign: "middle" }} />
             </span>
           }
-          onTouchTap={this.handleOpenAnswerPopover}
+          onTouchTap={!disabled ? this.handleOpenAnswerPopover : noAction => {}}
           className={css(flexStyles.flatButton)}
           labelStyle={inlineStyles.flatButtonLabel}
           backgroundColor={
             availableSteps.length ? "white" : "rgb(176, 176, 176)"
           }
-          disabled={!availableSteps.length}
+          disabled={disabled}
         />
 
         <FlatButton
@@ -887,7 +903,7 @@ export class AssignmentTexterContactControls extends React.Component {
   }
 
   renderMessageControls() {
-    const { contact, messageStatusFilter } = this.props;
+    const { contact, messageStatusFilter, assignment } = this.props;
     const {
       availableSteps,
       questionResponses,
@@ -922,7 +938,10 @@ export class AssignmentTexterContactControls extends React.Component {
           </div>
         </div>
 
-        {this.renderMessagingRowReplyButtons(availableSteps)}
+        {this.renderMessagingRowReplyButtons(
+          availableSteps,
+          assignment.campaignCannedResponses
+        )}
       </div>,
       this.renderMessagingRowSendSkip(contact),
       this.renderSurveySection()
