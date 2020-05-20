@@ -578,12 +578,13 @@ describe("Reassignments", async () => {
       const contact = testContacts.filter(
         c => assignmentContacts2[i].id === c.id.toString()
       )[0];
-      await sendMessage(contact.id, testTexterUser2, {
+      const messageRes = await sendMessage(contact.id, testTexterUser2, {
         userId: testTexterUser2.id,
         contactNumber: contact.cell,
         text: "test text autorespond",
         assignmentId: assignmentId2
       });
+      console.log("campaign.test sendMessage", messageRes);
     }
     // does this sleep fix the "sometimes 4 instead of 5" below?
     await sleep(5);
