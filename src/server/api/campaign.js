@@ -6,6 +6,7 @@ import {
   getAvailableIngestMethods,
   getMethodChoiceData
 } from "../../integrations/contact-loaders";
+import twilio from "./lib/twilio";
 
 const title = 'lower("campaign"."title")';
 
@@ -250,6 +251,8 @@ export const resolvers = {
         "introHtml",
         "primaryColor",
         "logoImageUrl",
+        "useOwnMessagingService",
+        "messageserviceSid",
         "overrideOrganizationTextingHours",
         "textingHoursEnforced",
         "textingHoursStart",
@@ -487,6 +490,13 @@ export const resolvers = {
         return cacheableData.campaign.currentEditors(campaign, user);
       }
       return "";
+    },
+    phoneNumbers: async campaign => {
+      const phoneNumbers = await twilio.getPhoneNumbersForService(
+        campaign.organization,
+        campaign.messageservice_sid
+      );
+      return phoneNumbers.map(phoneNumber => phoneNumber.phoneNumber);
     },
     creator: async (campaign, _, { loaders }) =>
       campaign.creator_id ? loaders.user.load(campaign.creator_id) : null

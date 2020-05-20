@@ -43,7 +43,10 @@ export function makeTasks(config) {
 
       const role = await r
         .knex("user_organization")
-        .where({ organization_id: config.env.TEST_ORGANIZATION_ID })
+        .where({
+          organization_id: config.env.TEST_ORGANIZATION_ID,
+          user_id: user.id
+        })
         .first();
 
       if (!role) {
@@ -62,6 +65,18 @@ export function makeTasks(config) {
       }
 
       return user.id;
+    },
+
+    clearTestOrgPhoneNumbers: async areaCode => {
+      await r
+        .knex("owned_phone_number")
+        .where({
+          organization_id: config.env.TEST_ORGANIZATION_ID,
+          service: "fakeservice",
+          area_code: areaCode
+        })
+        .delete();
+      return null;
     }
   };
 }
