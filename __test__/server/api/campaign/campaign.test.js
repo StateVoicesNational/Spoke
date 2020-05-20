@@ -32,7 +32,8 @@ import {
   getCampaignContact,
   sendMessage,
   bulkSendMessages,
-  runGql
+  runGql,
+  sleep
 } from "../../../test_helpers";
 
 jest.mock("../../../../src/server/api/lib/twilio");
@@ -584,6 +585,8 @@ describe("Reassignments", async () => {
         assignmentId: assignmentId2
       });
     }
+    // does this sleep fix the "sometimes 4 instead of 5" below?
+    await sleep(5);
     // TEXTER 1 (70 needsMessage, 5 messaged)
     // TEXTER 2 (15 needsMessage, 5 needsResponse)
     texterCampaignDataResults = await runComponentGql(
