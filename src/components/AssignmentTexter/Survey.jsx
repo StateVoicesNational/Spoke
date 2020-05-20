@@ -177,6 +177,9 @@ class AssignmentTexterSurveys extends Component {
             }}
             key={`cur${index}_${answerOption.value}`}
             primaryText={answerOption.value}
+            secondaryText={answerOption.nextInteractionStep && answerOption.nextInteractionStep.script
+                           ? answerOption.nextInteractionStep.script
+                           : null}
             rightIcon={
               responseValue === answerOption.value ? <ClearIcon /> : null
             }
