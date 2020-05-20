@@ -5,6 +5,8 @@ import isUrl from "is-url";
 
 import { gzip, makeTree, getHighestRole } from "../../lib";
 import { capitalizeWord } from "./lib/utils";
+import twilio from "./lib/twilio";
+
 import {
   assignTexters,
   dispatchContactIngestLoad,
@@ -64,7 +66,8 @@ import Twilio from "twilio";
 import {
   sendMessage,
   bulkSendMessages,
-  findNewCampaignContact
+  findNewCampaignContact,
+  buyPhoneNumbers
 } from "./mutations";
 
 const ActionHandlers = require("../../integrations/action-handlers");
@@ -84,6 +87,8 @@ async function editCampaign(id, campaign, loaders, user, origCampaignRecord) {
     logoImageUrl,
     introHtml,
     primaryColor,
+    useOwnMessagingService,
+    messageserviceSid,
     overrideOrganizationTextingHours,
     textingHoursEnforced,
     textingHoursStart,
@@ -112,6 +117,8 @@ async function editCampaign(id, campaign, loaders, user, origCampaignRecord) {
     texting_hours_enforced: textingHoursEnforced,
     texting_hours_start: textingHoursStart,
     texting_hours_end: textingHoursEnd,
+    use_own_messaging_service: useOwnMessagingService,
+    messageservice_sid: messageserviceSid,
     timezone
   };
 
@@ -314,6 +321,7 @@ async function updateInteractionSteps(
 
 const rootMutations = {
   RootMutation: {
+    buyPhoneNumbers,
     userAgreeTerms: async (_, { userId }, { user, loaders }) => {
       if (user.id === Number(userId)) {
         return user.terms ? user : null;
@@ -702,7 +710,8 @@ const rootMutations = {
         description: campaign.description,
         due_by: campaign.dueBy,
         is_started: false,
-        is_archived: false
+        is_archived: false,
+        use_own_messaging_service: false
       });
       const newCampaign = await campaignInstance.save();
       await r.knex("campaign_admin").insert({
@@ -837,6 +846,21 @@ const rootMutations = {
       const organization = await loaders.organization.load(
         campaign.organization_id
       );
+
+      if (campaign.use_own_messaging_service) {
+        if (campaign.messageservice_sid == undefined) {
+          const friendlyName = `Campaign: ${campaign.title} (${campaign.id}) [${process.env.BASE_URL}]`;
+          const messagingService = await twilio.createMessagingService(
+            organization,
+            friendlyName
+          );
+          campaign.messageservice_sid = messagingService.sid;
+        }
+      } else {
+        campaign.messageservice_sid = await cacheableData.organization.getMessageServiceSid(
+          organization
+        );
+      }
 
       campaign.is_started = true;
 

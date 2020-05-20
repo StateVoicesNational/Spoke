@@ -122,6 +122,61 @@ export const resolvers = {
         }
       }
       return true;
+    },
+    phoneInventoryEnabled: async (organization, _, { user }) => {
+      await accessRequired(user, organization.id, "SUPERVOLUNTEER");
+      return getConfig("EXPERIMENTAL_PHONE_INVENTORY", organization, {
+        truthy: true
+      });
+    },
+    pendingPhoneNumberJobs: async (organization, _, { user }) => {
+      await accessRequired(user, organization.id, "OWNER", true);
+      const jobs = await r
+        .knex("job_request")
+        .where({
+          job_type: "buy_phone_numbers",
+          organization_id: organization.id
+        })
+        .orderBy("updated_at", "desc");
+      return jobs.map(j => {
+        const payload = JSON.parse(j.payload);
+        return {
+          id: j.id,
+          assigned: j.assigned,
+          status: j.status,
+          resultMessage: j.result_message,
+          areaCode: payload.areaCode,
+          limit: payload.limit
+        };
+      });
+    },
+    phoneNumberCounts: async (organization, _, { user }) => {
+      await accessRequired(user, organization.id, "ADMIN");
+      if (
+        !getConfig("EXPERIMENTAL_PHONE_INVENTORY", organization, {
+          truthy: true
+        })
+      ) {
+        throw Error("Twilio inventory management is not enabled");
+      }
+      const service = getConfig("DEFAULT_SERVICE");
+      const counts = await r
+        .knex("owned_phone_number")
+        .select(
+          "area_code",
+          r.knex.raw("count(allocated_to) as allocated_count"),
+          r.knex.raw("count(allocated_to IS NULL) as available_count")
+        )
+        .where({
+          service,
+          organization_id: organization.id
+        })
+        .groupBy("area_code");
+      return counts.map(row => ({
+        areaCode: row.area_code,
+        allocatedCount: Number(row.allocated_count),
+        availableCount: Number(row.available_count)
+      }));
     }
   }
 };
