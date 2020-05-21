@@ -294,7 +294,7 @@ const mapMutationsToProps = ({ ownProps }) => ({
       limit,
       addToOrganizationMessagingService
     },
-    refetchQueries: ["getdata"]
+    refetchQueries: ["getOrganizationData"]
   })
 });
 

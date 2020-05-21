@@ -100,20 +100,27 @@ function parseMessageText(message) {
 }
 
 async function getMessagingServiceSid(organization, contact, message) {
-  const campaign = cacheableData.campaign;
-  if (campaign.messageservice_sid) {
-    return campaign.messageservice_sid;
-  } else {
-    return await cacheableData.organization.getMessageServiceSid(
-      organization,
-      contact,
-      message.text
-    );
+  if (
+    getConfig(
+      "EXPERIMENTAL_TWILIO_PER_CAMPAIGN_MESSAGING_SERVICE",
+      organization
+    )
+  ) {
+    const campaign = await cacheableData.campaign.load(contact.campaign_id);
+    if (campaign.messageservice_sid) {
+      return campaign.messageservice_sid;
+    }
   }
+
+  return await cacheableData.organization.getMessageServiceSid(
+    organization,
+    contact,
+    message.text
+  );
 }
 
 async function sendMessage(message, contact, trx, organization) {
-  const twilio = getTwilio(organization);
+  const twilio = await getTwilio(organization);
   const APITEST = /twilioapitest/.test(message.text);
   if (!twilio && !APITEST) {
     log.warn(
