@@ -43,6 +43,7 @@ function spokeDbListener(data) {
 }
 
 const mockAddNumberToMessagingService = jest.fn();
+const mockMessageCreate = jest.fn();
 
 jest.mock("twilio", () => {
   const uuid = require("uuid");
@@ -72,6 +73,9 @@ jest.mock("twilio", () => {
           create: mockAddNumberToMessagingService
         }
       })
+    },
+    messages: {
+      create: mockMessageCreate
     }
   }));
 });
@@ -110,6 +114,41 @@ afterEach(async () => {
   await cleanupTest();
   if (r.redis) r.redis.flushdb();
 }, global.DATABASE_SETUP_TEARDOWN_TIMEOUT);
+
+it("should send messages", async () => {
+  let message = await Message.save({
+    campaign_contact_id: dbCampaignContact.id,
+    messageservice_sid: "test_message_service",
+    contact_number: dbCampaignContact.cell,
+    is_from_contact: false,
+    send_status: "SENDING",
+    service: "twilio",
+    text: "blah blah blah",
+    user_id: testTexterUser.id
+  });
+
+  await setTwilioAuth(testAdminUser, testOrganization);
+  const org = await cacheableData.organization.load(organizationId);
+
+  mockMessageCreate.mockImplementation((payload, cb) => {
+    cb(null, { sid: "SM12345", error_code: null });
+  });
+
+  await twilio.sendMessage(message, dbCampaignContact, null, org);
+  expect(mockMessageCreate).toHaveBeenCalledTimes(1);
+  const arg = mockMessageCreate.mock.calls[0][0];
+  expect(arg).toMatchObject({
+    to: dbCampaignContact.cell,
+    body: "blah blah blah",
+    messagingServiceSid: "test_message_service"
+  });
+
+  message = await Message.get(message.id);
+  expect(message).toMatchObject({
+    service_id: "SM12345",
+    send_status: "SENT"
+  });
+});
 
 it("postMessageSend success should save message and update contact state", async () => {
   const message = await Message.save({
