@@ -6,7 +6,7 @@ import uuid from "uuid";
 // that end up just in the db appropriately and then using sendReply() graphql
 // queries for the reception (rather than a real service)
 
-async function sendMessage(message, contact, trx, organization) {
+async function sendMessage(message, contact, trx, organization, campaign) {
   const changes = {
     service: "fakeservice",
     messageservice_sid: "fakeservice",

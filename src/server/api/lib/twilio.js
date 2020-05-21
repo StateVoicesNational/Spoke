@@ -99,14 +99,20 @@ function parseMessageText(message) {
   return params;
 }
 
-async function getMessagingServiceSid(organization, contact, message) {
+async function getMessagingServiceSid(
+  organization,
+  contact,
+  message,
+  campaign
+) {
   if (
     getConfig(
       "EXPERIMENTAL_TWILIO_PER_CAMPAIGN_MESSAGING_SERVICE",
       organization
     )
   ) {
-    const campaign = await cacheableData.campaign.load(contact.campaign_id);
+    const campaign =
+      campaign || (await cacheableData.campaign.load(contact.campaign_id));
     if (campaign.messageservice_sid) {
       return campaign.messageservice_sid;
     }
@@ -119,7 +125,7 @@ async function getMessagingServiceSid(organization, contact, message) {
   );
 }
 
-async function sendMessage(message, contact, trx, organization) {
+async function sendMessage(message, contact, trx, organization, campaign) {
   const twilio = await getTwilio(organization);
   const APITEST = /twilioapitest/.test(message.text);
   if (!twilio && !APITEST) {
@@ -144,7 +150,8 @@ async function sendMessage(message, contact, trx, organization) {
   const messagingServiceSid = await getMessagingServiceSid(
     organization,
     contact,
-    message
+    message,
+    campaign
   );
 
   return new Promise((resolve, reject) => {
