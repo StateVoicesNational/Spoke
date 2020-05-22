@@ -7,7 +7,8 @@ import {
   createStartedCampaign,
   runGql,
   sendMessage,
-  setupTest
+  setupTest,
+  makeRunnableMutations
 } from "../../../test_helpers";
 
 const UpdateQuestionResponses = require("../../../../src/server/api/mutations/updateQuestionResponses");
@@ -23,7 +24,7 @@ import MuiThemeProvider from "material-ui/styles/MuiThemeProvider";
 import { StyleSheetTestUtils } from "aphrodite";
 import {
   AssignmentTexterContact,
-  mapMutationsToProps
+  mapMutationsToProps as assignmentTexterContactMutations
 } from "../../../../src/containers/AssignmentTexterContact";
 import { AssignmentTexterContactControls } from "../../../../src/components/AssignmentTexter/Controls";
 import {
@@ -427,26 +428,10 @@ describe("mutations.updateQuestionResponses", () => {
         };
         StyleSheetTestUtils.suppressStyleInjection();
 
-        const mutations = mapMutationsToProps();
-
-        const makeRunnableMutations = (mutationsToWrap, user) => {
-          const newMutations = {};
-
-          Object.keys(mutationsToWrap).forEach(k => {
-            newMutations[k] = async (...args) => {
-              // TODO validate received args against args in the schema
-              const toWrap = mutationsToWrap[k](...args);
-              return runGql(
-                toWrap.mutation.loc.source.body,
-                toWrap.variables,
-                user
-              );
-            };
-          });
-          return newMutations;
-        };
-
-        const wrappedMutations = makeRunnableMutations(mutations, texterUser);
+        const wrappedMutations = makeRunnableMutations(
+          assignmentTexterContactMutations,
+          texterUser
+        );
 
         const component = await mount(
           <MuiThemeProvider>

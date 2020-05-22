@@ -112,7 +112,7 @@ export default class CampaignInteractionStepsForm extends React.Component {
     await this.props.onChange({
       interactionSteps: makeTree(tweakedInteractionSteps)
     });
-    this.props.onSubmit();
+    return this.props.onSubmit();
   };
 
   addStep(parentInteractionId) {
@@ -266,6 +266,7 @@ export default class CampaignInteractionStepsForm extends React.Component {
                 <div key={`answeractions-${interactionStep.id}`}>
                   <div>
                     <Form.Field
+                      {...dataTest("actionSelect")}
                       floatingLabelText="Action handler"
                       name="answerActions"
                       type="select"
@@ -286,6 +287,7 @@ export default class CampaignInteractionStepsForm extends React.Component {
                   {clientChoiceData && clientChoiceData.length ? (
                     <div>
                       <Form.Field
+                        {...dataTest("actionDataAutoComplete")}
                         hintText="Start typing to search for the data to use with the answer action"
                         floatingLabelText="Answer Action Data"
                         fullWidth
