@@ -173,7 +173,7 @@ const flexStyles = StyleSheet.create({
     backgroundColor: bgGrey
   },
   subButtonsAnswerButtons: {
-    flex: "1 1 80px", // keeps bottom buttons in place
+    flex: "1 1 auto", // keeps bottom buttons in place
     // height:105: webkit needs constraint on height sometimes
     //   during the inflection point of showing the shortcut-buttons
     //   without the height, the exit buttons get pushed down oddly
@@ -849,9 +849,9 @@ export class AssignmentTexterContactControls extends React.Component {
     const disabled =
       !campaignCannedResponses.length &&
       availableSteps.length === 1 &&
-        (!availableSteps[0].question ||
-          !availableSteps[0].question.answerOptions ||
-          !availableSteps[0].question.answerOptions.length);
+      (!availableSteps[0].question ||
+        !availableSteps[0].question.answerOptions ||
+        !availableSteps[0].question.answerOptions.length);
     return (
       <div className={css(flexStyles.subButtonsExitButtons)}>
         <FlatButton
