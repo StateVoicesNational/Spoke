@@ -93,7 +93,7 @@ export const campaignDataQuery = gql`query getCampaign($campaignId: String!) {
         }
       }`;
 
-class AdminCampaignEdit extends React.Component {
+export class AdminCampaignEdit extends React.Component {
   constructor(props) {
     super(props);
     const isNew = props.location.query.new;
@@ -742,7 +742,7 @@ AdminCampaignEdit.propTypes = {
   pendingJobsData: PropTypes.object
 };
 
-const mapQueriesToProps = ({ ownProps }) => ({
+export const mapQueriesToProps = ({ ownProps }) => ({
   pendingJobsData: pendingJobsGql(ownProps.params.campaignId),
   campaignData: {
     query: campaignDataQuery,
@@ -784,7 +784,7 @@ const mapQueriesToProps = ({ ownProps }) => ({
 });
 
 // Right now we are copying the result fields instead of using a fragment because of https://github.com/apollostack/apollo-client/issues/451
-const mapMutationsToProps = ({ ownProps }) => ({
+export const mapMutationsToProps = ({ ownProps }) => ({
   archiveCampaign: campaignId => ({
     mutation: gql`mutation archiveCampaign($campaignId: String!) {
           archiveCampaign(id: $campaignId) {

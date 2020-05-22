@@ -702,3 +702,41 @@ export const createJob = async (campaign, overrides) => {
 
   return job;
 };
+
+export const makeRunnableMutations = (mutationsToWrap, user, ownProps) => {
+  const mutations = mutationsToWrap(ownProps);
+  const newMutations = {};
+  Object.keys(mutations).forEach(k => {
+    newMutations[k] = async (...args) => {
+      // TODO validate received args against args in the schema
+      const toWrap = mutations[k](...args);
+      return runGql(toWrap.mutation.loc.source.body, toWrap.variables, user);
+    };
+  });
+  return newMutations;
+};
+
+export const runComponentQueries = async (queriesToRun, user, ownProps) => {
+  const queries = queriesToRun(ownProps);
+  const keys = Object.keys(queries);
+  const promises = keys.map(k => {
+    const query = queries[k];
+    return runGql(query.query.loc.source.body, query.variables, user);
+  });
+
+  const resolvedPromises = await Promise.all(promises);
+
+  const queryResults = {};
+  for (let i = 0; i < keys.length; i++) {
+    const dataKey = Object.keys(resolvedPromises[i].data)[0];
+    const key = keys[i];
+    queryResults[key] = {
+      refetch: async () => {
+        return Promise.resolve(resolvedPromises[i].data[dataKey]);
+      }
+    };
+    queryResults[key][dataKey] = resolvedPromises[i].data[dataKey];
+  }
+
+  return queryResults;
+};
