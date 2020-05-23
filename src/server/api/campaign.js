@@ -6,11 +6,20 @@ import {
   getAvailableIngestMethods,
   getMethodChoiceData
 } from "../../integrations/contact-loaders";
+import twilio from "./lib/twilio";
 
 const title = 'lower("campaign"."title")';
 
-export function addCampaignsFilterToQuery(queryParam, campaignsFilter) {
+export function addCampaignsFilterToQuery(
+  queryParam,
+  campaignsFilter,
+  organizationId
+) {
   let query = queryParam;
+
+  if (organizationId) {
+    query = query.where("campaign.organization_id", organizationId);
+  }
 
   if (campaignsFilter) {
     const resultSize = campaignsFilter.listSize ? campaignsFilter.listSize : 0;
@@ -55,22 +64,17 @@ export function addCampaignsFilterToQuery(queryParam, campaignsFilter) {
 export function buildCampaignQuery(
   queryParam,
   organizationId,
-  campaignsFilter,
-  addFromClause = true
+  campaignsFilter
 ) {
-  let query = queryParam;
+  let query = queryParam.from("campaign");
 
-  if (addFromClause) {
-    query = query.from("campaign");
-  }
-
-  query = query.where("campaign.organization_id", organizationId);
   query = query.leftJoin(
     "campaign_admin",
     "campaign_admin.campaign_id",
     "campaign.id"
   );
-  query = addCampaignsFilterToQuery(query, campaignsFilter);
+
+  query = addCampaignsFilterToQuery(query, campaignsFilter, organizationId);
 
   return query;
 }
@@ -135,18 +139,14 @@ export async function getCampaigns(
     campaignsQuery = campaignsQuery.limit(cursor.limit).offset(cursor.offset);
     const campaigns = await campaignsQuery;
 
-    const campaignsCountQuery = buildCampaignQuery(
-      r.knex.count("*"),
-      organizationId,
-      campaignsFilter
+    const campaignsCount = await r.getCount(
+      buildCampaignQuery(r.knex, organizationId, campaignsFilter)
     );
-
-    const campaignsCountArray = await campaignsCountQuery;
 
     const pageInfo = {
       limit: cursor.limit,
       offset: cursor.offset,
-      total: campaignsCountArray[0].count
+      total: campaignsCount
     };
     return {
       campaigns,
@@ -251,6 +251,8 @@ export const resolvers = {
         "introHtml",
         "primaryColor",
         "logoImageUrl",
+        "useOwnMessagingService",
+        "messageserviceSid",
         "overrideOrganizationTextingHours",
         "textingHoursEnforced",
         "textingHoursStart",
@@ -384,6 +386,11 @@ export const resolvers = {
     },
     interactionSteps: async (campaign, _, { user }) => {
       await accessRequired(user, campaign.organization_id, "TEXTER", true);
+      console.log(
+        "campaign.interactionSteps",
+        campaign.id,
+        campaign.interactionSteps
+      );
       return (
         campaign.interactionSteps ||
         cacheableData.campaign.dbInteractionSteps(campaign.id)
@@ -483,6 +490,13 @@ export const resolvers = {
         return cacheableData.campaign.currentEditors(campaign, user);
       }
       return "";
+    },
+    phoneNumbers: async campaign => {
+      const phoneNumbers = await twilio.getPhoneNumbersForService(
+        campaign.organization,
+        campaign.messageservice_sid
+      );
+      return phoneNumbers.map(phoneNumber => phoneNumber.phoneNumber);
     },
     creator: async (campaign, _, { loaders }) =>
       campaign.creator_id ? loaders.user.load(campaign.creator_id) : null

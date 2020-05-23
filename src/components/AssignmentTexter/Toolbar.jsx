@@ -70,7 +70,7 @@ const styles = StyleSheet.create({
   },
   navigationTitle: {
     flex: "1 1 auto",
-    width: "3em",
+    width: "4em",
     height: "100%",
     padding: "6px",
     textAlign: "center"

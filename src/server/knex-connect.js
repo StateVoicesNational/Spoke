@@ -32,7 +32,7 @@ if (DB_JSON) {
   config = JSON.parse(DB_JSON);
 } else if (DB_TYPE) {
   config = {
-    client: "pg",
+    client: DB_TYPE,
     connection: {
       host: DB_HOST,
       port: DB_PORT,

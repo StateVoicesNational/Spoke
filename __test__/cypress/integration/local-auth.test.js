@@ -1,8 +1,10 @@
-// Don't run this
+// Disable this test if running against auth0
 describe("Login with the local passport strategy", () => {
   const ts = new Date().getTime();
 
   beforeEach(() => {
+    // TODO: create an invite in the test organization so that this works
+    // even when SUPPRESS_SELF_INVITE is turned off
     cy.visit("/");
   });
 

@@ -267,7 +267,12 @@ export async function createCampaign(
   return result.data.createCampaign;
 }
 
-export async function saveCampaign(user, campaign, title = "test campaign") {
+export async function saveCampaign(
+  user,
+  campaign,
+  title = "test campaign",
+  useOwnMessagingService = "false"
+) {
   const rootValue = {};
   const description = "test description";
   const organizationId = campaign.organizationId;
@@ -277,6 +282,7 @@ export async function saveCampaign(user, campaign, title = "test campaign") {
     editCampaign(id: $campaignId, campaign: $campaign) {
       id
       title
+      useOwnMessagingService
     }
   }`;
 
@@ -284,7 +290,8 @@ export async function saveCampaign(user, campaign, title = "test campaign") {
     campaign: {
       title,
       description,
-      organizationId
+      organizationId,
+      useOwnMessagingService
     },
     campaignId: campaign.id
   };

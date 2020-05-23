@@ -5,6 +5,8 @@ import isUrl from "is-url";
 
 import { log, gzip, makeTree, getHighestRole } from "../../lib";
 import { capitalizeWord } from "./lib/utils";
+import twilio from "./lib/twilio";
+
 import {
   assignTexters,
   dispatchContactIngestLoad,
@@ -60,7 +62,15 @@ import { change } from "../local-auth-helpers";
 import { symmetricEncrypt } from "./lib/crypto";
 import Twilio from "twilio";
 
-import * as Mutations from "./mutations";
+import {
+  sendMessage,
+  bulkSendMessages,
+  findNewCampaignContact,
+  buyPhoneNumbers,
+  updateQuestionResponses
+} from "./mutations";
+
+const ActionHandlers = require("../../integrations/action-handlers");
 
 const uuidv4 = require("uuid").v4;
 const JOBS_SAME_PROCESS = !!(
@@ -77,6 +87,8 @@ async function editCampaign(id, campaign, loaders, user, origCampaignRecord) {
     logoImageUrl,
     introHtml,
     primaryColor,
+    useOwnMessagingService,
+    messageserviceSid,
     overrideOrganizationTextingHours,
     textingHoursEnforced,
     textingHoursStart,
@@ -105,6 +117,8 @@ async function editCampaign(id, campaign, loaders, user, origCampaignRecord) {
     texting_hours_enforced: textingHoursEnforced,
     texting_hours_start: textingHoursStart,
     texting_hours_end: textingHoursEnd,
+    use_own_messaging_service: useOwnMessagingService,
+    messageservice_sid: messageserviceSid,
     timezone
   };
 
@@ -307,6 +321,7 @@ async function updateInteractionSteps(
 
 const rootMutations = {
   RootMutation: {
+    buyPhoneNumbers,
     userAgreeTerms: async (_, { userId }, { user, loaders }) => {
       if (user.id === Number(userId)) {
         return user.terms ? user : null;
@@ -695,7 +710,8 @@ const rootMutations = {
         description: campaign.description,
         due_by: campaign.dueBy,
         is_started: false,
-        is_archived: false
+        is_archived: false,
+        use_own_messaging_service: false
       });
       const newCampaign = await campaignInstance.save();
       await r.knex("campaign_admin").insert({
@@ -830,6 +846,21 @@ const rootMutations = {
       const organization = await loaders.organization.load(
         campaign.organization_id
       );
+
+      if (campaign.use_own_messaging_service) {
+        if (campaign.messageservice_sid == undefined) {
+          const friendlyName = `Campaign: ${campaign.title} (${campaign.id}) [${process.env.BASE_URL}]`;
+          const messagingService = await twilio.createMessagingService(
+            organization,
+            friendlyName
+          );
+          campaign.messageservice_sid = messagingService.sid;
+        }
+      } else {
+        campaign.messageservice_sid = await cacheableData.organization.getMessageServiceSid(
+          organization
+        );
+      }
 
       campaign.is_started = true;
 
@@ -1020,11 +1051,7 @@ const rootMutations = {
       { assignmentId, numberContacts },
       { user }
     ) => {
-      return await Mutations.findNewCampaignContact(
-        assignmentId,
-        numberContacts,
-        user
-      );
+      return await findNewCampaignContact(assignmentId, numberContacts, user);
     },
 
     createOptOut: async (
@@ -1070,19 +1097,14 @@ const rootMutations = {
       return loaders.campaignContact.load(campaignContactId);
     },
     bulkSendMessages: async (_, { assignmentId }, { loaders, user }) => {
-      return await Mutations.bulkSendMessages(assignmentId, loaders, user);
+      return await bulkSendMessages(assignmentId, loaders, user);
     },
     sendMessage: async (
       _,
       { message, campaignContactId },
       { loaders, user }
     ) => {
-      return await Mutations.sendMessage(
-        message,
-        campaignContactId,
-        loaders,
-        user
-      );
+      return await sendMessage(message, campaignContactId, loaders, user);
     },
     deleteQuestionResponses: async (
       _,
@@ -1103,7 +1125,7 @@ const rootMutations = {
 
       return contact;
     },
-    updateQuestionResponses: Mutations.updateQuestionResponses,
+    updateQuestionResponses,
     reassignCampaignContacts: async (
       _,
       { organizationId, campaignIdsContactIds, newTexterUserId },
@@ -1314,9 +1336,15 @@ const rootResolvers = {
       },
       { user }
     ) => {
+      console.log(
+        "getConversations root resolver",
+        cursor,
+        organizationId,
+        contactsFilter
+      );
       await accessRequired(user, organizationId, "SUPERVOLUNTEER", true);
-
-      return getConversations(
+      console.log("getConversations root post access", organizationId);
+      const data = await getConversations(
         cursor,
         organizationId,
         campaignsFilter,
@@ -1324,6 +1352,8 @@ const rootResolvers = {
         contactsFilter,
         utc
       );
+      console.log("getConversations root post data", data);
+      return data;
     },
     campaigns: async (
       _,

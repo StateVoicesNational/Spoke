@@ -1,30 +1,25 @@
 /* eslint-disable no-unused-expressions, consistent-return */
 import { r, Message, cacheableData } from "../../../../src/server/models/";
-import {
+import twilio, {
   postMessageSend,
   handleDeliveryReport
 } from "../../../../src/server/api/lib/twilio";
-import twilio from "../../../../src/server/api/lib/twilio";
 import { getLastMessage } from "../../../../src/server/api/lib/message-sending";
 import { erroredMessageSender } from "../../../../src/workers/job-processes";
 import {
   setupTest,
   cleanupTest,
-  runComponentGql,
   createUser,
   createInvite,
   createOrganization,
   setTwilioAuth,
   createCampaign,
-  saveCampaign,
-  copyCampaign,
   createContacts,
   createTexter,
   assignTexter,
   createScript,
   startCampaign,
-  getCampaignContact,
-  sendMessage
+  getCampaignContact
 } from "../../../test_helpers";
 
 let testAdminUser;
@@ -34,7 +29,6 @@ let testOrganization;
 let testOrganization2;
 let testCampaign;
 let testTexterUser;
-let testTexterUser2;
 let testContacts;
 let organizationId;
 let organizationId2;
@@ -47,6 +41,44 @@ function spokeDbListener(data) {
     queryLog.push(data);
   }
 }
+
+const mockAddNumberToMessagingService = jest.fn();
+const mockMessageCreate = jest.fn();
+
+jest.mock("twilio", () => {
+  const uuid = require("uuid");
+  return jest.fn().mockImplementation(() => ({
+    availablePhoneNumbers: _ => ({
+      local: {
+        list: ({ areaCode, limit }) => {
+          const response = [];
+          for (let i = 0; i < limit; i++) {
+            const last4 = limit.toString().padStart(4, "0");
+            response.push({
+              phoneNumber: `+1${areaCode}XYZ${last4}`
+            });
+          }
+          return response;
+        }
+      }
+    }),
+    incomingPhoneNumbers: {
+      create: () => ({
+        sid: `PNTEST${uuid.v4()}`
+      })
+    },
+    messaging: {
+      services: () => ({
+        phoneNumbers: {
+          create: mockAddNumberToMessagingService
+        }
+      })
+    },
+    messages: {
+      create: mockMessageCreate
+    }
+  }));
+});
 
 beforeEach(async () => {
   // Set up an entire working campaign
@@ -82,6 +114,41 @@ afterEach(async () => {
   await cleanupTest();
   if (r.redis) r.redis.flushdb();
 }, global.DATABASE_SETUP_TEARDOWN_TIMEOUT);
+
+it("should send messages", async () => {
+  let message = await Message.save({
+    campaign_contact_id: dbCampaignContact.id,
+    messageservice_sid: "test_message_service",
+    contact_number: dbCampaignContact.cell,
+    is_from_contact: false,
+    send_status: "SENDING",
+    service: "twilio",
+    text: "blah blah blah",
+    user_id: testTexterUser.id
+  });
+
+  await setTwilioAuth(testAdminUser, testOrganization);
+  const org = await cacheableData.organization.load(organizationId);
+
+  mockMessageCreate.mockImplementation((payload, cb) => {
+    cb(null, { sid: "SM12345", error_code: null });
+  });
+
+  await twilio.sendMessage(message, dbCampaignContact, null, org);
+  expect(mockMessageCreate).toHaveBeenCalledTimes(1);
+  const arg = mockMessageCreate.mock.calls[0][0];
+  expect(arg).toMatchObject({
+    to: dbCampaignContact.cell,
+    body: "blah blah blah",
+    messagingServiceSid: "test_message_service"
+  });
+
+  message = await Message.get(message.id);
+  expect(message).toMatchObject({
+    service_id: "SM12345",
+    send_status: "SENT"
+  });
+});
 
 it("postMessageSend success should save message and update contact state", async () => {
   const message = await Message.save({
@@ -378,6 +445,39 @@ it("orgs should have separate twilio credentials", async () => {
   const org2Auth = await cacheableData.organization.getTwilioAuth(org2);
   expect(org2Auth.authToken).toBe("test_twlio_auth_token");
   expect(org2Auth.accountSid).toBe("test_twilio_account_sid");
+});
+
+describe("Number buying", () => {
+  it("buys numbers in batches from twilio", async () => {
+    const org2 = await cacheableData.organization.load(organizationId2);
+    await twilio.buyNumbersInAreaCode(org2, "212", 35);
+    const inventoryCount = await r.getCount(
+      r.knex("owned_phone_number").where({
+        area_code: "212",
+        organization_id: organizationId2,
+        allocated_to: null
+      })
+    );
+
+    expect(inventoryCount).toEqual(35);
+  });
+
+  it("optionally adds them to a messaging service", async () => {
+    const org2 = await cacheableData.organization.load(organizationId2);
+    await twilio.buyNumbersInAreaCode(org2, "917", 12, {
+      messagingServiceSid: "MG123FAKE"
+    });
+    const inventoryCount = await r.getCount(
+      r.knex("owned_phone_number").where({
+        area_code: "917",
+        organization_id: organizationId2,
+        allocated_to: "messaging_service",
+        allocated_to_id: "MG123FAKE"
+      })
+    );
+    expect(mockAddNumberToMessagingService).toHaveBeenCalledTimes(12);
+    expect(inventoryCount).toEqual(12);
+  });
 });
 
 // FUTURE
