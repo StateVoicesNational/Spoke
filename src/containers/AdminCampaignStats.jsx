@@ -246,7 +246,18 @@ class AdminCampaignStats extends React.Component {
                               this.props.params.campaignId
                             )
                           }
-                        />
+                        />,
+                        campaign.useOwnMessagingService ? (
+                          <RaisedButton
+                            {...dataTest("messagingService")}
+                            onTouchTap={() =>
+                              this.props.router.push(
+                                `/admin/${organizationId}/campaigns/${campaignId}/messaging-service`
+                              )
+                            }
+                            label="Messaging Service"
+                          />
+                        ) : null
                       ]
                     : null}
                 </div>
@@ -312,6 +323,7 @@ const mapQueriesToProps = ({ ownProps }) => ({
           title
           isArchived
           useDynamicAssignment
+          useOwnMessagingService
           assignments {
             id
             texter {

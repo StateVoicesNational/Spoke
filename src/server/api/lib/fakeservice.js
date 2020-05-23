@@ -1,12 +1,12 @@
 import { getLastMessage } from "./message-sending";
 import { Message, PendingMessagePart, r, cacheableData } from "../../models";
-import { log } from "../../../lib";
+import uuid from "uuid";
 
 // This 'fakeservice' allows for fake-sending messages
 // that end up just in the db appropriately and then using sendReply() graphql
 // queries for the reception (rather than a real service)
 
-async function sendMessage(message, contact, trx, organization) {
+async function sendMessage(message, contact, trx, organization, campaign) {
   const changes = {
     service: "fakeservice",
     messageservice_sid: "fakeservice",
@@ -90,8 +90,28 @@ async function handleIncomingMessage(message) {
   return part.id;
 }
 
+async function buyNumbersInAreaCode(organization, areaCode, limit) {
+  const rows = [];
+  for (let i = 0; i < limit; i++) {
+    const last4 = limit.toString().padStart(4, "0");
+    rows.push({
+      organization_id: organization.id,
+      area_code: areaCode,
+      phone_number: `+1${areaCode}XYZ${last4}`,
+      service: "fakeservice",
+      service_id: uuid.v4()
+    });
+  }
+
+  // add some latency
+  await new Promise(resolve => setTimeout(resolve, limit * 25));
+  await r.knex("owned_phone_number").insert(rows);
+  return limit;
+}
+
 export default {
   sendMessage,
+  buyNumbersInAreaCode,
   // useless unused stubs
   convertMessagePartsToMessage,
   handleIncomingMessage

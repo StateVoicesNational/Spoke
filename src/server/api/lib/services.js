@@ -8,6 +8,13 @@ import fakeservice from "./fakeservice";
 // async handleIncomingMessage(<native message format>) -> saved (new) messagePart.id
 // async convertMessagePartsToMessage(messagePartsGroupedByMessage) -> new Message() <unsaved>
 
+// TODO:
+// addExpressEndpoints(app) -> void
+
+// For phone number inventory management:
+// async buyNumbersInAreaCode(organization, areaCode, limit, opts) -> Count of successfully purchased numbers
+// where the `opts` parameter can include service specific options
+
 const serviceMap = {
   nexmo,
   twilio,

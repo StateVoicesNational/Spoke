@@ -11,6 +11,7 @@ import {
 } from "../../../../src/containers/AdminIncomingMessageList";
 
 import { makeTree } from "../../../../src/lib";
+import twilio from "../../../../src/server/api/lib/twilio";
 
 import {
   setupTest,
@@ -31,8 +32,11 @@ import {
   getCampaignContact,
   sendMessage,
   bulkSendMessages,
-  runGql
+  runGql,
+  sleep
 } from "../../../test_helpers";
+
+jest.mock("../../../../src/server/api/lib/twilio");
 
 let testAdminUser;
 let testInvite;
@@ -574,13 +578,16 @@ describe("Reassignments", async () => {
       const contact = testContacts.filter(
         c => assignmentContacts2[i].id === c.id.toString()
       )[0];
-      await sendMessage(contact.id, testTexterUser2, {
+      const messageRes = await sendMessage(contact.id, testTexterUser2, {
         userId: testTexterUser2.id,
         contactNumber: contact.cell,
         text: "test text autorespond",
         assignmentId: assignmentId2
       });
+      console.log("campaign.test sendMessage", messageRes);
     }
+    // does this sleep fix the "sometimes 4 instead of 5" below?
+    await sleep(5);
     // TEXTER 1 (70 needsMessage, 5 messaged)
     // TEXTER 2 (15 needsMessage, 5 needsResponse)
     texterCampaignDataResults = await runComponentGql(
@@ -1206,5 +1213,61 @@ describe("all interaction steps fields travel round trip", () => {
         ]);
       });
     });
+  });
+});
+
+describe("useOwnMessagingService", async () => {
+  it("uses default messaging service when false", async () => {
+    await startCampaign(testAdminUser, testCampaign);
+
+    const campaignDataResults = await runComponentGql(
+      AdminCampaignEditQuery,
+      { campaignId: testCampaign.id },
+      testAdminUser
+    );
+
+    expect(campaignDataResults.data.campaign.useOwnMessagingService).toEqual(
+      false
+    );
+    expect(campaignDataResults.data.campaign.messageserviceSid).toEqual(
+      global.TWILIO_MESSAGE_SERVICE_SID
+    );
+  });
+  it("creates new messaging service when true", async () => {
+    await saveCampaign(
+      testAdminUser,
+      { id: testCampaign.id, organizationId },
+      "test campaign new title",
+      true
+    );
+
+    const getCampaignsQuery = `
+      query getCampaign($campaignId: String!) {
+        campaign(id: $campaignId) {
+          id
+          useOwnMessagingService
+          messageserviceSid
+        }
+      }
+    `;
+
+    const variables = {
+      campaignId: testCampaign.id
+    };
+
+    await startCampaign(testAdminUser, testCampaign);
+
+    const campaignDataResults = await runGql(
+      getCampaignsQuery,
+      variables,
+      testAdminUser
+    );
+
+    expect(campaignDataResults.data.campaign.useOwnMessagingService).toEqual(
+      true
+    );
+    expect(campaignDataResults.data.campaign.messageserviceSid).toEqual(
+      "testTWILIOsid"
+    );
   });
 });

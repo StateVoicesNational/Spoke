@@ -61,6 +61,7 @@ const tableList = [
   "question_response",
   "tag",
   "tag_campaign_contact",
+  "owned_phone_number",
   "user_cell",
   "user_organization",
   "zip_code" // good candidate (or by contact)?
@@ -116,6 +117,12 @@ const loaders = {
 const createLoaders = () => loaders;
 
 const r = thinky.r;
+
+if (process.env.ENABLE_KNEX_TRACING === "true") {
+  r.knex.on("query", ({ sql, bindings }) =>
+    console.debug("TRACE:", sql, bindings)
+  );
+}
 
 export {
   loaders,
