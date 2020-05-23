@@ -11,7 +11,7 @@ import {
   makeRunnableMutations
 } from "../../../test_helpers";
 
-const UpdateQuestionResponses = require("../../../../src/server/api/mutations/updateQuestionResponses");
+import * as Mutations from "../../../../src/server/api/mutations/";
 const ActionHandlers = require("../../../../src/integrations/action-handlers");
 const ComplexTestActionHandler = require("../../../../src/integrations/action-handlers/complex-test-action");
 
@@ -246,10 +246,7 @@ describe("mutations.updateQuestionResponses", () => {
       ];
     });
 
-    it("when called through the mutation, it records answers for a contact", async () => {
-      // use this to ensure we're calling updateQuestionResponses as expected
-      jest.spyOn(UpdateQuestionResponses, "updateQuestionResponses");
-
+    it("it records answers for a contact", async () => {
       // verify that contacts have messageStatus === 'messaged'
       const results = await r
         .knex("campaign_contact")
@@ -292,29 +289,6 @@ describe("mutations.updateQuestionResponses", () => {
         variables,
         texterUser
       );
-
-      // verify that updateQuestionResponses was called as expected
-      expect(
-        UpdateQuestionResponses.updateQuestionResponses.mock.calls
-      ).toEqual([
-        [
-          [
-            {
-              campaignContactId: contacts[0].id.toString(),
-              interactionStepId: interactionSteps[0].id.toString(),
-              value: "Red"
-            },
-            {
-              campaignContactId: contacts[0].id.toString(),
-              interactionStepId: "2",
-              value: "Crimson"
-            }
-          ],
-          contacts[0].id.toString(),
-          loaders,
-          texterUser
-        ]
-      ]);
 
       // verify that updateQuestionResponses returns what we expect
       expect(updateQuestionResponseResult.data.updateQuestionResponses).toEqual(
@@ -645,16 +619,14 @@ describe("mutations.updateQuestionResponses", () => {
         jest.spyOn(loaders.campaign, "load");
         jest.spyOn(errors, "assignmentRequiredOrAdminRole");
         jest.spyOn(cacheableData.questionResponse, "save");
-        jest.spyOn(UpdateQuestionResponses, "updateQuestionResponses");
         jest.spyOn(ActionHandlers, "rawAllActionHandlers").mockReturnValue({});
       });
 
       it("delegates to its dependencies", async () => {
-        await UpdateQuestionResponses.updateQuestionResponses(
-          questionResponses,
-          contacts[0].id,
-          loaders,
-          texterUser
+        await Mutations.updateQuestionResponses(
+          undefined,
+          { questionResponses, campaignContactId: contacts[0].id },
+          { loaders, user: texterUser }
         );
         expect(loaders.campaignContact.load.mock.calls).toEqual([[1], [1]]);
         expect(loaders.campaign.load.mock.calls).toEqual([[contacts[0].id]]);
@@ -717,11 +689,10 @@ describe("mutations.updateQuestionResponses", () => {
         jest.spyOn(ActionHandlers, "getActionHandler");
         jest.spyOn(ComplexTestActionHandler, "processAction");
 
-        UpdateQuestionResponses.updateQuestionResponses(
-          questionResponses,
-          contacts[0].id,
-          loaders,
-          texterUser
+        Mutations.updateQuestionResponses(
+          undefined,
+          { questionResponses, campaignContactId: contacts[0].id },
+          { loaders, user: texterUser }
         ).then(() => {
           expect(ActionHandlers.rawAllActionHandlers).toHaveBeenCalledTimes(1);
           expect(ActionHandlers.rawAllActionHandlers.mock.results).toEqual([
@@ -805,11 +776,10 @@ describe("mutations.updateQuestionResponses", () => {
             .mockReturnValue({});
           jest.spyOn(loaders.organization, "load");
 
-          UpdateQuestionResponses.updateQuestionResponses(
-            questionResponses,
-            contacts[0].id,
-            loaders,
-            texterUser
+          Mutations.updateQuestionResponses(
+            undefined,
+            { questionResponses, campaignContactId: contacts[0].id },
+            { loaders, user: texterUser }
           ).then(() => {
             expect(loaders.organization.load).not.toHaveBeenCalled();
             done();
@@ -837,11 +807,10 @@ describe("mutations.updateQuestionResponses", () => {
           jest.spyOn(ComplexTestActionHandler, "processAction");
           jest.spyOn(loaders.organization, "load");
 
-          UpdateQuestionResponses.updateQuestionResponses(
-            questionResponses,
-            contacts[0].id,
-            loaders,
-            texterUser
+          Mutations.updateQuestionResponses(
+            {},
+            { questionResponses, campaignContactId: contacts[0].id },
+            { loaders, user: texterUser }
           ).then(() => {
             expect(loaders.organization.load).toHaveBeenCalledTimes(2);
 
@@ -883,11 +852,10 @@ describe("mutations.updateQuestionResponses", () => {
             .mockRejectedValueOnce(new Error("oh no"));
           jest.spyOn(loaders.organization, "load");
 
-          UpdateQuestionResponses.updateQuestionResponses(
-            questionResponses,
-            contacts[0].id,
-            loaders,
-            texterUser
+          Mutations.updateQuestionResponses(
+            {},
+            { questionResponses, campaignContactId: contacts[0].id },
+            { loaders, user: texterUser }
           ).then(() => {
             expect(loaders.organization.load).toHaveBeenCalledTimes(2);
 
