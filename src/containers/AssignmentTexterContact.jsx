@@ -510,9 +510,7 @@ export const mapMutationsToProps = () => ({
         updateQuestionResponses(
           questionResponses: $questionResponses
           campaignContactId: $campaignContactId
-        ) {
-          id
-        }
+        )
       }
     `,
     variables: {

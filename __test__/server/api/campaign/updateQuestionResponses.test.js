@@ -8,7 +8,8 @@ import {
   runGql,
   sendMessage,
   setupTest,
-  makeRunnableMutations
+  makeRunnableMutations,
+  sleep
 } from "../../../test_helpers";
 
 import * as Mutations from "../../../../src/server/api/mutations/";
@@ -267,14 +268,7 @@ describe("mutations.updateQuestionResponses", () => {
 
       const updateQuestionResponseGql = `
       mutation updateQuestionResponses($qr: [QuestionResponseInput], $ccid: String!) {
-        updateQuestionResponses(questionResponses: $qr, campaignContactId: $ccid) {
-          id
-          messageStatus
-          questionResponseValues {
-            interactionStepId
-            value
-          }
-        }
+        updateQuestionResponses(questionResponses: $qr, campaignContactId: $ccid)
       }
     `;
 
@@ -292,20 +286,7 @@ describe("mutations.updateQuestionResponses", () => {
 
       // verify that updateQuestionResponses returns what we expect
       expect(updateQuestionResponseResult.data.updateQuestionResponses).toEqual(
-        {
-          id: contacts[0].id.toString(),
-          messageStatus: "messaged",
-          questionResponseValues: [
-            {
-              interactionStepId: 1,
-              value: "Red"
-            },
-            {
-              interactionStepId: 2,
-              value: "Crimson"
-            }
-          ]
-        }
+        contacts[0].id.toString()
       );
 
       const databaseQueryResults = await r.knex.raw(
@@ -628,7 +609,7 @@ describe("mutations.updateQuestionResponses", () => {
           { questionResponses, campaignContactId: contacts[0].id },
           { loaders, user: texterUser }
         );
-        expect(loaders.campaignContact.load.mock.calls).toEqual([[1], [1]]);
+        expect(loaders.campaignContact.load.mock.calls).toEqual([[1]]);
         expect(loaders.campaign.load.mock.calls).toEqual([[contacts[0].id]]);
         expect(errors.assignmentRequiredOrAdminRole.mock.calls).toEqual([
           [
@@ -683,51 +664,177 @@ describe("mutations.updateQuestionResponses", () => {
         ];
       });
 
-      it("delegates to its dependencies", done => {
+      it("delegates to its dependencies", async () => {
         jest.spyOn(ActionHandlers, "rawAllActionHandlers");
         jest.spyOn(loaders.organization, "load");
         jest.spyOn(ActionHandlers, "getActionHandler");
         jest.spyOn(ComplexTestActionHandler, "processAction");
 
-        Mutations.updateQuestionResponses(
+        await Mutations.updateQuestionResponses(
           undefined,
           { questionResponses, campaignContactId: contacts[0].id },
           { loaders, user: texterUser }
-        ).then(() => {
-          expect(ActionHandlers.rawAllActionHandlers).toHaveBeenCalledTimes(1);
-          expect(ActionHandlers.rawAllActionHandlers.mock.results).toEqual([
-            {
-              isThrow: false,
-              value: {
-                "complex-test-action": expect.objectContaining({
-                  name: "complex-test-action"
-                }),
-                "test-action": expect.objectContaining({
-                  name: "test-action"
-                })
-              }
-            }
-          ]);
+        );
 
-          expect(loaders.organization.load.mock.calls).toEqual([
-            [Number(organization.id)],
-            [Number(organization.id)]
-          ]);
-
-          expect(ActionHandlers.getActionHandler.mock.calls).toEqual([
-            [
-              "complex-test-action",
-              expect.objectContaining({
-                id: Number(organization.id)
+        await sleep(100);
+        expect(ActionHandlers.rawAllActionHandlers).toHaveBeenCalledTimes(1);
+        expect(ActionHandlers.rawAllActionHandlers.mock.results).toEqual([
+          {
+            isThrow: false,
+            value: {
+              "complex-test-action": expect.objectContaining({
+                name: "complex-test-action"
               }),
-              texterUser
+              "test-action": expect.objectContaining({
+                name: "test-action"
+              })
+            }
+          }
+        ]);
+
+        expect(loaders.organization.load.mock.calls).toEqual([
+          [Number(organization.id)]
+        ]);
+
+        expect(ActionHandlers.getActionHandler.mock.calls).toEqual([
+          [
+            "complex-test-action",
+            expect.objectContaining({
+              id: Number(organization.id)
+            }),
+            texterUser
+          ],
+          [
+            "complex-test-action",
+            expect.objectContaining({ id: Number(organization.id) }),
+            texterUser
+          ]
+        ]);
+
+        expect(ComplexTestActionHandler.processAction).toHaveBeenCalledTimes(2);
+        expect(ComplexTestActionHandler.processAction.mock.calls).toEqual(
+          expect.arrayContaining([
+            [
+              expect.objectContaining(questionResponses[0]),
+              expect.objectWithId(colorInteractionSteps[0]),
+              Number(contacts[0].id),
+              expect.objectWithId(contacts[0]),
+              expect.objectWithId(campaign),
+              expect.objectWithId(organization)
             ],
             [
-              "complex-test-action",
-              expect.objectContaining({ id: Number(organization.id) }),
-              texterUser
+              expect.objectContaining(questionResponses[1]),
+              expect.objectWithId(shadesOfRedInteractionSteps[0]),
+              Number(contacts[0].id),
+              expect.objectWithId(contacts[0]),
+              expect.objectWithId(campaign),
+              expect.objectWithId(organization)
+            ]
+          ])
+        );
+      });
+
+      describe("when no action handlers are configured", async () => {
+        beforeEach(async () => {
+          ({
+            interactionSteps,
+            redInteractionStep,
+            shadesOfRedInteractionSteps,
+            colorInteractionSteps
+          } = await saveInteractionStepsAndSendInitialMessages(
+            inputInteractionStepsWithActionHandlers,
+            2
+          ));
+        });
+
+        it("exits early and logs an error", async () => {
+          jest
+            .spyOn(ActionHandlers, "rawAllActionHandlers")
+            .mockReturnValue({});
+          jest.spyOn(loaders.organization, "load");
+
+          await Mutations.updateQuestionResponses(
+            undefined,
+            { questionResponses, campaignContactId: contacts[0].id },
+            { loaders, user: texterUser }
+          );
+
+          expect(loaders.organization.load).not.toHaveBeenCalled();
+        });
+      });
+
+      describe("when the action handler fails to load :-(", () => {
+        beforeEach(async () => {
+          ({
+            interactionSteps,
+            redInteractionStep,
+            shadesOfRedInteractionSteps,
+            colorInteractionSteps
+          } = await saveInteractionStepsAndSendInitialMessages(
+            inputInteractionStepsWithActionHandlers,
+            2
+          ));
+        });
+
+        it("processes the other actions", async () => {
+          jest
+            .spyOn(ActionHandlers, "getActionHandler")
+            .mockResolvedValueOnce(undefined);
+          jest.spyOn(ComplexTestActionHandler, "processAction");
+          jest.spyOn(loaders.organization, "load");
+
+          await Mutations.updateQuestionResponses(
+            {},
+            { questionResponses, campaignContactId: contacts[0].id },
+            { loaders, user: texterUser }
+          );
+
+          await sleep(100);
+          expect(loaders.organization.load).toHaveBeenCalledTimes(1);
+
+          expect(ComplexTestActionHandler.processAction).toHaveBeenCalledTimes(
+            1
+          );
+          expect(ComplexTestActionHandler.processAction.mock.calls).toEqual([
+            [
+              expect.objectContaining(questionResponses[1]),
+              expect.objectWithId(shadesOfRedInteractionSteps[0]),
+              Number(contacts[0].id),
+              expect.objectWithId(contacts[0]),
+              expect.objectWithId(campaign),
+              expect.objectWithId(organization)
             ]
           ]);
+        });
+      });
+
+      describe("when the action handler throws an exception", () => {
+        beforeEach(async () => {
+          ({
+            interactionSteps,
+            redInteractionStep,
+            shadesOfRedInteractionSteps,
+            colorInteractionSteps
+          } = await saveInteractionStepsAndSendInitialMessages(
+            inputInteractionStepsWithActionHandlers,
+            2
+          ));
+        });
+
+        it("processes the other actions", async () => {
+          jest
+            .spyOn(ComplexTestActionHandler, "processAction")
+            .mockRejectedValueOnce(new Error("oh no"));
+          jest.spyOn(loaders.organization, "load");
+
+          await Mutations.updateQuestionResponses(
+            {},
+            { questionResponses, campaignContactId: contacts[0].id },
+            { loaders, user: texterUser }
+          );
+
+          await sleep(100);
+          expect(loaders.organization.load).toHaveBeenCalledTimes(1);
 
           expect(ComplexTestActionHandler.processAction).toHaveBeenCalledTimes(
             2
@@ -752,139 +859,6 @@ describe("mutations.updateQuestionResponses", () => {
               ]
             ])
           );
-
-          done();
-        });
-      });
-
-      describe("when no action handlers are configured", async () => {
-        beforeEach(async () => {
-          ({
-            interactionSteps,
-            redInteractionStep,
-            shadesOfRedInteractionSteps,
-            colorInteractionSteps
-          } = await saveInteractionStepsAndSendInitialMessages(
-            inputInteractionStepsWithActionHandlers,
-            2
-          ));
-        });
-
-        it("exits early and logs an error", done => {
-          jest
-            .spyOn(ActionHandlers, "rawAllActionHandlers")
-            .mockReturnValue({});
-          jest.spyOn(loaders.organization, "load");
-
-          Mutations.updateQuestionResponses(
-            undefined,
-            { questionResponses, campaignContactId: contacts[0].id },
-            { loaders, user: texterUser }
-          ).then(() => {
-            expect(loaders.organization.load).not.toHaveBeenCalled();
-            done();
-          });
-        });
-      });
-
-      describe("when the action handler fails to load :-(", () => {
-        beforeEach(async () => {
-          ({
-            interactionSteps,
-            redInteractionStep,
-            shadesOfRedInteractionSteps,
-            colorInteractionSteps
-          } = await saveInteractionStepsAndSendInitialMessages(
-            inputInteractionStepsWithActionHandlers,
-            2
-          ));
-        });
-
-        it("processes the other actions", done => {
-          jest
-            .spyOn(ActionHandlers, "getActionHandler")
-            .mockResolvedValueOnce(undefined);
-          jest.spyOn(ComplexTestActionHandler, "processAction");
-          jest.spyOn(loaders.organization, "load");
-
-          Mutations.updateQuestionResponses(
-            {},
-            { questionResponses, campaignContactId: contacts[0].id },
-            { loaders, user: texterUser }
-          ).then(() => {
-            expect(loaders.organization.load).toHaveBeenCalledTimes(2);
-
-            expect(
-              ComplexTestActionHandler.processAction
-            ).toHaveBeenCalledTimes(1);
-            expect(ComplexTestActionHandler.processAction.mock.calls).toEqual([
-              [
-                expect.objectContaining(questionResponses[1]),
-                expect.objectWithId(shadesOfRedInteractionSteps[0]),
-                Number(contacts[0].id),
-                expect.objectWithId(contacts[0]),
-                expect.objectWithId(campaign),
-                expect.objectWithId(organization)
-              ]
-            ]);
-
-            done();
-          });
-        });
-      });
-
-      describe("when the action handler throws an exception", () => {
-        beforeEach(async () => {
-          ({
-            interactionSteps,
-            redInteractionStep,
-            shadesOfRedInteractionSteps,
-            colorInteractionSteps
-          } = await saveInteractionStepsAndSendInitialMessages(
-            inputInteractionStepsWithActionHandlers,
-            2
-          ));
-        });
-
-        it("processes the other actions", done => {
-          jest
-            .spyOn(ComplexTestActionHandler, "processAction")
-            .mockRejectedValueOnce(new Error("oh no"));
-          jest.spyOn(loaders.organization, "load");
-
-          Mutations.updateQuestionResponses(
-            {},
-            { questionResponses, campaignContactId: contacts[0].id },
-            { loaders, user: texterUser }
-          ).then(() => {
-            expect(loaders.organization.load).toHaveBeenCalledTimes(2);
-
-            expect(
-              ComplexTestActionHandler.processAction
-            ).toHaveBeenCalledTimes(2);
-            expect(ComplexTestActionHandler.processAction.mock.calls).toEqual(
-              expect.arrayContaining([
-                [
-                  expect.objectContaining(questionResponses[0]),
-                  expect.objectWithId(colorInteractionSteps[0]),
-                  Number(contacts[0].id),
-                  expect.objectWithId(contacts[0]),
-                  expect.objectWithId(campaign),
-                  expect.objectWithId(organization)
-                ],
-                [
-                  expect.objectContaining(questionResponses[1]),
-                  expect.objectWithId(shadesOfRedInteractionSteps[0]),
-                  Number(contacts[0].id),
-                  expect.objectWithId(contacts[0]),
-                  expect.objectWithId(campaign),
-                  expect.objectWithId(organization)
-                ]
-              ])
-            );
-
-            done();
-          });
         });
       });
     });
