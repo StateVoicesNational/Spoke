@@ -731,6 +731,8 @@ export const runComponentQueries = async (queriesToRun, user, ownProps) => {
     const dataKey = Object.keys(resolvedPromises[i].data)[0];
     const key = keys[i];
     queryResults[key] = {
+      // as implemented here refetch does not hit the resolvers
+      // and returns the data that was originally feteched
       refetch: async () => {
         return Promise.resolve(resolvedPromises[i].data[dataKey]);
       }
