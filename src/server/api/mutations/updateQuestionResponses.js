@@ -4,10 +4,9 @@ import { cacheableData } from "../../models";
 const ActionHandlers = require("../../../integrations/action-handlers");
 
 export const updateQuestionResponses = async (
-  questionResponses,
-  campaignContactId,
-  loaders,
-  user
+  _,
+  { questionResponses, campaignContactId },
+  { loaders, user }
 ) => {
   let contact = await loaders.campaignContact.load(campaignContactId);
   const campaign = await loaders.campaign.load(contact.campaign_id);

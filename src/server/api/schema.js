@@ -60,15 +60,7 @@ import { change } from "../local-auth-helpers";
 import { symmetricEncrypt } from "./lib/crypto";
 import Twilio from "twilio";
 
-const UpdateQuestionResponses = require("./mutations/updateQuestionResponses");
-
-import {
-  sendMessage,
-  bulkSendMessages,
-  findNewCampaignContact
-} from "./mutations";
-
-const ActionHandlers = require("../../integrations/action-handlers");
+import * as Mutations from "./mutations";
 
 const uuidv4 = require("uuid").v4;
 const JOBS_SAME_PROCESS = !!(
@@ -1028,7 +1020,11 @@ const rootMutations = {
       { assignmentId, numberContacts },
       { user }
     ) => {
-      return await findNewCampaignContact(assignmentId, numberContacts, user);
+      return await Mutations.findNewCampaignContact(
+        assignmentId,
+        numberContacts,
+        user
+      );
     },
 
     createOptOut: async (
@@ -1074,14 +1070,19 @@ const rootMutations = {
       return loaders.campaignContact.load(campaignContactId);
     },
     bulkSendMessages: async (_, { assignmentId }, { loaders, user }) => {
-      return await bulkSendMessages(assignmentId, loaders, user);
+      return await Mutations.bulkSendMessages(assignmentId, loaders, user);
     },
     sendMessage: async (
       _,
       { message, campaignContactId },
       { loaders, user }
     ) => {
-      return await sendMessage(message, campaignContactId, loaders, user);
+      return await Mutations.sendMessage(
+        message,
+        campaignContactId,
+        loaders,
+        user
+      );
     },
     deleteQuestionResponses: async (
       _,
@@ -1102,18 +1103,7 @@ const rootMutations = {
 
       return contact;
     },
-    updateQuestionResponses: async (
-      _,
-      { questionResponses, campaignContactId },
-      { loaders, user }
-    ) => {
-      return UpdateQuestionResponses.updateQuestionResponses(
-        questionResponses,
-        campaignContactId,
-        loaders,
-        user
-      );
-    },
+    updateQuestionResponses: Mutations.updateQuestionResponses,
     reassignCampaignContacts: async (
       _,
       { organizationId, campaignIdsContactIds, newTexterUserId },
