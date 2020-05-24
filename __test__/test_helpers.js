@@ -426,20 +426,16 @@ export async function sendMessage(campaignContactId, user, message) {
 }
 
 export async function bulkSendMessages(assignmentId, user) {
-  const rootValue = {};
   const query = `
     mutation bulkSendMessage($assignmentId: Int!) {
         bulkSendMessages(assignmentId: $assignmentId) {
           id
         }
       }`;
-  const context = getContext({
-    user
-  });
   const variables = {
     assignmentId
   };
-  return await graphql(mySchema, query, rootValue, context, variables);
+  return runGql(query, variables, user);
 }
 
 export function buildScript(steps = 2, choices = 1) {
@@ -685,8 +681,7 @@ export const getConversations = async (
         }
       `;
 
-  const result = await runGql(conversationsQuery, variables, user);
-  return result;
+  return runGql(conversationsQuery, variables, user);
 };
 
 export const createJob = async (campaign, overrides) => {
