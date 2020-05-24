@@ -64,10 +64,10 @@ import { symmetricEncrypt } from "./lib/crypto";
 import Twilio from "twilio";
 
 import {
-  sendMessage,
   bulkSendMessages,
+  buyPhoneNumbers,
   findNewCampaignContact,
-  buyPhoneNumbers
+  sendMessage
 } from "./mutations";
 
 const ActionHandlers = require("../../integrations/action-handlers");
@@ -321,7 +321,10 @@ async function updateInteractionSteps(
 
 const rootMutations = {
   RootMutation: {
+    bulkSendMessages,
     buyPhoneNumbers,
+    findNewCampaignContact,
+    sendMessage,
     userAgreeTerms: async (_, { userId }, { user, loaders }) => {
       if (user.id === Number(userId)) {
         return user.terms ? user : null;
@@ -1046,14 +1049,6 @@ const rootMutations = {
       }
       return contacts;
     },
-    findNewCampaignContact: async (
-      _,
-      { assignmentId, numberContacts },
-      { user }
-    ) => {
-      return await findNewCampaignContact(assignmentId, numberContacts, user);
-    },
-
     createOptOut: async (
       _,
       { optOut, campaignContactId },
@@ -1095,16 +1090,6 @@ const rootMutations = {
       loaders.campaignContact.clear(campaignContactId.toString());
 
       return loaders.campaignContact.load(campaignContactId);
-    },
-    bulkSendMessages: async (_, { assignmentId }, { loaders, user }) => {
-      return await bulkSendMessages(assignmentId, loaders, user);
-    },
-    sendMessage: async (
-      _,
-      { message, campaignContactId },
-      { loaders, user }
-    ) => {
-      return await sendMessage(message, campaignContactId, loaders, user);
     },
     deleteQuestionResponses: async (
       _,
