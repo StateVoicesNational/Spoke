@@ -16,6 +16,7 @@ import wrapMutations from "./hoc/wrap-mutations";
 import RaisedButton from "material-ui/RaisedButton";
 import CampaignBasicsForm from "../components/CampaignBasicsForm";
 //import CampaignContactsForm from "../components/CampaignContactsForm";
+import CampaignMessagingServiceForm from "../components/CampaignMessagingServiceForm";
 import CampaignContactsChoiceForm from "../components/CampaignContactsChoiceForm";
 import CampaignTextersForm from "../components/CampaignTextersForm";
 import CampaignInteractionStepsForm from "../components/CampaignInteractionStepsForm";
@@ -42,6 +43,8 @@ const campaignInfoFragment = `
   logoImageUrl
   introHtml
   primaryColor
+  useOwnMessagingService
+  messageserviceSid
   overrideOrganizationTextingHours
   textingHoursEnforced
   textingHoursStart
@@ -423,6 +426,17 @@ class AdminCampaignEdit extends React.Component {
         expandableBySuperVolunteers: false
       }
     ];
+    if (window.EXPERIMENTAL_TWILIO_PER_CAMPAIGN_MESSAGING_SERVICE) {
+      finalSections.push({
+        title: "Messaging Service",
+        content: CampaignMessagingServiceForm,
+        keys: ["useOwnMessagingService", "messageserviceSid"],
+        checkCompleted: () => true,
+        blocksStarting: false,
+        expandAfterCampaignStarts: false,
+        expandableBySuperVolunteers: false
+      });
+    }
     if (window.CAN_GOOGLE_IMPORT) {
       finalSections.push({
         title: "Script Import",
