@@ -14,6 +14,7 @@ export const resolvers = {
         .map({
           value: r.row("answer_option"),
           action: r.row("answer_actions"),
+          actionData: r.row("answer_actions_data"),
           interaction_step_id: r.row("id"),
           parent_interaction_step: r.row("parent_interaction_id")
         }),
@@ -34,7 +35,10 @@ export const resolvers = {
         .filter({
           value: answer.value
         })
-        .eqJoin("campaign_contact_id", r.table("campaign_contact"))("right"),
+        .eqJoin(
+          "campaign_contact_id",
+          r.table("campaign_contact")
+        )("right"),
     responderCount: async answer =>
       r
         .table("question_response")

@@ -118,6 +118,7 @@ export class AssignmentSummary extends Component {
       skippedMessagesCount
     } = this.props;
     const {
+      id: campaignId,
       title,
       description,
       hasUnassignedContactsForTexter,
@@ -132,7 +133,10 @@ export class AssignmentSummary extends Component {
     const cardTitleTextColor = setContrastingColor(primaryColor);
 
     return (
-      <div className={css(styles.container)}>
+      <div
+        className={css(styles.container)}
+        {...dataTest(`assignmentSummary-${campaignId}`)}
+      >
         <Card key={assignment.id}>
           <CardTitle
             title={title}
@@ -174,9 +178,9 @@ export class AssignmentSummary extends Component {
             {window.NOT_IN_USA && window.ALLOW_SEND_ALL
               ? ""
               : this.renderBadgedButton({
-                  dataTestText: "sendReplies",
+                  dataTestText: "Respond",
                   assignment,
-                  title: "Send replies",
+                  title: "Respond",
                   count: unrepliedCount,
                   primary: false,
                   disabled: false,

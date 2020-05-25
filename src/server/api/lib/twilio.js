@@ -1,8 +1,18 @@
 import Twilio from "twilio";
 import { getFormattedPhoneNumber } from "../../../lib/phone-format";
-import { Log, Message, PendingMessagePart, r } from "../../models";
+import {
+  Log,
+  Message,
+  PendingMessagePart,
+  r,
+  cacheableData,
+  Campaign
+} from "../../models";
 import { log } from "../../../lib";
-import { getLastMessage, saveNewIncomingMessage } from "./message-sending";
+import { saveNewIncomingMessage } from "./message-sending";
+import { getConfig } from "./config";
+import urlJoin from "url-join";
+import _ from "lodash";
 
 // TWILIO error_codes:
 // > 1 (i.e. positive) error_codes are reserved for Twilio error codes
@@ -10,36 +20,43 @@ import { getLastMessage, saveNewIncomingMessage } from "./message-sending";
 // -100-....: custom local errors
 // -101: incoming message with a MediaUrl
 
-let twilio = null;
 const MAX_SEND_ATTEMPTS = 5;
 const MESSAGE_VALIDITY_PADDING_SECONDS = 30;
 const MAX_TWILIO_MESSAGE_VALIDITY = 14400;
-const DISABLE_DB_LOG = process.env.DISABLE_DB_LOG || global.DISABLE_DB_LOG;
+const DISABLE_DB_LOG = getConfig("DISABLE_DB_LOG");
+const TWILIO_SKIP_VALIDATION = getConfig("TWILIO_SKIP_VALIDATION");
+const BULK_REQUEST_CONCURRENCY = 5;
+const MAX_NUMBERS_PER_BUY_JOB = getConfig("MAX_NUMBERS_PER_BUY_JOB") || 100;
 
-if (process.env.TWILIO_API_KEY && process.env.TWILIO_AUTH_TOKEN) {
-  // eslint-disable-next-line new-cap
-  twilio = Twilio(process.env.TWILIO_API_KEY, process.env.TWILIO_AUTH_TOKEN);
-} else {
-  log.warn("NO TWILIO CONNECTION");
-}
-
-if (!process.env.TWILIO_MESSAGE_SERVICE_SID) {
-  log.warn(
-    "Twilio will not be able to send without TWILIO_MESSAGE_SERVICE_SID set"
-  );
-}
-
-function webhook() {
-  log.warn("twilio webhook call"); // sky: doesn't run this
-  if (twilio) {
-    return Twilio.webhook();
-  } else {
-    log.warn("NO TWILIO WEB VALIDATION");
-    return function(req, res, next) {
-      next();
-    };
+async function getTwilio(organization) {
+  const {
+    authToken,
+    accountSid
+  } = await cacheableData.organization.getTwilioAuth(organization);
+  if (accountSid && authToken) {
+    return Twilio(accountSid, authToken);
   }
+  return null;
 }
+
+const headerValidator = () => {
+  if (!!TWILIO_SKIP_VALIDATION) return (req, res, next) => next();
+
+  return async (req, res, next) => {
+    const organization = req.params.orgId
+      ? await cacheableData.organization.load(req.params.orgId)
+      : null;
+    const { authToken } = await cacheableData.organization.getTwilioAuth(
+      organization
+    );
+    const options = {
+      validate: true,
+      protocol: "https"
+    };
+
+    return Twilio.webhook(authToken, options)(req, res, next);
+  };
+};
 
 async function convertMessagePartsToMessage(messageParts) {
   const firstPart = messageParts[0];
@@ -52,20 +69,6 @@ async function convertMessagePartsToMessage(messageParts) {
     .map(serviceMessage => serviceMessage.Body)
     .join("")
     .replace(/\0/g, ""); // strip all UTF-8 null characters (0x00)
-
-  const lastMessage = await getLastMessage({
-    contactNumber,
-    service: "twilio",
-    messageServiceSid: serviceMessages[0].MessagingServiceSid
-  });
-  if (!lastMessage) {
-    console.error(
-      "Message thread not found (probably text spam)",
-      contactNumber,
-      serviceMessages[0]
-    );
-    return;
-  }
   return new Message({
     contact_number: contactNumber,
     user_number: userNumber,
@@ -73,62 +76,12 @@ async function convertMessagePartsToMessage(messageParts) {
     text,
     error_code: null,
     service_id: firstPart.service_id,
-    campaign_contact_id: lastMessage.campaign_contact_id,
+    // will be set during cacheableData.message.save()
+    // campaign_contact_id: lastMessage.campaign_contact_id,
     messageservice_sid: serviceMessages[0].MessagingServiceSid,
     service: "twilio",
     send_status: "DELIVERED"
   });
-}
-
-async function findNewCell() {
-  if (!twilio) {
-    return { availablePhoneNumbers: [{ phone_number: "+15005550006" }] };
-  }
-  return new Promise((resolve, reject) => {
-    twilio.availablePhoneNumbers("US").local.list({}, (err, data) => {
-      if (err) {
-        reject(new Error(err));
-      } else {
-        resolve(data);
-      }
-    });
-  });
-}
-
-async function rentNewCell() {
-  if (!twilio) {
-    const num = "1234"
-      .split("")
-      .map(() => parseInt(Math.random() * 10))
-      .join("");
-    return getFormattedPhoneNumber(`+1212555${num}`);
-  }
-  const newCell = await findNewCell();
-
-  if (
-    newCell &&
-    newCell.availablePhoneNumbers &&
-    newCell.availablePhoneNumbers[0] &&
-    newCell.availablePhoneNumbers[0].phone_number
-  ) {
-    return new Promise((resolve, reject) => {
-      twilio.incomingPhoneNumbers.create(
-        {
-          phoneNumber: newCell.availablePhoneNumbers[0].phone_number,
-          smsApplicationSid: process.env.TWILIO_APPLICATION_SID
-        },
-        (err, purchasedNumber) => {
-          if (err) {
-            reject(err);
-          } else {
-            resolve(purchasedNumber.phone_number);
-          }
-        }
-      );
-    });
-  }
-
-  throw new Error("Did not find any cell");
 }
 
 const mediaExtractor = new RegExp(/\[\s*(http[^\]\s]*)\s*\]/);
@@ -146,21 +99,60 @@ function parseMessageText(message) {
   return params;
 }
 
-async function sendMessage(message, contact, trx, organization) {
-  if (!twilio) {
+async function getMessagingServiceSid(
+  organization,
+  contact,
+  message,
+  campaign
+) {
+  if (
+    getConfig(
+      "EXPERIMENTAL_TWILIO_PER_CAMPAIGN_MESSAGING_SERVICE",
+      organization
+    )
+  ) {
+    const campaign =
+      campaign || (await cacheableData.campaign.load(contact.campaign_id));
+    if (campaign.messageservice_sid) {
+      return campaign.messageservice_sid;
+    }
+  }
+
+  return await cacheableData.organization.getMessageServiceSid(
+    organization,
+    contact,
+    message.text
+  );
+}
+
+async function sendMessage(message, contact, trx, organization, campaign) {
+  const twilio = await getTwilio(organization);
+  const APITEST = /twilioapitest/.test(message.text);
+  if (!twilio && !APITEST) {
     log.warn(
       "cannot actually send SMS message -- twilio is not fully configured:",
       message.id
     );
     if (message.id) {
-      const options = trx ? { transaction: trx } : {};
-      await Message.get(message.id).update(
-        { send_status: "SENT", sent_at: new Date() },
-        options
-      );
+      let updateQuery = r
+        .knex("message")
+        .where("id", message.id)
+        .update({ send_status: "SENT", sent_at: new Date() });
+      if (trx) {
+        updateQuery = updateQuery.transacting(trx);
+      }
+      await updateQuery;
     }
     return "test_message_uuid";
   }
+
+  // Note organization won't always be available, so then contact can trace to it
+  const messagingServiceSid = await getMessagingServiceSid(
+    organization,
+    contact,
+    message,
+    campaign
+  );
 
   return new Promise((resolve, reject) => {
     if (message.service !== "twilio") {
@@ -197,14 +189,9 @@ async function sendMessage(message, contact, trx, organization) {
         );
       }
     }
-    const messageToSave = {
-      ...message
-    };
+    const changes = {};
 
-    // FUTURE: this can be based on (contact, organization)
-    // Note organization won't always be available, so we'll need to conditionally look it up based on contact
-    const messagingServiceSid = process.env.TWILIO_MESSAGE_SERVICE_SID;
-    messageToSave.messageservice_sid = messagingServiceSid;
+    changes.messageservice_sid = messagingServiceSid;
 
     const messageParams = Object.assign(
       {
@@ -214,22 +201,50 @@ async function sendMessage(message, contact, trx, organization) {
         statusCallback: process.env.TWILIO_STATUS_CALLBACK_URL
       },
       twilioValidityPeriod ? { validityPeriod: twilioValidityPeriod } : {},
-      parseMessageText(messageToSave)
+      parseMessageText(message)
     );
 
     console.log("twilioMessage", messageParams);
-    twilio.messages.create(messageParams, (err, response) => {
+    if (APITEST) {
+      let fakeErr = null;
+      let fakeResponse = null;
+      if (/twilioapitesterrortimeout/.test(message.text)) {
+        fakeErr = {
+          status: "ESOCKETTIMEDOUT",
+          message:
+            'FAKE TRIGGER(apierrortest) Unable to reach host: "api.twilio.com"'
+        };
+      } else {
+        fakeResponse = {
+          sid: `FAKETWILIIO${Math.random()}`
+        };
+      }
       postMessageSend(
-        messageToSave,
+        message,
         contact,
         trx,
         resolve,
         reject,
-        err,
-        response,
-        organization
+        fakeErr,
+        fakeResponse,
+        organization,
+        changes
       );
-    });
+    } else {
+      twilio.messages.create(messageParams, (err, response) => {
+        postMessageSend(
+          message,
+          contact,
+          trx,
+          resolve,
+          reject,
+          err,
+          response,
+          organization,
+          changes
+        );
+      });
+    }
   });
 }
 
@@ -241,12 +256,15 @@ export function postMessageSend(
   reject,
   err,
   response,
-  organization
+  organization,
+  changes
 ) {
-  const messageToSave = {
-    ...message
-  };
-  log.info("messageToSave", messageToSave, response, err);
+  let changesToSave = changes
+    ? {
+        ...changes
+      }
+    : {};
+  log.info("postMessageSend", message, changes, response, err);
   let hasError = false;
   if (err) {
     hasError = true;
@@ -254,43 +272,44 @@ export function postMessageSend(
     console.log("Error sending message", err);
   }
   if (response) {
-    messageToSave.service_id = response.sid;
+    changesToSave.service_id = response.sid;
     hasError = !!response.error_code;
     if (hasError) {
-      messageToSave.error_code = response.error_code;
-      messageToSave.send_status = "ERROR";
+      changesToSave.error_code = response.error_code;
+      changesToSave.send_status = "ERROR";
     }
+  }
+  let updateQuery = r.knex("message").where("id", message.id);
+  if (trx) {
+    updateQuery = updateQuery.transacting(trx);
   }
 
   if (hasError) {
     if (err) {
-      if (messageToSave.error_code <= -MAX_SEND_ATTEMPTS) {
-        messageToSave.send_status = "ERROR";
+      if (message.error_code <= -MAX_SEND_ATTEMPTS) {
+        changesToSave.send_status = "ERROR";
       }
       // decrement error code starting from zero
-      messageToSave.error_code = Number(messageToSave.error_code || 0) - 1;
+      changesToSave.error_code = Number(message.error_code || 0) - 1;
     }
 
     let contactUpdateQuery = Promise.resolve(1);
-    if (contact && messageToSave.error_code) {
+    if (message.campaign_contact_id && changesToSave.error_code) {
       contactUpdateQuery = r
         .knex("campaign_contact")
-        .where("id", contact.id)
-        .update("error_code", messageToSave.error_code);
+        .where("id", message.campaign_contact_id)
+        .update("error_code", changesToSave.error_code);
     }
-    let options = { conflict: "update" };
+
+    updateQuery = updateQuery.update(changesToSave);
     if (trx) {
-      options.transaction = trx;
-      if (contact && messageToSave.error_code < 0) {
+      if (message.campaign_contact_id && changesToSave.error_code < 0) {
         contactUpdateQuery = contactUpdateQuery.transacting(trx);
       }
     }
 
-    Promise.all([
-      Message.save(messageToSave, options),
-      contactUpdateQuery
-    ]).then(() => {
-      console.log("Saved message error status", messageToSave, options, err);
+    Promise.all([updateQuery, contactUpdateQuery]).then(() => {
+      console.log("Saved message error status", changesToSave, err);
       reject(
         err ||
           (response
@@ -299,68 +318,73 @@ export function postMessageSend(
       );
     });
   } else {
-    let options = { conflict: "update" };
-    if (trx) {
-      options.transaction = trx;
-    }
-    Message.save(
-      {
-        ...messageToSave,
-        send_status: "SENT",
-        service: "twilio",
-        sent_at: new Date()
-      },
-      options
-    )
-      .then((newMessage, saveError) => {
-        resolve(newMessage);
+    changesToSave = {
+      ...changesToSave,
+      send_status: "SENT",
+      service: "twilio",
+      sent_at: new Date()
+    };
+    Promise.all([
+      updateQuery.update(changesToSave),
+      cacheableData.campaignContact.updateStatus({
+        ...contact,
+        messageservice_sid: changesToSave.messageservice_sid
+      })
+    ])
+      .then((newMessage, cacheResult) => {
+        resolve({
+          ...message,
+          ...changesToSave
+        });
       })
       .catch(err => {
+        console.error(
+          "Failed message and contact update on twilio postMessageSend",
+          err
+        );
         reject(err);
       });
   }
 }
 
-async function handleDeliveryReport(report) {
+export async function handleDeliveryReport(report) {
   const messageSid = report.MessageSid;
-  if (messageSid && !DISABLE_DB_LOG) {
-    await Log.save({
-      message_sid: report.MessageSid,
-      body: JSON.stringify(report),
-      error_code: Number(report.ErrorCode || 0) || 0,
-      from_num: report.From || null,
-      to_num: report.To || null
-    });
+  if (messageSid) {
     const messageStatus = report.MessageStatus;
-    const message = await r
-      .table("message")
-      .getAll(messageSid, { index: "service_id" })
-      .limit(1)(0)
-      .default(null);
-    if (message) {
-      const changes = {
-        service_response_at: new Date()
-      };
-      if (messageStatus === "delivered") {
-        changes.send_status = "DELIVERED";
-      } else if (
-        messageStatus === "failed" ||
-        messageStatus === "undelivered"
-      ) {
-        changes.send_status = "ERROR";
-        const errorCode = Number(report.ErrorCode || 0) || 0;
-        changes.error_code = errorCode;
-        if (message.campaign_contact_id) {
-          await r
-            .knex("campaign_contact")
-            .where("id", message.campaign_contact_id)
-            .update("error_code", errorCode);
-        }
-      }
-      await r
-        .knex("message")
-        .where("id", message.id)
-        .update(changes);
+
+    // Scalability: we don't care about "queued" and "sent" status updates so
+    // we skip writing to the database.
+    // Log just in case we need to debug something. Detailed logs can be viewed here:
+    // https://www.twilio.com/log/sms/logs/<SID>
+    log.info(`Message status ${messageSid}: ${messageStatus}`);
+    if (messageStatus === "queued" || messageStatus === "sent") {
+      return;
+    }
+
+    if (!DISABLE_DB_LOG) {
+      await Log.save({
+        message_sid: report.MessageSid,
+        body: JSON.stringify(report),
+        error_code: Number(report.ErrorCode || 0) || 0,
+        from_num: report.From || null,
+        to_num: report.To || null
+      });
+    }
+
+    if (
+      messageStatus === "delivered" ||
+      messageStatus === "failed" ||
+      messageStatus === "undelivered"
+    ) {
+      await cacheableData.message.deliveryReport({
+        contactNumber: report.To,
+        userNumber: report.From,
+        messageSid: report.MessageSid,
+        service: "twilio",
+        messageServiceSid: report.MessagingServiceSid,
+        newStatus: messageStatus === "delivered" ? "DELIVERED" : "ERROR",
+        errorCode: Number(report.ErrorCode || 0) || 0
+      });
     }
   }
 }
@@ -405,7 +429,7 @@ async function handleIncomingMessage(message) {
   }
 
   // store mediaurl data in Log, so it can be extracted manually
-  if (message.MediaUrl0 && !DISABLE_DB_LOG) {
+  if (message.MediaUrl0 && (!DISABLE_DB_LOG || getConfig("LOG_MEDIA_URL"))) {
     await Log.save({
       message_sid: MessageSid,
       body: JSON.stringify(message),
@@ -416,14 +440,162 @@ async function handleIncomingMessage(message) {
   }
 }
 
+/**
+ * Create a new Twilio messaging service
+ */
+async function createMessagingService(organization, friendlyName) {
+  const twilio = await getTwilio(organization);
+  const twilioBaseUrl = getConfig("TWILIO_BASE_CALLBACK_URL", organization);
+  return await twilio.messaging.services.create({
+    friendlyName,
+    statusCallback: urlJoin(twilioBaseUrl, "twilio-message-report"),
+    inboundRequestUrl: urlJoin(
+      twilioBaseUrl,
+      "twilio",
+      organization.id.toString()
+    )
+  });
+}
+
+/**
+ * Search for phone numbers available for purchase
+ */
+async function searchForAvailableNumbers(
+  twilioInstance,
+  countryCode,
+  areaCode,
+  limit
+) {
+  const count = Math.min(limit, 30); // Twilio limit
+  return twilioInstance.availablePhoneNumbers(countryCode).local.list({
+    areaCode,
+    limit: count,
+    capabilities: ["SMS", "MMS"]
+  });
+}
+
+/**
+ * Fetch Phone Numbers assigned to Messaging Service
+ */
+async function getPhoneNumbersForService(organization, messagingServiceSid) {
+  const twilio = await getTwilio(organization);
+  return await twilio.messaging
+    .services(messagingServiceSid)
+    .phoneNumbers.list({ limit: 400 });
+}
+
+/**
+ * Add bought phone number to a Messaging Service
+ */
+async function addNumberToMessagingService(
+  twilioInstance,
+  phoneNumberSid,
+  messagingServiceSid
+) {
+  return await twilioInstance.messaging
+    .services(messagingServiceSid)
+    .phoneNumbers.create({ phoneNumberSid });
+}
+
+/**
+ * Buy a phone number and add it to the owned_phone_number table
+ */
+async function buyNumber(organization, twilioInstance, phoneNumber, opts = {}) {
+  const response = await twilioInstance.incomingPhoneNumbers.create({
+    phoneNumber,
+    friendlyName: `Managed by Spoke [${process.env.BASE_URL}]: ${phoneNumber}`,
+    voiceUrl: getConfig("TWILIO_VOICE_URL", organization) // will use default twilio recording if undefined
+  });
+  if (response.error) {
+    throw new Error(`Error buying twilio number: ${response.error}`);
+  }
+  log.debug(`Bought number ${phoneNumber} [${response.sid}]`);
+  let allocationFields = {};
+  const messagingServiceSid = opts && opts.messagingServiceSid;
+  if (messagingServiceSid) {
+    await addNumberToMessagingService(
+      twilioInstance,
+      response.sid,
+      messagingServiceSid
+    );
+    allocationFields = {
+      allocated_to: "messaging_service",
+      allocated_to_id: messagingServiceSid,
+      allocated_at: new Date()
+    };
+  }
+  // Note: relies on the fact that twilio returns E. 164 formatted numbers
+  //  and only works in the US
+  const areaCode = phoneNumber.slice(2, 5);
+
+  return await r.knex("owned_phone_number").insert({
+    organization_id: organization.id,
+    area_code: areaCode,
+    phone_number: phoneNumber,
+    service: "twilio",
+    service_id: response.sid,
+    ...allocationFields
+  });
+}
+
+async function bulkRequest(array, fn) {
+  const chunks = _.chunk(array, BULK_REQUEST_CONCURRENCY);
+  const results = [];
+  for (const chunk of chunks) {
+    results.push(...(await Promise.all(chunk.map(fn))));
+  }
+  return results;
+}
+
+/**
+ * Buy up to <limit> numbers in <areaCode>
+ */
+async function buyNumbersInAreaCode(organization, areaCode, limit, opts = {}) {
+  const twilioInstance = await getTwilio(organization);
+  const countryCode = getConfig("PHONE_NUMBER_COUNTRY ", organization) || "US";
+  async function buyBatch(size) {
+    let successCount = 0;
+    log.debug(`Attempting to buy batch of ${size} numbers`);
+
+    const response = await searchForAvailableNumbers(
+      twilioInstance,
+      countryCode,
+      areaCode,
+      size
+    );
+
+    await bulkRequest(response, async item => {
+      await buyNumber(organization, twilioInstance, item.phoneNumber, opts);
+      successCount++;
+    });
+
+    log.debug(`Successfully bought ${successCount} number(s)`);
+    return successCount;
+  }
+
+  const totalRequested = Math.min(limit, MAX_NUMBERS_PER_BUY_JOB);
+  let totalPurchased = 0;
+  while (totalPurchased < totalRequested) {
+    const nextBatchSize = Math.min(30, totalRequested - totalPurchased);
+    const purchasedInBatch = await buyBatch(nextBatchSize);
+    totalPurchased += purchasedInBatch;
+    if (purchasedInBatch === 0) {
+      log.warn("Failed to buy as many numbers as requested");
+      break;
+    }
+  }
+  return totalPurchased;
+}
+
 export default {
   syncMessagePartProcessing: !!process.env.JOBS_SAME_PROCESS,
-  webhook,
+  headerValidator,
   convertMessagePartsToMessage,
-  findNewCell,
-  rentNewCell,
   sendMessage,
   handleDeliveryReport,
   handleIncomingMessage,
-  parseMessageText
+  parseMessageText,
+  createMessagingService,
+  getPhoneNumbersForService,
+  buyNumbersInAreaCode
 };

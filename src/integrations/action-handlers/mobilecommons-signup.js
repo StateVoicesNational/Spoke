@@ -2,6 +2,9 @@ import request from "request";
 import aws from "aws-sdk";
 import { r } from "../../server/models";
 import { actionKitSignup } from "./helper-ak-sync.js";
+
+export const name = "mobilecommons-signup";
+
 // What the user sees as the option
 export const displayName = () => "Mobile Commons Signup";
 
@@ -21,10 +24,10 @@ export const instructions = () =>
   "This option triggers a new user request to Upland Mobile Commons when selected.";
 
 export async function available(organizationId) {
-  if (organizationId && umcConfigured) {
-    return true;
-  }
-  return false;
+  return {
+    result: organizationId && umcConfigured,
+    expiresSeconds: 600
+  };
 }
 
 export async function processAction(

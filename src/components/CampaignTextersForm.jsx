@@ -303,6 +303,7 @@ export default class CampaignTextersForm extends React.Component {
         filter={filter}
         hintText="Search for texters to assign"
         dataSource={dataSource}
+        {...dataTest("texterSearch")}
         onNewRequest={value => {
           // If you're searching but get no match, value is a string
           // representing your search term, but we only want to handle matches
@@ -571,6 +572,7 @@ export default class CampaignTextersForm extends React.Component {
             type="submit"
             label={this.props.saveLabel}
             disabled={this.props.saveDisabled}
+            {...dataTest("submitCampaignTextersForm")}
           />
         </GSForm>
         <Snackbar

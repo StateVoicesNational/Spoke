@@ -30,7 +30,6 @@ export const schema = `
     optOut: OptOut
     campaign: Campaign
     questionResponseValues: [AnswerOption]
-    questionResponses: [AnswerOption]
     interactionSteps: [InteractionStep]
     messageStatus: String
     assignmentId: String

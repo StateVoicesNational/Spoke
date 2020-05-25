@@ -17,7 +17,7 @@ function getIngestMethods() {
       const c = require(`./${name}/index.js`);
       ingestMethods[name] = c;
     } catch (err) {
-      console.error("CONTACT_LOADERS failed to load ingestMethod", name);
+      console.error("CONTACT_LOADERS failed to load ingestMethod", name, err);
     }
   });
   return ingestMethods;
@@ -33,23 +33,33 @@ async function getSetCacheableResult(cacheKey, fallbackFunc) {
     }
   }
   const slowRes = await fallbackFunc();
-  if (r.redis && slowRes && slowRes.expireSeconds) {
-    await r.redis.setAsync(cacheKey, JSON.stringify(slowRes), slowRes.expireSeconds);
+  if (r.redis && slowRes && slowRes.expiresSeconds) {
+    await r.redis
+      .multi()
+      .set(cacheKey, JSON.stringify(slowRes))
+      .expire(cacheKey, slowRes.expiresSeconds)
+      .execAsync();
   }
   return slowRes;
 }
 
 async function getIngestAvailability(name, ingestMethod, organization, user) {
-  return (await getSetCacheableResult(
-    availabilityCacheKey(name, organization.id, user.id),
-    async () => ingestMethod.available(organization, user)
-  )).result;
+  return (
+    await getSetCacheableResult(
+      availabilityCacheKey(name, organization.id, user.id),
+      async () => ingestMethod.available(organization, user)
+    )
+  ).result;
 }
 
 export function rawIngestMethod(name) {
   /// RARE: You should almost always use getIngestMethod() below,
   /// unless workflow has already tested availability for the org-user
   return CONFIGURED_INGEST_METHODS[name];
+}
+
+export function rawAllMethods() {
+  return CONFIGURED_INGEST_METHODS;
 }
 
 export async function getIngestMethod(name, organization, user) {
@@ -67,10 +77,15 @@ export async function getIngestMethod(name, organization, user) {
 }
 
 export async function getAvailableIngestMethods(organization, user) {
+  const enabledIngestMethods = (
+    getConfig("CONTACT_LOADERS", organization) ||
+    "csv-upload,test-fakedata,datawarehouse"
+  ).split(",");
+
   const ingestMethods = await Promise.all(
-    Object.keys(CONFIGURED_INGEST_METHODS).map(name =>
-      getIngestMethod(name, organization, user)
-    )
+    enabledIngestMethods
+      .filter(name => name in CONFIGURED_INGEST_METHODS)
+      .map(name => getIngestMethod(name, organization, user))
   );
   return ingestMethods.filter(x => x);
 }
@@ -88,7 +103,9 @@ export async function getMethodChoiceData(
     ingestMethod.name,
     cacheFunc(organization, campaign, user, loaders)
   );
-  return (await getSetCacheableResult(cacheKey, async () =>
-    ingestMethod.getClientChoiceData(organization, campaign, user, loaders)
-  )).data;
+  return (
+    await getSetCacheableResult(cacheKey, async () =>
+      ingestMethod.getClientChoiceData(organization, campaign, user, loaders)
+    )
+  ).data;
 }

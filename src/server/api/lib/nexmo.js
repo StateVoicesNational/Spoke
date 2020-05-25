@@ -110,7 +110,7 @@ async function rentNewCell() {
   throw new Error("Did not find any cell");
 }
 
-async function sendMessage(message, contact, trx, organization) {
+async function sendMessage(message, contact, trx, organization, campaign) {
   if (!nexmo) {
     const options = trx ? { transaction: trx } : {};
     await Message.get(message.id).update({ send_status: "SENT" }, options);
@@ -230,11 +230,7 @@ async function handleIncomingMessage(message) {
   let parentId = "";
   if (isConcat) {
     log.info(
-      `Incoming message part (${message["concat-part"]} of ${
-        message["concat-total"]
-      } for ref ${
-        message["concat-ref"]
-      }) from ${contactNumber} to ${userNumber}`
+      `Incoming message part (${message["concat-part"]} of ${message["concat-total"]} for ref ${message["concat-ref"]}) from ${contactNumber} to ${userNumber}`
     );
     parentId = message["concat-ref"];
   } else {

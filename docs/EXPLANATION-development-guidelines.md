@@ -45,7 +45,7 @@ enviornment variable:
 * For any variables that enable features that should not be enabled (for legal reasons) in the United States, always ALSO test for `process.env.NOT_IN_USA` -- this ensures that the code self-documents the context these features will be available (and not available in).
 
 
-## Understanding DB/.[ORM].(https://stackoverflow.com/questions/1279613/what-is-an-orm-and-where-can-i-learn-more-about-it) calls
+## Understanding DB/[ORM](https://stackoverflow.com/questions/1279613/what-is-an-orm-and-where-can-i-learn-more-about-it) calls
 
 ###TLDR
 
@@ -105,6 +105,9 @@ Sqlite does not support knex's `returning()` method.  This affects running `r.kn
     See for example: https://github.com/MoveOnOrg/Spoke/issues/817
     One solution is to use r.table(...).getAll which WILL convert them.
     Otherwise, make sure your code does the conversion when necessary.
+* Knex also has different behavior between database backends for `knex.raw()` queries.
+  Sqlite will return the results directly, while Postgres will return the data in a sub-field, `.rows`.
+
 
 ### Schema changes
 

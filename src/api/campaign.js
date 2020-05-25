@@ -1,9 +1,13 @@
-export const schema = `
+import gql from "graphql-tag";
+
+export const schema = gql`
   input CampaignsFilter {
     isArchived: Boolean
     campaignId: Int
+    campaignIds: [Int]
     listSize: Int
     pageSize: Int
+    searchString: String
   }
 
   type CampaignStats {
@@ -12,10 +16,24 @@ export const schema = `
     optOutsCount: Int
   }
 
+  type CampaignCompletionStats {
+    contactsCount: Int
+    assignedCount: Int
+    messagedCount: Int
+    errorCount: Int
+  }
+
   type IngestMethod {
     name: String!
     displayName: String
     clientChoiceData: String
+    success: Boolean
+    result: String
+    reference: String
+    contactsCount: Int
+    deletedOptouts: Int
+    deletedDupes: Int
+    updatedAt: Date
   }
 
   type JobRequest {
@@ -45,7 +63,8 @@ export const schema = `
     hasUnsentInitialMessages: Boolean
     customFields: [String]
     cannedResponses(userId: String): [CannedResponse]
-    stats: CampaignStats,
+    stats: CampaignStats
+    completionStats: CampaignCompletionStats
     pendingJobs: [JobRequest]
     ingestMethodsAvailable: [IngestMethod]
     ingestMethod: IngestMethod
@@ -60,6 +79,9 @@ export const schema = `
     textingHoursStart: Int
     textingHoursEnd: Int
     timezone: String
+    messageserviceSid: String
+    useOwnMessagingService: Boolean
+    phoneNumbers: [String]
   }
 
   type CampaignsList {

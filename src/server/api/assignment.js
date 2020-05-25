@@ -13,6 +13,8 @@ export function addWhereClauseForContactsFilterMessageStatusIrrespectiveOfPastDu
   let query = queryParameter;
   if (messageStatusFilter === "needsMessageOrResponse") {
     query.whereIn("message_status", ["needsResponse", "needsMessage"]);
+  } else if (messageStatusFilter === "allReplies") {
+    query.whereNotIn("message_status", ["messaged", "needsMessage"]);
   } else {
     query = query.whereIn("message_status", messageStatusFilter.split(","));
   }
@@ -113,10 +115,16 @@ export function getContacts(
 export const resolvers = {
   Assignment: {
     ...mapFieldsToModel(["id", "maxContacts"], Assignment),
-    texter: async (assignment, _, { loaders }) =>
-      assignment.texter
-        ? assignment.texter
-        : loaders.user.load(assignment.user_id),
+    texter: async (assignment, _, { loaders, user }) => {
+      if (assignment.texter) {
+        return assignment.texter;
+      } else if (assignment.user_id === user.id) {
+        // Will use current user's cache if present
+        return user;
+      } else {
+        return await loaders.user.load(assignment.user_id);
+      }
+    },
     campaign: async (assignment, _, { loaders }) =>
       loaders.campaign.load(assignment.campaign_id),
     contactsCount: async (assignment, { contactsFilter }) => {
@@ -130,12 +138,14 @@ export const resolvers = {
         getContacts(assignment, contactsFilter, organization, campaign, true)
       );
     },
-    contacts: async (assignment, { contactsFilter }) => {
-      const campaign = await r.table("campaign").get(assignment.campaign_id);
+    contacts: async (assignment, { contactsFilter }, { loaders }) => {
+      const campaign = await cacheableData.campaign.load(
+        assignment.campaign_id
+      );
 
-      const organization = await r
-        .table("organization")
-        .get(campaign.organization_id);
+      const organization = await loaders.organization.load(
+        campaign.organization_id
+      );
       return getContacts(assignment, contactsFilter, organization, campaign);
     },
     campaignCannedResponses: async assignment =>

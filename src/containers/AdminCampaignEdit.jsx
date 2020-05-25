@@ -9,12 +9,14 @@ import Avatar from "material-ui/Avatar";
 import theme from "../styles/theme";
 import CircularProgress from "material-ui/CircularProgress";
 import { Card, CardHeader, CardText, CardActions } from "material-ui/Card";
+import { Link } from "react-router";
 import gql from "graphql-tag";
 import loadData from "./hoc/load-data";
 import wrapMutations from "./hoc/wrap-mutations";
 import RaisedButton from "material-ui/RaisedButton";
 import CampaignBasicsForm from "../components/CampaignBasicsForm";
 //import CampaignContactsForm from "../components/CampaignContactsForm";
+import CampaignMessagingServiceForm from "../components/CampaignMessagingServiceForm";
 import CampaignContactsChoiceForm from "../components/CampaignContactsChoiceForm";
 import CampaignTextersForm from "../components/CampaignTextersForm";
 import CampaignInteractionStepsForm from "../components/CampaignInteractionStepsForm";
@@ -38,6 +40,8 @@ const campaignInfoFragment = `
   logoImageUrl
   introHtml
   primaryColor
+  useOwnMessagingService
+  messageserviceSid
   overrideOrganizationTextingHours
   textingHoursEnforced
   textingHoursStart
@@ -59,6 +63,7 @@ const campaignInfoFragment = `
     script
     answerOption
     answerActions
+    answerActionsData
     parentInteractionId
     isDeleted
   }
@@ -74,6 +79,13 @@ const campaignInfoFragment = `
   }
   ingestMethod {
     name
+    success
+    result
+    reference
+    contactsCount
+    deletedOptouts
+    deletedDupes
+    updatedAt
   }
   editors
 `;
@@ -321,11 +333,13 @@ class AdminCampaignEdit extends React.Component {
           contactsCount: this.props.campaignData.campaign.contactsCount,
           ingestMethodChoices:
             this.props.campaignData.campaign.ingestMethodsAvailable || "",
+          pastIngestMethod:
+            this.props.campaignData.campaign.ingestMethod || null,
           jobResultMessage:
             (
-              this.props.pendingJobsData.campaign.pendingJobs.filter(job =>
-                /contacts/.test(job.jobType)
-              )[0] || {}
+              this.props.pendingJobsData.campaign.pendingJobs
+                .filter(job => /ingest/.test(job.jobType))
+                .reverse()[0] || {}
             ).resultMessage || ""
         }
       },
@@ -364,7 +378,8 @@ class AdminCampaignEdit extends React.Component {
         expandableBySuperVolunteers: true,
         extraProps: {
           customFields: this.props.campaignData.campaign.customFields,
-          availableActions: this.props.availableActionsData.availableActions
+          availableActions: this.props.organizationData.organization
+            .availableActions
         }
       },
       {
@@ -395,6 +410,17 @@ class AdminCampaignEdit extends React.Component {
         expandableBySuperVolunteers: false
       }
     ];
+    if (window.EXPERIMENTAL_TWILIO_PER_CAMPAIGN_MESSAGING_SERVICE) {
+      finalSections.push({
+        title: "Messaging Service",
+        content: CampaignMessagingServiceForm,
+        keys: ["useOwnMessagingService", "messageserviceSid"],
+        checkCompleted: () => true,
+        blocksStarting: false,
+        expandAfterCampaignStarts: false,
+        expandableBySuperVolunteers: false
+      });
+    }
     if (window.CAN_GOOGLE_IMPORT) {
       finalSections.push({
         title: "Script Import",
@@ -422,9 +448,8 @@ class AdminCampaignEdit extends React.Component {
     let jobId = null;
     if (pendingJobs.length > 0) {
       if (section.title === "Contacts") {
-        relatedJob = pendingJobs.filter(
-          job =>
-            job.jobType === "upload_contacts" || job.jobType === "contact_sql"
+        relatedJob = pendingJobs.filter(job =>
+          job.jobType.startsWith("ingest")
         )[0];
       } else if (section.title === "Texters") {
         relatedJob = pendingJobs.filter(
@@ -493,31 +518,36 @@ class AdminCampaignEdit extends React.Component {
     );
 
     return (
-      <div
-        style={{
-          marginBottom: 15,
-          fontSize: 16
-        }}
-      >
-        {this.state.startingCampaign ? (
-          <div
-            style={{
-              color: theme.colors.gray,
-              fontWeight: 800
-            }}
-          >
-            <CircularProgress
-              size={0.5}
-              style={{
-                verticalAlign: "middle",
-                display: "inline-block"
-              }}
-            />
-            Starting your campaign...
-          </div>
-        ) : (
-          notStarting
+      <div>
+        {this.props.campaignData.campaign.title && (
+          <h2>{this.props.campaignData.campaign.title}</h2>
         )}
+        <div
+          style={{
+            marginBottom: 15,
+            fontSize: 16
+          }}
+        >
+          {this.state.startingCampaign ? (
+            <div
+              style={{
+                color: theme.colors.gray,
+                fontWeight: 800
+              }}
+            >
+              <CircularProgress
+                size={0.5}
+                style={{
+                  verticalAlign: "middle",
+                  display: "inline-block"
+                }}
+              />
+              Starting your campaign...
+            </div>
+          ) : (
+            notStarting
+          )}
+        </div>
       </div>
     );
   }
@@ -527,6 +557,9 @@ class AdminCampaignEdit extends React.Component {
       // Supervolunteers don't have access to start the campaign or un/archive it
       return null;
     }
+    const orgConfigured = this.props.organizationData.organization
+      .fullyConfigured;
+    const settingsLink = `/admin/${this.props.organizationData.organization.id}/settings`;
     let isCompleted =
       this.props.pendingJobsData.campaign.pendingJobs.filter(job =>
         /Error/.test(job.resultMessage || "")
@@ -551,9 +584,17 @@ class AdminCampaignEdit extends React.Component {
             ...theme.layouts.multiColumn.flexColumn
           }}
         >
-          {isCompleted
-            ? "Your campaign is all good to go! >>>>>>>>>"
-            : "You need to complete all the sections below before you can start this campaign"}
+          {!orgConfigured ? (
+            <span>
+              Your organization is missing required configuration. Please{" "}
+              <Link to={settingsLink}>update your settings</Link> or contact an
+              adminstrator
+            </span>
+          ) : !isCompleted ? (
+            "You need to complete all the sections below before you can start this campaign"
+          ) : (
+            "Your campaign is all good to go! >>>>>>>>>"
+          )}
           {this.renderCurrentEditors()}
         </div>
         <div>
@@ -580,8 +621,11 @@ class AdminCampaignEdit extends React.Component {
             {...dataTest("startCampaign")}
             primary
             label="Start This Campaign!"
-            disabled={!isCompleted}
+            disabled={!isCompleted || !orgConfigured}
             onTouchTap={async () => {
+              if (!isCompleted || !orgConfigured) {
+                return;
+              }
               this.setState({
                 startingCampaign: true
               });
@@ -709,8 +753,7 @@ AdminCampaignEdit.propTypes = {
   organizationData: PropTypes.object,
   params: PropTypes.object,
   location: PropTypes.object,
-  pendingJobsData: PropTypes.object,
-  availableActionsData: PropTypes.object
+  pendingJobsData: PropTypes.object
 };
 
 const mapQueriesToProps = ({ ownProps }) => ({
@@ -728,11 +771,21 @@ const mapQueriesToProps = ({ ownProps }) => ({
         organization(id: $organizationId) {
           id
           uuid
+          fullyConfigured
           texters: people {
             id
             firstName
             lastName
             displayName
+          }
+          availableActions {
+            name
+            displayName
+            instructions
+            clientChoiceData {
+              name
+              details
+            }
           }
         }
       }
@@ -741,21 +794,6 @@ const mapQueriesToProps = ({ ownProps }) => ({
       organizationId: ownProps.params.organizationId
     },
     pollInterval: 20000
-  },
-  availableActionsData: {
-    query: gql`
-      query getActions($organizationId: String!) {
-        availableActions(organizationId: $organizationId) {
-          name
-          display_name
-          instructions
-        }
-      }
-    `,
-    variables: {
-      organizationId: ownProps.params.organizationId
-    },
-    forceFetch: true
   }
 });
 

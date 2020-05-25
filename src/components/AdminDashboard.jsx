@@ -67,7 +67,7 @@ class AdminDashboard extends React.Component {
     // HACK: Setting params.adminPerms helps us hide non-supervolunteer functionality
     params.adminPerms = hasRole("ADMIN", roles || []);
 
-    const sections = [
+    let sections = [
       {
         name: "Campaigns",
         path: "campaigns",
@@ -89,11 +89,29 @@ class AdminDashboard extends React.Component {
         role: "SUPERVOLUNTEER"
       },
       {
+        name: "Tags",
+        path: "tags",
+        role: "SUPERVOLUNTEER"
+      },
+      {
         name: "Settings",
         path: "settings",
         role: "SUPERVOLUNTEER"
+      },
+      {
+        name: "Phone Numbers",
+        path: "phone-numbers",
+        role: "OWNER"
       }
     ];
+
+    if (window.EXPERIMENTAL_TAGS === false) {
+      sections = sections.filter(section => section.name !== "Tags");
+    }
+
+    if (!this.props.data.organization.phoneInventoryEnabled) {
+      sections = sections.filter(section => section.name !== "Phone Numbers");
+    }
 
     let currentSection = sections.filter(section =>
       location.pathname.match(`/${section.path}`)
@@ -137,6 +155,10 @@ const mapQueriesToProps = ({ ownProps }) => ({
         currentUser {
           id
           roles(organizationId: $organizationId)
+        }
+        organization(id: $organizationId) {
+          name
+          phoneInventoryEnabled
         }
       }
     `,

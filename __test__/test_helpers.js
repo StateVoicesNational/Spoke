@@ -17,6 +17,10 @@ export async function cleanupTest() {
   await dropTables();
 }
 
+export function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 export function getContext(context) {
   return {
     ...context,
@@ -62,17 +66,21 @@ export function getGql(componentPath, props, dataKey = "data") {
 }
 
 export async function createUser(
-  userInfo = {
+  userInfo = {},
+  organization_id = null,
+  role = null
+) {
+  const defaultUserInfo = {
     auth0_id: "test123",
     first_name: "TestUserFirst",
     last_name: "TestUserLast",
     cell: "555-555-5555",
     email: "testuser@example.com"
-  },
-  organization_id = null,
-  role = null
-) {
-  const user = new User(userInfo);
+  };
+  const user = new User({
+    ...defaultUserInfo,
+    ...userInfo
+  });
   await user.save();
   if (organization_id && role) {
     await r.knex("user_organization").insert({
@@ -115,12 +123,39 @@ const mySchema = makeExecutableSchema({
 export async function runGql(query, vars, user) {
   const rootValue = {};
   const context = getContext({ user });
-  return await graphql(mySchema, query, rootValue, context, vars);
+  const result = await graphql(mySchema, query, rootValue, context, vars);
+  if (result && result.errors) {
+    console.log("runGql failed " + JSON.stringify(result));
+  }
+  return result;
 }
 
 export async function runComponentGql(componentDataQuery, queryVars, user) {
   return await runGql(componentDataQuery.loc.source.body, queryVars, user);
 }
+
+export const updateUserRoles = async (
+  adminUser,
+  organizationId,
+  userId,
+  roles
+) => {
+  const query = `mutation editOrganizationRoles(
+      $organizationId: String!,
+      $userId: String!,
+      $roles: [String]) {
+    editOrganizationRoles(userId: $userId, organizationId: $organizationId, roles: $roles) {
+      id
+    }
+  }`;
+
+  const variables = {
+    organizationId,
+    userId,
+    roles
+  };
+  return await runGql(query, variables, adminUser);
+};
 
 export async function createInvite() {
   const rootValue = {};
@@ -156,10 +191,50 @@ export async function createOrganization(user, invite) {
   return await graphql(mySchema, orgQuery, rootValue, context, variables);
 }
 
+export async function setTwilioAuth(user, organization) {
+  const rootValue = {};
+  const accountSid = "test_twilio_account_sid";
+  const authToken = "test_twlio_auth_token";
+  const messageServiceSid = "test_message_service";
+  const orgId = organization.data.createOrganization.id;
+
+  const context = getContext({ user });
+
+  const twilioQuery = `
+      mutation updateTwilioAuth(
+        $twilioAccountSid: String
+        $twilioAuthToken: String
+        $twilioMessageServiceSid: String
+        $organizationId: String!
+      ) {
+        updateTwilioAuth(
+          twilioAccountSid: $twilioAccountSid
+          twilioAuthToken: $twilioAuthToken
+          twilioMessageServiceSid: $twilioMessageServiceSid
+          organizationId: $organizationId
+        ) {
+          id
+          twilioAccountSid
+          twilioAuthToken
+          twilioMessageServiceSid
+        }
+      }`;
+
+  const variables = {
+    organizationId: orgId,
+    twilioAccountSid: accountSid,
+    twilioAuthToken: authToken,
+    twilioMessageServiceSid: messageServiceSid
+  };
+
+  return await graphql(mySchema, twilioQuery, rootValue, context, variables);
+}
+
 export async function createCampaign(
   user,
   organization,
-  title = "test campaign"
+  title = "test campaign",
+  args = {}
 ) {
   const rootValue = {};
   const description = "test description";
@@ -175,20 +250,29 @@ export async function createCampaign(
     input: {
       title,
       description,
-      organizationId
+      organizationId,
+      ...args
     }
   };
-  const ret = await graphql(
+  const result = await graphql(
     mySchema,
     campaignQuery,
     rootValue,
     context,
     variables
   );
-  return ret.data.createCampaign;
+  if (result.errors) {
+    throw new Exception("Create campaign failed " + JSON.stringify(result));
+  }
+  return result.data.createCampaign;
 }
 
-export async function saveCampaign(user, campaign, title = "test campaign") {
+export async function saveCampaign(
+  user,
+  campaign,
+  title = "test campaign",
+  useOwnMessagingService = "false"
+) {
   const rootValue = {};
   const description = "test description";
   const organizationId = campaign.organizationId;
@@ -198,6 +282,7 @@ export async function saveCampaign(user, campaign, title = "test campaign") {
     editCampaign(id: $campaignId, campaign: $campaign) {
       id
       title
+      useOwnMessagingService
     }
   }`;
 
@@ -205,18 +290,22 @@ export async function saveCampaign(user, campaign, title = "test campaign") {
     campaign: {
       title,
       description,
-      organizationId
+      organizationId,
+      useOwnMessagingService
     },
     campaignId: campaign.id
   };
-  const ret = await graphql(
+  const result = await graphql(
     mySchema,
     campaignQuery,
     rootValue,
     context,
     variables
   );
-  return ret.data.editCampaign;
+  if (result.errors) {
+    throw new Exception("Create campaign failed " + JSON.stringify(result));
+  }
+  return result.data.editCampaign;
 }
 
 export async function copyCampaign(campaignId, user) {
@@ -230,15 +319,22 @@ export async function copyCampaign(campaignId, user) {
   return await graphql(mySchema, query, rootValue, context, { campaignId });
 }
 
-export async function createTexter(organization) {
+export async function createTexter(organization, userInfo = {}) {
   const rootValue = {};
-  const user = await createUser({
+  const defaultUserInfo = {
     auth0_id: "test456",
     first_name: "TestTexterFirst",
     last_name: "TestTexterLast",
     cell: "555-555-6666",
     email: "testtexter@example.com"
+  };
+  const user = await createUser({
+    ...defaultUserInfo,
+    ...userInfo
   });
+  if (user.errors) {
+    throw new Exception("createUsers failed " + JSON.stringify(user));
+  }
   const joinQuery = `
   mutation joinOrganization($organizationUuid: String!) {
     joinOrganization(organizationUuid: $organizationUuid) {
@@ -249,7 +345,16 @@ export async function createTexter(organization) {
     organizationUuid: organization.data.createOrganization.uuid
   };
   const context = getContext({ user });
-  await graphql(mySchema, joinQuery, rootValue, context, variables);
+  const result = await graphql(
+    mySchema,
+    joinQuery,
+    rootValue,
+    context,
+    variables
+  );
+  if (result.errors) {
+    throw new Exception("joinOrganization failed " + JSON.stringify(result));
+  }
   return user;
 }
 
@@ -280,13 +385,17 @@ export async function assignTexter(admin, user, campaign, assignments) {
     campaignId,
     campaign: updateCampaign
   };
-  return await graphql(
+  const result = await graphql(
     mySchema,
     campaignEditQuery,
     rootValue,
     context,
     variables
   );
+  if (result.errors) {
+    throw new Exception("assignTexter failed " + JSON.stringify(result));
+  }
+  return result;
 }
 
 export async function sendMessage(campaignContactId, user, message) {
@@ -304,12 +413,16 @@ export async function sendMessage(campaignContactId, user, message) {
           }
         }
       }`;
-  const context = getContext({ user: user });
+  const context = getContext({ user });
   const variables = {
     message,
     campaignContactId
   };
-  return await graphql(mySchema, query, rootValue, context, variables);
+  const result = await graphql(mySchema, query, rootValue, context, variables);
+  if (result.errors) {
+    console.log("sendMessage errors", result);
+  }
+  return result;
 }
 
 export async function bulkSendMessages(assignmentId, user) {
@@ -329,28 +442,31 @@ export async function bulkSendMessages(assignmentId, user) {
   return await graphql(mySchema, query, rootValue, context, variables);
 }
 
-export function buildScript(steps = 2) {
+export function buildScript(steps = 2, choices = 1) {
+  const makeStep = (step, max, choice = "") => ({
+    id: `new${step}_${choice}`,
+    questionText: `hmm${step}`,
+    script:
+      step === 1
+        ? "{lastName}"
+        : step === 0
+        ? "autorespond {zip}"
+        : `${choice}Step Script ${step}`,
+    answerOption: `${choice}hmm${step}`,
+    answerActions: "",
+    parentInteractionId: step > 0 ? "new" + (step - 1) + "_" : null,
+    isDeleted: false,
+    interactionSteps: choice ? [] : createSteps(step + 1, max)
+  });
   const createSteps = (step, max) => {
     if (max <= step) {
       return [];
     }
-    return [
-      {
-        id: "new" + step,
-        questionText: "hmm" + step,
-        script:
-          step === 1
-            ? "{lastName}"
-            : step === 0
-            ? "autorespond {zip}"
-            : "Step Script " + step,
-        answerOption: "hmm" + step,
-        answerActions: "",
-        parentInteractionId: step > 0 ? "new" + (step - 1) : null,
-        isDeleted: false,
-        interactionSteps: createSteps(step + 1, max)
-      }
-    ];
+    const rv = [makeStep(step, max)];
+    for (let i = 1; i < choices; i++) {
+      rv.push(makeStep(step, max, i));
+    }
+    return rv;
   };
   return createSteps(0, steps);
 }
@@ -358,21 +474,20 @@ export function buildScript(steps = 2) {
 export async function createScript(
   admin,
   campaign,
-  interactionSteps,
-  steps = 2
+  { interactionSteps, steps = 2, choices = 1, campaignGqlFragment } = {}
 ) {
   const rootValue = {};
   const campaignEditQuery = `
   mutation editCampaign($campaignId: String!, $campaign: CampaignInput!) {
     editCampaign(id: $campaignId, campaign: $campaign) {
-      id
+      ${campaignGqlFragment || "id"}
     }
   }`;
   // function to create a recursive set of steps of arbitrary depth
   let builtInteractionSteps;
 
   if (!interactionSteps) {
-    builtInteractionSteps = buildScript(steps);
+    builtInteractionSteps = buildScript(steps, choices);
   }
 
   const context = getContext({ user: admin });
@@ -443,3 +558,154 @@ export async function getCampaignContact(id) {
     .where({ id })
     .first();
 }
+
+export async function getOptOut(assignmentId, cell) {
+  return await r
+    .knex("opt_out")
+    .where({
+      cell,
+      assignment_id: assignmentId
+    })
+    .first();
+}
+
+export async function createStartedCampaign() {
+  const testAdminUser = await createUser();
+  const testInvite = await createInvite();
+  const testOrganization = await createOrganization(testAdminUser, testInvite);
+  const organizationId = testOrganization.data.createOrganization.id;
+  const testCampaign = await createCampaign(testAdminUser, testOrganization);
+  const testContacts = await createContacts(testCampaign, 100);
+  const testTexterUser = await createTexter(testOrganization);
+  const testTexterUser2 = await createTexter(testOrganization);
+  await startCampaign(testAdminUser, testCampaign);
+
+  await assignTexter(testAdminUser, testTexterUser, testCampaign);
+  const dbCampaignContact = await getCampaignContact(testContacts[0].id);
+  const assignmentId = dbCampaignContact.assignment_id;
+  const assignment = (await r.knex("assignment").where("id", assignmentId))[0];
+
+  const testSuperAdminUser = await createUser(
+    {
+      auth0_id: "2024561111",
+      first_name: "super",
+      last_name: "admin",
+      cell: "202-456-1111",
+      email: "superadmin@example.com",
+      is_superadmin: true
+    },
+    organizationId,
+    "ADMIN"
+  );
+
+  return {
+    testAdminUser,
+    testInvite,
+    testOrganization,
+    testCampaign,
+    testTexterUser,
+    testTexterUser2,
+    testContacts,
+    assignmentId,
+    assignment,
+    testSuperAdminUser,
+    organizationId,
+    dbCampaignContact
+  };
+}
+
+export const getConversations = async (
+  user,
+  organizationId,
+  contactsFilter,
+  campaignsFilter,
+  assignmentsFilter
+) => {
+  const cursor = {
+    offset: 0,
+    limit: 1000
+  };
+  const variables = {
+    cursor,
+    organizationId,
+    contactsFilter,
+    campaignsFilter,
+    assignmentsFilter
+  };
+
+  const conversationsQuery = `
+    query Q(
+          $organizationId: String!
+          $cursor: OffsetLimitCursor!
+          $contactsFilter: ContactsFilter
+          $campaignsFilter: CampaignsFilter
+          $assignmentsFilter: AssignmentsFilter
+          $utc: String
+        ) {
+          conversations(
+            cursor: $cursor
+            organizationId: $organizationId
+            campaignsFilter: $campaignsFilter
+            contactsFilter: $contactsFilter
+            assignmentsFilter: $assignmentsFilter
+            utc: $utc
+          ) {
+            pageInfo {
+              limit
+              offset
+              total
+            }
+            conversations {
+              texter {
+                id
+                displayName
+              }
+              contact {
+                id
+                assignmentId
+                firstName
+                lastName
+                cell
+                messageStatus
+                messages {
+                  id
+                  text
+                  isFromContact
+                }
+                optOut {
+                  cell
+                }
+              }
+              campaign {
+                id
+                title
+              }
+            }
+          }
+        }
+      `;
+
+  const result = await runGql(conversationsQuery, variables, user);
+  return result;
+};
+
+export const createJob = async (campaign, overrides) => {
+  const job = {
+    campaign_id: campaign.id,
+    payload: "fake_payload",
+    queue_name: "1:fake_queue_name",
+    job_type: "fake_job_type",
+    locks_queue: true,
+    assigned: true,
+    status: 0,
+    ...(overrides && overrides)
+  };
+
+  const [job_id] = await r
+    .knex("job_request")
+    .returning("id")
+    .insert(job);
+  job.id = job_id;
+
+  return job;
+};
