@@ -77,6 +77,9 @@ const rootSchema = gql`
     texters: [TexterInput]
     interactionSteps: InteractionStepInput
     cannedResponses: [CannedResponseInput]
+    useOwnMessagingService: Boolean
+    phoneNumbers: [String]
+    messageserviceSid: String
     overrideOrganizationTextingHours: Boolean
     textingHoursEnforced: Boolean
     textingHoursStart: Int
@@ -315,6 +318,12 @@ const rootSchema = gql`
     createTag(organizationId: String!, tagData: TagInput!): Tag
     editTag(organizationId: String!, id: String!, tagData: TagInput!): Tag
     deleteTag(organizationId: String!, id: String!): Tag
+    buyPhoneNumbers(
+      organizationId: ID!
+      areaCode: String!
+      limit: Int!
+      addToOrganizationMessagingService: Boolean
+    ): JobRequest
   }
 
   schema {

@@ -21,13 +21,10 @@ describe("questionResponse cacheableData methods", async () => {
 
   it("save and load", async () => {
     const cid = initData.testContacts[0].id;
-    await createScript(
-      initData.testAdminUser,
-      initData.testCampaign,
-      null,
-      3,
-      2
-    );
+    await createScript(initData.testAdminUser, initData.testCampaign, {
+      steps: 3,
+      choices: 2
+    });
     const interactionSteps = await r.knex("interaction_step").select();
     await cacheableData.questionResponse.save(cid, [
       { interactionStepId: "1", value: "hmm1" }
