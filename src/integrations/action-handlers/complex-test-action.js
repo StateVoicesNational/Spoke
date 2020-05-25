@@ -12,6 +12,17 @@ export const instructions = () =>
   This action is for testing and as a code-template for new actions.
   `;
 
+export function serverAdministratorInstructions() {
+  return {
+    description: `
+      This action is for testing and as a code-template for new actions.
+      `,
+    setupInstructions:
+      "Add `complex-test-action` to the environment variable `ACTION_HANDLERS`",
+    environmentVariables: []
+  };
+}
+
 export function clientChoiceDataCacheKey(organization, user, loaders) {
   return `${organization.id}`;
 }

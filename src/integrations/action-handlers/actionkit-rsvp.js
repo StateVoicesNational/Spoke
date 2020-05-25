@@ -13,6 +13,20 @@ export const instructions = () =>
   which will be added as post data where '*' can be any word which will map to an action/event field.
   `;
 
+export function serverAdministratorInstructions() {
+  return {
+    description: `
+      Campaign contacts MUST be uploaded with "event_id" and "event_page" fields
+      along with external_id=<actionkit user.id>.
+      Optional fields include "event_source" (defaults to 'spoke') and "event_field_*" fields and "event_action_*"
+      which will be added as post data where '*' can be any word which will map to an action/event field.
+      `,
+    setupInstructions:
+      "Add `actionkit-rsvp` to the environment variable `ACTION_HANDLERS`; refer to `docs/HOWTO_INTEGRATE_WITH_ACTIONKIT.md`",
+    environmentVariables: ["AK_BASEURL", "AK_SECRET"]
+  };
+}
+
 export async function available(organizationId) {
   let isAvailable = false;
   if (process.env.AK_BASEURL && process.env.AK_SECRET) {

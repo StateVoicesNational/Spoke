@@ -12,6 +12,17 @@ export const instructions = () =>
   This action is for testing and as a code-template for new actions.
   `;
 
+export function serverAdministratorInstructions() {
+  return {
+    description: `
+      This action is for testing and as a code-template for new actions.
+      `,
+    setupInstructions:
+      "Add `test-action` to the environment variable `ACTION_HANDLERS`",
+    environmentVariables: []
+  };
+}
+
 // return true, if the action is usable and available for the organizationId
 // Sometimes this means certain variables/credentials must be setup
 // either in environment variables or organization.features json data
