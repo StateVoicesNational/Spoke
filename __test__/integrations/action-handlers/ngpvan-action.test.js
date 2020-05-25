@@ -1,4 +1,8 @@
-import { getClientChoiceData } from "../../../src/integrations/action-handlers/ngpvan-action";
+import {
+  validateActionHandler,
+  validateActionHandlerWithClientChoices
+} from "../../../src/integrations/action-handlers";
+import * as NgpVanAction from "../../../src/integrations/action-handlers/ngpvan-action";
 import nock from "nock";
 
 describe("ngpvn-action", () => {
@@ -10,6 +14,14 @@ describe("ngpvn-action", () => {
     process.env.NGP_VAN_MAXIMUM_LIST_SIZE = 300;
     process.env.NGP_VAN_CACHE_TTL = 30;
   });
+
+  it("passes validation", async () => {
+    expect(() => validateActionHandler(NgpVanAction)).not.toThrowError();
+    expect(() =>
+      validateActionHandlerWithClientChoices(NgpVanAction)
+    ).not.toThrowError();
+  });
+
   describe("#getClientChoiceData", async () => {
     let makeGetSurveyQuestionsNock;
     let makeGetActivistCodesNock;
@@ -211,7 +223,7 @@ describe("ngpvn-action", () => {
       const getActivistCodesNock = makeGetActivistCodesNock();
       const getCanvassResponsesResultCodesNock = makeGetCanvassResponsesResultCodesNock();
 
-      const clientChoiceData = await getClientChoiceData();
+      const clientChoiceData = await NgpVanAction.getClientChoiceData();
       const receivedItems = JSON.parse(clientChoiceData.data).items;
 
       const expectedItems = [
@@ -357,7 +369,7 @@ describe("ngpvn-action", () => {
         const getActivistCodesNock = makeGetActivistCodesNock();
         const getCanvassResponsesResultCodesNock = makeGetCanvassResponsesResultCodesNock();
 
-        const clientChoiceData = await getClientChoiceData();
+        const clientChoiceData = await NgpVanAction.getClientChoiceData();
         const receivedError = JSON.parse(clientChoiceData.data).error;
 
         expect(receivedError).toEqual(

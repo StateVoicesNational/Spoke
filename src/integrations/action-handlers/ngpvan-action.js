@@ -11,8 +11,24 @@ export const displayName = () => "NGPVAN action";
 
 // The Help text for the user after selecting the action
 export const instructions = () =>
-  `This action is for reporting the results of interactions
-   with contacts to NGPVAN`;
+  `
+  This action is for reporting the results of interactions with contacts to NGPVAN
+  `;
+
+export function serverAdministratorInstructions() {
+  return {
+    description:
+      "This action is for reporting the results of interactions with contacts to NGPVAN",
+    setupInstructions:
+      "Get an APP name and API key for your VAN account. Add them to your config, along with NGP_VAN_WEBHOOK_BASE_URL. In most cases the defaults for the other environment variables will work",
+    environmentVariables: [
+      "NGP_VAN_API_KEY",
+      "NGP_VAN_API_BASE_URL",
+      "NGP_VAN_APP_NAME",
+      "NGP_VAN_ACTION_HANDLER_CACHE_TTL"
+    ]
+  };
+}
 
 export function clientChoiceDataCacheKey(organization) {
   return `${organization.id}`;
