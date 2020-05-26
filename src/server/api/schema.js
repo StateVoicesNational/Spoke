@@ -560,6 +560,13 @@ const rootMutations = {
         .select("role")
         .first();
       if (!userOrg) {
+        if (
+          campaign &&
+          getConfig("CAMPAIGN_INVITES_CURRENT_USERS_ONLY", organization)
+        ) {
+          // only organization joins are valid with this setting
+          throw new GraphQLError("Invalid join request");
+        }
         try {
           await r.knex("user_organization").insert({
             user_id: user.id,
