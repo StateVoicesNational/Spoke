@@ -153,7 +153,7 @@ class AssignmentTexterSurveys extends Component {
         </h3>
         {Object.keys(questionResponses).length ? (
           <ListItem
-            onTouchTap={() => {
+            onClick={() => {
               this.handleExpandChange(true);
             }}
             key={`pastquestions`}
@@ -165,7 +165,7 @@ class AssignmentTexterSurveys extends Component {
         {step.question.answerOptions.map((answerOption, index) => (
           <ListItem
             value={answerOption.value}
-            onTouchTap={() => {
+            onClick={() => {
               this.handleSelectChange(
                 step,
                 index,
@@ -175,11 +175,26 @@ class AssignmentTexterSurveys extends Component {
               );
               this.props.onRequestClose();
             }}
+            onKeyPress={evt => {
+              if (evt.key === "Enter") {
+                this.handleSelectChange(
+                  step,
+                  index,
+                  responseValue === answerOption.value
+                    ? "clearResponse"
+                    : answerOption.value
+                );
+                this.props.onRequestClose();
+              }
+            }}
             key={`cur${index}_${answerOption.value}`}
             primaryText={answerOption.value}
-            secondaryText={answerOption.nextInteractionStep && answerOption.nextInteractionStep.script
-                           ? answerOption.nextInteractionStep.script
-                           : null}
+            secondaryText={
+              answerOption.nextInteractionStep &&
+              answerOption.nextInteractionStep.script
+                ? answerOption.nextInteractionStep.script
+                : null
+            }
             rightIcon={
               responseValue === answerOption.value ? <ClearIcon /> : null
             }

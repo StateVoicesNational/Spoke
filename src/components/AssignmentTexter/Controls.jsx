@@ -306,13 +306,13 @@ export class AssignmentTexterContactControls extends React.Component {
     }, 0);
 
     // note: key*down* is necessary to stop propagation of keyup for the textarea element
-    document.body.addEventListener("keydown", this.onEnter);
+    document.body.addEventListener("keydown", this.onKeyDown);
     window.addEventListener("resize", this.onResize);
     window.addEventListener("orientationchange", this.onResize);
   }
 
   componentWillUnmount() {
-    document.body.removeEventListener("keydown", this.onEnter);
+    document.body.removeEventListener("keydown", this.onKeyDown);
     window.removeEventListener("resize", this.onResize);
     window.removeEventListener("orientationchange", this.onResize);
   }
@@ -333,11 +333,25 @@ export class AssignmentTexterContactControls extends React.Component {
     });
   };
 
-  onEnter = evt => {
-    // FUTURE: consider disabling except in needsMessage
-    if (evt.keyCode === 13) {
+  onKeyDown = evt => {
+    if (evt.key === "Escape") {
+      this.setState({
+        optOutDialogOpen: false,
+        responsePopoverOpen: false,
+        answerPopoverOpen: false
+      });
+    }
+
+    // pressing the Enter key (or ctrl+Enter) submits
+    // This is limited for better accessibility:
+    // Enter is needed for 'click'ing buttons with the keyboard
+    if (
+      evt.key === "Enter" &&
+      (this.props.messageStatusFilter === "needsMessage" ||
+        // need to use ctrlKey in non-first texting context for accessibility
+        evt.ctrlKey)
+    ) {
       evt.preventDefault();
-      // pressing the Enter key submits
       if (this.state.optOutDialogOpen) {
         const { optOutMessageText } = this.state;
         this.props.onOptOut({ optOutMessageText });
@@ -538,7 +552,7 @@ export class AssignmentTexterContactControls extends React.Component {
       // todo: add flex: style.
       button = (
         <FlatButton
-          onTouchTap={() => this.props.onEditStatus("needsResponse")}
+          onClick={() => this.props.onEditStatus("needsResponse")}
           label="Reopen"
           className={css(flexStyles.flatButton)}
           style={{ flex: "1 1 auto" }}
@@ -549,7 +563,7 @@ export class AssignmentTexterContactControls extends React.Component {
     } else {
       button = (
         <FlatButton
-          onTouchTap={() => this.props.onEditStatus("closed", true)}
+          onClick={() => this.props.onEditStatus("closed", true)}
           label="Skip"
           className={css(flexStyles.flatButton)}
           style={{
@@ -606,7 +620,7 @@ export class AssignmentTexterContactControls extends React.Component {
                       : "white"
                 }}
                 label="Standard Message"
-                onTouchTap={() => {
+                onClick={() => {
                   this.setState({
                     optOutMessageText: this.props.campaign.organization
                       .optOutMessage
@@ -624,7 +638,7 @@ export class AssignmentTexterContactControls extends React.Component {
                     this.state.optOutMessageText === "" ? "#727272" : "white"
                 }}
                 label="No Message"
-                onTouchTap={() => {
+                onClick={() => {
                   this.setState({ optOutMessageText: "" });
                 }}
               />
@@ -641,7 +655,7 @@ export class AssignmentTexterContactControls extends React.Component {
                 labelStyle={inlineStyles.flatButtonLabel}
                 style={inlineStyles.inlineBlock}
                 label="Cancel"
-                onTouchTap={this.handleCloseDialog}
+                onClick={this.handleCloseDialog}
               />
               <FlatButton
                 type="submit"
@@ -801,7 +815,7 @@ export class AssignmentTexterContactControls extends React.Component {
           <FlatButton
             key={`shortcutStep_${opt.answer.value}`}
             label={opt.label}
-            onTouchTap={evt => {
+            onClick={evt => {
               this.handleQuestionResponseChange({
                 interactionStep: currentInteractionStep,
                 questionResponseValue: isCurrentAnswer(opt)
@@ -827,7 +841,7 @@ export class AssignmentTexterContactControls extends React.Component {
           <FlatButton
             key={`shortcutScript_${script.id}`}
             label={script.title.replace(/^(\+|\-)/, "")}
-            onTouchTap={evt => {
+            onClick={evt => {
               this.handleCannedResponseChange(script);
             }}
             className={css(flexStyles.flatButton)}
@@ -860,7 +874,8 @@ export class AssignmentTexterContactControls extends React.Component {
               All Responses <DownIcon style={{ verticalAlign: "middle" }} />
             </span>
           }
-          onTouchTap={!disabled ? this.handleOpenAnswerPopover : noAction => {}}
+          role="button"
+          onClick={!disabled ? this.handleOpenAnswerPopover : noAction => {}}
           className={css(flexStyles.flatButton)}
           labelStyle={inlineStyles.flatButtonLabel}
           backgroundColor={
@@ -872,7 +887,7 @@ export class AssignmentTexterContactControls extends React.Component {
         <FlatButton
           {...dataTest("optOut")}
           label="Opt-out"
-          onTouchTap={this.handleOpenDialog}
+          onClick={this.handleOpenDialog}
           className={css(flexStyles.flatButton)}
           labelStyle={{ ...inlineStyles.flatButtonLabel, color: "#DE1A1A" }}
           backgroundColor="white"
@@ -886,7 +901,7 @@ export class AssignmentTexterContactControls extends React.Component {
       <div className={css(flexStyles.sectionSend)}>
         <FlatButton
           {...dataTest("send")}
-          onTouchTap={this.handleClickSendMessageButton}
+          onClick={this.handleClickSendMessageButton}
           disabled={this.props.disabled}
           label={<span>&crarr; Send</span>}
           className={`${css(flexStyles.flatButton)} ${css(
