@@ -1,4 +1,22 @@
 # Release Notes
+## v6.0
+_May 2020:_ Version 6.0
+We're marking this as a major version update: 6.0 because there are several backwards-incompatible changes that we think you will love:
+- There is a new Texting UI -- in version 5.6 it was enableable with EXPERIMENTAL_TEXTERUI ahead of time. It is now the default! For this version, we allow you to preserve the old texter UI by setting the environment variable DEPRECATED_TEXTERUI=GONE_SOON. Also note that with the new UI we have removed user-created Canned Responses -- there's consensus that it causes more problems than it helps. We've also long had the Super Volunteer role which most campaigns use for a group of texters that can update canned responses when needed.
+- *Experimental* A new action_handler to export survey question responses back to NGP VAN (not yet tested on a production campaign)
+- Action Handler developers: Through the great work of @lperson for improved VAN support, our action handler api used to return a true/false value for the available() call -- it should now return an object with two keys: { result: <boolean on available>, expiresSeconds: <how long to cache the result, 0 by default>}
+There are several schema changes -- only adding fields, so migration should be easy/fast. However, if you have SUPPRESS_MIGRATIONS enabled, then you will need to manually migrate the database ( Heroku, AWS Lambda )
+
+In addition to those changes, we've improved the Admin People page (@lperson ) and made some tweaks to the Campaign Edit page (@matteosb , @higgyCodes ), and the Texter Todo list (@larkinds ).
+
+Thanks to all the contributors part of this release including:
+[higgyCodes](https://github.com/higgyCodes),
+[JeremyParker](https://github.com/JeremyParker),
+[larkinds](https://github.com/larkinds),
+[lperson](https://github.com/lperson),
+[matteosb](https://github.com/matteosb),
+[schuyler1d](https://github.com/schuyler1d)
+
 ## v5.5
 _May 2020:_ Version 5.5
 - Campaign List Admin changes (@lperson, @schuyler1d)
@@ -24,7 +42,7 @@ Thanks to all the contributors part of this release including:
 _April 2020:_ Version 5.4
 This release includes the following improvements:
 
-- *Experimental* A new contact loader for loading contacts in straight from NGP VAN (not yet testing on a production campaign)
+- *Experimental* A new contact loader for loading contacts in straight from NGP VAN (not yet tested on a production campaign)
 - Scaling improvements
 - Allow contact loaders to be toggled on a per-organization level
 - Improvements to the contact loaders framework
