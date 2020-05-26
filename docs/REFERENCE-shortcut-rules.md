@@ -22,22 +22,21 @@ to balance real-estate on the screen while avoiding confusion for the texter in 
 
 ## Rules
 
-* By default, if there are Question Responses not explicitly hidden (see below) as buttons, then no
-  Canned Response shortcut buttons will be shown.  This is to avoid confusing texters that the key
-  step is to answer the current survey question.
-* If any labels (shortened or otherwise) are the same, then no shortcuts will be shown.
 * Canned Responses, by default, will not show unless they have 12 characters or less.
-  * You can prefix a Canned Response with a '+' (plus character) to force it to be shown (even with more than 12 characters)
-  * You can prefix a Canned Response with a '-' (minus character) to force that response never to be shown as a button
+  * Prefix a Canned Response with a '+' (plus character) to force it to be shown (even with more than 12 characters)
+  * Prefix a Canned Response with a '-' (minus character) to force that response never to be shown as a button
   * Only remaining room will be used for Canned Response shortcuts.
 * Question Responses do NOT respond to a '+' -- by default they are included regardless of label width.
   * Adding punctuation after the first word in a question response will shorten the Label to the first word
-  * You can prefix a Question Response with a '-' (minus character) to force exclude that response in the shortcut options.
+  * Prefix a Question Response with a '-' (minus character) to force exclude that response in the shortcut options.
     This is useful, if you have a common one or two responses, but you want the 'special cases' in question response not
     to be shown, in favor of some Canned Response shortcuts.
   * Question response button labels must be less than 36 characters in total with an extra 2 characters
     subtracted per option (for space between buttons)
-
+* If any labels (shortened or otherwise) are the same, then no shortcuts will be shown.
+* If there is a present Question with Question Response Options but they are not shown as shortcuts
+  (because of duplication, too many or too long), then no Canned Response shortcuts will be shown either.
+  This is to focus the texter on whatever the current Question is.
 
 ## Examples
 
@@ -52,7 +51,7 @@ to balance real-estate on the screen while avoiding confusion for the texter in 
 2. Pluses and Minuses
    * Question Response Answers: "Yes: I voted", "No", "-Yes but I Moved"
    * Canned Response Titles: "-Who are you?", +I don't understand", "+Wrong Number"
-   * Resulting Shoftcuts: [Yes] [No] [I don't understand]
+   * Resulting Shortcuts: [Yes] [No] [I don't understand]
    * Reasoning: "Yes: I voted" was shortened to "Yes" because there is punctuation right after the first word.
      "-Yes but I Moved" was excluded because it starts with a "-" sign.  All the non-prefixed Question Responses
      fit, so we add Canned Responses in order.  The first is excluded because it starts with "-".  "+I don't understand"
