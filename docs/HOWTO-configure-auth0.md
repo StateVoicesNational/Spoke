@@ -15,9 +15,10 @@ Note for users following [Instructions for One-Click Deployment to Heroku](https
 2. Create an [Auth0](https://auth0.com) account. In your Auth0 account, go to [Applications](https://manage.auth0.com/#/applications/), click on `Default App` and then grab your Client ID, Client Secret, and your Auth0 domain (should look like xxx.auth0.com). Add those inside your `.env` file (AUTH0_CLIENT_ID, AUTH0_CLIENT_SECRET, AUTH0_DOMAIN respectively).
 3. Run `yarn dev` to create and populate the tables.
 4. In your Auth0 app settings, set the following (Note: for development use `http://localhost:3000` instead of `https://yourspoke.example.com`. If following [Instructions for One-Click Deployment to Heroku](https://github.com/MoveOnOrg/Spoke/blob/main/docs/HOWTO_HEROKU_DEPLOY.md), use `https://<YOUR SPOKE APP>.herokuapp.com`.):
+    + **Application Login URI** - `https://yourspoke.example.com/login`
     + **Allowed Callback URLs** - `https://yourspoke.example.com/login-callback`
-    + **Allowed Web Origins** - `https://yourspoke.example.com`
     + **Allowed Logout URLs** - `https://yourspoke.example.com/logout-callback`
+    + **Allowed Web Origins** - `https://yourspoke.example.com`
     + **Allowed Origins (CORS)** - `https://yourspoke.example.com`
 5. In Advanced Settings, under the OAuth section, turn off 'OIDC Conformant'.
 6. Add a [new empty rule](https://manage.auth0.com/#/rules/create) in Auth0:
@@ -124,4 +125,3 @@ callback(null, user, context);
     ```
 
     </details>
-
