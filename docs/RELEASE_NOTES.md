@@ -1,15 +1,25 @@
 # Release Notes
 ## v6.0
 _May 2020:_ Version 6.0
+**Note:** This is a major release and therefore requires a schema change. See the deploy steps section for details.
 We're marking this as a major version update: 6.0 because there are several backwards-incompatible changes that we think you will love:
 - There is a new Texting UI -- in version 5.6 it was enableable with EXPERIMENTAL_TEXTERUI ahead of time. It is now the default! For this version, we allow you to preserve the old texter UI by setting the environment variable DEPRECATED_TEXTERUI=GONE_SOON. Also note that with the new UI we have removed user-created Canned Responses -- there's consensus that it causes more problems than it helps. We've also long had the Super Volunteer role which most campaigns use for a group of texters that can update canned responses when needed.
+  - As part of this Texter UI, you can create [shortcut buttons](./REFERENCE-shortcut-rules.md) that will surface some of your question responses and canned responses as a row of buttons outside of a menu to speed up a texter's response flow. [Check out the docs to learn more!](./REFERENCE-shortcut-rules.md)
 - *Experimental* A new action_handler to export survey question responses back to NGP VAN (not yet tested on a production campaign)
 - Action Handler developers: Through the great work of @lperson for improved VAN support, our action handler api used to return a true/false value for the available() call -- it should now return an object with two keys: { result: <boolean on available>, expiresSeconds: <how long to cache the result, 0 by default>}
 There are several schema changes -- only adding fields, so migration should be easy/fast. However, if you have SUPPRESS_MIGRATIONS enabled, then you will need to manually migrate the database ( Heroku, AWS Lambda )
 
 In addition to those changes, we've improved the Admin People page (@lperson ) and made some tweaks to the Campaign Edit page (@matteosb , @higgyCodes ), and the Texter Todo list (@larkinds ).
 
+Deploy Steps:
+
+**Instructions for migrating you database**
+
+1. Make sure SUPPRESS_MIGRATIONS="" (not 0!) in your environment
+2. If you're using AWS Lambda, check out the [deploy instructions here](DEPLOYING_AWS_LAMBDA.md#migrating-the-database)
+
 Thanks to all the contributors part of this release including:
+[hiemanshu](https://github.com/hiemanshu),
 [higgyCodes](https://github.com/higgyCodes),
 [JeremyParker](https://github.com/JeremyParker),
 [larkinds](https://github.com/larkinds),
