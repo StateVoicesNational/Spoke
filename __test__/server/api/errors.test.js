@@ -40,8 +40,10 @@ describe("errors.js", () => {
         error = caught;
       }
 
+      console.log("JSON.stringify(error", JSON.stringify(error));
+
       expect(error).toBeDefined();
-      expect(error.message).toEqual({
+      expect(error).toEqual({
         message: "You must login to access that resource.",
         status: 401
       });
