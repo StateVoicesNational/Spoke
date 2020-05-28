@@ -337,35 +337,6 @@ const organizationFragment = `
   }
 `;
 
-const mapMutationsToProps = () => ({
-  editOrganizationRoles: (organizationId, campaignId, userId, roles) => ({
-    mutation: gql`
-      mutation editOrganizationRoles($organizationId: String!, $userId: String!, $roles: [String], $campaignId: String) {
-        editOrganizationRoles(organizationId: $organizationId, userId: $userId, roles: $roles, campaignId: $campaignId) {
-          ${organizationFragment}
-        }
-      }
-    `,
-    variables: {
-      organizationId,
-      userId,
-      roles,
-      campaignId
-    }
-  }),
-  resetUserPassword: (organizationId, userId) => ({
-    mutation: gql`
-      mutation resetUserPassword($organizationId: String!, $userId: Int!) {
-        resetUserPassword(organizationId: $organizationId, userId: $userId)
-      }
-    `,
-    variables: {
-      organizationId,
-      userId
-    }
-  })
-});
-
 export const getUsersGql = `
       query getUsers(
         $organizationId: String!
@@ -401,22 +372,58 @@ export const getUsersGql = `
         }
       }`;
 
-const mapQueriesToProps = ({ ownProps }) => ({
+const queries = {
   users: {
     query: gql`
       ${getUsersGql}
     `,
-    variables: {
-      cursor: { offset: 0, limit: INITIAL_PAGE_SIZE },
-      organizationId: ownProps.organizationId,
-      campaignsFilter: ownProps.campaignsFilter,
-      sortBy: ownProps.sortBy || "FIRST_NAME",
-      filterBy: ownProps.filterBy || "FIRST_NAME",
-      filterString: ownProps.searchString,
-      role: ownProps.role
-    },
-    forceFetch: true
+    options: ownProps => ({
+      variables: {
+        cursor: { offset: 0, limit: INITIAL_PAGE_SIZE },
+        organizationId: ownProps.organizationId,
+        campaignsFilter: ownProps.campaignsFilter,
+        sortBy: ownProps.sortBy || "FIRST_NAME",
+        filterBy: ownProps.filterBy || "FIRST_NAME",
+        filterString: ownProps.searchString,
+        role: ownProps.role
+      },
+      fetchPolicy: "network-only"
+    })
   }
-});
+};
 
-export default loadData(PeopleList, { mapQueriesToProps, mapMutationsToProps });
+const mutations = {
+  editOrganizationRoles: ownProps => (
+    organizationId,
+    campaignId,
+    userId,
+    roles
+  ) => ({
+    mutation: gql`
+      mutation editOrganizationRoles($organizationId: String!, $userId: String!, $roles: [String], $campaignId: String) {
+        editOrganizationRoles(organizationId: $organizationId, userId: $userId, roles: $roles, campaignId: $campaignId) {
+          ${organizationFragment}
+        }
+      }
+    `,
+    variables: {
+      organizationId,
+      userId,
+      roles,
+      campaignId
+    }
+  }),
+  resetUserPassword: ownProps => (organizationId, userId) => ({
+    mutation: gql`
+      mutation resetUserPassword($organizationId: String!, $userId: Int!) {
+        resetUserPassword(organizationId: $organizationId, userId: $userId)
+      }
+    `,
+    variables: {
+      organizationId,
+      userId
+    }
+  })
+};
+
+export default loadData({ queries, mutations })(PeopleList);

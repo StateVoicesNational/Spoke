@@ -3,36 +3,15 @@ import React from "react";
 import { StyleSheet, css } from "aphrodite";
 import OldControls from "../components/AssignmentTexter/OldControls";
 import Controls from "../components/AssignmentTexter/Controls";
-import RaisedButton from "material-ui/RaisedButton";
-import FlatButton from "material-ui/FlatButton";
-import NavigateHomeIcon from "material-ui/svg-icons/action/home";
-import { grey100 } from "material-ui/styles/colors";
-import IconButton from "material-ui/IconButton/IconButton";
-import { Toolbar, ToolbarGroup } from "material-ui/Toolbar";
-import { Card, CardActions, CardTitle } from "material-ui/Card";
-import Divider from "material-ui/Divider";
 import { applyScript } from "../lib/scripts";
 import gql from "graphql-tag";
 import loadData from "./hoc/load-data";
 import yup from "yup";
-import GSForm from "../components/forms/GSForm";
-import Form from "react-formal";
-import GSSubmitButton from "../components/forms/GSSubmitButton";
 import BulkSendButton from "../components/AssignmentTexter/BulkSendButton";
 import CircularProgress from "material-ui/CircularProgress";
 import Snackbar from "material-ui/Snackbar";
-import {
-  getChildren,
-  getTopMostParent,
-  interactionStepForId,
-  log,
-  isBetweenTextingHours
-} from "../lib";
+import { isBetweenTextingHours } from "../lib";
 import { withRouter } from "react-router";
-import wrapMutations from "./hoc/wrap-mutations";
-import Empty from "../components/Empty";
-import CreateIcon from "material-ui/svg-icons/content/create";
-import { dataTest } from "../lib/attributes";
 import { getContactTimezone } from "../lib/timezones";
 
 const styles = StyleSheet.create({
@@ -165,7 +144,7 @@ export class AssignmentTexterContact extends React.Component {
         this.skipContact();
       }
     } else {
-      log.error(e);
+      console.error(e);
       this.setState({
         snackbarError: "Something went wrong!"
       });
@@ -431,8 +410,8 @@ AssignmentTexterContact.propTypes = {
   messageStatusFilter: PropTypes.string
 };
 
-const mapMutationsToProps = () => ({
-  createOptOut: (optOut, campaignContactId) => ({
+const mutations = {
+  createOptOut: ownProps => (optOut, campaignContactId) => ({
     mutation: gql`
       mutation createOptOut(
         $optOut: OptOutInput!
@@ -452,7 +431,7 @@ const mapMutationsToProps = () => ({
       campaignContactId
     }
   }),
-  createCannedResponse: cannedResponse => ({
+  createCannedResponse: ownProps => cannedResponse => ({
     mutation: gql`
       mutation createCannedResponse($cannedResponse: CannedResponseInput!) {
         createCannedResponse(cannedResponse: $cannedResponse) {
@@ -462,7 +441,10 @@ const mapMutationsToProps = () => ({
     `,
     variables: { cannedResponse }
   }),
-  editCampaignContactMessageStatus: (messageStatus, campaignContactId) => ({
+  editCampaignContactMessageStatus: ownProps => (
+    messageStatus,
+    campaignContactId
+  ) => ({
     mutation: gql`
       mutation editCampaignContactMessageStatus(
         $messageStatus: String!
@@ -482,7 +464,10 @@ const mapMutationsToProps = () => ({
       campaignContactId
     }
   }),
-  deleteQuestionResponses: (interactionStepIds, campaignContactId) => ({
+  deleteQuestionResponses: ownProps => (
+    interactionStepIds,
+    campaignContactId
+  ) => ({
     mutation: gql`
       mutation deleteQuestionResponses(
         $interactionStepIds: [String]
@@ -501,7 +486,10 @@ const mapMutationsToProps = () => ({
       campaignContactId
     }
   }),
-  updateQuestionResponses: (questionResponses, campaignContactId) => ({
+  updateQuestionResponses: ownProps => (
+    questionResponses,
+    campaignContactId
+  ) => ({
     mutation: gql`
       mutation updateQuestionResponses(
         $questionResponses: [QuestionResponseInput]
@@ -520,7 +508,7 @@ const mapMutationsToProps = () => ({
       campaignContactId
     }
   }),
-  sendMessage: (message, campaignContactId) => ({
+  sendMessage: ownProps => (message, campaignContactId) => ({
     mutation: gql`
       mutation sendMessage(
         $message: MessageInput!
@@ -543,7 +531,7 @@ const mapMutationsToProps = () => ({
       campaignContactId
     }
   }),
-  bulkSendMessages: assignmentId => ({
+  bulkSendMessages: ownProps => assignmentId => ({
     mutation: gql`
       mutation bulkSendMessages($assignmentId: Int!) {
         bulkSendMessages(assignmentId: $assignmentId) {
@@ -555,8 +543,6 @@ const mapMutationsToProps = () => ({
       assignmentId
     }
   })
-});
+};
 
-export default loadData(wrapMutations(withRouter(AssignmentTexterContact)), {
-  mapMutationsToProps
-});
+export default loadData({ mutations })(withRouter(AssignmentTexterContact));

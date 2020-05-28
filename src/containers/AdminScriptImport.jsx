@@ -5,14 +5,12 @@ import { StyleSheet, css } from "aphrodite";
 
 import gql from "graphql-tag";
 import loadData from "./hoc/load-data";
-import wrapMutations from "./hoc/wrap-mutations";
 import theme from "../styles/theme";
 import CampaignFormSectionHeading from "../components/CampaignFormSectionHeading";
 import TextField from "material-ui/TextField";
 import { ListItem, List } from "material-ui/List";
 import RaisedButton from "material-ui/RaisedButton";
 import ErrorIcon from "material-ui/svg-icons/alert/error";
-import { pendingJobsGql } from "../lib/pendingJobsUtils";
 import { type } from "os";
 
 const errorIcon = <ErrorIcon color={theme.colors.red} />;
@@ -23,6 +21,7 @@ const styles = StyleSheet.create({
   }
 });
 
+// TODO[matteo]: refactor this so it doesn't do its own polling
 export class AdminScriptImport extends Component {
   constructor(props) {
     super(props);
@@ -101,12 +100,40 @@ export class AdminScriptImport extends Component {
   }
 }
 
-const mapQueriesToProps = ({ ownProps }) => ({
-  pendingJobsData: pendingJobsGql(ownProps.campaignData.campaign.id)
-});
+AdminScriptImport.propTypes = {
+  onSubmit: type.func,
+  campaignData: PropTypes.object,
+  mutations: PropTypes.object,
+  pendingJobsData: PropTypes.object
+};
 
-const mapMutationsToProps = () => ({
-  importCampaignScript: (campaignId, url) => ({
+const queries = {
+  pendingJobsData: {
+    query: gql`
+      query getCampaignJobs($campaignId: String!) {
+        campaign(id: $campaignId) {
+          id
+          pendingJobs {
+            id
+            jobType
+            assigned
+            status
+            resultMessage
+          }
+        }
+      }
+    `,
+    options: ownProps => ({
+      variables: {
+        campaignId: ownProps.params.campaignId
+      },
+      pollInterval: 60000 // TODO: revisit
+    })
+  }
+};
+
+const mutations = {
+  importCampaignScript: ownProps => (campaignId, url) => ({
     mutation: gql`
       mutation importCampaignScript($campaignId: String!, $url: String!) {
         importCampaignScript(campaignId: $campaignId, url: $url)
@@ -117,16 +144,6 @@ const mapMutationsToProps = () => ({
       url
     }
   })
-});
-
-AdminScriptImport.propTypes = {
-  onSubmit: type.func,
-  campaignData: PropTypes.object,
-  mutations: PropTypes.object,
-  pendingJobsData: PropTypes.object
 };
 
-export default loadData(wrapMutations(AdminScriptImport), {
-  mapQueriesToProps,
-  mapMutationsToProps
-});
+export default loadData({ queries, mutations })(AdminScriptImport);

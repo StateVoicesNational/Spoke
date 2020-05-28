@@ -1,68 +1,13 @@
-import gql from "graphql-tag";
-import PropTypes from "prop-types";
 import { Component } from "react";
-import { withRouter } from "react-router";
-import loadData from "./hoc/load-data";
+import PropTypes from "prop-types";
+import gql from "graphql-tag";
+import isEqual from "lodash/isEqual";
 
-export class PaginatedCampaignsRetriever extends Component {
-  constructor(props) {
-    super(props);
+import apolloClient from "../network/apollo-client-singleton";
 
-    this.state = { offset: 0 };
-  }
-
-  componentDidMount() {
-    this.handleCampaignsReceived();
-  }
-
-  componentDidUpdate(prevProps) {
-    this.handleCampaignsReceived();
-  }
-
-  handleCampaignsReceived() {
-    if (!this.props.campaigns || this.props.campaigns.loading) {
-      return;
-    }
-
-    if (
-      this.props.campaigns.campaigns.campaigns.length ===
-      this.props.campaigns.campaigns.pageInfo.total
-    ) {
-      this.props.onCampaignsReceived(this.props.campaigns.campaigns.campaigns);
-    }
-
-    const newOffset =
-      this.props.campaigns.campaigns.pageInfo.offset + this.props.pageSize;
-    if (newOffset < this.props.campaigns.campaigns.pageInfo.total) {
-      this.props.campaigns.fetchMore({
-        variables: {
-          cursor: {
-            offset: newOffset,
-            limit: this.props.pageSize
-          }
-        },
-        updateQuery: (prev, { fetchMoreResult }) => {
-          if (!fetchMoreResult) {
-            return prev;
-          }
-          const returnValue = Object.assign({}, prev);
-          returnValue.campaigns.campaigns = returnValue.campaigns.campaigns.concat(
-            fetchMoreResult.data.campaigns.campaigns
-          );
-          returnValue.campaigns.pageInfo =
-            fetchMoreResult.data.campaigns.pageInfo;
-          return returnValue;
-        }
-      });
-    }
-  }
-
-  render() {
-    return null;
-  }
-}
-
-export const campaignsQuery = `
+const fetchCampaigns = async (offset, limit, organizationId, campaignsFilter) =>
+  apolloClient.query({
+    query: gql`
       query qq(
         $organizationId: String!
         $cursor: OffsetLimitCursor
@@ -87,32 +32,61 @@ export const campaignsQuery = `
           }
         }
       }
-    `;
-
-const mapQueriesToProps = ({ ownProps }) => ({
-  campaigns: {
-    query: gql`
-      ${campaignsQuery}
     `,
     variables: {
-      cursor: { offset: 0, limit: ownProps.pageSize },
-      organizationId: ownProps.organizationId,
-      campaignsFilter: ownProps.campaignsFilter
+      cursor: { offset, limit },
+      organizationId,
+      campaignsFilter
     },
-    forceFetch: true
+    fetchPolicy: "network-only"
+  });
+
+export class PaginatedCampaignsRetriever extends Component {
+  static propTypes = {
+    organizationId: PropTypes.string.isRequired,
+    campaignsFilter: PropTypes.shape({
+      isArchived: PropTypes.bool,
+      campaignId: PropTypes.number
+    }),
+    onCampaignsReceived: PropTypes.func.isRequired,
+    pageSize: PropTypes.number.isRequired
+  };
+
+  componentDidMount() {
+    this.handlePropsReceived();
   }
-});
 
-PaginatedCampaignsRetriever.propTypes = {
-  organizationId: PropTypes.string.isRequired,
-  campaignsFilter: PropTypes.shape({
-    isArchived: PropTypes.bool,
-    campaignId: PropTypes.number
-  }),
-  onCampaignsReceived: PropTypes.func.isRequired,
-  pageSize: PropTypes.number.isRequired
-};
+  componentDidUpdate(prevProps) {
+    this.handlePropsReceived(prevProps);
+  }
 
-export default loadData(withRouter(PaginatedCampaignsRetriever), {
-  mapQueriesToProps
-});
+  handlePropsReceived = async (prevProps = {}) => {
+    if (isEqual(prevProps, this.props)) return;
+
+    const { organizationId, campaignsFilter, pageSize } = this.props;
+
+    let offset = 0;
+    let total = undefined;
+    let campaigns = [];
+    do {
+      const results = await fetchCampaigns(
+        offset,
+        pageSize,
+        organizationId,
+        campaignsFilter
+      );
+      const { pageInfo, campaigns: newCampaigns } = results.data.campaigns;
+      campaigns = campaigns.concat(newCampaigns);
+      offset += pageSize;
+      total = pageInfo.total;
+    } while (offset < total);
+
+    this.props.onCampaignsReceived(campaigns);
+  };
+
+  render() {
+    return null;
+  }
+}
+
+export default PaginatedCampaignsRetriever;
