@@ -122,6 +122,7 @@ export function assembleAnswerOptions(allInteractionSteps) {
           nextInteractionStep: interactionStep,
           value: interactionStep.answer_option,
           action: interactionStep.answer_actions,
+          action_data: interactionStep.answer_actions_data,
           interaction_step_id: interactionStep.id,
           parent_interaction_step: interactionStep.parent_interaction_id
         });

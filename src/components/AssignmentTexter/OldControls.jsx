@@ -1,10 +1,10 @@
 import PropTypes from "prop-types";
 import React from "react";
 import { StyleSheet, css } from "aphrodite";
-import ContactToolbar from "../components/ContactToolbar";
-import MessageList from "../components/MessageList";
-import CannedResponseMenu from "../components/CannedResponseMenu";
-import AssignmentTexterSurveys from "../components/AssignmentTexterSurveys";
+import OldToolbar from "./OldToolbar";
+import MessageList from "./MessageList";
+import CannedResponseMenu from "./CannedResponseMenu";
+import Survey from "./Survey";
 import RaisedButton from "material-ui/RaisedButton";
 import FlatButton from "material-ui/FlatButton";
 import NavigateHomeIcon from "material-ui/svg-icons/action/home";
@@ -17,11 +17,11 @@ import { Card, CardActions, CardTitle } from "material-ui/Card";
 import Divider from "material-ui/Divider";
 import gql from "graphql-tag";
 import yup from "yup";
-import GSForm from "../components/forms/GSForm";
+import GSForm from "../forms/GSForm";
 import Form from "react-formal";
-import GSSubmitButton from "../components/forms/GSSubmitButton";
-import SendButton from "../components/SendButton";
-import SendButtonArrow from "../components/SendButtonArrow";
+import GSSubmitButton from "../forms/GSSubmitButton";
+import SendButton from "../SendButton";
+import SendButtonArrow from "./SendButtonArrow";
 import CircularProgress from "material-ui/CircularProgress";
 import Snackbar from "material-ui/Snackbar";
 import {
@@ -31,11 +31,11 @@ import {
   interactionStepForId,
   log,
   isBetweenTextingHours
-} from "../lib";
-import Empty from "../components/Empty";
+} from "../../lib";
+import Empty from "../Empty";
 import CreateIcon from "material-ui/svg-icons/content/create";
-import { dataTest } from "../lib/attributes";
-import { getContactTimezone } from "../lib/timezones";
+import { dataTest } from "../../lib/attributes";
+import { getContactTimezone } from "../../lib/timezones";
 
 const styles = StyleSheet.create({
   mobile: {
@@ -325,7 +325,7 @@ export class AssignmentTexterContactControls extends React.Component {
       />
     ) : (
       <div>
-        <AssignmentTexterSurveys
+        <Survey
           contact={contact}
           interactionSteps={availableInteractionSteps}
           onQuestionResponseChange={this.handleQuestionResponseChange}
@@ -481,7 +481,7 @@ export class AssignmentTexterContactControls extends React.Component {
   renderTopFixedSection() {
     const { contact } = this.props;
     return (
-      <ContactToolbar
+      <OldToolbar
         campaign={this.props.campaign}
         campaignContact={contact}
         rightToolbarIcon={

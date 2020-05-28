@@ -2,9 +2,9 @@ import PropTypes from "prop-types";
 import React from "react";
 import { StyleSheet, css } from "aphrodite";
 import { Toolbar, ToolbarGroup, ToolbarTitle } from "material-ui/Toolbar";
-import { getDisplayPhoneNumber } from "../lib/phone-format";
-import { getLocalTime, getContactTimezone } from "../lib/timezones";
-import { getProcessEnvDstReferenceTimezone } from "../lib/tz-helpers";
+import { getDisplayPhoneNumber } from "../../lib/phone-format";
+import { getLocalTime, getContactTimezone } from "../../lib/timezones";
+import { getProcessEnvDstReferenceTimezone } from "../../lib/tz-helpers";
 import ActionFace from "material-ui/svg-icons/action/face";
 import IconButton from "material-ui/IconButton/IconButton";
 import { grey100 } from "material-ui/styles/colors";
@@ -70,7 +70,7 @@ const styles = StyleSheet.create({
   },
   navigationTitle: {
     flex: "1 1 auto",
-    width: "3em",
+    width: "4em",
     height: "100%",
     padding: "6px",
     textAlign: "center"
@@ -126,8 +126,9 @@ const ContactToolbar = function ContactToolbar(props) {
           <IconButton
             onTouchTap={props.onExit}
             className={css(styles.contactToolbarIconButton)}
+            tooltip="Return Home"
+            tooltipPosition="bottom-right"
           >
-            tooltip="Return Home" tooltipPosition="bottom-center" >
             <NavigateHomeIcon color={"white"} />
           </IconButton>
           <div className={css(styles.titleSmall)} style={{ color: "#B0B0B0" }}>
@@ -140,18 +141,18 @@ const ContactToolbar = function ContactToolbar(props) {
       </Toolbar>
       <Toolbar style={{ ...inlineStyles.toolbar, backgroundColor: "#7E808B" }}>
         <div className={`${css(styles.topFlex)} ${css(styles.contactData)}`}>
-          <IconButton className={css(styles.contactToolbarIconButton)}>
+          <IconButton
+            className={css(styles.contactToolbarIconButton)}
+            tooltip={`?contact=${campaignContact.id}`}
+            tooltipPosition="bottom-right"
+          >
             <ActionFace color="white" />
           </IconButton>
 
           <div className={css(styles.titleSmall)} style={{ color: "white" }}>
             {formattedLocalTime} - {formattedLocation}
           </div>
-          <div
-            className={css(styles.titleBig)}
-            style={{ fontSize: "24px" }}
-            title={"foo bar"}
-          >
+          <div className={css(styles.titleBig)} style={{ fontSize: "24px" }}>
             {campaignContact.firstName}
           </div>
         </div>

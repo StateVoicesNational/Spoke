@@ -238,7 +238,7 @@ const messageCache = {
         messageInstance.campaign_contact_id ||
         activeCellFound.campaign_contact_id;
     } else {
-      // IS from contact:
+      // is NOT from contact:
       newStatus =
         contact.message_status === "needsResponse" ||
         contact.message_status === "convo"

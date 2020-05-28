@@ -97,11 +97,20 @@ class AdminDashboard extends React.Component {
         name: "Settings",
         path: "settings",
         role: "SUPERVOLUNTEER"
+      },
+      {
+        name: "Phone Numbers",
+        path: "phone-numbers",
+        role: "OWNER"
       }
     ];
 
     if (window.EXPERIMENTAL_TAGS === false) {
       sections = sections.filter(section => section.name !== "Tags");
+    }
+
+    if (!this.props.data.organization.phoneInventoryEnabled) {
+      sections = sections.filter(section => section.name !== "Phone Numbers");
     }
 
     let currentSection = sections.filter(section =>
@@ -146,6 +155,10 @@ const mapQueriesToProps = ({ ownProps }) => ({
         currentUser {
           id
           roles(organizationId: $organizationId)
+        }
+        organization(id: $organizationId) {
+          name
+          phoneInventoryEnabled
         }
       }
     `,

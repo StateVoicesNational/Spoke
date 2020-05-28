@@ -10,7 +10,8 @@ import {
   handleIncomingMessageParts,
   fixOrgless,
   clearOldJobs,
-  importScript
+  importScript,
+  buyPhoneNumbers
 } from "./jobs";
 import { setupUserNotificationObservers } from "../server/notifications";
 
@@ -25,10 +26,13 @@ export { seedZipCodes } from "../server/seeds/seed-zip-codes";
    * Run the 'scripts' in dev-tools/Procfile.dev
  */
 
+const JOBS_SAME_PROCESS = !!process.env.JOBS_SAME_PROCESS;
+
 const jobMap = {
   export: exportCampaign,
   assign_texters: assignTexters,
-  import_script: importScript
+  import_script: importScript,
+  buy_phone_numbers: buyPhoneNumbers
 };
 
 export async function processJobs() {
@@ -162,10 +166,14 @@ export const erroredMessageSender = messageSenderCreator(function(mQuery) {
 }, "SENDING");
 
 export async function handleIncomingMessages() {
-  setupUserNotificationObservers();
   if (process.env.DEBUG_INCOMING_MESSAGES) {
     console.log("Running handleIncomingMessages");
   }
+  if (JOBS_SAME_PROCESS && process.env.DEFAULT_SERVICE === "twilio") {
+    // no need to handle incoming messages
+    return;
+  }
+  setupUserNotificationObservers();
   // eslint-disable-next-line no-constant-condition
   let i = 0;
   while (true) {
@@ -249,8 +257,6 @@ const syncProcessMap = {
   fixOrgless,
   clearOldJobs
 };
-
-const JOBS_SAME_PROCESS = !!process.env.JOBS_SAME_PROCESS;
 
 export async function dispatchProcesses(event, dispatcher, eventCallback) {
   const toDispatch =

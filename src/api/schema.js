@@ -1,57 +1,19 @@
 import gql from "graphql-tag";
 
-import {
-  schema as userSchema,
-  resolvers as userResolvers,
-  buildUserOrganizationQuery
-} from "./user";
-import {
-  schema as conversationSchema,
-  getConversations,
-  resolvers as conversationsResolver
-} from "./conversations";
-import {
-  schema as organizationSchema,
-  resolvers as organizationResolvers
-} from "./organization";
-import {
-  schema as campaignSchema,
-  resolvers as campaignResolvers
-} from "./campaign";
-import {
-  schema as assignmentSchema,
-  resolvers as assignmentResolvers
-} from "./assignment";
-import {
-  schema as interactionStepSchema,
-  resolvers as interactionStepResolvers
-} from "./interaction-step";
-import {
-  schema as questionSchema,
-  resolvers as questionResolvers
-} from "./question";
-import {
-  schema as questionResponseSchema,
-  resolvers as questionResponseResolvers
-} from "./question-response";
-import {
-  schema as optOutSchema,
-  resolvers as optOutResolvers
-} from "./opt-out";
-import {
-  schema as messageSchema,
-  resolvers as messageResolvers
-} from "./message";
-import {
-  schema as campaignContactSchema,
-  resolvers as campaignContactResolvers
-} from "./campaign-contact";
-import {
-  schema as cannedResponseSchema,
-  resolvers as cannedResponseResolvers
-} from "./canned-response";
+import { schema as userSchema } from "./user";
+import { schema as conversationSchema } from "./conversations";
+import { schema as organizationSchema } from "./organization";
+import { schema as campaignSchema } from "./campaign";
+import { schema as assignmentSchema } from "./assignment";
+import { schema as interactionStepSchema } from "./interaction-step";
+import { schema as questionSchema } from "./question";
+import { schema as questionResponseSchema } from "./question-response";
+import { schema as optOutSchema } from "./opt-out";
+import { schema as messageSchema } from "./message";
+import { schema as campaignContactSchema } from "./campaign-contact";
+import { schema as cannedResponseSchema } from "./canned-response";
+import { schema as inviteSchema } from "./invite";
 import { schema as tagSchema } from "./tag";
-import { schema as inviteSchema, resolvers as inviteResolvers } from "./invite";
 
 const rootSchema = gql`
   input CampaignContactInput {
@@ -87,6 +49,7 @@ const rootSchema = gql`
     script: String
     answerOption: String
     answerActions: String
+    answerActionsData: String
     parentInteractionId: String
     isDeleted: Boolean
     interactionSteps: [InteractionStepInput]
@@ -113,6 +76,9 @@ const rootSchema = gql`
     texters: [TexterInput]
     interactionSteps: InteractionStepInput
     cannedResponses: [CannedResponseInput]
+    useOwnMessagingService: Boolean
+    phoneNumbers: [String]
+    messageserviceSid: String
     overrideOrganizationTextingHours: Boolean
     textingHoursEnforced: Boolean
     textingHoursStart: Int
@@ -182,12 +148,6 @@ const rootSchema = gql`
     organizationId: String
   }
 
-  type Action {
-    name: String
-    display_name: String
-    instructions: String
-  }
-
   type FoundContact {
     found: Boolean
   }
@@ -211,6 +171,13 @@ const rootSchema = gql`
     OLDEST
   }
 
+  enum FilterPeopleBy {
+    FIRST_NAME
+    LAST_NAME
+    EMAIL
+    ANY
+  }
+
   enum SortCampaignsBy {
     DUE_DATE_ASC
     DUE_DATE_DESC
@@ -226,7 +193,6 @@ const rootSchema = gql`
     inviteByHash(hash: String!): [Invite]
     assignment(id: String!): Assignment
     organizations: [Organization]
-    availableActions(organizationId: String!): [Action]
     conversations(
       cursor: OffsetLimitCursor!
       organizationId: String!
@@ -247,6 +213,8 @@ const rootSchema = gql`
       campaignsFilter: CampaignsFilter
       role: String
       sortBy: SortPeopleBy
+      filterString: String
+      filterBy: FilterPeopleBy
     ): UsersReturn
     tags(organizationId: String!): TagsList
   }
@@ -353,6 +321,12 @@ const rootSchema = gql`
     createTag(organizationId: String!, tagData: TagInput!): Tag
     editTag(organizationId: String!, id: String!, tagData: TagInput!): Tag
     deleteTag(organizationId: String!, id: String!): Tag
+    buyPhoneNumbers(
+      organizationId: ID!
+      areaCode: String!
+      limit: Int!
+      addToOrganizationMessagingService: Boolean
+    ): JobRequest
   }
 
   schema {

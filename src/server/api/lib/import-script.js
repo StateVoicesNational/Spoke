@@ -244,6 +244,7 @@ const saveInteractionsHierarchyNode = async (
       script: interactionsHierarchyNode.script.join("\n") || "",
       answer_option: interactionsHierarchyNode.answer || "",
       answer_actions: "",
+      answer_actions_data: "",
       campaign_id: campaignId,
       is_deleted: false
     })

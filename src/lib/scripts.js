@@ -16,11 +16,9 @@ const TOP_LEVEL_UPLOAD_FIELDS = [
   "zip",
   "external_id"
 ];
-const TEXTER_SCRIPT_FIELDS = [
-  "texterFirstName",
-  "texterLastName",
-  "texterAliasOrFirstName"
-];
+const TEXTER_SCRIPT_FIELDS = ["texterLastName", "texterAliasOrFirstName"];
+
+const DEPRECATED_SCRIPT_FIELDS = ["texterFirstName"];
 
 // Fields that should be capitalized when a script is applied
 const CAPITALIZE_FIELDS = [
@@ -32,8 +30,10 @@ const CAPITALIZE_FIELDS = [
 ];
 
 // TODO: This will include zipCode even if you ddin't upload it
-export const allScriptFields = customFields =>
-  TOP_LEVEL_UPLOAD_FIELDS.concat(TEXTER_SCRIPT_FIELDS).concat(customFields);
+export const allScriptFields = (customFields, includeDeprecated) =>
+  TOP_LEVEL_UPLOAD_FIELDS.concat(TEXTER_SCRIPT_FIELDS)
+    .concat(customFields)
+    .concat(includeDeprecated ? DEPRECATED_SCRIPT_FIELDS : []);
 
 const capitalize = str => {
   const strTrimmed = str.trim();
@@ -63,7 +63,7 @@ const getScriptFieldValue = (contact, texter, fieldName) => {
 };
 
 export const applyScript = ({ script, contact, customFields, texter }) => {
-  const scriptFields = allScriptFields(customFields);
+  const scriptFields = allScriptFields(customFields, true);
   let appliedScript = script;
 
   for (const field of scriptFields) {
