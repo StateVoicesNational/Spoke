@@ -4,6 +4,9 @@ import { r } from "../../server/models";
 import { actionKitSignup } from "./helper-ak-sync.js";
 
 const sqs = new aws.SQS();
+
+export const name = "revere-signup";
+
 // What the user sees as the option
 export const displayName = () => "Revere Signup";
 
@@ -20,10 +23,10 @@ export const instructions = () =>
   "This option triggers a new user request to Revere when selected.";
 
 export async function available(organizationId) {
-  if (organizationId && listId && mobileApiKey) {
-    return true;
-  }
-  return false;
+  return {
+    result: organizationId && listId && mobileApiKey,
+    expiresSeconds: 600
+  };
 }
 
 export async function processAction(

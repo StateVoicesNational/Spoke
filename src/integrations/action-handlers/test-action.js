@@ -1,6 +1,8 @@
 import request from "request";
 import { r } from "../../server/models";
 
+export const name = "test-action";
+
 // What the user sees as the option
 export const displayName = () => "Test Action";
 
@@ -16,7 +18,10 @@ export const instructions = () =>
 // Besides this returning true, "test-action" will also need to be added to
 // process.env.ACTION_HANDLERS
 export async function available(organizationId) {
-  return true;
+  return {
+    result: true,
+    expiresSeconds: 600
+  };
 }
 
 // What happens when a texter saves the answer that triggers the action

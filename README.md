@@ -135,8 +135,12 @@ Docker is optional, but can help with a consistent development environment using
   - Configuration for [Enforcing Texting Hours](https://github.com/MoveOnOrg/Spoke/blob/main/docs/TEXTING-HOURS-ENFORCEMENT.md)
 
 - Integrations
-
-  - [ActionKit](https://github.com/MoveOnOrg/Spoke/blob/main/docs/HOWTO_INTEGRATE_WITH_ACTIONKIT.md)
+  - [Contact Loaders](https://github.com/MoveOnOrg/Spoke/blob/main/docs/HOWTO-use-contact-loaders.md)
+  - [Action Handlers](https://github.com/MoveOnOrg/Spoke/blob/main/docs/HOWTO-use-action-handlers.md)
+    - [ActionKit](https://github.com/MoveOnOrg/Spoke/blob/main/docs/HOWTO_INTEGRATE_WITH_ACTIONKIT.md)
+    - [Mobile Commons](https://github.com/MoveOnOrg/Spoke/blob/main/docs/HOWTO_INTEGRATE_WITH_MOBILE_COMMONS.md)
+    - NGPVAN and everyaction ***(coming soon)***
+    - [Revere](https://github.com/MoveOnOrg/Spoke/blob/main/docs/HOWTO_INTEGRATE_WITH_REVERE.md)
 
 - Administration
   - Description of the different [Roles and Their Permissions](https://github.com/MoveOnOrg/Spoke/blob/main/docs/ROLES_DESCRIPTION.md)

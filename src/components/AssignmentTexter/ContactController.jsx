@@ -1,11 +1,11 @@
 import PropTypes from "prop-types";
 import React from "react";
 import IconButton from "material-ui/IconButton/IconButton";
-import LoadingIndicator from "./LoadingIndicator";
+import LoadingIndicator from "../LoadingIndicator";
 import { StyleSheet, css } from "aphrodite";
 import { withRouter } from "react-router";
 import Check from "material-ui/svg-icons/action/check-circle";
-import Empty from "../components/Empty";
+import Empty from "../Empty";
 import RaisedButton from "material-ui/RaisedButton";
 
 const styles = StyleSheet.create({
@@ -23,7 +23,7 @@ const styles = StyleSheet.create({
   }
 });
 
-export class AssignmentTexter extends React.Component {
+export class ContactController extends React.Component {
   constructor(props) {
     super(props);
 
@@ -37,7 +37,15 @@ export class AssignmentTexter extends React.Component {
   }
 
   componentWillMount() {
-    this.updateCurrentContactIndex(0);
+    let startIndex = 0;
+    const contactId = String(document.location).match(/contact=(\d+)/);
+    if (contactId) {
+      startIndex = this.props.contacts.findIndex(c => c.id == contactId[1]);
+      if (startIndex === -1) {
+        startIndex = 0;
+      }
+    }
+    this.updateCurrentContactIndex(startIndex);
   }
 
   componentWillUpdate(nextProps, nextState) {
@@ -445,7 +453,7 @@ export class AssignmentTexter extends React.Component {
   }
 }
 
-AssignmentTexter.propTypes = {
+ContactController.propTypes = {
   assignment: PropTypes.object, // current assignment
   contacts: PropTypes.array, // contacts for current assignment
   allContactsCount: PropTypes.number,
@@ -459,4 +467,4 @@ AssignmentTexter.propTypes = {
   messageStatusFilter: PropTypes.string
 };
 
-export default withRouter(AssignmentTexter);
+export default withRouter(ContactController);

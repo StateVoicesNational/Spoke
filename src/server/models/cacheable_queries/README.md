@@ -122,6 +122,9 @@ manually referencing a key inline.  All root keys are prefixed by the environmen
   * KEY `cell-${cell}-${messageServiceSid}`
     * value=`{contact_id}::{timezone_offset}`
     * This is saved on the sending of the first message, for easy lookup of the contact info when a response comes in from the contact.  This is done through the api `.updateStatus(contact, newStatus)`. You can access the data from `.lookupByCell(cell, service, messageServiceSid)`
+* questionResponse (only when `REDIS_CONTACT_CACHE=1`)
+  * KEY `qresponse-${contactId}`
+    * stores JSON array of `[{interaction_step_id, value}, ....]`
 * message (only when `REDIS_CONTACT_CACHE=1`)
   * LIST `messages-${contactId}`
     * Includes all message data

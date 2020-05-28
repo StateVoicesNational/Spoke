@@ -1,16 +1,17 @@
-/* eslint-disable no-unused-expressions, consistent-return */
-import { r } from "../../../src/server/models/";
-import { dataQuery as TexterTodoListQuery } from "../../../src/containers/TexterTodoList";
-import { dataQuery as TexterTodoQuery } from "../../../src/containers/TexterTodo";
-import { campaignDataQuery as AdminCampaignEditQuery } from "../../../src/containers/AdminCampaignEdit";
-import { campaignsQuery } from "../../../src/containers/PaginatedCampaignsRetriever";
+import gql from "graphql-tag";
+import { r } from "../../../../src/server/models";
+import { dataQuery as TexterTodoListQuery } from "../../../../src/containers/TexterTodoList";
+import { dataQuery as TexterTodoQuery } from "../../../../src/containers/TexterTodo";
+import { campaignDataQuery as AdminCampaignEditQuery } from "../../../../src/containers/AdminCampaignEdit";
+import { campaignsQuery } from "../../../../src/containers/PaginatedCampaignsRetriever";
 
 import {
   bulkReassignCampaignContactsMutation,
   reassignCampaignContactsMutation
-} from "../../../src/containers/AdminIncomingMessageList";
+} from "../../../../src/containers/AdminIncomingMessageList";
 
-import { makeTree } from "../../../src/lib";
+import { makeTree } from "../../../../src/lib";
+import twilio from "../../../../src/server/api/lib/twilio";
 
 import {
   setupTest,
@@ -31,8 +32,11 @@ import {
   getCampaignContact,
   sendMessage,
   bulkSendMessages,
-  runGql
-} from "../../test_helpers";
+  runGql,
+  sleep
+} from "../../../test_helpers";
+
+jest.mock("../../../../src/server/api/lib/twilio");
 
 let testAdminUser;
 let testInvite;
@@ -92,7 +96,7 @@ afterEach(async () => {
 }, global.DATABASE_SETUP_TEARDOWN_TIMEOUT);
 
 it("allow supervolunteer to retrieve campaign data", async () => {
-  let campaignDataResults = await runComponentGql(
+  const campaignDataResults = await runComponentGql(
     AdminCampaignEditQuery,
     { campaignId: testCampaign.id },
     testSuperVolunteerUser
@@ -195,7 +199,9 @@ it("save campaign interaction steps, edit it, make sure the last value is set", 
   );
   interactionStepsClone1.interactionSteps[0].script =
     "second save before campaign start";
-  await createScript(testAdminUser, testCampaign, interactionStepsClone1);
+  await createScript(testAdminUser, testCampaign, {
+    interactionSteps: interactionStepsClone1
+  });
 
   campaignDataResults = await runComponentGql(
     AdminCampaignEditQuery,
@@ -210,7 +216,9 @@ it("save campaign interaction steps, edit it, make sure the last value is set", 
     campaignDataResults.data.campaign.interactionSteps
   );
   interactionStepsClone2.script = "Hi {firstName}, please autorespond";
-  await createScript(testAdminUser, testCampaign, interactionStepsClone2);
+  await createScript(testAdminUser, testCampaign, {
+    interactionSteps: interactionStepsClone2
+  });
 
   campaignDataResults = await runComponentGql(
     AdminCampaignEditQuery,
@@ -257,7 +265,9 @@ it("save campaign interaction steps, edit it, make sure the last value is set", 
     "third save after campaign start";
   interactionStepsClone3.interactionSteps[0].questionText =
     "hmm1 after campaign start";
-  await createScript(testAdminUser, testCampaign, interactionStepsClone3);
+  await createScript(testAdminUser, testCampaign, {
+    interactionSteps: interactionStepsClone3
+  });
 
   campaignDataResults = await runComponentGql(
     AdminCampaignEditQuery,
@@ -306,8 +316,8 @@ it("save campaign interaction steps, edit it, make sure the last value is set", 
   expect(copiedCampaign1.data.copyCampaign.id).not.toEqual(testCampaign.id);
 
   const prevCampaignIsteps = campaignDataResults.data.campaign.interactionSteps;
-  const compareToLater = async (campaignId, prevCampaignIsteps) => {
-    const campaignDataResults = await runComponentGql(
+  const compareToLater = async (campaignId, innerPrevCampaignIsteps) => {
+    campaignDataResults = await runComponentGql(
       AdminCampaignEditQuery,
       { campaignId },
       testAdminUser
@@ -326,10 +336,10 @@ it("save campaign interaction steps, edit it, make sure the last value is set", 
     // make sure the copied steps are new ones
     expect(
       Number(campaignDataResults.data.campaign.interactionSteps[0].id)
-    ).toBeGreaterThan(Number(prevCampaignIsteps[1].id));
+    ).toBeGreaterThan(Number(innerPrevCampaignIsteps[1].id));
     expect(
       Number(campaignDataResults.data.campaign.interactionSteps[1].id)
-    ).toBeGreaterThan(Number(prevCampaignIsteps[1].id));
+    ).toBeGreaterThan(Number(innerPrevCampaignIsteps[1].id));
     return campaignDataResults;
   };
   const campaign1Results = await compareToLater(
@@ -414,18 +424,14 @@ describe("Caching", async () => {
       await startCampaign(testAdminUser, testCampaign);
 
       queryLog = [];
-      console.log("STARTING TEXTING");
+      console.log("STARTING TEXTING"); // eslint-disable-line no-console
       for (let i = 0; i < 5; i++) {
-        const messageResult = await sendMessage(
-          testContacts[i].id,
-          testTexterUser,
-          {
-            userId: testTexterUser.id,
-            contactNumber: testContacts[i].cell,
-            text: "test text",
-            assignmentId
-          }
-        );
+        await sendMessage(testContacts[i].id, testTexterUser, {
+          userId: testTexterUser.id,
+          contactNumber: testContacts[i].cell,
+          text: "test text",
+          assignmentId
+        });
       }
       // should only have done updates and inserts
       expect(
@@ -483,16 +489,12 @@ describe("Reassignments", async () => {
     );
     // send some texts
     for (let i = 0; i < 5; i++) {
-      const messageResult = await sendMessage(
-        testContacts[i].id,
-        testTexterUser,
-        {
-          userId: testTexterUser.id,
-          contactNumber: testContacts[i].cell,
-          text: "test text",
-          assignmentId
-        }
-      );
+      await sendMessage(testContacts[i].id, testTexterUser, {
+        userId: testTexterUser.id,
+        contactNumber: testContacts[i].cell,
+        text: "test text",
+        assignmentId
+      });
     }
     // TEXTER 1 (95 needsMessage, 5 needsResponse)
     texterCampaignDataResults = await runComponentGql(
@@ -570,19 +572,22 @@ describe("Reassignments", async () => {
     expect(texterCampaignDataResults.data.assignment.allContactsCount).toEqual(
       20
     );
-    let assignmentContacts2 =
+    const assignmentContacts2 =
       texterCampaignDataResults.data.assignment.contacts;
     for (let i = 0; i < 5; i++) {
       const contact = testContacts.filter(
-        c => assignmentContacts2[i].id == c.id
+        c => assignmentContacts2[i].id === c.id.toString()
       )[0];
-      const messageResult = await sendMessage(contact.id, testTexterUser2, {
+      const messageRes = await sendMessage(contact.id, testTexterUser2, {
         userId: testTexterUser2.id,
         contactNumber: contact.cell,
         text: "test text autorespond",
         assignmentId: assignmentId2
       });
+      console.log("campaign.test sendMessage", messageRes);
     }
+    // does this sleep fix the "sometimes 4 instead of 5" below?
+    await sleep(5);
     // TEXTER 1 (70 needsMessage, 5 messaged)
     // TEXTER 2 (15 needsMessage, 5 needsResponse)
     texterCampaignDataResults = await runComponentGql(
@@ -596,6 +601,10 @@ describe("Reassignments", async () => {
         assignmentId: assignmentId2
       },
       testTexterUser2
+    );
+    console.log(
+      "campaign.test texterCampaignDataResults.data needsMessage",
+      JSON.stringify(texterCampaignDataResults.data, null, 2)
     );
     expect(texterCampaignDataResults.data.assignment.contacts.length).toEqual(
       15
@@ -615,17 +624,26 @@ describe("Reassignments", async () => {
       },
       testTexterUser2
     );
+    console.log(
+      "campaign.test texterCampaignDataResults.data needsResponse",
+      JSON.stringify(texterCampaignDataResults.data, null, 2)
+    );
+    // often is sometimes 4 instead of 5 in test results.  WHY?!!?!?
     expect(texterCampaignDataResults.data.assignment.contacts.length).toEqual(
       5
     );
     expect(texterCampaignDataResults.data.assignment.allContactsCount).toEqual(
       20
     );
+    const makeFilterFunction = contactToMatch => contactToTest =>
+      contactToMatch.id === contactToTest.id.toString();
     for (let i = 0; i < 3; i++) {
       const contact = testContacts.filter(
-        c => texterCampaignDataResults.data.assignment.contacts[i].id == c.id
+        makeFilterFunction(
+          texterCampaignDataResults.data.assignment.contacts[i]
+        )
       )[0];
-      const messageResult = await sendMessage(contact.id, testTexterUser2, {
+      await sendMessage(contact.id, testTexterUser2, {
         userId: testTexterUser2.id,
         contactNumber: contact.cell,
         text: "keep talking",
@@ -1004,7 +1022,6 @@ describe("Bulk Send", async () => {
 
 describe("campaigns query", async () => {
   let testCampaign2;
-  let testCampaign3;
 
   const cursor = {
     offset: 0,
@@ -1013,7 +1030,7 @@ describe("campaigns query", async () => {
 
   beforeEach(async () => {
     testCampaign2 = await createCampaign(testAdminUser, testOrganization);
-    testCampaign3 = await createCampaign(testAdminUser, testOrganization);
+    await createCampaign(testAdminUser, testOrganization);
   });
 
   it("correctly filters by a single campaign id", async () => {
@@ -1045,5 +1062,212 @@ describe("campaigns query", async () => {
     expect(result.data.campaigns.campaigns.length).toEqual(2);
     expect(result.data.campaigns.campaigns[0].id).toEqual(testCampaign.id);
     expect(result.data.campaigns.campaigns[1].id).toEqual(testCampaign2.id);
+  });
+});
+
+describe("all interaction steps fields travel round trip", () => {
+  let interactionSteps;
+  let interactionStepsExpected;
+
+  beforeEach(async () => {
+    interactionSteps = {
+      id: "new0",
+      questionText: "what is your favorite breed?",
+      script: "hello [firstName], let's talk about dogs",
+      parentInteractionId: "",
+      answerOption: "",
+      answerActions: "",
+      answerActionsData: "",
+      isDeleted: false,
+      interactionSteps: [
+        {
+          id: "new1",
+          questionText: "",
+          script: "",
+          parentInteractionId: "new0",
+          answerOption: "golden retriever",
+          answerActions: "fake-actions",
+          answerActionsData: "fake-actions-data",
+          isDeleted: false
+        }
+      ]
+    };
+  });
+
+  it("works", async () => {
+    const createScriptResult = await createScript(testAdminUser, testCampaign, {
+      interactionSteps
+    });
+
+    expect(createScriptResult.data.editCampaign).toEqual({
+      id: testCampaign.id
+    });
+
+    const campaignDataResults = await runComponentGql(
+      AdminCampaignEditQuery,
+      { campaignId: testCampaign.id },
+      testAdminUser
+    );
+
+    interactionStepsExpected = [
+      {
+        id: "1",
+        questionText: "what is your favorite breed?",
+        script: "hello [firstName], let's talk about dogs",
+        parentInteractionId: null,
+        answerOption: "",
+        answerActions: "",
+        answerActionsData: "",
+        isDeleted: false
+      },
+      {
+        id: "2",
+        questionText: "",
+        script: "",
+        parentInteractionId: "1",
+        answerOption: "golden retriever",
+        answerActions: "fake-actions",
+        answerActionsData: "fake-actions-data",
+        isDeleted: false
+      }
+    ];
+
+    expect(campaignDataResults.data.campaign.interactionSteps).toEqual(
+      interactionStepsExpected
+    );
+  });
+
+  describe("all interaction step fields are available through assignment.campaign.interactionSteps", () => {
+    let query;
+    let variables;
+
+    beforeEach(async () => {
+      await createScript(testAdminUser, testCampaign, { interactionSteps });
+
+      query = gql`
+        query assignment($id: String!) {
+          assignment(id: $id) {
+            id
+            campaign {
+              interactionSteps {
+                id
+                answerOption
+                answerActions
+                answerActionsData
+                isDeleted
+                parentInteractionId
+                questionText
+                script
+              }
+            }
+          }
+        }
+      `;
+
+      variables = {
+        id: assignmentId
+      };
+    });
+
+    it("returns what we expect", async () => {
+      const campaignDataResults = await runComponentGql(
+        query,
+        variables,
+        testSuperVolunteerUser
+      );
+
+      expect(
+        campaignDataResults.data.assignment.campaign.interactionSteps
+      ).toEqual(interactionStepsExpected);
+    });
+
+    describe("when the user is not a SUPERVOLUNTEER or higher", () => {
+      beforeEach(async () => {
+        interactionStepsExpected[0].answerActionsData = null;
+        interactionStepsExpected[1].answerActionsData = null;
+      });
+      it("doesn't return answerActionsData", async () => {
+        const campaignDataResults = await runComponentGql(
+          query,
+          variables,
+          testTexterUser
+        );
+
+        expect(
+          campaignDataResults.data.assignment.campaign.interactionSteps
+        ).toEqual(interactionStepsExpected);
+
+        const expectedError = expect.objectContaining({
+          path: expect.arrayContaining([
+            "assignment",
+            "campaign",
+            "interactionSteps",
+            "answerActionsData"
+          ]),
+          message: "You are not authorized to access that resource."
+        });
+
+        expect(campaignDataResults.errors).toEqual([
+          expectedError,
+          expectedError
+        ]);
+      });
+    });
+  });
+});
+
+describe("useOwnMessagingService", async () => {
+  it("uses default messaging service when false", async () => {
+    await startCampaign(testAdminUser, testCampaign);
+
+    const campaignDataResults = await runComponentGql(
+      AdminCampaignEditQuery,
+      { campaignId: testCampaign.id },
+      testAdminUser
+    );
+
+    expect(campaignDataResults.data.campaign.useOwnMessagingService).toEqual(
+      false
+    );
+    expect(campaignDataResults.data.campaign.messageserviceSid).toEqual(
+      global.TWILIO_MESSAGE_SERVICE_SID
+    );
+  });
+  it("creates new messaging service when true", async () => {
+    await saveCampaign(
+      testAdminUser,
+      { id: testCampaign.id, organizationId },
+      "test campaign new title",
+      true
+    );
+
+    const getCampaignsQuery = `
+      query getCampaign($campaignId: String!) {
+        campaign(id: $campaignId) {
+          id
+          useOwnMessagingService
+          messageserviceSid
+        }
+      }
+    `;
+
+    const variables = {
+      campaignId: testCampaign.id
+    };
+
+    await startCampaign(testAdminUser, testCampaign);
+
+    const campaignDataResults = await runGql(
+      getCampaignsQuery,
+      variables,
+      testAdminUser
+    );
+
+    expect(campaignDataResults.data.campaign.useOwnMessagingService).toEqual(
+      true
+    );
+    expect(campaignDataResults.data.campaign.messageserviceSid).toEqual(
+      "testTWILIOsid"
+    );
   });
 });

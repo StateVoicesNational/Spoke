@@ -5,11 +5,14 @@ import {
   Message,
   PendingMessagePart,
   r,
-  cacheableData
+  cacheableData,
+  Campaign
 } from "../../models";
 import { log } from "../../../lib";
 import { saveNewIncomingMessage } from "./message-sending";
 import { getConfig } from "./config";
+import urlJoin from "url-join";
+import _ from "lodash";
 
 // TWILIO error_codes:
 // > 1 (i.e. positive) error_codes are reserved for Twilio error codes
@@ -22,6 +25,19 @@ const MESSAGE_VALIDITY_PADDING_SECONDS = 30;
 const MAX_TWILIO_MESSAGE_VALIDITY = 14400;
 const DISABLE_DB_LOG = getConfig("DISABLE_DB_LOG");
 const TWILIO_SKIP_VALIDATION = getConfig("TWILIO_SKIP_VALIDATION");
+const BULK_REQUEST_CONCURRENCY = 5;
+const MAX_NUMBERS_PER_BUY_JOB = getConfig("MAX_NUMBERS_PER_BUY_JOB") || 100;
+
+async function getTwilio(organization) {
+  const {
+    authToken,
+    accountSid
+  } = await cacheableData.organization.getTwilioAuth(organization);
+  if (accountSid && authToken) {
+    return Twilio(accountSid, authToken);
+  }
+  return null;
+}
 
 const headerValidator = () => {
   if (!!TWILIO_SKIP_VALIDATION) return (req, res, next) => next();
@@ -83,15 +99,34 @@ function parseMessageText(message) {
   return params;
 }
 
-async function sendMessage(message, contact, trx, organization) {
-  const {
-    authToken,
-    accountSid
-  } = await cacheableData.organization.getTwilioAuth(organization);
-  let twilio = null;
-  if (accountSid && authToken) {
-    twilio = Twilio(accountSid, authToken);
+async function getMessagingServiceSid(
+  organization,
+  contact,
+  message,
+  campaign
+) {
+  if (
+    getConfig(
+      "EXPERIMENTAL_TWILIO_PER_CAMPAIGN_MESSAGING_SERVICE",
+      organization
+    )
+  ) {
+    const campaign =
+      campaign || (await cacheableData.campaign.load(contact.campaign_id));
+    if (campaign.messageservice_sid) {
+      return campaign.messageservice_sid;
+    }
   }
+
+  return await cacheableData.organization.getMessageServiceSid(
+    organization,
+    contact,
+    message.text
+  );
+}
+
+async function sendMessage(message, contact, trx, organization, campaign) {
+  const twilio = await getTwilio(organization);
   const APITEST = /twilioapitest/.test(message.text);
   if (!twilio && !APITEST) {
     log.warn(
@@ -112,11 +147,13 @@ async function sendMessage(message, contact, trx, organization) {
   }
 
   // Note organization won't always be available, so then contact can trace to it
-  const messagingServiceSid = await cacheableData.organization.getMessageServiceSid(
+  const messagingServiceSid = await getMessagingServiceSid(
     organization,
     contact,
-    message.text
+    message,
+    campaign
   );
+
   return new Promise((resolve, reject) => {
     if (message.service !== "twilio") {
       log.warn("Message not marked as a twilio message", message.id);
@@ -403,6 +440,153 @@ async function handleIncomingMessage(message) {
   }
 }
 
+/**
+ * Create a new Twilio messaging service
+ */
+async function createMessagingService(organization, friendlyName) {
+  const twilio = await getTwilio(organization);
+  const twilioBaseUrl = getConfig("TWILIO_BASE_CALLBACK_URL", organization);
+  return await twilio.messaging.services.create({
+    friendlyName,
+    statusCallback: urlJoin(twilioBaseUrl, "twilio-message-report"),
+    inboundRequestUrl: urlJoin(
+      twilioBaseUrl,
+      "twilio",
+      organization.id.toString()
+    )
+  });
+}
+
+/**
+ * Search for phone numbers available for purchase
+ */
+async function searchForAvailableNumbers(
+  twilioInstance,
+  countryCode,
+  areaCode,
+  limit
+) {
+  const count = Math.min(limit, 30); // Twilio limit
+  return twilioInstance.availablePhoneNumbers(countryCode).local.list({
+    areaCode,
+    limit: count,
+    capabilities: ["SMS", "MMS"]
+  });
+}
+
+/**
+ * Fetch Phone Numbers assigned to Messaging Service
+ */
+async function getPhoneNumbersForService(organization, messagingServiceSid) {
+  const twilio = await getTwilio(organization);
+  return await twilio.messaging
+    .services(messagingServiceSid)
+    .phoneNumbers.list({ limit: 400 });
+}
+
+/**
+ * Add bought phone number to a Messaging Service
+ */
+async function addNumberToMessagingService(
+  twilioInstance,
+  phoneNumberSid,
+  messagingServiceSid
+) {
+  return await twilioInstance.messaging
+    .services(messagingServiceSid)
+    .phoneNumbers.create({ phoneNumberSid });
+}
+
+/**
+ * Buy a phone number and add it to the owned_phone_number table
+ */
+async function buyNumber(organization, twilioInstance, phoneNumber, opts = {}) {
+  const response = await twilioInstance.incomingPhoneNumbers.create({
+    phoneNumber,
+    friendlyName: `Managed by Spoke [${process.env.BASE_URL}]: ${phoneNumber}`,
+    voiceUrl: getConfig("TWILIO_VOICE_URL", organization) // will use default twilio recording if undefined
+  });
+  if (response.error) {
+    throw new Error(`Error buying twilio number: ${response.error}`);
+  }
+  log.debug(`Bought number ${phoneNumber} [${response.sid}]`);
+  let allocationFields = {};
+  const messagingServiceSid = opts && opts.messagingServiceSid;
+  if (messagingServiceSid) {
+    await addNumberToMessagingService(
+      twilioInstance,
+      response.sid,
+      messagingServiceSid
+    );
+    allocationFields = {
+      allocated_to: "messaging_service",
+      allocated_to_id: messagingServiceSid,
+      allocated_at: new Date()
+    };
+  }
+  // Note: relies on the fact that twilio returns E. 164 formatted numbers
+  //  and only works in the US
+  const areaCode = phoneNumber.slice(2, 5);
+
+  return await r.knex("owned_phone_number").insert({
+    organization_id: organization.id,
+    area_code: areaCode,
+    phone_number: phoneNumber,
+    service: "twilio",
+    service_id: response.sid,
+    ...allocationFields
+  });
+}
+
+async function bulkRequest(array, fn) {
+  const chunks = _.chunk(array, BULK_REQUEST_CONCURRENCY);
+  const results = [];
+  for (const chunk of chunks) {
+    results.push(...(await Promise.all(chunk.map(fn))));
+  }
+  return results;
+}
+
+/**
+ * Buy up to <limit> numbers in <areaCode>
+ */
+async function buyNumbersInAreaCode(organization, areaCode, limit, opts = {}) {
+  const twilioInstance = await getTwilio(organization);
+  const countryCode = getConfig("PHONE_NUMBER_COUNTRY ", organization) || "US";
+  async function buyBatch(size) {
+    let successCount = 0;
+    log.debug(`Attempting to buy batch of ${size} numbers`);
+
+    const response = await searchForAvailableNumbers(
+      twilioInstance,
+      countryCode,
+      areaCode,
+      size
+    );
+
+    await bulkRequest(response, async item => {
+      await buyNumber(organization, twilioInstance, item.phoneNumber, opts);
+      successCount++;
+    });
+
+    log.debug(`Successfully bought ${successCount} number(s)`);
+    return successCount;
+  }
+
+  const totalRequested = Math.min(limit, MAX_NUMBERS_PER_BUY_JOB);
+  let totalPurchased = 0;
+  while (totalPurchased < totalRequested) {
+    const nextBatchSize = Math.min(30, totalRequested - totalPurchased);
+    const purchasedInBatch = await buyBatch(nextBatchSize);
+    totalPurchased += purchasedInBatch;
+    if (purchasedInBatch === 0) {
+      log.warn("Failed to buy as many numbers as requested");
+      break;
+    }
+  }
+  return totalPurchased;
+}
+
 export default {
   syncMessagePartProcessing: !!process.env.JOBS_SAME_PROCESS,
   headerValidator,
@@ -410,5 +594,8 @@ export default {
   sendMessage,
   handleDeliveryReport,
   handleIncomingMessage,
-  parseMessageText
+  parseMessageText,
+  createMessagingService,
+  getPhoneNumbersForService,
+  buyNumbersInAreaCode
 };

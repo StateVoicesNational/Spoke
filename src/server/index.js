@@ -8,7 +8,6 @@ import { makeExecutableSchema, addMockFunctionsToSchema } from "graphql-tools";
 import { createLoaders, createTablesIfNecessary, r } from "./models";
 import { resolvers } from "./api/schema";
 import { schema } from "../api/schema";
-import mocks from "./api/mocks";
 import passport from "passport";
 import cookieSession from "cookie-session";
 import passportSetup from "./auth-passport";
@@ -175,11 +174,6 @@ const executableSchema = makeExecutableSchema({
   typeDefs: schema,
   resolvers,
   allowUndefinedInResolve: false
-});
-addMockFunctionsToSchema({
-  schema: executableSchema,
-  mocks,
-  preserveResolvers: true
 });
 
 app.use(

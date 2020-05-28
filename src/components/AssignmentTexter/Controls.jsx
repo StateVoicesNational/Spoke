@@ -1,13 +1,13 @@
 import PropTypes from "prop-types";
 import React from "react";
 import { StyleSheet, css } from "aphrodite";
-import ContactToolbarNew from "../components/ContactToolbarNew";
-import MessageList from "../components/MessageList";
-import CannedResponseMenu from "../components/CannedResponseMenu";
-import AssignmentTexterSurveys from "../components/AssignmentTexterSurveys";
+import Toolbar from "./Toolbar";
+import MessageList from "./MessageList";
+import CannedResponseMenu from "./CannedResponseMenu";
+import Survey from "./Survey";
 import ScriptList from "./ScriptList";
-import Empty from "../components/Empty";
-import GSForm from "../components/forms/GSForm";
+import Empty from "../Empty";
+import GSForm from "../forms/GSForm";
 import RaisedButton from "material-ui/RaisedButton";
 import FlatButton from "material-ui/FlatButton";
 import IconButton from "material-ui/IconButton/IconButton";
@@ -16,7 +16,7 @@ import Divider from "material-ui/Divider";
 import CreateIcon from "material-ui/svg-icons/content/create";
 import DownIcon from "material-ui/svg-icons/navigation/arrow-drop-down";
 import yup from "yup";
-import theme from "../styles/theme";
+import theme from "../../styles/theme";
 import Form from "react-formal";
 import Popover from "material-ui/Popover";
 
@@ -29,9 +29,9 @@ import {
   interactionStepForId,
   log,
   isBetweenTextingHours
-} from "../lib";
+} from "../../lib";
 
-import { dataTest } from "../lib/attributes";
+import { dataTest } from "../../lib/attributes";
 
 const messageListStyles = {
   // passesd directly to <MessageList>
@@ -173,7 +173,7 @@ const flexStyles = StyleSheet.create({
     backgroundColor: bgGrey
   },
   subButtonsAnswerButtons: {
-    flex: "1 1 80px", // keeps bottom buttons in place
+    flex: "1 1 auto", // keeps bottom buttons in place
     // height:105: webkit needs constraint on height sometimes
     //   during the inflection point of showing the shortcut-buttons
     //   without the height, the exit buttons get pushed down oddly
@@ -193,7 +193,7 @@ const flexStyles = StyleSheet.create({
   },
   subSubAnswerButtonsColumns: {
     height: "0px",
-    "@media(min-height: 700px)": {
+    "@media(min-height: 600px)": {
       height: "40px" // TODO
     },
     display: "inline-block",
@@ -308,11 +308,13 @@ export class AssignmentTexterContactControls extends React.Component {
     // note: key*down* is necessary to stop propagation of keyup for the textarea element
     document.body.addEventListener("keydown", this.onEnter);
     window.addEventListener("resize", this.onResize);
+    window.addEventListener("orientationchange", this.onResize);
   }
 
   componentWillUnmount() {
     document.body.removeEventListener("keydown", this.onEnter);
     window.removeEventListener("resize", this.onResize);
+    window.removeEventListener("orientationchange", this.onResize);
   }
 
   getStartingMessageText() {
@@ -380,11 +382,16 @@ export class AssignmentTexterContactControls extends React.Component {
   };
 
   handleOpenDialog = () => {
-    this.setState({
-      optOutDialogOpen: true,
-      // store this, because on-close, we lose this
-      currentShortcutSpace: this.refs.answerButtons.offsetHeight
-    });
+    // delay to avoid accidental tap pass-through with focusing on
+    // the text field -- this is annoying on mobile where the keyboard
+    // pops up, inadvertantly
+    const self = this;
+    setTimeout(() =>
+               self.setState({
+                 optOutDialogOpen: true,
+                 // store this, because on-close, we lose this
+                 currentShortcutSpace: self.refs.answerButtons.offsetHeight
+               }), 200);
   };
 
   handleCloseDialog = () => {
@@ -462,9 +469,14 @@ export class AssignmentTexterContactControls extends React.Component {
   };
 
   handleCloseResponsePopover = () => {
-    this.setState({
-      responsePopoverOpen: false
-    });
+    // delay to avoid accidental tap pass-through with focusing on
+    // the text field -- this is annoying on mobile where the keyboard
+    // pops up, inadvertantly
+    const self = this;
+    setTimeout(() =>
+               self.setState({
+                 responsePopoverOpen: false
+               }), 200);
   };
 
   renderSurveySection() {
@@ -505,7 +517,7 @@ export class AssignmentTexterContactControls extends React.Component {
         targetOrigin={{ horizontal: "left", vertical: "bottom" }}
         onRequestClose={this.handleCloseAnswerPopover}
       >
-        <AssignmentTexterSurveys
+        <Survey
           contact={contact}
           interactionSteps={availableInteractionSteps}
           onQuestionResponseChange={this.handleQuestionResponseChange}
@@ -520,15 +532,6 @@ export class AssignmentTexterContactControls extends React.Component {
           customFields={campaign.customFields}
           currentCannedResponseScript={cannedResponseScript}
           subheader={<div id="otherresponses">Other Responses</div>}
-          onSelectCannedResponse={this.handleCannedResponseChange}
-          onCreateCannedResponse={this.props.onCreateCannedResponse}
-        />
-        <ScriptList
-          scripts={assignment.userCannedResponses}
-          showAddScriptButton={true}
-          customFields={[] /* texters shouldn't have access to custom fields */}
-          currentCannedResponseScript={cannedResponseScript}
-          subheader={<span>Personal Custom Responses</span>}
           onSelectCannedResponse={this.handleCannedResponseChange}
           onCreateCannedResponse={this.props.onCreateCannedResponse}
         />
@@ -639,7 +642,6 @@ export class AssignmentTexterContactControls extends React.Component {
             <Form.Field
               name="optOutMessageText"
               fullWidth
-              autoFocus
               multiLine
             />
             <div className={css(flexStyles.subSectionOptOutDialogActions)}>
@@ -704,6 +706,9 @@ export class AssignmentTexterContactControls extends React.Component {
   }
 
   renderMessagingRowCurrentQuestion(currentQuestion, currentQuestionAnswered) {
+    if (!currentQuestion || !currentQuestion.text) {
+      return null;
+    }
     return (
       <div
         className={css(flexStyles.subSubButtonsAnswerButtonsCurrentQuestion)}
@@ -714,9 +719,7 @@ export class AssignmentTexterContactControls extends React.Component {
           </span>
         ) : (
           <span>
-            <span className={css(flexStyles.flatButtonLabelMobile)}>
-              What was their reply to:{" "}
-            </span>
+            <span className={css(flexStyles.flatButtonLabelMobile)}>Q: </span>
             <b>{currentQuestion.text}</b>
           </span>
         )}
@@ -738,20 +741,37 @@ export class AssignmentTexterContactControls extends React.Component {
     let currentQuestionAnswered = null;
     let currentQuestionOptions = [];
     // 1. Current Interaction Step Shortcuts
-    if (currentInteractionStep) {
+    const currentStepHasAnswerOptions =
+      currentInteractionStep &&
+      currentInteractionStep.question &&
+      currentInteractionStep.question.answerOptions &&
+      currentInteractionStep.question.answerOptions.length;
+    if (currentStepHasAnswerOptions) {
       currentQuestion = currentInteractionStep.question;
       currentQuestionAnswered = questionResponses[currentInteractionStep.id];
-      currentQuestionOptions = currentQuestion.answerOptions.map(answer => {
+      const dupeTester = {};
+      const shortener = answerValue => {
         // label is for one-word values or e.g. "Yes: ...."
-        const label = answer.value.match(/^(\w+)([^\s\w]|$)/);
-        return {
-          answer: answer,
-          label: label ? label[1] : answer.value
-        };
-      });
+        const label = answerValue.match(/^(\w+)([^\s\w]|$)/);
+        return label ? label[1] : answerValue;
+      };
+      currentQuestionOptions = currentQuestion.answerOptions
+        .filter(answer => answer.value[0] != "-")
+        .map(answer => {
+          let label = shortener(answer.value);
+          if (label in dupeTester) {
+            dupeTester.FAIL = true;
+          } else {
+            dupeTester[label] = 1;
+          }
+          return {
+            answer,
+            label
+          };
+        });
       joinedLength = currentQuestionOptions.map(o => o.label).join("__").length;
-      if (joinedLength > 30) {
-        // too many/long options
+      if (joinedLength > 36 || dupeTester.FAIL) {
+        // too many/long options or duplicates
         currentQuestionOptions = [];
         joinedLength = 0;
       }
@@ -761,13 +781,13 @@ export class AssignmentTexterContactControls extends React.Component {
     // If there's a current interaction step but we aren't showing choices
     // then don't show canned response shortcuts either or it can
     // cause confusion.
-    if (!currentInteractionStep || joinedLength !== 0) {
+    if (!currentStepHasAnswerOptions || joinedLength !== 0) {
       shortCannedResponses = assignment.campaignCannedResponses
         .filter(
-          // allow for "Wrong Number"
+          // allow for "Wrong Number", prefixes of + or - can force add or remove
           script =>
-            (script.title.length < 13 || script.title[0] === ":") &&
-            script.title[script.title.length - 1] !== "."
+            (script.title.length < 13 || script.title[0] === "+") &&
+            script.title[0] !== "-"
         )
         .filter(script => {
           if (joinedLength + 1 + script.title.length < 80) {
@@ -815,7 +835,7 @@ export class AssignmentTexterContactControls extends React.Component {
         {shortCannedResponses.map(script => (
           <FlatButton
             key={`shortcutScript_${script.id}`}
-            label={script.title.replace(/^:/, "")}
+            label={script.title.replace(/^(\+|\-)/, "")}
             onTouchTap={evt => {
               this.handleCannedResponseChange(script);
             }}
@@ -834,7 +854,13 @@ export class AssignmentTexterContactControls extends React.Component {
     );
   }
 
-  renderMessagingRowReplyButtons(availableSteps) {
+  renderMessagingRowReplyButtons(availableSteps, campaignCannedResponses) {
+    const disabled =
+      !campaignCannedResponses.length &&
+      availableSteps.length === 1 &&
+      (!availableSteps[0].question ||
+        !availableSteps[0].question.answerOptions ||
+        !availableSteps[0].question.answerOptions.length);
     return (
       <div className={css(flexStyles.subButtonsExitButtons)}>
         <FlatButton
@@ -843,13 +869,13 @@ export class AssignmentTexterContactControls extends React.Component {
               All Responses <DownIcon style={{ verticalAlign: "middle" }} />
             </span>
           }
-          onTouchTap={this.handleOpenAnswerPopover}
+          onTouchTap={!disabled ? this.handleOpenAnswerPopover : noAction => {}}
           className={css(flexStyles.flatButton)}
           labelStyle={inlineStyles.flatButtonLabel}
           backgroundColor={
             availableSteps.length ? "white" : "rgb(176, 176, 176)"
           }
-          disabled={!availableSteps.length}
+          disabled={disabled}
         />
 
         <FlatButton
@@ -886,7 +912,7 @@ export class AssignmentTexterContactControls extends React.Component {
   }
 
   renderMessageControls() {
-    const { contact, messageStatusFilter } = this.props;
+    const { contact, messageStatusFilter, assignment } = this.props;
     const {
       availableSteps,
       questionResponses,
@@ -921,7 +947,10 @@ export class AssignmentTexterContactControls extends React.Component {
           </div>
         </div>
 
-        {this.renderMessagingRowReplyButtons(availableSteps)}
+        {this.renderMessagingRowReplyButtons(
+          availableSteps,
+          assignment.campaignCannedResponses
+        )}
       </div>,
       this.renderMessagingRowSendSkip(contact),
       this.renderSurveySection()
@@ -931,7 +960,7 @@ export class AssignmentTexterContactControls extends React.Component {
   renderToolbar() {
     return (
       <div key="toolbar" className={css(flexStyles.sectionHeaderToolbar)}>
-        <ContactToolbarNew
+        <Toolbar
           campaign={this.props.campaign}
           campaignContact={this.props.contact}
           navigationToolbarChildren={this.props.navigationToolbarChildren}

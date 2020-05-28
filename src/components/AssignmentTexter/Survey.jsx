@@ -1,6 +1,6 @@
 import PropTypes from "prop-types";
 import React, { Component } from "react";
-import theme from "../styles/theme";
+import theme from "../../styles/theme";
 import { Card, CardHeader, CardText } from "material-ui/Card";
 import Subheader from "material-ui/Subheader";
 import { List, ListItem } from "material-ui/List";
@@ -177,6 +177,9 @@ class AssignmentTexterSurveys extends Component {
             }}
             key={`cur${index}_${answerOption.value}`}
             primaryText={answerOption.value}
+            secondaryText={answerOption.nextInteractionStep && answerOption.nextInteractionStep.script
+                           ? answerOption.nextInteractionStep.script
+                           : null}
             rightIcon={
               responseValue === answerOption.value ? <ClearIcon /> : null
             }

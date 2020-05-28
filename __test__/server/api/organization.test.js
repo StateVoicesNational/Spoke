@@ -11,8 +11,11 @@ import {
   createOrganization,
   createCampaign,
   createTexter,
-  runGql
+  runGql,
+  createStartedCampaign
 } from "../../test_helpers";
+
+const ActionHandlerFramework = require("../../../src/integrations/action-handlers");
 
 describe("organization", async () => {
   let testTexterUser;
@@ -188,6 +191,105 @@ describe("organization", async () => {
           testCampaign2.id
         ]);
       });
+    });
+  });
+
+  describe(".availableActions", () => {
+    let savedActionHandlers;
+    let organizationQuery;
+    let variables;
+    let user;
+    let organization;
+
+    beforeAll(async () => {
+      savedActionHandlers = process.env.ACTION_HANDLERS;
+      await setupTest();
+    }, global.DATABASE_SETUP_TEARDOWN_TIMEOUT);
+
+    afterAll(async () => {
+      await cleanupTest();
+    }, global.DATABASE_SETUP_TEARDOWN_TIMEOUT);
+
+    afterEach(async () => {
+      process.env.ACTION_HANDLERS = savedActionHandlers;
+      jest.restoreAllMocks();
+    });
+
+    beforeEach(async () => {
+      ({
+        testOrganization: {
+          data: { createOrganization: organization }
+        },
+        testAdminUser: user
+      } = await createStartedCampaign());
+
+      organizationQuery = `
+        query q($organizationId: String!) {
+          organization(id: $organizationId) {
+            id 
+            name
+            availableActions {
+              name
+              displayName
+              instructions
+              clientChoiceData {
+                name
+                details
+              }
+            }
+          }
+        }
+      `;
+
+      variables = {
+        organizationId: organization.id
+      };
+
+      jest
+        .spyOn(ActionHandlerFramework, "getAvailableActionHandlers")
+        .mockResolvedValue([
+          {
+            name: "thing 1",
+            displayName: () => "THING ONE",
+            instructions: () => "Thing 1 instructions"
+          },
+          {
+            name: "thing 2",
+            displayName: () => "THING TWO",
+            instructions: () => "Thing 2 instructions"
+          }
+        ]);
+    });
+
+    it("calls availableHandlers and handles the result correctly", async () => {
+      const result = await runGql(organizationQuery, variables, user);
+
+      expect(
+        ActionHandlerFramework.getAvailableActionHandlers.mock.calls
+      ).toEqual([
+        [
+          expect.objectContaining({
+            id: Number(organization.id),
+            uuid: organization.uuid
+          }),
+          user
+        ]
+      ]);
+
+      expect(result.data.organization.availableActions).toEqual([
+        {
+          name: "thing 1",
+          displayName: "THING ONE",
+          instructions: "Thing 1 instructions",
+          clientChoiceData: []
+        },
+        {
+          name: "thing 2",
+          displayName: "THING TWO",
+          instructions: "Thing 2 instructions",
+          clientChoiceData: []
+        }
+      ]);
     });
   });
 });
