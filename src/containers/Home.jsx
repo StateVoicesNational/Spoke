@@ -133,40 +133,6 @@ Home.propTypes = {
   data: PropTypes.object
 };
 
-// const mapQueriesToProps = () => ({
-//   data: {
-//     query: gql`
-//       query getCurrentUser {
-//         currentUser {
-//           id
-//           adminOrganizations: organizations(role: "ADMIN") {
-//             id
-//           }
-//           ownerOrganizations: organizations(role: "OWNER") {
-//             id
-//           }
-//           texterOrganizations: organizations(role: "TEXTER") {
-//             id
-//           }
-//         }
-//       }
-//     `
-//   }
-// });
-//
-// const mapMutationsToProps = () => ({
-//   createInvite: invite => ({
-//     mutation: gql`
-//       mutation createInvite($invite: InviteInput!) {
-//         createInvite(invite: $invite) {
-//           hash
-//         }
-//       }
-//     `,
-//     variables: { invite }
-//   })
-// });
-
 const queries = {
   data: {
     query: gql`
@@ -205,9 +171,3 @@ const mutations = {
 };
 
 export default loadData({ queries, mutations })(withRouter(Home));
-
-//
-// export default loadData(wrapMutations(withRouter(Home)), {
-//   mapQueriesToProps,
-//   mapMutationsToProps
-// });

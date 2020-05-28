@@ -12,7 +12,6 @@ import { Card, CardHeader, CardText, CardActions } from "material-ui/Card";
 import { Link } from "react-router";
 import gql from "graphql-tag";
 import loadData from "./hoc/load-data";
-import wrapMutations from "./hoc/wrap-mutations";
 import RaisedButton from "material-ui/RaisedButton";
 import CampaignBasicsForm from "../components/CampaignBasicsForm";
 //import CampaignContactsForm from "../components/CampaignContactsForm";
@@ -25,7 +24,6 @@ import { dataTest, camelCase } from "../lib/attributes";
 import CampaignTextingHoursForm from "../components/CampaignTextingHoursForm";
 
 import AdminScriptImport from "../containers/AdminScriptImport";
-import { pendingJobsGql } from "../lib/pendingJobsUtils";
 
 const campaignInfoFragment = `
   id
@@ -756,14 +754,37 @@ AdminCampaignEdit.propTypes = {
   pendingJobsData: PropTypes.object
 };
 
-const mapQueriesToProps = ({ ownProps }) => ({
-  pendingJobsData: pendingJobsGql(ownProps.params.campaignId),
+const queries = {
+  pendingJobsData: {
+    query: gql`
+      query getCampaignJobs($campaignId: String!) {
+        campaign(id: $campaignId) {
+          id
+          pendingJobs {
+            id
+            jobType
+            assigned
+            status
+            resultMessage
+          }
+        }
+      }
+    `,
+    options: ownProps => ({
+      variables: {
+        campaignId: ownProps.params.campaignId
+      },
+      pollInterval: 60000 // TODO: revisit
+    })
+  },
   campaignData: {
     query: campaignDataQuery,
-    variables: {
-      campaignId: ownProps.params.campaignId
-    },
-    pollInterval: 60000
+    options: ownProps => ({
+      variables: {
+        campaignId: ownProps.params.campaignId
+      },
+      pollInterval: 60000
+    })
   },
   organizationData: {
     query: gql`
@@ -790,16 +811,19 @@ const mapQueriesToProps = ({ ownProps }) => ({
         }
       }
     `,
-    variables: {
-      organizationId: ownProps.params.organizationId
-    },
-    pollInterval: 20000
+    options: ownProps => ({
+      variables: {
+        organizationId: ownProps.params.organizationId
+      },
+      pollInterval: 20000
+    })
   }
-});
+};
 
+// TODO[matteo]: look into this
 // Right now we are copying the result fields instead of using a fragment because of https://github.com/apollostack/apollo-client/issues/451
-const mapMutationsToProps = ({ ownProps }) => ({
-  archiveCampaign: campaignId => ({
+const mutations = {
+  archiveCampaign: ownProps => campaignId => ({
     mutation: gql`mutation archiveCampaign($campaignId: String!) {
           archiveCampaign(id: $campaignId) {
             ${campaignInfoFragment}
@@ -807,7 +831,7 @@ const mapMutationsToProps = ({ ownProps }) => ({
         }`,
     variables: { campaignId }
   }),
-  unarchiveCampaign: campaignId => ({
+  unarchiveCampaign: ownProps => campaignId => ({
     mutation: gql`mutation unarchiveCampaign($campaignId: String!) {
         unarchiveCampaign(id: $campaignId) {
           ${campaignInfoFragment}
@@ -815,7 +839,7 @@ const mapMutationsToProps = ({ ownProps }) => ({
       }`,
     variables: { campaignId }
   }),
-  startCampaign: campaignId => ({
+  startCampaign: ownProps => campaignId => ({
     mutation: gql`mutation startCampaign($campaignId: String!) {
         startCampaign(id: $campaignId) {
           ${campaignInfoFragment}
@@ -823,7 +847,7 @@ const mapMutationsToProps = ({ ownProps }) => ({
       }`,
     variables: { campaignId }
   }),
-  editCampaign: (campaignId, campaign) => ({
+  editCampaign: ownProps => (campaignId, campaign) => ({
     mutation: gql`
       mutation editCampaign($campaignId: String!, $campaign: CampaignInput!) {
         editCampaign(id: $campaignId, campaign: $campaign) {
@@ -836,7 +860,7 @@ const mapMutationsToProps = ({ ownProps }) => ({
       campaign
     }
   }),
-  deleteJob: jobId => ({
+  deleteJob: ownProps => jobId => ({
     mutation: gql`
       mutation deleteJob($campaignId: String!, $id: String!) {
         deleteJob(campaignId: $campaignId, id: $id) {
@@ -849,9 +873,5 @@ const mapMutationsToProps = ({ ownProps }) => ({
       id: jobId
     }
   })
-});
-
-export default loadData(wrapMutations(AdminCampaignEdit), {
-  mapQueriesToProps,
-  mapMutationsToProps
-});
+};
+export default loadData({ queries, mutations })(AdminCampaignEdit);

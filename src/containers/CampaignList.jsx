@@ -3,10 +3,10 @@ import PropTypes from "prop-types";
 import React from "react";
 import { withRouter } from "react-router";
 import loadData from "./hoc/load-data";
-import wrapMutations from "./hoc/wrap-mutations";
 import CampaignTable from "../components/AdminCampaignList/CampaignTable";
 import LoadingIndicator from "../components/LoadingIndicator";
 
+// TODO[matteo]: use fragments?
 const campaignInfoFragment = `
   id
   title
@@ -142,8 +142,8 @@ CampaignList.propTypes = {
   sortBy: PropTypes.string
 };
 
-const mapMutationsToProps = () => ({
-  archiveCampaign: campaignId => ({
+const mutations = {
+  archiveCampaign: ownProps => campaignId => ({
     mutation: gql`mutation archiveCampaign($campaignId: String!) {
           archiveCampaign(id: $campaignId) {
             ${campaignInfoFragment}
@@ -151,7 +151,7 @@ const mapMutationsToProps = () => ({
         }`,
     variables: { campaignId }
   }),
-  unarchiveCampaign: campaignId => ({
+  unarchiveCampaign: ownProps => campaignId => ({
     mutation: gql`mutation unarchiveCampaign($campaignId: String!) {
         unarchiveCampaign(id: $campaignId) {
           ${campaignInfoFragment}
@@ -159,9 +159,12 @@ const mapMutationsToProps = () => ({
       }`,
     variables: { campaignId }
   })
-});
+};
 
-export const getCampaignsQuery = `query adminGetCampaigns(
+const queries = {
+  data: {
+    query: gql`
+      query adminGetCampaigns(
         $organizationId: String!,
         $campaignsFilter: CampaignsFilter,
         $cursor: OffsetLimitCursor,
@@ -187,24 +190,18 @@ export const getCampaignsQuery = `query adminGetCampaigns(
             }
           }
         }
-      }`;
-
-const mapQueriesToProps = ({ ownProps }) => ({
-  data: {
-    query: gql`
-      ${getCampaignsQuery}
+      }
     `,
-    variables: {
-      cursor: { offset: 0, limit: INITIAL_ROW_SIZE },
-      organizationId: ownProps.organizationId,
-      campaignsFilter: ownProps.campaignsFilter,
-      sortBy: ownProps.sortBy
-    },
-    forceFetch: true
+    options: ownProps => ({
+      variables: {
+        cursor: { offset: 0, limit: INITIAL_ROW_SIZE },
+        organizationId: ownProps.organizationId,
+        campaignsFilter: ownProps.campaignsFilter,
+        sortBy: ownProps.sortBy
+      },
+      fetchPolicy: "network-only"
+    })
   }
-});
+};
 
-export default loadData(wrapMutations(withRouter(CampaignList)), {
-  mapQueriesToProps,
-  mapMutationsToProps
-});
+export default loadData({ queries, mutations })(withRouter(CampaignList));

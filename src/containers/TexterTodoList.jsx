@@ -8,8 +8,8 @@ import gql from "graphql-tag";
 import { withRouter } from "react-router";
 
 class TexterTodoList extends React.Component {
-  constructor() {
-    super();
+  constructor(props) {
+    super(props);
     this.state = { polling: null };
   }
 
@@ -137,42 +137,44 @@ export const dataQuery = gql`
   }
 `;
 
-const mapQueriesToProps = ({ ownProps }) => ({
+const queries = {
   data: {
     query: dataQuery,
-    variables: {
-      organizationId: ownProps.params.organizationId,
-      needsMessageFilter: {
-        messageStatus: "needsMessage",
-        isOptedOut: false,
-        validTimezone: true
-      },
-      needsResponseFilter: {
-        messageStatus: "needsResponse",
-        isOptedOut: false,
-        validTimezone: true
-      },
-      badTimezoneFilter: {
-        isOptedOut: false,
-        validTimezone: false
-      },
-      completedConvosFilter: {
-        isOptedOut: false,
-        validTimezone: true,
-        messageStatus: "messaged"
-      },
-      pastMessagesFilter: {
-        messageStatus: "convo",
-        isOptedOut: false,
-        validTimezone: true
-      },
-      skippedMessagesFilter: {
-        messageStatus: "closed",
-        isOptedOut: false,
-        validTimezone: true
+    options: ownProps => ({
+      variables: {
+        organizationId: ownProps.params.organizationId,
+        needsMessageFilter: {
+          messageStatus: "needsMessage",
+          isOptedOut: false,
+          validTimezone: true
+        },
+        needsResponseFilter: {
+          messageStatus: "needsResponse",
+          isOptedOut: false,
+          validTimezone: true
+        },
+        badTimezoneFilter: {
+          isOptedOut: false,
+          validTimezone: false
+        },
+        completedConvosFilter: {
+          isOptedOut: false,
+          validTimezone: true,
+          messageStatus: "messaged"
+        },
+        pastMessagesFilter: {
+          messageStatus: "convo",
+          isOptedOut: false,
+          validTimezone: true
+        },
+        skippedMessagesFilter: {
+          messageStatus: "closed",
+          isOptedOut: false,
+          validTimezone: true
+        }
       }
-    }
+    })
   }
-});
+};
 
-export default loadData(withRouter(TexterTodoList), { mapQueriesToProps });
+export default loadData({ queries })(withRouter(TexterTodoList));

@@ -1,7 +1,6 @@
 import PropTypes from "prop-types";
 import React from "react";
 import loadData from "./hoc/load-data";
-import wrapMutations from "./hoc/wrap-mutations";
 import gql from "graphql-tag";
 import { withRouter } from "react-router";
 import GSForm from "../components/forms/GSForm";
@@ -290,24 +289,20 @@ UserEdit.propTypes = {
   openSuccessDialog: PropTypes.func
 };
 
-const mapQueriesToProps = ({ ownProps }) => {
-  if (ownProps.userId) {
-    return {
-      data: {
-        query: gql`
-          query getCurrentUser {
-            currentUser {
-              id
-              firstName
-              email
-              lastName
-              alias
-              cell
-            }
-          }
-        `
+const queries = {
+  data: {
+    query: gql`
+      query getCurrentUser {
+        currentUser {
+          id
+          firstName
+          email
+          lastName
+          alias
+          cell
+        }
       }
-    };
+    `
   }
 };
 
@@ -331,40 +326,36 @@ export const editUserMutation = `
     }
   }`;
 
-const mapMutationsToProps = ({ ownProps }) => {
-  if (ownProps.userId) {
-    return {
-      editUser: userData => ({
-        mutation: gql`
-          ${editUserMutation}
-        `,
-        variables: {
-          userId: ownProps.userId,
-          organizationId: ownProps.organizationId,
-          userData
+const mutations = {
+  editUser: ownProps => userData => ({
+    mutation: gql`
+      ${editUserMutation}
+    `,
+    variables: {
+      userId: ownProps.userId,
+      organizationId: ownProps.organizationId,
+      userData
+    }
+  }),
+  changePassword: ownProps => formData => ({
+    mutation: gql`
+      mutation changeUserPassword(
+        $userId: Int!
+        $formData: UserPasswordChange
+      ) {
+        changeUserPassword(userId: $userId, formData: $formData) {
+          id
         }
-      }),
-      changeUserPassword: formData => ({
-        mutation: gql`
-          mutation changeUserPassword(
-            $userId: Int!
-            $formData: UserPasswordChange
-          ) {
-            changeUserPassword(userId: $userId, formData: $formData) {
-              id
-            }
-          }
-        `,
-        variables: {
-          userId: ownProps.userId,
-          formData
-        }
-      })
-    };
-  }
+      }
+    `,
+    variables: {
+      userId: ownProps.userId,
+      formData
+    }
+  })
 };
 
-export default loadData(withRouter(wrapMutations(UserEdit)), {
-  mapQueriesToProps,
-  mapMutationsToProps
-});
+export default loadData({
+  queries,
+  mutations
+})(withRouter(UserEdit));

@@ -7,12 +7,10 @@ import IncomingMessageFilter, {
   ALL_CAMPAIGNS
 } from "../components/IncomingMessageFilter";
 import IncomingMessageList from "../components/IncomingMessageList";
-import LoadingIndicator from "../components/LoadingIndicator";
 import PaginatedCampaignsRetriever from "./PaginatedCampaignsRetriever";
 import gql from "graphql-tag";
 import loadData from "./hoc/load-data";
 import { withRouter } from "react-router";
-import wrapMutations from "./hoc/wrap-mutations";
 import PaginatedUsersRetriever from "./PaginatedUsersRetriever";
 
 function getCampaignsFilterForCampaignArchiveStatus(
@@ -422,7 +420,14 @@ export const reassignCampaignContactsMutation = gql`
   }
 `;
 
-const mapMutationsToProps = () => ({
+AdminIncomingMessageList.propTypes = {
+  conversations: PropTypes.object,
+  mutations: PropTypes.object,
+  params: PropTypes.object,
+  organization: PropTypes.object
+};
+
+const mutations = {
   reassignCampaignContacts: (
     organizationId,
     campaignIdsContactIds,
@@ -447,15 +452,6 @@ const mapMutationsToProps = () => ({
       newTexterUserId
     }
   })
-});
-
-AdminIncomingMessageList.propTypes = {
-  conversations: PropTypes.object,
-  mutations: PropTypes.object,
-  params: PropTypes.object,
-  organization: PropTypes.object
 };
 
-export default loadData(withRouter(wrapMutations(AdminIncomingMessageList)), {
-  mapMutationsToProps
-});
+export default loadData({ mutations })(withRouter(AdminIncomingMessageList));

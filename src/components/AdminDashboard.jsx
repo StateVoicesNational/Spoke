@@ -148,7 +148,7 @@ AdminDashboard.propTypes = {
   location: PropTypes.object
 };
 
-const mapQueriesToProps = ({ ownProps }) => ({
+const queries = {
   data: {
     query: gql`
       query getCurrentUserRoles($organizationId: String!) {
@@ -162,10 +162,12 @@ const mapQueriesToProps = ({ ownProps }) => ({
         }
       }
     `,
-    variables: {
-      organizationId: ownProps.params.organizationId
-    }
+    options: ownProps => ({
+      variables: {
+        organizationId: ownProps.params.organizationId
+      }
+    })
   }
-});
+};
 
-export default loadData(withRouter(AdminDashboard), { mapQueriesToProps });
+export default loadData({ queries })(withRouter(AdminDashboard));

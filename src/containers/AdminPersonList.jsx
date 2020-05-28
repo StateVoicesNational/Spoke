@@ -327,7 +327,7 @@ AdminPersonList.propTypes = {
   location: PropTypes.object
 };
 
-const mapQueriesToProps = ({ ownProps }) => ({
+const queries = {
   userData: {
     query: gql`
       query getCurrentUserAndRoles($organizationId: String!) {
@@ -337,10 +337,12 @@ const mapQueriesToProps = ({ ownProps }) => ({
         }
       }
     `,
-    variables: {
-      organizationId: ownProps.params.organizationId
-    },
-    forceFetch: true
+    options: ownProps => ({
+      variables: {
+        organizationId: ownProps.params.organizationId
+      },
+      fetchPolicy: "network-only"
+    })
   },
   organizationData: {
     query: gql`
@@ -362,12 +364,14 @@ const mapQueriesToProps = ({ ownProps }) => ({
         }
       }
     `,
-    variables: {
-      organizationId: ownProps.params.organizationId,
-      sortBy: CAMPAIGN_FILTER_SORT
-    },
-    forceFetch: true
+    options: ownProps => ({
+      variables: {
+        organizationId: ownProps.params.organizationId,
+        sortBy: CAMPAIGN_FILTER_SORT
+      },
+      fetchPolicy: "network-only"
+    })
   }
-});
+};
 
-export default loadData(withRouter(AdminPersonList), { mapQueriesToProps });
+export default loadData({ queries })(withRouter(AdminPersonList));

@@ -10,7 +10,6 @@ import { withRouter } from "react-router";
 import gql from "graphql-tag";
 import theme from "../styles/theme";
 import LoadingIndicator from "../components/LoadingIndicator";
-import wrapMutations from "./hoc/wrap-mutations";
 import DropDownMenu from "material-ui/DropDownMenu";
 import IconMenu from "material-ui/IconMenu";
 import { MenuItem } from "material-ui/Menu";
@@ -265,8 +264,8 @@ AdminCampaignList.propTypes = {
   router: PropTypes.object
 };
 
-const mapMutationsToProps = () => ({
-  createCampaign: campaign => ({
+const mutations = {
+  createCampaign: ownProps => campaign => ({
     mutation: gql`
       mutation createBlankCampaign($campaign: CampaignInput!) {
         createCampaign(campaign: $campaign) {
@@ -276,7 +275,7 @@ const mapMutationsToProps = () => ({
     `,
     variables: { campaign }
   }),
-  archiveCampaigns: ids => ({
+  archiveCampaigns: ownProps => ids => ({
     mutation: gql`
       mutation archiveCampaigns($ids: [String!]) {
         archiveCampaigns(ids: $ids) {
@@ -286,8 +285,6 @@ const mapMutationsToProps = () => ({
     `,
     variables: { ids }
   })
-});
+};
 
-export default loadData(wrapMutations(withRouter(AdminCampaignList)), {
-  mapMutationsToProps
-});
+export default loadData({ mutations })(withRouter(AdminCampaignList));

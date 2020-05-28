@@ -277,7 +277,7 @@ IncomingMessageList.propTypes = {
   onForceRefresh: type.func
 };
 
-const mapQueriesToProps = ({ ownProps }) => ({
+const queries = {
   conversations: {
     query: gql`
       query Q(
@@ -330,16 +330,18 @@ const mapQueriesToProps = ({ ownProps }) => ({
         }
       }
     `,
-    variables: {
-      organizationId: ownProps.organizationId,
-      cursor: ownProps.cursor,
-      contactsFilter: ownProps.contactsFilter,
-      campaignsFilter: ownProps.campaignsFilter,
-      assignmentsFilter: ownProps.assignmentsFilter,
-      utc: ownProps.utc
-    },
-    forceFetch: true
+    options: ownProps => ({
+      variables: {
+        organizationId: ownProps.organizationId,
+        cursor: ownProps.cursor,
+        contactsFilter: ownProps.contactsFilter,
+        campaignsFilter: ownProps.campaignsFilter,
+        assignmentsFilter: ownProps.assignmentsFilter,
+        utc: ownProps.utc
+      },
+      fetchPolicy: "network-only"
+    })
   }
-});
+};
 
-export default loadData(withRouter(IncomingMessageList), { mapQueriesToProps });
+export default loadData({ queries })(withRouter(IncomingMessageList));

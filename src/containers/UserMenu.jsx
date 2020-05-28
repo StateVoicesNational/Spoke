@@ -7,7 +7,7 @@ import Divider from "material-ui/Divider";
 import Subheader from "material-ui/Subheader";
 import IconButton from "material-ui/IconButton";
 import Avatar from "material-ui/Avatar";
-import { connect } from "react-apollo";
+import { graphql } from "react-apollo";
 import { withRouter } from "react-router";
 import gql from "graphql-tag";
 import { dataTest } from "../lib/attributes";
@@ -154,27 +154,23 @@ UserMenu.propTypes = {
   router: PropTypes.object
 };
 
-export const dataQuery = gql`
-  query getCurrentUserForMenu {
-    currentUser {
-      id
-      displayName
-      email
-      organizations {
+export default graphql(
+  gql`
+    query getCurrentUserForMenu {
+      currentUser {
         id
-        name
+        displayName
+        email
+        organizations {
+          id
+          name
+        }
       }
     }
+  `,
+  {
+    options: {
+      fetchPolicy: "network-only"
+    }
   }
-`;
-
-const mapQueriesToProps = () => ({
-  data: {
-    query: dataQuery,
-    forceFetch: true
-  }
-});
-
-export default connect({
-  mapQueriesToProps
-})(withRouter(UserMenu));
+)(withRouter(UserMenu));
