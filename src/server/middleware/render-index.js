@@ -31,7 +31,7 @@ const externalLinks = process.env.NO_EXTERNAL_LINKS
   ? ""
   : '<link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Poppins">';
 
-export default function renderIndex(html, css, assetMap, store) {
+export default function renderIndex(html, css, assetMap) {
   return `
 <!DOCTYPE html>
 <html lang="en">
@@ -65,7 +65,6 @@ export default function renderIndex(html, css, assetMap, store) {
   <body>
     <div id="mount">${html}</div>
     <script>
-      window.INITIAL_STATE=${JSON.stringify(store.getState())}
       window.RENDERED_CLASS_NAMES=${JSON.stringify(css.renderedClassNames)}
       window.AUTH0_CLIENT_ID="${process.env.AUTH0_CLIENT_ID}"
       window.AUTH0_DOMAIN="${process.env.AUTH0_DOMAIN}"
