@@ -428,7 +428,7 @@ AdminIncomingMessageList.propTypes = {
 };
 
 const mutations = {
-  reassignCampaignContacts: (
+  reassignCampaignContacts: ownProps => (
     organizationId,
     campaignIdsContactIds,
     newTexterUserId
@@ -436,7 +436,7 @@ const mutations = {
     mutation: reassignCampaignContactsMutation,
     variables: { organizationId, campaignIdsContactIds, newTexterUserId }
   }),
-  bulkReassignCampaignContacts: (
+  bulkReassignCampaignContacts: ownProps => (
     organizationId,
     campaignsFilter,
     assignmentsFilter,
@@ -454,4 +454,6 @@ const mutations = {
   })
 };
 
-export default loadData({ mutations })(withRouter(AdminIncomingMessageList));
+export const operations = { mutations };
+
+export default loadData(operations)(withRouter(AdminIncomingMessageList));

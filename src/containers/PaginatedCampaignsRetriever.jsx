@@ -5,34 +5,36 @@ import isEqual from "lodash/isEqual";
 
 import apolloClient from "../network/apollo-client-singleton";
 
-const fetchCampaigns = async (offset, limit, organizationId, campaignsFilter) =>
-  apolloClient.query({
-    query: gql`
-      query qq(
-        $organizationId: String!
-        $cursor: OffsetLimitCursor
-        $campaignsFilter: CampaignsFilter
-      ) {
-        campaigns(
-          organizationId: $organizationId
-          cursor: $cursor
-          campaignsFilter: $campaignsFilter
-        ) {
-          ... on PaginatedCampaigns {
-            pageInfo {
-              offset
-              limit
-              total
-            }
-            campaigns {
-              dueBy
-              title
-              id
-            }
-          }
+export const campaignsQuery = gql`
+  query qq(
+    $organizationId: String!
+    $cursor: OffsetLimitCursor
+    $campaignsFilter: CampaignsFilter
+  ) {
+    campaigns(
+      organizationId: $organizationId
+      cursor: $cursor
+      campaignsFilter: $campaignsFilter
+    ) {
+      ... on PaginatedCampaigns {
+        pageInfo {
+          offset
+          limit
+          total
+        }
+        campaigns {
+          dueBy
+          title
+          id
         }
       }
-    `,
+    }
+  }
+`;
+
+const fetchCampaigns = async (offset, limit, organizationId, campaignsFilter) =>
+  apolloClient.query({
+    query: campaignsQuery,
     variables: {
       cursor: { offset, limit },
       organizationId,
