@@ -30,6 +30,13 @@ export function serverAdministratorInstructions() {
   };
 }
 
+// cycle
+// TTL
+//
+export const DEFAULT_NGP_VAN_CONTACT_TYPE = "SMS Text";
+export const DEFAULT_NGP_VAN_INPUT_TYPE = "API";
+export const DEFAULT_NGP_VAN_ACTIONS_TTL = 600;
+
 export function clientChoiceDataCacheKey(organization) {
   return `${organization.id}`;
 }
@@ -40,9 +47,19 @@ export function clientChoiceDataCacheKey(organization) {
 // Besides this returning true, "test-action" will also need to be added to
 // process.env.ACTION_HANDLERS
 export async function available(organization) {
+  const result =
+    !!getConfig("NGP_VAN_API_KEY", organization) &&
+    !!getConfig("NGP_VAN_APP_NAME", organization);
+
+  if (!result) {
+    log.info(
+      "ngpvan contact loader unavailable. Missing one or more required environment variables."
+    );
+  }
+
   return {
-    result: true,
-    expiresSeconds: 600
+    result,
+    expiresSeconds: 86400
   };
 }
 
@@ -56,33 +73,17 @@ export async function processAction(
   campaign,
   organization
 ) {
-  console.log("PROCESS ACTION");
   try {
     const answerActionsData = JSON.parse(
       (interactionStep || {}).answer_actions_data || "{}"
     );
 
-    const answerActionsDataValue = JSON.parse(answerActionsData.value);
+    const body = JSON.parse(answerActionsData.value);
 
     const url = Van.makeUrl(
       `v4/people/${contact.external_id}/canvassResponses`,
       organization
     );
-
-    const type = answerActionsDataValue.type;
-
-    const body = {
-      canvassContext: {
-        contactTypeId: 37,
-        inputTypeId: 11
-      },
-      ...(type === "CanvassResponse" && {
-        resultCodeId: answerActionsDataValue.resultCodeId
-      }),
-      ...(type !== "CanvassResponse" && {
-        responses: [answerActionsDataValue]
-      })
-    };
 
     log.info("Sending contact update to VAN", {
       vanId: contact.external_id,
@@ -109,11 +110,7 @@ export async function processAction(
 
 export async function getClientChoiceData(organization) {
   // TODO survey questions
-  // statuses	query	string	Comma delimited list of statuses of Survey Questions. One or more of Active (default), Archived, and Inactive.
   // cycle	query	int	A year in the format YYYY; filters to Survey Questions with the given cycle
-
-  // TODO activist codes
-  // statuses	query	string	Comma delimited list of statuses of Activist Codes. One or more of Active (default), Archived, and Inactive.
 
   // TODO we're gong to want to look up resultCode, contactTypes,  and inputTypes just in case
   const surveyQuestionsPromise = httpRequest(
@@ -187,14 +184,27 @@ export async function getClientChoiceData(organization) {
     };
   }
 
+  const buildPayload = responseBody =>
+    JSON.stringify({
+      canvassContext: {
+        contactTypeId: 37, // TODO(lmp)
+        inputTypeId: 11 // TODO(lmp)
+      },
+      ...responseBody
+    });
+
   const surveyResponses = surveyQuestionsResponse.items.reduce(
     (accumulator, surveyQuestion) => {
       const responses = surveyQuestion.responses.map(surveyResponse => ({
         name: `${surveyQuestion.name} - ${surveyResponse.name}`,
-        details: JSON.stringify({
-          type: "SurveyResponse",
-          surveyQuestionId: surveyQuestion.surveyQuestionId,
-          surveyResponseId: surveyResponse.surveyResponseId
+        details: buildPayload({
+          responses: [
+            {
+              type: "SurveyResponse",
+              surveyQuestionId: surveyQuestion.surveyQuestionId,
+              surveyResponseId: surveyResponse.surveyResponseId
+            }
+          ]
         })
       }));
       accumulator.push(...responses);
@@ -205,18 +215,21 @@ export async function getClientChoiceData(organization) {
 
   const activistCodes = activistCodesResponse.items.map(activistCode => ({
     name: activistCode.name,
-    details: JSON.stringify({
-      type: "ActivistCode",
-      action: "Apply",
-      activistCodeId: activistCode.activistCodeId
+    details: buildPayload({
+      responses: [
+        {
+          type: "ActivistCode",
+          action: "Apply",
+          activistCodeId: activistCode.activistCodeId
+        }
+      ]
     })
   }));
 
   const canvassResponses = canvassResponsesResultCodesResponse.map(
     canvassResponse => ({
       name: canvassResponse.name,
-      details: JSON.stringify({
-        type: "CanvassResponse",
+      details: buildPayload({
         resultCodeId: canvassResponse.resultCodeId
       })
     })

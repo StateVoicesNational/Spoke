@@ -230,128 +230,204 @@ describe("ngpvn-action", () => {
         {
           name: "2020VotePPE - Yes - Early",
           details: JSON.stringify({
-            type: "SurveyResponse",
-            surveyQuestionId: 378552,
-            surveyResponseId: 1555791
+            canvassContext: { contactTypeId: 37, inputTypeId: 11 },
+            responses: [
+              {
+                type: "SurveyResponse",
+                surveyQuestionId: 378552,
+                surveyResponseId: 1555791
+              }
+            ]
           })
         },
         {
           name: "2020VotePPE - Yes - Eday",
           details: JSON.stringify({
-            type: "SurveyResponse",
-            surveyQuestionId: 378552,
-            surveyResponseId: 1555792
+            canvassContext: { contactTypeId: 37, inputTypeId: 11 },
+            responses: [
+              {
+                type: "SurveyResponse",
+                surveyQuestionId: 378552,
+                surveyResponseId: 1555792
+              }
+            ]
           })
         },
         {
           name: "2020VotePPE - Yes - Absentee",
           details: JSON.stringify({
-            type: "SurveyResponse",
-            surveyQuestionId: 378552,
-            surveyResponseId: 1555793
+            canvassContext: { contactTypeId: 37, inputTypeId: 11 },
+            responses: [
+              {
+                type: "SurveyResponse",
+                surveyQuestionId: 378552,
+                surveyResponseId: 1555793
+              }
+            ]
           })
         },
         {
           name: "2020VotePPE - Maybe",
           details: JSON.stringify({
-            type: "SurveyResponse",
-            surveyQuestionId: 378552,
-            surveyResponseId: 1555794
+            canvassContext: { contactTypeId: 37, inputTypeId: 11 },
+            responses: [
+              {
+                type: "SurveyResponse",
+                surveyQuestionId: 378552,
+                surveyResponseId: 1555794
+              }
+            ]
           })
         },
         {
           name: "2020VotePPE - No",
           details: JSON.stringify({
-            type: "SurveyResponse",
-            surveyQuestionId: 378552,
-            surveyResponseId: 1555795
+            canvassContext: { contactTypeId: 37, inputTypeId: 11 },
+            responses: [
+              {
+                type: "SurveyResponse",
+                surveyQuestionId: 378552,
+                surveyResponseId: 1555795
+              }
+            ]
           })
         },
         {
           name: "2020VoteTime - Morning",
           details: JSON.stringify({
-            type: "SurveyResponse",
-            surveyQuestionId: 381390,
-            surveyResponseId: 1566012
+            canvassContext: { contactTypeId: 37, inputTypeId: 11 },
+            responses: [
+              {
+                type: "SurveyResponse",
+                surveyQuestionId: 381390,
+                surveyResponseId: 1566012
+              }
+            ]
           })
         },
         {
           name: "2020VoteTime - Afternoon",
           details: JSON.stringify({
-            type: "SurveyResponse",
-            surveyQuestionId: 381390,
-            surveyResponseId: 1566013
+            canvassContext: { contactTypeId: 37, inputTypeId: 11 },
+            responses: [
+              {
+                type: "SurveyResponse",
+                surveyQuestionId: 381390,
+                surveyResponseId: 1566013
+              }
+            ]
           })
         },
         {
           name: "2020VoteTime - Evening",
           details: JSON.stringify({
-            type: "SurveyResponse",
-            surveyQuestionId: 381390,
-            surveyResponseId: 1566014
+            canvassContext: { contactTypeId: 37, inputTypeId: 11 },
+            responses: [
+              {
+                type: "SurveyResponse",
+                surveyQuestionId: 381390,
+                surveyResponseId: 1566014
+              }
+            ]
           })
         },
         {
           name: "EdayIssue-PollWorker",
           details: JSON.stringify({
-            type: "ActivistCode",
-            action: "Apply",
-            activistCodeId: 4482459
+            canvassContext: { contactTypeId: 37, inputTypeId: 11 },
+            responses: [
+              {
+                type: "ActivistCode",
+                action: "Apply",
+                activistCodeId: 4482459
+              }
+            ]
           })
         },
         {
           name: "Opt-In: Cell Phone",
           details: JSON.stringify({
-            type: "ActivistCode",
-            action: "Apply",
-            activistCodeId: 4153148
+            canvassContext: { contactTypeId: 37, inputTypeId: 11 },
+            responses: [
+              {
+                type: "ActivistCode",
+                action: "Apply",
+                activistCodeId: 4153148
+              }
+            ]
           })
         },
         {
           name: "Busy",
-          details: JSON.stringify({ type: "CanvassResponse", resultCodeId: 18 })
+          details: JSON.stringify({
+            canvassContext: { contactTypeId: 37, inputTypeId: 11 },
+            resultCodeId: 18
+          })
         },
         {
           name: "Call Back",
-          details: JSON.stringify({ type: "CanvassResponse", resultCodeId: 17 })
+          details: JSON.stringify({
+            canvassContext: { contactTypeId: 37, inputTypeId: 11 },
+            resultCodeId: 17
+          })
         },
         {
           name: "Canvassed",
-          details: JSON.stringify({ type: "CanvassResponse", resultCodeId: 14 })
+          details: JSON.stringify({
+            canvassContext: { contactTypeId: 37, inputTypeId: 11 },
+            resultCodeId: 14
+          })
         },
         {
           name: "Come Back",
-          details: JSON.stringify({ type: "CanvassResponse", resultCodeId: 13 })
+          details: JSON.stringify({
+            canvassContext: { contactTypeId: 37, inputTypeId: 11 },
+            resultCodeId: 13
+          })
         },
         {
           name: "Deceased",
-          details: JSON.stringify({ type: "CanvassResponse", resultCodeId: 4 })
+          details: JSON.stringify({
+            canvassContext: { contactTypeId: 37, inputTypeId: 11 },
+            resultCodeId: 4
+          })
         },
         {
           name: "Disconnected",
-          details: JSON.stringify({ type: "CanvassResponse", resultCodeId: 25 })
+          details: JSON.stringify({
+            canvassContext: { contactTypeId: 37, inputTypeId: 11 },
+            resultCodeId: 25
+          })
         },
         {
           name: "Do Not Call",
-          details: JSON.stringify({ type: "CanvassResponse", resultCodeId: 22 })
+          details: JSON.stringify({
+            canvassContext: { contactTypeId: 37, inputTypeId: 11 },
+            resultCodeId: 22
+          })
         },
         {
           name: "Do Not Email",
           details: JSON.stringify({
-            type: "CanvassResponse",
+            canvassContext: { contactTypeId: 37, inputTypeId: 11 },
+
             resultCodeId: 131
           })
         },
         {
           name: "Do Not Text",
           details: JSON.stringify({
-            type: "CanvassResponse",
+            canvassContext: { contactTypeId: 37, inputTypeId: 11 },
+
             resultCodeId: 130
           })
         },
         {
           name: "Do Not Walk",
-          details: JSON.stringify({ type: "CanvassResponse", resultCodeId: 23 })
+          details: JSON.stringify({
+            canvassContext: { contactTypeId: 37, inputTypeId: 11 },
+            resultCodeId: 23
+          })
         }
       ];
 
