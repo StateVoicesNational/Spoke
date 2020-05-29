@@ -545,4 +545,6 @@ const mutations = {
   })
 };
 
-export default loadData({ mutations })(withRouter(AssignmentTexterContact));
+export const operations = { mutations };
+
+export default loadData(operations)(withRouter(AssignmentTexterContact));

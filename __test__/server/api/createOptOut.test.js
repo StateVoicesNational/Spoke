@@ -9,7 +9,7 @@ import {
   getOptOut
 } from "../../test_helpers";
 
-import { createOptOutGqlString as createOptOutGql } from "../../../src/components/IncomingMessageList/ConversationPreviewModal";
+import { createOptOutGql } from "../../../src/components/IncomingMessageList/ConversationPreviewModal";
 
 describe("createOptOut", () => {
   let startedCampaign;

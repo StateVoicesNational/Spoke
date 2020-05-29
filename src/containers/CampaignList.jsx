@@ -30,6 +30,35 @@ const campaignInfoFragment = `
   }
 `;
 
+export const getCampaignsQuery = gql`
+  query adminGetCampaigns(
+    $organizationId: String!,
+    $campaignsFilter: CampaignsFilter,
+    $cursor: OffsetLimitCursor,
+    $sortBy: SortCampaignsBy) {
+  organization(id: $organizationId) {
+    id
+    cacheable
+    campaigns(campaignsFilter: $campaignsFilter, cursor: $cursor, sortBy: $sortBy) {
+      ... on CampaignsList {
+        campaigns {
+          ${campaignInfoFragment}
+        }
+      }
+      ... on PaginatedCampaigns {
+        pageInfo {
+          offset
+          limit
+          total
+        }
+        campaigns {
+          ${campaignInfoFragment}
+        }
+      }
+    }
+  }
+}
+`;
 const ROW_SIZES = [50, 10, 25, 100];
 const INITIAL_ROW_SIZE = ROW_SIZES[0];
 ROW_SIZES.sort((a, b) => a - b);

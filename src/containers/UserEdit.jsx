@@ -306,7 +306,7 @@ const queries = {
   }
 };
 
-export const editUserMutation = `
+export const editUserMutation = gql`
   mutation editUser(
     $organizationId: String!
     $userId: Int!
@@ -324,13 +324,12 @@ export const editUserMutation = `
       cell
       email
     }
-  }`;
+  }
+`;
 
 const mutations = {
   editUser: ownProps => userData => ({
-    mutation: gql`
-      ${editUserMutation}
-    `,
+    mutation: editUserMutation,
     variables: {
       userId: ownProps.userId,
       organizationId: ownProps.organizationId,

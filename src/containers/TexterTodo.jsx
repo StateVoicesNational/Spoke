@@ -265,4 +265,7 @@ const mutations = {
   })
 };
 
-export default loadData({ queries, mutations })(withRouter(TexterTodo));
+// exported for testing
+export const operations = { queries, mutations };
+
+export default loadData(operations)(withRouter(TexterTodo));
