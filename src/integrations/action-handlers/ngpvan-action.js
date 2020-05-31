@@ -30,12 +30,9 @@ export function serverAdministratorInstructions() {
   };
 }
 
-// cycle
-// TTL
-//
 export const DEFAULT_NGP_VAN_CONTACT_TYPE = "SMS Text";
 export const DEFAULT_NGP_VAN_INPUT_TYPE = "API";
-export const DEFAULT_NGP_VAN_ACTIONS_TTL = 600;
+export const DEFAULT_NGP_VAN_ACTION_HANDLER_CACHE_TTL = 600;
 
 export function clientChoiceDataCacheKey(organization) {
   return `${organization.id}`;
@@ -109,12 +106,88 @@ export async function processAction(
 }
 
 export async function getClientChoiceData(organization) {
-  // TODO survey questions
-  // cycle	query	int	A year in the format YYYY; filters to Survey Questions with the given cycle
+  const contactTypesPromise = httpRequest(
+    `https://api.securevan.com/v4/canvassResponses/contactTypes`,
+    {
+      method: "GET",
+      headers: {
+        Authorization: Van.getAuth(organization)
+      }
+    }
+  )
+    .then(async response => await response.json())
+    .catch(error => {
+      const message = `Error retrieving contact types from VAN ${error}`;
+      log.error(message);
+      throw new Error(message);
+    });
 
-  // TODO we're gong to want to look up resultCode, contactTypes,  and inputTypes just in case
+  const inputTypesPromise = httpRequest(
+    `https://api.securevan.com/v4/canvassResponses/inputTypes`,
+    {
+      method: "GET",
+      headers: {
+        Authorization: Van.getAuth(organization)
+      }
+    }
+  )
+    .then(async response => await response.json())
+    .catch(error => {
+      const message = `Error retrieving input types from VAN ${error}`;
+      log.error(message);
+      throw new Error(message);
+    });
+
+  let contactTypeId;
+  let inputTypeId;
+
+  try {
+    const [contactTypesResponse, inputTypesResponse] = await Promise.all([
+      contactTypesPromise,
+      inputTypesPromise
+    ]);
+
+    const contactType =
+      getConfig("NGP_VAN_CONTACT_TYPE", organization) ||
+      DEFAULT_NGP_VAN_CONTACT_TYPE;
+    ({ contactTypeId } = contactTypesResponse.find(
+      ct => ct.name === contactType
+    ));
+    if (!contactTypeId) {
+      log.error(`Contact type ${contactType} not returned by VAN`);
+    }
+
+    const inputType =
+      getConfig("NGP_VAN_INPUT_TYPE", organization) ||
+      DEFAULT_NGP_VAN_INPUT_TYPE;
+    ({ inputTypeId } = inputTypesResponse.find(
+      inTy => inTy.name === inputType
+    ));
+    if (!inputTypeId) {
+      log.error(`Input type ${inputType} not returned by VAN`);
+    }
+
+    if (!inputTypeId || !contactTypeId) {
+      throw new Error(
+        "VAN did not return the configured input type or contact type. Check the log"
+      );
+    }
+  } catch (caughtError) {
+    log.error(
+      `Error loading canvass/contactTypes or canvass/inputTypes from VAN  ${caughtError}`
+    );
+    return {
+      data: `${JSON.stringify({
+        error:
+          "Failed to load canvass/contactTypes or canvass/inputTypes from VAN"
+      })}`
+    };
+  }
+
+  const cycle = await getConfig("NGP_VAN_ELECTION_CYCLE_FILTER", organization);
+  const cycleFilter = (cycle && `&cycle=${cycle}`) || "";
   const surveyQuestionsPromise = httpRequest(
-    `https://api.securevan.com/v4/surveyQuestions?statuses=Active`,
+    `https://api.securevan.com/v4/surveyQuestions?statuses=Active${cycleFilter}`,
     {
       method: "GET",
       headers: {
@@ -176,10 +249,13 @@ export async function getClientChoiceData(organization) {
       canvassResultCodesPromise
     ]);
   } catch (caughtError) {
+    log.error(
+      `Error loading surveyQuestions, activistCodes or canvass/resultCodes from VAN  ${caughtError}`
+    );
     return {
       data: `${JSON.stringify({
         error:
-          "Failed to load surveyQuestions, activistCodes or canvassResultCodes from VAN"
+          "Failed to load surveyQuestions, activistCodes or canvass/resultCodes from VAN"
       })}`
     };
   }
@@ -187,8 +263,8 @@ export async function getClientChoiceData(organization) {
   const buildPayload = responseBody =>
     JSON.stringify({
       canvassContext: {
-        contactTypeId: 37, // TODO(lmp)
-        inputTypeId: 11 // TODO(lmp)
+        contactTypeId,
+        inputTypeId
       },
       ...responseBody
     });
@@ -240,6 +316,8 @@ export async function getClientChoiceData(organization) {
 
   return {
     data: `${JSON.stringify({ items: vanActions })}`,
-    expiresSeconds: Number(getConfig("NGP_VAN_CACHE_TTL")) || 300
+    expiresSeconds:
+      Number(getConfig("NGP_VAN_ACTION_HANDLER_CACHE_TTL", organization)) ||
+      DEFAULT_NGP_VAN_ACTION_HANDLER_CACHE_TTL
   };
 }

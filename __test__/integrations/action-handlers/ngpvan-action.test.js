@@ -7,8 +7,8 @@ import nock from "nock";
 
 describe("ngpvn-action", () => {
   beforeEach(async () => {
-    process.env.NGP_VAN_APP_NAME = "AVNY.003.hustle";
-    process.env.NGP_VAN_API_KEY = "e8ea38bf-4564-6d45-20f8-96fdbf12823c";
+    process.env.NGP_VAN_APP_NAME = "fake_app_name";
+    process.env.NGP_VAN_API_KEY = "fake_api_key";
     process.env.NGP_VAN_EXPORT_JOB_TYPE_ID = 8;
     process.env.NGP_VAN_WEBHOOK_URL = "https://e6f9b408.ngrok.io";
     process.env.NGP_VAN_MAXIMUM_LIST_SIZE = 300;
@@ -26,13 +26,77 @@ describe("ngpvn-action", () => {
     let makeGetSurveyQuestionsNock;
     let makeGetActivistCodesNock;
     let makeGetCanvassResponsesResultCodesNock;
+    let makeGetCanvassResponsesContactTypesNock;
+    let makeGetCanvassResponsesInputTypesNock;
+
+    let getSurveyQuestionsNock;
+    let getActivistCodesNock;
+    let getCanvassResponsesResultCodesNock;
+    let getCanvassResponsesContactTypesNock;
+    let getCanvassResponsesInputTypesNock;
 
     beforeEach(async () => {
-      makeGetSurveyQuestionsNock = (statusCode = 200) =>
+      makeGetCanvassResponsesContactTypesNock = (statusCode = 200) =>
         nock("https://api.securevan.com:443", {
           encodedQueryParams: true
         })
-          .get("/v4/surveyQuestions?statuses=Active")
+          .get(`/v4/canvassResponses/contactTypes`)
+          .reply(statusCode, [
+            {
+              contactTypeId: 4,
+              channelTypeName: "Phone",
+              name: "Robocall"
+            },
+            {
+              contactTypeId: 37,
+              channelTypeName: "Text",
+              name: "SMS Text"
+            },
+            {
+              contactTypeId: 79,
+              channelTypeName: "Online",
+              name: "Social Media"
+            },
+            {
+              contactTypeId: 15,
+              channelTypeName: "Other",
+              name: "Survey"
+            }
+          ]);
+    });
+
+    beforeEach(async () => {
+      makeGetCanvassResponsesInputTypesNock = (statusCode = 200) =>
+        nock("https://api.securevan.com:443", {
+          encodedQueryParams: true
+        })
+          .get(`/v4/canvassResponses/inputTypes`)
+          .reply(statusCode, [
+            {
+              inputTypeId: 11,
+              name: "API"
+            },
+            {
+              inputTypeId: 9,
+              name: "Auto Dial"
+            },
+            {
+              inputTypeId: 5,
+              name: "Back End"
+            },
+            {
+              inputTypeId: 3,
+              name: "Bar Code"
+            }
+          ]);
+    });
+
+    beforeEach(async () => {
+      makeGetSurveyQuestionsNock = (statusCode = 200, extraParams = "") =>
+        nock("https://api.securevan.com:443", {
+          encodedQueryParams: true
+        })
+          .get(`/v4/surveyQuestions?statuses=Active${extraParams}`)
           .reply(statusCode, {
             items: [
               {
@@ -219,9 +283,11 @@ describe("ngpvn-action", () => {
     });
 
     it("returns what we expect", async () => {
-      const getSurveyQuestionsNock = makeGetSurveyQuestionsNock(200);
-      const getActivistCodesNock = makeGetActivistCodesNock();
-      const getCanvassResponsesResultCodesNock = makeGetCanvassResponsesResultCodesNock();
+      getSurveyQuestionsNock = makeGetSurveyQuestionsNock(200);
+      getActivistCodesNock = makeGetActivistCodesNock();
+      getCanvassResponsesResultCodesNock = makeGetCanvassResponsesResultCodesNock();
+      getCanvassResponsesInputTypesNock = makeGetCanvassResponsesInputTypesNock();
+      getCanvassResponsesContactTypesNock = makeGetCanvassResponsesContactTypesNock();
 
       const clientChoiceData = await NgpVanAction.getClientChoiceData();
       const receivedItems = JSON.parse(clientChoiceData.data).items;
@@ -432,29 +498,62 @@ describe("ngpvn-action", () => {
       ];
 
       expect(receivedItems).toEqual(expectedItems);
-      expect(clientChoiceData.expiresSeconds).toEqual(30);
+      expect(clientChoiceData.expiresSeconds).toEqual(600);
 
       getCanvassResponsesResultCodesNock.done();
       getActivistCodesNock.done();
       getSurveyQuestionsNock.done();
+      getCanvassResponsesContactTypesNock.done();
+      getCanvassResponsesInputTypesNock.done();
+    });
+
+    describe("when there's an election cycle filter", () => {
+      beforeEach(async () => {
+        process.env.NGP_VAN_ELECTION_CYCLE_FILTER = "2020";
+        nock.removeInterceptor(getSurveyQuestionsNock);
+      });
+
+      afterEach(async () => {
+        delete process.env.NGP_VAN_ELECTION_CYCLE_FILTER;
+      });
+
+      it("makes the correct API requests", async () => {
+        getSurveyQuestionsNock = makeGetSurveyQuestionsNock(200, "&cycle=2020");
+        getActivistCodesNock = makeGetActivistCodesNock();
+        getCanvassResponsesResultCodesNock = makeGetCanvassResponsesResultCodesNock();
+        getCanvassResponsesInputTypesNock = makeGetCanvassResponsesInputTypesNock();
+        getCanvassResponsesContactTypesNock = makeGetCanvassResponsesContactTypesNock();
+
+        await NgpVanAction.getClientChoiceData();
+        getCanvassResponsesResultCodesNock.done();
+        getActivistCodesNock.done();
+        getSurveyQuestionsNock.done();
+        getCanvassResponsesContactTypesNock.done();
+        getCanvassResponsesInputTypesNock.done();
+      });
     });
 
     describe("when there's an error ", () => {
       it("returns what we expect", async () => {
-        const getSurveyQuestionsNock = makeGetSurveyQuestionsNock(404);
-        const getActivistCodesNock = makeGetActivistCodesNock();
-        const getCanvassResponsesResultCodesNock = makeGetCanvassResponsesResultCodesNock();
+        nock.removeInterceptor(getSurveyQuestionsNock);
+        getSurveyQuestionsNock = makeGetSurveyQuestionsNock(404);
+        getActivistCodesNock = makeGetActivistCodesNock();
+        getCanvassResponsesResultCodesNock = makeGetCanvassResponsesResultCodesNock();
+        getCanvassResponsesInputTypesNock = makeGetCanvassResponsesInputTypesNock();
+        getCanvassResponsesContactTypesNock = makeGetCanvassResponsesContactTypesNock();
 
         const clientChoiceData = await NgpVanAction.getClientChoiceData();
         const receivedError = JSON.parse(clientChoiceData.data).error;
 
         expect(receivedError).toEqual(
-          "Failed to load surveyQuestions, activistCodes or canvassResultCodes from VAN"
+          "Failed to load surveyQuestions, activistCodes or canvass/resultCodes from VAN"
         );
 
         getCanvassResponsesResultCodesNock.done();
         getActivistCodesNock.done();
         getSurveyQuestionsNock.done();
+        getCanvassResponsesContactTypesNock.done();
+        getCanvassResponsesInputTypesNock.done();
       });
     });
   });
