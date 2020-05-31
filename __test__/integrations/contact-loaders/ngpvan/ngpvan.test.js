@@ -53,7 +53,7 @@ describe("ngpvan", () => {
     it("returns true when all required environment variables are present", async () => {
       expect(await available()).toEqual({
         result: true,
-        expiresSeconds: 60
+        expiresSeconds: 86400
       });
     });
 
@@ -65,7 +65,7 @@ describe("ngpvan", () => {
       it("returns false", async () => {
         expect(await available()).toEqual({
           result: false,
-          expiresSeconds: 60
+          expiresSeconds: 86400
         });
       });
     });

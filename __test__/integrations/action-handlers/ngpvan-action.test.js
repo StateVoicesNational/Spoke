@@ -533,7 +533,7 @@ describe("ngpvn-action", () => {
       });
     });
 
-    describe("when there's an error ", () => {
+    describe("when there's an error retrieving surveyQuestions", () => {
       it("returns what we expect", async () => {
         nock.removeInterceptor(getSurveyQuestionsNock);
         getSurveyQuestionsNock = makeGetSurveyQuestionsNock(404);
@@ -556,5 +556,17 @@ describe("ngpvn-action", () => {
         getCanvassResponsesInputTypesNock.done();
       });
     });
+
+    describe("when there's an error retrieving canvass/contactTypes", () => {});
+
+    describe("when canvass/contactTypes doesn't have the item we want", () => {});
+
+    describe("when canvass/inputTypes doesn't have the item we want", () => {});
   });
+
+  describe("#clientChoiceDataCacheKey", () => {});
+
+  describe("#available", () => {});
+
+  describe("#processAction", () => {});
 });
