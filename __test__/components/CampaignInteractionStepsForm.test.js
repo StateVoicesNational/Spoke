@@ -1,29 +1,25 @@
 /**
  * @jest-environment jsdom
  */
-import util from "util";
 import React from "react";
 import { mount } from "enzyme";
 import { r } from "../../src/server/models";
 import { StyleSheetTestUtils } from "aphrodite";
 import MuiThemeProvider from "material-ui/styles/MuiThemeProvider";
-import { Card, CardHeader, CardActions, CardTitle } from "material-ui/Card";
+import { Card, CardHeader } from "material-ui/Card";
 import CampaignInteractionStepsForm from "../../src/components/CampaignInteractionStepsForm";
 import CampaignFormSectionHeading from "../../src/components/CampaignFormSectionHeading";
 import {
   AdminCampaignEdit,
-  mapMutationsToProps as adminCampaignEditMutations,
-  mapQueriesToProps as adminCampaignEditQueries
+  operations as adminCampaignEditOps
 } from "../../src/containers/AdminCampaignEdit";
 import {
   setupTest,
   cleanupTest,
   createStartedCampaign,
   makeRunnableMutations,
-  runComponentQueries,
-  sleep
+  runComponentQueries
 } from "../test_helpers";
-import CampaignBasicsForm from "../../src/components/CampaignBasicsForm";
 
 describe("CampaignInteractionStepsForm", () => {
   describe("basic instantiation", function t() {
@@ -683,26 +679,24 @@ describe("CampaignInteractionStepsForm", () => {
           adminPerms: true
         };
 
-        const ownPropsObject = {
-          ownProps: {
-            params: {
-              ...params
-            }
+        const ownProps = {
+          params: {
+            ...params
           }
         };
 
         const queryResults = await runComponentQueries(
-          adminCampaignEditQueries,
+          adminCampaignEditOps.queries,
           adminUser,
-          ownPropsObject
+          ownProps
         );
 
         queryResults.campaignData.campaign.interactionSteps = interactionSteps;
 
         const wrappedMutations = makeRunnableMutations(
-          adminCampaignEditMutations,
+          adminCampaignEditOps.mutations,
           adminUser,
-          ownPropsObject
+          ownProps
         );
 
         StyleSheetTestUtils.suppressStyleInjection();
