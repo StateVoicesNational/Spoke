@@ -382,11 +382,16 @@ export class AssignmentTexterContactControls extends React.Component {
   };
 
   handleOpenDialog = () => {
-    this.setState({
-      optOutDialogOpen: true,
-      // store this, because on-close, we lose this
-      currentShortcutSpace: this.refs.answerButtons.offsetHeight
-    });
+    // delay to avoid accidental tap pass-through with focusing on
+    // the text field -- this is annoying on mobile where the keyboard
+    // pops up, inadvertantly
+    const self = this;
+    setTimeout(() =>
+               self.setState({
+                 optOutDialogOpen: true,
+                 // store this, because on-close, we lose this
+                 currentShortcutSpace: self.refs.answerButtons.offsetHeight
+               }), 200);
   };
 
   handleCloseDialog = () => {
@@ -464,9 +469,14 @@ export class AssignmentTexterContactControls extends React.Component {
   };
 
   handleCloseResponsePopover = () => {
-    this.setState({
-      responsePopoverOpen: false
-    });
+    // delay to avoid accidental tap pass-through with focusing on
+    // the text field -- this is annoying on mobile where the keyboard
+    // pops up, inadvertantly
+    const self = this;
+    setTimeout(() =>
+               self.setState({
+                 responsePopoverOpen: false
+               }), 200);
   };
 
   renderSurveySection() {
@@ -632,7 +642,6 @@ export class AssignmentTexterContactControls extends React.Component {
             <Form.Field
               name="optOutMessageText"
               fullWidth
-              autoFocus
               multiLine
             />
             <div className={css(flexStyles.subSectionOptOutDialogActions)}>
