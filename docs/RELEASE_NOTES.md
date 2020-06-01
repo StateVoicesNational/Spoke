@@ -1,7 +1,7 @@
 # Release Notes
 ## v6.0
 _May 2020:_ Version 6.0
-**Note:** This is a major release and therefore requires a schema change. See the deploy steps section for details. Anything marked as *experimental* has not yet been tested on a production texting campaign, but has been QA'd by our QA volunteers.
+**Note:** This is a major release and therefore requires a schema change. See the deploy steps section for details. Anything marked as *experimental* has not yet been tested on a production texting campaign.
 We're marking this as a major version update: 6.0 because there are several backwards-incompatible changes that we think you will love:
 
 - *Experimental* Phone number inventory management -- Adds functionality to buy Twilio phone numbers directly through the Admin interface. Organizations using their own Messaging Service, i.e. those that have TWILIO_MESSAGE_SERVICE set in organization features rather than through the global env var, can add the numbers directly to their Messaging Service and use them for texting. Additionally, phone numbers purchased through Spoke can be configured to use a custom voice response by setting the TWILIO_VOICE_URL setting. A typical use case would be to use TwiML Bins to re-route calls or to play a custom voicemails. To configure:
