@@ -3,7 +3,7 @@ import GraphQLJSON from "graphql-type-json";
 import { GraphQLError } from "graphql/error";
 import isUrl from "is-url";
 
-import { gzip, makeTree, getHighestRole } from "../../lib";
+import { log, gzip, makeTree, getHighestRole } from "../../lib";
 import { capitalizeWord } from "./lib/utils";
 import twilio from "./lib/twilio";
 
@@ -24,7 +24,6 @@ import {
   JobRequest,
   Message,
   Organization,
-  QuestionResponse,
   Tag,
   UserOrganization,
   r,
@@ -67,7 +66,8 @@ import {
   bulkSendMessages,
   buyPhoneNumbers,
   findNewCampaignContact,
-  sendMessage
+  sendMessage,
+  updateQuestionResponses
 } from "./mutations";
 
 const ActionHandlers = require("../../integrations/action-handlers");
@@ -1110,80 +1110,7 @@ const rootMutations = {
 
       return contact;
     },
-    updateQuestionResponses: async (
-      _,
-      { questionResponses, campaignContactId },
-      { loaders, user }
-    ) => {
-      const contact = await loaders.campaignContact.load(campaignContactId);
-      const campaign = await loaders.campaign.load(contact.campaign_id);
-      await assignmentRequiredOrAdminRole(
-        user,
-        campaign.organization_id,
-        contact.assignment_id,
-        contact
-      );
-
-      await cacheableData.questionResponse.save(
-        campaignContactId,
-        questionResponses
-      );
-
-      // The rest is for ACTION_HANDLERS
-      const organization = await loaders.organization.load(
-        campaign.organization_id
-      );
-      const actionHandlers = getConfig("ACTION_HANDLERS", organization);
-      if (actionHandlers) {
-        const interactionSteps =
-          campaign.interactionSteps ||
-          (await cacheableData.campaign.dbInteractionSteps(campaign.id));
-
-        const count = questionResponses.length;
-
-        for (let i = 0; i < count; i++) {
-          const questionResponse = questionResponses[i];
-          const { interactionStepId, value } = questionResponse;
-
-          const interactionStepResult = interactionSteps.filter(
-            is =>
-              is.answer_actions &&
-              is.answer_option === value &&
-              is.parent_interaction_id === Number(interactionStepId)
-          );
-
-          const interactionStepAction =
-            interactionStepResult.length &&
-            interactionStepResult[0].answer_actions;
-          if (interactionStepAction) {
-            // run interaction step handler
-            try {
-              const handler = await ActionHandlers.getActionHandler(
-                interactionStepAction,
-                organization,
-                user
-              );
-              handler.processAction(
-                questionResponse,
-                interactionStepResult[0],
-                campaignContactId,
-                contact,
-                campaign,
-                organization
-              );
-            } catch (err) {
-              console.error(
-                "Handler for InteractionStep",
-                interactionStepId,
-                "Does Not Exist:",
-                interactionStepAction
-              );
-            }
-          }
-        }
-      }
-      return contact;
-    },
+    updateQuestionResponses,
     reassignCampaignContacts: async (
       _,
       { organizationId, campaignIdsContactIds, newTexterUserId },
