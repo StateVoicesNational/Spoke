@@ -76,7 +76,6 @@ class Login extends React.Component {
     /\/\w{8}-(\w{4}\-){3}\w{12}(\/|$)/.test(nextUrl);
 
   render() {
-    console.log("**** RENDERING");
     const auth0Strategy =
       window.PASSPORT_STRATEGY === "auth0" || window.PASSPORT_STRATEGY === "";
     const auth0Login = isClient() && auth0Strategy;

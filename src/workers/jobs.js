@@ -392,8 +392,6 @@ export async function assignTexters(job) {
   TODO: what happens when we switch modes? Do we allow it?
   */
 
-  // DELETE ME
-  await new Promise(resolve => setTimeout(resolve, 500));
   const payload = JSON.parse(job.payload);
   const cid = job.campaign_id;
   console.log("assignTexters1", cid, payload);
