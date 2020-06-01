@@ -300,7 +300,7 @@ const mutations = {
       limit,
       addToOrganizationMessagingService
     },
-    refetchQueries: ["getOrganizationData"]
+    refetchQueries: () => ["getOrganizationData"]
   })
 };
 

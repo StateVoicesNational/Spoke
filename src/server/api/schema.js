@@ -1268,7 +1268,7 @@ const rootMutations = {
     },
     importCampaignScript: async (_, { campaignId, url }, { loaders, user }) => {
       const campaign = await loaders.campaign.load(campaignId);
-      await accessRequired(user, campaignId.organization_id, "ADMIN", true);
+      await accessRequired(user, campaign.organization_id, "ADMIN", true);
       if (campaign.is_started || campaign.is_archived) {
         throw new GraphQLError(
           "Cannot import a campaign script for a campaign that is started or archived"
