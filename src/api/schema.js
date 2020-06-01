@@ -284,7 +284,7 @@ const rootSchema = gql`
     updateQuestionResponses(
       questionResponses: [QuestionResponseInput]
       campaignContactId: String!
-    ): CampaignContact
+    ): String
     startCampaign(id: String!): Campaign
     archiveCampaign(id: String!): Campaign
     archiveCampaigns(ids: [String!]): [Campaign]

@@ -12,6 +12,17 @@ export const instructions = () =>
   This action is for testing and as a code-template for new actions.
   `;
 
+export function serverAdministratorInstructions() {
+  return {
+    description: `
+      This action is for testing and as a code-template for new actions.
+      `,
+    setupInstructions:
+      "Add `test-action` to the environment variable `ACTION_HANDLERS`",
+    environmentVariables: []
+  };
+}
+
 // return true, if the action is usable and available for the organizationId
 // Sometimes this means certain variables/credentials must be setup
 // either in environment variables or organization.features json data
@@ -29,14 +40,14 @@ export async function available(organizationId) {
 export async function processAction(
   questionResponse,
   interactionStep,
-  campaignContactId
+  campaignContactId,
+  contact
+  // campaign,    // unused parameter
+  // organization // unused parameter
 ) {
   // This is a meta action that updates a variable in the contact record itself.
   // Generally, you want to send action data to the outside world, so you
   // might want the request library loaded above
-  const contact = await r
-    .knex("campaign_contact")
-    .where("campaign_contact_id", campaignContactId);
   const customFields = JSON.parse(contact.custom_fields || "{}");
   if (customFields) {
     customFields["processed_test_action"] = "completed";

@@ -101,7 +101,7 @@ export const campaignDataQuery = gql`query getCampaign($campaignId: String!) {
         }
       }`;
 
-class AdminCampaignEdit extends React.Component {
+export class AdminCampaignEdit extends React.Component {
   constructor(props) {
     super(props);
     const isNew = props.location.query.new;

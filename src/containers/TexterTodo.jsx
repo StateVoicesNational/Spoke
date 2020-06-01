@@ -6,7 +6,7 @@ import { withRouter } from "react-router";
 import loadData from "./hoc/load-data";
 import gql from "graphql-tag";
 
-const contactDataFragment = `
+export const contactDataFragment = `
         id
         assignmentId
         firstName
@@ -38,7 +38,7 @@ const contactDataFragment = `
         }
 `;
 
-export const dataQuery = gql`
+export const dataQueryString = `
   query getContacts($assignmentId: String!, $contactsFilter: ContactsFilter!) {
     assignment(id: $assignmentId) {
       id
@@ -101,6 +101,10 @@ export const dataQuery = gql`
       allContactsCount: contactsCount
     }
   }
+`;
+
+export const dataQuery = gql`
+  ${dataQueryString}
 `;
 
 export class TexterTodo extends React.Component {

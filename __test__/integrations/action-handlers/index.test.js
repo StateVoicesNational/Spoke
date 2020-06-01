@@ -302,6 +302,15 @@ describe("action-handlers/index", () => {
       [[{ name: "processAction", shouldValidate: true, type: "function" }]],
       [[{ name: "instructions", shouldValidate: true, type: "function" }]],
       [
+        [
+          {
+            name: "serverAdministratorInstructions",
+            shouldValidate: true,
+            type: "function"
+          }
+        ]
+      ],
+      [
         [{ name: "instructions", shouldValidate: true, type: "function" }],
         [{ name: "processAction", shouldValidate: true, type: "function" }]
       ],
@@ -329,7 +338,8 @@ describe("action-handlers/index", () => {
         displayName: () => {},
         available: () => {},
         processAction: () => {},
-        instructions: () => {}
+        instructions: () => {},
+        serverAdministratorInstructions: () => {}
       };
       items.forEach(item => {
         delete fakeHandlerToValidate[item.name];

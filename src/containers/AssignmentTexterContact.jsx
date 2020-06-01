@@ -346,7 +346,7 @@ export class AssignmentTexterContact extends React.Component {
         ? OldControls
         : Controls;
     return (
-      <div>
+      <div {...dataTest("assignmentTexterContactFirstDiv")}>
         {this.state.disabled ? (
           <div className={css(styles.overlay)}>
             <CircularProgress size={0.5} />
@@ -498,9 +498,7 @@ const mutations = {
         updateQuestionResponses(
           questionResponses: $questionResponses
           campaignContactId: $campaignContactId
-        ) {
-          id
-        }
+        )
       }
     `,
     variables: {
