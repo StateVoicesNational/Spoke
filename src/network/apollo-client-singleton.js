@@ -47,30 +47,6 @@ const ApolloClientSingleton = new ApolloClient({
   connectToDevTools: true,
   queryDeduplication: true
 });
-//
-// import { graphQLErrorParser } from "./errors";
-//
-//
-// const ApolloClientSingleton = new ApolloClient({
-//   uri: process.env.GRAPHQL_URL || "/graphql",
-//   onError: ({ graphQLErrors, networkError }) => {
-//     console.info("**** Error", error);
-//     // TODO: rather than use these status codes, use Apollo's built in string error codes
-//     if (networkError.statusCode === 401) {
-//       window.location = `/login?nextUrl=${window.location.pathname}`;
-//     } else if (networkError.statusCode === 403) {
-//       window.location = "/";
-//     } else if (networkError.statusCode === 404) {
-//       window.location = "/404";
-//     } else {
-//       console.error(
-//         `GraphQL request resulted in error:\nRequest:${JSON.stringify(
-//           error.response.data
-//         )}\nError:${JSON.stringify()}`
-//       );
-//     }
-//   }
-// });
 
 if (typeof window !== "undefined") {
   window.ApolloClient = ApolloClientSingleton;
