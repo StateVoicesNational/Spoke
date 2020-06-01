@@ -331,6 +331,7 @@ class AdminCampaignEdit extends React.Component {
   }
 
   sections() {
+    const pendingJobs = this.props.campaignData.campaign.pendingJobs;
     const finalSections = [
       {
         title: "Basics",
@@ -369,7 +370,7 @@ class AdminCampaignEdit extends React.Component {
             this.props.campaignData.campaign.ingestMethod || null,
           jobResultMessage:
             (
-              this.props.campaignData.campaign.pendingJobs
+              pendingJobs
                 .filter(job => /ingest/.test(job.jobType))
                 .reverse()[0] || {}
             ).resultMessage || ""
@@ -454,6 +455,7 @@ class AdminCampaignEdit extends React.Component {
       });
     }
     if (window.CAN_GOOGLE_IMPORT) {
+      // TODO: consider merging this component into Interactions
       finalSections.push({
         title: "Script Import",
         content: AdminScriptImport,
@@ -463,7 +465,12 @@ class AdminCampaignEdit extends React.Component {
         expandAfterCampaignStarts: false,
         expandableBySuperVolunteers: false,
         extraProps: {
-          campaignData: this.props.campaignData
+          startImport: async url =>
+            this.props.mutations.importCampaignScript(
+              this.props.campaignData.campaign.id,
+              url
+            ),
+          hasPendingJob: pendingJobs.some(j => j.jobType === "import_script")
         },
         doNotSaveAfterSubmit: true
       });
@@ -490,6 +497,10 @@ class AdminCampaignEdit extends React.Component {
       } else if (section.title === "Interactions") {
         relatedJob = pendingJobs.filter(
           job => job.jobType === "create_interaction_steps"
+        )[0];
+      } else if (section.title === "Script Import") {
+        relatedJob = pendingJobs.filter(
+          job => job.jobType === "import_script"
         )[0];
       }
     }
@@ -883,6 +894,19 @@ const mutations = {
       id: jobId
     },
     refetchQueries: () => ["getCampaign"]
+  }),
+  importCampaignScript: ownProps => (campaignId, url) => ({
+    mutation: gql`
+      mutation importCampaignScript($campaignId: String!, $url: String!) {
+        importCampaignScript(campaignId: $campaignId, url: $url)
+      }
+    `,
+    variables: {
+      campaignId,
+      url
+    },
+    refetchQueries: () => ["getCampaign"]
   })
 };
+
 export default loadData({ queries, mutations })(AdminCampaignEdit);
