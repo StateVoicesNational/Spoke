@@ -680,24 +680,23 @@ export const createJob = async (campaign, overrides) => {
 };
 
 export const makeRunnableMutations = (mutationsToWrap, user, ownProps) => {
-  const mutations = mutationsToWrap(ownProps);
   const newMutations = {};
-  Object.keys(mutations).forEach(k => {
+  Object.keys(mutationsToWrap).forEach(k => {
     newMutations[k] = async (...args) => {
       // TODO validate received args against args in the schema
-      const toWrap = mutations[k](...args);
-      return runGql(toWrap.mutation.loc.source.body, toWrap.variables, user);
+      const toWrap = mutationsToWrap[k](ownProps)(...args);
+      return runGql(toWrap.mutation, toWrap.variables, user);
     };
   });
   return newMutations;
 };
 
-export const runComponentQueries = async (queriesToRun, user, ownProps) => {
-  const queries = queriesToRun(ownProps);
+export const runComponentQueries = async (queries, user, ownProps) => {
   const keys = Object.keys(queries);
   const promises = keys.map(k => {
     const query = queries[k];
-    return runGql(query.query.loc.source.body, query.variables, user);
+    const opts = query.options(ownProps);
+    return runGql(query.query, opts.variables, user);
   });
 
   const resolvedPromises = await Promise.all(promises);

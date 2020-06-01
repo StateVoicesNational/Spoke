@@ -24,8 +24,8 @@ import { mount } from "enzyme";
 import MuiThemeProvider from "material-ui/styles/MuiThemeProvider";
 import { StyleSheetTestUtils } from "aphrodite";
 import {
-  AssignmentTexterContact,
-  mapMutationsToProps as assignmentTexterContactMutations
+  operations as assignmentTexterOps,
+  AssignmentTexterContact
 } from "../../../../src/containers/AssignmentTexterContact";
 import { AssignmentTexterContactControls } from "../../../../src/components/AssignmentTexter/Controls";
 import {
@@ -384,7 +384,7 @@ describe("mutations.updateQuestionResponses", () => {
         StyleSheetTestUtils.suppressStyleInjection();
 
         const wrappedMutations = makeRunnableMutations(
-          assignmentTexterContactMutations,
+          assignmentTexterOps.mutations,
           texterUser
         );
 

@@ -909,4 +909,5 @@ const mutations = {
   })
 };
 
-export default loadData({ queries, mutations })(AdminCampaignEdit);
+export const operations = { queries, mutations };
+export default loadData(operations)(AdminCampaignEdit);

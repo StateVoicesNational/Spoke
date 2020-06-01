@@ -13,6 +13,7 @@ import Snackbar from "material-ui/Snackbar";
 import { isBetweenTextingHours } from "../lib";
 import { withRouter } from "react-router";
 import { getContactTimezone } from "../lib/timezones";
+import { dataTest } from "../lib/attributes";
 
 const styles = StyleSheet.create({
   overlay: {
