@@ -11,10 +11,9 @@ const JOBS_SAME_PROCESS = !!(
 );
 
 export const sendMessage = async (
-  message,
-  campaignContactId,
-  loaders,
-  user
+  _,
+  { message, campaignContactId },
+  { loaders, user }
 ) => {
   let contact = await loaders.campaignContact.load(campaignContactId);
   const campaign = await loaders.campaign.load(contact.campaign_id);
