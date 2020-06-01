@@ -53,8 +53,8 @@ Welcome to the project! Once you've completed that first contribution, there are
 
 ### Finding issues
 - All issues that are up for grabs and mostly (if not fully) planned are listed under the [help wanted](https://github.com/MoveOnOrg/Spoke/issues?q=is%3Aopen+is%3Aissue+label%3A%22help+wanted%22) label. This is a great place to start if you don't feel attached to any particular issue and just want to keep helping out.
-- We use our [Area labels](TODO) to categorize issues into which code feature areas they belong in. Feel free to sort by an area you're interested in.
-- We use our [Organization labels](TODO) to categorize issues by which organizations are prioritizing them. You can sort by your favorite org and help out there.
+- We use our [Area labels](docs/EXPLANATION-labels.md) to categorize issues into which code feature areas they belong in. Feel free to sort by an area you're interested in.
+- We use our [Organization labels](docs/EXPLANATION-labels.md) to categorize issues by which organizations are prioritizing them. You can sort by your favorite org and help out there.
 - More broadly, there are all sort of different [labels](https://github.com/MoveOnOrg/Spoke/labels) we use to filter the issues down and you can leverage that to help you find work.
 - Lastly, you can always ping a project maintainer (@ibrand, and @schuyler1d) to get a read on what's on our radar right now.
 
