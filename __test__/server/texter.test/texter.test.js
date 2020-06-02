@@ -2,33 +2,51 @@ import { testTexterUser, testContact, assignmentId } from "./common";
 /* eslint-disable no-unused-expressions, consistent-return */
 import { r } from "../../../src/server/models";
 
-import { runGql, getGql, getCampaignContact } from "../../test_helpers";
+import { runGql, getCampaignContact } from "../../test_helpers";
 import waitForExpect from "wait-for-expect";
+import { operations as texterTodoOps } from "../../../src/containers/TexterTodo";
+import { operations as assignmentTexterOps } from "../../../src/containers/AssignmentTexterContact";
+
+function sendMessageMutAndVars(message, contactId) {
+  const { mutation, variables } = assignmentTexterOps.mutations.sendMessage({})(
+    message,
+    contactId
+  );
+  return [mutation, variables];
+}
+
+function getAssignmentContactsMutAndVars(props, contactIds, findNew) {
+  const { mutation, variables } = texterTodoOps.mutations.getAssignmentContacts(
+    props
+  )(contactIds, findNew);
+  return [mutation, variables];
+}
+
+const getContactsQuery = texterTodoOps.queries.data.query;
+const getContactsVars = props =>
+  texterTodoOps.queries.data.options(props).variables;
 
 /*
 * NOTE:
-* beforeEach and afterEach are defined in ./common and are run before the tests in thie
+* beforeEach and afterEach are defined in ./common and are run before the tests in the
 * file because ./common is imported
 
 * We have one test per file to work around limitations with jest's require cache
 */
-
-it("should send an inital message to test contacts", async () => {
-  const {
-    query: [getContacts, getContactsVars],
-    mutations
-  } = getGql("../src/containers/TexterTodo", {
+it("should send an initial message to test contacts", async () => {
+  const texterTodoProps = {
     messageStatus: "needsMessage",
     params: { assignmentId }
-  });
+  };
 
   const contactsResult = await runGql(
-    getContacts,
-    getContactsVars,
+    getContactsQuery,
+    getContactsVars(texterTodoProps),
     testTexterUser
   );
 
-  const [getAssignmentContacts, assignVars] = mutations.getAssignmentContacts(
+  const [getAssignmentContacts, assignVars] = getAssignmentContactsMutAndVars(
+    texterTodoProps,
     contactsResult.data.assignment.contacts.map(e => e.id),
     false
   );
@@ -43,7 +61,7 @@ it("should send an inital message to test contacts", async () => {
     assignmentId
   };
 
-  const [messageMutation, messageVars] = mutations.sendMessage(
+  const [messageMutation, messageVars] = sendMessageMutAndVars(
     message,
     contact.id
   );
@@ -87,21 +105,19 @@ it("should send an inital message to test contacts", async () => {
 });
 
 it("should be able to receive a response and reply (using fakeService)", async () => {
-  const {
-    query: [getContacts, getContactsVars],
-    mutations
-  } = getGql("../src/containers/TexterTodo", {
+  const texterTodoProps = {
     messageStatus: "needsMessage",
     params: { assignmentId }
-  });
+  };
 
   const contactsResult = await runGql(
-    getContacts,
-    getContactsVars,
+    getContactsQuery,
+    getContactsVars(texterTodoProps),
     testTexterUser
   );
 
-  const [getAssignmentContacts, assignVars] = mutations.getAssignmentContacts(
+  const [getAssignmentContacts, assignVars] = getAssignmentContactsMutAndVars(
+    texterTodoProps,
     contactsResult.data.assignment.contacts.map(e => e.id),
     false
   );
@@ -116,7 +132,7 @@ it("should be able to receive a response and reply (using fakeService)", async (
     assignmentId
   };
 
-  const [messageMutation, messageVars] = mutations.sendMessage(
+  const [messageMutation, messageVars] = sendMessageMutAndVars(
     message,
     contact.id
   );
@@ -157,7 +173,7 @@ it("should be able to receive a response and reply (using fakeService)", async (
     assignmentId
   };
 
-  const [replyMutation, replyVars] = mutations.sendMessage(
+  const [replyMutation, replyVars] = sendMessageMutAndVars(
     message2,
     contact.id
   );

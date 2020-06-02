@@ -7,8 +7,7 @@ import { StyleSheet, css } from "aphrodite";
 import Dialog from "material-ui/Dialog";
 import FlatButton from "material-ui/FlatButton";
 
-import loadData from "../../containers//hoc/load-data";
-import wrapMutations from "../../containers/hoc/wrap-mutations";
+import loadData from "../../containers/hoc/load-data";
 import GSForm from "../../components/forms/GSForm";
 import SendButton from "../../components/SendButton";
 
@@ -148,8 +147,8 @@ MessageResponse.propTypes = {
   messagesChanged: PropTypes.func
 };
 
-const mapMutationsToProps = () => ({
-  sendMessage: (message, campaignContactId) => ({
+const mutations = {
+  sendMessage: ownProps => (message, campaignContactId) => ({
     mutation: gql`
       mutation sendMessage(
         $message: MessageInput!
@@ -172,8 +171,6 @@ const mapMutationsToProps = () => ({
       campaignContactId
     }
   })
-});
+};
 
-export default loadData(wrapMutations(MessageResponse), {
-  mapMutationsToProps
-});
+export default loadData({ mutations })(MessageResponse);

@@ -2,7 +2,6 @@ import PropTypes from "prop-types";
 import React from "react";
 import loadData from "./hoc/load-data";
 import gql from "graphql-tag";
-import wrapMutations from "./hoc/wrap-mutations";
 import { withRouter } from "react-router";
 import { StyleSheet, css } from "aphrodite";
 import theme from "../styles/theme";
@@ -54,8 +53,8 @@ JoinTeam.propTypes = {
   location: PropTypes.object
 };
 
-const mapMutationsToProps = ({ ownProps }) => ({
-  joinOrganization: queryParams => ({
+const mutations = {
+  joinOrganization: ownProps => queryParams => ({
     mutation: gql`
       mutation joinOrganization(
         $organizationUuid: String!
@@ -77,8 +76,6 @@ const mapMutationsToProps = ({ ownProps }) => ({
       queryParams: queryParams
     }
   })
-});
+};
 
-export default loadData(wrapMutations(withRouter(JoinTeam)), {
-  mapMutationsToProps
-});
+export default loadData({ mutations })(withRouter(JoinTeam));

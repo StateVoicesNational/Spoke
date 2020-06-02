@@ -28,42 +28,6 @@ export function getContext(context) {
     loaders: createLoaders()
   };
 }
-import loadData from "../src/containers/hoc/load-data";
-jest.mock("../src/containers/hoc/load-data");
-/* Used to get graphql queries from components.
-*  Because of some limitations with the jest require cache that
-*  I can't find a way of getting around, it should only be called once
-*  per test.
-
-*  The query it returns will be that of the requested component, but
-*  the mutations will be merged from the component and its children.
-*/
-export function getGql(componentPath, props, dataKey = "data") {
-  require(componentPath); // eslint-disable-line
-  const { mapQueriesToProps } = _.last(loadData.mock.calls)[1];
-
-  const mutations = loadData.mock.calls.reduce((acc, mapping) => {
-    if (!mapping[1].mapMutationsToProps) return acc;
-    return {
-      ...acc,
-      ..._.mapValues(
-        mapping[1].mapMutationsToProps({ ownProps: props }),
-        mutation => (...params) => {
-          const m = mutation(...params);
-          return [m.mutation.loc.source.body, m.variables];
-        }
-      )
-    };
-  }, {});
-
-  let query;
-  if (mapQueriesToProps) {
-    const data = mapQueriesToProps({ ownProps: props });
-    query = [data[dataKey].query.loc.source.body, data[dataKey].variables];
-  }
-
-  return { query, mutations };
-}
 
 export async function createUser(
   userInfo = {},
@@ -120,18 +84,28 @@ const mySchema = makeExecutableSchema({
   allowUndefinedInResolve: true
 });
 
-export async function runGql(query, vars, user) {
+/**
+ * Get the text for a query parsed with the gql tag
+ */
+function getGqlOperationText(op) {
+  return op.loc && op.loc.source.body;
+}
+
+export async function runGql(operation, vars, user) {
+  const operationText = getGqlOperationText(operation) || operation;
   const rootValue = {};
   const context = getContext({ user });
-  const result = await graphql(mySchema, query, rootValue, context, vars);
+  const result = await graphql(
+    mySchema,
+    operationText,
+    rootValue,
+    context,
+    vars
+  );
   if (result && result.errors) {
     console.log("runGql failed " + JSON.stringify(result));
   }
   return result;
-}
-
-export async function runComponentGql(componentDataQuery, queryVars, user) {
-  return await runGql(componentDataQuery.loc.source.body, queryVars, user);
 }
 
 export const updateUserRoles = async (
@@ -426,20 +400,16 @@ export async function sendMessage(campaignContactId, user, message) {
 }
 
 export async function bulkSendMessages(assignmentId, user) {
-  const rootValue = {};
   const query = `
     mutation bulkSendMessage($assignmentId: Int!) {
         bulkSendMessages(assignmentId: $assignmentId) {
           id
         }
       }`;
-  const context = getContext({
-    user
-  });
   const variables = {
     assignmentId
   };
-  return await graphql(mySchema, query, rootValue, context, variables);
+  return runGql(query, variables, user);
 }
 
 export function buildScript(steps = 2, choices = 1) {
@@ -685,8 +655,7 @@ export const getConversations = async (
         }
       `;
 
-  const result = await runGql(conversationsQuery, variables, user);
-  return result;
+  return runGql(conversationsQuery, variables, user);
 };
 
 export const createJob = async (campaign, overrides) => {
@@ -708,4 +677,43 @@ export const createJob = async (campaign, overrides) => {
   job.id = job_id;
 
   return job;
+};
+
+export const makeRunnableMutations = (mutationsToWrap, user, ownProps) => {
+  const newMutations = {};
+  Object.keys(mutationsToWrap).forEach(k => {
+    newMutations[k] = async (...args) => {
+      // TODO validate received args against args in the schema
+      const toWrap = mutationsToWrap[k](ownProps)(...args);
+      return runGql(toWrap.mutation, toWrap.variables, user);
+    };
+  });
+  return newMutations;
+};
+
+export const runComponentQueries = async (queries, user, ownProps) => {
+  const keys = Object.keys(queries);
+  const promises = keys.map(k => {
+    const query = queries[k];
+    const opts = query.options(ownProps);
+    return runGql(query.query, opts.variables, user);
+  });
+
+  const resolvedPromises = await Promise.all(promises);
+
+  const queryResults = {};
+  for (let i = 0; i < keys.length; i++) {
+    const dataKey = Object.keys(resolvedPromises[i].data)[0];
+    const key = keys[i];
+    queryResults[key] = {
+      // as implemented here refetch does not hit the resolvers
+      // and returns the data that was originally feteched
+      refetch: async () => {
+        return Promise.resolve(resolvedPromises[i].data[dataKey]);
+      }
+    };
+    queryResults[key][dataKey] = resolvedPromises[i].data[dataKey];
+  }
+
+  return queryResults;
 };

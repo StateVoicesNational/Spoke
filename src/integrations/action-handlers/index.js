@@ -51,15 +51,7 @@ export async function getSetCacheableResult(cacheKey, fallbackFunc) {
   return slowRes;
 }
 
-export function validateActionHandler(actionHandler) {
-  const toValidate = [
-    { name: "name", type: "string" },
-    { name: "available", type: "function" },
-    { name: "processAction", type: "function" },
-    { name: "displayName", type: "function" },
-    { name: "instructions", type: "function" }
-  ];
-
+function validate(actionHandler, toValidate) {
   const errors = [];
   toValidate.forEach(({ name, type }) => {
     if (typeof actionHandler[name] !== type) {
@@ -72,6 +64,27 @@ export function validateActionHandler(actionHandler) {
   }
 }
 
+export function validateActionHandler(actionHandler) {
+  const toValidate = [
+    { name: "name", type: "string" },
+    { name: "available", type: "function" },
+    { name: "processAction", type: "function" },
+    { name: "displayName", type: "function" },
+    { name: "instructions", type: "function" },
+    { name: "serverAdministratorInstructions", type: "function" }
+  ];
+
+  validate(actionHandler, toValidate);
+}
+
+export function validateActionHandlerWithClientChoices(actionHandler) {
+  const toValidate = [
+    { name: "clientChoiceDataCacheKey", type: "function" },
+    { name: "getClientChoiceData", type: "function" }
+  ];
+
+  validate(actionHandler, toValidate);
+}
 export async function getActionHandlerAvailability(
   name,
   actionHandler,

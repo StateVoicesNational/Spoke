@@ -1,19 +1,14 @@
-import gql from "graphql-tag";
 import SpeakerNotesIcon from "material-ui/svg-icons/action/speaker-notes";
 import PropTypes from "prop-types";
 import React from "react";
 import { Link } from "react-router";
-import { List, ListItem } from "material-ui/List";
 import moment from "moment";
 import WarningIcon from "material-ui/svg-icons/alert/warning";
 import ArchiveIcon from "material-ui/svg-icons/content/archive";
 import UnarchiveIcon from "material-ui/svg-icons/content/unarchive";
 import IconButton from "material-ui/IconButton";
-import Checkbox from "material-ui/Checkbox";
 import theme from "../../styles/theme";
-import Chip from "../Chip";
 import Empty from "../Empty";
-import { dataTest } from "../../lib/attributes";
 import DataTables from "material-ui-datatables";
 
 const inlineStyles = {
