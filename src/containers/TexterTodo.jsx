@@ -75,7 +75,6 @@ export const dataQueryString = `
           textingHoursEnforced
           textingHoursStart
           textingHoursEnd
-          threeClickEnabled
           optOutMessage
         }
         customFields

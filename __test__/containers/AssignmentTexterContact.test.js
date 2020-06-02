@@ -24,8 +24,7 @@ const campaign = {
     id: 2,
     textingHoursEnforced: true,
     textingHoursStart: 8,
-    textingHoursEnd: 21,
-    threeClickEnabled: false
+    textingHoursEnd: 21
   },
   customFields: [],
   interactionSteps: [
