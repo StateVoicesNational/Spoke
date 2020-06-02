@@ -48,12 +48,6 @@ class UserEdit extends React.Component {
     this.handleCancel = this.handleCancel.bind(this);
   }
 
-  async componentWillMount() {
-    if (!this.props.authType) {
-      await this.props.mutations.editUser(null);
-    }
-  }
-
   async handleSave(formData) {
     if (!this.props.authType) {
       await this.props.mutations.editUser(formData);
@@ -62,7 +56,7 @@ class UserEdit extends React.Component {
       }
     } else if (this.props.authType === "change") {
       // change password
-      const res = await this.props.mutations.changeUserPassword(formData);
+      const res = await this.props.mutations.changePassword(formData);
       if (res.errors) {
         throw new Error(res.errors.graphQLErrors[0].message);
       }
@@ -158,10 +152,9 @@ class UserEdit extends React.Component {
 
   render() {
     const { authType, editUser, style, userId, data, saveLabel } = this.props;
-    const user = (editUser && editUser.editUser) || {};
 
+    const user = (data && data.currentUser) || {};
     const formSchema = this.buildFormSchema(authType);
-
     return (
       <div>
         <GSForm
