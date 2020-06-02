@@ -22,6 +22,22 @@ const sqsUrl = process.env.REVERE_SQS_URL;
 export const instructions = () =>
   "This option triggers a new user request to Revere when selected.";
 
+export function serverAdministratorInstructions() {
+  return {
+    description: `
+      This option triggers a new user request to Revere when selected."
+      `,
+    setupInstructions:
+      "Add `revere-signup` to the environment variable `ACTION_HANDLERS`; refer to `docs/HOWTO_INTEGRATE_WITH_REVERE.md`",
+    environmentVariables: [
+      "UMC_PROFILE_URL",
+      "UMC_USER",
+      "UMC_PW",
+      "UMC_OPT_IN_PATH"
+    ]
+  };
+}
+
 export async function available(organizationId) {
   return {
     result: organizationId && listId && mobileApiKey,

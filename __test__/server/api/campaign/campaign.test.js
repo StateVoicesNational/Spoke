@@ -16,7 +16,6 @@ import twilio from "../../../../src/server/api/lib/twilio";
 import {
   setupTest,
   cleanupTest,
-  runComponentGql,
   createUser,
   createInvite,
   createOrganization,
@@ -96,7 +95,7 @@ afterEach(async () => {
 }, global.DATABASE_SETUP_TEARDOWN_TIMEOUT);
 
 it("allow supervolunteer to retrieve campaign data", async () => {
-  const campaignDataResults = await runComponentGql(
+  const campaignDataResults = await runGql(
     AdminCampaignEditQuery,
     { campaignId: testCampaign.id },
     testSuperVolunteerUser
@@ -110,7 +109,7 @@ it("allow supervolunteer to retrieve campaign data", async () => {
 });
 
 it("save campaign data, edit it, make sure the last value", async () => {
-  let campaignDataResults = await runComponentGql(
+  let campaignDataResults = await runGql(
     AdminCampaignEditQuery,
     { campaignId: testCampaign.id },
     testAdminUser
@@ -121,7 +120,7 @@ it("save campaign data, edit it, make sure the last value", async () => {
     "test description"
   );
 
-  let texterCampaignDataResults = await runComponentGql(
+  let texterCampaignDataResults = await runGql(
     TexterTodoListQuery,
     { organizationId },
     testTexterUser
@@ -131,7 +130,7 @@ it("save campaign data, edit it, make sure the last value", async () => {
 
   // now we start and confirm that we can access it
   await startCampaign(testAdminUser, testCampaign);
-  texterCampaignDataResults = await runComponentGql(
+  texterCampaignDataResults = await runGql(
     TexterTodoListQuery,
     { organizationId },
     testTexterUser
@@ -152,7 +151,7 @@ it("save campaign data, edit it, make sure the last value", async () => {
   );
   expect(savedCampaign.title).toEqual("test campaign new title");
 
-  campaignDataResults = await runComponentGql(
+  campaignDataResults = await runGql(
     AdminCampaignEditQuery,
     { campaignId: testCampaign.id },
     testAdminUser
@@ -161,7 +160,7 @@ it("save campaign data, edit it, make sure the last value", async () => {
     "test campaign new title"
   );
 
-  texterCampaignDataResults = await runComponentGql(
+  texterCampaignDataResults = await runGql(
     TexterTodoListQuery,
     { organizationId },
     testTexterUser
@@ -174,7 +173,7 @@ it("save campaign data, edit it, make sure the last value", async () => {
 
 it("save campaign interaction steps, edit it, make sure the last value is set", async () => {
   await createScript(testAdminUser, testCampaign);
-  let campaignDataResults = await runComponentGql(
+  let campaignDataResults = await runGql(
     AdminCampaignEditQuery,
     { campaignId: testCampaign.id },
     testAdminUser
@@ -203,7 +202,7 @@ it("save campaign interaction steps, edit it, make sure the last value is set", 
     interactionSteps: interactionStepsClone1
   });
 
-  campaignDataResults = await runComponentGql(
+  campaignDataResults = await runGql(
     AdminCampaignEditQuery,
     { campaignId: testCampaign.id },
     testAdminUser
@@ -220,7 +219,7 @@ it("save campaign interaction steps, edit it, make sure the last value is set", 
     interactionSteps: interactionStepsClone2
   });
 
-  campaignDataResults = await runComponentGql(
+  campaignDataResults = await runGql(
     AdminCampaignEditQuery,
     { campaignId: testCampaign.id },
     testAdminUser
@@ -233,7 +232,7 @@ it("save campaign interaction steps, edit it, make sure the last value is set", 
   await startCampaign(testAdminUser, testCampaign);
   // now we start and confirm that we can access the script as a texter
 
-  let texterCampaignDataResults = await runComponentGql(
+  let texterCampaignDataResults = await runGql(
     TexterTodoQuery,
     {
       contactsFilter: {
@@ -269,7 +268,7 @@ it("save campaign interaction steps, edit it, make sure the last value is set", 
     interactionSteps: interactionStepsClone3
   });
 
-  campaignDataResults = await runComponentGql(
+  campaignDataResults = await runGql(
     AdminCampaignEditQuery,
     { campaignId: testCampaign.id },
     testAdminUser
@@ -283,7 +282,7 @@ it("save campaign interaction steps, edit it, make sure the last value is set", 
   expect(
     campaignDataResults.data.campaign.interactionSteps[1].questionText
   ).toEqual("hmm1 after campaign start");
-  texterCampaignDataResults = await runComponentGql(
+  texterCampaignDataResults = await runGql(
     TexterTodoQuery,
     {
       contactsFilter: {
@@ -317,7 +316,7 @@ it("save campaign interaction steps, edit it, make sure the last value is set", 
 
   const prevCampaignIsteps = campaignDataResults.data.campaign.interactionSteps;
   const compareToLater = async (campaignId, innerPrevCampaignIsteps) => {
-    campaignDataResults = await runComponentGql(
+    campaignDataResults = await runGql(
       AdminCampaignEditQuery,
       { campaignId },
       testAdminUser
@@ -366,7 +365,7 @@ it("should save campaign canned responses across copies and match saved data", a
     { title: "canned 5", text: "can5 {firstName}" },
     { title: "canned 6", text: "can6 {firstName}" }
   ]);
-  let campaignDataResults = await runComponentGql(
+  let campaignDataResults = await runGql(
     AdminCampaignEditQuery,
     { campaignId: testCampaign.id },
     testAdminUser
@@ -386,7 +385,7 @@ it("should save campaign canned responses across copies and match saved data", a
   const copiedCampaign1 = await copyCampaign(testCampaign.id, testAdminUser);
   const copiedCampaign2 = await copyCampaign(testCampaign.id, testAdminUser);
 
-  campaignDataResults = await runComponentGql(
+  campaignDataResults = await runGql(
     AdminCampaignEditQuery,
     { campaignId: copiedCampaign2.data.copyCampaign.id },
     testAdminUser
@@ -400,7 +399,7 @@ it("should save campaign canned responses across copies and match saved data", a
       `can${i + 1} {firstName}`
     );
   }
-  campaignDataResults = await runComponentGql(
+  campaignDataResults = await runGql(
     AdminCampaignEditQuery,
     { campaignId: copiedCampaign1.data.copyCampaign.id },
     testAdminUser
@@ -467,7 +466,7 @@ describe("Reassignments", async () => {
     // use bulkReassignmentCampaign to reassign texter2 needsResponse => texter1
     await createScript(testAdminUser, testCampaign);
     await startCampaign(testAdminUser, testCampaign);
-    let texterCampaignDataResults = await runComponentGql(
+    let texterCampaignDataResults = await runGql(
       TexterTodoQuery,
       {
         contactsFilter: {
@@ -497,7 +496,7 @@ describe("Reassignments", async () => {
       });
     }
     // TEXTER 1 (95 needsMessage, 5 needsResponse)
-    texterCampaignDataResults = await runComponentGql(
+    texterCampaignDataResults = await runGql(
       TexterTodoQuery,
       {
         contactsFilter: {
@@ -528,7 +527,7 @@ describe("Reassignments", async () => {
     ]);
     // TEXTER 1 (70 needsMessage, 5 messaged)
     // TEXTER 2 (20 needsMessage)
-    texterCampaignDataResults = await runComponentGql(
+    texterCampaignDataResults = await runGql(
       TexterTodoQuery,
       {
         contactsFilter: {
@@ -540,7 +539,7 @@ describe("Reassignments", async () => {
       },
       testTexterUser
     );
-    let texterCampaignDataResults2 = await runComponentGql(
+    let texterCampaignDataResults2 = await runGql(
       TexterTodoListQuery,
       { organizationId },
       testTexterUser2
@@ -554,7 +553,7 @@ describe("Reassignments", async () => {
 
     const assignmentId2 =
       texterCampaignDataResults2.data.currentUser.todos[0].id;
-    texterCampaignDataResults = await runComponentGql(
+    texterCampaignDataResults = await runGql(
       TexterTodoQuery,
       {
         contactsFilter: {
@@ -590,7 +589,7 @@ describe("Reassignments", async () => {
     await sleep(5);
     // TEXTER 1 (70 needsMessage, 5 messaged)
     // TEXTER 2 (15 needsMessage, 5 needsResponse)
-    texterCampaignDataResults = await runComponentGql(
+    texterCampaignDataResults = await runGql(
       TexterTodoQuery,
       {
         contactsFilter: {
@@ -612,7 +611,7 @@ describe("Reassignments", async () => {
     expect(texterCampaignDataResults.data.assignment.allContactsCount).toEqual(
       20
     );
-    texterCampaignDataResults = await runComponentGql(
+    texterCampaignDataResults = await runGql(
       TexterTodoQuery,
       {
         contactsFilter: {
@@ -652,7 +651,7 @@ describe("Reassignments", async () => {
     }
     // TEXTER 1 (70 needsMessage, 5 messaged)
     // TEXTER 2 (15 needsMessage, 2 needsResponse, 3 convo)
-    texterCampaignDataResults = await runComponentGql(
+    texterCampaignDataResults = await runGql(
       TexterTodoQuery,
       {
         contactsFilter: {
@@ -670,7 +669,7 @@ describe("Reassignments", async () => {
     expect(texterCampaignDataResults.data.assignment.allContactsCount).toEqual(
       20
     );
-    texterCampaignDataResults = await runComponentGql(
+    texterCampaignDataResults = await runGql(
       TexterTodoQuery,
       {
         contactsFilter: {
@@ -695,7 +694,7 @@ describe("Reassignments", async () => {
     ]);
     // TEXTER 1 (60 needsMessage, 5 messaged)
     // TEXTER 2 (25 needsMessage, 2 needsResponse, 3 convo)
-    texterCampaignDataResults = await runComponentGql(
+    texterCampaignDataResults = await runGql(
       TexterTodoQuery,
       {
         contactsFilter: {
@@ -707,7 +706,7 @@ describe("Reassignments", async () => {
       },
       testTexterUser
     );
-    texterCampaignDataResults2 = await runComponentGql(
+    texterCampaignDataResults2 = await runGql(
       TexterTodoQuery,
       {
         contactsFilter: {
@@ -734,7 +733,7 @@ describe("Reassignments", async () => {
     );
     // maybe test no intersections of texted people and non-texted, and/or needsReply
     //   reassignCampaignContactsMutation
-    await runComponentGql(
+    await runGql(
       reassignCampaignContactsMutation,
       {
         organizationId,
@@ -753,7 +752,7 @@ describe("Reassignments", async () => {
     );
     // TEXTER 1 (60 needsMessage, 4 messaged)
     // TEXTER 2 (25 needsMessage, 2 needsResponse, 3 convo, 1 messaged)
-    texterCampaignDataResults = await runComponentGql(
+    texterCampaignDataResults = await runGql(
       TexterTodoQuery,
       {
         contactsFilter: {
@@ -765,7 +764,7 @@ describe("Reassignments", async () => {
       },
       testTexterUser
     );
-    texterCampaignDataResults2 = await runComponentGql(
+    texterCampaignDataResults2 = await runGql(
       TexterTodoQuery,
       {
         contactsFilter: {
@@ -791,7 +790,7 @@ describe("Reassignments", async () => {
       31
     );
     //   bulkReassignCampaignContactsMutation
-    await runComponentGql(
+    await runGql(
       bulkReassignCampaignContactsMutation,
       {
         organizationId,
@@ -808,7 +807,7 @@ describe("Reassignments", async () => {
     );
     // TEXTER 1 (60 needsMessage, 2 needsResponse, 4 messaged)
     // TEXTER 2 (25 needsMessage, 3 convo, 1 messaged)
-    texterCampaignDataResults = await runComponentGql(
+    texterCampaignDataResults = await runGql(
       TexterTodoQuery,
       {
         contactsFilter: {
@@ -821,7 +820,7 @@ describe("Reassignments", async () => {
       testTexterUser
     );
 
-    texterCampaignDataResults2 = await runComponentGql(
+    texterCampaignDataResults2 = await runGql(
       TexterTodoQuery,
       {
         contactsFilter: {
@@ -874,7 +873,7 @@ describe("Bulk Send", async () => {
     testCampaign.use_dynamic_assignment = true;
     await createScript(testAdminUser, testCampaign);
     await startCampaign(testAdminUser, testCampaign);
-    let texterCampaignDataResults = await runComponentGql(
+    let texterCampaignDataResults = await runGql(
       TexterTodoQuery,
       {
         contactsFilter: {
@@ -900,7 +899,7 @@ describe("Bulk Send", async () => {
     resultTestFunction(bulkSendResult);
 
     // TEXTER 1 (95 needsMessage, 5 needsResponse)
-    texterCampaignDataResults = await runComponentGql(
+    texterCampaignDataResults = await runGql(
       TexterTodoQuery,
       {
         contactsFilter: {
@@ -1103,7 +1102,7 @@ describe("all interaction steps fields travel round trip", () => {
       id: testCampaign.id
     });
 
-    const campaignDataResults = await runComponentGql(
+    const campaignDataResults = await runGql(
       AdminCampaignEditQuery,
       { campaignId: testCampaign.id },
       testAdminUser
@@ -1170,7 +1169,7 @@ describe("all interaction steps fields travel round trip", () => {
     });
 
     it("returns what we expect", async () => {
-      const campaignDataResults = await runComponentGql(
+      const campaignDataResults = await runGql(
         query,
         variables,
         testSuperVolunteerUser
@@ -1187,7 +1186,7 @@ describe("all interaction steps fields travel round trip", () => {
         interactionStepsExpected[1].answerActionsData = null;
       });
       it("doesn't return answerActionsData", async () => {
-        const campaignDataResults = await runComponentGql(
+        const campaignDataResults = await runGql(
           query,
           variables,
           testTexterUser
@@ -1220,7 +1219,7 @@ describe("useOwnMessagingService", async () => {
   it("uses default messaging service when false", async () => {
     await startCampaign(testAdminUser, testCampaign);
 
-    const campaignDataResults = await runComponentGql(
+    const campaignDataResults = await runGql(
       AdminCampaignEditQuery,
       { campaignId: testCampaign.id },
       testAdminUser

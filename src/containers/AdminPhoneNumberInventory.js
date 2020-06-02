@@ -238,7 +238,7 @@ class AdminPhoneNumberInventory extends React.Component {
   }
 }
 
-const mapQueriesToProps = ({ ownProps }) => ({
+const queries = {
   data: {
     query: gql`
       query getOrganizationData($organizationId: String!) {
@@ -261,16 +261,22 @@ const mapQueriesToProps = ({ ownProps }) => ({
         }
       }
     `,
-    variables: {
-      organizationId: ownProps.params.organizationId
-    },
-    pollInterval: 5000,
-    forceFetch: true
+    options: ownProps => ({
+      variables: {
+        organizationId: ownProps.params.organizationId
+      },
+      pollInterval: 5000,
+      fetchPolicy: "network-only"
+    })
   }
-});
+};
 
-const mapMutationsToProps = ({ ownProps }) => ({
-  buyPhoneNumbers: (areaCode, limit, addToOrganizationMessagingService) => ({
+const mutations = {
+  buyPhoneNumbers: ownProps => (
+    areaCode,
+    limit,
+    addToOrganizationMessagingService
+  ) => ({
     mutation: gql`
       mutation buyPhoneNumbers(
         $organizationId: ID!
@@ -294,11 +300,8 @@ const mapMutationsToProps = ({ ownProps }) => ({
       limit,
       addToOrganizationMessagingService
     },
-    refetchQueries: ["getOrganizationData"]
+    refetchQueries: () => ["getOrganizationData"]
   })
-});
+};
 
-export default loadData(AdminPhoneNumberInventory, {
-  mapQueriesToProps,
-  mapMutationsToProps
-});
+export default loadData({ queries, mutations })(AdminPhoneNumberInventory);

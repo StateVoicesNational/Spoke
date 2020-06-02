@@ -3,7 +3,6 @@ import React from "react";
 import loadData from "./hoc/load-data";
 import gql from "graphql-tag";
 import { StyleSheet, css } from "aphrodite";
-import wrapMutations from "./hoc/wrap-mutations";
 import theme from "../styles/theme";
 import { withRouter } from "react-router";
 
@@ -134,13 +133,16 @@ Home.propTypes = {
   data: PropTypes.object
 };
 
-const mapQueriesToProps = () => ({
+const queries = {
   data: {
     query: gql`
       query getCurrentUser {
         currentUser {
           id
           adminOrganizations: organizations(role: "ADMIN") {
+            id
+          }
+          superVolOrganizations: organizations(role: "SUPERVOLUNTEER") {
             id
           }
           ownerOrganizations: organizations(role: "OWNER") {
@@ -153,10 +155,10 @@ const mapQueriesToProps = () => ({
       }
     `
   }
-});
+};
 
-const mapMutationsToProps = () => ({
-  createInvite: invite => ({
+const mutations = {
+  createInvite: ownProps => invite => ({
     mutation: gql`
       mutation createInvite($invite: InviteInput!) {
         createInvite(invite: $invite) {
@@ -166,9 +168,6 @@ const mapMutationsToProps = () => ({
     `,
     variables: { invite }
   })
-});
+};
 
-export default loadData(wrapMutations(withRouter(Home)), {
-  mapQueriesToProps,
-  mapMutationsToProps
-});
+export default loadData({ queries, mutations })(withRouter(Home));
