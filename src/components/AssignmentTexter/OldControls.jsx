@@ -393,7 +393,6 @@ export class AssignmentTexterContactControls extends React.Component {
           <Toolbar style={inlineStyles.actionToolbarFirst}>
             <ToolbarGroup firstChild>
               <SendButton
-                threeClickEnabled={false}
                 onFinalTouchTap={this.handleClickSendMessageButton}
                 disabled={this.props.disabled}
               />
@@ -447,7 +446,6 @@ export class AssignmentTexterContactControls extends React.Component {
           <Toolbar style={inlineStyles.actionToolbarFirst}>
             <ToolbarGroup firstChild>
               <SendButton
-                threeClickEnabled={false}
                 onFinalTouchTap={this.handleClickSendMessageButton}
                 disabled={this.props.disabled}
               />
@@ -573,7 +571,6 @@ export class AssignmentTexterContactControls extends React.Component {
     ) {
       return (
         <SendButtonArrow
-          threeClickEnabled={false}
           onFinalTouchTap={this.handleClickSendMessageButton}
           disabled={this.props.disabled}
         />
