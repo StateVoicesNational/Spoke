@@ -11,6 +11,7 @@ import { grey100 } from "material-ui/styles/colors";
 import ArrowBackIcon from "material-ui/svg-icons/navigation/arrow-back";
 import ArrowForwardIcon from "material-ui/svg-icons/navigation/arrow-forward";
 import NavigateHomeIcon from "material-ui/svg-icons/action/home";
+import ActionExtension from "material-ui/svg-icons/action/extension";
 
 const inlineStyles = {
   toolbar: {
@@ -26,6 +27,13 @@ const styles = StyleSheet.create({
     flexDirection: "column",
     alignContent: "flex-start",
     marginLeft: "-24px"
+  },
+  campaignData: {
+    flex: "1 2 auto",
+    maxWidth: "80%",
+    "@media(max-width: 375px)": {
+      maxWidth: "70%" // iphone 5 and X
+    }
   },
   contactData: {
     flex: "1 2 auto",
@@ -62,8 +70,15 @@ const styles = StyleSheet.create({
       width: "50px"
     }
   },
+  navigationSideBox: {
+    flexBasis: "24px",
+    "@media(min-width: 575px)": {
+      display: "none"
+    }
+  },
   navigation: {
-    flex: "0 0 130px",
+    flexGrow: 0,
+    flexShrink: 0,
     display: "flex",
     flexDirection: "column",
     flexWrap: "wrap"
@@ -122,7 +137,7 @@ const ContactToolbar = function ContactToolbar(props) {
   return (
     <div>
       <Toolbar style={inlineStyles.toolbar}>
-        <div className={css(styles.topFlex)} style={{ width: "100%" }}>
+        <div className={`${css(styles.topFlex)} ${css(styles.campaignData)}`}>
           <IconButton
             onTouchTap={props.onExit}
             className={css(styles.contactToolbarIconButton)}
@@ -137,6 +152,19 @@ const ContactToolbar = function ContactToolbar(props) {
           <div className={css(styles.titleBig)} title={props.campaign.title}>
             {props.campaign.title}
           </div>
+        </div>
+        <div
+          className={`${css(styles.navigation)} ${css(
+            styles.navigationSideBox
+          )}`}
+        >
+          <IconButton
+            tooltip="foobar"
+            className={css(styles.contactToolbarIconButton)}
+            style={{ flex: "0 0 56px", width: "45px" }}
+          >
+            <ActionExtension color="white" />
+          </IconButton>
         </div>
       </Toolbar>
       <Toolbar style={{ ...inlineStyles.toolbar, backgroundColor: "#7E808B" }}>
@@ -156,7 +184,7 @@ const ContactToolbar = function ContactToolbar(props) {
             {campaignContact.firstName}
           </div>
         </div>
-        <div className={css(styles.navigation)}>
+        <div className={css(styles.navigation)} style={{ flexBasis: "130px" }}>
           <IconButton
             onTouchTap={navigationToolbarChildren.onPrevious}
             disabled={!navigationToolbarChildren.onPrevious}
