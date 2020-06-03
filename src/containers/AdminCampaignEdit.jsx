@@ -24,6 +24,7 @@ import { dataTest, camelCase } from "../lib/attributes";
 import CampaignTextingHoursForm from "../components/CampaignTextingHoursForm";
 
 import AdminScriptImport from "../containers/AdminScriptImport";
+import { makeTree } from "../lib";
 
 const campaignInfoFragment = `
   id
@@ -293,10 +294,7 @@ export class AdminCampaignEdit extends React.Component {
         }));
       }
       if (newCampaign.hasOwnProperty("interactionSteps")) {
-        newCampaign.interactionSteps = Object.assign(
-          {},
-          newCampaign.interactionSteps
-        );
+        newCampaign.interactionSteps = makeTree(newCampaign.interactionSteps);
       }
       await this.props.mutations.editCampaign(
         this.props.campaignData.campaign.id,

@@ -110,7 +110,7 @@ export default class CampaignInteractionStepsForm extends React.Component {
     });
 
     await this.props.onChange({
-      interactionSteps: makeTree(tweakedInteractionSteps)
+      interactionSteps: tweakedInteractionSteps
     });
     return this.props.onSubmit();
   };
