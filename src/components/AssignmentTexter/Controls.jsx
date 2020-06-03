@@ -36,7 +36,6 @@ import { dataTest } from "../../lib/attributes";
 const messageListStyles = {
   // passesd directly to <MessageList>
   messageList: {
-    flex: "2 4 auto",
     overflow: "hidden",
     overflow: "-moz-scrollbars-vertical",
     maxWidth: "574px"
@@ -115,13 +114,28 @@ const flexStyles = StyleSheet.create({
   sectionHeaderToolbar: {
     flex: "0 0 auto"
   },
-  /// * Section Scrolling Message Thread
-  sectionMessageThread: {
+  sectionSideBox: {
+    flex: "0 1 240px",
+    textAlign: "center",
+    padding: "24px",
+    maxWidth: "240px",
+    "@media(max-width: 575px)": {
+      display: "none"
+    }
+  },
+  superSectionMessageBox: {
     flex: "1 2 auto",
     overflowY: "scroll",
     overflow: "-moz-scrollbars-vertical",
     overflowX: "hidden",
-    backgroundColor: "#f0f0f0"
+    // for sidebar
+    display: "flex",
+    flexDirection: "row"
+  },
+  /// * Section Scrolling Message Thread
+  sectionMessageThread: {
+    backgroundColor: "#f0f0f0",
+    flex: "1 1 auto"
   },
   /// * Section OptOut Dialog
   sectionOptOutDialog: {
@@ -940,22 +954,43 @@ export class AssignmentTexterContactControls extends React.Component {
     );
   }
 
+  renderMessageBox(internalComponent) {
+    return (
+      <div className={css(flexStyles.superSectionMessageBox)}>
+        <div
+          {...dataTest("messageList")}
+          key="messageScrollContainer"
+          ref="messageScrollContainer"
+          className={css(flexStyles.sectionMessageThread)}
+        >
+          {internalComponent}
+        </div>
+        <div className={css(flexStyles.sectionSideBox)}>
+          <div>
+            <div>Can&rsquo;t send the rest of these texts?</div>
+            <FlatButton
+              onTouchTap={console.log}
+              label="Release Batch"
+              className={css(flexStyles.flatButton)}
+              labelStyle={inlineStyles.flatButtonLabel}
+            />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   renderFirstMessage() {
     return [
       this.renderToolbar(),
-      <div
-        {...dataTest("messageList")}
-        ref="messageScrollContainer"
-        key="messageScrollContainer"
-        className={css(flexStyles.sectionMessageThread)}
-      >
+      this.renderMessageBox(
         <Empty
           title={
             "This is your first message to " + this.props.contact.firstName
           }
           icon={<CreateIcon color="rgb(83, 180, 119)" />}
         />
-      </div>,
+      ),
       this.renderMessagingRowMessage({ readOnly: true }),
       this.renderMessagingRowSendSkip(this.props.contact)
     ];
@@ -967,18 +1002,13 @@ export class AssignmentTexterContactControls extends React.Component {
       ? this.renderFirstMessage()
       : [
           this.renderToolbar(),
-          <div
-            {...dataTest("messageList")}
-            key="messageScrollContainer"
-            ref="messageScrollContainer"
-            className={css(flexStyles.sectionMessageThread)}
-          >
+          this.renderMessageBox(
             <MessageList
               contact={this.props.contact}
               messages={this.props.contact.messages}
               styles={messageListStyles}
             />
-          </div>,
+          ),
           this.renderMessageControls()
         ];
     return <div className={css(flexStyles.topContainer)}>{content}</div>;
