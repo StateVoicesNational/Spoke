@@ -105,7 +105,7 @@ export async function processAction(
   }
 }
 
-export async function getClientChoiceData(organization) {
+async function getContactTypeIdAndInputTypeId(organization) {
   const contactTypesPromise = httpRequest(
     `https://api.securevan.com/v4/canvassResponses/contactTypes`,
     {
@@ -182,6 +182,19 @@ export async function getClientChoiceData(organization) {
           "Failed to load canvass/contactTypes or canvass/inputTypes from VAN"
       })}`
     };
+  }
+
+  return { contactTypeId, inputTypeId };
+}
+
+export async function getClientChoiceData(organization) {
+  const {
+    contactTypeId,
+    inputTypeId,
+    data: errorReturned
+  } = await getContactTypeIdAndInputTypeId(organization);
+  if (errorReturned) {
+    return { data: errorReturned };
   }
 
   const cycle = await getConfig("NGP_VAN_ELECTION_CYCLE_FILTER", organization);
