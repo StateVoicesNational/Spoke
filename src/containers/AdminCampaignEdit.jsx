@@ -870,14 +870,17 @@ const mutations = {
     mutation: gql`
       mutation editCampaign($campaignId: String!, $campaign: CampaignInput!) {
         editCampaign(id: $campaignId, campaign: $campaign) {
-          ${campaignInfoFragment}
+          id
         }
-      },
+      }
     `,
     variables: {
       campaignId,
       campaign
-    }
+    },
+    // TODO: the refetch here is a work around because
+    //  returning the fragment doesn't seem to always work with interaction steps.
+    refetchQueries: () => ["getCampaign"]
   }),
   deleteJob: ownProps => jobId => ({
     mutation: gql`
