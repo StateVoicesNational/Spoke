@@ -398,6 +398,8 @@ export class AdminCampaignEdit extends React.Component {
         extraProps: {
           orgTexters: this.props.organizationData.organization.texters,
           organizationUuid: this.props.organizationData.organization.uuid,
+          useDynamicAssignment: this.props.campaignData.campaign
+            .useDynamicAssignment,
           campaignId: this.props.campaignData.campaign.id
         }
       },
@@ -440,7 +442,8 @@ export class AdminCampaignEdit extends React.Component {
         expandAfterCampaignStarts: true,
         expandableBySuperVolunteers: true,
         extraProps: {
-          joinToken: this.props.campaignData.campaign.joinToken
+          joinToken: this.props.campaignData.campaign.joinToken,
+          campaignId: this.props.campaignData.campaign.id
         }
       },
       {

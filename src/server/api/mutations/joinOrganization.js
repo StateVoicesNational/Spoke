@@ -23,7 +23,7 @@ export const joinOrganization = async (
       })
       .first();
     if (campaign) {
-      organization = loaders.organization.load(campaign.organization_id);
+      organization = await loaders.organization.load(campaign.organization_id);
     } else {
       throw new GraphQLError("Invalid join request");
     }
