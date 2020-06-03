@@ -76,7 +76,12 @@ class ScriptList extends React.Component {
     const listItems = scripts.map(script => (
       <ListItem
         value={script.text}
-        onTouchTap={() => onSelectCannedResponse(script)}
+        onClick={() => onSelectCannedResponse(script)}
+        onKeyPress={evt => {
+          if (evt.key === "Enter") {
+            onSelectCannedResponse(script);
+          }
+        }}
         key={script.id}
         primaryText={script.title}
         secondaryText={script.text}
