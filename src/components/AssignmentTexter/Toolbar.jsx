@@ -72,6 +72,7 @@ const styles = StyleSheet.create({
   },
   navigationSideBox: {
     flexBasis: "24px",
+    // width also in Controls.jsx::getSideboxDialogOpen
     "@media(min-width: 575px)": {
       display: "none"
     }
