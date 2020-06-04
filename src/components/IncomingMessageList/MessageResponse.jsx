@@ -112,7 +112,6 @@ class MessageResponse extends Component {
               }}
             >
               <SendButton
-                threeClickEnabled={false}
                 onFinalTouchTap={this.handleClickSendMessageButton}
                 disabled={isSendDisabled}
               />

@@ -25,6 +25,7 @@ import { dataTest, camelCase } from "../lib/attributes";
 import CampaignTextingHoursForm from "../components/CampaignTextingHoursForm";
 
 import AdminScriptImport from "../containers/AdminScriptImport";
+import { makeTree } from "../lib";
 
 const campaignInfoFragment = `
   id
@@ -257,14 +258,21 @@ export class AdminCampaignEdit extends React.Component {
     if (!this.state.expandedSection.doNotSaveAfterSubmit) {
       await this.handleSave();
     }
-    this.setState({
-      expandedSection:
-        this.state.expandedSection >= this.sections().length - 1 ||
-        !this.isNew()
-          ? null
-          : this.state.expandedSection + 1
-    }); // currently throws an unmounted component error in the console
-    this.props.campaignData.refetch();
+    this.setState(
+      {
+        expandedSection:
+          this.state.expandedSection >= this.sections().length - 1 ||
+          !this.isNew()
+            ? null
+            : this.state.expandedSection + 1
+      },
+      () => {
+        // manually refetching after the expanded section changes makes sure
+        // that componentWillReceiveProps does not ignore server results for
+        // the section we just saved.
+        this.props.campaignData.refetch();
+      }
+    );
   };
 
   handleSave = async () => {
@@ -297,10 +305,7 @@ export class AdminCampaignEdit extends React.Component {
         }));
       }
       if (newCampaign.hasOwnProperty("interactionSteps")) {
-        newCampaign.interactionSteps = Object.assign(
-          {},
-          newCampaign.interactionSteps
-        );
+        newCampaign.interactionSteps = makeTree(newCampaign.interactionSteps);
       }
       await this.props.mutations.editCampaign(
         this.props.campaignData.campaign.id,
@@ -513,10 +518,6 @@ export class AdminCampaignEdit extends React.Component {
         relatedJob = pendingJobs.filter(
           job => job.jobType === "assign_texters"
         )[0];
-      } else if (section.title === "Interactions") {
-        relatedJob = pendingJobs.filter(
-          job => job.jobType === "create_interaction_steps"
-        )[0];
       } else if (section.title === "Script Import") {
         relatedJob = pendingJobs.filter(
           job => job.jobType === "import_script"
@@ -622,10 +623,7 @@ export class AdminCampaignEdit extends React.Component {
     const orgConfigured = this.props.organizationData.organization
       .fullyConfigured;
     const settingsLink = `/admin/${this.props.organizationData.organization.id}/settings`;
-    let isCompleted =
-      this.props.campaignData.campaign.pendingJobs.filter(job =>
-        /Error/.test(job.resultMessage || "")
-      ).length === 0;
+    let isCompleted = this.props.campaignData.campaign.pendingJobs.length === 0;
     this.sections().forEach(section => {
       if (
         (section.blocksStarting && !this.checkSectionCompleted(section)) ||
@@ -888,12 +886,15 @@ const mutations = {
     variables: { campaignId }
   }),
   editCampaign: ownProps => (campaignId, campaign) => ({
+    // Note: we don't fetch the campaignInfoFragment here because we want to
+    // refetch manually in handleSubmit after updating the expanded section.
+    // If we were to fetch the fragment here, the refetch would be ignored.
     mutation: gql`
       mutation editCampaign($campaignId: String!, $campaign: CampaignInput!) {
         editCampaign(id: $campaignId, campaign: $campaign) {
-          ${campaignInfoFragment}
+          id
         }
-      },
+      }
     `,
     variables: {
       campaignId,
