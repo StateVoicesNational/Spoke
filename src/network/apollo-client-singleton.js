@@ -48,8 +48,4 @@ const ApolloClientSingleton = new ApolloClient({
   queryDeduplication: true
 });
 
-if (typeof window !== "undefined") {
-  window.ApolloClient = ApolloClientSingleton;
-}
-
 export default ApolloClientSingleton;
