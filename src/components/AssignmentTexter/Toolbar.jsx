@@ -11,7 +11,7 @@ import { grey100 } from "material-ui/styles/colors";
 import ArrowBackIcon from "material-ui/svg-icons/navigation/arrow-back";
 import ArrowForwardIcon from "material-ui/svg-icons/navigation/arrow-forward";
 import NavigateHomeIcon from "material-ui/svg-icons/action/home";
-import ActionExtension from "material-ui/svg-icons/action/extension";
+import SideboxOpenIcon from "material-ui/svg-icons/action/build";
 
 const inlineStyles = {
   toolbar: {
@@ -165,7 +165,7 @@ const ContactToolbar = function ContactToolbar(props) {
               className={css(styles.contactToolbarIconButton)}
               style={{ flex: "0 0 56px", width: "45px" }}
             >
-              <ActionExtension color="white" />
+              <SideboxOpenIcon color="white" />
             </IconButton>
           </div>
         ) : null}
