@@ -605,8 +605,8 @@ export class AdminCampaignEdit extends React.Component {
       .fullyConfigured;
     const settingsLink = `/admin/${this.props.organizationData.organization.id}/settings`;
     let isCompleted =
-      this.props.campaignData.campaign.pendingJobs.filter(job =>
-        /Error/.test(job.resultMessage || "")
+      this.props.campaignData.campaign.pendingJobs.filter(
+        job => !/Error/.test(job.resultMessage || "")
       ).length === 0;
     this.sections().forEach(section => {
       if (
