@@ -254,14 +254,21 @@ export class AdminCampaignEdit extends React.Component {
     if (!this.state.expandedSection.doNotSaveAfterSubmit) {
       await this.handleSave();
     }
-    this.setState({
-      expandedSection:
-        this.state.expandedSection >= this.sections().length - 1 ||
-        !this.isNew()
-          ? null
-          : this.state.expandedSection + 1
-    }); // currently throws an unmounted component error in the console
-    this.props.campaignData.refetch();
+    this.setState(
+      {
+        expandedSection:
+          this.state.expandedSection >= this.sections().length - 1 ||
+          !this.isNew()
+            ? null
+            : this.state.expandedSection + 1
+      },
+      () => {
+        // manually refetching after the expanded section changes makes sure
+        // that componentWillReceiveProps does not ignore server results for
+        // the section we just saved.
+        this.props.campaignData.refetch();
+      }
+    );
   };
 
   handleSave = async () => {
@@ -491,10 +498,6 @@ export class AdminCampaignEdit extends React.Component {
       } else if (section.title === "Texters") {
         relatedJob = pendingJobs.filter(
           job => job.jobType === "assign_texters"
-        )[0];
-      } else if (section.title === "Interactions") {
-        relatedJob = pendingJobs.filter(
-          job => job.jobType === "create_interaction_steps"
         )[0];
       } else if (section.title === "Script Import") {
         relatedJob = pendingJobs.filter(
@@ -867,6 +870,9 @@ const mutations = {
     variables: { campaignId }
   }),
   editCampaign: ownProps => (campaignId, campaign) => ({
+    // Note: we don't fetch the campaignInfoFragment here because we want to
+    // refetch manually in handleSubmit after updating the expanded section.
+    // If we were to fetch the fragment here, the refetch would be ignored.
     mutation: gql`
       mutation editCampaign($campaignId: String!, $campaign: CampaignInput!) {
         editCampaign(id: $campaignId, campaign: $campaign) {
@@ -877,10 +883,7 @@ const mutations = {
     variables: {
       campaignId,
       campaign
-    },
-    // TODO: the refetch here is a work around because
-    //  returning the fragment doesn't seem to always work with interaction steps.
-    refetchQueries: () => ["getCampaign"]
+    }
   }),
   deleteJob: ownProps => jobId => ({
     mutation: gql`
