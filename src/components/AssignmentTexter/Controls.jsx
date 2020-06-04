@@ -20,6 +20,8 @@ import theme from "../../styles/theme";
 import Form from "react-formal";
 import Popover from "material-ui/Popover";
 
+import sideboxes from "../../integrations/texter-sideboxes/components";
+
 const bgGrey = "rgb(214, 215, 223)";
 
 import {
@@ -299,6 +301,8 @@ export class AssignmentTexterContactControls extends React.Component {
       optOutMessageText: props.campaign.organization.optOutMessage,
       responsePopoverOpen: false,
       answerPopoverOpen: false,
+      sideboxCloses: {},
+      sideboxOpens: {},
       messageText: this.getStartingMessageText(),
       cannedResponseScript: null,
       optOutDialogOpen: false,
@@ -338,6 +342,25 @@ export class AssignmentTexterContactControls extends React.Component {
           getTopMostParent(campaign.interactionSteps).script
         )
       : "";
+  }
+
+  getSideboxes() {
+    const popups = [];
+    const enabledSideboxes = Object.keys(sideboxes)
+      // TODO: filter for enabled in the campaign
+      .filter(sb => {
+        const res = sideboxes[sb].showSidebox(this.props);
+        if (res === "popup") {
+          popups.push(sb);
+        }
+        return res;
+      })
+      .map(sb => ({
+        name: sb,
+        Component: sideboxes[sb].TexterSidebox
+      }));
+    enabledSideboxes.popups = popups;
+    return enabledSideboxes;
   }
 
   onResize = evt => {
@@ -414,12 +437,15 @@ export class AssignmentTexterContactControls extends React.Component {
     // the text field -- this is annoying on mobile where the keyboard
     // pops up, inadvertantly
     const self = this;
-    setTimeout(() =>
-               self.setState({
-                 optOutDialogOpen: true,
-                 // store this, because on-close, we lose this
-                 currentShortcutSpace: self.refs.answerButtons.offsetHeight
-               }), 200);
+    setTimeout(
+      () =>
+        self.setState({
+          optOutDialogOpen: true,
+          // store this, because on-close, we lose this
+          currentShortcutSpace: self.refs.answerButtons.offsetHeight
+        }),
+      200
+    );
   };
 
   handleCloseDialog = () => {
@@ -501,10 +527,43 @@ export class AssignmentTexterContactControls extends React.Component {
     // the text field -- this is annoying on mobile where the keyboard
     // pops up, inadvertantly
     const self = this;
-    setTimeout(() =>
-               self.setState({
-                 responsePopoverOpen: false
-               }), 200);
+    setTimeout(
+      () =>
+        self.setState({
+          responsePopoverOpen: false
+        }),
+      200
+    );
+  };
+
+  handleClickSideboxDialog = () => {
+    const enabledSideboxes = this.getSideboxes();
+    const sideboxOpen = this.getSideboxDialogOpen(enabledSideboxes);
+    if (sideboxOpen) {
+      // dismiss dialog
+      const sideboxCloses = { ...this.state.sideboxCloses };
+      enabledSideboxes.popups.forEach(popup => {
+        sideboxCloses[popup] = (sideboxCloses[popup] || 0) + 1;
+      });
+      sideboxCloses.MANUAL = (sideboxCloses.MANUAL || 0) + 1;
+      this.setState({ sideboxCloses });
+    } else {
+      // click to open
+      const sideboxOpens = { ...this.state.sideboxOpens };
+      sideboxOpens.MANUAL = (this.state.sideboxCloses.MANUAL || 0) + 1;
+      this.setState({ sideboxOpens });
+    }
+  };
+
+  getSideboxDialogOpen = enabledSideboxes => {
+    // needs to be mobile-small + not dismissed
+    const { sideboxCloses, sideboxOpens } = this.state;
+    if (sideboxOpens.MANUAL > (sideboxCloses.MANUAL || 0)) {
+      return true;
+    }
+    return enabledSideboxes.popups.some(
+      popup => (sideboxCloses[popup] || 0) > (sideboxOpens[popup] || 0)
+    );
   };
 
   renderSurveySection() {
@@ -667,11 +726,7 @@ export class AssignmentTexterContactControls extends React.Component {
                 }}
               />
             </div>
-            <Form.Field
-              name="optOutMessageText"
-              fullWidth
-              multiLine
-            />
+            <Form.Field name="optOutMessageText" fullWidth multiLine />
             <div className={css(flexStyles.subSectionOptOutDialogActions)}>
               <FlatButton
                 className={css(flexStyles.flatButton)}
@@ -986,7 +1041,7 @@ export class AssignmentTexterContactControls extends React.Component {
     ];
   }
 
-  renderToolbar() {
+  renderToolbar(enabledSideboxes) {
     return (
       <div key="toolbar" className={css(flexStyles.sectionHeaderToolbar)}>
         <Toolbar
@@ -994,12 +1049,55 @@ export class AssignmentTexterContactControls extends React.Component {
           campaignContact={this.props.contact}
           navigationToolbarChildren={this.props.navigationToolbarChildren}
           onExit={this.props.onExitTexter}
+          onSideboxButtonClick={
+            enabledSideboxes.length > 0 ? this.handleClickSideboxDialog : null
+          }
         />
       </div>
     );
   }
 
-  renderMessageBox(internalComponent) {
+  renderSidebox(enabledSideboxes) {
+    if (!enabledSideboxes || !enabledSideboxes.length) {
+      return null;
+    }
+    const sideboxList = enabledSideboxes.map(({ name, Component }) => (
+      // TODO: maybe style if name is in popups
+      <div key={name}>
+        <Component {...this.props} />
+      </div>
+    ));
+    const sideboxOpen = this.getSideboxDialogOpen(enabledSideboxes);
+    if (sideboxOpen) {
+      return (
+        <Popover
+          style={inlineStyles.popover}
+          className={css(flexStyles.popover)}
+          open={true}
+          anchorOrigin={{ horizontal: "left", vertical: "bottom" }}
+          targetOrigin={{ horizontal: "left", vertical: "bottom" }}
+        >
+          {sideboxList}
+        </Popover>
+      );
+    }
+    return (
+      <div className={css(flexStyles.sectionSideBox)}>
+        <div>
+          <div>Can&rsquo;t send the rest of these texts?</div>
+          <FlatButton
+            onTouchTap={console.log}
+            label="Release Batch"
+            className={css(flexStyles.flatButton)}
+            labelStyle={inlineStyles.flatButtonLabel}
+          />
+        </div>
+        {sideboxList}
+      </div>
+    );
+  }
+
+  renderMessageBox(internalComponent, enabledSideboxes) {
     return (
       <div className={css(flexStyles.superSectionMessageBox)}>
         <div
@@ -1010,31 +1108,22 @@ export class AssignmentTexterContactControls extends React.Component {
         >
           {internalComponent}
         </div>
-        <div className={css(flexStyles.sectionSideBox)}>
-          <div>
-            <div>Can&rsquo;t send the rest of these texts?</div>
-            <FlatButton
-              onTouchTap={console.log}
-              label="Release Batch"
-              className={css(flexStyles.flatButton)}
-              labelStyle={inlineStyles.flatButtonLabel}
-            />
-          </div>
-        </div>
+        {this.renderSidebox(enabledSideboxes)}
       </div>
     );
   }
 
-  renderFirstMessage() {
+  renderFirstMessage(enabledSideboxes) {
     return [
-      this.renderToolbar(),
+      this.renderToolbar(enabledSideboxes),
       this.renderMessageBox(
         <Empty
           title={
             "This is your first message to " + this.props.contact.firstName
           }
           icon={<CreateIcon color="rgb(83, 180, 119)" />}
-        />
+        />,
+        enabledSideboxes
       ),
       this.renderMessagingRowMessage({ readOnly: true }),
       this.renderMessagingRowSendSkip(this.props.contact)
@@ -1043,18 +1132,20 @@ export class AssignmentTexterContactControls extends React.Component {
 
   render() {
     const firstMessage = this.props.messageStatusFilter === "needsMessage";
+    const enabledSideboxes = this.getSideboxes();
     const content = firstMessage
-      ? this.renderFirstMessage()
+      ? this.renderFirstMessage(enabledSideboxes)
       : [
-          this.renderToolbar(),
+          this.renderToolbar(enabledSideboxes),
           this.renderMessageBox(
             <MessageList
               contact={this.props.contact}
               messages={this.props.contact.messages}
               styles={messageListStyles}
-            />
+            />,
+            enabledSideboxes
           ),
-          this.renderMessageControls()
+          this.renderMessageControls(enabledSideboxes)
         ];
     return <div className={css(flexStyles.topContainer)}>{content}</div>;
   }

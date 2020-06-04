@@ -139,7 +139,7 @@ const ContactToolbar = function ContactToolbar(props) {
       <Toolbar style={inlineStyles.toolbar}>
         <div className={`${css(styles.topFlex)} ${css(styles.campaignData)}`}>
           <IconButton
-            onTouchTap={props.onExit}
+            onClick={props.onExit}
             className={css(styles.contactToolbarIconButton)}
             tooltip="Return Home"
             tooltipPosition="bottom-right"
@@ -153,19 +153,22 @@ const ContactToolbar = function ContactToolbar(props) {
             {props.campaign.title}
           </div>
         </div>
-        <div
-          className={`${css(styles.navigation)} ${css(
-            styles.navigationSideBox
-          )}`}
-        >
-          <IconButton
-            tooltip="foobar"
-            className={css(styles.contactToolbarIconButton)}
-            style={{ flex: "0 0 56px", width: "45px" }}
+        {props.onSideboxButtonClick ? (
+          <div
+            className={`${css(styles.navigation)} ${css(
+              styles.navigationSideBox
+            )}`}
           >
-            <ActionExtension color="white" />
-          </IconButton>
-        </div>
+            <IconButton
+              tooltip="Open Details"
+              onClick={props.onSideboxButtonClick}
+              className={css(styles.contactToolbarIconButton)}
+              style={{ flex: "0 0 56px", width: "45px" }}
+            >
+              <ActionExtension color="white" />
+            </IconButton>
+          </div>
+        ) : null}
       </Toolbar>
       <Toolbar style={{ ...inlineStyles.toolbar, backgroundColor: "#7E808B" }}>
         <div className={`${css(styles.topFlex)} ${css(styles.contactData)}`}>
@@ -186,7 +189,7 @@ const ContactToolbar = function ContactToolbar(props) {
         </div>
         <div className={css(styles.navigation)} style={{ flexBasis: "130px" }}>
           <IconButton
-            onTouchTap={navigationToolbarChildren.onPrevious}
+            onClick={navigationToolbarChildren.onPrevious}
             disabled={!navigationToolbarChildren.onPrevious}
             tooltip="Previous Contact"
             className={css(styles.contactToolbarIconButton)}
@@ -204,7 +207,7 @@ const ContactToolbar = function ContactToolbar(props) {
             {navigationToolbarChildren.title}
           </div>
           <IconButton
-            onTouchTap={navigationToolbarChildren.onNext}
+            onClick={navigationToolbarChildren.onNext}
             disabled={!navigationToolbarChildren.onNext}
             tooltip="Next Contact"
             className={css(styles.contactToolbarIconButton)}
@@ -227,6 +230,7 @@ const ContactToolbar = function ContactToolbar(props) {
 ContactToolbar.propTypes = {
   campaignContact: PropTypes.object, // contacts for current assignment
   campaign: PropTypes.object,
+  onSideboxButtonClick: PropTypes.func,
   onExit: PropTypes.func,
   navigationToolbarChildren: PropTypes.object
 };
