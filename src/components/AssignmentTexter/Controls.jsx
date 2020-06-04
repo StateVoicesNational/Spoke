@@ -330,6 +330,11 @@ export class AssignmentTexterContactControls extends React.Component {
   getSideboxDialogOpen = enabledSideboxes => {
     // needs to be mobile-small + not dismissed
     const { sideboxCloses, sideboxOpens } = this.state;
+    const documentWidth = document.documentElement.clientWidth;
+    if (documentWidth > 575) {
+      // also in Toolbar.jsx::navigationSidebox
+      return false;
+    }
     if (sideboxOpens.MANUAL > (sideboxCloses.MANUAL || 0)) {
       return true;
     }
@@ -848,10 +853,7 @@ export class AssignmentTexterContactControls extends React.Component {
     if (sideboxOpen) {
       return (
         <Popover
-          style={{
-            ...inlineStyles.popover,
-            backgroundColor: "rgb(240, 240, 240)"
-          }}
+          style={inlineStyles.popoverSidebox}
           className={css(flexStyles.popover)}
           open={sideboxOpen}
           anchorEl={this.refs.messageBox}

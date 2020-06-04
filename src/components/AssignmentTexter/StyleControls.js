@@ -46,6 +46,9 @@ export const inlineStyles = {
   flatButtonLabel: {
     textTransform: "none",
     fontWeight: "bold"
+  },
+  popoverSidebox: {
+    backgroundColor: "rgb(240, 240, 240)"
   }
 };
 
