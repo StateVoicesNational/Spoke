@@ -69,6 +69,16 @@ export const resolvers = {
       "I'm opting you out of texts immediately. Have a great day.",
     textingHoursStart: organization => organization.texting_hours_start,
     textingHoursEnd: organization => organization.texting_hours_end,
+    texterUIConfig: async (organization, _, { user }) => {
+      await accessRequired(user, organization.id, "OWNER");
+      const options = getConfig("TEXTER_UI_SETTINGS", organization);
+      // note this is global, since we need the set that's globally enabled/allowed to choose from
+      const sideboxChoices = (getConfig("TEXTER_SIDEBOXES") || "").split(",");
+      return {
+        options,
+        sideboxChoices
+      };
+    },
     cacheable: (org, _, { user }) =>
       //quanery logic.  levels are 0, 1, 2
       r.redis ? (getConfig("REDIS_CONTACT_CACHE", org) ? 2 : 1) : 0,

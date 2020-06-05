@@ -49,7 +49,7 @@ import {
 import { resolvers as interactionStepResolvers } from "./interaction-step";
 import { resolvers as inviteResolvers } from "./invite";
 import { saveNewIncomingMessage } from "./lib/message-sending";
-import { getConfig } from "./lib/config";
+import { getConfig, getFeatures } from "./lib/config";
 import { resolvers as messageResolvers } from "./message";
 import { resolvers as optOutResolvers } from "./opt-out";
 import { resolvers as organizationResolvers } from "./organization";
@@ -135,6 +135,14 @@ async function editCampaign(id, campaign, loaders, user, origCampaignRecord) {
   if (origCampaignRecord && !origCampaignRecord.join_token) {
     campaignUpdates.join_token = uuidv4();
   }
+  const features = getFeatures(origCampaignRecord);
+  if (campaign.texterUIConfig && campaign.texterUIConfig.options) {
+    Object.assign(features, {
+      TEXTER_UI_SETTINGS: campaign.texterUIConfig.options
+    });
+    campaignUpdates.features = JSON.stringify(features);
+  }
+
   let changed = Boolean(Object.keys(campaignUpdates).length);
   if (changed) {
     await r
@@ -561,7 +569,7 @@ const rootMutations = {
       await accessRequired(user, organizationId, "OWNER");
 
       const organization = await Organization.get(organizationId);
-      const featuresJSON = JSON.parse(organization.features || "{}");
+      const featuresJSON = getFeatures(organization);
       featuresJSON.opt_out_message = optOutMessage;
       organization.features = JSON.stringify(featuresJSON);
 
@@ -583,7 +591,7 @@ const rootMutations = {
       await accessRequired(user, organizationId, "OWNER");
 
       const organization = await Organization.get(organizationId);
-      const featuresJSON = JSON.parse(organization.features || "{}");
+      const featuresJSON = getFeatures(organization);
       featuresJSON.TWILIO_ACCOUNT_SID = twilioAccountSid.substr(0, 64);
       featuresJSON.TWILIO_AUTH_TOKEN_ENCRYPTED = twilioAuthToken
         ? symmetricEncrypt(twilioAuthToken).substr(0, 256)

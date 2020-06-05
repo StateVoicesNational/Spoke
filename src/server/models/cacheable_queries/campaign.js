@@ -1,6 +1,7 @@
 import { r, loaders, Campaign } from "../../models";
 import { modelWithExtraProps } from "./lib";
 import { assembleAnswerOptions } from "../../../lib/interaction-step-helpers";
+import { getFeatures } from "../../api/lib/config";
 
 // This should be cached data for a campaign that will not change
 // based on assignments or texter actions
@@ -44,7 +45,7 @@ const dbInteractionSteps = async id => {
     .filter({ is_deleted: false })
     .orderBy("id");
   const data = assembleAnswerOptions(allSteps);
-  console.log("cacheabledata.campaign.dbInteractionSteps", id, data);
+  // console.log("cacheabledata.campaign.dbInteractionSteps", id, data);
   return data;
 };
 
@@ -168,9 +169,11 @@ const campaignCache = {
           infoCacheKey(id),
           "errorCount"
         );
+        campaignObj.feature = getFeatures(campaignObj);
         // console.log('campaign cache', cacheKey(id), campaignObj, campaignData)
         const campaign = modelWithExtraProps(campaignObj, Campaign, [
           "customFields",
+          "feature",
           "interactionSteps",
           "contactTimezones",
           "contactsCount",

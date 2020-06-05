@@ -23,7 +23,6 @@ export default class CampaignDynamicAssignmentForm extends React.Component {
   };
 
   onChange = formValues => {
-    console.log("onChange", formValues);
     this.setState(formValues);
     this.props.onChange({
       ...this.state,
@@ -33,14 +32,6 @@ export default class CampaignDynamicAssignmentForm extends React.Component {
 
   toggleChange = (toggler, useDynamicAssignment) => {
     this.setState({ useDynamicAssignment });
-    console.log(
-      "toggleChange",
-      useDynamicAssignment,
-      "x",
-      this.state,
-      "y",
-      this
-    );
     this.props.onChange({
       ...this.state,
       useDynamicAssignment
@@ -105,7 +96,7 @@ export default class CampaignDynamicAssignmentForm extends React.Component {
             </div>
           )}
           <Form.Button
-            type="Save"
+            type="submit"
             onTouchTap={this.props.onSubmit}
             label={this.props.saveLabel}
             disabled={this.props.saveDisabled}

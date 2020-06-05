@@ -84,6 +84,7 @@ const rootSchema = gql`
     textingHoursEnforced: Boolean
     textingHoursStart: Int
     textingHoursEnd: Int
+    texterUIConfig: TexterUIConfigInput
     timezone: String
   }
 

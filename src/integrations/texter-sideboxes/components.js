@@ -8,7 +8,7 @@ function getComponents() {
       const c = require(`./${componentName}/react-component.js`);
       components[componentName] = c;
     } catch (err) {
-      console.error("CONTACT_LOADERS failed to load component", componentName);
+      console.error("TEXTER_SIDEBOXES failed to load component", componentName);
     }
   });
   return components;
