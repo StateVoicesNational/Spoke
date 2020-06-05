@@ -38,36 +38,14 @@ export function clientChoiceDataCacheKey(organization) {
   return `${organization.id}`;
 }
 
-// return true, if the action is usable and available for the organizationId
-// Sometimes this means certain variables/credentials must be setup
-// either in environment variables or organization.features json data
-// Besides this returning true, "test-action" will also need to be added to
-// process.env.ACTION_HANDLERS
-export async function available(organization) {
-  const result =
-    !!getConfig("NGP_VAN_API_KEY", organization) &&
-    !!getConfig("NGP_VAN_APP_NAME", organization);
-
-  if (!result) {
-    log.info(
-      "ngpvan contact loader unavailable. Missing one or more required environment variables."
-    );
-  }
-
-  return {
-    result,
-    expiresSeconds: 86400
-  };
-}
-
 // What happens when a texter saves the answer that triggers the action
 // This is presumably the meat of the action
 export async function processAction(
-  questionResponse,
+  unusedQuestionResponse,
   interactionStep,
-  campaignContactId,
+  unusedCampaignContactId,
   contact,
-  campaign,
+  unusedCampaign,
   organization
 ) {
   try {
@@ -172,29 +150,27 @@ async function getContactTypeIdAndInputTypeId(organization) {
         "VAN did not return the configured input type or contact type. Check the log"
       );
     }
-  } catch (caughtError) {
+  } catch (error) {
     log.error(
-      `Error loading canvass/contactTypes or canvass/inputTypes from VAN  ${caughtError}`
+      `Error loading canvass/contactTypes or canvass/inputTypes from VAN  ${error}`
     );
-    return {
-      data: `${JSON.stringify({
-        error:
-          "Failed to load canvass/contactTypes or canvass/inputTypes from VAN"
-      })}`
-    };
   }
 
   return { contactTypeId, inputTypeId };
 }
 
 export async function getClientChoiceData(organization) {
-  const {
-    contactTypeId,
-    inputTypeId,
-    data: errorReturned
-  } = await getContactTypeIdAndInputTypeId(organization);
-  if (errorReturned) {
-    return { data: errorReturned };
+  const { contactTypeId, inputTypeId } = await getContactTypeIdAndInputTypeId(
+    organization
+  );
+
+  if (!contactTypeId || !inputTypeId) {
+    return {
+      data: `${JSON.stringify({
+        error:
+          "Failed to load canvass/contactTypes or canvass/inputTypes from VAN"
+      })}`
+    };
   }
 
   const cycle = await getConfig("NGP_VAN_ELECTION_CYCLE_FILTER", organization);
@@ -332,5 +308,45 @@ export async function getClientChoiceData(organization) {
     expiresSeconds:
       Number(getConfig("NGP_VAN_ACTION_HANDLER_CACHE_TTL", organization)) ||
       DEFAULT_NGP_VAN_ACTION_HANDLER_CACHE_TTL
+  };
+}
+
+// return true, if the action is usable and available for the organizationId
+// Sometimes this means certain variables/credentials must be setup
+// either in environment variables or organization.features json data
+// Besides this returning true, "test-action" will also need to be added to
+// process.env.ACTION_HANDLERS
+export async function available(organization) {
+  let result =
+    !!getConfig("NGP_VAN_API_KEY", organization) &&
+    !!getConfig("NGP_VAN_APP_NAME", organization);
+
+  if (!result) {
+    log.info(
+      "ngpvan-action unavailable. Missing one or more required environment variables"
+    );
+  }
+
+  if (result) {
+    try {
+      const { data } = await exports.getClientChoiceData(organization);
+      const parsedData = (data && JSON.parse(data)) || {};
+      if (parsedData.error) {
+        log.info(
+          `ngpvan-action unavailable. getClientChoiceData returned error ${parsedData.error}`
+        );
+        result = false;
+      }
+    } catch (caughtError) {
+      log.info(
+        `ngpvan-action unavailable. getClientChoiceData threw an exception ${caughtError}`
+      );
+      result = false;
+    }
+  }
+
+  return {
+    result,
+    expiresSeconds: 86400
   };
 }
