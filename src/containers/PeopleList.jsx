@@ -140,17 +140,10 @@ export class PeopleList extends Component {
         }
       },
       updateQuery: (prev, { fetchMoreResult }) => {
-        const returnValue = {
-          people: {
-            users: []
-          }
-        };
-
-        if (fetchMoreResult) {
-          returnValue.people.users = fetchMoreResult.data.people.users;
-          returnValue.people.pageInfo = fetchMoreResult.data.people.pageInfo;
+        if (!fetchMoreResult) {
+          return prev;
         }
-        return returnValue;
+        return fetchMoreResult;
       }
     });
     this.setState({

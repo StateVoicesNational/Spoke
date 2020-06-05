@@ -93,18 +93,10 @@ export class CampaignList extends React.Component {
         }
       },
       updateQuery: (prev, { fetchMoreResult }) => {
-        const returnValue = {
-          organization: {
-            campaigns: {
-              campaigns: []
-            }
-          }
-        };
-
-        if (fetchMoreResult) {
-          returnValue.organization = fetchMoreResult.data.organization;
+        if (!fetchMoreResult) {
+          return prev;
         }
-        return returnValue;
+        return fetchMoreResult;
       }
     });
     this.setState({
