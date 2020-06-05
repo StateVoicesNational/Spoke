@@ -130,12 +130,10 @@ export class CampaignList extends React.Component {
 
   handleArchiveCampaign = async campaignId => {
     await this.props.mutations.archiveCampaign(campaignId);
-    this.props.data.refetch();
   };
 
   handleUnarchiveCampaign = async campaignId => {
     await this.props.mutations.unarchiveCampaign(campaignId);
-    this.props.data.refetch();
   };
 
   render() {
@@ -178,7 +176,8 @@ const mutations = {
             ${campaignInfoFragment}
           }
         }`,
-    variables: { campaignId }
+    variables: { campaignId },
+    refetchQueries: () => ["adminGetCampaigns"]
   }),
   unarchiveCampaign: ownProps => campaignId => ({
     mutation: gql`mutation unarchiveCampaign($campaignId: String!) {
@@ -186,7 +185,8 @@ const mutations = {
           ${campaignInfoFragment}
         }
       }`,
-    variables: { campaignId }
+    variables: { campaignId },
+    refetchQueries: () => ["adminGetCampaigns"]
   })
 };
 
