@@ -2,10 +2,14 @@ import {
   validateActionHandler,
   validateActionHandlerWithClientChoices
 } from "../../../src/integrations/action-handlers";
-import * as NgpVanAction from "../../../src/integrations/action-handlers/ngpvan-action";
 import nock from "nock";
 
+const NgpVanAction = require("../../../src/integrations/action-handlers/ngpvan-action");
+require("../../test_helpers");
+
 describe("ngpvn-action", () => {
+  let veryFakeOrganization;
+
   beforeEach(async () => {
     process.env.NGP_VAN_APP_NAME = "fake_app_name";
     process.env.NGP_VAN_API_KEY = "fake_api_key";
@@ -13,6 +17,10 @@ describe("ngpvn-action", () => {
     process.env.NGP_VAN_WEBHOOK_URL = "https://e6f9b408.ngrok.io";
     process.env.NGP_VAN_MAXIMUM_LIST_SIZE = 300;
     process.env.NGP_VAN_CACHE_TTL = 30;
+
+    veryFakeOrganization = {
+      id: 3
+    };
   });
 
   it("passes validation", async () => {
@@ -623,12 +631,211 @@ describe("ngpvn-action", () => {
 
   describe("#clientChoiceDataCacheKey", () => {
     it("returns the organizationId as a string", async () => {
-      const cacheKey = NgpVanAction.clientChoiceDataCacheKey({ id: 3 });
+      const cacheKey = NgpVanAction.clientChoiceDataCacheKey(
+        veryFakeOrganization
+      );
       expect(cacheKey).toEqual("3");
     });
   });
 
-  describe("#available", () => {});
+  describe("#available", () => {
+    it("delegates to its dependencies and returns something indicating it's available", async () => {
+      jest.spyOn(NgpVanAction, "getClientChoiceData").mockResolvedValueOnce({});
+      const result = await NgpVanAction.available(veryFakeOrganization);
+      expect(result).toEqual({
+        result: true,
+        expiresSeconds: 86400
+      });
+      expect(NgpVanAction.getClientChoiceData.mock.calls).toEqual([
+        [veryFakeOrganization]
+      ]);
+    });
 
-  describe("#processAction", () => {});
+    describe("when an enviornment variable is missing", () => {
+      beforeEach(async () => {
+        delete process.env.NGP_VAN_API_KEY;
+      });
+      it("returns something indicating it's unavailble", async () => {
+        jest.spyOn(NgpVanAction, "getClientChoiceData");
+        const result = await NgpVanAction.available(veryFakeOrganization);
+        expect(result).toEqual({
+          result: false,
+          expiresSeconds: 86400
+        });
+        expect(NgpVanAction.getClientChoiceData).not.toHaveBeenCalled();
+      });
+    });
+
+    describe("when getClientChoiceData returns an error", () => {
+      beforeEach(async () => {
+        jest.spyOn(NgpVanAction, "getClientChoiceData").mockResolvedValue({
+          data: JSON.stringify({
+            error: "Mercury is retrograde"
+          })
+        });
+      });
+      it("returns something indicating it's unavailble", async () => {
+        const result = await NgpVanAction.available(veryFakeOrganization);
+        expect(result).toEqual({
+          result: false,
+          expiresSeconds: 86400
+        });
+        expect(NgpVanAction.getClientChoiceData.mock.calls).toEqual([
+          [veryFakeOrganization]
+        ]);
+      });
+    });
+
+    describe("when getClientChoiceData throws an exception", () => {
+      beforeEach(async () => {
+        jest
+          .spyOn(NgpVanAction, "getClientChoiceData")
+          .mockRejectedValueOnce(new Error("Mercury is retrograde"));
+      });
+      it("returns something indicating it's unavailble", async () => {
+        const result = await NgpVanAction.available(veryFakeOrganization);
+        expect(result).toEqual({
+          result: false,
+          expiresSeconds: 86400
+        });
+        expect(NgpVanAction.getClientChoiceData.mock.calls).toEqual([
+          [veryFakeOrganization]
+        ]);
+      });
+    });
+  });
+
+  describe("#processAction", () => {
+    let interactionStep;
+    let contact;
+    let organization;
+    let interactionStepValue;
+
+    let unusedQuestionResponse;
+    let unusedCampaignContactId;
+    let unusedCampaign;
+
+    let makePostPeopleCanvassResponsesNock;
+    let postPeopleCanvassResponsesNock;
+
+    beforeEach(async () => {
+      interactionStepValue = '{"hex":"#B22222","rgb":{"r":178,"g":34,"b":34}}';
+      interactionStep = {
+        answer_actions_data: JSON.stringify({
+          value: JSON.stringify(interactionStepValue)
+        })
+      };
+
+      contact = {
+        external_id: "10025"
+      };
+
+      organization = {
+        id: 3
+      };
+    });
+
+    beforeEach(async () => {
+      makePostPeopleCanvassResponsesNock = ({ statusCode = 204 } = {}) =>
+        nock("https://api.securevan.com:443", {
+          encodedQueryParams: true
+        })
+          .post(
+            `/v4/people/10025/canvassResponses`,
+            JSON.stringify(interactionStepValue)
+          )
+          .reply(statusCode);
+    });
+
+    it("calls the people endpoint", async () => {
+      postPeopleCanvassResponsesNock = makePostPeopleCanvassResponsesNock();
+
+      await NgpVanAction.processAction(
+        unusedQuestionResponse,
+        interactionStep,
+        unusedCampaignContactId,
+        contact,
+        unusedCampaign,
+        organization
+      );
+
+      postPeopleCanvassResponsesNock.done();
+    });
+
+    describe("when VAN returns a status other than 204", () => {
+      it("rethrows the exception", async () => {
+        postPeopleCanvassResponsesNock = makePostPeopleCanvassResponsesNock({
+          statusCode: 500
+        });
+
+        let error;
+        try {
+          await NgpVanAction.processAction(
+            unusedQuestionResponse,
+            interactionStep,
+            unusedCampaignContactId,
+            contact,
+            unusedCampaign,
+            organization
+          );
+        } catch (caughtException) {
+          error = caughtException;
+        }
+
+        expect(error.message).toEqual(
+          expect.stringMatching(/.*received status 500.*/)
+        );
+
+        postPeopleCanvassResponsesNock.done();
+      });
+    });
+
+    describe("when something throws an exception", () => {
+      beforeEach(async () => {
+        interactionStepValue =
+          '{"hex":"#B22222","rgb":{"r":178,"g":34,"b":34}}';
+
+        // not stringifying in order to force an exception
+        interactionStep = {
+          answer_actions_data: {
+            value: interactionStepValue
+          }
+        };
+
+        contact = {
+          external_id: "10025"
+        };
+
+        organization = {
+          id: 3
+        };
+      });
+      it("rethrows the exception", async () => {
+        postPeopleCanvassResponsesNock = makePostPeopleCanvassResponsesNock({
+          statusCode: 500
+        });
+
+        let error;
+        try {
+          await NgpVanAction.processAction(
+            unusedQuestionResponse,
+            interactionStep,
+            unusedCampaignContactId,
+            contact,
+            unusedCampaign,
+            organization
+          );
+        } catch (caughtException) {
+          error = caughtException;
+        }
+
+        expect(error.message).toEqual(
+          expect.stringMatching(/^unexpected token*/i)
+        );
+
+        expect(postPeopleCanvassResponsesNock.isDone()).toEqual(false);
+        nock.cleanAll();
+      });
+    });
+  });
 });
