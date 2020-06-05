@@ -21,6 +21,7 @@ import CampaignTextersForm from "../components/CampaignTextersForm";
 import CampaignInteractionStepsForm from "../components/CampaignInteractionStepsForm";
 import CampaignCannedResponsesForm from "../components/CampaignCannedResponsesForm";
 import CampaignDynamicAssignmentForm from "../components/CampaignDynamicAssignmentForm";
+import CampaignTexterUIForm from "../components/CampaignTexterUIForm";
 import { dataTest, camelCase } from "../lib/attributes";
 import CampaignTextingHoursForm from "../components/CampaignTextingHoursForm";
 
@@ -48,6 +49,10 @@ const campaignInfoFragment = `
   textingHoursEnforced
   textingHoursStart
   textingHoursEnd
+  texterUIConfig {
+    options
+    sideboxChoices
+  }
   timezone
   texters {
     id
@@ -450,6 +455,15 @@ export class AdminCampaignEdit extends React.Component {
           joinToken: this.props.campaignData.campaign.joinToken,
           campaignId: this.props.campaignData.campaign.id
         }
+      },
+      {
+        title: "Texter Experience",
+        content: CampaignTexterUIForm,
+        keys: ["texterUIConfig"],
+        checkCompleted: () => true,
+        blocksStarting: false,
+        expandAfterCampaignStarts: true,
+        expandableBySuperVolunteers: false
       },
       {
         title: "Texting Hours",

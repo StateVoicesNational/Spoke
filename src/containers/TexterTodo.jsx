@@ -78,6 +78,10 @@ export const dataQueryString = `
           optOutMessage
         }
         customFields
+        texterUIConfig {
+          options
+          sideboxChoices
+        }
         interactionSteps {
           id
           script

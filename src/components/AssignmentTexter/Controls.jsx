@@ -116,7 +116,9 @@ export class AssignmentTexterContactControls extends React.Component {
   getSideboxes(props) {
     const popups = [];
     console.log("getSideboxes", sideboxes);
-    const enabledSideboxes = Object.keys(sideboxes)
+    // TODO: need to filter texterUIConfig.options (and json parse) for which ones are marked as enabled
+    // and then pass options data into the component
+    const enabledSideboxes = props.campaign.texterUIConfig.sideboxChoices
       // TODO: filter for enabled in the campaign
       .filter(sb => {
         const res = sideboxes[sb].showSidebox(props);
@@ -135,9 +137,11 @@ export class AssignmentTexterContactControls extends React.Component {
 
   onResize = evt => {
     // trigger re-render to determine whether there's space for shortcuts
-    this.setState({
-      currentShortcutSpace: this.refs.answerButtons.offsetHeight
-    });
+    if (this.refs.answerButtons) {
+      this.setState({
+        currentShortcutSpace: this.refs.answerButtons.offsetHeight
+      });
+    }
   };
 
   onKeyDown = evt => {
@@ -206,16 +210,13 @@ export class AssignmentTexterContactControls extends React.Component {
     // delay to avoid accidental tap pass-through with focusing on
     // the text field -- this is annoying on mobile where the keyboard
     // pops up, inadvertantly
+    const update = { optOutDialogOpen: true };
+    if (this.refs.answerButtons) {
+      // store this, because on-close, we lose this
+      update.currentShortcutSpace = this.refs.answerButtons.offsetHeight;
+    }
     const self = this;
-    setTimeout(
-      () =>
-        self.setState({
-          optOutDialogOpen: true,
-          // store this, because on-close, we lose this
-          currentShortcutSpace: self.refs.answerButtons.offsetHeight
-        }),
-      200
-    );
+    setTimeout(() => self.setState(update), 200);
   };
 
   handleCloseDialog = () => {

@@ -1,6 +1,8 @@
 import type from "prop-types";
 import React from "react";
 import { Link } from "react-router";
+import yup from "yup";
+import Toggle from "material-ui/Toggle";
 
 export const displayName = () => "Contact Conversation URL";
 
@@ -44,13 +46,25 @@ TexterSidebox.propTypes = {
   messageStatusFilter: type.string
 };
 
+export const adminSchema = () => ({
+  contactReferenceClickable: yup.boolean()
+});
+
 export class AdminConfig extends React.Component {
   render() {
-    return <div>foobarADMIN</div>;
+    return (
+      <Toggle
+        label="Clickable reference link (vs. just copyable)"
+        toggled={this.props.settingsData.contactReferenceClickable}
+        onToggle={(toggler, val) =>
+          this.props.onToggle("contactReferenceClickable", val)
+        }
+      />
+    );
   }
 }
 
 AdminConfig.propTypes = {
-  enabled: type.bool,
-  data: type.string
+  settingsData: type.object,
+  onToggle: type.func
 };
