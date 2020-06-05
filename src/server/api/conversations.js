@@ -143,11 +143,6 @@ export async function getConversations(
   });
 
   query = query.orderBy("cc_id", "desc").orderBy("message.id");
-  console.log(
-    "getConversations query2",
-    awsContext && awsContext.awsRequestId,
-    query
-  );
   const conversationRows = await query;
   console.log(
     "getConversations query2 result",
@@ -196,10 +191,6 @@ export async function getConversations(
     campaignsFilter,
     assignmentsFilter,
     contactsFilter
-  );
-  console.log(
-    "getConversations query3 sql",
-    conversationsCountQuery.toString()
   );
   let conversationCount;
   try {
@@ -361,10 +352,6 @@ export async function reassignConversations(
 export const resolvers = {
   PaginatedConversations: {
     conversations: queryResult => {
-      console.log(
-        "getConversations paginatedconversations conversations",
-        queryResult.conversations
-      );
       return queryResult.conversations;
     },
     pageInfo: queryResult => {
