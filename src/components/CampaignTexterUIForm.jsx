@@ -2,6 +2,7 @@ import type from "prop-types";
 import React from "react";
 import orderBy from "lodash/orderBy";
 import Slider from "./Slider";
+import Divider from "material-ui/Divider";
 import AutoComplete from "material-ui/AutoComplete";
 import IconButton from "material-ui/IconButton";
 import RaisedButton from "material-ui/RaisedButton";
@@ -71,7 +72,13 @@ export default class CampaignTexterUIForm extends React.Component {
         <div key={sb}>
           <Toggle
             {...dataTest(`toggle_${sb}`)}
-            label={displayName}
+            label={
+              <div
+                style={{ ...theme.text.secondaryHeader, marginBottom: "10px" }}
+              >
+                {displayName}
+              </div>
+            }
             toggled={this.state[sb]}
             onToggle={(toggler, val) => this.toggleChange(sb, val)}
           />
@@ -80,9 +87,11 @@ export default class CampaignTexterUIForm extends React.Component {
               <AdminConfig
                 settingsData={this.state}
                 onToggle={this.toggleChange}
+                organization={this.props.organization}
               />
             </div>
           ) : null}
+          <div style={{ height: "20px" }}></div>
         </div>
       );
     });
@@ -110,6 +119,7 @@ export default class CampaignTexterUIForm extends React.Component {
 CampaignTexterUIForm.propTypes = {
   sideboxOptions: type.string,
   formValues: type.object,
+  organization: type.object,
   onChange: type.func,
   onSubmit: type.func,
   saveLabel: type.string,

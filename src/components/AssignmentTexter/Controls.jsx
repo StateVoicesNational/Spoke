@@ -940,6 +940,7 @@ AssignmentTexterContactControls.propTypes = {
   startingMessage: PropTypes.string,
   onMessageFormSubmit: PropTypes.func,
   onOptOut: PropTypes.func,
+  onUpdateTags: PropTypes.func,
   onQuestionResponseChange: PropTypes.func,
   onCreateCannedResponse: PropTypes.func,
   onExitTexter: PropTypes.func,

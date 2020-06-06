@@ -463,7 +463,10 @@ export class AdminCampaignEdit extends React.Component {
         checkCompleted: () => true,
         blocksStarting: false,
         expandAfterCampaignStarts: true,
-        expandableBySuperVolunteers: false
+        expandableBySuperVolunteers: false,
+        extraProps: {
+          organization: this.props.organizationData.organization
+        }
       },
       {
         title: "Texting Hours",

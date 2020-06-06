@@ -232,6 +232,11 @@ export class AssignmentTexterContact extends React.Component {
     }
   };
 
+  handleUpdateTags = async tags => {
+    const { contact } = this.props;
+    await this.props.mutations.updateContactTags(tags, contact.id);
+  };
+
   handleEditStatus = async (messageStatus, finishContact) => {
     const { contact } = this.props;
     await this.props.mutations.editCampaignContactMessageStatus(
@@ -366,6 +371,7 @@ export class AssignmentTexterContact extends React.Component {
           disabled={this.state.disabled}
           onMessageFormSubmit={this.handleMessageFormSubmit}
           onOptOut={this.handleOptOut}
+          onUpdateTags={this.handleUpdateTags}
           onQuestionResponseChange={this.handleQuestionResponseChange}
           onCreateCannedResponse={this.handleCreateCannedResponse}
           onExitTexter={this.props.onExitTexter}
@@ -484,6 +490,20 @@ const mutations = {
     `,
     variables: {
       interactionStepIds,
+      campaignContactId
+    }
+  }),
+  updateContactTags: ownProps => (tags, campaignContactId) => ({
+    mutation: gql`
+      mutation updateContactTags(
+        $tags: [TagInput]
+        $campaignContactId: String!
+      ) {
+        updateContactTags(tags: $tags, campaignContactId: $campaignContactId)
+      }
+    `,
+    variables: {
+      tags,
       campaignContactId
     }
   }),
