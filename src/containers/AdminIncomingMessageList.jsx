@@ -56,6 +56,20 @@ function getContactsFilterForConversationOptOutStatus(
 }
 
 export class AdminIncomingMessageList extends Component {
+  static tagsFilterStateFromTagsFilter = tagsFilter => {
+    let newTagsFilter = null;
+    if (tagsFilter.anyTag) {
+      newTagsFilter = ["*"];
+    } else if (tagsFilter.noTag) {
+      newTagsFilter = [];
+    } else if (!tagsFilter.ignoreTags) {
+      newTagsFilter = Object.values(tagsFilter.selectedTags).map(
+        tagFilter => tagFilter.value
+      );
+    }
+    return newTagsFilter;
+  };
+
   constructor(props) {
     super(props);
 
@@ -75,7 +89,8 @@ export class AdminIncomingMessageList extends Component {
       includeActiveCampaigns: true,
       includeNotOptedOutConversations: true,
       includeOptedOutConversations: false,
-      clearSelectedMessages: false
+      clearSelectedMessages: false,
+      tagsFilter: { ignoreTags: true }
     };
   }
 
@@ -288,6 +303,24 @@ export class AdminIncomingMessageList extends Component {
     });
   };
 
+  handleTagsFilterChanged = tagsFilter => {
+    const newTagsFilter = AdminIncomingMessageList.tagsFilterStateFromTagsFilter(
+      tagsFilter
+    );
+
+    const contactsFilter = {
+      ...this.state.contactsFilter
+      // tags: newTagsFilter || undefined
+    };
+
+    this.setState({
+      clearSelectedMessages: true,
+      contactsFilter,
+      tagsFilter,
+      needsRender: true
+    });
+  };
+
   conversationCountChanged = conversationCount => {
     this.setState({
       conversationCount
@@ -351,6 +384,9 @@ export class AdminIncomingMessageList extends Component {
             includeOptedOutConversations={
               this.state.includeOptedOutConversations
             }
+            onTagsFilterChanged={this.handleTagsFilterChanged}
+            tagsFilter={this.state.tagsFilter}
+            tags={this.props.tags.tags.tags}
           />
           <br />
           <IncomingMessageActions
@@ -424,7 +460,32 @@ AdminIncomingMessageList.propTypes = {
   conversations: PropTypes.object,
   mutations: PropTypes.object,
   params: PropTypes.object,
-  organization: PropTypes.object
+  organization: PropTypes.object,
+  tags: PropTypes.object
+};
+
+const queries = {
+  tags: {
+    query: gql`
+      query getTags($organizationId: String!) {
+        tags(organizationId: $organizationId) {
+          tags {
+            id
+            name
+            isDeleted
+          }
+        }
+      }
+    `,
+    options: ownProps => {
+      return {
+        variables: {
+          organizationId: ownProps.params.organizationId
+        },
+        fetchPolicy: "network-only"
+      };
+    }
+  }
 };
 
 const mutations = {
@@ -454,6 +515,6 @@ const mutations = {
   })
 };
 
-export const operations = { mutations };
+export const operations = { mutations, queries };
 
 export default loadData(operations)(withRouter(AdminIncomingMessageList));
