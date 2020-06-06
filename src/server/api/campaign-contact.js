@@ -87,6 +87,13 @@ export const resolvers = {
       });
       return messages;
     },
+    tags: async campaignContact => {
+      const tags = cacheableData.tagCampaignContact.query(
+        campaignContact.id,
+        true
+      );
+      return tags;
+    },
     optOut: async (campaignContact, _, { loaders }) => {
       let isOptedOut = null;
       if (typeof campaignContact.is_opted_out !== "undefined") {

@@ -11,6 +11,7 @@ import { grey100 } from "material-ui/styles/colors";
 import ArrowBackIcon from "material-ui/svg-icons/navigation/arrow-back";
 import ArrowForwardIcon from "material-ui/svg-icons/navigation/arrow-forward";
 import NavigateHomeIcon from "material-ui/svg-icons/action/home";
+import SideboxOpenIcon from "material-ui/svg-icons/action/build";
 
 const inlineStyles = {
   toolbar: {
@@ -26,6 +27,13 @@ const styles = StyleSheet.create({
     flexDirection: "column",
     alignContent: "flex-start",
     marginLeft: "-24px"
+  },
+  campaignData: {
+    flex: "1 2 auto",
+    maxWidth: "80%",
+    "@media(max-width: 375px)": {
+      maxWidth: "70%" // iphone 5 and X
+    }
   },
   contactData: {
     flex: "1 2 auto",
@@ -62,8 +70,16 @@ const styles = StyleSheet.create({
       width: "50px"
     }
   },
+  navigationSideBox: {
+    flexBasis: "24px",
+    // width also in Controls.jsx::getSideboxDialogOpen
+    "@media(min-width: 575px)": {
+      display: "none"
+    }
+  },
   navigation: {
-    flex: "0 0 130px",
+    flexGrow: 0,
+    flexShrink: 0,
     display: "flex",
     flexDirection: "column",
     flexWrap: "wrap"
@@ -122,9 +138,9 @@ const ContactToolbar = function ContactToolbar(props) {
   return (
     <div>
       <Toolbar style={inlineStyles.toolbar}>
-        <div className={css(styles.topFlex)} style={{ width: "100%" }}>
+        <div className={`${css(styles.topFlex)} ${css(styles.campaignData)}`}>
           <IconButton
-            onTouchTap={props.onExit}
+            onClick={props.onExit}
             className={css(styles.contactToolbarIconButton)}
             tooltip="Return Home"
             tooltipPosition="bottom-right"
@@ -138,6 +154,22 @@ const ContactToolbar = function ContactToolbar(props) {
             {props.campaign.title}
           </div>
         </div>
+        {props.onSideboxButtonClick ? (
+          <div
+            className={`${css(styles.navigation)} ${css(
+              styles.navigationSideBox
+            )}`}
+          >
+            <IconButton
+              tooltip="Open Details"
+              onClick={props.onSideboxButtonClick}
+              className={css(styles.contactToolbarIconButton)}
+              style={{ flex: "0 0 56px", width: "45px" }}
+            >
+              <SideboxOpenIcon color="white" />
+            </IconButton>
+          </div>
+        ) : null}
       </Toolbar>
       <Toolbar style={{ ...inlineStyles.toolbar, backgroundColor: "#7E808B" }}>
         <div className={`${css(styles.topFlex)} ${css(styles.contactData)}`}>
@@ -156,9 +188,9 @@ const ContactToolbar = function ContactToolbar(props) {
             {campaignContact.firstName}
           </div>
         </div>
-        <div className={css(styles.navigation)}>
+        <div className={css(styles.navigation)} style={{ flexBasis: "130px" }}>
           <IconButton
-            onTouchTap={navigationToolbarChildren.onPrevious}
+            onClick={navigationToolbarChildren.onPrevious}
             disabled={!navigationToolbarChildren.onPrevious}
             tooltip="Previous Contact"
             className={css(styles.contactToolbarIconButton)}
@@ -176,7 +208,7 @@ const ContactToolbar = function ContactToolbar(props) {
             {navigationToolbarChildren.title}
           </div>
           <IconButton
-            onTouchTap={navigationToolbarChildren.onNext}
+            onClick={navigationToolbarChildren.onNext}
             disabled={!navigationToolbarChildren.onNext}
             tooltip="Next Contact"
             className={css(styles.contactToolbarIconButton)}
@@ -199,6 +231,7 @@ const ContactToolbar = function ContactToolbar(props) {
 ContactToolbar.propTypes = {
   campaignContact: PropTypes.object, // contacts for current assignment
   campaign: PropTypes.object,
+  onSideboxButtonClick: PropTypes.func,
   onExit: PropTypes.func,
   navigationToolbarChildren: PropTypes.object
 };

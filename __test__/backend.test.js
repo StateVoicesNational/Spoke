@@ -260,34 +260,6 @@ describe("graphql test suite", async () => {
     );
   });
 
-  it("should add texters to a organization", async () => {
-    testTexterUser = await createUser({
-      auth0_id: "test456",
-      first_name: "TestTexterFirst",
-      last_name: "TestTexterLast",
-      cell: "555-555-6666",
-      email: "testtexter@example.com"
-    });
-    const joinQuery = `
-    mutation joinOrganization($organizationUuid: String!) {
-      joinOrganization(organizationUuid: $organizationUuid) {
-        id
-      }
-    }`;
-    const variables = {
-      organizationUuid: testOrganization.data.createOrganization.uuid
-    };
-    const context = getContext({ user: testTexterUser });
-    const result = await graphql(
-      mySchema,
-      joinQuery,
-      rootValue,
-      context,
-      variables
-    );
-    expect(result.data.joinOrganization.id).toBeTruthy();
-  });
-
   it("should assign texters to campaign contacts", async () => {
     const campaignEditQuery = `
     mutation editCampaign($campaignId: String!, $campaign: CampaignInput!) {

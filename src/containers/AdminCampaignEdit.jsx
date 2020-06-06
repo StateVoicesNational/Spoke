@@ -20,6 +20,8 @@ import CampaignContactsChoiceForm from "../components/CampaignContactsChoiceForm
 import CampaignTextersForm from "../components/CampaignTextersForm";
 import CampaignInteractionStepsForm from "../components/CampaignInteractionStepsForm";
 import CampaignCannedResponsesForm from "../components/CampaignCannedResponsesForm";
+import CampaignDynamicAssignmentForm from "../components/CampaignDynamicAssignmentForm";
+import CampaignTexterUIForm from "../components/CampaignTexterUIForm";
 import { dataTest, camelCase } from "../lib/attributes";
 import CampaignTextingHoursForm from "../components/CampaignTextingHoursForm";
 
@@ -31,6 +33,8 @@ const campaignInfoFragment = `
   title
   description
   dueBy
+  joinToken
+  batchSize
   isStarted
   isArchived
   contactsCount
@@ -45,6 +49,10 @@ const campaignInfoFragment = `
   textingHoursEnforced
   textingHoursStart
   textingHoursEnd
+  texterUIConfig {
+    options
+    sideboxChoices
+  }
   timezone
   texters {
     id
@@ -242,6 +250,7 @@ export class AdminCampaignEdit extends React.Component {
   }
 
   handleChange = formValues => {
+    console.log("handleChange", formValues);
     this.setState({
       campaignFormValues: {
         ...this.state.campaignFormValues,
@@ -252,7 +261,7 @@ export class AdminCampaignEdit extends React.Component {
 
   handleSubmit = async () => {
     if (!this.state.expandedSection.doNotSaveAfterSubmit) {
-      await this.handleSave();
+      const saveRes = await this.handleSave();
     }
     this.setState(
       {
@@ -269,6 +278,8 @@ export class AdminCampaignEdit extends React.Component {
         this.props.campaignData.refetch();
       }
     );
+    console.log("REFETCHING");
+    return await this.props.campaignData.refetch();
   };
 
   handleSave = async () => {
@@ -303,7 +314,8 @@ export class AdminCampaignEdit extends React.Component {
       if (newCampaign.hasOwnProperty("interactionSteps")) {
         newCampaign.interactionSteps = makeTree(newCampaign.interactionSteps);
       }
-      await this.props.mutations.editCampaign(
+
+      return await this.props.mutations.editCampaign(
         this.props.campaignData.campaign.id,
         newCampaign
       );
@@ -384,7 +396,7 @@ export class AdminCampaignEdit extends React.Component {
       {
         title: "Texters",
         content: CampaignTextersForm,
-        keys: ["texters", "contactsCount", "useDynamicAssignment"],
+        keys: ["texters", "contactsCount"],
         checkCompleted: () =>
           (this.state.campaignFormValues.texters.length > 0 &&
             this.state.campaignFormValues.contactsCount ===
@@ -399,6 +411,8 @@ export class AdminCampaignEdit extends React.Component {
         extraProps: {
           orgTexters: this.props.organizationData.organization.texters,
           organizationUuid: this.props.organizationData.organization.uuid,
+          useDynamicAssignment: this.props.campaignData.campaign
+            .useDynamicAssignment,
           campaignId: this.props.campaignData.campaign.id
         }
       },
@@ -430,6 +444,31 @@ export class AdminCampaignEdit extends React.Component {
         expandableBySuperVolunteers: true,
         extraProps: {
           customFields: this.props.campaignData.campaign.customFields
+        }
+      },
+      {
+        title: "Dynamic Assignment",
+        content: CampaignDynamicAssignmentForm,
+        keys: ["batchSize", "useDynamicAssignment"],
+        checkCompleted: () => true,
+        blocksStarting: false,
+        expandAfterCampaignStarts: true,
+        expandableBySuperVolunteers: true,
+        extraProps: {
+          joinToken: this.props.campaignData.campaign.joinToken,
+          campaignId: this.props.campaignData.campaign.id
+        }
+      },
+      {
+        title: "Texter Experience",
+        content: CampaignTexterUIForm,
+        keys: ["texterUIConfig"],
+        checkCompleted: () => true,
+        blocksStarting: false,
+        expandAfterCampaignStarts: true,
+        expandableBySuperVolunteers: false,
+        extraProps: {
+          organization: this.props.organizationData.organization
         }
       },
       {

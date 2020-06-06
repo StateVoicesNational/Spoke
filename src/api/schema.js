@@ -70,6 +70,7 @@ const rootSchema = gql`
     primaryColor: String
     introHtml: String
     useDynamicAssignment: Boolean
+    batchSize: Int
     ingestMethod: String
     contactData: String
     organizationId: String
@@ -83,6 +84,7 @@ const rootSchema = gql`
     textingHoursEnforced: Boolean
     textingHoursStart: Int
     textingHoursEnd: Int
+    texterUIConfig: TexterUIConfigInput
     timezone: String
   }
 
@@ -143,7 +145,8 @@ const rootSchema = gql`
     id: String
     name: String!
     group: String
-    description: String!
+    value: String
+    description: String
     isDeleted: Boolean
     organizationId: String
   }
@@ -216,7 +219,6 @@ const rootSchema = gql`
       filterString: String
       filterBy: FilterPeopleBy
     ): UsersReturn
-    tags(organizationId: String!): TagsList
   }
 
   type RootMutation {
@@ -234,6 +236,7 @@ const rootSchema = gql`
     ): Organization
     joinOrganization(
       organizationUuid: String!
+      campaignId: String
       queryParams: String
     ): Organization
     editOrganizationRoles(
@@ -281,6 +284,7 @@ const rootSchema = gql`
       interactionStepIds: [String]
       campaignContactId: String!
     ): CampaignContact
+    updateContactTags(tags: [TagInput], campaignContactId: String!): String
     updateQuestionResponses(
       questionResponses: [QuestionResponseInput]
       campaignContactId: String!
@@ -299,11 +303,6 @@ const rootSchema = gql`
       assignmentId: String!
       numberContacts: Int!
     ): FoundContact
-    assignUserToCampaign(
-      organizationUuid: String!
-      campaignId: String!
-      queryParams: String
-    ): Campaign
     userAgreeTerms(userId: String!): User
     reassignCampaignContacts(
       organizationId: String!

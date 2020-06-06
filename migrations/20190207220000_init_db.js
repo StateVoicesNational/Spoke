@@ -343,7 +343,7 @@ const initialize = async (knex, Promise) => {
         t.text("service_response")
           .notNullable()
           .defaultTo("");
-        t.integer("assignment_id").notNullable();
+        t.integer("assignment_id");
         t.text("service")
           .notNullable()
           .defaultTo("");
