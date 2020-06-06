@@ -1,6 +1,5 @@
 import PropTypes from "prop-types";
 import React from "react";
-import CampaignList from "./CampaignList";
 import FloatingActionButton from "material-ui/FloatingActionButton";
 import ContentAdd from "material-ui/svg-icons/content/add";
 import ArchiveIcon from "material-ui/svg-icons/content/archive";
@@ -21,6 +20,7 @@ import SortBy, {
 import Paper from "material-ui/Paper";
 import Search from "../components/Search";
 import { StyleSheet, css } from "aphrodite";
+import CampaignTable from "../components/AdminCampaignList/CampaignTable";
 
 const styles = StyleSheet.create({
   settings: {
@@ -30,16 +30,23 @@ const styles = StyleSheet.create({
   }
 });
 
+const INITIAL_ROW_SIZE = 50;
+const INITIAL_FILTER = {
+  isArchived: false,
+  searchString: ""
+};
+const INITIAL_SORT_BY = DUE_DATE_DESC_SORT.value;
+
 class AdminCampaignList extends React.Component {
   state = {
+    pageSize: INITIAL_ROW_SIZE,
+    page: 0,
     isLoading: false,
-    campaignsFilter: {
-      isArchived: false,
-      searchString: ""
-    },
+    campaignsFilter: INITIAL_FILTER,
     archiveMultiple: false,
     campaignsToArchive: [],
-    sortBy: DUE_DATE_DESC_SORT.value
+    campaignsWithChangingStatus: [],
+    sortBy: INITIAL_SORT_BY
   };
 
   handleClickNewButton = async () => {
@@ -66,10 +73,11 @@ class AdminCampaignList extends React.Component {
     );
   };
 
-  handleClickArchiveButton = async keys => {
+  handleClickArchiveMultipleButton = async keys => {
     if (keys.length) {
       this.setState({ isLoading: true });
       await this.props.mutations.archiveCampaigns(keys);
+      await this.props.data.refetch();
       this.setState({
         archiveMultiple: false,
         isLoading: false,
@@ -78,26 +86,13 @@ class AdminCampaignList extends React.Component {
     }
   };
 
-  handleFilterChange = (event, index, isArchived) => {
-    this.setState({
-      campaignsFilter: {
-        isArchived
-      }
-    });
+  handleArchiveFilterChange = async (event, index, isArchived) => {
+    this.changeFilter({ isArchived });
   };
 
-  handleListSizeChange = (event, index, value) => {
+  handleChecked = campaignIds => {
     this.setState({
-      campaignsFilter: {
-        isArchived: this.state.campaignsFilter.isArchived,
-        listSize: value
-      }
-    });
-  };
-
-  handleChecked = ({ campaignIds }) => {
-    this.setState({
-      campaignsToArchive: campaignIds
+      campaignsToArchive: [...campaignIds]
     });
   };
 
@@ -107,16 +102,12 @@ class AdminCampaignList extends React.Component {
     }, delay);
   };
 
-  handleSortByChanged = sortBy => {
-    this.setState({ sortBy });
-  };
-
   handleSearchRequested = searchString => {
     const campaignsFilter = {
       ...this.state.campaignsFilter,
       searchString
     };
-    this.setState({ campaignsFilter });
+    this.changeFilter(campaignsFilter);
   };
 
   handleCancelSearch = () => {
@@ -124,7 +115,7 @@ class AdminCampaignList extends React.Component {
       ...this.state.campaignsFilter,
       searchString: ""
     };
-    this.setState({ campaignsFilter });
+    this.changeFilter(campaignsFilter);
   };
 
   renderArchivedAndSortBy = () => {
@@ -134,15 +125,12 @@ class AdminCampaignList extends React.Component {
           <span>
             <DropDownMenu
               value={this.state.campaignsFilter.isArchived}
-              onChange={this.handleFilterChange}
+              onChange={this.handleArchiveFilterChange}
             >
               <MenuItem value={false} primaryText="Current" />
               <MenuItem value primaryText="Archived" />
             </DropDownMenu>
-            <SortBy
-              onChange={this.handleSortByChanged}
-              sortBy={this.state.sortBy}
-            />
+            <SortBy onChange={this.changeSortBy} sortBy={this.state.sortBy} />
           </span>
         </span>
       )
@@ -172,15 +160,18 @@ class AdminCampaignList extends React.Component {
   );
 
   renderArchiveMultiple() {
+    const iconButton = (
+      <IconButton>
+        <MoreVertIcon />
+      </IconButton>
+    );
+
+    if (this.state.campaignsFilter.isArchived) {
+      return iconButton;
+    }
+
     return (
-      <IconMenu
-        iconButtonElement={
-          <IconButton>
-            <MoreVertIcon />
-          </IconButton>
-        }
-        style={{ bottom: "13px" }}
-      >
+      <IconMenu iconButtonElement={iconButton}>
         {/*
           The IconMenu component delays hiding the menu after it is
           clicked for 200ms. This looks nice, so the state change is
@@ -206,6 +197,100 @@ class AdminCampaignList extends React.Component {
     );
   }
 
+  changePage = (pageDelta, pageSize) => {
+    const {
+      limit,
+      offset,
+      total
+    } = this.props.data.organization.campaigns.pageInfo;
+    const currentPage = Math.floor(offset / limit);
+    const pageSizeAdjustedCurrentPage = Math.floor(
+      (currentPage * limit) / pageSize
+    );
+    const maxPage = Math.floor(total / pageSize);
+    const newPage = Math.min(maxPage, pageSizeAdjustedCurrentPage + pageDelta);
+    this.props.data.fetchMore({
+      variables: {
+        cursor: {
+          offset: newPage * pageSize,
+          limit: pageSize
+        }
+      },
+      updateQuery: (prev, { fetchMoreResult }) => {
+        if (!fetchMoreResult) {
+          return prev;
+        }
+        return fetchMoreResult;
+      }
+    });
+  };
+
+  changeFilter = async newFilter => {
+    this.setState({
+      isLoading: true,
+      campaignsFilter: newFilter
+    });
+    await this.props.data.refetch({
+      campaignsFilter: newFilter
+    });
+    this.setState({ isLoading: false });
+  };
+
+  changeSortBy = async newSort => {
+    this.setState({
+      isLoading: true,
+      sortBy: newSort
+    });
+    await this.props.data.refetch({
+      sortBy: newSort
+    });
+    this.setState({ isLoading: false });
+  };
+
+  handleNextPageClick = () => {
+    this.changePage(1, this.state.pageSize);
+  };
+
+  handlePreviousPageClick = () => {
+    this.changePage(-1, this.state.pageSize);
+  };
+
+  handleRowSizeChanged = (index, value) => {
+    console.log("rowsizechanged", index, value); // eslint-disable-line no-console
+    this.changePage(0, value);
+    this.setState({
+      pageSize: value
+    });
+  };
+
+  changeCampaignStatus = async (campaignId, changeFn) => {
+    this.setState({
+      campaignsWithChangingStatus: this.state.campaignsWithChangingStatus.concat(
+        [campaignId]
+      )
+    });
+    await changeFn(campaignId);
+    await this.props.data.refetch();
+    this.setState({
+      campaignsWithChangingStatus: this.state.campaignsWithChangingStatus.filter(
+        id => id !== campaignId
+      )
+    });
+  };
+
+  handleArchiveCampaign = async campaignId => {
+    await this.changeCampaignStatus(campaignId, async id => {
+      await this.props.mutations.archiveCampaigns([id]);
+    });
+  };
+
+  handleUnarchiveCampaign = async campaignId => {
+    await this.changeCampaignStatus(
+      campaignId,
+      this.props.mutations.unarchiveCampaign
+    );
+  };
+
   renderActionButton() {
     if (this.state.archiveMultiple) {
       const keys = this.state.campaignsToArchive;
@@ -213,7 +298,7 @@ class AdminCampaignList extends React.Component {
         <FloatingActionButton
           {...dataTest("archiveCampaigns")}
           style={theme.components.floatingButton}
-          onTouchTap={() => this.handleClickArchiveButton(keys)}
+          onTouchTap={() => this.handleClickArchiveMultipleButton(keys)}
           disabled={!keys.length}
         >
           <ArchiveIcon />
@@ -239,13 +324,19 @@ class AdminCampaignList extends React.Component {
         {this.state.isLoading ? (
           <LoadingIndicator />
         ) : (
-          <CampaignList
-            campaignsFilter={this.state.campaignsFilter}
-            sortBy={this.state.sortBy}
-            organizationId={this.props.params.organizationId}
-            adminPerms={adminPerms}
+          <CampaignTable
+            data={this.props.data}
+            campaignsToArchive={this.state.campaignsToArchive}
+            campaignsWithChangingStatus={this.state.campaignsWithChangingStatus}
+            onNextPageClick={this.handleNextPageClick}
+            onPreviousPageClick={this.handlePreviousPageClick}
+            onRowSizeChange={this.handleRowSizeChanged}
+            adminPerms={this.props.params.adminPerms}
             selectMultiple={this.state.archiveMultiple}
+            organizationId={this.props.params.organizationId}
             handleChecked={this.handleChecked}
+            archiveCampaign={this.handleArchiveCampaign}
+            unarchiveCampaign={this.handleUnarchiveCampaign}
           />
         )}
 
@@ -262,6 +353,102 @@ AdminCampaignList.propTypes = {
     archiveCampaigns: PropTypes.func
   }),
   router: PropTypes.object
+};
+
+const campaignInfoFragment = `
+  id
+  title
+  isStarted
+  isArchived
+  hasUnassignedContacts
+  hasUnsentInitialMessages
+  description
+  dueBy
+  creator {
+    displayName
+  }
+  ingestMethod {
+    success
+    contactsCount
+  }
+  completionStats {
+    contactsCount
+    assignedCount
+    messagedCount
+  }
+`;
+
+export const getCampaignsQuery = gql`
+  query adminGetCampaigns(
+    $organizationId: String!,
+    $campaignsFilter: CampaignsFilter,
+    $cursor: OffsetLimitCursor,
+    $sortBy: SortCampaignsBy) {
+  organization(id: $organizationId) {
+    id
+    cacheable
+    campaigns(campaignsFilter: $campaignsFilter, cursor: $cursor, sortBy: $sortBy) {
+      ... on CampaignsList {
+        campaigns {
+          ${campaignInfoFragment}
+        }
+      }
+      ... on PaginatedCampaigns {
+        pageInfo {
+          offset
+          limit
+          total
+        }
+        campaigns {
+          ${campaignInfoFragment}
+        }
+      }
+    }
+  }
+}
+`;
+
+const queries = {
+  data: {
+    query: gql`
+      query adminGetCampaigns(
+        $organizationId: String!,
+        $campaignsFilter: CampaignsFilter,
+        $cursor: OffsetLimitCursor,
+        $sortBy: SortCampaignsBy) {
+      organization(id: $organizationId) {
+        id
+        cacheable
+        campaigns(campaignsFilter: $campaignsFilter, cursor: $cursor, sortBy: $sortBy) {
+          ... on CampaignsList{
+            campaigns{
+              ${campaignInfoFragment}
+            }
+          }
+          ... on PaginatedCampaigns{
+              pageInfo {
+                offset
+                limit
+                total
+              }
+              campaigns{
+                ${campaignInfoFragment}
+              }
+            }
+          }
+        }
+      }
+    `,
+    options: ownProps => ({
+      variables: {
+        cursor: { offset: 0, limit: 50 },
+        organizationId: ownProps.params.organizationId,
+        campaignsFilter: INITIAL_FILTER,
+        sortBy: INITIAL_SORT_BY
+      },
+      fetchPolicy: "network-only"
+    })
+  }
 };
 
 const mutations = {
@@ -284,7 +471,15 @@ const mutations = {
       }
     `,
     variables: { ids }
+  }),
+  unarchiveCampaign: ownProps => campaignId => ({
+    mutation: gql`mutation unarchiveCampaign($campaignId: String!) {
+        unarchiveCampaign(id: $campaignId) {
+          ${campaignInfoFragment}
+        }
+      }`,
+    variables: { campaignId }
   })
 };
 
-export default loadData({ mutations })(withRouter(AdminCampaignList));
+export default loadData({ queries, mutations })(withRouter(AdminCampaignList));

@@ -261,7 +261,7 @@ export class AdminCampaignEdit extends React.Component {
 
   handleSubmit = async () => {
     if (!this.state.expandedSection.doNotSaveAfterSubmit) {
-      await this.handleSave();
+      const saveRes = await this.handleSave();
     }
     this.setState(
       {
@@ -278,6 +278,8 @@ export class AdminCampaignEdit extends React.Component {
         this.props.campaignData.refetch();
       }
     );
+    console.log("REFETCHING");
+    return await this.props.campaignData.refetch();
   };
 
   handleSave = async () => {
@@ -312,7 +314,8 @@ export class AdminCampaignEdit extends React.Component {
       if (newCampaign.hasOwnProperty("interactionSteps")) {
         newCampaign.interactionSteps = makeTree(newCampaign.interactionSteps);
       }
-      await this.props.mutations.editCampaign(
+
+      return await this.props.mutations.editCampaign(
         this.props.campaignData.campaign.id,
         newCampaign
       );

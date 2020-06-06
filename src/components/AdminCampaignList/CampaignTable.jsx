@@ -10,6 +10,7 @@ import IconButton from "material-ui/IconButton";
 import theme from "../../styles/theme";
 import Empty from "../Empty";
 import DataTables from "material-ui-datatables";
+import { CircularProgress } from "material-ui";
 
 const inlineStyles = {
   past: {
@@ -23,6 +24,9 @@ const inlineStyles = {
   },
   warnUnsent: {
     color: theme.colors.darkBlue
+  },
+  changing: {
+    color: theme.colors.gray
   },
   campaignInfo: {
     whiteSpace: "nowrap"
@@ -46,7 +50,33 @@ const inlineStyles = {
 };
 
 export class CampaignTable extends React.Component {
+  static propTypes = {
+    adminPerms: PropTypes.bool,
+    selectMultiple: PropTypes.bool,
+    organizationId: PropTypes.string,
+    data: PropTypes.object,
+    handleChecked: PropTypes.func,
+    archiveCampaign: PropTypes.func,
+    unarchiveCampaign: PropTypes.func,
+    onNextPageClick: PropTypes.func,
+    onPreviousPageClick: PropTypes.func,
+    onRowSizeChange: PropTypes.func,
+    campaignsToArchive: PropTypes.array,
+    campaignsWithChangingStatus: PropTypes.array
+  };
+
+  state = {
+    dataTableKey: "initial"
+  };
+
+  statusIsChanging = campaign => {
+    return this.props.campaignsWithChangingStatus.includes(campaign.id);
+  };
+
   renderArchiveIcon(campaign) {
+    if (this.statusIsChanging(campaign)) {
+      return <CircularProgress size={25} />;
+    }
     if (campaign.isArchived) {
       return (
         <IconButton
@@ -118,7 +148,9 @@ export class CampaignTable extends React.Component {
         },
         render: (columnKey, campaign) => {
           let linkStyle = inlineStyles.good;
-          if (campaign.isArchived) {
+          if (this.statusIsChanging(campaign)) {
+            linkStyle = inlineStyles.changing;
+          } else if (campaign.isArchived) {
             linkStyle = inlineStyles.past;
           } else if (!campaign.isStarted || campaign.hasUnassignedContacts) {
             linkStyle = inlineStyles.warn;
@@ -204,8 +236,8 @@ export class CampaignTable extends React.Component {
         render: (columnKey, row) =>
           organization.cacheable > 1 &&
           row.completionStats.messagedCount !== null
-            ? (row.completionStats.contactsCount -
-                row.completionStats.messagedCount: "")
+            ? row.completionStats.contactsCount -
+                row.completionStats.messagedCount || ""
             : !row.isStarted
             ? "Not started"
             : row.hasUnsentInitialMessages
@@ -215,6 +247,32 @@ export class CampaignTable extends React.Component {
       ...extraRows
     ];
   }
+
+  getSelectedRowIndexes = () => {
+    const campaignIds = this.props.data.organization.campaigns.campaigns.map(
+      c => c.id
+    );
+    const indexes = this.props.campaignsToArchive.map(campaignId =>
+      campaignIds.indexOf(campaignId)
+    );
+    if (indexes.includes(-1)) {
+      // this is a programming error unless we decide it's an experience we want to support
+      console.warn(
+        "Some campaigns to archive are not visible in the campaign list"
+      );
+      return indexes.filter(idx => idx === -1);
+    }
+    return indexes;
+  };
+
+  clearCampaignSelection = () => {
+    this.props.handleChecked([]);
+    // Terrible hack around buggy DataTables: we have to force the component
+    // to remount if we want clear the "select all" status
+    this.setState({
+      dataTableKey: new Date().getTime()
+    });
+  };
 
   render() {
     const { campaigns, pageInfo } = this.props.data.organization.campaigns;
@@ -226,25 +284,43 @@ export class CampaignTable extends React.Component {
     ) : (
       <div style={{ position: "relative" }}>
         <DataTables
+          key={this.state.dataTableKey}
           data={campaigns}
           columns={this.prepareTableColumns(this.props.data.organization)}
           multiSelectable={this.props.selectMultiple}
-          selectable={true}
+          selectable={this.props.selectMultiple}
           enableSelectAll={true}
           showCheckboxes={this.props.selectMultiple}
-          onRowSelection={selectedRowIndexes =>
-            this.props.handleChecked({
-              campaignIds: selectedRowIndexes.map(i => campaigns[i].id)
-            })
-          }
+          selectedRows={this.getSelectedRowIndexes()}
+          allRowsSelected={false}
+          onRowSelection={selectedRowIndexes => {
+            let ids;
+            if (selectedRowIndexes === "all") {
+              ids = campaigns.map(c => c.id);
+            } else if (selectedRowIndexes === "none") {
+              ids = [];
+            } else {
+              ids = selectedRowIndexes.map(i => campaigns[i].id);
+            }
+            this.props.handleChecked(ids);
+          }}
           page={displayPage}
           rowSize={limit}
           count={total}
           footerToolbarStyle={inlineStyles.tableMovePaginationOnTop}
           tableWrapperStyle={inlineStyles.tableSpaceForPaginationOnTop}
-          onNextPageClick={this.props.onNextPageClick}
-          onPreviousPageClick={this.props.onPreviousPageClick}
-          onRowSizeChange={this.props.onRowSizeChange}
+          onNextPageClick={() => {
+            this.clearCampaignSelection();
+            this.props.onNextPageClick();
+          }}
+          onPreviousPageClick={() => {
+            this.clearCampaignSelection();
+            this.props.onPreviousPageClick();
+          }}
+          onRowSizeChange={(index, value) => {
+            this.clearCampaignSelection();
+            this.props.onRowSizeChange(index, value);
+          }}
           onSortOrderChange={(key, direction) => {
             campaigns.sort(this.sortFunc(key));
             if (direction === "desc") {
@@ -257,18 +333,5 @@ export class CampaignTable extends React.Component {
     );
   }
 }
-
-CampaignTable.propTypes = {
-  adminPerms: PropTypes.bool,
-  selectMultiple: PropTypes.bool,
-  organizationId: PropTypes.string,
-  data: PropTypes.object,
-  handleChecked: PropTypes.func,
-  archiveCampaign: PropTypes.func,
-  unarchiveCampaign: PropTypes.func,
-  onNextPageClick: PropTypes.func,
-  onPreviousPageClick: PropTypes.func,
-  onRowSizeChange: PropTypes.func
-};
 
 export default CampaignTable;
