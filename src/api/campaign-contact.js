@@ -4,6 +4,7 @@ export const schema = `
     isOptedOut: Boolean
     validTimezone: Boolean
     includePastDue: Boolean
+    tags: [String]
   }
 
   type Timezone {

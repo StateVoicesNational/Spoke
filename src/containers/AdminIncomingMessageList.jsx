@@ -309,8 +309,8 @@ export class AdminIncomingMessageList extends Component {
     );
 
     const contactsFilter = {
-      ...this.state.contactsFilter
-      // tags: newTagsFilter || undefined
+      ...this.state.contactsFilter,
+      tags: newTagsFilter || undefined
     };
 
     this.setState({
