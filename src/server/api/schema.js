@@ -56,7 +56,7 @@ import { resolvers as organizationResolvers } from "./organization";
 import { GraphQLPhone } from "./phone";
 import { resolvers as questionResolvers } from "./question";
 import { resolvers as questionResponseResolvers } from "./question-response";
-import { getTags, resolvers as tagResolvers } from "./tag";
+import { resolvers as tagResolvers } from "./tag";
 import { getUsers, resolvers as userResolvers } from "./user";
 import { change } from "../local-auth-helpers";
 import { symmetricEncrypt } from "./lib/crypto";
@@ -68,6 +68,7 @@ import {
   findNewCampaignContact,
   joinOrganization,
   sendMessage,
+  updateContactTags,
   updateQuestionResponses
 } from "./mutations";
 
@@ -1042,6 +1043,7 @@ const rootMutations = {
 
       return contact;
     },
+    updateContactTags,
     updateQuestionResponses,
     reassignCampaignContacts: async (
       _,
@@ -1295,10 +1297,6 @@ const rootResolvers = {
         filterString,
         filterBy
       );
-    },
-    tags: async (_, { organizationId }, { user }) => {
-      await accessRequired(user, organizationId, "SUPERVOLUNTEER");
-      return getTags(organizationId);
     }
   }
 };

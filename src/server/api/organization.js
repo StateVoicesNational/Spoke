@@ -1,6 +1,7 @@
 import { mapFieldsToModel } from "./lib/utils";
 import { getConfig } from "./lib/config";
 import { r, Organization, cacheableData } from "../models";
+import { getTags } from "./tag";
 import { accessRequired } from "./errors";
 import { getCampaigns } from "./campaign";
 import { buildUsersQuery } from "./user";
@@ -37,6 +38,16 @@ export const resolvers = {
     people: async (organization, { role, campaignId, sortBy }, { user }) => {
       await accessRequired(user, organization.id, "SUPERVOLUNTEER");
       return buildUsersQuery(organization.id, role, { campaignId }, sortBy);
+    },
+    tags: async (organization, _, { user }) => {
+      let group = null;
+      try {
+        await accessRequired(user, organization.id, "SUPERVOLUNTEER");
+      } catch (err) {
+        await accessRequired(user, organization.id, "TEXTER");
+        group = "texter-tags";
+      }
+      return getTags(organization.id, group);
     },
     availableActions: async (organization, _, { user, loaders }) => {
       await accessRequired(user, organization.id, "SUPERVOLUNTEER");

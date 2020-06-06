@@ -8,7 +8,8 @@ export const schema = `
     organizationId: String
   }
 
-  type TagsList {
-    tags: [Tag]
+  type ContactTag {
+    id: ID
+    value: String
   }
 `;

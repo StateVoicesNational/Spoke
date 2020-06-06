@@ -118,7 +118,7 @@ export class Tags extends React.Component {
   }
 
   render() {
-    const tags = this.props.data.tags.tags.sort((a, b) => a.id - b.id);
+    const tags = this.props.data.organization.tags.sort((a, b) => a.id - b.id);
     const {
       openTagDialog,
       dialogSubmitHandler,
@@ -128,7 +128,8 @@ export class Tags extends React.Component {
     } = this.state;
     const formSchema = yup.object({
       name: yup.string().required(),
-      description: yup.string().required()
+      description: yup.string().required(),
+      group: yup.string().nullable()
     });
     const dialogTag = tagId ? tags.find(t => t.id === tagId) : {};
     return (
@@ -176,6 +177,10 @@ export class Tags extends React.Component {
             <div className={css(styles.fields)}>
               <Form.Field label="Name" name="name" />
               <Form.Field label="Description" name="description" />
+              <Form.Field
+                label="Group ('texter-tags' for texters)"
+                name="group"
+              />
             </div>
             <div className={css(styles.submit)}>
               <Form.Button type="submit" label={dialogButtonLabel} />
@@ -197,7 +202,7 @@ const queries = {
   data: {
     query: gql`
       query getTags($organizationId: String!) {
-        tags(organizationId: $organizationId) {
+        organization(id: $organizationId) {
           tags {
             id
             name
