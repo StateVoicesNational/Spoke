@@ -64,7 +64,7 @@ export class AdminIncomingMessageList extends Component {
       newTagsFilter = [];
     } else if (!tagsFilter.ignoreTags) {
       newTagsFilter = Object.values(tagsFilter.selectedTags).map(
-        tagFilter => tagFilter.value
+        tagFilter => tagFilter.id
       );
     }
     return newTagsFilter;
