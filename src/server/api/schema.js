@@ -1367,6 +1367,20 @@ const rootResolvers = {
     tags: async (_, { organizationId }, { user }) => {
       await accessRequired(user, organizationId, "SUPERVOLUNTEER");
       return getTags(organizationId);
+    },
+    user: async (_, { organizationId, userId }, { user }) => {
+      if (user.id !== userId) {
+        // User can view themselves
+        await accessRequired(user, organizationId, "ADMIN", true);
+      }
+      return r
+        .knex("user")
+        .join("user_organization", "user.id", "user_organization.user_id")
+        .where({
+          "user_organization.organization_id": organizationId,
+          "user.id": userId
+        })
+        .first();
     }
   }
 };
