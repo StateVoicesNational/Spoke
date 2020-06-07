@@ -104,7 +104,8 @@ const getSectionParagraphs = (sections, heading) =>
   (
     sections.find(
       section =>
-        section.text && section.text.toLowerCase() === heading.toLowerCase()
+        section.text &&
+        section.text.toLowerCase().match(new RegExp(heading.toLowerCase()))
     ) || {}
   ).paragraphs;
 
