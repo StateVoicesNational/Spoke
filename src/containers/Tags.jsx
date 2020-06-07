@@ -203,13 +203,13 @@ const queries = {
     query: gql`
       query getTags($organizationId: String!) {
         organization(id: $organizationId) {
+          id
           tags {
             id
             name
             group
             description
             isDeleted
-            organizationId
           }
         }
       }
