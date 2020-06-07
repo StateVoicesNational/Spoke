@@ -30,19 +30,6 @@ class JoinTeam extends React.Component {
       });
     }
 
-    if (this.props.params.campaignId) {
-      try {
-        campaign = await this.props.mutations.assignUserToCampaign(
-          this.props.location.search
-        );
-      } catch (ex) {
-        this.setState({
-          errors:
-            "Something went wrong trying to join this campaign. Please contact your administrator."
-        });
-      }
-    }
-
     if (organization) {
       this.props.router.push(`/app/${organization.data.joinOrganization.id}`);
     }
@@ -71,29 +58,10 @@ const mutations = {
     mutation: gql`
       mutation joinOrganization(
         $organizationUuid: String!
-        $queryParams: String
-      ) {
-        joinOrganization(
-          organizationUuid: $organizationUuid
-          queryParams: $queryParams
-        ) {
-          id
-        }
-      }
-    `,
-    variables: {
-      organizationUuid: ownProps.params.organizationUuid,
-      queryParams: queryParams
-    }
-  }),
-  assignUserToCampaign: ownProps => queryParams => ({
-    mutation: gql`
-      mutation assignUserToCampaign(
-        $organizationUuid: String!
         $campaignId: String!
         $queryParams: String
       ) {
-        assignUserToCampaign(
+        joinOrganization(
           organizationUuid: $organizationUuid
           campaignId: $campaignId
           queryParams: $queryParams
@@ -103,8 +71,8 @@ const mutations = {
       }
     `,
     variables: {
-      campaignId: ownProps.params.campaignId,
       organizationUuid: ownProps.params.organizationUuid,
+      campaignId: ownProps.params.campaignId,
       queryParams: queryParams
     }
   })

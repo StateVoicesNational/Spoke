@@ -44,7 +44,9 @@ export const schema = gql`
     textingHoursEnforced: Boolean
     textingHoursStart: Int
     textingHoursEnd: Int
+    texterUIConfig: TexterUIConfig
     cacheable: Int
+    tags: [Tag]
     twilioAccountSid: String
     twilioAuthToken: String
     twilioMessageServiceSid: String

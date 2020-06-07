@@ -7,6 +7,7 @@ import {
   getMethodChoiceData
 } from "../../integrations/contact-loaders";
 import twilio from "./lib/twilio";
+import { getConfig } from "./lib/config";
 
 const title = 'lower("campaign"."title")';
 
@@ -245,6 +246,7 @@ export const resolvers = {
         "id",
         "title",
         "description",
+        "batchSize",
         "isStarted",
         "isArchived",
         "useDynamicAssignment",
@@ -265,6 +267,15 @@ export const resolvers = {
       campaign.due_by instanceof Date || !campaign.due_by
         ? campaign.due_by || null
         : new Date(campaign.due_by),
+    joinToken: async (campaign, _, { user }) => {
+      await accessRequired(
+        user,
+        campaign.organization_id,
+        "SUPERVOLUNTEER",
+        true
+      );
+      return campaign.join_token;
+    },
     organization: async (campaign, _, { loaders }) =>
       campaign.organization ||
       loaders.organization.load(campaign.organization_id),
@@ -386,11 +397,6 @@ export const resolvers = {
     },
     interactionSteps: async (campaign, _, { user }) => {
       await accessRequired(user, campaign.organization_id, "TEXTER", true);
-      console.log(
-        "campaign.interactionSteps",
-        campaign.id,
-        campaign.interactionSteps
-      );
       return (
         campaign.interactionSteps ||
         cacheableData.campaign.dbInteractionSteps(campaign.id)
@@ -402,6 +408,25 @@ export const resolvers = {
         userId: userId || "",
         campaignId: campaign.id
       });
+    },
+    texterUIConfig: async (campaign, _, { user, loaders }) => {
+      await accessRequired(user, campaign.organization_id, "TEXTER", true);
+      const organization = await loaders.organization.load(
+        campaign.organization_id
+      );
+
+      let options =
+        getConfig("TEXTER_UI_SETTINGS", campaign, { onlyLocal: true }) || "";
+      if (!options) {
+        // fallback on organization defaults
+        options = getConfig("TEXTER_UI_SETTINGS", organization) || "";
+      }
+      const sideboxes = getConfig("TEXTER_SIDEBOXES", organization);
+      const sideboxChoices = (sideboxes && sideboxes.split(",")) || [];
+      return {
+        options,
+        sideboxChoices
+      };
     },
     contacts: async (campaign, _, { user }) => {
       await accessRequired(user, campaign.organization_id, "ADMIN", true);

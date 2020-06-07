@@ -1,6 +1,7 @@
 import { mapFieldsToModel } from "./lib/utils";
 import { getConfig } from "./lib/config";
 import { r, Organization, cacheableData } from "../models";
+import { getTags } from "./tag";
 import { accessRequired } from "./errors";
 import { getCampaigns } from "./campaign";
 import { buildUsersQuery } from "./user";
@@ -38,6 +39,16 @@ export const resolvers = {
       await accessRequired(user, organization.id, "SUPERVOLUNTEER");
       return buildUsersQuery(organization.id, role, { campaignId }, sortBy);
     },
+    tags: async (organization, _, { user }) => {
+      let group = null;
+      try {
+        await accessRequired(user, organization.id, "SUPERVOLUNTEER");
+      } catch (err) {
+        await accessRequired(user, organization.id, "TEXTER");
+        group = "texter-tags";
+      }
+      return getTags(organization.id, group);
+    },
     availableActions: async (organization, _, { user, loaders }) => {
       await accessRequired(user, organization.id, "SUPERVOLUNTEER");
       const availableHandlers = await getAvailableActionHandlers(
@@ -69,6 +80,16 @@ export const resolvers = {
       "I'm opting you out of texts immediately. Have a great day.",
     textingHoursStart: organization => organization.texting_hours_start,
     textingHoursEnd: organization => organization.texting_hours_end,
+    texterUIConfig: async (organization, _, { user }) => {
+      await accessRequired(user, organization.id, "OWNER");
+      const options = getConfig("TEXTER_UI_SETTINGS", organization);
+      // note this is global, since we need the set that's globally enabled/allowed to choose from
+      const sideboxChoices = (getConfig("TEXTER_SIDEBOXES") || "").split(",");
+      return {
+        options,
+        sideboxChoices
+      };
+    },
     cacheable: (org, _, { user }) =>
       //quanery logic.  levels are 0, 1, 2
       r.redis ? (getConfig("REDIS_CONTACT_CACHE", org) ? 2 : 1) : 0,

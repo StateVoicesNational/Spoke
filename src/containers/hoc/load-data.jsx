@@ -7,6 +7,7 @@ import { Card, CardHeader, CardText } from "material-ui/Card";
 // https://www.apollographql.com/docs/react/v2.5/recipes/recompose/
 
 import LoadingIndicator from "../../components/LoadingIndicator";
+import { CardActions, RaisedButton } from "material-ui";
 
 /**
  * This HOC takes a list of GraphQL query names and adds a loading prop that is true if any of the
@@ -74,6 +75,9 @@ const PrettyErrors = ({ errors }) => (
         ))}
       </ul>
     </CardText>
+    <CardActions>
+      <RaisedButton label="Reload" onClick={() => window.location.reload()} />
+    </CardActions>
   </Card>
 );
 

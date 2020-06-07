@@ -19,8 +19,9 @@ import yup from "yup";
 import theme from "../../styles/theme";
 import Form from "react-formal";
 import Popover from "material-ui/Popover";
+import { messageListStyles, inlineStyles, flexStyles } from "./StyleControls";
 
-const bgGrey = "rgb(214, 215, 223)";
+import sideboxes from "../../integrations/texter-sideboxes/components";
 
 import {
   getChildren,
@@ -32,239 +33,6 @@ import {
 } from "../../lib";
 
 import { dataTest } from "../../lib/attributes";
-
-const messageListStyles = {
-  // passesd directly to <MessageList>
-  messageList: {
-    flex: "2 4 auto",
-    overflow: "hidden",
-    overflow: "-moz-scrollbars-vertical",
-    maxWidth: "574px"
-  },
-  messageSent: {
-    textAlign: "right",
-    marginLeft: "20%",
-    marginRight: "10px",
-    backgroundColor: "white",
-    borderRadius: "16px",
-    marginBottom: "10px",
-    fontSize: "95%"
-  },
-  messageReceived: {
-    marginRight: "20%",
-    marginLeft: "10px",
-    color: "white",
-    backgroundColor: "hsla(206, 99%, 31%, 0.74)", //#01579B",
-    borderRadius: "16px",
-    //fontWeight: "600",
-    fontSize: "110%",
-    lineHeight: "120%",
-    marginBottom: "10px"
-  }
-};
-
-const inlineStyles = {
-  inlineBlock: {
-    display: "inline-block"
-  },
-  exitTexterIconButton: {
-    float: "left",
-    padding: "3px",
-    height: "56px",
-    zIndex: 100,
-    top: 0,
-    left: "-12px"
-  },
-  flatButtonLabel: {
-    textTransform: "none",
-    fontWeight: "bold"
-  }
-};
-
-const flexStyles = StyleSheet.create({
-  topContainer: {
-    margin: 0,
-    position: "absolute",
-    top: 0,
-    bottom: 0,
-    left: 0,
-    right: 0,
-    display: "flex",
-    flexDirection: "column",
-    height: "100%",
-    backgroundColor: bgGrey
-  },
-  popover: {
-    width: "85%",
-    height: "85%",
-    "@media(min-height: 800px)": {
-      // if it's too tall, the current question options are too far away
-      height: "50%"
-    }
-  },
-  popoverLink: {
-    float: "right",
-    width: "4em",
-    marginRight: "2em",
-    fontWeight: "normal",
-    fontSize: "80%"
-  },
-  popoverLinkColor: {
-    color: "rgb(81, 82, 89)"
-  },
-  sectionHeaderToolbar: {
-    flex: "0 0 auto"
-  },
-  /// * Section Scrolling Message Thread
-  sectionMessageThread: {
-    flex: "1 2 auto",
-    overflowY: "scroll",
-    overflow: "-moz-scrollbars-vertical",
-    overflowX: "hidden",
-    backgroundColor: "#f0f0f0"
-  },
-  /// * Section OptOut Dialog
-  sectionOptOutDialog: {
-    padding: "4px 10px 9px 10px",
-    zIndex: 2000,
-    backgroundColor: "white",
-    "@media (hover: hover) and (pointer: fine)": {
-      // for touchpads and phones, the edge of the tablet is easier
-      // vs for desktops, we want to maximize how far the mouse needs to travel
-      maxWidth: "554px"
-    }
-  },
-  subSectionOptOutDialogActions: {
-    marginTop: 20,
-    display: "flex",
-    flexDirection: "row",
-    justifyContent: "flex-end"
-  },
-  /// * Section Texting Input Field
-  sectionMessageField: {
-    // messageField
-    flex: "1 0 20px",
-    padding: "0px 4px",
-    marginBottom: "8px",
-    backgroundColor: "white"
-  },
-  subSectionMessageFieldTextField: {
-    "@media(max-width: 350px)": {
-      overflowY: "scroll !important"
-    }
-  },
-  /// * Section Reply/Exit Buttons
-  sectionButtons: {
-    // TODO: maybe make this contingent on whether there are answer buttons
-    "@media(max-height: 600px)": {
-      flexBasis: "96px" // TODO
-    },
-    "@media(min-height: 600px)": {
-      flexBasis: "144px" // TODO
-    },
-    flexGrow: "0",
-    flexShrink: "0",
-    // flexBasis: ${130px|190px}", // stretches and shrinks more quickly than message
-    flexDirection: "column",
-    display: "flex",
-    // flexWrap: "wrap",
-    overflow: "hidden",
-    position: "relative",
-    backgroundColor: bgGrey
-  },
-  subButtonsAnswerButtons: {
-    flex: "1 1 auto", // keeps bottom buttons in place
-    // height:105: webkit needs constraint on height sometimes
-    //   during the inflection point of showing the shortcut-buttons
-    //   without the height, the exit buttons get pushed down oddly
-    height: "15px", //TODO
-    // internal:
-    margin: "9px 0px 0px 9px",
-    width: "100%"
-    // similar to 572 below, but give room for other shortcut-buttons
-  },
-  subSubButtonsAnswerButtonsCurrentQuestion: {
-    marginBottom: "12px",
-    //flex: "0 0 auto",
-    width: "100%",
-    // for mobile:
-    whiteSpace: "nowrap",
-    overflow: "hidden"
-  },
-  subSubAnswerButtonsColumns: {
-    height: "0px",
-    "@media(min-height: 600px)": {
-      height: "40px" // TODO
-    },
-    display: "inline-block",
-    //flex: "1 1 50%",
-    overflow: "hidden",
-    position: "relative"
-  },
-  subButtonsExitButtons: {
-    // next/prev/skip/optout
-    // width: "100%", default is better on mobile
-    height: "40px",
-    margin: "9px",
-    // default works better for mobile right margin
-    // flex: "0 0 40px",
-    // internal:
-    display: "flex",
-    flexDirection: "column",
-    flexWrap: "wrap",
-    alignContent: "space-between",
-    // to 'win' against absoslute positioned content above it:
-    backgroundColor: bgGrey,
-    zIndex: "10",
-    "@media (hover: hover) and (pointer: fine)": {
-      // for touchpads and phones, the edge of the tablet is easier
-      // vs for desktops, we want to maximize how far the mouse needs to travel
-      maxWidth: "554px"
-    }
-  },
-  /// * Section Send Button
-  sectionSend: {
-    //sendButtonWrapper
-    flex: `0 0 auto`,
-    height: "36px",
-    display: "flex",
-    flexDirection: "column",
-    flexWrap: "wrap",
-    alignContent: "space-between",
-    padding: "9px",
-    "@media (hover: hover) and (pointer: fine)": {
-      // for touchpads and phones, the edge of the tablet is easier
-      // vs for desktops, we want to maximize how far the mouse needs to travel
-      maxWidth: "554px"
-    }
-  },
-  subSectionSendButton: {
-    flex: "1 1 auto",
-    width: "70%",
-    height: "100%",
-    //borderRadius: "0px",
-    color: "white"
-  },
-  flatButton: {
-    height: "40px",
-    border: "1px solid #949494",
-    // FlatButton property, setting here, overrides hover
-    // backgroundColor: "white",
-    borderRadius: "0",
-    boxShadow: "none",
-    maxWidth: "300px",
-    "@media(max-width: 450px)": {
-      // mobile crunch
-      minWidth: "auto"
-    }
-  },
-  flatButtonLabelMobile: {
-    "@media(max-width: 327px)": {
-      // mobile crunch
-      display: "none"
-    }
-  }
-});
 
 export class AssignmentTexterContactControls extends React.Component {
   constructor(props) {
@@ -285,6 +53,9 @@ export class AssignmentTexterContactControls extends React.Component {
       optOutMessageText: props.campaign.organization.optOutMessage,
       responsePopoverOpen: false,
       answerPopoverOpen: false,
+      sideboxCloses: {},
+      sideboxOpens: {},
+      enabledSideboxes: this.getSideboxes(this.props),
       messageText: this.getStartingMessageText(),
       cannedResponseScript: null,
       optOutDialogOpen: false,
@@ -306,15 +77,31 @@ export class AssignmentTexterContactControls extends React.Component {
     }, 0);
 
     // note: key*down* is necessary to stop propagation of keyup for the textarea element
-    document.body.addEventListener("keydown", this.onEnter);
+    document.body.addEventListener("keydown", this.onKeyDown);
     window.addEventListener("resize", this.onResize);
     window.addEventListener("orientationchange", this.onResize);
   }
 
   componentWillUnmount() {
-    document.body.removeEventListener("keydown", this.onEnter);
+    document.body.removeEventListener("keydown", this.onKeyDown);
     window.removeEventListener("resize", this.onResize);
     window.removeEventListener("orientationchange", this.onResize);
+  }
+
+  componentWillUpdate(nextProps, nextState) {
+    // we refresh sideboxes here because we need to compare previous state
+    console.log("componentWillUpdate", nextState);
+    nextState.enabledSideboxes = this.getSideboxes(nextProps);
+    const newPopups = [];
+    nextState.enabledSideboxes.popups.forEach((sb, i) => {
+      if (this.state.enabledSideboxes.popups.indexOf(sb) === -1) {
+        newPopups.push(sb);
+      }
+    });
+    // newPopups increment open
+    newPopups.forEach(sb => {
+      nextState.sideboxOpens[sb] = (nextState.sideboxOpens[sb] || 0) + 1;
+    });
   }
 
   getStartingMessageText() {
@@ -326,18 +113,56 @@ export class AssignmentTexterContactControls extends React.Component {
       : "";
   }
 
+  getSideboxes(props) {
+    const popups = [];
+    console.log("getSideboxes", sideboxes);
+    // TODO: need to filter texterUIConfig.options (and json parse) for which ones are marked as enabled
+    // and then pass options data into the component
+    const enabledSideboxes = props.campaign.texterUIConfig.sideboxChoices
+      // TODO: filter for enabled in the campaign
+      .filter(sb => {
+        const res = sideboxes[sb].showSidebox(props);
+        if (res === "popup") {
+          popups.push(sb);
+        }
+        return res;
+      })
+      .map(sb => ({
+        name: sb,
+        Component: sideboxes[sb].TexterSidebox
+      }));
+    enabledSideboxes.popups = popups;
+    return enabledSideboxes;
+  }
+
   onResize = evt => {
     // trigger re-render to determine whether there's space for shortcuts
-    this.setState({
-      currentShortcutSpace: this.refs.answerButtons.offsetHeight
-    });
+    if (this.refs.answerButtons) {
+      this.setState({
+        currentShortcutSpace: this.refs.answerButtons.offsetHeight
+      });
+    }
   };
 
-  onEnter = evt => {
-    // FUTURE: consider disabling except in needsMessage
-    if (evt.keyCode === 13) {
+  onKeyDown = evt => {
+    if (evt.key === "Escape") {
+      this.setState({
+        optOutDialogOpen: false,
+        responsePopoverOpen: false,
+        answerPopoverOpen: false
+      });
+    }
+
+    // pressing the Enter key (or ctrl+Enter) submits
+    // This is limited for better accessibility:
+    // Enter is needed for 'click'ing buttons with the keyboard
+    if (
+      evt.key === "Enter" &&
+      (this.props.messageStatusFilter === "needsMessage" ||
+        // need to use ctrlKey in non-first texting context for accessibility
+        evt.ctrlKey)
+    ) {
       evt.preventDefault();
-      // pressing the Enter key submits
       if (this.state.optOutDialogOpen) {
         const { optOutMessageText } = this.state;
         this.props.onOptOut({ optOutMessageText });
@@ -385,13 +210,13 @@ export class AssignmentTexterContactControls extends React.Component {
     // delay to avoid accidental tap pass-through with focusing on
     // the text field -- this is annoying on mobile where the keyboard
     // pops up, inadvertantly
+    const update = { optOutDialogOpen: true };
+    if (this.refs.answerButtons) {
+      // store this, because on-close, we lose this
+      update.currentShortcutSpace = this.refs.answerButtons.offsetHeight;
+    }
     const self = this;
-    setTimeout(() =>
-               self.setState({
-                 optOutDialogOpen: true,
-                 // store this, because on-close, we lose this
-                 currentShortcutSpace: self.refs.answerButtons.offsetHeight
-               }), 200);
+    setTimeout(() => self.setState(update), 200);
   };
 
   handleCloseDialog = () => {
@@ -473,10 +298,50 @@ export class AssignmentTexterContactControls extends React.Component {
     // the text field -- this is annoying on mobile where the keyboard
     // pops up, inadvertantly
     const self = this;
-    setTimeout(() =>
-               self.setState({
-                 responsePopoverOpen: false
-               }), 200);
+    setTimeout(
+      () =>
+        self.setState({
+          responsePopoverOpen: false
+        }),
+      200
+    );
+  };
+
+  handleClickSideboxDialog = () => {
+    const { enabledSideboxes } = this.state;
+    console.log("handleClickSideboxDialog", enabledSideboxes);
+    const sideboxOpen = this.getSideboxDialogOpen(enabledSideboxes);
+    if (sideboxOpen) {
+      // Close the dialog
+      const sideboxCloses = { ...this.state.sideboxCloses };
+      // since we are closing, we need all opens to be reflected in sideboxCloses
+      enabledSideboxes.popups.forEach(popup => {
+        sideboxCloses[popup] = this.state.sideboxOpens[popup] || 0;
+      });
+      sideboxCloses.MANUAL = this.state.sideboxOpens.MANUAL || 0;
+      this.setState({ sideboxCloses });
+    } else {
+      // Open the dialog
+      const sideboxOpens = { ...this.state.sideboxOpens };
+      sideboxOpens.MANUAL = (this.state.sideboxCloses.MANUAL || 0) + 1;
+      this.setState({ sideboxOpens });
+    }
+  };
+
+  getSideboxDialogOpen = enabledSideboxes => {
+    // needs to be mobile-small + not dismissed
+    const { sideboxCloses, sideboxOpens } = this.state;
+    const documentWidth = document.documentElement.clientWidth;
+    if (documentWidth > 575) {
+      // also in Toolbar.jsx::navigationSidebox
+      return false;
+    }
+    if (sideboxOpens.MANUAL > (sideboxCloses.MANUAL || 0)) {
+      return true;
+    }
+    return enabledSideboxes.popups.some(
+      popup => (sideboxOpens[popup] || 0) > (sideboxCloses[popup] || 0)
+    );
   };
 
   renderSurveySection() {
@@ -548,7 +413,7 @@ export class AssignmentTexterContactControls extends React.Component {
       // todo: add flex: style.
       button = (
         <FlatButton
-          onTouchTap={() => this.props.onEditStatus("needsResponse")}
+          onClick={() => this.props.onEditStatus("needsResponse")}
           label="Reopen"
           className={css(flexStyles.flatButton)}
           style={{ flex: "1 1 auto" }}
@@ -559,7 +424,7 @@ export class AssignmentTexterContactControls extends React.Component {
     } else {
       button = (
         <FlatButton
-          onTouchTap={() => this.props.onEditStatus("closed", true)}
+          onClick={() => this.props.onEditStatus("closed", true)}
           label="Skip"
           className={css(flexStyles.flatButton)}
           style={{
@@ -616,7 +481,7 @@ export class AssignmentTexterContactControls extends React.Component {
                       : "white"
                 }}
                 label="Standard Message"
-                onTouchTap={() => {
+                onClick={() => {
                   this.setState({
                     optOutMessageText: this.props.campaign.organization
                       .optOutMessage
@@ -634,23 +499,19 @@ export class AssignmentTexterContactControls extends React.Component {
                     this.state.optOutMessageText === "" ? "#727272" : "white"
                 }}
                 label="No Message"
-                onTouchTap={() => {
+                onClick={() => {
                   this.setState({ optOutMessageText: "" });
                 }}
               />
             </div>
-            <Form.Field
-              name="optOutMessageText"
-              fullWidth
-              multiLine
-            />
+            <Form.Field name="optOutMessageText" fullWidth multiLine />
             <div className={css(flexStyles.subSectionOptOutDialogActions)}>
               <FlatButton
                 className={css(flexStyles.flatButton)}
                 labelStyle={inlineStyles.flatButtonLabel}
                 style={inlineStyles.inlineBlock}
                 label="Cancel"
-                onTouchTap={this.handleCloseDialog}
+                onClick={this.handleCloseDialog}
               />
               <FlatButton
                 type="submit"
@@ -810,7 +671,7 @@ export class AssignmentTexterContactControls extends React.Component {
           <FlatButton
             key={`shortcutStep_${opt.answer.value}`}
             label={opt.label}
-            onTouchTap={evt => {
+            onClick={evt => {
               this.handleQuestionResponseChange({
                 interactionStep: currentInteractionStep,
                 questionResponseValue: isCurrentAnswer(opt)
@@ -836,7 +697,7 @@ export class AssignmentTexterContactControls extends React.Component {
           <FlatButton
             key={`shortcutScript_${script.id}`}
             label={script.title.replace(/^(\+|\-)/, "")}
-            onTouchTap={evt => {
+            onClick={evt => {
               this.handleCannedResponseChange(script);
             }}
             className={css(flexStyles.flatButton)}
@@ -869,7 +730,8 @@ export class AssignmentTexterContactControls extends React.Component {
               All Responses <DownIcon style={{ verticalAlign: "middle" }} />
             </span>
           }
-          onTouchTap={!disabled ? this.handleOpenAnswerPopover : noAction => {}}
+          role="button"
+          onClick={!disabled ? this.handleOpenAnswerPopover : noAction => {}}
           className={css(flexStyles.flatButton)}
           labelStyle={inlineStyles.flatButtonLabel}
           backgroundColor={
@@ -881,7 +743,7 @@ export class AssignmentTexterContactControls extends React.Component {
         <FlatButton
           {...dataTest("optOut")}
           label="Opt-out"
-          onTouchTap={this.handleOpenDialog}
+          onClick={this.handleOpenDialog}
           className={css(flexStyles.flatButton)}
           labelStyle={{ ...inlineStyles.flatButtonLabel, color: "#DE1A1A" }}
           backgroundColor="white"
@@ -895,7 +757,7 @@ export class AssignmentTexterContactControls extends React.Component {
       <div className={css(flexStyles.sectionSend)}>
         <FlatButton
           {...dataTest("send")}
-          onTouchTap={this.handleClickSendMessageButton}
+          onClick={this.handleClickSendMessageButton}
           disabled={this.props.disabled}
           label={<span>&crarr; Send</span>}
           className={`${css(flexStyles.flatButton)} ${css(
@@ -957,7 +819,7 @@ export class AssignmentTexterContactControls extends React.Component {
     ];
   }
 
-  renderToolbar() {
+  renderToolbar(enabledSideboxes) {
     return (
       <div key="toolbar" className={css(flexStyles.sectionHeaderToolbar)}>
         <Toolbar
@@ -965,51 +827,98 @@ export class AssignmentTexterContactControls extends React.Component {
           campaignContact={this.props.contact}
           navigationToolbarChildren={this.props.navigationToolbarChildren}
           onExit={this.props.onExitTexter}
+          onSideboxButtonClick={
+            enabledSideboxes.length > 0 ? this.handleClickSideboxDialog : null
+          }
         />
       </div>
     );
   }
 
-  renderFirstMessage() {
+  renderSidebox(enabledSideboxes) {
+    if (!enabledSideboxes || !enabledSideboxes.length) {
+      return null;
+    }
+    const sideboxList = enabledSideboxes.map(({ name, Component }) => (
+      <Component
+        key={name}
+        {...this.props}
+        updateState={state => {
+          // allows a component to preserve state across dialog open/close
+          this.setState({ [`sideboxState${name}`]: state });
+        }}
+        persistedState={this.state[`sideboxState${name}`]}
+      />
+    ));
+    const sideboxOpen = this.getSideboxDialogOpen(enabledSideboxes);
+    if (sideboxOpen) {
+      return (
+        <Popover
+          style={inlineStyles.popoverSidebox}
+          className={css(flexStyles.popover)}
+          open={sideboxOpen}
+          anchorEl={this.refs.messageBox}
+          anchorOrigin={{ horizontal: "middle", vertical: "top" }}
+          targetOrigin={{ horizontal: "middle", vertical: "top" }}
+          onRequestClose={this.handleClickSideboxDialog}
+        >
+          {sideboxList}
+        </Popover>
+      );
+    }
+    // TODO: max height and scroll-y
+    return <div className={css(flexStyles.sectionSideBox)}>{sideboxList}</div>;
+  }
+
+  renderMessageBox(internalComponent, enabledSideboxes) {
+    return (
+      <div ref="messageBox" className={css(flexStyles.superSectionMessageBox)}>
+        <div
+          {...dataTest("messageList")}
+          key="messageScrollContainer"
+          ref="messageScrollContainer"
+          className={css(flexStyles.sectionMessageThread)}
+        >
+          {internalComponent}
+        </div>
+        {this.renderSidebox(enabledSideboxes)}
+      </div>
+    );
+  }
+
+  renderFirstMessage(enabledSideboxes) {
     return [
-      this.renderToolbar(),
-      <div
-        {...dataTest("messageList")}
-        ref="messageScrollContainer"
-        key="messageScrollContainer"
-        className={css(flexStyles.sectionMessageThread)}
-      >
+      this.renderToolbar(enabledSideboxes),
+      this.renderMessageBox(
         <Empty
           title={
             "This is your first message to " + this.props.contact.firstName
           }
           icon={<CreateIcon color="rgb(83, 180, 119)" />}
-        />
-      </div>,
+        />,
+        enabledSideboxes
+      ),
       this.renderMessagingRowMessage({ readOnly: true }),
       this.renderMessagingRowSendSkip(this.props.contact)
     ];
   }
 
   render() {
+    const { enabledSideboxes } = this.state;
     const firstMessage = this.props.messageStatusFilter === "needsMessage";
     const content = firstMessage
-      ? this.renderFirstMessage()
+      ? this.renderFirstMessage(enabledSideboxes)
       : [
-          this.renderToolbar(),
-          <div
-            {...dataTest("messageList")}
-            key="messageScrollContainer"
-            ref="messageScrollContainer"
-            className={css(flexStyles.sectionMessageThread)}
-          >
+          this.renderToolbar(enabledSideboxes),
+          this.renderMessageBox(
             <MessageList
               contact={this.props.contact}
               messages={this.props.contact.messages}
               styles={messageListStyles}
-            />
-          </div>,
-          this.renderMessageControls()
+            />,
+            enabledSideboxes
+          ),
+          this.renderMessageControls(enabledSideboxes)
         ];
     return <div className={css(flexStyles.topContainer)}>{content}</div>;
   }
@@ -1031,6 +940,7 @@ AssignmentTexterContactControls.propTypes = {
   startingMessage: PropTypes.string,
   onMessageFormSubmit: PropTypes.func,
   onOptOut: PropTypes.func,
+  onUpdateTags: PropTypes.func,
   onQuestionResponseChange: PropTypes.func,
   onCreateCannedResponse: PropTypes.func,
   onExitTexter: PropTypes.func,

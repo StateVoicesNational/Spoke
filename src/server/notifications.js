@@ -15,7 +15,10 @@ async function getOrganizationOwner(organizationId) {
     .getAll(organizationId, { index: "organization_id" })
     .filter({ role: "OWNER" })
     .limit(1)
-    .eqJoin("user_id", r.table("user"))("right")(0);
+    .eqJoin(
+      "user_id",
+      r.table("user")
+    )("right")(0);
 }
 const sendAssignmentUserNotification = async (assignment, notification) => {
   const campaign = await Campaign.get(assignment.campaign_id);
@@ -68,6 +71,7 @@ export const sendUserNotification = async notification => {
       );
     }
   } else if (type === Notifications.ASSIGNMENT_MESSAGE_RECEIVED) {
+    console.log("sendUserNotification", notification);
     const assignment = await Assignment.get(notification.assignmentId);
     const campaign = await Campaign.get(assignment.campaign_id);
     const campaignContact = await r

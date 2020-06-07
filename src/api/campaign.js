@@ -10,6 +10,16 @@ export const schema = gql`
     searchString: String
   }
 
+  type TexterUIConfig {
+    options: String
+    sideboxChoices: [String]
+  }
+
+  input TexterUIConfigInput {
+    options: String
+    sideboxChoices: [String]
+  }
+
   type CampaignStats {
     sentMessagesCount: Int
     receivedMessagesCount: Int
@@ -49,6 +59,8 @@ export const schema = gql`
     organization: Organization
     title: String
     description: String
+    joinToken: String
+    batchSize: Int
     dueBy: Date
     isStarted: Boolean
     isArchived: Boolean
@@ -63,6 +75,7 @@ export const schema = gql`
     hasUnsentInitialMessages: Boolean
     customFields: [String]
     cannedResponses(userId: String): [CannedResponse]
+    texterUIConfig: TexterUIConfig
     stats: CampaignStats
     completionStats: CampaignCompletionStats
     pendingJobs: [JobRequest]
