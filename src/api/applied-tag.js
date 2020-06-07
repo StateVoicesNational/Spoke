@@ -5,8 +5,4 @@ export const schema = gql`
     name: String!
     value: String!
   }
-
-  type AppliedTagsList {
-    appliedTags: [AppliedTag]
-  }
 `;

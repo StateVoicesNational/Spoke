@@ -57,6 +57,7 @@ import { GraphQLPhone } from "./phone";
 import { resolvers as questionResolvers } from "./question";
 import { resolvers as questionResponseResolvers } from "./question-response";
 import { resolvers as tagResolvers } from "./tag";
+import { resolvers as appliedTagResolvers } from "./applied-tag";
 import { getUsers, resolvers as userResolvers } from "./user";
 import { change } from "../local-auth-helpers";
 import { symmetricEncrypt } from "./lib/crypto";
@@ -1257,6 +1258,7 @@ const rootResolvers = {
       info
     ) => {
       const includeTags = graphqlInfo => {
+        console.log("INCLUDE TAGS", graphqlInfo);
         const findField = (selectionSet, fieldName) => {
           if (!selectionSet.selections) {
             return undefined;
@@ -1270,10 +1272,15 @@ const rootResolvers = {
           );
         };
 
-        const outerConversations = findField(graphqlInfo, "conversations");
+        const outerConversations = findField(
+          graphqlInfo.operation.selectionSet,
+          "conversations"
+        );
         if (!outerConversations) {
           return false;
         }
+
+        console.log("outerConversations", outerConversations);
 
         const innerConversations = findField(
           outerConversations.selectionSet,
@@ -1282,10 +1289,14 @@ const rootResolvers = {
         if (!innerConversations) {
           return false;
         }
+        console.log("innerConversations", innerConversations);
+
         const contact = findField(innerConversations.selectionSet, "contact");
         if (!contact) {
           return false;
         }
+
+        console.log("contact", contact);
 
         return !!findField(contact.selectionSet, "tags");
       };
@@ -1372,5 +1383,6 @@ export const resolvers = {
   ...questionResolvers,
   ...conversationsResolver,
   ...tagResolvers,
+  ...appliedTagResolvers,
   ...rootMutations
 };
