@@ -1,6 +1,6 @@
 /* eslint-disable no-unused-expressions, consistent-return */
 import { r } from "../../../src/server/models/";
-import { getCampaignsQuery } from "../../../src/containers/CampaignList";
+import { getCampaignsQuery } from "../../../src/containers/AdminCampaignList";
 import { GraphQLError } from "graphql/error";
 
 import {
