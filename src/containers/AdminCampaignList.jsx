@@ -37,7 +37,18 @@ const INITIAL_FILTER = {
 };
 const INITIAL_SORT_BY = DUE_DATE_DESC_SORT.value;
 
-class AdminCampaignList extends React.Component {
+export class AdminCampaignList extends React.Component {
+  static propTypes = {
+    params: PropTypes.object,
+    mutations: PropTypes.exact({
+      createCampaign: PropTypes.func,
+      archiveCampaigns: PropTypes.func,
+      unarchiveCampaign: PropTypes.func
+    }),
+    data: PropTypes.object,
+    router: PropTypes.object
+  };
+
   state = {
     pageSize: INITIAL_ROW_SIZE,
     page: 0,
@@ -345,15 +356,6 @@ class AdminCampaignList extends React.Component {
     );
   }
 }
-
-AdminCampaignList.propTypes = {
-  params: PropTypes.object,
-  mutations: PropTypes.exact({
-    createCampaign: PropTypes.func,
-    archiveCampaigns: PropTypes.func
-  }),
-  router: PropTypes.object
-};
 
 const campaignInfoFragment = `
   id
