@@ -36,6 +36,28 @@ function getConversationsJoinsAndWhereClause(
     query = query.where("is_opted_out", contactsFilter.isOptedOut);
   }
 
+  if (contactsFilter && contactsFilter.tags) {
+    const tags = contactsFilter.tags;
+
+    let tagsSubquery = r.knex
+      .select(1)
+      .from("tag_campaign_contact")
+      .whereRaw(
+        "campaign_contact.id = tag_campaign_contact.campaign_contact_id"
+      );
+
+    if (tags.length === 0) {
+      // no tags
+      query = query.whereNotExists(tagsSubquery);
+    } else if (tags.length === 1 && tags[0] === "*") {
+      // any tag
+      query = query.whereExists(tagsSubquery);
+    } else {
+      tagsSubquery = tagsSubquery.whereIn("tag_id", tags);
+      query = query.whereExists(tagsSubquery);
+    }
+  }
+
   return query;
 }
 
@@ -64,6 +86,7 @@ export async function getConversations(
   assignmentsFilter,
   contactsFilter,
   utc,
+  includeTags,
   awsContext
 ) {
   /* Query #1 == get campaign_contact.id for all the conversations matching

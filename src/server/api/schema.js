@@ -1253,8 +1253,43 @@ const rootResolvers = {
         contactsFilter,
         utc
       },
-      { user }
+      { user },
+      info
     ) => {
+      const includeTags = graphqlInfo => {
+        const findField = (selectionSet, fieldName) => {
+          if (!selectionSet.selections) {
+            return undefined;
+          }
+
+          return selectionSet.selections.find(
+            ss =>
+              ss.kind === "Field" &&
+              ss.name.kind === "Name" &&
+              ss.name.value === fieldName
+          );
+        };
+
+        const outerConversations = findField(graphqlInfo, "conversations");
+        if (!outerConversations) {
+          return false;
+        }
+
+        const innerConversations = findField(
+          outerConversations.selectionSet,
+          "conversations"
+        );
+        if (!innerConversations) {
+          return false;
+        }
+        const contact = findField(innerConversations.selectionSet, "contact");
+        if (!contact) {
+          return false;
+        }
+
+        return !!findField(contact.selectionSet, "tags");
+      };
+
       await accessRequired(user, organizationId, "SUPERVOLUNTEER", true);
       const data = await getConversations(
         cursor,
@@ -1262,7 +1297,8 @@ const rootResolvers = {
         campaignsFilter,
         assignmentsFilter,
         contactsFilter,
-        utc
+        utc,
+        includeTags(info)
       );
       return data;
     },
