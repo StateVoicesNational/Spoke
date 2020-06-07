@@ -9,6 +9,7 @@ import yup from "yup";
 import Dialog from "material-ui/Dialog";
 import RaisedButton from "material-ui/RaisedButton";
 import { StyleSheet, css } from "aphrodite";
+import apolloClient from "../network/apollo-client-singleton";
 
 import { dataTest } from "../lib/attributes";
 
@@ -33,22 +34,61 @@ const styles = StyleSheet.create({
   }
 });
 
+const fetchUser = async (organizationId, userId) =>
+  apolloClient.query({
+    query: gql`
+      query getEditedUser($organizationId: ID!, $userId: ID!) {
+        user(organizationId: $organizationId, userId: $userId) {
+          id
+          firstName
+          email
+          lastName
+          alias
+          cell
+        }
+      }
+    `,
+    variables: { organizationId, userId }
+  });
+
 class UserEdit extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      changePasswordDialog: false,
-      successDialog: false
-    };
-    this.handleSave = this.handleSave.bind(this);
-    this.handleClick = this.handleClick.bind(this);
-    this.handleClose = this.handleClose.bind(this);
-    this.openSuccessDialog = this.openSuccessDialog.bind(this);
-    this.buildFormSchema = this.buildFormSchema.bind(this);
-    this.handleCancel = this.handleCancel.bind(this);
+  static propTypes = {
+    mutations: PropTypes.object,
+    currentUser: PropTypes.object,
+    editedUser: PropTypes.object,
+    editUser: PropTypes.object,
+    router: PropTypes.object,
+    userId: PropTypes.string,
+    organizationId: PropTypes.string,
+    onRequestClose: PropTypes.func,
+    onCancel: PropTypes.func,
+    saveLabel: PropTypes.string,
+    authType: PropTypes.string,
+    nextUrl: PropTypes.string,
+    style: PropTypes.string,
+    handleClose: PropTypes.func,
+    openSuccessDialog: PropTypes.func
+  };
+
+  state = {
+    changePasswordDialog: false,
+    successDialog: false,
+    editedUser: null
+  };
+
+  async componentDidMount() {
+    if (!this.props.authType && this.props.userId) {
+      const response = await fetchUser(
+        this.props.organizationId,
+        this.props.userId
+      );
+      this.setState({
+        editedUser: response.data
+      });
+    }
   }
 
-  async handleSave(formData) {
+  handleSave = async formData => {
     if (!this.props.authType) {
       await this.props.mutations.editUser(formData);
       if (this.props.onRequestClose) {
@@ -80,29 +120,25 @@ class UserEdit extends React.Component {
         throw new Error(headers.get("www-authenticate") || "");
       }
     }
-  }
+  };
 
-  handleClick() {
+  handleClick = () => {
     this.setState({ changePasswordDialog: true });
-  }
+  };
 
-  handleClose() {
+  handleClose = () => {
     if (this.props.handleClose) {
       this.props.handleClose();
     } else {
       this.setState({ changePasswordDialog: false, successDialog: false });
     }
-  }
+  };
 
-  handleCancel() {
-    this.props.router.goBack();
-  }
-
-  openSuccessDialog() {
+  openSuccessDialog = () => {
     this.setState({ successDialog: true });
-  }
+  };
 
-  buildFormSchema(authType) {
+  buildFormSchema = authType => {
     let passwordFields = {};
     if (authType) {
       passwordFields = {
@@ -148,12 +184,12 @@ class UserEdit extends React.Component {
       ...userFields,
       ...passwordFields
     });
-  }
+  };
 
   render() {
-    const { authType, editUser, style, userId, data, saveLabel } = this.props;
-
-    const user = (data && data.currentUser) || {};
+    const { authType, currentUser, style, userId, saveLabel } = this.props;
+    const onCancel = this.props.onCancel || this.props.router.goBack;
+    const user = (this.state.editedUser && this.state.editedUser.user) || {};
     const formSchema = this.buildFormSchema(authType);
     return (
       <div>
@@ -163,7 +199,6 @@ class UserEdit extends React.Component {
           defaultValue={user}
           className={style}
           {...dataTest("userEditForm")}
-          data
         >
           <Form.Field label="Email" name="email" {...dataTest("email")} />
           {(!authType || authType === "signup") && (
@@ -207,15 +242,17 @@ class UserEdit extends React.Component {
               type="password"
             />
           )}
-          {authType !== "change" && userId && userId === data.currentUser.id && (
-            <div className={css(styles.container)}>
-              <RaisedButton
-                onTouchTap={this.handleClick}
-                label="Change password"
-                variant="outlined"
-              />
-            </div>
-          )}
+          {authType !== "change" &&
+            userId &&
+            userId === currentUser.currentUser.id && (
+              <div className={css(styles.container)}>
+                <RaisedButton
+                  onTouchTap={this.handleClick}
+                  label="Change password"
+                  variant="outlined"
+                />
+              </div>
+            )}
           <div className={css(styles.buttons)}>
             <Form.Button
               className={css(styles.submit)}
@@ -227,7 +264,7 @@ class UserEdit extends React.Component {
                 className={css(styles.cancel)}
                 label="Cancel"
                 variant="outlined"
-                onClick={this.handleCancel}
+                onClick={onCancel}
               />
             )}
           </div>
@@ -266,24 +303,8 @@ class UserEdit extends React.Component {
   }
 }
 
-UserEdit.propTypes = {
-  mutations: PropTypes.object,
-  data: PropTypes.object,
-  router: PropTypes.object,
-  editUser: PropTypes.object,
-  userId: PropTypes.string,
-  organizationId: PropTypes.string,
-  onRequestClose: PropTypes.func,
-  saveLabel: PropTypes.string,
-  authType: PropTypes.string,
-  nextUrl: PropTypes.string,
-  style: PropTypes.string,
-  handleClose: PropTypes.func,
-  openSuccessDialog: PropTypes.func
-};
-
 const queries = {
-  data: {
+  currentUser: {
     query: gql`
       query getCurrentUser {
         currentUser {

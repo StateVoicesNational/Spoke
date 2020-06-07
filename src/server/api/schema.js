@@ -1297,6 +1297,22 @@ const rootResolvers = {
         filterString,
         filterBy
       );
+    },
+    user: async (_, { organizationId, userId }, { user }) => {
+      // This is somewhat redundant to people and getCurrentUser above
+      if (user.id !== userId) {
+        // User can view themselves
+        await accessRequired(user, organizationId, "ADMIN", true);
+      }
+      // TODO: use caching+loaders and possibly move into organization
+      return r
+        .knex("user")
+        .join("user_organization", "user.id", "user_organization.user_id")
+        .where({
+          "user_organization.organization_id": organizationId,
+          "user.id": userId
+        })
+        .first();
     }
   }
 };
