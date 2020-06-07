@@ -386,7 +386,7 @@ export class AdminIncomingMessageList extends Component {
             }
             onTagsFilterChanged={this.handleTagsFilterChanged}
             tagsFilter={this.state.tagsFilter}
-            tags={this.props.tags.tags.tags}
+            tags={this.props.organization.organization.tags}
           />
           <br />
           <IncomingMessageActions
@@ -465,14 +465,13 @@ AdminIncomingMessageList.propTypes = {
 };
 
 const queries = {
-  tags: {
+  organization: {
     query: gql`
-      query getTags($organizationId: String!) {
-        tags(organizationId: $organizationId) {
+      query getOrganization($id: String!) {
+        organization(id: $id) {
           tags {
             id
             name
-            isDeleted
           }
         }
       }
@@ -480,7 +479,7 @@ const queries = {
     options: ownProps => {
       return {
         variables: {
-          organizationId: ownProps.params.organizationId
+          id: ownProps.params.organizationId
         },
         fetchPolicy: "network-only"
       };
