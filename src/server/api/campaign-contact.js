@@ -88,10 +88,12 @@ export const resolvers = {
       return messages;
     },
     tags: async campaignContact => {
-      const tags = cacheableData.tagCampaignContact.query(
-        campaignContact.id,
-        true
-      );
+      const tags =
+        campaignContact.tags ||
+        (await cacheableData.tagCampaignContact.query(
+          campaignContact.id,
+          true
+        ));
       return tags;
     },
     optOut: async (campaignContact, _, { loaders }) => {
