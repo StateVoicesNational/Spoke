@@ -4,12 +4,18 @@
 import React from "react";
 import { mount } from "enzyme";
 import MuiThemeProvider from "material-ui/styles/MuiThemeProvider";
-import { CampaignList } from "../../src/containers/CampaignList";
+import { AdminCampaignList } from "../../src/containers/AdminCampaignList";
 import { StyleSheetTestUtils } from "aphrodite";
 
 describe("CampaignList", () => {
+  const params = {
+    adminPerms: true,
+    organizationId: 77
+  };
+
   const mutations = {
-    archiveCampaign: () => {},
+    createCampaign: () => {},
+    archiveCampaigns: () => {},
     unarchiveCampaign: () => {}
   };
 
@@ -47,7 +53,11 @@ describe("CampaignList", () => {
       StyleSheetTestUtils.suppressStyleInjection();
       const wrapper = mount(
         <MuiThemeProvider>
-          <CampaignList data={data} mutations={mutations} adminPerms={true} />
+          <AdminCampaignList
+            data={data}
+            mutations={mutations}
+            params={params}
+          />
         </MuiThemeProvider>
       );
       const text = wrapper.text();
@@ -89,7 +99,11 @@ describe("CampaignList", () => {
       StyleSheetTestUtils.suppressStyleInjection();
       const wrapper = mount(
         <MuiThemeProvider>
-          <CampaignList data={data} mutations={mutations} />
+          <AdminCampaignList
+            data={data}
+            mutations={mutations}
+            params={params}
+          />
         </MuiThemeProvider>
       );
       expect(
@@ -97,7 +111,6 @@ describe("CampaignList", () => {
           <span> &mdash; Created by Lorem Ipsum</span>
         )
       ).toBeTruthy();
-      expect(wrapper.text()).not.toMatch(/Archive/);
     });
   });
 });
