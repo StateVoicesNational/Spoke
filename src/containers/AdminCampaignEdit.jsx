@@ -14,7 +14,6 @@ import gql from "graphql-tag";
 import loadData from "./hoc/load-data";
 import RaisedButton from "material-ui/RaisedButton";
 import CampaignBasicsForm from "../components/CampaignBasicsForm";
-//import CampaignContactsForm from "../components/CampaignContactsForm";
 import CampaignMessagingServiceForm from "../components/CampaignMessagingServiceForm";
 import CampaignContactsChoiceForm from "../components/CampaignContactsChoiceForm";
 import CampaignTextersForm from "../components/CampaignTextersForm";
@@ -260,8 +259,9 @@ export class AdminCampaignEdit extends React.Component {
   };
 
   handleSubmit = async () => {
-    if (!this.state.expandedSection.doNotSaveAfterSubmit) {
-      const saveRes = await this.handleSave();
+    const section = this.sections()[this.state.expandedSection];
+    if (!section.doNotSaveAfterSubmit) {
+      await this.handleSave();
     }
     this.setState(
       {
@@ -278,8 +278,6 @@ export class AdminCampaignEdit extends React.Component {
         this.props.campaignData.refetch();
       }
     );
-    console.log("REFETCHING");
-    return await this.props.campaignData.refetch();
   };
 
   handleSave = async () => {

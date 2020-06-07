@@ -599,6 +599,7 @@ describe("CampaignInteractionStepsForm", () => {
       let campaign;
       let organization;
       let interactionSteps;
+      let queryResults;
 
       beforeEach(async () => {
         await setupTest();
@@ -685,13 +686,11 @@ describe("CampaignInteractionStepsForm", () => {
           }
         };
 
-        const queryResults = await runComponentQueries(
+        queryResults = await runComponentQueries(
           adminCampaignEditOps.queries,
           adminUser,
           ownProps
         );
-
-        queryResults.campaignData.campaign.interactionSteps = interactionSteps;
 
         const wrappedMutations = makeRunnableMutations(
           adminCampaignEditOps.mutations,
@@ -718,7 +717,6 @@ describe("CampaignInteractionStepsForm", () => {
 
       it("saves the interaction steps with onSave is invoked", async done => {
         expect(wrappedComponent.exists()).toEqual(true);
-
         const interactionStepsBefore = await r
           .knex("interaction_step")
           .where({ campaign_id: campaign.id });
@@ -730,7 +728,11 @@ describe("CampaignInteractionStepsForm", () => {
           .first()
           .setState(
             {
-              expandedSection: 3
+              expandedSection: 3,
+              campaignFormValues: {
+                ...queryResults.campaignData.campaign,
+                interactionSteps
+              }
             },
             async () => {
               const campaignInteractionStepsForm = wrappedComponent.find(
@@ -747,7 +749,6 @@ describe("CampaignInteractionStepsForm", () => {
                 .knex("interaction_step")
                 .where({ campaign_id: campaign.id });
 
-              // re
               interactionStepsAfter.forEach(step => {
                 // eslint-disable-next-line no-param-reassign
                 step.is_deleted = !!step.is_deleted;
