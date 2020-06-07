@@ -17,6 +17,7 @@ const UserEditDialog = props => (
       organizationId={props.organizationId}
       userId={props.userId}
       onRequestClose={props.updateUser}
+      onCancel={props.onCancel}
     />
   </Dialog>
 );

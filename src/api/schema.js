@@ -217,6 +217,7 @@ const rootSchema = gql`
       filterBy: FilterPeopleBy
     ): UsersReturn
     tags(organizationId: String!): TagsList
+    user(organizationId: ID!, userId: ID!): User
   }
 
   type RootMutation {
