@@ -125,6 +125,9 @@ export class AssignmentTexterContact extends React.Component {
   };
 
   handleSendMessageError = e => {
+    // NOTE: status codes don't currently work so all errors will appear
+    // as "Something went wrong" keeping this code in here because
+    // we want to replace status codes with Apollo 2 error codes.
     if (e.status === 402) {
       this.goBackToTodos();
     } else if (e.status === 400) {
@@ -147,14 +150,15 @@ export class AssignmentTexterContact extends React.Component {
     } else {
       console.error(e);
       this.setState({
+        disabled: true,
         snackbarError: "Something went wrong!"
       });
     }
   };
 
   handleMessageFormSubmit = async ({ messageText }) => {
+    const { contact } = this.props;
     try {
-      const { contact } = this.props;
       const message = this.createMessageToContact(messageText);
       if (this.state.disabled) {
         return; // stops from multi-send
@@ -167,6 +171,9 @@ export class AssignmentTexterContact extends React.Component {
       this.props.onFinishContact(contact.id);
     } catch (e) {
       this.handleSendMessageError(e);
+      setTimeout(() => {
+        this.props.onFinishContact(contact.id);
+      }, 750);
     }
   };
 
@@ -268,6 +275,9 @@ export class AssignmentTexterContact extends React.Component {
     } catch (err) {
       console.log("handleOptOut Error", err);
       this.handleSendMessageError(err);
+      setTimeout(() => {
+        this.props.onFinishContact(contact.id);
+      }, 750);
     }
   };
 
