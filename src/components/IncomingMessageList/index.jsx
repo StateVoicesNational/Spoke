@@ -57,6 +57,14 @@ export class IncomingMessageList extends Component {
     };
   }
 
+  componentDidMount() {
+    let conversationCount = 0;
+    if (this.props.conversations.conversations) {
+      conversationCount = this.props.conversations.conversations.pageInfo.total;
+    }
+    this.props.onConversationCountChanged(conversationCount);
+  }
+
   componentDidUpdate = prevProps => {
     if (
       this.props.clearSelectedMessages &&
