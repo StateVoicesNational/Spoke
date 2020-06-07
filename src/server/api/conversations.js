@@ -202,6 +202,36 @@ export async function getConversations(
     );
   }
 
+  // tags query
+  console.log("includeTags", includeTags);
+  if (includeTags) {
+    const tagsQuery = r.knex
+      .select(
+        "tag_campaign_contact.campaign_contact_id as campaign_contact_id",
+        "tag.name as name",
+        "tag_campaign_contact.value as value"
+      )
+      .from("tag_campaign_contact")
+      .join("tag", "tag.id", "=", "tag_campaign_contact.tag_id")
+      .whereIn("campaign_contact_id", ccIds);
+
+    const rows = await tagsQuery;
+
+    const contactTags = {};
+    rows.forEach(appliedTag => {
+      const campaignContactId = Number(appliedTag.campaign_contact_id);
+      contactTags[campaignContactId] = contactTags[campaignContactId] || [];
+      contactTags[campaignContactId].push(appliedTag);
+    });
+
+    console.log("contactTags, conversations", contactTags, conversations);
+
+    conversations.forEach(convo => {
+      // eslint-disable-next-line no-param-reassign
+      convo.tags = contactTags[convo.ccId];
+    });
+  }
+
   /* Query #3 -- get the count of all conversations matching the criteria.
    * We need this to show total number of conversations to support paging */
   console.log(
