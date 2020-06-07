@@ -40,11 +40,6 @@ export class PeopleList extends Component {
       },
       passwordResetHash: ""
     };
-
-    this.requestUserEditClose = this.requestUserEditClose.bind(this);
-    this.updateUser = this.updateUser.bind(this);
-    this.handlePasswordResetClose = this.handlePasswordResetClose.bind(this);
-    this.handleChange = this.handleChange.bind(this);
   }
 
   prepareTableColumns = () => [
@@ -98,22 +93,22 @@ export class PeopleList extends Component {
     }
   ];
 
-  editUser(userId) {
+  editUser = userId => {
     this.setState({
       userEdit: userId
     });
-  }
+  };
 
-  updateUser() {
+  updateUser = () => {
     this.setState({
       userEdit: false
     });
     this.props.users.refetch({
       cursor: this.state.cursor
     });
-  }
+  };
 
-  async resetPassword(userId) {
+  resetPassword = async userId => {
     const { currentUser } = this.props;
     if (currentUser.id !== userId) {
       const res = await this.props.mutations.resetUserPassword(
@@ -122,7 +117,7 @@ export class PeopleList extends Component {
       );
       this.setState({ passwordResetHash: res.data.resetUserPassword });
     }
-  }
+  };
 
   changePage = (pageDelta, pageSize) => {
     const { limit, offset, total } = this.props.users.people.pageInfo;
@@ -154,30 +149,6 @@ export class PeopleList extends Component {
     });
   };
 
-  componentWillReceiveProps = nextProps => {
-    // this is a hack
-    // without this, some graphql updates did not happen
-    // until the next location pop
-    // which means the list of people did not reflect what was in the URL
-    // and the values of the filters and sort
-    // the hack reloads the entire page if the filters or sort changed
-    // and users is not loading -- the fact that it's not loading means
-    // the graphql update is not happening
-    const nextLocation = nextProps.location;
-    const currentLocation = this.props.location;
-
-    if (
-      nextLocation.action === "POP" &&
-      (nextLocation.query.searchString !== currentLocation.query.searchString ||
-        nextLocation.query.campaignId !== currentLocation.query.campaignId ||
-        nextLocation.query.sortBy !== currentLocation.query.sortBy ||
-        nextLocation.query.role !== currentLocation.query.role) &&
-      !nextProps.users.loading
-    ) {
-      window.location.reload();
-    }
-  };
-
   handleNextPageClick = () => {
     this.changePage(1, this.state.pageSize);
   };
@@ -206,16 +177,9 @@ export class PeopleList extends Component {
     this.setState({ userEdit: false });
   };
 
-  handleInviteTexterOpen() {
-    this.setState({ open: true });
-  }
-
-  handleInviteTexterClose() {
-    this.setState({ open: false });
-  }
-  handlePasswordResetClose() {
+  handlePasswordResetClose = () => {
     this.setState({ passwordResetHash: "" });
-  }
+  };
 
   renderRolesDropdown = (columnKey, row) => {
     const { roles, texterId } = row;
@@ -294,6 +258,7 @@ export class PeopleList extends Component {
               userId={this.state.userEdit}
               updateUser={this.updateUser}
               requestClose={this.requestUserEditClose}
+              onCancel={this.requestUserEditClose}
             />
             <ResetPasswordDialog
               open={!!this.state.passwordResetHash}
@@ -316,8 +281,7 @@ PeopleList.propTypes = {
   utc: type.string,
   currentUser: type.object,
   sortBy: type.string,
-  searchString: type.string,
-  location: type.object
+  searchString: type.string
 };
 
 const organizationFragment = `

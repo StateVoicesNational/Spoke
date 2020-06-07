@@ -219,6 +219,7 @@ const rootSchema = gql`
       filterString: String
       filterBy: FilterPeopleBy
     ): UsersReturn
+    user(organizationId: ID!, userId: ID!): User
   }
 
   type RootMutation {
