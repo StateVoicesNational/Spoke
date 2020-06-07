@@ -10,7 +10,8 @@ export const schema = gql`
     organizationId: String
   }
 
-  type TagsList {
-    tags: [Tag]
+  type ContactTag {
+    id: ID
+    value: String
   }
 `;

@@ -84,7 +84,13 @@ export const setCacheContactAssignment = async (id, campaignId, contactObj) => {
     contactObj.assignment_id
   ) {
     const assignmentKey = contactAssignmentKey(campaignId);
-    // console.log('setCacheContactAssignment', id, contactObj.assignment_id, contactObj.user_id, assignmentKey)
+    console.log(
+      "setCacheContactAssignment",
+      id,
+      contactObj.assignment_id,
+      contactObj.user_id,
+      assignmentKey
+    );
     await r.redis
       .multi()
       .hset(
@@ -98,7 +104,7 @@ export const setCacheContactAssignment = async (id, campaignId, contactObj) => {
 };
 
 export const getCacheContactAssignment = async (id, campaignId, contactObj) => {
-  // console.log('getCacheContactAssignment0', id, contactObj.assignment_id);
+  console.log("getCacheContactAssignment0", id, contactObj.assignment_id);
   if (contactObj && contactObj.assignment_id) {
     return {
       assignment_id: contactObj.assignment_id,
@@ -110,11 +116,16 @@ export const getCacheContactAssignment = async (id, campaignId, contactObj) => {
       contactAssignmentKey(campaignId),
       id
     );
-    // console.log('getContactAssignmentCache1', contactAssignment)
+    console.log("getContactAssignmentCache1", contactAssignment);
     if (contactAssignment) {
       // eslint-disable-next-line camelcase
       const [assignment_id, user_id] = (contactAssignment || ":").split(":");
-      // console.log('getContactAssignmentCache2', contactAssignment, assignment_id, user_id);
+      console.log(
+        "getContactAssignmentCache2",
+        contactAssignment,
+        assignment_id,
+        user_id
+      );
       // if empty string, then it's null
       return {
         assignment_id: assignment_id ? Number(assignment_id) : null,
@@ -160,7 +171,7 @@ const saveCacheRecord = async (
       messageServiceSid,
       campaign
     );
-    // console.log('contact saveCacheRecord', contactCacheObj)
+    console.log("contact saveCacheRecord", contactCacheObj);
     const contactKey = cacheKey(dbRecord.id);
     await r.redis
       .multi()

@@ -33,8 +33,8 @@ const contactIdFromOther = async ({
   if (campaignContactId) {
     return campaignContactId;
   }
-  console.error(
-    "contactIdfromother hard",
+  console.log(
+    "messageCache contactIdfromother hard",
     campaignContactId,
     assignmentId,
     cell,
@@ -113,7 +113,7 @@ const query = async ({ campaignContactId }) => {
         .exists(cacheKey(campaignContactId))
         .lrange(cacheKey(campaignContactId), 0, -1)
         .execAsync();
-      // console.log('cached messages exist?', exists, messages)
+      console.log("messageCache exist?", exists, messages);
       if (exists) {
         // note: lrange returns messages in reverse order
         return messages.reverse().map(m => JSON.parse(m));
@@ -131,7 +131,11 @@ const incomingMessageMatching = async (messageInstance, activeCellFound) => {
     // No active thread to attach message to. This should be very RARE
     // This could happen way after a campaign is closed and a contact responds 'very late'
     // or e.g. gives the 'number for moveon' to another person altogether that tries to text it.
-    console.error("ORPHAN MESSAGE", messageInstance, activeCellFound);
+    console.log(
+      "messageCache ORPHAN MESSAGE",
+      messageInstance,
+      activeCellFound
+    );
     return "ORPHAN MESSAGE";
   }
   // Check to see if the message is a duplicate of the last one
@@ -140,7 +144,11 @@ const incomingMessageMatching = async (messageInstance, activeCellFound) => {
     // DB non-caching contect
     if (messageInstance.service_id === activeCellFound.service_id) {
       // already saved the message -- this is a duplicate message
-      console.error("DUPLICATE MESSAGE DB", messageInstance, activeCellFound);
+      console.log(
+        "messageCache DUPLICATE MESSAGE DB",
+        messageInstance,
+        activeCellFound
+      );
       return "DUPLICATE MESSAGE DB";
     }
   } else {
@@ -188,7 +196,7 @@ const deliveryReport = async ({
         .where("id", lookup.campaign_contact_id)
         .update("error_code", errorCode);
     }
-    console.log("deliveryReport", lookup);
+    console.log("messageCache deliveryReport", lookup);
     if (lookup.campaign_id) {
       campaignCache.incrCount(lookup.campaign_id, "errorCount");
     }
@@ -220,13 +228,13 @@ const messageCache = {
     let newStatus = "needsResponse";
 
     if (messageInstance.is_from_contact) {
-      // console.log('message SAVE lookup')
+      console.log("messageCache SAVE lookup");
       const activeCellFound = await campaignContactCache.lookupByCell(
         messageInstance.contact_number,
         messageInstance.service,
         messageInstance.messageservice_sid
       );
-      // console.log('activeCellFound', activeCellFound)
+      console.log("messageCache activeCellFound", activeCellFound);
       const matchError = await incomingMessageMatching(
         messageInstance,
         activeCellFound
@@ -262,9 +270,9 @@ const messageCache = {
       messageservice_sid: messageToSave.messageservice_sid,
       campaign_id: contact && contact.campaign_id
     };
-    // console.log('hi saveMsg3', newStatus, contactData);
+    console.log("messageCache hi saveMsg3", newStatus, contactData);
     await campaignContactCache.updateStatus(contactData, newStatus);
-    // console.log('hi saveMsg4', newStatus)
+    console.log("messageCache saveMsg4", newStatus);
     if (
       !messageInstance.is_from_contact &&
       contact.message_status === "needsMessage"

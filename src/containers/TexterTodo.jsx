@@ -36,6 +36,9 @@ export const contactDataFragment = `
           text
           isFromContact
         }
+        tags {
+          id
+        }
 `;
 
 export const dataQueryString = `
@@ -72,12 +75,20 @@ export const dataQueryString = `
         textingHoursEnforced
         organization {
           id
+          tags {
+            id
+            name
+          }
           textingHoursEnforced
           textingHoursStart
           textingHoursEnd
           optOutMessage
         }
         customFields
+        texterUIConfig {
+          options
+          sideboxChoices
+        }
         interactionSteps {
           id
           script

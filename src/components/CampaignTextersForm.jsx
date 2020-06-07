@@ -9,7 +9,6 @@ import Snackbar from "material-ui/Snackbar";
 import GSForm from "../components/forms/GSForm";
 import yup from "yup";
 import Form from "react-formal";
-import OrganizationJoinLink from "./OrganizationJoinLink";
 import CampaignFormSectionHeading from "./CampaignFormSectionHeading";
 import { StyleSheet, css } from "aphrodite";
 import theme from "../styles/theme";
@@ -107,19 +106,9 @@ export default class CampaignTextersForm extends React.Component {
   state = {
     autoSplit: false,
     focusedTexterId: null,
-    useDynamicAssignment: this.formValues().useDynamicAssignment,
     snackbarOpen: false,
     snackbarMessage: ""
   };
-
-  handleToggleChange() {
-    this.setState({
-      useDynamicAssignment: !this.state.useDynamicAssignment
-    });
-    this.props.onChange({
-      useDynamicAssignment: !this.state.useDynamicAssignment
-    });
-  }
 
   onChange = formValues => {
     const existingFormValues = this.formValues();
@@ -401,7 +390,7 @@ export default class CampaignTextersForm extends React.Component {
               direction={0}
             />
           </div>
-          {this.state.useDynamicAssignment ? (
+          {this.props.useDynamicAssignment ? (
             <div className={css(styles.input)}>
               <Form.Field
                 name={`texters[${index}].assignment.maxContacts`}
@@ -454,17 +443,6 @@ export default class CampaignTextersForm extends React.Component {
 
   render() {
     const { organizationUuid, campaignId } = this.props;
-    const subtitle = this.state.useDynamicAssignment ? (
-      <div>
-        <OrganizationJoinLink
-          organizationUuid={organizationUuid}
-          campaignId={campaignId}
-        />
-      </div>
-    ) : (
-      ""
-    );
-
     const assignedContacts = this.formValues().texters.reduce(
       (prev, texter) => prev + texter.assignment.contactsCount,
       0
@@ -478,16 +456,8 @@ export default class CampaignTextersForm extends React.Component {
       <div>
         <CampaignFormSectionHeading
           title="Who should send the texts?"
-          subtitle={subtitle}
+          subtitle={"Also see Dynamic Assignment Panel, below."}
         />
-        <div>
-          <Toggle
-            {...dataTest("useDynamicAssignment")}
-            label="Dynamically assign contacts"
-            toggled={this.state.useDynamicAssignment}
-            onToggle={this.handleToggleChange.bind(this)}
-          />
-        </div>
         <GSForm
           schema={this.formSchema}
           value={this.formValues()}
@@ -593,6 +563,7 @@ CampaignTextersForm.propTypes = {
   organizationId: type.string,
   formValues: type.object,
   contactsCount: type.number,
+  useDynamicAssignment: type.bool,
   onSubmit: type.func,
   saveLabel: type.string,
   saveDisabled: type.bool
