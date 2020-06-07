@@ -27,6 +27,10 @@ const campaign = {
     textingHoursEnd: 21
   },
   customFields: [],
+  texterUIConfig: {
+    sideboxChoices: [],
+    options: "{}"
+  },
   interactionSteps: [
     {
       id: 11,
