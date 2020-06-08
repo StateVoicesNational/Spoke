@@ -280,7 +280,7 @@ const campaignContactCache = {
   loadMany: async (
     campaign,
     organization,
-    { queryFunc, remainingMilliseconds }
+    { queryFunc, remainingMilliseconds, onCampaignStart }
   ) => {
     // queryFunc(query) has query input of a knex query
     // queryFunc should return a query with added where clauses

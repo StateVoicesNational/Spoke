@@ -201,7 +201,17 @@ export async function setTwilioAuth(user, organization) {
     twilioMessageServiceSid: messageServiceSid
   };
 
-  return await graphql(mySchema, twilioQuery, rootValue, context, variables);
+  const result = await graphql(
+    mySchema,
+    twilioQuery,
+    rootValue,
+    context,
+    variables
+  );
+  if (result && result.errors) {
+    console.log("updateTwilioAuth failed " + JSON.stringify(result));
+  }
+  return result;
 }
 
 export async function createCampaign(

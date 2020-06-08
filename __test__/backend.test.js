@@ -303,6 +303,8 @@ describe("graphql test suite", async () => {
     const context = getContext({ user: testAdminUser });
     const updateCampaign = Object.assign({}, testCampaign.data.createCampaign);
     const campaignId = updateCampaign.id;
+    testTexterUser = await helperCreateTexter(testOrganization);
+
     updateCampaign.texters = [
       {
         id: testTexterUser.id

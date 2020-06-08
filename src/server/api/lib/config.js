@@ -14,7 +14,8 @@ export function getFeatures(organization) {
   }
   return (
     organization.feature ||
-    (typeof organization.features == "string" &&
+    (organization.features &&
+      typeof organization.features == "string" &&
       JSON.parse(organization.features)) ||
     organization.features ||
     {}
