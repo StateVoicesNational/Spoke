@@ -385,6 +385,7 @@ const importScriptFromDocument = async (campaignId, scriptUrl) => {
   );
   await replaceCannedResponsesInDatabase(campaignId, cannedResponsesList);
   await cacheableData.campaign.reload(campaignId);
+  await cacheableData.cannedResponse.clearQuery({ campaignId });
 };
 
 export default importScriptFromDocument;
