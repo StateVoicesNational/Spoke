@@ -827,6 +827,7 @@ export async function importScript(job) {
   const payload = await unzipPayload(job);
   try {
     await importScriptFromDocument(payload.campaignId, payload.url); // TODO try/catch
+    console.log(`Script import complete ${payload.campaignId} ${payload.url}`);
   } catch (exception) {
     await r
       .knex("job_request")
