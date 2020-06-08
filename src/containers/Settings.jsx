@@ -14,6 +14,8 @@ import { StyleSheet, css } from "aphrodite";
 import theme from "../styles/theme";
 import Toggle from "material-ui/Toggle";
 import moment from "moment";
+import CampaignTexterUIForm from "../components/CampaignTexterUIForm";
+
 const styles = StyleSheet.create({
   section: {
     margin: "10px 0"
@@ -73,33 +75,7 @@ class Settings extends React.Component {
       textingHoursEnd: yup.number().required()
     });
 
-    const hours = [
-      0,
-      1,
-      2,
-      3,
-      4,
-      5,
-      6,
-      7,
-      8,
-      9,
-      10,
-      11,
-      12,
-      13,
-      14,
-      15,
-      16,
-      17,
-      18,
-      19,
-      20,
-      21,
-      22,
-      23,
-      24
-    ];
+    const hours = new Array(24).fill(0).map((_, i) => i);
     const hourChoices = hours.map(hour => ({
       value: hour,
       label: formatTextingHours(hour)
@@ -213,7 +189,12 @@ class Settings extends React.Component {
 
     return (
       <Card>
-        <CardHeader title="Twilio Credentials" />
+        <CardHeader
+          title="Twilio Credentials"
+          style={{
+            backgroundColor: allSet ? theme.colors.green : theme.colors.yellow
+          }}
+        />
         {allSet && (
           <CardText style={inlineStyles.shadeBox}>
             <DisplayLink
@@ -287,7 +268,10 @@ class Settings extends React.Component {
     return (
       <div>
         <Card>
-          <CardHeader title="Settings" />
+          <CardHeader
+            title="Settings"
+            style={{ backgroundColor: theme.colors.green }}
+          />
           <CardText>
             <div className={css(styles.section)}>
               <GSForm
@@ -351,7 +335,33 @@ class Settings extends React.Component {
           </CardActions>
         </Card>
         <div>{this.renderTextingHoursForm()}</div>
-        <div>{window.TWILIO_MULTI_ORG && this.renderTwilioAuthForm()}</div>
+        {window.TWILIO_MULTI_ORG && this.renderTwilioAuthForm()}
+        <Card>
+          <CardHeader
+            title="Texter UI Defaults"
+            style={{ backgroundColor: theme.colors.green }}
+          />
+          <CardText>
+            <CampaignTexterUIForm
+              formValues={this.props.data.organization}
+              organization={this.props.data.organization}
+              sideboxOptions={
+                this.props.data.organization.texterUIConfig.sideboxOptions
+              }
+              onSubmit={async () => {
+                const { texterUIConfig } = this.state;
+                await this.props.mutations.editOrganization({ texterUIConfig });
+                this.setState({ texterUIConfig: null });
+              }}
+              onChange={formValues => {
+                console.log("change", formValues);
+                this.setState(formValues);
+              }}
+              saveLabel="Save Texter UI Campaign Defaults"
+              saveDisabled={!this.state.texterUIConfig}
+            />
+          </CardText>
+        </Card>
       </div>
     );
   }
@@ -374,6 +384,10 @@ const queries = {
           textingHoursStart
           textingHoursEnd
           optOutMessage
+          texterUIConfig {
+            options
+            sideboxChoices
+          }
           twilioAccountSid
           twilioAuthToken
           twilioMessageServiceSid
@@ -390,6 +404,29 @@ const queries = {
 };
 
 const mutations = {
+  editOrganization: ownProps => organizationChanges => ({
+    mutation: gql`
+      mutation editOrganization(
+        $organizationId: String!
+        $organizationChanges: OrganizationInput!
+      ) {
+        editOrganization(
+          id: $organizationId
+          organization: $organizationChanges
+        ) {
+          id
+          texterUIConfig {
+            options
+            sideboxChoices
+          }
+        }
+      }
+    `,
+    variables: {
+      organizationId: ownProps.params.organizationId,
+      organizationChanges
+    }
+  }),
   updateTextingHours: ownProps => (textingHoursStart, textingHoursEnd) => ({
     mutation: gql`
       mutation updateTextingHours(
