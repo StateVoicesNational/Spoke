@@ -470,6 +470,7 @@ const queries = {
     query: gql`
       query getOrganization($id: String!) {
         organization(id: $id) {
+          id
           tags {
             id
             name
