@@ -384,6 +384,11 @@ const importScriptFromDocument = async (campaignId, scriptUrl) => {
     _.clone(cannedResponsesParagraphs)
   );
   await replaceCannedResponsesInDatabase(campaignId, cannedResponsesList);
+  console.log(
+    `After canned responses ${campaignId} ${scriptUrl} ${JSON.stringify(
+      cannedResponsesList
+    )}`
+  );
 };
 
 export default importScriptFromDocument;
