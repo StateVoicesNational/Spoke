@@ -57,7 +57,6 @@ import { GraphQLPhone } from "./phone";
 import { resolvers as questionResolvers } from "./question";
 import { resolvers as questionResponseResolvers } from "./question-response";
 import { resolvers as tagResolvers } from "./tag";
-import { resolvers as appliedTagResolvers } from "./applied-tag";
 import { getUsers, resolvers as userResolvers } from "./user";
 import { change } from "../local-auth-helpers";
 import { symmetricEncrypt } from "./lib/crypto";
@@ -1383,6 +1382,5 @@ export const resolvers = {
   ...questionResolvers,
   ...conversationsResolver,
   ...tagResolvers,
-  ...appliedTagResolvers,
   ...rootMutations
 };

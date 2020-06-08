@@ -8,6 +8,7 @@ import gql from "graphql-tag";
 import LoadingIndicator from "../../components/LoadingIndicator";
 import DataTables from "material-ui-datatables";
 import ConversationPreviewModal from "./ConversationPreviewModal";
+import TagChip from "../TagChip";
 
 import { MESSAGE_STATUSES } from "../../components/IncomingMessageFilter";
 
@@ -26,7 +27,8 @@ export const prepareDataTableData = conversations =>
     campaignContactId: conversation.contact.id,
     assignmentId: conversation.contact.assignmentId,
     status: conversation.contact.messageStatus,
-    messages: conversation.contact.messages
+    messages: conversation.contact.messages,
+    tags: conversation.contact.tags
   }));
 
 const prepareSelectedRowsData = (conversations, rowsSelected) => {
@@ -51,9 +53,15 @@ export class IncomingMessageList extends Component {
   constructor(props) {
     super(props);
 
+    const tags = {};
+    (props.tags || []).forEach(tag => {
+      tags[tag.id] = tag.name;
+    });
+
     this.state = {
       selectedRows: [],
-      activeConversation: undefined
+      activeConversation: undefined,
+      tags
     };
   }
 
@@ -173,9 +181,10 @@ export class IncomingMessageList extends Component {
         overflow: "scroll",
         whiteSpace: "pre-line"
       },
-      render: (columnKey, row) => {
-        if (row.messages && row.messages.length > 0) {
-          return (
+      render: (columnKey, row) =>
+        row.messages &&
+        row.messages.length > 0 && (
+          <div>
             <FlatButton
               onClick={event => {
                 event.stopPropagation();
@@ -183,10 +192,9 @@ export class IncomingMessageList extends Component {
               }}
               icon={<ActionOpenInNew />}
             />
-          );
-        }
-        return "";
-      }
+            {window.EXPERIMENTAL_TAGS && this.renderTags(row.tags)}
+          </div>
+        )
     }
   ];
 
@@ -231,6 +239,15 @@ export class IncomingMessageList extends Component {
     this.setState({ activeConversation: undefined });
   };
 
+  renderTags = tags => (
+    <div>
+      {tags &&
+        tags
+          .filter(tag => !tag.resolvedAt)
+          .map(tag => <TagChip text={this.state.tags[tag.id]} />)}
+    </div>
+  );
+
   render() {
     if (this.props.conversations.loading) {
       return <LoadingIndicator />;
@@ -260,6 +277,9 @@ export class IncomingMessageList extends Component {
           selectedRows={clearSelectedMessages ? null : this.state.selectedRows}
         />
         <ConversationPreviewModal
+          {...(window.EXPERIMENTAL_TAGS && {
+            organizationTags: this.state.tags
+          })}
           conversation={this.state.activeConversation}
           onRequestClose={this.handleCloseConversation}
           onForceRefresh={this.props.onForceRefresh}
@@ -282,7 +302,8 @@ IncomingMessageList.propTypes = {
   utc: type.string,
   conversations: type.object,
   clearSelectedMessages: type.bool,
-  onForceRefresh: type.func
+  onForceRefresh: type.func,
+  tags: type.arrayOf(type.object)
 };
 
 const queries = {
@@ -325,6 +346,9 @@ const queries = {
                 id
                 text
                 isFromContact
+              }
+              tags {
+                id
               }
               optOut {
                 id

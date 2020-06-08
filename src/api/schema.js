@@ -14,7 +14,6 @@ import { schema as campaignContactSchema } from "./campaign-contact";
 import { schema as cannedResponseSchema } from "./canned-response";
 import { schema as inviteSchema } from "./invite";
 import { schema as tagSchema } from "./tag";
-import { schema as appliedTagSchema } from "./applied-tag";
 
 const rootSchema = gql`
   input CampaignContactInput {
@@ -354,6 +353,5 @@ export const schema = [
   questionSchema,
   inviteSchema,
   conversationSchema,
-  tagSchema,
-  appliedTagSchema
+  tagSchema
 ];

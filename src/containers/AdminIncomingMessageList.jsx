@@ -411,6 +411,7 @@ export class AdminIncomingMessageList extends Component {
             onConversationCountChanged={this.conversationCountChanged}
             clearSelectedMessages={this.state.clearSelectedMessages}
             onForceRefresh={this.handleForceRefresh}
+            tags={this.props.organization.organization.tags}
           />
         </div>
       </div>
