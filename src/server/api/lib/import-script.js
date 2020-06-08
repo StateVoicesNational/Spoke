@@ -3,7 +3,7 @@ import { google } from "googleapis";
 import _ from "lodash";
 import { compose, map, reduce, getOr, find, filter, has } from "lodash/fp";
 
-import { r } from "../../models";
+import { r, cacheableData } from "../../models";
 import { getConfig } from "./config";
 
 const textRegex = RegExp(".*[A-Za-z0-9]+.*");
@@ -384,11 +384,7 @@ const importScriptFromDocument = async (campaignId, scriptUrl) => {
     _.clone(cannedResponsesParagraphs)
   );
   await replaceCannedResponsesInDatabase(campaignId, cannedResponsesList);
-  console.log(
-    `After canned responses ${campaignId} ${scriptUrl} ${JSON.stringify(
-      cannedResponsesList
-    )}`
-  );
+  await cacheableData.campaign.reload(campaignId);
 };
 
 export default importScriptFromDocument;
