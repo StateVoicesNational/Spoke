@@ -22,7 +22,6 @@ Generally, label by filename what kind of documentation it is in all-caps, one o
 * Run `sqlite3 mydb.sqlite` to connect to a SQL shell for the dev database
 * [Set up an ESLint plugin in your code editor so that you catch coding errors and follow code style guidelines more easily!](https://medium.com/planet-arkency/catch-mistakes-before-you-run-you-javascript-code-6e524c36f0c8#.oboqsse48)
 * [Install the redux-devtools-extension](https://github.com/zalmoxisus/redux-devtools-extension) in Chrome to get advanced Redux debugging features.
-* Right now there is a bug in Apollo (https://github.com/apollostack/react-apollo/issues/57) that means in one particular case, errors get swallowed.  If you end up with an app that is silently breaking, console.log(this.props.data) and check the errors property.
 
 ## Dependency Management
 
@@ -36,7 +35,7 @@ Environment Variables affect how the application is run. We aim to support a
 diverse group of organizations and deployment contexts, which means a lot of configuration.
 
 Some important places to update or consider updating when you are creating a new
-enviornment variable:
+environment variable:
 
 * Documentation: Be sure to update or add your variable to [REFERENCE-environment_variables.md](./REFERENCE-environment_variables.md)
 * Make sure the default value will not break the application for users that upgrade from a context before the variable existed.
@@ -128,14 +127,11 @@ If you want to use the knex CLI, run with `yarn knex` which will leverage your `
 
 ## Apollo/GraphQL structure and gotchas
 
-Spoke was originally generated from [react-apollo-starter-kit](https://github.com/saikat/react-apollo-starter-kit).  You can look at that project's README for info on some of the libraries used.
-
 See [EXPLANATION-request-example.md](./EXPLANATION-request-example.md) for a great run-down all the
 way through the call stack on the client and server.
 
-See Apollo documentation for more details. Note that Spoke currently runs an older version
-(`apollo-client: ^0.4.7` and `apollo-server-express": ^1.2.0`) -- we would like to upgrade, but
-this will require coordination and revisions on both the server and client side.
+See the [Apollo documentation](https://www.apollographql.com/docs/react/v2.5) for more details.
+Note that Spoke currently runs an older version of apollo server (`^1.2.0`).
 
 One common change is adding an additional field or value to an existing GraphQl query. Below, with
 AdminCampaignEdit.jsx as an example, we'll list the places you may need to add a value.  Let's say
@@ -143,7 +139,7 @@ we want to add a value to campaign info for that edit page. We might need to edi
 
 * At the top of `src/containers/AdminCampaignEdit.jsx` in `campaignInfoFragment`
 * ...which is referenced from several places at the bottom of the same file
-  inside `mapQueriesToProps` and `mapMutationsToProps` -- note, in most (simpler) containers/components
+  inside `queries` and `mutations` -- note, in most (simpler) containers/components
   on the front-end, it will just be in the bottom map definitions.
   Updating it here means that the client side will now *ask* for that field from the server. If you don't
   include it here, then even if the server *can* get the value, it won't.
