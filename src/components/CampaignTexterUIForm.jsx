@@ -117,7 +117,6 @@ export default class CampaignTexterUIForm extends React.Component {
 }
 
 CampaignTexterUIForm.propTypes = {
-  sideboxOptions: type.string,
   formValues: type.object,
   organization: type.object,
   onChange: type.func,
