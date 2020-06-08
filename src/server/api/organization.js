@@ -39,15 +39,15 @@ export const resolvers = {
       await accessRequired(user, organization.id, "SUPERVOLUNTEER");
       return buildUsersQuery(organization.id, role, { campaignId }, sortBy);
     },
-    tags: async (organization, _, { user }) => {
-      let group = null;
+    tags: async (organization, { group }, { user }) => {
+      let groupFilter = group;
       try {
         await accessRequired(user, organization.id, "SUPERVOLUNTEER");
       } catch (err) {
         await accessRequired(user, organization.id, "TEXTER");
-        group = "texter-tags";
+        groupFilter = "texter-tags";
       }
-      return getTags(organization.id, group);
+      return getTags(organization, groupFilter);
     },
     availableActions: async (organization, _, { user, loaders }) => {
       await accessRequired(user, organization.id, "SUPERVOLUNTEER");

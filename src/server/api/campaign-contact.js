@@ -88,6 +88,15 @@ export const resolvers = {
       return messages;
     },
     tags: async campaignContact => {
+      // TODO: there's more to do here to avoid cache-misses
+      // maybe preload with campaignContact.loadMany
+      if (!getConfig("EXPERIMENTAL_TAGS", null, { truthy: 1 })) {
+        return [];
+      }
+      if (campaignContact.message_status === "needsMessage") {
+        return []; // it's the beginning, so there won't be any
+      }
+
       const tags = cacheableData.tagCampaignContact.query(
         campaignContact.id,
         true
