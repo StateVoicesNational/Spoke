@@ -82,9 +82,10 @@ export const resolvers = {
     textingHoursEnd: organization => organization.texting_hours_end,
     texterUIConfig: async (organization, _, { user }) => {
       await accessRequired(user, organization.id, "OWNER");
-      const options = getConfig("TEXTER_UI_SETTINGS", organization);
+      const options = getConfig("TEXTER_UI_SETTINGS", organization) || null;
       // note this is global, since we need the set that's globally enabled/allowed to choose from
-      const sideboxChoices = (getConfig("TEXTER_SIDEBOXES") || "").split(",");
+      const sideboxConfig = getConfig("TEXTER_SIDEBOXES");
+      const sideboxChoices = (sideboxConfig && sideboxConfig.split(",")) || [];
       return {
         options,
         sideboxChoices
