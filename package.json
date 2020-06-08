@@ -192,6 +192,8 @@
     "regenerator-runtime": "^0.10.5",
     "saucelabs": "^1.5.0",
     "selenium-webdriver": "^3.6.0",
+    "serverless": "^1.72.0",
+    "serverless-api-compression": "^1.0.1",
     "sqlite3": "^4.1.1",
     "wait-on": "^2.1.0",
     "webpack-dev-server": "^2.9.4"
