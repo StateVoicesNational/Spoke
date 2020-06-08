@@ -88,6 +88,10 @@ const rootSchema = gql`
     timezone: String
   }
 
+  input OrganizationInput {
+    texterUIConfig: TexterUIConfigInput
+  }
+
   input MessageInput {
     text: String
     contactNumber: Phone
@@ -226,6 +230,10 @@ const rootSchema = gql`
     createInvite(invite: InviteInput!): Invite
     createCampaign(campaign: CampaignInput!): Campaign
     editCampaign(id: String!, campaign: CampaignInput!): Campaign
+    editOrganization(
+      id: String!
+      organization: OrganizationInput!
+    ): Organization
     deleteJob(campaignId: String!, id: String!): JobRequest
     copyCampaign(id: String!): Campaign
     exportCampaign(id: String!): JobRequest

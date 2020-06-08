@@ -1,7 +1,8 @@
 function getComponents() {
-  const enabledComponents = (
-    global.TEXTER_SIDEBOXES || "contact-reference"
-  ).split(",");
+  const enabledComponents =
+    "TEXTER_SIDEBOXES" in global
+      ? (global.TEXTER_SIDEBOXES && global.TEXTER_SIDEBOXES.split(",")) || []
+      : [];
   const components = {};
   enabledComponents.forEach(componentName => {
     try {

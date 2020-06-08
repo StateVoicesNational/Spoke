@@ -67,6 +67,7 @@ import {
   buyPhoneNumbers,
   findNewCampaignContact,
   joinOrganization,
+  editOrganization,
   sendMessage,
   updateContactTags,
   updateQuestionResponses
@@ -337,6 +338,7 @@ const rootMutations = {
   RootMutation: {
     bulkSendMessages,
     buyPhoneNumbers,
+    editOrganization,
     findNewCampaignContact,
     joinOrganization,
     sendMessage,
