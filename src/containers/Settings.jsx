@@ -336,32 +336,34 @@ class Settings extends React.Component {
         </Card>
         <div>{this.renderTextingHoursForm()}</div>
         {window.TWILIO_MULTI_ORG && this.renderTwilioAuthForm()}
-        <Card>
-          <CardHeader
-            title="Texter UI Defaults"
-            style={{ backgroundColor: theme.colors.green }}
-          />
-          <CardText>
-            <CampaignTexterUIForm
-              formValues={this.props.data.organization}
-              organization={this.props.data.organization}
-              sideboxOptions={
-                this.props.data.organization.texterUIConfig.sideboxOptions
-              }
-              onSubmit={async () => {
-                const { texterUIConfig } = this.state;
-                await this.props.mutations.editOrganization({ texterUIConfig });
-                this.setState({ texterUIConfig: null });
-              }}
-              onChange={formValues => {
-                console.log("change", formValues);
-                this.setState(formValues);
-              }}
-              saveLabel="Save Texter UI Campaign Defaults"
-              saveDisabled={!this.state.texterUIConfig}
+        {this.props.data.organization &&
+        this.props.data.organization.texterUIConfig.sideboxChoices.length ? (
+          <Card>
+            <CardHeader
+              title="Texter UI Defaults"
+              style={{ backgroundColor: theme.colors.green }}
             />
-          </CardText>
-        </Card>
+            <CardText>
+              <CampaignTexterUIForm
+                formValues={this.props.data.organization}
+                organization={this.props.data.organization}
+                onSubmit={async () => {
+                  const { texterUIConfig } = this.state;
+                  await this.props.mutations.editOrganization({
+                    texterUIConfig
+                  });
+                  this.setState({ texterUIConfig: null });
+                }}
+                onChange={formValues => {
+                  console.log("change", formValues);
+                  this.setState(formValues);
+                }}
+                saveLabel="Save Texter UI Campaign Defaults"
+                saveDisabled={!this.state.texterUIConfig}
+              />
+            </CardText>
+          </Card>
+        ) : null}
       </div>
     );
   }
