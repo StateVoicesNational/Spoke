@@ -3,6 +3,9 @@ import React from "react";
 import { Link } from "react-router";
 import yup from "yup";
 import Toggle from "material-ui/Toggle";
+import CopyIcon from "material-ui/svg-icons/content/content-copy";
+import IconButton from "material-ui/IconButton/IconButton";
+import TextField from "material-ui/TextField";
 
 export const displayName = () => "Contact Conversation URL";
 
@@ -22,12 +25,58 @@ export const showSidebox = ({
 };
 
 export class TexterSidebox extends React.Component {
+  state = {
+    copiedStatus: ""
+  };
+
+  copyToClipboard = () => {
+    if (this.refs.displayLink) {
+      this.refs.displayLink.focus();
+      document.execCommand("copy");
+      console.log("Copied");
+      this.setState({ copiedStatus: " (copied)" });
+    }
+  };
+
   render() {
     const { campaign, assignment, contact } = this.props;
-    const url = `/app/${campaign.organization.id}/todos/${assignment.id}/allreplies?contact=${this.props.contact.id}`;
+    const settings = JSON.parse(campaign.texterUIConfig.options || "{}");
+
+    const { host, protocol } = document.location;
+    const url = `${protocol}//${host}/app/${campaign.organization.id}/todos/${assignment.id}/allreplies?contact=${this.props.contact.id}`;
+
+    const textContent = [
+      <IconButton
+        onClick={this.copyToClipboard}
+        tooltip="Copy conversation link to clipboard"
+        tooltipPosition="bottom-right"
+        style={{ padding: 0, height: 20, width: 20, paddingRight: 6 }}
+        iconStyle={{ height: 14, width: 14 }}
+      >
+        <CopyIcon />
+      </IconButton>,
+      <span onClick={this.copyToClipboard}>Get</span>,
+      " a ",
+      settings.contactReferenceClickable ? (
+        <Link target="_blank" to={url}>
+          conversation link
+        </Link>
+      ) : (
+        "conversation link"
+      ),
+      this.state.copiedStatus
+    ];
     return (
       <div>
-        <Link to={url}>Conversation link</Link>
+        <div>{textContent}</div>
+        <TextField
+          ref="displayLink"
+          name={url}
+          value={url}
+          onFocus={event => event.target.select()}
+          fullWidth
+          inputStyle={{ fontSize: "12px" }}
+        />
       </div>
     );
   }

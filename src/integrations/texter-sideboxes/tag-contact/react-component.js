@@ -9,6 +9,8 @@ import {
   flexStyles,
   inlineStyles
 } from "../../../components/AssignmentTexter/StyleControls";
+import CheckIcon from "material-ui/svg-icons/action/check-circle";
+import CircularProgress from "material-ui/CircularProgress";
 
 export const displayName = () => "Tagging Contacts";
 
@@ -32,7 +34,7 @@ export class TexterSidebox extends React.Component {
 
   render() {
     const { campaign, contact } = this.props;
-    const { newTags } = this.state;
+    const { newTags, submitted } = this.state;
     const currentTags = {};
     contact.tags.forEach(t => {
       currentTags[t.id] = t.name;
@@ -53,7 +55,8 @@ export class TexterSidebox extends React.Component {
                 newTags: {
                   ...newTags,
                   [tag.id]: newTags[tag.id] ? false : tag.name
-                }
+                },
+                submitted: 0
               })
             }
             label={tag.name}
@@ -91,12 +94,21 @@ export class TexterSidebox extends React.Component {
                 });
             });
           }}
-          label={settings.tagButtonText || "Request support"}
+          label={settings.tagButtonText || "Request help"}
+          icon={
+            (submitted === 1 && (
+              <CircularProgress style={{ lineHeight: 1 }} size={16} />
+            )) ||
+            (submitted === 2 && <CheckIcon />) ||
+            null
+          }
           className={css(flexStyles.flatButton)}
           labelStyle={inlineStyles.flatButtonLabel}
-          disabled={!Object.keys(newTags).filter(tid => newTags[tid]).length}
-        />{" "}
-        {this.state.submitted}
+          disabled={
+            !Object.keys(newTags).filter(tid => newTags[tid]).length ||
+            submitted >= 1
+          }
+        />
       </div>
     );
   }
