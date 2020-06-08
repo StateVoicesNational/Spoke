@@ -222,13 +222,11 @@ export async function getConversations(
     const rows = await tagsQuery;
 
     const contactTags = {};
-    rows.forEach(appliedTag => {
-      const campaignContactId = Number(appliedTag.campaign_contact_id);
+    rows.forEach(tag => {
+      const campaignContactId = Number(tag.campaign_contact_id);
       contactTags[campaignContactId] = contactTags[campaignContactId] || [];
-      contactTags[campaignContactId].push(appliedTag);
+      contactTags[campaignContactId].push(tag);
     });
-
-    console.log("contactTags, conversations", contactTags, conversations);
 
     conversations.forEach(convo => {
       // eslint-disable-next-line no-param-reassign
