@@ -113,7 +113,7 @@ const query = async ({ campaignContactId }) => {
         .exists(cacheKey(campaignContactId))
         .lrange(cacheKey(campaignContactId), 0, -1)
         .execAsync();
-      console.log("messageCache exist?", exists, messages);
+      // console.log("messageCache exist?", exists, messages);
       if (exists) {
         // note: lrange returns messages in reverse order
         return messages.reverse().map(m => JSON.parse(m));
