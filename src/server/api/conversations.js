@@ -3,6 +3,7 @@ import { Assignment, r, cacheableData, loaders } from "../models";
 import { addWhereClauseForContactsFilterMessageStatusIrrespectiveOfPastDue } from "./assignment";
 import { addCampaignsFilterToQuery } from "./campaign";
 import { log } from "../../lib";
+import { getConfig } from "../api/lib/config";
 
 function getConversationsJoinsAndWhereClause(
   queryParam,
@@ -36,7 +37,11 @@ function getConversationsJoinsAndWhereClause(
     query = query.where("is_opted_out", contactsFilter.isOptedOut);
   }
 
-  if (contactsFilter && contactsFilter.tags) {
+  if (
+    getConfig("EXPERIMENTAL_TAGS", null, { truthy: 1 }) &&
+    contactsFilter &&
+    contactsFilter.tags
+  ) {
     const tags = contactsFilter.tags;
 
     let tagsSubquery = r.knex
@@ -203,8 +208,7 @@ export async function getConversations(
   }
 
   // tags query
-  console.log("includeTags", includeTags);
-  if (includeTags) {
+  if (getConfig("EXPERIMENTAL_TAGS", null, { truthy: 1 }) && includeTags) {
     const tagsQuery = r.knex
       .select(
         "tag_campaign_contact.campaign_contact_id as campaign_contact_id",

@@ -318,11 +318,13 @@ class IncomingMessageFilter extends Component {
               />
             </div>
             <div>
-              <TagsSelector
-                onChange={this.onTagsFilterChanged}
-                tagsFilter={this.state.tagsFilter}
-                tags={this.props.tags}
-              />
+              {window.EXPERIMENTAL_TAGS === true && (
+                <TagsSelector
+                  onChange={this.onTagsFilterChanged}
+                  tagsFilter={this.state.tagsFilter}
+                  tags={this.props.tags}
+                />
+              )}
               <SelectedCampaigns
                 campaigns={this.state.selectedCampaigns}
                 onDeleteRequested={this.handleCampaignRemoved}
