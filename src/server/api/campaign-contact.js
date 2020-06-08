@@ -1,5 +1,6 @@
 import { CampaignContact, r, cacheableData } from "../models";
 import { mapFieldsToModel } from "./lib/utils";
+import { getConfig } from "./lib/config";
 import { log, getTopMostParent, zipToTimeZone } from "../../lib";
 
 export const resolvers = {

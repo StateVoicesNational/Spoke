@@ -42,7 +42,7 @@ export const contactDataFragment = `
 `;
 
 export const dataQueryString = `
-  query getContacts($assignmentId: String!, $contactsFilter: ContactsFilter!) {
+  query getContacts($assignmentId: String!, $contactsFilter: ContactsFilter!, $tagGroup: String) {
     assignment(id: $assignmentId) {
       id
       userCannedResponses {
@@ -75,7 +75,7 @@ export const dataQueryString = `
         textingHoursEnforced
         organization {
           id
-          tags {
+          tags(group: $tagGroup) {
             id
             name
           }
@@ -235,7 +235,8 @@ const queries = {
           isOptedOut: false,
           validTimezone: true
         },
-        assignmentId: ownProps.params.assignmentId
+        assignmentId: ownProps.params.assignmentId,
+        tagGroup: "texter-tags"
       },
       fetchPolicy: "network-only",
       pollInterval: 20000

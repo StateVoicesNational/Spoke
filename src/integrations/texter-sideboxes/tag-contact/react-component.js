@@ -77,6 +77,7 @@ export class TexterSidebox extends React.Component {
           onClick={() => {
             const self = this;
             this.setState({ submitted: 1 }, () => {
+              // TODO: include old tags as well, not just new tags
               const tags = Object.keys(newTags)
                 .filter(tid => newTags[tid])
                 .map(tid => ({ id: tid, name: newTags[tid] }));
