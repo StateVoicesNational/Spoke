@@ -11,7 +11,7 @@ describe("Tags list with several tags", () => {
   // given
 
   const data = {
-    tags: {
+    organization: {
       tags: [
         {
           id: "1",
