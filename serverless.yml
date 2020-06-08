@@ -1,0 +1,93 @@
+service: spoke
+
+frameworkVersion: ">=1.0.0 <2.0.0"
+
+custom:
+  stage: ${opt:stage, 'prod'}
+  region: ${opt:region, 'us-east-1'}
+  contentCompression: 1024
+  baseUrl: ${ssm:/${self:custom.stage}/spoke/BASE_URL~true}
+  vpcConfig:
+    subnetIds:
+      - "${ssm:/vpc/subnets/private/id/0~true}"
+      - "${ssm:/vpc/subnets/private/id/1~true}"
+      - "${ssm:/vpc/subnets/private/id/2~true}"
+    securityGroupIds:
+      - "${ssm:/vpc/security-group/default/id~true}"
+
+provider:
+  name: aws
+  runtime: nodejs10.x
+  deploymentBucket:
+    arn: ${ssm:/${self:custom.stage}/s3/lambda-deploy/bucket/arn~true}
+    blockPublicAccess: true
+  environment:
+    STAGE: ${self:custom.stage}
+    NODE_ENV: production
+    ASSETS_DIR: ./build/client/assets
+    ASSETS_MAP_FILE: assets.json
+    STATIC_BASE_URL: /assets/
+    AWS_S3_BUCKET_NAME: ${ssm:/${self:custom.stage}/s3/spoke-private/bucket/name~true}
+    PHONE_NUMBER_COUNTRY: US
+    SUPPRESS_SELF_INVITE: 1
+    SUPPRESS_SEED_CALLS: 1
+    SUPPRESS_MIGRATIONS: 1
+    SUPPRESS_DATABASE_AUTOCREATE: 1
+    PASSPORT_STRATEGY: auth0
+    AUTH0_DOMAIN: ${ssm:/${self:custom.stage}/spoke/AUTH0_DOMAIN~true}
+    AUTH0_CLIENT_ID: ${ssm:/${self:custom.stage}/spoke/AUTH0_CLIENT_ID~true}
+    AUTH0_CLIENT_SECRET: ${ssm:/${self:custom.stage}/spoke/AUTH0_CLIENT_SECRET~true}
+    DST_REFERENCE_TIMEZONE: America/New_York
+    DB_TYPE: pg
+    DB_PORT: 5432
+    DB_HOST: ${ssm:/${self:custom.stage}/spoke/DB_HOST~true}
+    DB_NAME: postgres
+    DB_USER: postgres
+    DB_PASSWORD: ${ssm:/${self:custom.stage}/spoke/DB_PASSWORD~true}
+    DB_MIN_POOL: 1
+    DB_MAX_POOL: 3
+    CACHE_PREFIX: spoke-
+    JOBS_SAME_PROCESS: 1
+    OPTOUTS_SHARE_ALL_ORGS: 1
+    BASE_URL: ${self:custom.baseUrl}
+    SESSION_SECRET: ${ssm:/${self:custom.stage}/spoke/SESSION_SECRET~true}
+    REDIS_URL: redis://${ssm:/${self:custom.stage}/spoke/REDIS_PRIMARY_ENDPOINT~true}:6379/0
+    DEFAULT_SERVICE: fakeservice
+    # TWILIO_ACCOUNT_SID: ${ssm:/${self:custom.stage}/spoke/TWILIO_ACCOUNT_SID~true}
+    # TWILIO_AUTH_TOKEN: ${ssm:/${self:custom.stage}/spoke/TWILIO_AUTH_TOKEN~true}
+    # TWILIO_MESSAGE_SERVICE_SID: ${ssm:/${self:custom.stage}/spoke/TWILIO_MESSAGE_SERVICE_SID~true}
+    # TWILIO_STATUS_CALLBACK_URL: ${self:custom.baseUrl}/twilio-message-report
+  iamRoleStatements:
+    - Effect: Allow
+      Action: "s3:*"
+      Resource:
+        - "${ssm:/${self:custom.stage}/s3/spoke-private/bucket/arn~true}"
+        - "${ssm:/${self:custom.stage}/s3/spoke-private/bucket/arn~true}/*"
+
+functions:
+  api:
+    handler: lambda.handler
+    timeout: 900
+    vpc: ${self:custom.vpcConfig}
+    events:
+      - http: ANY /
+      - http: ANY {proxy+}
+
+plugins:
+  - serverless-api-compression
+
+package:
+  excludeDevDependencies: true
+  package:
+  exclude:
+    - "*"
+    - "webpack/**"
+    - ".github/**"
+    - "dev-tools/**"
+    - "docs/**"
+    - "__test__/**"
+    - "__mocks__/**"
+    - "**/node_modules/aws-sdk/**" # included on Lambda.
+    - "!package.json"
+    - "!lambda.js"
+    - "!knexfile.js"

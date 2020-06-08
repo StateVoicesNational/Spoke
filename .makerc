@@ -1,0 +1,6 @@
+# Environment for Serverless deploys
+export NODE_ENV=production
+export OUTPUT_DIR=./build
+export ASSETS_DIR=./build/client/assets
+export ASSETS_MAP_FILE=assets.json
+export PHONE_NUMBER_COUNTRY=US
