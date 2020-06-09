@@ -258,6 +258,7 @@ export class IncomingMessageList extends Component {
     const { clearSelectedMessages } = this.props;
     const displayPage = Math.floor(offset / limit) + 1;
     const tableData = prepareDataTableData(conversations);
+
     return (
       <div>
         <DataTables
@@ -283,6 +284,7 @@ export class IncomingMessageList extends Component {
           conversation={this.state.activeConversation}
           onRequestClose={this.handleCloseConversation}
           onForceRefresh={this.props.onForceRefresh}
+          organizationId={this.props.organizationId}
         />
       </div>
     );

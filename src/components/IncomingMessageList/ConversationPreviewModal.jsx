@@ -6,6 +6,10 @@ import Dialog from "material-ui/Dialog";
 import FlatButton from "material-ui/FlatButton";
 import FlagIcon from "material-ui/svg-icons/content/flag";
 import Avatar from "material-ui/Avatar";
+import CopyIcon from "material-ui/svg-icons/content/content-copy";
+import CheckIcon from "material-ui/svg-icons/navigation/check";
+import IconButton from "material-ui/IconButton/IconButton";
+import TextField from "material-ui/TextField";
 
 import theme from "../../styles/theme";
 
@@ -148,6 +152,8 @@ export class InnerConversationPreviewModal extends Component {
   constructor(props) {
     super(props);
 
+    this.handleCopyToClipboard = this.handleCopyToClipboard.bind(this);
+
     this.state = {
       optOutError: ""
     };
@@ -181,11 +187,54 @@ export class InnerConversationPreviewModal extends Component {
     }
   };
 
+  handleCopyToClipboard = () => {
+    this.refs.convoLink.focus();
+    document.execCommand("copy");
+    this.setState({ justCopied: true });
+    setTimeout(() => {
+      this.setState({ justCopied: false });
+    }, 2000);
+  };
+
   render() {
-    const { conversation } = this.props;
+    const { conversation, organizationId } = this.props;
     const isOpen = conversation !== undefined;
 
+    const { host, protocol } = document.location;
+    const { assignmentId, campaignContactId } = conversation || {};
+    const url = `${protocol}//${host}/app/${organizationId}/todos/${assignmentId}/allreplies?contact=${campaignContactId}`;
+
     const primaryActions = [
+      <span>
+        <IconButton
+          style={{ padding: 0, height: "20px", width: "35px" }}
+          iconStyle={{ height: "20px", width: "25px" }}
+          onClick={this.handleCopyToClipboard}
+          tooltip={
+            this.state.justCopied
+              ? "Copied!"
+              : "Copy conversation link to clipboard"
+          }
+          tooltipPosition="top-right"
+        >
+          {this.state.justCopied ? (
+            <CheckIcon color={theme.colors.green} />
+          ) : (
+            <CopyIcon />
+          )}
+        </IconButton>
+        <TextField
+          ref="convoLink"
+          value={url}
+          underlineShow={false}
+          inputStyle={{ visibility: "visible", height: "1px", width: "1px" }}
+          style={{ width: "1px", height: "1px" }}
+          onFocus={event => event.target.select()}
+        />
+        <a href={url} target="_blank">
+          GO TO CONVERSATION
+        </a>
+      </span>,
       <FlatButton
         {...dataTest("conversationPreviewModalOptOutButton")}
         label="Opt-Out"
@@ -220,6 +269,7 @@ export class InnerConversationPreviewModal extends Component {
 
 InnerConversationPreviewModal.propTypes = {
   organizationTags: PropTypes.object,
+  organizationId: PropTypes.string,
   conversation: PropTypes.object,
   onRequestClose: PropTypes.func,
   mutations: PropTypes.object,
