@@ -10,7 +10,7 @@ import MenuItem from "material-ui/MenuItem";
 import theme from "../styles/theme";
 import { dataSourceItem } from "./utils";
 import SelectedCampaigns from "./SelectedCampaigns";
-import TagsSelector from "./TagsSelector.jsx";
+import TagsSelector from "./TagsSelector";
 
 import { StyleSheet, css } from "aphrodite";
 
