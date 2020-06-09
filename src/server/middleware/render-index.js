@@ -97,6 +97,9 @@ export default function renderIndex(html, css, assetMap) {
       window.EXPERIMENTAL_TAGS=${getConfig("EXPERIMENTAL_TAGS", null, {
         truthy: 1
       }) || false}
+      window.HOLD_ENTER_KEY=${getConfig("HOLD_ENTER_KEY", null, {
+        truthy: 1
+      }) || false}
       window.TWILIO_MULTI_ORG=${process.env.TWILIO_MULTI_ORG || false}
       window.DEPRECATED_TEXTERUI="${process.env.DEPRECATED_TEXTERUI || ""}"
       window.TEXTER_SIDEBOXES="${process.env.TEXTER_SIDEBOXES || ""}"
