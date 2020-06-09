@@ -4,13 +4,16 @@ import { Link } from "react-router";
 import yup from "yup";
 import Form from "react-formal";
 import FlatButton from "material-ui/FlatButton";
+import TagChip from "../../../components/TagChip";
+import theme from "../../../styles/theme";
+import CheckIcon from "material-ui/svg-icons/action/check-circle";
+import CircularProgress from "material-ui/CircularProgress";
+import DoneIcon from "material-ui/svg-icons/action/done";
 import { css } from "aphrodite";
 import {
   flexStyles,
   inlineStyles
 } from "../../../components/AssignmentTexter/StyleControls";
-import CheckIcon from "material-ui/svg-icons/action/check-circle";
-import CircularProgress from "material-ui/CircularProgress";
 
 export const displayName = () => "Tagging Contacts";
 
@@ -45,30 +48,43 @@ export class TexterSidebox extends React.Component {
     // save button
     // get campaign.texterUIConfig
     console.log("tag-contact render", typeof settings, settings, campaign);
+    const escalatedTags = campaign.organization.tags.filter(
+      tag => tag.id in currentTags
+    );
+    const otherTags = campaign.organization.tags.filter(
+      tag => !(tag.id in currentTags)
+    );
     return (
-      <div style={{ marginLeft: "20px" }}>
+      <div>
         <h3>{settings.tagHeaderText || "Tag a contact here for help"}</h3>
-        {campaign.organization.tags.map(tag => (
-          <FlatButton
-            onClick={() =>
+        <div>
+          {escalatedTags.map(tag => (
+            <TagChip
+              text={tag.name}
+              icon={<CheckIcon />}
+              backgroundColor={theme.colors.white}
+            />
+          ))}
+        </div>
+        {otherTags.map(tag => (
+          <TagChip
+            text={tag.name}
+            icon={(newTags[tag.id] && <DoneIcon />) || null}
+            backgroundColor={
+              newTags[tag.id] ? theme.colors.white : theme.colors.lightYellow
+            }
+            onClick={() => {
+              if (tag.id in currentTags) {
+                return;
+              }
               this.setState({
                 newTags: {
                   ...newTags,
                   [tag.id]: newTags[tag.id] ? false : tag.name
                 },
                 submitted: 0
-              })
-            }
-            label={tag.name}
-            backgroundColor={
-              (tag.id in currentTags && "yellow") ||
-              (newTags[tag.id] && "white") ||
-              null
-            }
-            style={{ marginRight: "10px" }}
-            className={css(flexStyles.flatButton)}
-            labelStyle={inlineStyles.flatButtonLabel}
-            disabled={tag.id in currentTags}
+              });
+            }}
           />
         ))}
         <br />
@@ -100,7 +116,7 @@ export class TexterSidebox extends React.Component {
             (submitted === 1 && (
               <CircularProgress style={{ lineHeight: 1 }} size={16} />
             )) ||
-            (submitted === 2 && <CheckIcon />) ||
+            (submitted === 2 && <DoneIcon />) ||
             null
           }
           className={css(flexStyles.flatButton)}

@@ -10,6 +10,8 @@ const logFunction = data => {
   console.log("logging data", data);
 };
 
+const sideboxes = global.TEXTER_SIDEBOXES;
+
 export const tests = {
   a: {
     disabled: false,
@@ -29,6 +31,10 @@ export const tests = {
         organization: {
           optOutMessage:
             "Sorry about that, removing you immediately -- have a good day!"
+        },
+        texterUIConfig: {
+          options: '{"tag-contact": 1, "contact-reference": 1}',
+          sideboxChoices: (sideboxes && sideboxes.split(",")) || []
         },
         interactionSteps: [
           {
@@ -81,7 +87,15 @@ export const tests = {
         useDynamicAssignment: false,
         organization: {
           optOutMessage:
-            "Sorry about that, removing you immediately -- have a good day!"
+            "Sorry about that, removing you immediately -- have a good day!",
+          tags: [
+            { id: 1, name: "Spanish" },
+            { id: 1, name: "911" }
+          ]
+        },
+        texterUIConfig: {
+          options: '{"tag-contact": 1, "contact-reference": 1}',
+          sideboxChoices: (sideboxes && sideboxes.split(",")) || []
         },
         interactionSteps: [
           {
@@ -165,6 +179,7 @@ export const tests = {
       firstName: "Earl",
       lastName: "Femur",
       messageStatus: "needsResponse",
+      tags: [],
       location: {
         city: "Youngstown",
         state: "OH",
@@ -210,7 +225,15 @@ export const tests = {
         useDynamicAssignment: false,
         organization: {
           optOutMessage:
-            "Sorry about that, removing you immediately -- have a good day!"
+            "Sorry about that, removing you immediately -- have a good day!",
+          tags: [
+            { id: 1, name: "Spanish" },
+            { id: 1, name: "911" }
+          ]
+        },
+        texterUIConfig: {
+          options: '{"tag-contact": 1, "contact-reference": 1}',
+          sideboxChoices: (sideboxes && sideboxes.split(",")) || []
         },
         interactionSteps: [
           {

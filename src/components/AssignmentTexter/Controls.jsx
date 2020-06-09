@@ -75,14 +75,15 @@ export class AssignmentTexterContactControls extends React.Component {
     setTimeout(() => {
       node.scrollTop = Math.floor(node.scrollHeight);
     }, 0);
-
-    document.body.addEventListener("keyup", this.onKeyUp);
+    const keyAction = window.HOLD_ENTER_KEY ? "keydown" : "keyup";
+    document.body.addEventListener(keyAction, this.onKeyUp);
     window.addEventListener("resize", this.onResize);
     window.addEventListener("orientationchange", this.onResize);
   }
 
   componentWillUnmount() {
-    document.body.removeEventListener("keyup", this.onKeyUp);
+    const keyAction = window.HOLD_ENTER_KEY ? "keydown" : "keyup";
+    document.body.removeEventListener(keyAction, this.onKeyUp);
     window.removeEventListener("resize", this.onResize);
     window.removeEventListener("orientationchange", this.onResize);
   }
@@ -114,7 +115,11 @@ export class AssignmentTexterContactControls extends React.Component {
 
   getSideboxes(props) {
     const popups = [];
-    console.log("getSideboxes", sideboxes);
+    console.log(
+      "getSideboxes",
+      sideboxes,
+      props.campaign.texterUIConfig.sideboxChoices
+    );
     // TODO: need to filter texterUIConfig.options (and json parse) for which ones are marked as enabled
     // and then pass options data into the component
     const enabledSideboxes = props.campaign.texterUIConfig.sideboxChoices
@@ -157,9 +162,8 @@ export class AssignmentTexterContactControls extends React.Component {
     // Enter is needed for 'click'ing buttons with the keyboard
     if (
       evt.key === "Enter" &&
-      (this.props.messageStatusFilter === "needsMessage" ||
-        // need to use ctrlKey in non-first texting context for accessibility
-        evt.ctrlKey)
+      // need to use ctrlKey in non-first texting context for accessibility
+      evt.ctrlKey
     ) {
       evt.preventDefault();
       if (this.state.optOutDialogOpen) {
@@ -168,6 +172,24 @@ export class AssignmentTexterContactControls extends React.Component {
       } else {
         this.handleClickSendMessageButton();
       }
+      return;
+    }
+
+    // Allow initial sends to use any key, avoiding RSI injuries
+    // the texter can distribute which button to press across the keyboard
+    if (
+      this.props.messageStatusFilter === "needsMessage" &&
+      !evt.ctrlKey &&
+      !evt.metaKey &&
+      !evt.altKey &&
+      ((evt.keyCode >= 65 /*a*/ && evt.keyCode <= 90) /*z*/ ||
+        evt.key === "Enter" ||
+        evt.key === "Space" ||
+        evt.key === "Semicolon")
+    ) {
+      evt.preventDefault();
+      this.handleClickSendMessageButton();
+      return;
     }
   };
 

@@ -239,14 +239,24 @@ export class IncomingMessageList extends Component {
     this.setState({ activeConversation: undefined });
   };
 
-  renderTags = tags => (
-    <div>
-      {tags &&
-        tags
-          .filter(tag => !tag.resolvedAt)
-          .map(tag => <TagChip text={this.state.tags[tag.id]} />)}
-    </div>
-  );
+  renderTags = tags => {
+    // dedupe names from server
+    const tagNames = {};
+    tags &&
+      tags
+        .filter(tag => !tag.resolvedAt)
+        .forEach(tag => {
+          tagNames[this.state.tags[tag.id]] = 1;
+        });
+    console.log("tagnames", tagNames);
+    return (
+      <div>
+        {Object.keys(tagNames).map(name => (
+          <TagChip text={name} />
+        ))}
+      </div>
+    );
+  };
 
   render() {
     if (this.props.conversations.loading) {
