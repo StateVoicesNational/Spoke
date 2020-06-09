@@ -433,7 +433,7 @@ const rootMutations = {
     findNewCampaignContact,
     joinOrganization,
     sendMessage,
-    userAgreeTerms: async (_, { userId }, { user, loaders }) => {
+    userAgreeTerms: async (_, { userId }, { user }) => {
       if (user.id === Number(userId)) {
         return user.terms ? user : null;
       }
@@ -448,7 +448,7 @@ const rootMutations = {
     },
 
     sendReply: async (_, { id, message }, { user, loaders }) => {
-      const contact = await loaders.campaignContact.load(id);
+      const contact = await cacheableData.campaignContact.load(id);
       const campaign = await loaders.campaign.load(contact.campaign_id);
 
       await accessRequired(user, campaign.organization_id, "ADMIN");
@@ -487,7 +487,7 @@ const rootMutations = {
         }),
         contact
       );
-      return loaders.campaignContact.load(id);
+      return await cacheableData.campaignContact.load(id);
     },
     exportCampaign: async (_, { id }, { user, loaders }) => {
       const campaign = await loaders.campaign.load(id);
@@ -512,7 +512,7 @@ const rootMutations = {
     editOrganizationRoles: async (
       _,
       { userId, organizationId, roles },
-      { user, loaders }
+      { user }
     ) => {
       const currentRoles = (
         await r
@@ -644,7 +644,7 @@ const rootMutations = {
     updateTextingHoursEnforcement: async (
       _,
       { organizationId, textingHoursEnforced },
-      { user, loaders }
+      { user }
     ) => {
       await accessRequired(user, organizationId, "SUPERVOLUNTEER");
 
@@ -653,7 +653,7 @@ const rootMutations = {
       });
       await cacheableData.organization.clear(organizationId);
 
-      return await loaders.organization.load(organizationId);
+      return await cacheableData.load(organizationId);
     },
     updateOptOutMessage: async (
       _,
@@ -826,16 +826,16 @@ const rootMutations = {
 
       return newCampaign;
     },
-    unarchiveCampaign: async (_, { id }, { user, loaders }) => {
-      const campaign = await loaders.campaign.load(id);
+    unarchiveCampaign: async (_, { id }, { user }) => {
+      const campaign = await cacheableData.campaign.load(id);
       await accessRequired(user, campaign.organization_id, "ADMIN");
       campaign.is_archived = false;
       await campaign.save();
       await cacheableData.campaign.clear(id);
       return campaign;
     },
-    archiveCampaign: async (_, { id }, { user, loaders }) => {
-      const campaign = await loaders.campaign.load(id);
+    archiveCampaign: async (_, { id }, { user }) => {
+      const campaign = await cacheableData.campaign.load(id);
       await accessRequired(user, campaign.organization_id, "ADMIN");
       campaign.is_archived = true;
       await campaign.save();
@@ -863,6 +863,7 @@ const rootMutations = {
           await cacheableData.campaign.clear(campaign.id);
         })
       );
+      loaders.campaign.clearAll();
       return campaigns;
     },
     startCampaign: async (
@@ -870,7 +871,7 @@ const rootMutations = {
       { id },
       { user, loaders, remainingMilliseconds }
     ) => {
-      const campaign = await loaders.campaign.load(id);
+      const campaign = await cacheableData.campaign.load(id);
       await accessRequired(user, campaign.organization_id, "ADMIN");
       const organization = await loaders.organization.load(
         campaign.organization_id
@@ -931,7 +932,7 @@ const rootMutations = {
       }
       return editCampaign(id, campaign, loaders, user, origCampaign);
     },
-    deleteJob: async (_, { campaignId, id }, { user, loaders }) => {
+    deleteJob: async (_, { campaignId, id }, { user }) => {
       const campaign = await Campaign.get(campaignId);
       await accessRequired(user, campaign.organization_id, "ADMIN");
       const res = await r
@@ -943,7 +944,7 @@ const rootMutations = {
         .delete();
       return { id };
     },
-    createCannedResponse: async (_, { cannedResponse }, { user, loaders }) => {
+    createCannedResponse: async (_, { cannedResponse }, { user }) => {
       authRequired(user);
 
       const cannedResponseInstance = new CannedResponse({
@@ -969,19 +970,15 @@ const rootMutations = {
         .andWhere({ user_id: cannedResponse.userId })
         .del();
       await query;
-      cacheableData.cannedResponse.clearQuery({
+      await cacheableData.cannedResponse.clearQuery({
         campaignId: cannedResponse.campaignId,
         userId: cannedResponse.userId
       });
       return cannedResponseInstance;
     },
-    createOrganization: async (
-      _,
-      { name, userId, inviteId },
-      { loaders, user }
-    ) => {
+    createOrganization: async (_, { name, userId, inviteId }, { user }) => {
       authRequired(user);
-      const invite = await loaders.invite.load(inviteId);
+      const invite = await Invite.get(inviteId);
       if (!invite || !invite.is_valid) {
         throw new GraphQLError({
           status: 400,
@@ -1011,9 +1008,11 @@ const rootMutations = {
     editCampaignContactMessageStatus: async (
       _,
       { messageStatus, campaignContactId },
-      { loaders, user }
+      { user }
     ) => {
-      const contact = await loaders.campaignContact.load(campaignContactId);
+      const contact = await cacheableData.campaignContact.load(
+        campaignContactId
+      );
       await assignmentRequired(user, contact.assignment_id, null, contact);
       contact.message_status = messageStatus;
       await cacheableData.campaignContact.updateStatus(contact, messageStatus);
@@ -1039,8 +1038,6 @@ const rootMutations = {
       );
       let triedUpdate = false;
       const contacts = contactIds.map(async (contactId, cIdx) => {
-        // note we are loading from cacheableData and NOT loaders to avoid loader staleness
-        // this is relevant for the possible multiple web dynos
         let contact =
           cIdx === 0
             ? firstContact
@@ -1080,7 +1077,9 @@ const rootMutations = {
       { optOut, campaignContactId },
       { loaders, user }
     ) => {
-      const contact = await loaders.campaignContact.load(campaignContactId);
+      const contact = await cacheableData.campaignContact.load(
+        campaignContactId
+      );
       const campaign = await loaders.campaign.load(contact.campaign_id);
 
       console.log(
@@ -1113,16 +1112,18 @@ const rootMutations = {
         campaignContactId,
         contact.campaign_id
       );
-      loaders.campaignContact.clear(campaignContactId.toString());
+      await cacheableData.campaignContact.clear(campaignContactId.toString());
 
-      return loaders.campaignContact.load(campaignContactId);
+      return cacheableData.campaignContact.load(campaignContactId);
     },
     deleteQuestionResponses: async (
       _,
       { interactionStepIds, campaignContactId },
-      { loaders, user }
+      { user }
     ) => {
-      const contact = await loaders.campaignContact.load(campaignContactId);
+      const contact = await cacheableData.campaignContact.load(
+        campaignContactId
+      );
       await assignmentRequired(user, contact.assignment_id, null, contact);
       // TODO: maybe undo action_handler
       await r
@@ -1205,8 +1206,8 @@ const rootMutations = {
         newTexterUserId
       );
     },
-    importCampaignScript: async (_, { campaignId, url }, { loaders, user }) => {
-      const campaign = await loaders.campaign.load(campaignId);
+    importCampaignScript: async (_, { campaignId, url }, { user }) => {
+      const campaign = await cacheableData.campaign.load(campaignId);
       await accessRequired(user, campaign.organization_id, "ADMIN", true);
       if (campaign.is_started || campaign.is_archived) {
         throw new GraphQLError(

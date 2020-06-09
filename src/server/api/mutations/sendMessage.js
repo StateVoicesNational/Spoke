@@ -1,7 +1,6 @@
 import { GraphQLError } from "graphql/error";
 
-import { log } from "../../../lib";
-import { Message, r, cacheableData } from "../../models";
+import { Message, cacheableData } from "../../models";
 import serviceMap from "../lib/services";
 
 import { getSendBeforeTimeUtc } from "../../../lib/timezones";
@@ -15,7 +14,8 @@ export const sendMessage = async (
   { message, campaignContactId },
   { loaders, user }
 ) => {
-  let contact = await loaders.campaignContact.load(campaignContactId);
+  // contact is mutated, so we don't use a loader
+  let contact = await cacheableData.campaignContact.load(campaignContactId);
   const campaign = await loaders.campaign.load(contact.campaign_id);
   if (
     contact.assignment_id !== parseInt(message.assignmentId) ||

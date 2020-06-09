@@ -94,18 +94,17 @@ export async function getMethodChoiceData(
   ingestMethod,
   organization,
   campaign,
-  user,
-  loaders
+  user
 ) {
   const cacheFunc =
     ingestMethod.clientChoiceDataCacheKey || (org => `${org.id}`);
   const cacheKey = choiceDataCacheKey(
     ingestMethod.name,
-    cacheFunc(organization, campaign, user, loaders)
+    cacheFunc(organization, campaign, user)
   );
   return (
     await getSetCacheableResult(cacheKey, async () =>
-      ingestMethod.getClientChoiceData(organization, campaign, user, loaders)
+      ingestMethod.getClientChoiceData(organization, campaign, user)
     )
   ).data;
 }
