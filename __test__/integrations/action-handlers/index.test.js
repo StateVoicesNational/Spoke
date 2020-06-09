@@ -1,4 +1,4 @@
-import { r, createLoaders } from "../../../src/server/models";
+import { r } from "../../../src/server/models";
 import each from "jest-each";
 import {
   setupTest,
@@ -532,12 +532,9 @@ describe("action-handlers/index", () => {
   });
 
   describe("#getActionChoiceData", () => {
-    let loaders;
     let expectedReturn;
 
     beforeEach(async () => {
-      loaders = createLoaders();
-
       expectedReturn = [
         {
           details: '{"hex":"#B22222","rgb":{"r":178,"g":34,"b":34}}',
@@ -557,38 +554,36 @@ describe("action-handlers/index", () => {
       const returned = await ActionHandlers.getActionChoiceData(
         ComplexTestAction,
         organization,
-        user,
-        loaders
+        user
       );
 
       expect(returned).toEqual(expectedReturn);
 
       expect(ComplexTestAction.clientChoiceDataCacheKey.mock.calls).toEqual([
-        [organization, user, loaders]
+        [organization, user]
       ]);
 
       expect(ComplexTestAction.getClientChoiceData.mock.calls).toEqual([
-        [organization, user, loaders]
+        [organization, user]
       ]);
 
       // handles the second call from the cache
       const secondCallReturned = await ActionHandlers.getActionChoiceData(
         ComplexTestAction,
         organization,
-        user,
-        loaders
+        user
       );
 
       expect(secondCallReturned).toEqual(expectedReturn);
 
       expect(ComplexTestAction.clientChoiceDataCacheKey.mock.calls).toEqual([
-        [organization, user, loaders],
-        [organization, user, loaders]
+        [organization, user],
+        [organization, user]
       ]);
 
       expect(ComplexTestAction.getClientChoiceData.mock.calls).toEqual([
-        [organization, user, loaders],
-        ...(!r.redis && [[organization, user, loaders]])
+        [organization, user],
+        ...(!r.redis && [[organization, user]])
       ]);
     });
 
@@ -597,8 +592,7 @@ describe("action-handlers/index", () => {
         const returned = await ActionHandlers.getActionChoiceData(
           TestAction,
           organization,
-          user,
-          loaders
+          user
         );
         expect(returned).toEqual([]);
       });
@@ -621,8 +615,7 @@ describe("action-handlers/index", () => {
           const returned = await ActionHandlers.getActionChoiceData(
             fakeAction,
             { id: 99 },
-            user,
-            loaders
+            user
           );
           expect(returned).toEqual(expectedReturn);
           expect(ActionHandlers.getSetCacheableResult.mock.calls).toEqual([
@@ -642,8 +635,7 @@ describe("action-handlers/index", () => {
           const returned = await ActionHandlers.getActionChoiceData(
             fakeAction,
             organization,
-            user,
-            loaders
+            user
           );
           expect(returned).toEqual([]);
         });
@@ -659,8 +651,7 @@ describe("action-handlers/index", () => {
           const returned = await ActionHandlers.getActionChoiceData(
             fakeAction,
             organization,
-            user,
-            loaders
+            user
           );
           expect(returned).toEqual([]);
         });
@@ -677,8 +668,7 @@ describe("action-handlers/index", () => {
           const returned = await ActionHandlers.getActionChoiceData(
             fakeAction,
             organization,
-            user,
-            loaders
+            user
           );
           expect(returned).toEqual([]);
         });
@@ -695,8 +685,7 @@ describe("action-handlers/index", () => {
           const returned = await ActionHandlers.getActionChoiceData(
             fakeAction,
             organization,
-            user,
-            loaders
+            user
           );
           expect(returned).toEqual([]);
         });
@@ -714,8 +703,7 @@ describe("action-handlers/index", () => {
           const returned = await ActionHandlers.getActionChoiceData(
             fakeAction,
             organization,
-            user,
-            loaders
+            user
           );
           expect(returned).toEqual([]);
           expect(log.error.mock.calls).toEqual([
@@ -740,8 +728,7 @@ describe("action-handlers/index", () => {
           const returned = await ActionHandlers.getActionChoiceData(
             fakeAction,
             organization,
-            user,
-            loaders
+            user
           );
           expect(returned).toEqual(expectedReturn);
           expect(log.error.mock.calls).toEqual([
@@ -769,8 +756,7 @@ describe("action-handlers/index", () => {
           const returned = await ActionHandlers.getActionChoiceData(
             fakeAction,
             organization,
-            user,
-            loaders
+            user
           );
           expect(returned).toEqual([]);
           expect(log.error.mock.calls).toEqual([

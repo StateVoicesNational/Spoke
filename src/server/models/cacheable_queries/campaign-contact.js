@@ -1,4 +1,4 @@
-import { r, loaders, CampaignContact } from "../../models";
+import { r, CampaignContact } from "../../models";
 import campaignCache from "./campaign";
 import optOutCache from "./opt-out";
 import organizationCache from "./organization";
@@ -219,11 +219,6 @@ const getMessageStatus = async (id, contactObj) => {
   return contact && contact.message_status;
 };
 
-const clearMemoizedCache = id => {
-  loaders.campaignContact.clear(String(id));
-  loaders.campaignContact.clear(Number(id));
-};
-
 const campaignContactCache = {
   clear: async (id, campaignId) => {
     if (r.redis) {
@@ -232,7 +227,6 @@ const campaignContactCache = {
         await r.redis.hdelAsync(contactAssignmentKey(id), id);
       }
     }
-    clearMemoizedCache(id);
   },
   load: async (id, opts) => {
     if (r.redis && CONTACT_CACHE_ENABLED) {
@@ -293,7 +287,6 @@ const campaignContactCache = {
       return;
     }
     console.log("campaign-contact loadMany", campaign.id);
-    loaders.campaignContact.clearAll();
     // 1. load the data
     let query = r
       .knex("campaign_contact")
@@ -432,7 +425,6 @@ const campaignContactCache = {
       assignment_id: newAssignmentId,
       user_id: newUserId
     });
-    clearMemoizedCache(contactId);
   },
   updateCampaignAssignmentCache: async (campaignId, contactIds) => {
     try {
@@ -528,7 +520,6 @@ const campaignContactCache = {
         await redisQuery.execAsync();
         //await updateAssignmentContact(contact, newStatus);
       }
-      clearMemoizedCache(contact.id);
     } catch (err) {
       console.log(
         "contact updateStatus Error",

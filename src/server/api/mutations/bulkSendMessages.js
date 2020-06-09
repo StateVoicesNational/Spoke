@@ -81,6 +81,5 @@ export const bulkSendMessages = async (
     );
   });
 
-  const contactMessages = await Promise.all(promises);
-  return contactMessages;
+  return await Promise.all(promises);
 };
