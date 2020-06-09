@@ -1,14 +1,10 @@
-import { getConfig, getFeatures } from "../lib/config";
+import { getFeatures } from "../lib/config";
 import { accessRequired } from "../errors";
 import { r, cacheableData } from "../../models";
 
-export const editOrganization = async (
-  _,
-  { id, organization },
-  { loaders, user }
-) => {
+export const editOrganization = async (_, { id, organization }, { user }) => {
   await accessRequired(user, id, "OWNER", true);
-  const orgRecord = cacheableData.organization.load(id);
+  const orgRecord = await cacheableData.organization.load(id);
   const features = getFeatures(orgRecord);
   const changes = {};
 
@@ -29,7 +25,5 @@ export const editOrganization = async (
   }
 
   await cacheableData.organization.clear(id);
-  return loaders.organization.load(id);
+  return await cacheableData.organization.load(id);
 };
-
-export default editOrganization;
