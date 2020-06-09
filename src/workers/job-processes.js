@@ -11,7 +11,8 @@ import {
   fixOrgless,
   clearOldJobs,
   importScript,
-  buyPhoneNumbers
+  buyPhoneNumbers,
+  startCampaignAsync
 } from "./jobs";
 import { setupUserNotificationObservers } from "../server/notifications";
 
@@ -32,7 +33,18 @@ const jobMap = {
   export: exportCampaign,
   assign_texters: assignTexters,
   import_script: importScript,
-  buy_phone_numbers: buyPhoneNumbers
+  buy_phone_numbers: buyPhoneNumbers,
+  start_campaign: startCampaignAsync
+};
+
+export const invokeJobFunction = async job => {
+  if (job.job_type in jobMap) {
+    await jobMap[job.job_type](job);
+  } else if (job.job_type.startsWith("ingest.")) {
+    await dispatchContactIngestLoad(job);
+  } else {
+    throw new Error(`Job of type ${job.job_type} not found`);
+  }
 };
 
 export async function processJobs() {
