@@ -119,11 +119,3 @@ export async function assignmentRequiredOrAdminRole(
   // is functionally identical but it allows us to mock assignmentRequired
   return await exports.assignmentRequired(user, assignmentId, null, contact);
 }
-
-export function superAdminRequired(user) {
-  authRequired(user);
-
-  if (!user.is_superadmin) {
-    throw new GraphQLError("You are not authorized to access that resource.");
-  }
-}
