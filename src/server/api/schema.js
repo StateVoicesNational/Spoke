@@ -3,7 +3,7 @@ import GraphQLJSON from "graphql-type-json";
 import { GraphQLError } from "graphql/error";
 import isUrl from "is-url";
 
-import { gzip, makeTree, getHighestRole } from "../../lib";
+import { log, gzip, makeTree, getHighestRole } from "../../lib";
 import { capitalizeWord } from "./lib/utils";
 import twilio from "./lib/twilio";
 
@@ -24,7 +24,6 @@ import {
   JobRequest,
   Message,
   Organization,
-  QuestionResponse,
   Tag,
   UserOrganization,
   r,
@@ -64,10 +63,11 @@ import { symmetricEncrypt } from "./lib/crypto";
 import Twilio from "twilio";
 
 import {
-  sendMessage,
   bulkSendMessages,
+  buyPhoneNumbers,
   findNewCampaignContact,
-  buyPhoneNumbers
+  sendMessage,
+  updateQuestionResponses
 } from "./mutations";
 
 const ActionHandlers = require("../../integrations/action-handlers");
@@ -321,7 +321,10 @@ async function updateInteractionSteps(
 
 const rootMutations = {
   RootMutation: {
+    bulkSendMessages,
     buyPhoneNumbers,
+    findNewCampaignContact,
+    sendMessage,
     userAgreeTerms: async (_, { userId }, { user, loaders }) => {
       if (user.id === Number(userId)) {
         return user.terms ? user : null;
@@ -1046,14 +1049,6 @@ const rootMutations = {
       }
       return contacts;
     },
-    findNewCampaignContact: async (
-      _,
-      { assignmentId, numberContacts },
-      { user }
-    ) => {
-      return await findNewCampaignContact(assignmentId, numberContacts, user);
-    },
-
     createOptOut: async (
       _,
       { optOut, campaignContactId },
@@ -1096,16 +1091,6 @@ const rootMutations = {
 
       return loaders.campaignContact.load(campaignContactId);
     },
-    bulkSendMessages: async (_, { assignmentId }, { loaders, user }) => {
-      return await bulkSendMessages(assignmentId, loaders, user);
-    },
-    sendMessage: async (
-      _,
-      { message, campaignContactId },
-      { loaders, user }
-    ) => {
-      return await sendMessage(message, campaignContactId, loaders, user);
-    },
     deleteQuestionResponses: async (
       _,
       { interactionStepIds, campaignContactId },
@@ -1125,80 +1110,7 @@ const rootMutations = {
 
       return contact;
     },
-    updateQuestionResponses: async (
-      _,
-      { questionResponses, campaignContactId },
-      { loaders, user }
-    ) => {
-      const contact = await loaders.campaignContact.load(campaignContactId);
-      const campaign = await loaders.campaign.load(contact.campaign_id);
-      await assignmentRequiredOrAdminRole(
-        user,
-        campaign.organization_id,
-        contact.assignment_id,
-        contact
-      );
-
-      await cacheableData.questionResponse.save(
-        campaignContactId,
-        questionResponses
-      );
-
-      // The rest is for ACTION_HANDLERS
-      const organization = await loaders.organization.load(
-        campaign.organization_id
-      );
-      const actionHandlers = getConfig("ACTION_HANDLERS", organization);
-      if (actionHandlers) {
-        const interactionSteps =
-          campaign.interactionSteps ||
-          (await cacheableData.campaign.dbInteractionSteps(campaign.id));
-
-        const count = questionResponses.length;
-
-        for (let i = 0; i < count; i++) {
-          const questionResponse = questionResponses[i];
-          const { interactionStepId, value } = questionResponse;
-
-          const interactionStepResult = interactionSteps.filter(
-            is =>
-              is.answer_actions &&
-              is.answer_option === value &&
-              is.parent_interaction_id === Number(interactionStepId)
-          );
-
-          const interactionStepAction =
-            interactionStepResult.length &&
-            interactionStepResult[0].answer_actions;
-          if (interactionStepAction) {
-            // run interaction step handler
-            try {
-              const handler = await ActionHandlers.getActionHandler(
-                interactionStepAction,
-                organization,
-                user
-              );
-              handler.processAction(
-                questionResponse,
-                interactionStepResult[0],
-                campaignContactId,
-                contact,
-                campaign,
-                organization
-              );
-            } catch (err) {
-              console.error(
-                "Handler for InteractionStep",
-                interactionStepId,
-                "Does Not Exist:",
-                interactionStepAction
-              );
-            }
-          }
-        }
-      }
-      return contact;
-    },
+    updateQuestionResponses,
     reassignCampaignContacts: async (
       _,
       { organizationId, campaignIdsContactIds, newTexterUserId },
@@ -1268,7 +1180,7 @@ const rootMutations = {
     },
     importCampaignScript: async (_, { campaignId, url }, { loaders, user }) => {
       const campaign = await loaders.campaign.load(campaignId);
-      await accessRequired(user, campaignId.organization_id, "ADMIN", true);
+      await accessRequired(user, campaign.organization_id, "ADMIN", true);
       if (campaign.is_started || campaign.is_archived) {
         throw new GraphQLError(
           "Cannot import a campaign script for a campaign that is started or archived"
@@ -1455,6 +1367,20 @@ const rootResolvers = {
     tags: async (_, { organizationId }, { user }) => {
       await accessRequired(user, organizationId, "SUPERVOLUNTEER");
       return getTags(organizationId);
+    },
+    user: async (_, { organizationId, userId }, { user }) => {
+      if (user.id !== userId) {
+        // User can view themselves
+        await accessRequired(user, organizationId, "ADMIN", true);
+      }
+      return r
+        .knex("user")
+        .join("user_organization", "user.id", "user_organization.user_id")
+        .where({
+          "user_organization.organization_id": organizationId,
+          "user.id": userId
+        })
+        .first();
     }
   }
 };

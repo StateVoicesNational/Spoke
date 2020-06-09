@@ -60,8 +60,6 @@ export const resolvers = {
 
       return Promise.all(promises);
     },
-    threeClickEnabled: organization =>
-      organization.features.indexOf("threeClick") !== -1,
     textingHoursEnforced: organization => organization.texting_hours_enforced,
     optOutMessage: organization =>
       (organization.features &&

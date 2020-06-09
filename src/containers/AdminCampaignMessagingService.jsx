@@ -5,7 +5,6 @@ import { withRouter } from "react-router";
 import gql from "graphql-tag";
 import theme from "../styles/theme";
 import DisplayLink from "../components/DisplayLink";
-import wrapMutations from "./hoc/wrap-mutations";
 import { StyleSheet, css } from "aphrodite";
 import { Table, TableBody, TableRow, TableRowColumn } from "material-ui/Table";
 
@@ -65,7 +64,7 @@ AdminCampaignMessagingService.propTypes = {
   data: PropTypes.object
 };
 
-const mapQueriesToProps = ({ ownProps }) => ({
+const queries = {
   data: {
     query: gql`
       query getCampaign($campaignId: String!) {
@@ -77,17 +76,14 @@ const mapQueriesToProps = ({ ownProps }) => ({
         }
       }
     `,
-    variables: {
-      organizationId: ownProps.params.organizationId,
-      campaignId: ownProps.params.campaignId
-    },
-    forceFetch: true
+    options: ownProps => ({
+      variables: {
+        organizationId: ownProps.params.organizationId,
+        campaignId: ownProps.params.campaignId
+      },
+      fetchPolicy: "network-only"
+    })
   }
-});
+};
 
-export default loadData(
-  wrapMutations(withRouter(AdminCampaignMessagingService)),
-  {
-    mapQueriesToProps
-  }
-);
+export default loadData({ queries })(withRouter(AdminCampaignMessagingService));

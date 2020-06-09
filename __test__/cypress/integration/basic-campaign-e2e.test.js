@@ -84,6 +84,7 @@ describe("End-to-end campaign flow", () => {
       cy.get(cardSelector)
         .find("button[data-test=sendFirstTexts]")
         .click();
+      // TODO: handle when order of contacts is reversed
       cy.get("textArea[name=messageText]").then(el => {
         expect(el).to.have.text(
           "Hi Contactfirst1 this is Texter1first, how are you?"

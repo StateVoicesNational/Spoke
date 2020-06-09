@@ -12,10 +12,8 @@ import { Card, CardHeader, CardText, CardActions } from "material-ui/Card";
 import { Link } from "react-router";
 import gql from "graphql-tag";
 import loadData from "./hoc/load-data";
-import wrapMutations from "./hoc/wrap-mutations";
 import RaisedButton from "material-ui/RaisedButton";
 import CampaignBasicsForm from "../components/CampaignBasicsForm";
-//import CampaignContactsForm from "../components/CampaignContactsForm";
 import CampaignMessagingServiceForm from "../components/CampaignMessagingServiceForm";
 import CampaignContactsChoiceForm from "../components/CampaignContactsChoiceForm";
 import CampaignTextersForm from "../components/CampaignTextersForm";
@@ -25,7 +23,7 @@ import { dataTest, camelCase } from "../lib/attributes";
 import CampaignTextingHoursForm from "../components/CampaignTextingHoursForm";
 
 import AdminScriptImport from "../containers/AdminScriptImport";
-import { pendingJobsGql } from "../lib/pendingJobsUtils";
+import { makeTree } from "../lib";
 
 const campaignInfoFragment = `
   id
@@ -88,6 +86,13 @@ const campaignInfoFragment = `
     updatedAt
   }
   editors
+  pendingJobs {
+    id
+    jobType
+    assigned
+    status
+    resultMessage
+  }  
 `;
 
 export const campaignDataQuery = gql`query getCampaign($campaignId: String!) {
@@ -96,15 +101,48 @@ export const campaignDataQuery = gql`query getCampaign($campaignId: String!) {
         }
       }`;
 
-class AdminCampaignEdit extends React.Component {
+export class AdminCampaignEdit extends React.Component {
   constructor(props) {
     super(props);
     const isNew = props.location.query.new;
     this.state = {
       expandedSection: isNew ? 0 : null,
       campaignFormValues: props.campaignData.campaign,
-      startingCampaign: false
+      startingCampaign: false,
+      isPolling: false
     };
+  }
+
+  startPollingIfNecessary = () => {
+    if (!this.state.isPolling) {
+      console.log("Start polling");
+      this.setState(
+        {
+          isPolling: true
+        },
+        () => this.props.campaignData.startPolling(2500)
+      );
+    }
+  };
+
+  stopPollingIfNecessary = () => {
+    if (this.state.isPolling) {
+      console.log("Stop polling");
+      this.setState(
+        {
+          isPolling: false
+        },
+        () => {
+          this.props.campaignData.stopPolling();
+        }
+      );
+    }
+  };
+
+  componentDidMount() {
+    if (this.props.campaignData.campaign.pendingJobs.length > 0) {
+      this.startPollingIfNecessary();
+    }
   }
 
   componentWillReceiveProps(newProps) {
@@ -116,7 +154,7 @@ class AdminCampaignEdit extends React.Component {
     // 3. Refetch/poll updates data in loadData component wrapper
     //    and triggers *this* method => this.props.campaignData => this.state.campaignFormValues
     // So campaignFormValues should always be the diffs between server and client form data
-    let { expandedSection } = this.state;
+    let { expandedSection, isPolling } = this.state;
     let expandedKeys = [];
     if (expandedSection !== null) {
       expandedSection = this.sections()[expandedSection];
@@ -152,6 +190,15 @@ class AdminCampaignEdit extends React.Component {
           delete pushToFormValues[key];
         }
       });
+    }
+
+    const newPendingJobs = newProps.campaignData.campaign.pendingJobs;
+    if (newPendingJobs.length > 0) {
+      this.startPollingIfNecessary();
+    }
+
+    if (newPendingJobs.length === 0) {
+      this.stopPollingIfNecessary();
     }
 
     this.setState({
@@ -190,7 +237,6 @@ class AdminCampaignEdit extends React.Component {
       )
     ) {
       await this.props.mutations.deleteJob(jobId);
-      await this.props.pendingJobsData.refetch();
     }
   }
 
@@ -204,17 +250,25 @@ class AdminCampaignEdit extends React.Component {
   };
 
   handleSubmit = async () => {
-    if (!this.state.expandedSection.doNotSaveAfterSubmit) {
+    const section = this.sections()[this.state.expandedSection];
+    if (!section.doNotSaveAfterSubmit) {
       await this.handleSave();
     }
-    this.setState({
-      expandedSection:
-        this.state.expandedSection >= this.sections().length - 1 ||
-        !this.isNew()
-          ? null
-          : this.state.expandedSection + 1
-    }); // currently throws an unmounted component error in the console
-    this.props.campaignData.refetch();
+    this.setState(
+      {
+        expandedSection:
+          this.state.expandedSection >= this.sections().length - 1 ||
+          !this.isNew()
+            ? null
+            : this.state.expandedSection + 1
+      },
+      () => {
+        // manually refetching after the expanded section changes makes sure
+        // that componentWillReceiveProps does not ignore server results for
+        // the section we just saved.
+        this.props.campaignData.refetch();
+      }
+    );
   };
 
   handleSave = async () => {
@@ -247,31 +301,15 @@ class AdminCampaignEdit extends React.Component {
         }));
       }
       if (newCampaign.hasOwnProperty("interactionSteps")) {
-        newCampaign.interactionSteps = Object.assign(
-          {},
-          newCampaign.interactionSteps
-        );
+        newCampaign.interactionSteps = makeTree(newCampaign.interactionSteps);
       }
-      await this.props.mutations.editCampaign(
+
+      return await this.props.mutations.editCampaign(
         this.props.campaignData.campaign.id,
         newCampaign
       );
-
-      this.pollDuringActiveJobs();
     }
   };
-
-  async pollDuringActiveJobs(noMore) {
-    const pendingJobs = await this.props.pendingJobsData.refetch();
-    if (pendingJobs.length && !noMore) {
-      const self = this;
-      setTimeout(() => {
-        // run it once more after there are no more jobs
-        self.pollDuringActiveJobs(true);
-      }, 1000);
-    }
-    this.props.campaignData.refetch();
-  }
 
   checkSectionSaved(section) {
     // Tests section's keys of campaignFormValues against props.campaignData
@@ -299,6 +337,7 @@ class AdminCampaignEdit extends React.Component {
   }
 
   sections() {
+    const pendingJobs = this.props.campaignData.campaign.pendingJobs;
     const finalSections = [
       {
         title: "Basics",
@@ -337,7 +376,7 @@ class AdminCampaignEdit extends React.Component {
             this.props.campaignData.campaign.ingestMethod || null,
           jobResultMessage:
             (
-              this.props.pendingJobsData.campaign.pendingJobs
+              pendingJobs
                 .filter(job => /ingest/.test(job.jobType))
                 .reverse()[0] || {}
             ).resultMessage || ""
@@ -422,6 +461,7 @@ class AdminCampaignEdit extends React.Component {
       });
     }
     if (window.CAN_GOOGLE_IMPORT) {
+      // TODO: consider merging this component into Interactions
       finalSections.push({
         title: "Script Import",
         content: AdminScriptImport,
@@ -431,7 +471,12 @@ class AdminCampaignEdit extends React.Component {
         expandAfterCampaignStarts: false,
         expandableBySuperVolunteers: false,
         extraProps: {
-          campaignData: this.props.campaignData
+          startImport: async url =>
+            this.props.mutations.importCampaignScript(
+              this.props.campaignData.campaign.id,
+              url
+            ),
+          hasPendingJob: pendingJobs.some(j => j.jobType === "import_script")
         },
         doNotSaveAfterSubmit: true
       });
@@ -440,7 +485,7 @@ class AdminCampaignEdit extends React.Component {
   }
 
   sectionSaveStatus(section) {
-    const pendingJobs = this.props.pendingJobsData.campaign.pendingJobs;
+    const pendingJobs = this.props.campaignData.campaign.pendingJobs;
     let sectionIsSaving = false;
     let relatedJob = null;
     let savePercent = 0;
@@ -455,9 +500,9 @@ class AdminCampaignEdit extends React.Component {
         relatedJob = pendingJobs.filter(
           job => job.jobType === "assign_texters"
         )[0];
-      } else if (section.title === "Interactions") {
+      } else if (section.title === "Script Import") {
         relatedJob = pendingJobs.filter(
-          job => job.jobType === "create_interaction_steps"
+          job => job.jobType === "import_script"
         )[0];
       }
     }
@@ -560,10 +605,7 @@ class AdminCampaignEdit extends React.Component {
     const orgConfigured = this.props.organizationData.organization
       .fullyConfigured;
     const settingsLink = `/admin/${this.props.organizationData.organization.id}/settings`;
-    let isCompleted =
-      this.props.pendingJobsData.campaign.pendingJobs.filter(job =>
-        /Error/.test(job.resultMessage || "")
-      ).length === 0;
+    let isCompleted = this.props.campaignData.campaign.pendingJobs.length === 0;
     this.sections().forEach(section => {
       if (
         (section.blocksStarting && !this.checkSectionCompleted(section)) ||
@@ -752,18 +794,18 @@ AdminCampaignEdit.propTypes = {
   mutations: PropTypes.object,
   organizationData: PropTypes.object,
   params: PropTypes.object,
-  location: PropTypes.object,
-  pendingJobsData: PropTypes.object
+  location: PropTypes.object
 };
 
-const mapQueriesToProps = ({ ownProps }) => ({
-  pendingJobsData: pendingJobsGql(ownProps.params.campaignId),
+const queries = {
   campaignData: {
     query: campaignDataQuery,
-    variables: {
-      campaignId: ownProps.params.campaignId
-    },
-    pollInterval: 60000
+    options: ownProps => ({
+      variables: {
+        campaignId: ownProps.params.campaignId
+      },
+      pollInterval: 60000
+    })
   },
   organizationData: {
     query: gql`
@@ -790,16 +832,18 @@ const mapQueriesToProps = ({ ownProps }) => ({
         }
       }
     `,
-    variables: {
-      organizationId: ownProps.params.organizationId
-    },
-    pollInterval: 20000
+    options: ownProps => ({
+      variables: {
+        organizationId: ownProps.params.organizationId
+      },
+      pollInterval: 20000
+    })
   }
-});
+};
 
-// Right now we are copying the result fields instead of using a fragment because of https://github.com/apollostack/apollo-client/issues/451
-const mapMutationsToProps = ({ ownProps }) => ({
-  archiveCampaign: campaignId => ({
+// TODO: use fragment?
+const mutations = {
+  archiveCampaign: ownProps => campaignId => ({
     mutation: gql`mutation archiveCampaign($campaignId: String!) {
           archiveCampaign(id: $campaignId) {
             ${campaignInfoFragment}
@@ -807,7 +851,7 @@ const mapMutationsToProps = ({ ownProps }) => ({
         }`,
     variables: { campaignId }
   }),
-  unarchiveCampaign: campaignId => ({
+  unarchiveCampaign: ownProps => campaignId => ({
     mutation: gql`mutation unarchiveCampaign($campaignId: String!) {
         unarchiveCampaign(id: $campaignId) {
           ${campaignInfoFragment}
@@ -815,7 +859,7 @@ const mapMutationsToProps = ({ ownProps }) => ({
       }`,
     variables: { campaignId }
   }),
-  startCampaign: campaignId => ({
+  startCampaign: ownProps => campaignId => ({
     mutation: gql`mutation startCampaign($campaignId: String!) {
         startCampaign(id: $campaignId) {
           ${campaignInfoFragment}
@@ -823,20 +867,23 @@ const mapMutationsToProps = ({ ownProps }) => ({
       }`,
     variables: { campaignId }
   }),
-  editCampaign: (campaignId, campaign) => ({
+  editCampaign: ownProps => (campaignId, campaign) => ({
+    // Note: we don't fetch the campaignInfoFragment here because we want to
+    // refetch manually in handleSubmit after updating the expanded section.
+    // If we were to fetch the fragment here, the refetch would be ignored.
     mutation: gql`
       mutation editCampaign($campaignId: String!, $campaign: CampaignInput!) {
         editCampaign(id: $campaignId, campaign: $campaign) {
-          ${campaignInfoFragment}
+          id
         }
-      },
+      }
     `,
     variables: {
       campaignId,
       campaign
     }
   }),
-  deleteJob: jobId => ({
+  deleteJob: ownProps => jobId => ({
     mutation: gql`
       mutation deleteJob($campaignId: String!, $id: String!) {
         deleteJob(campaignId: $campaignId, id: $id) {
@@ -847,11 +894,22 @@ const mapMutationsToProps = ({ ownProps }) => ({
     variables: {
       campaignId: ownProps.params.campaignId,
       id: jobId
-    }
+    },
+    refetchQueries: () => ["getCampaign"]
+  }),
+  importCampaignScript: ownProps => (campaignId, url) => ({
+    mutation: gql`
+      mutation importCampaignScript($campaignId: String!, $url: String!) {
+        importCampaignScript(campaignId: $campaignId, url: $url)
+      }
+    `,
+    variables: {
+      campaignId,
+      url
+    },
+    refetchQueries: () => ["getCampaign"]
   })
-});
+};
 
-export default loadData(wrapMutations(AdminCampaignEdit), {
-  mapQueriesToProps,
-  mapMutationsToProps
-});
+export const operations = { queries, mutations };
+export default loadData(operations)(AdminCampaignEdit);

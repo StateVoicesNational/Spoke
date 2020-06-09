@@ -114,7 +114,6 @@ async function createOrganization(user, name, userId, inviteId) {
       id
       uuid
       name
-      threeClickEnabled
       textingHoursEnforced
       textingHoursStart
       textingHoursEnd

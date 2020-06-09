@@ -10,7 +10,6 @@ import ConversationPreviewModal, {
 import { prepareDataTableData } from "../../../src/components/IncomingMessageList";
 
 import ReactTestUtils from "react-dom/test-utils";
-import Store from "../../../src/store";
 import { createMemoryHistory } from "react-router";
 import ApolloClientSingleton from "../../../src/network/apollo-client-singleton";
 import { ApolloProvider } from "react-apollo";
@@ -35,7 +34,6 @@ describe("ConversationPreviewModal", async () => {
   let onRequestCloseMock;
 
   let component;
-  let store;
 
   beforeAll(async () => {
     // Set up an entire working campaign
@@ -78,8 +76,6 @@ describe("ConversationPreviewModal", async () => {
     );
 
     console.log(conversations);
-
-    store = new Store(createMemoryHistory("/")).data;
   }, global.DATABASE_SETUP_TEARDOWN_TIMEOUT);
 
   afterAll(async () => {
@@ -99,7 +95,7 @@ describe("ConversationPreviewModal", async () => {
       onRequestCloseMock = jest.fn();
 
       component = mount(
-        <ApolloProvider store={store} client={ApolloClientSingleton}>
+        <ApolloProvider client={ApolloClientSingleton}>
           <MuiThemeProvider>
             <ConversationPreviewModal
               organizationId={startedCampaign.organizationId}

@@ -10,7 +10,6 @@ import { StyleSheet, css } from "aphrodite";
 import loadData from "./hoc/load-data";
 import gql from "graphql-tag";
 import theme from "../styles/theme";
-import wrapMutations from "./hoc/wrap-mutations";
 import { dataTest } from "../lib/attributes";
 
 const inlineStyles = {
@@ -311,7 +310,7 @@ AdminCampaignStats.propTypes = {
   router: PropTypes.object
 };
 
-const mapQueriesToProps = ({ ownProps }) => ({
+const queries = {
   data: {
     query: gql`
       query getCampaign(
@@ -359,18 +358,20 @@ const mapQueriesToProps = ({ ownProps }) => ({
         }
       }
     `,
-    variables: {
-      campaignId: ownProps.params.campaignId,
-      contactsFilter: {
-        messageStatus: "needsMessage"
-      }
-    },
-    pollInterval: 5000
+    options: ownProps => ({
+      variables: {
+        campaignId: ownProps.params.campaignId,
+        contactsFilter: {
+          messageStatus: "needsMessage"
+        }
+      },
+      pollInterval: 5000
+    })
   }
-});
+};
 
-const mapMutationsToProps = () => ({
-  archiveCampaign: campaignId => ({
+const mutations = {
+  archiveCampaign: ownProps => campaignId => ({
     mutation: gql`
       mutation archiveCampaign($campaignId: String!) {
         archiveCampaign(id: $campaignId) {
@@ -381,7 +382,7 @@ const mapMutationsToProps = () => ({
     `,
     variables: { campaignId }
   }),
-  unarchiveCampaign: campaignId => ({
+  unarchiveCampaign: ownProps => campaignId => ({
     mutation: gql`
       mutation unarchiveCampaign($campaignId: String!) {
         unarchiveCampaign(id: $campaignId) {
@@ -392,7 +393,7 @@ const mapMutationsToProps = () => ({
     `,
     variables: { campaignId }
   }),
-  exportCampaign: campaignId => ({
+  exportCampaign: ownProps => campaignId => ({
     mutation: gql`
       mutation exportCampaign($campaignId: String!) {
         exportCampaign(id: $campaignId) {
@@ -402,7 +403,7 @@ const mapMutationsToProps = () => ({
     `,
     variables: { campaignId }
   }),
-  copyCampaign: campaignId => ({
+  copyCampaign: ownProps => campaignId => ({
     mutation: gql`
       mutation copyCampaign($campaignId: String!) {
         copyCampaign(id: $campaignId) {
@@ -412,9 +413,6 @@ const mapMutationsToProps = () => ({
     `,
     variables: { campaignId }
   })
-});
+};
 
-export default loadData(withRouter(wrapMutations(AdminCampaignStats)), {
-  mapQueriesToProps,
-  mapMutationsToProps
-});
+export default loadData({ queries, mutations })(withRouter(AdminCampaignStats));

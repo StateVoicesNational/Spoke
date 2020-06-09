@@ -6,7 +6,7 @@ import { withRouter } from "react-router";
 import loadData from "./hoc/load-data";
 import gql from "graphql-tag";
 
-const contactDataFragment = `
+export const contactDataFragment = `
         id
         assignmentId
         firstName
@@ -38,7 +38,7 @@ const contactDataFragment = `
         }
 `;
 
-export const dataQuery = gql`
+export const dataQueryString = `
   query getContacts($assignmentId: String!, $contactsFilter: ContactsFilter!) {
     assignment(id: $assignmentId) {
       id
@@ -75,7 +75,6 @@ export const dataQuery = gql`
           textingHoursEnforced
           textingHoursStart
           textingHoursEnd
-          threeClickEnabled
           optOutMessage
         }
         customFields
@@ -101,6 +100,10 @@ export const dataQuery = gql`
       allContactsCount: contactsCount
     }
   }
+`;
+
+export const dataQuery = gql`
+  ${dataQueryString}
 `;
 
 export class TexterTodo extends React.Component {
@@ -211,24 +214,26 @@ TexterTodo.propTypes = {
   location: PropTypes.object
 };
 
-const mapQueriesToProps = ({ ownProps }) => ({
+const queries = {
   data: {
     query: dataQuery,
-    variables: {
-      contactsFilter: {
-        messageStatus: ownProps.messageStatus,
-        isOptedOut: false,
-        validTimezone: true
+    options: ownProps => ({
+      variables: {
+        contactsFilter: {
+          messageStatus: ownProps.messageStatus,
+          isOptedOut: false,
+          validTimezone: true
+        },
+        assignmentId: ownProps.params.assignmentId
       },
-      assignmentId: ownProps.params.assignmentId
-    },
-    forceFetch: true,
-    pollInterval: 20000
+      fetchPolicy: "network-only",
+      pollInterval: 20000
+    })
   }
-});
+};
 
-const mapMutationsToProps = ({ ownProps }) => ({
-  findNewCampaignContact: assignmentId => ({
+const mutations = {
+  findNewCampaignContact: ownProps => assignmentId => ({
     mutation: gql`
       mutation findNewCampaignContact(
         $assignmentId: String!
@@ -247,7 +252,7 @@ const mapMutationsToProps = ({ ownProps }) => ({
       numberContacts: 10
     }
   }),
-  getAssignmentContacts: (contactIds, findNew) => ({
+  getAssignmentContacts: ownProps => (contactIds, findNew) => ({
     mutation: gql`
       mutation getAssignmentContacts($assignmentId: String!, $contactIds: [String]!, $findNew: Boolean) {
         getAssignmentContacts(assignmentId: $assignmentId, contactIds: $contactIds, findNew: $findNew) {
@@ -261,9 +266,9 @@ const mapMutationsToProps = ({ ownProps }) => ({
       findNew: !!findNew
     }
   })
-});
+};
 
-export default loadData(withRouter(TexterTodo), {
-  mapQueriesToProps,
-  mapMutationsToProps
-});
+// exported for testing
+export const operations = { queries, mutations };
+
+export default loadData(operations)(withRouter(TexterTodo));

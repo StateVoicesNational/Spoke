@@ -5,8 +5,7 @@ import { StyleSheet, css } from "aphrodite";
 import Dialog from "material-ui/Dialog";
 import FlatButton from "material-ui/FlatButton";
 
-import loadData from "../../containers//hoc/load-data";
-import wrapMutations from "../../containers/hoc/wrap-mutations";
+import loadData from "../../containers/hoc/load-data";
 import MessageResponse from "./MessageResponse";
 
 import { dataTest } from "../../lib/attributes";
@@ -185,32 +184,22 @@ InnerConversationPreviewModal.propTypes = {
   onForceRefresh: PropTypes.func
 };
 
-export const createOptOutGqlString = `mutation createOptOut(
-  $optOut: OptOutInput!
-  $campaignContactId: String!
-) {
-  createOptOut(
-   optOut: $optOut
-   campaignContactId: $campaignContactId
-  ) {
-   id
-  }
-}`;
-
 export const createOptOutGql = gql`
-  ${createOptOutGqlString}
+  mutation createOptOut($optOut: OptOutInput!, $campaignContactId: String!) {
+    createOptOut(optOut: $optOut, campaignContactId: $campaignContactId) {
+      id
+    }
+  }
 `;
 
-const mapMutationsToProps = () => ({
-  createOptOut: (optOut, campaignContactId) => ({
+const mutations = {
+  createOptOut: ownProps => (optOut, campaignContactId) => ({
     mutation: createOptOutGql,
     variables: {
       optOut,
       campaignContactId
     }
   })
-});
+};
 
-export default loadData(wrapMutations(InnerConversationPreviewModal), {
-  mapMutationsToProps
-});
+export default loadData({ mutations })(InnerConversationPreviewModal);

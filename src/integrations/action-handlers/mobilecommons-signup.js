@@ -23,6 +23,22 @@ const umcConfigured = defaultProfileOptInId && createProfileUrl;
 export const instructions = () =>
   "This option triggers a new user request to Upland Mobile Commons when selected.";
 
+export function serverAdministratorInstructions() {
+  return {
+    description: `
+      This option triggers a new user request to Upland Mobile Commons when selected.
+      `,
+    setupInstructions:
+      "Add `mobilecommons-signup` to the environment variable `ACTION_HANDLERS`; refer to `docs/HOWTO_INTEGRATE_WITH_MOBILE_COMMONS.md`",
+    environmentVariables: [
+      "UMC_PROFILE_URL",
+      "UMC_USER",
+      "UMC_PW",
+      "UMC_OPT_IN_PATH"
+    ]
+  };
+}
+
 export async function available(organizationId) {
   return {
     result: organizationId && umcConfigured,
