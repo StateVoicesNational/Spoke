@@ -76,14 +76,13 @@ export class AssignmentTexterContactControls extends React.Component {
       node.scrollTop = Math.floor(node.scrollHeight);
     }, 0);
 
-    // note: key*down* is necessary to stop propagation of keyup for the textarea element
-    document.body.addEventListener("keydown", this.onKeyDown);
+    document.body.addEventListener("keyup", this.onKeyUp);
     window.addEventListener("resize", this.onResize);
     window.addEventListener("orientationchange", this.onResize);
   }
 
   componentWillUnmount() {
-    document.body.removeEventListener("keydown", this.onKeyDown);
+    document.body.removeEventListener("keyup", this.onKeyUp);
     window.removeEventListener("resize", this.onResize);
     window.removeEventListener("orientationchange", this.onResize);
   }
@@ -144,7 +143,7 @@ export class AssignmentTexterContactControls extends React.Component {
     }
   };
 
-  onKeyDown = evt => {
+  onKeyUp = evt => {
     if (evt.key === "Escape") {
       this.setState({
         optOutDialogOpen: false,
