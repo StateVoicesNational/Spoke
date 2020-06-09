@@ -88,7 +88,7 @@ function dropTables() {
   });
 }
 
-const loaders = {
+const createLoaders = () => ({
   // Note: loaders with cacheObj should also run loaders.XX.clear(id)
   //  on clear on the cache as well.
   assignment: createLoader(Assignment),
@@ -112,9 +112,7 @@ const loaders = {
   questionResponse: createLoader(QuestionResponse),
   userCell: createLoader(UserCell),
   userOrganization: createLoader(UserOrganization)
-};
-
-const createLoaders = () => loaders;
+});
 
 const r = thinky.r;
 
@@ -125,7 +123,6 @@ if (process.env.ENABLE_KNEX_TRACING === "true") {
 }
 
 export {
-  loaders,
   createLoaders,
   r,
   cacheableData,

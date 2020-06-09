@@ -16,7 +16,7 @@ import * as Mutations from "../../../../src/server/api/mutations/";
 const ActionHandlers = require("../../../../src/integrations/action-handlers");
 const ComplexTestActionHandler = require("../../../../src/integrations/action-handlers/complex-test-action");
 
-import { r, loaders, cacheableData } from "../../../../src/server/models";
+import { r, cacheableData, createLoaders } from "../../../../src/server/models";
 const errors = require("../../../../src/server/api/errors");
 
 import React from "react";
@@ -46,7 +46,7 @@ describe("mutations.updateQuestionResponses", () => {
   let questionResponses;
   let questionResponseValuesDatabaseSql;
   let organization;
-
+  const loaders = createLoaders();
   beforeEach(async () => {
     await cleanupTest();
     await setupTest();

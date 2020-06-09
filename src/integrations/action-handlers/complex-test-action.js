@@ -23,7 +23,7 @@ export function serverAdministratorInstructions() {
   };
 }
 
-export function clientChoiceDataCacheKey(organization, user, loaders) {
+export function clientChoiceDataCacheKey(organization, user) {
   return `${organization.id}`;
 }
 
