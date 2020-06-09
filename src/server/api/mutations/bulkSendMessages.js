@@ -8,11 +8,7 @@ import { getTopMostParent, log } from "../../../lib";
 
 import { sendMessage, findNewCampaignContact } from "./index";
 
-export const bulkSendMessages = async (
-  _,
-  { assignmentId },
-  { loaders, user }
-) => {
+export const bulkSendMessages = async (_, { assignmentId }, { user }) => {
   if (!process.env.ALLOW_SEND_ALL || !process.env.NOT_IN_USA) {
     log.error("Not allowed to send all messages at once");
     throw new GraphQLError({
@@ -77,7 +73,7 @@ export const bulkSendMessages = async (
     return sendMessage(
       undefined,
       { message: contactMessage, campaignContactId: contact.id },
-      { loaders, user }
+      { user }
     );
   });
 

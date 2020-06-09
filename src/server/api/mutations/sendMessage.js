@@ -12,11 +12,11 @@ const JOBS_SAME_PROCESS = !!(
 export const sendMessage = async (
   _,
   { message, campaignContactId },
-  { loaders, user }
+  { user }
 ) => {
   // contact is mutated, so we don't use a loader
   let contact = await cacheableData.campaignContact.load(campaignContactId);
-  const campaign = await loaders.campaign.load(contact.campaign_id);
+  const campaign = await cacheableData.campaign.load(contact.campaign_id);
   if (
     contact.assignment_id !== parseInt(message.assignmentId) ||
     campaign.is_archived
@@ -27,7 +27,7 @@ export const sendMessage = async (
       message: "Your assignment has changed"
     });
   }
-  const organization = await loaders.organization.load(
+  const organization = await cacheableData.organization.load(
     campaign.organization_id
   );
   const orgFeatures = JSON.parse(organization.features || "{}");
