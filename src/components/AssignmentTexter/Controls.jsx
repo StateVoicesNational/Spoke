@@ -98,6 +98,7 @@ export class AssignmentTexterContactControls extends React.Component {
         newPopups.push(sb);
       }
     });
+    // For getDerivedStateFromProps in React 16:
     // newPopups increment open
     newPopups.forEach(sb => {
       nextState.sideboxOpens[sb] = (nextState.sideboxOpens[sb] || 0) + 1;
@@ -156,12 +157,11 @@ export class AssignmentTexterContactControls extends React.Component {
         answerPopoverOpen: false
       });
     }
-
-    // pressing the Enter key (or ctrl+Enter) submits
-    // This is limited for better accessibility:
-    // Enter is needed for 'click'ing buttons with the keyboard
+    // if document.activeElement then ignore a naked keypress to be safe
+    // console.log('KEYBOARD', evt.key, document.activeElement);
     if (
-      evt.key === "Enter" &&
+      // SEND: Ctrl-x
+      evt.key === "x" &&
       // need to use ctrlKey in non-first texting context for accessibility
       evt.ctrlKey
     ) {
@@ -175,6 +175,15 @@ export class AssignmentTexterContactControls extends React.Component {
       return;
     }
 
+    if (
+      // SKIP: Ctrl-y
+      evt.key === "y" &&
+      // need to use ctrlKey in non-first texting context for accessibility
+      evt.ctrlKey
+    ) {
+      evt.preventDefault();
+      this.props.onEditStatus("closed", true);
+    }
     // Allow initial sends to use any key, avoiding RSI injuries
     // the texter can distribute which button to press across the keyboard
     if (
@@ -682,6 +691,8 @@ export class AssignmentTexterContactControls extends React.Component {
     if (!joinedLength) {
       return null;
     }
+    // the only non-contextual state/props needed
+    // questionResponses, currentInteractionStep, cannedResponseScript
     const isCurrentAnswer = opt =>
       opt.answer.value === questionResponses[currentInteractionStep.id];
     const isCurrentCannedResponse = script =>
