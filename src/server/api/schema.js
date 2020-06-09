@@ -81,6 +81,97 @@ const JOBS_SAME_PROCESS = !!(
 );
 const JOBS_SYNC = !!(process.env.JOBS_SYNC || global.JOBS_SYNC);
 
+// This function determines whether a field was requested
+// in a graphql query. Each graphql resolver receives a fourth parameter,
+// which contains information about the current request and the execution
+// context. It might be userful to determine this in order to avoid
+// retrieving fields through database joins if they were not
+// requested, for example.
+//
+// In the following query, let's say you want to test whether tags was
+// included. The path to tags is conversations/conversations/contact/tags,
+// because tags is in the contact object which is in the conversations
+// object which is in the conversations query.
+//
+// Therefore, assuming the fourth parameter to your resolver is called
+// 'graphqlInfo', the call to this function to determine if tags is in
+// that specific position would be:
+//   isFieldInSelectionSetHierarchy(graphqlInfo, ["conversations", "conversations", "contact", "tags"]);
+//
+// query Q(
+//   $organizationId: String!
+//   $cursor: OffsetLimitCursor!
+//   $contactsFilter: ContactsFilter
+//   $campaignsFilter: CampaignsFilter
+//   $assignmentsFilter: AssignmentsFilter
+//   $utc: String
+// ) {
+//   conversations(
+//     cursor: $cursor
+//     organizationId: $organizationId
+//     campaignsFilter: $campaignsFilter
+//     contactsFilter: $contactsFilter
+//     assignmentsFilter: $assignmentsFilter
+//     utc: $utc
+//   ) {
+//     pageInfo {
+//       limit
+//       offset
+//       total
+//     }
+//     conversations {
+//       texter {
+//         id
+//         displayName
+//       }
+//       contact {
+//         id
+//         assignmentId
+//         firstName
+//         lastName
+//         cell
+//         messageStatus
+//         messages {
+//           id
+//           text
+//           isFromContact
+//         }
+//         tags {
+//           id
+//         }
+//         optOut {
+//           id
+//         }
+//       }
+//       campaign {
+//         id
+//         title
+//       }
+//     }
+//   }
+// }
+const isFieldInSelectionSetHierarchy = (graphqlInfo, fieldPath) => {
+  const findField = (selectionSet, fieldName) => {
+    if (!selectionSet.selections) {
+      return undefined;
+    }
+
+    return selectionSet.selections.find(
+      ss =>
+        ss.kind === "Field" &&
+        ss.name.kind === "Name" &&
+        ss.name.value === fieldName
+    );
+  };
+
+  let currentLevel = graphqlInfo.operation;
+
+  return fieldPath.every(field => {
+    currentLevel = findField(currentLevel.selectionSet, field);
+    return !!currentLevel;
+  });
+};
+
 async function editCampaign(id, campaign, loaders, user, origCampaignRecord) {
   const {
     title,
@@ -1256,51 +1347,17 @@ const rootResolvers = {
         utc
       },
       { user },
-      info
+      graphqlInfo
     ) => {
-      const includeTags = graphqlInfo => {
-        console.log("INCLUDE TAGS", graphqlInfo);
-        const findField = (selectionSet, fieldName) => {
-          if (!selectionSet.selections) {
-            return undefined;
-          }
-
-          return selectionSet.selections.find(
-            ss =>
-              ss.kind === "Field" &&
-              ss.name.kind === "Name" &&
-              ss.name.value === fieldName
-          );
-        };
-
-        const outerConversations = findField(
-          graphqlInfo.operation.selectionSet,
-          "conversations"
-        );
-        if (!outerConversations) {
-          return false;
-        }
-
-        console.log("outerConversations", outerConversations);
-
-        const innerConversations = findField(
-          outerConversations.selectionSet,
-          "conversations"
-        );
-        if (!innerConversations) {
-          return false;
-        }
-        console.log("innerConversations", innerConversations);
-
-        const contact = findField(innerConversations.selectionSet, "contact");
-        if (!contact) {
-          return false;
-        }
-
-        console.log("contact", contact);
-
-        return !!findField(contact.selectionSet, "tags");
-      };
+      // Determine if tags were requested in the graphql query.
+      // in order to avoid retrieving tags if they were not
+      // requested.
+      const includeTags = isFieldInSelectionSetHierarchy(graphqlInfo, [
+        "conversations",
+        "conversations",
+        "contact",
+        "tags"
+      ]);
 
       await accessRequired(user, organizationId, "SUPERVOLUNTEER", true);
       const data = await getConversations(
@@ -1310,7 +1367,7 @@ const rootResolvers = {
         assignmentsFilter,
         contactsFilter,
         utc,
-        includeTags(info)
+        includeTags
       );
       return data;
     },
