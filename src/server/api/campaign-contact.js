@@ -98,11 +98,11 @@ export const resolvers = {
         return []; // it's the beginning, so there won't be any
       }
 
-      const tags = cacheableData.tagCampaignContact.query(
-        campaignContact.id,
-        true
-      );
-      return tags;
+      if (campaignContact.tags) {
+        return campaignContact.tags;
+      }
+
+      return cacheableData.tagCampaignContact.query(campaignContact.id, true);
     },
     optOut: async (campaignContact, _, { loaders }) => {
       let isOptedOut = null;

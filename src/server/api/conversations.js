@@ -3,6 +3,7 @@ import { Assignment, r, cacheableData, loaders } from "../models";
 import { addWhereClauseForContactsFilterMessageStatusIrrespectiveOfPastDue } from "./assignment";
 import { addCampaignsFilterToQuery } from "./campaign";
 import { log } from "../../lib";
+import { getConfig } from "../api/lib/config";
 
 function getConversationsJoinsAndWhereClause(
   queryParam,
@@ -36,6 +37,32 @@ function getConversationsJoinsAndWhereClause(
     query = query.where("is_opted_out", contactsFilter.isOptedOut);
   }
 
+  if (
+    getConfig("EXPERIMENTAL_TAGS", null, { truthy: 1 }) &&
+    contactsFilter &&
+    contactsFilter.tags
+  ) {
+    const tags = contactsFilter.tags;
+
+    let tagsSubquery = r.knex
+      .select(1)
+      .from("tag_campaign_contact")
+      .whereRaw(
+        "campaign_contact.id = tag_campaign_contact.campaign_contact_id"
+      );
+
+    if (tags.length === 0) {
+      // no tags
+      query = query.whereNotExists(tagsSubquery);
+    } else if (tags.length === 1 && tags[0] === "*") {
+      // any tag
+      query = query.whereExists(tagsSubquery);
+    } else {
+      tagsSubquery = tagsSubquery.whereIn("tag_id", tags);
+      query = query.whereExists(tagsSubquery);
+    }
+  }
+
   return query;
 }
 
@@ -64,6 +91,7 @@ export async function getConversations(
   assignmentsFilter,
   contactsFilter,
   utc,
+  includeTags,
   awsContext
 ) {
   /* Query #1 == get campaign_contact.id for all the conversations matching
@@ -177,6 +205,33 @@ export async function getConversations(
         mess_id: "id"
       })
     );
+  }
+
+  // tags query
+  if (getConfig("EXPERIMENTAL_TAGS", null, { truthy: 1 }) && includeTags) {
+    const tagsQuery = r.knex
+      .select(
+        "tag_campaign_contact.campaign_contact_id as campaign_contact_id",
+        "tag.name as name",
+        "tag_campaign_contact.value as value"
+      )
+      .from("tag_campaign_contact")
+      .join("tag", "tag.id", "=", "tag_campaign_contact.tag_id")
+      .whereIn("campaign_contact_id", ccIds);
+
+    const rows = await tagsQuery;
+
+    const contactTags = {};
+    rows.forEach(tag => {
+      const campaignContactId = Number(tag.campaign_contact_id);
+      contactTags[campaignContactId] = contactTags[campaignContactId] || [];
+      contactTags[campaignContactId].push(tag);
+    });
+
+    conversations.forEach(convo => {
+      // eslint-disable-next-line no-param-reassign
+      convo.tags = contactTags[convo.ccId];
+    });
   }
 
   /* Query #3 -- get the count of all conversations matching the criteria.
