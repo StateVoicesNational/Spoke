@@ -69,7 +69,7 @@ export async function available(organization, user) {
 
   return {
     result,
-    expiresSeconds: 60
+    expiresSeconds: 86400
   };
 }
 
