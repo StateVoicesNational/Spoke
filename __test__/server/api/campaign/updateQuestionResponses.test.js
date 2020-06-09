@@ -596,8 +596,8 @@ describe("mutations.updateQuestionResponses", () => {
       });
 
       beforeEach(async () => {
-        jest.spyOn(loaders.campaignContact, "load");
-        jest.spyOn(loaders.campaign, "load");
+        jest.spyOn(cacheableData.campaignContact, "load");
+        jest.spyOn(cacheableData.campaign, "load");
         jest.spyOn(errors, "assignmentRequiredOrAdminRole");
         jest.spyOn(cacheableData.questionResponse, "save");
         jest.spyOn(ActionHandlers, "rawAllActionHandlers").mockReturnValue({});
@@ -607,10 +607,12 @@ describe("mutations.updateQuestionResponses", () => {
         await Mutations.updateQuestionResponses(
           undefined,
           { questionResponses, campaignContactId: contacts[0].id },
-          { loaders, user: texterUser }
+          { user: texterUser }
         );
-        expect(loaders.campaignContact.load.mock.calls).toEqual([[1]]);
-        expect(loaders.campaign.load.mock.calls).toEqual([[contacts[0].id]]);
+        expect(cacheableData.campaignContact.load.mock.calls).toEqual([[1]]);
+        expect(cacheableData.campaign.load.mock.calls).toEqual([
+          [contacts[0].id]
+        ]);
         expect(errors.assignmentRequiredOrAdminRole.mock.calls).toEqual([
           [
             texterUser,
@@ -666,7 +668,7 @@ describe("mutations.updateQuestionResponses", () => {
 
       it("delegates to its dependencies", async () => {
         jest.spyOn(ActionHandlers, "rawAllActionHandlers");
-        jest.spyOn(loaders.organization, "load");
+        jest.spyOn(cacheableData.organization, "load");
         jest.spyOn(ActionHandlers, "getActionHandler");
         jest.spyOn(ComplexTestActionHandler, "processAction");
 
@@ -692,7 +694,7 @@ describe("mutations.updateQuestionResponses", () => {
           }
         ]);
 
-        expect(loaders.organization.load.mock.calls).toEqual([
+        expect(cacheableData.organization.load.mock.calls).toEqual([
           [Number(organization.id)]
         ]);
 
@@ -751,7 +753,7 @@ describe("mutations.updateQuestionResponses", () => {
           jest
             .spyOn(ActionHandlers, "rawAllActionHandlers")
             .mockReturnValue({});
-          jest.spyOn(loaders.organization, "load");
+          jest.spyOn(cacheableData.organization, "load");
 
           await Mutations.updateQuestionResponses(
             undefined,
@@ -759,7 +761,7 @@ describe("mutations.updateQuestionResponses", () => {
             { loaders, user: texterUser }
           );
 
-          expect(loaders.organization.load).not.toHaveBeenCalled();
+          expect(cacheableData.organization.load).not.toHaveBeenCalled();
         });
       });
 
@@ -781,7 +783,7 @@ describe("mutations.updateQuestionResponses", () => {
             .spyOn(ActionHandlers, "getActionHandler")
             .mockResolvedValueOnce(undefined);
           jest.spyOn(ComplexTestActionHandler, "processAction");
-          jest.spyOn(loaders.organization, "load");
+          jest.spyOn(cacheableData.organization, "load");
 
           await Mutations.updateQuestionResponses(
             {},
@@ -790,7 +792,7 @@ describe("mutations.updateQuestionResponses", () => {
           );
 
           await sleep(100);
-          expect(loaders.organization.load).toHaveBeenCalledTimes(1);
+          expect(cacheableData.organization.load).toHaveBeenCalledTimes(1);
 
           expect(ComplexTestActionHandler.processAction).toHaveBeenCalledTimes(
             1
@@ -825,7 +827,7 @@ describe("mutations.updateQuestionResponses", () => {
           jest
             .spyOn(ComplexTestActionHandler, "processAction")
             .mockRejectedValueOnce(new Error("oh no"));
-          jest.spyOn(loaders.organization, "load");
+          jest.spyOn(cacheableData.organization, "load");
 
           await Mutations.updateQuestionResponses(
             {},
@@ -834,7 +836,7 @@ describe("mutations.updateQuestionResponses", () => {
           );
 
           await sleep(100);
-          expect(loaders.organization.load).toHaveBeenCalledTimes(1);
+          expect(cacheableData.organization.load).toHaveBeenCalledTimes(1);
 
           expect(ComplexTestActionHandler.processAction).toHaveBeenCalledTimes(
             2
