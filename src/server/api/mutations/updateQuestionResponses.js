@@ -6,10 +6,10 @@ const ActionHandlers = require("../../../integrations/action-handlers");
 export const updateQuestionResponses = async (
   _,
   { questionResponses, campaignContactId },
-  { loaders, user }
+  { user }
 ) => {
-  const contact = await loaders.campaignContact.load(campaignContactId);
-  const campaign = await loaders.campaign.load(contact.campaign_id);
+  const contact = await cacheableData.campaignContact.load(campaignContactId);
+  const campaign = await cacheableData.campaign.load(contact.campaign_id);
   await assignmentRequiredOrAdminRole(
     user,
     campaign.organization_id,
@@ -44,7 +44,7 @@ export const updateQuestionResponses = async (
       return contact.id;
     }
 
-    const organization = await loaders.organization.load(
+    const organization = await cacheableData.organization.load(
       campaign.organization_id
     );
 

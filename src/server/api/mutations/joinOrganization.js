@@ -7,7 +7,7 @@ import { getConfig } from "../lib/config";
 export const joinOrganization = async (
   _,
   { organizationUuid, campaignId, queryParams },
-  { user, loaders }
+  { user }
 ) => {
   let organization;
   let campaign;
@@ -23,7 +23,9 @@ export const joinOrganization = async (
       })
       .first();
     if (campaign) {
-      organization = await loaders.organization.load(campaign.organization_id);
+      organization = await cacheableData.organization.load(
+        campaign.organization_id
+      );
     } else {
       throw new GraphQLError("Invalid join request");
     }
