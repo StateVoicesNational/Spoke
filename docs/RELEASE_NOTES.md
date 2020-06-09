@@ -1,4 +1,29 @@
 # Release Notes
+## v6.1
+_June 2020:_ Version 6.1
+
+6.1 is mostly focused on technical improvements. We upgraded to the 2.x versions of apollo-client and react-apollo and removed the dependency on redux. This allowed us to fix some long-standing bugs and should improve the developer experience for Spoke contributors.
+
+**Improvements**
+* Data loading errors are displayed to the user rather than causing blank screens or infinite loading animations
+* Enhanced the action handler framework with better error handling and caching to improve performance, and added the ability for administrators to optionally select extra information on a per-question-response basis to be sent to the remote system when a texter selects the response.
+
+**Changes**
+* Removed the threeClickEnabled organization feature
+
+**Bug fixes**
+* Resolved numerous issues related to cache collisions in the Apollo store
+* Job progress updates more reliably on the campaign creation screen
+* Fixed select all on the campaign archive screen
+* Closing the user edit modal now takes you back to the person list
+* Fixed an issue that allowed campaigns to start before all jobs completed
+
+Thanks to all the contributors part of this release including:
+[ibrand](https://github.com/ibrand),
+[lperson](https://github.com/lperson),
+[matteosb](https://github.com/matteosb),
+[schuyler1d](https://github.com/schuyler1d)
+
 ## v6.0
 _May 2020:_ Version 6.0
 **Note:** This is a major release and therefore requires a schema change. See the deploy steps section for details. Anything marked as *experimental* has not yet been tested on a production texting campaign.
