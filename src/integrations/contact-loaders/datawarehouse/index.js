@@ -67,12 +67,7 @@ export function clientChoiceDataCacheKey(organization, campaign, user) {
   return ""; // independent of org, campaign, and user since it's about availability
 }
 
-export async function getClientChoiceData(
-  organization,
-  campaign,
-  user,
-  loaders
-) {
+export async function getClientChoiceData(organization, campaign, user) {
   /// data to be sent to the admin client to present options to the component or similar
   /// The react-component will be sent this data as a property
   /// return a json object which will be cached for expiresSeconds long

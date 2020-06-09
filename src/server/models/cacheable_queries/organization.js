@@ -1,4 +1,4 @@
-import { r, loaders } from "../../models";
+import { r } from "../../models";
 import { getConfig, hasConfig } from "../../api/lib/config";
 import { symmetricDecrypt } from "../../api/lib/crypto";
 
@@ -9,8 +9,6 @@ const organizationCache = {
     if (r.redis) {
       await r.redis.delAsync(cacheKey(id));
     }
-    loaders.organization.clear(String(id));
-    loaders.organization.clear(Number(id));
   },
   getMessageServiceSid: async (organization, contact, messageText) => {
     // Note organization won't always be available, so we'll need to conditionally look it up based on contact

@@ -1,5 +1,5 @@
 import _ from "lodash";
-import { Assignment, r, cacheableData, loaders } from "../models";
+import { Assignment, r, cacheableData } from "../models";
 import { addWhereClauseForContactsFilterMessageStatusIrrespectiveOfPastDue } from "./assignment";
 import { addCampaignsFilterToQuery } from "./campaign";
 import { log } from "../../lib";
@@ -382,7 +382,6 @@ export async function reassignConversations(
       // to be refreshed. We also update the assignment in the cache
       await Promise.all(
         campaignContactIds.map(async campaignContactId => {
-          loaders.campaignContact.clear(campaignContactId.toString());
           await cacheableData.campaignContact.updateAssignmentCache(
             campaignContactId,
             assignmentId,
