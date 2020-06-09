@@ -2,7 +2,6 @@ import PropTypes from "prop-types";
 import React from "react";
 import loadData from "./hoc/load-data";
 import gql from "graphql-tag";
-import wrapMutations from "./hoc/wrap-mutations";
 import GSForm from "../components/forms/GSForm";
 import Form from "react-formal";
 import Dialog from "material-ui/Dialog";
@@ -364,8 +363,34 @@ Settings.propTypes = {
   mutations: PropTypes.object
 };
 
-const mapMutationsToProps = ({ ownProps }) => ({
-  updateTextingHours: (textingHoursStart, textingHoursEnd) => ({
+const queries = {
+  data: {
+    query: gql`
+      query adminGetCampaigns($organizationId: String!) {
+        organization(id: $organizationId) {
+          id
+          name
+          textingHoursEnforced
+          textingHoursStart
+          textingHoursEnd
+          optOutMessage
+          twilioAccountSid
+          twilioAuthToken
+          twilioMessageServiceSid
+        }
+      }
+    `,
+    options: ownProps => ({
+      variables: {
+        organizationId: ownProps.params.organizationId
+      },
+      fetchPolicy: "network-only"
+    })
+  }
+};
+
+const mutations = {
+  updateTextingHours: ownProps => (textingHoursStart, textingHoursEnd) => ({
     mutation: gql`
       mutation updateTextingHours(
         $textingHoursStart: Int!
@@ -390,7 +415,7 @@ const mapMutationsToProps = ({ ownProps }) => ({
       textingHoursEnd
     }
   }),
-  updateTextingHoursEnforcement: textingHoursEnforced => ({
+  updateTextingHoursEnforcement: ownProps => textingHoursEnforced => ({
     mutation: gql`
       mutation updateTextingHoursEnforcement(
         $textingHoursEnforced: Boolean!
@@ -412,7 +437,7 @@ const mapMutationsToProps = ({ ownProps }) => ({
       textingHoursEnforced
     }
   }),
-  updateOptOutMessage: ({ optOutMessage }) => ({
+  updateOptOutMessage: ownProps => ({ optOutMessage }) => ({
     mutation: gql`
       mutation updateOptOutMessage(
         $optOutMessage: String!
@@ -432,7 +457,7 @@ const mapMutationsToProps = ({ ownProps }) => ({
       optOutMessage
     }
   }),
-  updateTwilioAuth: (accountSid, authToken, messageServiceSid) => ({
+  updateTwilioAuth: ownProps => (accountSid, authToken, messageServiceSid) => ({
     mutation: gql`
       mutation updateTwilioAuth(
         $twilioAccountSid: String
@@ -460,33 +485,6 @@ const mapMutationsToProps = ({ ownProps }) => ({
       twilioMessageServiceSid: messageServiceSid
     }
   })
-});
+};
 
-const mapQueriesToProps = ({ ownProps }) => ({
-  data: {
-    query: gql`
-      query adminGetCampaigns($organizationId: String!) {
-        organization(id: $organizationId) {
-          id
-          name
-          textingHoursEnforced
-          textingHoursStart
-          textingHoursEnd
-          optOutMessage
-          twilioAccountSid
-          twilioAuthToken
-          twilioMessageServiceSid
-        }
-      }
-    `,
-    variables: {
-      organizationId: ownProps.params.organizationId
-    },
-    forceFetch: true
-  }
-});
-
-export default loadData(wrapMutations(Settings), {
-  mapQueriesToProps,
-  mapMutationsToProps
-});
+export default loadData({ queries, mutations })(Settings);

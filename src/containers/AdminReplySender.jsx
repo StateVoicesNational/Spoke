@@ -5,7 +5,6 @@ import gql from "graphql-tag";
 import { StyleSheet, css } from "aphrodite";
 import theme from "../styles/theme";
 import GSForm from "../components/forms/GSForm";
-import wrapMutations from "./hoc/wrap-mutations";
 import Form from "react-formal";
 import yup from "yup";
 import { dataTest } from "../lib/attributes";
@@ -125,7 +124,7 @@ AdminReplySender.propTypes = {
   data: PropTypes.object
 };
 
-const mapQueriesToProps = ({ ownProps }) => ({
+const queries = {
   data: {
     query: gql`
       query getCampaignMessages($campaignId: String!) {
@@ -145,14 +144,16 @@ const mapQueriesToProps = ({ ownProps }) => ({
         }
       }
     `,
-    variables: {
-      campaignId: ownProps.params.campaignId
-    }
+    options: ownProps => ({
+      variables: {
+        campaignId: ownProps.params.campaignId
+      }
+    })
   }
-});
+};
 
-const mapMutationsToProps = () => ({
-  sendReply: (contactId, message) => ({
+const mutations = {
+  sendReply: ownProps => (contactId, message) => ({
     mutation: gql`
       mutation sendReply($contactId: String!, $message: String!) {
         sendReply(id: $contactId, message: $message) {
@@ -166,9 +167,6 @@ const mapMutationsToProps = () => ({
     `,
     variables: { contactId, message }
   })
-});
+};
 
-export default loadData(wrapMutations(AdminReplySender), {
-  mapQueriesToProps,
-  mapMutationsToProps
-});
+export default loadData({ queries, mutations })(AdminReplySender);

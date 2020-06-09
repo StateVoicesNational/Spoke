@@ -93,6 +93,13 @@ app.use((req, res, next) => {
   next();
 });
 
+// Simulate latency in local development
+if (process.env.SIMULATE_DELAY_MILLIS) {
+  app.use((req, res, next) => {
+    setTimeout(next, Number(process.env.SIMULATE_DELAY_MILLIS));
+  });
+}
+
 // give contact loaders a chance
 const configuredIngestMethods = rawAllMethods();
 Object.keys(configuredIngestMethods).forEach(ingestMethodName => {

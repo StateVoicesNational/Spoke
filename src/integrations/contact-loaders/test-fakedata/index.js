@@ -59,7 +59,7 @@ export async function getClientChoiceData(
   /// return a json object which will be cached for expiresSeconds long
   /// `data` should be a single string -- it can be JSON which you can parse in the client component
   return {
-    data: `choice data from server ${Math.random()}`,
+    data: `choice data from server`,
     expiresSeconds: 0
   };
 }

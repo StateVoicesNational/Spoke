@@ -12,6 +12,13 @@ import GSForm from "./forms/GSForm";
 import yup from "yup";
 import { makeTree } from "../lib";
 import { dataTest } from "../lib/attributes";
+import { StyleSheet, css } from "aphrodite";
+
+const styleSheet = StyleSheet.create({
+  errorMessage: {
+    color: theme.colors.red
+  }
+});
 
 const styles = {
   pullRight: {
@@ -42,6 +49,16 @@ export default class CampaignInteractionStepsForm extends React.Component {
     super(props);
     this.state = {
       focusedField: null,
+      availableActionsLookup: props.availableActions.reduce(
+        (lookup, action) => {
+          const toReturn = {
+            ...lookup
+          };
+          toReturn[action.name] = action;
+          return toReturn;
+        },
+        {}
+      ),
       interactionSteps: this.props.formValues.interactionSteps[0]
         ? this.props.formValues.interactionSteps
         : [
@@ -81,6 +98,8 @@ export default class CampaignInteractionStepsForm extends React.Component {
         ...is
       };
 
+      delete tweakedInteractionStep.needRequiredAnswerActionsData;
+
       if (is.answerActionsData && typeof is.answerActionsData !== "string") {
         tweakedInteractionStep.answerActionsData = JSON.stringify(
           is.answerActionsData
@@ -91,9 +110,9 @@ export default class CampaignInteractionStepsForm extends React.Component {
     });
 
     await this.props.onChange({
-      interactionSteps: makeTree(tweakedInteractionSteps)
+      interactionSteps: tweakedInteractionSteps
     });
-    this.props.onSubmit();
+    return this.props.onSubmit();
   };
 
   addStep(parentInteractionId) {
@@ -125,32 +144,45 @@ export default class CampaignInteractionStepsForm extends React.Component {
     return () => {
       this.setState({
         interactionSteps: this.state.interactionSteps.map(is => {
-          if (is.id == id) {
-            is.isDeleted = true;
+          const copiedInteractionStep = {
+            ...is
+          };
+
+          if (copiedInteractionStep.id === id) {
+            copiedInteractionStep.isDeleted = true;
             this.state.interactionSteps
               .filter(isp => isp.parentInteractionId === is.id)
-              .map(isp => {
+              .forEach(isp => {
                 this.deleteStep(isp.id);
               });
           }
-          return is;
+          return copiedInteractionStep;
         })
       });
     };
   }
 
   handleFormChange(event) {
+    const handler =
+      event.answerActions &&
+      this.state.availableActionsLookup[event.answerActions];
     this.setState({
-      answerActions: event.answerActions,
+      answerActions: handler,
       answerActionsData: event.answerActionsData,
       interactionSteps: this.state.interactionSteps.map(is => {
-        if (is.id == event.id) {
-          delete event.interactionSteps;
-          return event;
-        } else {
-          delete event.interactionSteps;
-          return is;
+        const copiedEvent = {
+          ...event
+        };
+        delete copiedEvent.interactionSteps;
+        if (is.id === event.id) {
+          copiedEvent.needRequiredAnswerActionsData =
+            handler &&
+            !event.answerActionsData &&
+            handler.clientChoiceData &&
+            handler.clientChoiceData.length > 0;
+          return copiedEvent;
         }
+        return is;
       })
     });
   }
@@ -232,32 +264,48 @@ export default class CampaignInteractionStepsForm extends React.Component {
               this.props.availableActions &&
               this.props.availableActions.length ? (
                 <div key={`answeractions-${interactionStep.id}`}>
-                  <Form.Field
-                    name="answerActions"
-                    type="select"
-                    default=""
-                    choices={[
-                      { value: "", label: "Action..." },
-                      ...this.props.availableActions.map(action => ({
-                        value: action.name,
-                        label: action.displayName
-                      }))
-                    ]}
-                  />
-                  <IconButton tooltip="An action is something that is triggered by this answer being chosen, often in an outside system">
-                    <HelpIconOutline />
-                  </IconButton>
-                  {clientChoiceData && clientChoiceData.length ? (
+                  <div>
                     <Form.Field
-                      name="answerActionsData"
-                      type="autocomplete"
-                      choices={clientChoiceData.map(item => ({
-                        value: item.details,
-                        label: item.name
-                      }))}
+                      {...dataTest("actionSelect")}
+                      floatingLabelText="Action handler"
+                      name="answerActions"
+                      type="select"
+                      default=""
+                      choices={[
+                        ...this.props.availableActions.map(action => ({
+                          value: action.name,
+                          label: action.displayName
+                        }))
+                      ]}
                     />
+                    <IconButton tooltip="An action is something that is triggered by this answer being chosen, often in an outside system">
+                      <HelpIconOutline />
+                      <div></div>
+                    </IconButton>
+                    {instructions ? <div>{instructions}</div> : null}
+                  </div>
+                  {clientChoiceData && clientChoiceData.length ? (
+                    <div>
+                      <Form.Field
+                        {...dataTest("actionDataAutoComplete")}
+                        hintText="Start typing to search for the data to use with the answer action"
+                        floatingLabelText="Answer Action Data"
+                        fullWidth
+                        name="answerActionsData"
+                        type="autocomplete"
+                        choices={clientChoiceData.map(item => ({
+                          value: item.details,
+                          label: item.name
+                        }))}
+                      />
+                      {interactionStep.needRequiredAnswerActionsData ? (
+                        <div className={css(styleSheet.errorMessage)}>
+                          Action requires additional data. Please select
+                          something.
+                        </div>
+                      ) : null}
+                    </div>
                   ) : null}
-                  {instructions ? <div>{instructions}</div> : null}
                 </div>
               ) : (
                 ""
@@ -338,6 +386,9 @@ export default class CampaignInteractionStepsForm extends React.Component {
         {this.renderInteractionStep(tree, availableActions)}
         <RaisedButton
           {...dataTest("interactionSubmit")}
+          disabled={this.state.interactionSteps.some(
+            is => is.needRequiredAnswerActionsData && !is.isDeleted
+          )}
           primary
           label={this.props.saveLabel}
           onTouchTap={this.onSave.bind(this)}

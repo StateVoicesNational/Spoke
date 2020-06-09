@@ -40,11 +40,6 @@ export class PeopleList extends Component {
       },
       passwordResetHash: ""
     };
-
-    this.requestUserEditClose = this.requestUserEditClose.bind(this);
-    this.updateUser = this.updateUser.bind(this);
-    this.handlePasswordResetClose = this.handlePasswordResetClose.bind(this);
-    this.handleChange = this.handleChange.bind(this);
   }
 
   prepareTableColumns = () => [
@@ -98,22 +93,22 @@ export class PeopleList extends Component {
     }
   ];
 
-  editUser(userId) {
+  editUser = userId => {
     this.setState({
       userEdit: userId
     });
-  }
+  };
 
-  updateUser() {
+  updateUser = () => {
     this.setState({
       userEdit: false
     });
     this.props.users.refetch({
       cursor: this.state.cursor
     });
-  }
+  };
 
-  async resetPassword(userId) {
+  resetPassword = async userId => {
     const { currentUser } = this.props;
     if (currentUser.id !== userId) {
       const res = await this.props.mutations.resetUserPassword(
@@ -122,7 +117,7 @@ export class PeopleList extends Component {
       );
       this.setState({ passwordResetHash: res.data.resetUserPassword });
     }
-  }
+  };
 
   changePage = (pageDelta, pageSize) => {
     const { limit, offset, total } = this.props.users.people.pageInfo;
@@ -140,17 +135,10 @@ export class PeopleList extends Component {
         }
       },
       updateQuery: (prev, { fetchMoreResult }) => {
-        const returnValue = {
-          people: {
-            users: []
-          }
-        };
-
-        if (fetchMoreResult) {
-          returnValue.people.users = fetchMoreResult.data.people.users;
-          returnValue.people.pageInfo = fetchMoreResult.data.people.pageInfo;
+        if (!fetchMoreResult) {
+          return prev;
         }
-        return returnValue;
+        return fetchMoreResult;
       }
     });
     this.setState({
@@ -159,30 +147,6 @@ export class PeopleList extends Component {
         limit: pageSize
       }
     });
-  };
-
-  componentWillReceiveProps = nextProps => {
-    // this is a hack
-    // without this, some graphql updates did not happen
-    // until the next location pop
-    // which means the list of people did not reflect what was in the URL
-    // and the values of the filters and sort
-    // the hack reloads the entire page if the filters or sort changed
-    // and users is not loading -- the fact that it's not loading means
-    // the graphql update is not happening
-    const nextLocation = nextProps.location;
-    const currentLocation = this.props.location;
-
-    if (
-      nextLocation.action === "POP" &&
-      (nextLocation.query.searchString !== currentLocation.query.searchString ||
-        nextLocation.query.campaignId !== currentLocation.query.campaignId ||
-        nextLocation.query.sortBy !== currentLocation.query.sortBy ||
-        nextLocation.query.role !== currentLocation.query.role) &&
-      !nextProps.users.loading
-    ) {
-      window.location.reload();
-    }
   };
 
   handleNextPageClick = () => {
@@ -213,16 +177,9 @@ export class PeopleList extends Component {
     this.setState({ userEdit: false });
   };
 
-  handleInviteTexterOpen() {
-    this.setState({ open: true });
-  }
-
-  handleInviteTexterClose() {
-    this.setState({ open: false });
-  }
-  handlePasswordResetClose() {
+  handlePasswordResetClose = () => {
     this.setState({ passwordResetHash: "" });
-  }
+  };
 
   renderRolesDropdown = (columnKey, row) => {
     const { roles, texterId } = row;
@@ -301,6 +258,7 @@ export class PeopleList extends Component {
               userId={this.state.userEdit}
               updateUser={this.updateUser}
               requestClose={this.requestUserEditClose}
+              onCancel={this.requestUserEditClose}
             />
             <ResetPasswordDialog
               open={!!this.state.passwordResetHash}
@@ -323,8 +281,7 @@ PeopleList.propTypes = {
   utc: type.string,
   currentUser: type.object,
   sortBy: type.string,
-  searchString: type.string,
-  location: type.object
+  searchString: type.string
 };
 
 const organizationFragment = `
@@ -336,35 +293,6 @@ const organizationFragment = `
     roles(organizationId: $organizationId)
   }
 `;
-
-const mapMutationsToProps = () => ({
-  editOrganizationRoles: (organizationId, campaignId, userId, roles) => ({
-    mutation: gql`
-      mutation editOrganizationRoles($organizationId: String!, $userId: String!, $roles: [String], $campaignId: String) {
-        editOrganizationRoles(organizationId: $organizationId, userId: $userId, roles: $roles, campaignId: $campaignId) {
-          ${organizationFragment}
-        }
-      }
-    `,
-    variables: {
-      organizationId,
-      userId,
-      roles,
-      campaignId
-    }
-  }),
-  resetUserPassword: (organizationId, userId) => ({
-    mutation: gql`
-      mutation resetUserPassword($organizationId: String!, $userId: Int!) {
-        resetUserPassword(organizationId: $organizationId, userId: $userId)
-      }
-    `,
-    variables: {
-      organizationId,
-      userId
-    }
-  })
-});
 
 export const getUsersGql = `
       query getUsers(
@@ -401,22 +329,58 @@ export const getUsersGql = `
         }
       }`;
 
-const mapQueriesToProps = ({ ownProps }) => ({
+const queries = {
   users: {
     query: gql`
       ${getUsersGql}
     `,
-    variables: {
-      cursor: { offset: 0, limit: INITIAL_PAGE_SIZE },
-      organizationId: ownProps.organizationId,
-      campaignsFilter: ownProps.campaignsFilter,
-      sortBy: ownProps.sortBy || "FIRST_NAME",
-      filterBy: ownProps.filterBy || "FIRST_NAME",
-      filterString: ownProps.searchString,
-      role: ownProps.role
-    },
-    forceFetch: true
+    options: ownProps => ({
+      variables: {
+        cursor: { offset: 0, limit: INITIAL_PAGE_SIZE },
+        organizationId: ownProps.organizationId,
+        campaignsFilter: ownProps.campaignsFilter,
+        sortBy: ownProps.sortBy || "FIRST_NAME",
+        filterBy: ownProps.filterBy || "FIRST_NAME",
+        filterString: ownProps.searchString,
+        role: ownProps.role
+      },
+      fetchPolicy: "network-only"
+    })
   }
-});
+};
 
-export default loadData(PeopleList, { mapQueriesToProps, mapMutationsToProps });
+const mutations = {
+  editOrganizationRoles: ownProps => (
+    organizationId,
+    campaignId,
+    userId,
+    roles
+  ) => ({
+    mutation: gql`
+      mutation editOrganizationRoles($organizationId: String!, $userId: String!, $roles: [String], $campaignId: String) {
+        editOrganizationRoles(organizationId: $organizationId, userId: $userId, roles: $roles, campaignId: $campaignId) {
+          ${organizationFragment}
+        }
+      }
+    `,
+    variables: {
+      organizationId,
+      userId,
+      roles,
+      campaignId
+    }
+  }),
+  resetUserPassword: ownProps => (organizationId, userId) => ({
+    mutation: gql`
+      mutation resetUserPassword($organizationId: String!, $userId: Int!) {
+        resetUserPassword(organizationId: $organizationId, userId: $userId)
+      }
+    `,
+    variables: {
+      organizationId,
+      userId
+    }
+  })
+};
+
+export default loadData({ queries, mutations })(PeopleList);

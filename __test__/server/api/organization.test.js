@@ -1,18 +1,18 @@
 /* eslint-disable no-unused-expressions, consistent-return */
 import { r } from "../../../src/server/models/";
-import { getCampaignsQuery } from "../../../src/containers/CampaignList";
+import { getCampaignsQuery } from "../../../src/containers/AdminCampaignList";
 import { GraphQLError } from "graphql/error";
 
 import {
-  setupTest,
   cleanupTest,
-  createUser,
+  createCampaign,
   createInvite,
   createOrganization,
-  createCampaign,
+  createStartedCampaign,
   createTexter,
+  createUser,
   runGql,
-  createStartedCampaign
+  setupTest
 } from "../../test_helpers";
 
 const ActionHandlerFramework = require("../../../src/integrations/action-handlers");
@@ -85,10 +85,9 @@ describe("organization", async () => {
     });
 
     it("filters by a single campaign id", async () => {
-      const campaignsFilter = {
+      variables.campaignsFilter = {
         campaignId: testCampaign.id
       };
-      variables.campaignsFilter = campaignsFilter;
 
       const result = await runGql(getCampaignsQuery, variables, testAdminUser);
       expect(result.data.organization.campaigns.campaigns.length).toEqual(1);
