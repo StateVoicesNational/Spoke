@@ -98,12 +98,7 @@ export function clientChoiceDataCacheKey(organization, campaign, user) {
   return `${organization.id}`;
 }
 
-export async function getClientChoiceData(
-  organization,
-  campaign,
-  user,
-  loaders
-) {
+export async function getClientChoiceData(organization, campaign, user) {
   let responseJson;
 
   try {

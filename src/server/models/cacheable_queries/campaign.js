@@ -1,4 +1,4 @@
-import { r, loaders, Campaign } from "../../models";
+import { r, Campaign } from "../../models";
 import { modelWithExtraProps } from "./lib";
 import { assembleAnswerOptions } from "../../../lib/interaction-step-helpers";
 import { getFeatures } from "../../api/lib/config";
@@ -63,7 +63,6 @@ const clear = async (id, campaign) => {
     // console.log('clearing campaign cache')
     await r.redis.delAsync(cacheKey(id));
   }
-  loaders.campaign.clear(id);
 };
 
 const loadDeep = async id => {
@@ -77,7 +76,6 @@ const loadDeep = async id => {
     if (campaign.is_archived) {
       // console.log('campaign is_archived')
       // do not cache archived campaigns
-      loaders.campaign.clear(id);
       return campaign;
     }
     // console.log('campaign loaddeep', campaign)
@@ -101,9 +99,6 @@ const loadDeep = async id => {
       .expire(infoCacheKey(id), 43200)
       .execAsync();
   }
-  // console.log('clearing campaign', id, typeof id, loaders.campaign)
-  loaders.campaign.clear(String(id));
-  loaders.campaign.clear(Number(id));
   return null;
 };
 
@@ -184,10 +179,7 @@ const campaignCache = {
         return campaign;
       }
     }
-    if (opts && opts.forceLoad) {
-      loaders.campaign.clear(String(id));
-      loaders.campaign.clear(Number(id));
-    }
+
     return await Campaign.get(id);
   },
   reload: loadDeep,
