@@ -11,9 +11,9 @@ const logFunction = data => {
 };
 
 export const tests = testName => {
-  const sideboxParam = String(document.location.search).match(
-    /sideboxes=([^&]*)/
-  );
+  const sideboxParam = global.document
+    ? String(global.document.location.search).match(/sideboxes=([^&]*)/)
+    : null;
   const sideboxes = sideboxParam ? sideboxParam[1] : global.TEXTER_SIDEBOXES;
 
   const testData = {
@@ -414,6 +414,7 @@ export const tests = testName => {
             hasDST: 1
           }
         },
+        tags: [],
         questionResponseValues: [
           {
             interactionStepId: "13",
