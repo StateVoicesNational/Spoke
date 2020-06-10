@@ -128,7 +128,13 @@ export const updateUserRoles = async (
     userId,
     roles
   };
-  return await runGql(query, variables, adminUser);
+  const result = await runGql(query, variables, adminUser);
+  if (result && result.errors) {
+    throw new Exception(
+      "editOrganizationRoles failed " + JSON.stringify(result)
+    );
+  }
+  return result;
 };
 
 export async function createInvite() {
