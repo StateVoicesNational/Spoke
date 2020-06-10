@@ -48,6 +48,7 @@ provider:
     DB_MIN_POOL: 1
     DB_MAX_POOL: 3
     CACHE_PREFIX: spoke-
+    CONTACT_LOADERS: csv-s3-upload
     JOBS_SAME_PROCESS: 1
     OPTOUTS_SHARE_ALL_ORGS: 1
     BASE_URL: ${self:custom.baseUrl}
