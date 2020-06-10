@@ -53,11 +53,12 @@ provider:
     BASE_URL: ${self:custom.baseUrl}
     SESSION_SECRET: ${ssm:/${self:custom.stage}/spoke/SESSION_SECRET~true}
     REDIS_URL: redis://${ssm:/${self:custom.stage}/spoke/REDIS_PRIMARY_ENDPOINT~true}:6379/0
-    DEFAULT_SERVICE: fakeservice
-    # TWILIO_ACCOUNT_SID: ${ssm:/${self:custom.stage}/spoke/TWILIO_ACCOUNT_SID~true}
-    # TWILIO_AUTH_TOKEN: ${ssm:/${self:custom.stage}/spoke/TWILIO_AUTH_TOKEN~true}
-    # TWILIO_MESSAGE_SERVICE_SID: ${ssm:/${self:custom.stage}/spoke/TWILIO_MESSAGE_SERVICE_SID~true}
-    # TWILIO_STATUS_CALLBACK_URL: ${self:custom.baseUrl}/twilio-message-report
+    DEFAULT_SERVICE: twilio
+    TWILIO_ACCOUNT_SID: ${ssm:/${self:custom.stage}/spoke/TWILIO_ACCOUNT_SID~true}
+    TWILIO_AUTH_TOKEN: ${ssm:/${self:custom.stage}/spoke/TWILIO_AUTH_TOKEN~true}
+    TWILIO_MESSAGE_SERVICE_SID: ${ssm:/${self:custom.stage}/spoke/TWILIO_MESSAGE_SERVICE_SID~true}
+    TWILIO_STATUS_CALLBACK_URL: ${self:custom.baseUrl}/twilio-message-report
+    EXPERIMENTAL_TAGS: 1
   iamRoleStatements:
     - Effect: Allow
       Action: "s3:*"
