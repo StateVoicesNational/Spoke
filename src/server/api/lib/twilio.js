@@ -299,14 +299,12 @@ export function postMessageSend(
         .knex("campaign_contact")
         .where("id", message.campaign_contact_id)
         .update("error_code", changesToSave.error_code);
-    }
-
-    updateQuery = updateQuery.update(changesToSave);
-    if (trx) {
-      if (message.campaign_contact_id && changesToSave.error_code < 0) {
+      if (trx) {
         contactUpdateQuery = contactUpdateQuery.transacting(trx);
       }
     }
+
+    updateQuery = updateQuery.update(changesToSave);
 
     Promise.all([updateQuery, contactUpdateQuery]).then(() => {
       console.log("Saved message error status", changesToSave, err);
