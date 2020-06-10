@@ -546,7 +546,7 @@ const rootMutations = {
         });
       }
       await cacheableData.user.clearUser(userId);
-      return loaders.organization.load(organizationId);
+      return cacheableData.organization.load(organizationId);
     },
     editUser: async (_, { organizationId, userId, userData }, { user }) => {
       if (user.id !== userId) {
