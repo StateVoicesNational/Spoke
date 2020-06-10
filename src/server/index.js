@@ -27,10 +27,6 @@ process.on("uncaughtException", ex => {
 });
 const DEBUG = process.env.NODE_ENV === "development";
 
-const loginCallbacks = passportSetup[
-  process.env.PASSPORT_STRATEGY || global.PASSPORT_STRATEGY || "auth0"
-]();
-
 if (!process.env.SUPPRESS_SEED_CALLS) {
   seedZipCodes();
 }
@@ -172,6 +168,11 @@ app.get("/logout-callback", (req, res) => {
   req.logOut();
   res.redirect("/");
 });
+
+const loginCallbacks = passportSetup[
+  process.env.PASSPORT_STRATEGY || global.PASSPORT_STRATEGY || "auth0"
+](app);
+
 if (loginCallbacks) {
   app.get("/login-callback", ...loginCallbacks.loginCallback);
   app.post("/login-callback", ...loginCallbacks.loginCallback);
