@@ -90,7 +90,6 @@ export class AssignmentTexterContactControls extends React.Component {
 
   componentWillUpdate(nextProps, nextState) {
     // we refresh sideboxes here because we need to compare previous state
-    console.log("componentWillUpdate", nextState);
     nextState.enabledSideboxes = this.getSideboxes(nextProps);
     const newPopups = [];
     nextState.enabledSideboxes.popups.forEach((sb, i) => {
@@ -116,11 +115,6 @@ export class AssignmentTexterContactControls extends React.Component {
 
   getSideboxes(props) {
     const popups = [];
-    console.log(
-      "getSideboxes",
-      sideboxes,
-      props.campaign.texterUIConfig.sideboxChoices
-    );
     // TODO: need to filter texterUIConfig.options (and json parse) for which ones are marked as enabled
     // and then pass options data into the component
     const enabledSideboxes = props.campaign.texterUIConfig.sideboxChoices

@@ -107,7 +107,8 @@ export const flexStyles = StyleSheet.create({
   /// * Section Scrolling Message Thread
   sectionMessageThread: {
     backgroundColor: "#f0f0f0",
-    flex: "1 1 auto"
+    flex: "1 1 auto",
+    overflowY: "scroll"
   },
   /// * Section OptOut Dialog
   sectionOptOutDialog: {
