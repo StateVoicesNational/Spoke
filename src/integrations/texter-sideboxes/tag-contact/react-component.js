@@ -56,7 +56,7 @@ export class TexterSidebox extends React.Component {
     );
     return (
       <div>
-        <h3>{settings.tagHeaderText || "Tag a contact here for help"}</h3>
+        <h3>{settings.tagHeaderText || "Tag a contact here:"}</h3>
         <div>
           {escalatedTags.map(tag => (
             <TagChip
@@ -111,7 +111,7 @@ export class TexterSidebox extends React.Component {
                 });
             });
           }}
-          label={settings.tagButtonText || "Request help"}
+          label={settings.tagButtonText || "Save tags"}
           icon={
             (submitted === 1 && (
               <CircularProgress style={{ lineHeight: 1 }} size={16} />
