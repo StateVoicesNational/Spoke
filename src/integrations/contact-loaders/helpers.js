@@ -43,11 +43,9 @@ export const finalizeContactLoad = async (
       index * chunkSize,
       (index + 1) * chunkSize
     );
-    await CampaignContact.save(savePortion).catch(err => {
-      // eslint-disable-next-line no-console
-      console.error("Error saving campaign contacts:", campaignId, err);
-      // call the error thing
-    });
+
+    console.log(`Working on importing chunk No: ${index}`);
+    await r.knex.batchInsert("campaign_contact", savePortion);
   }
 
   await completeContactLoad(job, [], ingestDataReference, ingestResult);
