@@ -58,7 +58,7 @@ const mutations = {
     mutation: gql`
       mutation joinOrganization(
         $organizationUuid: String!
-        $campaignId: String!
+        $campaignId: String
         $queryParams: String
       ) {
         joinOrganization(
