@@ -33,10 +33,11 @@ provider:
     SUPPRESS_SEED_CALLS: 1
     SUPPRESS_MIGRATIONS: 1
     SUPPRESS_DATABASE_AUTOCREATE: 1
-    PASSPORT_STRATEGY: auth0
-    AUTH0_DOMAIN: ${ssm:/${self:custom.stage}/spoke/AUTH0_DOMAIN~true}
-    AUTH0_CLIENT_ID: ${ssm:/${self:custom.stage}/spoke/AUTH0_CLIENT_ID~true}
-    AUTH0_CLIENT_SECRET: ${ssm:/${self:custom.stage}/spoke/AUTH0_CLIENT_SECRET~true}
+    PASSPORT_STRATEGY: slack
+    SLACK_CLIENT_ID: ${ssm:/${self:custom.stage}/spoke/SLACK_CLIENT_ID~true}
+    SLACK_CLIENT_SECRET: ${ssm:/${self:custom.stage}/spoke/SLACK_CLIENT_SECRET~true}
+    SLACK_TEAM_NAME: ${ssm:/${self:custom.stage}/spoke/SLACK_TEAM_NAME~true}
+    SLACK_TEAM_ID: ${ssm:/${self:custom.stage}/spoke/SLACK_TEAM_ID~true}
     DST_REFERENCE_TIMEZONE: America/New_York
     DB_TYPE: pg
     DB_PORT: 5432
