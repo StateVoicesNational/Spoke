@@ -4,8 +4,10 @@ import { editOrganization } from "./editOrganization";
 import { findNewCampaignContact } from "./findNewCampaignContact";
 import { joinOrganization } from "./joinOrganization";
 import { sendMessage } from "./sendMessage";
+import { startCampaign } from "./startCampaign";
 import { updateContactTags } from "./updateContactTags";
 import { updateQuestionResponses } from "./updateQuestionResponses";
+import { releaseCampaignNumbers } from "./releaseCampaignNumbers";
 
 export {
   bulkSendMessages,
@@ -14,6 +16,8 @@ export {
   findNewCampaignContact,
   joinOrganization,
   sendMessage,
+  startCampaign,
   updateContactTags,
-  updateQuestionResponses
+  updateQuestionResponses,
+  releaseCampaignNumbers
 };
