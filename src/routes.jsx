@@ -152,6 +152,18 @@ export default function makeRoutes(requireAuth = () => {}) {
                 }}
               />
               <Route
+                path="review"
+                components={{
+                  fullScreen: props => (
+                    <TexterTodo
+                      {...props}
+                      messageStatus="needsMessage,needsResponse,convo,messaged,closed"
+                    />
+                  ),
+                  topNav: null
+                }}
+              />
+              <Route
                 path="all"
                 components={{
                   fullScreen: props => (
