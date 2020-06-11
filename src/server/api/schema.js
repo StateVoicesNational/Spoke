@@ -67,6 +67,7 @@ import {
   findNewCampaignContact,
   joinOrganization,
   editOrganization,
+  releaseContacts,
   sendMessage,
   updateContactTags,
   updateQuestionResponses
@@ -431,6 +432,7 @@ const rootMutations = {
     editOrganization,
     findNewCampaignContact,
     joinOrganization,
+    releaseContacts,
     sendMessage,
     userAgreeTerms: async (_, { userId }, { user }) => {
       if (user.id === Number(userId)) {

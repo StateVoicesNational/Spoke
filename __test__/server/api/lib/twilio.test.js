@@ -1,5 +1,6 @@
 /* eslint-disable no-unused-expressions, consistent-return */
 import { r, Message, cacheableData } from "../../../../src/server/models/";
+import { getConfig } from "../../../../src/server/api/lib/config";
 import twilio, {
   postMessageSend,
   handleDeliveryReport
@@ -291,7 +292,7 @@ it("handleIncomingMessage should save message and update contact state", async (
     MessagingServiceSid: "fakeSid_MK123"
   });
 
-  if (r.redis) {
+  if (r.redis && getConfig("REDIS_CONTACT_CACHE")) {
     // IMPORTANT: this should be tested before we do SELECT statements below
     //   in the test itself to check the database
     const selectMethods = { select: 1, first: 1 };
