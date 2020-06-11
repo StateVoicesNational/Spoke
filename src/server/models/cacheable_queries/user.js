@@ -1,6 +1,10 @@
 import DataLoader from "dataloader";
 import { r } from "../../models";
-import { isRoleGreater } from "../../../lib/permissions";
+import {
+  isRoleGreater,
+  rolesEqualOrGreater,
+  rolesEqualOrLess
+} from "../../../lib/permissions";
 
 /*
 KEY: texterauth-${authId}
@@ -34,6 +38,7 @@ const userAuthKey = authId =>
 export const accessHierarchy = [
   "SUSPENDED",
   "TEXTER",
+  "VETTED_TEXTER",
   "SUPERVOLUNTEER",
   "ADMIN",
   "OWNER"
@@ -134,7 +139,7 @@ const dbLoadUserAuth = async (field, val) => {
 
 const userOrgs = async (userId, role) => {
   const acceptableRoles = role
-    ? accessHierarchy.slice(accessHierarchy.indexOf(role))
+    ? rolesEqualOrGreater(role)
     : [...accessHierarchy];
   const orgRoles = await loadUserRoles(userId);
   const matchedOrgs = Object.keys(orgRoles).filter(
@@ -146,10 +151,7 @@ const userOrgs = async (userId, role) => {
 const orgRoles = async (userId, orgId) => {
   const orgRolesDict = await loadUserRoles(userId);
   if (orgId in orgRolesDict) {
-    return accessHierarchy.slice(
-      0,
-      1 + accessHierarchy.indexOf(orgRolesDict[orgId].role)
-    );
+    return rolesEqualOrLess(orgRolesDict[orgId].role);
   }
   return [];
 };
@@ -186,7 +188,7 @@ const userOrgHighestRole = async (userId, orgId) => {
 };
 
 const userHasRole = async (user, orgId, role) => {
-  const acceptableRoles = accessHierarchy.slice(accessHierarchy.indexOf(role));
+  const acceptableRoles = rolesEqualOrGreater(role);
   let highestRole = "";
   if (user.orgRoleCache) {
     highestRole = await user.orgRoleCache.load(`${user.id}:${orgId}`);

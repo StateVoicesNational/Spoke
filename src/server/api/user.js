@@ -1,4 +1,5 @@
 import { mapFieldsToModel } from "./lib/utils";
+import { rolesEqualOrLess } from "../../lib/permissions";
 import { r, User, cacheableData } from "../models";
 
 const firstName = '"user"."first_name"';
@@ -234,8 +235,11 @@ export const resolvers = {
       // Note: this only returns {id, name}, but that is all apis need here
       return await cacheableData.user.userOrgs(user.id, role);
     },
-    roles: async (user, { organizationId }) =>
-      cacheableData.user.orgRoles(user.id, organizationId),
+    roles: async (user, { organizationId }) => {
+      return user.role
+        ? rolesEqualOrLess(user.role)
+        : await cacheableData.user.orgRoles(user.id, organizationId);
+    },
     todos: async (user, { organizationId }) =>
       r
         .table("assignment")
