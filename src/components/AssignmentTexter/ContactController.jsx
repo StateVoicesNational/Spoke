@@ -228,11 +228,14 @@ export class ContactController extends React.Component {
   }
 
   hasPrevious() {
-    return this.state.currentContactIndex > 0;
+    return !this.props.reviewMode && this.state.currentContactIndex > 0;
   }
 
   hasNext() {
-    return this.state.currentContactIndex < this.contactCount() - 1;
+    return (
+      !this.props.reviewMode &&
+      this.state.currentContactIndex < this.contactCount() - 1
+    );
   }
 
   handleFinishContact = contactId => {
@@ -464,7 +467,8 @@ ContactController.propTypes = {
   assignContactsIfNeeded: PropTypes.func,
   organizationId: PropTypes.string,
   ChildComponent: PropTypes.func,
-  messageStatusFilter: PropTypes.string
+  messageStatusFilter: PropTypes.string,
+  reviewMode: PropTypes.bool
 };
 
 export default withRouter(ContactController);

@@ -211,6 +211,7 @@ export class TexterTodo extends React.Component {
         organizationId={this.props.params.organizationId}
         ChildComponent={AssignmentTexterContact}
         messageStatusFilter={this.props.messageStatus}
+        reviewMode={this.props.reviewMode}
       />
     );
   }
@@ -218,6 +219,7 @@ export class TexterTodo extends React.Component {
 
 TexterTodo.propTypes = {
   messageStatus: PropTypes.string,
+  reviewMode: PropTypes.bool,
   params: PropTypes.object,
   data: PropTypes.object,
   mutations: PropTypes.object,

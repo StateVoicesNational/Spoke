@@ -158,6 +158,7 @@ export default function makeRoutes(requireAuth = () => {}) {
                     <TexterTodo
                       {...props}
                       messageStatus="needsMessage,needsResponse,convo,messaged,closed"
+                      reviewMode={true}
                     />
                   ),
                   topNav: null
