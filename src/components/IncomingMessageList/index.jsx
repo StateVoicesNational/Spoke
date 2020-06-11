@@ -160,6 +160,7 @@ export class IncomingMessageList extends Component {
                 overflow: "hidden",
                 whiteSpace: "nowrap"
               }}
+              title={lastMessage.text}
             >
               <span
                 style={{ color: lastMessage.isFromContact ? "blue" : "black" }}
