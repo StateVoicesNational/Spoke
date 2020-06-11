@@ -10,6 +10,7 @@ import {
 import { log, gunzip, zipToTimeZone, convertOffsetsToStrings } from "../lib";
 import { updateJob } from "./lib";
 import serviceMap from "../server/api/lib/services";
+import twilio from "../server/api/lib/twilio";
 import {
   getLastMessage,
   saveNewIncomingMessage
@@ -1154,6 +1155,89 @@ export async function buyPhoneNumbers(job) {
     });
   } catch (err) {
     log.error(`JOB ${job.id} FAILED: ${err.message}`, err);
+  } finally {
+    await defensivelyDeleteJob(job);
+  }
+}
+
+// Prepares a messaging service with owned number for the campaign
+async function prepareTwilioCampaign(campaign, organization) {
+  const ts = Math.floor(new Date() / 1000);
+  const friendlyName = `Campaign ${campaign.id}: ${campaign.organization_id}-${ts} [${process.env.BASE_URL}]`;
+  const messagingService = await twilio.createMessagingService(
+    organization,
+    friendlyName
+  );
+  const msgSrvSid = messagingService.sid;
+  if (!msgSrvSid) {
+    throw new Error("Failed to create messaging service!");
+  }
+  const phoneSids = await r
+    .knex("owned_phone_number")
+    .select("service_id")
+    .where({
+      organization_id: campaign.organization_id,
+      service: "twilio",
+      allocated_to: "campaign",
+      allocated_to_id: campaign.id.toString()
+    })
+    .map(row => row.service_id);
+  console.log(`Transferring ${phoneSids.length} numbers to ${msgSrvSid}`);
+  try {
+    await twilio.addNumbersToMessagingService(
+      organization,
+      phoneSids,
+      msgSrvSid
+    );
+  } catch (e) {
+    console.error("Failed to add numbers to messaging service", e);
+    await twilio.deleteMessagingService(organization, msgSrvSid);
+    throw new Error("Failed to add numbers to messaging service");
+  }
+  return msgSrvSid;
+}
+
+export async function startCampaignWithPhoneNumbers(job) {
+  try {
+    const campaign = await cacheableData.campaign.load(job.campaign_id);
+    const organization = await cacheableData.organization.load(
+      campaign.organization_id
+    );
+    const service = getConfig("DEFAULT_SERVICE", organization);
+
+    let messagingServiceSid;
+    if (service === "twilio") {
+      messagingServiceSid = await prepareTwilioCampaign(campaign, organization);
+    } else if (service === "fakeservice") {
+      // simulate some latency
+      await new Promise(resolve => setTimeout(resolve, 5000));
+      messagingServiceSid = "FAKEMESSAGINGSERVICE";
+    } else {
+      throw new Error(
+        `Campaign phone numbers are not supported for service ${service}`
+      );
+    }
+
+    await r
+      .knex("campaign")
+      .where("id", campaign.id)
+      .update({
+        is_started: true,
+        use_own_messaging_service: true,
+        messageservice_sid: messagingServiceSid
+      });
+
+    await cacheableData.campaign.clear(job.campaign_id);
+    const reloadedCampaign = await cacheableData.campaign.load(job.campaign_id);
+
+    await sendUserNotification({
+      type: Notifications.CAMPAIGN_STARTED,
+      campaignId: campaign.id
+    });
+
+    await loadCampaignCache(reloadedCampaign, organization, {});
+  } catch (e) {
+    console.error(`Job ${job.id} failed: ${e.message}`, e);
   } finally {
     await defensivelyDeleteJob(job);
   }

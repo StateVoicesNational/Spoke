@@ -6,6 +6,7 @@ import isUrl from "is-url";
 import { gzip, makeTree, getHighestRole } from "../../lib";
 import { capitalizeWord } from "./lib/utils";
 import twilio from "./lib/twilio";
+import ownedPhoneNumber from "./lib/owned-phone-number";
 
 import {
   assignTexters,
@@ -29,7 +30,6 @@ import {
   r,
   cacheableData
 } from "../models";
-import { Notifications, sendUserNotification } from "../notifications";
 import { resolvers as assignmentResolvers } from "./assignment";
 import { getCampaigns, resolvers as campaignResolvers } from "./campaign";
 import { resolvers as campaignContactResolvers } from "./campaign-contact";
@@ -69,8 +69,10 @@ import {
   joinOrganization,
   editOrganization,
   sendMessage,
+  startCampaign,
   updateContactTags,
-  updateQuestionResponses
+  updateQuestionResponses,
+  releaseCampaignNumbers
 } from "./mutations";
 
 const ActionHandlers = require("../../integrations/action-handlers");
@@ -344,6 +346,31 @@ async function editCampaign(id, campaign, loaders, user, origCampaignRecord) {
     });
   }
 
+  if (campaign.hasOwnProperty("inventoryPhoneNumberCounts")) {
+    if (origCampaignRecord.isStarted) {
+      throw new Error(
+        "Cannot update phone numbers once a campaign has started"
+      );
+    }
+    const phoneCounts = campaign.inventoryPhoneNumberCounts;
+    await r.knex.transaction(async trx => {
+      await ownedPhoneNumber.releaseCampaignNumbers(id, trx);
+      for (const pc of phoneCounts) {
+        if (pc.count) {
+          await ownedPhoneNumber.allocateCampaignNumbers(
+            {
+              organizationId: organizationId,
+              campaignId: id,
+              areaCode: pc.areaCode,
+              amount: pc.count
+            },
+            trx
+          );
+        }
+      }
+    });
+  }
+
   const campaignRefreshed = await cacheableData.campaign.load(id, {
     forceLoad: changed
   });
@@ -433,6 +460,8 @@ const rootMutations = {
     findNewCampaignContact,
     joinOrganization,
     sendMessage,
+    startCampaign,
+    releaseCampaignNumbers,
     userAgreeTerms: async (_, { userId }, { user }) => {
       if (user.id === Number(userId)) {
         return user.terms ? user : null;
@@ -829,6 +858,10 @@ const rootMutations = {
     unarchiveCampaign: async (_, { id }, { user }) => {
       const campaign = await cacheableData.campaign.load(id);
       await accessRequired(user, campaign.organization_id, "ADMIN");
+      // TODO: make helper
+      if (campaignResolvers.Campaign.isArchivedPermanently(campaign)) {
+        throw new Error("Cannot archive permanently archived campaign");
+      }
       campaign.is_archived = false;
       await campaign.save();
       await cacheableData.campaign.clear(id);
@@ -865,49 +898,6 @@ const rootMutations = {
       );
       loaders.campaign.clearAll();
       return campaigns;
-    },
-    startCampaign: async (
-      _,
-      { id },
-      { user, loaders, remainingMilliseconds }
-    ) => {
-      const campaign = await cacheableData.campaign.load(id);
-      await accessRequired(user, campaign.organization_id, "ADMIN");
-      const organization = await loaders.organization.load(
-        campaign.organization_id
-      );
-
-      if (campaign.use_own_messaging_service) {
-        if (campaign.messageservice_sid == undefined) {
-          const friendlyName = `Campaign: ${campaign.title} (${campaign.id}) [${process.env.BASE_URL}]`;
-          const messagingService = await twilio.createMessagingService(
-            organization,
-            friendlyName
-          );
-          campaign.messageservice_sid = messagingService.sid;
-        }
-      } else {
-        campaign.messageservice_sid = await cacheableData.organization.getMessageServiceSid(
-          organization
-        );
-      }
-
-      campaign.is_started = true;
-
-      await campaign.save();
-      const campaignRefreshed = await cacheableData.campaign.load(id, {
-        forceLoad: true
-      });
-      await sendUserNotification({
-        type: Notifications.CAMPAIGN_STARTED,
-        campaignId: id
-      });
-
-      // some asynchronous cache-priming:
-      await loadCampaignCache(campaignRefreshed, organization, {
-        remainingMilliseconds
-      });
-      return campaignRefreshed;
     },
     editCampaign: async (_, { id, campaign }, { user, loaders }) => {
       const origCampaign = await Campaign.get(id);
