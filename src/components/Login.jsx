@@ -5,7 +5,6 @@ import { withRouter } from "react-router";
 import { StyleSheet, css } from "aphrodite";
 import theme from "../styles/theme";
 
-import { isClient } from "../lib";
 import UserEdit from "../containers/UserEdit";
 
 const styles = StyleSheet.create({
