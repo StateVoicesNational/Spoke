@@ -10,6 +10,30 @@ import {
   getActionChoiceData
 } from "../../integrations/action-handlers";
 
+const campaignNumbersEnabled = organization => {
+  const inventoryEnabled = getConfig(
+    "EXPERIMENTAL_PHONE_INVENTORY",
+    organization,
+    {
+      truthy: true
+    }
+  );
+
+  return (
+    inventoryEnabled &&
+    getConfig("EXPERIMENTAL_CAMPAIGN_PHONE_NUMBERS", organization, {
+      truthy: true
+    })
+  );
+};
+
+const manualMessagingServicesEnabled = organization =>
+  getConfig(
+    "EXPERIMENTAL_TWILIO_PER_CAMPAIGN_MESSAGING_SERVICE",
+    organization,
+    { truthy: true }
+  );
+
 export const resolvers = {
   Organization: {
     ...mapFieldsToModel(["id", "name"], Organization),
@@ -139,10 +163,20 @@ export const resolvers = {
           authToken,
           accountSid
         } = await cacheableData.organization.getTwilioAuth(organization);
-        const messagingServiceSid = await cacheableData.organization.getMessageServiceSid(
-          organization
-        );
-        if (!(authToken && accountSid && messagingServiceSid)) {
+
+        let messagingServiceConfigured;
+        if (
+          manualMessagingServicesEnabled(organization) ||
+          campaignNumbersEnabled(organization)
+        ) {
+          messagingServiceConfigured = true;
+        } else {
+          messagingServiceConfigured = await cacheableData.organization.getMessageServiceSid(
+            organization
+          );
+        }
+
+        if (!(authToken && accountSid && messagingServiceConfigured)) {
           return false;
         }
       }
@@ -153,6 +187,33 @@ export const resolvers = {
       return getConfig("EXPERIMENTAL_PHONE_INVENTORY", organization, {
         truthy: true
       });
+    },
+    campaignPhoneNumbersEnabled: async (organization, _, { user }) => {
+      await accessRequired(user, organization.id, "SUPERVOLUNTEER");
+      const inventoryEnabled = getConfig(
+        "EXPERIMENTAL_PHONE_INVENTORY",
+        organization,
+        {
+          truthy: true
+        }
+      );
+      const configured =
+        inventoryEnabled &&
+        getConfig("EXPERIMENTAL_CAMPAIGN_PHONE_NUMBERS", organization, {
+          truthy: true
+        });
+      // check that the incompatible strategies are not enabled
+      const manualMsgServiceFeatureEnabled = getConfig(
+        "EXPERIMENTAL_TWILIO_PER_CAMPAIGN_MESSAGING_SERVICE",
+        organization,
+        { truthy: true }
+      );
+      if (configured && manualMsgServiceFeatureEnabled) {
+        throw new Error(
+          "Incompatible phone number management features enabled"
+        );
+      }
+      return configured;
     },
     pendingPhoneNumberJobs: async (organization, _, { user }) => {
       await accessRequired(user, organization.id, "OWNER", true);
@@ -182,7 +243,7 @@ export const resolvers = {
           truthy: true
         })
       ) {
-        throw Error("Twilio inventory management is not enabled");
+        return [];
       }
       const service = getConfig("DEFAULT_SERVICE");
       const counts = await r
