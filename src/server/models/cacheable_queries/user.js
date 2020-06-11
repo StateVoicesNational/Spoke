@@ -1,10 +1,6 @@
 import DataLoader from "dataloader";
 import { r } from "../../models";
-import {
-  isRoleGreater,
-  rolesEqualOrGreater,
-  rolesEqualOrLess
-} from "../../../lib/permissions";
+import * as perms from "../../../lib/permissions";
 
 /*
 KEY: texterauth-${authId}
@@ -35,15 +31,6 @@ const userRoleKey = userId =>
 const userAuthKey = authId =>
   `${process.env.CACHE_PREFIX || ""}texterauth-${authId}`;
 
-export const accessHierarchy = [
-  "SUSPENDED",
-  "TEXTER",
-  "VETTED_TEXTER",
-  "SUPERVOLUNTEER",
-  "ADMIN",
-  "OWNER"
-];
-
 const getHighestRolesPerOrg = userOrgs => {
   const highestRolesPerOrg = {};
   userOrgs.forEach(userOrg => {
@@ -52,7 +39,7 @@ const getHighestRolesPerOrg = userOrgs => {
     const orgName = userOrg.name;
 
     if (highestRolesPerOrg[orgId]) {
-      if (isRoleGreater(orgRole, highestRolesPerOrg[orgId].role)) {
+      if (perms.isRoleGreater(orgRole, highestRolesPerOrg[orgId].role)) {
         highestRolesPerOrg[orgId].role = orgRole;
       }
     } else {
@@ -139,8 +126,8 @@ const dbLoadUserAuth = async (field, val) => {
 
 const userOrgs = async (userId, role) => {
   const acceptableRoles = role
-    ? rolesEqualOrGreater(role)
-    : [...accessHierarchy];
+    ? perms.rolesEqualOrGreater(role)
+    : [...perms.ROLE_HIERARCHY];
   const orgRoles = await loadUserRoles(userId);
   const matchedOrgs = Object.keys(orgRoles).filter(
     orgId => acceptableRoles.indexOf(orgRoles[orgId].role) !== -1
@@ -151,7 +138,7 @@ const userOrgs = async (userId, role) => {
 const orgRoles = async (userId, orgId) => {
   const orgRolesDict = await loadUserRoles(userId);
   if (orgId in orgRolesDict) {
-    return rolesEqualOrLess(orgRolesDict[orgId].role);
+    return perms.rolesEqualOrLess(orgRolesDict[orgId].role);
   }
   return [];
 };
@@ -177,18 +164,14 @@ const userOrgHighestRole = async (userId, orgId) => {
       .select("role")
       .where({ user_id: userId, organization_id: orgId });
     if (roles.length) {
-      highestRole = roles
-        .map(ri => ri.role)
-        .sort(
-          (a, b) => accessHierarchy.indexOf(b) - accessHierarchy.indexOf(a)
-        )[0];
+      highestRole = perms.getHighestRole(roles.map(ri => ri.role));
     }
   }
   return highestRole;
 };
 
 const userHasRole = async (user, orgId, role) => {
-  const acceptableRoles = rolesEqualOrGreater(role);
+  const acceptableRoles = perms.rolesEqualOrGreater(role);
   let highestRole = "";
   if (user.orgRoleCache) {
     highestRole = await user.orgRoleCache.load(`${user.id}:${orgId}`);
