@@ -347,6 +347,7 @@ const queries = {
             texter {
               id
               displayName
+              roles(organizationId: $organizationId)
             }
             contact {
               id
