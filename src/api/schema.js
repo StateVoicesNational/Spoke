@@ -312,6 +312,10 @@ const rootSchema = gql`
       assignmentId: String!
       numberContacts: Int!
     ): FoundContact
+    releaseContacts(
+      assignmentId: String!
+      releaseConversations: Boolean
+    ): Assignment
     userAgreeTerms(userId: String!): User
     reassignCampaignContacts(
       organizationId: String!

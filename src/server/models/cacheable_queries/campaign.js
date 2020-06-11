@@ -152,18 +152,17 @@ const campaignCache = {
         // console.log('new campaign data', id, campaignData)
       }
       if (campaignObj) {
-        campaignObj.assignedCount = await r.redis.hgetAsync(
-          infoCacheKey(id),
-          "assignedCount"
-        );
-        campaignObj.messagedCount = await r.redis.hgetAsync(
-          infoCacheKey(id),
-          "messagedCount"
-        );
-        campaignObj.errorCount = await r.redis.hgetAsync(
-          infoCacheKey(id),
+        const counts = [
+          "assignedCount",
+          "messagedCount",
+          "needsResponseCount",
           "errorCount"
-        );
+        ];
+        const countKey = infoCacheKey(id);
+        for (let i = 0, l = counts.length; i < l; i++) {
+          const countName = counts[i];
+          campaignObj[countName] = await r.redis.hgetAsync(countKey, countName);
+        }
         campaignObj.feature = getFeatures(campaignObj);
         // console.log('campaign cache', cacheKey(id), campaignObj, campaignData)
         const campaign = modelWithExtraProps(campaignObj, Campaign, [
@@ -172,9 +171,7 @@ const campaignCache = {
           "interactionSteps",
           "contactTimezones",
           "contactsCount",
-          "assignedCount",
-          "messagedCount",
-          "errorCount"
+          ...counts
         ]);
         return campaign;
       }
@@ -187,14 +184,14 @@ const campaignCache = {
   dbCustomFields,
   dbInteractionSteps,
   completionStats: async id => {
-    if (r.redis && CONTACT_CACHE_ENABLED) {
+    if (r.redis) {
       const data = await r.redis.hgetallAsync(infoCacheKey(id));
       return data || {};
     }
     return {};
   },
   updateAssignedCount: async id => {
-    if (r.redis && CONTACT_CACHE_ENABLED) {
+    if (r.redis) {
       try {
         const assignCount = await r.getCount(
           r
@@ -213,15 +210,19 @@ const campaignCache = {
       }
     }
   },
-  incrCount: async (id, countType) => {
-    // countType={"messagedCount", "errorCount"}
+  incrCount: async (id, countType, countAmount) => {
+    // countType={"messagedCount", "errorCount", "needsResposneCount", "assignedCount"}
     // console.log("incrCount", id, countType, CONTACT_CACHE_ENABLED);
-    if (r.redis && CONTACT_CACHE_ENABLED) {
+    if (r.redis) {
       try {
         const infoKey = infoCacheKey(id);
         await r.redis
           .multi()
-          .hincrby(infoKey, countType, 1)
+          .hincrby(
+            infoKey,
+            countType,
+            typeof countAmount === "number" ? countAmount : 1
+          )
           .expire(infoKey, 43200)
           .execAsync();
       } catch (err) {

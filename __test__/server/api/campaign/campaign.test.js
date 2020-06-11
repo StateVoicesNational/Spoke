@@ -1,5 +1,6 @@
 import gql from "graphql-tag";
 import { r } from "../../../../src/server/models";
+import { getConfig } from "../../../../src/server/api/lib/config";
 import { dataQuery as TexterTodoListQuery } from "../../../../src/containers/TexterTodoList";
 import { dataQuery as TexterTodoQuery } from "../../../../src/containers/TexterTodo";
 import { campaignDataQuery as AdminCampaignEditQuery } from "../../../../src/containers/AdminCampaignEdit";
@@ -417,7 +418,7 @@ it("should save campaign canned responses across copies and match saved data", a
 });
 
 describe("Caching", async () => {
-  if (r.redis) {
+  if (r.redis && getConfig("REDIS_CONTACT_CACHE")) {
     it("should not have any selects on a cached campaign when message sending", async () => {
       await createScript(testAdminUser, testCampaign);
       await startCampaign(testAdminUser, testCampaign);

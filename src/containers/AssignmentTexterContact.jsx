@@ -560,6 +560,35 @@ const mutations = {
       campaignContactId
     }
   }),
+  releaseContacts: ownProps => (assignmentId, releaseConversations) => ({
+    mutation: gql`
+      mutation releaseContacts(
+        $assignmentId: Int!
+        $contactsFilter: ContactsFilter!
+        $releaseConversations: Boolean
+      ) {
+        releaseContacts(
+          assignmentId: $assignmentId
+          releaseConversations: $releaseConversations
+        ) {
+          id
+          contacts(contactsFilter: $contactsFilter) {
+            id
+          }
+          allContactsCount: contactsCount
+        }
+      }
+    `,
+    variables: {
+      assignmentId,
+      releaseConversations,
+      contactsFilter: {
+        messageStatus: ownProps.messageStatusFilter,
+        isOptedOut: false,
+        validTimezone: true
+      }
+    }
+  }),
   bulkSendMessages: ownProps => assignmentId => ({
     mutation: gql`
       mutation bulkSendMessages($assignmentId: Int!) {

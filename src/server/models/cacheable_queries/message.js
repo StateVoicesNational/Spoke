@@ -226,10 +226,10 @@ const messageCache = {
     // console.log('message SAVE', contact, messageInstance)
     const messageToSave = { ...messageInstance };
     let newStatus = "needsResponse";
-
+    let activeCellFound = null;
     if (messageInstance.is_from_contact) {
       console.log("messageCache SAVE lookup");
-      const activeCellFound = await campaignContactCache.lookupByCell(
+      activeCellFound = await campaignContactCache.lookupByCell(
         messageInstance.contact_number,
         messageInstance.service,
         messageInstance.messageservice_sid
@@ -262,22 +262,28 @@ const messageCache = {
     // We modify this info for sendMessage so it can send through the service with the id, etc.
     // eslint-disable-next-line no-param-reassign
     messageToSave.id = messageInstance.id || savedMessage.id;
-
+    const campaignId =
+      (contact && contact.campaign_id) ||
+      (activeCellFound && activeCellFound.campaign_id);
     await saveMessageCache(messageToSave.campaign_contact_id, [messageToSave]);
     const contactData = {
       id: messageToSave.campaign_contact_id,
       cell: messageToSave.contact_number,
       messageservice_sid: messageToSave.messageservice_sid,
-      campaign_id: contact && contact.campaign_id
+      campaign_id: campaignId
     };
     console.log("messageCache hi saveMsg3", newStatus, contactData);
     await campaignContactCache.updateStatus(contactData, newStatus);
     console.log("messageCache saveMsg4", newStatus);
-    if (
-      !messageInstance.is_from_contact &&
-      contact.message_status === "needsMessage"
-    ) {
-      await campaignCache.incrCount(contact.campaign_id, "messagedCount");
+    // update campaign counts
+    if (!messageInstance.is_from_contact) {
+      if (contact.message_status === "needsMessage") {
+        await campaignCache.incrCount(campaignId, "messagedCount");
+      } else if (contact.message_status === "needsResponse") {
+        await campaignCache.incrCount(campaignId, "needsResponseCount", -1);
+      }
+    } else if (newStatus === "needsResponse" && campaignId) {
+      await campaignCache.incrCount(campaignId, "needsResponseCount", 1);
     }
     return {
       message: messageToSave,
