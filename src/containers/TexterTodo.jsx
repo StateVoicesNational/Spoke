@@ -73,6 +73,7 @@ export const dataQueryString = `
         textingHoursStart
         textingHoursEnd
         textingHoursEnforced
+        batchSize
         organization {
           id
           tags(group: $tagGroup) {

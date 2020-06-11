@@ -276,7 +276,7 @@ export async function getConversations(
   };
 }
 
-export async function getCampaignIdMessageIdsAndCampaignIdContactIdsMaps(
+export async function getCampaignIdContactIdsMaps(
   organizationId,
   campaignsFilter,
   assignmentsFilter,
@@ -284,8 +284,7 @@ export async function getCampaignIdMessageIdsAndCampaignIdContactIdsMaps(
 ) {
   let query = r.knex.select(
     "campaign_contact.id as cc_id",
-    "campaign.id as cmp_id",
-    "message.id as mess_id"
+    "campaign.id as cmp_id"
   );
 
   query = getConversationsJoinsAndWhereClause(
@@ -296,16 +295,11 @@ export async function getCampaignIdMessageIdsAndCampaignIdContactIdsMaps(
     contactsFilter
   );
 
-  query = query.leftJoin("message", table => {
-    table.on("message.campaign_contact_id", "=", "campaign_contact.id");
-  });
-
   query = query.orderBy("cc_id");
 
   const conversationRows = await query;
 
   const campaignIdContactIdsMap = new Map();
-  const campaignIdMessagesIdsMap = new Map();
 
   let ccId = undefined;
   for (const conversationRow of conversationRows) {
@@ -318,28 +312,16 @@ export async function getCampaignIdMessageIdsAndCampaignIdContactIdsMaps(
       }
 
       campaignIdContactIdsMap.get(conversationRow.cmp_id).push(ccId);
-
-      if (!campaignIdMessagesIdsMap.has(conversationRow.cmp_id)) {
-        campaignIdMessagesIdsMap.set(conversationRow.cmp_id, []);
-      }
-    }
-
-    if (conversationRow.mess_id) {
-      campaignIdMessagesIdsMap
-        .get(conversationRow.cmp_id)
-        .push(conversationRow.mess_id);
     }
   }
 
   return {
-    campaignIdContactIdsMap,
-    campaignIdMessagesIdsMap
+    campaignIdContactIdsMap
   };
 }
 
 export async function reassignConversations(
   campaignIdContactIdsMap,
-  campaignIdMessagesIdsMap,
   newTexterUserId
 ) {
   // ensure existence of assignments

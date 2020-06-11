@@ -358,6 +358,9 @@ const campaignContactCache = {
     });
     console.log("contact loadMany finish stream", campaign.id);
   },
+  orgId: async contact =>
+    contact.organization_id ||
+    ((await campaignCache.load(contact.campaign_id)) || {}).organization_id,
   lookupByCell: async (cell, service, messageServiceSid, bailWithoutCache) => {
     // Used to lookup contact/campaign information by cell number for incoming messages
     // in order to map it to the existing campaign, since Twilio, etc "doesn't know"
