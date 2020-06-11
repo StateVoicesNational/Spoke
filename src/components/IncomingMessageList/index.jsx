@@ -183,7 +183,7 @@ export class IncomingMessageList extends Component {
       },
       render: (columnKey, row) =>
         row.messages &&
-        row.messages.length > 0 && (
+        row.messages.length > 1 && (
           <div>
             <FlatButton
               onClick={event => {
