@@ -59,7 +59,9 @@ provider:
     TWILIO_AUTH_TOKEN: ${ssm:/${self:custom.stage}/spoke/TWILIO_AUTH_TOKEN~true}
     TWILIO_MESSAGE_SERVICE_SID: ${ssm:/${self:custom.stage}/spoke/TWILIO_MESSAGE_SERVICE_SID~true}
     TWILIO_STATUS_CALLBACK_URL: ${self:custom.baseUrl}/twilio-message-report
+    TEXTER_SIDEBOXES: contact-reference,tag-contact
     EXPERIMENTAL_TAGS: 1
+    GOOGLE_SECRET: ${ssm:/${self:custom.stage}/spoke/GOOGLE_SECRET~true}
   iamRoleStatements:
     - Effect: Allow
       Action: "s3:*"
