@@ -57,8 +57,9 @@ export function buildUsersQuery(
   filterBy
 ) {
   const queryParam = buildSelect(sortBy);
-  const roleFilter = role ? { role } : {};
-  const suspendedFilter = role === "SUSPENDED" ? {} : { role: "SUSPENDED" };
+  const roleFilter = role && role !== "ANY" ? { role } : {};
+  const suspendedFilter =
+    role === "SUSPENDED" || role === "ANY" ? {} : { role: "SUSPENDED" };
 
   let query = queryParam
     .from("user_organization")
