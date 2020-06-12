@@ -100,7 +100,7 @@ const campaignInfoFragment = `
     assigned
     status
     resultMessage
-  }  
+  }
 `;
 
 export const campaignDataQuery = gql`query getCampaign($campaignId: String!) {
