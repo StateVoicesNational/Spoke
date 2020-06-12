@@ -5,6 +5,7 @@ import ActionOpenInNew from "material-ui/svg-icons/action/open-in-new";
 import loadData from "../../containers/hoc/load-data";
 import { withRouter } from "react-router";
 import gql from "graphql-tag";
+import { getHighestRole } from "../../lib/permissions";
 import LoadingIndicator from "../../components/LoadingIndicator";
 import DataTables from "material-ui-datatables";
 import ConversationPreviewModal from "./ConversationPreviewModal";
@@ -15,7 +16,11 @@ import { MESSAGE_STATUSES } from "../../components/IncomingMessageFilter";
 export const prepareDataTableData = conversations =>
   conversations.map(conversation => ({
     campaignTitle: conversation.campaign.title,
-    texter: conversation.texter.displayName,
+    texter:
+      conversation.texter.displayName +
+      (getHighestRole(conversation.texter.roles) === "SUSPENDED"
+        ? " (Suspended)"
+        : ""),
     to:
       conversation.contact.firstName +
       " " +
