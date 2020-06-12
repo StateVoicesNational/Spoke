@@ -160,6 +160,7 @@ export class IncomingMessageList extends Component {
                 overflow: "hidden",
                 whiteSpace: "nowrap"
               }}
+              title={lastMessage.text}
             >
               <span
                 style={{ color: lastMessage.isFromContact ? "blue" : "black" }}
@@ -183,7 +184,7 @@ export class IncomingMessageList extends Component {
       },
       render: (columnKey, row) =>
         row.messages &&
-        row.messages.length > 0 && (
+        row.messages.length > 1 && (
           <div>
             <FlatButton
               onClick={event => {
