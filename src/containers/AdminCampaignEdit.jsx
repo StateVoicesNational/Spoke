@@ -512,7 +512,10 @@ export class AdminCampaignEdit extends React.Component {
               this.props.campaignData.campaign.id,
               url
             ),
-          hasPendingJob: pendingJobs.some(j => j.jobType === "import_script")
+          hasPendingJob: pendingJobs.some(
+            j => j.jobType === "import_script" && !j.resultMessage
+          ),
+          jobError: (pendingJobs[0] || {}).resultMessage
         },
         doNotSaveAfterSubmit: true
       });
