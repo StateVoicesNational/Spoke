@@ -78,6 +78,7 @@ export class AdminIncomingMessageList extends Component {
       pageSize: 10,
       campaignsFilter: { isArchived: false },
       contactsFilter: { isOptedOut: false },
+      messageTextFilter: "",
       assignmentsFilter: {},
       needsRender: false,
       utc: Date.now().toString(),
@@ -139,6 +140,13 @@ export class AdminIncomingMessageList extends Component {
     }
     await this.setState({
       assignmentsFilter,
+      needsRender: true
+    });
+  };
+
+  handleMessageTextFilterChange = async messageTextFilter => {
+    await this.setState({
+      messageTextFilter,
       needsRender: true
     });
   };
@@ -367,6 +375,7 @@ export class AdminIncomingMessageList extends Component {
             onCampaignChanged={this.handleCampaignChanged}
             onTexterChanged={this.handleTexterChanged}
             onMessageFilterChanged={this.handleMessageFilterChange}
+            onMessageTextFilterChanged={this.handleMessageTextFilterChange}
             assignmentsFilter={this.state.assignmentsFilter}
             onActiveCampaignsToggled={this.handleActiveCampaignsToggled}
             onArchivedCampaignsToggled={this.handleArchivedCampaignsToggled}
@@ -404,6 +413,7 @@ export class AdminIncomingMessageList extends Component {
             contactsFilter={this.state.contactsFilter}
             campaignsFilter={this.state.campaignsFilter}
             assignmentsFilter={this.state.assignmentsFilter}
+            messageTextFilter={this.state.messageTextFilter}
             utc={this.state.utc}
             onPageChanged={this.handlePageChange}
             onPageSizeChanged={this.handlePageSizeChange}
