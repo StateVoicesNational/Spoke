@@ -945,8 +945,7 @@ const mutations = {
     variables: {
       campaignId,
       url
-    },
-    refetchQueries: () => ["getCampaign"]
+    }
   })
 };
 
