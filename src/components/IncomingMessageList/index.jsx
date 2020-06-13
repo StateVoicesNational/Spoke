@@ -307,6 +307,7 @@ IncomingMessageList.propTypes = {
   contactsFilter: type.object,
   campaignsFilter: type.object,
   assignmentsFilter: type.object,
+  messageTextFilter: type.string,
   onPageChanged: type.func,
   onPageSizeChanged: type.func,
   onConversationSelected: type.func,
@@ -327,6 +328,7 @@ const queries = {
         $contactsFilter: ContactsFilter
         $campaignsFilter: CampaignsFilter
         $assignmentsFilter: AssignmentsFilter
+        $messageTextFilter: String
         $utc: String
       ) {
         conversations(
@@ -335,6 +337,7 @@ const queries = {
           campaignsFilter: $campaignsFilter
           contactsFilter: $contactsFilter
           assignmentsFilter: $assignmentsFilter
+          messageTextFilter: $messageTextFilter
           utc: $utc
         ) {
           pageInfo {
@@ -381,6 +384,7 @@ const queries = {
         contactsFilter: ownProps.contactsFilter,
         campaignsFilter: ownProps.campaignsFilter,
         assignmentsFilter: ownProps.assignmentsFilter,
+        messageTextFilter: ownProps.messageTextFilter,
         utc: ownProps.utc
       },
       fetchPolicy: "network-only"

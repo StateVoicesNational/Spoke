@@ -206,6 +206,7 @@ const rootSchema = gql`
       campaignsFilter: CampaignsFilter
       assignmentsFilter: AssignmentsFilter
       contactsFilter: ContactsFilter
+      messageTextFilter: String
       utc: String
     ): PaginatedConversations
     campaigns(

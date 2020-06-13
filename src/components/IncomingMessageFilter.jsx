@@ -6,6 +6,7 @@ import _ from "lodash";
 import { Card, CardHeader, CardText } from "material-ui/Card";
 import AutoComplete from "material-ui/AutoComplete";
 import SelectField from "material-ui/SelectField";
+import TextField from "material-ui/TextField";
 import MenuItem from "material-ui/MenuItem";
 import theme from "../styles/theme";
 import { dataSourceItem } from "./utils";
@@ -74,6 +75,7 @@ class IncomingMessageFilter extends Component {
 
     this.state = {
       selectedCampaigns: [],
+      messageTextFilter: "",
       tagsFilter: this.props.tagsFilter
     };
   }
@@ -317,6 +319,23 @@ class IncomingMessageFilter extends Component {
                 onNewRequest={this.onTexterSelected}
               />
             </div>
+            <div className={css(styles.spacer)} />
+            <div className={css(styles.flexColumn)}>
+              <TextField
+                hintText="Search message text"
+                floatingLabelText="Search message text"
+                onChange={(_, messageTextFilter) => {
+                  this.setState({ messageTextFilter });
+                }}
+                onKeyPress={evt => {
+                  if (evt.key === "Enter") {
+                    this.props.onMessageTextFilterChanged(
+                      this.state.messageTextFilter
+                    );
+                  }
+                }}
+              />
+            </div>
             <div>
               {window.EXPERIMENTAL_TAGS === true && (
                 <TagsSelector
@@ -341,6 +360,7 @@ class IncomingMessageFilter extends Component {
 IncomingMessageFilter.propTypes = {
   onCampaignChanged: type.func.isRequired,
   onTexterChanged: type.func.isRequired,
+  onMessageTextFilterChanged: type.func.isRequired,
   onActiveCampaignsToggled: type.func.isRequired,
   onArchivedCampaignsToggled: type.func.isRequired,
   includeArchivedCampaigns: type.bool.isRequired,

@@ -1345,6 +1345,7 @@ const rootResolvers = {
         campaignsFilter,
         assignmentsFilter,
         contactsFilter,
+        messageTextFilter,
         utc
       },
       { user },
@@ -1364,9 +1365,12 @@ const rootResolvers = {
       const data = await getConversations(
         cursor,
         organizationId,
-        campaignsFilter,
-        assignmentsFilter,
-        contactsFilter,
+        {
+          campaignsFilter,
+          assignmentsFilter,
+          contactsFilter,
+          messageTextFilter
+        },
         utc,
         includeTags
       );
