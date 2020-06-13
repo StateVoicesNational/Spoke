@@ -794,6 +794,7 @@ describe("Reassignments", async () => {
       bulkReassignCampaignContactsMutation,
       {
         organizationId,
+        newTexterUserId: testTexterUser.id,
         contactsFilter: {
           messageStatus: "needsResponse",
           isOptedOut: false,
@@ -801,7 +802,7 @@ describe("Reassignments", async () => {
         },
         campaignsFilter: { campaignId: testCampaign.id },
         assignmentsFilter: { texterId: testTexterUser2.id },
-        newTexterUserId: testTexterUser.id
+        messageTextFilter: ""
       },
       testAdminUser
     );
