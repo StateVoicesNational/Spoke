@@ -30,7 +30,7 @@ export const tests = testName => {
       assignment: {
         campaign: {
           id: 10123,
-          title: "GOT Progressive Vote",
+          title: "Event Recruitment",
           useDynamicAssignment: false,
           organization: {
             optOutMessage:
@@ -44,7 +44,7 @@ export const tests = testName => {
             {
               id: "13",
               script:
-                "Hi {firstName}, it's {texterAliasOrFirstName} a volunteer with MoveOn. There is an election in Arizona coming Tuesday. Will you vote progressive?",
+                "Hey {firstName}, it's {texterAliasOrFirstName} with the Movement for Black Lives! We're coming together on Friday, June 19th at 4:00 PM to commemorate Juneteenth and make demands for Black lives in Philadelphia. Are you able to make it?",
               question: { text: "", answerOptions: [] }
             }
           ]
@@ -87,7 +87,7 @@ export const tests = testName => {
       assignment: {
         campaign: {
           id: 10123,
-          title: "GOT Progressive Vote",
+          title: "Event Recruitment",
           useDynamicAssignment: false,
           organization: {
             optOutMessage:
@@ -105,9 +105,9 @@ export const tests = testName => {
             {
               id: "13",
               script:
-                "Hi {firstName}, it's {texterAliasOrFirstName}, a volunteer with MoveOn. There is an election in Ohio this coming Tuesday. Will you vote progressive?",
+                "Hey {firstName}, it's {texterAliasOrFirstName} with the Movement for Black Lives! We're coming together on Friday, June 19th at 4:00 PM to commemorate Juneteenth and make demands for Black lives in Philadelphia. Are you able to make it?",
               question: {
-                text: "Will you vote progressive?",
+                text: "Will they will go to the event?",
                 answerOptions: [
                   {
                     value: "Yes",
@@ -115,7 +115,7 @@ export const tests = testName => {
                     nextInteractionStep: {
                       id: "14",
                       script:
-                        "Great! Did you get your ballot in the mail? We suggest getting it ready to turn in early so that it doesn't get lost and it's fun to be done with something important. Let us know if you have any problems or questions. And let us know when you vote!"
+                        "Amazing! You can RSVP right here: m4bl.org Thank you for being a part of the movement! Would you be able to bring 3 friends to make sure this event has the most impact?"
                     }
                   },
                   {
@@ -123,7 +123,17 @@ export const tests = testName => {
                     interactionStepId: "15",
                     nextInteractionStep: {
                       id: "15",
-                      script: "That's too bad, but we love you anyway!"
+                      script:
+                        "Got it, thanks for letting me know. Hope you have a great day!"
+                    }
+                  },
+                  {
+                    value: "Maybe",
+                    interactionStepId: "16",
+                    nextInteractionStep: {
+                      id: "16",
+                      script:
+                        "Ok, if you can make it you can RSVP right here: m4bl.org Thank you for being a part of the movement!"
                     }
                   }
                 ]
@@ -131,24 +141,32 @@ export const tests = testName => {
             },
             {
               id: "14",
-              script:
-                "That's great, can you convince three friends to vote as well?",
+              script: "Will they bring 3 friends?",
               question: {
-                text: "More friends?",
+                text: "Will they bring 3 friends?",
                 answerOptions: [
                   {
                     value: "Yes, friends",
                     interactionStepId: "20",
                     nextInteractionStep: {
                       id: "20",
-                      script: "Super, we'll add your +3"
+                      script:
+                        "Great! Please make sure to send them the RSVP link! Have a great day."
+                    }
+                  },
+                  {
+                    value: "Maybe, friends",
+                    nextInteractionStep: {
+                      id: "21",
+                      script:
+                        "Ok, if you can make it you can make sure to send them the RSVP link. Have a great day!"
                     }
                   },
                   {
                     value: "No, no friends",
                     nextInteractionStep: {
-                      script:
-                        "Ok, but we need all the help we can get in getting out the vote!"
+                      id: "22",
+                      script: "Ok, I understand! Have a great day."
                     }
                   }
                 ]
@@ -160,15 +178,23 @@ export const tests = testName => {
         campaignCannedResponses: [
           {
             id: "1",
-            title: "Moved",
+            title: "How did you get my information?",
             text:
-              "I'm sorry, we'll update your address -- what is your current zip code?",
+              "We received our information from the publicly available voter file and the Democratic Party.",
             isUserCreated: false
           },
           {
             id: "2",
-            title: "Wrong number",
-            text: "Ok, we'll remove you from our list, {firstName}.",
+            title: "Multimedia Message",
+            text:
+              "I’m sorry, I’m unfortunately not able to receive images or videos. Would you mind explaining via text?",
+            isUserCreated: false
+          },
+          {
+            id: "3",
+            title: "Sensitive Question",
+            text:
+              "I’m sorry, as a volunteer I'm unable to answer that for you right now. Please contact info@m4bl.org to have your concerns addressed. Thank you.",
             isUserCreated: false
           }
         ],
@@ -197,13 +223,13 @@ export const tests = testName => {
           {
             id: "fake1",
             text:
-              "Hi Earl, it's Christine, a volunteer with MoveOn. There is an election in Ohio this coming Tuesday. Will you vote progressive?",
+              "Hey Earl, it's Christine with the Movement for Black Lives! We're coming together on Friday, June 19th at 4:00 PM to commemorate Juneteenth and make demands for Black lives in Philadelphia. Are you able to make it?",
             isFromContact: false,
             createdAt: new Date(Number(new Date()) - 314 * 60 * 1000)
           },
           {
             id: "fake2",
-            text: "Yes! We need to help save the world.",
+            text: "Yes!",
             isFromContact: true,
             createdAt: new Date(Number(new Date()) - 142 * 60 * 1000)
           }
@@ -225,7 +251,7 @@ export const tests = testName => {
       assignment: {
         campaign: {
           id: 10123,
-          title: "Event Recruitment for Saving the World",
+          title: "Event Recruitment",
           useDynamicAssignment: false,
           organization: {
             optOutMessage:
@@ -243,9 +269,9 @@ export const tests = testName => {
             {
               id: "13",
               script:
-                "Hi {firstName}, it's {texterAliasOrFirstName}, a volunteer with MoveOn. There is an election in Ohio this coming Tuesday. Will you vote progressive?",
+                "Hey {firstName}, it's {texterAliasOrFirstName} with the Movement for Black Lives! We're coming together on Friday, June 19th at 4:00 PM to commemorate Juneteenth and make demands for Black lives in Philadelphia. Are you able to make it?",
               question: {
-                text: "Will you vote progressive?",
+                text: "Will they will go to the event?",
                 answerOptions: [
                   {
                     value: "Yes",
@@ -253,7 +279,7 @@ export const tests = testName => {
                     nextInteractionStep: {
                       id: "14",
                       script:
-                        "Great! Did you get your ballot in the mail? We suggest getting it ready to turn in early so that it doesn't get lost and it's fun to be done with something important. Let us know if you have any problems or questions. And let us know when you vote!"
+                        "Amazing! You can RSVP right here: m4bl.org Thank you for being a part of the movement! Would you be able to bring 3 friends to make sure this event has the most impact?"
                     }
                   },
                   {
@@ -261,7 +287,17 @@ export const tests = testName => {
                     interactionStepId: "15",
                     nextInteractionStep: {
                       id: "15",
-                      script: "That's too bad, but we love you anyway!"
+                      script:
+                        "Got it, thanks for letting me know. Hope you have a great day!"
+                    }
+                  },
+                  {
+                    value: "Maybe",
+                    interactionStepId: "16",
+                    nextInteractionStep: {
+                      id: "16",
+                      script:
+                        "Ok, if you can make it you can RSVP right here: m4bl.org Thank you for being a part of the movement!"
                     }
                   }
                 ]
@@ -270,7 +306,7 @@ export const tests = testName => {
             {
               id: "14",
               script:
-                "That's great, we'll see you there! Will you bring a friend?",
+                "Amazing! You can RSVP right here: m4bl.org Thank you for being a part of the movement! Would you be able to bring 3 friends to make sure this event has the most impact?",
               question: {
                 text: "Bring friend?",
                 answerOptions: [
@@ -279,7 +315,8 @@ export const tests = testName => {
                     interactionStepId: "20",
                     nextInteractionStep: {
                       id: "20",
-                      script: "Super, we'll add your +1"
+                      script:
+                        "Great! Please make sure to send them the RSVP link! Have a great day."
                     }
                   },
                   {
@@ -287,49 +324,16 @@ export const tests = testName => {
                     interactionStepId: "21",
                     nextInteractionStep: {
                       id: "21",
-                      script:
-                        "It's too bad, hopefully you'll meet some cool people there."
+                      script: "Ok, I understand! Have a great day."
                     }
                   },
                   {
-                    value: "Maybe",
+                    value: "Maybe, with friends",
                     interactionStepId: "22",
                     nextInteractionStep: {
                       id: "22",
-                      script: "Super, we'll add your +1"
-                    }
-                  },
-
-                  {
-                    value: "Is it ok if my friend is a Republican?",
-                    interactionStepId: "23",
-                    nextInteractionStep: {
-                      id: "23",
-                      script: "Yes, let's make sure they hear important facts."
-                    }
-                  },
-                  {
-                    value: "More than one friend",
-                    interactionStepId: "24",
-                    nextInteractionStep: {
-                      id: "24",
-                      script: "You must be popular, we'll add your +10"
-                    }
-                  },
-                  {
-                    value: "Another possible answer",
-                    interactionStepId: "25",
-                    nextInteractionStep: {
-                      id: "25",
-                      script: "You must be popular, we'll add your +10"
-                    }
-                  },
-                  {
-                    value: "Yet Another possible answer",
-                    interactionStepId: "26",
-                    nextInteractionStep: {
-                      id: "26",
-                      script: "You must be popular, we'll add your +10"
+                      script:
+                        "Ok, if you can make it you can make sure to send them the RSVP link. Have a great day!"
                     }
                   }
                 ]
@@ -341,57 +345,23 @@ export const tests = testName => {
         campaignCannedResponses: [
           {
             id: "1",
-            title: "Moved",
+            title: "How did you get my information?",
             text:
-              "I'm sorry, we'll update your address -- what is your current zip code?",
+              "We received our information from the publicly available voter file and the Democratic Party.",
             isUserCreated: false
           },
           {
             id: "2",
-            title: "Wrong number",
-            text: "Ok, we'll remove you from our list, {firstName}.",
+            title: "Multimedia Message",
+            text:
+              "I’m sorry, I’m unfortunately not able to receive images or videos. Would you mind explaining via text?",
             isUserCreated: false
           },
           {
             id: "3",
-            title: "Moved3",
+            title: "Sensitive Question",
             text:
-              "I'm sorry, we'll update your address -- what is your current zip code?",
-            isUserCreated: false
-          },
-          {
-            id: "4",
-            title: "Moved4",
-            text:
-              "I'm sorry, we'll update your address -- what is your current zip code?",
-            isUserCreated: false
-          },
-          {
-            id: "5",
-            title: "Moved5",
-            text:
-              "I'm sorry, we'll update your address -- what is your current zip code?",
-            isUserCreated: false
-          },
-          {
-            id: "6",
-            title: "Moved6",
-            text:
-              "I'm sorry, we'll update your address -- what is your current zip code?",
-            isUserCreated: false
-          },
-          {
-            id: "7",
-            title: "Moved7",
-            text:
-              "I'm sorry, we'll update your address -- what is your current zip code?",
-            isUserCreated: false
-          },
-          {
-            id: "8",
-            title: "Moved8",
-            text:
-              "I'm sorry, we'll update your address -- what is your current zip code?",
+              "I’m sorry, as a volunteer I'm unable to answer that for you right now. Please contact info@m4bl.org to have your concerns addressed. Thank you.",
             isUserCreated: false
           }
         ],
@@ -425,20 +395,20 @@ export const tests = testName => {
           {
             id: "fake1",
             text:
-              "Hi Earl, it's Christine, a volunteer with MoveOn. There is an election in Ohio this coming Tuesday. Will you vote progressive?",
+              "Hey Earl, it's Christine with the Movement for Black Lives! We're coming together on Friday, June 19th at 4:00 PM to commemorate Juneteenth and make demands for Black lives in Philadelphia. Are you able to make it?",
             isFromContact: false,
             createdAt: new Date(Number(new Date()) - 314 * 60 * 1000)
           },
           {
             id: "fake2",
-            text: "Yes! We need to help save the world.",
+            text: "Yes!",
             isFromContact: true,
             createdAt: new Date(Number(new Date()) - 142 * 60 * 1000)
           },
           {
             id: "fake3",
             text:
-              "That's great -- can you bring a friend -- the more the merrier!",
+              "Amazing! You can RSVP right here: m4bl.org Thank you for being a part of the movement! Would you be able to bring 3 friends to make sure this event has the most impact?",
             isFromContact: false,
             createdAt: new Date(Number(new Date()) - 140 * 60 * 1000)
           },
@@ -450,7 +420,8 @@ export const tests = testName => {
           },
           {
             id: "fake5",
-            text: "Ok, let us know what they say.",
+            text:
+              "Ok, if you can make it you can make sure to send them the RSVP link. Have a great day!",
             isFromContact: false,
             createdAt: new Date(Number(new Date()) - 10 * 60 * 1000)
           },
