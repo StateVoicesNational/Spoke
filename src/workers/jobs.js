@@ -24,6 +24,28 @@ import { sendEmail } from "../server/mail";
 import { Notifications, sendUserNotification } from "../server/notifications";
 import { getConfig } from "../server/api/lib/config";
 
+const defensivelyDeleteOldJobsForCampaignJobType = async job => {
+  console.log("job", job);
+  let retries = 0;
+  const doDelete = async () => {
+    try {
+      await r
+        .knex("job_request")
+        .where({ campaign_id: job.campaign_id, job_type: job.job_type })
+        .whereNot({ id: job.id })
+        .delete();
+    } catch (err) {
+      if (retries < 5) {
+        retries += 1;
+        await doDelete();
+      } else
+        console.error(`Could not delete campaign/jobType. Err: ${err.message}`);
+    }
+  };
+
+  await doDelete();
+};
+
 const defensivelyDeleteJob = async job => {
   if (job.id) {
     let retries = 0;
@@ -37,7 +59,7 @@ const defensivelyDeleteJob = async job => {
         if (retries < 5) {
           retries += 1;
           await deleteJob();
-        } else log.error(`Could not delete job. Err: ${err.message}`);
+        } else console.error(`Could not delete job. Err: ${err.message}`);
       }
     };
 
@@ -826,6 +848,7 @@ export async function exportCampaign(job) {
 export async function importScript(job) {
   const payload = await unzipPayload(job);
   try {
+    await defensivelyDeleteOldJobsForCampaignJobType(job);
     await importScriptFromDocument(payload.campaignId, payload.url); // TODO try/catch
     console.log(`Script import complete ${payload.campaignId} ${payload.url}`);
   } catch (exception) {
@@ -833,7 +856,7 @@ export async function importScript(job) {
       .knex("job_request")
       .where("id", job.id)
       .update({ result_message: exception.message });
-    console.log(exception.message);
+    console.warn(exception.message);
     return;
   }
   defensivelyDeleteJob(job);
