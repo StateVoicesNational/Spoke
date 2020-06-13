@@ -244,6 +244,15 @@ export class AssignmentTexterContact extends React.Component {
     await this.props.mutations.updateContactTags(tags, contact.id);
   };
 
+  handleReleaseContacts = async releaseConversations => {
+    const { assignment } = this.props;
+    const result = await this.props.mutations.releaseContacts(
+      assignment.id,
+      releaseConversations
+    );
+    return result;
+  };
+
   handleEditStatus = async (messageStatus, finishContact) => {
     const { contact } = this.props;
     await this.props.mutations.editCampaignContactMessageStatus(
@@ -382,6 +391,7 @@ export class AssignmentTexterContact extends React.Component {
           onMessageFormSubmit={this.handleMessageFormSubmit}
           onOptOut={this.handleOptOut}
           onUpdateTags={this.handleUpdateTags}
+          onReleaseContacts={this.handleReleaseContacts}
           onQuestionResponseChange={this.handleQuestionResponseChange}
           onCreateCannedResponse={this.handleCreateCannedResponse}
           onExitTexter={this.props.onExitTexter}
