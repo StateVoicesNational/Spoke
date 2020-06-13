@@ -39,7 +39,7 @@ const defensivelyDeleteOldJobsForCampaignJobType = async job => {
         retries += 1;
         await doDelete();
       } else
-        log.error(`Could not delete campaign/jobType. Err: ${err.message}`);
+        console.error(`Could not delete campaign/jobType. Err: ${err.message}`);
     }
   };
 
@@ -59,7 +59,7 @@ const defensivelyDeleteJob = async job => {
         if (retries < 5) {
           retries += 1;
           await deleteJob();
-        } else log.error(`Could not delete job. Err: ${err.message}`);
+        } else console.error(`Could not delete job. Err: ${err.message}`);
       }
     };
 
@@ -850,13 +850,13 @@ export async function importScript(job) {
   try {
     await defensivelyDeleteOldJobsForCampaignJobType(job);
     await importScriptFromDocument(payload.campaignId, payload.url); // TODO try/catch
-    log.info(`Script import complete ${payload.campaignId} ${payload.url}`);
+    console.log(`Script import complete ${payload.campaignId} ${payload.url}`);
   } catch (exception) {
     await r
       .knex("job_request")
       .where("id", job.id)
       .update({ result_message: exception.message });
-    log.warn(exception.message);
+    console.warn(exception.message);
     return;
   }
   defensivelyDeleteJob(job);
