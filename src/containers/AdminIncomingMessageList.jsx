@@ -178,10 +178,11 @@ export class AdminIncomingMessageList extends Component {
   handleReassignAllMatchingRequested = async newTexterUserId => {
     await this.props.mutations.bulkReassignCampaignContacts(
       this.props.params.organizationId,
+      newTexterUserId,
       this.state.campaignsFilter || {},
       this.state.assignmentsFilter || {},
       this.state.contactsFilter || {},
-      newTexterUserId
+      this.state.messageTextFilter || null
     );
     this.setState({
       utc: Date.now().toString(),
@@ -432,17 +433,19 @@ export class AdminIncomingMessageList extends Component {
 export const bulkReassignCampaignContactsMutation = gql`
   mutation bulkReassignCampaignContacts(
     $organizationId: String!
+    $newTexterUserId: String!
     $contactsFilter: ContactsFilter
     $campaignsFilter: CampaignsFilter
     $assignmentsFilter: AssignmentsFilter
-    $newTexterUserId: String!
+    $messageTextFilter: String
   ) {
     bulkReassignCampaignContacts(
       organizationId: $organizationId
+      newTexterUserId: $newTexterUserId
       contactsFilter: $contactsFilter
       campaignsFilter: $campaignsFilter
       assignmentsFilter: $assignmentsFilter
-      newTexterUserId: $newTexterUserId
+      messageTextFilter: $messageTextFilter
     ) {
       campaignId
       assignmentId
@@ -510,10 +513,11 @@ const mutations = {
   }),
   bulkReassignCampaignContacts: ownProps => (
     organizationId,
+    newTexterUserId,
     campaignsFilter,
     assignmentsFilter,
     contactsFilter,
-    newTexterUserId
+    messageTextFilter
   ) => ({
     mutation: bulkReassignCampaignContactsMutation,
     variables: {
@@ -521,6 +525,7 @@ const mutations = {
       campaignsFilter,
       assignmentsFilter,
       contactsFilter,
+      messageTextFilter,
       newTexterUserId
     }
   })

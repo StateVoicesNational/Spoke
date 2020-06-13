@@ -29,8 +29,12 @@ function getConversationsJoinsAndWhereClause(
   if (messageTextFilter && !forData) {
     // NOT forData -- just for filter -- and then we need ALL the messages
     query = query
-      .join("message", "message.campaign_contact_id", "campaign_contact.id")
-      .where("message.text", "LIKE", `%${messageTextFilter}%`);
+      .join(
+        "message AS msgfilter",
+        "msgfilter.campaign_contact_id",
+        "campaign_contact.id"
+      )
+      .where("msgfilter.text", "LIKE", `%${messageTextFilter}%`);
   }
 
   query = addWhereClauseForContactsFilterMessageStatusIrrespectiveOfPastDue(
@@ -252,9 +256,12 @@ export async function getConversations(
   const conversationsCountQuery = getConversationsJoinsAndWhereClause(
     r.knex,
     organizationId,
-    campaignsFilter,
-    assignmentsFilter,
-    contactsFilter
+    {
+      campaignsFilter,
+      assignmentsFilter,
+      contactsFilter,
+      messageTextFilter
+    }
   );
   let conversationCount;
   try {
@@ -287,9 +294,7 @@ export async function getConversations(
 
 export async function getCampaignIdMessageIdsAndCampaignIdContactIdsMaps(
   organizationId,
-  campaignsFilter,
-  assignmentsFilter,
-  contactsFilter
+  { campaignsFilter, assignmentsFilter, contactsFilter, messageTextFilter }
 ) {
   let query = r.knex.select(
     "campaign_contact.id as cc_id",
@@ -297,13 +302,12 @@ export async function getCampaignIdMessageIdsAndCampaignIdContactIdsMaps(
     "message.id as mess_id"
   );
 
-  query = getConversationsJoinsAndWhereClause(
-    query,
-    organizationId,
+  query = getConversationsJoinsAndWhereClause(query, organizationId, {
     campaignsFilter,
     assignmentsFilter,
-    contactsFilter
-  );
+    contactsFilter,
+    messageTextFilter
+  });
 
   query = query.leftJoin("message", table => {
     table.on("message.campaign_contact_id", "=", "campaign_contact.id");

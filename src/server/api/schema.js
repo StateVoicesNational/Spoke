@@ -1181,10 +1181,11 @@ const rootMutations = {
       _,
       {
         organizationId,
+        newTexterUserId,
         campaignsFilter,
         assignmentsFilter,
         contactsFilter,
-        newTexterUserId
+        messageTextFilter
       },
       { user }
     ) => {
@@ -1195,9 +1196,12 @@ const rootMutations = {
         campaignIdMessagesIdsMap
       } = await getCampaignIdMessageIdsAndCampaignIdContactIdsMaps(
         organizationId,
-        campaignsFilter,
-        assignmentsFilter,
-        contactsFilter
+        {
+          campaignsFilter,
+          assignmentsFilter,
+          contactsFilter,
+          messageTextFilter
+        }
       );
 
       return await reassignConversations(
