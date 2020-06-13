@@ -547,7 +547,7 @@ const rootMutations = {
         });
       }
       await cacheableData.user.clearUser(userId);
-      return loaders.organization.load(organizationId);
+      return cacheableData.organization.load(organizationId);
     },
     editUser: async (_, { organizationId, userId, userData }, { user }) => {
       if (user.id !== userId) {
@@ -1198,10 +1198,11 @@ const rootMutations = {
       _,
       {
         organizationId,
+        newTexterUserId,
         campaignsFilter,
         assignmentsFilter,
         contactsFilter,
-        newTexterUserId
+        messageTextFilter
       },
       { user }
     ) => {
@@ -1209,9 +1210,12 @@ const rootMutations = {
       await accessRequired(user, organizationId, "ADMIN", /* superadmin*/ true);
       const { campaignIdContactIdsMap } = await getCampaignIdContactIdsMaps(
         organizationId,
-        campaignsFilter,
-        assignmentsFilter,
-        contactsFilter
+        {
+          campaignsFilter,
+          assignmentsFilter,
+          contactsFilter,
+          messageTextFilter
+        }
       );
 
       return await reassignConversations(
@@ -1358,6 +1362,7 @@ const rootResolvers = {
         campaignsFilter,
         assignmentsFilter,
         contactsFilter,
+        messageTextFilter,
         utc
       },
       { user },
@@ -1377,9 +1382,12 @@ const rootResolvers = {
       const data = await getConversations(
         cursor,
         organizationId,
-        campaignsFilter,
-        assignmentsFilter,
-        contactsFilter,
+        {
+          campaignsFilter,
+          assignmentsFilter,
+          contactsFilter,
+          messageTextFilter
+        },
         utc,
         includeTags
       );
