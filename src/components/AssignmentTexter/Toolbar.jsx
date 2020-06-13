@@ -124,13 +124,9 @@ const ContactToolbar = function ContactToolbar(props) {
   }
   formattedLocation = `${formattedLocation}${city}`;
 
-  const dstReferenceTimezone = props.campaign.overrideOrganizationTextingHours
-    ? props.campaign.timezone
-    : getProcessEnvDstReferenceTimezone();
-
   let formattedLocalTime;
   if (offset === undefined) {
-    const zone = momenttz.tz.zone(dstReferenceTimezone);
+    const zone = momenttz.tz.zone(props.campaign.timezone);
     offset = zone.parse(Date.now()) / -60;
     hasDST = false;
   }
@@ -138,7 +134,7 @@ const ContactToolbar = function ContactToolbar(props) {
   formattedLocalTime = getLocalTime(
     offset,
     hasDST,
-    dstReferenceTimezone
+    props.campaign.timezone
   ).format("LT"); // format('h:mm a')
 
   return (
