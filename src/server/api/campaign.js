@@ -287,8 +287,8 @@ export const resolvers = {
         true
       );
       return r
-        .table("job_request")
-        .filter({ campaign_id: campaign.id })
+        .knex("job_request")
+        .where({ campaign_id: campaign.id })
         .orderBy("updated_at", "desc");
     },
     ingestMethodsAvailable: async (campaign, _, { user, loaders }) => {
