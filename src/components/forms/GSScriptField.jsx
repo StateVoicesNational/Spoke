@@ -89,9 +89,6 @@ export default class GSScriptField extends GSFormField {
       <div>
         <TextField
           multiLine
-          onFocus={event => {
-            this.handleOpenDialog(event);
-          }}
           onTouchTap={event => {
             this.handleOpenDialog(event);
           }}
