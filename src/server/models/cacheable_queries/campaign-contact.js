@@ -84,13 +84,6 @@ export const setCacheContactAssignment = async (id, campaignId, contactObj) => {
     contactObj.assignment_id
   ) {
     const assignmentKey = contactAssignmentKey(campaignId);
-    console.log(
-      "setCacheContactAssignment",
-      id,
-      contactObj.assignment_id,
-      contactObj.user_id,
-      assignmentKey
-    );
     await r.redis
       .multi()
       .hset(
@@ -104,7 +97,6 @@ export const setCacheContactAssignment = async (id, campaignId, contactObj) => {
 };
 
 export const getCacheContactAssignment = async (id, campaignId, contactObj) => {
-  console.log("getCacheContactAssignment0", id, contactObj.assignment_id);
   if (contactObj && contactObj.assignment_id) {
     return {
       assignment_id: contactObj.assignment_id,
@@ -116,16 +108,9 @@ export const getCacheContactAssignment = async (id, campaignId, contactObj) => {
       contactAssignmentKey(campaignId),
       id
     );
-    console.log("getContactAssignmentCache1", contactAssignment);
     if (contactAssignment) {
       // eslint-disable-next-line camelcase
       const [assignment_id, user_id] = (contactAssignment || ":").split(":");
-      console.log(
-        "getContactAssignmentCache2",
-        contactAssignment,
-        assignment_id,
-        user_id
-      );
       // if empty string, then it's null
       return {
         assignment_id: assignment_id ? Number(assignment_id) : null,
@@ -140,12 +125,6 @@ export const getCacheContactAssignment = async (id, campaignId, contactObj) => {
     .where("campaign_contact.id", id)
     .select("assignment_id", "user_id")
     .first();
-  console.log(
-    "campaignContact.getCacheContactAssignment uncached assignment",
-    campaignId,
-    id,
-    assignment
-  );
   if (assignment) {
     await setCacheContactAssignment(id, campaignId, assignment);
     const { assignment_id, user_id } = assignment;
@@ -171,7 +150,6 @@ const saveCacheRecord = async (
       messageServiceSid,
       campaign
     );
-    console.log("contact saveCacheRecord", contactCacheObj);
     const contactKey = cacheKey(dbRecord.id);
     await r.redis
       .multi()
@@ -247,11 +225,6 @@ const campaignContactCache = {
           { cachedResult: true }
         );
 
-        console.log(
-          "contact fromCache",
-          cacheData.id,
-          cacheData.message_status
-        );
         return modelWithExtraProps(cacheData, CampaignContact, [
           "organization_id",
           "city",

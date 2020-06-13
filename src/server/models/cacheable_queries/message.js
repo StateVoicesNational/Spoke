@@ -228,13 +228,13 @@ const messageCache = {
     let newStatus = "needsResponse";
     let activeCellFound = null;
     if (messageInstance.is_from_contact) {
-      console.log("messageCache SAVE lookup");
+      // console.log("messageCache SAVE lookup");
       activeCellFound = await campaignContactCache.lookupByCell(
         messageInstance.contact_number,
         messageInstance.service,
         messageInstance.messageservice_sid
       );
-      console.log("messageCache activeCellFound", activeCellFound);
+      // console.log("messageCache activeCellFound", activeCellFound);
       const matchError = await incomingMessageMatching(
         messageInstance,
         activeCellFound
@@ -272,9 +272,9 @@ const messageCache = {
       messageservice_sid: messageToSave.messageservice_sid,
       campaign_id: campaignId
     };
-    console.log("messageCache hi saveMsg3", newStatus, contactData);
+    // console.log("messageCache hi saveMsg3", newStatus, contactData);
     await campaignContactCache.updateStatus(contactData, newStatus);
-    console.log("messageCache saveMsg4", newStatus);
+    // console.log("messageCache saveMsg4", newStatus);
     // update campaign counts
     if (!messageInstance.is_from_contact) {
       if (contact.message_status === "needsMessage") {

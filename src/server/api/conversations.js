@@ -274,12 +274,6 @@ export async function getConversations(
     console.log("getConversations timeout", err);
   }
 
-  console.log(
-    "getConversations query3 result",
-    Number(new Date()) - Number(starttime),
-    conversationCount,
-    conversations
-  );
   const pageInfo = {
     limit: cursor.limit,
     offset: cursor.offset,
@@ -413,7 +407,7 @@ export const resolvers = {
   },
   Conversation: {
     texter: queryResult => {
-      console.log("getConversation texter");
+      // console.log("getConversation texter");
       return mapQueryFieldsToResolverFields(queryResult, {
         u_id: "id",
         u_first_name: "first_name",
@@ -421,7 +415,7 @@ export const resolvers = {
       });
     },
     contact: queryResult => {
-      console.log("getConversation contact", queryResult);
+      // console.log("getConversation contact", queryResult);
       return mapQueryFieldsToResolverFields(queryResult, {
         cc_id: "id",
         cc_first_name: "first_name",
@@ -429,7 +423,7 @@ export const resolvers = {
       });
     },
     campaign: queryResult => {
-      console.log("getConversation campaign");
+      // console.log("getConversation campaign");
       return mapQueryFieldsToResolverFields(queryResult, { cmp_id: "id" });
     }
   }
