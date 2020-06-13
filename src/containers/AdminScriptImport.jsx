@@ -20,12 +20,18 @@ const styles = StyleSheet.create({
 export default class AdminScriptImport extends Component {
   static propTypes = {
     startImport: PropTypes.func,
-    hasPendingJob: PropTypes.bool
+    hasPendingJob: PropTypes.bool,
+    jobError: PropTypes.bool,
+    onSubmit: PropTypes.bool
   };
 
   constructor(props) {
     super(props);
-    this.state = {};
+    this.state = {
+      ...(!!props.jobError && {
+        error: `Error from last attempt: ${props.jobError}`
+      })
+    };
   }
 
   startImport = async () => {
@@ -33,6 +39,7 @@ export default class AdminScriptImport extends Component {
     if (res.errors) {
       this.setState({ error: res.errors.message });
     }
+    this.props.onSubmit();
   };
 
   handleUrlChange = (_eventId, newValue) => this.setState({ url: newValue });
