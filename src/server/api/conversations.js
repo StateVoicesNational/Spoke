@@ -8,9 +8,7 @@ import { getConfig } from "../api/lib/config";
 function getConversationsJoinsAndWhereClause(
   queryParam,
   organizationId,
-  campaignsFilter,
-  assignmentsFilter,
-  contactsFilter,
+  { campaignsFilter, assignmentsFilter, contactsFilter, messageTextFilter },
   forData
 ) {
   let query = queryParam
@@ -26,6 +24,17 @@ function getConversationsJoinsAndWhereClause(
     query = query
       .leftJoin("assignment", "campaign_contact.assignment_id", "assignment.id")
       .leftJoin("user", "assignment.user_id", "user.id");
+  }
+
+  if (messageTextFilter && !forData) {
+    // NOT forData -- just for filter -- and then we need ALL the messages
+    query = query
+      .join(
+        "message AS msgfilter",
+        "msgfilter.campaign_contact_id",
+        "campaign_contact.id"
+      )
+      .where("msgfilter.text", "LIKE", `%${messageTextFilter}%`);
   }
 
   query = addWhereClauseForContactsFilterMessageStatusIrrespectiveOfPastDue(
@@ -87,9 +96,7 @@ function mapQueryFieldsToResolverFields(queryResult, fieldsMap) {
 export async function getConversations(
   cursor,
   organizationId,
-  campaignsFilter,
-  assignmentsFilter,
-  contactsFilter,
+  { campaignsFilter, assignmentsFilter, contactsFilter, messageTextFilter },
   utc,
   includeTags,
   awsContext
@@ -102,9 +109,12 @@ export async function getConversations(
   offsetLimitQuery = getConversationsJoinsAndWhereClause(
     offsetLimitQuery,
     organizationId,
-    campaignsFilter,
-    assignmentsFilter,
-    contactsFilter
+    {
+      campaignsFilter,
+      assignmentsFilter,
+      contactsFilter,
+      messageTextFilter
+    }
   );
 
   offsetLimitQuery = offsetLimitQuery.orderBy("cc_id", "desc");
@@ -158,9 +168,12 @@ export async function getConversations(
   query = getConversationsJoinsAndWhereClause(
     query,
     organizationId,
-    campaignsFilter,
-    assignmentsFilter,
-    contactsFilter,
+    {
+      campaignsFilter,
+      assignmentsFilter,
+      contactsFilter,
+      messageTextFilter
+    },
     true
   );
 
@@ -243,9 +256,12 @@ export async function getConversations(
   const conversationsCountQuery = getConversationsJoinsAndWhereClause(
     r.knex,
     organizationId,
-    campaignsFilter,
-    assignmentsFilter,
-    contactsFilter
+    {
+      campaignsFilter,
+      assignmentsFilter,
+      contactsFilter,
+      messageTextFilter
+    }
   );
   let conversationCount;
   try {
@@ -278,22 +294,19 @@ export async function getConversations(
 
 export async function getCampaignIdContactIdsMaps(
   organizationId,
-  campaignsFilter,
-  assignmentsFilter,
-  contactsFilter
+  { campaignsFilter, assignmentsFilter, contactsFilter, messageTextFilter }
 ) {
   let query = r.knex.select(
     "campaign_contact.id as cc_id",
     "campaign.id as cmp_id"
   );
 
-  query = getConversationsJoinsAndWhereClause(
-    query,
-    organizationId,
+  query = getConversationsJoinsAndWhereClause(query, organizationId, {
     campaignsFilter,
     assignmentsFilter,
-    contactsFilter
-  );
+    contactsFilter,
+    messageTextFilter
+  });
 
   query = query.orderBy("cc_id");
 
