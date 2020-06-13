@@ -1,17 +1,16 @@
 import PropTypes from "prop-types";
 import React from "react";
 import { StyleSheet, css } from "aphrodite";
-import { Toolbar, ToolbarGroup, ToolbarTitle } from "material-ui/Toolbar";
-import { getDisplayPhoneNumber } from "../../lib/phone-format";
+import { Toolbar } from "material-ui/Toolbar";
 import { getLocalTime, getContactTimezone } from "../../lib/timezones";
 import { getProcessEnvDstReferenceTimezone } from "../../lib/tz-helpers";
 import ActionFace from "material-ui/svg-icons/action/face";
 import IconButton from "material-ui/IconButton/IconButton";
-import { grey100 } from "material-ui/styles/colors";
 import ArrowBackIcon from "material-ui/svg-icons/navigation/arrow-back";
 import ArrowForwardIcon from "material-ui/svg-icons/navigation/arrow-forward";
 import NavigateHomeIcon from "material-ui/svg-icons/action/home";
 import SideboxOpenIcon from "material-ui/svg-icons/action/build";
+import momenttz from "moment-timezone";
 
 const inlineStyles = {
   toolbar: {
@@ -101,8 +100,8 @@ const ContactToolbar = function ContactToolbar(props) {
   let city = "";
   let state = "";
   let timezone = null;
-  let offset = 0;
-  let hasDST = false;
+  let offset;
+  let hasDST;
 
   if (location) {
     city = location.city;
@@ -129,7 +128,14 @@ const ContactToolbar = function ContactToolbar(props) {
     ? props.campaign.timezone
     : getProcessEnvDstReferenceTimezone();
 
-  const formattedLocalTime = getLocalTime(
+  let formattedLocalTime;
+  if (offset === undefined) {
+    const zone = momenttz.tz.zone(dstReferenceTimezone);
+    offset = zone.parse(Date.now()) / -60;
+    hasDST = false;
+  }
+
+  formattedLocalTime = getLocalTime(
     offset,
     hasDST,
     dstReferenceTimezone
