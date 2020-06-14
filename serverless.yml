@@ -48,6 +48,7 @@ provider:
     DB_MIN_POOL: 1
     DB_MAX_POOL: 3
     CACHE_PREFIX: spoke-
+    REDIS_CONTACT_CACHE: 1
     CONTACT_LOADERS: csv-s3-upload
     JOBS_SAME_PROCESS: 1
     OPTOUTS_SHARE_ALL_ORGS: 1
@@ -59,10 +60,12 @@ provider:
     TWILIO_AUTH_TOKEN: ${ssm:/${self:custom.stage}/spoke/TWILIO_AUTH_TOKEN~true}
     TWILIO_MESSAGE_SERVICE_SID: ${ssm:/${self:custom.stage}/spoke/TWILIO_MESSAGE_SERVICE_SID~true}
     TWILIO_STATUS_CALLBACK_URL: ${self:custom.baseUrl}/twilio-message-report
+    TWILIO_BASE_CALLBACK_URL: ${self:custom.baseUrl}
     TEXTER_SIDEBOXES: contact-reference,tag-contact
     EXPERIMENTAL_TAGS: 1
     GOOGLE_SECRET: ${ssm:/${self:custom.stage}/spoke/GOOGLE_SECRET~true}
-    REDIS_CONTACT_CACHE: 1
+    EXPERIMENTAL_CAMPAIGN_PHONE_NUMBERS: 1
+    EXPERIMENTAL_PHONE_INVENTORY: 1
   iamRoleStatements:
     - Effect: Allow
       Action: "s3:*"
