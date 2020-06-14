@@ -107,6 +107,9 @@ export default function renderIndex(html, css, assetMap) {
       window.TEXTER_SIDEBOXES="${process.env.TEXTER_SIDEBOXES || ""}"
       window.MAX_NUMBERS_PER_BUY_JOB=${getConfig("MAX_NUMBERS_PER_BUY_JOB") ||
         100};
+      window.CONTACTS_PER_PHONE_NUMBER=${getConfig(
+        "CONTACTS_PER_PHONE_NUMBER"
+      ) || 200};      
     </script>
     <script src="${assetMap["bundle.js"]}"></script>
   </body>
