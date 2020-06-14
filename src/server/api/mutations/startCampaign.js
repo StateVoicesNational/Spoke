@@ -2,10 +2,7 @@ import cacheableData from "../../models/cacheable_queries";
 import { r } from "../../models";
 import { accessRequired } from "../errors";
 import { Notifications, sendUserNotification } from "../../notifications";
-import {
-  loadCampaignCache,
-  startCampaignWithPhoneNumbers
-} from "../../../workers/jobs";
+import { loadCampaignCache, startCampaignAsync } from "../../../workers/jobs";
 import twilio from "../lib/twilio";
 import { getConfig } from "../lib/config";
 
@@ -60,7 +57,7 @@ export const startCampaign = async (
 
     console.log("Kicked off start_campaign job", job[0]);
     // TODO: move to job dispatch function
-    startCampaignWithPhoneNumbers(job[0]); // JOB_SAME_PROCESS no await
+    startCampaignAsync(job[0]); // JOB_SAME_PROCESS no await
 
     return await cacheableData.campaign.load(id, {
       forceLoad: true
