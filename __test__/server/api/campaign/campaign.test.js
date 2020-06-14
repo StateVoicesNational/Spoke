@@ -584,7 +584,6 @@ describe("Reassignments", async () => {
         text: "test text autorespond",
         assignmentId: assignmentId2
       });
-      console.log("campaign.test sendMessage", messageRes);
     }
     // does this sleep fix the "sometimes 4 instead of 5" below?
     await sleep(5);
@@ -601,10 +600,6 @@ describe("Reassignments", async () => {
         assignmentId: assignmentId2
       },
       testTexterUser2
-    );
-    console.log(
-      "campaign.test texterCampaignDataResults.data needsMessage",
-      JSON.stringify(texterCampaignDataResults.data, null, 2)
     );
     expect(texterCampaignDataResults.data.assignment.contacts.length).toEqual(
       15
@@ -623,10 +618,6 @@ describe("Reassignments", async () => {
         assignmentId: assignmentId2
       },
       testTexterUser2
-    );
-    console.log(
-      "campaign.test texterCampaignDataResults.data needsResponse",
-      JSON.stringify(texterCampaignDataResults.data, null, 2)
     );
     // often is sometimes 4 instead of 5 in test results.  WHY?!!?!?
     expect(texterCampaignDataResults.data.assignment.contacts.length).toEqual(
