@@ -2,6 +2,7 @@ import { r, Campaign } from "../../models";
 import { modelWithExtraProps } from "./lib";
 import { assembleAnswerOptions } from "../../../lib/interaction-step-helpers";
 import { getFeatures } from "../../api/lib/config";
+import organizationCache from "./organization";
 
 // This should be cached data for a campaign that will not change
 // based on assignments or texter actions
@@ -128,56 +129,82 @@ const currentEditors = async (campaign, user) => {
   return editors.map(editor => editor[0].split("~")[1]).join(", ");
 };
 
+const load = async (id, opts) => {
+  // console.log('campaign cache load', id)
+  if (r.redis) {
+    let campaignData = await r.redis.getAsync(cacheKey(id));
+    let campaignObj = campaignData ? JSON.parse(campaignData) : null;
+    // console.log('pre campaign cache', campaignObj)
+    if (
+      (opts && opts.forceLoad) ||
+      !campaignObj ||
+      !campaignObj.interactionSteps
+    ) {
+      // console.log('no campaigndata', id, campaignObj)
+      const campaignNoCache = await loadDeep(id);
+      if (campaignNoCache) {
+        // archived or not found in db either
+        return campaignNoCache;
+      }
+      campaignData = await r.redis.getAsync(cacheKey(id));
+      campaignObj = campaignData ? JSON.parse(campaignData) : null;
+      // console.log('new campaign data', id, campaignData)
+    }
+    if (campaignObj) {
+      const counts = [
+        "assignedCount",
+        "messagedCount",
+        "needsResponseCount",
+        "errorCount"
+      ];
+      const countKey = infoCacheKey(id);
+      for (let i = 0, l = counts.length; i < l; i++) {
+        const countName = counts[i];
+        campaignObj[countName] = await r.redis.hgetAsync(countKey, countName);
+      }
+      campaignObj.feature = getFeatures(campaignObj);
+      // console.log('campaign cache', cacheKey(id), campaignObj, campaignData)
+      const campaign = modelWithExtraProps(campaignObj, Campaign, [
+        "customFields",
+        "feature",
+        "interactionSteps",
+        "contactTimezones",
+        "contactsCount",
+        ...counts
+      ]);
+      return campaign;
+    }
+  }
+
+  return await Campaign.get(id);
+};
+
 const campaignCache = {
   clear,
-  load: async (id, opts) => {
-    // console.log('campaign cache load', id)
-    if (r.redis) {
-      let campaignData = await r.redis.getAsync(cacheKey(id));
-      let campaignObj = campaignData ? JSON.parse(campaignData) : null;
-      // console.log('pre campaign cache', campaignObj)
-      if (
-        (opts && opts.forceLoad) ||
-        !campaignObj ||
-        !campaignObj.interactionSteps
-      ) {
-        // console.log('no campaigndata', id, campaignObj)
-        const campaignNoCache = await loadDeep(id);
-        if (campaignNoCache) {
-          // archived or not found in db either
-          return campaignNoCache;
-        }
-        campaignData = await r.redis.getAsync(cacheKey(id));
-        campaignObj = campaignData ? JSON.parse(campaignData) : null;
-        // console.log('new campaign data', id, campaignData)
-      }
-      if (campaignObj) {
-        const counts = [
-          "assignedCount",
-          "messagedCount",
-          "needsResponseCount",
-          "errorCount"
-        ];
-        const countKey = infoCacheKey(id);
-        for (let i = 0, l = counts.length; i < l; i++) {
-          const countName = counts[i];
-          campaignObj[countName] = await r.redis.hgetAsync(countKey, countName);
-        }
-        campaignObj.feature = getFeatures(campaignObj);
-        // console.log('campaign cache', cacheKey(id), campaignObj, campaignData)
-        const campaign = modelWithExtraProps(campaignObj, Campaign, [
-          "customFields",
-          "feature",
-          "interactionSteps",
-          "contactTimezones",
-          "contactsCount",
-          ...counts
-        ]);
-        return campaign;
-      }
+  load,
+  loadCampaignOrganization: async ({ campaign, campaignId, organization }) => {
+    const already = organization || (campaign && campaign.organization);
+    if (already) {
+      return already;
     }
-
-    return await Campaign.get(id);
+    if (campaign && campaign.organization_id) {
+      return await organizationCache.load(campaign.organization_id);
+    }
+    if (!campaignId) {
+      return;
+    }
+    if (r.redis) {
+      const c = await load(campaignId);
+      return await organizationCache.load(c.organization_id);
+    } else {
+      const org = await r
+        .knex("organization")
+        .select("organization.*")
+        .join("campaign", "campaign.organization_id", "organization.id")
+        .where("campaign.id", campaignId)
+        .first();
+      return org;
+    }
   },
   reload: loadDeep,
   currentEditors,
