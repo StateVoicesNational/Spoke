@@ -506,7 +506,7 @@ export class AdminCampaignEdit extends React.Component {
       });
     }
     if (this.props.organizationData.organization.campaignPhoneNumbersEnabled) {
-      const contactsPerPhoneNumber = window.CONTACTS_PER_PHONE_NUMBER || 200;
+      const contactsPerPhoneNumber = window.CONTACTS_PER_PHONE_NUMBER;
       finalSections.push({
         title: "Phone Numbers",
         content: CampaignPhoneNumbersForm,
