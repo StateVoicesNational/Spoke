@@ -1,5 +1,6 @@
 export function getProcessEnvTz() {
-  return process.env.TZ;
+  // TZ is a reserved env var in Lambda and always returns :UTC
+  return process.env.TZ === ":UTC" ? "UTC" : process.env.TZ;
 }
 
 export function getProcessEnvDstReferenceTimezone() {
