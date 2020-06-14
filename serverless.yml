@@ -62,6 +62,7 @@ provider:
     TEXTER_SIDEBOXES: contact-reference,tag-contact
     EXPERIMENTAL_TAGS: 1
     GOOGLE_SECRET: ${ssm:/${self:custom.stage}/spoke/GOOGLE_SECRET~true}
+    REDIS_CONTACT_CACHE: 1
   iamRoleStatements:
     - Effect: Allow
       Action: "s3:*"
