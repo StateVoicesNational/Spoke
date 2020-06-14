@@ -124,6 +124,8 @@ async function getMessagingServiceSid(
   message,
   campaign
 ) {
+  // NOTE: because of this check you can't switch back to organization/global
+  // messaging service without breaking running campaigns.
   if (
     getConfig(
       "EXPERIMENTAL_TWILIO_PER_CAMPAIGN_MESSAGING_SERVICE",

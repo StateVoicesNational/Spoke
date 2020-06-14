@@ -1197,7 +1197,7 @@ async function prepareTwilioCampaign(campaign, organization) {
   return msgSrvSid;
 }
 
-export async function startCampaignWithPhoneNumbers(job) {
+export async function startCampaignAsync(job) {
   try {
     const campaign = await cacheableData.campaign.load(job.campaign_id);
     const organization = await cacheableData.organization.load(
