@@ -638,9 +638,8 @@ const rootMutations = {
         texting_hours_start: textingHoursStart,
         texting_hours_end: textingHoursEnd
       });
-      cacheableData.organization.clear(organizationId);
-
-      return await Organization.get(organizationId);
+      await cacheableData.organization.clear(organizationId);
+      return await cacheableData.organization.load(organizationId);
     },
     updateTextingHoursEnforcement: async (
       _,
@@ -654,7 +653,7 @@ const rootMutations = {
       });
       await cacheableData.organization.clear(organizationId);
 
-      return await cacheableData.load(organizationId);
+      return await cacheableData.organization.load(organizationId);
     },
     updateOptOutMessage: async (
       _,
