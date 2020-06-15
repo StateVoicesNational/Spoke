@@ -124,18 +124,18 @@ const ContactToolbar = function ContactToolbar(props) {
   }
   formattedLocation = `${formattedLocation}${city}`;
 
+  const campaignTimezone =
+    props.campaign.timezone || getProcessEnvDstReferenceTimezone();
   let formattedLocalTime;
   if (offset === undefined) {
-    const zone = momenttz.tz.zone(props.campaign.timezone);
+    const zone = momenttz.tz.zone(campaignTimezone);
     offset = zone.parse(Date.now()) / -60;
     hasDST = false;
   }
 
-  formattedLocalTime = getLocalTime(
-    offset,
-    hasDST,
-    props.campaign.timezone
-  ).format("LT"); // format('h:mm a')
+  formattedLocalTime = getLocalTime(offset, hasDST, campaignTimezone).format(
+    "LT"
+  ); // format('h:mm a')
 
   return (
     <div>
