@@ -26,6 +26,20 @@ export const joinOrganization = async (
       organization = await cacheableData.organization.load(
         campaign.organization_id
       );
+      const maxTextersPerCampaign = getConfig(
+        "MAX_TEXTERS_PER_CAMPAIGN",
+        organization
+      );
+      if (maxTextersPerCampaign) {
+        const campaignTexterCount = await r.getCount(
+          r.knex("assignment").where("campaign_id", campaignId)
+        );
+        if (campaignTexterCount >= maxTextersPerCampaign) {
+          throw new GraphQLError(
+            "Sorry, this campaign has too many texters already"
+          );
+        }
+      }
     } else {
       throw new GraphQLError("Invalid join request");
     }
