@@ -81,9 +81,6 @@ describe("Message Hanlder: profanity-tagger", () => {
       }
     });
 
-    const messages = await r.knex("message");
-    expect(messages).toEqual([]);
-
     const text1 = await r
       .knex("tag_campaign_contact")
       .select("tag_id", "campaign_contact_id");
