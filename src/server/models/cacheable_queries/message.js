@@ -267,7 +267,9 @@ const messageCache = {
 
     if (Object.keys(handlers).length && (organization || campaignId)) {
       if (!organization) {
-        organization = campaignCache.loadCampaignOrganization({ campaignId });
+        organization = await campaignCache.loadCampaignOrganization({
+          campaignId
+        });
       }
       const availableHandlers = Object.keys(handlers)
         .filter(
