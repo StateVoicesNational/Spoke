@@ -63,6 +63,12 @@ describe("Message Hanlder: profanity-tagger", () => {
       text: "brass shoe eddie homonym",
       assignmentId: c.assignmentId
     });
+    // a little stupidly updating messageservice_sid is necessary
+    // because it's not await'd
+    await r
+      .knex("message")
+      .where("user_id", c.testTexterUser.id)
+      .update("messageservice_sid", "fakeservice");
     await cacheableData.message.save({
       contact: c.testContacts[1],
       messageInstance: {
