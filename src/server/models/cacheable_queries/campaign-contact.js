@@ -347,7 +347,13 @@ const campaignContactCache = {
       const cellData = await r.redis.getAsync(
         cellTargetKey(cell, messageServiceSid)
       );
-      // console.log('lookupByCell cache', cell, service, messageServiceSid, cellData)
+      console.log(
+        "lookupByCell cache",
+        cell,
+        service,
+        messageServiceSid,
+        cellData
+      );
       if (cellData) {
         // eslint-disable-next-line camelcase
         const [
