@@ -35,5 +35,5 @@ export const dispatch = async (
       Payload: JSON.stringify({ jobId: job.id })
     })
     .promise();
-  return job.id;
+  return job;
 };

@@ -33,5 +33,6 @@ export const dispatch = async (
       console.log("Exception in un-awaited job", err)
     );
   }
+  return job;
   // default: just save the job
 };
