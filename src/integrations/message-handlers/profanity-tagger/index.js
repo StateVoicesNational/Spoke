@@ -1,5 +1,5 @@
 import { getConfig } from "../../../server/api/lib/config";
-import { cacheableData } from "../../../server/models";
+import { r, cacheableData } from "../../../server/models";
 
 // Besides a bunch of horrible words, this includes "fakeslur" for easier testing.
 // These defaults include offensive slurs but do not include e.g. "fu**" or "sh**"
@@ -24,7 +24,9 @@ export const serverAdministratorInstructions = () => {
     environmentVariables: [
       "PROFANITY_CONTACT_TAG_ID",
       "PROFANITY_TEXTER_TAG_ID",
-      "PROFANITY_REGEX_BASE64"
+      "PROFANITY_REGEX_BASE64",
+      "PROFANITY_TEXTER_REGEX_BASE64",
+      "PROFANITY_TEXTER_SUSPEND_COUNT"
     ]
   };
 };
@@ -62,6 +64,55 @@ export const postMessageSave = async ({ message, organization }) => {
       await cacheableData.tagCampaignContact.save(message.campaign_contact_id, [
         { id: tag_id }
       ]);
+      if (!message.is_from_contact) {
+        const suspendThreshold = getConfig(
+          "PROFANITY_TEXTER_SUSPEND_COUNT",
+          organization
+        );
+        if (suspendThreshold) {
+          // we need to get the messages again, to confirm that it was *this* user that sent them
+          // FUTURE: if tag_campaign_contact had a creator_id column, then we could probably just do a count
+          // (where we would set the creator_id above to the message.user_id)
+          const badTexts = await r
+            .knex("campaign_contact")
+            .select("message.text")
+            .join("campaign", "campaign.id", "campaign_contact.campaign_id")
+            .join(
+              "assignment",
+              "assignment.id",
+              "campaign_contact.assignment_id"
+            )
+            .join(
+              "message",
+              "message.campaign_contact_id",
+              "campaign_contact.id"
+            )
+            .join(
+              "tag_campaign_contact",
+              "tag_campaign_contact.campaign_contact_id",
+              "campaign_contact.id"
+            )
+            .where({
+              "tag_campaign_contact.tag_id": tag_id,
+              "campaign.is_archived": false,
+              "assignment.user_id": message.user_id,
+              "message.user_id": message.user_id,
+              "message.is_from_contact": false
+            });
+          const badTextsCount = badTexts.filter(m => m.text && m.text.match(re))
+            .length;
+          if (badTextsCount >= Number(suspendThreshold)) {
+            await r
+              .knex("user_organization")
+              .where({
+                user_id: message.user_id,
+                organization_id: organization.id
+              })
+              .update({ role: "SUSPENDED" });
+            await cacheableData.user.clearUser(message.user_id);
+          }
+        }
+      }
     }
   }
 };
