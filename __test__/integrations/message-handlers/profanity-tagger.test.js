@@ -53,7 +53,7 @@ describe("Message Hanlder: profanity-tagger", () => {
       .knex("organization")
       .update(
         "features",
-        '{"EXPERIMENTAL_TAGS": "1", "PROFANITY_CONTACT_TAG_ID": "1", "PROFANITY_TEXTER_TAG_ID": "2"}'
+        '{"EXPERIMENTAL_TAGS": "1", "PROFANITY_CONTACT_TAG_ID": "1", "PROFANITY_TEXTER_TAG_ID": "2", "PROFANITY_TEXTER_SUSPEND_COUNT": "1"}'
       );
     await cacheableData.organization.clear(c.organizationId);
     const org = await cacheableData.organization.load(c.organizationId);
@@ -63,6 +63,12 @@ describe("Message Hanlder: profanity-tagger", () => {
       text: "brass shoe eddie homonym",
       assignmentId: c.assignmentId
     });
+    // a little stupidly updating messageservice_sid is necessary
+    // because it's not await'd
+    await r
+      .knex("message")
+      .where("user_id", c.testTexterUser.id)
+      .update("messageservice_sid", "fakeservice");
     await cacheableData.message.save({
       contact: c.testContacts[1],
       messageInstance: {
@@ -79,6 +85,12 @@ describe("Message Hanlder: profanity-tagger", () => {
       .knex("tag_campaign_contact")
       .select("tag_id", "campaign_contact_id");
     expect(text1).toEqual([{ tag_id: 1, campaign_contact_id: 2 }]);
+    const user = await cacheableData.user.userHasRole(
+      c.testTexterUser,
+      c.organizationId,
+      "TEXTER"
+    );
+    expect(user).toBe(true);
   });
 
   it("Texter profanity is flagged", async () => {
@@ -100,7 +112,7 @@ describe("Message Hanlder: profanity-tagger", () => {
       .knex("organization")
       .update(
         "features",
-        '{"EXPERIMENTAL_TAGS": "1", "PROFANITY_CONTACT_TAG_ID": "1", "PROFANITY_TEXTER_TAG_ID": "2"}'
+        '{"EXPERIMENTAL_TAGS": "1", "PROFANITY_CONTACT_TAG_ID": "1", "PROFANITY_TEXTER_TAG_ID": "2", "PROFANITY_TEXTER_SUSPEND_COUNT": "2"}'
       );
     await cacheableData.organization.clear(c.organizationId);
     const org = await cacheableData.organization.load(c.organizationId);
@@ -121,6 +133,13 @@ describe("Message Hanlder: profanity-tagger", () => {
       .where("campaign_contact_id", 1);
     expect(text1).toEqual([{ tag_id: 2, campaign_contact_id: 1 }]);
 
+    let user = await cacheableData.user.userHasRole(
+      c.testTexterUser,
+      c.organizationId,
+      "TEXTER"
+    );
+    expect(user).toBe(true);
+
     // Confirm texter no-match
     await sendMessage(c.testContacts[1].id, c.testTexterUser, {
       userId: c.testTexterUser.id,
@@ -133,5 +152,26 @@ describe("Message Hanlder: profanity-tagger", () => {
       .select("tag_id", "campaign_contact_id")
       .where("campaign_contact_id", 2);
     expect(text2).toEqual([]);
+
+    user = await cacheableData.user.userHasRole(
+      c.testTexterUser,
+      c.organizationId,
+      "TEXTER"
+    );
+    expect(user).toBe(true);
+
+    // Confirm texter no-match
+    await sendMessage(c.testContacts[1].id, c.testTexterUser, {
+      userId: c.testTexterUser.id,
+      contactNumber: c.testContacts[1].cell,
+      text: "fakeslur is one too many slurs",
+      assignmentId: c.assignmentId
+    });
+    user = await cacheableData.user.userHasRole(
+      c.testTexterUser,
+      c.organizationId,
+      "TEXTER"
+    );
+    expect(user).toBe(false);
   });
 });
