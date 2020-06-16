@@ -1,5 +1,6 @@
 import { accessRequired } from "./errors";
 import { mapFieldsToModel } from "./lib/utils";
+import { errorDescriptions } from "./lib/twilio";
 import { Campaign, JobRequest, r, cacheableData } from "../models";
 import { getUsers } from "./user";
 import {
@@ -212,6 +213,32 @@ export const resolvers = {
           .knex("campaign_contact")
           .where({ is_opted_out: true, campaign_id: campaign.id })
       );
+    },
+    errorCounts: async (campaign, _, { user, loaders }) => {
+      await accessRequired(
+        user,
+        campaign.organization_id,
+        "SUPERVOLUNTEER",
+        true
+      );
+      const errorCounts = await r
+        .knex("campaign_contact")
+        .where("campaign_id", campaign.id)
+        .whereNotNull("error_code")
+        .select("error_code", r.knex.raw("count(*) as error_count"))
+        .groupBy("error_code")
+        .orderByRaw("count(*) DESC");
+      const organization = loaders.organization.load(campaign.organization_id);
+      const isTwilio = getConfig("DEFAULT_SERVICE", organization) === "twilio";
+      return errorCounts.map(e => ({
+        code: String(e.error_code),
+        count: e.error_count,
+        description: errorDescriptions[e.error_code] || null,
+        link:
+          e.error_code > 0 && isTwilio
+            ? `https://www.twilio.com/docs/api/errors/${e.error_code}`
+            : null
+      }));
     }
   },
   CampaignsReturn: {
@@ -382,15 +409,38 @@ export const resolvers = {
         true
       );
       let query = r
-        .table("assignment")
-        .getAll(campaign.id, { index: "campaign_id" });
+        .knex("assignment")
+        .where("assignment.campaign_id", campaign.id);
 
-      if (
-        assignmentsFilter &&
-        assignmentsFilter.hasOwnProperty("texterId") &&
-        assignmentsFilter.textId !== null
-      ) {
-        query = query.filter({ user_id: assignmentsFilter.texterId });
+      if (assignmentsFilter) {
+        if (assignmentsFilter.texterId) {
+          query = query.where("user_id", assignmentsFilter.texterId);
+        }
+        if (assignmentsFilter.stats) {
+          const fields = [
+            "assignment.id",
+            "assignment.user_id",
+            "assignment.campaign_id",
+            "user.first_name",
+            "user.last_name"
+          ];
+          query = query
+            .join("user", "user.id", "assignment.user_id")
+            .join(
+              "campaign_contact",
+              "campaign_contact.assignment_id",
+              "assignment.id"
+            )
+            .select(
+              ...fields,
+              r.knex.raw(
+                "SUM(CASE WHEN campaign_contact.message_status = 'needsMessage' THEN 1 ELSE 0 END) as needs_message_count"
+              ),
+              r.knex.raw("COUNT(*) as contacts_count")
+            )
+            .groupBy(...fields)
+            .havingRaw("count(*) > 0");
+        }
       }
 
       return query;

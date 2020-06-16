@@ -121,18 +121,30 @@ export const resolvers = {
       } else if (assignment.user_id === user.id) {
         // Will use current user's cache if present
         return user;
+      } else if (assignment.first_name) {
+        return assignment;
       } else {
         return await loaders.user.load(assignment.user_id);
       }
     },
     campaign: async (assignment, _, { loaders }) =>
       loaders.campaign.load(assignment.campaign_id),
-    contactsCount: async (assignment, { contactsFilter }) => {
-      const campaign = await r.table("campaign").get(assignment.campaign_id);
-
-      const organization = await r
-        .table("organization")
-        .get(campaign.organization_id);
+    contactsCount: async (assignment, { contactsFilter }, { loaders }) => {
+      if (assignment.contacts_count) {
+        if (!contactsFilter || Object.keys(contactsFilter).length === 0) {
+          return assignment.contacts_count;
+        } else if (
+          assignment.needs_message_count &&
+          contactsFilter.messageStatus === "needsMessage" &&
+          Object.keys(contactsFilter).length === 1
+        ) {
+          return assignment.needs_message_count;
+        }
+      }
+      const campaign = await loaders.campaign.load(assignment.campaign_id);
+      const organization = await loaders.organization.load(
+        campaign.organization_id
+      );
 
       return await r.getCount(
         getContacts(assignment, contactsFilter, organization, campaign, true)

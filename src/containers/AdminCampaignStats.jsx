@@ -3,6 +3,7 @@ import React from "react";
 import RaisedButton from "material-ui/RaisedButton";
 import Chart from "../components/Chart";
 import { Card, CardTitle, CardText } from "material-ui/Card";
+import LinearProgress from "material-ui/LinearProgress";
 import TexterStats from "../components/TexterStats";
 import Snackbar from "material-ui/Snackbar";
 import { withRouter } from "react-router";
@@ -132,6 +133,37 @@ class AdminCampaignStats extends React.Component {
         </div>
       );
     });
+  }
+
+  renderErrorCounts() {
+    const { errorCounts } = this.props.data.campaign.stats;
+    const { contactsCount } = this.props.data.campaign;
+    console.log("errorcounts", contactsCount, errorCounts);
+    if (!errorCounts.length) {
+      return null;
+    }
+    return (
+      <div>
+        {errorCounts.map(error => (
+          <div key={error.code}>
+            {error.link ? (
+              <a href={error.link} target="_blank">
+                Error code {error.code}
+              </a>
+            ) : (
+              error.code
+            )}{" "}
+            {error.description || null}
+            <div>{error.count} errors</div>
+            <LinearProgress
+              color="red"
+              mode="determinate"
+              value={Math.round((100 * error.count) / contactsCount)}
+            />
+          </div>
+        ))}
+      </div>
+    );
   }
 
   renderCopyButton() {
@@ -286,7 +318,12 @@ class AdminCampaignStats extends React.Component {
         </div>
         <div className={css(styles.header)}>Survey Questions</div>
         {this.renderSurveyStats()}
-
+        {campaign.stats.errorCounts.length > 0 ? (
+          <div>
+            <div className={css(styles.header)}>Sending Errors</div>
+            {this.renderErrorCounts()}{" "}
+          </div>
+        ) : null}
         <div className={css(styles.header)}>Texter stats</div>
         <div className={css(styles.secondaryHeader)}>% of first texts sent</div>
         <TexterStats campaign={campaign} />
@@ -316,6 +353,7 @@ const queries = {
       query getCampaign(
         $campaignId: String!
         $contactsFilter: ContactsFilter!
+        $assignmentsFilter: AssignmentsFilter
       ) {
         campaign(id: $campaignId) {
           id
@@ -323,7 +361,7 @@ const queries = {
           isArchived
           useDynamicAssignment
           useOwnMessagingService
-          assignments {
+          assignments(assignmentsFilter: $assignmentsFilter) {
             id
             texter {
               id
@@ -354,6 +392,12 @@ const queries = {
             sentMessagesCount
             receivedMessagesCount
             optOutsCount
+            errorCounts {
+              code
+              count
+              description
+              link
+            }
           }
         }
       }
@@ -361,6 +405,9 @@ const queries = {
     options: ownProps => ({
       variables: {
         campaignId: ownProps.params.campaignId,
+        assignmentsFilter: {
+          stats: true
+        },
         contactsFilter: {
           messageStatus: "needsMessage"
         }
