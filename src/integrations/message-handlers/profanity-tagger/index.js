@@ -6,7 +6,7 @@ import { cacheableData } from "../../../server/models";
 // though they include some variants of those words -- the (default) goal is not to flag
 // descriptive language, but hostile language.  This can be customized by an env or organization setting.
 export const DEFAULT_PROFANITY_REGEX_BASE64 =
-  "ZmFrZXNsdXJ8YXNzaG9sZXxiaXRjaHxibG93am9ifGJyb3duaWV8Y2hpbmt8Y29ja3xjb29ufGN1Y2t8Y3VudHxkYXJreXxkaWNraGVhZHxmYWdnb3R8ZmFydHxmcmlnaWR8ZnVja2JveXxmdWNrZXJ8Z29va3xoZWVifGppZ2Fib298a2lrZXxsaWNrIG18bWFjYWNhfG15IGRpY2t8bXkgYXNzfG5lZ3JvfG5pZ2dlcnxuaWdyYXxwcmlja3xwdXNzeXxxdWltfHJhcGV8cmV0YXJkfHNoZWVuaWV8c2hpdGhlYWR8c2h5bG9ja3xzaHlzdGVyfHNsdXR8c3BpY3xzcGlrfHN1Y2sgbXl8dGFjb2hlYWR8dGl0c3x0b3dlbGhlYWR8dHJhbm5pZXx0cmFubnl8dHVyZHx0d2F0fHdhbmt8d2V0YmFja3x3aG9yZXx5aWQ=";
+  "ZmFrZXNsdXJ8XGJhc3NcYnxhc3Nob2xlfGJpdGNofGJsb3dqb2J8YnJvd25pZXxjaGlua3xjb2NrfGNvb258Y3Vja3xjdW50fGRhcmt5fGRpY2toZWFkfFxiZGllXGJ8ZmFnZ290fGZhaXJ5fGZhcnR8ZnJpZ2lkfGZ1Y2tib3l8ZnVja2VyfGdvb2t8aGVlYnxcYmhvZVxifFxiaG9tb1xifGppZ2Fib298a2lrZXxra2t8a3Uga2x1eCBrbGFufGxpY2sgbXxtYWNhY2F8bW9sZXN0fG15IGRpY2t8bXkgYXNzfG5lZ3JvfG5pZ2dlcnxuaWdyYXxwZWRvfHBpc3N8cHJpY2t8cHVzc3l8cXVpbXxyYXBlfHJldGFyZHxzaGVlbmllfHNoaXRoZWFkfHNoeWxvY2t8c2h5c3RlcnxzbHV0fHNwaWN8c3Bpa3xzdWNrIG15fHRhY29oZWFkfHRpdHN8dG93ZWxoZWFkfHRyYW5uaWV8dHJhbm55fHR1cmR8dHdhdHx3YW5rfHdldGJhY2t8d2hvcmV8eWlk";
 
 export const serverAdministratorInstructions = () => {
   return {
@@ -42,18 +42,23 @@ export const available = organization => {
 
 export const postMessageSave = async ({ message, organization }) => {
   let tag_id = null;
+  let regexText = null;
   if (message.is_from_contact) {
     tag_id = getConfig("PROFANITY_CONTACT_TAG_ID", organization);
-  } else {
-    tag_id = getConfig("PROFANITY_TEXTER_TAG_ID", organization);
-  }
-  if (tag_id) {
-    const regexText =
+    regexText =
       getConfig("PROFANITY_REGEX_BASE64", organization) ||
       DEFAULT_PROFANITY_REGEX_BASE64;
+  } else {
+    tag_id = getConfig("PROFANITY_TEXTER_TAG_ID", organization);
+    regexText =
+      getConfig("PROFANITY_TEXTER_REGEX_BASE64", organization) ||
+      getConfig("PROFANITY_REGEX_BASE64", organization) ||
+      DEFAULT_PROFANITY_REGEX_BASE64;
+  }
+
+  if (tag_id) {
     const re = new RegExp(Buffer.from(regexText, "base64").toString(), "i");
     if (String(message.text).match(re)) {
-      console.log("MATCH", message.text);
       await cacheableData.tagCampaignContact.save(message.campaign_contact_id, [
         { id: tag_id }
       ]);
