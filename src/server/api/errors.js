@@ -75,3 +75,18 @@ export async function assignmentRequiredOrAdminRole(
   }
   return userHasAssignment || true;
 }
+
+export async function assignmentRequiredOrRole(
+  user,
+  orgId,
+  assignmentId,
+  contact,
+  role
+) {
+  authRequired(user);
+  const hasRole = await cacheableData.user.userHasRole(user, orgId, role);
+  if (hasRole || user.is_superadmin) {
+    return true;
+  }
+  return await exports.assignmentRequired(user, assignmentId, null, contact);
+}

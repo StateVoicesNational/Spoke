@@ -42,6 +42,7 @@ import {
 import {
   accessRequired,
   assignmentRequiredOrAdminRole,
+  assignmentRequiredOrRole,
   authRequired
 } from "./errors";
 import { resolvers as interactionStepResolvers } from "./interaction-step";
@@ -1061,11 +1062,12 @@ const rootMutations = {
       if (!effectiveAssignmentId) {
         effectiveAssignmentId = firstContact.assignment_id;
       }
-      await assignmentRequiredOrAdminRole(
+      await assignmentRequiredOrRole(
         user,
         organizationId,
         effectiveAssignmentId,
-        firstContact
+        firstContact,
+        "SUPERVOLUNTEER"
       );
       let triedUpdate = false;
       const contacts = contactIds.map(async (contactId, cIdx) => {
