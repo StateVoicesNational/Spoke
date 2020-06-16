@@ -57,7 +57,7 @@ export const postMessageSave = async ({ message, organization }) => {
       getConfig("PROFANITY_REGEX_BASE64", organization) ||
       DEFAULT_PROFANITY_REGEX_BASE64;
   }
-
+  console.log("profanity postMessageSave", message, tag_id);
   if (tag_id) {
     const re = new RegExp(Buffer.from(regexText, "base64").toString(), "i");
     if (String(message.text).match(re)) {
