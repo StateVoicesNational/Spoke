@@ -242,7 +242,7 @@ const messageCache = {
         messageInstance.service,
         messageInstance.messageservice_sid
       );
-      // console.log("messageCache activeCellFound", activeCellFound);
+      console.log("messageCache activeCellFound", activeCellFound);
       const matchError = await incomingMessageMatching(
         messageInstance,
         activeCellFound
@@ -315,7 +315,7 @@ const messageCache = {
       messageservice_sid: messageToSave.messageservice_sid,
       campaign_id: campaignId
     };
-    // console.log("messageCache hi saveMsg3", newStatus, contactData);
+    console.log("messageCache hi saveMsg3", newStatus, contactData);
     await campaignContactCache.updateStatus(contactData, newStatus);
     // console.log("messageCache saveMsg4", newStatus);
 
