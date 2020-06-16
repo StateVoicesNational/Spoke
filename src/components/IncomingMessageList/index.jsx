@@ -9,6 +9,7 @@ import LoadingIndicator from "../../components/LoadingIndicator";
 import DataTables from "material-ui-datatables";
 import ConversationPreviewModal from "./ConversationPreviewModal";
 import TagChip from "../TagChip";
+import moment from "moment";
 
 import { MESSAGE_STATUSES } from "../../components/IncomingMessageFilter";
 
@@ -168,6 +169,10 @@ export class IncomingMessageList extends Component {
                 <b>{lastMessage.isFromContact ? "Contact:" : "Texter:"} </b>
               </span>
               {lastMessage.text}
+              <br />
+              <span style={{ color: "gray", fontSize: "85%" }}>
+                {moment.utc(lastMessage.createdAt).fromNow()}
+              </span>
             </p>
           );
         }
@@ -362,6 +367,7 @@ const queries = {
                 id
                 text
                 isFromContact
+                createdAt
               }
               tags {
                 id
