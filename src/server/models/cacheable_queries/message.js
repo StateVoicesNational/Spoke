@@ -315,7 +315,12 @@ const messageCache = {
       messageservice_sid: messageToSave.messageservice_sid,
       campaign_id: campaignId
     };
-    console.log("messageCache hi saveMsg3", newStatus, contactData);
+    console.log(
+      "messageCache hi saveMsg3",
+      messageToSave.id,
+      newStatus,
+      contactData
+    );
     await campaignContactCache.updateStatus(contactData, newStatus);
     // console.log("messageCache saveMsg4", newStatus);
 
