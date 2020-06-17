@@ -352,6 +352,7 @@ const queries = {
     query: gql`
       query getCampaign(
         $campaignId: String!
+        $organizationId: String!
         $contactsFilter: ContactsFilter!
         $assignmentsFilter: AssignmentsFilter
       ) {
@@ -365,6 +366,7 @@ const queries = {
             id
             texter {
               id
+              roles(organizationId: $organizationId)
               firstName
               lastName
             }
@@ -405,6 +407,7 @@ const queries = {
     options: ownProps => ({
       variables: {
         campaignId: ownProps.params.campaignId,
+        organizationId: ownProps.params.organizationId,
         assignmentsFilter: {
           stats: true
         },

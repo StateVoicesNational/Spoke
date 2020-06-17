@@ -13,9 +13,12 @@ class TexterStats extends React.Component {
       ((contactsCount - unmessagedCount) * 100) / contactsCount
     );
 
+    // texter is suspended if they don't have at least one role that isn't SUSPENDED
+    const suspended = !texter.roles.some(r => r !== "SUSPENDED");
+
     return (
       <div key={id}>
-        {texter.firstName} {texter.lastName}
+        {texter.firstName} {texter.lastName} {suspended ? "(SUSPENDED)" : ""}
         <div>{percentComplete}%</div>
         <LinearProgress mode="determinate" value={percentComplete} />
       </div>
