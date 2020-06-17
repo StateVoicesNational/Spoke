@@ -848,12 +848,12 @@ const queries = {
   },
   organizationData: {
     query: gql`
-      query getOrganizationData($organizationId: String!, $role: String) {
+      query getOrganizationData($organizationId: String!) {
         organization(id: $organizationId) {
           id
           uuid
           fullyConfigured
-          texters: people(role: $role) {
+          texters: people(role: "ANY") {
             id
             roles(organizationId: $organizationId)
             firstName
@@ -874,8 +874,7 @@ const queries = {
     `,
     options: ownProps => ({
       variables: {
-        organizationId: ownProps.params.organizationId,
-        role: "ANY"
+        organizationId: ownProps.params.organizationId
       },
       pollInterval: 20000
     })
