@@ -274,6 +274,7 @@ export default class CampaignTextersForm extends React.Component {
 
     const dataSource = orgTexters
       .filter(orgTexter => !texters.find(texter => texter.id === orgTexter.id))
+      .filter(orgTexter => orgTexter.roles.some(role => role !== "SUSPENDED"))
       .map(orgTexter => dataSourceItem(orgTexter.displayName, orgTexter.id));
 
     const filter = (searchText, key) =>
@@ -342,8 +343,10 @@ export default class CampaignTextersForm extends React.Component {
   }
 
   getDisplayName(texterId) {
-    let texterObj = this.props.orgTexters.find(o => o.id === texterId);
-    return texterObj.displayName;
+    const texterObj = this.props.orgTexters.find(o => o.id === texterId);
+    const suspended = !texterObj.roles.some(r => r !== "SUSPENDED");
+    const suffix = suspended ? " (SUSPENDED)" : "";
+    return texterObj.displayName + suffix;
   }
 
   showTexters() {
