@@ -230,7 +230,7 @@ const campaignCache = {
         await r.redis
           .multi()
           .hset(infoKey, "assignedCount", assignCount)
-          .expire(infoKey, 43200)
+          .expire(infoKey, 432000) // counts stay 5 days for easier review
           .execAsync();
       } catch (err) {
         console.log("campaign.updateAssignedCount Error", id, err);
@@ -250,7 +250,7 @@ const campaignCache = {
             countType,
             typeof countAmount === "number" ? countAmount : 1
           )
-          .expire(infoKey, 43200)
+          .expire(infoKey, 432000) // counts stay 5 days for easier review
           .execAsync();
       } catch (err) {
         console.log("campaign.incrMessaged Error", id, err);
