@@ -31,7 +31,7 @@ describe("Message Hanlder: profanity-tagger", () => {
       "i"
     );
     expect(re.test("blah blah fakeslur blah blah")).toBe(true);
-    expect("brass shoe eddie homonym".match(re)).toBe(null);
+    expect("brass shoe eddie homonym Saturday".match(re)).toBe(null);
   });
 
   it("Contact profanity is flagged", async () => {
