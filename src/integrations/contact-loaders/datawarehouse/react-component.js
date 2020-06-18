@@ -1,5 +1,6 @@
 import type from "prop-types";
 import React from "react";
+import RaisedButton from "material-ui/RaisedButton";
 import GSForm from "../../../components/forms/GSForm";
 import Form from "react-formal";
 import { ListItem, List } from "material-ui/List";
@@ -7,6 +8,16 @@ import CampaignFormSectionHeading from "../../../components/CampaignFormSectionH
 import theme from "../../../styles/theme";
 import { StyleSheet, css } from "aphrodite";
 import yup from "yup";
+
+const innerStyles = {
+  button: {
+    margin: "24px 5px 24px 0",
+    fontSize: "10px"
+  },
+  sqlBox: {
+    width: "100%"
+  }
+};
 
 const styles = StyleSheet.create({
   csvHeader: {
@@ -31,8 +42,9 @@ export class CampaignContactsForm extends React.Component {
     formValues: null
   };
 
-  validateSql = sql => {
+  validateSql = () => {
     const errors = [];
+    const sql = document.getElementById("contact-sql").value
     if (!sql.startsWith("SELECT")) {
       errors.push('Must start with "SELECT" in caps');
     }
@@ -121,10 +133,17 @@ export class CampaignContactsForm extends React.Component {
               </ul>
             </div>
             <Form.Field
+              id="contact-sql"
               name="contactSql"
               type="textarea"
               rows="5"
-              onChange={this.validateSql}
+              style={innerStyles.sqlBox}
+            />
+            <RaisedButton
+              style={innerStyles.button}
+              label="Validate SQL"
+              labelPosition="before"
+              onClick={this.validateSql}
             />
             {contactSqlError ? (
               <List>
