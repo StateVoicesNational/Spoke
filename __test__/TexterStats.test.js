@@ -10,7 +10,8 @@ const campaign = {
       texter: {
         id: "1",
         firstName: "Test",
-        lastName: "Tester"
+        lastName: "Tester",
+        roles: ["SUSPENDED", "TEXTER"]
       },
       unmessagedCount: 193,
       contactsCount: 238
@@ -20,7 +21,8 @@ const campaign = {
       texter: {
         id: "1",
         firstName: "Someone",
-        lastName: "Else"
+        lastName: "Else",
+        roles: ["SUSPENDED", "TEXTER"]
       },
       unmessagedCount: 4,
       contactsCount: 545
@@ -36,7 +38,8 @@ const campaignDynamic = {
       texter: {
         id: "1",
         firstName: "Test",
-        lastName: "Tester"
+        lastName: "Tester",
+        roles: ["SUSPENDED", "TEXTER"]
       },
       unmessagedCount: 193,
       contactsCount: 238
@@ -46,7 +49,8 @@ const campaignDynamic = {
       texter: {
         id: "1",
         firstName: "Someone",
-        lastName: "Else"
+        lastName: "Else",
+        roles: ["SUSPENDED", "TEXTER"]
       },
       unmessagedCount: 4,
       contactsCount: 545
