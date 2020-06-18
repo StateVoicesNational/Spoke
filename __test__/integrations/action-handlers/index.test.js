@@ -531,6 +531,18 @@ describe("action-handlers/index", () => {
     });
   });
 
+  describe("#getActionHandlersAvailableForTagUpdate", () => {
+    it("returns all the handlers available for tag update", async () => {
+      const returned = await ActionHandlers.getActionHandlersAvailableForTagUpdate(
+        organization,
+        user
+      );
+
+      expect(returned).toHaveLength(1);
+      expect(returned).toEqual(expect.arrayContaining([ComplexTestAction]));
+    });
+  });
+
   describe("#getActionChoiceData", () => {
     let expectedReturn;
 
