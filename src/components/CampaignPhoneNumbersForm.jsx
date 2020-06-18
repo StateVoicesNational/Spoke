@@ -290,7 +290,7 @@ export default class CampaignPhoneNumbersForm extends React.Component {
           const assignedNumberCount = this.getTotalNumberCount(
             inventoryPhoneNumberCounts
           );
-          if (assignedNumberCount >= maxNumbersPerCampaign) {
+          if (assignedNumberCount > maxNumbersPerCampaign) {
             this.setState({
               error: `Only ${maxNumbersPerCampaign} numbers can be reserved for a single campaign. Please remove some and try again!`
             });
