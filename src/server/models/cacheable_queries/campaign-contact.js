@@ -504,15 +504,8 @@ const campaignContactCache = {
         //await updateAssignmentContact(contact, newStatus);
       }
     } catch (err) {
-      console.log(
-        "contact updateStatus Error",
-        cellKey,
-        newStatus,
-        contact,
-        err
-      );
+      console.log("contact updateStatus Error", newStatus, contact, err);
     }
-    // console.log('updateStatus, CONTACT', contact)
   }
 };
 
