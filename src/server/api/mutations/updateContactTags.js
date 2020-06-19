@@ -45,10 +45,10 @@ export const updateContactTags = async (
         organization,
         user
       )
-        .then(handler => {
+        .then(async handler => {
           if (handler) {
             // no, no AWAIT. FUTURE: convert to dispatch
-            handler
+            await handler
               .onTagUpdate(
                 tags,
                 campaignContactId,
