@@ -1,6 +1,7 @@
 import { log } from "../../../lib";
 import { assignmentRequiredOrAdminRole } from "../errors";
 import { cacheableData } from "../../models";
+import { runningInLambda } from "../lib/utils";
 const ActionHandlers = require("../../../integrations/action-handlers");
 
 export const updateContactTags = async (
@@ -37,8 +38,9 @@ export const updateContactTags = async (
   );
 
   if (supportedActionHandlers.length) {
+    const promises = [];
     for (let i = 0, l = supportedActionHandlers.length; i < l; i++) {
-      ActionHandlers.getActionHandler(
+      const actionHandlerPromise = ActionHandlers.getActionHandler(
         supportedActionHandlers[i],
         organization,
         user
@@ -66,6 +68,11 @@ export const updateContactTags = async (
             `Error loading handler for InteractionStep ${interactionStepId} InteractionStepAction ${interactionStepAction} error ${err}`
           );
         });
+      promises.push(actionHandlerPromise);
+    }
+
+    if (runningInLambda()) {
+      await Promise.all(promises);
     }
   }
   return contact.id;

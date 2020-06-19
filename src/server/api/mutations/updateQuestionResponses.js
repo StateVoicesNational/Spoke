@@ -1,6 +1,7 @@
 import { log } from "../../../lib";
 import { assignmentRequiredOrAdminRole } from "../errors";
 import { cacheableData } from "../../models";
+import { runningInLambda } from "../lib/utils";
 const ActionHandlers = require("../../../integrations/action-handlers");
 
 export const updateQuestionResponses = async (
@@ -48,6 +49,7 @@ export const updateQuestionResponses = async (
       campaign.organization_id
     );
 
+    const promises = [];
     questionResponses.map(async questionResponse => {
       const { interactionStepId, value } = questionResponse;
 
@@ -67,7 +69,11 @@ export const updateQuestionResponses = async (
       }
 
       // run interaction step handler
-      ActionHandlers.getActionHandler(interactionStepAction, organization, user)
+      const actionHandlerPromise = ActionHandlers.getActionHandler(
+        interactionStepAction,
+        organization,
+        user
+      )
         .then(handler => {
           if (!handler) {
             return questionResponse;
@@ -93,8 +99,13 @@ export const updateQuestionResponses = async (
             `Error loading handler for InteractionStep ${interactionStepId} InteractionStepAction ${interactionStepAction} error ${err}`
           );
         });
+      promises.push(actionHandlerPromise);
       return questionResponse;
     });
+
+    if (runningInLambda()) {
+      await Promise.all(promises);
+    }
   }
   return contact.id;
 };
