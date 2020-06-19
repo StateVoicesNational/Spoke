@@ -74,11 +74,11 @@ export const updateQuestionResponses = async (
         organization,
         user
       )
-        .then(handler => {
+        .then(async handler => {
           if (!handler) {
             return questionResponse;
           }
-          handler
+          await handler
             .processAction(
               questionResponse,
               questionResponseInteractionStep,
