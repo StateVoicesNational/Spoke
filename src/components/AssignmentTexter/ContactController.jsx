@@ -461,8 +461,6 @@ ContactController.propTypes = {
   contacts: PropTypes.array, // contacts for current assignment
   allContactsCount: PropTypes.number,
   router: PropTypes.object,
-  routes: PropTypes.object.isRequired,
-  route: PropTypes.object.isRequired,
   refreshData: PropTypes.func,
   loadContacts: PropTypes.func,
   getNewContacts: PropTypes.func,
