@@ -1144,8 +1144,8 @@ describe("all interaction steps fields travel round trip", () => {
       await createScript(testAdminUser, testCampaign, { interactionSteps });
 
       query = gql`
-        query assignment($id: String!) {
-          assignment(id: $id) {
+        query assignment($assignmentId: String) {
+          assignment(assignmentId: $assignmentId) {
             id
             campaign {
               interactionSteps {
@@ -1164,7 +1164,7 @@ describe("all interaction steps fields travel round trip", () => {
       `;
 
       variables = {
-        id: assignmentId
+        assignmentId
       };
     });
 
