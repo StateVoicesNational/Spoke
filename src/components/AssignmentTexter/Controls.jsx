@@ -443,6 +443,7 @@ export class AssignmentTexterContactControls extends React.Component {
           style={{ flex: "1 1 auto" }}
           labelStyle={inlineStyles.flatButtonLabel}
           backgroundColor="white"
+          disabled={!!this.props.contact.optOut}
         />
       );
     } else {
@@ -457,6 +458,7 @@ export class AssignmentTexterContactControls extends React.Component {
           }}
           labelStyle={{ ...inlineStyles.flatButtonLabel, flex: "1 1 auto" }}
           backgroundColor="white"
+          disabled={!!this.props.contact.optOut}
         />
       );
     }
@@ -773,18 +775,20 @@ export class AssignmentTexterContactControls extends React.Component {
           className={css(flexStyles.flatButton)}
           labelStyle={{ ...inlineStyles.flatButtonLabel, color: "#DE1A1A" }}
           backgroundColor="white"
+          disabled={!!this.props.contact.optOut}
         />
       </div>
     );
   }
 
   renderMessagingRowSendSkip(contact) {
+    console.log("this.props", this.props);
     return (
       <div className={css(flexStyles.sectionSend)}>
         <FlatButton
           {...dataTest("send")}
           onClick={this.handleClickSendMessageButton}
-          disabled={this.props.disabled}
+          disabled={this.props.disabled || !!this.props.contact.optOut}
           label={<span>&crarr; Send</span>}
           className={`${css(flexStyles.flatButton)} ${css(
             flexStyles.subSectionSendButton
