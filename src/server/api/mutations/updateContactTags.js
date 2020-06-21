@@ -1,5 +1,6 @@
 import { assignmentRequiredOrAdminRole } from "../errors";
 import { cacheableData } from "../../models";
+import { runningInLambda } from "../lib/utils";
 const ActionHandlers = require("../../../integrations/action-handlers");
 
 export const updateContactTags = async (
@@ -25,12 +26,13 @@ export const updateContactTags = async (
     );
 
     // The rest is for ACTION_HANDLERS
-    ActionHandlers.getActionHandlersAvailableForTagUpdate(
+    const promises = [];
+    const getHandlersPromise = ActionHandlers.getActionHandlersAvailableForTagUpdate(
       organization,
       user
     ).then(supportedActionHandlers => {
       supportedActionHandlers.forEach(handler => {
-        handler
+        const tagUpdatePromise = handler
           .onTagUpdate(tags, user, contact, campaign, organization)
           .catch(err => {
             // eslint-disable-next-line no-console
@@ -38,8 +40,15 @@ export const updateContactTags = async (
               `Error executing handler.onTagUpdate for ${handler.name}, campaignContactId ${campaignContactId} error ${err}`
             );
           });
+        promises.push(tagUpdatePromise);
       });
     });
+
+    promises.push(getHandlersPromise);
+
+    if (runningInLambda()) {
+      await Promise.all(promises);
+    }
   } catch (err) {
     // eslint-disable-next-line no-console
     console.error(
