@@ -50,7 +50,7 @@ export async function onTagUpdate(tags, user, contact, campaign, organization) {
 
   console.info(`Zapier onTagUpdate sending ${stringifiedPayload} to ${url}`);
 
-  const promise = httpRequest(url, {
+  return httpRequest(url, {
     method: "POST",
     retries: 0,
     timeout: 5000,
