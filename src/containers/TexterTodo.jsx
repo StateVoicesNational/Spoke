@@ -234,6 +234,9 @@ const queries = {
         contactsFilter: {
           messageStatus: ownProps.messageStatus,
           ...(!ownProps.params.reviewContactId && { isOptedOut: false }),
+          ...(ownProps.params.reviewContactId && {
+            contactId: ownProps.params.reviewContactId
+          }),
           validTimezone: true
         },
         ...(ownProps.params.assignmentId && {

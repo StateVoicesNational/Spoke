@@ -69,6 +69,9 @@ export function getContacts(
   });
 
   if (contactsFilter) {
+    if (contactsFilter.contactId) {
+      query = query.where({ id: contactsFilter.contactId });
+    }
     const validTimezone = contactsFilter.validTimezone;
     if (validTimezone !== null) {
       if (validTimezone === true) {
