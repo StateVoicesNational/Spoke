@@ -68,7 +68,7 @@ export async function processAction(
     return httpRequest(url, {
       method: "POST",
       retries: 0,
-      timeout: 5000,
+      timeout: 32000,
       headers: {
         Authorization: Van.getAuth(organization),
         "Content-Type": "application/json"
@@ -88,7 +88,7 @@ async function getContactTypeIdAndInputTypeId(organization) {
     `https://api.securevan.com/v4/canvassResponses/contactTypes`,
     {
       method: "GET",
-      timeout: 5000,
+      timeout: 32000,
       headers: {
         Authorization: Van.getAuth(organization)
       }
@@ -105,7 +105,7 @@ async function getContactTypeIdAndInputTypeId(organization) {
     `https://api.securevan.com/v4/canvassResponses/inputTypes`,
     {
       method: "GET",
-      timeout: 5000,
+      timeout: 32000,
       headers: {
         Authorization: Van.getAuth(organization)
       }
@@ -181,7 +181,7 @@ export async function getClientChoiceData(organization) {
     `https://api.securevan.com/v4/surveyQuestions?statuses=Active${cycleFilter}`,
     {
       method: "GET",
-      timeout: 5000,
+      timeout: 32000,
       headers: {
         Authorization: Van.getAuth(organization)
       }
@@ -198,7 +198,7 @@ export async function getClientChoiceData(organization) {
     `https://api.securevan.com/v4/activistCodes?statuses=Active`,
     {
       method: "GET",
-      timeout: 5000,
+      timeout: 32000,
       headers: {
         Authorization: Van.getAuth(organization)
       }
@@ -215,7 +215,7 @@ export async function getClientChoiceData(organization) {
     `https://api.securevan.com/v4/canvassResponses/resultCodes`,
     {
       method: "GET",
-      timeout: 5000,
+      timeout: 32000,
       headers: {
         Authorization: Van.getAuth(organization)
       }
