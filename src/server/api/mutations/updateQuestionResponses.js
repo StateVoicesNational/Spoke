@@ -78,7 +78,7 @@ export const updateQuestionResponses = async (
           if (!handler) {
             return questionResponse;
           }
-          await handler
+          const processActionPromise = handler
             .processAction(
               questionResponse,
               questionResponseInteractionStep,
@@ -92,6 +92,7 @@ export const updateQuestionResponses = async (
                 `Error executing handler for InteractionStep ${interactionStepId} InteractionStepAction ${interactionStepAction} error ${err}`
               );
             });
+          promises.push(processActionPromise);
           return questionResponse;
         })
         .catch(err => {
