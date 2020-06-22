@@ -98,7 +98,7 @@ export default class CampaignCannedResponsesForm extends React.Component {
         secondary
         label="Add new canned response"
         icon={<CreateIcon />}
-        onTouchTap={() =>
+        onClick={() =>
           this.setState({
             showForm: true,
             responseId: null,
@@ -120,7 +120,7 @@ export default class CampaignCannedResponsesForm extends React.Component {
         rightIconButton={
           <span>
             <IconButton
-              onTouchTap={() =>
+              onClick={() =>
                 this.setState({
                   showForm: true,
                   responseId: response.id,
@@ -131,7 +131,7 @@ export default class CampaignCannedResponsesForm extends React.Component {
               <CreateIcon />
             </IconButton>
             <IconButton
-              onTouchTap={() => {
+              onClick={() => {
                 const newVals = this.props.formValues.cannedResponses
                   .map(responseToDelete => {
                     if (responseToDelete.id === response.id) {
