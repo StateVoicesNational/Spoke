@@ -65,7 +65,7 @@ export async function processAction(
       body
     });
 
-    await httpRequest(url, {
+    return httpRequest(url, {
       method: "POST",
       retries: 0,
       timeout: 5000,
