@@ -25,6 +25,7 @@ We're marking this as a major version update: 7.0 because there are several back
 * We have now disabled by default the ability to hold down the Enter key -- for sending you can now press any letter key (or Enter) to send a message. If you want this functionality back set HOLD_ENTER_KEY=1
 * There is now a campaign 'sending errors' report which summarizes how many sending errors have been reported by Twilio.  Carrier Violation error messages are especially useful (and important) to track.
 * A new contact-loader that allows upload into S3 to make larger uploads possible if you have deployed on AWS.
+* A new environment or organization.features variable MAX_TEXTERS_PER_CAMPAIGN which can block more texters from joining a campaign with dynamic assignment.
 
 ### Bug fixes
 
