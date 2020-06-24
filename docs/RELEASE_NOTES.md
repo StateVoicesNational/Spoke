@@ -73,10 +73,6 @@ Thanks to all the contributors part of this release including:
 [matteosb](https://github.com/matteosb),
 [schuyler1d](https://github.com/schuyler1d)
 
-<<<<<<< HEAD
-
-=======
->>>>>>> jeremyparker/suspend-user-step-2
 ## v6.0
 _May 2020:_ Version 6.0
 **Note:** This is a major release and therefore requires a schema change. See the deploy steps section for details. Anything marked as *experimental* has not yet been tested on a production texting campaign.
