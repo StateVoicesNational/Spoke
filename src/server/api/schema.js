@@ -35,14 +35,13 @@ import { resolvers as campaignContactResolvers } from "./campaign-contact";
 import { resolvers as cannedResponseResolvers } from "./canned-response";
 import {
   getConversations,
-  getCampaignIdMessageIdsAndCampaignIdContactIdsMaps,
+  getCampaignIdContactIdsMaps,
   reassignConversations,
   resolvers as conversationsResolver
 } from "./conversations";
 import {
   accessRequired,
   assignmentRequiredOrAdminRole,
-  assignmentRequired,
   authRequired
 } from "./errors";
 import { resolvers as interactionStepResolvers } from "./interaction-step";
@@ -67,6 +66,7 @@ import {
   findNewCampaignContact,
   joinOrganization,
   editOrganization,
+  releaseContacts,
   sendMessage,
   updateContactTags,
   updateQuestionResponses
@@ -431,6 +431,7 @@ const rootMutations = {
     editOrganization,
     findNewCampaignContact,
     joinOrganization,
+    releaseContacts,
     sendMessage,
     userAgreeTerms: async (_, { userId }, { user }) => {
       if (user.id === Number(userId)) {
@@ -513,15 +514,13 @@ const rootMutations = {
       { userId, organizationId, roles },
       { user }
     ) => {
-      const currentRoles = (
-        await r
-          .knex("user_organization")
-          .where({
-            organization_id: organizationId,
-            user_id: userId
-          })
-          .select("role")
-      ).map(res => res.role);
+      const currentRoles = (await r
+        .knex("user_organization")
+        .where({
+          organization_id: organizationId,
+          user_id: userId
+        })
+        .select("role")).map(res => res.role);
       const oldRoleIsOwner = currentRoles.indexOf("OWNER") !== -1;
       const newRoleIsOwner = roles.indexOf("OWNER") !== -1;
       const roleRequired = oldRoleIsOwner || newRoleIsOwner ? "OWNER" : "ADMIN";
@@ -729,6 +728,11 @@ const rootMutations = {
         "ADMIN",
         /* allowSuperadmin=*/ true
       );
+
+      const organization = cacheableData.organization.load(
+        campaign.organizationId
+      );
+
       const campaignInstance = new Campaign({
         organization_id: campaign.organizationId,
         creator_id: user.id,
@@ -738,6 +742,7 @@ const rootMutations = {
         is_started: false,
         is_archived: false,
         join_token: uuidv4(),
+        batch_size: Number(getConfig("DEFAULT_BATCHSIZE", organization) || 300),
         use_own_messaging_service: false
       });
       const newCampaign = await campaignInstance.save();
@@ -750,14 +755,22 @@ const rootMutations = {
       const campaign = await loaders.campaign.load(id);
       await accessRequired(user, campaign.organization_id, "ADMIN");
 
+      const organization = cacheableData.organization.load(
+        campaign.organization_id
+      );
+
       const campaignInstance = new Campaign({
         organization_id: campaign.organization_id,
         creator_id: user.id,
         title: "COPY - " + campaign.title,
         description: campaign.description,
         due_by: campaign.dueBy,
+        batch_size:
+          campaign.batch_size ||
+          Number(getConfig("DEFAULT_BATCHSIZE", organization) || 300),
         is_started: false,
-        is_archived: false
+        is_archived: false,
+        join_token: uuidv4()
       });
       const newCampaign = await campaignInstance.save();
       await r.knex("campaign_admin").insert({
@@ -1011,7 +1024,13 @@ const rootMutations = {
       const contact = await cacheableData.campaignContact.load(
         campaignContactId
       );
-      await assignmentRequired(user, contact.assignment_id, null, contact);
+      const organizationId = await cacheableData.campaignContact.orgId(contact);
+      await assignmentRequiredOrAdminRole(
+        user,
+        organizationId,
+        contact.assignment_id,
+        contact
+      );
       contact.message_status = messageStatus;
       await cacheableData.campaignContact.updateStatus(contact, messageStatus);
       return contact;
@@ -1027,10 +1046,12 @@ const rootMutations = {
       const firstContact = await cacheableData.campaignContact.load(
         contactIds[0]
       );
-      const campaign = await loaders.campaign.load(firstContact.campaign_id);
+      const organizationId = await cacheableData.campaignContact.orgId(
+        firstContact
+      );
       await assignmentRequiredOrAdminRole(
         user,
-        campaign.organization_id,
+        organizationId,
         assignmentId,
         firstContact
       );
@@ -1122,7 +1143,13 @@ const rootMutations = {
       const contact = await cacheableData.campaignContact.load(
         campaignContactId
       );
-      await assignmentRequired(user, contact.assignment_id, null, contact);
+      const organizationId = await cacheableData.campaignContact.orgId(contact);
+      await assignmentRequiredOrAdminRole(
+        user,
+        organizationId,
+        contact.assignment_id,
+        contact
+      );
       // TODO: maybe undo action_handler
       await r
         .knex("question_response")
@@ -1148,30 +1175,18 @@ const rootMutations = {
       // group contactIds by campaign
       // group messages by campaign
       const campaignIdContactIdsMap = new Map();
-      const campaignIdMessagesIdsMap = new Map();
       for (const campaignIdContactId of campaignIdsContactIds) {
-        const {
-          campaignId,
-          campaignContactId,
-          messageIds
-        } = campaignIdContactId;
+        const { campaignId, campaignContactId } = campaignIdContactId;
 
         if (!campaignIdContactIdsMap.has(campaignId)) {
           campaignIdContactIdsMap.set(campaignId, []);
         }
 
         campaignIdContactIdsMap.get(campaignId).push(campaignContactId);
-
-        if (!campaignIdMessagesIdsMap.has(campaignId)) {
-          campaignIdMessagesIdsMap.set(campaignId, []);
-        }
-
-        campaignIdMessagesIdsMap.get(campaignId).push(...messageIds);
       }
 
       return await reassignConversations(
         campaignIdContactIdsMap,
-        campaignIdMessagesIdsMap,
         newTexterUserId
       );
     },
@@ -1179,28 +1194,28 @@ const rootMutations = {
       _,
       {
         organizationId,
+        newTexterUserId,
         campaignsFilter,
         assignmentsFilter,
         contactsFilter,
-        newTexterUserId
+        messageTextFilter
       },
       { user }
     ) => {
       // verify permissions
       await accessRequired(user, organizationId, "ADMIN", /* superadmin*/ true);
-      const {
-        campaignIdContactIdsMap,
-        campaignIdMessagesIdsMap
-      } = await getCampaignIdMessageIdsAndCampaignIdContactIdsMaps(
+      const { campaignIdContactIdsMap } = await getCampaignIdContactIdsMaps(
         organizationId,
-        campaignsFilter,
-        assignmentsFilter,
-        contactsFilter
+        {
+          campaignsFilter,
+          assignmentsFilter,
+          contactsFilter,
+          messageTextFilter
+        }
       );
 
       return await reassignConversations(
         campaignIdContactIdsMap,
-        campaignIdMessagesIdsMap,
         newTexterUserId
       );
     },
@@ -1343,6 +1358,7 @@ const rootResolvers = {
         campaignsFilter,
         assignmentsFilter,
         contactsFilter,
+        messageTextFilter,
         utc
       },
       { user },
@@ -1362,9 +1378,12 @@ const rootResolvers = {
       const data = await getConversations(
         cursor,
         organizationId,
-        campaignsFilter,
-        assignmentsFilter,
-        contactsFilter,
+        {
+          campaignsFilter,
+          assignmentsFilter,
+          contactsFilter,
+          messageTextFilter
+        },
         utc,
         includeTags
       );

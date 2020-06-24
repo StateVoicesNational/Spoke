@@ -184,8 +184,10 @@ export const resolvers = {
         .knex("owned_phone_number")
         .select(
           "area_code",
-          r.knex.raw("count(allocated_to) as allocated_count"),
-          r.knex.raw("count(allocated_to IS NULL) as available_count")
+          r.knex.raw("COUNT(allocated_to) as allocated_count"),
+          r.knex.raw(
+            "SUM(CASE WHEN allocated_to IS NULL THEN 1 END) as available_count"
+          )
         )
         .where({
           service,

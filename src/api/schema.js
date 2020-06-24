@@ -206,6 +206,7 @@ const rootSchema = gql`
       campaignsFilter: CampaignsFilter
       assignmentsFilter: AssignmentsFilter
       contactsFilter: ContactsFilter
+      messageTextFilter: String
       utc: String
     ): PaginatedConversations
     campaigns(
@@ -223,7 +224,7 @@ const rootSchema = gql`
       filterString: String
       filterBy: FilterPeopleBy
     ): UsersReturn
-    user(organizationId: ID!, userId: ID!): User
+    user(organizationId: ID!, userId: Int!): User
   }
 
   type RootMutation {
@@ -312,6 +313,10 @@ const rootSchema = gql`
       assignmentId: String!
       numberContacts: Int!
     ): FoundContact
+    releaseContacts(
+      assignmentId: String!
+      releaseConversations: Boolean
+    ): Assignment
     userAgreeTerms(userId: String!): User
     reassignCampaignContacts(
       organizationId: String!
@@ -323,6 +328,7 @@ const rootSchema = gql`
       campaignsFilter: CampaignsFilter
       assignmentsFilter: AssignmentsFilter
       contactsFilter: ContactsFilter
+      messageTextFilter: String
       newTexterUserId: String!
     ): [CampaignIdAssignmentId]
     importCampaignScript(campaignId: String!, url: String!): Int
