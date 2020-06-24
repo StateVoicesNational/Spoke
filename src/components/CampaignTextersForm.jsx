@@ -275,7 +275,7 @@ export default class CampaignTextersForm extends React.Component {
 
     const dataSource = orgTexters
       .filter(orgTexter => !texters.find(texter => texter.id === orgTexter.id))
-      .filter(orgTexter => getHighestRole(orgTexter.roles) === "SUSPENDED")
+      .filter(orgTexter => getHighestRole(orgTexter.roles) !== "SUSPENDED")
       .map(orgTexter => dataSourceItem(orgTexter.displayName, orgTexter.id));
 
     const filter = (searchText, key) =>
