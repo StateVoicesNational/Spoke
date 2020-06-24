@@ -1,6 +1,6 @@
 import { resolvers } from "../src/server/api/schema";
 import { schema } from "../src/api/schema";
-import { assignmentRequired } from "../src/server/api/errors";
+import { assignmentRequiredOrAdminRole } from "../src/server/api/errors";
 import { graphql } from "graphql";
 
 console.log("This is an intentional error");
@@ -500,34 +500,6 @@ describe("graphql test suite", async () => {
           { user: adminUser }
         );
         expect(results).toEqual(false);
-      });
-
-      test("test assignmentRequired access control", async () => {
-        const user = await createUser();
-
-        const assignment = await new Assignment({
-          user_id: user.id,
-          campaign_id: campaign.id
-        }).save();
-
-        const allowUser = await assignmentRequired(
-          user,
-          assignment.id,
-          assignment
-        );
-        expect(allowUser).toEqual(true);
-        const allowUserAssignmentId = await assignmentRequired(
-          user,
-          assignment.id
-        );
-        expect(allowUserAssignmentId.user_id).toEqual(user.id);
-        expect(allowUserAssignmentId.id).toEqual(assignment.id);
-        try {
-          const notAllowed = await assignmentRequired(user, -1);
-          throw new Exception("should throw BEFORE this exception");
-        } catch (err) {
-          expect(/not authorized/.test(String(err))).toEqual(true);
-        }
       });
     });
 

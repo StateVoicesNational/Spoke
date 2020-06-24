@@ -7,13 +7,20 @@ import uuid from "uuid";
 // queries for the reception (rather than a real service)
 
 async function sendMessage(message, contact, trx, organization, campaign) {
+  const errorCode = message.text.match(/error(\d+)/);
   const changes = {
     service: "fakeservice",
     messageservice_sid: "fakeservice",
     send_status: "SENT",
-    sent_at: new Date()
+    sent_at: new Date(),
+    error_code: errorCode ? errorCode[1] : null
   };
 
+  // console.log(
+  //   "fakeservice sendMessage",
+  //   message && message.id,
+  //   contact && contact.id
+  // );
   if (message && message.id) {
     let request = r.knex("message");
     if (trx) {
@@ -21,6 +28,13 @@ async function sendMessage(message, contact, trx, organization, campaign) {
     }
     // updating message!
     await request.where("id", message.id).update(changes);
+
+    if (errorCode && message.campaign_contact_id) {
+      await r
+        .knex("campaign_contact")
+        .where("id", message.campaign_contact_id)
+        .update("error_code", errorCode[1]);
+    }
   }
 
   if (contact && /autorespond/.test(message.text)) {

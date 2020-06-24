@@ -73,6 +73,7 @@ export const dataQueryString = `
         textingHoursStart
         textingHoursEnd
         textingHoursEnforced
+        batchSize
         organization {
           id
           tags(group: $tagGroup) {
@@ -169,6 +170,7 @@ export class TexterTodo extends React.Component {
         assignment.contacts.map(c => c.id)
       );
       this.loadingNewContacts = true;
+      // TODO: don't run this ever
       const didAddContacts = (
         await this.props.mutations.findNewCampaignContact(assignment.id)
       ).data.findNewCampaignContact.found;

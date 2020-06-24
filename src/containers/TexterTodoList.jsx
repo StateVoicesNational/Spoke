@@ -115,6 +115,7 @@ export const dataQuery = gql`
           id
           title
           description
+          batchSize
           useDynamicAssignment
           hasUnassignedContactsForTexter
           introHtml

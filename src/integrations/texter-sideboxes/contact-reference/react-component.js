@@ -39,8 +39,7 @@ export class TexterSidebox extends React.Component {
   };
 
   render() {
-    const { campaign, assignment, contact } = this.props;
-    const settings = JSON.parse(campaign.texterUIConfig.options || "{}");
+    const { campaign, assignment, contact, settingsData } = this.props;
 
     const { host, protocol } = document.location;
     const url = `${protocol}//${host}/app/${campaign.organization.id}/todos/review/${this.props.contact.id}`;
@@ -57,7 +56,7 @@ export class TexterSidebox extends React.Component {
       </IconButton>,
       <span onClick={this.copyToClipboard}>Get</span>,
       " a ",
-      settings.contactReferenceClickable ? (
+      settingsData.contactReferenceClickable ? (
         <Link target="_blank" to={url}>
           conversation link
         </Link>
