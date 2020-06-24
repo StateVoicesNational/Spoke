@@ -382,12 +382,14 @@ export const resolvers = {
       // must be cache-loaded or bust:
       const stats = await cacheableData.campaign.completionStats(campaign.id);
       return {
-        contactsCount: campaign.contactsCount || stats.contactsCount || null,
         // 0 should still diffrentiate from null
         assignedCount: stats.assignedCount > -1 ? stats.assignedCount : null,
+        contactsCount: campaign.contactsCount || stats.contactsCount || null,
+        errorCount: stats.errorCount || null,
         // messagedCount won't be defined until some messages are sent
         messagedCount: stats.assignedCount ? stats.messagedCount || 0 : null,
-        errorCount: stats.errorCount || null
+        needsResponseCount:
+          stats.needsResponseCount > -1 ? stats.needsResponseCount : null
       };
     },
     texters: async (campaign, _, { user }) => {

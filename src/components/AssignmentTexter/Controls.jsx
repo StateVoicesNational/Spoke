@@ -117,10 +117,13 @@ export class AssignmentTexterContactControls extends React.Component {
     const popups = [];
     // TODO: need to filter texterUIConfig.options (and json parse) for which ones are marked as enabled
     // and then pass options data into the component
+    const settingsData = JSON.parse(
+      props.campaign.texterUIConfig.options || "{}"
+    );
     const enabledSideboxes = props.campaign.texterUIConfig.sideboxChoices
       // TODO: filter for enabled in the campaign
       .filter(sb => {
-        const res = sideboxes[sb].showSidebox(props);
+        const res = sideboxes[sb].showSidebox({ settingsData, ...props });
         if (res === "popup") {
           popups.push(sb);
         }
@@ -865,9 +868,13 @@ export class AssignmentTexterContactControls extends React.Component {
     if (!enabledSideboxes || !enabledSideboxes.length) {
       return null;
     }
+    const settingsData = JSON.parse(
+      this.props.campaign.texterUIConfig.options || "{}"
+    );
     const sideboxList = enabledSideboxes.map(({ name, Component }) => (
       <Component
         key={name}
+        settingsData={settingsData}
         {...this.props}
         updateState={state => {
           // allows a component to preserve state across dialog open/close
@@ -967,6 +974,7 @@ AssignmentTexterContactControls.propTypes = {
   onMessageFormSubmit: PropTypes.func,
   onOptOut: PropTypes.func,
   onUpdateTags: PropTypes.func,
+  onReleaseContacts: PropTypes.func,
   onQuestionResponseChange: PropTypes.func,
   onCreateCannedResponse: PropTypes.func,
   onExitTexter: PropTypes.func,
