@@ -39,8 +39,8 @@ describe("CampaignCannedResponseForm component", () => {
     ).toBe("Response1");
     expect(
       wrapper
-        .find({ type: "submit" })
         .find("button")
+        .first()
         .text()
     ).toBe("Edit Response");
   });
@@ -60,8 +60,8 @@ describe("CampaignCannedResponseForm component", () => {
     ).toBe("");
     expect(
       wrapper
-        .find({ type: "submit" })
         .find("button")
+        .first()
         .text()
     ).toBe("Add Response");
   });
