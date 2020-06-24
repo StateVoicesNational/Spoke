@@ -405,25 +405,24 @@ const queries = {
   }
 };
 
+export const editOrganizationGql = gql`
+  mutation editOrganization(
+    $organizationId: String!
+    $organizationChanges: OrganizationInput!
+  ) {
+    editOrganization(id: $organizationId, organization: $organizationChanges) {
+      id
+      texterUIConfig {
+        options
+        sideboxChoices
+      }
+    }
+  }
+`;
+
 const mutations = {
   editOrganization: ownProps => organizationChanges => ({
-    mutation: gql`
-      mutation editOrganization(
-        $organizationId: String!
-        $organizationChanges: OrganizationInput!
-      ) {
-        editOrganization(
-          id: $organizationId
-          organization: $organizationChanges
-        ) {
-          id
-          texterUIConfig {
-            options
-            sideboxChoices
-          }
-        }
-      }
-    `,
+    mutation: editOrganizationGql,
     variables: {
       organizationId: ownProps.params.organizationId,
       organizationChanges

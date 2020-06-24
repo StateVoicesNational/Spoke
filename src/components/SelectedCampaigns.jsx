@@ -18,7 +18,7 @@ const styles = {
 
 const SelectedCampaigns = props => (
   <div className={css(ssStyles.container)}>
-    {props.campaigns.length && (
+    {props.campaigns.length ? (
       <Chip
         style={styles.chip}
         key={0}
@@ -27,7 +27,7 @@ const SelectedCampaigns = props => (
       >
         Clear campaigns
       </Chip>
-    )}
+    ) : null}
     {props.campaigns.map(campaign => (
       <Chip
         style={styles.chip}

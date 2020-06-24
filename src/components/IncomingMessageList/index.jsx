@@ -9,6 +9,7 @@ import LoadingIndicator from "../../components/LoadingIndicator";
 import DataTables from "material-ui-datatables";
 import ConversationPreviewModal from "./ConversationPreviewModal";
 import TagChip from "../TagChip";
+import moment from "moment";
 
 import { MESSAGE_STATUSES } from "../../components/IncomingMessageFilter";
 
@@ -168,6 +169,10 @@ export class IncomingMessageList extends Component {
                 <b>{lastMessage.isFromContact ? "Contact:" : "Texter:"} </b>
               </span>
               {lastMessage.text}
+              <br />
+              <span style={{ color: "gray", fontSize: "85%" }}>
+                {moment.utc(lastMessage.createdAt).fromNow()}
+              </span>
             </p>
           );
         }
@@ -308,6 +313,7 @@ IncomingMessageList.propTypes = {
   contactsFilter: type.object,
   campaignsFilter: type.object,
   assignmentsFilter: type.object,
+  messageTextFilter: type.string,
   onPageChanged: type.func,
   onPageSizeChanged: type.func,
   onConversationSelected: type.func,
@@ -328,6 +334,7 @@ const queries = {
         $contactsFilter: ContactsFilter
         $campaignsFilter: CampaignsFilter
         $assignmentsFilter: AssignmentsFilter
+        $messageTextFilter: String
         $utc: String
       ) {
         conversations(
@@ -336,6 +343,7 @@ const queries = {
           campaignsFilter: $campaignsFilter
           contactsFilter: $contactsFilter
           assignmentsFilter: $assignmentsFilter
+          messageTextFilter: $messageTextFilter
           utc: $utc
         ) {
           pageInfo {
@@ -359,6 +367,7 @@ const queries = {
                 id
                 text
                 isFromContact
+                createdAt
               }
               tags {
                 id
@@ -382,6 +391,7 @@ const queries = {
         contactsFilter: ownProps.contactsFilter,
         campaignsFilter: ownProps.campaignsFilter,
         assignmentsFilter: ownProps.assignmentsFilter,
+        messageTextFilter: ownProps.messageTextFilter,
         utc: ownProps.utc
       },
       fetchPolicy: "network-only"

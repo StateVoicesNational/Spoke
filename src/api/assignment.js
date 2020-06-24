@@ -1,6 +1,7 @@
 export const schema = `
   input AssignmentsFilter {
     texterId: Int
+    stats: Boolean
   }
   type Assignment {
     id: ID

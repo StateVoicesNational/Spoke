@@ -77,7 +77,7 @@ export class Tags extends React.Component {
     return () =>
       this.setState({
         openTagDialog: true,
-        dialogTitle: "Edit Tag",
+        dialogTitle: `Edit Tag (id: ${tagId})`,
         dialogSubmitHandler: this.handleEdit,
         dialogButtonLabel: "Save",
         tagId

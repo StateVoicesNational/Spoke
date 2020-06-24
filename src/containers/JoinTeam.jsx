@@ -23,10 +23,16 @@ class JoinTeam extends React.Component {
       organization = await this.props.mutations.joinOrganization(
         this.props.location.search
       );
-    } catch (ex) {
+    } catch (err) {
+      console.log("error joining", err);
+      const texterMessage = (err &&
+        err.message &&
+        err.message.match(/(Sorry,.+)$/)) || [
+        0,
+        "Something went wrong trying to join this organization. Please contact your administrator."
+      ];
       this.setState({
-        errors:
-          "Something went wrong trying to join this organization. Please contact your administrator."
+        errors: texterMessage[1]
       });
     }
 

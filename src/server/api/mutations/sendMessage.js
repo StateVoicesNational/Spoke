@@ -128,8 +128,15 @@ export const sendMessage = async (
 
   const saveResult = await cacheableData.message.save({
     messageInstance,
-    contact
+    contact,
+    campaign,
+    organization
   });
+  if (!saveResult.message) {
+    throw new GraphQLError(
+      `Message send error ${saveResult.texterError || ""}`
+    );
+  }
   contact.message_status = saveResult.contactStatus;
 
   // log.info(
