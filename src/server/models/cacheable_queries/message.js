@@ -1,7 +1,7 @@
 import { r, Message } from "../../models";
 import campaignCache from "./campaign";
 import campaignContactCache from "./campaign-contact";
-
+import { getMessageHandlers } from "../../../integrations/message-handlers";
 // QUEUE
 // messages-<contactId>
 // Expiration: 24 hours after last message added
@@ -33,8 +33,8 @@ const contactIdFromOther = async ({
   if (campaignContactId) {
     return campaignContactId;
   }
-  console.error(
-    "contactIdfromother hard",
+  console.log(
+    "messageCache contactIdfromother hard",
     campaignContactId,
     assignmentId,
     cell,
@@ -113,7 +113,7 @@ const query = async ({ campaignContactId }) => {
         .exists(cacheKey(campaignContactId))
         .lrange(cacheKey(campaignContactId), 0, -1)
         .execAsync();
-      // console.log('cached messages exist?', exists, messages)
+      // console.log("messageCache exist?", exists, messages);
       if (exists) {
         // note: lrange returns messages in reverse order
         return messages.reverse().map(m => JSON.parse(m));
@@ -131,7 +131,11 @@ const incomingMessageMatching = async (messageInstance, activeCellFound) => {
     // No active thread to attach message to. This should be very RARE
     // This could happen way after a campaign is closed and a contact responds 'very late'
     // or e.g. gives the 'number for moveon' to another person altogether that tries to text it.
-    console.error("ORPHAN MESSAGE", messageInstance, activeCellFound);
+    console.log(
+      "messageCache ORPHAN MESSAGE",
+      messageInstance,
+      activeCellFound
+    );
     return "ORPHAN MESSAGE";
   }
   // Check to see if the message is a duplicate of the last one
@@ -140,7 +144,11 @@ const incomingMessageMatching = async (messageInstance, activeCellFound) => {
     // DB non-caching contect
     if (messageInstance.service_id === activeCellFound.service_id) {
       // already saved the message -- this is a duplicate message
-      console.error("DUPLICATE MESSAGE DB", messageInstance, activeCellFound);
+      console.log(
+        "messageCache DUPLICATE MESSAGE DB",
+        messageInstance,
+        activeCellFound
+      );
       return "DUPLICATE MESSAGE DB";
     }
   } else {
@@ -188,7 +196,7 @@ const deliveryReport = async ({
         .where("id", lookup.campaign_contact_id)
         .update("error_code", errorCode);
     }
-    console.log("deliveryReport", lookup);
+    console.log("messageCache deliveryReport", lookup);
     if (lookup.campaign_id) {
       campaignCache.incrCount(lookup.campaign_id, "errorCount");
     }
@@ -209,7 +217,12 @@ const messageCache = {
   },
   deliveryReport,
   query,
-  save: async ({ messageInstance, contact }) => {
+  save: async ({
+    messageInstance,
+    contact,
+    /* unreliable: */ campaign,
+    organization
+  }) => {
     // 0. Gathers any missing data in the case of is_from_contact: campaign_contact_id
     // 1. Saves the messageInstance
     // 2. Updates the campaign_contact record with an updated status and updated_at
@@ -217,28 +230,29 @@ const messageCache = {
 
     // console.log('message SAVE', contact, messageInstance)
     const messageToSave = { ...messageInstance };
+    const handlers = getMessageHandlers();
     let newStatus = "needsResponse";
+    let activeCellFound = null;
+    let matchError = null;
 
     if (messageInstance.is_from_contact) {
-      // console.log('message SAVE lookup')
-      const activeCellFound = await campaignContactCache.lookupByCell(
+      // console.log("messageCache SAVE lookup");
+      activeCellFound = await campaignContactCache.lookupByCell(
         messageInstance.contact_number,
         messageInstance.service,
         messageInstance.messageservice_sid
       );
-      // console.log('activeCellFound', activeCellFound)
+      // console.log("messageCache activeCellFound", activeCellFound);
       const matchError = await incomingMessageMatching(
         messageInstance,
         activeCellFound
       );
-      if (matchError) {
-        return { error: matchError };
-      }
-      messageToSave.campaign_contact_id =
+      const contactId =
         messageInstance.campaign_contact_id ||
-        activeCellFound.campaign_contact_id;
+        (activeCellFound && activeCellFound.campaign_contact_id);
+      messageToSave.campaign_contact_id = contactId;
     } else {
-      // IS from contact:
+      // is NOT from contact:
       newStatus =
         contact.message_status === "needsResponse" ||
         contact.message_status === "convo"
@@ -247,6 +261,45 @@ const messageCache = {
     }
 
     messageToSave.created_at = new Date();
+    const campaignId =
+      (contact && contact.campaign_id) ||
+      (activeCellFound && activeCellFound.campaign_id);
+
+    if (Object.keys(handlers).length && (organization || campaignId)) {
+      if (!organization) {
+        organization = await campaignCache.loadCampaignOrganization({
+          campaignId
+        });
+      }
+      const availableHandlers = Object.keys(handlers)
+        .filter(
+          h =>
+            handlers[h].available &&
+            handlers[h].preMessageSave &&
+            handlers[h].available(organization)
+        )
+        .map(h => handlers[h]);
+      for (let i = 0, l = availableHandlers.length; i < l; i++) {
+        const result = await availableHandlers[i].preMessageSave({
+          messageToSave,
+          activeCellFound,
+          matchError,
+          newStatus,
+          contact,
+          campaign,
+          organization
+        });
+        if (result.cancel) {
+          return result; // return without saving
+        }
+        if (result && "matchError" in result) {
+          matchError = result.matchError;
+        }
+      }
+    }
+    if (matchError) {
+      return { error: matchError };
+    }
     const savedMessage = await Message.save(
       messageToSave,
       messageToSave.id ? { conflict: "update" } : undefined
@@ -260,17 +313,47 @@ const messageCache = {
       id: messageToSave.campaign_contact_id,
       cell: messageToSave.contact_number,
       messageservice_sid: messageToSave.messageservice_sid,
-      campaign_id: contact && contact.campaign_id
+      campaign_id: campaignId
     };
-    // console.log('hi saveMsg3', newStatus, contactData);
+    // console.log("messageCache hi saveMsg3", messageToSave.id, newStatus, contactData);
     await campaignContactCache.updateStatus(contactData, newStatus);
-    // console.log('hi saveMsg4', newStatus)
-    if (
-      !messageInstance.is_from_contact &&
-      contact.message_status === "needsMessage"
-    ) {
-      await campaignCache.incrCount(contact.campaign_id, "messagedCount");
+    // console.log("messageCache saveMsg4", newStatus);
+
+    // update campaign counts
+    if (!messageInstance.is_from_contact) {
+      if (contact.message_status === "needsMessage") {
+        await campaignCache.incrCount(campaignId, "messagedCount");
+      } else if (contact.message_status === "needsResponse") {
+        await campaignCache.incrCount(campaignId, "needsResponseCount", -1);
+      }
+    } else if (newStatus === "needsResponse" && campaignId) {
+      await campaignCache.incrCount(campaignId, "needsResponseCount", 1);
     }
+
+    if (Object.keys(handlers).length && organization) {
+      const availableHandlers = Object.keys(handlers)
+        .filter(
+          h =>
+            handlers[h].available &&
+            handlers[h].postMessageSave &&
+            handlers[h].available(organization)
+        )
+        .map(h => handlers[h]);
+      for (let i = 0, l = availableHandlers.length; i < l; i++) {
+        const result = await availableHandlers[i].postMessageSave({
+          message: messageToSave,
+          activeCellFound,
+          newStatus,
+          contact,
+          campaign,
+          organization
+        });
+        if (result && "newStatus" in result) {
+          newStatus = result.newStatus;
+        }
+      }
+    }
+
     return {
       message: messageToSave,
       contactStatus: newStatus

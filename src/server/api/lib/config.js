@@ -8,15 +8,30 @@ import fs from "fs";
 
 let CONFIG = null;
 
+export function getFeatures(organization) {
+  if (!organization) {
+    return {};
+  }
+  return (
+    organization.feature ||
+    (organization.features &&
+      typeof organization.features == "string" &&
+      JSON.parse(organization.features)) ||
+    organization.features ||
+    {}
+  );
+}
+
 export function getConfig(key, organization, opts) {
   if (organization) {
-    let features =
-      organization.feature ||
-      (organization.features && JSON.parse(organization.features)) ||
-      {};
+    // TODO: update to not parse if features is an object (vs. a string)
+    let features = getFeatures(organization);
     if (features[key]) {
       return features[key];
     }
+  }
+  if (opts && opts.onlyLocal) {
+    return;
   }
   if (key in global) {
     if (opts && opts.truthy) {

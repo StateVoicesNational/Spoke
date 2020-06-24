@@ -2,7 +2,6 @@ import PropTypes from "prop-types";
 import React from "react";
 import loadData from "./hoc/load-data";
 import gql from "graphql-tag";
-import wrapMutations from "./hoc/wrap-mutations";
 import GSForm from "../components/forms/GSForm";
 import Form from "react-formal";
 import Dialog from "material-ui/Dialog";
@@ -15,6 +14,8 @@ import { StyleSheet, css } from "aphrodite";
 import theme from "../styles/theme";
 import Toggle from "material-ui/Toggle";
 import moment from "moment";
+import CampaignTexterUIForm from "../components/CampaignTexterUIForm";
+
 const styles = StyleSheet.create({
   section: {
     margin: "10px 0"
@@ -74,33 +75,7 @@ class Settings extends React.Component {
       textingHoursEnd: yup.number().required()
     });
 
-    const hours = [
-      0,
-      1,
-      2,
-      3,
-      4,
-      5,
-      6,
-      7,
-      8,
-      9,
-      10,
-      11,
-      12,
-      13,
-      14,
-      15,
-      16,
-      17,
-      18,
-      19,
-      20,
-      21,
-      22,
-      23,
-      24
-    ];
+    const hours = new Array(24).fill(0).map((_, i) => i);
     const hourChoices = hours.map(hour => ({
       value: hour,
       label: formatTextingHours(hour)
@@ -214,7 +189,12 @@ class Settings extends React.Component {
 
     return (
       <Card>
-        <CardHeader title="Twilio Credentials" />
+        <CardHeader
+          title="Twilio Credentials"
+          style={{
+            backgroundColor: allSet ? theme.colors.green : theme.colors.yellow
+          }}
+        />
         {allSet && (
           <CardText style={inlineStyles.shadeBox}>
             <DisplayLink
@@ -288,7 +268,10 @@ class Settings extends React.Component {
     return (
       <div>
         <Card>
-          <CardHeader title="Settings" />
+          <CardHeader
+            title="Settings"
+            style={{ backgroundColor: theme.colors.green }}
+          />
           <CardText>
             <div className={css(styles.section)}>
               <GSForm
@@ -352,7 +335,35 @@ class Settings extends React.Component {
           </CardActions>
         </Card>
         <div>{this.renderTextingHoursForm()}</div>
-        <div>{window.TWILIO_MULTI_ORG && this.renderTwilioAuthForm()}</div>
+        {window.TWILIO_MULTI_ORG && this.renderTwilioAuthForm()}
+        {this.props.data.organization &&
+        this.props.data.organization.texterUIConfig.sideboxChoices.length ? (
+          <Card>
+            <CardHeader
+              title="Texter UI Defaults"
+              style={{ backgroundColor: theme.colors.green }}
+            />
+            <CardText>
+              <CampaignTexterUIForm
+                formValues={this.props.data.organization}
+                organization={this.props.data.organization}
+                onSubmit={async () => {
+                  const { texterUIConfig } = this.state;
+                  await this.props.mutations.editOrganization({
+                    texterUIConfig
+                  });
+                  this.setState({ texterUIConfig: null });
+                }}
+                onChange={formValues => {
+                  console.log("change", formValues);
+                  this.setState(formValues);
+                }}
+                saveLabel="Save Texter UI Campaign Defaults"
+                saveDisabled={!this.state.texterUIConfig}
+              />
+            </CardText>
+          </Card>
+        ) : null}
       </div>
     );
   }
@@ -364,8 +375,60 @@ Settings.propTypes = {
   mutations: PropTypes.object
 };
 
-const mapMutationsToProps = ({ ownProps }) => ({
-  updateTextingHours: (textingHoursStart, textingHoursEnd) => ({
+const queries = {
+  data: {
+    query: gql`
+      query adminGetCampaigns($organizationId: String!) {
+        organization(id: $organizationId) {
+          id
+          name
+          textingHoursEnforced
+          textingHoursStart
+          textingHoursEnd
+          optOutMessage
+          texterUIConfig {
+            options
+            sideboxChoices
+          }
+          twilioAccountSid
+          twilioAuthToken
+          twilioMessageServiceSid
+        }
+      }
+    `,
+    options: ownProps => ({
+      variables: {
+        organizationId: ownProps.params.organizationId
+      },
+      fetchPolicy: "network-only"
+    })
+  }
+};
+
+export const editOrganizationGql = gql`
+  mutation editOrganization(
+    $organizationId: String!
+    $organizationChanges: OrganizationInput!
+  ) {
+    editOrganization(id: $organizationId, organization: $organizationChanges) {
+      id
+      texterUIConfig {
+        options
+        sideboxChoices
+      }
+    }
+  }
+`;
+
+const mutations = {
+  editOrganization: ownProps => organizationChanges => ({
+    mutation: editOrganizationGql,
+    variables: {
+      organizationId: ownProps.params.organizationId,
+      organizationChanges
+    }
+  }),
+  updateTextingHours: ownProps => (textingHoursStart, textingHoursEnd) => ({
     mutation: gql`
       mutation updateTextingHours(
         $textingHoursStart: Int!
@@ -390,7 +453,7 @@ const mapMutationsToProps = ({ ownProps }) => ({
       textingHoursEnd
     }
   }),
-  updateTextingHoursEnforcement: textingHoursEnforced => ({
+  updateTextingHoursEnforcement: ownProps => textingHoursEnforced => ({
     mutation: gql`
       mutation updateTextingHoursEnforcement(
         $textingHoursEnforced: Boolean!
@@ -412,7 +475,7 @@ const mapMutationsToProps = ({ ownProps }) => ({
       textingHoursEnforced
     }
   }),
-  updateOptOutMessage: ({ optOutMessage }) => ({
+  updateOptOutMessage: ownProps => ({ optOutMessage }) => ({
     mutation: gql`
       mutation updateOptOutMessage(
         $optOutMessage: String!
@@ -432,7 +495,7 @@ const mapMutationsToProps = ({ ownProps }) => ({
       optOutMessage
     }
   }),
-  updateTwilioAuth: (accountSid, authToken, messageServiceSid) => ({
+  updateTwilioAuth: ownProps => (accountSid, authToken, messageServiceSid) => ({
     mutation: gql`
       mutation updateTwilioAuth(
         $twilioAccountSid: String
@@ -460,33 +523,6 @@ const mapMutationsToProps = ({ ownProps }) => ({
       twilioMessageServiceSid: messageServiceSid
     }
   })
-});
+};
 
-const mapQueriesToProps = ({ ownProps }) => ({
-  data: {
-    query: gql`
-      query adminGetCampaigns($organizationId: String!) {
-        organization(id: $organizationId) {
-          id
-          name
-          textingHoursEnforced
-          textingHoursStart
-          textingHoursEnd
-          optOutMessage
-          twilioAccountSid
-          twilioAuthToken
-          twilioMessageServiceSid
-        }
-      }
-    `,
-    variables: {
-      organizationId: ownProps.params.organizationId
-    },
-    forceFetch: true
-  }
-});
-
-export default loadData(wrapMutations(Settings), {
-  mapQueriesToProps,
-  mapMutationsToProps
-});
+export default loadData({ queries, mutations })(Settings);

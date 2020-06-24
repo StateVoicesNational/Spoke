@@ -61,6 +61,7 @@ const tableList = [
   "question_response",
   "tag",
   "tag_campaign_contact",
+  "owned_phone_number",
   "user_cell",
   "user_organization",
   "zip_code" // good candidate (or by contact)?
@@ -87,7 +88,7 @@ function dropTables() {
   });
 }
 
-const loaders = {
+const createLoaders = () => ({
   // Note: loaders with cacheObj should also run loaders.XX.clear(id)
   //  on clear on the cache as well.
   assignment: createLoader(Assignment),
@@ -111,14 +112,17 @@ const loaders = {
   questionResponse: createLoader(QuestionResponse),
   userCell: createLoader(UserCell),
   userOrganization: createLoader(UserOrganization)
-};
-
-const createLoaders = () => loaders;
+});
 
 const r = thinky.r;
 
+if (process.env.ENABLE_KNEX_TRACING === "true") {
+  r.knex.on("query", ({ sql, bindings }) =>
+    console.debug("TRACE:", sql, bindings)
+  );
+}
+
 export {
-  loaders,
   createLoaders,
   r,
   cacheableData,

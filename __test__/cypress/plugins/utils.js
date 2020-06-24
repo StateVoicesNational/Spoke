@@ -11,7 +11,11 @@ export async function getOrCreateTestOrganization() {
   if (!org) {
     org = await r
       .knex("organization")
-      .insert({ name: DEFAULT_ORGANIZATION_NAME, uuid: uuid.v4() })
+      .insert({
+        name: DEFAULT_ORGANIZATION_NAME,
+        uuid: uuid.v4(),
+        features: JSON.stringify({ EXPERIMENTAL_PHONE_INVENTORY: true })
+      })
       .returning("*");
   }
   return org.id;

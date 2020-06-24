@@ -1,12 +1,12 @@
 import PropTypes from "prop-types";
 import React from "react";
-import AssignmentTexter from "../components/AssignmentTexter";
-import AssignmentTexterContact from "../containers/AssignmentTexterContact";
+import AssignmentTexter from "../components/AssignmentTexter/ContactController";
+import AssignmentTexterContact from "./AssignmentTexterContact";
 import { withRouter } from "react-router";
 import loadData from "./hoc/load-data";
 import gql from "graphql-tag";
 
-const contactDataFragment = `
+export const contactDataFragment = `
         id
         assignmentId
         firstName
@@ -36,10 +36,13 @@ const contactDataFragment = `
           text
           isFromContact
         }
+        tags {
+          id
+        }
 `;
 
-export const dataQuery = gql`
-  query getContacts($assignmentId: String!, $contactsFilter: ContactsFilter!) {
+export const dataQueryString = `
+  query getContacts($assignmentId: String!, $contactsFilter: ContactsFilter!, $tagGroup: String) {
     assignment(id: $assignmentId) {
       id
       userCannedResponses {
@@ -70,15 +73,23 @@ export const dataQuery = gql`
         textingHoursStart
         textingHoursEnd
         textingHoursEnforced
+        batchSize
         organization {
           id
+          tags(group: $tagGroup) {
+            id
+            name
+          }
           textingHoursEnforced
           textingHoursStart
           textingHoursEnd
-          threeClickEnabled
           optOutMessage
         }
         customFields
+        texterUIConfig {
+          options
+          sideboxChoices
+        }
         interactionSteps {
           id
           script
@@ -101,6 +112,10 @@ export const dataQuery = gql`
       allContactsCount: contactsCount
     }
   }
+`;
+
+export const dataQuery = gql`
+  ${dataQueryString}
 `;
 
 export class TexterTodo extends React.Component {
@@ -155,9 +170,10 @@ export class TexterTodo extends React.Component {
         assignment.contacts.map(c => c.id)
       );
       this.loadingNewContacts = true;
-      const didAddContacts = (
-        await this.props.mutations.findNewCampaignContact(assignment.id)
-      ).data.findNewCampaignContact.found;
+      // TODO: don't run this ever
+      const didAddContacts = (await this.props.mutations.findNewCampaignContact(
+        assignment.id
+      )).data.findNewCampaignContact.found;
       console.log("getNewContacts ?added", didAddContacts);
       if (didAddContacts || waitForServer) {
         await this.props.data.refetch();
@@ -211,24 +227,27 @@ TexterTodo.propTypes = {
   location: PropTypes.object
 };
 
-const mapQueriesToProps = ({ ownProps }) => ({
+const queries = {
   data: {
     query: dataQuery,
-    variables: {
-      contactsFilter: {
-        messageStatus: ownProps.messageStatus,
-        isOptedOut: false,
-        validTimezone: true
+    options: ownProps => ({
+      variables: {
+        contactsFilter: {
+          messageStatus: ownProps.messageStatus,
+          isOptedOut: false,
+          validTimezone: true
+        },
+        assignmentId: ownProps.params.assignmentId,
+        tagGroup: "texter-tags"
       },
-      assignmentId: ownProps.params.assignmentId
-    },
-    forceFetch: true,
-    pollInterval: 20000
+      fetchPolicy: "network-only",
+      pollInterval: 20000
+    })
   }
-});
+};
 
-const mapMutationsToProps = ({ ownProps }) => ({
-  findNewCampaignContact: assignmentId => ({
+const mutations = {
+  findNewCampaignContact: ownProps => assignmentId => ({
     mutation: gql`
       mutation findNewCampaignContact(
         $assignmentId: String!
@@ -247,7 +266,7 @@ const mapMutationsToProps = ({ ownProps }) => ({
       numberContacts: 10
     }
   }),
-  getAssignmentContacts: (contactIds, findNew) => ({
+  getAssignmentContacts: ownProps => (contactIds, findNew) => ({
     mutation: gql`
       mutation getAssignmentContacts($assignmentId: String!, $contactIds: [String]!, $findNew: Boolean) {
         getAssignmentContacts(assignmentId: $assignmentId, contactIds: $contactIds, findNew: $findNew) {
@@ -261,9 +280,9 @@ const mapMutationsToProps = ({ ownProps }) => ({
       findNew: !!findNew
     }
   })
-});
+};
 
-export default loadData(withRouter(TexterTodo), {
-  mapQueriesToProps,
-  mapMutationsToProps
-});
+// exported for testing
+export const operations = { queries, mutations };
+
+export default loadData(operations)(withRouter(TexterTodo));

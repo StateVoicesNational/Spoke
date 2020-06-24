@@ -1,44 +1,19 @@
 import PropTypes from "prop-types";
 import React from "react";
 import { StyleSheet, css } from "aphrodite";
-import MessageList from "../components/MessageList";
-import CannedResponseMenu from "../components/CannedResponseMenu";
-import AssignmentTexterSurveys from "../components/AssignmentTexterSurveys";
-import AssignmentTexterContactControls from "../components/AssignmentTexterContactControls";
-import AssignmentTexterContactNewControls from "../components/AssignmentTexterContactNewControls";
-import RaisedButton from "material-ui/RaisedButton";
-import FlatButton from "material-ui/FlatButton";
-import NavigateHomeIcon from "material-ui/svg-icons/action/home";
-import { grey100 } from "material-ui/styles/colors";
-import IconButton from "material-ui/IconButton/IconButton";
-import { Toolbar, ToolbarGroup } from "material-ui/Toolbar";
-import { Card, CardActions, CardTitle } from "material-ui/Card";
-import Divider from "material-ui/Divider";
+import OldControls from "../components/AssignmentTexter/OldControls";
+import Controls from "../components/AssignmentTexter/Controls";
 import { applyScript } from "../lib/scripts";
 import gql from "graphql-tag";
 import loadData from "./hoc/load-data";
 import yup from "yup";
-import GSForm from "../components/forms/GSForm";
-import Form from "react-formal";
-import GSSubmitButton from "../components/forms/GSSubmitButton";
-import SendButton from "../components/SendButton";
-import BulkSendButton from "../components/BulkSendButton";
-import SendButtonArrow from "../components/SendButtonArrow";
+import BulkSendButton from "../components/AssignmentTexter/BulkSendButton";
 import CircularProgress from "material-ui/CircularProgress";
 import Snackbar from "material-ui/Snackbar";
-import {
-  getChildren,
-  getTopMostParent,
-  interactionStepForId,
-  log,
-  isBetweenTextingHours
-} from "../lib";
+import { isBetweenTextingHours } from "../lib";
 import { withRouter } from "react-router";
-import wrapMutations from "./hoc/wrap-mutations";
-import Empty from "../components/Empty";
-import CreateIcon from "material-ui/svg-icons/content/create";
-import { dataTest } from "../lib/attributes";
 import { getContactTimezone } from "../lib/timezones";
+import { dataTest } from "../lib/attributes";
 
 const styles = StyleSheet.create({
   overlay: {
@@ -150,6 +125,9 @@ export class AssignmentTexterContact extends React.Component {
   };
 
   handleSendMessageError = e => {
+    // NOTE: status codes don't currently work so all errors will appear
+    // as "Something went wrong" keeping this code in here because
+    // we want to replace status codes with Apollo 2 error codes.
     if (e.status === 402) {
       this.goBackToTodos();
     } else if (e.status === 400) {
@@ -170,16 +148,17 @@ export class AssignmentTexterContact extends React.Component {
         this.skipContact();
       }
     } else {
-      log.error(e);
+      console.error(e);
       this.setState({
+        disabled: true,
         snackbarError: "Something went wrong!"
       });
     }
   };
 
   handleMessageFormSubmit = async ({ messageText }) => {
+    const { contact } = this.props;
     try {
-      const { contact } = this.props;
       const message = this.createMessageToContact(messageText);
       if (this.state.disabled) {
         return; // stops from multi-send
@@ -192,6 +171,9 @@ export class AssignmentTexterContact extends React.Component {
       this.props.onFinishContact(contact.id);
     } catch (e) {
       this.handleSendMessageError(e);
+      setTimeout(() => {
+        this.props.onFinishContact(contact.id);
+      }, 750);
     }
   };
 
@@ -257,6 +239,20 @@ export class AssignmentTexterContact extends React.Component {
     }
   };
 
+  handleUpdateTags = async tags => {
+    const { contact } = this.props;
+    await this.props.mutations.updateContactTags(tags, contact.id);
+  };
+
+  handleReleaseContacts = async releaseConversations => {
+    const { assignment } = this.props;
+    const result = await this.props.mutations.releaseContacts(
+      assignment.id,
+      releaseConversations
+    );
+    return result;
+  };
+
   handleEditStatus = async (messageStatus, finishContact) => {
     const { contact } = this.props;
     await this.props.mutations.editCampaignContactMessageStatus(
@@ -293,6 +289,9 @@ export class AssignmentTexterContact extends React.Component {
     } catch (err) {
       console.log("handleOptOut Error", err);
       this.handleSendMessageError(err);
+      setTimeout(() => {
+        this.props.onFinishContact(contact.id);
+      }, 750);
     }
   };
 
@@ -367,11 +366,12 @@ export class AssignmentTexterContact extends React.Component {
 
   render() {
     const ControlsComponent =
-      /new=1/.test(document.location.search) || window.EXPERIMENTAL_TEXTERUI
-        ? AssignmentTexterContactNewControls
-        : AssignmentTexterContactControls;
+      /old=1/.test(document.location.search) ||
+      window.DEPRECATED_TEXTERUI === "GONE_SOON"
+        ? OldControls
+        : Controls;
     return (
-      <div>
+      <div {...dataTest("assignmentTexterContactFirstDiv")}>
         {this.state.disabled ? (
           <div className={css(styles.overlay)}>
             <CircularProgress size={0.5} />
@@ -390,6 +390,8 @@ export class AssignmentTexterContact extends React.Component {
           disabled={this.state.disabled}
           onMessageFormSubmit={this.handleMessageFormSubmit}
           onOptOut={this.handleOptOut}
+          onUpdateTags={this.handleUpdateTags}
+          onReleaseContacts={this.handleReleaseContacts}
           onQuestionResponseChange={this.handleQuestionResponseChange}
           onCreateCannedResponse={this.handleCreateCannedResponse}
           onExitTexter={this.props.onExitTexter}
@@ -435,8 +437,8 @@ AssignmentTexterContact.propTypes = {
   messageStatusFilter: PropTypes.string
 };
 
-const mapMutationsToProps = () => ({
-  createOptOut: (optOut, campaignContactId) => ({
+const mutations = {
+  createOptOut: ownProps => (optOut, campaignContactId) => ({
     mutation: gql`
       mutation createOptOut(
         $optOut: OptOutInput!
@@ -456,7 +458,7 @@ const mapMutationsToProps = () => ({
       campaignContactId
     }
   }),
-  createCannedResponse: cannedResponse => ({
+  createCannedResponse: ownProps => cannedResponse => ({
     mutation: gql`
       mutation createCannedResponse($cannedResponse: CannedResponseInput!) {
         createCannedResponse(cannedResponse: $cannedResponse) {
@@ -466,7 +468,10 @@ const mapMutationsToProps = () => ({
     `,
     variables: { cannedResponse }
   }),
-  editCampaignContactMessageStatus: (messageStatus, campaignContactId) => ({
+  editCampaignContactMessageStatus: ownProps => (
+    messageStatus,
+    campaignContactId
+  ) => ({
     mutation: gql`
       mutation editCampaignContactMessageStatus(
         $messageStatus: String!
@@ -486,7 +491,10 @@ const mapMutationsToProps = () => ({
       campaignContactId
     }
   }),
-  deleteQuestionResponses: (interactionStepIds, campaignContactId) => ({
+  deleteQuestionResponses: ownProps => (
+    interactionStepIds,
+    campaignContactId
+  ) => ({
     mutation: gql`
       mutation deleteQuestionResponses(
         $interactionStepIds: [String]
@@ -505,7 +513,24 @@ const mapMutationsToProps = () => ({
       campaignContactId
     }
   }),
-  updateQuestionResponses: (questionResponses, campaignContactId) => ({
+  updateContactTags: ownProps => (tags, campaignContactId) => ({
+    mutation: gql`
+      mutation updateContactTags(
+        $tags: [TagInput]
+        $campaignContactId: String!
+      ) {
+        updateContactTags(tags: $tags, campaignContactId: $campaignContactId)
+      }
+    `,
+    variables: {
+      tags,
+      campaignContactId
+    }
+  }),
+  updateQuestionResponses: ownProps => (
+    questionResponses,
+    campaignContactId
+  ) => ({
     mutation: gql`
       mutation updateQuestionResponses(
         $questionResponses: [QuestionResponseInput]
@@ -514,9 +539,7 @@ const mapMutationsToProps = () => ({
         updateQuestionResponses(
           questionResponses: $questionResponses
           campaignContactId: $campaignContactId
-        ) {
-          id
-        }
+        )
       }
     `,
     variables: {
@@ -524,7 +547,7 @@ const mapMutationsToProps = () => ({
       campaignContactId
     }
   }),
-  sendMessage: (message, campaignContactId) => ({
+  sendMessage: ownProps => (message, campaignContactId) => ({
     mutation: gql`
       mutation sendMessage(
         $message: MessageInput!
@@ -547,7 +570,36 @@ const mapMutationsToProps = () => ({
       campaignContactId
     }
   }),
-  bulkSendMessages: assignmentId => ({
+  releaseContacts: ownProps => (assignmentId, releaseConversations) => ({
+    mutation: gql`
+      mutation releaseContacts(
+        $assignmentId: Int!
+        $contactsFilter: ContactsFilter!
+        $releaseConversations: Boolean
+      ) {
+        releaseContacts(
+          assignmentId: $assignmentId
+          releaseConversations: $releaseConversations
+        ) {
+          id
+          contacts(contactsFilter: $contactsFilter) {
+            id
+          }
+          allContactsCount: contactsCount
+        }
+      }
+    `,
+    variables: {
+      assignmentId,
+      releaseConversations,
+      contactsFilter: {
+        messageStatus: ownProps.messageStatusFilter,
+        isOptedOut: false,
+        validTimezone: true
+      }
+    }
+  }),
+  bulkSendMessages: ownProps => assignmentId => ({
     mutation: gql`
       mutation bulkSendMessages($assignmentId: Int!) {
         bulkSendMessages(assignmentId: $assignmentId) {
@@ -559,8 +611,8 @@ const mapMutationsToProps = () => ({
       assignmentId
     }
   })
-});
+};
 
-export default loadData(wrapMutations(withRouter(AssignmentTexterContact)), {
-  mapMutationsToProps
-});
+export const operations = { mutations };
+
+export default loadData(operations)(withRouter(AssignmentTexterContact));

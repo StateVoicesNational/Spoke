@@ -1,9 +1,14 @@
 import { mapFieldsToModel } from "./lib/utils";
 import { getConfig } from "./lib/config";
 import { r, Organization, cacheableData } from "../models";
+import { getTags } from "./tag";
 import { accessRequired } from "./errors";
 import { getCampaigns } from "./campaign";
-import { buildSortedUserOrganizationQuery } from "./user";
+import { buildUsersQuery } from "./user";
+import {
+  getAvailableActionHandlers,
+  getActionChoiceData
+} from "../../integrations/action-handlers";
 
 export const resolvers = {
   Organization: {
@@ -32,15 +37,40 @@ export const resolvers = {
     },
     people: async (organization, { role, campaignId, sortBy }, { user }) => {
       await accessRequired(user, organization.id, "SUPERVOLUNTEER");
-      return buildSortedUserOrganizationQuery(
-        organization.id,
-        role,
-        campaignId,
-        sortBy
-      );
+      return buildUsersQuery(organization.id, role, { campaignId }, sortBy);
     },
-    threeClickEnabled: organization =>
-      organization.features.indexOf("threeClick") !== -1,
+    tags: async (organization, { group }, { user }) => {
+      let groupFilter = group;
+      try {
+        await accessRequired(user, organization.id, "SUPERVOLUNTEER");
+      } catch (err) {
+        await accessRequired(user, organization.id, "TEXTER");
+        groupFilter = "texter-tags";
+      }
+      return getTags(organization, groupFilter);
+    },
+    availableActions: async (organization, _, { user, loaders }) => {
+      await accessRequired(user, organization.id, "SUPERVOLUNTEER");
+      const availableHandlers = await getAvailableActionHandlers(
+        organization,
+        user
+      );
+
+      const promises = availableHandlers.map(handler => {
+        return getActionChoiceData(handler, organization, user, loaders).then(
+          clientChoiceData => {
+            return {
+              name: handler.name,
+              displayName: handler.displayName(),
+              instructions: handler.instructions(),
+              clientChoiceData
+            };
+          }
+        );
+      });
+
+      return Promise.all(promises);
+    },
     textingHoursEnforced: organization => organization.texting_hours_enforced,
     optOutMessage: organization =>
       (organization.features &&
@@ -50,6 +80,17 @@ export const resolvers = {
       "I'm opting you out of texts immediately. Have a great day.",
     textingHoursStart: organization => organization.texting_hours_start,
     textingHoursEnd: organization => organization.texting_hours_end,
+    texterUIConfig: async (organization, _, { user }) => {
+      await accessRequired(user, organization.id, "OWNER");
+      const options = getConfig("TEXTER_UI_SETTINGS", organization) || null;
+      // note this is global, since we need the set that's globally enabled/allowed to choose from
+      const sideboxConfig = getConfig("TEXTER_SIDEBOXES");
+      const sideboxChoices = (sideboxConfig && sideboxConfig.split(",")) || [];
+      return {
+        options,
+        sideboxChoices
+      };
+    },
     cacheable: (org, _, { user }) =>
       //quanery logic.  levels are 0, 1, 2
       r.redis ? (getConfig("REDIS_CONTACT_CACHE", org) ? 2 : 1) : 0,
@@ -101,6 +142,63 @@ export const resolvers = {
         }
       }
       return true;
+    },
+    phoneInventoryEnabled: async (organization, _, { user }) => {
+      await accessRequired(user, organization.id, "SUPERVOLUNTEER");
+      return getConfig("EXPERIMENTAL_PHONE_INVENTORY", organization, {
+        truthy: true
+      });
+    },
+    pendingPhoneNumberJobs: async (organization, _, { user }) => {
+      await accessRequired(user, organization.id, "OWNER", true);
+      const jobs = await r
+        .knex("job_request")
+        .where({
+          job_type: "buy_phone_numbers",
+          organization_id: organization.id
+        })
+        .orderBy("updated_at", "desc");
+      return jobs.map(j => {
+        const payload = JSON.parse(j.payload);
+        return {
+          id: j.id,
+          assigned: j.assigned,
+          status: j.status,
+          resultMessage: j.result_message,
+          areaCode: payload.areaCode,
+          limit: payload.limit
+        };
+      });
+    },
+    phoneNumberCounts: async (organization, _, { user }) => {
+      await accessRequired(user, organization.id, "ADMIN");
+      if (
+        !getConfig("EXPERIMENTAL_PHONE_INVENTORY", organization, {
+          truthy: true
+        })
+      ) {
+        throw Error("Twilio inventory management is not enabled");
+      }
+      const service = getConfig("DEFAULT_SERVICE");
+      const counts = await r
+        .knex("owned_phone_number")
+        .select(
+          "area_code",
+          r.knex.raw("COUNT(allocated_to) as allocated_count"),
+          r.knex.raw(
+            "SUM(CASE WHEN allocated_to IS NULL THEN 1 END) as available_count"
+          )
+        )
+        .where({
+          service,
+          organization_id: organization.id
+        })
+        .groupBy("area_code");
+      return counts.map(row => ({
+        areaCode: row.area_code,
+        allocatedCount: Number(row.allocated_count),
+        availableCount: Number(row.available_count)
+      }));
     }
   }
 };

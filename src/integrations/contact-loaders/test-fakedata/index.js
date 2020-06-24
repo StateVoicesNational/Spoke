@@ -48,18 +48,13 @@ export function clientChoiceDataCacheKey(organization, campaign, user) {
   return `${organization.id}-${campaign.id}`;
 }
 
-export async function getClientChoiceData(
-  organization,
-  campaign,
-  user,
-  loaders
-) {
+export async function getClientChoiceData(organization, campaign, user) {
   /// data to be sent to the admin client to present options to the component or similar
   /// The react-component will be sent this data as a property
   /// return a json object which will be cached for expiresSeconds long
   /// `data` should be a single string -- it can be JSON which you can parse in the client component
   return {
-    data: `choice data from server ${Math.random()}`,
+    data: `choice data from server`,
     expiresSeconds: 0
   };
 }
@@ -139,8 +134,7 @@ export async function processContactLoad(job, maxContacts, organization) {
       campaign_id: campaignId
     });
   }
-
-  await r.knex("campaign_contact").insert(newContacts);
+  await r.knex.batchInsert("campaign_contact", newContacts, 100);
 
   await completeContactLoad(
     job,

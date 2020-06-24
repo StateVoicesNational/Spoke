@@ -77,7 +77,7 @@ export class Tags extends React.Component {
     return () =>
       this.setState({
         openTagDialog: true,
-        dialogTitle: "Edit Tag",
+        dialogTitle: `Edit Tag (id: ${tagId})`,
         dialogSubmitHandler: this.handleEdit,
         dialogButtonLabel: "Save",
         tagId
@@ -118,7 +118,7 @@ export class Tags extends React.Component {
   }
 
   render() {
-    const tags = this.props.data.tags.tags.sort((a, b) => a.id - b.id);
+    const tags = this.props.data.organization.tags.sort((a, b) => a.id - b.id);
     const {
       openTagDialog,
       dialogSubmitHandler,
@@ -128,7 +128,8 @@ export class Tags extends React.Component {
     } = this.state;
     const formSchema = yup.object({
       name: yup.string().required(),
-      description: yup.string().required()
+      description: yup.string().required(),
+      group: yup.string().nullable()
     });
     const dialogTag = tagId ? tags.find(t => t.id === tagId) : {};
     return (
@@ -176,6 +177,10 @@ export class Tags extends React.Component {
             <div className={css(styles.fields)}>
               <Form.Field label="Name" name="name" />
               <Form.Field label="Description" name="description" />
+              <Form.Field
+                label="Group ('texter-tags' for texters)"
+                name="group"
+              />
             </div>
             <div className={css(styles.submit)}>
               <Form.Button type="submit" label={dialogButtonLabel} />
@@ -193,31 +198,33 @@ Tags.propTypes = {
   mutations: PropTypes.object
 };
 
-const mapQueriesToProps = ({ ownProps }) => ({
+const queries = {
   data: {
     query: gql`
       query getTags($organizationId: String!) {
-        tags(organizationId: $organizationId) {
+        organization(id: $organizationId) {
+          id
           tags {
             id
             name
             group
             description
             isDeleted
-            organizationId
           }
         }
       }
     `,
-    variables: {
-      organizationId: ownProps.params.organizationId
-    },
-    forceFetch: true
+    options: ownProps => ({
+      variables: {
+        organizationId: ownProps.params.organizationId
+      },
+      fetchPolicy: "network-only"
+    })
   }
-});
+};
 
-const mapMutationsToProps = () => ({
-  createTag: (tagData, organizationId) => ({
+const mutations = {
+  createTag: ownProps => (tagData, organizationId) => ({
     mutation: gql`
       mutation createTag($tagData: TagInput!, $organizationId: String!) {
         createTag(tagData: $tagData, organizationId: $organizationId) {
@@ -230,7 +237,7 @@ const mapMutationsToProps = () => ({
       organizationId
     }
   }),
-  editTag: (tagData, organizationId, id) => ({
+  editTag: ownProps => (tagData, organizationId, id) => ({
     mutation: gql`
       mutation editTag(
         $tagData: TagInput!
@@ -248,7 +255,7 @@ const mapMutationsToProps = () => ({
       id
     }
   }),
-  deleteTag: (organizationId, id) => ({
+  deleteTag: ownProps => (organizationId, id) => ({
     mutation: gql`
       mutation deleteTag($organizationId: String!, $id: String!) {
         deleteTag(organizationId: $organizationId, id: $id) {
@@ -261,9 +268,6 @@ const mapMutationsToProps = () => ({
       id
     }
   })
-});
+};
 
-export default loadData(withRouter(Tags), {
-  mapQueriesToProps,
-  mapMutationsToProps
-});
+export default loadData({ queries, mutations })(withRouter(Tags));

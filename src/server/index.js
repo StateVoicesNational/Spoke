@@ -8,7 +8,6 @@ import { makeExecutableSchema, addMockFunctionsToSchema } from "graphql-tools";
 import { createLoaders, createTablesIfNecessary, r } from "./models";
 import { resolvers } from "./api/schema";
 import { schema } from "../api/schema";
-import mocks from "./api/mocks";
 import passport from "passport";
 import cookieSession from "cookie-session";
 import passportSetup from "./auth-passport";
@@ -94,6 +93,13 @@ app.use((req, res, next) => {
   next();
 });
 
+// Simulate latency in local development
+if (process.env.SIMULATE_DELAY_MILLIS) {
+  app.use((req, res, next) => {
+    setTimeout(next, Number(process.env.SIMULATE_DELAY_MILLIS));
+  });
+}
+
 // give contact loaders a chance
 const configuredIngestMethods = rawAllMethods();
 Object.keys(configuredIngestMethods).forEach(ingestMethodName => {
@@ -175,11 +181,6 @@ const executableSchema = makeExecutableSchema({
   typeDefs: schema,
   resolvers,
   allowUndefinedInResolve: false
-});
-addMockFunctionsToSchema({
-  schema: executableSchema,
-  mocks,
-  preserveResolvers: true
 });
 
 app.use(

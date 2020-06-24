@@ -3,6 +3,7 @@ import React from "react";
 import RaisedButton from "material-ui/RaisedButton";
 import Chart from "../components/Chart";
 import { Card, CardTitle, CardText } from "material-ui/Card";
+import LinearProgress from "material-ui/LinearProgress";
 import TexterStats from "../components/TexterStats";
 import Snackbar from "material-ui/Snackbar";
 import { withRouter } from "react-router";
@@ -10,7 +11,6 @@ import { StyleSheet, css } from "aphrodite";
 import loadData from "./hoc/load-data";
 import gql from "graphql-tag";
 import theme from "../styles/theme";
-import wrapMutations from "./hoc/wrap-mutations";
 import { dataTest } from "../lib/attributes";
 
 const inlineStyles = {
@@ -135,6 +135,37 @@ class AdminCampaignStats extends React.Component {
     });
   }
 
+  renderErrorCounts() {
+    const { errorCounts } = this.props.data.campaign.stats;
+    const { contactsCount } = this.props.data.campaign;
+    console.log("errorcounts", contactsCount, errorCounts);
+    if (!errorCounts.length) {
+      return null;
+    }
+    return (
+      <div>
+        {errorCounts.map(error => (
+          <div key={error.code}>
+            {error.link ? (
+              <a href={error.link} target="_blank">
+                Error code {error.code}
+              </a>
+            ) : (
+              error.code
+            )}{" "}
+            {error.description || null}
+            <div>{error.count} errors</div>
+            <LinearProgress
+              color="red"
+              mode="determinate"
+              value={Math.round((100 * error.count) / contactsCount)}
+            />
+          </div>
+        ))}
+      </div>
+    );
+  }
+
   renderCopyButton() {
     return (
       <RaisedButton
@@ -246,7 +277,18 @@ class AdminCampaignStats extends React.Component {
                               this.props.params.campaignId
                             )
                           }
-                        />
+                        />,
+                        campaign.useOwnMessagingService ? (
+                          <RaisedButton
+                            {...dataTest("messagingService")}
+                            onTouchTap={() =>
+                              this.props.router.push(
+                                `/admin/${organizationId}/campaigns/${campaignId}/messaging-service`
+                              )
+                            }
+                            label="Messaging Service"
+                          />
+                        ) : null
                       ]
                     : null}
                 </div>
@@ -276,7 +318,12 @@ class AdminCampaignStats extends React.Component {
         </div>
         <div className={css(styles.header)}>Survey Questions</div>
         {this.renderSurveyStats()}
-
+        {campaign.stats.errorCounts.length > 0 ? (
+          <div>
+            <div className={css(styles.header)}>Sending Errors</div>
+            {this.renderErrorCounts()}{" "}
+          </div>
+        ) : null}
         <div className={css(styles.header)}>Texter stats</div>
         <div className={css(styles.secondaryHeader)}>% of first texts sent</div>
         <TexterStats campaign={campaign} />
@@ -300,19 +347,21 @@ AdminCampaignStats.propTypes = {
   router: PropTypes.object
 };
 
-const mapQueriesToProps = ({ ownProps }) => ({
+const queries = {
   data: {
     query: gql`
       query getCampaign(
         $campaignId: String!
         $contactsFilter: ContactsFilter!
+        $assignmentsFilter: AssignmentsFilter
       ) {
         campaign(id: $campaignId) {
           id
           title
           isArchived
           useDynamicAssignment
-          assignments {
+          useOwnMessagingService
+          assignments(assignmentsFilter: $assignmentsFilter) {
             id
             texter {
               id
@@ -343,22 +392,33 @@ const mapQueriesToProps = ({ ownProps }) => ({
             sentMessagesCount
             receivedMessagesCount
             optOutsCount
+            errorCounts {
+              code
+              count
+              description
+              link
+            }
           }
         }
       }
     `,
-    variables: {
-      campaignId: ownProps.params.campaignId,
-      contactsFilter: {
-        messageStatus: "needsMessage"
-      }
-    },
-    pollInterval: 5000
+    options: ownProps => ({
+      variables: {
+        campaignId: ownProps.params.campaignId,
+        assignmentsFilter: {
+          stats: true
+        },
+        contactsFilter: {
+          messageStatus: "needsMessage"
+        }
+      },
+      pollInterval: 5000
+    })
   }
-});
+};
 
-const mapMutationsToProps = () => ({
-  archiveCampaign: campaignId => ({
+const mutations = {
+  archiveCampaign: ownProps => campaignId => ({
     mutation: gql`
       mutation archiveCampaign($campaignId: String!) {
         archiveCampaign(id: $campaignId) {
@@ -369,7 +429,7 @@ const mapMutationsToProps = () => ({
     `,
     variables: { campaignId }
   }),
-  unarchiveCampaign: campaignId => ({
+  unarchiveCampaign: ownProps => campaignId => ({
     mutation: gql`
       mutation unarchiveCampaign($campaignId: String!) {
         unarchiveCampaign(id: $campaignId) {
@@ -380,7 +440,7 @@ const mapMutationsToProps = () => ({
     `,
     variables: { campaignId }
   }),
-  exportCampaign: campaignId => ({
+  exportCampaign: ownProps => campaignId => ({
     mutation: gql`
       mutation exportCampaign($campaignId: String!) {
         exportCampaign(id: $campaignId) {
@@ -390,7 +450,7 @@ const mapMutationsToProps = () => ({
     `,
     variables: { campaignId }
   }),
-  copyCampaign: campaignId => ({
+  copyCampaign: ownProps => campaignId => ({
     mutation: gql`
       mutation copyCampaign($campaignId: String!) {
         copyCampaign(id: $campaignId) {
@@ -400,9 +460,6 @@ const mapMutationsToProps = () => ({
     `,
     variables: { campaignId }
   })
-});
+};
 
-export default loadData(withRouter(wrapMutations(AdminCampaignStats)), {
-  mapQueriesToProps,
-  mapMutationsToProps
-});
+export default loadData({ queries, mutations })(withRouter(AdminCampaignStats));

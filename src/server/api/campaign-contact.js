@@ -1,5 +1,6 @@
 import { CampaignContact, r, cacheableData } from "../models";
 import { mapFieldsToModel } from "./lib/utils";
+import { getConfig } from "./lib/config";
 import { log, getTopMostParent, zipToTimeZone } from "../../lib";
 
 export const resolvers = {
@@ -48,79 +49,6 @@ export const resolvers = {
         true // minimalObj: we might need more info one day
       );
     },
-    questionResponses: async (campaignContact, _, { loaders }) => {
-      const results = await r
-        .knex("question_response as qres")
-        .where("qres.campaign_contact_id", campaignContact.id)
-        .join(
-          "interaction_step",
-          "qres.interaction_step_id",
-          "interaction_step.id"
-        )
-        .join(
-          "interaction_step as child",
-          "qres.interaction_step_id",
-          "child.parent_interaction_id"
-        )
-        .select(
-          "child.answer_option",
-          "child.id",
-          "child.parent_interaction_id",
-          "child.created_at",
-          "interaction_step.interaction_step_id",
-          "interaction_step.campaign_id",
-          "interaction_step.question",
-          "interaction_step.script",
-          "qres.id",
-          "qres.value",
-          "qres.created_at",
-          "qres.interaction_step_id"
-        )
-        .catch(log.error);
-
-      let formatted = {};
-
-      for (let i = 0; i < results.length; i++) {
-        const res = results[i];
-
-        const responseId = res["qres.id"];
-        const responseValue = res["qres.value"];
-        const answerValue = res["child.answer_option"];
-        const interactionStepId = res["child.id"];
-
-        if (responseId in formatted) {
-          formatted[responseId]["parent_interaction_step"][
-            "answer_options"
-          ].push({
-            value: answerValue,
-            interaction_step_id: interactionStepId
-          });
-          if (responseValue === answerValue) {
-            formatted[responseId]["interaction_step_id"] = interactionStepId;
-          }
-        } else {
-          formatted[responseId] = {
-            contact_response_value: responseValue,
-            interaction_step_id: interactionStepId,
-            parent_interaction_step: {
-              answer_option: "",
-              answer_options: [
-                { value: answerValue, interaction_step_id: interactionStepId }
-              ],
-              campaign_id: res["interaction_step.campaign_id"],
-              created_at: res["child.created_at"],
-              id: responseId,
-              parent_interaction_id:
-                res["interaction_step.parent_interaction_id"],
-              question: res["interaction_step.question"],
-              script: res["interaction_step.script"]
-            },
-            value: responseValue
-          };
-        }
-      }
-      return Object.values(formatted);
-    },
     location: async (campaignContact, _, { loaders }) => {
       if (campaignContact.timezone_offset) {
         // couldn't look up the timezone by zip record, so we load it
@@ -155,38 +83,47 @@ export const resolvers = {
       if ("messages" in campaignContact) {
         return campaignContact.messages;
       }
-
       const messages = cacheableData.message.query({
         campaignContactId: campaignContact.id
       });
       return messages;
     },
-    optOut: async (campaignContact, _, { loaders }) => {
-      if ("opt_out_cell" in campaignContact) {
-        return {
-          cell: campaignContact.opt_out_cell
-        };
-      } else {
-        let isOptedOut = null;
-        if (typeof campaignContact.is_opted_out !== "undefined") {
-          isOptedOut = campaignContact.is_opted_out;
-        } else {
-          let organizationId = campaignContact.organization_id;
-          if (!organizationId) {
-            const campaign = await loaders.campaign.load(
-              campaignContact.campaign_id
-            );
-            organizationId = campaign.organization_id;
-          }
-
-          const isOptedOut = await cacheableData.optOut.query({
-            cell: campaignContact.cell,
-            organizationId
-          });
-        }
-        // fake ID so we don't need to look up existance
-        return isOptedOut ? { id: "optout" } : null;
+    tags: async campaignContact => {
+      // TODO: there's more to do here to avoid cache-misses
+      // maybe preload with campaignContact.loadMany
+      if (!getConfig("EXPERIMENTAL_TAGS", null, { truthy: 1 })) {
+        return [];
       }
+      if (campaignContact.message_status === "needsMessage") {
+        return []; // it's the beginning, so there won't be any
+      }
+
+      if (campaignContact.tags) {
+        return campaignContact.tags;
+      }
+
+      return cacheableData.tagCampaignContact.query(campaignContact.id, true);
+    },
+    optOut: async (campaignContact, _, { loaders }) => {
+      let isOptedOut = null;
+      if (typeof campaignContact.is_opted_out !== "undefined") {
+        isOptedOut = campaignContact.is_opted_out;
+      } else {
+        let organizationId = campaignContact.organization_id;
+        if (!organizationId) {
+          const campaign = await loaders.campaign.load(
+            campaignContact.campaign_id
+          );
+          organizationId = campaign.organization_id;
+        }
+
+        const isOptedOut = await cacheableData.optOut.query({
+          cell: campaignContact.cell,
+          organizationId
+        });
+      }
+      // fake ID so we don't need to look up existance
+      return isOptedOut ? { id: "optout" } : null;
     }
   }
 };

@@ -4,6 +4,9 @@ import { r } from "../../server/models";
 import { actionKitSignup } from "./helper-ak-sync.js";
 
 const sqs = new aws.SQS();
+
+export const name = "revere-signup";
+
 // What the user sees as the option
 export const displayName = () => "Revere Signup";
 
@@ -19,11 +22,27 @@ const sqsUrl = process.env.REVERE_SQS_URL;
 export const instructions = () =>
   "This option triggers a new user request to Revere when selected.";
 
+export function serverAdministratorInstructions() {
+  return {
+    description: `
+      This option triggers a new user request to Revere when selected."
+      `,
+    setupInstructions:
+      "Add `revere-signup` to the environment variable `ACTION_HANDLERS`; refer to `docs/HOWTO_INTEGRATE_WITH_REVERE.md`",
+    environmentVariables: [
+      "UMC_PROFILE_URL",
+      "UMC_USER",
+      "UMC_PW",
+      "UMC_OPT_IN_PATH"
+    ]
+  };
+}
+
 export async function available(organizationId) {
-  if (organizationId && listId && mobileApiKey) {
-    return true;
-  }
-  return false;
+  return {
+    result: organizationId && listId && mobileApiKey,
+    expiresSeconds: 600
+  };
 }
 
 export async function processAction(

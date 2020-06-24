@@ -7,7 +7,7 @@ import Divider from "material-ui/Divider";
 import Subheader from "material-ui/Subheader";
 import IconButton from "material-ui/IconButton";
 import Avatar from "material-ui/Avatar";
-import { connect } from "react-apollo";
+import { graphql } from "react-apollo";
 import { withRouter } from "react-router";
 import gql from "graphql-tag";
 import { dataTest } from "../lib/attributes";
@@ -43,16 +43,20 @@ export class UserMenu extends Component {
 
   handleMenuChange = (event, value) => {
     this.handleRequestClose();
+    const { currentUser } = this.props.data;
     if (value === "logout") {
       window.AuthService.logout();
     } else if (value === "account") {
       const { orgId } = this.props;
-      const { currentUser } = this.props.data;
       if (orgId) {
         this.props.router.push(`/app/${orgId}/account/${currentUser.id}`);
       }
     } else {
-      this.props.router.push(`/admin/${value}`);
+      if (currentUser.superVolOrganizations.some(org => org.id === value)) {
+        this.props.router.push(`/admin/${value}`);
+      } else {
+        this.props.router.push(`/app/${value}/todos`);
+      }
     }
   };
 
@@ -88,6 +92,7 @@ export class UserMenu extends Component {
     if (!currentUser) {
       return <div />;
     }
+    const organizations = currentUser.texterOrganizations;
 
     return (
       <div>
@@ -117,7 +122,7 @@ export class UserMenu extends Component {
             </MenuItem>
             <Divider />
             <Subheader>Teams</Subheader>
-            {currentUser.organizations.map(organization => (
+            {organizations.map(organization => (
               <MenuItem
                 key={organization.id}
                 primaryText={organization.name}
@@ -154,27 +159,27 @@ UserMenu.propTypes = {
   router: PropTypes.object
 };
 
-export const dataQuery = gql`
-  query getCurrentUserForMenu {
-    currentUser {
-      id
-      displayName
-      email
-      organizations {
+export default graphql(
+  gql`
+    query getCurrentUserForMenu {
+      currentUser {
         id
-        name
+        displayName
+        email
+        superVolOrganizations: organizations(role: "SUPERVOLUNTEER") {
+          id
+          name
+        }
+        texterOrganizations: organizations(role: "TEXTER") {
+          id
+          name
+        }
       }
     }
+  `,
+  {
+    options: {
+      fetchPolicy: "network-only"
+    }
   }
-`;
-
-const mapQueriesToProps = () => ({
-  data: {
-    query: dataQuery,
-    forceFetch: true
-  }
-});
-
-export default connect({
-  mapQueriesToProps
-})(withRouter(UserMenu));
+)(withRouter(UserMenu));

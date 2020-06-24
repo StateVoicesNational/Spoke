@@ -44,12 +44,10 @@ async function getSetCacheableResult(cacheKey, fallbackFunc) {
 }
 
 async function getIngestAvailability(name, ingestMethod, organization, user) {
-  return (
-    await getSetCacheableResult(
-      availabilityCacheKey(name, organization.id, user.id),
-      async () => ingestMethod.available(organization, user)
-    )
-  ).result;
+  return (await getSetCacheableResult(
+    availabilityCacheKey(name, organization.id, user.id),
+    async () => ingestMethod.available(organization, user)
+  )).result;
 }
 
 export function rawIngestMethod(name) {
@@ -94,18 +92,15 @@ export async function getMethodChoiceData(
   ingestMethod,
   organization,
   campaign,
-  user,
-  loaders
+  user
 ) {
   const cacheFunc =
     ingestMethod.clientChoiceDataCacheKey || (org => `${org.id}`);
   const cacheKey = choiceDataCacheKey(
     ingestMethod.name,
-    cacheFunc(organization, campaign, user, loaders)
+    cacheFunc(organization, campaign, user)
   );
-  return (
-    await getSetCacheableResult(cacheKey, async () =>
-      ingestMethod.getClientChoiceData(organization, campaign, user, loaders)
-    )
-  ).data;
+  return (await getSetCacheableResult(cacheKey, async () =>
+    ingestMethod.getClientChoiceData(organization, campaign, user)
+  )).data;
 }

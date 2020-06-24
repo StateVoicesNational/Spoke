@@ -33,6 +33,7 @@ const styles = {
   }
 };
 
+// TODO[matteo]: remove? appears unused
 class AssignmentTexterSurveyDropdown extends Component {
   handleAnswerChange = async (event, index, value) => {
     const { step, campaignContactId } = this.props;
@@ -108,8 +109,8 @@ AssignmentTexterSurveyDropdown.propTypes = {
   mutations: PropTypes.object
 };
 
-const mapMutationsToProps = () => ({
-  editQuestionResponse: questionResponse => ({
+const mutations = {
+  editQuestionResponse: ownProps => questionResponse => ({
     mutation: gql`
       mutation editQuestionResponse($questionResponse: QuestionResponseInput!) {
         editQuestionResponse(questionResponse: $questionResponse) {
@@ -122,8 +123,6 @@ const mapMutationsToProps = () => ({
       questionResponse
     }
   })
-});
+};
 
-export default loadData(AssignmentTexterSurveyDropdown, {
-  mapMutationsToProps
-});
+export default loadData({ mutations })(AssignmentTexterSurveyDropdown);

@@ -10,10 +10,28 @@ export const schema = gql`
     searchString: String
   }
 
+  type TexterUIConfig {
+    options: String
+    sideboxChoices: [String]
+  }
+
+  input TexterUIConfigInput {
+    options: String
+    sideboxChoices: [String]
+  }
+
+  type ErrorStat {
+    code: String!
+    count: Int!
+    link: String
+    description: String
+  }
+
   type CampaignStats {
     sentMessagesCount: Int
     receivedMessagesCount: Int
     optOutsCount: Int
+    errorCounts: [ErrorStat]
   }
 
   type CampaignCompletionStats {
@@ -49,6 +67,8 @@ export const schema = gql`
     organization: Organization
     title: String
     description: String
+    joinToken: String
+    batchSize: Int
     dueBy: Date
     isStarted: Boolean
     isArchived: Boolean
@@ -63,6 +83,7 @@ export const schema = gql`
     hasUnsentInitialMessages: Boolean
     customFields: [String]
     cannedResponses(userId: String): [CannedResponse]
+    texterUIConfig: TexterUIConfig
     stats: CampaignStats
     completionStats: CampaignCompletionStats
     pendingJobs: [JobRequest]
@@ -79,6 +100,9 @@ export const schema = gql`
     textingHoursStart: Int
     textingHoursEnd: Int
     timezone: String
+    messageserviceSid: String
+    useOwnMessagingService: Boolean
+    phoneNumbers: [String]
   }
 
   type CampaignsList {

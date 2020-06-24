@@ -30,23 +30,18 @@ export async function accessRequired(
   }
 }
 
-export async function assignmentRequired(
+export async function assignmentRequiredOrAdminRole(
   user,
+  orgId,
   assignmentId,
-  assignment,
-  contact
+  contact,
+  assignment
 ) {
   authRequired(user);
 
   if (user.is_superadmin) {
     return true;
   }
-  // console.log(
-  //   "createOptOut assignmentRequired",
-  //   user.id,
-  //   assignmentId,
-  //   contact
-  // );
   if (assignment && assignment.user_id === user.id) {
     // if we are passed the full assignment object, we can test directly
     return true;
@@ -60,12 +55,7 @@ export async function assignmentRequired(
     // check both to verify that the assignmentId-userId pair are accepted
     return true;
   }
-  // console.log(
-  //   "createOptOut assignmentRequired dbcall",
-  //   user.id,
-  //   assignmentId,
-  //   contact
-  // );
+
   const [userHasAssignment] = await r
     .knex("assignment")
     .where({
@@ -73,57 +63,15 @@ export async function assignmentRequired(
       id: assignmentId
     })
     .limit(1);
-  // console.log(
-  //   "createOptOut assignmentRequired dbcall post",
-  //   user.id,
-  //   assignmentId,
-  //   userHasAssignment
-  // );
-  if (!userHasAssignment) {
-    // undefined or null
+
+  const roleRequired = userHasAssignment ? "TEXTER" : "SUPERVOLUNTEER";
+  const hasPermission = await cacheableData.user.userHasRole(
+    user,
+    orgId,
+    roleRequired
+  );
+  if (!hasPermission) {
     throw new GraphQLError("You are not authorized to access that resource.");
   }
-  return userHasAssignment;
-}
-
-export async function assignmentRequiredOrAdminRole(
-  user,
-  orgId,
-  assignmentId,
-  contact
-) {
-  authRequired(user);
-  // console.log(
-  //   "createOptOut assignmentRequiredOrAdminRole",
-  //   user.id,
-  //   orgId,
-  //   assignmentId
-  // );
-  const isAdmin = await cacheableData.user.userHasRole(user, orgId, "ADMIN");
-  // console.log(
-  //   "createOptOut assignmentRequiredOrAdminRole isAdmin",
-  //   user.id,
-  //   orgId,
-  //   assignmentId,
-  //   isAdmin
-  // );
-  if (isAdmin || user.is_superadmin) {
-    return true;
-  }
-  // console.log(
-  //   "createOptOut assignmentRequiredOrAdminRole assignmentRequiredCall",
-  //   user.id,
-  //   orgId
-  // );
-  // calling exports.assignmentRequired instead of just assignmentRequired
-  // is functionally identical but it allows us to mock assignmentRequired
-  return await exports.assignmentRequired(user, assignmentId, null, contact);
-}
-
-export function superAdminRequired(user) {
-  authRequired(user);
-
-  if (!user.is_superadmin) {
-    throw new GraphQLError("You are not authorized to access that resource.");
-  }
+  return userHasAssignment || true;
 }

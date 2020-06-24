@@ -28,55 +28,23 @@ export function getContext(context) {
     loaders: createLoaders()
   };
 }
-import loadData from "../src/containers/hoc/load-data";
-jest.mock("../src/containers/hoc/load-data");
-/* Used to get graphql queries from components.
-*  Because of some limitations with the jest require cache that
-*  I can't find a way of getting around, it should only be called once
-*  per test.
-
-*  The query it returns will be that of the requested component, but
-*  the mutations will be merged from the component and its children.
-*/
-export function getGql(componentPath, props, dataKey = "data") {
-  require(componentPath); // eslint-disable-line
-  const { mapQueriesToProps } = _.last(loadData.mock.calls)[1];
-
-  const mutations = loadData.mock.calls.reduce((acc, mapping) => {
-    if (!mapping[1].mapMutationsToProps) return acc;
-    return {
-      ...acc,
-      ..._.mapValues(
-        mapping[1].mapMutationsToProps({ ownProps: props }),
-        mutation => (...params) => {
-          const m = mutation(...params);
-          return [m.mutation.loc.source.body, m.variables];
-        }
-      )
-    };
-  }, {});
-
-  let query;
-  if (mapQueriesToProps) {
-    const data = mapQueriesToProps({ ownProps: props });
-    query = [data[dataKey].query.loc.source.body, data[dataKey].variables];
-  }
-
-  return { query, mutations };
-}
 
 export async function createUser(
-  userInfo = {
+  userInfo = {},
+  organization_id = null,
+  role = null
+) {
+  const defaultUserInfo = {
     auth0_id: "test123",
     first_name: "TestUserFirst",
     last_name: "TestUserLast",
     cell: "555-555-5555",
     email: "testuser@example.com"
-  },
-  organization_id = null,
-  role = null
-) {
-  const user = new User(userInfo);
+  };
+  const user = new User({
+    ...defaultUserInfo,
+    ...userInfo
+  });
   await user.save();
   if (organization_id && role) {
     await r.knex("user_organization").insert({
@@ -116,15 +84,58 @@ const mySchema = makeExecutableSchema({
   allowUndefinedInResolve: true
 });
 
-export async function runGql(query, vars, user) {
-  const rootValue = {};
-  const context = getContext({ user });
-  return await graphql(mySchema, query, rootValue, context, vars);
+/**
+ * Get the text for a query parsed with the gql tag
+ */
+function getGqlOperationText(op) {
+  return op.loc && op.loc.source.body;
 }
 
-export async function runComponentGql(componentDataQuery, queryVars, user) {
-  return await runGql(componentDataQuery.loc.source.body, queryVars, user);
+export async function runGql(operation, vars, user) {
+  const operationText = getGqlOperationText(operation) || operation;
+  const rootValue = {};
+  const context = getContext({ user });
+  const result = await graphql(
+    mySchema,
+    operationText,
+    rootValue,
+    context,
+    vars
+  );
+  if (result && result.errors) {
+    console.log("runGql failed " + JSON.stringify(result));
+  }
+  return result;
 }
+
+export const updateUserRoles = async (
+  adminUser,
+  organizationId,
+  userId,
+  roles
+) => {
+  const query = `mutation editOrganizationRoles(
+      $organizationId: String!,
+      $userId: String!,
+      $roles: [String]) {
+    editOrganizationRoles(userId: $userId, organizationId: $organizationId, roles: $roles) {
+      id
+    }
+  }`;
+
+  const variables = {
+    organizationId,
+    userId,
+    roles
+  };
+  const result = await runGql(query, variables, adminUser);
+  if (result && result.errors) {
+    throw new Exception(
+      "editOrganizationRoles failed " + JSON.stringify(result)
+    );
+  }
+  return result;
+};
 
 export async function createInvite() {
   const rootValue = {};
@@ -196,7 +207,17 @@ export async function setTwilioAuth(user, organization) {
     twilioMessageServiceSid: messageServiceSid
   };
 
-  return await graphql(mySchema, twilioQuery, rootValue, context, variables);
+  const result = await graphql(
+    mySchema,
+    twilioQuery,
+    rootValue,
+    context,
+    variables
+  );
+  if (result && result.errors) {
+    console.log("updateTwilioAuth failed " + JSON.stringify(result));
+  }
+  return result;
 }
 
 export async function createCampaign(
@@ -223,17 +244,25 @@ export async function createCampaign(
       ...args
     }
   };
-  const ret = await graphql(
+  const result = await graphql(
     mySchema,
     campaignQuery,
     rootValue,
     context,
     variables
   );
-  return ret.data.createCampaign;
+  if (result.errors) {
+    throw new Exception("Create campaign failed " + JSON.stringify(result));
+  }
+  return result.data.createCampaign;
 }
 
-export async function saveCampaign(user, campaign, title = "test campaign") {
+export async function saveCampaign(
+  user,
+  campaign,
+  title = "test campaign",
+  useOwnMessagingService = "false"
+) {
   const rootValue = {};
   const description = "test description";
   const organizationId = campaign.organizationId;
@@ -243,6 +272,7 @@ export async function saveCampaign(user, campaign, title = "test campaign") {
     editCampaign(id: $campaignId, campaign: $campaign) {
       id
       title
+      useOwnMessagingService
     }
   }`;
 
@@ -250,18 +280,22 @@ export async function saveCampaign(user, campaign, title = "test campaign") {
     campaign: {
       title,
       description,
-      organizationId
+      organizationId,
+      useOwnMessagingService
     },
     campaignId: campaign.id
   };
-  const ret = await graphql(
+  const result = await graphql(
     mySchema,
     campaignQuery,
     rootValue,
     context,
     variables
   );
-  return ret.data.editCampaign;
+  if (result.errors) {
+    throw new Exception("Create campaign failed " + JSON.stringify(result));
+  }
+  return result.data.editCampaign;
 }
 
 export async function copyCampaign(campaignId, user) {
@@ -275,15 +309,22 @@ export async function copyCampaign(campaignId, user) {
   return await graphql(mySchema, query, rootValue, context, { campaignId });
 }
 
-export async function createTexter(organization) {
+export async function createTexter(organization, userInfo = {}) {
   const rootValue = {};
-  const user = await createUser({
+  const defaultUserInfo = {
     auth0_id: "test456",
     first_name: "TestTexterFirst",
     last_name: "TestTexterLast",
     cell: "555-555-6666",
     email: "testtexter@example.com"
+  };
+  const user = await createUser({
+    ...defaultUserInfo,
+    ...userInfo
   });
+  if (user.errors) {
+    throw new Exception("createUsers failed " + JSON.stringify(user));
+  }
   const joinQuery = `
   mutation joinOrganization($organizationUuid: String!) {
     joinOrganization(organizationUuid: $organizationUuid) {
@@ -294,7 +335,16 @@ export async function createTexter(organization) {
     organizationUuid: organization.data.createOrganization.uuid
   };
   const context = getContext({ user });
-  await graphql(mySchema, joinQuery, rootValue, context, variables);
+  const result = await graphql(
+    mySchema,
+    joinQuery,
+    rootValue,
+    context,
+    variables
+  );
+  if (result.errors) {
+    throw new Exception("joinOrganization failed " + JSON.stringify(result));
+  }
   return user;
 }
 
@@ -325,13 +375,17 @@ export async function assignTexter(admin, user, campaign, assignments) {
     campaignId,
     campaign: updateCampaign
   };
-  return await graphql(
+  const result = await graphql(
     mySchema,
     campaignEditQuery,
     rootValue,
     context,
     variables
   );
+  if (result.errors) {
+    throw new Exception("assignTexter failed " + JSON.stringify(result));
+  }
+  return result;
 }
 
 export async function sendMessage(campaignContactId, user, message) {
@@ -354,48 +408,51 @@ export async function sendMessage(campaignContactId, user, message) {
     message,
     campaignContactId
   };
-  return await graphql(mySchema, query, rootValue, context, variables);
+  const result = await graphql(mySchema, query, rootValue, context, variables);
+  if (result.errors) {
+    console.log("sendMessage errors", result);
+  }
+  return result;
 }
 
 export async function bulkSendMessages(assignmentId, user) {
-  const rootValue = {};
   const query = `
     mutation bulkSendMessage($assignmentId: Int!) {
         bulkSendMessages(assignmentId: $assignmentId) {
           id
         }
       }`;
-  const context = getContext({
-    user
-  });
   const variables = {
     assignmentId
   };
-  return await graphql(mySchema, query, rootValue, context, variables);
+  return runGql(query, variables, user);
 }
 
-export function buildScript(steps = 2) {
+export function buildScript(steps = 2, choices = 1) {
+  const makeStep = (step, max, choice = "") => ({
+    id: `new${step}_${choice}`,
+    questionText: `hmm${step}`,
+    script:
+      step === 1
+        ? "{lastName}"
+        : step === 0
+        ? "autorespond {zip}"
+        : `${choice}Step Script ${step}`,
+    answerOption: `${choice}hmm${step}`,
+    answerActions: "",
+    parentInteractionId: step > 0 ? "new" + (step - 1) + "_" : null,
+    isDeleted: false,
+    interactionSteps: choice ? [] : createSteps(step + 1, max)
+  });
   const createSteps = (step, max) => {
     if (max <= step) {
       return [];
     }
-    return [
-      {
-        id: "new" + step,
-        questionText: "hmm" + step,
-        script:
-          step === 1
-            ? "{lastName}"
-            : step === 0
-            ? "autorespond {zip}"
-            : "Step Script " + step,
-        answerOption: "hmm" + step,
-        answerActions: "",
-        parentInteractionId: step > 0 ? "new" + (step - 1) : null,
-        isDeleted: false,
-        interactionSteps: createSteps(step + 1, max)
-      }
-    ];
+    const rv = [makeStep(step, max)];
+    for (let i = 1; i < choices; i++) {
+      rv.push(makeStep(step, max, i));
+    }
+    return rv;
   };
   return createSteps(0, steps);
 }
@@ -403,21 +460,20 @@ export function buildScript(steps = 2) {
 export async function createScript(
   admin,
   campaign,
-  interactionSteps,
-  steps = 2
+  { interactionSteps, steps = 2, choices = 1, campaignGqlFragment } = {}
 ) {
   const rootValue = {};
   const campaignEditQuery = `
   mutation editCampaign($campaignId: String!, $campaign: CampaignInput!) {
     editCampaign(id: $campaignId, campaign: $campaign) {
-      id
+      ${campaignGqlFragment || "id"}
     }
   }`;
   // function to create a recursive set of steps of arbitrary depth
   let builtInteractionSteps;
 
   if (!interactionSteps) {
-    builtInteractionSteps = buildScript(steps);
+    builtInteractionSteps = buildScript(steps, choices);
   }
 
   const context = getContext({ user: admin });
@@ -615,8 +671,7 @@ export const getConversations = async (
         }
       `;
 
-  const result = await runGql(conversationsQuery, variables, user);
-  return result;
+  return runGql(conversationsQuery, variables, user);
 };
 
 export const createJob = async (campaign, overrides) => {
@@ -638,4 +693,43 @@ export const createJob = async (campaign, overrides) => {
   job.id = job_id;
 
   return job;
+};
+
+export const makeRunnableMutations = (mutationsToWrap, user, ownProps) => {
+  const newMutations = {};
+  Object.keys(mutationsToWrap).forEach(k => {
+    newMutations[k] = async (...args) => {
+      // TODO validate received args against args in the schema
+      const toWrap = mutationsToWrap[k](ownProps)(...args);
+      return runGql(toWrap.mutation, toWrap.variables, user);
+    };
+  });
+  return newMutations;
+};
+
+export const runComponentQueries = async (queries, user, ownProps) => {
+  const keys = Object.keys(queries);
+  const promises = keys.map(k => {
+    const query = queries[k];
+    const opts = query.options(ownProps);
+    return runGql(query.query, opts.variables, user);
+  });
+
+  const resolvedPromises = await Promise.all(promises);
+
+  const queryResults = {};
+  for (let i = 0; i < keys.length; i++) {
+    const dataKey = Object.keys(resolvedPromises[i].data)[0];
+    const key = keys[i];
+    queryResults[key] = {
+      // as implemented here refetch does not hit the resolvers
+      // and returns the data that was originally feteched
+      refetch: async () => {
+        return Promise.resolve(resolvedPromises[i].data[dataKey]);
+      }
+    };
+    queryResults[key][dataKey] = resolvedPromises[i].data[dataKey];
+  }
+
+  return queryResults;
 };

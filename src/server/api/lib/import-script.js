@@ -3,7 +3,7 @@ import { google } from "googleapis";
 import _ from "lodash";
 import { compose, map, reduce, getOr, find, filter, has } from "lodash/fp";
 
-import { r } from "../../models";
+import { r, cacheableData } from "../../models";
 import { getConfig } from "./config";
 
 const textRegex = RegExp(".*[A-Za-z0-9]+.*");
@@ -32,7 +32,10 @@ const getDocument = async documentId => {
 const getParagraphStyle = getOr("", "paragraph.paragraphStyle.namedStyleType");
 const getTextRun = getOr("", "textRun.content");
 const sanitizeTextRun = textRun => textRun.replace("\n", "");
-const getSanitizedTextRun = compose(sanitizeTextRun, getTextRun);
+const getSanitizedTextRun = compose(
+  sanitizeTextRun,
+  getTextRun
+);
 const concat = (left, right) => left.concat(right);
 const reduceStrings = reduce(concat, String());
 const getParagraphText = compose(
@@ -104,7 +107,8 @@ const getSectionParagraphs = (sections, heading) =>
   (
     sections.find(
       section =>
-        section.text && section.text.toLowerCase() === heading.toLowerCase()
+        section.text &&
+        section.text.toLowerCase().match(new RegExp(heading.toLowerCase()))
     ) || {}
   ).paragraphs;
 
@@ -244,6 +248,7 @@ const saveInteractionsHierarchyNode = async (
       script: interactionsHierarchyNode.script.join("\n") || "",
       answer_option: interactionsHierarchyNode.answer || "",
       answer_actions: "",
+      answer_actions_data: "",
       campaign_id: campaignId,
       is_deleted: false
     })
@@ -382,6 +387,8 @@ const importScriptFromDocument = async (campaignId, scriptUrl) => {
     _.clone(cannedResponsesParagraphs)
   );
   await replaceCannedResponsesInDatabase(campaignId, cannedResponsesList);
+  await cacheableData.campaign.reload(campaignId);
+  await cacheableData.cannedResponse.clearQuery({ campaignId });
 };
 
 export default importScriptFromDocument;

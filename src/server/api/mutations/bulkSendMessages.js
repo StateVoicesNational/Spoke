@@ -8,7 +8,7 @@ import { getTopMostParent, log } from "../../../lib";
 
 import { sendMessage, findNewCampaignContact } from "./index";
 
-export const bulkSendMessages = async (assignmentId, loaders, user) => {
+export const bulkSendMessages = async (_, { assignmentId }, { user }) => {
   if (!process.env.ALLOW_SEND_ALL || !process.env.NOT_IN_USA) {
     log.error("Not allowed to send all messages at once");
     throw new GraphQLError({
@@ -21,9 +21,13 @@ export const bulkSendMessages = async (assignmentId, loaders, user) => {
 
   // Assign some contacts
   await findNewCampaignContact(
-    assignmentId,
-    Number(process.env.BULK_SEND_CHUNK_SIZE) - 1,
-    user
+    undefined,
+    {
+      assignment,
+      assignmentId,
+      numberContacts: Number(process.env.BULK_SEND_CHUNK_SIZE) - 1
+    },
+    { user }
   );
 
   const contacts = await r
@@ -51,7 +55,7 @@ export const bulkSendMessages = async (assignmentId, loaders, user) => {
   const texter = camelCaseKeys(await User.get(assignment.user_id));
   const customFields = Object.keys(JSON.parse(contacts[0].custom_fields));
 
-  const contactMessages = await contacts.map(async contact => {
+  const promises = contacts.map(async contact => {
     contact.customFields = contact.custom_fields;
     const text = applyScript({
       contact: camelCaseKeys(contact),
@@ -66,8 +70,12 @@ export const bulkSendMessages = async (assignmentId, loaders, user) => {
       text,
       assignmentId
     };
-    await sendMessage(contactMessage, contact.id, loaders, user);
+    return sendMessage(
+      undefined,
+      { message: contactMessage, campaignContactId: contact.id },
+      { user }
+    );
   });
 
-  return contactMessages;
+  return await Promise.all(promises);
 };

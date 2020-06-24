@@ -1,4 +1,113 @@
 # Release Notes
+
+## v7.0
+_June 2020:_ Version 7.0 (or 6.19 in honor of Juneteenth!)
+**Note:** This is a major release and therefore requires a schema change. See the deploy steps section for details. Anything marked as *experimental* has not yet been tested on a production texting campaign.
+We're marking this as a major version update: 7.0 because there are several backwards-incompatible changes that we believe are important and valuable.
+
+### Backwards incompatibilities:
+
+* This change has schema changes on the `campaign` table which you should make sure to update -- it should be a fast and painless upgrade (automatic if you have it setup). See the deploy steps section for details of how to migrate.
+* There are many Texter UI accessibility improvements, but they do come at the expense of changing how the Enter key behaves for texters.  You should communicate this to your texting team and update and training materials. (to revert this functionality, you can enable the env var HOLD_ENTER_KEY=1)
+* SuperVolunteer roles now have access to all MessageReview operations.
+
+### Improvements
+
+* There is now further support for VAN -- a robust action handler that can be enabled by adding `ACTION_HANDLERS=ngpvan-action` to your environment variables will enable this.
+* We have a new framework for extending the Texter UI interface called ["sideboxes"](https://github.com/MoveOnOrg/Spoke/issues/1533).  Enabled with environment variable TEXTER_SIDEBOXES which works similarly to action handlers, where it should be a comma separated list of enabled sideboxes. Developers can add sidebox functionality, and admins can set defaults in the organization Settings section and changes per-campaign -- enabling/disabling sideboxes.  Two so-far are:
+  * `contact-reference` which is a link the texter can click and/or share with an admin for direct access to that conversation later
+  * `tag-contact` which if you have EXPERIMENTAL_TAGS=1 enabled and create tags, a texter will have an interface to mark them.  They can then be filtered for in Message Review.
+
+  There will be more work here going forward -- feedback is welcome as this is still a feature in active development.
+
+* There is _another_ new experimental framework: Message Handlers which can intercept a message pre and post-save with a sample message handler that can tag profanity -- you can experiment with this by setting `MESSAGE_HANDLERS=profanity-tagger`
+* Texter UI Accessibility improvements -- previously we captured the Enter key to send a message. This was inaccessible because the Enter key is used when navigating with the keyboard in order to 'click' a button. Sending is now possible with `Ctrl-x` (and skip is `Ctrl-y`).
+* We have now disabled by default the ability to hold down the Enter key -- for sending you can now press any letter key (or Enter) to send a message. If you want this functionality back set HOLD_ENTER_KEY=1
+* There is now a campaign 'sending errors' report which summarizes how many sending errors have been reported by Twilio.  Carrier Violation error messages are especially useful (and important) to track.
+* A new contact-loader that allows upload into S3 to make larger uploads possible if you have deployed on AWS.
+* A new environment or organization.features variable MAX_TEXTERS_PER_CAMPAIGN which can block more texters from joining a campaign with dynamic assignment.
+
+### Bug fixes
+
+There are too many bug fixes to mention -- [please see the full list of linked changes](https://github.com/MoveOnOrg/Spoke/pull/1623)
+
+### Deploy Steps:
+Instructions for migrating you database
+
+* Make sure SUPPRESS_MIGRATIONS="" (not 0!) in your environment
+* If you're using AWS Lambda, check out the [deploy instructions here](https://github.com/MoveOnOrg/Spoke/blob/main/docs/DEPLOYING_AWS_LAMBDA.md#migrating-the-database)
+
+### Appreciations!
+
+Thanks to all the contributors part of this release including: @ibrand @lperson @matteosb @schuyler1d
+
+Also special shout outs to [Working Families Party](https://workingfamilies.org/) and [Movement For Black Lives](https://m4bl.org/) for staging some of these changes and giving feedback (along with MoveOn, too) -- Thank you to the Spoke teams there that drove great campaigns while providing technical bug reports so we could make this a better release :heart:
+
+### Onward
+
+Our next release, we're expecting some more great features -- ability to suspend texters, improving the dynamic assignment workflow, and more improvements around tags.  Devs and orgs, please send your PRs in now, so we can test your work out and get it in the next release.
+
+
+## v6.1
+_June 2020:_ Version 6.1
+
+6.1 is mostly focused on technical improvements. We upgraded to the 2.x versions of apollo-client and react-apollo and removed the dependency on redux. This allowed us to fix some long-standing bugs and should improve the developer experience for Spoke contributors.
+
+**Improvements**
+* Data loading errors are displayed to the user rather than causing blank screens or infinite loading animations
+* Enhanced the action handler framework with better error handling and caching to improve performance, and added the ability for administrators to optionally select extra information on a per-question-response basis to be sent to the remote system when a texter selects the response.
+
+**Changes**
+* Removed the threeClickEnabled organization feature
+
+**Bug fixes**
+* Resolved numerous issues related to cache collisions in the Apollo store
+* Job progress updates more reliably on the campaign creation screen
+* Fixed select all on the campaign archive screen
+* Closing the user edit modal now takes you back to the person list
+* Fixed an issue that allowed campaigns to start before all jobs completed
+
+Thanks to all the contributors part of this release including:
+[ibrand](https://github.com/ibrand),
+[lperson](https://github.com/lperson),
+[matteosb](https://github.com/matteosb),
+[schuyler1d](https://github.com/schuyler1d)
+
+
+## v6.0
+_May 2020:_ Version 6.0
+**Note:** This is a major release and therefore requires a schema change. See the deploy steps section for details. Anything marked as *experimental* has not yet been tested on a production texting campaign.
+We're marking this as a major version update: 6.0 because there are several backwards-incompatible changes that we think you will love:
+
+- *Experimental* Phone number inventory management -- Adds functionality to buy Twilio phone numbers directly through the Admin interface. Organizations using their own Messaging Service, i.e. those that have TWILIO_MESSAGE_SERVICE set in organization features rather than through the global env var, can add the numbers directly to their Messaging Service and use them for texting. Additionally, phone numbers purchased through Spoke can be configured to use a custom voice response by setting the TWILIO_VOICE_URL setting. A typical use case would be to use TwiML Bins to re-route calls or to play a custom voicemails. To configure:
+  - Set EXPERIMENTAL_PHONE_INVENTORY to enable the feature
+  - Set TWILIO_VOICE_URL for a custom voice response
+- *Experimental* Per-campaign Twilio Messaging Services -- This feature lays the foundation for scaling Spoke on Twilio by allowing campaigns to use their own Messaging Services. When enabled, the campaign edit screen will allow admins to either supply a Messaging Service for the campaign to use or to have Spoke create one for them. Note that numbers will have to be added to the Messaging Service manually. This feature will be integrated with the phone number inventory in a future release. To configure:
+  - Set EXPERIMENTAL_TWILIO_PER_CAMPAIGN_MESSAGING_SERVICE to enable
+  - Set TWILIO_BASE_CALLBACK_URL to configure webhooks for Messaging Services created by Spoke. Required if this feature is enabled.
+- New Texting UI -- in version 5.6 it was enableable with EXPERIMENTAL_TEXTERUI ahead of time. It is now the default! For this version, we allow you to preserve the old texter UI by setting the environment variable DEPRECATED_TEXTERUI=GONE_SOON. Also note that with the new UI we have removed user-created Canned Responses -- there's consensus that it causes more problems than it helps. We've also long had the Super Volunteer role which most campaigns use for a group of texters that can update canned responses when needed.
+  - As part of this Texter UI, you can create [shortcut buttons](./REFERENCE-shortcut-rules.md) that will surface some of your question responses and canned responses as a row of buttons outside of a menu to speed up a texter's response flow. [Check out the docs to learn more!](./REFERENCE-shortcut-rules.md)
+- Action Handler developers: Through the great work of @lperson for improved VAN support, our action handler api used to return a true/false value for the available() call -- it should now return an object with two keys: { result: <boolean on available>, expiresSeconds: <how long to cache the result, 0 by default>}
+There are several schema changes -- only adding fields, so migration should be easy/fast. However, if you have SUPPRESS_MIGRATIONS enabled, then you will need to manually migrate the database ( Heroku, AWS Lambda )
+
+In addition to those changes, we've improved the Admin People page (@lperson ) and made some tweaks to the Campaign Edit page (@matteosb , @higgyCodes ), and the Texter Todo list (@larkinds ).
+
+Deploy Steps:
+
+**Instructions for migrating you database**
+
+1. Make sure SUPPRESS_MIGRATIONS="" (not 0!) in your environment
+2. If you're using AWS Lambda, check out the [deploy instructions here](DEPLOYING_AWS_LAMBDA.md#migrating-the-database)
+
+Thanks to all the contributors part of this release including:
+[hiemanshu](https://github.com/hiemanshu),
+[higgyCodes](https://github.com/higgyCodes),
+[JeremyParker](https://github.com/JeremyParker),
+[larkinds](https://github.com/larkinds),
+[lperson](https://github.com/lperson),
+[matteosb](https://github.com/matteosb),
+[schuyler1d](https://github.com/schuyler1d)
+
 ## v5.5
 _May 2020:_ Version 5.5
 - Campaign List Admin changes (@lperson, @schuyler1d)
@@ -24,7 +133,7 @@ Thanks to all the contributors part of this release including:
 _April 2020:_ Version 5.4
 This release includes the following improvements:
 
-- *Experimental* A new contact loader for loading contacts in straight from NGP VAN (not yet testing on a production campaign)
+- *Experimental* A new contact loader for loading contacts in straight from NGP VAN (not yet tested on a production campaign)
 - Scaling improvements
 - Allow contact loaders to be toggled on a per-organization level
 - Improvements to the contact loaders framework

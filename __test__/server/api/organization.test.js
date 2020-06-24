@@ -1,18 +1,21 @@
 /* eslint-disable no-unused-expressions, consistent-return */
 import { r } from "../../../src/server/models/";
-import { getCampaignsQuery } from "../../../src/containers/CampaignList";
+import { getCampaignsQuery } from "../../../src/containers/AdminCampaignList";
 import { GraphQLError } from "graphql/error";
 
 import {
-  setupTest,
   cleanupTest,
-  createUser,
+  createCampaign,
   createInvite,
   createOrganization,
-  createCampaign,
+  createStartedCampaign,
   createTexter,
-  runGql
+  createUser,
+  runGql,
+  setupTest
 } from "../../test_helpers";
+
+const ActionHandlerFramework = require("../../../src/integrations/action-handlers");
 
 describe("organization", async () => {
   let testTexterUser;
@@ -82,10 +85,9 @@ describe("organization", async () => {
     });
 
     it("filters by a single campaign id", async () => {
-      const campaignsFilter = {
+      variables.campaignsFilter = {
         campaignId: testCampaign.id
       };
-      variables.campaignsFilter = campaignsFilter;
 
       const result = await runGql(getCampaignsQuery, variables, testAdminUser);
       expect(result.data.organization.campaigns.campaigns.length).toEqual(1);
@@ -188,6 +190,105 @@ describe("organization", async () => {
           testCampaign2.id
         ]);
       });
+    });
+  });
+
+  describe(".availableActions", () => {
+    let savedActionHandlers;
+    let organizationQuery;
+    let variables;
+    let user;
+    let organization;
+
+    beforeAll(async () => {
+      savedActionHandlers = process.env.ACTION_HANDLERS;
+      await setupTest();
+    }, global.DATABASE_SETUP_TEARDOWN_TIMEOUT);
+
+    afterAll(async () => {
+      await cleanupTest();
+    }, global.DATABASE_SETUP_TEARDOWN_TIMEOUT);
+
+    afterEach(async () => {
+      process.env.ACTION_HANDLERS = savedActionHandlers;
+      jest.restoreAllMocks();
+    });
+
+    beforeEach(async () => {
+      ({
+        testOrganization: {
+          data: { createOrganization: organization }
+        },
+        testAdminUser: user
+      } = await createStartedCampaign());
+
+      organizationQuery = `
+        query q($organizationId: String!) {
+          organization(id: $organizationId) {
+            id 
+            name
+            availableActions {
+              name
+              displayName
+              instructions
+              clientChoiceData {
+                name
+                details
+              }
+            }
+          }
+        }
+      `;
+
+      variables = {
+        organizationId: organization.id
+      };
+
+      jest
+        .spyOn(ActionHandlerFramework, "getAvailableActionHandlers")
+        .mockResolvedValue([
+          {
+            name: "thing 1",
+            displayName: () => "THING ONE",
+            instructions: () => "Thing 1 instructions"
+          },
+          {
+            name: "thing 2",
+            displayName: () => "THING TWO",
+            instructions: () => "Thing 2 instructions"
+          }
+        ]);
+    });
+
+    it("calls availableHandlers and handles the result correctly", async () => {
+      const result = await runGql(organizationQuery, variables, user);
+
+      expect(
+        ActionHandlerFramework.getAvailableActionHandlers.mock.calls
+      ).toEqual([
+        [
+          expect.objectContaining({
+            id: Number(organization.id),
+            uuid: organization.uuid
+          }),
+          user
+        ]
+      ]);
+
+      expect(result.data.organization.availableActions).toEqual([
+        {
+          name: "thing 1",
+          displayName: "THING ONE",
+          instructions: "Thing 1 instructions",
+          clientChoiceData: []
+        },
+        {
+          name: "thing 2",
+          displayName: "THING TWO",
+          instructions: "Thing 2 instructions",
+          clientChoiceData: []
+        }
+      ]);
     });
   });
 });

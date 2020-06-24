@@ -6,10 +6,12 @@ import _ from "lodash";
 import { Card, CardHeader, CardText } from "material-ui/Card";
 import AutoComplete from "material-ui/AutoComplete";
 import SelectField from "material-ui/SelectField";
+import TextField from "material-ui/TextField";
 import MenuItem from "material-ui/MenuItem";
 import theme from "../styles/theme";
 import { dataSourceItem } from "./utils";
 import SelectedCampaigns from "./SelectedCampaigns";
+import TagsSelector from "./TagsSelector";
 
 import { StyleSheet, css } from "aphrodite";
 
@@ -72,7 +74,9 @@ class IncomingMessageFilter extends Component {
     super(props);
 
     this.state = {
-      selectedCampaigns: []
+      selectedCampaigns: [],
+      messageTextFilter: "",
+      tagsFilter: this.props.tagsFilter
     };
   }
 
@@ -130,6 +134,11 @@ class IncomingMessageFilter extends Component {
     }
   };
 
+  onTagsFilterChanged = tagsFilter => {
+    this.setState({ tagsFilter });
+    this.props.onTagsFilterChanged(tagsFilter);
+  };
+
   applySelectedCampaigns = selectedCampaigns => {
     this.setState({
       selectedCampaigns,
@@ -174,7 +183,6 @@ class IncomingMessageFilter extends Component {
     selectedCampaigns.map(campaign => parseInt(campaign.key, 10));
 
   campaignsNotAlreadySelected = campaign => {
-    console.log(campaign);
     return !this.selectedCampaignIds(this.state.selectedCampaigns).includes(
       parseInt(campaign.id, 10)
     );
@@ -311,11 +319,37 @@ class IncomingMessageFilter extends Component {
                 onNewRequest={this.onTexterSelected}
               />
             </div>
-            <SelectedCampaigns
-              campaigns={this.state.selectedCampaigns}
-              onDeleteRequested={this.handleCampaignRemoved}
-              onClear={this.handleClearCampaigns}
-            />
+            <div className={css(styles.spacer)} />
+            <div className={css(styles.flexColumn)}>
+              <TextField
+                hintText="Search message text"
+                floatingLabelText="Search message text"
+                onChange={(_, messageTextFilter) => {
+                  this.setState({ messageTextFilter });
+                }}
+                onKeyPress={evt => {
+                  if (evt.key === "Enter") {
+                    this.props.onMessageTextFilterChanged(
+                      this.state.messageTextFilter
+                    );
+                  }
+                }}
+              />
+            </div>
+            <div>
+              {window.EXPERIMENTAL_TAGS === true && (
+                <TagsSelector
+                  onChange={this.onTagsFilterChanged}
+                  tagsFilter={this.state.tagsFilter}
+                  tags={this.props.tags}
+                />
+              )}
+              <SelectedCampaigns
+                campaigns={this.state.selectedCampaigns}
+                onDeleteRequested={this.handleCampaignRemoved}
+                onClear={this.handleClearCampaigns}
+              />
+            </div>
           </div>
         </CardText>
       </Card>
@@ -326,6 +360,7 @@ class IncomingMessageFilter extends Component {
 IncomingMessageFilter.propTypes = {
   onCampaignChanged: type.func.isRequired,
   onTexterChanged: type.func.isRequired,
+  onMessageTextFilterChanged: type.func.isRequired,
   onActiveCampaignsToggled: type.func.isRequired,
   onArchivedCampaignsToggled: type.func.isRequired,
   includeArchivedCampaigns: type.bool.isRequired,
@@ -339,7 +374,10 @@ IncomingMessageFilter.propTypes = {
   onMessageFilterChanged: type.func.isRequired,
   assignmentsFilter: type.shape({
     texterId: type.number
-  }).isRequired
+  }).isRequired,
+  onTagsFilterChanged: type.func.isRequired,
+  tags: type.arrayOf(type.object).isRequired,
+  tagsFilter: type.object.isRequired
 };
 
 export default IncomingMessageFilter;

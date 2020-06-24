@@ -1,22 +1,24 @@
-import {
-  log
-} from "../../../lib";
-import {
-  Assignment,
-  Campaign,
-  r
-} from "../../models";
-import {
-  assignmentRequired
-} from "../errors";
+import { log } from "../../../lib";
+import { Assignment, Campaign, r, cacheableData } from "../../models";
+import { assignmentRequiredOrAdminRole } from "../errors";
 
+export const findNewCampaignContact = async (
+  _,
+  { assignment: assignmentParameter, assignmentId, numberContacts },
+  { user }
+) => {
+  /* This attempts to find new contacts for the assignment, in the case that useDynamicAssigment == true */
+  const assignment =
+    assignmentParameter || (await Assignment.get(assignmentId));
+  const campaign = await cacheableData.campaign.load(assignment.campaign_id);
 
-export const findNewCampaignContact = async (assignmentId, numberContacts, user) => {
-  /* This attempts to find a new contact for the assignment, in the case that useDynamicAssigment == true */
-  const assignment = await Assignment.get(assignmentId);
-  await assignmentRequired(user, assignmentId, assignment);
-
-  const campaign = await Campaign.get(assignment.campaign_id);
+  await assignmentRequiredOrAdminRole(
+    user,
+    campaign.organization_id,
+    assignmentId,
+    null,
+    assignment
+  );
 
   if (!campaign.use_dynamic_assignment || assignment.max_contacts === 0) {
     return {
@@ -28,13 +30,20 @@ export const findNewCampaignContact = async (assignmentId, numberContacts, user)
     r.knex("campaign_contact").where("assignment_id", assignmentId)
   );
 
-  numberContacts = numberContacts || 1;
+  numberContacts = Math.min(
+    numberContacts || campaign.batch_size || 1,
+    campaign.batch_size === null
+      ? 1 // if null, then probably a legacy campaign
+      : campaign.batch_size
+  );
+
   if (
     assignment.max_contacts &&
     contactsCount + numberContacts > assignment.max_contacts
   ) {
     numberContacts = assignment.max_contacts - contactsCount;
   }
+
   // Don't add more if they already have that many
   const result = await r.getCount(
     r.knex("campaign_contact").where({
@@ -55,13 +64,13 @@ export const findNewCampaignContact = async (assignmentId, numberContacts, user)
       "id",
       "in",
       r
-      .knex("campaign_contact")
-      .where({
-        assignment_id: null,
-        campaign_id: campaign.id
-      })
-      .limit(numberContacts)
-      .select("id")
+        .knex("campaign_contact")
+        .where({
+          assignment_id: null,
+          campaign_id: campaign.id
+        })
+        .limit(numberContacts)
+        .select("id")
     )
     .update({
       assignment_id: assignmentId

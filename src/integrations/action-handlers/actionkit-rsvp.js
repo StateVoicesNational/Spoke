@@ -2,6 +2,7 @@ import request from "request";
 import { r } from "../../server/models";
 import crypto from "crypto";
 
+export const name = "actionkit-rsvp";
 export const displayName = () => "ActionKit Event RSVP";
 
 export const instructions = () =>
@@ -12,30 +13,51 @@ export const instructions = () =>
   which will be added as post data where '*' can be any word which will map to an action/event field.
   `;
 
+export function serverAdministratorInstructions() {
+  return {
+    description: `
+      Campaign contacts MUST be uploaded with "event_id" and "event_page" fields
+      along with external_id=<actionkit user.id>.
+      Optional fields include "event_source" (defaults to 'spoke') and "event_field_*" fields and "event_action_*"
+      which will be added as post data where '*' can be any word which will map to an action/event field.
+      `,
+    setupInstructions:
+      "Add `actionkit-rsvp` to the environment variable `ACTION_HANDLERS`; refer to `docs/HOWTO_INTEGRATE_WITH_ACTIONKIT.md`",
+    environmentVariables: ["AK_BASEURL", "AK_SECRET"]
+  };
+}
+
 export async function available(organizationId) {
+  let isAvailable = false;
   if (process.env.AK_BASEURL && process.env.AK_SECRET) {
-    return true;
+    isAvailable = true;
+  } else {
+    const org = await r
+      .knex("organization")
+      .where("id", organizationId)
+      .select("features");
+    const features = JSON.parse(org.features || "{}");
+    let needed = [];
+    if (!process.env.AK_BASEURL && !features.AK_BASEURL) {
+      needed.push("AK_BASEURL");
+    }
+    if (!process.env.AK_SECRET && !features.AK_SECRET) {
+      needed.push("AK_SECRET");
+    }
+    if (needed.length) {
+      console.error(
+        "actionkit-rsvp unavailable because " +
+          needed.join(", ") +
+          " must be set (either in environment variables or json value for organization)"
+      );
+    }
+    isAvailable = !!needed.length;
   }
-  const org = await r
-    .knex("organization")
-    .where("id", organizationId)
-    .select("features");
-  const features = JSON.parse(org.features || "{}");
-  let needed = [];
-  if (!process.env.AK_BASEURL && !features.AK_BASEURL) {
-    needed.push("AK_BASEURL");
-  }
-  if (!process.env.AK_SECRET && !features.AK_SECRET) {
-    needed.push("AK_SECRET");
-  }
-  if (needed.length) {
-    console.error(
-      "actionkit-rsvp unavailable because " +
-        needed.join(", ") +
-        " must be set (either in environment variables or json value for organization)"
-    );
-  }
-  return !!needed.length;
+
+  return {
+    result: isAvailable,
+    expiresSeconds: 600
+  };
 }
 
 export const akidGenerate = function(ak_secret, cleartext) {

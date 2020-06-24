@@ -1,5 +1,5 @@
 import DataLoader from "dataloader";
-import { r, loaders } from "../../models";
+import { r } from "../../models";
 import { isRoleGreater } from "../../../lib/permissions";
 
 /*
@@ -31,7 +31,13 @@ const userRoleKey = userId =>
 const userAuthKey = authId =>
   `${process.env.CACHE_PREFIX || ""}texterauth-${authId}`;
 
-export const accessHierarchy = ["TEXTER", "SUPERVOLUNTEER", "ADMIN", "OWNER"];
+export const accessHierarchy = [
+  "SUSPENDED",
+  "TEXTER",
+  "SUPERVOLUNTEER",
+  "ADMIN",
+  "OWNER"
+];
 
 const getHighestRolesPerOrg = userOrgs => {
   const highestRolesPerOrg = {};
@@ -231,8 +237,6 @@ const userCache = {
         await r.redis.delAsync(userAuthKey(authId));
       }
     }
-    loaders.user.clear(Number(userId));
-    loaders.user.clear(String(userId));
   }
 };
 

@@ -297,13 +297,13 @@ const initialize = async (knex, Promise) => {
         t.increments("id");
         t.integer("user_id").notNullable();
         t.integer("organization_id").notNullable();
-        t.enu("role", [
-          "OWNER",
-          "ADMIN",
-          "SUPERVOLUNTEER",
-          "TEXTER"
-        ]).notNullable();
 
+        const roles = ["OWNER", "ADMIN", "SUPERVOLUNTEER", "TEXTER"];
+        // In `20200512143258_add_user_roles` we use raw SQL to add some roles for Postgres DBs. For Sqlite DBs we init with all the values because that same raw SQL won't work.
+        if (isSqlite) {
+          roles.push("VETTED_TEXTER", "ORG_SUPERADMIN", "SUSPENDED");
+        }
+        t.enu("role", roles).notNullable();
         t.index("user_id");
         t.foreign("user_id").references("user.id");
         t.index("organization_id");
@@ -343,7 +343,7 @@ const initialize = async (knex, Promise) => {
         t.text("service_response")
           .notNullable()
           .defaultTo("");
-        t.integer("assignment_id").notNullable();
+        t.integer("assignment_id");
         t.text("service")
           .notNullable()
           .defaultTo("");

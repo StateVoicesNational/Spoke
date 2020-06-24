@@ -97,11 +97,20 @@ class AdminDashboard extends React.Component {
         name: "Settings",
         path: "settings",
         role: "SUPERVOLUNTEER"
+      },
+      {
+        name: "Phone Numbers",
+        path: "phone-numbers",
+        role: "OWNER"
       }
     ];
 
     if (window.EXPERIMENTAL_TAGS === false) {
       sections = sections.filter(section => section.name !== "Tags");
+    }
+
+    if (!this.props.data.organization.phoneInventoryEnabled) {
+      sections = sections.filter(section => section.name !== "Phone Numbers");
     }
 
     let currentSection = sections.filter(section =>
@@ -139,7 +148,7 @@ AdminDashboard.propTypes = {
   location: PropTypes.object
 };
 
-const mapQueriesToProps = ({ ownProps }) => ({
+const queries = {
   data: {
     query: gql`
       query getCurrentUserRoles($organizationId: String!) {
@@ -147,12 +156,18 @@ const mapQueriesToProps = ({ ownProps }) => ({
           id
           roles(organizationId: $organizationId)
         }
+        organization(id: $organizationId) {
+          name
+          phoneInventoryEnabled
+        }
       }
     `,
-    variables: {
-      organizationId: ownProps.params.organizationId
-    }
+    options: ownProps => ({
+      variables: {
+        organizationId: ownProps.params.organizationId
+      }
+    })
   }
-});
+};
 
-export default loadData(withRouter(AdminDashboard), { mapQueriesToProps });
+export default loadData({ queries })(withRouter(AdminDashboard));
