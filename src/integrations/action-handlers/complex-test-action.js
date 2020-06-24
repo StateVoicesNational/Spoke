@@ -23,6 +23,8 @@ export function serverAdministratorInstructions() {
   };
 }
 
+export async function onTagUpdate(tags, contact, campaign, organization) {}
+
 export function clientChoiceDataCacheKey(organization, user) {
   return `${organization.id}`;
 }
