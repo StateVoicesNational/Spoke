@@ -6,6 +6,7 @@ import GSForm from "./forms/GSForm";
 import Form from "react-formal";
 import FlatButton from "material-ui/FlatButton";
 import { dataTest } from "../lib/attributes";
+import theme from "../styles/theme";
 
 const styles = StyleSheet.create({
   buttonRow: {
@@ -47,12 +48,16 @@ class CannedResponseForm extends React.Component {
             fullWidth
           />
           <div className={css(styles.buttonRow)}>
-            <Form.Button
+            <FlatButton
               {...dataTest("addResponse")}
-              type="submit"
               label="Add Response"
+              backgroundColor={theme.colors.green}
+              labelStyle={{ color: "white" }}
               style={{
                 display: "inline-block"
+              }}
+              onClick={() => {
+                this.refs.form.submit();
               }}
             />
             <FlatButton

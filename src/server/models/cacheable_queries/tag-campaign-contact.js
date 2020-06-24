@@ -63,6 +63,10 @@ const tagCampaignContactCache = {
     );
     if (r.redis && CONTACT_CACHE_ENABLED) {
       const cacheKey = tagCacheKey(campaignContactId);
+      const existingTags = await r.redis.getAsync(cacheKey);
+      if (existingTags) {
+        tags.push(...JSON.parse(existingTags));
+      }
       await r.redis
         .multi()
         .set(
