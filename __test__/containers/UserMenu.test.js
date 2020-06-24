@@ -17,7 +17,13 @@ describe("UserMenu", () => {
         id: 1,
         displayName: "TestName",
         email: "test@test.com",
-        organizations: [
+        superVolOrganizations: [
+          {
+            id: 2,
+            name: "testOrg"
+          }
+        ],
+        texterOrganizations: [
           {
             id: 2,
             name: "testOrg"
@@ -46,7 +52,8 @@ describe("UserMenu", () => {
         id: 1,
         displayName: "TestName",
         email: "test@test.com",
-        organizations: [
+        superVolOrganizations: [],
+        texterOrganizations: [
           {
             id: 2,
             name: "testOrg"

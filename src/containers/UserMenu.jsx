@@ -43,16 +43,20 @@ export class UserMenu extends Component {
 
   handleMenuChange = (event, value) => {
     this.handleRequestClose();
+    const { currentUser } = this.props.data;
     if (value === "logout") {
       window.AuthService.logout();
     } else if (value === "account") {
       const { orgId } = this.props;
-      const { currentUser } = this.props.data;
       if (orgId) {
         this.props.router.push(`/app/${orgId}/account/${currentUser.id}`);
       }
     } else {
-      this.props.router.push(`/admin/${value}`);
+      if (currentUser.superVolOrganizations.some(org => org.id === value)) {
+        this.props.router.push(`/admin/${value}`);
+      } else {
+        this.props.router.push(`/app/${value}/todos`);
+      }
     }
   };
 
@@ -88,6 +92,7 @@ export class UserMenu extends Component {
     if (!currentUser) {
       return <div />;
     }
+    const organizations = currentUser.texterOrganizations;
 
     return (
       <div>
@@ -117,7 +122,7 @@ export class UserMenu extends Component {
             </MenuItem>
             <Divider />
             <Subheader>Teams</Subheader>
-            {currentUser.organizations.map(organization => (
+            {organizations.map(organization => (
               <MenuItem
                 key={organization.id}
                 primaryText={organization.name}
@@ -161,7 +166,11 @@ export default graphql(
         id
         displayName
         email
-        organizations {
+        superVolOrganizations: organizations(role: "SUPERVOLUNTEER") {
+          id
+          name
+        }
+        texterOrganizations: organizations(role: "TEXTER") {
           id
           name
         }

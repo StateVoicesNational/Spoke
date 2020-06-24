@@ -37,7 +37,7 @@ const styles = StyleSheet.create({
 const fetchUser = async (organizationId, userId) =>
   apolloClient.query({
     query: gql`
-      query getEditedUser($organizationId: ID!, $userId: ID!) {
+      query getEditedUser($organizationId: ID!, $userId: Int!) {
         user(organizationId: $organizationId, userId: $userId) {
           id
           firstName

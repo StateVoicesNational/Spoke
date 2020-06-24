@@ -36,18 +36,22 @@ export class TexterSidebox extends React.Component {
   };
 
   render() {
-    const { campaign, contact } = this.props;
+    const { campaign, contact, settingsData } = this.props;
     const { newTags, submitted } = this.state;
     const currentTags = {};
     contact.tags.forEach(t => {
       currentTags[t.id] = t.name;
     });
-    const settings = JSON.parse(campaign.texterUIConfig.options || "{}");
     // message from top
     // tag list (marking tags already set as disabled and 'on') -- i.e. you can only turn ON a tag, not off
     // save button
     // get campaign.texterUIConfig
-    console.log("tag-contact render", typeof settings, settings, campaign);
+    console.log(
+      "tag-contact render",
+      typeof settingsData,
+      settingsData,
+      campaign
+    );
     const escalatedTags = campaign.organization.tags.filter(
       tag => tag.id in currentTags
     );
@@ -56,7 +60,7 @@ export class TexterSidebox extends React.Component {
     );
     return (
       <div>
-        <h3>{settings.tagHeaderText || "Tag a contact here:"}</h3>
+        <h3>{settingsData.tagHeaderText || "Tag a contact here:"}</h3>
         <div>
           {escalatedTags.map(tag => (
             <TagChip
@@ -111,7 +115,7 @@ export class TexterSidebox extends React.Component {
                 });
             });
           }}
-          label={settings.tagButtonText || "Save tags"}
+          label={settingsData.tagButtonText || "Save tags"}
           icon={
             (submitted === 1 && (
               <CircularProgress style={{ lineHeight: 1 }} size={16} />

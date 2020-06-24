@@ -58,6 +58,24 @@ const headerValidator = () => {
   };
 };
 
+export const errorDescriptions = {
+  12400: "Internal (Twilio) Failure",
+  21211: "Invalid 'To' Phone Number",
+  21602: "Message body is required",
+  21610: "Attempt to send to unsubscribed recipient",
+  21611: "Source number has exceeded max number of queued messages",
+  21612: "Unreachable via SMS or MMS",
+  21614: "Invalid mobile number",
+  30001: "Queue overflow",
+  30002: "Account suspended",
+  30003: "Unreachable destination handset",
+  30004: "Message blocked",
+  30005: "Unknown destination handset",
+  30006: "Landline or unreachable carrier",
+  30007: "Message Delivery - Carrier violation",
+  30008: "Message Delivery - Unknown error"
+};
+
 async function convertMessagePartsToMessage(messageParts) {
   const firstPart = messageParts[0];
   const userNumber = firstPart.user_number;
