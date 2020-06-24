@@ -1,4 +1,5 @@
 import { mapFieldsToModel } from "./lib/utils";
+import { rolesEqualOrLess } from "../../lib/permissions";
 import { r, User, cacheableData } from "../models";
 
 const firstName = '"user"."first_name"';
@@ -56,12 +57,15 @@ export function buildUsersQuery(
   filterBy
 ) {
   const queryParam = buildSelect(sortBy);
-  const roleFilter = role ? { role } : {};
+  const roleFilter = role && role !== "ANY" ? { role } : {};
+  const suspendedFilter =
+    role === "SUSPENDED" || role === "ANY" ? {} : { role: "SUSPENDED" };
 
   let query = queryParam
     .from("user_organization")
     .innerJoin("user", "user_organization.user_id", "user.id")
     .where(roleFilter)
+    .whereNot(suspendedFilter)
     .whereRaw('"user_organization"."organization_id" = ?', organizationId)
     .distinct();
 
@@ -232,8 +236,11 @@ export const resolvers = {
       // Note: this only returns {id, name}, but that is all apis need here
       return await cacheableData.user.userOrgs(user.id, role);
     },
-    roles: async (user, { organizationId }) =>
-      cacheableData.user.orgRoles(user.id, organizationId),
+    roles: async (user, { organizationId }) => {
+      return user.role
+        ? rolesEqualOrLess(user.role)
+        : await cacheableData.user.orgRoles(user.id, organizationId);
+    },
     todos: async (user, { organizationId }) =>
       r
         .table("assignment")

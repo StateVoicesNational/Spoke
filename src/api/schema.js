@@ -254,7 +254,7 @@ const rootSchema = gql`
       userId: String!
       campaignId: String
       roles: [String]
-    ): Organization
+    ): User
     editUser(organizationId: String!, userId: Int!, userData: UserInput): User
     resetUserPassword(organizationId: String!, userId: Int!): String!
     changeUserPassword(userId: Int!, formData: UserPasswordChange): User

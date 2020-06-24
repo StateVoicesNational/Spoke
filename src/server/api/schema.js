@@ -16,7 +16,6 @@ import {
 } from "../../workers/jobs";
 import { getIngestMethod } from "../../integrations/contact-loaders";
 import {
-  Assignment,
   Campaign,
   CannedResponse,
   InteractionStep,
@@ -533,7 +532,7 @@ const rootMutations = {
 
       // Roles is sent as an array for historical purposes
       // but roles are hierarchical, so we only want one user_organization
-      // record.
+      // record. For legacy compatibility we still need to delete all recs for that user_id.
       await r
         .knex("user_organization")
         .where({ organization_id: organizationId, user_id: userId })
@@ -547,7 +546,7 @@ const rootMutations = {
         });
       }
       await cacheableData.user.clearUser(userId);
-      return cacheableData.organization.load(organizationId);
+      return { id: userId };
     },
     editUser: async (_, { organizationId, userId, userData }, { user }) => {
       if (user.id !== userId) {

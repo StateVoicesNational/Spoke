@@ -357,9 +357,20 @@ const mutations = {
     roles
   ) => ({
     mutation: gql`
-      mutation editOrganizationRoles($organizationId: String!, $userId: String!, $roles: [String], $campaignId: String) {
-        editOrganizationRoles(organizationId: $organizationId, userId: $userId, roles: $roles, campaignId: $campaignId) {
-          ${organizationFragment}
+      mutation editOrganizationRoles(
+        $organizationId: String!
+        $userId: String!
+        $roles: [String]
+        $campaignId: String
+      ) {
+        editOrganizationRoles(
+          organizationId: $organizationId
+          userId: $userId
+          roles: $roles
+          campaignId: $campaignId
+        ) {
+          id
+          roles(organizationId: $organizationId)
         }
       }
     `,
