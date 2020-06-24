@@ -198,7 +198,7 @@ const rootSchema = gql`
     organization(id: String!, utc: String): Organization
     campaign(id: String!): Campaign
     inviteByHash(hash: String!): [Invite]
-    assignment(id: String!): Assignment
+    assignment(assignmentId: String, contactId: String): Assignment
     organizations: [Organization]
     conversations(
       cursor: OffsetLimitCursor!
@@ -305,7 +305,7 @@ const rootSchema = gql`
     unarchiveCampaign(id: String!): Campaign
     sendReply(id: String!, message: String!): CampaignContact
     getAssignmentContacts(
-      assignmentId: String!
+      assignmentId: String
       contactIds: [String]
       findNew: Boolean
     ): [CampaignContact]

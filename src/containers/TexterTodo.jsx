@@ -42,8 +42,8 @@ export const contactDataFragment = `
 `;
 
 export const dataQueryString = `
-  query getContacts($assignmentId: String!, $contactsFilter: ContactsFilter!, $tagGroup: String) {
-    assignment(id: $assignmentId) {
+  query getContacts($assignmentId: String, $contactId: String, $contactsFilter: ContactsFilter!, $tagGroup: String) {
+    assignment(assignmentId: $assignmentId, contactId: $contactId) {
       id
       userCannedResponses {
         id
@@ -203,6 +203,7 @@ export class TexterTodo extends React.Component {
     return (
       <AssignmentTexter
         assignment={assignment}
+        reviewContactId={this.props.params.reviewContactId}
         contacts={contacts}
         allContactsCount={allContactsCount}
         assignContactsIfNeeded={this.assignContactsIfNeeded}
@@ -234,10 +235,18 @@ const queries = {
       variables: {
         contactsFilter: {
           messageStatus: ownProps.messageStatus,
-          isOptedOut: false,
+          ...(!ownProps.params.reviewContactId && { isOptedOut: false }),
+          ...(ownProps.params.reviewContactId && {
+            contactId: ownProps.params.reviewContactId
+          }),
           validTimezone: true
         },
-        assignmentId: ownProps.params.assignmentId,
+        ...(ownProps.params.assignmentId && {
+          assignmentId: ownProps.params.assignmentId
+        }),
+        ...(ownProps.params.reviewContactId && {
+          contactId: ownProps.params.reviewContactId
+        }),
         tagGroup: "texter-tags"
       },
       fetchPolicy: "network-only",
@@ -268,14 +277,16 @@ const mutations = {
   }),
   getAssignmentContacts: ownProps => (contactIds, findNew) => ({
     mutation: gql`
-      mutation getAssignmentContacts($assignmentId: String!, $contactIds: [String]!, $findNew: Boolean) {
+      mutation getAssignmentContacts($assignmentId: String, $contactIds: [String]!, $findNew: Boolean) {
         getAssignmentContacts(assignmentId: $assignmentId, contactIds: $contactIds, findNew: $findNew) {
           ${contactDataFragment}
         }
       }
     `,
     variables: {
-      assignmentId: ownProps.params.assignmentId,
+      ...(ownProps.params.assignmentId && {
+        assignmentId: ownProps.params.assignmentId
+      }),
       contactIds,
       findNew: !!findNew
     }
