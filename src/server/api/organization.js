@@ -49,6 +49,11 @@ export const resolvers = {
       }
       return getTags(organization, groupFilter);
     },
+    profileFields: organization =>
+      organization.features &&
+      organization.features.indexOf("profile_fields") !== -1
+        ? JSON.parse(organization.features).profile_fields
+        : [],
     availableActions: async (organization, _, { user, loaders }) => {
       await accessRequired(user, organization.id, "SUPERVOLUNTEER");
       const availableHandlers = await getAvailableActionHandlers(

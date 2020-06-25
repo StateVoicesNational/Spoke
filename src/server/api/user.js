@@ -202,6 +202,7 @@ export const resolvers = {
       ],
       User
     ),
+    extra: user => JSON.stringify(user.extra),
     displayName: user =>
       `${user.first_name}${user.alias ? ` (${user.alias}) ` : " "}${
         user.last_name

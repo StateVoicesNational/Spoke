@@ -566,6 +566,10 @@ const rootMutations = {
         return null;
       } else {
         const member = userRes[0];
+        const extra = {
+          ...member.extra,
+          ...JSON.parse(userData.extra)
+        }
 
         if (userData) {
           const newUserData = {
@@ -575,7 +579,8 @@ const rootMutations = {
               ? capitalizeWord(userData.alias).trim()
               : null,
             email: userData.email,
-            cell: userData.cell
+            cell: userData.cell,
+            extra
           };
 
           const userRes = await r

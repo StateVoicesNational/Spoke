@@ -115,6 +115,7 @@ const rootSchema = gql`
     cell: String!
     oldPassword: String
     newPassword: String
+    extra: String
   }
 
   input ContactMessage {
