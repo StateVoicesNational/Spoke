@@ -14,6 +14,7 @@ export const schema = `
     assignedCell: Phone
     assignment(campaignId: String): Assignment
     terms: Boolean
+    profileComplete(organizationId: String): Boolean
     cacheable: Boolean
   }
 

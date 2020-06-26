@@ -77,6 +77,7 @@ class UserEdit extends React.Component {
     editedUser: PropTypes.object,
     editUser: PropTypes.object,
     router: PropTypes.object,
+    location: PropTypes.object,
     userId: PropTypes.string,
     organizationId: PropTypes.string,
     onRequestClose: PropTypes.func,
@@ -117,11 +118,15 @@ class UserEdit extends React.Component {
   }
 
   handleSave = async formData => {
+    const { router, location } = this.props;
     if (!this.props.authType) {
       formData.extra = JSON.stringify(formData.extra)
       await this.props.mutations.editUser(formData);
       if (this.props.onRequestClose) {
         this.props.onRequestClose();
+      }
+      if (location.query.next) {
+        router.push(location.query.next);
       }
     } else if (this.props.authType === "change") {
       // change password
