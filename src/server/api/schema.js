@@ -566,11 +566,6 @@ const rootMutations = {
         return null;
       } else {
         const member = userRes[0];
-        const extra = {
-          ...member.extra,
-          ...JSON.parse(userData.extra)
-        }
-
         if (userData) {
           const newUserData = {
             first_name: capitalizeWord(userData.firstName).trim(),
@@ -579,9 +574,14 @@ const rootMutations = {
               ? capitalizeWord(userData.alias).trim()
               : null,
             email: userData.email,
-            cell: userData.cell,
-            extra
+            cell: userData.cell
           };
+          if (member.extra || userData.extra) {
+            newUserData.extra = {
+              ...member.extra,
+              ...JSON.parse(userData.extra || "{}")
+            };
+          }
 
           const userRes = await r
             .knex("user")
