@@ -16,7 +16,7 @@ class TexterStats extends React.Component {
 
     let displayName = `${texter.firstName} ${texter.lastName}`;
     if (getHighestRole(texter.roles) === "SUSPENDED") {
-      displayName += " (SUSPENDED)";
+      displayName += " (Suspended)";
     }
 
     return (

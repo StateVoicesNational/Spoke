@@ -345,8 +345,8 @@ export default class CampaignTextersForm extends React.Component {
 
   getDisplayName(texterId) {
     const texterObj = this.props.orgTexters.find(o => o.id === texterId);
-    const suspended = !texterObj.roles.some(r => r !== "SUSPENDED");
-    const suffix = suspended ? " (SUSPENDED)" : "";
+    const suffix =
+      getHighestRole(texterObj.roles) === "SUSPENDED" ? " (Suspended)" : "";
     return texterObj.displayName + suffix;
   }
 
