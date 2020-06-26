@@ -120,7 +120,9 @@ class UserEdit extends React.Component {
   handleSave = async formData => {
     const { router, location } = this.props;
     if (!this.props.authType) {
-      formData.extra = JSON.stringify(formData.extra)
+      if (formData.extra) {
+        formData.extra = JSON.stringify(formData.extra)
+      }
       await this.props.mutations.editUser(formData);
       if (this.props.onRequestClose) {
         this.props.onRequestClose();
@@ -210,11 +212,17 @@ class UserEdit extends React.Component {
       };
     }
 
-    const profileFields = {};
-    if (!authType && org) {
+    let profileFields = {};
+    if (!authType && org && org.profileFields.length) {
+      const fields = {}
       org.profileFields.forEach(field => {
-        profileFields[field.name] = yup.string().required();
+        fields[field.name] = yup.string().required();
       });
+      profileFields = {
+        extra: yup.object({
+          ...fields
+        })
+      }
     }
 
     return yup.object({
@@ -223,9 +231,7 @@ class UserEdit extends React.Component {
         .email()
         .required(),
       ...userFields,
-      extra: yup.object({
-        ...profileFields
-      }),
+      ...profileFields,
       ...passwordFields
     });
   };
