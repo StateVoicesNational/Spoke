@@ -43,7 +43,9 @@ export const postCanvassResponse = async (contact, organization, body) => {
     vanId = JSON.parse(contact.custom_fields || "{}").VanID;
   } catch (caughtException) {
     // eslint-disable-next-line no-console
-    console.error(`Error parsing custom_fields ${caughtException}`);
+    console.error(
+      `Error parsing custom_fields for contact ${contact.id} ${caughtException}`
+    );
     return {};
   }
 
