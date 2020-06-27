@@ -32,7 +32,7 @@ export const available = async organization => {
 
 export const postMessageSave = async ({ contact, organization }) => {
   if (contact.message_status !== "needsMessage") {
-    // return {};
+    return {};
   }
 
   const handler = await getActionHandler("ngpvan-action", organization);
