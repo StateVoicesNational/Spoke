@@ -39,11 +39,13 @@ describe("Message Hanlder: profanity-tagger", () => {
     const c = await createStartedCampaign();
     await r.knex("tag").insert([
       {
+        id: 1,
         name: "Contact Profanity",
         description: "mean contact",
         organization_id: c.organizationId
       },
       {
+        id: 2,
         name: "Texter language flag",
         description: "texter inappropriate",
         organization_id: c.organizationId
@@ -78,7 +80,8 @@ describe("Message Hanlder: profanity-tagger", () => {
         service: "fakeservice",
         messageservice_sid: "fakeservice",
         send_status: "DELIVERED"
-      }
+      },
+      organization: org
     });
 
     const text1 = await r
@@ -98,11 +101,13 @@ describe("Message Hanlder: profanity-tagger", () => {
     const c = await createStartedCampaign();
     await r.knex("tag").insert([
       {
+        id: 1,
         name: "Contact Profanity",
         description: "mean contact",
         organization_id: c.organizationId
       },
       {
+        id: 2,
         name: "Texter language flag",
         description: "texter inappropriate",
         organization_id: c.organizationId

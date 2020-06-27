@@ -31,8 +31,7 @@ export const serverAdministratorInstructions = () => {
   };
 };
 
-// note this is NOT async
-export const available = organization => {
+export const available = async organization => {
   return (
     getConfig("EXPERIMENTAL_TAGS", organization) &&
     (getConfig("PROFANITY_CONTACT_TAG_ID", organization) ||
