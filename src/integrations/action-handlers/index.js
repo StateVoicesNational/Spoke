@@ -99,8 +99,8 @@ export async function getActionHandlerAvailability(
   try {
     return (
       await getSetCacheableResult(
-        availabilityCacheKey(name, organization, user.id),
-        () => fallbackFunction(actionHandler, organization, user)
+        availabilityCacheKey(name, organization, user || { id: "" }),
+        () => fallbackFunction(actionHandler, organization, user || {})
       )
     ).result;
   } catch (caughtError) {
@@ -165,7 +165,7 @@ export async function getActionChoiceData(actionHandler, organization, user) {
     cacheKey = exports.choiceDataCacheKey(
       actionHandler.name,
       organization,
-      cacheKeyFunc(organization, user)
+      cacheKeyFunc(organization, user || {})
     );
   } catch (caughtException) {
     log.error(
@@ -177,7 +177,7 @@ export async function getActionChoiceData(actionHandler, organization, user) {
   try {
     returned =
       (await exports.getSetCacheableResult(cacheKey, async () =>
-        clientChoiceDataFunc(organization, user)
+        clientChoiceDataFunc(organization, user || {})
       )) || {};
   } catch (caughtException) {
     log.error(

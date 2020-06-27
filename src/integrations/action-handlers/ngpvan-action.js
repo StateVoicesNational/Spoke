@@ -38,6 +38,31 @@ export function clientChoiceDataCacheKey(organization) {
   return `${organization.id}`;
 }
 
+export const postCanvassResponse = async (contact, organization, body) => {
+  const url = Van.makeUrl(
+    `v4/people/${contact.external_id}/canvassResponses`,
+    organization
+  );
+
+  log.info("Sending contact update to VAN", {
+    vanId: contact.external_id,
+    body
+  });
+
+  return httpRequest(url, {
+    method: "POST",
+    retries: 0,
+    timeout: 32000,
+    headers: {
+      Authorization: Van.getAuth(organization),
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(body),
+    validStatuses: [204],
+    compress: false
+  });
+};
+
 // What happens when a texter saves the answer that triggers the action
 // This is presumably the meat of the action
 export async function processAction(
@@ -55,28 +80,7 @@ export async function processAction(
 
     const body = JSON.parse(answerActionsData.value);
 
-    const url = Van.makeUrl(
-      `v4/people/${contact.external_id}/canvassResponses`,
-      organization
-    );
-
-    log.info("Sending contact update to VAN", {
-      vanId: contact.external_id,
-      body
-    });
-
-    return httpRequest(url, {
-      method: "POST",
-      retries: 0,
-      timeout: 32000,
-      headers: {
-        Authorization: Van.getAuth(organization),
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify(body),
-      validStatuses: [204],
-      compress: false
-    });
+    return postCanvassResponse(contact, organization, body);
   } catch (caughtError) {
     log.error("Encountered exception in ngpvan.processAction", caughtError);
     throw caughtError;
