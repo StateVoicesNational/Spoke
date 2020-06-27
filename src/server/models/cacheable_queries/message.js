@@ -1,7 +1,10 @@
 import { r, Message } from "../../models";
 import campaignCache from "./campaign";
 import campaignContactCache from "./campaign-contact";
-import { getMessageHandlers } from "../../../integrations/message-handlers";
+import {
+  getAvailablePreMessageSaveHandlers,
+  getAvailablePostMessageSaveHandlers
+} from "../../../integrations/message-handlers";
 // QUEUE
 // messages-<contactId>
 // Expiration: 24 hours after last message added
@@ -230,7 +233,6 @@ const messageCache = {
 
     // console.log('message SAVE', contact, messageInstance)
     const messageToSave = { ...messageInstance };
-    const handlers = getMessageHandlers();
     let newStatus = "needsResponse";
     let activeCellFound = null;
     let matchError = null;
@@ -243,7 +245,7 @@ const messageCache = {
         messageInstance.messageservice_sid
       );
       // console.log("messageCache activeCellFound", activeCellFound);
-      const matchError = await incomingMessageMatching(
+      matchError = await incomingMessageMatching(
         messageInstance,
         activeCellFound
       );
@@ -265,41 +267,33 @@ const messageCache = {
       (contact && contact.campaign_id) ||
       (activeCellFound && activeCellFound.campaign_id);
 
-    if (Object.keys(handlers).length && (organization || campaignId)) {
-      if (!organization) {
-        organization = await campaignCache.loadCampaignOrganization({
-          campaignId
-        });
+    const preMessageSaveHandlers = await getAvailablePreMessageSaveHandlers({
+      organization,
+      campaignId
+    });
+
+    for (let i = 0, l = preMessageSaveHandlers.length; i < l; i++) {
+      const result = await preMessageSaveHandlers[i].preMessageSave({
+        messageToSave,
+        activeCellFound,
+        matchError,
+        newStatus,
+        contact,
+        campaign,
+        organization
+      });
+      if (result.cancel) {
+        return result; // return without saving
       }
-      const availableHandlers = Object.keys(handlers)
-        .filter(
-          h =>
-            handlers[h].available &&
-            handlers[h].preMessageSave &&
-            handlers[h].available(organization)
-        )
-        .map(h => handlers[h]);
-      for (let i = 0, l = availableHandlers.length; i < l; i++) {
-        const result = await availableHandlers[i].preMessageSave({
-          messageToSave,
-          activeCellFound,
-          matchError,
-          newStatus,
-          contact,
-          campaign,
-          organization
-        });
-        if (result.cancel) {
-          return result; // return without saving
-        }
-        if (result && "matchError" in result) {
-          matchError = result.matchError;
-        }
+      if (result && result.matchError) {
+        matchError = result.matchError;
       }
     }
+
     if (matchError) {
       return { error: matchError };
     }
+
     const savedMessage = await Message.save(
       messageToSave,
       messageToSave.id ? { conflict: "update" } : undefined
@@ -330,27 +324,23 @@ const messageCache = {
       await campaignCache.incrCount(campaignId, "needsResponseCount", 1);
     }
 
-    if (Object.keys(handlers).length && organization) {
-      const availableHandlers = Object.keys(handlers)
-        .filter(
-          h =>
-            handlers[h].available &&
-            handlers[h].postMessageSave &&
-            handlers[h].available(organization)
-        )
-        .map(h => handlers[h]);
-      for (let i = 0, l = availableHandlers.length; i < l; i++) {
-        const result = await availableHandlers[i].postMessageSave({
-          message: messageToSave,
-          activeCellFound,
-          newStatus,
-          contact,
-          campaign,
-          organization
-        });
-        if (result && "newStatus" in result) {
-          newStatus = result.newStatus;
-        }
+    const postMessageSaveHandlers = await getAvailablePostMessageSaveHandlers({
+      organization,
+      campaignId
+    });
+
+    for (let i = 0, l = postMessageSaveHandlers.length; i < l; i++) {
+      const handler = postMessageSaveHandlers[i];
+      const result = await handler.postMessageSave({
+        message: messageToSave,
+        activeCellFound,
+        newStatus,
+        contact,
+        campaign,
+        organization
+      });
+      if (result && result.newStatus) {
+        newStatus = result.newStatus;
       }
     }
 
