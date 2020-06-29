@@ -206,6 +206,7 @@ export const resolvers = {
       ],
       User
     ),
+    extra: user => JSON.stringify(user.extra),
     displayName: user =>
       `${user.first_name}${user.alias ? ` (${user.alias}) ` : " "}${
         user.last_name
@@ -251,6 +252,16 @@ export const resolvers = {
           organization_id: organizationId,
           is_archived: false
         })("left"),
+    profileComplete: async (user, { organizationId }) => {
+      const org = await cacheableData.organization.load(organizationId);
+      const fields = org.feature.profile_fields || [];
+      for (const field of fields) {
+        if (!user.extra || !user.extra[field.name]) {
+          return false;
+        }
+      }
+      return true;
+    },
     cacheable: () => false // FUTURE: Boolean(r.redis) when full assignment data is cached
   }
 };
