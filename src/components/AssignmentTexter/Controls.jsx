@@ -157,8 +157,8 @@ export class AssignmentTexterContactControls extends React.Component {
     // if document.activeElement then ignore a naked keypress to be safe
     // console.log('KEYBOARD', evt.key, document.activeElement);
     if (
-      // SEND: Ctrl-x
-      evt.key === "x" &&
+      // SEND: Ctrl-Enter
+      evt.key === "Enter" &&
       // need to use ctrlKey in non-first texting context for accessibility
       evt.ctrlKey
     ) {
@@ -191,6 +191,7 @@ export class AssignmentTexterContactControls extends React.Component {
       ((evt.keyCode >= 65 /*a*/ && evt.keyCode <= 90) /*z*/ ||
         evt.key === "Enter" ||
         evt.key === "Space" ||
+        evt.key === " " ||
         evt.key === "Semicolon")
     ) {
       evt.preventDefault();
