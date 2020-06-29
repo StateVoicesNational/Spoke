@@ -1040,7 +1040,7 @@ const rootMutations = {
     getAssignmentContacts: async (
       _,
       { assignmentId, contactIds, findNew },
-      { loaders, user }
+      { user }
     ) => {
       if (contactIds.length === 0) {
         return [];
