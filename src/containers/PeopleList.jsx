@@ -42,56 +42,61 @@ export class PeopleList extends Component {
     };
   }
 
-  prepareTableColumns = () => [
-    {
-      key: "texter",
-      label: "Texter",
-      style: {
-        textOverflow: "ellipsis",
-        overflow: "hidden",
-        whiteSpace: "pre-line"
+  prepareTableColumns = () => {
+    const columns = [
+      {
+        key: "texter",
+        label: "Texter",
+        style: {
+          textOverflow: "ellipsis",
+          overflow: "hidden",
+          whiteSpace: "pre-line"
+        }
+      },
+      {
+        key: "email",
+        label: "Email",
+        style: {
+          textOverflow: "ellipsis",
+          overflow: "scroll",
+          whiteSpace: "pre-line"
+        }
+      },
+      {
+        key: "roles",
+        label: "Role",
+        style: {
+          textOverflow: "ellipsis",
+          overflow: "scroll",
+          whiteSpace: "pre-line"
+        },
+        render: this.renderRolesDropdown
+      },
+      {
+        key: "edit",
+        label: "",
+        style: {
+          textOverflow: "ellipsis",
+          overflow: "scroll",
+          whiteSpace: "pre-line"
+        },
+        render: this.renderEditButton
       }
-    },
-    {
-      key: "email",
-      label: "Email",
-      style: {
-        textOverflow: "ellipsis",
-        overflow: "scroll",
-        whiteSpace: "pre-line"
-      }
-    },
-    {
-      key: "roles",
-      label: "Role",
-      style: {
-        textOverflow: "ellipsis",
-        overflow: "scroll",
-        whiteSpace: "pre-line"
-      },
-      render: this.renderRolesDropdown
-    },
-    {
-      key: "edit",
-      label: "",
-      style: {
-        textOverflow: "ellipsis",
-        overflow: "scroll",
-        whiteSpace: "pre-line"
-      },
-      render: this.renderEditButton
-    },
-    {
-      key: "password",
-      label: "",
-      style: {
-        textOverflow: "ellipsis",
-        overflow: "scroll",
-        whiteSpace: "pre-line"
-      },
-      render: this.renderChangePasswordButton
+    ];
+    if (window.PASSPORT_STRATEGY !== "slack") {
+      columns.push({
+        key: "password",
+        label: "",
+        style: {
+          textOverflow: "ellipsis",
+          overflow: "scroll",
+          whiteSpace: "pre-line"
+        },
+        render: this.renderChangePasswordButton
+      });
     }
-  ];
+    return columns;
+  };
 
   editUser = userId => {
     this.setState({
