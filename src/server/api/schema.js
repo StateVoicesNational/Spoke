@@ -1051,10 +1051,14 @@ const rootMutations = {
       const organizationId = await cacheableData.campaignContact.orgId(
         firstContact
       );
+      let effectiveAssignmentId = assignmentId;
+      if (!effectiveAssignmentId) {
+        effectiveAssignmentId = firstContact.assignment_id;
+      }
       await assignmentRequiredOrAdminRole(
         user,
         organizationId,
-        assignmentId,
+        effectiveAssignmentId,
         firstContact
       );
       let triedUpdate = false;
@@ -1068,7 +1072,7 @@ const rootMutations = {
         // maybe the cache is stale so try refreshing.
         if (
           contact.cachedResult &&
-          Number(contact.assignment_id) !== Number(assignmentId) &&
+          Number(contact.assignment_id) !== Number(effectiveAssignmentId) &&
           !triedUpdate
         ) {
           // In case assignment_id from cache needs to be refreshed, try again
@@ -1081,7 +1085,10 @@ const rootMutations = {
           contact = await cacheableData.campaignContact.load(contactId);
         }
 
-        if (contact && Number(contact.assignment_id) === Number(assignmentId)) {
+        if (
+          contact &&
+          Number(contact.assignment_id) === Number(effectiveAssignmentId)
+        ) {
           return contact;
         }
 
@@ -1309,9 +1316,20 @@ const rootResolvers = {
       await accessRequired(user, campaign.organization_id, "SUPERVOLUNTEER");
       return campaign;
     },
-    assignment: async (_, { id }, { loaders, user }) => {
+    assignment: async (
+      _,
+      { assignmentId: assignmentIdInput, contactId },
+      { loaders, user }
+    ) => {
       authRequired(user);
-      const assignment = await loaders.assignment.load(id);
+      let assignmentId = assignmentIdInput;
+      if (contactId) {
+        const campaignContact = await cacheableData.campaignContact.load(
+          contactId
+        );
+        assignmentId = campaignContact.assignment_id;
+      }
+      const assignment = await loaders.assignment.load(assignmentId);
       const campaign = await loaders.campaign.load(assignment.campaign_id);
       if (assignment.user_id == user.id) {
         await accessRequired(

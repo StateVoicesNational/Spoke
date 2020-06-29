@@ -38,9 +38,10 @@ export class ContactController extends React.Component {
 
   componentWillMount() {
     let startIndex = 0;
-    const contactId = String(document.location).match(/contact=(\d+)/);
-    if (contactId) {
-      startIndex = this.props.contacts.findIndex(c => c.id == contactId[1]);
+    if (this.props.reviewContactId) {
+      startIndex = this.props.contacts.findIndex(
+        c => c.id == this.props.reviewContactId
+      );
       if (startIndex === -1) {
         startIndex = 0;
       }
@@ -416,6 +417,7 @@ export class ContactController extends React.Component {
         key={contact.id}
         assignment={assignment}
         campaignContactId={contact.id}
+        reviewContactId={this.props.reviewContactId}
         contact={contactData}
         texter={texter}
         campaign={campaign}
@@ -454,6 +456,7 @@ export class ContactController extends React.Component {
 }
 
 ContactController.propTypes = {
+  reviewContactId: PropTypes.string, // if not undefined, contactId from a conversation link
   assignment: PropTypes.object, // current assignment
   contacts: PropTypes.array, // contacts for current assignment
   allContactsCount: PropTypes.number,
