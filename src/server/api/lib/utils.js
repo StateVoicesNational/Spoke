@@ -30,5 +30,3 @@ export const capitalizeWord = word => {
   }
   return "";
 };
-
-export const runningInLambda = () => !!process.env.AWS_LAMBDA_FUNCTION_NAME;
