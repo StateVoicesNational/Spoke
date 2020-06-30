@@ -6,7 +6,8 @@
 
 // API:
 // *  fullyConfigured() -> Boolean
-// *  dispatch(jobData) -> job object
+// *  dispatchJob(jobData) -> job object
+// *  task(taskData) -> void
 //
 // TODOs:
 // * Figure out what to do about locks_queue. Not all runners can support it but it
@@ -18,17 +19,18 @@
 //   the database.
 function getJobRunner() {
   const name = process.env.JOB_RUNNER || "legacy";
+  let runner;
   try {
     // eslint-disable-next-line global-require
-    const runner = require(`./${name}`);
-    console.log(`Successfully loaded ${name} job runner`);
-    if (!runner.fullyConfigured()) {
-      throw new Error(`Job runner ${name} is not fully configured`);
-    }
-    return runner;
+    runner = require(`./${name}`);
   } catch (e) {
     throw new Error(`Job runner ${name} not found`);
   }
+  console.log(`Successfully loaded ${name} job runner`);
+  if (!runner.fullyConfigured()) {
+    throw new Error(`Job runner ${name} is not fully configured`);
+  }
+  return runner;
 }
 
 export const jobRunner = getJobRunner();

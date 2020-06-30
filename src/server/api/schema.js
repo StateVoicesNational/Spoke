@@ -67,6 +67,7 @@ import {
 
 const ActionHandlers = require("../../integrations/action-handlers");
 import { jobRunner } from "../../integrations/job-runners";
+import { Jobs } from "../../workers/job-processes";
 
 const uuidv4 = require("uuid").v4;
 
@@ -242,7 +243,7 @@ async function editCampaign(id, campaign, loaders, user, origCampaignRecord) {
       user
     );
     if (ingestMethod) {
-      await jobRunner.dispatch({
+      await jobRunner.dispatchJob({
         queue_name: `${id}:edit_campaign`,
         job_type: `ingest.${campaign.ingestMethod}`,
         locks_queue: true,
@@ -264,10 +265,10 @@ async function editCampaign(id, campaign, loaders, user, origCampaignRecord) {
 
   if (campaign.hasOwnProperty("texters")) {
     changed = true;
-    await jobRunner.dispatch({
+    await jobRunner.dispatchJob({
       queue_name: `${id}:edit_campaign`,
       locks_queue: true,
-      job_type: "assign_texters",
+      job_type: Jobs.ASSIGN_TEXTERS,
       campaign_id: id,
       payload: JSON.stringify({
         id,
@@ -468,9 +469,9 @@ const rootMutations = {
       const campaign = await loaders.campaign.load(id);
       const organizationId = campaign.organization_id;
       await accessRequired(user, organizationId, "ADMIN");
-      return await jobRunner.dispatch({
+      return await jobRunner.dispatchJob({
         queue_name: `${id}:export`,
-        job_type: "export",
+        job_type: Jobs.EXPORT,
         locks_queue: false,
         campaign_id: id,
         payload: JSON.stringify({
@@ -1218,9 +1219,9 @@ const rootMutations = {
           url
         })
       );
-      const job = await jobRunner.dispatch({
+      const job = await jobRunner.dispatchJob({
         queue_name: `${campaignId}:import_script`,
-        job_type: "import_script",
+        job_type: Jobs.IMPORT_SCRIPT,
         locks_queue: true,
         campaign_id: campaignId,
         // NOTE: stringifying because compressedString is a binary buffer

@@ -32,8 +32,18 @@ export const dispatch = async (
     .invoke({
       FunctionName: functionName,
       InvocationType: "Event",
-      Payload: JSON.stringify({ jobId: job.id })
+      Payload: JSON.stringify({ type: "JOB", jobId: job.id })
     })
     .promise();
   return job;
+};
+
+export const dispatchTask = async (taskName, payload) => {
+  await client
+    .invoke({
+      FunctionName: functionName,
+      InvocationType: "Event",
+      Payload: JSON.stringify({ type: "TASK", taskName, payload })
+    })
+    .promise();
 };

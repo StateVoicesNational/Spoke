@@ -32,7 +32,7 @@ export const buyPhoneNumbers = async (
     }
     messagingServiceSid = msgSrv;
   }
-  return await jobRunner.dispatch({
+  return await jobRunner.dispatchJob({
     queue_name: `${organizationId}:buy_phone_numbers`,
     organization_id: organizationId,
     job_type: "buy_phone_numbers",

@@ -10,10 +10,10 @@ export const saveJob = async (jobData, trx) => {
     unsavedJob = { ...jobData, payload: JSON.stringify(jobData.payload) };
   }
 
-  const res = await builder("job_request")
-    .insert(unsavedJob)
-    // TODO: on sqlite issue second query to get back data
-    .returning("*");
+  const [id] = await builder("job_request").insert(unsavedJob, "id");
 
-  return res[0];
+  return builder("job_request")
+    .select("*")
+    .where("id", id)
+    .first();
 };
