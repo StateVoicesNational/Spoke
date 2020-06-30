@@ -50,3 +50,21 @@ in `src/workers/job-processes.js`. To add a new task/job add its
 
 _Note: when writing new jobs/tasks keep in mind that they
 may execute in a separate process and design accordingly._
+
+## Notes
+
+#### Retries
+
+As currently implemented, neither the 'legacy' nor the 'lambda-async' job runners
+support retries, but this could be a good feature to add to the API. Individual jobs
+would have to be tagged as retry-able/idempotent.
+
+#### Recommendations for running on AWS Lambda
+
+AWS Lambda "freezes" the application container as soon as it returns a response
+to API Gateway. Any background tasks are effectively paused until the container is
+reused to respond to another request, which is not guaranteed. The effect is more
+noticeable when traffic is low because containers are reused less.
+Because of this, it is not recommended to run jobs or tasks in-process without awaiting them.
+Either use the 'lambda-async' runner or pass TASKS_SYNC/JOBS_SYNC env vars when using
+the legacy runner.
