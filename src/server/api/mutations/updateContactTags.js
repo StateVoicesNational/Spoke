@@ -1,6 +1,7 @@
 import { assignmentRequiredOrAdminRole } from "../errors";
 import { cacheableData } from "../../models";
-import { runningInLambda } from "../lib/utils";
+import { jobRunner } from "../../../integrations/job-runners";
+import { Tasks } from "../../../workers/tasks";
 const ActionHandlers = require("../../../integrations/action-handlers");
 
 export const updateContactTags = async (
@@ -25,29 +26,19 @@ export const updateContactTags = async (
       campaign.organization_id
     );
 
-    // The rest is for ACTION_HANDLERS
-    const promises = [];
-    const getHandlersPromise = ActionHandlers.getActionHandlersAvailableForTagUpdate(
+    const handlers = await ActionHandlers.getActionHandlersAvailableForTagUpdate(
       organization,
       user
-    ).then(supportedActionHandlers => {
-      supportedActionHandlers.forEach(handler => {
-        const tagUpdatePromise = handler
-          .onTagUpdate(tags, user, contact, campaign, organization)
-          .catch(err => {
-            // eslint-disable-next-line no-console
-            console.error(
-              `Error executing handler.onTagUpdate for ${handler.name}, campaignContactId ${campaignContactId} error ${err}`
-            );
-          });
-        promises.push(tagUpdatePromise);
+    );
+    if (handlers && handlers.length > 0) {
+      // TODO: see if there is a better way to avoid unnecessary dispatches
+      await jobRunner.dispatchTask(Tasks.ACTION_HANDLER_TAG_UPDATE, {
+        tags,
+        user,
+        contact,
+        campaign,
+        organization
       });
-    });
-
-    promises.push(getHandlersPromise);
-
-    if (runningInLambda()) {
-      await Promise.all(promises);
     }
   } catch (err) {
     // eslint-disable-next-line no-console
@@ -59,5 +50,3 @@ export const updateContactTags = async (
 
   return contact.id;
 };
-
-export default updateContactTags;
