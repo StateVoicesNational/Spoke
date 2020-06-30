@@ -84,7 +84,7 @@ export default function renderIndex(html, css, assetMap) {
         "csv-upload,test-fakedata,datawarehouse"}"
       window.DST_REFERENCE_TIMEZONE="${process.env.DST_REFERENCE_TIMEZONE ||
         "America/New_York"}"
-      window.PASSPORT_STRATEGY="${process.env.PASSPORT_STRATEGY || ""}"
+      window.PASSPORT_STRATEGY="${process.env.PASSPORT_STRATEGY || "auth0"}"
       window.PEOPLE_PAGE_CAMPAIGN_FILTER_SORT = "${process.env
         .PEOPLE_PAGE_CAMPAIGN_FILTER_SORT || ""}"
       window.PEOPLE_PAGE_ROW_SIZES="${process.env.PEOPLE_PAGE_ROW_SIZES || ""}"
