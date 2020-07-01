@@ -1,7 +1,6 @@
 import { r, cacheableData } from "../../../src/server/models";
 import serviceMap from "../../../src/server/api/lib/services";
 import {
-  postMessageSave,
   available,
   DEFAULT_PROFANITY_REGEX_BASE64
 } from "../../../src/integrations/message-handlers/profanity-tagger";
@@ -61,7 +60,8 @@ describe("Message Hanlder: profanity-tagger", () => {
         '{"EXPERIMENTAL_TAGS": "1", "PROFANITY_CONTACT_TAG_ID": "1", "PROFANITY_TEXTER_TAG_ID": "2", "PROFANITY_TEXTER_SUSPEND_COUNT": "1"}'
       );
     await cacheableData.organization.clear(c.organizationId);
-    const org = await cacheableData.organization.load(c.organizationId);
+
+    // SEND
     await sendMessage(c.testContacts[1].id, c.testTexterUser, {
       userId: c.testTexterUser.id,
       contactNumber: c.testContacts[1].cell,

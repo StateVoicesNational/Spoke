@@ -46,15 +46,17 @@ export const preMessageSave = async ({ messageToSave, organization }) => {
     !messageToSave.is_from_contact &&
     getConfig("PROFANITY_TEXTER_BLOCK_SEND", organization, { truthy: true })
   ) {
-    const tag_id = getConfig("PROFANITY_TEXTER_TAG_ID", organization);
+    const tagId = getConfig("PROFANITY_TEXTER_TAG_ID", organization);
     const regexText =
       getConfig("PROFANITY_TEXTER_REGEX_BASE64", organization) ||
       getConfig("PROFANITY_REGEX_BASE64", organization) ||
       DEFAULT_PROFANITY_REGEX_BASE64;
     const re = new RegExp(Buffer.from(regexText, "base64").toString(), "i");
-    if (tag_id && String(messageToSave.text).match(re)) {
-      messageToSave.send_status = "ERROR";
-      messageToSave.error_code = -166;
+    if (tagId && String(messageToSave.text).match(re)) {
+      Object.assign(messageToSave, {
+        send_status: "ERROR",
+        error_code: -166
+      });
       return {
         messageToSave
       };
@@ -63,62 +65,11 @@ export const preMessageSave = async ({ messageToSave, organization }) => {
   return {};
 };
 
-export const postMessageSave = async ({ message, organization }) => {
-  let tag_id = null;
-  let regexText = null;
-  if (message.is_from_contact) {
-    tag_id = getConfig("PROFANITY_CONTACT_TAG_ID", organization);
-    regexText =
-      getConfig("PROFANITY_REGEX_BASE64", organization) ||
-      DEFAULT_PROFANITY_REGEX_BASE64;
-  } else {
-    tag_id = getConfig("PROFANITY_TEXTER_TAG_ID", organization);
-    regexText =
-      getConfig("PROFANITY_TEXTER_REGEX_BASE64", organization) ||
-      getConfig("PROFANITY_REGEX_BASE64", organization) ||
-      DEFAULT_PROFANITY_REGEX_BASE64;
-  }
-
-  if (tag_id) {
-    const re = new RegExp(Buffer.from(regexText, "base64").toString(), "i");
-    if (String(message.text).match(re)) {
-      await cacheableData.tagCampaignContact.save(message.campaign_contact_id, [
-        { id: tag_id }
-      ]);
-      if (!message.is_from_contact) {
-        // SUSPENDING TEXTER
-        const suspendThreshold = getConfig(
-          "PROFANITY_TEXTER_SUSPEND_COUNT",
-          organization
-        );
-        if (suspendThreshold) {
-          await maybeSuspendTexter(
-            suspendThreshold,
-            message,
-            organization,
-            tag_id,
-            re
-          );
-        }
-
-        // BLOCKING SEND
-        if (
-          getConfig("PROFANITY_TEXTER_BLOCK_SEND", organization, {
-            truthy: true
-          })
-        ) {
-          return { blockSend: true };
-        }
-      }
-    }
-  }
-};
-
 async function maybeSuspendTexter(
   suspendThreshold,
   message,
   organization,
-  tag_id,
+  tagId,
   matchRegex
 ) {
   // we need to get the messages again, to confirm that it was *this* user that sent them
@@ -136,7 +87,7 @@ async function maybeSuspendTexter(
       "campaign_contact.id"
     )
     .where({
-      "tag_campaign_contact.tag_id": tag_id,
+      "tag_campaign_contact.tag_id": tagId,
       "campaign.is_archived": false,
       "assignment.user_id": message.user_id,
       "message.user_id": message.user_id,
@@ -155,3 +106,55 @@ async function maybeSuspendTexter(
     await cacheableData.user.clearUser(message.user_id);
   }
 }
+
+export const postMessageSave = async ({ message, organization }) => {
+  let tagId = null;
+  let regexText = null;
+  if (message.is_from_contact) {
+    tagId = getConfig("PROFANITY_CONTACT_TAG_ID", organization);
+    regexText =
+      getConfig("PROFANITY_REGEX_BASE64", organization) ||
+      DEFAULT_PROFANITY_REGEX_BASE64;
+  } else {
+    tagId = getConfig("PROFANITY_TEXTER_TAG_ID", organization);
+    regexText =
+      getConfig("PROFANITY_TEXTER_REGEX_BASE64", organization) ||
+      getConfig("PROFANITY_REGEX_BASE64", organization) ||
+      DEFAULT_PROFANITY_REGEX_BASE64;
+  }
+
+  if (tagId) {
+    const re = new RegExp(Buffer.from(regexText, "base64").toString(), "i");
+    if (String(message.text).match(re)) {
+      await cacheableData.tagCampaignContact.save(message.campaign_contact_id, [
+        { id: tagId }
+      ]);
+      if (!message.is_from_contact) {
+        // SUSPENDING TEXTER
+        const suspendThreshold = getConfig(
+          "PROFANITY_TEXTER_SUSPEND_COUNT",
+          organization
+        );
+        if (suspendThreshold) {
+          await maybeSuspendTexter(
+            suspendThreshold,
+            message,
+            organization,
+            tagId,
+            re
+          );
+        }
+
+        // BLOCKING SEND
+        if (
+          getConfig("PROFANITY_TEXTER_BLOCK_SEND", organization, {
+            truthy: true
+          })
+        ) {
+          return { blockSend: true };
+        }
+      }
+    }
+  }
+  return null;
+};

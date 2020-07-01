@@ -1,5 +1,5 @@
 import { getConfig } from "../../../server/api/lib/config";
-import { r, cacheableData } from "../../../server/models";
+import { cacheableData, Message } from "../../../server/models";
 import serviceMap from "../../../server/api/lib/services";
 
 export const serverAdministratorInstructions = () => {
