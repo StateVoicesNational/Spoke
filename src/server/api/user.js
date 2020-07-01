@@ -202,7 +202,10 @@ export const resolvers = {
       ],
       User
     ),
-    extra: user => JSON.stringify(user.extra),
+    extra: user =>
+      user.extra && typeof user.extra === "object"
+        ? JSON.stringify(user.extra)
+        : user.extra || null,
     displayName: user =>
       `${user.first_name}${user.alias ? ` (${user.alias}) ` : " "}${
         user.last_name

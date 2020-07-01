@@ -1,5 +1,5 @@
 import { mapFieldsToModel } from "./lib/utils";
-import { getConfig } from "./lib/config";
+import { getConfig, getFeatures } from "./lib/config";
 import { r, Organization, cacheableData } from "../models";
 import { getTags } from "./tag";
 import { accessRequired } from "./errors";
@@ -50,10 +50,7 @@ export const resolvers = {
       return getTags(organization, groupFilter);
     },
     profileFields: organization =>
-      organization.features &&
-      organization.features.indexOf("profile_fields") !== -1
-        ? JSON.parse(organization.features).profile_fields
-        : [],
+      JSON.parse(getFeatures(organization).profile_fields || "[]"),
     availableActions: async (organization, _, { user, loaders }) => {
       await accessRequired(user, organization.id, "SUPERVOLUNTEER");
       const availableHandlers = await getAvailableActionHandlers(
