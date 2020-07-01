@@ -19,6 +19,7 @@ import _ from "lodash";
 // -1 - -MAX_SEND_ATTEMPTS (5): failed send messages
 // -100-....: custom local errors
 // -101: incoming message with a MediaUrl
+// -166: blocked send for profanity message_handler match
 
 const MAX_SEND_ATTEMPTS = 5;
 const MESSAGE_VALIDITY_PADDING_SECONDS = 30;
