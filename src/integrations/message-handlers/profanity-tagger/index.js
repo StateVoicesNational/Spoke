@@ -26,7 +26,8 @@ export const serverAdministratorInstructions = () => {
       "PROFANITY_TEXTER_TAG_ID",
       "PROFANITY_REGEX_BASE64",
       "PROFANITY_TEXTER_REGEX_BASE64",
-      "PROFANITY_TEXTER_SUSPEND_COUNT"
+      "PROFANITY_TEXTER_SUSPEND_COUNT",
+      "PROFANITY_TEXTER_BLOCK_SEND"
     ]
   };
 };
@@ -40,7 +41,27 @@ export const available = organization => {
   );
 };
 
-// export const preMessageSave = async () => {};
+export const preMessageSave = async ({ messageToSave, organization }) => {
+  if (
+    !messageToSave.is_from_contact &&
+    getConfig("PROFANITY_TEXTER_BLOCK_SEND", organization, { truthy: true })
+  ) {
+    const tag_id = getConfig("PROFANITY_TEXTER_TAG_ID", organization);
+    const regexText =
+      getConfig("PROFANITY_TEXTER_REGEX_BASE64", organization) ||
+      getConfig("PROFANITY_REGEX_BASE64", organization) ||
+      DEFAULT_PROFANITY_REGEX_BASE64;
+    const re = new RegExp(Buffer.from(regexText, "base64").toString(), "i");
+    if (tag_id && String(messageToSave.text).match(re)) {
+      messageToSave.send_status = "ERROR";
+      messageToSave.error_code = -166;
+      return {
+        messageToSave
+      };
+    }
+  }
+  return {};
+};
 
 export const postMessageSave = async ({ message, organization }) => {
   let tag_id = null;
@@ -65,54 +86,72 @@ export const postMessageSave = async ({ message, organization }) => {
         { id: tag_id }
       ]);
       if (!message.is_from_contact) {
+        // SUSPENDING TEXTER
         const suspendThreshold = getConfig(
           "PROFANITY_TEXTER_SUSPEND_COUNT",
           organization
         );
         if (suspendThreshold) {
-          // we need to get the messages again, to confirm that it was *this* user that sent them
-          // FUTURE: if tag_campaign_contact had a creator_id column, then we could probably just do a count
-          // (where we would set the creator_id above to the message.user_id)
-          const badTexts = await r
-            .knex("campaign_contact")
-            .select("message.text")
-            .join("campaign", "campaign.id", "campaign_contact.campaign_id")
-            .join(
-              "assignment",
-              "assignment.id",
-              "campaign_contact.assignment_id"
-            )
-            .join(
-              "message",
-              "message.campaign_contact_id",
-              "campaign_contact.id"
-            )
-            .join(
-              "tag_campaign_contact",
-              "tag_campaign_contact.campaign_contact_id",
-              "campaign_contact.id"
-            )
-            .where({
-              "tag_campaign_contact.tag_id": tag_id,
-              "campaign.is_archived": false,
-              "assignment.user_id": message.user_id,
-              "message.user_id": message.user_id,
-              "message.is_from_contact": false
-            });
-          const badTextsCount = badTexts.filter(m => m.text && m.text.match(re))
-            .length;
-          if (badTextsCount >= Number(suspendThreshold)) {
-            await r
-              .knex("user_organization")
-              .where({
-                user_id: message.user_id,
-                organization_id: organization.id
-              })
-              .update({ role: "SUSPENDED" });
-            await cacheableData.user.clearUser(message.user_id);
-          }
+          await maybeSuspendTexter(
+            suspendThreshold,
+            message,
+            organization,
+            tag_id,
+            re
+          );
+        }
+
+        // BLOCKING SEND
+        if (
+          getConfig("PROFANITY_TEXTER_BLOCK_SEND", organization, {
+            truthy: true
+          })
+        ) {
+          return { blockSend: true };
         }
       }
     }
   }
 };
+
+async function maybeSuspendTexter(
+  suspendThreshold,
+  message,
+  organization,
+  tag_id,
+  matchRegex
+) {
+  // we need to get the messages again, to confirm that it was *this* user that sent them
+  // FUTURE: if tag_campaign_contact had a creator_id column, then we could probably just do a count
+  // (where we would set the creator_id above to the message.user_id)
+  const badTexts = await r
+    .knex("campaign_contact")
+    .select("message.text")
+    .join("campaign", "campaign.id", "campaign_contact.campaign_id")
+    .join("assignment", "assignment.id", "campaign_contact.assignment_id")
+    .join("message", "message.campaign_contact_id", "campaign_contact.id")
+    .join(
+      "tag_campaign_contact",
+      "tag_campaign_contact.campaign_contact_id",
+      "campaign_contact.id"
+    )
+    .where({
+      "tag_campaign_contact.tag_id": tag_id,
+      "campaign.is_archived": false,
+      "assignment.user_id": message.user_id,
+      "message.user_id": message.user_id,
+      "message.is_from_contact": false
+    });
+  const badTextsCount = badTexts.filter(m => m.text && m.text.match(matchRegex))
+    .length;
+  if (badTextsCount >= Number(suspendThreshold)) {
+    await r
+      .knex("user_organization")
+      .where({
+        user_id: message.user_id,
+        organization_id: organization.id
+      })
+      .update({ role: "SUSPENDED" });
+    await cacheableData.user.clearUser(message.user_id);
+  }
+}
