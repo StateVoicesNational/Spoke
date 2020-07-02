@@ -22,19 +22,18 @@ export const serverAdministratorInstructions = () => {
 
 // note this is NOT async
 export const available = organization => {
-  return getConfig("AUTO_OPTOUT_REGEX_BASE64", organization);
+  return getConfig("AUTO_OPTOUT_REGEX_LIST_BASE64", organization);
 };
 
 // export const preMessageSave = async () => {};
 
-export const postMessageSave = async ({ message, campaign, organization }) => {
+export const postMessageSave = async ({ message, organization }) => {
   if (message.is_from_contact) {
     const config = Buffer.from(
       getConfig("AUTO_OPTOUT_REGEX_LIST_BASE64", organization),
       "base64"
     ).toString();
-
-    const regexList = JSON.parse(config || []);
+    const regexList = JSON.parse(config || "[]");
     const matches = regexList.filter(matcher => {
       const re = new RegExp(matcher.regex, "i");
       return String(message.text).match(re);
@@ -51,8 +50,8 @@ export const postMessageSave = async ({ message, campaign, organization }) => {
         cell: message.contact_number,
         campaignContactId: message.campaign_contact_id,
         assignmentId: contact.assignment_id,
-        reason,
-        campaign
+        campaign: { organization_id: organization.id },
+        reason
       });
 
       if (shouldAutoReply && message.service) {
@@ -79,7 +78,6 @@ export const postMessageSave = async ({ message, campaign, organization }) => {
         const saveResult = await cacheableData.message.save({
           messageInstance,
           contact,
-          campaign,
           organization
         });
         if (saveResult.message) {
@@ -88,8 +86,7 @@ export const postMessageSave = async ({ message, campaign, organization }) => {
             saveResult.message,
             contact,
             null,
-            organization,
-            campaign
+            organization
           );
         }
       }
