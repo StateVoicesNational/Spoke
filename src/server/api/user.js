@@ -251,7 +251,10 @@ export const resolvers = {
         })("left"),
     profileComplete: async (user, { organizationId }) => {
       const org = await cacheableData.organization.load(organizationId);
-      const fields = JSON.parse(getFeatures(org).profile_fields || "[]");
+      // @todo: standardize on escaped or not once there's an interface.
+      const fields = typeof getFeatures(org).profile_fields === "string"
+        ? JSON.parse(getFeatures(org).profile_fields)
+        : getFeatures(org).profile_fields || [];
       for (const field of fields) {
         if (!user.extra || !user.extra[field.name]) {
           return false;
