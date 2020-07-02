@@ -1,3 +1,4 @@
+import { getFeatures } from "./lib/config";
 import { mapFieldsToModel } from "./lib/utils";
 import { r, User, cacheableData } from "../models";
 
@@ -250,7 +251,7 @@ export const resolvers = {
         })("left"),
     profileComplete: async (user, { organizationId }) => {
       const org = await cacheableData.organization.load(organizationId);
-      const fields = org.feature.profile_fields || [];
+      const fields = JSON.parse(getFeatures(org).profile_fields || "[]");
       for (const field of fields) {
         if (!user.extra || !user.extra[field.name]) {
           return false;
