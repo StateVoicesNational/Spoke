@@ -406,6 +406,7 @@ export const editUserMutation = gql`
       cell
       email
       extra
+      profileComplete(organizationId: $organizationId)
     }
   }
 `;
