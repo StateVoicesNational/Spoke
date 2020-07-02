@@ -52,7 +52,7 @@ const fetchUser = async (organizationId, userId) =>
     variables: { organizationId, userId }
   });
 
-const fetchOrg = async (organizationId) =>
+const fetchOrg = async organizationId =>
   apolloClient.query({
     query: gql`
       query getOrganizationData($organizationId: String!) {
@@ -67,7 +67,7 @@ const fetchOrg = async (organizationId) =>
       }
     `,
     variables: { organizationId }
-  })
+  });
 
 class UserEdit extends React.Component {
   static propTypes = {
@@ -108,9 +108,7 @@ class UserEdit extends React.Component {
       });
     }
     if (!this.props.authType && this.props.organizationId) {
-      const response = await fetchOrg(
-        this.props.organizationId
-      )
+      const response = await fetchOrg(this.props.organizationId);
       this.setState({
         currentOrg: response.data
       });
@@ -121,7 +119,7 @@ class UserEdit extends React.Component {
     const { router, location } = this.props;
     if (!this.props.authType) {
       if (formData.extra) {
-        formData.extra = JSON.stringify(formData.extra)
+        formData.extra = JSON.stringify(formData.extra);
       }
       await this.props.mutations.editUser(formData);
       if (this.props.onRequestClose) {
@@ -214,7 +212,7 @@ class UserEdit extends React.Component {
 
     let profileFields = {};
     if (!authType && org && org.profileFields.length) {
-      const fields = {}
+      const fields = {};
       org.profileFields.forEach(field => {
         fields[field.name] = yup.string().required();
       });
@@ -222,7 +220,7 @@ class UserEdit extends React.Component {
         extra: yup.object({
           ...fields
         })
-      }
+      };
     }
 
     return yup.object({
@@ -239,20 +237,24 @@ class UserEdit extends React.Component {
   renderProfileField(field) {
     return (
       <span className={css(styles.fields)} key={field.name}>
-        <Form.Field
-          label={field.label}
-          name={`extra.${field.name}`}
-        />
+        <Form.Field label={field.label} name={`extra.${field.name}`} />
       </span>
     );
   }
 
   render() {
-    const { authType, currentUser, style, userId, saveLabel } = this.props;
-    const onCancel = this.props.onCancel || this.props.router.goBack;
+    const {
+      authType,
+      currentUser,
+      style,
+      userId,
+      saveLabel,
+      router
+    } = this.props;
+    const onCancel = this.props.onCancel || (router && router.goBack);
     const user = (this.state.editedUser && this.state.editedUser.user) || {};
     if (user && typeof user.extra === "string") {
-      user.extra = JSON.parse(user.extra)
+      user.extra = JSON.parse(user.extra);
     }
     const org = this.state.currentOrg && this.state.currentOrg.organization;
     const formSchema = this.buildFormSchema(authType, org);
@@ -290,9 +292,7 @@ class UserEdit extends React.Component {
               />
             </span>
           )}
-          {!authType && org && org.profileFields.map(
-            this.renderProfileField
-          )}
+          {!authType && org && org.profileFields.map(this.renderProfileField)}
           {authType && (
             <Form.Field label="Password" name="password" type="password" />
           )}
@@ -327,7 +327,7 @@ class UserEdit extends React.Component {
               type="submit"
               label={saveLabel || "Save"}
             />
-            {!authType && (
+            {!authType && onCancel && (
               <RaisedButton
                 className={css(styles.cancel)}
                 label="Cancel"
@@ -437,7 +437,9 @@ const mutations = {
   })
 };
 
-export default loadData({
-  queries,
-  mutations
-})(withRouter(UserEdit));
+export default withRouter(
+  loadData({
+    queries,
+    mutations
+  })(UserEdit)
+);
