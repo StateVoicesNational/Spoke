@@ -50,7 +50,10 @@ export const resolvers = {
       return getTags(organization, groupFilter);
     },
     profileFields: organization =>
-      JSON.parse(getFeatures(organization).profile_fields || "[]"),
+      // @todo: standardize on escaped or not once there's an interface.
+      typeof getFeatures(organization).profile_fields === "string"
+        ? JSON.parse(getFeatures(organization).profile_fields)
+        : getFeatures(organization).profile_fields || [],
     availableActions: async (organization, _, { user, loaders }) => {
       await accessRequired(user, organization.id, "SUPERVOLUNTEER");
       const availableHandlers = await getAvailableActionHandlers(
