@@ -434,14 +434,18 @@ const rootMutations = {
     releaseContacts,
     sendMessage,
     userAgreeTerms: async (_, { userId }, { user }) => {
-      const currentUser = await r
-        .table("user")
-        .get(userId)
+      // We ignore userId: you can only agree to terms for yourself
+      await r
+        .knex("user")
+        .where("id", user.id)
         .update({
           terms: true
         });
       await cacheableData.user.clearUser(user.id, user.auth0_id);
-      return currentUser;
+      return {
+        ...user,
+        terms: true
+      };
     },
 
     sendReply: async (_, { id, message }, { user, loaders }) => {
