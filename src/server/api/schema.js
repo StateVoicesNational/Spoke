@@ -434,9 +434,6 @@ const rootMutations = {
     releaseContacts,
     sendMessage,
     userAgreeTerms: async (_, { userId }, { user }) => {
-      if (user.id === Number(userId)) {
-        return user.terms ? user : null;
-      }
       const currentUser = await r
         .table("user")
         .get(userId)
