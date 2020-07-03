@@ -22,7 +22,19 @@ export const serverAdministratorInstructions = () => {
 
 // note this is NOT async
 export const available = organization => {
-  return getConfig("AUTO_OPTOUT_REGEX_LIST_BASE64", organization);
+  const conf = getConfig("AUTO_OPTOUT_REGEX_LIST_BASE64", organization);
+  if (!conf) {
+    return false;
+  }
+  try {
+    JSON.parse(conf);
+  } catch (e) {
+    console.log(
+      "message-handler/auto-optout JSON parse of AUTO_OPTOUT_REGEX_LIST_BASE64 failed",
+      e
+    );
+    return false;
+  }
 };
 
 // export const preMessageSave = async () => {};
