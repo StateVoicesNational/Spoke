@@ -372,7 +372,8 @@ export class AssignmentTexterContact extends React.Component {
         : Controls;
     return (
       <div {...dataTest("assignmentTexterContactFirstDiv")}>
-        {this.state.disabled ? (
+        {this.state.disabled &&
+        this.props.messageStatusFilter !== "needsMessage" ? (
           <div className={css(styles.overlay)}>
             <CircularProgress size={0.5} />
             {this.state.disabledText}
