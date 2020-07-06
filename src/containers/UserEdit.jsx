@@ -69,7 +69,7 @@ const fetchOrg = async organizationId =>
     variables: { organizationId }
   });
 
-class UserEdit extends React.Component {
+export class UserEdit extends React.Component {
   static propTypes = {
     mutations: PropTypes.object,
     currentUser: PropTypes.object,
