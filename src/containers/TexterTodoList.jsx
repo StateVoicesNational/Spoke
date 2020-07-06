@@ -84,7 +84,7 @@ class TexterTodoList extends React.Component {
       const orgId = this.props.params.organizationId;;
       const userId = data.currentUser.id;
       const next = this.props.location.pathname;
-      router.push(`/app/${orgId}/account/${userId}?next=${next}`);
+      router.push(`/app/${orgId}/account/${userId}?next=${next}&fieldsNeeded=1`);
     }
   }
 
