@@ -89,6 +89,16 @@ export const updateQuestionResponses = async (
       );
     });
 
-  await dispatchActionHandlers({ user, questionResponses, campaign, contact });
+  try {
+    await dispatchActionHandlers({
+      user,
+      questionResponses,
+      campaign,
+      contact
+    });
+  } catch (e) {
+    console.error("Dispatching to one or more action handlers failed", e);
+  }
+
   return contact.id;
 };

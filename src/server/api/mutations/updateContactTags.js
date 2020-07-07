@@ -42,6 +42,8 @@ export const updateContactTags = async (
           }
         });
       })
+    ).catch(e =>
+      console.error("Dispatching to one or more tag handlers failed", e)
     );
   } catch (err) {
     // eslint-disable-next-line no-console
