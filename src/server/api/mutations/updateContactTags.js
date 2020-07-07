@@ -31,13 +31,16 @@ export const updateContactTags = async (
       user
     );
     if (handlers && handlers.length > 0) {
-      // TODO: see if there is a better way to avoid unnecessary dispatches
       await jobRunner.dispatchTask(Tasks.ACTION_HANDLER_TAG_UPDATE, {
         tags,
-        user,
         contact,
         campaign,
-        organization
+        organization,
+        texter: {
+          first_name: user.first_name,
+          last_name: user.last_name,
+          email: user.email
+        }
       });
     }
   } catch (err) {

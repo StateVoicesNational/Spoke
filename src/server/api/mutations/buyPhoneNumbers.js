@@ -3,6 +3,7 @@ import { accessRequired } from "../errors";
 import { getConfig } from "../lib/config";
 import { cacheableData } from "../../models";
 import { jobRunner } from "../../../integrations/job-runners";
+import { Jobs } from "../../../workers/job-processes";
 
 export const buyPhoneNumbers = async (
   _,
@@ -35,7 +36,7 @@ export const buyPhoneNumbers = async (
   return await jobRunner.dispatchJob({
     queue_name: `${organizationId}:buy_phone_numbers`,
     organization_id: organizationId,
-    job_type: "buy_phone_numbers",
+    job_type: Jobs.BUY_PHONE_NUMBERS,
     locks_queue: false,
     payload: JSON.stringify({
       areaCode,

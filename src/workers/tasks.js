@@ -50,11 +50,11 @@ const tagUpdateActionHandler = async ({
   tags,
   contact,
   campaign,
-  organization
+  organization,
+  texter
 }) => {
-  const handlers = await ActionHandlers.rawActionHandler(name);
-  await handler.onTagUpdate(tags, user, contact, campaign, organization);
-  await Promise.all(handlers.map(async handler => {}));
+  const handler = await ActionHandlers.rawActionHandler(name);
+  await handler.onTagUpdate(tags, contact, campaign, organization, texter);
 };
 
 // const invokeMessageHandlerPostSave = async ({ name, postSaveData }) => {};
