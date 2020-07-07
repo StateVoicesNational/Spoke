@@ -153,18 +153,6 @@ export async function getAvailableActionHandlers(organization, user) {
   return actionHandlers.filter(x => x);
 }
 
-export async function getActionHandlersAvailableForTagUpdate(
-  organization,
-  user
-) {
-  const actionHandlers = await Promise.all(
-    Object.keys(CONFIGURED_ACTION_HANDLERS).map(name =>
-      getActionHandler(name, organization, user)
-    )
-  );
-  return actionHandlers.filter(x => x && !!x.onTagUpdate);
-}
-
 export async function getActionChoiceData(actionHandler, organization, user) {
   const cacheKeyFunc =
     actionHandler.clientChoiceDataCacheKey || (org => `${org.id}`);

@@ -140,14 +140,16 @@ export const sendMessage = async (
   }
   contact.message_status = saveResult.contactStatus;
 
-  await jobRunner.dispatchTask(Tasks.SEND_MESSAGE, {
-    message: saveResult.message,
-    contact,
-    // TODO: start a transaction inside the service send message function
-    trx: null,
-    organization,
-    campaign
-  });
+  if (!saveResult.blockSend) {
+    await jobRunner.dispatchTask(Tasks.SEND_MESSAGE, {
+      message: saveResult.message,
+      contact,
+      // TODO: start a transaction inside the service send message function
+      trx: null,
+      organization,
+      campaign
+    });
+  }
 
   if (initialMessageStatus === "needsMessage") {
     // don't both requerying the messages list on the response
