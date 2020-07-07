@@ -61,6 +61,7 @@ const tableList = [
   "question_response",
   "tag",
   "tag_campaign_contact",
+  "tag_canned_response",
   "owned_phone_number",
   "user_cell",
   "user_organization",

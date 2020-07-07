@@ -331,13 +331,15 @@ async function editCampaign(id, campaign, loaders, user, origCampaignRecord) {
         id: undefined
       });
     }
-
+    // run in a transaction
+    // delete from tag_canned_response for campaign_id knex
     await r
       .table("canned_response")
       .getAll(id, { index: "campaign_id" })
       .filter({ user_id: "" })
       .delete();
     await CannedResponse.save(convertedResponses);
+    // also save tag_ids
     await cacheableData.cannedResponse.clearQuery({
       userId: "",
       campaignId: id
@@ -515,13 +517,15 @@ const rootMutations = {
       { userId, organizationId, roles },
       { user }
     ) => {
-      const currentRoles = (await r
-        .knex("user_organization")
-        .where({
-          organization_id: organizationId,
-          user_id: userId
-        })
-        .select("role")).map(res => res.role);
+      const currentRoles = (
+        await r
+          .knex("user_organization")
+          .where({
+            organization_id: organizationId,
+            user_id: userId
+          })
+          .select("role")
+      ).map(res => res.role);
       const oldRoleIsOwner = currentRoles.indexOf("OWNER") !== -1;
       const newRoleIsOwner = roles.indexOf("OWNER") !== -1;
       const roleRequired = oldRoleIsOwner || newRoleIsOwner ? "OWNER" : "ADMIN";
@@ -821,7 +825,7 @@ const rootMutations = {
         campaign,
         {}
       );
-
+      // join tag_canned_response, copy any tag_canned_response rows
       const originalCannedResponses = await r
         .knex("canned_response")
         .where({ campaign_id: oldCampaignId });
