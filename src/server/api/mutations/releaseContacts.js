@@ -19,12 +19,10 @@ export const releaseContacts = async (
     assignment
   );
 
-  let releaseQuery = r
-    .knex("campaign_contact")
-    .where({
-      assignment_id: assignmentId,
-      campaign_id: assignment.campaign_id
-    });
+  let releaseQuery = r.knex("campaign_contact").where({
+    assignment_id: assignmentId,
+    campaign_id: assignment.campaign_id
+  });
   if (!releaseConversations) {
     releaseQuery = releaseQuery.where("message_status", "needsMessage");
   }

@@ -28,6 +28,11 @@ export const schema = gql`
     limit: Int!
   }
 
+  type ProfileField {
+    name: String!,
+    label: String!
+  }
+
   type Organization {
     id: ID
     uuid: String
@@ -38,6 +43,7 @@ export const schema = gql`
       sortBy: SortCampaignsBy
     ): CampaignsReturn
     people(role: String, campaignId: String, sortBy: SortPeopleBy): [User]
+    profileFields: [ProfileField]
     optOuts: [OptOut]
     availableActions: [Action]
     optOutMessage: String

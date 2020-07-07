@@ -136,7 +136,7 @@ export async function processContactLoad(job, maxContacts, organization) {
     });
 }
 
-export async function loadContactsFromDataWarehouseFragment(jobEvent) {
+export async function loadContactsFromDataWarehouseFragment(job, jobEvent) {
   console.log(
     "starting loadContactsFromDataWarehouseFragment",
     jobEvent.campaignId,
@@ -285,7 +285,7 @@ export async function loadContactsFromDataWarehouseFragment(jobEvent) {
           validationStats.invalidCellCount = result;
         });
     }
-    completeContactLoad(job, jobMessages);
+    completeContactLoad(job);
     return { completed: 1, validationStats };
   } else if (jobEvent.part < jobEvent.totalParts - 1) {
     const newPart = jobEvent.part + 1;
@@ -304,7 +304,7 @@ export async function loadContactsFromDataWarehouseFragment(jobEvent) {
       await sendJobToAWSLambda(newJob);
       return { invokedAgain: 1 };
     } else {
-      return loadContactsFromDataWarehouseFragment(newJob);
+      return loadContactsFromDataWarehouseFragment(job, newJob);
     }
   }
 }
@@ -375,7 +375,7 @@ export async function loadContactsFromDataWarehouse(job) {
     .where("campaign_id", job.campaign_id)
     .delete();
 
-  await loadContactsFromDataWarehouseFragment({
+  await loadContactsFromDataWarehouseFragment(job, {
     jobId: job.id,
     query: sqlQuery,
     campaignId: job.campaign_id,

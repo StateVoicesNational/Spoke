@@ -249,7 +249,7 @@ class AdminPersonList extends React.Component {
 
     return (
       <div>
-        <Paper className={css(styles.settings)} zDepth="3">
+        <Paper className={css(styles.settings)} zDepth={3}>
           <div>
             {this.renderCampaignList()}
             {this.renderRoles()}

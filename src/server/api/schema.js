@@ -16,7 +16,6 @@ import {
 } from "../../workers/jobs";
 import { getIngestMethod } from "../../integrations/contact-loaders";
 import {
-  Assignment,
   Campaign,
   CannedResponse,
   InteractionStep,
@@ -435,17 +434,18 @@ const rootMutations = {
     releaseContacts,
     sendMessage,
     userAgreeTerms: async (_, { userId }, { user }) => {
-      if (user.id === Number(userId)) {
-        return user.terms ? user : null;
-      }
-      const currentUser = await r
-        .table("user")
-        .get(userId)
+      // We ignore userId: you can only agree to terms for yourself
+      await r
+        .knex("user")
+        .where("id", user.id)
         .update({
           terms: true
         });
       await cacheableData.user.clearUser(user.id, user.auth0_id);
-      return currentUser;
+      return {
+        ...user,
+        terms: true
+      };
     },
 
     sendReply: async (_, { id, message }, { user, loaders }) => {
@@ -533,7 +533,7 @@ const rootMutations = {
 
       // Roles is sent as an array for historical purposes
       // but roles are hierarchical, so we only want one user_organization
-      // record.
+      // record. For legacy compatibility we still need to delete all recs for that user_id.
       await r
         .knex("user_organization")
         .where({ organization_id: organizationId, user_id: userId })
@@ -547,7 +547,7 @@ const rootMutations = {
         });
       }
       await cacheableData.user.clearUser(userId);
-      return cacheableData.organization.load(organizationId);
+      return { id: userId };
     },
     editUser: async (_, { organizationId, userId, userData }, { user }) => {
       if (user.id !== userId) {
@@ -566,7 +566,6 @@ const rootMutations = {
         return null;
       } else {
         const member = userRes[0];
-
         if (userData) {
           const newUserData = {
             first_name: capitalizeWord(userData.firstName).trim(),
@@ -577,6 +576,12 @@ const rootMutations = {
             email: userData.email,
             cell: userData.cell
           };
+          if (member.extra || userData.extra) {
+            newUserData.extra = {
+              ...member.extra,
+              ...JSON.parse(userData.extra || "{}")
+            };
+          }
 
           const userRes = await r
             .knex("user")
@@ -1041,7 +1046,7 @@ const rootMutations = {
     getAssignmentContacts: async (
       _,
       { assignmentId, contactIds, findNew },
-      { loaders, user }
+      { user }
     ) => {
       if (contactIds.length === 0) {
         return [];
@@ -1052,10 +1057,14 @@ const rootMutations = {
       const organizationId = await cacheableData.campaignContact.orgId(
         firstContact
       );
+      let effectiveAssignmentId = assignmentId;
+      if (!effectiveAssignmentId) {
+        effectiveAssignmentId = firstContact.assignment_id;
+      }
       await assignmentRequiredOrAdminRole(
         user,
         organizationId,
-        assignmentId,
+        effectiveAssignmentId,
         firstContact
       );
       let triedUpdate = false;
@@ -1069,7 +1078,7 @@ const rootMutations = {
         // maybe the cache is stale so try refreshing.
         if (
           contact.cachedResult &&
-          Number(contact.assignment_id) !== Number(assignmentId) &&
+          Number(contact.assignment_id) !== Number(effectiveAssignmentId) &&
           !triedUpdate
         ) {
           // In case assignment_id from cache needs to be refreshed, try again
@@ -1082,7 +1091,10 @@ const rootMutations = {
           contact = await cacheableData.campaignContact.load(contactId);
         }
 
-        if (contact && Number(contact.assignment_id) === Number(assignmentId)) {
+        if (
+          contact &&
+          Number(contact.assignment_id) === Number(effectiveAssignmentId)
+        ) {
           return contact;
         }
 
@@ -1310,9 +1322,20 @@ const rootResolvers = {
       await accessRequired(user, campaign.organization_id, "SUPERVOLUNTEER");
       return campaign;
     },
-    assignment: async (_, { id }, { loaders, user }) => {
+    assignment: async (
+      _,
+      { assignmentId: assignmentIdInput, contactId },
+      { loaders, user }
+    ) => {
       authRequired(user);
-      const assignment = await loaders.assignment.load(id);
+      let assignmentId = assignmentIdInput;
+      if (contactId) {
+        const campaignContact = await cacheableData.campaignContact.load(
+          contactId
+        );
+        assignmentId = campaignContact.assignment_id;
+      }
+      const assignment = await loaders.assignment.load(assignmentId);
       const campaign = await loaders.campaign.load(assignment.campaign_id);
       if (assignment.user_id == user.id) {
         await accessRequired(

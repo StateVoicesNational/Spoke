@@ -736,6 +736,11 @@ export async function exportCampaign(job) {
     convertedMessages = await Promise.all(convertedMessages);
     finalCampaignMessages = finalCampaignMessages.concat(convertedMessages);
     let convertedContacts = contacts.map(async contact => {
+      const tags = await r
+        .knex("tag_campaign_contact")
+        .where("campaign_contact_id", contact.id)
+        .leftJoin("tag", "tag.id", "tag_campaign_contact.tag_id");
+
       const contactRow = {
         campaignId: campaign.id,
         campaign: campaign.title,
@@ -756,7 +761,8 @@ export async function exportCampaign(job) {
           : "false",
         "contact[messageStatus]": contact.message_status,
         "contact[errorCode]": contact.error_code,
-        "contact[external_id]": contact.external_id
+        "contact[external_id]": contact.external_id,
+        "contact[tags]": tags.length > 0 ? tags.map(tag => tag.name) : null
       };
       const customFields = JSON.parse(contact.custom_fields);
       Object.keys(customFields).forEach(fieldName => {
