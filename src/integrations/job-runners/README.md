@@ -14,12 +14,16 @@ introducing conflicts with MoveOn/main.
 "Tasks" are lightweight fire-and-forget operations, while "Jobs" are
 long-running operations that are tracked in the JobRequest table.
 
+Task payloads should always be JSON-serializable and should be relatively small because
+they are passed to the job runner directly without being written to the database.
+If the maximum payload for a background operation exceeds 100Kb,
+consider using a Job rather than a Task.
+
 While most queueing systems should be able to handle both types of background
 processing, we are keeping them separate for now to allow for different execution
 strategies. For example, it might be reasonable to always run tasks in-process
 outside of AWS Lambda while still pushing Jobs to a separate worker process.
 
-Note: This api may change in the future.
 
 ## Configuration
 
