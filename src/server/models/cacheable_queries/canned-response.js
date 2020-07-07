@@ -23,6 +23,7 @@ const cannedResponseCache = {
         return JSON.parse(cannedData);
       }
     }
+    // rewrite to join to tags
     const dbResult = await r
       .table("canned_response")
       .getAll(campaignId, { index: "campaign_id" })
