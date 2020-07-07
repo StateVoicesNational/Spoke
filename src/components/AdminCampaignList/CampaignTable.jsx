@@ -11,6 +11,7 @@ import theme from "../../styles/theme";
 import Empty from "../Empty";
 import DataTables from "material-ui-datatables";
 import { CircularProgress } from "material-ui";
+import { SORTS, TIMEZONE_SORT } from "./SortBy";
 
 const inlineStyles = {
   past: {
@@ -62,7 +63,8 @@ export class CampaignTable extends React.Component {
     onPreviousPageClick: PropTypes.func,
     onRowSizeChange: PropTypes.func,
     campaignsToArchive: PropTypes.array,
-    campaignsWithChangingStatus: PropTypes.array
+    campaignsWithChangingStatus: PropTypes.array,
+    currentSortBy: PropTypes.oneOf(SORTS.map(s => s.value))
   };
 
   state = {
@@ -129,8 +131,21 @@ export class CampaignTable extends React.Component {
       });
     }
 
+    const timezoneColumn = [];
+    // only show the timezone column when we're currently sorting by timezone
+    if (this.props.currentSortBy === TIMEZONE_SORT.value) {
+      timezoneColumn.push({
+        key: "timezone",
+        label: "Timezone",
+        sortable: false,
+        style: {
+          width: "5em"
+        }
+      });
+    }
+
     return [
-      // id, title, user, contactcount, unassigned, unmessaged, due date, archive
+      // id, timezone (if current sort), title, user, contactcount, unassigned, unmessaged, due date, archive
       {
         key: "id",
         label: "id",
@@ -139,6 +154,7 @@ export class CampaignTable extends React.Component {
           width: "5em"
         }
       },
+      ...timezoneColumn,
       {
         key: "title",
         label: "Campaign",
@@ -278,7 +294,6 @@ export class CampaignTable extends React.Component {
     const { campaigns, pageInfo } = this.props.data.organization.campaigns;
     const { limit, offset, total } = pageInfo;
     const displayPage = Math.floor(offset / limit) + 1;
-    console.log("CampaignTable", campaigns);
     return campaigns.length === 0 ? (
       <Empty title="No campaigns" icon={<SpeakerNotesIcon />} />
     ) : (

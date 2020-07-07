@@ -99,6 +99,9 @@ const buildOrderByClause = (query, sortBy) => {
     case "TITLE":
       fragmentArray = [title];
       break;
+    case "TIMEZONE":
+      fragmentArray = ['"campaign"."timezone"'];
+      break;
     case "ID_DESC":
       fragmentArray = [desc(id)];
       break;
