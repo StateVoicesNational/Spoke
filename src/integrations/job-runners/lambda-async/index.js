@@ -9,7 +9,7 @@ const client = new AWS.Lambda();
 
 export const fullyConfigured = () => !!functionName;
 
-export const dispatch = async (
+export const dispatchJob = async (
   { queue_name, job_type, organization_id, campaign_id, payload },
   opts = {}
 ) => {
