@@ -363,6 +363,7 @@ export class AdminIncomingMessageList extends Component {
             onUsersReceived={this.handleCampaignTextersReceived}
             pageSize={1000}
             campaignsFilter={this.state.campaignsFilter}
+            roleFilter="ANY"
           />
           <PaginatedCampaignsRetriever
             organizationId={this.props.params.organizationId}

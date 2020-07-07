@@ -27,10 +27,20 @@ class CannedResponseForm extends React.Component {
       text: yup.string().required()
     });
 
-    const { customFields, handleCloseAddForm } = this.props;
+    const {
+      customFields,
+      handleCloseAddForm,
+      formButtonText,
+      defaultValue
+    } = this.props;
     return (
       <div>
-        <GSForm ref="form" schema={modelSchema} onSubmit={this.handleSave}>
+        <GSForm
+          ref="form"
+          schema={modelSchema}
+          onSubmit={this.handleSave}
+          defaultValue={defaultValue}
+        >
           <Form.Field
             {...dataTest("title")}
             name="title"
@@ -50,7 +60,7 @@ class CannedResponseForm extends React.Component {
           <div className={css(styles.buttonRow)}>
             <FlatButton
               {...dataTest("addResponse")}
-              label="Add Response"
+              label={formButtonText}
               backgroundColor={theme.colors.green}
               labelStyle={{ color: "white" }}
               style={{
@@ -78,7 +88,9 @@ class CannedResponseForm extends React.Component {
 CannedResponseForm.propTypes = {
   onSaveCannedResponse: type.func,
   handleCloseAddForm: type.func,
-  customFields: type.array
+  customFields: type.array,
+  formButtonText: type.string,
+  defaultValue: type.object
 };
 
 export default CannedResponseForm;

@@ -37,7 +37,7 @@ Generally, the first steps are:
 ### Working on an issue
 
 - Depending on the part of the codebase you are working on read relevant parts of [EXPLANATION-development-guidelines.md](./docs/EXPLANATION-development-guidelines.md) for some context and common gotchas.
-- While working on an issue, run existing tests to make sure they still work (`npm test` or `npm run test-sqlite` depending on your backend)
+- While working on an issue, run existing tests to make sure they still work (see [How To Run Tests](https://github.com/MoveOnOrg/Spoke/blob/main/docs/HOWTO-run_tests.md) documentation).
 - Please try adding a test
 
 ### Submitting your Pull Request

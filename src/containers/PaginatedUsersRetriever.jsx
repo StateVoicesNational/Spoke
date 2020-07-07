@@ -1,4 +1,4 @@
-import React, { Component } from "react";
+import { Component } from "react";
 import PropTypes from "prop-types";
 import gql from "graphql-tag";
 import isEqual from "lodash/isEqual";
@@ -10,7 +10,8 @@ const fetchPeople = async (
   limit,
   organizationId,
   campaignsFilter,
-  sortBy
+  sortBy,
+  role
 ) =>
   apolloClient.query({
     query: gql`
@@ -19,12 +20,14 @@ const fetchPeople = async (
         $cursor: OffsetLimitCursor
         $campaignsFilter: CampaignsFilter
         $sortBy: SortPeopleBy
+        $role: String
       ) {
         people(
           organizationId: $organizationId
           cursor: $cursor
           campaignsFilter: $campaignsFilter
           sortBy: $sortBy
+          role: $role
         ) {
           ... on PaginatedUsers {
             pageInfo {
@@ -46,7 +49,8 @@ const fetchPeople = async (
       cursor: { offset, limit },
       organizationId,
       campaignsFilter,
-      sortBy
+      sortBy,
+      role
     },
     fetchPolicy: "network-only"
   });
@@ -60,7 +64,8 @@ export class PaginatedUsersRetriever extends Component {
     }),
     sortBy: PropTypes.string,
     onUsersReceived: PropTypes.func.isRequired,
-    pageSize: PropTypes.number.isRequired
+    pageSize: PropTypes.number.isRequired,
+    roleFilter: PropTypes.string
   };
 
   componentDidMount() {
@@ -74,7 +79,14 @@ export class PaginatedUsersRetriever extends Component {
   handlePropsReceived = async (prevProps = {}) => {
     if (isEqual(prevProps, this.props)) return;
 
-    const { organizationId, campaignsFilter, pageSize, sortBy } = this.props;
+    const {
+      organizationId,
+      campaignsFilter,
+      pageSize,
+      sortBy,
+      onUsersReceived,
+      roleFilter
+    } = this.props;
 
     let offset = 0;
     let total = undefined;
@@ -85,16 +97,15 @@ export class PaginatedUsersRetriever extends Component {
         pageSize,
         organizationId,
         campaignsFilter,
-        sortBy || "FIRST_NAME"
+        sortBy || "FIRST_NAME",
+        roleFilter
       );
       const { pageInfo, users: newUsers } = results.data.people;
       users = users.concat(newUsers);
       offset += pageSize;
       total = pageInfo.total;
-      this.props.onUsersReceived(users);
+      onUsersReceived(users);
     } while (offset < total);
-
-    // this.props.onUsersReceived(users);
   };
 
   render() {
