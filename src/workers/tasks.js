@@ -57,8 +57,6 @@ const tagUpdateActionHandler = async ({
   await handler.onTagUpdate(tags, contact, campaign, organization, texter);
 };
 
-// const invokeMessageHandlerPostSave = async ({ name, postSaveData }) => {};
-
 const taskMap = Object.freeze({
   [Tasks.SEND_MESSAGE]: sendMessage,
   [Tasks.ACTION_HANDLER_QUESTION_RESPONSE]: questionResponseActionHandler,

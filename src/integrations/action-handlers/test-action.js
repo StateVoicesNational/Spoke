@@ -58,3 +58,15 @@ export async function processAction(
     .where("campaign_contact.id", campaignContactId)
     .update("custom_fields", JSON.stringify(customFields));
 }
+
+// Uncomment to test tag action handlers
+// TODO: move this to tag handlers
+// export async function onTagUpdate(
+//   tags,
+//   contact,
+//   campaign,
+//   organization,
+//   texter
+// ) {
+//   console.log("TEST TAG HANDLER", {tags, contact, campaign, organization, texter});
+// }

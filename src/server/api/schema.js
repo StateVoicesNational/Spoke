@@ -7,6 +7,7 @@ import { gzip, makeTree, getHighestRole } from "../../lib";
 import { capitalizeWord } from "./lib/utils";
 import twilio from "./lib/twilio";
 
+// TODO: make this a task
 import { loadCampaignCache } from "../../workers/jobs";
 import { getIngestMethod } from "../../integrations/contact-loaders";
 import {
