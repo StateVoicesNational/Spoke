@@ -69,7 +69,7 @@ const fetchOrg = async organizationId =>
     variables: { organizationId }
   });
 
-class UserEdit extends React.Component {
+export class UserEdit extends React.Component {
   static propTypes = {
     mutations: PropTypes.object,
     currentUser: PropTypes.object,
@@ -258,6 +258,8 @@ class UserEdit extends React.Component {
     }
     const org = this.state.currentOrg && this.state.currentOrg.organization;
     const formSchema = this.buildFormSchema(authType, org);
+    const fieldsNeeded = router && !!router.location.query.fieldsNeeded;
+
     return (
       <div>
         <GSForm
@@ -292,6 +294,9 @@ class UserEdit extends React.Component {
               />
             </span>
           )}
+          {fieldsNeeded && (
+            <h3>Please complete your profile</h3>
+          )}
           {!authType && org && org.profileFields.map(this.renderProfileField)}
           {authType && (
             <Form.Field label="Password" name="password" type="password" />
@@ -312,7 +317,8 @@ class UserEdit extends React.Component {
           )}
           {authType !== "change" &&
             userId &&
-            userId === currentUser.currentUser.id && (
+            userId === currentUser.currentUser.id &&
+            !fieldsNeeded && (
               <div className={css(styles.container)}>
                 <RaisedButton
                   onTouchTap={this.handleClick}
@@ -327,7 +333,7 @@ class UserEdit extends React.Component {
               type="submit"
               label={saveLabel || "Save"}
             />
-            {!authType && onCancel && (
+            {!authType && onCancel && !fieldsNeeded && (
               <RaisedButton
                 className={css(styles.cancel)}
                 label="Cancel"
