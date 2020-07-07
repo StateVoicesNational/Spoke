@@ -191,6 +191,7 @@ const rootSchema = gql`
     ID_ASC
     ID_DESC
     TITLE
+    TIMEZONE
   }
 
   type RootQuery {
