@@ -258,7 +258,7 @@ export class UserEdit extends React.Component {
     }
     const org = this.state.currentOrg && this.state.currentOrg.organization;
     const formSchema = this.buildFormSchema(authType, org);
-    const fieldsNeeded = !!router.location.query.fieldsNeeded;
+    const fieldsNeeded = router && !!router.location.query.fieldsNeeded;
 
     return (
       <div>
