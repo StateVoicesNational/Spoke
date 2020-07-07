@@ -310,13 +310,15 @@ async function editCampaign(id, campaign, loaders, user, origCampaignRecord) {
         id: undefined
       });
     }
-
+    // run in a transaction
+    // delete from tag_canned_response for campaign_id knex
     await r
       .table("canned_response")
       .getAll(id, { index: "campaign_id" })
       .filter({ user_id: "" })
       .delete();
     await CannedResponse.save(convertedResponses);
+    // also save tag_ids
     await cacheableData.cannedResponse.clearQuery({
       userId: "",
       campaignId: id
@@ -840,7 +842,7 @@ const rootMutations = {
         campaign,
         {}
       );
-
+      // join tag_canned_response, copy any tag_canned_response rows
       const originalCannedResponses = await r
         .knex("canned_response")
         .where({ campaign_id: oldCampaignId });
