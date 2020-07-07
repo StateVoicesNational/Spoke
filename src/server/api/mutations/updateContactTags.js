@@ -26,23 +26,23 @@ export const updateContactTags = async (
       campaign.organization_id
     );
 
-    const handlers = await ActionHandlers.getActionHandlersAvailableForTagUpdate(
-      organization,
-      user
+    const handlerNames = await ActionHandlers.rawAllTagUpdateActionHandlerNames();
+    await Promise.all(
+      handlerNames.map(name => {
+        return jobRunner.dispatchTask(Tasks.ACTION_HANDLER_TAG_UPDATE, {
+          name,
+          tags,
+          contact,
+          campaign,
+          organization,
+          texter: {
+            first_name: user.first_name,
+            last_name: user.last_name,
+            email: user.email
+          }
+        });
+      })
     );
-    if (handlers && handlers.length > 0) {
-      await jobRunner.dispatchTask(Tasks.ACTION_HANDLER_TAG_UPDATE, {
-        tags,
-        contact,
-        campaign,
-        organization,
-        texter: {
-          first_name: user.first_name,
-          last_name: user.last_name,
-          email: user.email
-        }
-      });
-    }
   } catch (err) {
     // eslint-disable-next-line no-console
     console.error(

@@ -52,7 +52,7 @@ const dispatchActionHandlers = async ({
         }
 
         await jobRunner.dispatchTask(Tasks.ACTION_HANDLER_QUESTION_RESPONSE, {
-          interactionStepAction,
+          name: interactionStepAction,
           organization,
           user,
           questionResponse,

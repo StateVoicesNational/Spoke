@@ -143,7 +143,7 @@ export const sendMessage = async (
   await jobRunner.dispatchTask(Tasks.SEND_MESSAGE, {
     message: saveResult.message,
     contact,
-    // TODO: trx can't be supported with remote dispatch, see if it's necessary
+    // TODO: start a transaction inside the service send message function
     trx: null,
     organization,
     campaign
