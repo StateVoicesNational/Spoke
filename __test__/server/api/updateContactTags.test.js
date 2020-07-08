@@ -96,9 +96,7 @@ describe("mutations.updateContactTags", () => {
     );
   });
 
-  it("saves the tags and calls the action handlers", async () => {
-    jest.spyOn(ComplexTestActionHandler, "onTagUpdate");
-
+  it("saves the tags", async () => {
     const result = await wrappedMutations.updateContactTags(
       dbExpectedTags,
       contacts[0].id
@@ -132,25 +130,11 @@ describe("mutations.updateContactTags", () => {
         })
       ])
     );
-
-    expect(ComplexTestActionHandler.onTagUpdate).toHaveBeenCalledTimes(1);
-    expect(ComplexTestActionHandler.onTagUpdate.mock.calls[0]).toHaveLength(5);
-    expect(ComplexTestActionHandler.onTagUpdate.mock.calls[0][0]).toMatchObject(
-      gqlExpectedTags
-    );
-    expect(ComplexTestActionHandler.onTagUpdate.mock.calls[0][1]).toMatchObject(
-      texterUser
-    );
-    expect(ComplexTestActionHandler.onTagUpdate.mock.calls[0][2]).toMatchObject(
-      contacts[0]
-    );
-    expect(
-      ComplexTestActionHandler.onTagUpdate.mock.calls[0][3]
-    ).toMatchObject({ id: Number(campaign.id) });
-    expect(
-      ComplexTestActionHandler.onTagUpdate.mock.calls[0][4]
-    ).toMatchObject({ id: Number(organization.id), uuid: organization.uuid });
   });
+
+  // TODO: implement these tests when we add a tag handler
+  it.skip("calls tag handlers", () => {});
+  it.skip("doesn't fail when dispatching to tag handlers throws an exception", () => {});
 
   describe("when cacheableData.tagCampaignContact.save throws an exception", () => {
     it("eats the exception and logs it", async () => {
@@ -171,28 +155,6 @@ describe("mutations.updateContactTags", () => {
         expect.stringMatching(
           /^Error saving tagCampaignContact for campaignContactID 999999.*/
         )
-      );
-    });
-  });
-
-  describe("when onTagUpdate throws an exception", () => {
-    it("eats the exception and logs it", async () => {
-      jest
-        .spyOn(ComplexTestActionHandler, "onTagUpdate")
-        .mockRejectedValue(new Error("mercury is retrograde"));
-
-      jest.spyOn(console, "error");
-
-      const result = await wrappedMutations.updateContactTags(
-        dbExpectedTags,
-        contacts[0].id
-      );
-
-      expect(result.data.updateContactTags).toEqual(contacts[0].id.toString());
-      expect(console.error).toHaveBeenCalledTimes(1); // eslint-disable-line no-console
-      // eslint-disable-next-line no-console
-      expect(console.error.mock.calls[0][0]).toEqual(
-        expect.stringMatching(/.*mercury is retrograde.*/)
       );
     });
   });
