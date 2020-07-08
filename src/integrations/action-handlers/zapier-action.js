@@ -27,14 +27,20 @@ export function clientChoiceDataCacheKey(organization) {
   return `${organization.id}`;
 }
 
-export async function onTagUpdate(tags, user, contact, campaign, organization) {
+export async function onTagUpdate(
+  tags,
+  contact,
+  campaign,
+  organization,
+  texter
+) {
   const baseUrl = getConfig("BASE_URL", organization);
   const conversationLink = `${baseUrl}/app/${organization.id}/todos/review/${contact.id}`;
 
   const payload = {
     texter: {
-      name: `${user.first_name} ${user.last_name}`,
-      email: user.email
+      name: `${texter.first_name} ${texter.last_name}`,
+      email: texter.email
     },
     campaign: {
       id: campaign.id,

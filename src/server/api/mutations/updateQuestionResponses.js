@@ -1,8 +1,69 @@
 import { log } from "../../../lib";
 import { assignmentRequiredOrAdminRole } from "../errors";
 import { cacheableData } from "../../models";
-import { runningInLambda } from "../lib/utils";
+import { jobRunner } from "../../../integrations/job-runners";
+import { Tasks } from "../../../workers/tasks";
+
 const ActionHandlers = require("../../../integrations/action-handlers");
+
+const dispatchActionHandlers = async ({
+  user,
+  contact,
+  campaign,
+  questionResponses
+}) => {
+  const actionHandlersConfigured =
+    Object.keys(ActionHandlers.rawAllActionHandlers()).length > 0;
+
+  if (actionHandlersConfigured) {
+    const interactionSteps =
+      campaign.interactionSteps ||
+      (await cacheableData.campaign.dbInteractionSteps(campaign.id));
+
+    const stepsWithActions = interactionSteps.filter(
+      interactionStep => interactionStep.answer_actions
+    );
+
+    if (!stepsWithActions.length) {
+      return contact.id;
+    }
+
+    const organization = await cacheableData.organization.load(
+      campaign.organization_id
+    );
+
+    await Promise.all(
+      questionResponses.map(async questionResponse => {
+        const { interactionStepId, value } = questionResponse;
+
+        const questionResponseInteractionStep = interactionSteps.find(
+          is =>
+            is.answer_actions &&
+            is.answer_option === value &&
+            is.parent_interaction_id === Number(interactionStepId)
+        );
+
+        const interactionStepAction =
+          questionResponseInteractionStep &&
+          questionResponseInteractionStep.answer_actions;
+
+        if (!interactionStepAction) {
+          return;
+        }
+
+        await jobRunner.dispatchTask(Tasks.ACTION_HANDLER_QUESTION_RESPONSE, {
+          name: interactionStepAction,
+          organization,
+          user,
+          questionResponse,
+          questionResponseInteractionStep,
+          campaign,
+          contact
+        });
+      })
+    );
+  }
+};
 
 export const updateQuestionResponses = async (
   _,
@@ -28,87 +89,16 @@ export const updateQuestionResponses = async (
       );
     });
 
-  // The rest is for ACTION_HANDLERS
-  const actionHandlersConfigured =
-    Object.keys(ActionHandlers.rawAllActionHandlers()).length > 0;
-
-  if (actionHandlersConfigured) {
-    const interactionSteps =
-      campaign.interactionSteps ||
-      (await cacheableData.campaign.dbInteractionSteps(campaign.id));
-
-    const stepsWithActions = interactionSteps.filter(
-      interactionStep => interactionStep.answer_actions
-    );
-
-    if (!stepsWithActions.length) {
-      return contact.id;
-    }
-
-    const organization = await cacheableData.organization.load(
-      campaign.organization_id
-    );
-
-    const promises = [];
-    questionResponses.map(async questionResponse => {
-      const { interactionStepId, value } = questionResponse;
-
-      const questionResponseInteractionStep = interactionSteps.find(
-        is =>
-          is.answer_actions &&
-          is.answer_option === value &&
-          is.parent_interaction_id === Number(interactionStepId)
-      );
-
-      const interactionStepAction =
-        questionResponseInteractionStep &&
-        questionResponseInteractionStep.answer_actions;
-
-      if (!interactionStepAction) {
-        return questionResponse;
-      }
-
-      // run interaction step handler
-      const actionHandlerPromise = ActionHandlers.getActionHandler(
-        interactionStepAction,
-        organization,
-        user
-      )
-        .then(async handler => {
-          if (!handler) {
-            return questionResponse;
-          }
-          const processActionPromise = handler
-            .processAction(
-              questionResponse,
-              questionResponseInteractionStep,
-              campaignContactId,
-              contact,
-              campaign,
-              organization
-            )
-            .catch(err => {
-              log.error(
-                `Error executing handler for InteractionStep ${interactionStepId} InteractionStepAction ${interactionStepAction} error ${err}`
-              );
-            });
-          promises.push(processActionPromise);
-          return questionResponse;
-        })
-        .catch(err => {
-          log.error(
-            `Error loading handler for InteractionStep ${interactionStepId} InteractionStepAction ${interactionStepAction} error ${err}`
-          );
-        });
-      promises.push(actionHandlerPromise);
-      return questionResponse;
+  try {
+    await dispatchActionHandlers({
+      user,
+      questionResponses,
+      campaign,
+      contact
     });
-
-    if (runningInLambda()) {
-      await Promise.all(promises);
-    }
+  } catch (e) {
+    console.error("Dispatching to one or more action handlers failed", e);
   }
+
   return contact.id;
 };
-
-export default updateQuestionResponses;
