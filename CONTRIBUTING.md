@@ -8,6 +8,7 @@ many important organizations!
 - We generally hang out in the [Progressive Coder Network slack](https://www.progcode.org/) in the `#spoke` channel
   - Please fill out the Join form there, and once you are on-boarded, we can chat live!
   - ProgCode has community guidelines
+- We have a weekly(ish) working group at [Progressive HackNight](https://progressivehacknight.org) that organizes in the #wg-spoke_p2p_sms_tool channel in the slack
 - Feel free to [create an issue or comment on an existing issue](https://github.com/MoveOnOrg/Spoke/issues) -- Every time we hear from the outside progressive developer community, we do a little dance.
 - We also welcome reaching out on our [MoveOn Spoke interest form](https://act.moveon.org/survey/spoke-project/) with questions, etc.
 
