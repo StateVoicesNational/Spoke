@@ -5,6 +5,7 @@ import React from "react";
 import { mount } from "enzyme";
 import MuiThemeProvider from "material-ui/styles/MuiThemeProvider";
 import { AdminCampaignList } from "../../src/containers/AdminCampaignList";
+import { TIMEZONE_SORT } from "../../src/components/AdminCampaignList/SortBy";
 import { StyleSheetTestUtils } from "aphrodite";
 
 describe("CampaignList", () => {
@@ -111,6 +112,64 @@ describe("CampaignList", () => {
           <span> &mdash; Created by Lorem Ipsum</span>
         )
       ).toBeTruthy();
+    });
+  });
+
+  describe("Campaign list sorting", () => {
+    const campaignWithCreator = {
+      id: 1,
+      creator: {
+        displayName: "Lorem Ipsum"
+      },
+      completionStats: {}
+    };
+
+    const data = {
+      organization: {
+        id: 1,
+        cacheable: 2,
+        campaigns: {
+          campaigns: [campaignWithCreator],
+          pageInfo: {
+            limit: 1000,
+            offset: 0,
+            total: 1
+          }
+        }
+      }
+    };
+
+    test("Timezone column is displayed when timezone is current sort", () => {
+      const wrapper = mount(
+        <MuiThemeProvider>
+          <AdminCampaignList
+            data={data}
+            mutations={mutations}
+            params={params}
+          />
+        </MuiThemeProvider>
+      );
+      wrapper.childAt(0).setState({
+        sortBy: TIMEZONE_SORT.value
+      });
+      expect(
+        wrapper.containsMatchingElement(<span>Timezone</span>)
+      ).toBeTruthy();
+    });
+
+    test("Timezone column is hidden when it isn't the current sort", () => {
+      const wrapper = mount(
+        <MuiThemeProvider>
+          <AdminCampaignList
+            data={data}
+            mutations={mutations}
+            params={params}
+          />
+        </MuiThemeProvider>
+      );
+      expect(
+        wrapper.containsMatchingElement(<span>Timezone</span>)
+      ).toBeFalsy();
     });
   });
 });

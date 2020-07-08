@@ -743,6 +743,7 @@ describe("editUser mutation", () => {
       data: {
         editUser: {
           ...userData,
+          profileComplete: true,
           id: testTexter.id.toString()
         }
       }
