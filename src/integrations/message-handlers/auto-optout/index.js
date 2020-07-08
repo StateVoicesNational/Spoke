@@ -10,7 +10,7 @@ export const serverAdministratorInstructions = () => {
     setupInstructions: `Set environment/organization variables
        AUTO_OPTOUT_REGEX_LIST_BASE64
        This should be encoded to BASE64 after creating a JSON list object in the form:
-       [{"regex": "....", "reason": "hostile", "autoreply": true}]
+       [{"regex": "....", "reason": "hostile"}]
        Be VERY careful about the regex -- if it is accidentally general,
        you might end up opting way more people out than you intended.
        Consider testing your AUTO_OPTOUT_REGEX_BASE64 with the PROFANITY TAGGER first
@@ -27,7 +27,8 @@ export const available = organization => {
     return false;
   }
   try {
-    JSON.parse(conf);
+    JSON.parse(Buffer.from(conf, "base64").toString());
+    return true;
   } catch (e) {
     console.log(
       "message-handler/auto-optout JSON parse of AUTO_OPTOUT_REGEX_LIST_BASE64 failed",
@@ -52,8 +53,8 @@ export const postMessageSave = async ({ message, organization }) => {
     });
 
     if (matches.length) {
+      console.log("auto-optout MATCH", matches);
       const reason = matches[0].reason || "auto_optout";
-      const shouldAutoReply = matches[0].autoreply;
       // OPTOUT
       const contact = await cacheableData.campaignContact.load(
         message.campaign_contact_id
@@ -65,43 +66,6 @@ export const postMessageSave = async ({ message, organization }) => {
         campaign: { organization_id: organization.id },
         reason
       });
-
-      if (shouldAutoReply && message.service) {
-        const service = serviceMap[message.service];
-        const autoReplyMessage =
-          typeof shouldAutoReply === "string"
-            ? shouldAutoReply
-            : getConfig("opt_out_message", organization) ||
-              getConfig("OPT_OUT_MESSAGE", organization) ||
-              "I'm opting you out of texts immediately. Have a great day.";
-        const messageInstance = new Message({
-          text: autoReplyMessage,
-          contact_number: message.contact_number,
-          user_number: "",
-          user_id: null,
-          campaign_contact_id: message.campaign_contact_id,
-          messageservice_sid: null,
-          send_status: "SENDING",
-          service: message.service,
-          is_from_contact: false,
-          queued_at: new Date(),
-          send_before: new Date()
-        });
-        const saveResult = await cacheableData.message.save({
-          messageInstance,
-          contact,
-          organization
-        });
-        if (saveResult.message) {
-          // FUTURE use dispatchTask when
-          await service.sendMessage(
-            saveResult.message,
-            contact,
-            null,
-            organization
-          );
-        }
-      }
     }
   }
 };
