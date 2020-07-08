@@ -12,6 +12,7 @@ const UserEditDialog = props => (
     modal={false}
     open={props.open}
     onRequestClose={props.requestClose}
+    autoScrollBodyContent={true}
   >
     <UserEdit
       organizationId={props.organizationId}

@@ -111,7 +111,7 @@ const dbLoadUserAuth = async (field, val) => {
     .where(field, val)
     .select("*")
     .first();
-  if (userAuth.extra && typeof userAuth.extra === "string") {
+  if (userAuth && typeof userAuth.extra === "string") {
     userAuth.extra = JSON.parse(userAuth.extra);
   }
   if (r.redis && userAuth) {

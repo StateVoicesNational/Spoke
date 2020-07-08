@@ -798,7 +798,11 @@ export class AssignmentTexterContactControls extends React.Component {
             flexStyles.subSectionSendButton
           )}`}
           labelStyle={inlineStyles.flatButtonLabel}
-          backgroundColor={theme.colors.coreBackgroundColor}
+          backgroundColor={
+            this.props.disabled
+              ? theme.colors.coreBackgroundColorDisabled
+              : theme.colors.coreBackgroundColor
+          }
           hoverColor={theme.colors.coreHoverColor}
           primary
         />

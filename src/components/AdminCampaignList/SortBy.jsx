@@ -46,17 +46,23 @@ export const ID_DESC_SORT = {
   value: "ID_DESC"
 };
 
-const TITLE_SORT = {
+export const TITLE_SORT = {
   display: "Title",
   value: "TITLE"
 };
 
-const SORTS = [
+export const TIMEZONE_SORT = {
+  display: "Timezone",
+  value: "TIMEZONE"
+};
+
+export const SORTS = [
   DUE_DATE_DESC_SORT,
   DUE_DATE_ASC_SORT,
   ID_DESC_SORT,
   ID_ASC_SORT,
-  TITLE_SORT
+  TITLE_SORT,
+  TIMEZONE_SORT
 ];
 
 export const DEFAULT_SORT_BY_VALUE = ID_ASC_SORT.value;
