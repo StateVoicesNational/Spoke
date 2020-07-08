@@ -7,7 +7,7 @@ export const saveJob = async (jobData, trx) => {
   if (typeof jobData.payload === "string") {
     unsavedJob = jobData;
   } else {
-    unsavedJob = { ...jobData, payload: JSON.stringify(jobData.payload) };
+    unsavedJob = { ...jobData, payload: JSON.stringify(jobData.payload || {}) };
   }
 
   const [id] = await builder("job_request").insert(unsavedJob, "id");
