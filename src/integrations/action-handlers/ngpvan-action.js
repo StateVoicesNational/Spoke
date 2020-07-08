@@ -1,6 +1,5 @@
 import { getConfig } from "../../server/api/lib/config";
 import Van from "../contact-loaders/ngpvan/util";
-import { log } from "../../lib";
 
 import httpRequest from "../../server/lib/http-request.js";
 
@@ -38,6 +37,48 @@ export function clientChoiceDataCacheKey(organization) {
   return `${organization.id}`;
 }
 
+export const postCanvassResponse = async (contact, organization, body) => {
+  let vanId;
+  try {
+    vanId = JSON.parse(contact.custom_fields || "{}").VanID;
+  } catch (caughtException) {
+    // eslint-disable-next-line no-console
+    console.error(
+      `Error parsing custom_fields for contact ${contact.id} ${caughtException}`
+    );
+    return {};
+  }
+
+  if (!vanId) {
+    // eslint-disable-next-line no-console
+    console.error(
+      `Cannot sync results to van for campaign_contact ${contact.id}. No VanID in custom fields`
+    );
+    return {};
+  }
+
+  const url = Van.makeUrl(`v4/people/${vanId}/canvassResponses`, organization);
+
+  // eslint-disable-next-line no-console
+  console.info("Sending contact update to VAN", {
+    vanId,
+    body
+  });
+
+  return httpRequest(url, {
+    method: "POST",
+    retries: 0,
+    timeout: 32000,
+    headers: {
+      Authorization: Van.getAuth(organization),
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(body),
+    validStatuses: [204],
+    compress: false
+  });
+};
+
 // What happens when a texter saves the answer that triggers the action
 // This is presumably the meat of the action
 export async function processAction(
@@ -55,30 +96,10 @@ export async function processAction(
 
     const body = JSON.parse(answerActionsData.value);
 
-    const url = Van.makeUrl(
-      `v4/people/${contact.external_id}/canvassResponses`,
-      organization
-    );
-
-    log.info("Sending contact update to VAN", {
-      vanId: contact.external_id,
-      body
-    });
-
-    return httpRequest(url, {
-      method: "POST",
-      retries: 0,
-      timeout: 32000,
-      headers: {
-        Authorization: Van.getAuth(organization),
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify(body),
-      validStatuses: [204],
-      compress: false
-    });
+    return postCanvassResponse(contact, organization, body);
   } catch (caughtError) {
-    log.error("Encountered exception in ngpvan.processAction", caughtError);
+    // eslint-disable-next-line no-console
+    console.error("Encountered exception in ngpvan.processAction", caughtError);
     throw caughtError;
   }
 }
@@ -97,7 +118,8 @@ async function getContactTypeIdAndInputTypeId(organization) {
     .then(async response => await response.json())
     .catch(error => {
       const message = `Error retrieving contact types from VAN ${error}`;
-      log.error(message);
+      // eslint-disable-next-line no-console
+      console.error(message);
       throw new Error(message);
     });
 
@@ -114,7 +136,8 @@ async function getContactTypeIdAndInputTypeId(organization) {
     .then(async response => await response.json())
     .catch(error => {
       const message = `Error retrieving input types from VAN ${error}`;
-      log.error(message);
+      // eslint-disable-next-line no-console
+      console.error(message);
       throw new Error(message);
     });
 
@@ -134,7 +157,8 @@ async function getContactTypeIdAndInputTypeId(organization) {
       ct => ct.name === contactType
     ));
     if (!contactTypeId) {
-      log.error(`Contact type ${contactType} not returned by VAN`);
+      // eslint-disable-next-line no-console
+      console.error(`Contact type ${contactType} not returned by VAN`);
     }
 
     const inputType =
@@ -144,7 +168,8 @@ async function getContactTypeIdAndInputTypeId(organization) {
       inTy => inTy.name === inputType
     ));
     if (!inputTypeId) {
-      log.error(`Input type ${inputType} not returned by VAN`);
+      // eslint-disable-next-line no-console
+      console.error(`Input type ${inputType} not returned by VAN`);
     }
 
     if (!inputTypeId || !contactTypeId) {
@@ -153,7 +178,8 @@ async function getContactTypeIdAndInputTypeId(organization) {
       );
     }
   } catch (error) {
-    log.error(
+    // eslint-disable-next-line no-console
+    console.error(
       `Error loading canvass/contactTypes or canvass/inputTypes from VAN  ${error}`
     );
   }
@@ -190,7 +216,8 @@ export async function getClientChoiceData(organization) {
     .then(async response => await response.json())
     .catch(error => {
       const message = `Error retrieving survey questions from VAN ${error}`;
-      log.error(message);
+      // eslint-disable-next-line no-console
+      console.error(message);
       throw new Error(message);
     });
 
@@ -207,7 +234,8 @@ export async function getClientChoiceData(organization) {
     .then(async response => await response.json())
     .catch(error => {
       const message = `Error retrieving activist codes from VAN ${error}`;
-      log.error(message);
+      // eslint-disable-next-line no-console
+      console.error(message);
       throw new Error(message);
     });
 
@@ -224,7 +252,8 @@ export async function getClientChoiceData(organization) {
     .then(async response => await response.json())
     .catch(error => {
       const message = `Error retrieving canvass result codes from VAN ${error}`;
-      log.error(message);
+      // eslint-disable-next-line no-console
+      console.error(message);
       throw new Error(message);
     });
 
@@ -243,7 +272,8 @@ export async function getClientChoiceData(organization) {
       canvassResultCodesPromise
     ]);
   } catch (caughtError) {
-    log.error(
+    // eslint-disable-next-line no-console
+    console.error(
       `Error loading surveyQuestions, activistCodes or canvass/resultCodes from VAN  ${caughtError}`
     );
     return {
@@ -327,7 +357,8 @@ export async function available(organization) {
     !!getConfig("NGP_VAN_APP_NAME", organization);
 
   if (!result) {
-    log.info(
+    // eslint-disable-next-line no-console
+    console.info(
       "ngpvan-action unavailable. Missing one or more required environment variables"
     );
   }
@@ -337,13 +368,15 @@ export async function available(organization) {
       const { data } = await exports.getClientChoiceData(organization);
       const parsedData = (data && JSON.parse(data)) || {};
       if (parsedData.error) {
-        log.info(
+        // eslint-disable-next-line no-console
+        console.info(
           `ngpvan-action unavailable. getClientChoiceData returned error ${parsedData.error}`
         );
         result = false;
       }
     } catch (caughtError) {
-      log.info(
+      // eslint-disable-next-line no-console
+      console.info(
         `ngpvan-action unavailable. getClientChoiceData threw an exception ${caughtError}`
       );
       result = false;
