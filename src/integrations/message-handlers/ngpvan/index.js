@@ -1,10 +1,7 @@
 import { getConfig } from "../../../server/api/lib/config";
-import { runningInLambda } from "../../../server/api/lib/utils";
+const Van = require("../../../integrations/action-handlers/ngpvan-action");
 
-import {
-  getActionHandler,
-  getActionChoiceData
-} from "../../../integrations/action-handlers";
+import { getActionChoiceData } from "../../../integrations/action-handlers";
 
 export const DEFAULT_NGP_VAN_INITIAL_TEXT_CANVASS_RESULT = "Texted";
 
@@ -23,20 +20,22 @@ export const serverAdministratorInstructions = () => {
   };
 };
 
-export const available = async organization => {
-  const handler = await getActionHandler("ngpvan-action", organization);
-  return !!handler;
-};
+export const available = organization =>
+  !!getConfig("NGP_VAN_API_KEY", organization) &&
+  !!getConfig("NGP_VAN_APP_NAME", organization);
 
 // export const preMessageSave = async () => {};
 
 export const postMessageSave = async ({ contact, organization }) => {
+  if (!available(organization)) {
+    return {};
+  }
+
   if (contact.message_status !== "needsMessage") {
     return {};
   }
 
-  const handler = await getActionHandler("ngpvan-action", organization);
-  const clientChoiceData = await getActionChoiceData(handler, organization);
+  const clientChoiceData = await getActionChoiceData(Van, organization);
   const initialTextResult =
     getConfig("NGP_VAN_INITIAL_TEXT_CANVASS_RESULT", organization) ||
     DEFAULT_NGP_VAN_INITIAL_TEXT_CANVASS_RESULT;
@@ -44,8 +43,7 @@ export const postMessageSave = async ({ contact, organization }) => {
   const texted = clientChoiceData.find(ccd => ccd.name === initialTextResult);
   const body = JSON.parse(texted.details);
 
-  const promise = handler
-    .postCanvassResponse(contact, organization, body)
+  return Van.postCanvassResponse(contact, organization, body)
     .then(() => {})
     .catch(caughtError => {
       // eslint-disable-next-line no-console
@@ -55,10 +53,4 @@ export const postMessageSave = async ({ contact, organization }) => {
       );
       return {};
     });
-
-  if (runningInLambda()) {
-    return promise;
-  }
-
-  return {};
 };
