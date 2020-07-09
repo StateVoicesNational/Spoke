@@ -376,9 +376,11 @@ const campaignInfoFragment = `
     contactsCount
   }
   completionStats {
-    contactsCount
     assignedCount
+    contactsCount
+    errorCount
     messagedCount
+    needsResponseCount
   }
 `;
 
