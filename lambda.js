@@ -1,18 +1,29 @@
 "use strict";
 const AWS = require("aws-sdk");
 const awsServerlessExpress = require("aws-serverless-express");
-let app, server, jobs;
+let app, server, jobs, dispatcher;
+
+let invocationContext = {};
+let invocationEvent = {};
+
 try {
   app = require("./build/server/server/index");
   server = awsServerlessExpress.createServer(app.default);
   jobs = require("./build/server/workers/job-processes");
+  dispatcher = require("./build/server/integrations/job-runners/lambda-async/handler");
+
+  app.default.set("awsContextGetter", function(req, res) {
+    return [invocationEvent, invocationContext];
+  });
 } catch (err) {
   if (!global.TEST_ENVIRONMENT) {
     console.error(`Unable to load built server: ${err}`);
   }
+  /*
   app = require("./src/server/index");
   server = awsServerlessExpress.createServer(app.default);
   jobs = require("./src/workers/job-processes");
+  */
 }
 
 // NOTE: the downside of loading above is environment variables are initially loaded immediately,
@@ -20,12 +31,6 @@ try {
 // We should NOT load app and server inside the handler, or all connection pools and state are re-instantiated per-request:
 // See: http://docs.aws.amazon.com/lambda/latest/dg/best-practices.html#function-code
 // "Separate the Lambda handler (entry point) from your core logic"
-
-let invocationContext = {};
-let invocationEvent = {};
-app.default.set("awsContextGetter", function(req, res) {
-  return [invocationEvent, invocationContext];
-});
 
 function cleanHeaders(event) {
   // X-Twilio-Body can contain unicode and disallowed chars by aws-serverless-express like "'"
@@ -45,6 +50,13 @@ exports.handler = async (event, context) => {
 
   if (process.env.LAMBDA_DEBUG_LOG) {
     console.log("LAMBDA EVENT", event);
+  }
+  if (
+    event.type &&
+    (event.type === "JOB" || event.type === "TASK") &&
+    dispatcher
+  ) {
+    return await dispatcher.handler(event, context);
   }
   if (!event.command) {
     // default web server stuff

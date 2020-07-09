@@ -1,5 +1,6 @@
 import PropTypes from "prop-types";
 import React from "react";
+import { Link } from "react-router";
 import {
   EditorState,
   ContentState,
@@ -10,6 +11,7 @@ import {
 import { delimit } from "../lib/scripts";
 import Chip from "./Chip";
 import { red400, green500, green600, grey100 } from "material-ui/styles/colors";
+import { getCharCount } from "@trt2/gsm-charset-utils";
 
 const styles = {
   editor: {
@@ -44,6 +46,21 @@ const styles = {
     padding: 5
   }
 };
+
+const gsmReplacements = [
+  ["‘", "'"],
+  ["’", "'"],
+  ["”", '"'],
+  ["”", '"'],
+  ["“", '"'],
+  ["–", "-"]
+];
+
+const replaceEasyGsmWins = text =>
+  gsmReplacements.reduce(
+    (acc, replacement) => acc.replace(replacement[0], replacement[1]),
+    text
+  );
 
 function findWithRegex(regex, contentBlock, callback) {
   const text = contentBlock.getText();
@@ -195,9 +212,16 @@ class ScriptEditor extends React.Component {
 
   render() {
     const { name } = this.props;
-
+    const text = this.state.editorState.getCurrentContent().getPlainText();
+    const segmentInfo = getCharCount(replaceEasyGsmWins(text));
     return (
       <div>
+        <div style={segmentInfo.charCount > 1600 ? { color: "red" } : {}}>
+          Total characters: {segmentInfo.charCount}
+          {segmentInfo.charCount > 1600 ? (
+            <span> Exceeded MMS maximum </span>
+          ) : null}
+        </div>
         <div style={styles.editor} onClick={this.focus}>
           <Editor
             name={name}
@@ -208,6 +232,21 @@ class ScriptEditor extends React.Component {
           />
         </div>
         {this.renderCustomFields()}
+        <div>
+          Estimated{" "}
+          <Link
+            target="_blank"
+            to="https://www.twilio.com/blog/2017/03/what-the-heck-is-a-segment.html"
+          >
+            Segments
+          </Link>
+          : {segmentInfo.msgCount}
+          <br />
+          Characters left in current segment:{" "}
+          {segmentInfo.msgCount * segmentInfo.charsPerSegment -
+            segmentInfo.charCount}
+          <br />
+        </div>
       </div>
     );
   }

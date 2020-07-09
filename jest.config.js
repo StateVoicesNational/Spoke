@@ -15,6 +15,7 @@ module.exports = {
       }
     }),
     JOBS_SYNC: "1",
+    TASKS_SYNC: "1",
     JOBS_SAME_PROCESS: "1",
     RETHINK_KNEX_NOREFS: "1", // avoids db race conditions
     DEFAULT_SERVICE: "fakeservice",
