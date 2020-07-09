@@ -1,9 +1,9 @@
 import AWS from "aws-sdk";
 import { saveJob } from "../helpers";
 
-// TODO: push this functionality into lambda.js so users don't
-// have to deploy two lambdas
-const functionName = process.env.WORKER_LAMBDA_FUNCTION_NAME;
+const functionName =
+  process.env.WORKER_LAMBDA_FUNCTION_NAME ||
+  process.env.AWS_LAMBDA_FUNCTION_NAME;
 
 const client = new AWS.Lambda();
 

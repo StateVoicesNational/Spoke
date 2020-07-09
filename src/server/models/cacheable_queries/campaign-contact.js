@@ -423,8 +423,9 @@ const campaignContactCache = {
         const assignmentKey = contactAssignmentKey(campaignId);
         let query = r
           .knex("campaign_contact")
+          .join("assignment", "assignment.id", "campaign_contact.assignment_id")
           .where("campaign_id", campaignId)
-          .select("id", "assignment_id");
+          .select("campaign_contact.id", "assignment_id", "assignment.user_id");
         if (contactIds) {
           query = query.whereIn("id", contactIds);
         }
