@@ -6,6 +6,7 @@ const JOBS_SAME_PROCESS = !!(
   process.env.JOBS_SAME_PROCESS || global.JOBS_SAME_PROCESS
 );
 const JOBS_SYNC = !!(process.env.JOBS_SYNC || global.JOBS_SYNC);
+const TASKS_SYNC = !!(process.env.TASKS_SYNC || global.TASKS_SYNC);
 
 export const fullyConfigured = () => true;
 
@@ -39,7 +40,7 @@ export const dispatchJob = async (
 
 // Tasks always run in the same process
 export const dispatchTask = async (taskName, payload) => {
-  if (Boolean(process.env.TASKS_SYNC)) {
+  if (TASKS_SYNC) {
     await invokeTaskFunction(taskName, payload);
   } else {
     // fire and forget

@@ -97,6 +97,6 @@ it("should return contacts after they are reassigned", async () => {
     100
   );
   expect(
-    getAssignmentContactsResult.data.getAssignmentContacts.map(c => c.id)
+    getAssignmentContactsResult.data.getAssignmentContacts.map(c => c && c.id)
   ).toEqual(testContacts.map(c => c.id.toString()));
 });
