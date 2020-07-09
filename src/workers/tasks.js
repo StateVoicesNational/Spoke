@@ -67,7 +67,7 @@ const startCampaignCache = async ({ campaign, organization }) => {
     campaign.id
   );
   const loadContacts = cacheableData.campaignContact
-    .loadMany(campaign, organization)
+    .loadMany(campaign, organization, {})
     .then(() => {
       console.log("FINISHED contact loadMany", campaign.id);
     })

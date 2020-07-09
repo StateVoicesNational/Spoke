@@ -67,7 +67,7 @@ import {
 const ActionHandlers = require("../../integrations/action-handlers");
 import { jobRunner } from "../../integrations/job-runners";
 import { Jobs } from "../../workers/job-processes";
-import { Tasks } from "../../../workers/tasks";
+import { Tasks } from "../../workers/tasks";
 
 const uuidv4 = require("uuid").v4;
 
@@ -1044,44 +1044,36 @@ const rootMutations = {
         effectiveAssignmentId,
         firstContact
       );
-      let triedUpdate = false;
-      const contacts = contactIds.map(async (contactId, cIdx) => {
-        let contact =
-          cIdx === 0
-            ? firstContact
-            : await cacheableData.campaignContact.load(contactId);
-
-        // If contact.assignment_id is null or misassigned,
-        // maybe the cache is stale so try refreshing.
-        if (
-          contact.cachedResult &&
-          Number(contact.assignment_id) !== Number(effectiveAssignmentId) &&
-          !triedUpdate
-        ) {
-          // In case assignment_id from cache needs to be refreshed, try again
-          // user_id will only be a property if it's from a cached response
-          triedUpdate = true;
-          await cacheableData.campaignContact.updateCampaignAssignmentCache(
-            contact.campaign_id,
-            contactIds
-          );
-          contact = await cacheableData.campaignContact.load(contactId);
-        }
-
-        if (
-          contact &&
-          Number(contact.assignment_id) === Number(effectiveAssignmentId)
-        ) {
-          return contact;
-        }
-
-        return null;
-      });
-      if (findNew) {
-        // maybe FUTURE: we could automatically add dynamic assignments in the same api call
-        // findNewCampaignContact()
+      const contacts = await Promise.all(
+        contactIds.map(
+          // FUTURE: consider a better path for no-caching to load all ids at the same time with loadMany
+          async (contactId, cIdx) =>
+            cIdx === 0
+              ? firstContact
+              : await cacheableData.campaignContact.load(contactId)
+        )
+      );
+      const hasAssn = contact =>
+        contact &&
+        Number(contact.assignment_id) === Number(effectiveAssignmentId)
+          ? contact
+          : null;
+      const retries = contacts.filter(c => c && !hasAssn(c) && c.cachedResult);
+      let updatedContacts = {};
+      if (retries.length) {
+        await cacheableData.campaignContact.updateCampaignAssignmentCache(
+          retries[0].campaign_id,
+          contactIds
+        );
+        const retriedContacts = await Promise.all(
+          retries.map(c => cacheableData.campaignContact.load(c.id))
+        );
+        retriedContacts.forEach(c => {
+          updatedContacts[c.id] = c;
+        });
       }
-      return contacts;
+      console.log("getAssignedContacts", contacts.length, updatedContacts);
+      return contacts.map(c => c && (updatedContacts[c.id] || c)).map(hasAssn);
     },
     createOptOut: async (
       _,
