@@ -335,16 +335,12 @@ export async function processContactLoad(job, maxContacts, organization) {
 
   try {
     const vanContacts = await vanResponse.text();
-    const cautiousCellPhoneSelection = getConfig(
-      "NGP_VAN_CAUTIOUS_CELL_PHONE_SELECTION",
-      organization
-    );
+    const cautiousCellPhoneSelection =
+      getConfig("NGP_VAN_CAUTIOUS_CELL_PHONE_SELECTION", organization) ===
+      "true";
 
     const { validationStats, contacts } = await parseCSVAsync(vanContacts, {
-      rowTransformer: exports.makeRowTransformer(
-        !cautiousCellPhoneSelection ||
-          (cautiousCellPhoneSelection && cautiousCellPhoneSelection === "true")
-      ),
+      rowTransformer: exports.makeRowTransformer(cautiousCellPhoneSelection),
       headerTransformer
     });
 
