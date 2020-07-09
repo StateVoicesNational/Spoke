@@ -411,7 +411,6 @@ const campaignContactCache = {
     });
   },
   updateCampaignAssignmentCache: async (campaignId, contactIds) => {
-    //try {
     if (r.redis && !contactIds) {
       await campaignCache.updateAssignedCount(campaignId);
     }
@@ -436,14 +435,6 @@ const campaignContactCache = {
       const data = await Promise.all(promises);
       console.log("updateCampaignAssignmentCache", data[0], data.length);
     }
-    /*
-    } catch (err) {
-      console.log(
-        "updateCampaignAssignmentCache Function Error",
-        campaignId,
-        err
-      );
-    }*/
   },
   updateStatus: async (contact, newStatus) => {
     // console.log('updateSTATUS', newStatus, contact)
