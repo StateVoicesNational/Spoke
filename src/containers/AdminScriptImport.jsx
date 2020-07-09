@@ -52,11 +52,22 @@ export default class AdminScriptImport extends Component {
     );
 
   render() {
+    const url =
+      "https://github.com/MoveOnOrg/Spoke/blob/main/docs/HOWTO_IMPORT_GOOGLE_DOCS_SCRIPTS_TO_IMPORT.md";
     return (
       <div>
         <CampaignFormSectionHeading
           title="Script Import"
-          subtitle="You can import interactions and canned responses from a properly formatted Google Doc."
+          subtitle={
+            <span>
+              You can import interactions and canned responses from a properly
+              formatted Google Doc. Please refer to{" "}
+              <a target="_blank" href={url}>
+                this document
+              </a>{" "}
+              for more details.
+            </span>
+          }
         />
         <TextField
           hintText="URL of the Google Doc"
