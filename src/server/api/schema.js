@@ -7,8 +7,6 @@ import { gzip, makeTree, getHighestRole } from "../../lib";
 import { capitalizeWord } from "./lib/utils";
 import twilio from "./lib/twilio";
 
-// TODO: make this a task
-import { loadCampaignCache } from "../../workers/jobs";
 import { getIngestMethod } from "../../integrations/contact-loaders";
 import {
   Campaign,
@@ -69,6 +67,7 @@ import {
 const ActionHandlers = require("../../integrations/action-handlers");
 import { jobRunner } from "../../integrations/job-runners";
 import { Jobs } from "../../workers/job-processes";
+import { Tasks } from "../../../workers/tasks";
 
 const uuidv4 = require("uuid").v4;
 
@@ -325,6 +324,7 @@ async function editCampaign(id, campaign, loaders, user, origCampaignRecord) {
 
   // hacky easter egg to force reload campaign contacts
   if (
+    r.redis &&
     campaignUpdates.description &&
     campaignUpdates.description.endsWith("..")
   ) {
@@ -334,7 +334,10 @@ async function editCampaign(id, campaign, loaders, user, origCampaignRecord) {
       campaignRefreshed,
       organization
     );
-    await loadCampaignCache(campaignRefreshed, organization, {});
+    await jobRunner.dispatchTask(Tasks.CAMPAIGN_START_CACHE, {
+      campaign: campaignRefreshed,
+      organization
+    });
   }
 
   return Campaign.get(id);
@@ -893,10 +896,13 @@ const rootMutations = {
         campaignId: id
       });
 
-      // some asynchronous cache-priming:
-      await loadCampaignCache(campaignRefreshed, organization, {
-        remainingMilliseconds
-      });
+      if (r.redis) {
+        // some asynchronous cache-priming:
+        await jobRunner.dispatchTask(Tasks.CAMPAIGN_START_CACHE, {
+          campaign: campaignRefreshed,
+          organization
+        });
+      }
       return campaignRefreshed;
     },
     editCampaign: async (_, { id, campaign }, { user, loaders }) => {
