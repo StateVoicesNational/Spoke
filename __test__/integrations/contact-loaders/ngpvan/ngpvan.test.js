@@ -3,7 +3,7 @@ import nock from "nock";
 import {
   getCellFromRow,
   getZipFromRow,
-  rowTransformer,
+  makeRowTransformer,
   processContactLoad,
   handleFailedContactLoad,
   getClientChoiceData,
@@ -48,6 +48,7 @@ describe("ngpvan", () => {
       process.env.NGP_VAN_WEBHOOK_BASE_URL = oldNgpVanWebhookUrl;
       process.env.NGP_VAN_APP_NAME = oldNgpVanAppName;
       process.env.NGP_VAN_API_KEY = oldNgpVanApiKey;
+      delete process.env.NGP_VAN_CAUTIOUS_CELL_PHONE_SELECTION;
     });
 
     it("returns true when all required environment variables are present", async () => {
@@ -238,20 +239,16 @@ describe("ngpvan", () => {
       csvReply = `CanvassFileRequestID,VanID,Address,FirstName,LastName,StreetAddress,City,State,ZipOrPostal,County,Employer,Occupation,Email,HomePhone,IsHomePhoneACellExchange,CellPhone,WorkPhone,IsWorkPhoneACellExchange,Phone,OptInPhone,OptInStatus,OptInPhoneType,CongressionalDistrict,StateHouse,StateSenate,Party,PollingLocation,PollingAddress,PollingCity
 1286,6144436,"1749 Kori Ter, Ranbelsi, SC 02569",Jean,Leclerc,1749 Kori Ter,Ranbelsi,SC,,Suffolk,,,,,,,,,,,,,001,004,002,R,,,
 1286,6144439,"169 Unnag St, Fekokmuw, NM 15043",Sophia,Robinson,169 Unnag St,Fekokmuw,NM,,Suffolk,,,,,,,,,,,,,001,004,002,R,,,
-1286,6348005,"415 Domru Park, Igguhe, AK 41215",Samuel,Jimenez,415 Domru Park,Igguhe,AK,,Suffolk,,,,(216) 274-1428,0,,,,(973) 687-4476,,,,001,004,002,O,,,
 1286,6409040,"50 Vichad Path, Bapherte, DC 07893",Bobby,Barber,50 Vichad Path,Bapherte,DC,,Suffolk,,,,,,,,,,,,,001,004,002,D,,,
-1286,6455083,"627 Wizow Way, Lofaje, DE 89435",Larry,Foster,627 Wizow Way,Lofaje,DE,,Suffolk,,,,,,(321) 402-8326,,,(384) 984-5966,,,,001,004,002,D,,,
+1286,6455083,"627 Wizow Way, Lofaje, DE 89435",Larry,Foster,627 Wizow Way,Lofaje,DE,,Suffolk,,,,,,3214028326,,,(384) 984-5966,,,,001,004,002,D,,,
 1286,6475967,"902 Jotho Park, Ilibaed, MN 91571",Cordelia,Gagliardi,902 Jotho Park,Ilibaed,MN,,Suffolk,,,,(887) 867-3213,0,(242) 554-4053,,,(473) 324-5133,,,,001,004,002,D,,,
 1286,6678759,"1229 Dubud Cir, Gujufbik, MA 67577",Zachary,Chapman,1229 Dubud Cir,Gujufbik,MA,,Suffolk,,,,(530) 591-9876,0,(770) 500-5813,,,(865) 787-7929,,,,001,004,002,O,,,
 1286,6687736,"1660 Tiwa Pike, Owucudji, MD 78594",Phoebe,König,1660 Tiwa Pike,Owucudji,MD,,Suffolk,,,,,,(765) 927-7705,,,(232) 872-2395,,,,001,004,002,D,,,
 1286,6687737,"1820 Kasi Plz, Uhokuicu, NJ 70521",Andrew,Coli,1820 Kasi Plz,Uhokuicu,NJ,,Suffolk,,,,,,(830) 978-5900,,,(256) 289-2236,,,,001,004,002,R,,,
 1286,6740265,"1864 Pohe Path, Lahutci, IA 21134",Francis,Anderson,1864 Pohe Path,Lahutci,IA,,Suffolk,,,,(229) 403-7155,0,,,,(839) 862-7352,,,,001,004,002,R,,,
-1286,6740266,"28 Lian Cir, Ruutunu, NM 59815",Sallie,Naylor,28 Lian Cir,Ruutunu,NM,,Suffolk,,,,(216) 509-8792,0,,,,(972) 896-8504,,,,001,004,002,R,,,
 1286,6848857,"296 Bilez Sq, Efabodgun, NC 26984",Florence,Adkins,296 Bilez Sq,Efabodgun,NC,,Suffolk,,,,,,,,,,,,,001,004,002,D,,,
 1286,6870533,"701 Zetli Plz, Nuwdope, CA 62375",Leona,Orsini,701 Zetli Plz,Nuwdope,CA,,Suffolk,,,,(968) 346-8020,0,,,,(874) 366-8307,,,,001,004,002,R,,,
-1286,8277239,"299 Evto Cir, Nembecivo, MN 03381",Howard,Ashton,299 Evto Cir,Nembecivo,MN,,Suffolk,,,,(472) 767-4456,0,,,,(401) 854-6069,,,,001,004,002,D,,,
 1286,15597061,"1591 Zuote Rdg, Pudugpu, MA 56190",Francis,Reyes,1591 Zuote Rdg,Pudugpu,MA,,Suffolk,,,,,,,,,,,,,001,004,002,R,,,
-1286,17293476,"65 Niboko Pkwy, Tawurel, LA 39583",Jerry,Tucci,65 Niboko Pkwy,Tawurel,LA,,Suffolk,,,,(973) 507-1207,0,,,,(760) 455-8006,,,,001,004,002,D,,,
 1286,19680982,"588 Pinovu Path, Notjuap, WV 59864",Isaac,Stefani,588 Pinovu Path,Notjuap,WV,,Suffolk,,,,,,,,,,,,,001,004,002,D,,,
 1286,20700354,"241 Ozno Sq, Pomizivi, TN 13358",Marion,Cook,241 Ozno Sq,Pomizivi,TN,,Suffolk,,,,,,(831) 401-6718,,,(670) 427-8081,,,,001,004,002,R,,,
 1286,21681436,"902 Hamze Pl, Biuhke, SC 35341",Bill,Fiore,902 Hamze Pl,Biuhke,SC,,Suffolk,,,,,,(802) 897-2566,,,(332) 794-5172,,,,001,004,002,R,,,
@@ -329,6 +326,7 @@ describe("ngpvan", () => {
         .spyOn(ngpvan, "handleFailedContactLoad")
         .mockImplementation(() => true);
       jest.spyOn(config, "getConfig");
+      jest.spyOn(ngpvan, "makeRowTransformer");
     });
 
     afterEach(async () => {
@@ -345,6 +343,7 @@ describe("ngpvan", () => {
       const getCsvNock = makeSuccessfulGetCsvNock();
 
       await processContactLoad(job, maxContacts, organization);
+      expect(ngpvan.makeRowTransformer.mock.calls).toEqual([[false]]);
 
       expect(csvParser.parseCSVAsync).toHaveBeenCalledTimes(1);
 
@@ -362,7 +361,7 @@ describe("ngpvan", () => {
         {
           cell: "+13214028326",
           custom_fields:
-            '{"CanvassFileRequestID":"1286","VanID":"6455083","Address":"627 Wizow Way, Lofaje, DE 89435","StreetAddress":"627 Wizow Way","City":"Lofaje","State":"DE","ZipOrPostal":"","County":"Suffolk","Employer":"","Occupation":"","Email":"","HomePhone":"","IsHomePhoneACellExchange":"","CellPhone":"(321) 402-8326","WorkPhone":"","IsWorkPhoneACellExchange":"","Phone":"(384) 984-5966","OptInPhone":"","OptInStatus":"","OptInPhoneType":"","CongressionalDistrict":"001","StateHouse":"004","StateSenate":"002","Party":"D","PollingLocation":"","PollingAddress":"","PollingCity":""}',
+            '{"CanvassFileRequestID":"1286","VanID":"6455083","Address":"627 Wizow Way, Lofaje, DE 89435","StreetAddress":"627 Wizow Way","City":"Lofaje","State":"DE","ZipOrPostal":"","County":"Suffolk","Employer":"","Occupation":"","Email":"","HomePhone":"","IsHomePhoneACellExchange":"","CellPhone":"3214028326","WorkPhone":"","IsWorkPhoneACellExchange":"","Phone":"(384) 984-5966","OptInPhone":"","OptInStatus":"","OptInPhoneType":"","CongressionalDistrict":"001","StateHouse":"004","StateSenate":"002","Party":"D","PollingLocation":"","PollingAddress":"","PollingCity":""}',
           external_id: "6455083",
           first_name: "Larry",
           last_name: "Foster",
@@ -425,15 +424,50 @@ describe("ngpvan", () => {
       ]);
 
       expect(config.getConfig.mock.calls).toEqual([
-        [expect.any(String), organization],
-        [expect.any(String), organization],
-        [expect.any(String), organization],
-        [expect.any(String), organization],
-        [expect.any(String), organization]
+        ["NGP_VAN_WEBHOOK_BASE_URL", organization],
+        ["NGP_VAN_API_BASE_URL", organization],
+        ["NGP_VAN_APP_NAME", organization],
+        ["NGP_VAN_API_KEY", organization],
+        ["NGP_VAN_EXPORT_JOB_TYPE_ID", organization],
+        ["NGP_VAN_CAUTIOUS_CELL_PHONE_SELECTION", organization]
       ]);
 
       exportJobsNock.done();
       getCsvNock.done();
+    });
+
+    describe("when NGP_VAN_CAUTIOUS_CELL_PHONE_SELECTION is set to true", () => {
+      beforeEach(async () => {
+        process.env.NGP_VAN_CAUTIOUS_CELL_PHONE_SELECTION = "true";
+      });
+
+      it("calls the api and its dependencies", async () => {
+        const exportJobsNock = makeSuccessfulExportJobPostNock("Completed");
+        const getCsvNock = makeSuccessfulGetCsvNock();
+
+        await processContactLoad(job, maxContacts, organization);
+        expect(ngpvan.makeRowTransformer.mock.calls).toEqual([[true]]);
+
+        exportJobsNock.done();
+        getCsvNock.done();
+      });
+    });
+
+    describe("when NGP_VAN_CAUTIOUS_CELL_PHONE_SELECTION is set to anything other than true", () => {
+      beforeEach(async () => {
+        process.env.NGP_VAN_CAUTIOUS_CELL_PHONE_SELECTION = "waffles";
+      });
+
+      it("calls the api and its dependencies", async () => {
+        const exportJobsNock = makeSuccessfulExportJobPostNock("Completed");
+        const getCsvNock = makeSuccessfulGetCsvNock();
+
+        await processContactLoad(job, maxContacts, organization);
+        expect(ngpvan.makeRowTransformer.mock.calls).toEqual([[false]]);
+
+        exportJobsNock.done();
+        getCsvNock.done();
+      });
     });
 
     describe("when the POST to exportJobs succeeds but returns status !== Error and status !== Completed", () => {
@@ -674,6 +708,10 @@ describe("ngpvan", () => {
   describe("rowTransformer", () => {
     let getCellFromRowSpy;
     let getZipFromRowSpy;
+    let inputFields;
+    let expectedFields;
+    let inputRow;
+
     beforeEach(() => {
       getCellFromRowSpy = jest
         .spyOn(ngpvan, "getCellFromRow")
@@ -681,6 +719,14 @@ describe("ngpvan", () => {
       getZipFromRowSpy = jest
         .spyOn(ngpvan, "getZipFromRow")
         .mockReturnValue("07052");
+
+      inputFields = ["VanID"];
+      expectedFields = ["cell", "zip", "external_id"];
+      inputRow = {
+        VanID: "abc",
+        firstName: "Jerry",
+        lastName: "Garcia"
+      };
     });
 
     afterEach(() => {
@@ -688,15 +734,10 @@ describe("ngpvan", () => {
     });
 
     it("delegates to its dependencies", () => {
-      const inputFields = ["VanID"];
-      const expectedFields = ["cell", "zip", "external_id"];
-      const inputRow = {
-        VanID: "abc",
-        firstName: "Jerry",
-        lastName: "Garcia"
-      };
+      const rowTransformer = makeRowTransformer();
       const transformedRow = rowTransformer(inputFields, inputRow);
-      expect(getCellFromRowSpy.mock.calls).toEqual([[inputRow]]);
+
+      expect(getCellFromRowSpy.mock.calls).toEqual([[inputRow, true]]);
       expect(getZipFromRowSpy.mock.calls).toEqual([[inputRow]]);
       expect(transformedRow.row).toEqual({
         VanID: "abc",
@@ -710,6 +751,14 @@ describe("ngpvan", () => {
       expect(transformedRow.addedFields).toEqual(
         expect.arrayContaining(expectedFields)
       );
+    });
+
+    describe("when we throw caution to the wind", () => {
+      it("passes false to getCellFromRow", async () => {
+        const rowTransformer = makeRowTransformer(false);
+        rowTransformer(inputFields, inputRow);
+        expect(getCellFromRowSpy.mock.calls).toEqual([[inputRow, false]]);
+      });
     });
   });
 
@@ -732,7 +781,60 @@ describe("ngpvan", () => {
         },
         undefined
       ],
-      [{ HomePhone: "2024561111", HomePhoneDialingPrefix: "1" }, undefined],
+      [
+        { OptInPhone: "2024561111", OptInPhoneDialingPrefix: "1" },
+        "12024561111"
+      ],
+      [
+        {
+          OptInPhone: "2024561111",
+          OptInPhoneDialingPrefix: "1",
+          IsOptInPhoneACellExchange: "1"
+        },
+        "12024561111"
+      ],
+      [
+        {
+          OptInPhone: "2024561111",
+          OptInPhoneDialingPrefix: "1",
+          IsOptInPhoneACellExchange: "0"
+        },
+        "12024561111"
+      ],
+      [
+        {
+          OptInPhone: "2024561111",
+          OptInPhoneDialingPrefix: "1",
+          IsOptInPhoneACellExchange: "a"
+        },
+        "12024561111"
+      ],
+      [{ Phone: "2024561111", PhoneDialingPrefix: "1" }, "12024561111"],
+      [
+        {
+          Phone: "2024561111",
+          PhoneDialingPrefix: "1",
+          IsPhoneACellExchange: "1"
+        },
+        "12024561111"
+      ],
+      [
+        {
+          Phone: "2024561111",
+          PhoneDialingPrefix: "1",
+          IsPhoneACellExchange: "0"
+        },
+        "12024561111"
+      ],
+      [
+        {
+          Phone: "2024561111",
+          PhoneDialingPrefix: "1",
+          IsPhoneACellExchange: "a"
+        },
+        "12024561111"
+      ],
+      [{ HomePhone: "2024561111", HomePhoneDialingPrefix: "1" }, "12024561111"],
       [
         {
           HomePhone: "2024561111",
@@ -747,7 +849,7 @@ describe("ngpvan", () => {
           HomePhoneDialingPrefix: "1",
           IsHomePhoneACellExchange: "0"
         },
-        undefined
+        "12024561111"
       ],
       [
         {
@@ -755,7 +857,7 @@ describe("ngpvan", () => {
           HomePhoneDialingPrefix: "1",
           IsHomePhoneACellExchange: "a"
         },
-        undefined
+        "12024561111"
       ],
       [
         {
@@ -764,7 +866,7 @@ describe("ngpvan", () => {
           WorkPhone: "2024561414",
           WorkPhoneDialingPrefix: "1"
         },
-        undefined
+        "12024561111"
       ],
       [
         {
@@ -786,7 +888,7 @@ describe("ngpvan", () => {
           WorkPhoneDialingPrefix: "1",
           IsWorkPhoneACellExchange: "0"
         },
-        undefined
+        "12024561111"
       ],
       [
         {
@@ -797,7 +899,7 @@ describe("ngpvan", () => {
           WorkPhoneDialingPrefix: "1",
           IsWorkPhoneACellExchange: "0"
         },
-        undefined
+        "12024561111"
       ],
       [
         {
@@ -813,7 +915,7 @@ describe("ngpvan", () => {
           WorkPhoneDialingPrefix: "1",
           IsWorkPhoneACellExchange: "0"
         },
-        undefined
+        "12024561414"
       ],
       [
         {
@@ -821,9 +923,9 @@ describe("ngpvan", () => {
           WorkPhoneDialingPrefix: "1",
           IsWorkPhoneACellExchange: "a"
         },
-        undefined
+        "12024561414"
       ],
-      [{ WorkPhone: "2024561414", WorkPhoneDialingPrefix: "1" }, undefined],
+      [{ WorkPhone: "2024561414", WorkPhoneDialingPrefix: "1" }, "12024561414"],
       [
         {
           HomePhone: "2024561111",
@@ -833,10 +935,189 @@ describe("ngpvan", () => {
           WorkPhoneDialingPrefix: "1",
           IsWorkPhoneACellExchange: "1"
         },
-        "12024561414"
+        "12024561111"
       ]
     ]).test("getZipFromRow( %j ) returns %s", (row, allegedPhone) => {
-      expect(getCellFromRow(row)).toEqual(allegedPhone);
+      expect(getCellFromRow(row, false)).toEqual(allegedPhone);
+    });
+    describe("when cautious is true", () => {
+      each([
+        [
+          { CellPhone: "2024561111", CellPhoneDialingPrefix: "1" },
+          "12024561111"
+        ],
+        [
+          {
+            CellPhone: "2024561111",
+            CellPhoneDialingPrefix: "1",
+            CellPhoneCountryCode: "US"
+          },
+          "12024561111"
+        ],
+        [
+          {
+            CellPhone: "2024561111",
+            CellPhoneDialingPrefix: "1",
+            CellPhoneCountryCode: "AU"
+          },
+          undefined
+        ],
+        [{ OptInPhone: "2024561111", OptInPhoneDialingPrefix: "1" }, undefined],
+        [
+          {
+            OptInPhone: "2024561111",
+            OptInPhoneDialingPrefix: "1",
+            IsOptInPhoneACellExchange: "1"
+          },
+          "12024561111"
+        ],
+        [
+          {
+            OptInPhone: "2024561111",
+            OptInPhoneDialingPrefix: "1",
+            IsOptInPhoneACellExchange: "0"
+          },
+          undefined
+        ],
+        [
+          {
+            OptInPhone: "2024561111",
+            OptInPhoneDialingPrefix: "1",
+            IsOptInPhoneACellExchange: "a"
+          },
+          undefined
+        ],
+        [{ Phone: "2024561111", PhoneDialingPrefix: "1" }, undefined],
+        [
+          {
+            Phone: "2024561111",
+            PhoneDialingPrefix: "1",
+            IsPhoneACellExchange: "1"
+          },
+          "12024561111"
+        ],
+        [
+          {
+            Phone: "2024561111",
+            PhoneDialingPrefix: "1",
+            IsPhoneACellExchange: "0"
+          },
+          undefined
+        ],
+        [
+          {
+            Phone: "2024561111",
+            PhoneDialingPrefix: "1",
+            IsPhoneACellExchange: "a"
+          },
+          undefined
+        ],
+        [{ HomePhone: "2024561111", HomePhoneDialingPrefix: "1" }, undefined],
+        [
+          {
+            HomePhone: "2024561111",
+            HomePhoneDialingPrefix: "1",
+            IsHomePhoneACellExchange: "1"
+          },
+          "12024561111"
+        ],
+        [
+          {
+            HomePhone: "2024561111",
+            HomePhoneDialingPrefix: "1",
+            IsHomePhoneACellExchange: "0"
+          },
+          undefined
+        ],
+        [
+          {
+            HomePhone: "2024561111",
+            HomePhoneDialingPrefix: "1",
+            IsHomePhoneACellExchange: "a"
+          },
+          undefined
+        ],
+        [
+          {
+            HomePhone: "2024561111",
+            HomePhoneDialingPrefix: "1",
+            WorkPhone: "2024561414",
+            WorkPhoneDialingPrefix: "1"
+          },
+          undefined
+        ],
+        [
+          {
+            HomePhone: "2024561111",
+            HomePhoneDialingPrefix: "1",
+            IsHomePhoneACellExchange: "1",
+            WorkPhone: "2024561414",
+            WorkPhoneDialingPrefix: "1",
+            IsWorkPhoneACellExchange: "0"
+          },
+          "12024561111"
+        ],
+        [
+          {
+            HomePhone: "2024561111",
+            HomePhoneDialingPrefix: "1",
+            IsHomePhoneACellExchange: "0",
+            WorkPhone: "2024561414",
+            WorkPhoneDialingPrefix: "1",
+            IsWorkPhoneACellExchange: "0"
+          },
+          undefined
+        ],
+        [
+          {
+            HomePhone: "2024561111",
+            HomePhoneDialingPrefix: "1",
+            IsHomePhoneACellExchange: "a",
+            WorkPhone: "2024561414",
+            WorkPhoneDialingPrefix: "1",
+            IsWorkPhoneACellExchange: "0"
+          },
+          undefined
+        ],
+        [
+          {
+            WorkPhone: "2024561414",
+            WorkPhoneDialingPrefix: "1",
+            IsWorkPhoneACellExchange: "1"
+          },
+          "12024561414"
+        ],
+        [
+          {
+            WorkPhone: "2024561414",
+            WorkPhoneDialingPrefix: "1",
+            IsWorkPhoneACellExchange: "0"
+          },
+          undefined
+        ],
+        [
+          {
+            WorkPhone: "2024561414",
+            WorkPhoneDialingPrefix: "1",
+            IsWorkPhoneACellExchange: "a"
+          },
+          undefined
+        ],
+        [{ WorkPhone: "2024561414", WorkPhoneDialingPrefix: "1" }, undefined],
+        [
+          {
+            HomePhone: "2024561111",
+            HomePhoneDialingPrefix: "1",
+            IsHomePhoneACellExchange: "0",
+            WorkPhone: "2024561414",
+            WorkPhoneDialingPrefix: "1",
+            IsWorkPhoneACellExchange: "1"
+          },
+          "12024561414"
+        ]
+      ]).test("getZipFromRow( %j ) returns %s", (row, allegedPhone) => {
+        expect(getCellFromRow(row, true)).toEqual(allegedPhone);
+      });
     });
   });
 

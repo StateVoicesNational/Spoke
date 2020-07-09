@@ -29,7 +29,8 @@ export function serverAdministratorInstructions() {
       "NGP_VAN_CACHE_TTL",
       "NGP_VAN_EXPORT_JOB_TYPE_ID",
       "NGP_VAN_MAXIMUM_LIST_SIZE",
-      "NGP_VAN_WEBHOOK_BASE_URL"
+      "NGP_VAN_WEBHOOK_BASE_URL",
+      "NGP_VAN_CAUTIOUS_CELL_PHONE_SELECTION"
     ]
   };
 }
@@ -187,11 +188,13 @@ const getPhoneNumberIfLikelyCell = (phoneType, row) => {
   return undefined;
 };
 
-export const getCellFromRow = row => {
+export const getCellFromRow = (row, cautious = true) => {
   const phoneTypes = [
     { typeName: "Cell", assumeCellIfPresent: true },
-    { typeName: "Home", assumeCellIfPresent: false },
-    { typeName: "Work", assumeCellIfPresent: false }
+    { typeName: "OptIn", assumeCellIfPresent: !cautious || false },
+    { typeName: "", assumeCellIfPresent: !cautious || false },
+    { typeName: "Home", assumeCellIfPresent: !cautious || false },
+    { typeName: "Work", assumeCellIfPresent: !cautious || false }
   ];
   let cell = undefined;
   phoneTypes.some(phoneType => {
@@ -205,14 +208,17 @@ export const getCellFromRow = row => {
   return cell;
 };
 
-export const rowTransformer = (originalFields, originalRow) => {
+export const makeRowTransformer = (cautious = true) => (
+  originalFields,
+  originalRow
+) => {
   const addedFields = ["external_id"];
 
   const row = {
     ...originalRow
   };
 
-  row.cell = exports.getCellFromRow(originalRow);
+  row.cell = exports.getCellFromRow(originalRow, cautious);
   if (row.cell) {
     addedFields.push("cell");
   }
@@ -329,9 +335,12 @@ export async function processContactLoad(job, maxContacts, organization) {
 
   try {
     const vanContacts = await vanResponse.text();
+    const cautiousCellPhoneSelection =
+      getConfig("NGP_VAN_CAUTIOUS_CELL_PHONE_SELECTION", organization) ===
+      "true";
 
     const { validationStats, contacts } = await parseCSVAsync(vanContacts, {
-      rowTransformer,
+      rowTransformer: exports.makeRowTransformer(cautiousCellPhoneSelection),
       headerTransformer
     });
 
