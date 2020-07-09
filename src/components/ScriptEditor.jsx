@@ -1,5 +1,6 @@
 import PropTypes from "prop-types";
 import React from "react";
+import { Link } from "react-router";
 import {
   EditorState,
   ContentState,
@@ -218,7 +219,7 @@ class ScriptEditor extends React.Component {
         <div style={segmentInfo.charCount > 1600 ? { color: "red" } : {}}>
           Total characters: {segmentInfo.charCount}
           {segmentInfo.charCount > 1600 ? (
-            <span> Exceeded SMS maximum </span>
+            <span> Exceeded MMS maximum </span>
           ) : null}
         </div>
         <div style={styles.editor} onClick={this.focus}>
@@ -232,7 +233,14 @@ class ScriptEditor extends React.Component {
         </div>
         {this.renderCustomFields()}
         <div>
-          Estimated Segments: {segmentInfo.msgCount}
+          Estimated{" "}
+          <Link
+            target="_blank"
+            to="https://www.twilio.com/blog/2017/03/what-the-heck-is-a-segment.html"
+          >
+            Segments
+          </Link>
+          : {segmentInfo.msgCount}
           <br />
           Characters left in current segment:{" "}
           {segmentInfo.msgCount * segmentInfo.charsPerSegment -
