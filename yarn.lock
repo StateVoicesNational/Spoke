@@ -1331,6 +1331,11 @@
   dependencies:
     defer-to-connect "^1.0.1"
 
+"@trt2/gsm-charset-utils@^1.0.13":
+  version "1.0.13"
+  resolved "https://registry.yarnpkg.com/@trt2/gsm-charset-utils/-/gsm-charset-utils-1.0.13.tgz#42509a9b6803cdbc4c53862ad7ad79c1afd110cc"
+  integrity sha512-apaLDiEABRaxYaFehRa8h478tyYiJWAFuCaaW8d0r/IN6ZigQbS6SGhGAfunnrugdjXxLxl6GjQ0X9cVHeqmNQ==
+
 "@types/bluebird@^3.5.27":
   version "3.5.32"
   resolved "https://registry.yarnpkg.com/@types/bluebird/-/bluebird-3.5.32.tgz#381e7b59e39f010d20bbf7e044e48f5caf1ab620"

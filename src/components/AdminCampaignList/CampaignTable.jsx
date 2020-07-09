@@ -119,8 +119,21 @@ export class CampaignTable extends React.Component {
     return sorts[key];
   }
 
-  prepareTableColumns(organization) {
+  prepareTableColumns(organization, campaigns) {
     const extraRows = [];
+    const needsResponseCol = campaigns.some(
+      c => c.completionStats.needsResponseCount
+    );
+    if (needsResponseCol) {
+      extraRows.push({
+        label: "Needs Response",
+        render: (columnKey, row) =>
+          row.completionStats.needsResponseCount || "",
+        style: {
+          width: "5em"
+        }
+      });
+    }
     if (this.props.adminPerms) {
       extraRows.push({
         label: "Archive",
@@ -211,6 +224,12 @@ export class CampaignTable extends React.Component {
                     )
                   ))) ||
                   ""}
+                {campaign.completionStats.errorCount &&
+                campaign.completionStats.errorCount > 50 ? (
+                  <span> Errors: {campaign.completionStats.errorCount} </span>
+                ) : (
+                  ""
+                )}
               </div>
             </div>
           );
@@ -301,7 +320,10 @@ export class CampaignTable extends React.Component {
         <DataTables
           key={this.state.dataTableKey}
           data={campaigns}
-          columns={this.prepareTableColumns(this.props.data.organization)}
+          columns={this.prepareTableColumns(
+            this.props.data.organization,
+            campaigns
+          )}
           multiSelectable={this.props.selectMultiple}
           selectable={this.props.selectMultiple}
           enableSelectAll={true}
