@@ -81,7 +81,11 @@ export default function renderIndex(html, css, assetMap) {
       window.TERMS_REQUIRE=${getConfig("TERMS_REQUIRE", null, {
         truthy: 1
       }) || false}
-      window.TZ="${process.env.TZ || ""}"
+      window.TZ="${
+        "DEFAULT_TZ" in process.env
+          ? process.env.DEFAULT_TZ
+          : process.env.TZ || ""
+      }"
       window.CONTACT_LOADERS="${process.env.CONTACT_LOADERS ||
         "csv-upload,test-fakedata,datawarehouse"}"
       window.DST_REFERENCE_TIMEZONE="${process.env.DST_REFERENCE_TIMEZONE ||
