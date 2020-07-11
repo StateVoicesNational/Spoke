@@ -1,5 +1,6 @@
 import { mapFieldsToModel } from "./lib/utils";
 import { Assignment, r, cacheableData } from "../models";
+import { getConfig } from "./lib/config";
 import { getOffsets, defaultTimezoneIsBetweenTextingHours } from "../../lib";
 
 export function addWhereClauseForContactsFilterMessageStatusIrrespectiveOfPastDue(
@@ -38,7 +39,12 @@ export function getContacts(
   const pastDue =
     campaign.due_by &&
     Number(campaign.due_by) + 24 * 60 * 60 * 1000 < Number(new Date());
-  const config = { textingHoursStart, textingHoursEnd, textingHoursEnforced };
+  const config = {
+    textingHoursStart,
+    textingHoursEnd,
+    textingHoursEnforced,
+    defaultTimezone: getConfig("DEFAULT_TZ", organization)
+  };
 
   if (campaign.override_organization_texting_hours) {
     const textingHoursStart = campaign.texting_hours_start;
