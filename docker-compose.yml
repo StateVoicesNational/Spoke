@@ -9,28 +9,15 @@ services:
       POSTGRES_USER: spoke
     volumes:
       - postgres:/var/lib/postgresql/data
+    ports:
+      - 5432:5432
   redis:
     image: redis:alpine
     restart: always
     volumes:
       - redis:/data
-  spoke:
-    image: spokeapp/spoke
-    build:
-      context: .
-    depends_on:
-      - postgres
-      - redis
-    env_file:
-      - ./.env
-    environment:
-      DATABASE_URL: postgres://spoke:spoke@postgres:5432/spokedev
-      REDIS_URL: redis://redis:6379
-      KNEX_MIGRATION_DIR: /spoke/build/server/migrations/
     ports:
-      - 3000:3000
-    volumes:
-      - ./.env:/Spoke/.env
+      - 6379:6379
 volumes:
   postgres:
     external: false
