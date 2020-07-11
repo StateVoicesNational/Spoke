@@ -3,7 +3,7 @@ import { log } from "../../lib";
 
 import httpRequest from "../../server/lib/http-request.js";
 
-export const name = "zapier";
+export const name = "zapier-action";
 
 // What the user sees as the option
 export const displayName = () => "ZAPIER";
