@@ -104,6 +104,6 @@ export async function available(organization) {
 
   return {
     result,
-    expiresSeconds: 86400
+    expiresSeconds: 0
   };
 }
