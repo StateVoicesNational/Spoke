@@ -1,8 +1,13 @@
 import { isClient } from "./is-client";
 
-export function getProcessEnvTz() {
+export function getProcessEnvTz(defaultTimezone) {
   // TZ is a reserved env var in Lambda and always returns :UTC
-  return process.env.TZ === ":UTC" ? "UTC" : process.env.TZ;
+  return (
+    defaultTimezone ||
+    (process.env.TZ === ":UTC"
+      ? process.env.DEFAULT_TZ
+      : process.env.DEFAULT_TZ || process.env.TZ)
+  );
 }
 
 export function getProcessEnvDstReferenceTimezone() {
