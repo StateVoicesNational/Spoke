@@ -215,7 +215,7 @@ export async function getClientChoiceData(organization) {
     let pageToDoStart = 0;
 
     while (pageToDoStart < pageToDo.length) {
-      if (pageToDo.length > REQUESTS_PER_SECOND) {
+      if (pageToDo.length > REQUESTS_PER_SECOND - firstPagePromises.length) {
         await exports.setTimeoutPromise(WAIT_MILLIS);
       }
 

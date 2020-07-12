@@ -508,6 +508,95 @@ describe("action-network", () => {
         });
       });
 
+      describe("when there are more than 4 total pages", () => {
+        let additionalTagsResponses = [];
+        beforeEach(async () => {
+          getTagsResponse.total_pages = 3;
+          getTagsResponse.perPage = 2;
+          getTagsResponse.total_records = 5;
+
+          // eslint-disable-next-line no-underscore-dangle
+          secondPageTagsResponse._embedded["osdi:tags"].push({
+            name: "2019 Survey - Worker Stories",
+            identifiers: ["action_network:c1f68579-b36b-4d43-8312-204894afbbbb"]
+          });
+
+          additionalTagsResponses = [
+            {
+              total_pages: 3,
+              per_page: 2,
+              page: 3,
+              total_records: 9,
+              _embedded: {
+                "osdi:tags": [
+                  {
+                    name: "page 3 tag 1"
+                  }
+                ]
+              }
+            }
+          ];
+
+          getClientChoiceDataResponse.push(
+            ...[
+              {
+                details: '{"type":"tag","tag":"2019 Survey - Worker Stories"}',
+                name: "TAG 2019 Survey - Worker Stories"
+              },
+              {
+                details: '{"type":"tag","tag":"page 3 tag 1"}',
+                name: "TAG page 3 tag 1"
+              }
+            ]
+          );
+        });
+
+        it("return the jawns from all the pages", async () => {
+          makeAllNocks({
+            getEventsStatusCode: 200,
+            eventsResponse: getEventsResponse,
+            getTagsStatusCode: 200,
+            tagsResponse: getTagsResponse
+          });
+
+          const eventsSecondPageNock = makeGetEventsNock({
+            page: 2,
+            statusCode: 200,
+            eventsResponse: secondPageEventsResponse
+          });
+
+          const tagsSecondPageNock = makeGetTagsNock({
+            page: 2,
+            statusCode: 200,
+            tagsResponse: secondPageTagsResponse
+          });
+
+          const additionalPagesNocks = additionalTagsResponses.map(
+            (response, index) =>
+              makeGetTagsNock({
+                page: index + 3,
+                statusCode: 200,
+                tagsResponse: response
+              })
+          );
+          const clientChoiceData = await ActionNetwork.getClientChoiceData(
+            veryFakeOrganization
+          );
+
+          const receivedEvents = JSON.parse(clientChoiceData.data).items;
+
+          expect(ActionNetwork.setTimeoutPromise.mock.calls).toEqual([[1100]]);
+
+          expect(receivedEvents).toEqual(getClientChoiceDataResponse);
+
+          additionalPagesNocks.forEach(pageNock => {
+            pageNock.done();
+          });
+          eventsSecondPageNock.done();
+          tagsSecondPageNock.done();
+          allNocksDone();
+        });
+      });
       describe("when there are more than 6 total pages", () => {
         let additionalTagsResponses = [];
         beforeEach(async () => {
