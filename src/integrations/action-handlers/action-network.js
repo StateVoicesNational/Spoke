@@ -1,8 +1,12 @@
 /* eslint no-console: 0 */
+/* eslint no-underscore-dangle: 0 */
 import moment from "moment";
+import util from "util";
 import { getConfig } from "../../server/api/lib/config";
 
 import httpRequest from "../../server/lib/http-request.js";
+
+export const setTimeoutPromise = util.promisify(setTimeout);
 
 export const name = "action-network";
 
@@ -137,10 +141,10 @@ export async function processAction(
   }
 }
 
-const getEventsPage = async (page, organization) => {
-  const url = makeUrl(`events?page=${page}`);
+const getPage = async (item, page, organization) => {
+  const url = makeUrl(`${item}?page=${page}`);
   try {
-    const eventsResponse = await httpRequest(url, {
+    const pageResponse = await httpRequest(url, {
       method: "GET",
       headers: {
         ...makeAuthHeader(organization)
@@ -148,54 +152,101 @@ const getEventsPage = async (page, organization) => {
     })
       .then(async response => await response.json())
       .catch(error => {
-        const message = `Error retrieving events from ActionNetwork ${error}`;
+        const message = `Error retrieving ${item} from ActionNetwork ${error}`;
         console.error(message);
         throw new Error(message);
       });
 
-    return eventsResponse;
+    return {
+      item,
+      page,
+      pageResponse
+    };
   } catch (caughtError) {
     console.error(
-      `Error loading events page ${page} from ActionNetwork ${caughtError}`
+      `Error loading ${item} page ${page} from ActionNetwork ${caughtError}`
     );
     throw caughtError;
   }
 };
 
+const extractReceived = (item, responses) => {
+  const toReturn = [];
+  responses[item].forEach(response => {
+    toReturn.push(...((response._embedded || [])[`osdi:${item}`] || []));
+  });
+  return toReturn;
+};
+
 export async function getClientChoiceData(organization) {
-  let eventsResponses;
+  const responses = {
+    tags: [],
+    events: []
+  };
+
   try {
-    const firstEventsResponse = await getEventsPage(1, organization);
-    eventsResponses = [firstEventsResponse];
+    const firstPagePromises = [
+      getPage("events", 1, organization),
+      getPage("tags", 1, organization)
+    ];
 
-    const pageCount = firstEventsResponse.total_pages;
-    const pagePromises = [];
-    for (let i = 2; i <= pageCount; ++i) {
-      const pagePromise = getEventsPage(i, organization);
-      pagePromises.push(pagePromise);
+    const [firstEventsResponse, firstTagsResponse] = await Promise.all(
+      firstPagePromises
+    );
+
+    responses.events.push(firstEventsResponse.pageResponse);
+    responses.tags.push(firstTagsResponse.pageResponse);
+
+    const pagesNeeded = {
+      events: firstEventsResponse.pageResponse.total_pages,
+      tags: firstTagsResponse.pageResponse.total_pages
+    };
+
+    const pageToDo = [];
+
+    Object.entries(pagesNeeded).forEach(([item, pageCount]) => {
+      for (let i = 2; i <= pageCount; ++i) {
+        pageToDo.push([item, i, organization]);
+      }
+    });
+
+    const REQUESTS_PER_SECOND = 4;
+    const WAIT_MILLIS = 1100;
+    let pageToDoStart = 0;
+
+    while (pageToDoStart < pageToDo.length) {
+      if (pageToDo.length > REQUESTS_PER_SECOND) {
+        await exports.setTimeoutPromise(WAIT_MILLIS);
+      }
+
+      const pageToDoEnd = pageToDoStart + REQUESTS_PER_SECOND;
+      const thisTranche = pageToDo.slice(pageToDoStart, pageToDoEnd);
+
+      const pagePromises = thisTranche.map(thisPageToDo => {
+        return getPage(...thisPageToDo);
+      });
+
+      const pageResponses = await Promise.all(pagePromises);
+
+      pageResponses.forEach(pageResponse => {
+        responses[pageResponse.item].push(pageResponse.pageResponse);
+      });
+      pageToDoStart = pageToDoEnd;
     }
-
-    const pageResponses = await Promise.all(pagePromises);
-    eventsResponses.push(...pageResponses);
   } catch (caughtError) {
-    console.error(`Error loading events from ActionNetwork ${caughtError}`);
+    console.error(`Error loading choices from ActionNetwork ${caughtError}`);
     return {
       data: `${JSON.stringify({
-        error: "Failed to load events from ActionNetwork"
+        error: "Failed to load choices from ActionNetwork"
       })}`
     };
   }
 
-  const receivedEvents = [];
-  eventsResponses.forEach(eventsResponse => {
-    // eslint-disable-next-line no-underscore-dangle
-    const receivedEventsFromThisPage =
-      (eventsResponse._embedded || [])["osdi:events"] || [];
-    receivedEvents.push(...receivedEventsFromThisPage);
-  });
+  const receivedEvents = [...extractReceived("events", responses)];
+  const receivedTags = [...extractReceived("tags", responses)];
 
   const identifierRegex = /action_network:(.*)/;
-  const events = [];
+  const toReturn = [];
 
   receivedEvents.forEach(event => {
     let identifier;
@@ -217,8 +268,8 @@ export async function getClientChoiceData(organization) {
       return;
     }
 
-    events.push({
-      name: event.name || event.title,
+    toReturn.push({
+      name: `RSVP ${event.name || event.title}`,
       details: JSON.stringify({
         type: "event",
         identifier
@@ -226,41 +277,30 @@ export async function getClientChoiceData(organization) {
     });
   });
 
-  const actions = [];
-  actions.push(...events);
+  receivedTags.forEach(tag => {
+    toReturn.push({
+      name: `TAG ${tag.name}`,
+      details: JSON.stringify({
+        type: "tag",
+        tag: `${tag.name}`
+      })
+    });
+  });
 
   return {
-    data: `${JSON.stringify({ items: actions })}`,
+    data: `${JSON.stringify({ items: toReturn })}`,
     expiresSeconds:
       Number(getConfig(envVars.CACHE_TTL, organization)) || defaults.CACHE_TTL
   };
 }
 
 export async function available(organization) {
-  let result = !!getConfig(envVars.API_KEY, organization);
+  const result = !!getConfig(envVars.API_KEY, organization);
 
   if (!result) {
     console.info(
       "action-network action unavailable. Missing one or more required environment variables"
     );
-  }
-
-  if (result) {
-    try {
-      const { data } = await exports.getClientChoiceData(organization);
-      const parsedData = (data && JSON.parse(data)) || {};
-      if (parsedData.error) {
-        console.info(
-          `action-network action unavailable. getClientChoiceData returned error ${parsedData.error}`
-        );
-        result = false;
-      }
-    } catch (caughtError) {
-      console.info(
-        `action-network action unavailable. getClientChoiceData threw an exception ${caughtError}`
-      );
-      result = false;
-    }
   }
 
   return {
