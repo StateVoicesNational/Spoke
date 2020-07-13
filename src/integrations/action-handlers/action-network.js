@@ -73,7 +73,8 @@ const handlers = {
         }
       }
     };
-  }
+  },
+  tag: (email, actionData) => {}
 };
 
 // What happens when a texter saves the answer that triggers the action
