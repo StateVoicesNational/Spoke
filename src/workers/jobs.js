@@ -24,6 +24,7 @@ import moment from "moment";
 import { sendEmail } from "../server/mail";
 import { Notifications, sendUserNotification } from "../server/notifications";
 import { getConfig } from "../server/api/lib/config";
+import { invokeTaskFunction, Tasks } from "./tasks";
 
 const defensivelyDeleteOldJobsForCampaignJobType = async job => {
   console.log("job", job);
@@ -1197,7 +1198,9 @@ async function prepareTwilioCampaign(campaign, organization) {
   return msgSrvSid;
 }
 
-export async function startCampaignAsync(job) {
+// Start a campaign when EXPERIMENTAL_CAMPAIGN_PHONE_NUMBERS is enabled
+// TODO: refactor this to share more code with the startCampaign mutation
+export async function startCampaignWithPhoneNumbers(job) {
   try {
     const campaign = await cacheableData.campaign.load(job.campaign_id);
     const organization = await cacheableData.organization.load(
@@ -1235,7 +1238,12 @@ export async function startCampaignAsync(job) {
       campaignId: campaign.id
     });
 
-    await loadCampaignCache(reloadedCampaign, organization, {});
+    // We are already in an background job process, so invoke the task directly rather than
+    // kicking it off through the dispatcher
+    await invokeTaskFunction(Tasks.CAMPAIGN_START_CACHE, {
+      organization,
+      campaign: reloadedCampaign
+    });
   } catch (e) {
     console.error(`Job ${job.id} failed: ${e.message}`, e);
   } finally {
