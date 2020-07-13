@@ -2,13 +2,11 @@ import cacheableData from "../../models/cacheable_queries";
 import { r } from "../../models";
 import { accessRequired } from "../errors";
 import { Notifications, sendUserNotification } from "../../notifications";
-import { loadCampaignCache, startCampaignAsync } from "../../../workers/jobs";
 import twilio from "../lib/twilio";
 import { getConfig } from "../lib/config";
-
-const JOBS_SAME_PROCESS = !!(
-  process.env.JOBS_SAME_PROCESS || global.JOBS_SAME_PROCESS
-);
+import { jobRunner } from "../../../integrations/job-runners";
+import { Tasks } from "../../../workers/tasks";
+import { Jobs } from "../../../workers/job-processes";
 
 export const startCampaign = async (
   _,
@@ -26,16 +24,11 @@ export const startCampaign = async (
       truthy: true
     })
   ) {
-    if (!JOBS_SAME_PROCESS) {
-      throw Error(
-        "EXPERIMENTAL_CAMPAIGN_PHONE_NUMBERS only supports JOBS_SAME_PROCESS"
-      );
-    }
-    // Transferring numbers in twilio can take a long time, so start campaign becomes a job
-    const job = await r.knex.transaction(async trx => {
-      // TODO: get this working on SQLite?
-      // prevent duplicate start jobs for the same campaign
-      await trx.raw("LOCK TABLE job_request IN EXCLUSIVE MODE");
+    await r.knex.transaction(async trx => {
+      if (!/sqlite/.test(r.knex.client.config.client)) {
+        // prevent duplicate start jobs for the same campaign
+        await trx.raw("LOCK TABLE job_request IN EXCLUSIVE MODE");
+      }
       const existing = await trx("job_request")
         .select("*")
         .where({ campaign_id: id, job_type: "start_campaign" })
@@ -43,21 +36,18 @@ export const startCampaign = async (
       if (existing) {
         throw new Error("Duplicate start campaign job");
       }
-      return trx("job_request")
-        .insert({
+      // NOTE: long-running transaction with 'legacy' runner if run with JOBS_SYNC
+      return await jobRunner.dispatchJob(
+        {
           queue_name: `${id}:start_campaign`,
-          job_type: "start_campaign",
+          job_type: Jobs.START_CAMPAIGN_WITH_PHONE_NUMBERS,
           locks_queue: false,
-          assigned: true,
           campaign_id: id,
           payload: JSON.stringify({})
-        })
-        .returning("*");
+        },
+        { trx }
+      );
     });
-
-    console.log("Kicked off start_campaign job", job[0]);
-    // TODO: move to job dispatch function
-    startCampaignAsync(job[0]); // JOB_SAME_PROCESS no await
 
     return await cacheableData.campaign.load(id, {
       forceLoad: true
@@ -82,18 +72,20 @@ export const startCampaign = async (
   campaign.is_started = true;
 
   await campaign.save();
+  const campaignRefreshed = await cacheableData.campaign.load(id, {
+    forceLoad: true
+  });
   await sendUserNotification({
     type: Notifications.CAMPAIGN_STARTED,
     campaignId: id
   });
 
-  const campaignRefreshed = await cacheableData.campaign.load(id, {
-    forceLoad: true
-  });
-
-  // some asynchronous cache-priming:
-  await loadCampaignCache(campaignRefreshed, organization, {
-    remainingMilliseconds
-  });
+  if (r.redis) {
+    // some asynchronous cache-priming:
+    await jobRunner.dispatchTask(Tasks.CAMPAIGN_START_CACHE, {
+      campaign: campaignRefreshed,
+      organization
+    });
+  }
   return campaignRefreshed;
 };

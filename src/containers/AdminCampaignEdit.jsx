@@ -268,6 +268,7 @@ export class AdminCampaignEdit extends React.Component {
     if (!section.doNotSaveAfterSubmit) {
       await this.handleSave();
     }
+
     this.setState(
       {
         expandedSection:
@@ -526,8 +527,8 @@ export class AdminCampaignEdit extends React.Component {
           return numbersReserved >= numbersNeeded;
         },
         blocksStarting: true,
-        expandAfterCampaignStarts: true,
-        expandableBySuperVolunteers: true,
+        expandAfterCampaignStarts: false,
+        expandableBySuperVolunteers: false,
         extraProps: {
           contactsPerPhoneNumber: contactsPerPhoneNumber,
           isStarted: this.props.campaignData.campaign.isStarted,
@@ -629,7 +630,7 @@ export class AdminCampaignEdit extends React.Component {
 
   renderHeader() {
     let startJob = this.props.campaignData.campaign.pendingJobs.filter(
-      job => job.jobType === "start_campaign"
+      job => job.jobType === "start_campaign_with_phone_numbers"
     )[0];
     const isStarting = startJob || this.state.startingCampaign;
     const notStarting = this.props.campaignData.campaign.isStarted ? (
@@ -666,11 +667,12 @@ export class AdminCampaignEdit extends React.Component {
               }}
             >
               <CircularProgress
-                size={0.5}
                 style={{
                   verticalAlign: "middle",
-                  display: "inline-block"
+                  display: "inline-block",
+                  marginRight: 10
                 }}
+                size={25}
               />
               Starting your campaign...
             </div>
