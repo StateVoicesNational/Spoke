@@ -29,6 +29,8 @@ const getDocument = async documentId => {
   return result;
 };
 
+let namedStyles = [];
+const getNamedStyle = style => namedStyles.find(x => x.namedStyleType === style);
 const getParagraphStyle = getOr("", "paragraph.paragraphStyle.namedStyleType");
 const getTextRun = getOr("", "textRun.content");
 const sanitizeTextRun = textRun => textRun.replace("\n", "");
@@ -44,15 +46,25 @@ const getParagraphIndent = getOr(
   0,
   "paragraph.paragraphStyle.indentFirstLine.magnitude"
 );
+const namedStyleIndent = compose(
+  getOr(0, "paragraphStyle.indentFirstLine.magnitude"),
+  getNamedStyle,
+  getParagraphStyle
+);
 const getParagraphBold = compose(
   getOr(false, "textRun.textStyle.bold"),
   find(getTextRun),
   getOr([], "paragraph.elements")
 );
+const namedStyleBold = compose(
+  getOr(false, "textStyle.bold"),
+  getNamedStyle,
+  getParagraphStyle
+);
 const getParagraph = element => ({
   style: getParagraphStyle(element),
-  indent: getParagraphIndent(element),
-  isParagraphBold: getParagraphBold(element),
+  indent: getParagraphIndent(element) + namedStyleIndent(element),
+  isParagraphBold: namedStyleBold(element) || getParagraphBold(element),
   text: getParagraphText(element)
 });
 const hasParagraph = has("paragraph");
@@ -369,6 +381,7 @@ const importScriptFromDocument = async (campaignId, scriptUrl) => {
     );
   }
   const document = result.data.body.content;
+  namedStyles = result.data.namedStyles.styles;
   const sections = getSections(document);
 
   const interactionParagraphs = getInteractions(sections);
