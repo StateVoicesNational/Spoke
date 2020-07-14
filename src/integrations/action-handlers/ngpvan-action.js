@@ -161,20 +161,21 @@ async function getContactTypeIdAndInputTypeId(organization) {
       console.error(`Contact type ${contactType} not returned by VAN`);
     }
 
-    const inputType = getConfig("NGP_VAN_INPUT_TYPE", organization);
-    if (inputType) {
-      ({ inputTypeId } = inputTypesResponse.find(
-        inTy => inTy.name === inputType
-      ));
-      if (!inputTypeId) {
+    const inputTypeName = getConfig("NGP_VAN_INPUT_TYPE", organization);
+    if (inputTypeName) {
+      const inputType = inputTypesResponse.find(
+        inTy => inTy.name === inputTypeName
+      ) || {};
+      inputTypeId = inputType.inputTypeId || -1;
+      if (inputTypeId === -1) {
         // eslint-disable-next-line no-console
         console.error(`Input type ${inputType} not returned by VAN`);
       }
     }
 
-    if (!contactTypeId) {
+    if (inputTypeId === -1 || !contactTypeId) {
       throw new Error(
-        "VAN did not return the configured contact type. Check the log"
+        "VAN did not return the configured input type or contact type. Check the log"
       );
     }
   } catch (error) {
@@ -192,7 +193,7 @@ export async function getClientChoiceData(organization) {
     organization
   );
 
-  if (!contactTypeId) {
+  if (inputTypeId === -1 || !contactTypeId) {
     return {
       data: `${JSON.stringify({
         error:
