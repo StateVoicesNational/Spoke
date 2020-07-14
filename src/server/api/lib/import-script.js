@@ -46,11 +46,6 @@ const getParagraphIndent = getOr(
   0,
   "paragraph.paragraphStyle.indentFirstLine.magnitude"
 );
-const namedStyleIndent = compose(
-  getOr(0, "paragraphStyle.indentFirstLine.magnitude"),
-  getNamedStyle,
-  getParagraphStyle
-);
 const getParagraphBold = compose(
   getOr(false, "textRun.textStyle.bold"),
   find(getTextRun),
@@ -63,7 +58,7 @@ const namedStyleBold = compose(
 );
 const getParagraph = element => ({
   style: getParagraphStyle(element),
-  indent: getParagraphIndent(element) + namedStyleIndent(element),
+  indent: getParagraphIndent(element),
   isParagraphBold: namedStyleBold(element) || getParagraphBold(element),
   text: getParagraphText(element)
 });
