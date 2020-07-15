@@ -1,6 +1,7 @@
 import PropTypes from "prop-types";
 import React from "react";
 import LinearProgress from "material-ui/LinearProgress";
+import { getHighestRole } from "../lib/permissions";
 
 class TexterStats extends React.Component {
   renderAssignment(assignment) {
@@ -13,9 +14,14 @@ class TexterStats extends React.Component {
       ((contactsCount - unmessagedCount) * 100) / contactsCount
     );
 
+    let displayName = `${texter.firstName} ${texter.lastName}`;
+    if (getHighestRole(texter.roles) === "SUSPENDED") {
+      displayName += " (Suspended)";
+    }
+
     return (
       <div key={id}>
-        {texter.firstName} {texter.lastName}
+        {displayName}
         <div>{percentComplete}%</div>
         <LinearProgress mode="determinate" value={percentComplete} />
       </div>
