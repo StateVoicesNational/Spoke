@@ -35,7 +35,7 @@ _July 2020:_ Release 7.1 is a testament to the community working together -- sev
 
 ### Appreciations
 
-Thanks to [alliejones](https://github/alliejones), [aschneit](https://github/aschneit), [eamouzou](https://github/eamouzou), [hiemanshu](https://github/hiemanshu), [ibrand](https://github/ibrand), [jeffm2001](https://github/jeffm2001), [JeremyParker](https://github/JeremyParker), [matteosb](https://github/matteosb), and [schuyler1d](https://github/schuyler1d).
+Thanks to [alliejones](https://github/alliejones), [aschneit](https://github/aschneit), [eamouzou](https://github/eamouzou), [hiemanshu](https://github/hiemanshu), [ibrand](https://github/ibrand), [jeffm2001](https://github/jeffm2001), [JeremyParker](https://github/JeremyParker), [lperson](https://github/lperson), [matteosb](https://github/matteosb), and [schuyler1d](https://github/schuyler1d).
 
 Also to AFL-CIO, MoveOn, NYCET, Scale to Win, and Working Families Party for sending their contributions and giving early feedback/debugging time.
 
