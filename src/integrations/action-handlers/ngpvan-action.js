@@ -62,7 +62,7 @@ export const postCanvassResponse = async (contact, organization, body) => {
   // eslint-disable-next-line no-console
   console.info("Sending contact update to VAN", {
     vanId,
-    body
+    body: JSON.stringify(body)
   });
 
   return httpRequest(url, {

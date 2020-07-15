@@ -79,6 +79,29 @@ export const updateQuestionResponses = async (
     contact
   );
 
+  const questionResponsesHash = {};
+  questionResponses.forEach(questionResponse => {
+    questionResponsesHash[
+      questionResponse.interactionStepId
+    ] = questionResponse;
+  });
+
+  const oldQuestionResponses = await cacheableData.questionResponse.query(
+    campaignContactId
+  );
+  oldQuestionResponses.forEach(oldQuestionResponse => {
+    const newQuestionResponse =
+      questionResponsesHash[oldQuestionResponse.interaction_step_id];
+    if (
+      newQuestionResponse &&
+      newQuestionResponse.value === oldQuestionResponse.value
+    ) {
+      delete questionResponsesHash[
+        oldQuestionResponse.interaction_step_id.toString()
+      ];
+    }
+  });
+
   await cacheableData.questionResponse
     .save(campaignContactId, questionResponses)
     .catch(err => {
@@ -92,7 +115,7 @@ export const updateQuestionResponses = async (
   try {
     await dispatchActionHandlers({
       user,
-      questionResponses,
+      questionResponses: Object.values(questionResponsesHash),
       campaign,
       contact
     });
