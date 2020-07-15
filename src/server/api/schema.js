@@ -333,12 +333,38 @@ async function editCampaign(id, campaign, loaders, user, origCampaignRecord) {
     }
     // run in a transaction
     // delete from tag_canned_response for campaign_id knex
+
+    await r
+      .knex("tag_canned_response")
+      .whereIn(
+        "canned_response_id",
+        r
+          .knex("canned_response")
+          .select("id")
+          .where({ "canned_response.campaign_id": id })
+      )
+      .delete();
     await r
       .table("canned_response")
       .getAll(id, { index: "campaign_id" })
       .filter({ user_id: "" })
       .delete();
-    await CannedResponse.save(convertedResponses);
+    const saveCannedResponse = cannedResponse => {
+      return CannedResponse.save(cannedResponse).then(
+        ({ id: cannedResponseId }) => cannedResponseId
+      );
+    };
+    await Promise.all(
+      convertedResponses.map(async response => {
+        const { tagIds, ...filteredResponse } = response;
+        const responseId = await saveCannedResponse(filteredResponse);
+        const tagCannedResponses = tagIds.map(tid => ({
+          tag_id: tid,
+          canned_response_id: responseId
+        }));
+        return r.knex("tag_canned_response").insert(tagCannedResponses);
+      })
+    );
     // also save tag_ids
     await cacheableData.cannedResponse.clearQuery({
       userId: "",
