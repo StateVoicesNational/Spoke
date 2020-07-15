@@ -23,6 +23,9 @@ export class UserMenu extends Component {
     };
     this.handleReturn = this.handleReturn.bind(this);
     this.handleRequestFaqs = this.handleRequestFaqs.bind(this);
+    this.handleRequestManageOrganizations = this.handleRequestManageOrganizations.bind(
+      this
+    );
   }
 
   handleTouchTap = event => {
@@ -70,6 +73,12 @@ export class UserMenu extends Component {
     e.preventDefault();
     const { orgId } = this.props;
     this.props.router.push(`/app/${orgId}/faqs`);
+  };
+
+  handleRequestManageOrganizations = e => {
+    e.preventDefault();
+    const { orgId } = this.props;
+    this.props.router.push(`/app/${orgId}/manage-organizations`);
   };
 
   renderAvatar(user, size) {
@@ -120,6 +129,13 @@ export class UserMenu extends Component {
             >
               {currentUser.email}
             </MenuItem>
+            <Divider />
+            <Subheader>Admin Tools</Subheader>
+            <MenuItem
+              {...dataTest("ManageOrganizations")}
+              primaryText="Manage Organizations"
+              onClick={this.handleRequestManageOrganizations}
+            />
             <Divider />
             <Subheader>Teams</Subheader>
             {organizations.map(organization => (

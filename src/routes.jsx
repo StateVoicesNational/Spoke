@@ -24,6 +24,7 @@ import Settings from "./containers/Settings";
 import Tags from "./containers/Tags";
 import UserEdit from "./containers/UserEdit";
 import TexterFaqs from "./components/TexterFrequentlyAskedQuestions";
+import ManageOrganizations from "./containers/ManageOrganizations";
 import FAQs from "./lib/faqs";
 import {
   DemoTexterNeedsMessage,
@@ -71,6 +72,15 @@ export default function makeRoutes(requireAuth = () => {}) {
         />
         <Route path=":organizationId">
           <IndexRedirect to="todos" />
+          <Route
+            path="manage-organizations"
+            components={{
+              main: () => <ManageOrganizations />,
+              topNav: p => (
+                <TopNav title="Account" orgId={p.params.organizationId} />
+              )
+            }}
+          />
           <Route
             path="faqs"
             components={{
