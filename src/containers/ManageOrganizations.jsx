@@ -47,10 +47,60 @@ const styles = StyleSheet.create({
 export class ManageOrganizations extends React.Component {
   constructor(props) {
     super(props);
+    this.state = {
+      openTagDialog: false,
+      orggId: null,
+      dialogTitle: "",
+      dialogSubmitHandler: null,
+      dialogButtonLabel: ""
+    };
+    this.handleOpen = this.handleOpen.bind(this);
+    this.handleClose = this.handleClose.bind(this);
+    this.handleCreate = this.handleCreate.bind(this);
+  }
+
+  handleOpen() {
+    this.setState({
+      openTagDialog: true,
+      dialogTitle: "Create Organization",
+      dialogSubmitHandler: this.handleCreate,
+      dialogButtonLabel: "Create",
+      orgId: null
+    });
+  }
+
+  handleClose() {
+    this.setState({ openTagDialog: false });
+  }
+
+  async handleCreate(formData) {
+    console.log(this.props);
+
+    // debugger;
+    // const newOrganization = await this.props.mutations.createOrganization(
+    //   formData.name,
+    //   this.props.userData.currentUser.id,
+    //   this.props.inviteData.inviteByHash[0].id
+    // );
+
+    // await this.props.data.refetch();
+    this.handleClose();
+    // console.log(newOrganization);
   }
 
   render() {
-    const organizations = this.props.data.organizations;
+    const organizations = this.props.orgData.organizations;
+    const {
+      openOrgDialog,
+      dialogSubmitHandler,
+      dialogTitle,
+      dialogButtonLabel,
+      orgId
+    } = this.state;
+    const formSchema = yup.object({
+      name: yup.string().required()
+    });
+    const dialogOrg = orgId ? organizations.find(org => org.id === orgId) : {};
     return (
       <div className={css(styles.cards)}>
         {organizations.map(org => (
@@ -65,13 +115,17 @@ export class ManageOrganizations extends React.Component {
                 label="Edit"
                 labelPosition="before"
                 icon={<CreateIcon />}
-                onTouchTap={console.log("edit")}
+                onTouchTap={() => {
+                  console.log("edit");
+                }}
               />
               <RaisedButton
                 label="Delete"
                 labelPosition="before"
                 icon={<DeleteIcon color={red500} />}
-                onTouchTap={console.log("delete")}
+                onTouchTap={() => {
+                  console.log("delete");
+                }}
               />
             </CardText>
           </Card>
@@ -82,19 +136,37 @@ export class ManageOrganizations extends React.Component {
         >
           <ContentAdd />
         </FloatingActionButton>
+        <Dialog
+          title={dialogTitle}
+          open={openOrgDialog}
+          onRequestClose={this.handleClose}
+        >
+          <GSForm
+            schema={formSchema}
+            onSubmit={dialogSubmitHandler}
+            defaultValue={dialogOrg}
+          >
+            <div className={css(styles.fields)}>
+              <Form.Field label="Name" name="name" />
+            </div>
+            <div className={css(styles.submit)}>
+              <Form.Button type="submit" label={dialogButtonLabel} />
+            </div>
+          </GSForm>
+        </Dialog>
       </div>
     );
   }
 }
 
 ManageOrganizations.propTypes = {
-  data: PropTypes.object,
+  orgData: PropTypes.object,
   params: PropTypes.object,
   mutations: PropTypes.object
 };
 
 const queries = {
-  data: {
+  orgData: {
     query: gql`
       query getInstanceOrganizations {
         organizations {
@@ -103,7 +175,35 @@ const queries = {
         }
       }
     `
+  },
+  inviteData: {
+    query: gql`
+      query getInvite($inviteId: String!) {
+        inviteByHash(hash: $inviteId) {
+          id
+          isValid
+        }
+      }
+    `,
+    options: ownProps => ({
+      variables: {
+        inviteId: ownProps.params.inviteId
+      },
+      fetchPolicy: "network-only"
+    })
   }
+  // userData: {
+  //   query: gql`
+  //     query getCurrentUser {
+  //       currentUser {
+  //         id
+  //       }
+  //     }
+  //   `,
+  //   options: ownProps => ({
+  //     fetchPolicy: "network-only"
+  //   })
+  // }
 };
 
 const mutations = {
