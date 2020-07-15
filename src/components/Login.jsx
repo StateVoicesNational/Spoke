@@ -5,7 +5,6 @@ import { withRouter } from "react-router";
 import { StyleSheet, css } from "aphrodite";
 import theme from "../styles/theme";
 
-import { isClient } from "../lib";
 import UserEdit from "../containers/UserEdit";
 
 const styles = StyleSheet.create({
@@ -52,16 +51,26 @@ class Login extends React.Component {
     this.state = {
       active: "login"
     };
+
+    this.isLocalLogin = window.PASSPORT_STRATEGY === "local";
   }
 
   componentDidMount = () => {
-    if (!this.naiveVerifyInviteValid(this.props.location.query.nextUrl)) {
+    const {
+      location: {
+        query: { nextUrl }
+      }
+    } = this.props;
+
+    if (!this.isLocalLogin) {
+      window.AuthService.login(nextUrl);
+      return;
+    }
+
+    if (!this.naiveVerifyInviteValid(nextUrl)) {
       this.props.router.replace("/login");
     }
-    if (
-      this.props.location.query.nextUrl &&
-      this.props.location.query.nextUrl.includes("reset")
-    ) {
+    if (nextUrl && nextUrl.includes("reset")) {
       this.setState({ active: "reset" });
     }
   };
@@ -76,9 +85,10 @@ class Login extends React.Component {
     /\/\w{8}-(\w{4}\-){3}\w{12}(\/|$)/.test(nextUrl);
 
   render() {
-    const auth0Strategy =
-      window.PASSPORT_STRATEGY === "auth0" || window.PASSPORT_STRATEGY === "";
-    const auth0Login = isClient() && auth0Strategy;
+    if (!this.isLocalLogin) {
+      // Login provider will handle redirecting
+      return null;
+    }
 
     const {
       location: {
@@ -104,47 +114,41 @@ class Login extends React.Component {
 
     return (
       <div className={css(styles.loginPage)}>
-        {/* Use auth0 */}
-        {auth0Login && window.AuthService.login(nextUrl)}
-
-        {/* Show UserEdit component configured for login / signup */}
-        {window.PASSPORT_STRATEGY === "local" && (
-          <div>
-            {/* Only display sign up option if there is a nextUrl */}
-            {displaySignUp && (
-              <section>
-                <button
-                  className={css(styles.button)}
-                  type="button"
-                  name="login"
-                  onClick={this.handleClick}
-                  disabled={this.state.active === "login"}
-                >
-                  Log In
-                </button>
-                <button
-                  className={css(styles.button)}
-                  type="button"
-                  name="signup"
-                  onClick={this.handleClick}
-                  disabled={this.state.active === "signup"}
-                >
-                  Sign Up
-                </button>
-              </section>
-            )}
-            <div className={css(styles.fieldContainer)}>
-              <h2 className={css(styles.header)}>Welcome to Spoke</h2>
-              <UserEdit
-                authType={this.state.active}
-                saveLabel={saveLabels[this.state.active]}
-                router={router}
-                nextUrl={nextUrl}
-                style={css(styles.authFields)}
-              />
-            </div>
+        <div>
+          {/* Only display sign up option if there is a nextUrl */}
+          {displaySignUp && (
+            <section>
+              <button
+                className={css(styles.button)}
+                type="button"
+                name="login"
+                onClick={this.handleClick}
+                disabled={this.state.active === "login"}
+              >
+                Log In
+              </button>
+              <button
+                className={css(styles.button)}
+                type="button"
+                name="signup"
+                onClick={this.handleClick}
+                disabled={this.state.active === "signup"}
+              >
+                Sign Up
+              </button>
+            </section>
+          )}
+          <div className={css(styles.fieldContainer)}>
+            <h2 className={css(styles.header)}>Welcome to Spoke</h2>
+            <UserEdit
+              authType={this.state.active}
+              saveLabel={saveLabels[this.state.active]}
+              router={router}
+              nextUrl={nextUrl}
+              style={css(styles.authFields)}
+            />
           </div>
-        )}
+        </div>
       </div>
     );
   }

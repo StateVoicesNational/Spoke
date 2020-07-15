@@ -74,8 +74,6 @@ describe("ConversationPreviewModal", async () => {
       campaignsFilter,
       {}
     );
-
-    console.log(conversations);
   }, global.DATABASE_SETUP_TEARDOWN_TIMEOUT);
 
   afterAll(async () => {

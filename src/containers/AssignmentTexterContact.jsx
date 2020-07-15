@@ -58,7 +58,7 @@ export class AssignmentTexterContact extends React.Component {
       snackbarError = "Your assignment has changed";
       snackbarOnTouchTap = this.goBackToTodos;
       snackbarActionTitle = "Back to Todos";
-    } else if (contact.optOut) {
+    } else if (contact.optOut && !this.props.reviewContactId) {
       disabledText = "Skipping opt-out...";
       disabled = true;
     } else if (!this.isContactBetweenTextingHours(contact)) {
@@ -81,7 +81,9 @@ export class AssignmentTexterContact extends React.Component {
   componentDidMount() {
     const { contact } = this.props;
     if (contact.optOut) {
-      this.skipContact();
+      if (!this.props.reviewContactId) {
+        this.skipContact();
+      }
     } else if (!this.isContactBetweenTextingHours(contact)) {
       setTimeout(() => {
         this.props.refreshData();
@@ -372,7 +374,8 @@ export class AssignmentTexterContact extends React.Component {
         : Controls;
     return (
       <div {...dataTest("assignmentTexterContactFirstDiv")}>
-        {this.state.disabled ? (
+        {this.state.disabled &&
+        this.props.messageStatusFilter !== "needsMessage" ? (
           <div className={css(styles.overlay)}>
             <CircularProgress size={0.5} />
             {this.state.disabledText}
@@ -424,6 +427,7 @@ export class AssignmentTexterContact extends React.Component {
 }
 
 AssignmentTexterContact.propTypes = {
+  reviewContactid: PropTypes.string,
   contact: PropTypes.object,
   campaign: PropTypes.object,
   assignment: PropTypes.object,

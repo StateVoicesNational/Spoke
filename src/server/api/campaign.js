@@ -99,6 +99,9 @@ const buildOrderByClause = (query, sortBy) => {
     case "TITLE":
       fragmentArray = [title];
       break;
+    case "TIMEZONE":
+      fragmentArray = ['"campaign"."timezone"'];
+      break;
     case "ID_DESC":
       fragmentArray = [desc(id)];
       break;
@@ -399,9 +402,12 @@ export const resolvers = {
         "SUPERVOLUNTEER",
         true
       );
-      return getUsers(campaign.organization_id, null, {
-        campaignId: campaign.id
-      });
+      return getUsers(
+        campaign.organization_id,
+        null,
+        { campaignId: campaign.id },
+        "ANY"
+      );
     },
     assignments: async (campaign, { assignmentsFilter }, { user }) => {
       await accessRequired(
@@ -424,10 +430,12 @@ export const resolvers = {
             "assignment.user_id",
             "assignment.campaign_id",
             "user.first_name",
-            "user.last_name"
+            "user.last_name",
+            "user_organization.role"
           ];
           query = query
             .join("user", "user.id", "assignment.user_id")
+            .join("user_organization", "user_organization.user_id", "user.id")
             .join(
               "campaign_contact",
               "campaign_contact.assignment_id",
