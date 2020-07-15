@@ -680,6 +680,7 @@ describe("mutations.updateQuestionResponses", () => {
         );
 
         await sleep(100);
+
         expect(ActionHandlers.rawAllActionHandlers).toHaveBeenCalledTimes(1);
         expect(ActionHandlers.rawAllActionHandlers.mock.results).toEqual([
           {
@@ -720,6 +721,80 @@ describe("mutations.updateQuestionResponses", () => {
             ]
           ])
         );
+      });
+
+      describe("when one of the question responses has already be saved with the same value", () => {
+        beforeEach(async () => {
+          questionResponses = [
+            {
+              campaignContactId: contacts[0].id,
+              interactionStepId: interactionSteps[0].id,
+              value: colorInteractionSteps[0].answerOption
+            },
+            {
+              campaignContactId: contacts[0].id.toString(),
+              interactionStepId: redInteractionStep.id,
+              value: shadesOfRedInteractionSteps[0].answerOption
+            }
+          ];
+        });
+
+        it.only("delegates to its dependencies", async () => {
+          jest.spyOn(ComplexTestActionHandler, "processAction");
+
+          await Mutations.updateQuestionResponses(
+            undefined,
+            {
+              questionResponses: [questionResponses[0]],
+              campaignContactId: contacts[0].id
+            },
+            { loaders, user: texterUser }
+          );
+
+          await sleep(100);
+
+          expect(ComplexTestActionHandler.processAction).toHaveBeenCalledTimes(
+            1
+          );
+          expect(ComplexTestActionHandler.processAction.mock.calls).toEqual(
+            expect.arrayContaining([
+              [
+                expect.objectContaining(questionResponses[0]),
+                expect.objectWithId(colorInteractionSteps[0]),
+                Number(contacts[0].id),
+                expect.objectWithId(contacts[0]),
+                expect.objectWithId(campaign),
+                expect.objectWithId(organization)
+              ]
+            ])
+          );
+
+          ComplexTestActionHandler.processAction.mockReset();
+
+          await Mutations.updateQuestionResponses(
+            undefined,
+            { questionResponses, campaignContactId: contacts[0].id },
+            { loaders, user: texterUser }
+          );
+
+          await sleep(100);
+
+          expect(ComplexTestActionHandler.processAction).toHaveBeenCalledTimes(
+            1
+          );
+          expect(ComplexTestActionHandler.processAction.mock.calls).toEqual(
+            expect.arrayContaining([
+              [
+                expect.objectContaining(questionResponses[1]),
+                expect.objectWithId(shadesOfRedInteractionSteps[0]),
+                Number(contacts[0].id),
+                expect.objectWithId(contacts[0]),
+                expect.objectWithId(campaign),
+                expect.objectWithId(organization)
+              ]
+            ])
+          );
+        });
       });
 
       describe("when no action handlers are configured", async () => {
