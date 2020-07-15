@@ -40,6 +40,9 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: theme.colors.gray,
     marginBottom: 8,
+    display: "-webkit-box",
+    WebkitBoxOrient: "vertical",
+    WebkitLineClamp: 2,
     overflow: "hidden",
     height: 32
   }
@@ -99,7 +102,6 @@ export class CampaignCannedResponsesForm extends React.Component {
                 });
                 this.setState({ showForm: false });
               }}
-              organizationId={this.props.organizationId}
               customFields={this.props.customFields}
               tags={this.props.data.organization.tags}
             />
@@ -163,11 +165,10 @@ export class CampaignCannedResponsesForm extends React.Component {
             </IconButton>
           </span>
         }
-        secondaryTextLines={2}
       >
         <div className={css(styles.title)}>{response.title}</div>
         <div className={css(styles.text)}>{response.text}</div>
-        {response.tagIds.length > 0 && (
+        {response.tagIds && response.tagIds.length > 0 && (
           <TagChips
             tags={this.props.data.organization.tags}
             tagIds={response.tagIds}
