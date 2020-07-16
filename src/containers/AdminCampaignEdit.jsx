@@ -282,7 +282,7 @@ export class AdminCampaignEdit extends React.Component {
         // that componentWillReceiveProps does not ignore server results for
         // the section we just saved.
         this.props.campaignData.refetch();
-        // hack to update phone counts, probably should make phone reservation it's own mutation
+        // hack to update phone counts, probably should make phone reservation its own mutation
         if (this.props.organizationData.campaignPhoneNumbersEnabled) {
           this.props.organizationData.refetch();
         }

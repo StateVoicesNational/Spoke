@@ -31,10 +31,6 @@ export const releaseCampaignNumbers = async (_, { campaignId }, { user }) => {
       "Campaign no longer has a message service associated with it"
     );
   }
-  await r
-    .knex("campaign")
-    .where({ id: campaignId })
-    .update({ messageservice_sid: null });
 
   if (service === "twilio") {
     await twilio.deleteMessagingService(
@@ -42,6 +38,11 @@ export const releaseCampaignNumbers = async (_, { campaignId }, { user }) => {
       campaign.messageservice_sid
     );
   }
+
+  await r
+    .knex("campaign")
+    .where({ id: campaignId })
+    .update({ messageservice_sid: null });
 
   await ownedPhoneNumber.releaseCampaignNumbers(campaignId, r.knex);
   await cacheableData.campaign.clear(campaignId);
