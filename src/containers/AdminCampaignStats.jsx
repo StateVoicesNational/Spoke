@@ -504,7 +504,8 @@ const mutations = {
         }
       }
     `,
-    variables: { campaignId }
+    variables: { campaignId },
+    refetchQueries: () => ["getOrganizationData"]
   })
 };
 

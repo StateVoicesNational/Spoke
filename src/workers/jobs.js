@@ -1162,7 +1162,7 @@ export async function buyPhoneNumbers(job) {
 }
 
 // Prepares a messaging service with owned number for the campaign
-async function prepareTwilioCampaign(campaign, organization) {
+async function prepareTwilioCampaign(campaign, organization, trx) {
   const ts = Math.floor(new Date() / 1000);
   const friendlyName = `Campaign ${campaign.id}: ${campaign.organization_id}-${ts} [${process.env.BASE_URL}]`;
   const messagingService = await twilio.createMessagingService(
@@ -1173,8 +1173,7 @@ async function prepareTwilioCampaign(campaign, organization) {
   if (!msgSrvSid) {
     throw new Error("Failed to create messaging service!");
   }
-  const phoneSids = await r
-    .knex("owned_phone_number")
+  const phoneSids = await trx("owned_phone_number")
     .select("service_id")
     .where({
       organization_id: campaign.organization_id,
@@ -1201,41 +1200,57 @@ async function prepareTwilioCampaign(campaign, organization) {
 // Start a campaign when EXPERIMENTAL_CAMPAIGN_PHONE_NUMBERS is enabled
 // TODO: refactor this to share more code with the startCampaign mutation
 export async function startCampaignWithPhoneNumbers(job) {
+  if (!job.campaign_id) {
+    throw new Error("Missing job.campaign_id");
+  }
   try {
-    const campaign = await cacheableData.campaign.load(job.campaign_id);
-    const organization = await cacheableData.organization.load(
-      campaign.organization_id
-    );
-    const service = getConfig("DEFAULT_SERVICE", organization);
-
-    let messagingServiceSid;
-    if (service === "twilio") {
-      messagingServiceSid = await prepareTwilioCampaign(campaign, organization);
-    } else if (service === "fakeservice") {
-      // simulate some latency
-      await new Promise(resolve => setTimeout(resolve, 5000));
-      messagingServiceSid = "FAKEMESSAGINGSERVICE";
-    } else {
-      throw new Error(
-        `Campaign phone numbers are not supported for service ${service}`
+    let organization;
+    await r.knex.transaction(async trx => {
+      const campaign = await trx("campaign")
+        .where("id", job.campaign_id)
+        // PG only: lock this campaign while starting, making this job idempotent
+        .forUpdate()
+        .first();
+      if (campaign.is_started) {
+        throw new Error("Campaign already started");
+      }
+      organization = await cacheableData.organization.load(
+        campaign.organization_id
       );
-    }
+      const service = getConfig("DEFAULT_SERVICE", organization);
 
-    await r
-      .knex("campaign")
-      .where("id", campaign.id)
-      .update({
-        is_started: true,
-        use_own_messaging_service: true,
-        messageservice_sid: messagingServiceSid
-      });
+      let messagingServiceSid;
+      if (service === "twilio") {
+        messagingServiceSid = await prepareTwilioCampaign(
+          campaign,
+          organization,
+          trx
+        );
+      } else if (service === "fakeservice") {
+        // simulate some latency
+        await new Promise(resolve => setTimeout(resolve, 5000));
+        messagingServiceSid = "FAKEMESSAGINGSERVICE";
+      } else {
+        throw new Error(
+          `Campaign phone numbers are not supported for service ${service}`
+        );
+      }
+
+      await trx("campaign")
+        .where("id", campaign.id)
+        .update({
+          is_started: true,
+          use_own_messaging_service: true,
+          messageservice_sid: messagingServiceSid
+        });
+    });
 
     await cacheableData.campaign.clear(job.campaign_id);
     const reloadedCampaign = await cacheableData.campaign.load(job.campaign_id);
 
     await sendUserNotification({
       type: Notifications.CAMPAIGN_STARTED,
-      campaignId: campaign.id
+      campaignId: job.campaign_id
     });
 
     // We are already in an background job process, so invoke the task directly rather than
