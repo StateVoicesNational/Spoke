@@ -1214,9 +1214,9 @@ export async function startCampaignWithPhoneNumbers(job) {
       if (campaign.is_started) {
         throw new Error("Campaign already started");
       }
-      organization = await cacheableData.organization.load(
-        campaign.organization_id
-      );
+      organization = await trx("organization")
+        .where("id", campaign.organization_id)
+        .first();
       const service = getConfig("DEFAULT_SERVICE", organization);
 
       let messagingServiceSid;
@@ -1228,7 +1228,7 @@ export async function startCampaignWithPhoneNumbers(job) {
         );
       } else if (service === "fakeservice") {
         // simulate some latency
-        await new Promise(resolve => setTimeout(resolve, 5000));
+        await new Promise(resolve => setTimeout(resolve, 1000));
         messagingServiceSid = "FAKEMESSAGINGSERVICE";
       } else {
         throw new Error(
