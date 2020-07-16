@@ -1283,7 +1283,7 @@ describe("per-campaign phone numbers", async () => {
       {
         organization_id: organizationId,
         service: "fakeservice",
-        service_id: "fakeid",
+        service_id: `fake${new Date().getTime()}`,
         area_code: "917",
         phone_number: "+19175555555"
       },
