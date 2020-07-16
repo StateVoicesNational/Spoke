@@ -1,8 +1,5 @@
 import { r } from "../../models";
 
-// TODO: move to db/models package
-// TODO: index allocated_to and allocated_to_id
-// TODO: make transaction optional
 async function allocateCampaignNumbers(
   { organizationId, campaignId, areaCode, amount },
   transactionOrKnex
@@ -29,7 +26,7 @@ async function allocateCampaignNumbers(
     .update({
       allocated_to: "campaign",
       allocated_to_id: campaignId.toString(),
-      allocated_at: r.knex.raw("now()")
+      allocated_at: r.knex.fn.now()
     });
 }
 

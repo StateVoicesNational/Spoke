@@ -24,29 +24,12 @@ export const startCampaign = async (
       truthy: true
     })
   ) {
-    await r.knex.transaction(async trx => {
-      if (!/sqlite/.test(r.knex.client.config.client)) {
-        // prevent duplicate start jobs for the same campaign
-        await trx.raw("LOCK TABLE job_request IN EXCLUSIVE MODE");
-      }
-      const existing = await trx("job_request")
-        .select("*")
-        .where({ campaign_id: id, job_type: "start_campaign" })
-        .first();
-      if (existing) {
-        throw new Error("Duplicate start campaign job");
-      }
-      // NOTE: long-running transaction with 'legacy' runner if run with JOBS_SYNC
-      return await jobRunner.dispatchJob(
-        {
-          queue_name: `${id}:start_campaign`,
-          job_type: Jobs.START_CAMPAIGN_WITH_PHONE_NUMBERS,
-          locks_queue: false,
-          campaign_id: id,
-          payload: JSON.stringify({})
-        },
-        { trx }
-      );
+    await jobRunner.dispatchJob({
+      queue_name: `${id}:start_campaign`,
+      job_type: Jobs.START_CAMPAIGN_WITH_PHONE_NUMBERS,
+      locks_queue: false,
+      campaign_id: id,
+      payload: JSON.stringify({})
     });
 
     return await cacheableData.campaign.load(id, {

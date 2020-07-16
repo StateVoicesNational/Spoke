@@ -1263,3 +1263,76 @@ describe("useOwnMessagingService", async () => {
     );
   });
 });
+
+describe("per-campaign phone numbers", async () => {
+  const oldEnv = process.env;
+  beforeAll(() => {
+    process.env = {
+      ...process.env,
+      EXPERIMENTAL_PHONE_INVENTORY: "1",
+      EXPERIMENTAL_CAMPAIGN_PHONE_NUMBERS: "1"
+    };
+  });
+
+  afterAll(() => {
+    process.env = oldEnv;
+  });
+
+  it("allocates numbers to a campaign and creates a messaging service on start", async () => {
+    const [phoneId] = await r.knex("owned_phone_number").insert(
+      {
+        organization_id: organizationId,
+        service: "fakeservice",
+        service_id: "fakeid",
+        area_code: "917",
+        phone_number: "+19175555555"
+      },
+      "id"
+    );
+    console.log("PHONE ID", phoneId);
+    await saveCampaign(
+      testAdminUser,
+      { id: testCampaign.id, organizationId },
+      "test campaign new title",
+      true,
+      [{ areaCode: "917", count: 1 }]
+    );
+
+    const phoneNumber = await r
+      .knex("owned_phone_number")
+      .where("id", phoneId)
+      .first();
+    expect(phoneNumber.allocated_to).toEqual("campaign");
+    expect(phoneNumber.allocated_to_id).toEqual(testCampaign.id.toString());
+
+    await startCampaign(testAdminUser, testCampaign);
+
+    const getCampaignsQuery = `
+      query getCampaign($campaignId: String!) {
+        campaign(id: $campaignId) {
+          id
+          useOwnMessagingService
+          messageserviceSid
+          inventoryPhoneNumberCounts {
+            areaCode
+            count
+          }
+        }
+      }
+    `;
+
+    const variables = {
+      campaignId: testCampaign.id
+    };
+
+    const { data } = await runGql(getCampaignsQuery, variables, testAdminUser);
+    console.log("DATA", data.campaign);
+    expect(data.campaign.useOwnMessagingService).toEqual(true);
+    expect(data.campaign.messageserviceSid).toEqual(
+      "FAKEMESSAGINGSERVICE" // hard-coded in the the start campaign job
+    );
+    expect(data.campaign.inventoryPhoneNumberCounts).toEqual([
+      { areaCode: "917", count: 1 }
+    ]);
+  });
+});
