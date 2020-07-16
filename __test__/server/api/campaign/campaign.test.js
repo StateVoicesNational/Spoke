@@ -1289,7 +1289,7 @@ describe("per-campaign phone numbers", async () => {
       },
       "id"
     );
-    console.log("PHONE ID", phoneId);
+
     await saveCampaign(
       testAdminUser,
       { id: testCampaign.id, organizationId },
@@ -1326,7 +1326,6 @@ describe("per-campaign phone numbers", async () => {
     };
 
     const { data } = await runGql(getCampaignsQuery, variables, testAdminUser);
-    console.log("DATA", data.campaign);
     expect(data.campaign.useOwnMessagingService).toEqual(true);
     expect(data.campaign.messageserviceSid).toEqual(
       "FAKEMESSAGINGSERVICE" // hard-coded in the the start campaign job
