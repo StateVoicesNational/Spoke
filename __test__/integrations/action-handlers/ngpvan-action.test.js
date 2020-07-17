@@ -715,7 +715,7 @@ describe("ngpvn-action", () => {
     let organization;
     let interactionStepValue;
 
-    let unusedQuestionResponse;
+    let questionResponse;
     let unusedCampaignContactId;
     let unusedCampaign;
 
@@ -725,9 +725,14 @@ describe("ngpvn-action", () => {
     beforeEach(async () => {
       interactionStepValue = '{"hex":"#B22222","rgb":{"r":178,"g":34,"b":34}}';
       interactionStep = {
+        id: "77",
         answer_actions_data: JSON.stringify({
           value: JSON.stringify(interactionStepValue)
         })
+      };
+
+      questionResponse = {
+        interactionStepId: "77"
       };
 
       contact = {
@@ -757,12 +762,15 @@ describe("ngpvn-action", () => {
       postPeopleCanvassResponsesNock = makePostPeopleCanvassResponsesNock();
 
       await NgpVanAction.processAction(
-        unusedQuestionResponse,
+        questionResponse,
         interactionStep,
         unusedCampaignContactId,
         contact,
         unusedCampaign,
-        organization
+        organization,
+        {
+          unchanged: {}
+        }
       );
 
       postPeopleCanvassResponsesNock.done();
@@ -777,12 +785,15 @@ describe("ngpvn-action", () => {
         let error;
         try {
           await NgpVanAction.processAction(
-            unusedQuestionResponse,
+            questionResponse,
             interactionStep,
             unusedCampaignContactId,
             contact,
             unusedCampaign,
-            organization
+            organization,
+            {
+              unchanged: {}
+            }
           );
         } catch (caughtException) {
           error = caughtException;
@@ -826,12 +837,15 @@ describe("ngpvn-action", () => {
         let error;
         try {
           await NgpVanAction.processAction(
-            unusedQuestionResponse,
+            questionResponse,
             interactionStep,
             unusedCampaignContactId,
             contact,
             unusedCampaign,
-            organization
+            organization,
+            {
+              unchanged: {}
+            }
           );
         } catch (caughtException) {
           error = caughtException;
@@ -839,6 +853,27 @@ describe("ngpvn-action", () => {
 
         expect(error.message).toEqual(
           expect.stringMatching(/^unexpected token*/i)
+        );
+
+        expect(postPeopleCanvassResponsesNock.isDone()).toEqual(false);
+        nock.cleanAll();
+      });
+    });
+
+    describe("when the question response has not been added or updated", () => {
+      it("returns without doing anything", async () => {
+        postPeopleCanvassResponsesNock = makePostPeopleCanvassResponsesNock();
+
+        await NgpVanAction.processAction(
+          questionResponse,
+          interactionStep,
+          unusedCampaignContactId,
+          contact,
+          unusedCampaign,
+          organization,
+          {
+            unchanged: { 77: {} }
+          }
         );
 
         expect(postPeopleCanvassResponsesNock.isDone()).toEqual(false);

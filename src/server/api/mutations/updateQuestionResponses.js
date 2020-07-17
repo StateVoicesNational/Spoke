@@ -10,7 +10,8 @@ const dispatchActionHandlers = async ({
   user,
   contact,
   campaign,
-  questionResponses
+  questionResponses,
+  questionResponsesStatus
 }) => {
   const actionHandlersConfigured =
     Object.keys(ActionHandlers.rawAllActionHandlers()).length > 0;
@@ -58,7 +59,8 @@ const dispatchActionHandlers = async ({
           questionResponse,
           questionResponseInteractionStep,
           campaign,
-          contact
+          contact,
+          questionResponsesStatus
         });
       })
     );
@@ -102,7 +104,7 @@ export const updateQuestionResponses = async (
     }
   });
 
-  await cacheableData.questionResponse
+  const questionResponsesStatus = await cacheableData.questionResponse
     .save(campaignContactId, questionResponses)
     .catch(err => {
       log.error(
@@ -115,9 +117,10 @@ export const updateQuestionResponses = async (
   try {
     await dispatchActionHandlers({
       user,
-      questionResponses: Object.values(questionResponsesHash),
+      questionResponses,
       campaign,
-      contact
+      contact,
+      questionResponsesStatus
     });
   } catch (e) {
     console.error("Dispatching to one or more action handlers failed", e);

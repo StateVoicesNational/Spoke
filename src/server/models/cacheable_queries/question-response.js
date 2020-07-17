@@ -50,8 +50,13 @@ const questionResponseCache = {
   save: async (campaignContactId, questionResponses) => {
     // This is a bit elaborate because we want to preserve the created_at time
     // Otherwise, we could just delete all and recreate
+    const toReturn = {
+      new: {},
+      updated: {},
+      unchanged: {}
+    };
     if (!campaignContactId) {
-      return; // guard for delete command
+      return toReturn; // guard for delete command
     }
     const deleteQuery = r
       .knex("question_response")
@@ -68,9 +73,9 @@ const questionResponseCache = {
             .forUpdate()
             .where("question_response.campaign_contact_id", campaignContactId)
             .select("value", "interaction_step_id");
+          const newIds = {};
           const insertQuestionResponses = [];
           const updateStepIds = [];
-          const newIds = {};
           questionResponses.forEach(qr => {
             newIds[qr.interactionStepId] = 1;
             const existing = dbResponses.filter(
@@ -83,10 +88,18 @@ const questionResponseCache = {
             };
             if (!existing.length) {
               insertQuestionResponses.push(newObj);
+              toReturn.new[Number(qr.interactionStepId)] = qr;
             } else if (existing[0].value !== qr.value) {
               updateStepIds.push(qr.interactionStepId);
+              toReturn.updated[Number(qr.interactionStepId)] = {
+                campaignContactId: existing[0].campaign_contact_id,
+                interactionStepId: existing[0].interaction_step_id,
+                value: existing[0].value
+              };
               // will be both deleted and inserted
               insertQuestionResponses.push(newObj);
+            } else {
+              toReturn.unchanged[qr.interactionStepId] = qr;
             }
           });
           const deletes = dbResponses
@@ -107,6 +120,7 @@ const questionResponseCache = {
           await trx.commit();
         });
       } catch (error) {
+        // eslint-disable-next-line no-console
         console.log("questionResponse cache transaction error", error);
       }
     }
@@ -126,6 +140,8 @@ const questionResponseCache = {
         .expire(cacheKey, 43200)
         .execAsync();
     }
+
+    return toReturn;
   },
   reloadQuery: async campaignContactId => {
     if (r.redis && CONTACT_CACHE_ENABLED) {

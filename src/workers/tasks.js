@@ -33,7 +33,8 @@ const questionResponseActionHandler = async ({
   questionResponse,
   questionResponseInteractionStep,
   campaign,
-  contact
+  contact,
+  questionResponsesStatus
 }) => {
   const handler = await ActionHandlers.rawActionHandler(name);
   // TODO: clean up processAction interface
@@ -43,7 +44,8 @@ const questionResponseActionHandler = async ({
     contact.id,
     contact,
     campaign,
-    organization
+    organization,
+    questionResponsesStatus
   );
 };
 
