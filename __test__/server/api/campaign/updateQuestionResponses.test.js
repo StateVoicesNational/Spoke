@@ -241,7 +241,7 @@ describe("mutations.updateQuestionResponses", () => {
           value: colorInteractionSteps[0].answerOption
         },
         {
-          campaignContactId: contacts[0].id.toString(),
+          campaignContactId: contacts[0].id,
           interactionStepId: redInteractionStep.id,
           value: shadesOfRedInteractionSteps[0].answerOption
         }
@@ -589,7 +589,7 @@ describe("mutations.updateQuestionResponses", () => {
             value: colorInteractionSteps[0].answerOption
           },
           {
-            campaignContactId: contacts[0].id.toString(),
+            campaignContactId: contacts[0].id,
             interactionStepId: redInteractionStep.id,
             value: shadesOfRedInteractionSteps[0].answerOption
           }
@@ -660,7 +660,7 @@ describe("mutations.updateQuestionResponses", () => {
             value: colorInteractionSteps[0].answerOption
           },
           {
-            campaignContactId: contacts[0].id.toString(),
+            campaignContactId: contacts[0].id,
             interactionStepId: redInteractionStep.id,
             value: shadesOfRedInteractionSteps[0].answerOption
           }
@@ -723,7 +723,7 @@ describe("mutations.updateQuestionResponses", () => {
         );
       });
 
-      describe("when one of the question responses has already be saved with the same value", () => {
+      describe("when one of the question responses has already been saved with the same value", () => {
         beforeEach(async () => {
           questionResponses = [
             {
@@ -732,7 +732,7 @@ describe("mutations.updateQuestionResponses", () => {
               value: colorInteractionSteps[0].answerOption
             },
             {
-              campaignContactId: contacts[0].id.toString(),
+              campaignContactId: contacts[0].id,
               interactionStepId: redInteractionStep.id,
               value: shadesOfRedInteractionSteps[0].answerOption
             }
@@ -756,18 +756,28 @@ describe("mutations.updateQuestionResponses", () => {
           expect(ComplexTestActionHandler.processAction).toHaveBeenCalledTimes(
             1
           );
-          expect(ComplexTestActionHandler.processAction.mock.calls).toEqual(
-            expect.arrayContaining([
-              [
-                expect.objectContaining(questionResponses[0]),
-                expect.objectWithId(colorInteractionSteps[0]),
-                Number(contacts[0].id),
-                expect.objectWithId(contacts[0]),
-                expect.objectWithId(campaign),
-                expect.objectWithId(organization)
-              ]
-            ])
-          );
+
+          expect(ComplexTestActionHandler.processAction.mock.calls).toEqual([
+            [
+              expect.objectContaining(questionResponses[0]),
+              expect.objectWithId(colorInteractionSteps[0]),
+              Number(contacts[0].id),
+              expect.objectWithId(contacts[0]),
+              expect.objectWithId(campaign),
+              expect.objectWithId(organization),
+              {
+                new: {
+                  "1": {
+                    campaignContactId: 1,
+                    interactionStepId: "1",
+                    value: "Red"
+                  }
+                },
+                updated: {},
+                unchanged: {}
+              }
+            ]
+          ]);
 
           ComplexTestActionHandler.processAction.mockReset();
 
@@ -779,18 +789,57 @@ describe("mutations.updateQuestionResponses", () => {
 
           await sleep(100);
 
-          expect(ComplexTestActionHandler.processAction).toHaveBeenCalledTimes(
-            1
-          );
           expect(ComplexTestActionHandler.processAction.mock.calls).toEqual(
             expect.arrayContaining([
+              [
+                expect.objectContaining(questionResponses[0]),
+                expect.objectWithId(colorInteractionSteps[0]),
+                Number(contacts[0].id),
+                expect.objectWithId(contacts[0]),
+                expect.objectWithId(campaign),
+                expect.objectWithId(organization),
+                {
+                  new: {
+                    "2": {
+                      campaignContactId: 1,
+                      interactionStepId: "2",
+                      value: "Crimson"
+                    }
+                  },
+                  updated: {},
+                  unchanged: {
+                    "1": {
+                      campaignContactId: 1,
+                      interactionStepId: "1",
+                      value: "Red"
+                    }
+                  }
+                }
+              ],
               [
                 expect.objectContaining(questionResponses[1]),
                 expect.objectWithId(shadesOfRedInteractionSteps[0]),
                 Number(contacts[0].id),
                 expect.objectWithId(contacts[0]),
                 expect.objectWithId(campaign),
-                expect.objectWithId(organization)
+                expect.objectWithId(organization),
+                {
+                  new: {
+                    "2": {
+                      campaignContactId: 1,
+                      interactionStepId: "2",
+                      value: "Crimson"
+                    }
+                  },
+                  updated: {},
+                  unchanged: {
+                    "1": {
+                      campaignContactId: 1,
+                      interactionStepId: "1",
+                      value: "Red"
+                    }
+                  }
+                }
               ]
             ])
           );

@@ -26,9 +26,21 @@ describe("questionResponse cacheableData methods", async () => {
       choices: 2
     });
     const interactionSteps = await r.knex("interaction_step").select();
-    await cacheableData.questionResponse.save(cid, [
+
+    let saveResult = await cacheableData.questionResponse.save(cid, [
       { interactionStepId: "1", value: "hmm1" }
     ]);
+    expect(saveResult).toEqual({
+      new: {
+        "1": {
+          interactionStepId: "1",
+          value: "hmm1"
+        }
+      },
+      updated: {},
+      unchanged: {}
+    });
+
     let questionResponses = await r.knex("question_response").select();
     expect(questionResponses.length).toBe(1);
     expect(questionResponses[0].value).toBe("hmm1");
@@ -40,11 +52,28 @@ describe("questionResponse cacheableData methods", async () => {
     expect(questionResponses[0].value).toBe("hmm1");
     expect(questionResponses[0].interaction_step_id).toBe(1);
     await sleep(20);
+
     // change value adding one
-    await cacheableData.questionResponse.save(cid, [
+    saveResult = await cacheableData.questionResponse.save(cid, [
       { interactionStepId: "1", value: "hmm1" },
       { interactionStepId: "2", value: "1hmm2" }
     ]);
+    expect(saveResult).toEqual({
+      new: {
+        "2": {
+          interactionStepId: "2",
+          value: "1hmm2"
+        }
+      },
+      updated: {},
+      unchanged: {
+        "1": {
+          interactionStepId: "1",
+          value: "hmm1"
+        }
+      }
+    });
+
     questionResponses = await r.knex("question_response").select();
     expect(questionResponses.length).toBe(2);
     expect(questionResponses[0].value).toBe("hmm1");
