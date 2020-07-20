@@ -33,37 +33,77 @@ const dispatchActionHandlers = async ({
       campaign.organization_id
     );
 
-    await Promise.all(
-      questionResponses.map(async questionResponse => {
+    const findInteractionStep = (value, interactionStepId) => {
+      return interactionSteps.find(is => {
+        return (
+          is.answer_actions &&
+          is.answer_option === value &&
+          is.parent_interaction_id === Number(interactionStepId)
+        );
+      });
+    };
+
+    return Promise.all([
+      ...questionResponses.map(async questionResponse => {
         const { interactionStepId, value } = questionResponse;
 
-        const questionResponseInteractionStep = interactionSteps.find(
-          is =>
-            is.answer_actions &&
-            is.answer_option === value &&
-            is.parent_interaction_id === Number(interactionStepId)
-        );
+        const updatedPreviousValue =
+          questionResponsesStatus.newOrUpdatedPreviousValue[
+            interactionStepId.toString()
+          ];
 
-        const interactionStepAction =
-          questionResponseInteractionStep &&
-          questionResponseInteractionStep.answer_actions;
-
-        if (!interactionStepAction) {
-          return;
+        if (updatedPreviousValue === undefined) {
+          return Promise.resolve();
         }
 
-        await jobRunner.dispatchTask(Tasks.ACTION_HANDLER_QUESTION_RESPONSE, {
+        const interactionStep = findInteractionStep(value, interactionStepId);
+
+        const interactionStepAction =
+          interactionStep && interactionStep.answer_actions;
+
+        if (!interactionStepAction) {
+          return Promise.resolve();
+        }
+        return jobRunner.dispatchTask(Tasks.ACTION_HANDLER_QUESTION_RESPONSE, {
           name: interactionStepAction,
           organization,
           user,
           questionResponse,
-          questionResponseInteractionStep,
+          interactionStep,
           campaign,
           contact,
-          questionResponsesStatus
+          wasDeleted: false,
+          previousValue: updatedPreviousValue
+        });
+      }),
+      ...questionResponsesStatus.deletedPrevious.map(async deletedQr => {
+        const { interactionStepId, value } = deletedQr;
+        const interactionStep = findInteractionStep(value, interactionStepId);
+
+        const interactionStepAction =
+          interactionStep && interactionStep.answer_actions;
+
+        if (!interactionStepAction) {
+          return Promise.resolve();
+        }
+
+        return jobRunner.dispatchTask(Tasks.ACTION_HANDLER_QUESTION_RESPONSE, {
+          name: interactionStepAction,
+          organization,
+          user,
+          questionResponse: {
+            interactionStepId: interactionStepId.toString(),
+            value,
+            campaignContactId: contact.id
+          },
+          interactionStep,
+          campaign,
+          contact,
+          wasDeleted: true,
+          previousValue: value
         });
       })
-    );
+    ]);
   }
 };
 
