@@ -761,17 +761,13 @@ describe("ngpvn-action", () => {
     it("calls the people endpoint", async () => {
       postPeopleCanvassResponsesNock = makePostPeopleCanvassResponsesNock();
 
-      await NgpVanAction.processAction(
+      await NgpVanAction.processAction({
         questionResponse,
         interactionStep,
-        unusedCampaignContactId,
         contact,
-        unusedCampaign,
         organization,
-        {
-          unchanged: {}
-        }
-      );
+        previousValue: null
+      });
 
       postPeopleCanvassResponsesNock.done();
     });
@@ -784,17 +780,13 @@ describe("ngpvn-action", () => {
 
         let error;
         try {
-          await NgpVanAction.processAction(
+          await NgpVanAction.processAction({
             questionResponse,
             interactionStep,
-            unusedCampaignContactId,
             contact,
-            unusedCampaign,
             organization,
-            {
-              unchanged: {}
-            }
-          );
+            previousValue: null
+          });
         } catch (caughtException) {
           error = caughtException;
         }
@@ -836,44 +828,21 @@ describe("ngpvn-action", () => {
 
         let error;
         try {
-          await NgpVanAction.processAction(
+          await NgpVanAction.processAction({
             questionResponse,
             interactionStep,
             unusedCampaignContactId,
             contact,
             unusedCampaign,
             organization,
-            {
-              unchanged: {}
-            }
-          );
+            previousValue: null
+          });
         } catch (caughtException) {
           error = caughtException;
         }
 
         expect(error.message).toEqual(
           expect.stringMatching(/^unexpected token*/i)
-        );
-
-        expect(postPeopleCanvassResponsesNock.isDone()).toEqual(false);
-        nock.cleanAll();
-      });
-    });
-
-    describe("when the question response has not been added or updated", () => {
-      it("returns without doing anything", async () => {
-        postPeopleCanvassResponsesNock = makePostPeopleCanvassResponsesNock();
-
-        await NgpVanAction.processAction(
-          questionResponse,
-          interactionStep,
-          unusedCampaignContactId,
-          contact,
-          unusedCampaign,
-          organization,
-          {
-            unchanged: { 77: {} }
-          }
         );
 
         expect(postPeopleCanvassResponsesNock.isDone()).toEqual(false);
