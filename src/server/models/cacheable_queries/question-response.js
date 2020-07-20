@@ -98,12 +98,10 @@ const questionResponseCache = {
               insertQuestionResponses.push(newObj);
             }
           });
-          console.log("dbResponses", dbResponses, newIds);
           const toDelete = dbResponses.filter(
             dbqr => !(dbqr.interaction_step_id.toString() in newIds)
           );
           toDelete.forEach(dbqr => {
-            console.log("dbqr", dbqr);
             toReturn.deletedPrevious.push({
               value: dbqr.value,
               interactionStepId: dbqr.interaction_step_id.toString()
