@@ -51,9 +51,8 @@ const questionResponseCache = {
     // This is a bit elaborate because we want to preserve the created_at time
     // Otherwise, we could just delete all and recreate
     const toReturn = {
-      new: {},
-      updated: {},
-      unchanged: {}
+      newOrUpdatedPreviousValue: {},
+      deletedPrevious: []
     };
     if (!campaignContactId) {
       return toReturn; // guard for delete command
@@ -77,7 +76,7 @@ const questionResponseCache = {
           const insertQuestionResponses = [];
           const updateStepIds = [];
           questionResponses.forEach(qr => {
-            newIds[qr.interactionStepId] = 1;
+            newIds[qr.interactionStepId.toString()] = 1;
             const existing = dbResponses.filter(
               db => db.interaction_step_id === Number(qr.interactionStepId)
             );
@@ -88,23 +87,29 @@ const questionResponseCache = {
             };
             if (!existing.length) {
               insertQuestionResponses.push(newObj);
-              toReturn.new[Number(qr.interactionStepId)] = qr;
+              toReturn.newOrUpdatedPreviousValue[
+                Number(qr.interactionStepId)
+              ] = null;
             } else if (existing[0].value !== qr.value) {
               updateStepIds.push(qr.interactionStepId);
-              toReturn.updated[Number(qr.interactionStepId)] = {
-                campaignContactId: existing[0].campaign_contact_id,
-                interactionStepId: existing[0].interaction_step_id,
-                value: existing[0].value
-              };
+              toReturn.newOrUpdatedPreviousValue[Number(qr.interactionStepId)] =
+                existing[0].value;
               // will be both deleted and inserted
               insertQuestionResponses.push(newObj);
-            } else {
-              toReturn.unchanged[qr.interactionStepId] = qr;
             }
           });
-          const deletes = dbResponses
-            .map(db => db.interaction_step_id)
-            .filter(id => !(id in newIds));
+          console.log("dbResponses", dbResponses, newIds);
+          const toDelete = dbResponses.filter(
+            dbqr => !(dbqr.interaction_step_id.toString() in newIds)
+          );
+          toDelete.forEach(dbqr => {
+            console.log("dbqr", dbqr);
+            toReturn.deletedPrevious.push({
+              value: dbqr.value,
+              interactionStepId: dbqr.interaction_step_id.toString()
+            });
+          });
+          const deletes = toDelete.map(db => db.interaction_step_id);
           deletes.push(...updateStepIds);
           if (deletes.length) {
             await deleteQuery

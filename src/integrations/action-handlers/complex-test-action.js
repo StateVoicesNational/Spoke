@@ -63,6 +63,17 @@ export async function processAction({
     .update("custom_fields", JSON.stringify(customFields));
 }
 
+// What happens when a texter remotes an answer that triggers the action
+export async function processDeletedQuestionResponse(options) {
+  console.log(
+    `complex-test-action handler called with parameters ${JSON.stringify(
+      options,
+      "",
+      2
+    )}`
+  );
+}
+
 export async function getClientChoiceData(organization, user) {
   const items = [
     {
