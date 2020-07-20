@@ -81,19 +81,11 @@ export const postCanvassResponse = async (contact, organization, body) => {
 
 // What happens when a texter saves the answer that triggers the action
 // This is presumably the meat of the action
-export async function processAction(
-  questionResponse,
+export async function processAction({
   interactionStep,
-  unusedCampaignContactId,
   contact,
-  unusedCampaign,
-  organization,
-  questionResponsesStatus
-) {
-  if (questionResponsesStatus.unchanged[questionResponse.interactionStepId]) {
-    return;
-  }
-
+  organization
+}) {
   try {
     const answerActionsData = JSON.parse(
       (interactionStep || {}).answer_actions_data || "{}"

@@ -67,11 +67,7 @@ export const akidGenerate = function(ak_secret, cleartext) {
   return `${cleartext}.${shortHash}`;
 };
 
-export async function processAction(
-  questionResponse,
-  interactionStep,
-  campaignContactId
-) {
+export async function processAction({ campaignContactId }) {
   const contactRes = await r
     .knex("campaign_contact")
     .where("campaign_contact.id", campaignContactId)
