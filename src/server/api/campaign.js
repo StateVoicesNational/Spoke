@@ -276,7 +276,6 @@ export const resolvers = {
         "id",
         "title",
         "description",
-        "batchSize",
         "isStarted",
         "isArchived",
         "useDynamicAssignment",
@@ -307,6 +306,7 @@ export const resolvers = {
       );
       return campaign.join_token;
     },
+    batchSize: campaign => campaign.batch_size || 200,
     organization: async (campaign, _, { loaders }) =>
       campaign.organization ||
       loaders.organization.load(campaign.organization_id),

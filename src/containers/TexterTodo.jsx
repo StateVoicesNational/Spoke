@@ -265,7 +265,7 @@ const mutations = {
     `,
     variables: {
       assignmentId,
-      numberContacts: 10
+      numberContacts: ownProps.data.assignment.campaign.batchSize
     }
   }),
   getAssignmentContacts: ownProps => (contactIds, findNew) => ({
