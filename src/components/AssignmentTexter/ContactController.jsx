@@ -1,12 +1,13 @@
 import PropTypes from "prop-types";
+import theme from "../../styles/theme";
 import React from "react";
-import IconButton from "material-ui/IconButton/IconButton";
 import LoadingIndicator from "../LoadingIndicator";
 import { StyleSheet, css } from "aphrodite";
 import { withRouter } from "react-router";
 import Check from "material-ui/svg-icons/action/check-circle";
 import Empty from "../Empty";
 import RaisedButton from "material-ui/RaisedButton";
+import Dialog from "material-ui/Dialog";
 
 const styles = StyleSheet.create({
   container: {
@@ -20,6 +21,18 @@ const styles = StyleSheet.create({
     zIndex: 1002,
     backgroundColor: "white",
     overflow: "hidden"
+  },
+  requestContainer: {
+    ...theme.text.header,
+    marginTop: "50px",
+    width: 500,
+    marginLeft: "auto",
+    marginRight: "auto",
+    textAlign: "center"
+  },
+  button: {
+    marginLeft: "10px",
+    marginRight: "10px"
   }
 });
 
@@ -32,7 +45,8 @@ export class ContactController extends React.Component {
       contactCache: {},
       loading: false,
       direction: "right",
-      reloadDelay: 200
+      reloadDelay: 200,
+      requestDialogOpen: false
     };
   }
 
@@ -168,10 +182,8 @@ export class ContactController extends React.Component {
       // console.log('getContactData batch forward ', getIds)
     } else if (
       !getIds.length &&
-      this.props.assignment.campaign.useDynamicAssignment &&
-      // If we have just crossed the threshold of contact data we have, get more
-      contacts[newIndex + BATCH_FORWARD - 1] &&
-      !contacts[newIndex + BATCH_FORWARD]
+      this.props.assignment.allContactsCount === 0 &&
+      this.props.assignment.campaign.useDynamicAssignment
     ) {
       this.props.getNewContacts();
     }
@@ -264,7 +276,18 @@ export class ContactController extends React.Component {
           );
           // If we still don't have a next item (contacts haven't updated), then give up
           if (!self.hasNext() && typeof giveUpAction === "function") {
-            giveUpAction();
+            this.giveUpAction = giveUpAction;
+            if (
+              ((self.props.messageStatusFilter === "needsMessage" ||
+                self.props.messageStatusFilter === "needsSecondPass") &&
+                !self.props.assignment.campaign.requestAfterReply) ||
+              (self.props.messageStatusFilter === "needsResponse" &&
+                self.props.assignment.campaign.requestAfterReply)
+            ) {
+              this.setState({ requestDialogOpen: true });
+            } else {
+              this.giveUpAction();
+            }
           }
         });
     }
@@ -429,7 +452,45 @@ export class ContactController extends React.Component {
       />
     );
   }
+  renderDialog() {
+    return (
+      <Dialog
+        title="Request more texts?"
+        actions={[
+          <RaisedButton
+            className={css(styles.button)}
+            label="Request More"
+            primary
+            onTouchTap={() => {
+              this.props.getNewContacts();
+              this.setState({ requestDialogOpen: false });
+            }}
+          />,
+          <RaisedButton
+            className={css(styles.button)}
+            label="Done For Now"
+            primary
+            onTouchTap={() => {
+              this.setState({ requestDialogOpen: false });
+              this.giveUpAction();
+            }}
+          />
+        ]}
+        modal
+        open={this.state.requestDialogOpen}
+      >
+        <div>
+          You've already messaged or replied to all your contacts for now.
+          <br />
+          <br />
+          Would you like a new batch of 200 more?
+        </div>
+      </Dialog>
+    );
+  }
   renderEmpty() {
+    const useDynamicAssignment = this.props.assignment.campaign
+      .useDynamicAssignment;
     return (
       <div>
         <Empty
@@ -442,6 +503,18 @@ export class ContactController extends React.Component {
             />
           }
         />
+        {useDynamicAssignment ? (
+          <div className={css(styles.requestContainer)}>
+            <h3>Finished sending all your messages, and want to send more?</h3>
+            <RaisedButton
+              label="Request More"
+              primary
+              onClick={() => this.props.getNewContacts()}
+            />
+          </div>
+        ) : (
+          ""
+        )}
       </div>
     );
   }
@@ -449,6 +522,7 @@ export class ContactController extends React.Component {
     const { contacts } = this.props;
     return (
       <div className={css(styles.container)}>
+        {this.renderDialog()}
         {contacts.length === 0 ? this.renderEmpty() : this.renderTexter()}
       </div>
     );

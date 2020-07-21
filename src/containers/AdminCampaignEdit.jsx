@@ -39,6 +39,7 @@ const campaignInfoFragment = `
   contactsCount
   customFields
   useDynamicAssignment
+  requestAfterReply
   logoImageUrl
   introHtml
   primaryColor
@@ -447,7 +448,7 @@ export class AdminCampaignEdit extends React.Component {
       {
         title: "Dynamic Assignment",
         content: CampaignDynamicAssignmentForm,
-        keys: ["batchSize", "useDynamicAssignment"],
+        keys: ["batchSize", "useDynamicAssignment", "requestAfterReply"],
         checkCompleted: () => true,
         blocksStarting: false,
         expandAfterCampaignStarts: true,

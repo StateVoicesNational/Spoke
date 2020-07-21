@@ -91,6 +91,7 @@ export const schema = gql`
     ingestMethodsAvailable: [IngestMethod]
     ingestMethod: IngestMethod
     useDynamicAssignment: Boolean
+    requestAfterReply: Boolean
     introHtml: String
     primaryColor: String
     logoImageUrl: String
