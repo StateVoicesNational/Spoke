@@ -81,10 +81,12 @@ class TexterTodoList extends React.Component {
   profileComplete() {
     const { data, router } = this.props;
     if (!data.currentUser.profileComplete) {
-      const orgId = this.props.params.organizationId;;
+      const orgId = this.props.params.organizationId;
       const userId = data.currentUser.id;
       const next = this.props.location.pathname;
-      router.push(`/app/${orgId}/account/${userId}?next=${next}&fieldsNeeded=1`);
+      router.push(
+        `/app/${orgId}/account/${userId}?next=${next}&fieldsNeeded=1`
+      );
     }
   }
 
@@ -150,6 +152,28 @@ export const dataQuery = gql`
   }
 `;
 
+const mutations = {
+  findNewCampaignContact: ownProps => (assignmentId, numberContacts) => ({
+    mutation: gql`
+      mutation findNewCampaignContact(
+        $assignmentId: String!
+        $numberContacts: Int!
+      ) {
+        findNewCampaignContact(
+          assignmentId: $assignmentId
+          numberContacts: $numberContacts
+        ) {
+          found
+        }
+      }
+    `,
+    variables: {
+      assignmentId,
+      numberContacts
+    }
+  })
+};
+
 const queries = {
   data: {
     query: dataQuery,
@@ -190,4 +214,4 @@ const queries = {
   }
 };
 
-export default loadData({ queries })(withRouter(TexterTodoList));
+export default loadData({ queries, mutations })(withRouter(TexterTodoList));
