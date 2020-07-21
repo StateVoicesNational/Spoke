@@ -1,21 +1,12 @@
 import type from "prop-types";
 import React from "react";
-import orderBy from "lodash/orderBy";
-import Slider from "./Slider";
-import AutoComplete from "material-ui/AutoComplete";
-import IconButton from "material-ui/IconButton";
-import RaisedButton from "material-ui/RaisedButton";
 import GSForm from "../components/forms/GSForm";
 import yup from "yup";
 import Form from "react-formal";
 import OrganizationJoinLink from "./OrganizationJoinLink";
-import CampaignFormSectionHeading from "./CampaignFormSectionHeading";
-import { StyleSheet, css } from "aphrodite";
-import theme from "../styles/theme";
 import Toggle from "material-ui/Toggle";
-import DeleteIcon from "material-ui/svg-icons/action/delete";
 import { dataTest } from "../lib/attributes";
-import { dataSourceItem } from "./utils";
+import cloneDeep from "lodash/cloneDeep";
 
 export default class CampaignDynamicAssignmentForm extends React.Component {
   state = {
@@ -30,22 +21,26 @@ export default class CampaignDynamicAssignmentForm extends React.Component {
     });
   };
 
-  toggleChange = (toggler, useDynamicAssignment) => {
-    this.setState({ useDynamicAssignment });
+  toggleChange = (key, val) => {
+    this.setState({ [key]: val });
+
+    const formValues = cloneDeep(this.props.formValues);
+    formValues[key] = val;
+
     this.props.onChange({
       ...this.state,
-      useDynamicAssignment
+      ...formValues
     });
   };
 
   formSchema = yup.object({
-    batchSize: yup.number().integer()
+    batchSize: yup.number().integer(),
+    requestAfterReply: yup.boolean()
   });
 
   render() {
     const { joinToken, campaignId } = this.props;
-    const { useDynamicAssignment } = this.state;
-    const subtitle = useDynamicAssignment ? <div></div> : "";
+    const { useDynamicAssignment, requestAfterReply } = this.state;
 
     return (
       <div>
@@ -53,7 +48,9 @@ export default class CampaignDynamicAssignmentForm extends React.Component {
           {...dataTest("useDynamicAssignment")}
           label="Allow texters with a link to join and start texting when the campaign is started?"
           toggled={useDynamicAssignment}
-          onToggle={this.toggleChange}
+          onToggle={(toggler, val) =>
+            this.toggleChange("useDynamicAssignment", val)
+          }
         />
         <GSForm
           schema={this.formSchema}
@@ -92,6 +89,13 @@ export default class CampaignDynamicAssignmentForm extends React.Component {
                 label="How large should a batch be?"
                 initialValue={300}
                 style={{ display: "none" }}
+              />
+              <Toggle
+                label="Require texters to request more texts after replies?"
+                toggled={requestAfterReply}
+                onToggle={(toggler, val) => {
+                  this.toggleChange("requestAfterReply", val);
+                }}
               />
             </div>
           )}

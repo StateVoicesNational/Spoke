@@ -68,6 +68,7 @@ export const dataQueryString = `
         title
         isArchived
         useDynamicAssignment
+        requestAfterReply
         overrideOrganizationTextingHours
         timezone
         textingHoursStart
@@ -134,33 +135,6 @@ export class TexterTodo extends React.Component {
     }
   }
 
-  assignContactsIfNeeded = async (checkServer = false, currentIndex) => {
-    const { assignment } = this.props.data;
-    // TODO: should we assign a single contact at first, and then afterwards assign 10
-    //       to avoid people loading up the screen but doing nothing -- then they've 'taken' only one contact
-    if (
-      !this.loadingNewContacts &&
-      assignment &&
-      (assignment.contacts.length === 0 || checkServer)
-    ) {
-      const didAddContacts = await this.getNewContacts(
-        checkServer,
-        currentIndex
-      );
-      if (didAddContacts) {
-        return;
-      }
-      // FUTURE: we might check if currentIndex is really at the end now that we've updated
-      console.log("Are we empty?", checkServer, currentIndex);
-      const self = this;
-      return () => {
-        self.props.router.push(
-          `/app/${self.props.params.organizationId}/todos`
-        );
-      };
-    }
-  };
-
   getNewContacts = async (waitForServer = false, currentIndex) => {
     const { assignment } = this.props.data;
     if (assignment.campaign.useDynamicAssignment) {
@@ -180,6 +154,25 @@ export class TexterTodo extends React.Component {
       }
       this.loadingNewContacts = false;
       return didAddContacts;
+    }
+  };
+
+  assignContactsIfNeeded = async (checkServer = false, currentIndex) => {
+    const { assignment } = this.props.data;
+    // TODO: should we assign a single contact at first, and then afterwards assign 10
+    //       to avoid people loading up the screen but doing nothing -- then they've 'taken' only one contact
+    if (
+      !this.loadingNewContacts &&
+      assignment &&
+      (assignment.contacts.length === 0 || checkServer)
+    ) {
+      // FUTURE: we might check if currentIndex is really at the end now that we've updated
+      const self = this;
+      return () => {
+        self.props.router.push(
+          `/app/${self.props.params.organizationId}/todos`
+        );
+      };
     }
   };
 
