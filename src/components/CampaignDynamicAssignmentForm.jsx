@@ -74,21 +74,16 @@ export default class CampaignDynamicAssignmentForm extends React.Component {
                   You can turn off dynamic assignment after starting a campaign
                   to disallow more new texters to join
                 </li>
-                <li style={{ display: "none" }}>
-                  Batch sizes are how many texts someone should send before they
-                  switch to replying This should be a low number (~50-300) for
-                  campaigns which expect many replies, and a higher number
-                  (~100-1000) for campaigns where deliverability of the first
-                  message is more urgent or important (e.g. Get-Out-The-Vote
-                  efforts).
-                </li>
               </ul>
+              <p>
+                Batch sizes are how many texts someone should send before they
+                switch to replying.
+              </p>
               <Form.Field
                 name="batchSize"
                 type="number"
                 label="How large should a batch be?"
-                initialValue={300}
-                style={{ display: "none" }}
+                initialValue={200}
               />
               <Toggle
                 label="Require texters to request more texts after replies?"
@@ -121,5 +116,6 @@ CampaignDynamicAssignmentForm.propTypes = {
   onSubmit: type.func,
   saveLabel: type.string,
   saveDisabled: type.bool,
-  joinToken: type.string
+  joinToken: type.string,
+  batchSize: type.string
 };

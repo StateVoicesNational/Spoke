@@ -483,7 +483,8 @@ export class ContactController extends React.Component {
           You've already messaged or replied to all your contacts for now.
           <br />
           <br />
-          Would you like a new batch of 200 more?
+          Would you like a new batch of{" "}
+          {this.props.assignment.campaign.batchSize} more?
         </div>
       </Dialog>
     );
