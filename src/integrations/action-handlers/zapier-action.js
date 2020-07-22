@@ -3,7 +3,7 @@ import { log } from "../../lib";
 
 import httpRequest from "../../server/lib/http-request.js";
 
-export const name = "zapier";
+export const name = "zapier-action";
 
 // What the user sees as the option
 export const displayName = () => "ZAPIER";
@@ -72,12 +72,6 @@ export async function onTagUpdate(
 // What happens when a texter saves the answer that triggers the action
 // This is presumably the meat of the action
 export async function processAction() {
-  // unusedQuestionResponse,
-  // interactionStep,
-  // unusedCampaignContactId,
-  // contact,
-  // unusedCampaign,
-  // organization
   try {
     throw new Error("zapier-action.processAction is not implemented");
   } catch (caughtError) {
@@ -104,6 +98,6 @@ export async function available(organization) {
 
   return {
     result,
-    expiresSeconds: 86400
+    expiresSeconds: 0
   };
 }

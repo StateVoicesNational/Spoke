@@ -1298,6 +1298,9 @@ const rootResolvers = {
         assignmentId = campaignContact.assignment_id;
       }
       const assignment = await loaders.assignment.load(assignmentId);
+      if (!assignment) {
+        return null;
+      }
       const campaign = await loaders.campaign.load(assignment.campaign_id);
       if (assignment.user_id == user.id) {
         await accessRequired(

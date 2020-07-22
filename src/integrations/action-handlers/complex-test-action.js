@@ -41,14 +41,11 @@ export async function available(organizationId) {
 
 // What happens when a texter saves the answer that triggers the action
 // This is presumably the meat of the action
-export async function processAction(
-  questionResponse,
+export async function processAction({
   interactionStep,
   campaignContactId,
   contact
-  // campaign,     // unused parameter
-  // organization  // unused parameter
-) {
+}) {
   // This is a meta action that updates a variable in the contact record itself.
   // Generally, you want to send action data to the outside world, so you
   // might want the request library loaded above
@@ -64,6 +61,17 @@ export async function processAction(
     .knex("campaign_contact")
     .where("campaign_contact.id", campaignContactId)
     .update("custom_fields", JSON.stringify(customFields));
+}
+
+// What happens when a texter remotes an answer that triggers the action
+export async function processDeletedQuestionResponse(options) {
+  console.log(
+    `complex-test-action handler called with parameters ${JSON.stringify(
+      options,
+      "",
+      2
+    )}`
+  );
 }
 
 export async function getClientChoiceData(organization, user) {
