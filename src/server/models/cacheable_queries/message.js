@@ -280,6 +280,7 @@ const messageCache = {
         )
         .map(h => handlers[h]);
       for (let i = 0, l = availableHandlers.length; i < l; i++) {
+        // NOTE: these handlers can alter messageToSave properties
         const result = await availableHandlers[i].preMessageSave({
           messageToSave,
           activeCellFound,
@@ -330,6 +331,11 @@ const messageCache = {
       await campaignCache.incrCount(campaignId, "needsResponseCount", 1);
     }
 
+    const retVal = {
+      message: messageToSave,
+      contactStatus: newStatus
+    };
+
     if (Object.keys(handlers).length && organization) {
       const availableHandlers = Object.keys(handlers)
         .filter(
@@ -348,16 +354,18 @@ const messageCache = {
           campaign,
           organization
         });
-        if (result && "newStatus" in result) {
-          newStatus = result.newStatus;
+        if (result) {
+          if ("newStatus" in result) {
+            retVal.contactStatus = result.newStatus;
+          }
+          if ("blockSend" in result) {
+            retVal.blockSend = result.blockSend;
+          }
         }
       }
     }
 
-    return {
-      message: messageToSave,
-      contactStatus: newStatus
-    };
+    return retVal;
   }
 };
 

@@ -84,15 +84,16 @@ export const setCacheContactAssignment = async (id, campaignId, contactObj) => {
     contactObj.assignment_id
   ) {
     const assignmentKey = contactAssignmentKey(campaignId);
+    const value = [
+      contactObj.assignment_id || "",
+      contactObj.user_id || ""
+    ].join(":");
     await r.redis
       .multi()
-      .hset(
-        assignmentKey,
-        id,
-        [contactObj.assignment_id || "", contactObj.user_id || ""].join(":")
-      )
+      .hset(assignmentKey, id, value)
       .expire(assignmentKey, 43200)
       .execAsync();
+    return value;
   }
 };
 
@@ -410,56 +411,29 @@ const campaignContactCache = {
     });
   },
   updateCampaignAssignmentCache: async (campaignId, contactIds) => {
-    try {
-      if (r.redis && !contactIds) {
-        await campaignCache.updateAssignedCount(campaignId);
+    if (r.redis && !contactIds) {
+      await campaignCache.updateAssignedCount(campaignId);
+    }
+    if (r.redis && CONTACT_CACHE_ENABLED) {
+      // console.log("updateCampaignAssignmentCache", campaignId, contactIds);
+      // We do NOT delete current cache as mostly people are re-assigned.
+      // When people are zero-d out, then the assignments themselves are deleted
+      // await r.redis.delAsync(assignmentKey);
+      // Now refill it, streaming for efficiency
+      const assignmentKey = contactAssignmentKey(campaignId);
+      let query = r
+        .knex("campaign_contact")
+        .join("assignment", "assignment.id", "campaign_contact.assignment_id")
+        .where("campaign_contact.campaign_id", campaignId)
+        .select("campaign_contact.id", "assignment_id", "assignment.user_id");
+      if (contactIds) {
+        query = query.whereIn("campaign_contact.id", contactIds);
       }
-      if (r.redis && CONTACT_CACHE_ENABLED) {
-        // console.log("updateCampaignAssignmentCache", campaignId, contactIds);
-        // We do NOT delete current cache as mostly people are re-assigned.
-        // When people are zero-d out, then the assignments themselves are deleted
-        // await r.redis.delAsync(assignmentKey);
-        // Now refill it, streaming for efficiency
-        const assignmentKey = contactAssignmentKey(campaignId);
-        let query = r
-          .knex("campaign_contact")
-          .where("campaign_id", campaignId)
-          .select("id", "assignment_id");
-        if (contactIds) {
-          query = query.whereIn("id", contactIds);
-        }
-        const result = query.stream(stream => {
-          const cacheSaver = new Writable({ objectMode: true });
-          // eslint-disable-next-line no-underscore-dangle
-          cacheSaver._write = (dbRecord, enc, next) => {
-            // Note: non-async land
-            setCacheContactAssignment(dbRecord.id, campaignId, dbRecord).then(
-              () => {
-                next();
-              },
-              err => {
-                console.error("FAILED CAMPAIGN ASSIGNMENT CACHE SAVE", err);
-                stream.end();
-                next();
-              }
-            );
-          };
-          stream.pipe(cacheSaver);
-        });
-        return result
-          .then(done => {
-            console.log("updateCampaignAssignmentCache Completed", campaignId);
-          })
-          .catch(err => {
-            console.log("updateCampaignAssignmentCache Error", campaignId, err);
-          });
-      }
-    } catch (err) {
-      console.log(
-        "updateCampaignAssignmentCache Function Error",
-        campaignId,
-        err
+      const promises = (await query).map(dbRecord =>
+        setCacheContactAssignment(dbRecord.id, campaignId, dbRecord)
       );
+      const data = await Promise.all(promises);
+      console.log("updateCampaignAssignmentCache", data[0], data.length);
     }
   },
   updateStatus: async (contact, newStatus) => {

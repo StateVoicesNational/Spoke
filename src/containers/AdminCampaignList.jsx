@@ -339,6 +339,7 @@ export class AdminCampaignList extends React.Component {
             data={this.props.data}
             campaignsToArchive={this.state.campaignsToArchive}
             campaignsWithChangingStatus={this.state.campaignsWithChangingStatus}
+            currentSortBy={this.state.sortBy}
             onNextPageClick={this.handleNextPageClick}
             onPreviousPageClick={this.handlePreviousPageClick}
             onRowSizeChange={this.handleRowSizeChanged}
@@ -365,6 +366,7 @@ const campaignInfoFragment = `
   hasUnassignedContacts
   hasUnsentInitialMessages
   description
+  timezone
   dueBy
   creator {
     displayName
@@ -374,9 +376,11 @@ const campaignInfoFragment = `
     contactsCount
   }
   completionStats {
-    contactsCount
     assignedCount
+    contactsCount
+    errorCount
     messagedCount
+    needsResponseCount
   }
 `;
 

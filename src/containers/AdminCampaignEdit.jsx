@@ -855,8 +855,9 @@ const queries = {
           id
           uuid
           fullyConfigured
-          texters: people {
+          texters: people(role: "ANY") {
             id
+            roles(organizationId: $organizationId)
             firstName
             lastName
             displayName

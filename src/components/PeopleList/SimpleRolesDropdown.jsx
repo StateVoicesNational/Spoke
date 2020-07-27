@@ -25,7 +25,7 @@ const SimpleRolesDropdown = props => (
 );
 
 SimpleRolesDropdown.propTypes = {
-  selectedRole: type.object,
+  selectedRole: type.string,
   onChange: type.func
 };
 

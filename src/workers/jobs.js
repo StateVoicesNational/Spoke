@@ -736,6 +736,11 @@ export async function exportCampaign(job) {
     convertedMessages = await Promise.all(convertedMessages);
     finalCampaignMessages = finalCampaignMessages.concat(convertedMessages);
     let convertedContacts = contacts.map(async contact => {
+      const tags = await r
+        .knex("tag_campaign_contact")
+        .where("campaign_contact_id", contact.id)
+        .leftJoin("tag", "tag.id", "tag_campaign_contact.tag_id");
+
       const contactRow = {
         campaignId: campaign.id,
         campaign: campaign.title,
@@ -756,7 +761,8 @@ export async function exportCampaign(job) {
           : "false",
         "contact[messageStatus]": contact.message_status,
         "contact[errorCode]": contact.error_code,
-        "contact[external_id]": contact.external_id
+        "contact[external_id]": contact.external_id,
+        "contact[tags]": tags.length > 0 ? tags.map(tag => tag.name) : null
       };
       const customFields = JSON.parse(contact.custom_fields);
       Object.keys(customFields).forEach(fieldName => {
@@ -1073,35 +1079,6 @@ export async function loadMessages(csvFile) {
       }
     });
   });
-}
-
-export async function loadCampaignCache(
-  campaign,
-  organization,
-  { remainingMilliseconds }
-) {
-  // Asynchronously start running a refresh of all the campaign data into
-  // our cache.  This should refresh/clear any corruption
-  console.log("loadCampaignCache async tasks...", campaign.id);
-  const loadContacts = cacheableData.campaignContact
-    .loadMany(campaign, organization, { remainingMilliseconds })
-    .then(() => {
-      console.log("FINISHED contact loadMany", campaign.id);
-    })
-    .catch(err => {
-      console.error("ERROR contact loadMany", campaign.id, err, campaign);
-    });
-  const loadOptOuts = cacheableData.optOut.loadMany(organization.id);
-  const loadAssignments = cacheableData.campaignContact.updateCampaignAssignmentCache(
-    campaign.id
-  );
-
-  if (global.TEST_ENVIRONMENT) {
-    // otherwise this races with texting
-    await loadContacts;
-    await loadOptOuts;
-    await loadAssignments;
-  }
 }
 
 // Temporary fix for orgless users
