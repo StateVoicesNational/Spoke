@@ -13,6 +13,6 @@ export const schema = `
     title: String
     text: String
     isUserCreated: Boolean
-    tags: [Tag]
+    tagIds: [ID]
   }
 `;
