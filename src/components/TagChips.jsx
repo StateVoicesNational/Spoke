@@ -15,15 +15,18 @@ const TagChips = ({ tags, tagIds, onRequestDelete }) => (
     {tagIds.map(id => {
       const listedTag = tags.find(t => t.id === id);
       return (
-        <TagChip
-          text={listedTag.name}
-          onRequestDelete={
-            onRequestDelete ? () => onRequestDelete(listedTag) : null
-          }
-          deleteIconStyle={{
-            marginBottom: "4px"
-          }}
-        />
+        listedTag && (
+          <TagChip
+            key={id}
+            text={listedTag.name}
+            onRequestDelete={
+              onRequestDelete ? () => onRequestDelete(listedTag) : null
+            }
+            deleteIconStyle={{
+              marginBottom: "4px"
+            }}
+          />
+        )
       );
     })}
   </div>

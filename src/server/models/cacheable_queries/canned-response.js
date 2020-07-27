@@ -1,4 +1,5 @@
 import { r } from "../../models";
+import { groupCannedResponses } from "../../api/lib/utils";
 
 // Datastructure:
 // * regular GET/SET with JSON ordered list of the objects {id,title,text}
@@ -23,18 +24,27 @@ const cannedResponseCache = {
         return JSON.parse(cannedData);
       }
     }
-    // rewrite to join to tags
+    // get canned responses with tag ids
     const dbResult = await r
-      .table("canned_response")
-      .getAll(campaignId, { index: "campaign_id" })
-      .filter({ user_id: userId || "" })
-      .orderBy("title");
+      .knex("canned_response")
+      .leftJoin(
+        "tag_canned_response",
+        "canned_response.id",
+        "tag_canned_response.canned_response_id"
+      )
+      .where("campaign_id", campaignId)
+      .whereNull("user_id")
+      .select("canned_response.*", "tag_canned_response.tag_id")
+      .orderBy("title", "id");
+    // group each canned response with its array of tag ids
+    const grouped = groupCannedResponses(dbResult);
     if (r.redis) {
-      const cacheData = dbResult.map(cannedRes => ({
+      const cacheData = grouped.map(cannedRes => ({
         id: cannedRes.id,
         title: cannedRes.title,
         text: cannedRes.text,
-        user_id: cannedRes.user_id
+        user_id: cannedRes.user_id,
+        tagIds: cannedRes.tagIds
       }));
       await r.redis
         .multi()
@@ -42,7 +52,7 @@ const cannedResponseCache = {
         .expire(cacheKey(campaignId, userId), 43200) // 12 hours
         .execAsync();
     }
-    return dbResult;
+    return grouped;
   }
 };
 
