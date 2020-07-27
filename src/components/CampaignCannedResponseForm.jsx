@@ -37,8 +37,7 @@ export default class CannedResponseForm extends React.Component {
   render() {
     const modelSchema = yup.object({
       title: yup.string().required(),
-      text: yup.string().required(),
-      tags: yup.string()
+      text: yup.string().required()
     });
 
     const {
@@ -76,9 +75,9 @@ export default class CannedResponseForm extends React.Component {
             ref="autocompleteInput"
             floatingLabelText="Tags"
             filter={AutoComplete.fuzzyFilter}
-            dataSource={tags.filter(
-              t => this.state.tagIds.indexOf(t.id) === -1
-            )}
+            dataSource={
+              tags && tags.filter(t => this.state.tagIds.indexOf(t.id) === -1)
+            }
             maxSearchResults={8}
             onNewRequest={({ id }) => {
               this.refs.autocompleteInput.setState({ searchText: "" });

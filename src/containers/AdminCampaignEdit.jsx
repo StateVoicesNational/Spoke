@@ -77,6 +77,7 @@ const campaignInfoFragment = `
     id
     title
     text
+    tagIds
   }
   ingestMethodsAvailable {
     name

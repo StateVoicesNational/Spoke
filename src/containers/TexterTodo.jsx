@@ -56,6 +56,7 @@ export const dataQueryString = `
         title
         text
         isUserCreated
+        tagIds
       }
       texter {
         id
@@ -171,9 +172,9 @@ export class TexterTodo extends React.Component {
       );
       this.loadingNewContacts = true;
       // TODO: don't run this ever
-      const didAddContacts = (await this.props.mutations.findNewCampaignContact(
-        assignment.id
-      )).data.findNewCampaignContact.found;
+      const didAddContacts = (
+        await this.props.mutations.findNewCampaignContact(assignment.id)
+      ).data.findNewCampaignContact.found;
       console.log("getNewContacts ?added", didAddContacts);
       if (didAddContacts || waitForServer) {
         await this.props.data.refetch();
