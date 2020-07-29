@@ -40,7 +40,8 @@ export function clientChoiceDataCacheKey(organization) {
 export const postCanvassResponse = async (contact, organization, body) => {
   let vanId;
   try {
-    vanId = JSON.parse(contact.custom_fields || "{}").VanID;
+    const customFields = JSON.parse(contact.custom_fields || "{}");
+    vanId = customFields.VanID || customFields.vanid;
   } catch (caughtException) {
     // eslint-disable-next-line no-console
     console.error(
