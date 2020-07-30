@@ -9,6 +9,7 @@ import {
   getAvailableActionHandlers,
   getActionChoiceData
 } from "../../integrations/action-handlers";
+import { get as stateLookup } from "us-area-codes";
 
 export const resolvers = {
   Organization: {
@@ -184,7 +185,8 @@ export const resolvers = {
       ) {
         throw Error("Twilio inventory management is not enabled");
       }
-      const service = getConfig("DEFAULT_SERVICE");
+      const service = getConfig("service", organization) ||
+        getConfig("DEFAULT_SERVICE");
       const counts = await r
         .knex("owned_phone_number")
         .select(
@@ -201,6 +203,7 @@ export const resolvers = {
         .groupBy("area_code");
       return counts.map(row => ({
         areaCode: row.area_code,
+        state: stateLookup(Number(row.area_code)),
         allocatedCount: Number(row.allocated_count),
         availableCount: Number(row.available_count)
       }));
