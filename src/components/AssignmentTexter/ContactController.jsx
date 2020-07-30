@@ -452,7 +452,7 @@ export class ContactController extends React.Component {
   }
 
   renderEmpty(enabledSideboxes, sideboxProps) {
-    const { assignment, messageStatusFilter } = this.props;
+    const { assignment, messageStatusFilter, allContactsCount } = this.props;
     let sideboxList = null;
     if (enabledSideboxes.length) {
       sideboxList = enabledSideboxes.map(sidebox =>
@@ -462,7 +462,7 @@ export class ContactController extends React.Component {
     const action =
       messageStatusFilter === "needsMessage" ? "messaged" : "replied to";
     const emptyMessage =
-      assignment.allContactsCount === 0
+      allContactsCount === 0
         ? "No current contacts"
         : `You've already ${action} all your assigned contacts for now.`;
     return (
@@ -483,7 +483,7 @@ export class ContactController extends React.Component {
   }
   render() {
     const { assignment, contacts, messageStatusFilter } = this.props;
-    const { campaign, texter } = assignment;
+    const { campaign, texter } = assignment || {};
     const contact = this.currentContact();
     const navigationToolbarChildren = this.getNavigationToolbarChildren();
     const { finishedContactId, loading } = this.state;
@@ -493,7 +493,12 @@ export class ContactController extends React.Component {
         !navigationToolbarChildren.onNext &&
         finishedContactId &&
         Number(contact.id) === Number(finishedContactId));
-    const settingsData = JSON.parse(campaign.texterUIConfig.options || "{}");
+    const settingsData = JSON.parse(
+      (campaign &&
+        campaign.texterUIConfig &&
+        campaign.texterUIConfig.options) ||
+        "{}"
+    );
     const sideboxProps = {
       assignment,
       campaign,

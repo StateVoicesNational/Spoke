@@ -90,11 +90,12 @@ export class AssignmentTexterContactControls extends React.Component {
   componentWillUpdate(nextProps, nextState) {
     // we refresh sideboxes here because we need to compare previous state
     const newPopups = [];
-    nextProps.enabledSideboxes.popups.forEach((sb, i) => {
-      if (this.props.enabledSideboxes.popups.indexOf(sb) === -1) {
-        newPopups.push(sb);
-      }
-    });
+    nextProps.enabledSideboxes &&
+      nextProps.enabledSideboxes.popups.forEach((sb, i) => {
+        if (this.props.enabledSideboxes.popups.indexOf(sb) === -1) {
+          newPopups.push(sb);
+        }
+      });
     // For getDerivedStateFromProps in React 16:
     // newPopups increment open
     newPopups.forEach(sb => {
@@ -841,7 +842,9 @@ export class AssignmentTexterContactControls extends React.Component {
           navigationToolbarChildren={this.props.navigationToolbarChildren}
           onExit={this.props.onExitTexter}
           onSideboxButtonClick={
-            enabledSideboxes.length > 0 ? this.handleClickSideboxDialog : null
+            enabledSideboxes && enabledSideboxes.length > 0
+              ? this.handleClickSideboxDialog
+              : null
           }
         />
       </div>

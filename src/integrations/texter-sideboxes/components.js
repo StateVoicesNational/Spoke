@@ -31,7 +31,12 @@ export const getSideboxes = ({
   loading
 }) => {
   const popups = [];
-  const enabledSideboxes = campaign.texterUIConfig.sideboxChoices
+  const enabledSideboxes = (
+    (campaign &&
+      campaign.texterUIConfig &&
+      campaign.texterUIConfig.sideboxChoices) ||
+    []
+  )
     .filter(sb => {
       if (
         settingsData[sb] ||
