@@ -17,7 +17,6 @@ const Campaign = thinky.createModel(
       description: optionalString(),
       join_token: optionalString().allowNull(true),
       batch_size: type.integer().allowNull(true),
-      request_after_reply: type.boolean().required(),
       features: type.string().allowNull(true),
       is_started: type.boolean().required(),
       due_by: type

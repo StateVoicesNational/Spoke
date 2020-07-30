@@ -48,7 +48,8 @@ export const inlineStyles = {
     fontWeight: "bold"
   },
   popoverSidebox: {
-    backgroundColor: "rgb(240, 240, 240)"
+    backgroundColor: "rgb(240, 240, 240)",
+    padding: "20px"
   }
 };
 

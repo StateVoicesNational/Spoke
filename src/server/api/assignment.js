@@ -133,6 +133,34 @@ export const resolvers = {
     },
     campaign: async (assignment, _, { loaders }) =>
       loaders.campaign.load(assignment.campaign_id),
+    hasUnassignedContactsForTexter: async (
+      assignment,
+      _,
+      { loaders, user }
+    ) => {
+      if (assignment.hasOwnProperty("hasUnassignedContactsForTexter")) {
+        return assignment.hasUnassignedContactsForTexter;
+      }
+      const campaign = await loaders.campaign.load(assignment.campaign_id);
+      if (!campaign.use_dynamic_assignment || campaign.is_archived) {
+        return 0;
+      }
+      if (assignment.max_contacts === 0 || !campaign.batch_size) {
+        return 0;
+      }
+      const availableCount = await r.getCount(
+        r
+          .knex("campaign_contact")
+          .where({ campaign_id: campaign.id, assignment_id: null })
+      );
+      const suggestedCount = Math.min(
+        assignment.max_contacts || campaign.batch_size,
+        campaign.batch_size,
+        availableCount
+      );
+      // FUTURE: extension that can test if they have done their replies or if they are a vetted texter.
+      return suggestedCount;
+    },
     contactsCount: async (assignment, { contactsFilter }, { loaders }) => {
       if (assignment.contacts_count) {
         if (!contactsFilter || Object.keys(contactsFilter).length === 0) {

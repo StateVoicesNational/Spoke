@@ -12,7 +12,7 @@ import Divider from "material-ui/Divider";
 import { withRouter } from "react-router";
 import { dataTest } from "../lib/attributes";
 
-const inlineStyles = {
+export const inlineStyles = {
   badge: {
     fontSize: 12,
     top: 20,

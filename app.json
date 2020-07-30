@@ -124,6 +124,12 @@
       "value": ""
     },
 
+    "TEXTER_SIDEBOXES": {
+      "description": "Configurable per-organization and per-campaign extensions to the Texter UI",
+      "required": false,
+      "value": "celebration-gif,default-dynamicassignment,release-contacts,contact-reference,tag-contact"
+    },
+
     "NODE_ENV": {
       "description": "node environment determines the application start process",
       "required": true,

@@ -159,6 +159,7 @@ const rootSchema = gql`
 
   type FoundContact {
     found: Boolean
+    assignment: Assignment
   }
 
   type PageInfo {

@@ -28,7 +28,8 @@ import FAQs from "./lib/faqs";
 import {
   DemoTexterNeedsMessage,
   DemoTexterNeedsResponse,
-  DemoTexterNeedsResponse2ndQuestion
+  DemoTexter2ndQuestion,
+  DemoTexterDynAssign
 } from "./components/AssignmentTexter/Demo";
 import AdminPhoneNumberInventory from "./containers/AdminPhoneNumberInventory";
 
@@ -210,7 +211,14 @@ export default function makeRoutes(requireAuth = () => {}) {
         <Route
           path="reply2"
           components={{
-            main: props => <DemoTexterNeedsResponse2ndQuestion {...props} />,
+            main: props => <DemoTexter2ndQuestion {...props} />,
+            topNav: null
+          }}
+        />
+        <Route
+          path="dyn"
+          components={{
+            main: props => <DemoTexterDynAssign {...props} />,
             topNav: null
           }}
         />

@@ -137,6 +137,7 @@ export const dataQuery = gql`
           logoImageUrl
         }
         maxContacts
+        allContactsCount: contactsCount
         unmessagedCount: contactsCount(contactsFilter: $needsMessageFilter)
         unrepliedCount: contactsCount(contactsFilter: $needsResponseFilter)
         badTimezoneCount: contactsCount(contactsFilter: $badTimezoneFilter)

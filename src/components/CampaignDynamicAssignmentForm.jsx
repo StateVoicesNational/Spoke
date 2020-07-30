@@ -34,13 +34,12 @@ export default class CampaignDynamicAssignmentForm extends React.Component {
   };
 
   formSchema = yup.object({
-    batchSize: yup.number().integer(),
-    requestAfterReply: yup.boolean()
+    batchSize: yup.number().integer()
   });
 
   render() {
     const { joinToken, campaignId } = this.props;
-    const { useDynamicAssignment, requestAfterReply } = this.state;
+    const { useDynamicAssignment } = this.state;
 
     return (
       <div>
@@ -84,13 +83,6 @@ export default class CampaignDynamicAssignmentForm extends React.Component {
                 type="number"
                 label="How large should a batch be?"
                 initialValue={200}
-              />
-              <Toggle
-                label="Require texters to request more texts after replies?"
-                toggled={requestAfterReply}
-                onToggle={(toggler, val) => {
-                  this.toggleChange("requestAfterReply", val);
-                }}
               />
             </div>
           )}
