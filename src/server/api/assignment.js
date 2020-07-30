@@ -1,6 +1,7 @@
 import { mapFieldsToModel } from "./lib/utils";
 import { Assignment, r, cacheableData } from "../models";
 import { getOffsets, defaultTimezoneIsBetweenTextingHours } from "../../lib";
+import { getDynamicAssignmentBatchPolicy } from "../../integrations/dynamicassignment-batches";
 
 export function addWhereClauseForContactsFilterMessageStatusIrrespectiveOfPastDue(
   queryParameter,
@@ -142,23 +143,36 @@ export const resolvers = {
         return assignment.hasUnassignedContactsForTexter;
       }
       const campaign = await loaders.campaign.load(assignment.campaign_id);
-      if (!campaign.use_dynamic_assignment || campaign.is_archived) {
+      if (campaign.is_archived) {
         return 0;
       }
-      if (assignment.max_contacts === 0 || !campaign.batch_size) {
-        return 0;
-      }
-      const availableCount = await r.getCount(
-        r
-          .knex("campaign_contact")
-          .where({ campaign_id: campaign.id, assignment_id: null })
+
+      const organization = await loaders.organization.load(
+        campaign.organization_id
       );
+      const policy = getDynamicAssignmentBatchPolicy({
+        organization,
+        campaign
+      });
+      if (!policy || !policy.requestNewBatchCount) {
+        return 0; // to be safe, default to never
+      }
+      // default is finished-replies
+      const availableCount = await policy.requestNewBatchCount({
+        r,
+        loaders,
+        cacheableData,
+        organization,
+        campaign,
+        assignment,
+        texter: user
+      });
+
       const suggestedCount = Math.min(
         assignment.max_contacts || campaign.batch_size,
         campaign.batch_size,
         availableCount
       );
-      // FUTURE: extension that can test if they have done their replies or if they are a vetted texter.
       return suggestedCount;
     },
     contactsCount: async (assignment, { contactsFilter }, { loaders }) => {
