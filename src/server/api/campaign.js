@@ -279,7 +279,6 @@ export const resolvers = {
         "isStarted",
         "isArchived",
         "useDynamicAssignment",
-        "requestAfterReply",
         "introHtml",
         "primaryColor",
         "logoImageUrl",

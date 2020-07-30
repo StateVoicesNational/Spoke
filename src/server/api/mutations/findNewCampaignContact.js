@@ -7,9 +7,24 @@ export const findNewCampaignContact = async (
   { assignment: assignmentParameter, assignmentId, numberContacts },
   { user }
 ) => {
+  const falseRetVal = {
+    found: false,
+    assignment: {
+      id: assignmentId,
+      // stop people from getting another batch right after they get the current one
+      hasUnassignedContactsForTexter: 0
+    }
+  };
   /* This attempts to find new contacts for the assignment, in the case that useDynamicAssigment == true */
   const assignment =
-    assignmentParameter || (await Assignment.get(assignmentId));
+    assignmentParameter ||
+    (await r
+      .knex("assignment")
+      .where("id", assignmentId)
+      .first());
+  if (!assignment) {
+    return falseRetVal;
+  }
   const campaign = await cacheableData.campaign.load(assignment.campaign_id);
 
   await assignmentRequiredOrAdminRole(
@@ -21,9 +36,7 @@ export const findNewCampaignContact = async (
   );
 
   if (!campaign.use_dynamic_assignment || assignment.max_contacts === 0) {
-    return {
-      found: false
-    };
+    return falseRetVal;
   }
 
   const contactsCount = await r.getCount(
@@ -53,9 +66,7 @@ export const findNewCampaignContact = async (
     })
   );
   if (result >= numberContacts) {
-    return {
-      found: false
-    };
+    return falseRetVal;
   }
 
   const updatedCount = await r
@@ -84,11 +95,10 @@ export const findNewCampaignContact = async (
       updatedCount
     );
     return {
+      ...falseRetVal,
       found: true
     };
   } else {
-    return {
-      found: false
-    };
+    return falseRetVal;
   }
 };
