@@ -61,6 +61,7 @@ export class AssignmentTexterContactControls extends React.Component {
       currentShortcutSpace: 0,
       messageFocus: false,
       availableSteps: availableSteps,
+      messageReadOnly: props.messageStatusFilter === "needsMessage",
       currentInteractionStep:
         availableSteps.length > 0
           ? availableSteps[availableSteps.length - 1]
@@ -142,7 +143,7 @@ export class AssignmentTexterContactControls extends React.Component {
         const { optOutMessageText } = this.state;
         this.props.onOptOut({ optOutMessageText });
       } else {
-        this.handleClickSendMessageButton();
+        this.handleClickSendMessageButton(true);
       }
       return;
     }
@@ -160,6 +161,7 @@ export class AssignmentTexterContactControls extends React.Component {
     // the texter can distribute which button to press across the keyboard
     if (
       this.props.messageStatusFilter === "needsMessage" &&
+      this.state.messageReadOnly &&
       !evt.ctrlKey &&
       !evt.metaKey &&
       !evt.altKey &&
@@ -187,8 +189,17 @@ export class AssignmentTexterContactControls extends React.Component {
       .max(window.MAX_MESSAGE_LENGTH)
   });
 
-  handleClickSendMessageButton = () => {
-    this.refs.form.submit();
+  handleClickSendMessageButton = doneClicked => {
+    if (
+      doneClicked !== true &&
+      window.TEXTER_TWOCLICK &&
+      !this.state.doneFirstClick
+    ) {
+      this.setState({ doneFirstClick: true });
+    } else {
+      this.refs.form.submit();
+      this.setState({ doneFirstClick: false });
+    }
   };
 
   handleCannedResponseChange = cannedResponseScript => {
@@ -311,19 +322,24 @@ export class AssignmentTexterContactControls extends React.Component {
     );
   };
 
+  closeSideboxDialog = () => {
+    const { enabledSideboxes } = this.props;
+    // Close the dialog
+    const sideboxCloses = { ...this.state.sideboxCloses };
+    // since we are closing, we need all opens to be reflected in sideboxCloses
+    enabledSideboxes.popups.forEach(popup => {
+      sideboxCloses[popup] = this.state.sideboxOpens[popup] || 0;
+    });
+    sideboxCloses.MANUAL = this.state.sideboxOpens.MANUAL || 0;
+    this.setState({ sideboxCloses });
+  };
+
   handleClickSideboxDialog = () => {
     const { enabledSideboxes } = this.props;
     console.log("handleClickSideboxDialog", enabledSideboxes);
     const sideboxOpen = this.getSideboxDialogOpen(enabledSideboxes);
     if (sideboxOpen) {
-      // Close the dialog
-      const sideboxCloses = { ...this.state.sideboxCloses };
-      // since we are closing, we need all opens to be reflected in sideboxCloses
-      enabledSideboxes.popups.forEach(popup => {
-        sideboxCloses[popup] = this.state.sideboxOpens[popup] || 0;
-      });
-      sideboxCloses.MANUAL = this.state.sideboxOpens.MANUAL || 0;
-      this.setState({ sideboxCloses });
+      this.closeSideboxDialog();
     } else {
       // Open the dialog
       const sideboxOpens = { ...this.state.sideboxOpens };
@@ -539,7 +555,7 @@ export class AssignmentTexterContactControls extends React.Component {
     );
   }
 
-  renderMessagingRowMessage({ readOnly = false }) {
+  renderMessagingRowMessage() {
     return (
       <div className={css(flexStyles.sectionMessageField)}>
         <GSForm
@@ -548,7 +564,7 @@ export class AssignmentTexterContactControls extends React.Component {
           value={{ messageText: this.state.messageText }}
           onSubmit={this.props.onMessageFormSubmit}
           onChange={
-            readOnly
+            this.state.messageReadOnly
               ? null // message is uneditable for firstMessage
               : this.handleMessageFormChange
           }
@@ -762,8 +778,12 @@ export class AssignmentTexterContactControls extends React.Component {
   }
 
   renderMessagingRowSendSkip(contact) {
+    const firstMessage = this.props.messageStatusFilter === "needsMessage";
     return (
-      <div className={css(flexStyles.sectionSend)}>
+      <div
+        className={css(flexStyles.sectionSend)}
+        style={firstMessage ? { height: "54px" } : { height: "36px" }}
+      >
         <FlatButton
           {...dataTest("send")}
           onClick={this.handleClickSendMessageButton}
@@ -776,9 +796,15 @@ export class AssignmentTexterContactControls extends React.Component {
           backgroundColor={
             this.props.disabled
               ? theme.colors.coreBackgroundColorDisabled
+              : this.state.doneFirstClick
+              ? theme.colors.darkBlue
               : theme.colors.coreBackgroundColor
           }
-          hoverColor={theme.colors.coreHoverColor}
+          hoverColor={
+            this.state.doneFirstClick
+              ? theme.colors.lightBlue
+              : theme.colors.coreHoverColor
+          }
           primary
         />
         {this.renderNeedsResponseToggleButton(contact)}
@@ -908,7 +934,7 @@ export class AssignmentTexterContactControls extends React.Component {
         />,
         enabledSideboxes
       ),
-      this.renderMessagingRowMessage({ readOnly: true }),
+      this.renderMessagingRowMessage(),
       this.renderMessagingRowSendSkip(this.props.contact)
     ];
   }
