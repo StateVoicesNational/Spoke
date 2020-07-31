@@ -214,7 +214,6 @@ export const flexStyles = StyleSheet.create({
   sectionSend: {
     //sendButtonWrapper
     flex: `0 0 auto`,
-    height: "36px",
     display: "flex",
     flexDirection: "column",
     flexWrap: "wrap",
