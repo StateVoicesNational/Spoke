@@ -510,7 +510,7 @@ export class ContactController extends React.Component {
       loading,
       settingsData
     };
-    const enabledSideboxes = getSideboxes(sideboxProps);
+    const enabledSideboxes = getSideboxes(sideboxProps, "TexterTodo");
     return (
       <div className={css(styles.container)}>
         {contacts.length === 0

@@ -2,6 +2,7 @@ import PropTypes from "prop-types";
 import React from "react";
 import Check from "material-ui/svg-icons/action/check-circle";
 import Empty from "../components/Empty";
+import LoadingIndicator from "../components/LoadingIndicator";
 import AssignmentSummary from "../components/AssignmentSummary";
 import loadData from "./hoc/load-data";
 import gql from "graphql-tag";
@@ -26,24 +27,15 @@ class TexterTodoList extends React.Component {
       })
       .map(assignment => {
         if (
-          assignment.unmessagedCount > 0 ||
-          assignment.unrepliedCount > 0 ||
-          assignment.badTimezoneCount > 0 ||
-          assignment.campaign.useDynamicAssignment ||
-          assignment.pastMessagesCount > 0 ||
-          assignment.skippedMessagesCount > 0
+          assignment.allContactsCount > 0 ||
+          assignment.campaign.useDynamicAssignment
         ) {
           return (
             <AssignmentSummary
               organizationId={organizationId}
               key={assignment.id}
               assignment={assignment}
-              unmessagedCount={assignment.unmessagedCount}
-              unrepliedCount={assignment.unrepliedCount}
-              badTimezoneCount={assignment.badTimezoneCount}
-              totalMessagedCount={assignment.totalMessagedCount}
-              pastMessagesCount={assignment.pastMessagesCount}
-              skippedMessagesCount={assignment.skippedMessagesCount}
+              texter={this.props.data.currentUser}
             />
           );
         }
@@ -54,7 +46,12 @@ class TexterTodoList extends React.Component {
   componentDidMount() {
     this.props.data.refetch();
     // stopPolling is broken (at least in currently used version), so we roll our own so we can unmount correctly
-    if (this.props.data.currentUser.cacheable && !this.state.polling) {
+    if (
+      this.props.data &&
+      this.props.data.currentUser &&
+      this.props.data.currentUser.cacheable &&
+      !this.state.polling
+    ) {
       const self = this;
       this.setState({
         polling: setInterval(() => {
@@ -91,9 +88,13 @@ class TexterTodoList extends React.Component {
   }
 
   render() {
+    const { data } = this.props;
+    if (!data || !data.currentUser) {
+      return <LoadingIndicator />;
+    }
     this.termsAgreed();
     this.profileComplete();
-    const todos = this.props.data.currentUser.todos;
+    const todos = data.currentUser.todos;
     const renderedTodos = this.renderTodoList(todos);
 
     const empty = <Empty title="You have nothing to do!" icon={<Check />} />;
@@ -125,16 +126,23 @@ export const dataQuery = gql`
       cacheable
       todos(organizationId: $organizationId) {
         id
+        hasUnassignedContactsForTexter
         campaign {
           id
           title
           description
           batchSize
           useDynamicAssignment
-          hasUnassignedContactsForTexter
           introHtml
           primaryColor
           logoImageUrl
+          texterUIConfig {
+            options
+            sideboxChoices
+          }
+          organization {
+            id
+          }
         }
         maxContacts
         allContactsCount: contactsCount

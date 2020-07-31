@@ -562,7 +562,7 @@ const rootMutations = {
             .knex("user")
             .where("id", userId)
             .update(newUserData);
-          await cacheableData.user.clearUser(member.id, member.auth0_id);
+          await cacheableData.user.clearUser(member.user_id, member.auth0_id);
           userData = {
             id: userId,
             ...newUserData
