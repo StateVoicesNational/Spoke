@@ -17,7 +17,6 @@ export const showSidebox = ({
   // Return anything False-y to not show
   // Return anything Truth-y to show
   // Return 'popup' to force a popup on mobile screens (instead of letting it hide behind a button)
-  console.log("celebration-gif showSidebox", contact, finished);
   if (contact && finished) {
     return "popup";
   }
