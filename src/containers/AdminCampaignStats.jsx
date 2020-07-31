@@ -191,7 +191,11 @@ class AdminCampaignStats extends React.Component {
     const exportLabel = currentExportJob
       ? `Exporting (${currentExportJob.status}%)`
       : "Export Data";
-
+    const {
+      campaignPhoneNumbersEnabled
+    } = this.props.organizationData.organization;
+    const showReleaseNumbers =
+      campaign.isArchived && campaignPhoneNumbersEnabled;
     return (
       <div>
         <div className={css(styles.container)}>
@@ -251,6 +255,7 @@ class AdminCampaignStats extends React.Component {
                         />, // unarchive
                         campaign.isArchived ? (
                           <RaisedButton
+                            disabled={campaign.isArchivedPermanently}
                             onTouchTap={async () =>
                               await this.props.mutations.unarchiveCampaign(
                                 campaignId
@@ -258,7 +263,7 @@ class AdminCampaignStats extends React.Component {
                             }
                             label="Unarchive"
                           />
-                        ) : null, // archive
+                        ) : null,
                         !campaign.isArchived ? (
                           <RaisedButton
                             onTouchTap={async () =>
@@ -287,6 +292,16 @@ class AdminCampaignStats extends React.Component {
                               )
                             }
                             label="Messaging Service"
+                          />
+                        ) : null,
+                        showReleaseNumbers ? (
+                          <RaisedButton
+                            onTouchTap={async () =>
+                              this.props.mutations.releaseCampaignNumbers(
+                                campaignId
+                              )
+                            }
+                            label="Release Numbers"
                           />
                         ) : null
                       ]
@@ -360,8 +375,10 @@ const queries = {
           id
           title
           isArchived
+          isArchivedPermanently
           useDynamicAssignment
           useOwnMessagingService
+          messageserviceSid
           assignments(assignmentsFilter: $assignmentsFilter) {
             id
             texter {
@@ -417,6 +434,21 @@ const queries = {
       },
       pollInterval: 5000
     })
+  },
+  organizationData: {
+    query: gql`
+      query getOrganizationData($organizationId: String!) {
+        organization(id: $organizationId) {
+          id
+          campaignPhoneNumbersEnabled
+        }
+      }
+    `,
+    options: ownProps => ({
+      variables: {
+        organizationId: ownProps.params.organizationId
+      }
+    })
   }
 };
 
@@ -462,6 +494,18 @@ const mutations = {
       }
     `,
     variables: { campaignId }
+  }),
+  releaseCampaignNumbers: ownProps => campaignId => ({
+    mutation: gql`
+      mutation releaseCampaignNumbers($campaignId: ID!) {
+        releaseCampaignNumbers(campaignId: $campaignId) {
+          id
+          messageserviceSid
+        }
+      }
+    `,
+    variables: { campaignId },
+    refetchQueries: () => ["getOrganizationData"]
   })
 };
 
