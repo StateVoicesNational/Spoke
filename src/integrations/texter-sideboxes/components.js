@@ -98,6 +98,7 @@ export const renderSidebox = (
       settingsData={settingsData}
       {...parentComponent.props}
       {...(moreProps || {})}
+      parent={parentComponent}
       updateState={state => {
         // allows a component to preserve state across dialog open/close
         parentComponent.setState({ [`sideboxState${name}`]: state });
@@ -120,6 +121,7 @@ export const renderSummary = (
       settingsData={settingsData}
       {...parentComponent.props}
       {...(moreProps || {})}
+      parent={parentComponent}
       updateState={state => {
         // allows a component to preserve state across dialog open/close
         parentComponent.setState({ [`sideboxState${name}`]: state });
