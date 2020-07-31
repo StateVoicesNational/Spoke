@@ -72,12 +72,6 @@ export async function onTagUpdate(
 // What happens when a texter saves the answer that triggers the action
 // This is presumably the meat of the action
 export async function processAction() {
-  // unusedQuestionResponse,
-  // interactionStep,
-  // unusedCampaignContactId,
-  // contact,
-  // unusedCampaign,
-  // organization
   try {
     throw new Error("zapier-action.processAction is not implemented");
   } catch (caughtError) {
