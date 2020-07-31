@@ -246,15 +246,6 @@ export class AssignmentTexterContact extends React.Component {
     await this.props.mutations.updateContactTags(tags, contact.id);
   };
 
-  handleReleaseContacts = async releaseConversations => {
-    const { assignment } = this.props;
-    const result = await this.props.mutations.releaseContacts(
-      assignment.id,
-      releaseConversations
-    );
-    return result;
-  };
-
   handleEditStatus = async (messageStatus, finishContact) => {
     const { contact } = this.props;
     await this.props.mutations.editCampaignContactMessageStatus(
@@ -391,14 +382,15 @@ export class AssignmentTexterContact extends React.Component {
           navigationToolbarChildren={this.props.navigationToolbarChildren}
           messageStatusFilter={this.props.messageStatusFilter}
           disabled={this.state.disabled}
+          enabledSideboxes={this.props.enabledSideboxes}
           onMessageFormSubmit={this.handleMessageFormSubmit}
           onOptOut={this.handleOptOut}
           onUpdateTags={this.handleUpdateTags}
-          onReleaseContacts={this.handleReleaseContacts}
           onQuestionResponseChange={this.handleQuestionResponseChange}
           onCreateCannedResponse={this.handleCreateCannedResponse}
           onExitTexter={this.props.onExitTexter}
           onEditStatus={this.handleEditStatus}
+          refreshData={this.props.refreshData}
           getMessageTextFromScript={this.getMessageTextFromScript}
         />
         {this.props.contact.messageStatus === "needsMessage" &&
@@ -433,6 +425,7 @@ AssignmentTexterContact.propTypes = {
   assignment: PropTypes.object,
   texter: PropTypes.object,
   navigationToolbarChildren: PropTypes.object,
+  enabledSideboxes: PropTypes.arrayOf(PropTypes.object),
   onFinishContact: PropTypes.func,
   router: PropTypes.object,
   mutations: PropTypes.object,
@@ -572,35 +565,6 @@ const mutations = {
     variables: {
       message,
       campaignContactId
-    }
-  }),
-  releaseContacts: ownProps => (assignmentId, releaseConversations) => ({
-    mutation: gql`
-      mutation releaseContacts(
-        $assignmentId: Int!
-        $contactsFilter: ContactsFilter!
-        $releaseConversations: Boolean
-      ) {
-        releaseContacts(
-          assignmentId: $assignmentId
-          releaseConversations: $releaseConversations
-        ) {
-          id
-          contacts(contactsFilter: $contactsFilter) {
-            id
-          }
-          allContactsCount: contactsCount
-        }
-      }
-    `,
-    variables: {
-      assignmentId,
-      releaseConversations,
-      contactsFilter: {
-        messageStatus: ownProps.messageStatusFilter,
-        isOptedOut: false,
-        validTimezone: true
-      }
     }
   }),
   bulkSendMessages: ownProps => assignmentId => ({

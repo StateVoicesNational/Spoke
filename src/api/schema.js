@@ -70,6 +70,7 @@ const rootSchema = gql`
     primaryColor: String
     introHtml: String
     useDynamicAssignment: Boolean
+    requestAfterReply: Boolean
     batchSize: Int
     ingestMethod: String
     contactData: String
@@ -158,6 +159,7 @@ const rootSchema = gql`
 
   type FoundContact {
     found: Boolean
+    assignment: Assignment
   }
 
   type PageInfo {

@@ -1,6 +1,7 @@
 import { mapFieldsToModel } from "./lib/utils";
 import { Assignment, r, cacheableData } from "../models";
 import { getOffsets, defaultTimezoneIsBetweenTextingHours } from "../../lib";
+import { getDynamicAssignmentBatchPolicy } from "../../integrations/dynamicassignment-batches";
 
 export function addWhereClauseForContactsFilterMessageStatusIrrespectiveOfPastDue(
   queryParameter,
@@ -133,7 +134,61 @@ export const resolvers = {
     },
     campaign: async (assignment, _, { loaders }) =>
       loaders.campaign.load(assignment.campaign_id),
-    contactsCount: async (assignment, { contactsFilter }, { loaders }) => {
+    hasUnassignedContactsForTexter: async (
+      assignment,
+      _,
+      { loaders, user }
+    ) => {
+      if (assignment.hasOwnProperty("hasUnassignedContactsForTexter")) {
+        return assignment.hasUnassignedContactsForTexter;
+      }
+      const campaign = await loaders.campaign.load(assignment.campaign_id);
+      if (campaign.is_archived) {
+        return 0;
+      }
+
+      const organization = await loaders.organization.load(
+        campaign.organization_id
+      );
+      const policy = getDynamicAssignmentBatchPolicy({
+        organization,
+        campaign
+      });
+      if (!policy || !policy.requestNewBatchCount) {
+        return 0; // to be safe, default to never
+      }
+      // default is finished-replies
+      const availableCount = await policy.requestNewBatchCount({
+        r,
+        loaders,
+        cacheableData,
+        organization,
+        campaign,
+        assignment,
+        texter: user
+      });
+
+      const suggestedCount = Math.min(
+        assignment.max_contacts || campaign.batch_size,
+        campaign.batch_size,
+        availableCount
+      );
+      return suggestedCount;
+    },
+    contactsCount: async (
+      assignment,
+      { contactsFilter },
+      { loaders },
+      apolloRequestContext
+    ) => {
+      if (
+        apolloRequestContext &&
+        apolloRequestContext.path &&
+        apolloRequestContext.path.key &&
+        assignment[apolloRequestContext.path.key.toLowerCase()]
+      ) {
+        return assignment[apolloRequestContext.path.key.toLowerCase()];
+      }
       if (assignment.contacts_count) {
         if (!contactsFilter || Object.keys(contactsFilter).length === 0) {
           return assignment.contacts_count;

@@ -1,12 +1,17 @@
 import PropTypes from "prop-types";
+import theme from "../../styles/theme";
 import React from "react";
-import IconButton from "material-ui/IconButton/IconButton";
 import LoadingIndicator from "../LoadingIndicator";
 import { StyleSheet, css } from "aphrodite";
 import { withRouter } from "react-router";
 import Check from "material-ui/svg-icons/action/check-circle";
 import Empty from "../Empty";
 import RaisedButton from "material-ui/RaisedButton";
+import Dialog from "material-ui/Dialog";
+import {
+  getSideboxes,
+  renderSidebox
+} from "../../integrations/texter-sideboxes/components";
 
 const styles = StyleSheet.create({
   container: {
@@ -20,6 +25,18 @@ const styles = StyleSheet.create({
     zIndex: 1002,
     backgroundColor: "white",
     overflow: "hidden"
+  },
+  requestContainer: {
+    ...theme.text.header,
+    marginTop: "50px",
+    width: 500,
+    marginLeft: "auto",
+    marginRight: "auto",
+    textAlign: "center"
+  },
+  button: {
+    marginLeft: "10px",
+    marginRight: "10px"
   }
 });
 
@@ -32,7 +49,8 @@ export class ContactController extends React.Component {
       contactCache: {},
       loading: false,
       direction: "right",
-      reloadDelay: 200
+      reloadDelay: 200,
+      finishedContactId: null
     };
   }
 
@@ -166,14 +184,6 @@ export class ContactController extends React.Component {
         .map(c => c.id)
         .filter(cId => !force || !this.state.contactCache[cId]);
       // console.log('getContactData batch forward ', getIds)
-    } else if (
-      !getIds.length &&
-      this.props.assignment.campaign.useDynamicAssignment &&
-      // If we have just crossed the threshold of contact data we have, get more
-      contacts[newIndex + BATCH_FORWARD - 1] &&
-      !contacts[newIndex + BATCH_FORWARD]
-    ) {
-      this.props.getNewContacts();
     }
     if (getIds.length) {
       // console.log('getContactData length', newIndex, getIds.length)
@@ -236,37 +246,46 @@ export class ContactController extends React.Component {
     return this.state.currentContactIndex < this.contactCount() - 1;
   }
 
+  canRequestMore() {
+    const { assignment, messageStatusFilter } = this.props;
+    if (assignment.hasUnassignedContactsForTexter) {
+      if (
+        (messageStatusFilter === "needsMessage" ||
+          messageStatusFilter === "needsSecondPass") &&
+        !assignment.campaign.requestAfterReply
+      ) {
+        return true;
+      } else if (
+        messageStatusFilter === "needsResponse" &&
+        assignment.campaign.requestAfterReply
+      ) {
+        if (
+          assignment.unmessagedCount === 0 &&
+          assignment.unrepliedCount === 0 &&
+          assignment.secondpassCount === 0
+        ) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
   handleFinishContact = contactId => {
     if (this.hasNext()) {
-      this.handleNavigateNext();
+      this.setState({ finishedContactId: null }, () => {
+        this.handleNavigateNext();
+      });
       this.clearContactIdOldData(contactId);
     } else {
-      // Will look async and then redirect to todo page if not
-      console.log(
-        "handleFinishContact<ctct><ind><contacts.len>",
-        this.props.contacts[this.state.currentContactIndex],
-        this.state.currentContactIndex,
-        this.props.contacts.length
-      );
-      const self = this;
-      this.props
-        .assignContactsIfNeeded(
-          /* checkServer */ true,
-          this.state.currentContactIndex
-        )
-        .then(giveUpAction => {
-          self.clearContactIdOldData(contactId);
-          console.log(
-            "should we give up?!",
-            self.state.currentContactIndex,
-            self.props.contacts && self.props.contacts.length,
-            giveUpAction
-          );
-          // If we still don't have a next item (contacts haven't updated), then give up
-          if (!self.hasNext() && typeof giveUpAction === "function") {
-            giveUpAction();
-          }
-        });
+      // This should NOT be an INFINITE LOOP
+      // because this is only called on particular actions by the texter
+      // rather than on render
+      this.setState({ finishedContactId: contactId }, () => {
+        if (!this.props.reviewContactId) {
+          this.props.refreshData();
+        }
+      });
     }
   };
 
@@ -284,8 +303,6 @@ export class ContactController extends React.Component {
     if (!this.hasNext()) {
       return;
     }
-
-    // this.props.refreshData()
     this.setState({ direction: "right" }, () =>
       this.incrementCurrentContactIndex(1)
     );
@@ -320,6 +337,9 @@ export class ContactController extends React.Component {
 
   currentContact() {
     const { contacts } = this.props;
+    if (contacts.length === 0) {
+      return null;
+    }
     // If the index has got out of sync with the contacts available, then rewind to the start
     if (typeof this.state.currentContactIndex !== "undefined") {
       return this.getContact(contacts, this.state.currentContactIndex);
@@ -352,7 +372,7 @@ export class ContactController extends React.Component {
     };
   }
 
-  renderTexter() {
+  renderTexter(enabledSideboxes) {
     const { assignment, ChildComponent } = this.props;
     const { campaign, texter } = assignment;
     const contact = this.currentContact();
@@ -422,6 +442,7 @@ export class ContactController extends React.Component {
         texter={texter}
         campaign={campaign}
         navigationToolbarChildren={navigationToolbarChildren}
+        enabledSideboxes={enabledSideboxes}
         onFinishContact={this.handleFinishContact}
         refreshData={this.props.refreshData}
         onExitTexter={this.handleExitTexter}
@@ -429,11 +450,25 @@ export class ContactController extends React.Component {
       />
     );
   }
-  renderEmpty() {
+
+  renderEmpty(enabledSideboxes, sideboxProps) {
+    const { assignment, messageStatusFilter, allContactsCount } = this.props;
+    let sideboxList = null;
+    if (enabledSideboxes.length) {
+      sideboxList = enabledSideboxes.map(sidebox =>
+        renderSidebox(sidebox, sideboxProps.settingsData, this, sideboxProps)
+      );
+    }
+    const action =
+      messageStatusFilter === "needsMessage" ? "messaged" : "replied to";
+    const emptyMessage =
+      allContactsCount === 0
+        ? "No current contacts"
+        : `You've already ${action} all your assigned contacts for now.`;
     return (
       <div>
         <Empty
-          title="You've already messaged or replied to all your assigned contacts for now."
+          title={emptyMessage}
           icon={<Check />}
           content={
             <RaisedButton
@@ -442,14 +477,45 @@ export class ContactController extends React.Component {
             />
           }
         />
+        {sideboxList}
       </div>
     );
   }
   render() {
-    const { contacts } = this.props;
+    const { assignment, contacts, messageStatusFilter } = this.props;
+    const { campaign, texter } = assignment || {};
+    const contact = this.currentContact();
+    const navigationToolbarChildren = this.getNavigationToolbarChildren();
+    const { finishedContactId, loading } = this.state;
+    const finished =
+      !contact ||
+      (navigationToolbarChildren &&
+        !navigationToolbarChildren.onNext &&
+        finishedContactId &&
+        Number(contact.id) === Number(finishedContactId));
+    const settingsData = JSON.parse(
+      (campaign &&
+        campaign.texterUIConfig &&
+        campaign.texterUIConfig.options) ||
+        "{}"
+    );
+    const sideboxProps = {
+      assignment,
+      campaign,
+      texter,
+      contact,
+      navigationToolbarChildren,
+      messageStatusFilter,
+      finished,
+      loading,
+      settingsData
+    };
+    const enabledSideboxes = getSideboxes(sideboxProps, "TexterTodo");
     return (
       <div className={css(styles.container)}>
-        {contacts.length === 0 ? this.renderEmpty() : this.renderTexter()}
+        {contacts.length === 0
+          ? this.renderEmpty(enabledSideboxes, sideboxProps)
+          : this.renderTexter(enabledSideboxes)}
       </div>
     );
   }
@@ -463,8 +529,6 @@ ContactController.propTypes = {
   router: PropTypes.object,
   refreshData: PropTypes.func,
   loadContacts: PropTypes.func,
-  getNewContacts: PropTypes.func,
-  assignContactsIfNeeded: PropTypes.func,
   organizationId: PropTypes.string,
   ChildComponent: PropTypes.func,
   messageStatusFilter: PropTypes.string
