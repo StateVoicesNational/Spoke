@@ -29,7 +29,7 @@ export const schema = gql`
   }
 
   type ProfileField {
-    name: String!,
+    name: String!
     label: String!
   }
 
@@ -57,7 +57,8 @@ export const schema = gql`
     twilioAuthToken: String
     twilioMessageServiceSid: String
     fullyConfigured: Boolean
-    phoneInventoryEnabled: Boolean
+    phoneInventoryEnabled: Boolean!
+    campaignPhoneNumbersEnabled: Boolean!
     pendingPhoneNumberJobs: [BuyPhoneNumbersJobRequest]
     phoneNumberCounts: [PhoneNumberCounts]
   }

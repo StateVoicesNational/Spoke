@@ -87,6 +87,7 @@ const rootSchema = gql`
     textingHoursEnd: Int
     texterUIConfig: TexterUIConfigInput
     timezone: String
+    inventoryPhoneNumberCounts: [CampaignPhoneNumberInput!]
   }
 
   input OrganizationInput {
@@ -346,6 +347,7 @@ const rootSchema = gql`
       limit: Int!
       addToOrganizationMessagingService: Boolean
     ): JobRequest
+    releaseCampaignNumbers(campaignId: ID!): Campaign!
   }
 
   schema {

@@ -15,7 +15,8 @@ import {
   fixOrgless,
   clearOldJobs,
   importScript,
-  buyPhoneNumbers
+  buyPhoneNumbers,
+  startCampaignWithPhoneNumbers
 } from "./jobs";
 import { setupUserNotificationObservers } from "../server/notifications";
 
@@ -36,14 +37,16 @@ export const Jobs = Object.freeze({
   EXPORT: "export",
   ASSIGN_TEXTERS: "assign_texters",
   IMPORT_SCRIPT: "import_script",
-  BUY_PHONE_NUMBERS: "buy_phone_numbers"
+  BUY_PHONE_NUMBERS: "buy_phone_numbers",
+  START_CAMPAIGN_WITH_PHONE_NUMBERS: "start_campaign_with_phone_numbers"
 });
 
 const jobMap = Object.freeze({
   [Jobs.EXPORT]: exportCampaign,
   [Jobs.ASSIGN_TEXTERS]: assignTexters,
   [Jobs.IMPORT_SCRIPT]: importScript,
-  [Jobs.BUY_PHONE_NUMBERS]: buyPhoneNumbers
+  [Jobs.BUY_PHONE_NUMBERS]: buyPhoneNumbers,
+  [Jobs.START_CAMPAIGN_WITH_PHONE_NUMBERS]: startCampaignWithPhoneNumbers
 });
 
 export const invokeJobFunction = async job => {

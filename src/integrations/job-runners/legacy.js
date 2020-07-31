@@ -30,9 +30,10 @@ export const dispatchJob = async (
   if (JOBS_SAME_PROCESS) {
     if (JOBS_SYNC) {
       await invokeJobFunction(job);
+    } else {
+      // Intentionally un-awaited promise
+      invokeJobFunction(job).catch(err => console.log("Job failed", job, err));
     }
-    // Intentionally un-awaited promise
-    invokeJobFunction(job).catch(err => console.log("Job failed", job, err));
   }
   return job;
   // default: just save the job
