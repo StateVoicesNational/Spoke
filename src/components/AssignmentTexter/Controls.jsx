@@ -762,7 +762,6 @@ export class AssignmentTexterContactControls extends React.Component {
   }
 
   renderMessagingRowSendSkip(contact) {
-    console.log("this.props", this.props);
     return (
       <div className={css(flexStyles.sectionSend)}>
         <FlatButton

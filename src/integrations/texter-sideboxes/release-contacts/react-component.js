@@ -25,12 +25,6 @@ export const showSidebox = ({
   // Return anything False-y to not show
   // Return anything Truth-y to show
   // Return 'popup' to force a popup on mobile screens (instead of letting it hide behind a button)
-  console.log(
-    "release contacts",
-    assignment.allContactsCount,
-    finished,
-    settingsData
-  );
   return (
     assignment.allContactsCount &&
     !finished &&
