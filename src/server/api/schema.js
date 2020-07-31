@@ -1078,7 +1078,7 @@ const rootMutations = {
     },
     createOptOut: async (
       _,
-      { optOut, campaignContactId },
+      { optOut, campaignContactId, noReply },
       { loaders, user }
     ) => {
       const contact = await cacheableData.campaignContact.load(
@@ -1109,7 +1109,8 @@ const rootMutations = {
         campaignContactId,
         reason,
         assignmentId,
-        campaign
+        campaign,
+        noReply
       });
       console.log(
         "createOptOut post save",

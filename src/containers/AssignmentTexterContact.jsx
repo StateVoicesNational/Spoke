@@ -277,7 +277,11 @@ export class AssignmentTexterContact extends React.Component {
       };
 
       await this.handleSubmitSurveys();
-      await this.props.mutations.createOptOut(optOut, contact.id);
+      await this.props.mutations.createOptOut(
+        optOut,
+        contact.id,
+        !optOutMessageText.length
+      );
       this.props.onFinishContact(contact.id);
     } catch (err) {
       console.log("handleOptOut Error", err);
@@ -435,13 +439,18 @@ AssignmentTexterContact.propTypes = {
 };
 
 const mutations = {
-  createOptOut: ownProps => (optOut, campaignContactId) => ({
+  createOptOut: ownProps => (optOut, campaignContactId, noReply) => ({
     mutation: gql`
       mutation createOptOut(
         $optOut: OptOutInput!
         $campaignContactId: String!
+        $noReply: Boolean!
       ) {
-        createOptOut(optOut: $optOut, campaignContactId: $campaignContactId) {
+        createOptOut(
+          optOut: $optOut
+          campaignContactId: $campaignContactId
+          noReply: $noReply
+        ) {
           id
           optOut {
             id
@@ -452,7 +461,8 @@ const mutations = {
     `,
     variables: {
       optOut,
-      campaignContactId
+      campaignContactId,
+      noReply
     }
   }),
   createCannedResponse: ownProps => cannedResponse => ({
