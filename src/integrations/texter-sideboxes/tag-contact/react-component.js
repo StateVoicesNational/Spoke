@@ -17,13 +17,14 @@ import {
 
 export const displayName = () => "Tagging Contacts";
 
-export const showSidebox = ({ campaign, messageStatusFilter, disabled }) => {
+export const showSidebox = ({ contact, campaign, messageStatusFilter }) => {
   // Return anything False-y to not show
   // Return anything Truth-y to show
   // Return 'popup' to force a popup on mobile screens (instead of letting it hide behind a button)
-  console.log("showsidebox", campaign.organization.tags);
+  // console.log("showsidebox", messageStatusFilter, contact, campaign);
   return (
-    !disabled &&
+    contact &&
+    !contact.optOut &&
     messageStatusFilter !== "needsMessage" &&
     campaign.organization.tags.length
   );
@@ -46,12 +47,6 @@ export class TexterSidebox extends React.Component {
     // tag list (marking tags already set as disabled and 'on') -- i.e. you can only turn ON a tag, not off
     // save button
     // get campaign.texterUIConfig
-    console.log(
-      "tag-contact render",
-      typeof settingsData,
-      settingsData,
-      campaign
-    );
     const escalatedTags = campaign.organization.tags.filter(
       tag => tag.id in currentTags
     );

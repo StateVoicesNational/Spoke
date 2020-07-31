@@ -15,13 +15,12 @@ export const showSidebox = ({
   assignment,
   texter,
   navigationToolbarChildren,
-  messageStatusFilter,
-  disabled
+  messageStatusFilter
 }) => {
   // Return anything False-y to not show
   // Return anything Truth-y to show
   // Return 'popup' to force a popup on mobile screens (instead of letting it hide behind a button)
-  return messageStatusFilter !== "needsMessage";
+  return contact && messageStatusFilter !== "needsMessage";
 };
 
 export class TexterSidebox extends React.Component {

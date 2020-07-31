@@ -7,14 +7,17 @@ import { StyleSheetTestUtils } from "aphrodite";
 import injectTapEventPlugin from "react-tap-event-plugin";
 import each from "jest-each";
 import MuiThemeProvider from "material-ui/styles/MuiThemeProvider";
+import { ApolloProvider } from "react-apollo";
+import ApolloClientSingleton from "../../src/network/apollo-client-singleton";
 import { CardActions, CardTitle } from "material-ui/Card";
-import { AssignmentSummary } from "../src/components/AssignmentSummary";
+import { AssignmentSummary } from "../../src/components/AssignmentSummary";
 import Badge from "material-ui/Badge/Badge";
 import RaisedButton from "material-ui/RaisedButton/RaisedButton";
 
-function getAssignment(isDynamic = false) {
+function getAssignment({ isDynamic = false, counts = {} }) {
   return {
     id: "1",
+    hasUnassignedContactsForTexter: 100,
     campaign: {
       id: "1",
       title: "New Campaign",
@@ -23,8 +26,13 @@ function getAssignment(isDynamic = false) {
       hasUnassignedContacts: false,
       introHtml: "yoyo",
       primaryColor: "#2052d8",
-      logoImageUrl: ""
-    }
+      logoImageUrl: "",
+      texterUIConfig: {
+        options: "{}",
+        sideboxChoices: isDynamic ? ["default-dynamicassignment"] : []
+      }
+    },
+    ...counts
   };
 }
 
@@ -33,12 +41,15 @@ describe("AssignmentSummary text", function t() {
     this.summary = mount(
       <MuiThemeProvider>
         <AssignmentSummary
-          assignment={getAssignment()}
-          unmessagedCount={1}
-          unrepliedCount={0}
-          badTimezoneCount={0}
-          pastMessagesCount={0}
-          skippedMessagesCount={0}
+          assignment={getAssignment({
+            counts: {
+              unmessagedCount: 1,
+              unrepliedCount: 0,
+              badTimezoneCount: 0,
+              pastMessagesCount: 0,
+              skippedMessagesCount: 0
+            }
+          })}
         />
       </MuiThemeProvider>
     );
@@ -81,16 +92,24 @@ describe("AssignmentSummary actions inUSA and NOT AllowSendAll", () => {
     window.NOT_IN_USA = 0;
     window.ALLOW_SEND_ALL = false;
     return mount(
-      <MuiThemeProvider>
-        <AssignmentSummary
-          assignment={getAssignment(isDynamic)}
-          unmessagedCount={unmessaged}
-          unrepliedCount={unreplied}
-          badTimezoneCount={badTimezone}
-          pastMessagesCount={past}
-          skippedMessagesCount={skipped}
-        />
-      </MuiThemeProvider>
+      <ApolloProvider client={ApolloClientSingleton}>
+        <MuiThemeProvider>
+          <AssignmentSummary
+            assignment={getAssignment({
+              isDynamic,
+              counts: {
+                allContactsCount:
+                  unmessaged + unreplied + badTimezone + past + skipped,
+                unmessagedCount: unmessaged,
+                unrepliedCount: unreplied,
+                badTimezoneCount: badTimezone,
+                pastMessagesCount: past,
+                skippedMessagesCount: skipped
+              }
+            })}
+          />
+        </MuiThemeProvider>
+      </ApolloProvider>
     ).find(CardActions);
   }
 
@@ -128,12 +147,13 @@ describe("AssignmentSummary actions inUSA and NOT AllowSendAll", () => {
 
   it('renders "send first texts" with no unmessaged (dynamic assignment)', () => {
     const actions = create(0, 0, 0, 0, 0, true);
+    // This button will come from the default-dynamicassignment texter-sidebox
     expect(
       actions
-        .find(RaisedButton)
-        .at(0)
+        .find("div")
+        .children(RaisedButton)
         .prop("label")
-    ).toBe("Send first texts");
+    ).toBe("Start texting");
   });
 
   it('renders a "past messages" badge after messaged contacts', () => {
@@ -177,12 +197,16 @@ describe("AssignmentSummary NOT inUSA and AllowSendAll", () => {
     return mount(
       <MuiThemeProvider>
         <AssignmentSummary
-          assignment={getAssignment(isDynamic)}
-          unmessagedCount={unmessaged}
-          unrepliedCount={unreplied}
-          badTimezoneCount={badTimezone}
-          pastMessagesCount={past}
-          skippedMessagesCount={skipped}
+          assignment={getAssignment({
+            isDynamic,
+            counts: {
+              unmessagedCount: unmessaged,
+              unrepliedCount: unreplied,
+              badTimezoneCount: badTimezone,
+              pastMessagesCount: past,
+              skippedMessagesCount: skipped
+            }
+          })}
         />
       </MuiThemeProvider>
     ).find(CardActions);
@@ -213,11 +237,14 @@ it('renders "Send later" when there is a badTimezoneCount', () => {
   const actions = mount(
     <MuiThemeProvider>
       <AssignmentSummary
-        assignment={getAssignment()}
-        unmessagedCount={0}
-        unrepliedCount={0}
-        badTimezoneCount={4}
-        skippedMessagesCount={0}
+        assignment={getAssignment({
+          counts: {
+            unmessagedCount: 0,
+            unrepliedCount: 0,
+            badTimezoneCount: 4,
+            skippedMessagesCount: 0
+          }
+        })}
       />
     </MuiThemeProvider>
   ).find(CardActions);
@@ -255,11 +282,14 @@ describe("contacts filters", () => {
     mount(
       <MuiThemeProvider>
         <AssignmentSummary
-          assignment={getAssignment()}
-          unmessagedCount={1}
-          unrepliedCount={1}
-          badTimezoneCount={4}
-          skippedMessagesCount={0}
+          assignment={getAssignment({
+            counts: {
+              unmessagedCount: 1,
+              unrepliedCount: 1,
+              badTimezoneCount: 4,
+              skippedMessagesCount: 0
+            }
+          })}
         />
       </MuiThemeProvider>
     );
@@ -287,11 +317,14 @@ describe("contacts filters", () => {
     mount(
       <MuiThemeProvider>
         <AssignmentSummary
-          assignment={getAssignment()}
-          unmessagedCount={1}
-          unrepliedCount={1}
-          badTimezoneCount={4}
-          skippedMessagesCount={0}
+          assignment={getAssignment({
+            counts: {
+              unmessagedCount: 1,
+              unrepliedCount: 1,
+              badTimezoneCount: 4,
+              skippedMessagesCount: 0
+            }
+          })}
         />
       </MuiThemeProvider>
     );

@@ -1,21 +1,12 @@
 import type from "prop-types";
 import React from "react";
-import orderBy from "lodash/orderBy";
-import Slider from "./Slider";
-import AutoComplete from "material-ui/AutoComplete";
-import IconButton from "material-ui/IconButton";
-import RaisedButton from "material-ui/RaisedButton";
 import GSForm from "../components/forms/GSForm";
 import yup from "yup";
 import Form from "react-formal";
 import OrganizationJoinLink from "./OrganizationJoinLink";
-import CampaignFormSectionHeading from "./CampaignFormSectionHeading";
-import { StyleSheet, css } from "aphrodite";
-import theme from "../styles/theme";
 import Toggle from "material-ui/Toggle";
-import DeleteIcon from "material-ui/svg-icons/action/delete";
 import { dataTest } from "../lib/attributes";
-import { dataSourceItem } from "./utils";
+import cloneDeep from "lodash/cloneDeep";
 
 export default class CampaignDynamicAssignmentForm extends React.Component {
   state = {
@@ -30,11 +21,15 @@ export default class CampaignDynamicAssignmentForm extends React.Component {
     });
   };
 
-  toggleChange = (toggler, useDynamicAssignment) => {
-    this.setState({ useDynamicAssignment });
+  toggleChange = (key, val) => {
+    this.setState({ [key]: val });
+
+    const formValues = cloneDeep(this.props.formValues);
+    formValues[key] = val;
+
     this.props.onChange({
       ...this.state,
-      useDynamicAssignment
+      ...formValues
     });
   };
 
@@ -45,7 +40,6 @@ export default class CampaignDynamicAssignmentForm extends React.Component {
   render() {
     const { joinToken, campaignId } = this.props;
     const { useDynamicAssignment } = this.state;
-    const subtitle = useDynamicAssignment ? <div></div> : "";
 
     return (
       <div>
@@ -53,7 +47,9 @@ export default class CampaignDynamicAssignmentForm extends React.Component {
           {...dataTest("useDynamicAssignment")}
           label="Allow texters with a link to join and start texting when the campaign is started?"
           toggled={useDynamicAssignment}
-          onToggle={this.toggleChange}
+          onToggle={(toggler, val) =>
+            this.toggleChange("useDynamicAssignment", val)
+          }
         />
         <GSForm
           schema={this.formSchema}
@@ -77,21 +73,16 @@ export default class CampaignDynamicAssignmentForm extends React.Component {
                   You can turn off dynamic assignment after starting a campaign
                   to disallow more new texters to join
                 </li>
-                <li style={{ display: "none" }}>
-                  Batch sizes are how many texts someone should send before they
-                  switch to replying This should be a low number (~50-300) for
-                  campaigns which expect many replies, and a higher number
-                  (~100-1000) for campaigns where deliverability of the first
-                  message is more urgent or important (e.g. Get-Out-The-Vote
-                  efforts).
-                </li>
               </ul>
+              <p>
+                Batch sizes are how many texts someone should send before they
+                switch to replying.
+              </p>
               <Form.Field
                 name="batchSize"
                 type="number"
                 label="How large should a batch be?"
-                initialValue={300}
-                style={{ display: "none" }}
+                initialValue={200}
               />
             </div>
           )}
@@ -117,5 +108,6 @@ CampaignDynamicAssignmentForm.propTypes = {
   onSubmit: type.func,
   saveLabel: type.string,
   saveDisabled: type.bool,
-  joinToken: type.string
+  joinToken: type.string,
+  batchSize: type.string
 };
