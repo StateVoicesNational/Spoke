@@ -64,6 +64,7 @@ export const postMessageSave = async ({ message, organization }) => {
         campaignContactId: message.campaign_contact_id,
         assignmentId: contact.assignment_id,
         campaign: { organization_id: organization.id },
+        noReply: true,
         reason
       });
     }
