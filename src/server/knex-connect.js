@@ -14,6 +14,7 @@ const {
   DB_PASSWORD,
   DB_USER,
   DB_SCHEMA,
+  DB_DEBUG,
   DATABASE_URL,
   NODE_ENV
 } = process.env;
@@ -25,6 +26,8 @@ const pg = require("pg");
 const useSSL = DB_USE_SSL === "1" || DB_USE_SSL.toLowerCase() === "true";
 if (useSSL) pg.defaults.ssl = true;
 // see https://github.com/tgriesser/knex/issues/852
+
+const debug = DB_DEBUG === "1" || DB_DEBUG.toLowerCase() === "true";
 
 let config;
 
@@ -78,5 +81,7 @@ if (DB_JSON) {
     useNullAsDefault: true
   };
 }
+
+config.debug = debug;
 
 module.exports = config;
