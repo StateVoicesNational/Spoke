@@ -37,14 +37,12 @@ export async function available(organizationId) {
 
 // What happens when a texter saves the answer that triggers the action
 // This is presumably the meat of the action
-export async function processAction(
-  questionResponse,
-  interactionStep,
+export async function processAction({
   campaignContactId,
   contact
   // campaign,    // unused parameter
   // organization // unused parameter
-) {
+}) {
   // This is a meta action that updates a variable in the contact record itself.
   // Generally, you want to send action data to the outside world, so you
   // might want the request library loaded above

@@ -62,7 +62,7 @@ export const postCanvassResponse = async (contact, organization, body) => {
   // eslint-disable-next-line no-console
   console.info("Sending contact update to VAN", {
     vanId,
-    body
+    body: JSON.stringify(body)
   });
 
   return httpRequest(url, {
@@ -81,14 +81,11 @@ export const postCanvassResponse = async (contact, organization, body) => {
 
 // What happens when a texter saves the answer that triggers the action
 // This is presumably the meat of the action
-export async function processAction(
-  unusedQuestionResponse,
+export async function processAction({
   interactionStep,
-  unusedCampaignContactId,
   contact,
-  unusedCampaign,
   organization
-) {
+}) {
   try {
     const answerActionsData = JSON.parse(
       (interactionStep || {}).answer_actions_data || "{}"

@@ -31,20 +31,39 @@ const questionResponseActionHandler = async ({
   name,
   organization,
   questionResponse,
-  questionResponseInteractionStep,
+  interactionStep,
   campaign,
-  contact
+  contact,
+  wasDeleted,
+  previousValue
 }) => {
   const handler = await ActionHandlers.rawActionHandler(name);
-  // TODO: clean up processAction interface
-  await handler.processAction(
-    questionResponse,
-    questionResponseInteractionStep,
-    contact.id,
-    contact,
-    campaign,
-    organization
-  );
+
+  if (!wasDeleted) {
+    // TODO: clean up processAction interface
+    return handler.processAction({
+      questionResponse,
+      interactionStep,
+      campaignContactId: contact.id,
+      contact,
+      campaign,
+      organization,
+      previousValue
+    });
+  } else if (
+    handler.processDeletedQuestionResponse &&
+    typeof handler.processDeletedQuestionResponse === "function"
+  ) {
+    return handler.processDeletedQuestionResponse({
+      questionResponse,
+      interactionStep,
+      campaignContactId: contact.id,
+      contact,
+      campaign,
+      organization,
+      previousValue
+    });
+  }
 };
 
 const tagUpdateActionHandler = async ({
@@ -62,16 +81,17 @@ const tagUpdateActionHandler = async ({
 const startCampaignCache = async ({ campaign, organization }) => {
   // Refresh all the campaign data into cache
   // This should refresh/clear any corruption
-  console.log("loadCampaignCache async tasks...", campaign.id);
   const loadAssignments = cacheableData.campaignContact.updateCampaignAssignmentCache(
     campaign.id
   );
   const loadContacts = cacheableData.campaignContact
     .loadMany(campaign, organization, {})
     .then(() => {
+      // eslint-disable-next-line no-console
       console.log("FINISHED contact loadMany", campaign.id);
     })
     .catch(err => {
+      // eslint-disable-next-line no-console
       console.error("ERROR contact loadMany", campaign.id, err, campaign);
     });
   const loadOptOuts = cacheableData.optOut.loadMany(organization.id);
