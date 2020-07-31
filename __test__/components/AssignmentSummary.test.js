@@ -8,9 +8,9 @@ import injectTapEventPlugin from "react-tap-event-plugin";
 import each from "jest-each";
 import MuiThemeProvider from "material-ui/styles/MuiThemeProvider";
 import { ApolloProvider } from "react-apollo";
-import ApolloClientSingleton from "../src/network/apollo-client-singleton";
+import ApolloClientSingleton from "../../src/network/apollo-client-singleton";
 import { CardActions, CardTitle } from "material-ui/Card";
-import { AssignmentSummary } from "../src/components/AssignmentSummary";
+import { AssignmentSummary } from "../../src/components/AssignmentSummary";
 import Badge from "material-ui/Badge/Badge";
 import RaisedButton from "material-ui/RaisedButton/RaisedButton";
 
