@@ -161,18 +161,19 @@ async function getContactTypeIdAndInputTypeId(organization) {
       console.error(`Contact type ${contactType} not returned by VAN`);
     }
 
-    const inputType =
-      getConfig("NGP_VAN_INPUT_TYPE", organization) ||
-      DEFAULT_NGP_VAN_INPUT_TYPE;
-    ({ inputTypeId } = inputTypesResponse.find(
-      inTy => inTy.name === inputType
-    ));
-    if (!inputTypeId) {
-      // eslint-disable-next-line no-console
-      console.error(`Input type ${inputType} not returned by VAN`);
+    const inputTypeName = getConfig("NGP_VAN_INPUT_TYPE", organization);
+    if (inputTypeName) {
+      const inputType = inputTypesResponse.find(
+        inTy => inTy.name === inputTypeName
+      ) || {};
+      inputTypeId = inputType.inputTypeId || -1;
+      if (inputTypeId === -1) {
+        // eslint-disable-next-line no-console
+        console.error(`Input type ${inputType} not returned by VAN`);
+      }
     }
 
-    if (!inputTypeId || !contactTypeId) {
+    if (inputTypeId === -1 || !contactTypeId) {
       throw new Error(
         "VAN did not return the configured input type or contact type. Check the log"
       );
@@ -192,7 +193,7 @@ export async function getClientChoiceData(organization) {
     organization
   );
 
-  if (!contactTypeId || !inputTypeId) {
+  if (inputTypeId === -1 || !contactTypeId) {
     return {
       data: `${JSON.stringify({
         error:
@@ -200,6 +201,9 @@ export async function getClientChoiceData(organization) {
       })}`
     };
   }
+
+  const canvassContext = { contactTypeId };
+  if (inputTypeId) canvassContext.inputTypeId = inputTypeId;
 
   const cycle = await getConfig("NGP_VAN_ELECTION_CYCLE_FILTER", organization);
   const cycleFilter = (cycle && `&cycle=${cycle}`) || "";
@@ -287,8 +291,7 @@ export async function getClientChoiceData(organization) {
   const buildPayload = responseBody =>
     JSON.stringify({
       canvassContext: {
-        contactTypeId,
-        inputTypeId
+        ...canvassContext
       },
       ...responseBody
     });
