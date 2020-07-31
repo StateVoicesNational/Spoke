@@ -74,7 +74,10 @@ export const errorDescriptions = {
   30005: "Unknown destination handset",
   30006: "Landline or unreachable carrier",
   30007: "Message Delivery - Carrier violation",
-  30008: "Message Delivery - Unknown error"
+  30008: "Message Delivery - Unknown error",
+  "-166":
+    "Internal: Message blocked due to text match trigger (profanity-tagger)",
+  "-167": "Internal: Initial message altered (initialtext-guard)"
 };
 
 async function convertMessagePartsToMessage(messageParts) {

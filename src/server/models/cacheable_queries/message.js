@@ -221,7 +221,8 @@ const messageCache = {
     messageInstance,
     contact,
     /* unreliable: */ campaign,
-    organization
+    organization,
+    texter
   }) => {
     // 0. Gathers any missing data in the case of is_from_contact: campaign_contact_id
     // 1. Saves the messageInstance
@@ -288,7 +289,8 @@ const messageCache = {
           newStatus,
           contact,
           campaign,
-          organization
+          organization,
+          texter
         });
         if (result.cancel) {
           return result; // return without saving
@@ -352,7 +354,8 @@ const messageCache = {
           newStatus,
           contact,
           campaign,
-          organization
+          organization,
+          texter
         });
         if (result) {
           if ("newStatus" in result) {

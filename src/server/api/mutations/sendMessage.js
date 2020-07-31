@@ -131,7 +131,8 @@ export const sendMessage = async (
     messageInstance,
     contact,
     campaign,
-    organization
+    organization,
+    texter: user
   });
   if (!saveResult.message) {
     throw new GraphQLError(
