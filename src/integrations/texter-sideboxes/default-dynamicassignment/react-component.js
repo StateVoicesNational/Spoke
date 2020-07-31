@@ -36,12 +36,21 @@ export const showSidebox = ({
   }
 };
 
+export const showSummary = ({ campaign, assignment, settingsData }) =>
+  campaign.useDynamicAssignment &&
+  assignment.hasUnassignedContactsForTexter &&
+  !assignment.unmessagedCount &&
+  assignment.maxContacts !== 0;
+
 export class TexterSideboxClass extends React.Component {
   requestNewContacts = async () => {
     const { assignment, messageStatusFilter } = this.props;
     const didAddContacts = (await this.props.mutations.findNewCampaignContact())
       .data.findNewCampaignContact;
-    console.log("getNewContacts ?added", didAddContacts);
+    console.log(
+      "default-dynamicassignment:requestNewContacts added?",
+      didAddContacts
+    );
     if (didAddContacts && didAddContacts.found) {
       if (messageStatusFilter !== "needsMessage") {
         this.gotoInitials();
@@ -84,7 +93,6 @@ export class TexterSideboxClass extends React.Component {
       messageStatusFilter
     } = this.props;
     // need to see whether they have already texted anyone and if there are replies
-    console.log("dyaamsdmfidf", assignment.allContactsCount);
     const nextBatchMessage =
       assignment.allContactsCount === 0
         ? "Start texting with your first batch"
@@ -95,8 +103,9 @@ export class TexterSideboxClass extends React.Component {
         ? "Start texting"
         : settingsData.dynamicAssignmentRequestMoreLabel ||
           "Request another batch";
+    const headerStyle = messageStatusFilter ? { textAlign: "center" } : {};
     return (
-      <div style={{ textAlign: "center" }}>
+      <div style={headerStyle}>
         {assignment.hasUnassignedContactsForTexter ? (
           <div>
             <h3>{nextBatchMessage}</h3>
@@ -173,6 +182,12 @@ export const mutations = {
 export const TexterSidebox = loadData({ mutations })(
   withRouter(TexterSideboxClass)
 );
+
+// This is a bit of a trick
+// Normally we'd want to implement a separate component,
+// but we have crafted it to work in both contexts.
+// If you make changes, make sure you test in both!
+export const SummaryComponent = TexterSidebox;
 
 export const adminSchema = () => ({
   dynamicAssignmentRequestMoreLabel: yup.string(),

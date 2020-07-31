@@ -19,17 +19,20 @@ function getComponents() {
 
 export const componentList = getComponents();
 
-export const getSideboxes = ({
-  settingsData,
-  campaign,
-  contact,
-  assignment,
-  texter,
-  navigationToolbarChildren,
-  messageStatusFilter,
-  finished,
-  loading
-}) => {
+export const getSideboxes = (
+  {
+    settingsData,
+    campaign,
+    contact,
+    assignment,
+    texter,
+    navigationToolbarChildren,
+    messageStatusFilter,
+    finished,
+    loading
+  },
+  context
+) => {
   const popups = [];
   const enabledSideboxes = (
     (campaign &&
@@ -42,17 +45,30 @@ export const getSideboxes = ({
         settingsData[sb] ||
         (sb.startsWith("default") && settingsData[sb] !== false)
       ) {
-        const res = componentList[sb].showSidebox({
-          settingsData,
-          campaign,
-          contact,
-          assignment,
-          texter,
-          navigationToolbarChildren,
-          messageStatusFilter,
-          finished,
-          loading
-        });
+        let res = false;
+        if (context === "TexterTodo" && componentList[sb].showSidebox) {
+          res = componentList[sb].showSidebox({
+            settingsData,
+            campaign,
+            contact,
+            assignment,
+            texter,
+            navigationToolbarChildren,
+            messageStatusFilter,
+            finished,
+            loading
+          });
+        } else if (
+          context === "TexterTodoList" &&
+          componentList[sb].showSummary
+        ) {
+          res = componentList[sb].showSummary({
+            settingsData,
+            campaign,
+            assignment,
+            texter
+          });
+        }
         if (res === "popup") {
           popups.push(sb);
         }
@@ -62,7 +78,8 @@ export const getSideboxes = ({
     })
     .map(sb => ({
       name: sb,
-      Component: componentList[sb].TexterSidebox
+      Component: componentList[sb].TexterSidebox,
+      SummaryComponent: componentList[sb].SummaryComponent
     }));
   enabledSideboxes.popups = popups;
   return enabledSideboxes;
@@ -75,6 +92,28 @@ export const renderSidebox = (
   moreProps
 ) => {
   const Component = sideBox.Component;
+  return (
+    <Component
+      key={sideBox.name}
+      settingsData={settingsData}
+      {...parentComponent.props}
+      {...(moreProps || {})}
+      updateState={state => {
+        // allows a component to preserve state across dialog open/close
+        parentComponent.setState({ [`sideboxState${name}`]: state });
+      }}
+      persistedState={parentComponent.state[`sideboxState${name}`]}
+    />
+  );
+};
+
+export const renderSummary = (
+  sideBox,
+  settingsData,
+  parentComponent,
+  moreProps
+) => {
+  const Component = sideBox.SummaryComponent;
   return (
     <Component
       key={sideBox.name}

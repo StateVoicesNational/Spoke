@@ -175,7 +175,20 @@ export const resolvers = {
       );
       return suggestedCount;
     },
-    contactsCount: async (assignment, { contactsFilter }, { loaders }) => {
+    contactsCount: async (
+      assignment,
+      { contactsFilter },
+      { loaders },
+      apolloRequestContext
+    ) => {
+      if (
+        apolloRequestContext &&
+        apolloRequestContext.path &&
+        apolloRequestContext.path.key &&
+        assignment[apolloRequestContext.path.key.toLowerCase()]
+      ) {
+        return assignment[apolloRequestContext.path.key.toLowerCase()];
+      }
       if (assignment.contacts_count) {
         if (!contactsFilter || Object.keys(contactsFilter).length === 0) {
           return assignment.contacts_count;
