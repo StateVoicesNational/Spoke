@@ -20,11 +20,12 @@ const requestWithRetry = async (
   {
     validStatuses,
     statusValidationFunction,
-    retries = retries || 0,
+    retries: retriesInput,
     timeout = 2000,
     ...props
   } = {}
 ) => {
+  const retries = retriesInput || 0;
   const requestId = uuid();
 
   const retryDelay = () => {
@@ -46,7 +47,14 @@ const requestWithRetry = async (
   };
 
   const logRequest = () => {
-    return JSON.stringify({ url, props });
+    const logProps = {
+      ...props
+    };
+    if (props && props.headers && props.headers.Authorization) {
+      logProps.headers.Authorization = "redacted";
+    }
+
+    return JSON.stringify({ url, logProps });
   };
 
   const RetryReturnError = {

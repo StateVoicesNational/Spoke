@@ -157,8 +157,8 @@ export class AssignmentTexterContactControls extends React.Component {
     // if document.activeElement then ignore a naked keypress to be safe
     // console.log('KEYBOARD', evt.key, document.activeElement);
     if (
-      // SEND: Ctrl-x
-      evt.key === "x" &&
+      // SEND: Ctrl-Enter
+      evt.key === "Enter" &&
       // need to use ctrlKey in non-first texting context for accessibility
       evt.ctrlKey
     ) {
@@ -191,6 +191,7 @@ export class AssignmentTexterContactControls extends React.Component {
       ((evt.keyCode >= 65 /*a*/ && evt.keyCode <= 90) /*z*/ ||
         evt.key === "Enter" ||
         evt.key === "Space" ||
+        evt.key === " " ||
         evt.key === "Semicolon")
     ) {
       evt.preventDefault();
@@ -446,6 +447,7 @@ export class AssignmentTexterContactControls extends React.Component {
           style={{ flex: "1 1 auto" }}
           labelStyle={inlineStyles.flatButtonLabel}
           backgroundColor="white"
+          disabled={!!this.props.contact.optOut}
         />
       );
     } else {
@@ -460,6 +462,7 @@ export class AssignmentTexterContactControls extends React.Component {
           }}
           labelStyle={{ ...inlineStyles.flatButtonLabel, flex: "1 1 auto" }}
           backgroundColor="white"
+          disabled={!!this.props.contact.optOut}
         />
       );
     }
@@ -776,24 +779,30 @@ export class AssignmentTexterContactControls extends React.Component {
           className={css(flexStyles.flatButton)}
           labelStyle={{ ...inlineStyles.flatButtonLabel, color: "#DE1A1A" }}
           backgroundColor="white"
+          disabled={!!this.props.contact.optOut}
         />
       </div>
     );
   }
 
   renderMessagingRowSendSkip(contact) {
+    console.log("this.props", this.props);
     return (
       <div className={css(flexStyles.sectionSend)}>
         <FlatButton
           {...dataTest("send")}
           onClick={this.handleClickSendMessageButton}
-          disabled={this.props.disabled}
+          disabled={this.props.disabled || !!this.props.contact.optOut}
           label={<span>&crarr; Send</span>}
           className={`${css(flexStyles.flatButton)} ${css(
             flexStyles.subSectionSendButton
           )}`}
           labelStyle={inlineStyles.flatButtonLabel}
-          backgroundColor={theme.colors.coreBackgroundColor}
+          backgroundColor={
+            this.props.disabled
+              ? theme.colors.coreBackgroundColorDisabled
+              : theme.colors.coreBackgroundColor
+          }
           hoverColor={theme.colors.coreHoverColor}
           primary
         />

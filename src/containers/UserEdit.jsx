@@ -45,19 +45,39 @@ const fetchUser = async (organizationId, userId) =>
           lastName
           alias
           cell
+          extra
         }
       }
     `,
     variables: { organizationId, userId }
   });
 
-class UserEdit extends React.Component {
+const fetchOrg = async organizationId =>
+  apolloClient.query({
+    query: gql`
+      query getOrganizationData($organizationId: String!) {
+        organization(id: $organizationId) {
+          id
+          name
+          profileFields {
+            name
+            label
+          }
+        }
+      }
+    `,
+    variables: { organizationId }
+  });
+
+export class UserEdit extends React.Component {
   static propTypes = {
     mutations: PropTypes.object,
     currentUser: PropTypes.object,
+    currentOrg: PropTypes.object,
     editedUser: PropTypes.object,
     editUser: PropTypes.object,
     router: PropTypes.object,
+    location: PropTypes.object,
     userId: PropTypes.string,
     organizationId: PropTypes.string,
     onRequestClose: PropTypes.func,
@@ -73,6 +93,7 @@ class UserEdit extends React.Component {
   state = {
     changePasswordDialog: false,
     successDialog: false,
+    currentOrg: null,
     editedUser: null
   };
 
@@ -86,13 +107,26 @@ class UserEdit extends React.Component {
         editedUser: response.data
       });
     }
+    if (!this.props.authType && this.props.organizationId) {
+      const response = await fetchOrg(this.props.organizationId);
+      this.setState({
+        currentOrg: response.data
+      });
+    }
   }
 
   handleSave = async formData => {
+    const { router, location } = this.props;
     if (!this.props.authType) {
+      if (formData.extra) {
+        formData.extra = JSON.stringify(formData.extra);
+      }
       await this.props.mutations.editUser(formData);
       if (this.props.onRequestClose) {
         this.props.onRequestClose();
+      }
+      if (location.query.next) {
+        router.push(location.query.next);
       }
     } else if (this.props.authType === "change") {
       // change password
@@ -138,7 +172,7 @@ class UserEdit extends React.Component {
     this.setState({ successDialog: true });
   };
 
-  buildFormSchema = authType => {
+  buildFormSchema = (authType, org) => {
     let passwordFields = {};
     if (authType) {
       passwordFields = {
@@ -176,21 +210,56 @@ class UserEdit extends React.Component {
       };
     }
 
+    let profileFields = {};
+    if (!authType && org && org.profileFields.length) {
+      const fields = {};
+      org.profileFields.forEach(field => {
+        fields[field.name] = yup.string().required();
+      });
+      profileFields = {
+        extra: yup.object({
+          ...fields
+        })
+      };
+    }
+
     return yup.object({
       email: yup
         .string()
         .email()
         .required(),
       ...userFields,
+      ...profileFields,
       ...passwordFields
     });
   };
 
+  renderProfileField(field) {
+    return (
+      <span className={css(styles.fields)} key={field.name}>
+        <Form.Field label={field.label} name={`extra.${field.name}`} />
+      </span>
+    );
+  }
+
   render() {
-    const { authType, currentUser, style, userId, saveLabel } = this.props;
-    const onCancel = this.props.onCancel || this.props.router.goBack;
+    const {
+      authType,
+      currentUser,
+      style,
+      userId,
+      saveLabel,
+      router
+    } = this.props;
+    const onCancel = this.props.onCancel || (router && router.goBack);
     const user = (this.state.editedUser && this.state.editedUser.user) || {};
-    const formSchema = this.buildFormSchema(authType);
+    if (user && typeof user.extra === "string") {
+      user.extra = JSON.parse(user.extra);
+    }
+    const org = this.state.currentOrg && this.state.currentOrg.organization;
+    const formSchema = this.buildFormSchema(authType, org);
+    const fieldsNeeded = router && !!router.location.query.fieldsNeeded;
+
     return (
       <div>
         <GSForm
@@ -225,6 +294,10 @@ class UserEdit extends React.Component {
               />
             </span>
           )}
+          {fieldsNeeded && (
+            <h3>Please complete your profile</h3>
+          )}
+          {!authType && org && org.profileFields.map(this.renderProfileField)}
           {authType && (
             <Form.Field label="Password" name="password" type="password" />
           )}
@@ -244,7 +317,8 @@ class UserEdit extends React.Component {
           )}
           {authType !== "change" &&
             userId &&
-            userId === currentUser.currentUser.id && (
+            userId === currentUser.currentUser.id &&
+            !fieldsNeeded && (
               <div className={css(styles.container)}>
                 <RaisedButton
                   onTouchTap={this.handleClick}
@@ -259,7 +333,7 @@ class UserEdit extends React.Component {
               type="submit"
               label={saveLabel || "Save"}
             />
-            {!authType && (
+            {!authType && onCancel && !fieldsNeeded && (
               <RaisedButton
                 className={css(styles.cancel)}
                 label="Cancel"
@@ -337,6 +411,8 @@ export const editUserMutation = gql`
       alias
       cell
       email
+      extra
+      profileComplete(organizationId: $organizationId)
     }
   }
 `;
@@ -368,7 +444,9 @@ const mutations = {
   })
 };
 
-export default loadData({
-  queries,
-  mutations
-})(withRouter(UserEdit));
+export default withRouter(
+  loadData({
+    queries,
+    mutations
+  })(UserEdit)
+);

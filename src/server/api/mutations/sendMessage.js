@@ -1,9 +1,10 @@
 import { GraphQLError } from "graphql/error";
 
 import { Message, cacheableData } from "../../models";
-import serviceMap from "../lib/services";
 
 import { getSendBeforeTimeUtc } from "../../../lib/timezones";
+import { jobRunner } from "../../../integrations/job-runners";
+import { Tasks } from "../../../workers/tasks";
 
 const JOBS_SAME_PROCESS = !!(
   process.env.JOBS_SAME_PROCESS || global.JOBS_SAME_PROCESS
@@ -108,7 +109,7 @@ export const sendMessage = async (
     global.DEFAULT_SERVICE ||
     process.env.DEFAULT_SERVICE ||
     "";
-  const service = serviceMap[serviceName];
+
   const finalText = replaceCurlyApostrophes(text);
   const messageInstance = new Message({
     text: finalText,
@@ -139,17 +140,16 @@ export const sendMessage = async (
   }
   contact.message_status = saveResult.contactStatus;
 
-  // log.info(
-  //   `Sending (${serviceName}): ${messageInstance.user_number} -> ${messageInstance.contact_number}\nMessage: ${messageInstance.text}`
-  // );
-  //NO AWAIT: pro=return before api completes, con=context needs to stay alive
-  service.sendMessage(
-    saveResult.message,
-    contact,
-    null,
-    organization,
-    campaign
-  );
+  if (!saveResult.blockSend) {
+    await jobRunner.dispatchTask(Tasks.SEND_MESSAGE, {
+      message: saveResult.message,
+      contact,
+      // TODO: start a transaction inside the service send message function
+      trx: null,
+      organization,
+      campaign
+    });
+  }
 
   if (initialMessageStatus === "needsMessage") {
     // don't both requerying the messages list on the response

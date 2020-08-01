@@ -731,7 +731,9 @@ describe("ngpvn-action", () => {
       };
 
       contact = {
-        external_id: "10025"
+        custom_fields: JSON.stringify({
+          VanID: "8675309"
+        })
       };
 
       organization = {
@@ -745,7 +747,7 @@ describe("ngpvn-action", () => {
           encodedQueryParams: true
         })
           .post(
-            `/v4/people/10025/canvassResponses`,
+            `/v4/people/8675309/canvassResponses`,
             JSON.stringify(interactionStepValue)
           )
           .reply(statusCode);
@@ -807,7 +809,9 @@ describe("ngpvn-action", () => {
         };
 
         contact = {
-          external_id: "10025"
+          custom_fields: JSON.stringify({
+            VanID: "8675309"
+          })
         };
 
         organization = {
@@ -839,6 +843,95 @@ describe("ngpvn-action", () => {
 
         expect(postPeopleCanvassResponsesNock.isDone()).toEqual(false);
         nock.cleanAll();
+      });
+    });
+  });
+
+  describe("#postCanvassResponse", () => {
+    let contact;
+    let organization;
+    let body;
+
+    describe("happy path", () => {
+      beforeEach(async () => {
+        contact = {
+          custom_fields: JSON.stringify({
+            VanID: "8675309"
+          })
+        };
+
+        organization = {
+          id: 3
+        };
+
+        body = {
+          willVote: true
+        };
+      });
+
+      it("calls the people endpoint", async () => {
+        const postPeopleCanvassResponsesNock = nock(
+          "https://api.securevan.com:443",
+          {
+            encodedQueryParams: true
+          }
+        )
+          .post(`/v4/people/8675309/canvassResponses`, JSON.stringify(body))
+          .reply(204);
+
+        await NgpVanAction.postCanvassResponse(contact, organization, body);
+
+        postPeopleCanvassResponsesNock.done();
+      });
+    });
+
+    describe("when custom_fields fails to parse", () => {
+      beforeEach(async () => {
+        jest.spyOn(console, "error");
+        contact = {
+          id: 3,
+          custom_fields: "won't parse"
+        };
+      });
+
+      it("logs an error and returns {}", async () => {
+        const result = await NgpVanAction.postCanvassResponse(
+          contact,
+          organization,
+          body
+        );
+
+        // eslint-disable-next-line no-console
+        expect(console.error.mock.calls).toEqual([
+          [expect.stringMatching(/Error parsing custom_fields for contact 3.*/)]
+        ]);
+        expect(result).toEqual({});
+      });
+    });
+
+    describe("when custom_fields doesn't have VanID", () => {
+      beforeEach(async () => {
+        jest.spyOn(console, "error");
+        contact = {
+          id: 3,
+          custom_fields: "{}"
+        };
+      });
+
+      it("logs an error and returns {}", async () => {
+        const result = await NgpVanAction.postCanvassResponse(
+          contact,
+          organization,
+          body
+        );
+
+        // eslint-disable-next-line no-console
+        expect(console.error.mock.calls).toEqual([
+          [
+            "Cannot sync results to van for campaign_contact 3. No VanID in custom fields"
+          ]
+        ]);
+        expect(result).toEqual({});
       });
     });
   });

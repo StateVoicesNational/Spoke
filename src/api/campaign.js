@@ -35,10 +35,11 @@ export const schema = gql`
   }
 
   type CampaignCompletionStats {
-    contactsCount: Int
     assignedCount: Int
-    messagedCount: Int
+    contactsCount: Int
     errorCount: Int
+    messagedCount: Int
+    needsResponseCount: Int
   }
 
   type IngestMethod {

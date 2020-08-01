@@ -1,5 +1,49 @@
 # Release Notes
 
+
+## v7.1
+
+_July 2020:_ Release 7.1 is a testament to the community working together -- several organizations using Spoke contributed features along with several open-source progressive volunteers (several as their first contribution)!  Thank you to all who contributed.  At the top in "Significant for deployments" there are top-lines for what to know before or during upgrade.  As usual, please let us know if you have any issues.
+
+### Significant for deployments:
+
+* After changing the texter send keyboard shortcut to Ctrl-X we have moved it (again) to Ctrl-Enter (to avoid conflict with OS 'cut' shortcuts)
+* There is a small migration to the user table which needs to be run before/during migration (either by leaving/disabling SUPPRESS_MIGRATIONS="" or for [AWS Lambda, see the db migration instructions](https://github.com/MoveOnOrg/Spoke/blob/main/docs/DEPLOYING_AWS_LAMBDA.md#migrating-the-database)
+* If you are running on lambda, you might consider setting JOB_RUNNER="lambda-async" for better scaling/performance
+
+### New Features
+* Suspending texters: marking a texter Suspended in the People page immediately stops them from being able to text - @JeremyParker
+* Zapier action handler support for triggering when contact tags are updated - @lperson (enable with adding `zapier-action` in your ACTION_HANDLERS env var)
+* Extra Profile Fields -- by setting an organization features variable in the database, additional profile fields can be added during signup, which can be required even for existing users to complete. - @jeffm2001
+* [Slack Authentication](./HOWTO_INTEGRATE_SLACK_AUTH.md) (alternative to Auth0 or local)  - @matteosb
+* Tag data in campaign export files - @jeffm2001
+* DataWarehouse contact loader bugfixes (actually works now) - @jeffm2001
+* Edit canned responses (you used to just be able to add/remove -- now you can edit) - @aschneit
+* Reduced 'flash' while sending initial text messages -- now the Send button just blinks instead of the whole screen for reduced visual strain - @eamouzou
+* Character and segment counts in the Script Editor - @hiemanshu
+* Timezone sorting on the Campaign Admin List - @alliejones
+* "Needs Response" count on Campaign Admin List, when [Redis is configured](./HOWTO_CONNECT_WITH_REDIS.md) - @schuyler1d
+* Improved NGP VAN cell selection from lists - @lperson
+* More experimental message-handler extensions: "auto-optout" allows automatic optout based on certain text coming in from a contact. and "profanity-tagger" gains an option to block a message on-send based on content. - @schuyler1d
+* An exciting new "dispatch" framework to send jobs and tasks asynchronously for tracking which can differ by framework -- especially supporting AWS Lambda, but there is also an experimental "bull" implementation using Redis that we may want to default on Heroku deployments.  Please tell us of your experience here.  This should resolve a large number of bugs and improve performance in many places. - @matteosb
+* Documenting Progressive Hacknight - @ibrand
+
+### Bugs fixed
+* weird [Object object] when tabbing into canned response text issue - @eamouzou
+* simplified docker-compose file - @matteosb
+* fix action handler select menu in Campaign Admin Interactions section - @matteosb
+
+### Appreciations
+
+Thanks to [alliejones](https://github/alliejones), [aschneit](https://github/aschneit), [eamouzou](https://github/eamouzou), [hiemanshu](https://github/hiemanshu), [ibrand](https://github/ibrand), [jeffm2001](https://github/jeffm2001), [JeremyParker](https://github/JeremyParker), [lperson](https://github/lperson), [matteosb](https://github/matteosb), and [schuyler1d](https://github/schuyler1d).
+
+Also to AFL-CIO, MoveOn, NYCET, Scale to Win, and Working Families Party for sending their contributions and giving early feedback/debugging time.
+
+### Coming up
+
+In our next release, we're hoping to have even more VAN support in message handlers, some timezone config flexibility, some changes and features related to the recent FCC court decision, and hopefully a new dynamic assignment model. -- of course, along with a whole lot more -- send us your changes now, so we can bring it in to the next version!
+
+
 ## v7.0
 _June 2020:_ Version 7.0 (or 6.19 in honor of Juneteenth!)
 **Note:** This is a major release and therefore requires a schema change. See the deploy steps section for details. Anything marked as *experimental* has not yet been tested on a production texting campaign.
@@ -72,7 +116,6 @@ Thanks to all the contributors part of this release including:
 [lperson](https://github.com/lperson),
 [matteosb](https://github.com/matteosb),
 [schuyler1d](https://github.com/schuyler1d)
-
 
 ## v6.0
 _May 2020:_ Version 6.0

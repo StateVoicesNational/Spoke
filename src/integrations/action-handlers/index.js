@@ -1,6 +1,7 @@
 import { getConfig } from "../../server/api/lib/config";
 import { r } from "../../server/models";
 import { log } from "../../lib";
+import _ from "lodash";
 
 export const availabilityCacheKey = (name, organization, userId) =>
   `${getConfig("CACHE_PREFIX", organization) || ""}action-avail-${name}-${
@@ -11,6 +12,8 @@ export const choiceDataCacheKey = (name, organization, suffix) =>
   `${getConfig("CACHE_PREFIX", organization) ||
     ""}action-choices-${name}-${suffix}`;
 
+// TODO: organization is never actually passed to this method so action handlers
+//   are not actually configurable at the organization level
 export function getActionHandlers(organization) {
   const enabledActionHandlers = (
     getConfig("ACTION_HANDLERS", organization) ||
@@ -32,6 +35,10 @@ export function getActionHandlers(organization) {
 }
 
 const CONFIGURED_ACTION_HANDLERS = getActionHandlers();
+const CONFIGURED_TAG_HANDLERS = _.pickBy(
+  CONFIGURED_ACTION_HANDLERS,
+  handler => !!handler.onTagUpdate
+);
 
 export async function getSetCacheableResult(cacheKey, fallbackFunc) {
   if (r.redis && cacheKey) {
@@ -111,13 +118,17 @@ export async function getActionHandlerAvailability(
 }
 
 export function rawActionHandler(name) {
-  // RARE: You should almost always use getActionHandler() below,
-  // unless workflow has already tested availability for the org-user
   return CONFIGURED_ACTION_HANDLERS[name];
 }
 
 export function rawAllActionHandlers() {
   return CONFIGURED_ACTION_HANDLERS;
+}
+
+// TODO: clean up tag update API. Because tag update handlers are _always_ run if configured
+//   it would be better to separate tag handler integrations from question response handlers
+export function rawAllTagUpdateActionHandlerNames() {
+  return Object.keys(CONFIGURED_TAG_HANDLERS);
 }
 
 export async function getActionHandler(name, organization, user) {

@@ -78,13 +78,15 @@ export default function renderIndex(html, css, assetMap) {
       window.ALLOW_SEND_ALL=${process.env.ALLOW_SEND_ALL || 0}
       window.BULK_SEND_CHUNK_SIZE=${process.env.BULK_SEND_CHUNK_SIZE || 0}
       window.MAX_MESSAGE_LENGTH=${process.env.MAX_MESSAGE_LENGTH || 99999}
-      window.TERMS_REQUIRE="${process.env.TERMS_REQUIRE || ""}"
+      window.TERMS_REQUIRE=${getConfig("TERMS_REQUIRE", null, {
+        truthy: 1
+      }) || false}
       window.TZ="${process.env.TZ || ""}"
       window.CONTACT_LOADERS="${process.env.CONTACT_LOADERS ||
         "csv-upload,test-fakedata,datawarehouse"}"
       window.DST_REFERENCE_TIMEZONE="${process.env.DST_REFERENCE_TIMEZONE ||
         "America/New_York"}"
-      window.PASSPORT_STRATEGY="${process.env.PASSPORT_STRATEGY || ""}"
+      window.PASSPORT_STRATEGY="${process.env.PASSPORT_STRATEGY || "auth0"}"
       window.PEOPLE_PAGE_CAMPAIGN_FILTER_SORT = "${process.env
         .PEOPLE_PAGE_CAMPAIGN_FILTER_SORT || ""}"
       window.PEOPLE_PAGE_ROW_SIZES="${process.env.PEOPLE_PAGE_ROW_SIZES || ""}"

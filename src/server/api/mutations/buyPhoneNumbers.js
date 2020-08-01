@@ -1,12 +1,9 @@
 import serviceMap from "../lib/services";
 import { accessRequired } from "../errors";
 import { getConfig } from "../lib/config";
-import { cacheableData, JobRequest } from "../../models";
-import { buyPhoneNumbers as buyNumbersJob } from "../../../workers/jobs";
-
-const JOBS_SAME_PROCESS = !!(
-  process.env.JOBS_SAME_PROCESS || global.JOBS_SAME_PROCESS
-);
+import { cacheableData } from "../../models";
+import { jobRunner } from "../../../integrations/job-runners";
+import { Jobs } from "../../../workers/job-processes";
 
 export const buyPhoneNumbers = async (
   _,
@@ -36,20 +33,15 @@ export const buyPhoneNumbers = async (
     }
     messagingServiceSid = msgSrv;
   }
-  const job = await JobRequest.save({
+  return await jobRunner.dispatchJob({
     queue_name: `${organizationId}:buy_phone_numbers`,
     organization_id: organizationId,
-    job_type: "buy_phone_numbers",
+    job_type: Jobs.BUY_PHONE_NUMBERS,
     locks_queue: false,
-    assigned: JOBS_SAME_PROCESS,
     payload: JSON.stringify({
       areaCode,
       limit,
       messagingServiceSid
     })
   });
-  if (JOBS_SAME_PROCESS) {
-    buyNumbersJob(job);
-  }
-  return job;
 };

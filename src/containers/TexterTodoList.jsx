@@ -78,8 +78,19 @@ class TexterTodoList extends React.Component {
     }
   }
 
+  profileComplete() {
+    const { data, router } = this.props;
+    if (!data.currentUser.profileComplete) {
+      const orgId = this.props.params.organizationId;;
+      const userId = data.currentUser.id;
+      const next = this.props.location.pathname;
+      router.push(`/app/${orgId}/account/${userId}?next=${next}&fieldsNeeded=1`);
+    }
+  }
+
   render() {
     this.termsAgreed();
+    this.profileComplete();
     const todos = this.props.data.currentUser.todos;
     const renderedTodos = this.renderTodoList(todos);
 
@@ -108,6 +119,7 @@ export const dataQuery = gql`
     currentUser {
       id
       terms
+      profileComplete(organizationId: $organizationId)
       cacheable
       todos(organizationId: $organizationId) {
         id

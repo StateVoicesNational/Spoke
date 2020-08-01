@@ -15,6 +15,7 @@ import {
 import * as Mutations from "../../../../src/server/api/mutations/";
 const ActionHandlers = require("../../../../src/integrations/action-handlers");
 const ComplexTestActionHandler = require("../../../../src/integrations/action-handlers/complex-test-action");
+import { jobRunner } from "../../../../src/integrations/job-runners";
 
 import { r, cacheableData, createLoaders } from "../../../../src/server/models";
 const errors = require("../../../../src/server/api/errors");
@@ -698,21 +699,6 @@ describe("mutations.updateQuestionResponses", () => {
           [Number(organization.id)]
         ]);
 
-        expect(ActionHandlers.getActionHandler.mock.calls).toEqual([
-          [
-            "complex-test-action",
-            expect.objectContaining({
-              id: Number(organization.id)
-            }),
-            texterUser
-          ],
-          [
-            "complex-test-action",
-            expect.objectContaining({ id: Number(organization.id) }),
-            texterUser
-          ]
-        ]);
-
         expect(ComplexTestActionHandler.processAction).toHaveBeenCalledTimes(2);
         expect(ComplexTestActionHandler.processAction.mock.calls).toEqual(
           expect.arrayContaining([
@@ -765,7 +751,7 @@ describe("mutations.updateQuestionResponses", () => {
         });
       });
 
-      describe("when the action handler fails to load :-(", () => {
+      describe("when task dispatch fails", () => {
         beforeEach(async () => {
           ({
             interactionSteps,
@@ -778,13 +764,11 @@ describe("mutations.updateQuestionResponses", () => {
           ));
         });
 
-        it("processes the other actions", async () => {
-          jest
-            .spyOn(ActionHandlers, "getActionHandler")
-            .mockResolvedValueOnce(undefined);
+        it("dispatches other actions", async () => {
           jest.spyOn(ComplexTestActionHandler, "processAction");
-          jest.spyOn(cacheableData.organization, "load");
-
+          jest.spyOn(jobRunner, "dispatchTask").mockImplementationOnce(() => {
+            throw new Error("foo");
+          });
           await Mutations.updateQuestionResponses(
             {},
             { questionResponses, campaignContactId: contacts[0].id },
@@ -792,7 +776,6 @@ describe("mutations.updateQuestionResponses", () => {
           );
 
           await sleep(100);
-          expect(cacheableData.organization.load).toHaveBeenCalledTimes(1);
 
           expect(ComplexTestActionHandler.processAction).toHaveBeenCalledTimes(
             1
