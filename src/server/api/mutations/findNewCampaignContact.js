@@ -78,6 +78,11 @@ export const findNewCampaignContact = async (
     .catch(log.error);
 
   if (updatedCount > 0) {
+    await cacheableData.campaign.incrCount(
+      campaign.id,
+      "assignedCount",
+      updatedCount
+    );
     return {
       found: true
     };

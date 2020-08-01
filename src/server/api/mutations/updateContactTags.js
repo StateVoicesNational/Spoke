@@ -1,6 +1,7 @@
-import { log } from "../../../lib";
 import { assignmentRequiredOrAdminRole } from "../errors";
 import { cacheableData } from "../../models";
+import { jobRunner } from "../../../integrations/job-runners";
+import { Tasks } from "../../../workers/tasks";
 const ActionHandlers = require("../../../integrations/action-handlers");
 
 export const updateContactTags = async (
@@ -8,67 +9,49 @@ export const updateContactTags = async (
   { tags, campaignContactId },
   { user }
 ) => {
-  const contact = await cacheableData.campaignContact.load(campaignContactId);
-  const campaign = await cacheableData.campaign.load(contact.campaign_id);
-  await assignmentRequiredOrAdminRole(
-    user,
-    campaign.organization_id,
-    contact.assignment_id,
-    contact
-  );
+  let contact;
+  try {
+    contact = await cacheableData.campaignContact.load(campaignContactId);
+    const campaign = await cacheableData.campaign.load(contact.campaign_id);
+    await assignmentRequiredOrAdminRole(
+      user,
+      campaign.organization_id,
+      contact.assignment_id,
+      contact
+    );
 
-  await cacheableData.tagCampaignContact
-    .save(campaignContactId, tags)
-    .catch(err => {
-      log.error(
-        `Error saving updated QuestionResponse for campaignContactID ${campaignContactId} questionResponses ${JSON.stringify(
-          questionResponses
-        )} error ${err}`
-      );
-    });
+    await cacheableData.tagCampaignContact.save(campaignContactId, tags);
 
-  const organization = await cacheableData.organization.load(
-    campaign.organization_id
-  );
-  // The rest is for ACTION_HANDLERS
-  const actionHandlers = ActionHandlers.getActionHandlers(organization);
-  const supportedActionHandlers = Object.keys(actionHandlers).filter(
-    handler => actionHandlers[handler].onTagUpdate
-  );
+    const organization = await cacheableData.organization.load(
+      campaign.organization_id
+    );
 
-  if (supportedActionHandlers.length) {
-    for (let i = 0, l = supportedActionHandlers.length; i < l; i++) {
-      ActionHandlers.getActionHandler(
-        supportedActionHandlers[i],
-        organization,
-        user
-      )
-        .then(handler => {
-          if (handler) {
-            // no, no AWAIT. FUTURE: convert to dispatch
-            handler
-              .onTagUpdate(
-                tags,
-                campaignContactId,
-                contact,
-                campaign,
-                organization
-              )
-              .catch(err => {
-                log.error(
-                  `Error executing handler for ${supportedActionHandlers[i]}, campaignContactId ${campaignContactId} error ${err}`
-                );
-              });
+    const handlerNames = await ActionHandlers.rawAllTagUpdateActionHandlerNames();
+    await Promise.all(
+      handlerNames.map(name => {
+        return jobRunner.dispatchTask(Tasks.ACTION_HANDLER_TAG_UPDATE, {
+          name,
+          tags,
+          contact,
+          campaign,
+          organization,
+          texter: {
+            first_name: user.first_name,
+            last_name: user.last_name,
+            email: user.email
           }
-        })
-        .catch(err => {
-          log.error(
-            `Error loading handler for InteractionStep ${interactionStepId} InteractionStepAction ${interactionStepAction} error ${err}`
-          );
         });
-    }
+      })
+    ).catch(e =>
+      console.error("Dispatching to one or more tag handlers failed", e)
+    );
+  } catch (err) {
+    // eslint-disable-next-line no-console
+    console.error(
+      `Error saving tagCampaignContact for campaignContactID ${campaignContactId} tags ${tags}  error ${err}`
+    );
+    throw err;
   }
+
   return contact.id;
 };
-
-export default updateContactTags;

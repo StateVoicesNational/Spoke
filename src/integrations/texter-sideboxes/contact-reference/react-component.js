@@ -42,7 +42,7 @@ export class TexterSidebox extends React.Component {
     const { campaign, assignment, contact, settingsData } = this.props;
 
     const { host, protocol } = document.location;
-    const url = `${protocol}//${host}/app/${campaign.organization.id}/todos/${assignment.id}/allreplies?contact=${this.props.contact.id}`;
+    const url = `${protocol}//${host}/app/${campaign.organization.id}/todos/review/${this.props.contact.id}`;
 
     const textContent = [
       <IconButton

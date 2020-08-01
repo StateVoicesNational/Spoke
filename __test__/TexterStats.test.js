@@ -10,7 +10,8 @@ const campaign = {
       texter: {
         id: "1",
         firstName: "Test",
-        lastName: "Tester"
+        lastName: "Tester",
+        roles: ["SUSPENDED", "TEXTER"]
       },
       unmessagedCount: 193,
       contactsCount: 238
@@ -20,7 +21,8 @@ const campaign = {
       texter: {
         id: "1",
         firstName: "Someone",
-        lastName: "Else"
+        lastName: "Else",
+        roles: ["SUSPENDED"]
       },
       unmessagedCount: 4,
       contactsCount: 545
@@ -36,7 +38,8 @@ const campaignDynamic = {
       texter: {
         id: "1",
         firstName: "Test",
-        lastName: "Tester"
+        lastName: "Tester",
+        roles: ["SUSPENDED", "TEXTER"]
       },
       unmessagedCount: 193,
       contactsCount: 238
@@ -46,7 +49,8 @@ const campaignDynamic = {
       texter: {
         id: "1",
         firstName: "Someone",
-        lastName: "Else"
+        lastName: "Else",
+        roles: ["SUSPENDED"]
       },
       unmessagedCount: 4,
       contactsCount: 545
@@ -58,7 +62,7 @@ describe("TexterStats (Non-dynamic campaign)", () => {
   it("contains the right text", () => {
     const stats = shallow(<TexterStats campaign={campaign} />);
     expect(stats.text()).toEqual(
-      "Test Tester19%<LinearProgress />Someone Else99%<LinearProgress />"
+      "Test Tester19%<LinearProgress />Someone Else (Suspended)99%<LinearProgress />"
     );
   });
 

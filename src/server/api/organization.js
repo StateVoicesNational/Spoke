@@ -1,5 +1,5 @@
 import { mapFieldsToModel } from "./lib/utils";
-import { getConfig } from "./lib/config";
+import { getConfig, getFeatures } from "./lib/config";
 import { r, Organization, cacheableData } from "../models";
 import { getTags } from "./tag";
 import { accessRequired } from "./errors";
@@ -49,6 +49,11 @@ export const resolvers = {
       }
       return getTags(organization, groupFilter);
     },
+    profileFields: organization =>
+      // @todo: standardize on escaped or not once there's an interface.
+      typeof getFeatures(organization).profile_fields === "string"
+        ? JSON.parse(getFeatures(organization).profile_fields)
+        : getFeatures(organization).profile_fields || [],
     availableActions: async (organization, _, { user, loaders }) => {
       await accessRequired(user, organization.id, "SUPERVOLUNTEER");
       const availableHandlers = await getAvailableActionHandlers(

@@ -69,35 +69,39 @@ export function getContacts(
   });
 
   if (contactsFilter) {
-    const validTimezone = contactsFilter.validTimezone;
-    if (validTimezone !== null) {
-      if (validTimezone === true) {
-        if (defaultTimezoneIsBetweenTextingHours(config)) {
-          // missing timezone ok
-          validOffsets.push("");
+    if (contactsFilter.contactId) {
+      query = query.where({ id: contactsFilter.contactId });
+    } else {
+      const validTimezone = contactsFilter.validTimezone;
+      if (validTimezone !== null) {
+        if (validTimezone === true) {
+          if (defaultTimezoneIsBetweenTextingHours(config)) {
+            // missing timezone ok
+            validOffsets.push("");
+          }
+          query = query.whereIn("timezone_offset", validOffsets);
+        } else if (validTimezone === false) {
+          if (!defaultTimezoneIsBetweenTextingHours(config)) {
+            // missing timezones are not ok to text
+            invalidOffsets.push("");
+          }
+          query = query.whereIn("timezone_offset", invalidOffsets);
         }
-        query = query.whereIn("timezone_offset", validOffsets);
-      } else if (validTimezone === false) {
-        if (!defaultTimezoneIsBetweenTextingHours(config)) {
-          // missing timezones are not ok to text
-          invalidOffsets.push("");
-        }
-        query = query.whereIn("timezone_offset", invalidOffsets);
       }
-    }
 
-    query = addWhereClauseForContactsFilterMessageStatusIrrespectiveOfPastDue(
-      query,
-      (contactsFilter && contactsFilter.messageStatus) ||
-        (pastDue
-          ? // by default if asking for 'send later' contacts we include only those that need replies
-            "needsResponse"
-          : // we do not want to return closed/messaged
-            "needsMessageOrResponse")
-    );
+      query = addWhereClauseForContactsFilterMessageStatusIrrespectiveOfPastDue(
+        query,
+        (contactsFilter && contactsFilter.messageStatus) ||
+          (pastDue
+            ? // by default if asking for 'send later' contacts we include only those that need replies
+              "needsResponse"
+            : // we do not want to return closed/messaged
+              "needsMessageOrResponse")
+      );
 
-    if (Object.prototype.hasOwnProperty.call(contactsFilter, "isOptedOut")) {
-      query = query.where("is_opted_out", contactsFilter.isOptedOut);
+      if (Object.prototype.hasOwnProperty.call(contactsFilter, "isOptedOut")) {
+        query = query.where("is_opted_out", contactsFilter.isOptedOut);
+      }
     }
   }
 

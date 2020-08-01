@@ -12,7 +12,7 @@ export function getMessageHandlers(organization) {
       const c = require(`./${name}/index.js`);
       handlers[name] = c;
     } catch (err) {
-      log.error(
+      console.error(
         `${handlerKey} failed to load message handler ${name} -- ${err}`
       );
     }
