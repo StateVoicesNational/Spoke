@@ -49,9 +49,11 @@ const headerValidator = () => {
     const { authToken } = await cacheableData.organization.getTwilioAuth(
       organization
     );
-    const options = {
+    const twilioMessageUrl = getConfig("TWILIO_MESSAGE_CALLBACK_URL");
+    let options = {
       validate: true,
-      protocol: "https"
+      protocol: "https",
+      url: twilioMessageUrl,
     };
 
     return Twilio.webhook(authToken, options)(req, res, next);

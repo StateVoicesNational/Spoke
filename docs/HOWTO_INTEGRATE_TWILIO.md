@@ -23,6 +23,7 @@ If you are using these instructions for an Heroku instance or AWS Lambda instanc
   - Make sure `SEND AN INCOMING_MESSAGE WEBHOOK` is selected
   - `REQUEST URL` is `https://<YOUR_NGROK_APP_URL>/twilio` (or for Heroku instructions, `https://<YOUR_HEROKU_APP_URL>/twilio`) using `HTTP POST`
   - Set `FALLBACK URL` to the same as `REQUEST URL`
+  - In your .env file, set `TWILIO_MESSAGE_CALLBACK_URL` to this same URL
 8. Under `Outbound Settings`
   - `STATUS CALLBACK URL` in your Twilio console is `https://<YOUR_NGROK_APP_URL>/twilio-message-report` (or for Heroku instructions, `https://<YOUR_HEROKU_APP_URL>/twilio-message-report`)
   - In your .env file, set `TWILIO_STATUS_CALLBACK_URL` to this same URL
