@@ -51,7 +51,7 @@ const headerValidator = () => {
       organization
     );
     const twilioMessageUrl = getConfig("TWILIO_MESSAGE_CALLBACK_URL");
-    let options = {
+    const options = {
       validate: true,
       protocol: "https",
       url: twilioMessageUrl,
