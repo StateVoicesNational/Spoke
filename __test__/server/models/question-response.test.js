@@ -103,7 +103,7 @@ describe("questionResponse cacheableData methods", async () => {
       },
       deleted: [
         {
-          interactionStepId: "1",
+          interactionStepId: 1,
           value: "hmm1"
         }
       ]

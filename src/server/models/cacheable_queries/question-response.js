@@ -76,7 +76,7 @@ const questionResponseCache = {
           const insertQuestionResponses = [];
           const updateStepIds = [];
           questionResponses.forEach(qr => {
-            newIds[qr.interactionStepId.toString()] = 1;
+            newIds[qr.interactionStepId] = 1;
             const existing = dbResponses.filter(
               db => db.interaction_step_id === Number(qr.interactionStepId)
             );
@@ -97,12 +97,12 @@ const questionResponseCache = {
             }
           });
           const toDelete = dbResponses.filter(
-            dbqr => !(dbqr.interaction_step_id.toString() in newIds)
+            dbqr => !(dbqr.interaction_step_id in newIds)
           );
           toDelete.forEach(dbqr => {
             toReturn.deleted.push({
               value: dbqr.value,
-              interactionStepId: dbqr.interaction_step_id.toString()
+              interactionStepId: dbqr.interaction_step_id
             });
           });
           const deletes = toDelete.map(db => db.interaction_step_id);
