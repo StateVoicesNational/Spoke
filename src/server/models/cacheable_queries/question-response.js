@@ -51,8 +51,8 @@ const questionResponseCache = {
     // This is a bit elaborate because we want to preserve the created_at time
     // Otherwise, we could just delete all and recreate
     const toReturn = {
-      newOrUpdatedPreviousValue: {},
-      deletedPrevious: []
+      newOrUpdated: {},
+      deleted: []
     };
     if (!campaignContactId) {
       return toReturn; // guard for delete command
@@ -87,12 +87,10 @@ const questionResponseCache = {
             };
             if (!existing.length) {
               insertQuestionResponses.push(newObj);
-              toReturn.newOrUpdatedPreviousValue[
-                Number(qr.interactionStepId)
-              ] = null;
+              toReturn.newOrUpdated[Number(qr.interactionStepId)] = null;
             } else if (existing[0].value !== qr.value) {
               updateStepIds.push(qr.interactionStepId);
-              toReturn.newOrUpdatedPreviousValue[Number(qr.interactionStepId)] =
+              toReturn.newOrUpdated[Number(qr.interactionStepId)] =
                 existing[0].value;
               // will be both deleted and inserted
               insertQuestionResponses.push(newObj);
@@ -102,7 +100,7 @@ const questionResponseCache = {
             dbqr => !(dbqr.interaction_step_id.toString() in newIds)
           );
           toDelete.forEach(dbqr => {
-            toReturn.deletedPrevious.push({
+            toReturn.deleted.push({
               value: dbqr.value,
               interactionStepId: dbqr.interaction_step_id.toString()
             });
