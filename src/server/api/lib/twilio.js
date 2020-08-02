@@ -40,7 +40,12 @@ async function getTwilio(organization) {
   return null;
 }
 
-const headerValidator = () => {
+/**
+ * Validate that the message came from Twilio before proceeding.
+ *
+ * @param url The external-facing URL; this may be omitted to use the URL from the request.
+ */
+const headerValidator = (url) => {
   if (!!TWILIO_SKIP_VALIDATION) return (req, res, next) => next();
 
   return async (req, res, next) => {
@@ -50,11 +55,10 @@ const headerValidator = () => {
     const { authToken } = await cacheableData.organization.getTwilioAuth(
       organization
     );
-    const twilioMessageUrl = getConfig("TWILIO_MESSAGE_CALLBACK_URL");
     const options = {
       validate: true,
       protocol: "https",
-      url: twilioMessageUrl,
+      url: url,
     };
 
     return Twilio.webhook(authToken, options)(req, res, next);
