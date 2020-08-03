@@ -54,7 +54,7 @@ class TexterTodoList extends React.Component {
   componentDidMount() {
     this.props.data.refetch();
     // stopPolling is broken (at least in currently used version), so we roll our own so we can unmount correctly
-    if (this.props.data.currentUser.cacheable && !this.state.polling) {
+    if (!this.state.polling) {
       const self = this;
       this.setState({
         polling: setInterval(() => {
