@@ -9,7 +9,6 @@ import {
   getAvailableActionHandlers,
   getActionChoiceData
 } from "../../integrations/action-handlers";
-import { get as stateLookup } from "us-area-codes";
 
 export const resolvers = {
   Organization: {
@@ -185,6 +184,7 @@ export const resolvers = {
       ) {
         throw Error("Twilio inventory management is not enabled");
       }
+      const usAreaCodes = require('us-area-codes');
       const service = getConfig("service", organization) ||
         getConfig("DEFAULT_SERVICE");
       const counts = await r
@@ -203,7 +203,7 @@ export const resolvers = {
         .groupBy("area_code");
       return counts.map(row => ({
         areaCode: row.area_code,
-        state: stateLookup(Number(row.area_code)),
+        state: usAreaCodes.get(Number(row.area_code)),
         allocatedCount: Number(row.allocated_count),
         availableCount: Number(row.available_count)
       }));
