@@ -23,9 +23,9 @@ export const tests = testName => {
       navigationToolbarChildren: {
         onNext: logFunction,
         onPrevious: logFunction,
-        title: "21 of 42",
+        title: "42 of 42",
         total: 42,
-        currentIndex: 21
+        currentIndex: 42
       },
       assignment: {
         campaign: {
