@@ -243,11 +243,11 @@ export const tests = testName => {
       assignment: {
         id: "-1",
         allContactsCount: 88,
+        hasUnassignedContactsForTexter: 200,
         campaign: {
           id: 10123,
           title: "Event Recruitment for Saving the World",
           useDynamicAssignment: true,
-          hasUnassignedContactsForTexter: 200,
           batchSize: 200,
           organization: {
             id: 0,

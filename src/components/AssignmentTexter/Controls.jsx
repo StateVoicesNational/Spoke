@@ -966,6 +966,7 @@ AssignmentTexterContactControls.propTypes = {
   contact: PropTypes.object,
   campaign: PropTypes.object,
   assignment: PropTypes.object,
+  currentUser: PropTypes.object,
   texter: PropTypes.object,
 
   // parent state

@@ -383,6 +383,7 @@ export class AssignmentTexterContact extends React.Component {
           campaign={this.props.campaign}
           texter={this.props.texter}
           assignment={this.props.assignment}
+          currentUser={this.props.currentUser}
           navigationToolbarChildren={this.props.navigationToolbarChildren}
           messageStatusFilter={this.props.messageStatusFilter}
           disabled={this.state.disabled}
@@ -427,6 +428,7 @@ AssignmentTexterContact.propTypes = {
   contact: PropTypes.object,
   campaign: PropTypes.object,
   assignment: PropTypes.object,
+  currentUser: PropTypes.object,
   texter: PropTypes.object,
   navigationToolbarChildren: PropTypes.object,
   enabledSideboxes: PropTypes.arrayOf(PropTypes.object),

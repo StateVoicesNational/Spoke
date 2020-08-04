@@ -45,11 +45,16 @@ export const dataQueryString = `
   query getContacts(
     $assignmentId: String,
     $contactId: String,
+    $organizationId: String!,
     $contactsFilter: ContactsFilter!,
     $tagGroup: String,
     $needsMessageFilter: ContactsFilter,
     $needsResponseFilter: ContactsFilter
   ) {
+    currentUser {
+      id
+      roles(organizationId: $organizationId)
+    }
     assignment(assignmentId: $assignmentId, contactId: $contactId) {
       id
       hasUnassignedContactsForTexter
@@ -151,12 +156,13 @@ export class TexterTodo extends React.Component {
   };
 
   render() {
-    const { assignment } = this.props.data;
+    const { assignment, currentUser } = this.props.data;
     const contacts = assignment ? assignment.contacts : [];
     const allContactsCount = assignment ? assignment.allContactsCount : 0;
     return (
       <AssignmentTexter
         assignment={assignment}
+        currentUser={currentUser}
         reviewContactId={this.props.params.reviewContactId}
         contacts={contacts}
         allContactsCount={allContactsCount}
@@ -183,36 +189,40 @@ TexterTodo.propTypes = {
 const queries = {
   data: {
     query: dataQuery,
-    options: ownProps => ({
-      variables: {
-        contactsFilter: {
-          messageStatus: ownProps.messageStatus,
-          ...(!ownProps.params.reviewContactId && { isOptedOut: false }),
+    options: ownProps => {
+      console.log("TexterTodo ownProps", ownProps);
+      return {
+        variables: {
+          contactsFilter: {
+            messageStatus: ownProps.messageStatus,
+            ...(!ownProps.params.reviewContactId && { isOptedOut: false }),
+            ...(ownProps.params.reviewContactId && {
+              contactId: ownProps.params.reviewContactId
+            }),
+            validTimezone: true
+          },
+          needsMessageFilter: {
+            messageStatus: "needsMessage",
+            isOptedOut: false,
+            validTimezone: true
+          },
+          needsResponseFilter: {
+            messageStatus: "needsResponse",
+            isOptedOut: false,
+            validTimezone: true
+          },
+          ...(ownProps.params.assignmentId && {
+            assignmentId: ownProps.params.assignmentId
+          }),
           ...(ownProps.params.reviewContactId && {
             contactId: ownProps.params.reviewContactId
           }),
-          validTimezone: true
+          organizationId: ownProps.params.organizationId,
+          tagGroup: "texter-tags"
         },
-        needsMessageFilter: {
-          messageStatus: "needsMessage",
-          isOptedOut: false,
-          validTimezone: true
-        },
-        needsResponseFilter: {
-          messageStatus: "needsResponse",
-          isOptedOut: false,
-          validTimezone: true
-        },
-        ...(ownProps.params.assignmentId && {
-          assignmentId: ownProps.params.assignmentId
-        }),
-        ...(ownProps.params.reviewContactId && {
-          contactId: ownProps.params.reviewContactId
-        }),
-        tagGroup: "texter-tags"
-      },
-      fetchPolicy: "network-only"
-    })
+        fetchPolicy: "network-only"
+      };
+    }
   }
 };
 

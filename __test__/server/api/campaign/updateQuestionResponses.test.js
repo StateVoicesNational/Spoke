@@ -334,7 +334,8 @@ describe("mutations.updateQuestionResponses", () => {
           contactsFilter: {
             messageStatus: "messaged"
           },
-          assignmentId: assignment.id.toString()
+          assignmentId: assignment.id.toString(),
+          organizationId: organization.id.toString()
         };
 
         const retrievedAssignment = await runGql(

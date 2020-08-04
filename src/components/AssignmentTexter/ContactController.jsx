@@ -436,6 +436,7 @@ export class ContactController extends React.Component {
       <ChildComponent
         key={contact.id}
         assignment={assignment}
+        currentUser={this.props.currentUser}
         campaignContactId={contact.id}
         reviewContactId={this.props.reviewContactId}
         contact={contactData}
@@ -482,7 +483,12 @@ export class ContactController extends React.Component {
     );
   }
   render() {
-    const { assignment, contacts, messageStatusFilter } = this.props;
+    const {
+      assignment,
+      contacts,
+      messageStatusFilter,
+      currentUser
+    } = this.props;
     const { campaign, texter } = assignment || {};
     const contact = this.currentContact();
     const navigationToolbarChildren = this.getNavigationToolbarChildren();
@@ -503,6 +509,7 @@ export class ContactController extends React.Component {
       assignment,
       campaign,
       texter,
+      currentUser,
       contact,
       navigationToolbarChildren,
       messageStatusFilter,
@@ -525,6 +532,7 @@ ContactController.propTypes = {
   reviewContactId: PropTypes.string, // if not undefined, contactId from a conversation link
   assignment: PropTypes.object, // current assignment
   contacts: PropTypes.array, // contacts for current assignment
+  currentUser: PropTypes.object,
   allContactsCount: PropTypes.number,
   router: PropTypes.object,
   refreshData: PropTypes.func,

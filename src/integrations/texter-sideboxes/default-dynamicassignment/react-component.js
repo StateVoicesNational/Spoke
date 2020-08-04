@@ -101,8 +101,7 @@ export class TexterSideboxClass extends React.Component {
     const nextBatchMoreLabel =
       assignment.allContactsCount === 0
         ? "Start texting"
-        : settingsData.dynamicAssignmentRequestMoreLabel ||
-          "Request another batch";
+        : settingsData.dynamicAssignmentRequestMoreLabel || "Send more texts";
     const headerStyle = messageStatusFilter ? { textAlign: "center" } : {};
     return (
       <div style={headerStyle}>
@@ -202,7 +201,7 @@ export class AdminConfig extends React.Component {
           name="dynamicAssignmentRequestMoreLabel"
           label="Request More Label"
           fullWidth
-          hintText="default: Request another batch"
+          hintText="default: Send more texts"
         />
         <Form.Field
           name="dynamicAssignmentRequestMoreMessage"
