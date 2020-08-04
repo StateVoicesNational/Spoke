@@ -237,7 +237,12 @@ export const resolvers = {
       });
     },
     phoneNumberCounts: async (organization, _, { user }) => {
-      await accessRequired(user, organization.id, "ADMIN");
+      try {
+        await accessRequired(user, organization.id, "ADMIN");
+      } catch (err) {
+        // for SUPERVOLUNTEERS
+        return [];
+      }
       if (
         !getConfig("EXPERIMENTAL_PHONE_INVENTORY", organization, {
           truthy: true
