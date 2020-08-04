@@ -44,7 +44,9 @@ export const preMessageSave = async ({
     )[0].script;
     let matchFailed = false;
     try {
-      const regexScript = new RegExp(initialScript.replace(/\{[^}]*\}/, ".*"));
+      const regexScript = new RegExp(
+        "^" + initialScript.replace(/\{[^}]*\}/, ".*") + "$"
+      );
       matchFailed = !messageToSave.text.match(regexScript);
     } catch (err) {
       // give up -- maybe the script had a special character
@@ -54,8 +56,16 @@ export const preMessageSave = async ({
       // 0. check if they are a vetted texter NEED: texter
       const vetted = await cacheableData.user.userHasRole(
         texter,
-        orgId,
+        campaign.organization_id,
         "VETTED_TEXTER"
+      );
+      console.log(
+        "initialtext-guard: detected different initial message",
+        texter.id,
+        vetted,
+        contact.id,
+        messageToSave.text,
+        initialScript
       );
       if (vetted) {
         return;
