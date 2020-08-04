@@ -241,7 +241,8 @@ it("save campaign interaction steps, edit it, make sure the last value is set", 
         isOptedOut: false,
         validTimezone: true
       },
-      assignmentId
+      assignmentId,
+      organizationId
     },
     testTexterUser
   );
@@ -291,7 +292,8 @@ it("save campaign interaction steps, edit it, make sure the last value is set", 
         isOptedOut: false,
         validTimezone: true
       },
-      assignmentId
+      assignmentId,
+      organizationId
     },
     testTexterUser
   );
@@ -475,7 +477,8 @@ describe("Reassignments", async () => {
           isOptedOut: false,
           validTimezone: true
         },
-        assignmentId
+        assignmentId,
+        organizationId
       },
       testTexterUser
     );
@@ -505,7 +508,8 @@ describe("Reassignments", async () => {
           isOptedOut: false,
           validTimezone: true
         },
-        assignmentId
+        assignmentId,
+        organizationId
       },
       testTexterUser
     );
@@ -536,7 +540,8 @@ describe("Reassignments", async () => {
           isOptedOut: false,
           validTimezone: true
         },
-        assignmentId
+        assignmentId,
+        organizationId
       },
       testTexterUser
     );
@@ -562,6 +567,7 @@ describe("Reassignments", async () => {
           isOptedOut: false,
           validTimezone: true
         },
+        organizationId,
         assignmentId: assignmentId2
       },
       testTexterUser2
@@ -597,6 +603,7 @@ describe("Reassignments", async () => {
           isOptedOut: false,
           validTimezone: true
         },
+        organizationId,
         assignmentId: assignmentId2
       },
       testTexterUser2
@@ -615,6 +622,7 @@ describe("Reassignments", async () => {
           isOptedOut: false,
           validTimezone: true
         },
+        organizationId,
         assignmentId: assignmentId2
       },
       testTexterUser2
@@ -651,6 +659,7 @@ describe("Reassignments", async () => {
           isOptedOut: false,
           validTimezone: true
         },
+        organizationId,
         assignmentId: assignmentId2
       },
       testTexterUser2
@@ -669,6 +678,7 @@ describe("Reassignments", async () => {
           isOptedOut: false,
           validTimezone: true
         },
+        organizationId,
         assignmentId: assignmentId2
       },
       testTexterUser2
@@ -694,7 +704,8 @@ describe("Reassignments", async () => {
           isOptedOut: false,
           validTimezone: true
         },
-        assignmentId
+        assignmentId,
+        organizationId
       },
       testTexterUser
     );
@@ -706,6 +717,7 @@ describe("Reassignments", async () => {
           isOptedOut: false,
           validTimezone: true
         },
+        organizationId,
         assignmentId: assignmentId2
       },
       testTexterUser2
@@ -752,7 +764,8 @@ describe("Reassignments", async () => {
           isOptedOut: false,
           validTimezone: true
         },
-        assignmentId
+        assignmentId,
+        organizationId
       },
       testTexterUser
     );
@@ -764,6 +777,7 @@ describe("Reassignments", async () => {
           isOptedOut: false,
           validTimezone: true
         },
+        organizationId,
         assignmentId: assignmentId2
       },
       testTexterUser2
@@ -808,7 +822,8 @@ describe("Reassignments", async () => {
           isOptedOut: false,
           validTimezone: true
         },
-        assignmentId
+        assignmentId,
+        organizationId
       },
       testTexterUser
     );
@@ -821,7 +836,8 @@ describe("Reassignments", async () => {
           isOptedOut: false,
           validTimezone: true
         },
-        assignmentId: assignmentId2
+        assignmentId: assignmentId2,
+        organizationId
       },
       testTexterUser2
     );
@@ -874,7 +890,8 @@ describe("Bulk Send", async () => {
           isOptedOut: false,
           validTimezone: true
         },
-        assignmentId
+        assignmentId,
+        organizationId
       },
       testTexterUser
     );
@@ -900,7 +917,8 @@ describe("Bulk Send", async () => {
           isOptedOut: false,
           validTimezone: true
         },
-        assignmentId
+        assignmentId,
+        organizationId
       },
       testTexterUser
     );

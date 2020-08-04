@@ -20,6 +20,7 @@ export const showSidebox = ({
   settingsData,
   messageStatusFilter,
   assignment,
+  campaign,
   finished
 }) => {
   // Return anything False-y to not show
@@ -28,6 +29,8 @@ export const showSidebox = ({
   return (
     assignment.allContactsCount &&
     !finished &&
+    (campaign.useDynamicAssignment ||
+      settingsData.releaseContactsNonDynamicToo) &&
     (settingsData.releaseContactsReleaseConvos ||
       (messageStatusFilter === "needsMessage" && assignment.unmessagedCount))
   );
@@ -147,6 +150,7 @@ export const TexterSidebox = loadData({ mutations })(
 
 export const adminSchema = () => ({
   releaseContactsReleaseConvos: yup.boolean(),
+  releaseContactsNonDynamicToo: yup.boolean(),
   releaseContactsBatchTitle: yup.string(),
   releaseContactsBatchLabel: yup.string(),
   releaseContactsConvosTitle: yup.string(),
@@ -162,6 +166,13 @@ export class AdminConfig extends React.Component {
           toggled={this.props.settingsData.releaseContactsReleaseConvos}
           onToggle={(toggler, val) =>
             this.props.onToggle("releaseContactsReleaseConvos", val)
+          }
+        />
+        <Toggle
+          label="Enable for campaigns even without Dynamic Assignment enabled."
+          toggled={this.props.settingsData.releaseContactsNonDynamicToo}
+          onToggle={(toggler, val) =>
+            this.props.onToggle("releaseContactsNonDynamicToo", val)
           }
         />
         <Form.Field

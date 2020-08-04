@@ -11,8 +11,7 @@ export const showSidebox = ({ contact, messageStatusFilter }) =>
 const defaultMessagePre =
   "It’s important not to automate sending texts to conform to FCC regulations. Please";
 const defaultLinkText = "don’t alter script messages";
-const defaultMessagePost =
-  "except in circumstances where a custom reply is necessary.";
+const defaultMessagePost = "unless instructed by your campaign administrator.";
 
 export class TexterSidebox extends React.Component {
   setMessageEditable = () => {

@@ -230,7 +230,7 @@ const messageCache = {
     // 3. Updates all the related caches
 
     // console.log('message SAVE', contact, messageInstance)
-    const messageToSave = { ...messageInstance };
+    let messageToSave = { ...messageInstance };
     const handlers = getMessageHandlers();
     let newStatus = "needsResponse";
     let activeCellFound = null;
@@ -292,8 +292,11 @@ const messageCache = {
           organization,
           texter
         });
-        if (result.cancel) {
+        if (result && result.cancel) {
           return result; // return without saving
+        }
+        if (result && result.messageToSave) {
+          messageToSave = result.messageToSave;
         }
         if (result && "matchError" in result) {
           matchError = result.matchError;
