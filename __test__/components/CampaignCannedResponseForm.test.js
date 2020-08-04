@@ -68,21 +68,19 @@ describe("CampaignCannedResponseForm component", () => {
         .find("button")
         .text()
     ).toBe("Edit Response");
-    if (process.env.EXPERIMENTAL_TAGS) {
-      expect(wrapper.find("TagChips").prop("tagIds")).toEqual([1, 2]);
-      expect(wrapper.find("TagChips").prop("tags")).toEqual([
-        {
-          id: 1,
-          name: "Tag1",
-          description: "Tag1Desc"
-        },
-        {
-          id: 2,
-          name: "Tag2",
-          description: "Tag2Desc"
-        }
-      ]);
-    }
+    expect(wrapper.find("TagChips").prop("tagIds")).toEqual([1, 2]);
+    expect(wrapper.find("TagChips").prop("tags")).toEqual([
+      {
+        id: 1,
+        name: "Tag1",
+        description: "Tag1Desc"
+      },
+      {
+        id: 2,
+        name: "Tag2",
+        description: "Tag2Desc"
+      }
+    ]);
   });
 
   test("Renders form with correct fields and label for adding", () => {
@@ -104,20 +102,18 @@ describe("CampaignCannedResponseForm component", () => {
         .find("button")
         .text()
     ).toBe("Add Response");
-    if (process.env.EXPERIMENTAL_TAGS) {
-      expect(wrapper.find("TagChips").prop("tagIds")).toEqual([]);
-      expect(wrapper.find("TagChips").prop("tags")).toEqual([
-        {
-          id: 1,
-          name: "Tag1",
-          description: "Tag1Desc"
-        },
-        {
-          id: 2,
-          name: "Tag2",
-          description: "Tag2Desc"
-        }
-      ]);
-    }
+    expect(wrapper.find("TagChips").prop("tagIds")).toEqual([]);
+    expect(wrapper.find("TagChips").prop("tags")).toEqual([
+      {
+        id: 1,
+        name: "Tag1",
+        description: "Tag1Desc"
+      },
+      {
+        id: 2,
+        name: "Tag2",
+        description: "Tag2Desc"
+      }
+    ]);
   });
 });

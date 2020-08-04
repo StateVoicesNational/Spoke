@@ -49,22 +49,19 @@ describe("CampaignCannedResponsesForm component", () => {
   test("Renders canned responses with correct text", () => {
     expect(wrapper.find("ListItem").text()).toContain("Response1");
     expect(wrapper.find("ListItem").text()).toContain("Response1 desc");
-
-    if (process.env.EXPERIMENTAL_TAGS) {
-      expect(wrapper.find("TagChips").prop("tagIds")).toEqual([1, 2]);
-      expect(wrapper.find("TagChips").prop("tags")).toEqual([
-        {
-          id: 1,
-          name: "Tag1",
-          description: "Tag1Desc"
-        },
-        {
-          id: 2,
-          name: "Tag2",
-          description: "Tag2Desc"
-        }
-      ]);
-    }
+    expect(wrapper.find("TagChips").prop("tagIds")).toEqual([1, 2]);
+    expect(wrapper.find("TagChips").prop("tags")).toEqual([
+      {
+        id: 1,
+        name: "Tag1",
+        description: "Tag1Desc"
+      },
+      {
+        id: 2,
+        name: "Tag2",
+        description: "Tag2Desc"
+      }
+    ]);
   });
 
   test("Renders CampaignCannedResponseForm component for editing when edit icon clicked", () => {
