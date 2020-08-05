@@ -18,6 +18,7 @@ import Login from "./components/Login";
 import Terms from "./containers/Terms";
 import React from "react";
 import CreateOrganization from "./containers/CreateOrganization";
+import CreateAdditionalOrganization from "./containers/CreateAdditionalOrganization";
 import AdminOrganizationsDashboard from "./containers/AdminOrganizationsDashboard";
 import JoinTeam from "./containers/JoinTeam";
 import Home from "./containers/Home";
@@ -182,6 +183,11 @@ export default function makeRoutes(requireAuth = () => {}) {
       <Route
         path="invite/:inviteId"
         component={CreateOrganization}
+        onEnter={requireAuth}
+      />
+      <Route
+        path="addOrganization/:inviteId"
+        component={CreateAdditionalOrganization}
         onEnter={requireAuth}
       />
       <Route
