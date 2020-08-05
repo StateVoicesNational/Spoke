@@ -72,6 +72,11 @@ export class UserMenu extends Component {
     this.props.router.push(`/app/${orgId}/faqs`);
   };
 
+  handleAdminOrganizations = e => {
+    e.preventDefault();
+    this.props.router.push(`/adminOrganizations`);
+  };
+
   renderAvatar(user, size) {
     // Material-UI seems to not be handling this correctly when doing serverside rendering
     const inlineStyles = {
@@ -87,12 +92,28 @@ export class UserMenu extends Component {
     );
   }
 
+  renderAdminTools() {
+    return (
+      <div>
+        <Subheader>Admin Tools</Subheader>
+        <MenuItem
+          primaryText="Manage Organizations"
+          value={"adminOrganizations"}
+          onClick={this.handleAdminOrganizations}
+        />
+        <Divider />
+      </div>
+    )
+  }
+
   render() {
     const { currentUser } = this.props.data;
     if (!currentUser) {
       return <div />;
     }
     const organizations = currentUser.texterOrganizations;
+    // const isSuperAdmin = currentUser.is_superadmin;
+    const isSuperAdmin = true;
 
     return (
       <div>
@@ -121,6 +142,7 @@ export class UserMenu extends Component {
               {currentUser.email}
             </MenuItem>
             <Divider />
+            {isSuperAdmin && this.renderAdminTools()}
             <Subheader>Teams</Subheader>
             {organizations.map(organization => (
               <MenuItem
