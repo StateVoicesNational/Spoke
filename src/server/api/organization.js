@@ -136,8 +136,9 @@ export const resolvers = {
       } catch (err) {
         return null;
       }
-      let messageHandlers = [];
-      let actionHandlers = [];
+      let messageHandlers = null;
+      let actionHandlers = null;
+      let contactLoaders = null;
       const features = getFeatures(organization);
       const visibleFeatures = {};
       const unsetFeatures = [];
@@ -155,12 +156,17 @@ export const resolvers = {
           const globalActionHandlers = getConfig("ACTION_HANDLERS");
           actionHandlers =
             (globalActionHandlers && globalActionHandlers.split(",")) || [];
+        } else if (f === "CONTACT_LOADERS") {
+          const globalContactLoaders = getConfig("CONTACT_LOADERS");
+          contactLoaders =
+            (globalContactLoaders && globalContactLoaders.split(",")) || [];
         }
       });
 
       return {
         messageHandlers,
         actionHandlers,
+        contactLoaders,
         unsetFeatures,
         featuresJSON: JSON.stringify(visibleFeatures)
       };

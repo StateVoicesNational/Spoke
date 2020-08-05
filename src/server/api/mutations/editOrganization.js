@@ -15,17 +15,24 @@ export const editOrganization = async (_, { id, organization }, { user }) => {
     changes["features"] = features;
   }
 
+  console.log("editOrg settings: ", organization.settings);
   if (organization.settings) {
     const { unsetFeatures, featuresJSON } = organization.settings;
+    console.log("editOrg featuresJson: ", featuresJSON);
+
     const newFeatureValues = JSON.parse(featuresJSON);
+    console.log("editOrg newFeatures: ", newFeatureValues);
     getAllowed(orgRecord, user).forEach(f => {
       if (newFeatureValues.hasOwnProperty(f)) {
         features[f] = newFeatureValues[f];
       }
     });
+    console.log("editOrg features first: ", features);
+
     unsetFeatures.forEach(f => {
       delete features[f];
     });
+    console.log("editOrg features then: ", features);
     changes["features"] = features;
   }
 

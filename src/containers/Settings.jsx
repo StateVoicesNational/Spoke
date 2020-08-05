@@ -16,6 +16,7 @@ import Toggle from "material-ui/Toggle";
 import moment from "moment";
 import CampaignTexterUIForm from "../components/CampaignTexterUIForm";
 import OrganizationFeatureSettings from "../components/OrganizationFeatureSettings";
+import ExtensionSettings from "../components/ExtensionSettings";
 
 const styles = StyleSheet.create({
   section: {
@@ -356,7 +357,6 @@ class Settings extends React.Component {
                   this.setState({ texterUIConfig: null });
                 }}
                 onChange={formValues => {
-                  console.log("change", formValues);
                   this.setState(formValues);
                 }}
                 saveLabel="Save Texter UI Campaign Defaults"
@@ -384,7 +384,34 @@ class Settings extends React.Component {
                   this.setState({ settings: null });
                 }}
                 onChange={formValues => {
-                  console.log("change", formValues);
+                  this.setState(formValues);
+                }}
+                saveLabel="Save settings"
+                saveDisabled={!this.state.settings}
+              />
+            </CardText>
+          </Card>
+        ) : null}
+        {this.props.data.organization &&
+        this.props.data.organization.settings ? (
+          <Card>
+            <CardHeader
+              title="yay bob"
+              style={{ backgroundColor: theme.colors.green }}
+            />
+            <CardText>
+              <ExtensionSettings
+                formValues={this.props.data.organization}
+                organization={this.props.data.organization}
+                onSubmit={async () => {
+                  const { settings } = this.state;
+                  console.log("settings about to be set:", settings);
+                  await this.props.mutations.editOrganization({
+                    settings
+                  });
+                  this.setState({ settings: null });
+                }}
+                onChange={formValues => {
                   this.setState(formValues);
                 }}
                 saveLabel="Save settings"
@@ -418,6 +445,7 @@ const queries = {
           settings {
             messageHandlers
             actionHandlers
+            contactLoaders
             featuresJSON
             unsetFeatures
           }
@@ -447,6 +475,13 @@ export const editOrganizationGql = gql`
   ) {
     editOrganization(id: $organizationId, organization: $organizationChanges) {
       id
+      settings {
+        messageHandlers
+        actionHandlers
+        contactLoaders
+        featuresJSON
+        unsetFeatures
+      }
       texterUIConfig {
         options
         sideboxChoices

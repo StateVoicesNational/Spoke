@@ -36,6 +36,7 @@ export const schema = gql`
   type OrgSettings {
     messageHandlers: [String]
     actionHandlers: [String]
+    contactLoaders: [String]
     featuresJSON: String
     unsetFeatures: [String]
   }
@@ -43,6 +44,7 @@ export const schema = gql`
   input OrgSettingsInput {
     messageHandlers: [String]
     actionHandlers: [String]
+    contactLoaders: [String]
     featuresJSON: String
     unsetFeatures: [String]
   }

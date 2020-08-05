@@ -18,50 +18,55 @@ import DeleteIcon from "material-ui/svg-icons/action/delete";
 import { dataTest } from "../lib/attributes";
 import { dataSourceItem } from "./utils";
 
-const configurableFields = {
+const toggled = (name, isToggled) => {
+  const formValues = cloneDeep(this.props.formValues);
+  formValues[name] = isToggled;
+  this.props.onChange(formValues);
+};
+
+/*
+export default class Integration = (props) => {
+  return  
+    <Form.Field
+      label={props.label}
+      name={props.name}
+      type={Toggle}
+      defaultToggled={true}
+      onToggle={async (_, isToggled) => {
+        this.toggled(name, isToggled);
+      }}
+    />
+}
+*/
+
+const integrationCategories = {
   ACTION_HANDLERS: {
     schema: yup.string(),
-    ready: true,
     component: props => {
       // toggles on/off for each handler, needs a description of each
+      /* 
       return (
-        <Form.Field
-          label="Action Handlers (comma-separated)"
-          name="ACTION_HANDLERS"
-          fullWidth
-        />
+        {props.actionHandlers && (
+          <div>Bob's Actions</>
+          {props.actionHandlers.map(ah => (
+            <Integration>
+              label = ah
+              name = ah
+              description = "ready set action handler"
+              fullWidth
+            </>
+            )
+          )}
+        }
+      )
+      */
+      return (
+        <Form.Field label="Action Handlers" name="ACTION_HANDLERS" fullWidth />
       );
-    }
-  },
-  ALLOW_SEND_ALL_ENABLED: {
-    schema: yup.boolean(),
-    component: props => {
-      // toggle ? with important legal text!!
-      return <div></div>;
-    }
-  },
-  DEFAULT_BATCHSIZE: {
-    schema: yup.number().integer(),
-    component: props => {
-      return <div></div>;
-    }
-  },
-  MAX_CONTACTS_PER_TEXTER: {
-    schema: yup.number().integer(),
-    component: props => {
-      // allow empty (set empty for null)
-      return <div></div>;
-    }
-  },
-  MAX_MESSAGE_LENGTH: {
-    schema: yup.number().integer(),
-    component: props => {
-      return <div></div>;
     }
   },
   MESSAGE_HANDLERS: {
     schema: yup.string(),
-    ready: true,
     component: props => {
       // toggles on/off for each handler, needs a description of each
       return (
@@ -73,11 +78,13 @@ const configurableFields = {
       );
     }
   },
-  opt_out_message: {
+  CONTACT_LOADERS: {
     schema: yup.string(),
     component: props => {
-      // default to props.organization.optOutMessage
-      return <div></div>;
+      // toggles on/off for each handler, needs a description of each
+      return (
+        <Form.Field label="Contact Loaders" name="CONTACT_LOADERS" fullWidth />
+      );
     }
   }
 };
@@ -94,18 +101,8 @@ export default class OrganizationFeatureSettings extends React.Component {
   }
 
   onChange = formValues => {
+    console.log("onChange state", this.state);
     this.setState(formValues, () => {
-      this.props.onChange({
-        settings: {
-          featuresJSON: JSON.stringify(this.state),
-          unsetFeatures: this.state.unsetFeatures
-        }
-      });
-    });
-  };
-
-  toggleChange = (key, value) => {
-    this.setState({ [key]: value }, newData => {
       this.props.onChange({
         settings: {
           featuresJSON: JSON.stringify(this.state),
@@ -120,12 +117,15 @@ export default class OrganizationFeatureSettings extends React.Component {
     // action handlers: add/remove
     // features and unsetFeatures list
     const schemaObject = {};
-    const adminItems = Object.keys(configurableFields)
-      .filter(f => configurableFields[f].ready)
-      .map(f => {
-        schemaObject[f] = configurableFields[f].schema;
-        return configurableFields[f].component({ ...this.props, parent: this });
+    const adminItems = Object.keys(integrationCategories).map(f => {
+      schemaObject[f] = integrationCategories[f].schema;
+      return integrationCategories[f].component({
+        ...this.props,
+        parent: this
       });
+    });
+    console.log("currentstate: ", this.state);
+    console.log("current props: ", this.props);
     return (
       <div>
         <GSForm
@@ -139,7 +139,7 @@ export default class OrganizationFeatureSettings extends React.Component {
             onClick={this.props.onSubmit}
             label={this.props.saveLabel}
             disabled={this.props.saveDisabled}
-            {...dataTest("submitOrganizationFeatureSettings")}
+            {...dataTest("submitExtensionSettings")}
           />
         </GSForm>
       </div>
