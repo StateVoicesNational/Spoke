@@ -1,11 +1,12 @@
 import PropTypes from "prop-types";
 import React from "react";
+import TopNav from "../components/TopNav";
 import { withRouter } from "react-router";
+import ContentAdd from "material-ui/svg-icons/content/add";
+import FloatingActionButton from "material-ui/FloatingActionButton";
 
 import { StyleSheet, css } from "aphrodite";
 import theme from "../styles/theme";
-
-import UserEdit from "./UserEdit";
 
 const styles = StyleSheet.create({
   fieldContainer: {
@@ -81,6 +82,17 @@ class AdminOrganizationsDashboard extends React.Component {
     /^\/sign/.test(nextUrl) || // signup integration urls
     /\/\w{8}-(\w{4}\-){3}\w{12}(\/|$)/.test(nextUrl);
 
+  renderActionButton() {
+    return (
+      <FloatingActionButton
+        style={theme.components.floatingButton}
+        onTouchTap={() => {}}
+      >
+        <ContentAdd />
+      </FloatingActionButton>
+    );
+  }
+
   render() {
     if (!this.isLocalAdminOrganizationsDashboard) {
       // AdminOrganizationsDashboard provider will handle redirecting
@@ -110,43 +122,18 @@ class AdminOrganizationsDashboard extends React.Component {
     };
 
     return (
-      <div className={css(styles.loginPage)}>
+      <div>
+        <TopNav
+          title={"Manage Organizations"}
+        />
+        <div className={css(styles.loginPage)}>
         <div>
-          {/* Only display sign up option if there is a nextUrl */}
-          {displaySignUp && (
-            <section>
-              <button
-                className={css(styles.button)}
-                type="button"
-                name="login"
-                onClick={this.handleClick}
-                disabled={this.state.active === "login"}
-              >
-                Log In
-              </button>
-              <button
-                className={css(styles.button)}
-                type="button"
-                name="signup"
-                onClick={this.handleClick}
-                disabled={this.state.active === "signup"}
-              >
-                Sign Up
-              </button>
-            </section>
-          )}
-          <div className={css(styles.fieldContainer)}>
-            <h2 className={css(styles.header)}>Welcome to Spoke</h2>
-            <UserEdit
-              authType={this.state.active}
-              saveLabel={saveLabels[this.state.active]}
-              router={router}
-              nextUrl={nextUrl}
-              style={css(styles.authFields)}
-            />
-          </div>
+          Hello
         </div>
+        </div>
+      {this.renderActionButton()}
       </div>
+      
     );
   }
 }
