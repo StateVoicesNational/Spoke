@@ -92,6 +92,7 @@ const rootSchema = gql`
 
   input OrganizationInput {
     texterUIConfig: TexterUIConfigInput
+    settings: OrgSettingsInput
   }
 
   input MessageInput {

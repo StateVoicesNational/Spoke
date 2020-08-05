@@ -15,6 +15,7 @@ import theme from "../styles/theme";
 import Toggle from "material-ui/Toggle";
 import moment from "moment";
 import CampaignTexterUIForm from "../components/CampaignTexterUIForm";
+import OrganizationFeatureSettings from "../components/OrganizationFeatureSettings";
 
 const styles = StyleSheet.create({
   section: {
@@ -364,6 +365,34 @@ class Settings extends React.Component {
             </CardText>
           </Card>
         ) : null}
+        {this.props.data.organization &&
+        this.props.data.organization.settings ? (
+          <Card>
+            <CardHeader
+              title="Overriding default settings"
+              style={{ backgroundColor: theme.colors.green }}
+            />
+            <CardText>
+              <OrganizationFeatureSettings
+                formValues={this.props.data.organization}
+                organization={this.props.data.organization}
+                onSubmit={async () => {
+                  const { settings } = this.state;
+                  await this.props.mutations.editOrganization({
+                    settings
+                  });
+                  this.setState({ settings: null });
+                }}
+                onChange={formValues => {
+                  console.log("change", formValues);
+                  this.setState(formValues);
+                }}
+                saveLabel="Save settings"
+                saveDisabled={!this.state.settings}
+              />
+            </CardText>
+          </Card>
+        ) : null}
       </div>
     );
   }
@@ -386,6 +415,12 @@ const queries = {
           textingHoursStart
           textingHoursEnd
           optOutMessage
+          settings {
+            messageHandlers
+            actionHandlers
+            featuresJSON
+            unsetFeatures
+          }
           texterUIConfig {
             options
             sideboxChoices

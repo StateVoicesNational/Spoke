@@ -10,6 +10,28 @@ import {
   getActionChoiceData
 } from "../../integrations/action-handlers";
 
+export const ownerConfigurable = {
+  ACTION_HANDLERS: 1,
+  ALLOW_SEND_ALL_ENABLED: 1,
+  DEFAULT_BATCHSIZE: 1,
+  MAX_CONTACTS_PER_TEXTER: 1,
+  MAX_MESSAGE_LENGTH: 1,
+  MESSAGE_HANDLERS: 1,
+  opt_out_message: 1
+};
+
+export const getAllowed = (organization, user) => {
+  const configable = getConfig("OWNER_CONFIGURABLE", organization);
+  const allowed = {};
+  ((configable && configable.split(",")) || []).forEach(c => {
+    allowed[c] = 1;
+  });
+  if (user.is_superadmin) {
+    allowed["ALL"] = 1;
+  }
+  return Object.keys(allowed.ALL ? ownerConfigurable : allowed);
+};
+
 const campaignNumbersEnabled = organization => {
   const inventoryEnabled = getConfig(
     "EXPERIMENTAL_PHONE_INVENTORY",
@@ -99,6 +121,49 @@ export const resolvers = {
       });
 
       return Promise.all(promises);
+    },
+    allowSendAll: organization =>
+      Boolean(
+        // the first ALLOW_SEND_ALL is NOT per-org
+        // to make sure the system administrator has enabled it
+        getConfig("ALLOW_SEND_ALL", null, { truthy: 1 }) &&
+          getConfig("ALLOW_SEND_ALL", organization, { truthy: 1 }) &&
+          getFeatures(organization).ALLOW_SEND_ALL_ENABLED
+      ),
+    settings: async (organization, _, { user, loaders }) => {
+      try {
+        await accessRequired(user, organization.id, "OWNER", true);
+      } catch (err) {
+        return null;
+      }
+      let messageHandlers = [];
+      let actionHandlers = [];
+      const features = getFeatures(organization);
+      const visibleFeatures = {};
+      const unsetFeatures = [];
+      getAllowed(organization, user).forEach(f => {
+        if (features.hasOwnProperty(f)) {
+          visibleFeatures[f] = features[f];
+        } else {
+          unsetFeatures.push(f);
+        }
+        if (f === "MESSAGE_HANDLERS") {
+          const globalMessageHandlers = getConfig("MESSAGE_HANDLERS");
+          messageHandlers =
+            (globalMessageHandlers && globalMessageHandlers.split(",")) || [];
+        } else if (f === "ACTION_HANDLERS") {
+          const globalActionHandlers = getConfig("ACTION_HANDLERS");
+          actionHandlers =
+            (globalActionHandlers && globalActionHandlers.split(",")) || [];
+        }
+      });
+
+      return {
+        messageHandlers,
+        actionHandlers,
+        unsetFeatures,
+        featuresJSON: JSON.stringify(visibleFeatures)
+      };
     },
     textingHoursEnforced: organization => organization.texting_hours_enforced,
     optOutMessage: organization =>
