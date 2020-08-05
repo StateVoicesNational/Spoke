@@ -1,6 +1,8 @@
 import PropTypes from "prop-types";
 import React from "react";
 import TopNav from "../components/TopNav";
+import gql from "graphql-tag";
+import loadData from "./hoc/load-data";
 import { withRouter } from "react-router";
 import ContentAdd from "material-ui/svg-icons/content/add";
 import FloatingActionButton from "material-ui/FloatingActionButton";
@@ -82,11 +84,26 @@ class AdminOrganizationsDashboard extends React.Component {
     /^\/sign/.test(nextUrl) || // signup integration urls
     /\/\w{8}-(\w{4}\-){3}\w{12}(\/|$)/.test(nextUrl);
 
+  handleCreateOrgClick = async e => {
+    e.preventDefault();
+    const newInvite = await this.props.mutations.createInvite({
+      is_valid: true
+    });
+    if (newInvite.errors) {
+      alert("There was an error creating your invite");
+      throw new Error(newInvite.errors);
+    } else {
+      this.props.router.push(
+        `/addOrganization/${newInvite.data.createInvite.hash}`
+      );
+    }
+  };
+  
   renderActionButton() {
     return (
       <FloatingActionButton
         style={theme.components.floatingButton}
-        onTouchTap={() => {}}
+        onTouchTap={this.handleCreateOrgClick}
       >
         <ContentAdd />
       </FloatingActionButton>
@@ -138,9 +155,23 @@ class AdminOrganizationsDashboard extends React.Component {
   }
 }
 
-AdminOrganizationsDashboard.propTypes = {
-  location: PropTypes.object,
-  router: PropTypes.object
+const mutations = {
+  createInvite: ownProps => invite => ({
+    mutation: gql`
+      mutation createInvite($invite: InviteInput!) {
+        createInvite(invite: $invite) {
+          hash
+        }
+      }
+    `,
+    variables: { invite }
+  })
 };
 
-export default withRouter(AdminOrganizationsDashboard);
+AdminOrganizationsDashboard.propTypes = {
+  location: PropTypes.object,
+  router: PropTypes.object,
+  mutations: PropTypes.object
+};
+
+export default loadData({mutations})(withRouter(AdminOrganizationsDashboard));

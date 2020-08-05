@@ -6,6 +6,7 @@ import Form from "react-formal";
 import yup from "yup";
 import { StyleSheet, css } from "aphrodite";
 import theme from "../styles/theme";
+import TopNav from "../components/TopNav";
 import Paper from "material-ui/Paper";
 import { withRouter } from "react-router";
 import GSForm from "../components/forms/GSForm";
@@ -13,16 +14,11 @@ import { dataTest } from "../lib/attributes";
 
 const styles = StyleSheet.create({
   container: {
-    marginTop: "5vh",
     textAlign: "center",
     color: theme.colors.white
   },
   formContainer: {
     ...theme.layouts.greenBox
-  },
-  bigHeader: {
-    ...theme.text.header,
-    fontSize: 40
   },
   header: {
     ...theme.text.header,
@@ -38,7 +34,7 @@ const styles = StyleSheet.create({
   }
 });
 
-class CreateOrganization extends React.Component {
+class CreateAdditionalOrganization extends React.Component {
   formSchema = yup.object({
     name: yup.string().required()
   });
@@ -54,7 +50,7 @@ class CreateOrganization extends React.Component {
     return (
       <div>
         <div className={css(styles.header)}>
-          Create your organization to get started.
+          Create an additional organization below!
         </div>
         <div className={css(styles.form)}>
           <Paper style={{ padding: 20 }}>
@@ -67,7 +63,7 @@ class CreateOrganization extends React.Component {
                   this.props.inviteData.inviteByHash[0].id
                 );
                 this.props.router.push(
-                  `/admin/${newOrganization.data.createOrganization.id}`
+                  `/adminOrganizations`
                 );
               }}
             >
@@ -80,9 +76,9 @@ class CreateOrganization extends React.Component {
               />
               <Form.Button
                 type="submit"
-                label="Get Started"
+                label="Create"
                 name="submit"
-                value="Get Started"
+                value="Create"
                 fullWidth
                 secondary
                 style={{ marginTop: 40 }}
@@ -96,20 +92,25 @@ class CreateOrganization extends React.Component {
 
   render() {
     return (
-      <div className={css(styles.container)}>
-        <div className={css(styles.bigHeader)}>Spoke</div>
-        <div className={css(styles.formContainer)}>
-          {this.props.inviteData.inviteByHash &&
-          this.props.inviteData.inviteByHash[0].isValid
-            ? this.renderForm()
-            : this.renderInvalid()}
+      <div>
+        <TopNav
+          title={"Add An Organization"}
+        />
+        <div className={css(styles.container)}>
+          <div className={css(styles.formContainer)}>
+            {this.props.inviteData.inviteByHash &&
+            this.props.inviteData.inviteByHash[0].isValid
+              ? this.renderForm()
+              : this.renderInvalid()}
+          </div>
         </div>
       </div>
+      
     );
   }
 }
 
-CreateOrganization.propTypes = {
+CreateAdditionalOrganization.propTypes = {
   mutations: PropTypes.object,
   router: PropTypes.object,
   userData: PropTypes.object,
@@ -164,4 +165,4 @@ const mutations = {
   })
 };
 
-export default loadData({ queries, mutations })(withRouter(CreateOrganization));
+export default loadData({ queries, mutations })(withRouter(CreateAdditionalOrganization));
