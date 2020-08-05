@@ -97,6 +97,7 @@ export const dataQueryString = `
           textingHoursStart
           textingHoursEnd
           optOutMessage
+          allowSendAll
         }
         customFields
         texterUIConfig {

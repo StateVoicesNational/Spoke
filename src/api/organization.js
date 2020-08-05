@@ -33,6 +33,20 @@ export const schema = gql`
     label: String!
   }
 
+  type OrgSettings {
+    messageHandlers: [String]
+    actionHandlers: [String]
+    featuresJSON: String
+    unsetFeatures: [String]
+  }
+
+  input OrgSettingsInput {
+    messageHandlers: [String]
+    actionHandlers: [String]
+    featuresJSON: String
+    unsetFeatures: [String]
+  }
+
   type Organization {
     id: ID
     uuid: String
@@ -45,7 +59,9 @@ export const schema = gql`
     people(role: String, campaignId: String, sortBy: SortPeopleBy): [User]
     profileFields: [ProfileField]
     optOuts: [OptOut]
+    allowSendAll: Boolean
     availableActions: [Action]
+    settings: OrgSettings
     optOutMessage: String
     textingHoursEnforced: Boolean
     textingHoursStart: Int
