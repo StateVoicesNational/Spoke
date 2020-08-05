@@ -27,8 +27,6 @@ const useSSL = DB_USE_SSL === "1" || DB_USE_SSL.toLowerCase() === "true";
 if (useSSL) pg.defaults.ssl = true;
 // see https://github.com/tgriesser/knex/issues/852
 
-const debug = DB_DEBUG === "1" || DB_DEBUG.toLowerCase() === "true";
-
 let config;
 
 if (DB_JSON) {
@@ -82,6 +80,6 @@ if (DB_JSON) {
   };
 }
 
-config.debug = debug;
+config.debug = DB_DEBUG === "1" || DB_DEBUG.toLowerCase() === "true";
 
 module.exports = config;
