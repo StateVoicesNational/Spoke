@@ -21,9 +21,16 @@ import { dataSourceItem } from "./utils";
 const configurableFields = {
   ACTION_HANDLERS: {
     schema: yup.string(),
+    ready: true,
     component: props => {
       // toggles on/off for each handler, needs a description of each
-      return <div></div>;
+      return (
+        <Form.Field
+          label="Action Handlers (comma-separated)"
+          name="ACTION_HANDLERS"
+          fullWidth
+        />
+      );
     }
   },
   ALLOW_SEND_ALL_ENABLED: {
@@ -54,8 +61,16 @@ const configurableFields = {
   },
   MESSAGE_HANDLERS: {
     schema: yup.string(),
+    ready: true,
     component: props => {
-      return <div></div>;
+      // toggles on/off for each handler, needs a description of each
+      return (
+        <Form.Field
+          label="Message Handlers (comma-separated)"
+          name="MESSAGE_HANDLERS"
+          fullWidth
+        />
+      );
     }
   },
   opt_out_message: {
@@ -111,8 +126,14 @@ export default class OrganizationFeatureSettings extends React.Component {
       this.state,
       this.props.formValues
     );
-    const adminItems = [];
     const schemaObject = {};
+    const adminItems = Object.keys(configurableFields)
+      .filter(f => configurableFields[f].ready)
+      .map(f => {
+        schemaObject[f] = configurableFields[f].schema;
+        return configurableFields[f].component({ ...this.props, parent: this });
+      });
+    console.log("organizationfeaturesettings", schemaObject);
     return (
       <div>
         <GSForm
