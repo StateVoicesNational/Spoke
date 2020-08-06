@@ -85,7 +85,11 @@ class Settings extends React.Component {
 
     return (
       <Dialog
-        open={this.state.textingHoursDialogOpen}
+        open={
+          this.state.textingHoursDialogOpen === undefined
+            ? false
+            : this.state.textingHoursDialogOpen
+        }
         onRequestClose={this.handleCloseTextingHoursDialog}
       >
         <GSForm
@@ -366,7 +370,7 @@ class Settings extends React.Component {
           </Card>
         ) : null}
         {this.props.data.organization &&
-        this.props.data.organization.settings ? (
+        this.props.data.organization.defaultSettings ? (
           <Card>
             <CardHeader
               title="Overriding default settings"
@@ -386,14 +390,14 @@ class Settings extends React.Component {
                 onChange={formValues => {
                   this.setState(formValues);
                 }}
-                saveLabel="Save settings"
+                saveLabel="Save Default Settings"
                 saveDisabled={!this.state.settings}
               />
             </CardText>
           </Card>
         ) : null}
         {this.props.data.organization &&
-        this.props.data.organization.settings ? (
+        this.props.data.organization.extensionSettings ? (
           <Card>
             <CardHeader
               title="yay bob"
@@ -404,18 +408,19 @@ class Settings extends React.Component {
                 formValues={this.props.data.organization}
                 organization={this.props.data.organization}
                 onSubmit={async () => {
-                  const { settings } = this.state;
-                  console.log("settings about to be set:", settings);
+                  const { extensionSettings } = this.state;
+                  console.log("settings about to be set:", extensionSettings);
                   await this.props.mutations.editOrganization({
-                    settings
+                    extensionSettings
                   });
-                  this.setState({ settings: null });
+                  this.setState({ extensionSettings: null });
                 }}
                 onChange={formValues => {
+                  console.log("FORM VALUES:", formValues);
                   this.setState(formValues);
                 }}
-                saveLabel="Save settings"
-                saveDisabled={!this.state.settings}
+                saveLabel="Save Extensions"
+                saveDisabled={!this.state.extensionSettings}
               />
             </CardText>
           </Card>
@@ -442,12 +447,17 @@ const queries = {
           textingHoursStart
           textingHoursEnd
           optOutMessage
-          settings {
-            messageHandlers
-            actionHandlers
-            contactLoaders
+          defaultSettings {
             featuresJSON
             unsetFeatures
+          }
+          extensionSettings {
+            savedMessageHandlers
+            savedActionHandlers
+            savedContactLoaders
+            allowedMessageHandlers
+            allowedActionHandlers
+            allowedContactLoaders
           }
           texterUIConfig {
             options
@@ -475,12 +485,17 @@ export const editOrganizationGql = gql`
   ) {
     editOrganization(id: $organizationId, organization: $organizationChanges) {
       id
-      settings {
-        messageHandlers
-        actionHandlers
-        contactLoaders
+      defaultSettings {
         featuresJSON
         unsetFeatures
+      }
+      extensionSettings {
+        savedMessageHandlers
+        savedActionHandlers
+        savedContactLoaders
+        allowedMessageHandlers
+        allowedActionHandlers
+        allowedContactLoaders
       }
       texterUIConfig {
         options
@@ -491,13 +506,15 @@ export const editOrganizationGql = gql`
 `;
 
 const mutations = {
-  editOrganization: ownProps => organizationChanges => ({
-    mutation: editOrganizationGql,
-    variables: {
-      organizationId: ownProps.params.organizationId,
-      organizationChanges
-    }
-  }),
+  editOrganization: ownProps => organizationChanges => {
+    return {
+      mutation: editOrganizationGql,
+      variables: {
+        organizationId: ownProps.params.organizationId,
+        organizationChanges
+      }
+    };
+  },
   updateTextingHours: ownProps => (textingHoursStart, textingHoursEnd) => ({
     mutation: gql`
       mutation updateTextingHours(

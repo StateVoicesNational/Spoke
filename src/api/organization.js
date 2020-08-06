@@ -33,20 +33,32 @@ export const schema = gql`
     label: String!
   }
 
-  type OrgSettings {
-    messageHandlers: [String]
-    actionHandlers: [String]
-    contactLoaders: [String]
+  type DefaultSettings {
     featuresJSON: String
     unsetFeatures: [String]
   }
 
-  input OrgSettingsInput {
-    messageHandlers: [String]
-    actionHandlers: [String]
-    contactLoaders: [String]
+  input DefaultSettingsInput {
     featuresJSON: String
     unsetFeatures: [String]
+  }
+
+  type ExtensionSettings {
+    savedMessageHandlers: [String]
+    savedActionHandlers: [String]
+    savedContactLoaders: [String]
+    allowedMessageHandlers: [String]
+    allowedActionHandlers: [String]
+    allowedContactLoaders: [String]
+  }
+
+  input ExtensionSettingsInput {
+    savedMessageHandlers: [String]
+    savedActionHandlers: [String]
+    savedContactLoaders: [String]
+    allowedMessageHandlers: [String]
+    allowedActionHandlers: [String]
+    allowedContactLoaders: [String]
   }
 
   type Organization {
@@ -63,7 +75,8 @@ export const schema = gql`
     optOuts: [OptOut]
     allowSendAll: Boolean
     availableActions: [Action]
-    settings: OrgSettings
+    defaultSettings: DefaultSettings
+    extensionSettings: ExtensionSettings
     optOutMessage: String
     textingHoursEnforced: Boolean
     textingHoursStart: Int
