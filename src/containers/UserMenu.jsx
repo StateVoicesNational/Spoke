@@ -103,7 +103,7 @@ export class UserMenu extends Component {
         />
         <Divider />
       </div>
-    )
+    );
   }
 
   render() {
@@ -112,6 +112,10 @@ export class UserMenu extends Component {
       return <div />;
     }
     const organizations = currentUser.texterOrganizations;
+    /*
+    Right now we comment out this next line so anyone can see the Admin Tools in the drop down
+    TODO: Uncomment this when we're ready to demo/test
+    */
     // const isSuperAdmin = currentUser.is_superadmin;
     const isSuperAdmin = true;
 

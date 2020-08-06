@@ -55,7 +55,8 @@ class AdminOrganizationsDashboard extends React.Component {
       active: "login"
     };
 
-    this.isLocalAdminOrganizationsDashboard = window.PASSPORT_STRATEGY === "local";
+    this.isLocalAdminOrganizationsDashboard =
+      window.PASSPORT_STRATEGY === "local";
   }
 
   componentDidMount = () => {
@@ -98,7 +99,7 @@ class AdminOrganizationsDashboard extends React.Component {
       );
     }
   };
-  
+
   renderActionButton() {
     return (
       <FloatingActionButton
@@ -138,19 +139,22 @@ class AdminOrganizationsDashboard extends React.Component {
       reset: "Save New Password"
     };
 
+    // TODO: Uncomment this code when we have access to currentUser on this page
+    //const { currentUser } = this.props.data;
+    //const isSuperAdmin = currentUser.is_superadmin;
+    //const isSuperAdmin = true;
+    //if (!isSuperAdmin){
+    // return <div>You do not have access to Manage Organizations page</div>;
+    //}
+
     return (
       <div>
-        <TopNav
-          title={"Manage Organizations"}
-        />
+        <TopNav title={"Manage Organizations"} />
         <div className={css(styles.loginPage)}>
-        <div>
-          Hello
+          <div>Hello</div>
         </div>
-        </div>
-      {this.renderActionButton()}
+        {this.renderActionButton()}
       </div>
-      
     );
   }
 }
@@ -174,4 +178,4 @@ AdminOrganizationsDashboard.propTypes = {
   mutations: PropTypes.object
 };
 
-export default loadData({mutations})(withRouter(AdminOrganizationsDashboard));
+export default loadData({ mutations })(withRouter(AdminOrganizationsDashboard));
