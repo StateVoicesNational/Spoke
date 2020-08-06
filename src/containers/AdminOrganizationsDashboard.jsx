@@ -151,13 +151,11 @@ class AdminOrganizationsDashboard extends React.Component {
       <div>
         <TopNav title={"Manage Organizations"} />
         <div className={css(styles.loginPage)}>
-          <div>
             <DataTables
               key={"adminOrganizations"}
               data={this.props.data.organizations}
               columns={columns}
             />
-          </div>
         </div>
         {this.renderActionButton()}
       </div>

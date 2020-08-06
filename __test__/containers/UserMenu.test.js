@@ -83,4 +83,87 @@ describe("UserMenu", () => {
     expect(menuItems[2].props["data-test"]).toBe("FAQs");
     expect(menuItems[3].props["data-test"]).toBe("userMenuLogOut");
   });
+
+  it("renders admin tools if user is superadmin", async () => {
+    StyleSheetTestUtils.suppressStyleInjection();
+
+    const data = {
+      currentUser: {
+        id: 1,
+        displayName: "TestName",
+        email: "test@test.com",
+        is_superadmin: "true",
+        superVolOrganizations: [],
+        texterOrganizations: [
+          {
+            id: 2,
+            name: "testOrg"
+          }
+        ]
+      },
+    };
+
+    const wrapper = mount(
+      <MuiThemeProvider>
+        <UserMenu data={data} />
+      </MuiThemeProvider>
+    ).find(UserMenu);
+
+    // Make sure the menu loads
+    const menuPopover = wrapper.find("Popover");
+    expect(menuPopover.length).toBeGreaterThan(0);
+
+    const menuContentArray = menuPopover.props().children.props.children;
+    const menuItems = menuContentArray.filter(
+      item => item.type && (item.type.muiName === "MenuItem" || item.type === "div")
+    );
+
+    // Check for each thing we always expect to see in the menu
+    expect(menuItems[0].props["data-test"]).toBe("userMenuDisplayName");
+    expect(menuItems[1].key).toBe(null);
+    expect(menuItems[2].props["data-test"]).toBe("home");
+    expect(menuItems[3].props["data-test"]).toBe("FAQs");
+    expect(menuItems[4].props["data-test"]).toBe("userMenuLogOut");
+  });
+
+  it("DOESN'T render admin tools if user is NOT superadmin", async () => {
+    StyleSheetTestUtils.suppressStyleInjection();
+
+    const data = {
+      currentUser: {
+        id: 1,
+        displayName: "TestName",
+        email: "test@test.com",
+        is_superadmin: "false",
+        superVolOrganizations: [],
+        texterOrganizations: [
+          {
+            id: 2,
+            name: "testOrg"
+          }
+        ]
+      },
+    };
+
+    const wrapper = mount(
+      <MuiThemeProvider>
+        <UserMenu data={data} />
+      </MuiThemeProvider>
+    ).find(UserMenu);
+
+    // Make sure the menu loads
+    const menuPopover = wrapper.find("Popover");
+    expect(menuPopover.length).toBeGreaterThan(0);
+
+    const menuContentArray = menuPopover.props().children.props.children;
+    const menuItems = menuContentArray.filter(
+      item => item.type && (item.type.muiName === "MenuItem" || item.type === "div")
+    );
+
+    // Check for each thing we always expect to see in the menu
+    expect(menuItems[0].props["data-test"]).toBe("userMenuDisplayName");
+    expect(menuItems[2].props["data-test"]).toBe("home");
+    expect(menuItems[3].props["data-test"]).toBe("FAQs");
+    expect(menuItems[4].props["data-test"]).toBe("userMenuLogOut");
+  });
 });
