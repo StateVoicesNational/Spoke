@@ -2,7 +2,7 @@ import GraphQLDate from "graphql-date";
 import GraphQLJSON from "graphql-type-json";
 import { GraphQLError } from "graphql/error";
 import isUrl from "is-url";
-
+import _ from "lodash";
 import { gzip, makeTree, getHighestRole } from "../../lib";
 import { capitalizeWord, groupCannedResponses } from "./lib/utils";
 import twilio from "./lib/twilio";
@@ -338,13 +338,13 @@ async function editCampaign(id, campaign, loaders, user, origCampaignRecord) {
         convertedResponses.map(async response => {
           const { tagIds, ...filteredResponse } = response;
           const responseId = await saveCannedResponse(filteredResponse);
-          return tagIds.map(t => ({
+          return (tagIds || []).map(t => ({
             tag_id: t,
             canned_response_id: responseId
           }));
         })
       );
-      await trx("tag_canned_response").insert(tagCannedResponses.flatten());
+      await trx("tag_canned_response").insert(_.flatten(tagCannedResponses));
     });
 
     await cacheableData.cannedResponse.clearQuery({
