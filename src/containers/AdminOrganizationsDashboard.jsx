@@ -4,7 +4,6 @@ import TopNav from "../components/TopNav";
 import gql from "graphql-tag";
 import loadData from "./hoc/load-data";
 import { withRouter } from "react-router";
-import gql from "graphql-tag";
 import ContentAdd from "material-ui/svg-icons/content/add";
 import DataTables from "material-ui-datatables";
 import FloatingActionButton from "material-ui/FloatingActionButton";
@@ -159,7 +158,6 @@ class AdminOrganizationsDashboard extends React.Component {
               columns={columns}
             />
           </div>
-          <div>Hello</div>
         </div>
         {this.renderActionButton()}
       </div>
