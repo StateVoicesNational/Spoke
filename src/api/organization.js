@@ -29,7 +29,7 @@ export const schema = gql`
   }
 
   type ProfileField {
-    name: String!,
+    name: String!
     label: String!
   }
 
@@ -42,6 +42,7 @@ export const schema = gql`
       campaignsFilter: CampaignsFilter
       sortBy: SortCampaignsBy
     ): CampaignsReturn
+    campaignsCount: Int
     people(role: String, campaignId: String, sortBy: SortPeopleBy): [User]
     profileFields: [ProfileField]
     optOuts: [OptOut]

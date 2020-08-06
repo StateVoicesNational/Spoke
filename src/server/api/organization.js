@@ -3,7 +3,7 @@ import { getConfig, getFeatures } from "./lib/config";
 import { r, Organization, cacheableData } from "../models";
 import { getTags } from "./tag";
 import { accessRequired } from "./errors";
-import { getCampaigns } from "./campaign";
+import { getCampaigns, getCampaignsCount } from "./campaign";
 import { buildUsersQuery } from "./user";
 import {
   getAvailableActionHandlers,
@@ -20,6 +20,10 @@ export const resolvers = {
     ) => {
       await accessRequired(user, organization.id, "SUPERVOLUNTEER");
       return getCampaigns(organization.id, cursor, campaignsFilter, sortBy);
+    },
+    campaignsCount: async (organization, _, { user }) => {
+      await accessRequired(user, organization.id, "SUPERVOLUNTEER");
+      return getCampaignsCount(organization.id);
     },
     uuid: async (organization, _, { user }) => {
       await accessRequired(user, organization.id, "SUPERVOLUNTEER");
