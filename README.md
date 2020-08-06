@@ -24,26 +24,26 @@ Follow up instructions located [here](https://github.com/MoveOnOrg/Spoke/blob/ma
 
 Please let us know if you deployed by filling out this form [here](https://act.moveon.org/survey/tech/)
 
-## Getting started
+## Getting Started with Local Development
 
 ### Downloading
-
-1. Install either sqlite, postgres, or another [knex](http://knexjs.org/#Installation-client)-supported database.
-2. Install the Node version listed in `.nvmrc`. [NVM](https://github.com/creationix/nvm) is one way to do this (from the spoke directory):
+1. Download or clone Spoke into your local machine.  Note development will be significantly easier on Unix-based operation system.  If you choose to use Windows, you will likely have to download the [Windows Subsystem for Linux](https://docs.microsoft.com/en-us/windows/wsl/install-win10) and follow instructions on its download page.
+2. Install either sqlite, postgres, or another [knex](http://knexjs.org/#Installation-client)-supported database.
+3. Install the Node version listed in `.nvmrc`. [NVM](https://github.com/creationix/nvm) is one way to do this (from the spoke directory):
    ```
    nvm install
    nvm use
    ```
-3. Install yarn.
+4. Install yarn.
 
 - Yarn is a package manager that will download all required packages to run Spoke.
 - Install using the [directions provided by Yarn](https://yarnpkg.com/en/docs/install).
 
-4. Install the packages.
+5. Install the packages.
    ```
    yarn install
    ```
-5. Create a real environment file:
+6. Create a real environment file:
    ```
    cp .env.example .env
    ```
