@@ -106,7 +106,8 @@ export default function renderIndex(html, css, assetMap) {
       window.DEPRECATED_TEXTERUI="${process.env.DEPRECATED_TEXTERUI || ""}"
       window.TEXTER_SIDEBOXES="${process.env.TEXTER_SIDEBOXES || ""}"
       window.MAX_NUMBERS_PER_BUY_JOB=${getConfig("MAX_NUMBERS_PER_BUY_JOB") ||
-        100};
+        100}
+      window.MULTI_TENANT=${process.env.MULTI_TENANT};
     </script>
     <script src="${assetMap["bundle.js"]}"></script>
   </body>
