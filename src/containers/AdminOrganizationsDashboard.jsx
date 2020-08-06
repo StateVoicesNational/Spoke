@@ -1,6 +1,7 @@
 import PropTypes from "prop-types";
 import React from "react";
 import TopNav from "../components/TopNav";
+import gql from "graphql-tag";
 import loadData from "./hoc/load-data";
 import { withRouter } from "react-router";
 import gql from "graphql-tag";
@@ -50,11 +51,57 @@ const styles = StyleSheet.create({
 });
 
 class AdminOrganizationsDashboard extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      active: "login"
+    };
+
+    this.isLocalAdminOrganizationsDashboard =
+      window.PASSPORT_STRATEGY === "local";
+  }
+
+  componentDidMount = () => {
+    const {
+      location: {
+        query: { nextUrl }
+      }
+    } = this.props;
+
+    if (!this.isLocalAdminOrganizationsDashboard) {
+      window.AuthService.login(nextUrl);
+      return;
+    }
+
+    if (nextUrl && nextUrl.includes("reset")) {
+      this.setState({ active: "reset" });
+    }
+  };
+
+  handleClick = e => {
+    this.setState({ active: e.target.name });
+  };
+
+  handleCreateOrgClick = async e => {
+    e.preventDefault();
+    const newInvite = await this.props.mutations.createInvite({
+      is_valid: true
+    });
+    if (newInvite.errors) {
+      alert("There was an error creating your invite");
+      throw new Error(newInvite.errors);
+    } else {
+      this.props.router.push(
+        `/addOrganization/${newInvite.data.createInvite.hash}`
+      );
+    }
+  };
+
   renderActionButton() {
     return (
       <FloatingActionButton
         style={theme.components.floatingButton}
-        onTouchTap={() => {}}
+        onTouchTap={this.handleCreateOrgClick}
       >
         <ContentAdd />
       </FloatingActionButton>
@@ -93,6 +140,14 @@ class AdminOrganizationsDashboard extends React.Component {
       }
     ];
 
+    // TODO: Uncomment this code when we have access to currentUser on this page
+    //const { currentUser } = this.props.data;
+    //const isSuperAdmin = currentUser.is_superadmin;
+    //const isSuperAdmin = true;
+    //if (!isSuperAdmin){
+    // return <div>You do not have access to Manage Organizations page</div>;
+    //}
+
     return (
       <div>
         <TopNav title={"Manage Organizations"} />
@@ -104,6 +159,7 @@ class AdminOrganizationsDashboard extends React.Component {
               columns={columns}
             />
           </div>
+          <div>Hello</div>
         </div>
         {this.renderActionButton()}
       </div>
@@ -111,9 +167,24 @@ class AdminOrganizationsDashboard extends React.Component {
   }
 }
 
+const mutations = {
+  createInvite: ownProps => invite => ({
+    mutation: gql`
+      mutation createInvite($invite: InviteInput!) {
+        createInvite(invite: $invite) {
+          hash
+        }
+      }
+    `,
+    variables: { invite }
+  })
+};
+
 AdminOrganizationsDashboard.propTypes = {
   location: PropTypes.object,
-  data: PropTypes.object
+  data: PropTypes.object,
+  router: PropTypes.object,
+  mutations: PropTypes.object
 };
 
 const queries = {
@@ -133,4 +204,6 @@ const queries = {
   }
 };
 
-export default loadData({ queries })(withRouter(AdminOrganizationsDashboard));
+export default loadData({ queries, mutations })(
+  withRouter(AdminOrganizationsDashboard)
+);
