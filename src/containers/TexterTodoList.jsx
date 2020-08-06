@@ -53,14 +53,19 @@ class TexterTodoList extends React.Component {
   }
   componentDidMount() {
     this.props.data.refetch();
-    // stopPolling is broken (at least in currently used version), so we roll our own so we can unmount correctly
-    if (this.props.data.currentUser.cacheable && !this.state.polling) {
-      const self = this;
-      this.setState({
-        polling: setInterval(() => {
-          self.props.data.refetch();
-        }, 5000)
-      });
+    // Set up auto-refresh for the data.
+    // We're only going to do this if `UI_TODO_REFRESH_INTERVAL` (measured in seconds) has been set.
+    // Note: stopPolling is broken (at least in currently used version), so we roll our own so we can unmount correctly.
+    if (!this.state.polling && process.env.UI_TODO_REFRESH_INTERVAL) {
+      let duration = process.env.UI_TODO_REFRESH_INTERVAL * 1; // Force the duration to be either a number or NaN.
+      if (duration && duration > 0) {
+        const self = this;
+        this.setState({
+          polling: setInterval(() => {
+            self.props.data.refetch();
+          }, duration * 1000)
+        });
+      }
     }
   }
 
@@ -81,10 +86,12 @@ class TexterTodoList extends React.Component {
   profileComplete() {
     const { data, router } = this.props;
     if (!data.currentUser.profileComplete) {
-      const orgId = this.props.params.organizationId;;
+      const orgId = this.props.params.organizationId;
       const userId = data.currentUser.id;
       const next = this.props.location.pathname;
-      router.push(`/app/${orgId}/account/${userId}?next=${next}&fieldsNeeded=1`);
+      router.push(
+        `/app/${orgId}/account/${userId}?next=${next}&fieldsNeeded=1`
+      );
     }
   }
 
