@@ -24,7 +24,8 @@ if (isClient()) {
     rollbar = new Rollbar({
       accessToken: process.env.ROLLBAR_ACCESS_TOKEN,
       captureUncaught: true,
-      captureUnhandledRejections: true
+      captureUnhandledRejections: true,
+      endpoint: "https://api.rollbar.com/api/1/item"
     });
   }
 
