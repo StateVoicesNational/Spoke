@@ -8,7 +8,8 @@ const DEBUG = process.env.NODE_ENV !== "production";
 const plugins = [
   new webpack.DefinePlugin({
     "process.env.NODE_ENV": `"${process.env.NODE_ENV}"`,
-    "process.env.PHONE_NUMBER_COUNTRY": `"${process.env.PHONE_NUMBER_COUNTRY}"`
+    "process.env.PHONE_NUMBER_COUNTRY": `"${process.env.PHONE_NUMBER_COUNTRY}"`,
+    "process.env.UI_TODO_REFRESH_INTERVAL": `"${process.env.UI_TODO_REFRESH_INTERVAL}"`
   }),
   new webpack.ContextReplacementPlugin(
     /[\/\\]node_modules[\/\\]timezonecomplete[\/\\]/,
