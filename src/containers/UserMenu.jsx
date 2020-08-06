@@ -112,12 +112,7 @@ export class UserMenu extends Component {
       return <div />;
     }
     const organizations = currentUser.texterOrganizations;
-    /*
-    Right now we comment out this next line so anyone can see the Admin Tools in the drop down
-    TODO: Uncomment this when we're ready to demo/test
-    */
-    //const isSuperAdmin = currentUser.is_superadmin;
-    const isSuperAdmin = true;
+    const isSuperAdmin = currentUser.is_superadmin;
 
     return (
       <div>
@@ -146,7 +141,7 @@ export class UserMenu extends Component {
               {currentUser.email}
             </MenuItem>
             <Divider />
-            {window.MULTI_TENANT && isSuperAdmin && this.renderAdminTools()}
+            {window.MULTI_TENANT && isSuperAdmin ? this.renderAdminTools() : <div />}
             <Subheader>Teams</Subheader>
             {organizations.map(organization => (
               <MenuItem
