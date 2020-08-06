@@ -1,6 +1,6 @@
 import minilog from "minilog";
 import { isClient } from "./is-client";
-const rollbar = require("rollbar");
+const Rollbar = require("rollbar");
 let logInstance = null;
 
 if (isClient()) {
@@ -20,8 +20,11 @@ if (isClient()) {
     process.env.NODE_ENV === "production" &&
     process.env.ROLLBAR_ACCESS_TOKEN
   ) {
-    enableRollbar = true;
-    rollbar.init(process.env.ROLLBAR_ACCESS_TOKEN);
+    rollbar = new Rollbar({
+      accessToken: process.env.ROLLBAR_ACCESS_TOKEN,
+      captureUncaught: true,
+      captureUnhandledRejections: true
+    });
   }
 
   minilog.suggest.deny(
@@ -39,11 +42,11 @@ if (isClient()) {
   logInstance.error = err => {
     if (enableRollbar) {
       if (typeof err === "object") {
-        rollbar.handleError(err);
+        rollbar.error(err);
       } else if (typeof err === "string") {
-        rollbar.reportMessage(err);
+        rollbar.log(err);
       } else {
-        rollbar.reportMessage("Got backend error with no error message");
+        rollbar.log("Got backend error with no error message");
       }
     }
 
