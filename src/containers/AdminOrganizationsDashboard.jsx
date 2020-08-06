@@ -1,8 +1,11 @@
 import PropTypes from "prop-types";
 import React from "react";
 import TopNav from "../components/TopNav";
+import loadData from "./hoc/load-data";
 import { withRouter } from "react-router";
+import gql from "graphql-tag";
 import ContentAdd from "material-ui/svg-icons/content/add";
+import DataTables from "material-ui-datatables";
 import FloatingActionButton from "material-ui/FloatingActionButton";
 
 import { StyleSheet, css } from "aphrodite";
@@ -47,41 +50,6 @@ const styles = StyleSheet.create({
 });
 
 class AdminOrganizationsDashboard extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      active: "login"
-    };
-
-    this.isLocalAdminOrganizationsDashboard = window.PASSPORT_STRATEGY === "local";
-  }
-
-  componentDidMount = () => {
-    const {
-      location: {
-        query: { nextUrl }
-      }
-    } = this.props;
-
-    if (!this.isLocalAdminOrganizationsDashboard) {
-      window.AuthService.login(nextUrl);
-      return;
-    }
-
-    if (nextUrl && nextUrl.includes("reset")) {
-      this.setState({ active: "reset" });
-    }
-  };
-
-  handleClick = e => {
-    this.setState({ active: e.target.name });
-  };
-
-  naiveVerifyInviteValid = (nextUrl, maybeSignup) =>
-    (/^\/int/.test(nextUrl) && !maybeSignup) || // integration urls
-    /^\/sign/.test(nextUrl) || // signup integration urls
-    /\/\w{8}-(\w{4}\-){3}\w{12}(\/|$)/.test(nextUrl);
-
   renderActionButton() {
     return (
       <FloatingActionButton
@@ -94,53 +62,75 @@ class AdminOrganizationsDashboard extends React.Component {
   }
 
   render() {
-    if (!this.isLocalAdminOrganizationsDashboard) {
-      // AdminOrganizationsDashboard provider will handle redirecting
-      return null;
-    }
-
-    const {
-      location: {
-        query: { nextUrl }
+    console.log(this.props.data);
+    var columns = [
+      {
+        key: "id",
+        label: "id",
+        sortable: true,
+        style: {
+          width: "5em"
+        }
       },
-      router
-    } = this.props;
-
-    // If nextUrl is a valid (naive RegEx only) invite or organization
-    // UUID display Sign Up section. Full validation done on backend.
-    const inviteLink =
-      nextUrl && (nextUrl.includes("join") || nextUrl.includes("invite"));
-    let displaySignUp;
-    if (inviteLink) {
-      displaySignUp = this.naiveVerifyInviteValid(nextUrl, true);
-    }
-
-    const saveLabels = {
-      login: "Log In",
-      signup: "Sign Up",
-      reset: "Save New Password"
-    };
+      {
+        key: "name",
+        label: "name",
+        sortable: true,
+        style: {
+          width: "5em"
+        }
+      },
+      // note that 'active' is defined as 'not archived'.
+      // campaigns that have not yet started are included here.
+      // is this what we want?
+      {
+        key: "campaignsCount",
+        label: "Number of Active Campaigns",
+        sortable: true,
+        style: {
+          width: "5em"
+        }
+      }
+    ];
 
     return (
       <div>
-        <TopNav
-          title={"Manage Organizations"}
-        />
+        <TopNav title={"Manage Organizations"} />
         <div className={css(styles.loginPage)}>
-        <div>
-          Hello
+          <div>
+            <DataTables
+              key={"adminOrganizations"}
+              data={this.props.data.organizations}
+              columns={columns}
+            />
+          </div>
         </div>
-        </div>
-      {this.renderActionButton()}
+        {this.renderActionButton()}
       </div>
-      
     );
   }
 }
 
 AdminOrganizationsDashboard.propTypes = {
   location: PropTypes.object,
-  router: PropTypes.object
+  data: PropTypes.object
 };
 
-export default withRouter(AdminOrganizationsDashboard);
+const queries = {
+  data: {
+    query: gql`
+      query getOrganizations {
+        organizations {
+          id
+          name
+          campaignsCount
+        }
+      }
+    `,
+    options: ownProps => ({
+      fetchPolicy: "network-only"
+    })
+  }
+};
+
+export default loadData({ queries })(withRouter(AdminOrganizationsDashboard));
