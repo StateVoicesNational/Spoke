@@ -15,7 +15,8 @@ if (isClient()) {
     existingErrorLogger.call(...errObj);
   };
 } else {
-  let enableRollbar = false;
+  let rollbar = null;
+
   if (
     process.env.NODE_ENV === "production" &&
     process.env.ROLLBAR_ACCESS_TOKEN
@@ -40,7 +41,7 @@ if (isClient()) {
   logInstance = minilog("backend");
   const existingErrorLogger = logInstance.error;
   logInstance.error = err => {
-    if (enableRollbar) {
+    if (rollbar) {
       if (typeof err === "object") {
         rollbar.error(err);
       } else if (typeof err === "string") {
