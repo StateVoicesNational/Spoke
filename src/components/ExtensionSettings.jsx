@@ -6,70 +6,32 @@ import Form from "react-formal";
 import { StyleSheet, css } from "aphrodite";
 import Toggle from "material-ui/Toggle";
 import { dataTest } from "../lib/attributes";
-import { dataSourceItem } from "./utils";
+import cloneDeep from "lodash/cloneDeep";
 
-const toggled = (name, isToggled) => {
-  const formValues = cloneDeep(this.props.formValues);
-  formValues[name] = isToggled;
-  this.props.onChange(formValues);
-};
-
-const IntegrationCategory = props => {
-  return;
-  <Form.Field
-    label={props.label}
-    name={props.name}
-    type={Toggle}
-    defaultToggled={true}
-    onToggle={async (_, isToggled) => {
-      this.toggled(name, isToggled);
-    }}
-  />;
-};
+const ACTION_HANDLERS = "ACTION_HANDLERS";
+const MESSAGE_HANDLERS = "MESSAGE_HANDLERS";
+const CONTACT_LOADERS = "CONTACT_LOADERS";
 
 const integrationCategories = {
-  ACTION_HANDLERS: {
+  actionHandlers: {
     schema: yup.string(),
-    component: props => {
-      // toggles on/off for each handler, needs a description of each
-      return (
-        props.ACTION_HANDLERS && (
-          <div>
-            <div>Bob's Actions</div>
-            {props.actionHandlers.map(ah => (
-              <IntegrationCategory label={ah} name={ah} />
-            ))}
-          </div>
-        )
-      );
+    props: {
+      name: ACTION_HANDLERS,
+      handlers: "allowedActionHandlers" // TODO
     }
   },
-  MESSAGE_HANDLERS: {
+  messageHandlers: {
     schema: yup.string(),
-    component: props => {
-      // toggles on/off for each handler, needs a description of each
-      return (
-        <Form.Field
-          label="Message Handlers (comma-separated)"
-          name="MESSAGE_HANDLERS"
-          fullWidth
-          key={2}
-        />
-      );
+    props: {
+      name: MESSAGE_HANDLERS,
+      handlers: "allowedMessageHandlers" // TODO
     }
   },
-  CONTACT_LOADERS: {
+  contactLoaders: {
     schema: yup.string(),
-    component: props => {
-      // toggles on/off for each handler, needs a description of each
-      return (
-        <Form.Field
-          label="Contact Loaders"
-          name="CONTACT_LOADERS"
-          fullWidth
-          key={3}
-        />
-      );
+    props: {
+      name: CONTACT_LOADERS,
+      handlers: "allowedContactLoader" // TODO
     }
   }
 };
@@ -88,24 +50,80 @@ export default class ExtensionSettings extends React.Component {
     this.setState(formValues, () => {
       this.props.onChange({
         extensionSettings: {
-          savedMesssageHandlers: JSON.stringify(this.state.MESSAGE_HANDLERS),
-          savedActionHandlers: JSON.stringify(this.state.ACTION_HANDLERS),
-          savedContactLoaders: JSON.stringify(this.state.CONTACT_LOADERS)
+          savedMesssageHandlers: formValues.savedMesssageHandlers,
+          savedActionHandlers: formValues.savedActionHandlers,
+          savedContactLoaders: formValues.savedContactLoaders
         }
       });
     });
   };
 
+  toggled(integrationName, handlerName, isToggled) {
+    const integrationType = this.getIntegrationType(integrationName);
+    if (isToggled) {
+      this.state[integrationType].push(handlerName);
+    } else {
+      this.state[integrationType] = this.state[integrationType].filter(
+        h => h !== handlerName
+      );
+    }
+
+    this.onChange({
+      savedActionHandlers: this.state.savedActionHandlers,
+      savedMessageHandlers: this.state.savedMesssageHandlers,
+      savedContactLoaders: this.state.savedContactLoaders
+    });
+  }
+
+  addToggleFormField(integrationName, handlerName) {
+    const integrationType = this.getIntegrationType(integrationName);
+    return (
+      <Form.Field
+        name={handlerName}
+        type={Toggle}
+        defaultToggled={this.props.formValues.extensionSettings[
+          integrationType
+        ].includes(handlerName)}
+        label={handlerName}
+        onToggle={async (_, isToggled) => {
+          this.toggled(integrationName, handlerName, isToggled);
+        }}
+      />
+    );
+  }
+
+  getIntegrationType(integrationName) {
+    return integrationName === ACTION_HANDLER
+      ? "savedActionHandlers"
+      : integrationName === MESSAGE_HANDLER
+      ? "savedMessageHandlers"
+      : "savedContactLoaders";
+  }
+
   render() {
     const schemaObject = {};
     const adminItems = Object.keys(integrationCategories).map(f => {
       schemaObject[f] = integrationCategories[f].schema;
-      schemaObject[f] = integrationCategories[f].schema;
-      return integrationCategories[f].component({
-        ...this.props,
-        parent: this
-      });
+      schemaObject[integrationCategories[f].props.name] = yup.string();
+      const allowedCategoryHandlers = this.props.formValues.extensionSettings[
+        integrationCategories[f].props.handlers
+      ];
+      return (
+        allowedCategoryHandlers && (
+          <div>
+            <div>{integrationCategories[f].props.name}</div>
+            {allowedCategoryHandlers.map((handlerName, index) => {
+              schemaObject[allowedCategoryHandlers[index]] = yup.string();
+              return this.addToggleFormField(
+                integrationCategories[f].props.name,
+                handlerName
+              );
+            })}
+          </div>
+        )
+      );
     });
+    console.log("schemaObject: ", schemaObject);
     console.log("currentstate: ", this.state);
     console.log("current props: ", this.props);
     return (

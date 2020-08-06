@@ -411,7 +411,12 @@ class Settings extends React.Component {
                   const { extensionSettings } = this.state;
                   console.log("settings about to be set:", extensionSettings);
                   await this.props.mutations.editOrganization({
-                    extensionSettings
+                    extensionSettings: {
+                      ...extensionSettings,
+                      allowedMessageHandlers: [],
+                      allowedActionHandlers: [],
+                      allowedContactLoaders: []
+                    }
                   });
                   this.setState({ extensionSettings: null });
                 }}
