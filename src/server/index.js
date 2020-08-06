@@ -1,6 +1,7 @@
 import "babel-polyfill";
 import bodyParser from "body-parser";
 import express from "express";
+import morgan from "morgan";
 import appRenderer from "./middleware/app-renderer";
 import { graphqlExpress, graphiqlExpress } from "apollo-server-express";
 import { makeExecutableSchema, addMockFunctionsToSchema } from "graphql-tools";
@@ -52,6 +53,9 @@ const port = process.env.DEV_APP_PORT || process.env.PORT;
 
 // Don't rate limit heroku
 app.enable("trust proxy");
+
+// Log requests.
+app.use(morgan('combined'));
 
 // Serve static assets
 if (existsSync(process.env.ASSETS_DIR)) {
