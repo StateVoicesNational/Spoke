@@ -7,6 +7,7 @@ export const schema = `
     displayName: String
     email: String
     cell: String
+    is_superadmin: Boolean
     extra: String
     organizations(role: String): [Organization]
     todos(organizationId: String): [Assignment]
