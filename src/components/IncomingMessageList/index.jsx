@@ -123,7 +123,7 @@ export class IncomingMessageList extends Component {
       label: "Texter",
       style: {
         textOverflow: "ellipsis",
-        overflow: "scroll",
+        overflow: "hidden",
         whiteSpace: "pre-line"
       }
     },
@@ -132,7 +132,7 @@ export class IncomingMessageList extends Component {
       label: "To",
       style: {
         textOverflow: "ellipsis",
-        overflow: "scroll",
+        overflow: "hidden",
         whiteSpace: "pre-line"
       }
     },
@@ -141,7 +141,7 @@ export class IncomingMessageList extends Component {
       label: "Conversation Status",
       style: {
         textOverflow: "ellipsis",
-        overflow: "scroll",
+        overflow: "hidden",
         whiteSpace: "pre-line"
       },
       render: (columnKey, row) => MESSAGE_STATUSES[row.status].name
@@ -151,7 +151,7 @@ export class IncomingMessageList extends Component {
       label: "Latest Message",
       style: {
         textOverflow: "ellipsis",
-        overflow: "scroll",
+        overflow: "hidden",
         whiteSpace: "pre-line"
       },
       render: (columnKey, row) => {
@@ -189,7 +189,7 @@ export class IncomingMessageList extends Component {
       label: "View Conversation",
       style: {
         textOverflow: "ellipsis",
-        overflow: "scroll",
+        overflow: "hidden",
         whiteSpace: "pre-line"
       },
       render: (columnKey, row) =>
