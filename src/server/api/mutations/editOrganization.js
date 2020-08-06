@@ -12,22 +12,28 @@ export const editOrganization = async (_, { id, organization }, { user }) => {
   if (organization.texterUIConfig) {
     // update texterUIConfig
     features.TEXTER_UI_SETTINGS = organization.texterUIConfig.options;
-    changes["features"] = features;
   }
 
-  if (organization.settings) {
-    const { unsetFeatures, featuresJSON } = organization.settings;
+  if (organization.defaultSettings) {
+    const { unsetFeatures, featuresJSON } = organization.defaultSettings;
     const newFeatureValues = JSON.parse(featuresJSON);
     getAllowed(orgRecord, user).forEach(f => {
-      if (newFeatureValues.hasOwnProperty(f)) {
-        features[f] = newFeatureValues[f];
+      if (newFeatureValues.hasOwnProperty(f) && !unsetFeatures.includes(f)) {
+        features.DEFAULT_SETTINGS[f] = newFeatureValues[f];
       }
     });
-    unsetFeatures.forEach(f => {
-      delete features[f];
-    });
-    changes["features"] = features;
   }
+
+  if (organization.extensionSettings) {
+    const updatedExtensionSettings = {
+      MESSAGE_HANDLERS: organization.extensionSettings.savedMessageHandlers,
+      ACTION_HANDLERS: organization.extensionSettings.savedActionHandlers,
+      CONTACT_LOADERS: organization.extensionSettings.savedContactLoaders
+    };
+    features.EXTENSION_SETTINGS = updatedExtensionSettings;
+  }
+
+  changes["features"] = features;
 
   if (Object.keys(changes).length) {
     if (changes.features) {

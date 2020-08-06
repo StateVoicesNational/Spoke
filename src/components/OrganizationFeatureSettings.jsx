@@ -19,20 +19,6 @@ import { dataTest } from "../lib/attributes";
 import { dataSourceItem } from "./utils";
 
 const configurableFields = {
-  ACTION_HANDLERS: {
-    schema: yup.string(),
-    ready: true,
-    component: props => {
-      // toggles on/off for each handler, needs a description of each
-      return (
-        <Form.Field
-          label="Action Handlers (comma-separated)"
-          name="ACTION_HANDLERS"
-          fullWidth
-        />
-      );
-    }
-  },
   ALLOW_SEND_ALL_ENABLED: {
     schema: yup.boolean(),
     component: props => {
@@ -59,20 +45,6 @@ const configurableFields = {
       return <div></div>;
     }
   },
-  MESSAGE_HANDLERS: {
-    schema: yup.string(),
-    ready: true,
-    component: props => {
-      // toggles on/off for each handler, needs a description of each
-      return (
-        <Form.Field
-          label="Message Handlers (comma-separated)"
-          name="MESSAGE_HANDLERS"
-          fullWidth
-        />
-      );
-    }
-  },
   opt_out_message: {
     schema: yup.string(),
     component: props => {
@@ -87,17 +59,16 @@ export default class OrganizationFeatureSettings extends React.Component {
     super(props);
     const { formValues } = this.props;
     const settingsData =
-      (formValues.settings.featuresJSON &&
-        JSON.parse(formValues.settings.featuresJSON)) ||
+      (formValues.defaultSettings.featuresJSON &&
+        JSON.parse(formValues.defaultSettings.featuresJSON)) ||
       {};
     this.state = { ...settingsData, unsetFeatures: [] };
   }
 
   onChange = formValues => {
-    console.log("onChange", formValues);
     this.setState(formValues, () => {
       this.props.onChange({
-        settings: {
+        defaultSettings: {
           featuresJSON: JSON.stringify(this.state),
           unsetFeatures: this.state.unsetFeatures
         }
@@ -106,10 +77,9 @@ export default class OrganizationFeatureSettings extends React.Component {
   };
 
   toggleChange = (key, value) => {
-    console.log("toggleChange", key, value);
     this.setState({ [key]: value }, newData => {
       this.props.onChange({
-        settings: {
+        defaultSettings: {
           featuresJSON: JSON.stringify(this.state),
           unsetFeatures: this.state.unsetFeatures
         }
@@ -118,14 +88,7 @@ export default class OrganizationFeatureSettings extends React.Component {
   };
 
   render() {
-    // message handlers add/remove
-    // action handlers: add/remove
     // features and unsetFeatures list
-    console.log(
-      "OrganizationFeatureSettings",
-      this.state,
-      this.props.formValues
-    );
     const schemaObject = {};
     const adminItems = Object.keys(configurableFields)
       .filter(f => configurableFields[f].ready)
@@ -133,7 +96,6 @@ export default class OrganizationFeatureSettings extends React.Component {
         schemaObject[f] = configurableFields[f].schema;
         return configurableFields[f].component({ ...this.props, parent: this });
       });
-    console.log("organizationfeaturesettings", schemaObject);
     return (
       <div>
         <GSForm
@@ -143,6 +105,7 @@ export default class OrganizationFeatureSettings extends React.Component {
         >
           {adminItems}
           <Form.Button
+            key="OFS-submit"
             type="submit"
             onClick={this.props.onSubmit}
             label={this.props.saveLabel}

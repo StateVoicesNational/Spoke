@@ -17,6 +17,7 @@ export const ownerConfigurable = {
   MAX_CONTACTS_PER_TEXTER: 1,
   MAX_MESSAGE_LENGTH: 1,
   MESSAGE_HANDLERS: 1,
+  CONTACT_LOADERS: 1,
   opt_out_message: 1
 };
 
@@ -130,37 +131,65 @@ export const resolvers = {
           getConfig("ALLOW_SEND_ALL", organization, { truthy: 1 }) &&
           getFeatures(organization).ALLOW_SEND_ALL_ENABLED
       ),
-    settings: async (organization, _, { user, loaders }) => {
+    extensionSettings: async (organization, _, { user, loaders }) => {
       try {
         await accessRequired(user, organization.id, "OWNER", true);
       } catch (err) {
         return null;
       }
-      let messageHandlers = [];
-      let actionHandlers = [];
-      const features = getFeatures(organization);
-      const visibleFeatures = {};
-      const unsetFeatures = [];
-      getAllowed(organization, user).forEach(f => {
-        if (features.hasOwnProperty(f)) {
-          visibleFeatures[f] = features[f];
-        } else {
-          unsetFeatures.push(f);
-        }
-        if (f === "MESSAGE_HANDLERS") {
-          const globalMessageHandlers = getConfig("MESSAGE_HANDLERS");
-          messageHandlers =
-            (globalMessageHandlers && globalMessageHandlers.split(",")) || [];
-        } else if (f === "ACTION_HANDLERS") {
-          const globalActionHandlers = getConfig("ACTION_HANDLERS");
-          actionHandlers =
-            (globalActionHandlers && globalActionHandlers.split(",")) || [];
-        }
-      });
+
+      // reads from environment config, where these are individually set
+      const configurableSettings = getAllowed(organization, user);
+      const allowedMessageHandlers =
+        (configurableSettings.MESSAGE_HANDLERS === 1 &&
+          getConfig("MESSAGE_HANDLERS")) ||
+        [];
+      const allowedActionHandlers =
+        (configurableSettings.ACTION_HANDLERS === 1 &&
+          getConfig("ACTION_HANDLERS")) ||
+        [];
+      const allowedContactLoaders =
+        (configurableSettings.CONTACT_LOADERS === 1 &&
+          getConfig("CONTACT_LOADERS")) ||
+        [];
+
+      // reads from DB, where these are grouped under features.EXTENSION_SETTINGS
+      const extensionSettings =
+        getConfig("EXTENSION_SETTINGS", organization) || [];
+      let savedMessageHandlers = extensionSettings.MESSAGE_HANDLERS || [];
+      let savedActionHandlers = extensionSettings.ACTION_HANDLERS || [];
+      let savedContactLoaders = extensionSettings.CONTACT_LOADERS || [];
 
       return {
-        messageHandlers,
-        actionHandlers,
+        savedMessageHandlers,
+        savedActionHandlers,
+        savedContactLoaders,
+        allowedMessageHandlers,
+        allowedActionHandlers,
+        allowedContactLoaders
+      };
+    },
+    defaultSettings: async (organization, _, { user, loaders }) => {
+      try {
+        await accessRequired(user, organization.id, "OWNER", true);
+      } catch (err) {
+        return null;
+      }
+
+      // reads from DB, where these are grouped under features.DEFAULT_SETTINGS
+      const features = getConfig("DEFAULT_SETTINGS", organization) || null;
+      const visibleFeatures = {};
+      const unsetFeatures = [];
+      if (features !== null) {
+        getAllowed(organization, user).forEach(f => {
+          if (features.hasOwnProperty(f)) {
+            visibleFeatures[f] = features[f];
+          } else {
+            unsetFeatures.push(f);
+          }
+        });
+      }
+      return {
         unsetFeatures,
         featuresJSON: JSON.stringify(visibleFeatures)
       };
