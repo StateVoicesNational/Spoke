@@ -116,15 +116,6 @@ class AdminOrganizationsDashboard extends React.Component {
         sortable: true,
         style: {
           width: "5em"
-        },
-        render: columnKey => {
-          return (
-            <div style={{ margin: "6px 0" }}>
-              <Link to={`/admin/${columnKey}/campaigns`}>
-                Visit Organization
-              </Link>
-            </div>
-          );
         }
       },
       {
@@ -133,6 +124,15 @@ class AdminOrganizationsDashboard extends React.Component {
         sortable: true,
         style: {
           width: "5em"
+        },
+        render: (columnKey, organizations) => {
+          return (
+            <div style={{ margin: "6px 0" }}>
+              <Link target="_blank" to={`/admin/${organizations.id}/campaigns`}>
+                {columnKey}
+              </Link>
+            </div>
+          );
         }
       },
       // note that 'active' is defined as 'not archived'.
@@ -164,7 +164,7 @@ class AdminOrganizationsDashboard extends React.Component {
             key={"adminOrganizations"}
             data={this.props.data.organizations}
             columns={columns}
-            //  selectable={true}
+            // selectable={true}
             // onRowClick={this.props.router.push(`/app/1/todos`)}
           />
         </div>
