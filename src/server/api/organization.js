@@ -26,7 +26,7 @@ export const resolvers = {
       return getCampaignsCount(organization.id);
     },
     numTextsInLastDay: async (organization, _, { user }) => {
-      await accessRequired(user, organization.id, "SUPERVOLUNTEER");
+      await accessRequired(user, organization.id, "OWNER", true);
       return getNumTextsInLastDay(organization.id);
     },
     uuid: async (organization, _, { user }) => {
