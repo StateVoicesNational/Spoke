@@ -75,15 +75,13 @@ export class AssignmentTexterContactControls extends React.Component {
     setTimeout(() => {
       node.scrollTop = Math.floor(node.scrollHeight);
     }, 0);
-    const keyAction = window.HOLD_ENTER_KEY ? "keydown" : "keyup";
-    document.body.addEventListener(keyAction, this.onKeyUp);
+    document.body.addEventListener("keypress", this.onKeyUp);
     window.addEventListener("resize", this.onResize);
     window.addEventListener("orientationchange", this.onResize);
   }
 
   componentWillUnmount() {
-    const keyAction = window.HOLD_ENTER_KEY ? "keydown" : "keyup";
-    document.body.removeEventListener(keyAction, this.onKeyUp);
+    document.body.removeEventListener("keypress", this.onKeyUp);
     window.removeEventListener("resize", this.onResize);
     window.removeEventListener("orientationchange", this.onResize);
   }
@@ -123,6 +121,22 @@ export class AssignmentTexterContactControls extends React.Component {
   };
 
   onKeyUp = evt => {
+    if (
+      window.document &&
+      document.location &&
+      /keys=1/.test(document.location.search)
+    ) {
+      // for debugging when keys don't work
+      document.location = `#${evt.key}`;
+    }
+    console.log(
+      "keypress",
+      evt.key,
+      evt.ctrlKey,
+      this.state.messageReadOnly,
+      this.props.messageStatusFilter
+    );
+
     if (evt.key === "Escape") {
       this.setState({
         optOutDialogOpen: false,

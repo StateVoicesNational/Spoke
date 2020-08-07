@@ -493,11 +493,19 @@ async function searchForAvailableNumbers(
   limit
 ) {
   const count = Math.min(limit, 30); // Twilio limit
-  return twilioInstance.availablePhoneNumbers(countryCode).local.list({
-    areaCode,
+  const criteria = {
     limit: count,
     capabilities: ["SMS", "MMS"]
-  });
+  };
+  let numberType = "local";
+  if (areaCode === "800") {
+    numberType = "tollFree";
+  } else {
+    criteria.areaCode = areaCode;
+  }
+  return twilioInstance
+    .availablePhoneNumbers(countryCode)
+    [numberType].list(criteria);
 }
 
 /**
