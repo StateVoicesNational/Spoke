@@ -57,7 +57,7 @@ class CreateAdditionalOrganization extends React.Component {
             <GSForm
               schema={this.formSchema}
               onSubmit={async formValues => {
-                const newOrganization = await this.props.mutations.createOrganization(
+                await this.props.mutations.createOrganization(
                   formValues.name,
                   this.props.userData.currentUser.id,
                   this.props.inviteData.inviteByHash[0].id
@@ -89,6 +89,9 @@ class CreateAdditionalOrganization extends React.Component {
   }
 
   render() {
+    if (!this.props.userData.currentUser.is_superadmin){
+      return (<div>You must be a super admin to create an additional organization.</div>)
+    }
     return (
       <div>
         <TopNav title={"Add An Organization"} />
@@ -134,17 +137,18 @@ const queries = {
       query getCurrentUser {
         currentUser {
           id
+          is_superadmin
         }
       }
     `,
-    options: ownProps => ({
+    options: () => ({
       fetchPolicy: "network-only"
     })
   }
 };
 
 const mutations = {
-  createOrganization: ownProps => (name, userId, inviteId) => ({
+  createOrganization: () => (name, userId, inviteId) => ({
     mutation: gql`
       mutation createOrganization(
         $name: String!
