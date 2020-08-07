@@ -7,6 +7,7 @@ import { StyleSheet, css } from "aphrodite";
 import Toggle from "material-ui/Toggle";
 import { dataTest } from "../lib/attributes";
 import cloneDeep from "lodash/cloneDeep";
+import theme from "../styles/theme";
 
 const ACTION_HANDLERS = "ACTION_HANDLERS";
 const MESSAGE_HANDLERS = "MESSAGE_HANDLERS";
@@ -17,21 +18,21 @@ const integrationCategories = {
     schema: yup.string(),
     props: {
       name: ACTION_HANDLERS,
-      handlers: "allowedActionHandlers" // TODO
+      handlers: "allowedActionHandlers"
     }
   },
   messageHandlers: {
     schema: yup.string(),
     props: {
       name: MESSAGE_HANDLERS,
-      handlers: "allowedMessageHandlers" // TODO
+      handlers: "allowedMessageHandlers"
     }
   },
   contactLoaders: {
     schema: yup.string(),
     props: {
       name: CONTACT_LOADERS,
-      handlers: "allowedContactLoader" // TODO
+      handlers: "allowedContactLoaders"
     }
   }
 };
@@ -40,17 +41,18 @@ export default class ExtensionSettings extends React.Component {
   constructor(props) {
     super(props);
     const { formValues } = this.props;
-    const settingsData =
-      (formValues.extensionSettings && formValues.extensionSettings) || {};
+    const settingsData = formValues.extensionSettings || {};
     this.state = { ...settingsData };
+    this.schemaObject = { actionWasNotDefined: yup.string() };
+    this.adminItems = this.getAdminItems();
   }
 
   onChange = formValues => {
-    console.log("onChange state", this.state);
     this.setState(formValues, () => {
+      console.log("boop", formValues);
       this.props.onChange({
         extensionSettings: {
-          savedMesssageHandlers: formValues.savedMesssageHandlers,
+          savedMessageHandlers: formValues.savedMessageHandlers,
           savedActionHandlers: formValues.savedActionHandlers,
           savedContactLoaders: formValues.savedContactLoaders
         }
@@ -70,7 +72,7 @@ export default class ExtensionSettings extends React.Component {
 
     this.onChange({
       savedActionHandlers: this.state.savedActionHandlers,
-      savedMessageHandlers: this.state.savedMesssageHandlers,
+      savedMessageHandlers: this.state.savedMessageHandlers,
       savedContactLoaders: this.state.savedContactLoaders
     });
   }
@@ -78,42 +80,48 @@ export default class ExtensionSettings extends React.Component {
   addToggleFormField(integrationName, handlerName) {
     const integrationType = this.getIntegrationType(integrationName);
     return (
-      <Form.Field
-        name={handlerName}
-        type={Toggle}
-        defaultToggled={this.props.formValues.extensionSettings[
-          integrationType
-        ].includes(handlerName)}
-        label={handlerName}
-        onToggle={async (_, isToggled) => {
-          this.toggled(integrationName, handlerName, isToggled);
-        }}
-      />
+      <div style={{ paddingLeft: "15px" }}>
+        <Form.Field
+          name={"actionWasNotDefined"} // TODO we get this error when we use handlerName, not sure why
+          type={Toggle}
+          defaultToggled={this.props.formValues.extensionSettings[
+            integrationType
+          ].includes(handlerName)}
+          label={handlerName}
+          onToggle={async (_, isToggled) => {
+            this.toggled(integrationName, handlerName, isToggled);
+          }}
+          key={handlerName}
+        />
+      </div>
     );
   }
 
   getIntegrationType(integrationName) {
-    return integrationName === ACTION_HANDLER
+    return integrationName === ACTION_HANDLERS
       ? "savedActionHandlers"
-      : integrationName === MESSAGE_HANDLER
+      : integrationName === MESSAGE_HANDLERS
       ? "savedMessageHandlers"
       : "savedContactLoaders";
   }
 
-  render() {
-    const schemaObject = {};
-    const adminItems = Object.keys(integrationCategories).map(f => {
-      schemaObject[f] = integrationCategories[f].schema;
-      schemaObject[integrationCategories[f].props.name] = yup.string();
+  getAdminItems = () => {
+    return Object.keys(integrationCategories).map(f => {
+      this.schemaObject[f] = integrationCategories[f].schema;
+      this.schemaObject[integrationCategories[f].props.name] = yup.string();
       const allowedCategoryHandlers = this.props.formValues.extensionSettings[
         integrationCategories[f].props.handlers
       ];
       return (
-        allowedCategoryHandlers && (
-          <div>
-            <div>{integrationCategories[f].props.name}</div>
+        allowedCategoryHandlers.length > 0 && (
+          <div key={f} style={{ marginBottom: "10px" }}>
+            <div
+              style={{ ...theme.text.secondaryHeader, marginBottom: "10px" }}
+            >
+              {integrationCategories[f].props.name}
+            </div>
             {allowedCategoryHandlers.map((handlerName, index) => {
-              schemaObject[allowedCategoryHandlers[index]] = yup.string();
+              this.schemaObject[handlerName] = yup.string();
               return this.addToggleFormField(
                 integrationCategories[f].props.name,
                 handlerName
@@ -123,17 +131,19 @@ export default class ExtensionSettings extends React.Component {
         )
       );
     });
-    console.log("schemaObject: ", schemaObject);
+  };
+
+  render() {
     console.log("currentstate: ", this.state);
-    console.log("current props: ", this.props);
+    console.log("current props: ", this.props.formValues.extensionSettings);
     return (
       <div>
         <GSForm
-          schema={yup.object(schemaObject)}
+          schema={yup.object(this.schemaObject)}
           value={this.state}
           onChange={this.onChange}
         >
-          {adminItems}
+          {this.adminItems}
           <Form.Button
             type="submit"
             onClick={this.props.onSubmit}

@@ -270,6 +270,7 @@ class Settings extends React.Component {
     const formSchema = yup.object({
       optOutMessage: yup.string().required()
     });
+    console.log("props from settings: ", organization);
 
     return (
       <div>
@@ -400,7 +401,7 @@ class Settings extends React.Component {
         this.props.data.organization.extensionSettings ? (
           <Card>
             <CardHeader
-              title="yay bob"
+              title="Extension Setting"
               style={{ backgroundColor: theme.colors.green }}
             />
             <CardText>

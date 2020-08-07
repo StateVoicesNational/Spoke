@@ -138,27 +138,42 @@ export const resolvers = {
         return null;
       }
 
-      // reads from environment config, where these are individually set
+      // reads from global/environment config, where these are individually set
       const configurableSettings = getAllowed(organization, user);
+
+      const configurableMessageHandlers =
+        configurableSettings.includes("MESSAGE_HANDLERS") &&
+        getConfig("MESSAGE_HANDLERS");
       const allowedMessageHandlers =
-        (configurableSettings.MESSAGE_HANDLERS === 1 &&
-          getConfig("MESSAGE_HANDLERS")) ||
-        [];
+        configurableMessageHandlers !== undefined
+          ? configurableMessageHandlers.split(",")
+          : [];
+
+      const configurableActionHandlers =
+        configurableSettings.includes("ACTION_HANDLERS") &&
+        getConfig("ACTION_HANDLERS");
       const allowedActionHandlers =
-        (configurableSettings.ACTION_HANDLERS === 1 &&
-          getConfig("ACTION_HANDLERS")) ||
-        [];
+        configurableActionHandlers !== undefined
+          ? configurableActionHandlers.split(",")
+          : [];
+
+      const configurableContactLoaders =
+        configurableSettings.includes("CONTACT_LOADERS") &&
+        getConfig("CONTACT_LOADERS");
       const allowedContactLoaders =
-        (configurableSettings.CONTACT_LOADERS === 1 &&
-          getConfig("CONTACT_LOADERS")) ||
-        [];
+        configurableContactLoaders !== undefined
+          ? configurableContactLoaders.split(",")
+          : [];
 
       // reads from DB, where these are grouped under features.EXTENSION_SETTINGS
       const extensionSettings =
         getConfig("EXTENSION_SETTINGS", organization) || [];
-      let savedMessageHandlers = extensionSettings.MESSAGE_HANDLERS || [];
-      let savedActionHandlers = extensionSettings.ACTION_HANDLERS || [];
-      let savedContactLoaders = extensionSettings.CONTACT_LOADERS || [];
+      let savedMessageHandlers =
+        extensionSettings.MESSAGE_HANDLERS.split(",") || [];
+      let savedActionHandlers =
+        extensionSettings.ACTION_HANDLERS.split(",") || [];
+      let savedContactLoaders =
+        extensionSettings.CONTACT_LOADERS.split(",") || [];
 
       return {
         savedMessageHandlers,

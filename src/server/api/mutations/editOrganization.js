@@ -26,9 +26,9 @@ export const editOrganization = async (_, { id, organization }, { user }) => {
 
   if (organization.extensionSettings) {
     const updatedExtensionSettings = {
-      MESSAGE_HANDLERS: organization.extensionSettings.savedMessageHandlers,
-      ACTION_HANDLERS: organization.extensionSettings.savedActionHandlers,
-      CONTACT_LOADERS: organization.extensionSettings.savedContactLoaders
+      MESSAGE_HANDLERS: organization.extensionSettings.savedMessageHandlers.join(),
+      ACTION_HANDLERS: organization.extensionSettings.savedActionHandlers.join(),
+      CONTACT_LOADERS: organization.extensionSettings.savedContactLoaders.join()
     };
     features.EXTENSION_SETTINGS = updatedExtensionSettings;
   }
