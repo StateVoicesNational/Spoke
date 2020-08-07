@@ -1,4 +1,6 @@
 #!/usr/bin/env node
 require('babel-register')
+// ignore import css statements that are handled with webpack
+require.extensions['.css'] = () => {}
 require('babel-polyfill')
 require('../' + process.argv[2])
