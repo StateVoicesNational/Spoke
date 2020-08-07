@@ -9,11 +9,17 @@ import {
   Modifier
 } from "draft-js";
 import { delimit } from "../lib/scripts";
+import EmojiPicker from "./EmojiPicker";
 import Chip from "./Chip";
 import { red400, green500, green600, grey100 } from "material-ui/styles/colors";
 import { getCharCount } from "@trt2/gsm-charset-utils";
 
 const styles = {
+  editorHeader: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center"
+  },
   editor: {
     border: "1px solid #ddd",
     cursor: "text",
@@ -105,7 +111,7 @@ class ScriptEditor extends React.Component {
 
     this.focus = () => this.refs.editor.focus();
     this.onChange = this.onChange.bind(this);
-    this.addCustomField = this.addCustomField.bind(this);
+    this.addTextToEditor = this.addTextToEditor.bind(this);
     // start out with buttons disabled for 200ms
     // because sometimes the click to open lands
     // on one of the items.  After it opens, we enable them.
@@ -174,12 +180,12 @@ class ScriptEditor extends React.Component {
     ]);
   }
 
-  addCustomField(field) {
+  addTextToEditor(textToInsert) {
     const { editorState, readyToAdd } = this.state;
     if (!readyToAdd) {
       return;
     }
-    const textToInsert = delimit(field);
+
     const selection = editorState.getSelection();
     const contentState = editorState.getCurrentContent();
     const newContentState = Modifier.insertText(
@@ -203,7 +209,7 @@ class ScriptEditor extends React.Component {
           <Chip
             style={styles.scriptFieldButton}
             text={delimit(field)}
-            onTouchTap={() => this.addCustomField(field)}
+            onTouchTap={() => this.addTextToEditor(delimit(field))}
           />
         ))}
       </div>
@@ -216,12 +222,17 @@ class ScriptEditor extends React.Component {
     const segmentInfo = getCharCount(replaceEasyGsmWins(text));
     return (
       <div>
-        <div style={segmentInfo.charCount > 1600 ? { color: "red" } : {}}>
-          Total characters: {segmentInfo.charCount}
-          {segmentInfo.charCount > 1600 ? (
-            <span> Exceeded MMS maximum </span>
-          ) : null}
-        </div>
+        <header style={styles.editorHeader}>
+          <div style={segmentInfo.charCount > 1600 ? { color: "red" } : {}}>
+            Total characters: {segmentInfo.charCount}
+            {segmentInfo.charCount > 1600 ? (
+              <span> Exceeded MMS maximum </span>
+            ) : null}
+          </div>
+          <EmojiPicker
+            onSelectEmoji={emoji => this.addTextToEditor(emoji.native)}
+          />
+        </header>
         <div style={styles.editor} onClick={this.focus}>
           <Editor
             name={name}
