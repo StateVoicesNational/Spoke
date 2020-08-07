@@ -8,6 +8,10 @@ import { r, cacheableData } from "../../../server/models";
 export const DEFAULT_PROFANITY_REGEX_BASE64 =
   "ZmFrZXNsdXJ8XGJhc3NcYnxhc3Nob2xlfGJpdGNofGJsb3dqb2J8YnJvd25pZXxjaGlua3xjb2NrfGNvb258Y3Vja3xjdW50fGRhcmt5fGRpY2toZWFkfFxiZGllXGJ8ZmFnZ290fGZhaXJ5fGZhcnR8ZnJpZ2lkfGZ1Y2tib3l8ZnVja2VyfGdvb2t8aGVlYnxcYmhvZVxifFxiaG9tb1xifGppZ2Fib298a2lrZXxra2t8a3Uga2x1eCBrbGFufGxpY2sgbXxtYWNhY2F8bW9sZXN0fG15IGRpY2t8bXkgYXNzfG5lZ3JvfG5pZ2dlcnxuaWdyYXxwZWRvfHBpc3N8cHJpY2t8cHVzc3l8cXVpbXxyYXBlfHJldGFyZHxzaGVlbmllfHNoaXRoZWFkfHNoeWxvY2t8c2h5c3RlcnxzbHV0fHNwaWN8c3Bpa3xzdWNrIG15fHRhY29oZWFkfHRpdHN8dG93ZWxoZWFkfHRyYW5uaWV8dHJhbm55fFxidHVyZHx0dXJkXGJ8dHdhdHx3YW5rfHdldGJhY2t8d2hvcmV8eWlk";
 
+export function displayName() {
+  return "Profanity Tagger";
+}
+
 export const serverAdministratorInstructions = () => {
   return {
     description: `

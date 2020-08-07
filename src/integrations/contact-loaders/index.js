@@ -108,3 +108,20 @@ export async function getMethodChoiceData(
     )
   ).data;
 }
+
+export function getHandlerDisplayName(name) {
+  try {
+    return require(`./${name}/index.js`).displayName();
+  } catch (exception) {
+    return "";
+  }
+}
+
+export function getHandlerDescription(name) {
+  try {
+    const serverAdministratorInstructions = require(`./${name}/index.js`).serverAdministratorInstructions();
+    return serverAdministratorInstructions.description;
+  } catch (exception) {
+    return "";
+  }
+}

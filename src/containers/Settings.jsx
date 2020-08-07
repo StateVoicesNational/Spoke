@@ -270,7 +270,6 @@ class Settings extends React.Component {
     const formSchema = yup.object({
       optOutMessage: yup.string().required()
     });
-    console.log("props from settings: ", organization);
 
     return (
       <div>
@@ -397,8 +396,11 @@ class Settings extends React.Component {
             </CardText>
           </Card>
         ) : null}
-        {this.props.data.organization &&
-        this.props.data.organization.extensionSettings ? (
+        {organization &&
+        organization.extensionSettings &&
+        (organization.extensionSettings.allowedActionHandlers.length > 0 ||
+          organization.extensionSettings.allowedMessageHandlers.length > 0 ||
+          organization.extensionSettings.allowedContactLoaders.length > 0) ? (
           <Card>
             <CardHeader
               title="Extension Setting"
@@ -410,7 +412,6 @@ class Settings extends React.Component {
                 organization={this.props.data.organization}
                 onSubmit={async () => {
                   const { extensionSettings } = this.state;
-                  console.log("settings about to be set:", extensionSettings);
                   await this.props.mutations.editOrganization({
                     extensionSettings: {
                       ...extensionSettings,
@@ -422,7 +423,6 @@ class Settings extends React.Component {
                   this.setState({ extensionSettings: null });
                 }}
                 onChange={formValues => {
-                  console.log("FORM VALUES:", formValues);
                   this.setState(formValues);
                 }}
                 saveLabel="Save Extensions"
@@ -464,6 +464,7 @@ const queries = {
             allowedMessageHandlers
             allowedActionHandlers
             allowedContactLoaders
+            handlerDisplayInformation
           }
           texterUIConfig {
             options

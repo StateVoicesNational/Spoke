@@ -6,9 +6,17 @@ import { accessRequired } from "./errors";
 import { getCampaigns } from "./campaign";
 import { buildUsersQuery } from "./user";
 import {
-  getAvailableActionHandlers,
-  getActionChoiceData
+  getHandlerDisplayName as getActionHandlerDisplayName,
+  getHandlerDescription as getActionHandlerDescription
 } from "../../integrations/action-handlers";
+import {
+  getHandlerDisplayName as getMessageHandlerDisplayName,
+  getHandlerDescription as getMessageHandlerDescription
+} from "../../integrations/message-handlers";
+import {
+  getHandlerDisplayName as getContactLoaderDisplayName,
+  getHandlerDescription as getContactLoaderDescription
+} from "../../integrations/contact-loaders";
 
 export const ownerConfigurable = {
   ACTION_HANDLERS: 1,
@@ -145,7 +153,8 @@ export const resolvers = {
         configurableSettings.includes("MESSAGE_HANDLERS") &&
         getConfig("MESSAGE_HANDLERS");
       const allowedMessageHandlers =
-        configurableMessageHandlers !== undefined
+        configurableMessageHandlers !== undefined &&
+        configurableMessageHandlers !== ""
           ? configurableMessageHandlers.split(",")
           : [];
 
@@ -153,7 +162,8 @@ export const resolvers = {
         configurableSettings.includes("ACTION_HANDLERS") &&
         getConfig("ACTION_HANDLERS");
       const allowedActionHandlers =
-        configurableActionHandlers !== undefined
+        configurableActionHandlers !== undefined &&
+        configurableActionHandlers !== ""
           ? configurableActionHandlers.split(",")
           : [];
 
@@ -161,7 +171,8 @@ export const resolvers = {
         configurableSettings.includes("CONTACT_LOADERS") &&
         getConfig("CONTACT_LOADERS");
       const allowedContactLoaders =
-        configurableContactLoaders !== undefined
+        configurableContactLoaders !== undefined &&
+        configurableContactLoaders != ""
           ? configurableContactLoaders.split(",")
           : [];
 
@@ -175,13 +186,45 @@ export const resolvers = {
       let savedContactLoaders =
         extensionSettings.CONTACT_LOADERS.split(",") || [];
 
+      // build display name and description dictionary for each handler
+      const displayInformationDictionary = {};
+      allowedContactLoaders.map(handler => {
+        const displayName = getContactLoaderDisplayName(handler);
+        const description = getContactLoaderDescription(handler);
+        displayInformationDictionary[handler] = {
+          displayName: displayName,
+          description: description
+        };
+      });
+      allowedActionHandlers.map(handler => {
+        const displayName = getActionHandlerDisplayName(handler);
+        const description = getActionHandlerDescription(handler);
+        displayInformationDictionary[handler] = {
+          displayName: displayName,
+          description: description
+        };
+      });
+      allowedMessageHandlers.map(handler => {
+        const displayName = getMessageHandlerDisplayName(handler);
+        const description = getMessageHandlerDescription(handler);
+        displayInformationDictionary[handler] = {
+          displayName: displayName,
+          description: description
+        };
+      });
+
+      const handlerDisplayInformation = JSON.stringify(
+        displayInformationDictionary
+      );
+
       return {
         savedMessageHandlers,
         savedActionHandlers,
         savedContactLoaders,
         allowedMessageHandlers,
         allowedActionHandlers,
-        allowedContactLoaders
+        allowedContactLoaders,
+        handlerDisplayInformation
       };
     },
     defaultSettings: async (organization, _, { user, loaders }) => {

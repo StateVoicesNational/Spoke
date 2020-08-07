@@ -2,6 +2,10 @@ import { getConfig } from "../../../server/api/lib/config";
 import { cacheableData, Message } from "../../../server/models";
 import serviceMap from "../../../server/api/lib/services";
 
+export function displayName() {
+  return "Auto Output";
+}
+
 export const serverAdministratorInstructions = () => {
   return {
     description: `

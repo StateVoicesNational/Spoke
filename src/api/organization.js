@@ -50,6 +50,7 @@ export const schema = gql`
     allowedMessageHandlers: [String]
     allowedActionHandlers: [String]
     allowedContactLoaders: [String]
+    handlerDisplayInformation: String
   }
 
   input ExtensionSettingsInput {
@@ -59,6 +60,7 @@ export const schema = gql`
     allowedMessageHandlers: [String]
     allowedActionHandlers: [String]
     allowedContactLoaders: [String]
+    handlerDisplayInformation: String
   }
 
   type Organization {
