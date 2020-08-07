@@ -25,8 +25,12 @@ export const resolvers = {
       await accessRequired(user, organization.id, "OWNER", true);
       return getCampaignsCount(organization.id);
     },
-    uuid: async (organization, _, { user }) => {
+    numTextsInLastDay: async (organization, _, { user }) => {
       await accessRequired(user, organization.id, "SUPERVOLUNTEER");
+      return getNumTextsInLastDay(organization.id);
+    },
+    uuid: async (organization, _, { user }) => {
+      await accessRequired(user, organization.id, "OWNER");
       const result = await r
         .knex("organization")
         .column("uuid")
@@ -211,3 +215,21 @@ export const resolvers = {
     }
   }
 };
+
+export async function getNumTextsInLastDay(organizationId) {
+  var yesterday = new Date();
+  yesterday.setDate(yesterday.getDate() - 1);
+
+  const textsInLastDay = r.knex
+    .from("message")
+    .join(
+      "campaign_contact",
+      "message.campaign_contact_id",
+      "campaign_contact.id"
+    )
+    .join("campaign", "campaign.id", "campaign_contact.campaign_id")
+    .where({ "campaign.organization_id": organizationId })
+    .where("message.sent_at", ">=", yesterday);
+  const numTexts = await r.getCount(textsInLastDay);
+  return numTexts;
+}

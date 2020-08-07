@@ -128,7 +128,7 @@ class AdminOrganizationsDashboard extends React.Component {
       },
       {
         key: "name",
-        label: "name",
+        label: "Name",
         sortable: true,
         style: {
           width: "5em"
@@ -153,11 +153,21 @@ class AdminOrganizationsDashboard extends React.Component {
         style: {
           width: "5em"
         }
+      },
+      {
+        key: "numTextsInLastDay",
+        label: "Number of texts in last day",
+        sortable: true,
+        style: {
+          width: "5em"
+        }
       }
     ];
 
-    if (!this.props.userData.currentUser.is_superadmin){
-      return <div>You do not have access to the Manage Organizations page.</div>;
+    if (!this.props.userData.currentUser.is_superadmin) {
+      return (
+        <div>You do not have access to the Manage Organizations page.</div>
+      );
     }
 
     return (
@@ -211,6 +221,7 @@ const queries = {
           id
           name
           campaignsCount
+          numTextsInLastDay
         }
       }
     `,
@@ -230,7 +241,7 @@ const queries = {
     options: () => ({
       fetchPolicy: "network-only"
     })
-  },
+  }
 };
 
 export default loadData({ queries, mutations })(
