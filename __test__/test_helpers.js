@@ -662,6 +662,9 @@ export const getConversations = async (
                   text
                   isFromContact
                 }
+                tags {
+                  id
+                }
                 optOut {
                   cell
                 }
