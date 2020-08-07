@@ -100,7 +100,8 @@ class AdminOrganizationsDashboard extends React.Component {
     const sorts = {
       id: (a, b) => b.id - a.id,
       name: (a, b) => (b.name > a.name ? 1 : -1),
-      campaignsCount: (a, b) => b.id - a.id
+      campaignsCount: (a, b) => b.id - a.id,
+      numTextsInLastDay: (a, b) => b.id - a.id
     };
     return sorts[key];
   }
@@ -117,6 +118,7 @@ class AdminOrganizationsDashboard extends React.Component {
   }
 
   render() {
+    // Note: when adding new columns, make sure to update the sortFunc to include that column
     var columns = [
       {
         key: "id",
