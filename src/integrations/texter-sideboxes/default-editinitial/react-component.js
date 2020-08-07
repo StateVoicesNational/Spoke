@@ -19,8 +19,9 @@ const defaultMessagePost =
   "unless instructed by your campaign administrator.  Making changes may flag your account for admins.";
 
 export class TexterSidebox extends React.Component {
-  componentDidUpdate() {
-    const { parent } = this.props;
+  constructor(props) {
+    super(props);
+    const { parent } = props;
     if (!parent.state.messageReadOnlyChanged) {
       // This makes it read-only by default and then they'll need to click again to make it editable.
       parent.setState({
