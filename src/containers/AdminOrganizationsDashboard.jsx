@@ -117,7 +117,6 @@ class AdminOrganizationsDashboard extends React.Component {
   }
 
   render() {
-    console.log(this.props.data);
     var columns = [
       {
         key: "id",
@@ -157,13 +156,9 @@ class AdminOrganizationsDashboard extends React.Component {
       }
     ];
 
-    // TODO: Uncomment this code when we have access to currentUser on this page
-    //const { currentUser } = this.props.data;
-    //const isSuperAdmin = currentUser.is_superadmin;
-    //const isSuperAdmin = true;
-    //if (!isSuperAdmin){
-    // return <div>You do not have access to Manage Organizations page</div>;
-    //}
+    if (!this.props.userData.currentUser.is_superadmin){
+      return <div>You do not have access to the Manage Organizations page.</div>;
+    }
 
     return (
       <div>
@@ -204,7 +199,8 @@ AdminOrganizationsDashboard.propTypes = {
   location: PropTypes.object,
   data: PropTypes.object,
   router: PropTypes.object,
-  mutations: PropTypes.object
+  mutations: PropTypes.object,
+  userData: PropTypes.object
 };
 
 const queries = {
@@ -221,7 +217,20 @@ const queries = {
     options: ownProps => ({
       fetchPolicy: "network-only"
     })
-  }
+  },
+  userData: {
+    query: gql`
+      query getCurrentUser {
+        currentUser {
+          id
+          is_superadmin
+        }
+      }
+    `,
+    options: () => ({
+      fetchPolicy: "network-only"
+    })
+  },
 };
 
 export default loadData({ queries, mutations })(
