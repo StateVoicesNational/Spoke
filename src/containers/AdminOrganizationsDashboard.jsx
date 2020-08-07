@@ -3,7 +3,7 @@ import React from "react";
 import TopNav from "../components/TopNav";
 import gql from "graphql-tag";
 import loadData from "./hoc/load-data";
-import { withRouter } from "react-router";
+import { withRouter, Link } from "react-router";
 import ContentAdd from "material-ui/svg-icons/content/add";
 import DataTables from "material-ui-datatables";
 import FloatingActionButton from "material-ui/FloatingActionButton";
@@ -116,6 +116,15 @@ class AdminOrganizationsDashboard extends React.Component {
         sortable: true,
         style: {
           width: "5em"
+        },
+        render: columnKey => {
+          return (
+            <div style={{ margin: "6px 0" }}>
+              <Link to={`/admin/${columnKey}/campaigns`}>
+                Visit Organization
+              </Link>
+            </div>
+          );
         }
       },
       {
@@ -151,11 +160,13 @@ class AdminOrganizationsDashboard extends React.Component {
       <div>
         <TopNav title={"Manage Organizations"} />
         <div className={css(styles.loginPage)}>
-            <DataTables
-              key={"adminOrganizations"}
-              data={this.props.data.organizations}
-              columns={columns}
-            />
+          <DataTables
+            key={"adminOrganizations"}
+            data={this.props.data.organizations}
+            columns={columns}
+            //  selectable={true}
+            // onRowClick={this.props.router.push(`/app/1/todos`)}
+          />
         </div>
         {this.renderActionButton()}
       </div>
