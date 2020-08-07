@@ -15,6 +15,7 @@ export const schema = gql`
 
   type PhoneNumberCounts {
     areaCode: String!
+    state: String!
     availableCount: Int!
     allocatedCount: Int!
   }

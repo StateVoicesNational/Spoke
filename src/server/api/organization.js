@@ -335,7 +335,9 @@ export const resolvers = {
       ) {
         return [];
       }
-      const service = getConfig("DEFAULT_SERVICE");
+      const usAreaCodes = require('us-area-codes');
+      const service = getConfig("service", organization) ||
+        getConfig("DEFAULT_SERVICE");
       const counts = await r
         .knex("owned_phone_number")
         .select(
@@ -352,6 +354,7 @@ export const resolvers = {
         .groupBy("area_code");
       return counts.map(row => ({
         areaCode: row.area_code,
+        state: usAreaCodes.get(Number(row.area_code)),
         allocatedCount: Number(row.allocated_count),
         availableCount: Number(row.available_count)
       }));
