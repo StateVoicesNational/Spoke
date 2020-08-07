@@ -113,7 +113,7 @@ export class UserMenu extends Component {
     }
     const organizations = currentUser.texterOrganizations;
     const isSuperAdmin = currentUser.is_superadmin;
-
+    //const isSuperAdmin = true;
     return (
       <div>
         <IconButton
@@ -141,7 +141,11 @@ export class UserMenu extends Component {
               {currentUser.email}
             </MenuItem>
             <Divider />
-            {window.MULTI_TENANT && isSuperAdmin ? this.renderAdminTools() : <div />}
+            {window.MULTI_TENANT && isSuperAdmin ? (
+              this.renderAdminTools()
+            ) : (
+              <div />
+            )}
             <Subheader>Teams</Subheader>
             {organizations.map(organization => (
               <MenuItem
