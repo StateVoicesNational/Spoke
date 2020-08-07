@@ -31,10 +31,10 @@ describe("questionResponse cacheableData methods", async () => {
       { interactionStepId: "1", value: "hmm1" }
     ]);
     expect(saveResult).toEqual({
-      newOrUpdatedPreviousValue: {
+      newOrUpdated: {
         "1": null
       },
-      deletedPrevious: []
+      deleted: []
     });
 
     let questionResponses = await r.knex("question_response").select();
@@ -55,10 +55,10 @@ describe("questionResponse cacheableData methods", async () => {
       { interactionStepId: "2", value: "1hmm2" }
     ]);
     expect(saveResult).toEqual({
-      newOrUpdatedPreviousValue: {
+      newOrUpdated: {
         "2": null
       },
-      deletedPrevious: []
+      deleted: []
     });
 
     questionResponses = await r.knex("question_response").select();
@@ -77,10 +77,10 @@ describe("questionResponse cacheableData methods", async () => {
       { interactionStepId: "2", value: "updated-1hmm2" }
     ]);
     expect(saveResult).toEqual({
-      newOrUpdatedPreviousValue: {
+      newOrUpdated: {
         "2": "1hmm2"
       },
-      deletedPrevious: []
+      deleted: []
     });
 
     questionResponses = await r.knex("question_response").select();
@@ -98,12 +98,12 @@ describe("questionResponse cacheableData methods", async () => {
       { interactionStepId: "2", value: "1hmm2" }
     ]);
     expect(saveResult).toEqual({
-      newOrUpdatedPreviousValue: {
+      newOrUpdated: {
         "2": "updated-1hmm2"
       },
-      deletedPrevious: [
+      deleted: [
         {
-          interactionStepId: "1",
+          interactionStepId: 1,
           value: "hmm1"
         }
       ]
