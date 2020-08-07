@@ -43,6 +43,7 @@ export const schema = gql`
       sortBy: SortCampaignsBy
     ): CampaignsReturn
     campaignsCount: Int
+    numTextsInLastDay: Int
     people(role: String, campaignId: String, sortBy: SortPeopleBy): [User]
     profileFields: [ProfileField]
     optOuts: [OptOut]

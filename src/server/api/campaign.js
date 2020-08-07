@@ -133,6 +133,7 @@ export async function getCampaignsCount(organizationId) {
   );
   return campaignsCount;
 }
+
 export async function getCampaigns(
   organizationId,
   cursor,
