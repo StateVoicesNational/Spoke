@@ -354,13 +354,6 @@ export class AssignmentTexterContact extends React.Component {
     this.props.refreshData();
   };
 
-  messageSchema = yup.object({
-    messageText: yup
-      .string()
-      .required("Can't send empty message")
-      .max(window.MAX_MESSAGE_LENGTH)
-  });
-
   render() {
     const ControlsComponent =
       /old=1/.test(document.location.search) ||

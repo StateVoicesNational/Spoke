@@ -86,6 +86,14 @@ export default class CampaignDynamicAssignmentForm extends React.Component {
               />
             </div>
           )}
+          {window.TEXTER_SIDEBOXES &&
+          !/dynamicassign/.test(window.TEXTER_SIDEBOXES) ? (
+            <div>
+              Warning: Spoke may be misconfigured: dynamic assignment depends on
+              TEXTER_SIDEBOXES= to include "default-dynamicassignment" or a
+              replacement dynamicassignment sidebox.
+            </div>
+          ) : null}
           <Form.Button
             type="submit"
             onTouchTap={this.props.onSubmit}

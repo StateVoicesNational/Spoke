@@ -11,13 +11,14 @@ import {
 } from "../../integrations/action-handlers";
 
 export const ownerConfigurable = {
-  ACTION_HANDLERS: 1,
+  // ACTION_HANDLERS: 1,
   ALLOW_SEND_ALL_ENABLED: 1,
   DEFAULT_BATCHSIZE: 1,
   MAX_CONTACTS_PER_TEXTER: 1,
-  MAX_MESSAGE_LENGTH: 1,
-  MESSAGE_HANDLERS: 1,
-  opt_out_message: 1
+  MAX_MESSAGE_LENGTH: 1
+  // MESSAGE_HANDLERS: 1,
+  // There is already an endpoint and widget for this:
+  // opt_out_message: 1
 };
 
 export const getAllowed = (organization, user) => {
@@ -30,6 +31,23 @@ export const getAllowed = (organization, user) => {
     allowed["ALL"] = 1;
   }
   return Object.keys(allowed.ALL ? ownerConfigurable : allowed);
+};
+
+export const getSideboxChoices = organization => {
+  // should match defaults with src/integrations/texter-sideboxes/components.js
+  const sideboxes = getConfig("TEXTER_SIDEBOXES", organization);
+  const sideboxChoices =
+    sideboxes === undefined
+      ? [
+          "celebration-gif",
+          "default-dynamicassignment",
+          "default-releasecontacts",
+          "celebration-gif",
+          "contact-reference",
+          "default-editinitial"
+        ]
+      : (sideboxes && sideboxes.split(",")) || [];
+  return sideboxChoices;
 };
 
 const campaignNumbersEnabled = organization => {
@@ -144,7 +162,10 @@ export const resolvers = {
       getAllowed(organization, user).forEach(f => {
         if (features.hasOwnProperty(f)) {
           visibleFeatures[f] = features[f];
+        } else if (getConfig(f)) {
+          visibleFeatures[f] = getConfig(f);
         } else {
+          visibleFeatures[f] = "";
           unsetFeatures.push(f);
         }
         if (f === "MESSAGE_HANDLERS") {
@@ -178,8 +199,7 @@ export const resolvers = {
       await accessRequired(user, organization.id, "OWNER");
       const options = getConfig("TEXTER_UI_SETTINGS", organization) || null;
       // note this is global, since we need the set that's globally enabled/allowed to choose from
-      const sideboxConfig = getConfig("TEXTER_SIDEBOXES");
-      const sideboxChoices = (sideboxConfig && sideboxConfig.split(",")) || [];
+      const sideboxChoices = getSideboxChoices();
       return {
         options,
         sideboxChoices

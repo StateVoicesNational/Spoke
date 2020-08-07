@@ -1,4 +1,4 @@
-import { getFeatures } from "../lib/config";
+import { getConfig, getFeatures } from "../lib/config";
 import { accessRequired } from "../errors";
 import { r, cacheableData } from "../../models";
 import { getAllowed } from "../organization";
@@ -19,7 +19,11 @@ export const editOrganization = async (_, { id, organization }, { user }) => {
     const { unsetFeatures, featuresJSON } = organization.settings;
     const newFeatureValues = JSON.parse(featuresJSON);
     getAllowed(orgRecord, user).forEach(f => {
-      if (newFeatureValues.hasOwnProperty(f)) {
+      if (
+        newFeatureValues.hasOwnProperty(f) &&
+        // don't save default values that aren't already overridden
+        (features.hasOwnProperty(f) || getConfig(f) != newFeatureValues[f])
+      ) {
         features[f] = newFeatureValues[f];
       }
     });

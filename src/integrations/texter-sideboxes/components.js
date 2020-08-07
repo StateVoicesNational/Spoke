@@ -4,7 +4,14 @@ function getComponents() {
   const enabledComponents =
     "TEXTER_SIDEBOXES" in global
       ? (global.TEXTER_SIDEBOXES && global.TEXTER_SIDEBOXES.split(",")) || []
-      : ["default-dynamicassignment"];
+      : [
+          "celebration-gif",
+          "default-dynamicassignment",
+          "default-releasecontacts",
+          "celebration-gif",
+          "contact-reference",
+          "default-editinitial"
+        ];
   const components = {};
   enabledComponents.forEach(componentName => {
     try {

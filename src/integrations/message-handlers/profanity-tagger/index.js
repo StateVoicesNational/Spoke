@@ -8,6 +8,9 @@ import { r, cacheableData } from "../../../server/models";
 export const DEFAULT_PROFANITY_REGEX_BASE64 =
   "ZmFrZXNsdXJ8XGJhc3NcYnxhc3Nob2xlfGJpdGNofGJsb3dqb2J8YnJvd25pZXxjaGlua3xjb2NrfGNvb258Y3Vja3xjdW50fGRhcmt5fGRpY2toZWFkfFxiZGllXGJ8ZmFnZ290fGZhaXJ5fGZhcnR8ZnJpZ2lkfGZ1Y2tib3l8ZnVja2VyfGdvb2t8aGVlYnxcYmhvZVxifFxiaG9tb1xifGppZ2Fib298a2lrZXxra2t8a3Uga2x1eCBrbGFufGxpY2sgbXxtYWNhY2F8bW9sZXN0fG15IGRpY2t8bXkgYXNzfG5lZ3JvfG5pZ2dlcnxuaWdyYXxwZWRvfHBpc3N8cHJpY2t8cHVzc3l8cXVpbXxyYXBlfHJldGFyZHxzaGVlbmllfHNoaXRoZWFkfHNoeWxvY2t8c2h5c3RlcnxzbHV0fHNwaWN8c3Bpa3xzdWNrIG15fHRhY29oZWFkfHRpdHN8dG93ZWxoZWFkfHRyYW5uaWV8dHJhbm55fFxidHVyZHx0dXJkXGJ8dHdhdHx3YW5rfHdldGJhY2t8d2hvcmV8eWlk";
 
+export const DEFAULT_PROFANITY_TEXTER_REGEX_BASE64 =
+  "ZmFrZXNsdXJ8XGJhc3NcYnxhc3Nob2xlfGJpdGNofGJsb3dqb2J8YnJvd25pZXxjaGlua3xcYmNvY2t8Y3Vja3xjdW50fGRhcmt5fGRpY2toZWFkfGZhZ2dvdHxcYmZhcnRcYnxmcmlnaWR8ZnVja2JveXxmdWNrZXJ8Z29va3xcYmBoZWVifFxiaG9lXGJ8XGJob21vXGJ8amlnYWJvb3xraWtlXGJ8bGljayBtfG1hY2FjYXxtb2xlc3R8bXkgZGlja3xteSBhc3N8bmVncm98bmlnZ2VyfG5pZ3JhXGJ8cGVkb3BoaWxlfFxicGlzc3xwcmlja3xwdXNzeXxcYnF1aW1cYnxyYXBlIGNoaWxkcmVufHJhcGUga2lkc3xyYXBlIHlvdXxyZXRhcmR8c2hlZW5pZXxzaGl0aGVhZHxzaHlsb2NrfHNoeXN0ZXJ8c2x1dFxifFxic3BpY1xifFxic3Bpa1xifHN1Y2sgbXl8dGFjb2hlYWR8dGl0c3x0b3dlbGhlYWR8dHJhbm5pZXx0cmFubnl8XGJ0dXJkfHR1cmRcYnxcYnR3YXR8XGJ3YW5rfHdldGJhY2t8d2hvcmV8XGJ5aWRcYg==";
+
 export const serverAdministratorInstructions = () => {
   return {
     description: `
@@ -35,9 +38,9 @@ export const serverAdministratorInstructions = () => {
 // note this is NOT async
 export const available = organization => {
   return (
-    getConfig("EXPERIMENTAL_TAGS", organization) &&
-    (getConfig("PROFANITY_CONTACT_TAG_ID", organization) ||
-      getConfig("PROFANITY_TEXTER_TAG_ID", organization))
+    getConfig("PROFANITY_CONTACT_TAG_ID", organization) ||
+    getConfig("PROFANITY_TEXTER_TAG_ID", organization) ||
+    getConfig("PROFANITY_TEXTER_BLOCK_SEND", organization, { truthy: true })
   );
 };
 
@@ -46,13 +49,12 @@ export const preMessageSave = async ({ messageToSave, organization }) => {
     !messageToSave.is_from_contact &&
     getConfig("PROFANITY_TEXTER_BLOCK_SEND", organization, { truthy: true })
   ) {
-    const tagId = getConfig("PROFANITY_TEXTER_TAG_ID", organization);
     const regexText =
       getConfig("PROFANITY_TEXTER_REGEX_BASE64", organization) ||
       getConfig("PROFANITY_REGEX_BASE64", organization) ||
-      DEFAULT_PROFANITY_REGEX_BASE64;
+      DEFAULT_PROFANITY_TEXTER_REGEX_BASE64;
     const re = new RegExp(Buffer.from(regexText, "base64").toString(), "i");
-    if (tagId && String(messageToSave.text).match(re)) {
+    if (String(messageToSave.text).match(re)) {
       Object.assign(messageToSave, {
         send_status: "ERROR",
         error_code: -166
@@ -110,6 +112,9 @@ async function maybeSuspendTexter(
 export const postMessageSave = async ({ message, organization }) => {
   let tagId = null;
   let regexText = null;
+  const blockSend = getConfig("PROFANITY_TEXTER_BLOCK_SEND", organization, {
+    truthy: true
+  });
   if (message.is_from_contact) {
     tagId = getConfig("PROFANITY_CONTACT_TAG_ID", organization);
     regexText =
@@ -117,18 +122,23 @@ export const postMessageSave = async ({ message, organization }) => {
       DEFAULT_PROFANITY_REGEX_BASE64;
   } else {
     tagId = getConfig("PROFANITY_TEXTER_TAG_ID", organization);
-    regexText =
-      getConfig("PROFANITY_TEXTER_REGEX_BASE64", organization) ||
-      getConfig("PROFANITY_REGEX_BASE64", organization) ||
-      DEFAULT_PROFANITY_REGEX_BASE64;
+    if (tagId || blockSend) {
+      regexText =
+        getConfig("PROFANITY_TEXTER_REGEX_BASE64", organization) ||
+        getConfig("PROFANITY_REGEX_BASE64", organization) ||
+        DEFAULT_PROFANITY_TEXTER_REGEX_BASE64;
+    }
   }
 
-  if (tagId) {
+  if (regexText) {
     const re = new RegExp(Buffer.from(regexText, "base64").toString(), "i");
     if (String(message.text).match(re)) {
-      await cacheableData.tagCampaignContact.save(message.campaign_contact_id, [
-        { id: tagId }
-      ]);
+      if (tagId) {
+        await cacheableData.tagCampaignContact.save(
+          message.campaign_contact_id,
+          [{ id: tagId }]
+        );
+      }
       if (!message.is_from_contact) {
         // SUSPENDING TEXTER
         const suspendThreshold = getConfig(
@@ -145,12 +155,7 @@ export const postMessageSave = async ({ message, organization }) => {
           );
         }
 
-        // BLOCKING SEND
-        if (
-          getConfig("PROFANITY_TEXTER_BLOCK_SEND", organization, {
-            truthy: true
-          })
-        ) {
+        if (blockSend) {
           return { blockSend: true };
         }
       }

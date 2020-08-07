@@ -8,16 +8,34 @@ export const displayName = () => "Allow editing of initial messages";
 export const showSidebox = ({ contact, messageStatusFilter }) =>
   contact && messageStatusFilter === "needsMessage";
 
-const defaultMessagePre =
-  "It’s important not to automate sending texts to conform to FCC regulations. Please";
-const defaultLinkText = "don’t alter script messages";
-const defaultMessagePost = "unless instructed by your campaign administrator.";
+const defaultMessagePre = (
+  <span>
+    It’s important to follow all training materials and campaign manager
+    guidance while texting. Please <u>don’t</u>
+  </span>
+);
+const defaultLinkText = "change the script";
+const defaultMessagePost =
+  "unless instructed by your campaign administrator.  Making changes may flag your account for admins.";
 
 export class TexterSidebox extends React.Component {
+  componentDidUpdate() {
+    const { parent } = this.props;
+    if (!parent.state.messageReadOnlyChanged) {
+      // This makes it read-only by default and then they'll need to click again to make it editable.
+      parent.setState({
+        messageReadOnly: true,
+        messageReadOnlyChanged: true
+      });
+    }
+  }
+
   setMessageEditable = () => {
     const { parent } = this.props;
     if (parent.state && parent.state.messageReadOnly) {
-      parent.setState({ messageReadOnly: false });
+      parent.setState({
+        messageReadOnly: false
+      });
       parent.closeSideboxDialog();
     }
   };
@@ -65,8 +83,12 @@ export class AdminConfig extends React.Component {
     return (
       <div>
         <p>
-          Some legal U.S. interpretations, suggest enabling this is important,
-          so it&rsquo;s default-on, but you can disable it.
+          For compliance for person-to-person texting in the US, it&rsquo;s
+          important to allow the first message to be editable. By default, the
+          first message is editable. Turning on this sidebox, makes it editable
+          only after clicking the link text which properly discourages texters
+          from changing the script. You can modify the text on the sidebox
+          itself.
         </p>
         <Form.Field
           name="editInitialMessagePre"

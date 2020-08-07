@@ -343,8 +343,10 @@ class Settings extends React.Component {
             <CardHeader
               title="Texter UI Defaults"
               style={{ backgroundColor: theme.colors.green }}
+              actAsExpander={true}
+              showExpandableButton={true}
             />
-            <CardText>
+            <CardText expandable>
               <CampaignTexterUIForm
                 formValues={this.props.data.organization}
                 organization={this.props.data.organization}
@@ -371,8 +373,10 @@ class Settings extends React.Component {
             <CardHeader
               title="Overriding default settings"
               style={{ backgroundColor: theme.colors.green }}
+              actAsExpander={true}
+              showExpandableButton={true}
             />
-            <CardText>
+            <CardText expandable>
               <OrganizationFeatureSettings
                 formValues={this.props.data.organization}
                 organization={this.props.data.organization}
@@ -447,6 +451,12 @@ export const editOrganizationGql = gql`
   ) {
     editOrganization(id: $organizationId, organization: $organizationChanges) {
       id
+      settings {
+        messageHandlers
+        actionHandlers
+        featuresJSON
+        unsetFeatures
+      }
       texterUIConfig {
         options
         sideboxChoices

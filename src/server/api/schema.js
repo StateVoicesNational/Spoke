@@ -741,7 +741,7 @@ const rootMutations = {
         /* allowSuperadmin=*/ true
       );
 
-      const organization = cacheableData.organization.load(
+      const organization = await loaders.organization.load(
         campaign.organizationId
       );
 
@@ -754,7 +754,7 @@ const rootMutations = {
         is_started: false,
         is_archived: false,
         join_token: uuidv4(),
-        batch_size: Number(getConfig("DEFAULT_BATCHSIZE", organization) || 200),
+        batch_size: Number(getConfig("DEFAULT_BATCHSIZE", organization) || 300),
         use_own_messaging_service: false
       });
       const newCampaign = await campaignInstance.save();
@@ -763,11 +763,11 @@ const rootMutations = {
       });
       return editCampaign(newCampaign.id, campaign, loaders, user);
     },
-    copyCampaign: async (_, { id }, { user, loaders }) => {
-      const campaign = await loaders.campaign.load(id);
+    copyCampaign: async (_, { id }, { user }) => {
+      const campaign = await cacheableData.campaign.load(id);
       await accessRequired(user, campaign.organization_id, "ADMIN");
 
-      const organization = cacheableData.organization.load(
+      const organization = await cacheableData.organization.load(
         campaign.organization_id
       );
 

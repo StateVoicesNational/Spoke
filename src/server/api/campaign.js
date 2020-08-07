@@ -3,6 +3,7 @@ import { mapFieldsToModel } from "./lib/utils";
 import { errorDescriptions } from "./lib/twilio";
 import { Campaign, JobRequest, r, cacheableData } from "../models";
 import { getUsers } from "./user";
+import { getSideboxChoices } from "./organization";
 import {
   getAvailableIngestMethods,
   getMethodChoiceData
@@ -306,7 +307,7 @@ export const resolvers = {
       );
       return campaign.join_token;
     },
-    batchSize: campaign => campaign.batch_size || 200,
+    batchSize: campaign => campaign.batch_size || 300,
     organization: async (campaign, _, { loaders }) =>
       campaign.organization ||
       loaders.organization.load(campaign.organization_id),
@@ -482,8 +483,7 @@ export const resolvers = {
         // fallback on organization defaults
         options = getConfig("TEXTER_UI_SETTINGS", organization) || "";
       }
-      const sideboxes = getConfig("TEXTER_SIDEBOXES", organization);
-      const sideboxChoices = (sideboxes && sideboxes.split(",")) || [];
+      const sideboxChoices = getSideboxChoices(organization);
       return {
         options,
         sideboxChoices
