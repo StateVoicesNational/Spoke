@@ -128,14 +128,15 @@ export class AssignmentTexterContactControls extends React.Component {
     ) {
       // for debugging when keys don't work
       document.location = `#${evt.key}`;
+      console.log(
+        "keypress",
+        evt.key,
+        evt.ctrlKey,
+        evt.keyCode,
+        this.state.messageReadOnly,
+        this.props.messageStatusFilter
+      );
     }
-    console.log(
-      "keypress",
-      evt.key,
-      evt.ctrlKey,
-      this.state.messageReadOnly,
-      this.props.messageStatusFilter
-    );
 
     if (evt.key === "Escape") {
       this.setState({
@@ -179,7 +180,7 @@ export class AssignmentTexterContactControls extends React.Component {
       !evt.ctrlKey &&
       !evt.metaKey &&
       !evt.altKey &&
-      ((evt.keyCode >= 65 /*a*/ && evt.keyCode <= 90) /*z*/ ||
+      (/[a-z,./;']/.test(evt.key) ||
         evt.key === "Enter" ||
         evt.key === "Return" ||
         evt.key === "Space" ||
