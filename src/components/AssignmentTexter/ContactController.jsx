@@ -162,8 +162,8 @@ export class ContactController extends React.Component {
   */
   getContactData = async (newIndex, force = false) => {
     const { contacts } = this.props;
-    const BATCH_GET = 10; // how many to get at once
-    const BATCH_FORWARD = 5; // when to reach out and get more
+    const BATCH_GET = 50; // how many to get at once
+    const BATCH_FORWARD = 25; // when to reach out and get more
     let getIds = [];
     // if we don't have current data, get that
     if (contacts[newIndex] && !this.state.contactCache[contacts[newIndex].id]) {
@@ -460,12 +460,14 @@ export class ContactController extends React.Component {
         renderSidebox(sidebox, sideboxProps.settingsData, this, sideboxProps)
       );
     }
-    const action =
-      messageStatusFilter === "needsMessage" ? "messaged" : "replied to";
+    const initials = messageStatusFilter === "needsMessage";
+    const action = initials ? "messaged" : "replied to";
     const emptyMessage =
       allContactsCount === 0
         ? "No current contacts"
-        : `You've already ${action} all your assigned contacts for now.`;
+        : `You've ${action} all your assigned contacts${
+            initials ? "" : " for now"
+          }.`;
     return (
       <div>
         <Empty

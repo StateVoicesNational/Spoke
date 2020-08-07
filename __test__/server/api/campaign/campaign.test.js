@@ -876,7 +876,7 @@ describe("Bulk Send", async () => {
     resultTestFunction
   ) => {
     process.env.ALLOW_SEND_ALL = params.allowSendAll;
-    process.env.NOT_IN_USA = params.notInUsa;
+    process.env.ALLOW_SEND_ALL_ENABLED = params.allowSendAllEnabled;
     process.env.BULK_SEND_CHUNK_SIZE = params.bulkSendChunkSize;
 
     testCampaign.use_dynamic_assignment = true;
@@ -966,7 +966,7 @@ describe("Bulk Send", async () => {
   it("should send initial texts to as many contacts as are in the chunk size if chunk size equals the number of contacts", async () => {
     const params = {
       allowSendAll: true,
-      notInUsa: true,
+      allowSendAllEnabled: true,
       bulkSendChunkSize: NUMBER_OF_CONTACTS
     };
     await testBulkSend(
@@ -979,7 +979,7 @@ describe("Bulk Send", async () => {
   it("should send initial texts to as many contacts as are in the chunk size if chunk size is smaller than the number of contacts", async () => {
     const params = {
       allowSendAll: true,
-      notInUsa: true,
+      allowSendAllEnabled: true,
       bulkSendChunkSize: NUMBER_OF_CONTACTS - 1
     };
     await testBulkSend(
@@ -992,7 +992,7 @@ describe("Bulk Send", async () => {
   it("should send initial texts to all contacts if chunk size is greater than the number of contacts", async () => {
     const params = {
       allowSendAll: true,
-      notInUsa: true,
+      allowSendAllEnabled: true,
       bulkSendChunkSize: NUMBER_OF_CONTACTS + 1
     };
     await testBulkSend(
@@ -1005,25 +1005,25 @@ describe("Bulk Send", async () => {
   it("should NOT bulk send initial texts if ALLOW_SEND_ALL is not set", async () => {
     const params = {
       allowSendAll: false,
-      notInUsa: true,
+      allowSendAllEnabled: true,
       bulkSendChunkSize: NUMBER_OF_CONTACTS
     };
     await testBulkSend(params, 0, expectErrorBulkSending);
   });
 
-  it("should NOT bulk send initial texts if NOT_IN_USA is not set", async () => {
+  it("should NOT bulk send initial texts if ALLOW_SEND_ALL_ENABLED is not set", async () => {
     const params = {
       allowSendAll: true,
-      notInUsa: false,
+      allowSendAllEnabled: false,
       bulkSendChunkSize: NUMBER_OF_CONTACTS
     };
     await testBulkSend(params, 0, expectErrorBulkSending);
   });
 
-  it("should NOT bulk send initial texts if neither ALLOW_SEND_ALL nor NOT_IN_USA is not set", async () => {
+  it("should NOT bulk send initial texts if neither ALLOW_SEND_ALL nor ALLOW_SEND_ALL_ENABLED is not set", async () => {
     const params = {
       allowSendAll: false,
-      notInUsa: false,
+      allowSendAllEnabled: false,
       bulkSendChunkSize: NUMBER_OF_CONTACTS
     };
     await testBulkSend(params, 0, expectErrorBulkSending);

@@ -1,8 +1,9 @@
 import camelCaseKeys from "camelcase-keys";
 import { GraphQLError } from "graphql/error";
 
+import { getConfig } from "../lib/config";
 import { applyScript } from "../../../lib/scripts";
-import { Assignment, r, User } from "../../models";
+import { Assignment, User, r, cacheableData } from "../../models";
 
 import { getTopMostParent, log } from "../../../lib";
 
@@ -13,15 +14,21 @@ export const bulkSendMessages = async (
   { assignmentId },
   { user, loaders }
 ) => {
-  if (!process.env.ALLOW_SEND_ALL || !process.env.NOT_IN_USA) {
+  const assignment = await Assignment.get(assignmentId);
+  const organization = await cacheableData.campaign.loadCampaignOrganization({
+    campaignId: assignment.campaign_id
+  });
+
+  if (
+    !getConfig("ALLOW_SEND_ALL") ||
+    !getConfig("ALLOW_SEND_ALL_ENABLED", organization)
+  ) {
     log.error("Not allowed to send all messages at once");
     throw new GraphQLError({
       status: 403,
       message: "Not allowed to send all messages at once"
     });
   }
-
-  const assignment = await Assignment.get(assignmentId);
 
   // Assign some contacts
   await findNewCampaignContact(

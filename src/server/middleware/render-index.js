@@ -75,7 +75,9 @@ export default function renderIndex(html, css, assetMap) {
       window.PRIVACY_URL="${process.env.PRIVACY_URL || ""}"
       window.BASE_URL="${process.env.BASE_URL || ""}"
       window.NOT_IN_USA=${process.env.NOT_IN_USA || 0}
-      window.ALLOW_SEND_ALL=${process.env.ALLOW_SEND_ALL || 0}
+      window.ALLOW_SEND_ALL=${getConfig("ALLOW_SEND_ALL", null, {
+        truthy: 1
+      }) || false}
       window.BULK_SEND_CHUNK_SIZE=${process.env.BULK_SEND_CHUNK_SIZE || 0}
       window.MAX_MESSAGE_LENGTH=${process.env.MAX_MESSAGE_LENGTH || 99999}
       window.TERMS_REQUIRE=${getConfig("TERMS_REQUIRE", null, {
@@ -104,7 +106,11 @@ export default function renderIndex(html, css, assetMap) {
       }) || false}
       window.TWILIO_MULTI_ORG=${process.env.TWILIO_MULTI_ORG || false}
       window.DEPRECATED_TEXTERUI="${process.env.DEPRECATED_TEXTERUI || ""}"
-      window.TEXTER_SIDEBOXES="${process.env.TEXTER_SIDEBOXES || ""}"
+      ${
+        process.env.TEXTER_SIDEBOXES
+          ? 'window.TEXTER_SIDEBOXES="' + process.env.TEXTER_SIDEBOXES + '"'
+          : ""
+      }
       window.TEXTER_TWOCLICK=${getConfig("TEXTER_TWOCLICK", null, {
         truthy: 1
       }) || false}

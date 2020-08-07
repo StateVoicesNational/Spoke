@@ -124,10 +124,10 @@
       "value": ""
     },
 
-    "TEXTER_SIDEBOXES": {
-      "description": "Configurable per-organization and per-campaign extensions to the Texter UI",
+    "OWNER_CONFIGURABLE": {
+      "description": "Allows organization owners to edit variables",
       "required": false,
-      "value": "celebration-gif,default-dynamicassignment,default-releasecontacts,contact-reference,tag-contact"
+      "value": "ALL"
     },
 
     "NODE_ENV": {

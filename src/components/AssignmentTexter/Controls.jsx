@@ -61,7 +61,7 @@ export class AssignmentTexterContactControls extends React.Component {
       currentShortcutSpace: 0,
       messageFocus: false,
       availableSteps: availableSteps,
-      messageReadOnly: props.messageStatusFilter === "needsMessage",
+      messageReadOnly: false,
       currentInteractionStep:
         availableSteps.length > 0
           ? availableSteps[availableSteps.length - 1]

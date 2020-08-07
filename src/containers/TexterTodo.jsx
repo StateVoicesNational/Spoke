@@ -192,6 +192,8 @@ const queries = {
     query: dataQuery,
     options: ownProps => {
       console.log("TexterTodo ownProps", ownProps);
+      // FUTURE: based on ?review=1 in location.search
+      //         exclude isOptedOut: false, validTimezone: true
       return {
         variables: {
           contactsFilter: {
