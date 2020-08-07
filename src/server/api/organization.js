@@ -22,7 +22,7 @@ export const resolvers = {
       return getCampaigns(organization.id, cursor, campaignsFilter, sortBy);
     },
     campaignsCount: async (organization, _, { user }) => {
-      await accessRequired(user, organization.id, "SUPERVOLUNTEER");
+      await accessRequired(user, organization.id, "OWNER", true);
       return getCampaignsCount(organization.id);
     },
     uuid: async (organization, _, { user }) => {
