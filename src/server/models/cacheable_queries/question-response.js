@@ -51,8 +51,8 @@ const questionResponseCache = {
     // This is a bit elaborate because we want to preserve the created_at time
     // Otherwise, we could just delete all and recreate
     const toReturn = {
-      newOrUpdatedPreviousValue: {},
-      deletedPrevious: []
+      newOrUpdated: {},
+      deleted: []
     };
     if (!campaignContactId) {
       return toReturn; // guard for delete command
@@ -76,7 +76,7 @@ const questionResponseCache = {
           const insertQuestionResponses = [];
           const updateStepIds = [];
           questionResponses.forEach(qr => {
-            newIds[qr.interactionStepId.toString()] = 1;
+            newIds[qr.interactionStepId] = 1;
             const existing = dbResponses.filter(
               db => db.interaction_step_id === Number(qr.interactionStepId)
             );
@@ -87,24 +87,22 @@ const questionResponseCache = {
             };
             if (!existing.length) {
               insertQuestionResponses.push(newObj);
-              toReturn.newOrUpdatedPreviousValue[
-                Number(qr.interactionStepId)
-              ] = null;
+              toReturn.newOrUpdated[Number(qr.interactionStepId)] = null;
             } else if (existing[0].value !== qr.value) {
               updateStepIds.push(qr.interactionStepId);
-              toReturn.newOrUpdatedPreviousValue[Number(qr.interactionStepId)] =
+              toReturn.newOrUpdated[Number(qr.interactionStepId)] =
                 existing[0].value;
               // will be both deleted and inserted
               insertQuestionResponses.push(newObj);
             }
           });
           const toDelete = dbResponses.filter(
-            dbqr => !(dbqr.interaction_step_id.toString() in newIds)
+            dbqr => !(dbqr.interaction_step_id in newIds)
           );
           toDelete.forEach(dbqr => {
-            toReturn.deletedPrevious.push({
+            toReturn.deleted.push({
               value: dbqr.value,
-              interactionStepId: dbqr.interaction_step_id.toString()
+              interactionStepId: dbqr.interaction_step_id
             });
           });
           const deletes = toDelete.map(db => db.interaction_step_id);

@@ -48,9 +48,7 @@ const dispatchActionHandlers = async ({
         const { interactionStepId, value } = questionResponse;
 
         const updatedPreviousValue =
-          questionResponsesStatus.newOrUpdatedPreviousValue[
-            interactionStepId.toString()
-          ];
+          questionResponsesStatus.newOrUpdated[interactionStepId.toString()];
 
         if (updatedPreviousValue === undefined) {
           return Promise.resolve();
@@ -76,7 +74,7 @@ const dispatchActionHandlers = async ({
           previousValue: updatedPreviousValue
         });
       }),
-      ...questionResponsesStatus.deletedPrevious.map(async deletedQr => {
+      ...questionResponsesStatus.deleted.map(async deletedQr => {
         const { interactionStepId, value } = deletedQr;
         const interactionStep = findInteractionStep(value, interactionStepId);
 
