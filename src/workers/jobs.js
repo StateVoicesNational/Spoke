@@ -566,6 +566,7 @@ export async function assignTexters(job) {
           .knex("assignment")
           .where({ id: existingAssignment.id })
           .update({ max_contacts: maxContacts });
+        cacheableData.assignment.clear(existingAssignment.id);
       }
     } else {
       assignment = await new Assignment({

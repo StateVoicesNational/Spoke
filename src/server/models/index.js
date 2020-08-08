@@ -91,7 +91,7 @@ function dropTables() {
 const createLoaders = () => ({
   // Note: loaders with cacheObj should also run loaders.XX.clear(id)
   //  on clear on the cache as well.
-  assignment: createLoader(Assignment),
+  assignment: createLoader(Assignment, { cacheObj: cacheableData.assignment }),
   campaign: createLoader(Campaign, { cacheObj: cacheableData.campaign }),
   invite: createLoader(Invite),
   organization: createLoader(Organization, {
