@@ -173,7 +173,7 @@ export const mutations = {
     `,
     variables: {
       assignmentId: ownProps.assignment.id,
-      numberContacts: ownProps.assignment.campaign.batchSize
+      numberContacts: ownProps.campaign.batchSize
     }
   })
 };

@@ -2,6 +2,9 @@ import { getConfig } from "../../../server/api/lib/config";
 import { cacheableData, Message } from "../../../server/models";
 import serviceMap from "../../../server/api/lib/services";
 
+const DEFAULT_AUTO_OPTOUT_REGEX_LIST_BASE64 =
+  "W3sicmVnZXgiOiAiXlxccypzdG9wXFxifFxcYnJlbW92ZSBtZVxccyokfHJlbW92ZSBteSBuYW1lfFxcYnRha2UgbWUgb2ZmIHRoXFx3KyBsaXN0fFxcYmxvc2UgbXkgbnVtYmVyfGRlbGV0ZSBteSBudW1iZXJ8Xlxccyp1bnN1YnNjcmliZVxccyokfF5cXHMqY2FuY2VsXFxzKiR8XlxccyplbmRcXHMqJHxeXFxzKnF1aXRcXHMqJCIsICJyZWFzb24iOiAic3RvcCJ9XQ==";
+
 export const serverAdministratorInstructions = () => {
   return {
     description: `
@@ -22,7 +25,9 @@ export const serverAdministratorInstructions = () => {
 
 // note this is NOT async
 export const available = organization => {
-  const conf = getConfig("AUTO_OPTOUT_REGEX_LIST_BASE64", organization);
+  const conf =
+    getConfig("AUTO_OPTOUT_REGEX_LIST_BASE64", organization) ||
+    DEFAULT_AUTO_OPTOUT_REGEX_LIST_BASE64;
   if (!conf) {
     return false;
   }
@@ -43,7 +48,8 @@ export const available = organization => {
 export const postMessageSave = async ({ message, organization }) => {
   if (message.is_from_contact) {
     const config = Buffer.from(
-      getConfig("AUTO_OPTOUT_REGEX_LIST_BASE64", organization),
+      getConfig("AUTO_OPTOUT_REGEX_LIST_BASE64", organization) ||
+        DEFAULT_AUTO_OPTOUT_REGEX_LIST_BASE64,
       "base64"
     ).toString();
     const regexList = JSON.parse(config || "[]");

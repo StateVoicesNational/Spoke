@@ -749,6 +749,7 @@ export async function exportCampaign(job) {
         "contact[optOut]": optOuts.find(ele => ele.cell === contact.cell)
           ? "true"
           : "false",
+        "contact[optOutRecord]": contact.is_opted_out,
         "contact[messageStatus]": contact.message_status,
         "contact[errorCode]": contact.error_code,
         "contact[external_id]": contact.external_id,

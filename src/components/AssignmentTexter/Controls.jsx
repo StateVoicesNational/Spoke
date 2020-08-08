@@ -75,13 +75,13 @@ export class AssignmentTexterContactControls extends React.Component {
     setTimeout(() => {
       node.scrollTop = Math.floor(node.scrollHeight);
     }, 0);
-    document.body.addEventListener("keypress", this.onKeyUp);
+    document.body.addEventListener("keypress", this.onKeyPress);
     window.addEventListener("resize", this.onResize);
     window.addEventListener("orientationchange", this.onResize);
   }
 
   componentWillUnmount() {
-    document.body.removeEventListener("keypress", this.onKeyUp);
+    document.body.removeEventListener("keypress", this.onKeyPress);
     window.removeEventListener("resize", this.onResize);
     window.removeEventListener("orientationchange", this.onResize);
   }
@@ -120,7 +120,7 @@ export class AssignmentTexterContactControls extends React.Component {
     }
   };
 
-  onKeyUp = evt => {
+  onKeyPress = evt => {
     if (
       window.document &&
       document.location &&
@@ -397,7 +397,7 @@ export class AssignmentTexterContactControls extends React.Component {
     const otherResponsesLink =
       this.state.currentInteractionStep &&
       this.state.currentInteractionStep.question.answerOptions.length > 6 &&
-      assignment.campaignCannedResponses.length ? (
+      campaign.cannedResponses.length ? (
         <div className={css(flexStyles.popoverLink)}>
           <a
             href="#otherresponses"
@@ -428,7 +428,7 @@ export class AssignmentTexterContactControls extends React.Component {
           onRequestClose={this.handleCloseAnswerPopover}
         />
         <ScriptList
-          scripts={assignment.campaignCannedResponses}
+          scripts={campaign.cannedResponses}
           showAddScriptButton={false}
           customFields={campaign.customFields}
           currentCannedResponseScript={cannedResponseScript}
@@ -627,7 +627,7 @@ export class AssignmentTexterContactControls extends React.Component {
   }
 
   renderMessagingRowReplyShortcuts() {
-    const { assignment } = this.props;
+    const { assignment, campaign } = this.props;
     const {
       availableSteps,
       questionResponses,
@@ -681,7 +681,7 @@ export class AssignmentTexterContactControls extends React.Component {
     // then don't show canned response shortcuts either or it can
     // cause confusion.
     if (!currentStepHasAnswerOptions || joinedLength !== 0) {
-      shortCannedResponses = assignment.campaignCannedResponses
+      shortCannedResponses = campaign.cannedResponses
         .filter(
           // allow for "Wrong Number", prefixes of + or - can force add or remove
           script =>
@@ -755,9 +755,9 @@ export class AssignmentTexterContactControls extends React.Component {
     );
   }
 
-  renderMessagingRowReplyButtons(availableSteps, campaignCannedResponses) {
+  renderMessagingRowReplyButtons(availableSteps, cannedResponses) {
     const disabled =
-      !campaignCannedResponses.length &&
+      !cannedResponses.length &&
       availableSteps.length === 1 &&
       (!availableSteps[0].question ||
         !availableSteps[0].question.answerOptions ||
@@ -829,7 +829,7 @@ export class AssignmentTexterContactControls extends React.Component {
   }
 
   renderMessageControls() {
-    const { contact, messageStatusFilter, assignment } = this.props;
+    const { contact, messageStatusFilter, assignment, campaign } = this.props;
     const {
       availableSteps,
       questionResponses,
@@ -866,7 +866,7 @@ export class AssignmentTexterContactControls extends React.Component {
 
         {this.renderMessagingRowReplyButtons(
           availableSteps,
-          assignment.campaignCannedResponses
+          campaign.cannedResponses
         )}
       </div>,
       this.renderMessagingRowSendSkip(contact),
@@ -899,9 +899,9 @@ export class AssignmentTexterContactControls extends React.Component {
     const settingsData = JSON.parse(
       this.props.campaign.texterUIConfig.options || "{}"
     );
-    const sideboxList = enabledSideboxes.map(sidebox =>
-      renderSidebox(sidebox, settingsData, this)
-    );
+    const sideboxList = enabledSideboxes.map(sidebox => {
+      return renderSidebox(sidebox, settingsData, this);
+    });
     const sideboxOpen = this.getSideboxDialogOpen(enabledSideboxes);
     if (sideboxOpen) {
       return (

@@ -1,6 +1,6 @@
 import PropTypes from "prop-types";
 import React from "react";
-import AssignmentTexter from "../components/AssignmentTexter/ContactController";
+import ContactController from "../components/AssignmentTexter/ContactController";
 import AssignmentTexterContact from "./AssignmentTexterContact";
 import { withRouter } from "react-router";
 import loadData from "./hoc/load-data";
@@ -41,41 +41,17 @@ export const contactDataFragment = `
         }
 `;
 
-export const dataQueryString = `
-  query getContacts(
-    $assignmentId: String,
-    $contactId: String,
-    $organizationId: String!,
-    $contactsFilter: ContactsFilter!,
-    $tagGroup: String,
-    $needsMessageFilter: ContactsFilter,
-    $needsResponseFilter: ContactsFilter
+// Campaign data that we'll keep refreshing
+// so when the admin updates the script, canned responses, etc
+// they'll be refreshed, and all of this comes from a single db lookup for assignment
+export const campaignQuery = gql`
+  query getCampaign(
+    $assignmentId: String
+    $contactId: String
+    $tagGroup: String
   ) {
-    currentUser {
-      id
-      roles(organizationId: $organizationId)
-    }
     assignment(assignmentId: $assignmentId, contactId: $contactId) {
       id
-      hasUnassignedContactsForTexter
-      contacts(contactsFilter: $contactsFilter) {
-        id
-      }
-      allContactsCount: contactsCount
-      unmessagedCount: contactsCount(contactsFilter: $needsMessageFilter)
-      unrepliedCount: contactsCount(contactsFilter: $needsResponseFilter)
-      campaignCannedResponses {
-        id
-        title
-        text
-        isUserCreated
-      }
-      texter {
-        id
-        firstName
-        lastName
-        alias
-      }
       campaign {
         id
         title
@@ -104,6 +80,12 @@ export const dataQueryString = `
           options
           sideboxChoices
         }
+        cannedResponses {
+          id
+          title
+          text
+          isUserCreated
+        }
         interactionSteps {
           id
           script
@@ -125,12 +107,40 @@ export const dataQueryString = `
 `;
 
 export const dataQuery = gql`
-  ${dataQueryString}
+  query getContacts(
+    $assignmentId: String
+    $contactId: String
+    $organizationId: String!
+    $contactsFilter: ContactsFilter!
+    $needsMessageFilter: ContactsFilter
+    $needsResponseFilter: ContactsFilter
+  ) {
+    currentUser {
+      id
+      roles(organizationId: $organizationId)
+    }
+    assignment(assignmentId: $assignmentId, contactId: $contactId) {
+      id
+      hasUnassignedContactsForTexter
+      contacts(contactsFilter: $contactsFilter) {
+        id
+      }
+      allContactsCount: contactsCount
+      unmessagedCount: contactsCount(contactsFilter: $needsMessageFilter)
+      unrepliedCount: contactsCount(contactsFilter: $needsResponseFilter)
+      texter {
+        id
+        firstName
+        lastName
+        alias
+      }
+    }
+  }
 `;
 
 export class TexterTodo extends React.Component {
   componentWillMount() {
-    const { assignment } = this.props.data;
+    const { assignment } = this.props.campaignData;
     if (!assignment || assignment.campaign.isArchived) {
       this.props.router.push(`/app/${this.props.params.organizationId}/todos`);
     }
@@ -148,7 +158,7 @@ export class TexterTodo extends React.Component {
   refreshData = () => {
     this.loadingNewContacts = true;
     const self = this;
-    return this.props.data.refetch().then(data => {
+    return this.props.contactData.refetch().then(data => {
       // TODO: hopefully get rid of self
       console.log("refreshData loadingNewContacts", this.loadingNewContacts);
       self.loadingNewContacts = false;
@@ -157,12 +167,16 @@ export class TexterTodo extends React.Component {
   };
 
   render() {
-    const { assignment, currentUser } = this.props.data;
+    const { assignment, currentUser } = this.props.contactData;
+    const {
+      assignment: { campaign }
+    } = this.props.campaignData;
     const contacts = assignment ? assignment.contacts : [];
     const allContactsCount = assignment ? assignment.allContactsCount : 0;
     return (
-      <AssignmentTexter
+      <ContactController
         assignment={assignment}
+        campaign={campaign}
         currentUser={currentUser}
         reviewContactId={this.props.params.reviewContactId}
         contacts={contacts}
@@ -188,7 +202,7 @@ TexterTodo.propTypes = {
 };
 
 const queries = {
-  data: {
+  contactData: {
     query: dataQuery,
     options: ownProps => {
       console.log("TexterTodo ownProps", ownProps);
@@ -226,6 +240,22 @@ const queries = {
         fetchPolicy: "network-only"
       };
     }
+  },
+  campaignData: {
+    query: campaignQuery,
+    options: ownProps => ({
+      variables: {
+        ...(ownProps.params.assignmentId && {
+          assignmentId: ownProps.params.assignmentId
+        }),
+        ...(ownProps.params.reviewContactId && {
+          contactId: ownProps.params.reviewContactId
+        }),
+        tagGroup: "texter-tags"
+      },
+      fetchPolicy: "network-only",
+      pollInterval: 20000
+    })
   }
 };
 

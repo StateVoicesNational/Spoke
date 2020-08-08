@@ -144,7 +144,6 @@ export const dataQuery = gql`
             id
           }
         }
-        maxContacts
         allContactsCount: contactsCount
         unmessagedCount: contactsCount(contactsFilter: $needsMessageFilter)
         unrepliedCount: contactsCount(contactsFilter: $needsResponseFilter)

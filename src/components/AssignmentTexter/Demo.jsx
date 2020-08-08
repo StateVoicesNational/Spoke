@@ -60,10 +60,9 @@ export const tests = testName => {
                 "Hi {firstName}, it's {texterAliasOrFirstName} a volunteer with MoveOn. There is an election in Arizona coming Tuesday. Will you vote progressive?",
               question: { text: "", answerOptions: [] }
             }
-          ]
-        },
-        campaignCannedResponses: [],
-        userCannedResponses: []
+          ],
+          cannedResponses: []
+        }
       },
       texter: {
         firstName: "Carlos",
@@ -172,24 +171,23 @@ export const tests = testName => {
               }
             }
           ],
-          customFields: ["donationLink", "vendor_id"]
-        },
-        campaignCannedResponses: [
-          {
-            id: "1",
-            title: "Moved",
-            text:
-              "I'm sorry, we'll update your address -- what is your current zip code?",
-            isUserCreated: false
-          },
-          {
-            id: "2",
-            title: "Wrong number",
-            text: "Ok, we'll remove you from our list, {firstName}.",
-            isUserCreated: false
-          }
-        ],
-        userCannedResponses: []
+          customFields: ["donationLink", "vendor_id"],
+          cannedResponses: [
+            {
+              id: "1",
+              title: "Moved",
+              text:
+                "I'm sorry, we'll update your address -- what is your current zip code?",
+              isUserCreated: false
+            },
+            {
+              id: "2",
+              title: "Wrong number",
+              text: "Ok, we'll remove you from our list, {firstName}.",
+              isUserCreated: false
+            }
+          ]
+        }
       },
       texter: {
         firstName: "Christine",
@@ -359,66 +357,65 @@ export const tests = testName => {
               }
             }
           ],
-          customFields: ["donationLink", "vendor_id"]
-        },
-        campaignCannedResponses: [
-          {
-            id: "1",
-            title: "Moved",
-            text:
-              "I'm sorry, we'll update your address -- what is your current zip code?",
-            isUserCreated: false
-          },
-          {
-            id: "2",
-            title: "Wrong number",
-            text: "Ok, we'll remove you from our list, {firstName}.",
-            isUserCreated: false
-          },
-          {
-            id: "3",
-            title: "Moved3",
-            text:
-              "I'm sorry, we'll update your address -- what is your current zip code?",
-            isUserCreated: false
-          },
-          {
-            id: "4",
-            title: "Moved4",
-            text:
-              "I'm sorry, we'll update your address -- what is your current zip code?",
-            isUserCreated: false
-          },
-          {
-            id: "5",
-            title: "Moved5",
-            text:
-              "I'm sorry, we'll update your address -- what is your current zip code?",
-            isUserCreated: false
-          },
-          {
-            id: "6",
-            title: "Moved6",
-            text:
-              "I'm sorry, we'll update your address -- what is your current zip code?",
-            isUserCreated: false
-          },
-          {
-            id: "7",
-            title: "Moved7",
-            text:
-              "I'm sorry, we'll update your address -- what is your current zip code?",
-            isUserCreated: false
-          },
-          {
-            id: "8",
-            title: "Moved8",
-            text:
-              "I'm sorry, we'll update your address -- what is your current zip code?",
-            isUserCreated: false
-          }
-        ],
-        userCannedResponses: []
+          customFields: ["donationLink", "vendor_id"],
+          cannedResponses: [
+            {
+              id: "1",
+              title: "Moved",
+              text:
+                "I'm sorry, we'll update your address -- what is your current zip code?",
+              isUserCreated: false
+            },
+            {
+              id: "2",
+              title: "Wrong number",
+              text: "Ok, we'll remove you from our list, {firstName}.",
+              isUserCreated: false
+            },
+            {
+              id: "3",
+              title: "Moved3",
+              text:
+                "I'm sorry, we'll update your address -- what is your current zip code?",
+              isUserCreated: false
+            },
+            {
+              id: "4",
+              title: "Moved4",
+              text:
+                "I'm sorry, we'll update your address -- what is your current zip code?",
+              isUserCreated: false
+            },
+            {
+              id: "5",
+              title: "Moved5",
+              text:
+                "I'm sorry, we'll update your address -- what is your current zip code?",
+              isUserCreated: false
+            },
+            {
+              id: "6",
+              title: "Moved6",
+              text:
+                "I'm sorry, we'll update your address -- what is your current zip code?",
+              isUserCreated: false
+            },
+            {
+              id: "7",
+              title: "Moved7",
+              text:
+                "I'm sorry, we'll update your address -- what is your current zip code?",
+              isUserCreated: false
+            },
+            {
+              id: "8",
+              title: "Moved8",
+              text:
+                "I'm sorry, we'll update your address -- what is your current zip code?",
+              isUserCreated: false
+            }
+          ]
+        }
       },
       texter: {
         firstName: "Texterfirst",
@@ -526,11 +523,10 @@ export const tests = testName => {
                 "Hi {firstName}, it's {texterAliasOrFirstName} a volunteer with MoveOn. There is an election in Arizona coming Tuesday. Will you vote progressive?",
               question: { text: "", answerOptions: [] }
             }
-          ]
+          ],
+          cannedResponses: []
         },
-        hasUnassignedContactsForTexter: 200,
-        campaignCannedResponses: [],
-        userCannedResponses: []
+        hasUnassignedContactsForTexter: 200
       },
       texter: {
         firstName: "Carlos",
@@ -595,6 +591,7 @@ export function generateDemoTexterContact(testName) {
     return (
       <ContactController
         assignment={test.assignment}
+        campaign={test.assignment.campaign}
         contacts={test.contact ? [{ id: test.contact.id }] : []}
         allContactsCount={test.navigationToolbarChildren.total}
         refreshData={logFunction}
