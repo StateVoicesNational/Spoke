@@ -143,8 +143,6 @@ export class AssignmentSummary extends Component {
     const sideboxList = enabledSideboxes.map(sb =>
       renderSummary(sb, settingsData, this, sideboxProps)
     );
-    const maxContacts = assignment.maxContacts;
-
     const cardTitleTextColor = setContrastingColor(primaryColor);
 
     return (
@@ -183,7 +181,7 @@ export class AssignmentSummary extends Component {
                   title: "Send first texts",
                   count: unmessagedCount,
                   primary: true,
-                  disabled: maxContacts === 0,
+                  disabled: false,
                   contactsFilter: "text",
                   hideIfZero: true
                 })}

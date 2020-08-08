@@ -247,17 +247,17 @@ export class ContactController extends React.Component {
   }
 
   canRequestMore() {
-    const { assignment, messageStatusFilter } = this.props;
+    const { assignment, campaign, messageStatusFilter } = this.props;
     if (assignment.hasUnassignedContactsForTexter) {
       if (
         (messageStatusFilter === "needsMessage" ||
           messageStatusFilter === "needsSecondPass") &&
-        !assignment.campaign.requestAfterReply
+        !campaign.requestAfterReply
       ) {
         return true;
       } else if (
         messageStatusFilter === "needsResponse" &&
-        assignment.campaign.requestAfterReply
+        campaign.requestAfterReply
       ) {
         if (
           assignment.unmessagedCount === 0 &&
@@ -356,10 +356,7 @@ export class ContactController extends React.Component {
 
     const currentIndex = this.state.currentContactIndex + 1 + messagedContacts;
     let total = allContactsCount;
-    if (
-      total === currentIndex &&
-      this.props.assignment.campaign.useDynamicAssignment
-    ) {
+    if (total === currentIndex && this.props.campaign.useDynamicAssignment) {
       total = "?";
     }
     const title = `${currentIndex} of ${total}`;
@@ -373,8 +370,8 @@ export class ContactController extends React.Component {
   }
 
   renderTexter(enabledSideboxes) {
-    const { assignment, ChildComponent } = this.props;
-    const { campaign, texter } = assignment;
+    const { assignment, campaign, ChildComponent } = this.props;
+    const { texter } = assignment;
     const contact = this.currentContact();
     const navigationToolbarChildren = this.getNavigationToolbarChildren();
     if (!contact || !contact.id) {
@@ -469,7 +466,7 @@ export class ContactController extends React.Component {
             initials ? "" : " for now"
           }.`;
     return (
-      <div>
+      <div key="empty">
         <Empty
           title={emptyMessage}
           icon={<Check />}
@@ -489,9 +486,10 @@ export class ContactController extends React.Component {
       assignment,
       contacts,
       messageStatusFilter,
-      currentUser
+      currentUser,
+      campaign
     } = this.props;
-    const { campaign, texter } = assignment || {};
+    const { texter } = assignment || {};
     const contact = this.currentContact();
     const navigationToolbarChildren = this.getNavigationToolbarChildren();
     const { finishedContactId, loading } = this.state;
@@ -521,7 +519,7 @@ export class ContactController extends React.Component {
     };
     const enabledSideboxes = getSideboxes(sideboxProps, "TexterTodo");
     return (
-      <div className={css(styles.container)}>
+      <div className={css(styles.container)} key="contactController">
         {contacts.length === 0
           ? this.renderEmpty(enabledSideboxes, sideboxProps)
           : this.renderTexter(enabledSideboxes)}
@@ -533,6 +531,7 @@ export class ContactController extends React.Component {
 ContactController.propTypes = {
   reviewContactId: PropTypes.string, // if not undefined, contactId from a conversation link
   assignment: PropTypes.object, // current assignment
+  campaign: PropTypes.object, // current campaign
   contacts: PropTypes.array, // contacts for current assignment
   currentUser: PropTypes.object,
   allContactsCount: PropTypes.number,
