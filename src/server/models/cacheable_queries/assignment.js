@@ -23,7 +23,7 @@ const load = async id => {
   return dbResult;
 };
 
-export const assignmentCache = {
+const assignmentCache = {
   clear: async id => {
     if (r.redis) {
       await r.redis.delAsync(cacheKey(id));
@@ -36,3 +36,5 @@ export const assignmentCache = {
   },
   load
 };
+
+export default assignmentCache;

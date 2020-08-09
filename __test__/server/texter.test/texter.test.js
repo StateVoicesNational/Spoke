@@ -27,9 +27,9 @@ function getAssignmentContactsMutAndVars(props, contactIds, findNew) {
   return [mutation, variables];
 }
 
-const getContactsQuery = texterTodoOps.queries.data.query;
+const getContactsQuery = texterTodoOps.queries.contactData.query;
 const getContactsVars = props =>
-  texterTodoOps.queries.data.options(props).variables;
+  texterTodoOps.queries.contactData.options(props).variables;
 
 /*
 * NOTE:

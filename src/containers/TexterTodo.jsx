@@ -168,6 +168,9 @@ export class TexterTodo extends React.Component {
 
   render() {
     const { assignment, currentUser } = this.props.contactData;
+    if (!this.props.campaignData.assignment) {
+      return null;
+    }
     const {
       assignment: { campaign }
     } = this.props.campaignData;
@@ -195,7 +198,8 @@ export class TexterTodo extends React.Component {
 TexterTodo.propTypes = {
   messageStatus: PropTypes.string,
   params: PropTypes.object,
-  data: PropTypes.object,
+  contactData: PropTypes.object,
+  campaignData: PropTypes.object,
   mutations: PropTypes.object,
   router: PropTypes.object,
   location: PropTypes.object

@@ -2,7 +2,10 @@ import gql from "graphql-tag";
 import { r } from "../../../../src/server/models";
 import { getConfig } from "../../../../src/server/api/lib/config";
 import { dataQuery as TexterTodoListQuery } from "../../../../src/containers/TexterTodoList";
-import { dataQuery as TexterTodoQuery } from "../../../../src/containers/TexterTodo";
+import {
+  dataQuery as TexterTodoQuery,
+  campaignQuery
+} from "../../../../src/containers/TexterTodo";
 import { campaignDataQuery as AdminCampaignEditQuery } from "../../../../src/containers/AdminCampaignEdit";
 import { campaignsQuery } from "../../../../src/containers/PaginatedCampaignsRetriever";
 
@@ -234,15 +237,9 @@ it("save campaign interaction steps, edit it, make sure the last value is set", 
   // now we start and confirm that we can access the script as a texter
 
   let texterCampaignDataResults = await runGql(
-    TexterTodoQuery,
+    campaignQuery,
     {
-      contactsFilter: {
-        messageStatus: "needsMessage",
-        isOptedOut: false,
-        validTimezone: true
-      },
-      assignmentId,
-      organizationId
+      assignmentId
     },
     testTexterUser
   );
@@ -285,15 +282,9 @@ it("save campaign interaction steps, edit it, make sure the last value is set", 
     campaignDataResults.data.campaign.interactionSteps[1].questionText
   ).toEqual("hmm1 after campaign start");
   texterCampaignDataResults = await runGql(
-    TexterTodoQuery,
+    campaignQuery,
     {
-      contactsFilter: {
-        messageStatus: "needsMessage",
-        isOptedOut: false,
-        validTimezone: true
-      },
-      assignmentId,
-      organizationId
+      assignmentId
     },
     testTexterUser
   );
