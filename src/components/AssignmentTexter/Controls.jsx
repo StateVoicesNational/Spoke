@@ -75,13 +75,15 @@ export class AssignmentTexterContactControls extends React.Component {
     setTimeout(() => {
       node.scrollTop = Math.floor(node.scrollHeight);
     }, 0);
-    document.body.addEventListener("keypress", this.onKeyPress);
+    document.body.addEventListener("keyup", this.onKeyUp);
+    document.body.addEventListener("keypress", this.blockWithCtrl);
     window.addEventListener("resize", this.onResize);
     window.addEventListener("orientationchange", this.onResize);
   }
 
   componentWillUnmount() {
-    document.body.removeEventListener("keypress", this.onKeyPress);
+    document.body.removeEventListener("keyup", this.onKeyUp);
+    document.body.removeEventListener("keypress", this.blockWithCtrl);
     window.removeEventListener("resize", this.onResize);
     window.removeEventListener("orientationchange", this.onResize);
   }
@@ -120,7 +122,15 @@ export class AssignmentTexterContactControls extends React.Component {
     }
   };
 
-  onKeyPress = evt => {
+  blockWithCtrl = evt => {
+    // HACK: This blocks Ctrl-Enter from triggering 'click'
+    // after a shortcut key has been pressed (instead of doing a send)
+    if (evt.ctrlKey && evt.key === "Enter") {
+      evt.preventDefault();
+    }
+  };
+
+  onKeyUp = evt => {
     if (
       window.document &&
       document.location &&
