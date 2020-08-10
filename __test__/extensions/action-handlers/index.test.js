@@ -5,10 +5,10 @@ import {
   cleanupTest,
   createStartedCampaign
 } from "../../test_helpers";
-const ActionHandlers = require("../../../src/integrations/action-handlers");
+const ActionHandlers = require("../../../src/extensions/action-handlers");
 const uuidv4 = require("uuid").v4;
-const TestAction = require("../../../src/integrations/action-handlers/test-action");
-const ComplexTestAction = require("../../../src/integrations/action-handlers/complex-test-action");
+const TestAction = require("../../../src/extensions/action-handlers/test-action");
+const ComplexTestAction = require("../../../src/extensions/action-handlers/complex-test-action");
 const log = require("../../../src/lib").log;
 
 describe("action-handlers/index", () => {

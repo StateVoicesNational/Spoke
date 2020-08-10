@@ -7,7 +7,7 @@ import { getSideboxChoices } from "./organization";
 import {
   getAvailableIngestMethods,
   getMethodChoiceData
-} from "../../integrations/contact-loaders";
+} from "../../extensions/contact-loaders";
 import twilio from "./lib/twilio";
 import { getConfig } from "./lib/config";
 import ownedPhoneNumber from "./lib/owned-phone-number";

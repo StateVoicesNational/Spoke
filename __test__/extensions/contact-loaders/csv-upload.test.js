@@ -4,11 +4,11 @@ import {
   available,
   getClientChoiceData,
   processContactLoad
-} from "../../../src/integrations/contact-loaders/csv-upload";
+} from "../../../src/extensions/contact-loaders/csv-upload";
 import {
   ensureCamelCaseRequiredHeaders,
   CampaignContactsForm
-} from "../../../src/integrations/contact-loaders/csv-upload/react-component";
+} from "../../../src/extensions/contact-loaders/csv-upload/react-component";
 
 // csv-upload libs for validation
 import { unzipPayload } from "../../../src/workers/jobs";

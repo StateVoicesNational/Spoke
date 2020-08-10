@@ -8,7 +8,7 @@ import { capitalizeWord } from "./lib/utils";
 import twilio from "./lib/twilio";
 import ownedPhoneNumber from "./lib/owned-phone-number";
 
-import { getIngestMethod } from "../../integrations/contact-loaders";
+import { getIngestMethod } from "../../extensions/contact-loaders";
 import {
   Campaign,
   CannedResponse,
@@ -66,8 +66,8 @@ import {
   releaseCampaignNumbers
 } from "./mutations";
 
-const ActionHandlers = require("../../integrations/action-handlers");
-import { jobRunner } from "../../integrations/job-runners";
+const ActionHandlers = require("../../extensions/action-handlers");
+import { jobRunner } from "../../extensions/job-runners";
 import { Jobs } from "../../workers/job-processes";
 import { Tasks } from "../../workers/tasks";
 

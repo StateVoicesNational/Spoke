@@ -1,6 +1,6 @@
 // Jobs are potentially long-running background processing operations
 // that are tracked in the database via the JobRequest table.
-// See src/integrations/job-runners/README.md for more details
+// See src/extensions/job-runners/README.md for more details
 
 import { r } from "../server/models";
 import { sleep, getNextJob } from "./lib";

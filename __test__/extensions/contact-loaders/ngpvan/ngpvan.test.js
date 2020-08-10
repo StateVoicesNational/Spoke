@@ -8,14 +8,14 @@ import {
   handleFailedContactLoad,
   getClientChoiceData,
   available
-} from "../../../../src/integrations/contact-loaders/ngpvan";
+} from "../../../../src/extensions/contact-loaders/ngpvan";
 
-import { CampaignContactsForm } from "../../../../src/integrations/contact-loaders/ngpvan/react-component";
+import { CampaignContactsForm } from "../../../../src/extensions/contact-loaders/ngpvan/react-component";
 
 const config = require("../../../../src/server/api/lib/config");
 const csvParser = require("../../../../src/workers/parse_csv");
-const ngpvan = require("../../../../src/integrations/contact-loaders/ngpvan");
-const helpers = require("../../../../src/integrations/contact-loaders/helpers");
+const ngpvan = require("../../../../src/extensions/contact-loaders/ngpvan");
+const helpers = require("../../../../src/extensions/contact-loaders/helpers");
 const jobs = require("../../../../src/workers/jobs");
 
 // client-testing libs

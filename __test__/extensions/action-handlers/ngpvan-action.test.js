@@ -1,10 +1,10 @@
 import {
   validateActionHandler,
   validateActionHandlerWithClientChoices
-} from "../../../src/integrations/action-handlers";
+} from "../../../src/extensions/action-handlers";
 import nock from "nock";
 
-const NgpVanAction = require("../../../src/integrations/action-handlers/ngpvan-action");
+const NgpVanAction = require("../../../src/extensions/action-handlers/ngpvan-action");
 require("../../test_helpers");
 
 afterEach(async () => {

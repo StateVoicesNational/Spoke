@@ -1,10 +1,10 @@
 import { log } from "../../../lib";
 import { assignmentRequiredOrAdminRole } from "../errors";
 import { cacheableData } from "../../models";
-import { jobRunner } from "../../../integrations/job-runners";
+import { jobRunner } from "../../../extensions/job-runners";
 import { Tasks } from "../../../workers/tasks";
 
-const ActionHandlers = require("../../../integrations/action-handlers");
+const ActionHandlers = require("../../../extensions/action-handlers");
 
 const dispatchActionHandlers = async ({
   user,

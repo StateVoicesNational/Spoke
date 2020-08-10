@@ -44,7 +44,7 @@ export class CampaignContactsForm extends React.Component {
 
   validateSql = () => {
     const errors = [];
-    const sql = document.getElementById("contact-sql").value
+    const sql = document.getElementById("contact-sql").value;
     if (!sql.startsWith("SELECT")) {
       errors.push('Must start with "SELECT" in caps');
     }

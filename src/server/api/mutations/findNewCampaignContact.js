@@ -1,7 +1,7 @@
 import { log } from "../../../lib";
 import { Assignment, Campaign, r, cacheableData } from "../../models";
 import { assignmentRequiredOrAdminRole } from "../errors";
-import { getDynamicAssignmentBatchPolicy } from "../../../integrations/dynamicassignment-batches";
+import { getDynamicAssignmentBatchPolicy } from "../../../extensions/dynamicassignment-batches";
 
 export const findNewCampaignContact = async (
   _,

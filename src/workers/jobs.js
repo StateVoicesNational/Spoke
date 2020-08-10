@@ -16,7 +16,7 @@ import {
   saveNewIncomingMessage
 } from "../server/api/lib/message-sending";
 import importScriptFromDocument from "../server/api/lib/import-script";
-import { rawIngestMethod } from "../integrations/contact-loaders";
+import { rawIngestMethod } from "../extensions/contact-loaders";
 
 import AWS from "aws-sdk";
 import Papa from "papaparse";

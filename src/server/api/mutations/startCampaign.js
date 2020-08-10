@@ -4,7 +4,7 @@ import { accessRequired } from "../errors";
 import { Notifications, sendUserNotification } from "../../notifications";
 import twilio from "../lib/twilio";
 import { getConfig } from "../lib/config";
-import { jobRunner } from "../../../integrations/job-runners";
+import { jobRunner } from "../../../extensions/job-runners";
 import { Tasks } from "../../../workers/tasks";
 import { Jobs } from "../../../workers/job-processes";
 

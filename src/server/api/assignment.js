@@ -1,7 +1,7 @@
 import { mapFieldsToModel } from "./lib/utils";
 import { Assignment, r, cacheableData } from "../models";
 import { getOffsets, defaultTimezoneIsBetweenTextingHours } from "../../lib";
-import { getDynamicAssignmentBatchPolicy } from "../../integrations/dynamicassignment-batches";
+import { getDynamicAssignmentBatchPolicy } from "../../extensions/dynamicassignment-batches";
 
 export function addWhereClauseForContactsFilterMessageStatusIrrespectiveOfPastDue(
   queryParameter,

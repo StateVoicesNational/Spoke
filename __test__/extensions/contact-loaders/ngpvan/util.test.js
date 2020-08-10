@@ -1,7 +1,7 @@
 import each from "jest-each";
 import Van, {
   DEFAULT_NGP_VAN_API_BASE_URL
-} from "../../../../src/integrations/contact-loaders/ngpvan/util";
+} from "../../../../src/extensions/contact-loaders/ngpvan/util";
 
 const config = require("../../../../src/server/api/lib/config");
 

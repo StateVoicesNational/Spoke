@@ -126,7 +126,7 @@ export function rawAllActionHandlers() {
 }
 
 // TODO: clean up tag update API. Because tag update handlers are _always_ run if configured
-//   it would be better to separate tag handler integrations from question response handlers
+//   it would be better to separate tag handler extensions from question response handlers
 export function rawAllTagUpdateActionHandlerNames() {
   return Object.keys(CONFIGURED_TAG_HANDLERS);
 }
