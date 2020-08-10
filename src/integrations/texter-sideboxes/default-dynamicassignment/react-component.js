@@ -28,7 +28,8 @@ export const showSidebox = ({
     finished &&
     campaign.useDynamicAssignment &&
     (assignment.hasUnassignedContactsForTexter ||
-      messageStatusFilter === "needsMessage") &&
+      messageStatusFilter === "needsMessage" ||
+      assignment.unmessagedCount) &&
     (messageStatusFilter === "needsMessage" ||
       messageStatusFilter === "needsResponse")
   ) {
@@ -124,6 +125,23 @@ export class TexterSideboxClass extends React.Component {
               secondary={false}
             >
               <RaisedButton label="Go To Replies" onClick={this.gotoReplies} />
+            </Badge>
+          </div>
+        ) : null}
+        {messageStatusFilter &&
+        messageStatusFilter !== "needsMessage" &&
+        assignment.unmessagedCount ? (
+          <div style={{ marginBottom: "8px", paddingLeft: "12px" }}>
+            <Badge
+              badgeStyle={{ ...inlineStyles.badge }}
+              badgeContent={assignment.unmessagedCount}
+              primary={true}
+              secondary={false}
+            >
+              <RaisedButton
+                label="Send first texts"
+                onClick={this.gotoInitials}
+              />
             </Badge>
           </div>
         ) : null}
