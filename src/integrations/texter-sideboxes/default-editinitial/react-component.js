@@ -8,13 +8,14 @@ export const displayName = () => "Allow editing of initial messages";
 export const showSidebox = ({ contact, messageStatusFilter }) =>
   contact && messageStatusFilter === "needsMessage";
 
+const defaultExpandText = "Sending Initial Messages";
 const defaultMessagePre = (
   <span>
     It’s important to follow all training materials and campaign manager
     guidance while texting. Please <u>don’t</u>
   </span>
 );
-const defaultLinkText = "change the script";
+const defaultLinkText = "change the initial script";
 const defaultMessagePost =
   "unless instructed by your campaign administrator.  Making changes may flag your account for admins.";
 
@@ -29,6 +30,9 @@ export class TexterSidebox extends React.Component {
         messageReadOnlyChanged: true
       });
     }
+    this.state = {
+      expanded: false
+    };
   }
 
   setMessageEditable = () => {
@@ -43,18 +47,32 @@ export class TexterSidebox extends React.Component {
 
   render() {
     const { settingsData } = this.props;
+    const expandMode =
+      !settingsData.editInitialExpandText ||
+      /\w+/.test(settingsData.editInitialExpandText);
     return (
       <div>
-        <p>
-          {settingsData.editInitialMessagePre || defaultMessagePre}{" "}
-          <a
-            style={{ textDecoration: "underline" }}
-            onClick={this.setMessageEditable}
-          >
-            {settingsData.editInitialLinkText || defaultLinkText}
-          </a>{" "}
-          {settingsData.editInitialMessagePost || defaultMessagePost}
-        </p>
+        {expandMode ? (
+          <div>
+            <a
+              onClick={() => this.setState({ expanded: !this.state.expanded })}
+            >
+              <u>{settingsData.editInitialExpandText || defaultExpandText}</u>
+            </a>
+          </div>
+        ) : null}
+        {!expandMode || this.state.expanded ? (
+          <p>
+            {settingsData.editInitialMessagePre || defaultMessagePre}{" "}
+            <a
+              style={{ textDecoration: "underline" }}
+              onClick={this.setMessageEditable}
+            >
+              {settingsData.editInitialLinkText || defaultLinkText}
+            </a>{" "}
+            {settingsData.editInitialMessagePost || defaultMessagePost}
+          </p>
+        ) : null}
       </div>
     );
   }
@@ -74,6 +92,7 @@ TexterSidebox.propTypes = {
 };
 
 export const adminSchema = () => ({
+  editInitialExpandText: yup.string(),
   editInitialMessagePre: yup.string(),
   editInitialLinkText: yup.string(),
   editInitialMessagePost: yup.string()
@@ -91,6 +110,12 @@ export class AdminConfig extends React.Component {
           from changing the script. You can modify the text on the sidebox
           itself.
         </p>
+        <Form.Field
+          name="editInitialExpandText"
+          label="Text to expand instructions"
+          hintText={`default: ${defaultExpandText} - set to a single space to disable the expand click`}
+          fullWidth
+        />
         <Form.Field
           name="editInitialMessagePre"
           label="Text before link"
