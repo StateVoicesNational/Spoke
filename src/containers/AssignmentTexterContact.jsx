@@ -518,7 +518,7 @@ const mutations = {
   updateContactTags: ownProps => (tags, campaignContactId) => ({
     mutation: gql`
       mutation updateContactTags(
-        $tags: [TagInput]
+        $tags: [ContactTagInput]
         $campaignContactId: String!
       ) {
         updateContactTags(tags: $tags, campaignContactId: $campaignContactId)
