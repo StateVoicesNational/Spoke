@@ -4,7 +4,7 @@ import {
   cleanupTest,
   createStartedCampaign
 } from "../../test_helpers";
-import { finalizeContactLoad } from "../../../src/integrations/contact-loaders/helpers";
+import { finalizeContactLoad } from "../../../src/extensions/contact-loaders/helpers";
 
 const workersJobs = require("../../../src/workers/jobs");
 

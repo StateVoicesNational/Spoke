@@ -2,7 +2,7 @@ import serviceMap from "../lib/services";
 import { accessRequired } from "../errors";
 import { getConfig } from "../lib/config";
 import { cacheableData } from "../../models";
-import { jobRunner } from "../../../integrations/job-runners";
+import { jobRunner } from "../../../extensions/job-runners";
 import { Jobs } from "../../../workers/job-processes";
 
 export const buyPhoneNumbers = async (

@@ -15,7 +15,7 @@ import { dataTest } from "../lib/attributes";
 import {
   getSideboxes,
   renderSummary
-} from "../integrations/texter-sideboxes/components";
+} from "../extensions/texter-sideboxes/components";
 
 export const inlineStyles = {
   badge: {

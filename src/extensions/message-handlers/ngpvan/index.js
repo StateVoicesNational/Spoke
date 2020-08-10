@@ -1,7 +1,7 @@
 import { getConfig } from "../../../server/api/lib/config";
-const Van = require("../../../integrations/action-handlers/ngpvan-action");
+const Van = require("../../../extensions/action-handlers/ngpvan-action");
 
-import { getActionChoiceData } from "../../../integrations/action-handlers";
+import { getActionChoiceData } from "../../../extensions/action-handlers";
 
 export const DEFAULT_NGP_VAN_INITIAL_TEXT_CANVASS_RESULT = "Texted";
 

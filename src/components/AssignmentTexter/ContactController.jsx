@@ -11,7 +11,7 @@ import Dialog from "material-ui/Dialog";
 import {
   getSideboxes,
   renderSidebox
-} from "../../integrations/texter-sideboxes/components";
+} from "../../extensions/texter-sideboxes/components";
 
 const styles = StyleSheet.create({
   container: {

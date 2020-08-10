@@ -3,7 +3,7 @@ import serviceMap from "../../../src/server/api/lib/services";
 import {
   available,
   DEFAULT_PROFANITY_REGEX_BASE64
-} from "../../../src/integrations/message-handlers/profanity-tagger";
+} from "../../../src/extensions/message-handlers/profanity-tagger";
 
 import {
   setupTest,

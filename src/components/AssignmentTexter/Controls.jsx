@@ -21,7 +21,7 @@ import Form from "react-formal";
 import Popover from "material-ui/Popover";
 import { messageListStyles, inlineStyles, flexStyles } from "./StyleControls";
 
-import { renderSidebox } from "../../integrations/texter-sideboxes/components";
+import { renderSidebox } from "../../extensions/texter-sideboxes/components";
 
 import {
   getChildren,

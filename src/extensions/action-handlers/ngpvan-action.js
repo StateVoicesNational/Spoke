@@ -161,9 +161,8 @@ async function getContactTypeIdAndInputTypeId(organization) {
 
     const inputTypeName = getConfig("NGP_VAN_INPUT_TYPE", organization);
     if (inputTypeName) {
-      const inputType = inputTypesResponse.find(
-        inTy => inTy.name === inputTypeName
-      ) || {};
+      const inputType =
+        inputTypesResponse.find(inTy => inTy.name === inputTypeName) || {};
       inputTypeId = inputType.inputTypeId || -1;
       if (inputTypeId === -1) {
         // eslint-disable-next-line no-console

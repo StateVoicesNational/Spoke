@@ -8,7 +8,7 @@ import { buildUsersQuery } from "./user";
 import {
   getAvailableActionHandlers,
   getActionChoiceData
-} from "../../integrations/action-handlers";
+} from "../../extensions/action-handlers";
 
 export const ownerConfigurable = {
   // ACTION_HANDLERS: 1,
@@ -34,7 +34,7 @@ export const getAllowed = (organization, user) => {
 };
 
 export const getSideboxChoices = organization => {
-  // should match defaults with src/integrations/texter-sideboxes/components.js
+  // should match defaults with src/extensions/texter-sideboxes/components.js
   const sideboxes = getConfig("TEXTER_SIDEBOXES", organization);
   const sideboxChoices =
     sideboxes === undefined
@@ -335,9 +335,9 @@ export const resolvers = {
       ) {
         return [];
       }
-      const usAreaCodes = require('us-area-codes');
-      const service = getConfig("service", organization) ||
-        getConfig("DEFAULT_SERVICE");
+      const usAreaCodes = require("us-area-codes");
+      const service =
+        getConfig("service", organization) || getConfig("DEFAULT_SERVICE");
       const counts = await r
         .knex("owned_phone_number")
         .select(

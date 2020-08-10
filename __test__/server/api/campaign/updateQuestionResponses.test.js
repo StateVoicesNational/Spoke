@@ -13,9 +13,9 @@ import {
 } from "../../../test_helpers";
 
 import * as Mutations from "../../../../src/server/api/mutations/";
-const ActionHandlers = require("../../../../src/integrations/action-handlers");
-const ComplexTestActionHandler = require("../../../../src/integrations/action-handlers/complex-test-action");
-import { jobRunner } from "../../../../src/integrations/job-runners";
+const ActionHandlers = require("../../../../src/extensions/action-handlers");
+const ComplexTestActionHandler = require("../../../../src/extensions/action-handlers/complex-test-action");
+import { jobRunner } from "../../../../src/extensions/job-runners";
 
 import { r, cacheableData, createLoaders } from "../../../../src/server/models";
 const errors = require("../../../../src/server/api/errors");
