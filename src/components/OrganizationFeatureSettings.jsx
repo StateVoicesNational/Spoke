@@ -87,30 +87,20 @@ const configurableFields = {
             <div style={{ padding: "8px" }}>
               <p>
                 You are turning on ALLOW_SEND_ALL mode, which means Spoke will
-                be substantially altered from its code for the use of
-                person-to-person texting in the United States.
+                be substantially altered from its default configuration.
               </p>
               <p>
                 <b>
                   PLEASE CONSULT WITH LEGAL COUNSEL BEFORE YOU ALTER THIS
-                  VARIABLE.
+                  VARIABLE TO ENSURE THAT YOUR USE OF SPOKE IS COMPLIANT WITH
+                  APPLICABLE LAW IN YOUR JURISDICTION FOR PERSON-TO-PERSON
+                  TEXTING.
                 </b>
-              </p>
-              <p>
-                If you wish to continue, you attest that you are using Spoke
-                non-compliantly for US person-to-person texting. In this mode,
-                you may{" "}
-                <b>
-                  <em>only</em>
-                </b>
-                text individuals that have given you express consent to do so.
-                Neither Spoke, nor its creators, may be held liable for your use
-                of the software in a non-compliant manner.
               </p>
             </div>
           ) : (
             <div style={{ padding: "8px" }}>
-              Non-US compliant for unsubscribed contacts
+              Please consult with legal counsel before you enable this.
             </div>
           )}
         </div>

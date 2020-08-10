@@ -35,7 +35,7 @@ class TexterTodoList extends React.Component {
               organizationId={organizationId}
               key={assignment.id}
               assignment={assignment}
-              texter={this.props.data.currentUser}
+              texter={this.props.data.user}
             />
           );
         }
@@ -48,8 +48,8 @@ class TexterTodoList extends React.Component {
     // stopPolling is broken (at least in currently used version), so we roll our own so we can unmount correctly
     if (
       this.props.data &&
-      this.props.data.currentUser &&
-      this.props.data.currentUser.cacheable &&
+      this.props.data.user &&
+      this.props.data.user.cacheable &&
       !this.state.polling
     ) {
       const self = this;
@@ -70,16 +70,16 @@ class TexterTodoList extends React.Component {
 
   termsAgreed() {
     const { data, router } = this.props;
-    if (window.TERMS_REQUIRE && !data.currentUser.terms) {
+    if (window.TERMS_REQUIRE && !data.user.terms) {
       router.push(`/terms?next=${this.props.location.pathname}`);
     }
   }
 
   profileComplete() {
     const { data, router } = this.props;
-    if (!data.currentUser.profileComplete) {
+    if (!data.user.profileComplete) {
       const orgId = this.props.params.organizationId;
-      const userId = data.currentUser.id;
+      const userId = data.user.id;
       const next = this.props.location.pathname;
       router.push(
         `/app/${orgId}/account/${userId}?next=${next}&fieldsNeeded=1`
@@ -89,12 +89,12 @@ class TexterTodoList extends React.Component {
 
   render() {
     const { data } = this.props;
-    if (!data || !data.currentUser) {
+    if (!data || !data.user) {
       return <LoadingIndicator />;
     }
     this.termsAgreed();
     this.profileComplete();
-    const todos = data.currentUser.todos;
+    const todos = data.user.todos;
     const renderedTodos = this.renderTodoList(todos);
 
     const empty = <Empty title="You have nothing to do!" icon={<Check />} />;
@@ -111,6 +111,7 @@ TexterTodoList.propTypes = {
 
 export const dataQuery = gql`
   query getTodos(
+    $userId: Int
     $organizationId: String!
     $needsMessageFilter: ContactsFilter
     $needsResponseFilter: ContactsFilter
@@ -119,7 +120,7 @@ export const dataQuery = gql`
     $pastMessagesFilter: ContactsFilter
     $skippedMessagesFilter: ContactsFilter
   ) {
-    currentUser {
+    user(organizationId: $organizationId, userId: $userId) {
       id
       terms
       profileComplete(organizationId: $organizationId)
@@ -187,6 +188,7 @@ const queries = {
     query: dataQuery,
     options: ownProps => ({
       variables: {
+        userId: ownProps.params.userId || null,
         organizationId: ownProps.params.organizationId,
         needsMessageFilter: {
           messageStatus: "needsMessage",
