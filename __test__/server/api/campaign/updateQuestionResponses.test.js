@@ -30,7 +30,7 @@ import {
 } from "../../../../src/containers/AssignmentTexterContact";
 import { AssignmentTexterContactControls } from "../../../../src/components/AssignmentTexter/Controls";
 import {
-  dataQueryString as assignmentQueryString,
+  campaignQuery,
   contactDataFragment
 } from "../../../../src/containers/TexterTodo";
 
@@ -331,15 +331,11 @@ describe("mutations.updateQuestionResponses", () => {
 
       beforeEach(async () => {
         const variables = {
-          contactsFilter: {
-            messageStatus: "messaged"
-          },
-          assignmentId: assignment.id.toString(),
-          organizationId: organization.id.toString()
+          assignmentId: assignment.id.toString()
         };
 
         const retrievedAssignment = await runGql(
-          assignmentQueryString,
+          campaignQuery,
           variables,
           adminUser
         );
