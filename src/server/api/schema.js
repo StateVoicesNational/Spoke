@@ -763,7 +763,8 @@ const rootMutations = {
 
       let interactions = await r
         .knex("interaction_step")
-        .where({ campaign_id: oldCampaignId, is_deleted: false });
+        .where({ campaign_id: oldCampaignId, is_deleted: false })
+        .orderBy("id"); // Ensure that the copy is deterministic.
 
       const interactionsArr = [];
       interactions.forEach((interaction, index) => {
