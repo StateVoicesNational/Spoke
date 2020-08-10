@@ -1403,7 +1403,9 @@ const rootResolvers = {
     },
     user: async (_, { organizationId, userId }, { user }) => {
       // This is somewhat redundant to people and getCurrentUser above
-      if (user.id !== userId) {
+      if (user && !userId) {
+        return user;
+      } else if (user.id !== userId) {
         // User can view themselves
         await accessRequired(user, organizationId, "ADMIN", true);
       }
