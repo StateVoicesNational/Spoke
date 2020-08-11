@@ -1417,6 +1417,11 @@ const rootResolvers = {
           "user_organization.organization_id": organizationId,
           "user.id": userId
         })
+        .select(
+          "user_organization.organization_id",
+          "user_organization.role",
+          "user.*"
+        )
         .first();
     }
   }
