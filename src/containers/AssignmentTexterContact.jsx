@@ -167,7 +167,10 @@ export class AssignmentTexterContact extends React.Component {
       }
       this.setState({ disabled: true });
       console.log("sendMessage", contact.id);
-      if (messageStatusFilter === "needsMessage") {
+      if (
+        messageStatusFilter === "needsMessage" &&
+        /fast=1/.test(document.location.search)
+      ) {
         this.props.mutations.sendMessage(message, contact.id).then(() => {
           console.log("sentMessage", contact.id);
         });
