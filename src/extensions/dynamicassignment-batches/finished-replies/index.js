@@ -15,11 +15,13 @@ export const requestNewBatchCount = async ({
     return 0;
   }
   const availableCount = await r.getCount(
-    r.knex("campaign_contact").where({
-      campaign_id: campaign.id,
-      message_status: "needsMessage",
-      assignment_id: null
-    })
+    r
+      .knex("campaign_contact")
+      .where({
+        campaign_id: campaign.id,
+        message_status: "needsMessage"
+      })
+      .whereNull("assignment_id")
   );
 
   // Make sure they don't have any needsResponse(s)

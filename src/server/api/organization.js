@@ -51,13 +51,13 @@ export const getSideboxChoices = organization => {
 };
 
 const campaignNumbersEnabled = organization => {
-  const inventoryEnabled = getConfig(
-    "EXPERIMENTAL_PHONE_INVENTORY",
-    organization,
-    {
+  const inventoryEnabled =
+    getConfig("EXPERIMENTAL_PHONE_INVENTORY", organization, {
       truthy: true
-    }
-  );
+    }) ||
+    getConfig("PHONE_INVENTORY", organization, {
+      truthy: true
+    });
 
   return (
     inventoryEnabled &&
@@ -269,19 +269,24 @@ export const resolvers = {
     },
     phoneInventoryEnabled: async (organization, _, { user }) => {
       await accessRequired(user, organization.id, "SUPERVOLUNTEER");
-      return getConfig("EXPERIMENTAL_PHONE_INVENTORY", organization, {
-        truthy: true
-      });
+      return (
+        getConfig("EXPERIMENTAL_PHONE_INVENTORY", organization, {
+          truthy: true
+        }) ||
+        getConfig("PHONE_INVENTORY", organization, {
+          truthy: true
+        })
+      );
     },
     campaignPhoneNumbersEnabled: async (organization, _, { user }) => {
       await accessRequired(user, organization.id, "SUPERVOLUNTEER");
-      const inventoryEnabled = getConfig(
-        "EXPERIMENTAL_PHONE_INVENTORY",
-        organization,
-        {
+      const inventoryEnabled =
+        getConfig("EXPERIMENTAL_PHONE_INVENTORY", organization, {
           truthy: true
-        }
-      );
+        }) ||
+        getConfig("PHONE_INVENTORY", organization, {
+          truthy: true
+        });
       const configured =
         inventoryEnabled &&
         getConfig("EXPERIMENTAL_CAMPAIGN_PHONE_NUMBERS", organization, {

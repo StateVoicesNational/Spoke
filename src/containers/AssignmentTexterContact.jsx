@@ -171,6 +171,10 @@ export class AssignmentTexterContact extends React.Component {
         messageStatusFilter === "needsMessage" &&
         /fast=1/.test(document.location.search)
       ) {
+        // FUTURE: this can cause some confusion especially when a texter
+        // thinks they completed sending, but there are still waiting requests
+        // This probably needs some interface tweaks to communicate something
+        // to the texter.
         this.props.mutations.sendMessage(message, contact.id).then(() => {
           console.log("sentMessage", contact.id);
         });
