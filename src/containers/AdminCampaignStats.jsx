@@ -166,17 +166,6 @@ class AdminCampaignStats extends React.Component {
     );
   }
 
-  renderCopyButton() {
-    return (
-      <RaisedButton
-        label="Copy Campaign"
-        onTouchTap={async () =>
-          await this.props.mutations.copyCampaign(this.props.params.campaignId)
-        }
-      />
-    );
-  }
-
   render() {
     const { data, params } = this.props;
     const { organizationId, campaignId } = params;
@@ -272,11 +261,26 @@ class AdminCampaignStats extends React.Component {
                         <RaisedButton
                           {...dataTest("copyCampaign")}
                           label="Copy Campaign"
-                          onTouchTap={async () =>
-                            await this.props.mutations.copyCampaign(
+                          onTouchTap={async () => {
+                            let result = await this.props.mutations.copyCampaign(
                               this.props.params.campaignId
-                            )
-                          }
+                            );
+                            if (
+                              window.confirm(
+                                "A new copy has been made.\nGo there now?"
+                              )
+                            ) {
+                              this.props.router.push(
+                                "/admin/" +
+                                  encodeURIComponent(organizationId) +
+                                  "/campaigns/" +
+                                  encodeURIComponent(
+                                    result.data.copyCampaign.id
+                                  ) +
+                                  "/edit"
+                              );
+                            }
+                          }}
                         />,
                         campaign.useOwnMessagingService ? (
                           <RaisedButton

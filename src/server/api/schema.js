@@ -746,7 +746,18 @@ const rootMutations = {
         creator_id: user.id,
         title: "COPY - " + campaign.title,
         description: campaign.description,
-        due_by: campaign.dueBy,
+        due_by: campaign.due_by,
+        features: campaign.features,
+        intro_html: campaign.intro_html,
+        primary_color: campaign.primary_color,
+        logo_image_url: campaign.logo_image_url,
+        override_organization_texting_hours:
+          campaign.override_organization_texting_hours,
+        texting_hours_enforced: campaign.texting_hours_enforced,
+        texting_hours_start: campaign.texting_hours_start,
+        texting_hours_end: campaign.texting_hours_end,
+        timezone: campaign.timezone,
+        use_dynamic_assignment: campaign.use_dynamic_assignment,
         batch_size:
           campaign.batch_size ||
           Number(getConfig("DEFAULT_BATCHSIZE", organization) || 300),
@@ -754,6 +765,8 @@ const rootMutations = {
         is_archived: false,
         join_token: uuidv4()
       });
+      console.log("campaign:", campaign);
+      console.log("campaignInstance:", campaignInstance);
       const newCampaign = await campaignInstance.save();
       await r.knex("campaign_admin").insert({
         campaign_id: newCampaign.id
@@ -763,7 +776,8 @@ const rootMutations = {
 
       let interactions = await r
         .knex("interaction_step")
-        .where({ campaign_id: oldCampaignId, is_deleted: false });
+        .where({ campaign_id: oldCampaignId, is_deleted: false })
+        .orderBy("id"); // Ensure that the copy is deterministic.
 
       const interactionsArr = [];
       interactions.forEach((interaction, index) => {
