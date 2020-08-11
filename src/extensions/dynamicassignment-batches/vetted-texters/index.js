@@ -24,11 +24,13 @@ export const requestNewBatchCount = async ({
   }
 
   const availableCount = await r.getCount(
-    r.knex("campaign_contact").where({
-      campaign_id: campaign.id,
-      message_status: "needsMessage",
-      assignment_id: null
-    })
+    r
+      .knex("campaign_contact")
+      .where({
+        campaign_id: campaign.id,
+        message_status: "needsMessage"
+      })
+      .whereNull("assignment_id")
   );
   return availableCount;
 };
