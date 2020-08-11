@@ -765,8 +765,6 @@ const rootMutations = {
         is_archived: false,
         join_token: uuidv4()
       });
-      console.log("campaign:", campaign);
-      console.log("campaignInstance:", campaignInstance);
       const newCampaign = await campaignInstance.save();
       await r.knex("campaign_admin").insert({
         campaign_id: newCampaign.id
