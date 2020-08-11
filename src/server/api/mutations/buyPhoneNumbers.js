@@ -12,7 +12,10 @@ export const buyPhoneNumbers = async (
 ) => {
   await accessRequired(user, organizationId, "OWNER");
   const org = await cacheableData.organization.load(organizationId);
-  if (!getConfig("EXPERIMENTAL_PHONE_INVENTORY", org, { truthy: true })) {
+  if (
+    !getConfig("EXPERIMENTAL_PHONE_INVENTORY", org, { truthy: true }) &&
+    !getConfig("PHONE_INVENTORY", org, { truthy: true })
+  ) {
     throw new Error("Phone inventory management is not enabled");
   }
   const serviceName = getConfig("DEFAULT_SERVICE", org);

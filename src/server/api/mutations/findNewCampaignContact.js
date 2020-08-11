@@ -99,8 +99,8 @@ export const findNewCampaignContact = async (
       "in",
       r
         .knex("campaign_contact")
+        .whereNull("assignment_id")
         .where({
-          assignment_id: null,
           // FUTURE: a function in the batch policy could allow convo contacts, too
           message_status: "needsMessage",
           campaign_id: campaign.id

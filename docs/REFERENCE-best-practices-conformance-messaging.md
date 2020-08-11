@@ -1,10 +1,10 @@
 # Best Practices on Conformance and Messaging
 
-- [Introduction](#Introduction)
-- [One click or keypress per-message](#One%20click%20or%20keypress%20per-message)
-- [Opting out](#Opting%20out)
-- [Modifying the initial text message](#Modifying%20the%20initial%20text%20message)
-- [Blocking inappropriate texter content](#Blocking%20inappropriate%20texter%20content)
+- [Introduction](#introduction)
+- [One click or keypress per-message](#one-click-or-keypress-per-message)
+- [Opting out](#opting-out)
+- [Modifying the initial text message](#modifying-the-initial-text-message)
+- [Blocking inappropriate texter content](#blocking-inappropriate-texter-content)
 
 ## Introduction
 

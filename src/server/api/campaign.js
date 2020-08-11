@@ -431,6 +431,7 @@ export const resolvers = {
             "assignment.id",
             "assignment.user_id",
             "assignment.campaign_id",
+            "assignment.max_contacts",
             "user.first_name",
             "user.last_name",
             "user_organization.role"
@@ -454,8 +455,10 @@ export const resolvers = {
             .havingRaw("count(*) > 0");
         }
       }
-
-      return query;
+      return (await query).map(a => ({
+        ...a,
+        texter: { ...a, id: a.user_id }
+      }));
     },
     interactionSteps: async (campaign, _, { user }) => {
       await accessRequired(user, campaign.organization_id, "TEXTER", true);
