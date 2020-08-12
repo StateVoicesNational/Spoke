@@ -1,6 +1,6 @@
 # Dynamic Assignment Batches Framework
 
-Every Spoke campaign needs a method for assigning available texts to texters. This can be done with manual or dynamic assignment. 
+Every Spoke campaign needs a method for assigning available contacts to texters. This can be done with manual or dynamic assignment. 
 
 Dynamic assignment allows admin to use a link that once clicked gives texters access to text in the associated campaign. Texters are then able to request new texts using a request button in the dynamic assignment sidebox.
 
@@ -11,7 +11,7 @@ Dynamic assignment allows admin to use a link that once clicked gives texters ac
 
 ## Dynamic assignment strategies
 
-By default, dynamic assignment uses the `vetted-texter` strategy for deciding which texters can request batches. This allows all **vetted** texters to request and receive batches. Strategies options can be found or added in `src/integrations/dynamicassignment-batches`. You can configure which strategies are active with `env var??`
+By default, dynamic assignment uses the `finished-replies` strategy for deciding which texters can request batches. This allows all texters to request and receive batches. Strategy options can be found or added in `src/integrations/dynamicassignment-batches`. You can configure which strategies are active by assigning a comma separated list to the `DYNAMICASSIGNMENT_BATCHES` environment variable.
 
 ### Developing strategies
 
