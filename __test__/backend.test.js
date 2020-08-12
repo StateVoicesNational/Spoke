@@ -608,18 +608,28 @@ describe("graphql test suite", async () => {
         expect(campaign.id).not.toEqual(copiedCampaign.id);
         // The title should start with the "COPY - " prefix.
         expect(copiedCampaign.title).toEqual(`COPY - ${campaign.title}`);
+        // The copy should not be started.
+        expect(copiedCampaign.is_started).toEqual(false);
+        // The copy should not be archived.
+        expect(copiedCampaign.is_archived).toEqual(false);
         // All of the other properties should be identical.
+        console.log(campaign, "vs.", copiedCampaign);
         expect(campaign.description).toEqual(copiedCampaign.description);
-        expect(campaign.due_by).toEqual(copiedCampaign.due_by);
+        if (typeof copiedCampaign.due_by === "number") {
+          let parsedDate = new Date(copiedCampaign.due_by);
+          expect(campaign.due_by).toEqual(parsedDate);
+        } else {
+          expect(campaign.due_by).toEqual(copiedCampaign.due_by);
+        }
         expect(campaign.features).toEqual(copiedCampaign.features);
         expect(campaign.intro_html).toEqual(copiedCampaign.intro_html);
         expect(campaign.primary_color).toEqual(copiedCampaign.primary_color);
         expect(campaign.logo_image_url).toEqual(copiedCampaign.logo_image_url);
-        expect(campaign.override_organization_texting_hours).toEqual(
-          copiedCampaign.override_organization_texting_hours
+        expect(!!campaign.override_organization_texting_hours).toEqual(
+          !!copiedCampaign.override_organization_texting_hours
         );
-        expect(campaign.texting_hours_enforced).toEqual(
-          copiedCampaign.texting_hours_enforced
+        expect(!!campaign.texting_hours_enforced).toEqual(
+          !!copiedCampaign.texting_hours_enforced
         );
         expect(campaign.texting_hours_start).toEqual(
           copiedCampaign.texting_hours_start
@@ -628,8 +638,8 @@ describe("graphql test suite", async () => {
           copiedCampaign.texting_hours_end
         );
         expect(campaign.timezone).toEqual(copiedCampaign.timezone);
-        expect(campaign.use_dynamic_assignment).toEqual(
-          copiedCampaign.use_dynamic_assignment
+        expect(!!campaign.use_dynamic_assignment).toEqual(
+          !!copiedCampaign.use_dynamic_assignment
         );
       });
       test("the copied campaign has the same canned response as the original one", async () => {
