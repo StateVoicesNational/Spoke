@@ -56,13 +56,10 @@ export async function assignmentRequiredOrAdminRole(
     return true;
   }
 
-  const [userHasAssignment] = await r
-    .knex("assignment")
-    .where({
-      user_id: user.id,
-      id: assignmentId
-    })
-    .limit(1);
+  const userHasAssignment = await cacheableData.assignment.hasAssignment(
+    user.id,
+    assignmentId
+  );
 
   const roleRequired = userHasAssignment ? "TEXTER" : "SUPERVOLUNTEER";
   const hasPermission = await cacheableData.user.userHasRole(

@@ -15,6 +15,7 @@ import theme from "../styles/theme";
 import Toggle from "material-ui/Toggle";
 import moment from "moment";
 import CampaignTexterUIForm from "../components/CampaignTexterUIForm";
+import OrganizationFeatureSettings from "../components/OrganizationFeatureSettings";
 
 const styles = StyleSheet.create({
   section: {
@@ -342,8 +343,10 @@ class Settings extends React.Component {
             <CardHeader
               title="Texter UI Defaults"
               style={{ backgroundColor: theme.colors.green }}
+              actAsExpander={true}
+              showExpandableButton={true}
             />
-            <CardText>
+            <CardText expandable>
               <CampaignTexterUIForm
                 formValues={this.props.data.organization}
                 organization={this.props.data.organization}
@@ -360,6 +363,36 @@ class Settings extends React.Component {
                 }}
                 saveLabel="Save Texter UI Campaign Defaults"
                 saveDisabled={!this.state.texterUIConfig}
+              />
+            </CardText>
+          </Card>
+        ) : null}
+        {this.props.data.organization &&
+        this.props.data.organization.settings ? (
+          <Card>
+            <CardHeader
+              title="Overriding default settings"
+              style={{ backgroundColor: theme.colors.green }}
+              actAsExpander={true}
+              showExpandableButton={true}
+            />
+            <CardText expandable>
+              <OrganizationFeatureSettings
+                formValues={this.props.data.organization}
+                organization={this.props.data.organization}
+                onSubmit={async () => {
+                  const { settings } = this.state;
+                  await this.props.mutations.editOrganization({
+                    settings
+                  });
+                  this.setState({ settings: null });
+                }}
+                onChange={formValues => {
+                  console.log("change", formValues);
+                  this.setState(formValues);
+                }}
+                saveLabel="Save settings"
+                saveDisabled={!this.state.settings}
               />
             </CardText>
           </Card>
@@ -386,6 +419,12 @@ const queries = {
           textingHoursStart
           textingHoursEnd
           optOutMessage
+          settings {
+            messageHandlers
+            actionHandlers
+            featuresJSON
+            unsetFeatures
+          }
           texterUIConfig {
             options
             sideboxChoices
@@ -412,6 +451,12 @@ export const editOrganizationGql = gql`
   ) {
     editOrganization(id: $organizationId, organization: $organizationChanges) {
       id
+      settings {
+        messageHandlers
+        actionHandlers
+        featuresJSON
+        unsetFeatures
+      }
       texterUIConfig {
         options
         sideboxChoices

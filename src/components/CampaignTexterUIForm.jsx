@@ -18,7 +18,7 @@ import DeleteIcon from "material-ui/svg-icons/action/delete";
 import { dataTest } from "../lib/attributes";
 import { dataSourceItem } from "./utils";
 
-import sideboxes from "../integrations/texter-sideboxes/components";
+import sideboxes from "../extensions/texter-sideboxes/components";
 
 export default class CampaignTexterUIForm extends React.Component {
   constructor(props) {
@@ -28,6 +28,12 @@ export default class CampaignTexterUIForm extends React.Component {
       (formValues.texterUIConfig.options &&
         JSON.parse(formValues.texterUIConfig.options)) ||
       {};
+    // default sideboxes should be enabled until they're explicitly turned off
+    formValues.texterUIConfig.sideboxChoices.forEach(sb => {
+      if (sb.startsWith("default") && !settingsData.hasOwnProperty(sb)) {
+        settingsData[sb] = true;
+      }
+    });
     this.state = settingsData;
   }
 
@@ -45,7 +51,7 @@ export default class CampaignTexterUIForm extends React.Component {
 
   toggleChange = (key, value) => {
     console.log("toggleChange", key, value);
-    this.setState({ [key]: value }, () => {
+    this.setState({ [key]: value }, newData => {
       this.props.onChange({
         texterUIConfig: {
           options: JSON.stringify(this.state),
