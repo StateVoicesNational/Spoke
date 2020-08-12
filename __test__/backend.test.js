@@ -613,7 +613,6 @@ describe("graphql test suite", async () => {
         // The copy should not be archived.
         expect(copiedCampaign.is_archived).toEqual(false);
         // All of the other properties should be identical.
-        console.log(campaign, "vs.", copiedCampaign);
         expect(campaign.description).toEqual(copiedCampaign.description);
         if (typeof copiedCampaign.due_by === "number") {
           let parsedDate = new Date(copiedCampaign.due_by);
