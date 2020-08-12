@@ -35,6 +35,7 @@ const campaignInfoFragment = `
   dueBy
   joinToken
   batchSize
+  responseWindow
   isStarted
   isArchived
   contactsCount
@@ -118,8 +119,15 @@ export class AdminCampaignEdit extends React.Component {
   constructor(props) {
     super(props);
     const isNew = props.location.query.new;
+    const section = props.location.query.section;
+    console.log("SECTION", section);
+    const expandedSection = section
+      ? this.sections().findIndex(s => s.title === section)
+      : isNew
+      ? 0
+      : null;
     this.state = {
-      expandedSection: isNew ? 0 : null,
+      expandedSection,
       campaignFormValues: props.campaignData.campaign,
       startingCampaign: false,
       isPolling: false
@@ -457,7 +465,7 @@ export class AdminCampaignEdit extends React.Component {
       {
         title: "Dynamic Assignment",
         content: CampaignDynamicAssignmentForm,
-        keys: ["batchSize", "useDynamicAssignment"],
+        keys: ["batchSize", "useDynamicAssignment", "responseWindow"],
         checkCompleted: () => true,
         blocksStarting: false,
         expandAfterCampaignStarts: true,

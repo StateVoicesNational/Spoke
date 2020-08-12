@@ -287,6 +287,7 @@ export const resolvers = {
         "useOwnMessagingService",
         "messageserviceSid",
         "overrideOrganizationTextingHours",
+        "responseWindow",
         "textingHoursEnforced",
         "textingHoursStart",
         "textingHoursEnd",
