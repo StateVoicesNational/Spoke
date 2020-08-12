@@ -102,10 +102,10 @@ export default class CampaignDynamicAssignmentForm extends React.Component {
               label="Expected Response Window (hours)"
             />
             <p style={{ paddingLeft: "8px" }}>
-              How long before we should consider reassignment without a texter
-              response. This relates to the "Expired Needs Response" message
-              status filter in Message Review. You might set this to 48 hours
-              for slower campaigns or 2 hours or less for GOTV campaigns.
+              How long (in hours) before we should consider reassignment without
+              a texter response. This relates to the "Expired Needs Response"
+              message status filter in Message Review. You might set this to 48
+              hours for slower campaigns or 2 hours or less for GOTV campaigns.
             </p>
           </div>
           <Form.Button

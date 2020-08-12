@@ -178,7 +178,6 @@ export const resolvers = {
         assignment,
         texter: user
       });
-
       const suggestedCount = Math.min(
         assignment.max_contacts || campaign.batch_size,
         campaign.batch_size,

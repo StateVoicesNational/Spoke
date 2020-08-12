@@ -758,7 +758,7 @@ const rootMutations = {
         join_token: uuidv4(),
         batch_size: Number(getConfig("DEFAULT_BATCHSIZE", organization) || 300),
         response_window: getConfig("DEFAULT_RESPONSEWINDOW", organization, {
-          default: null
+          default: 48
         }),
         use_own_messaging_service: false
       });
@@ -785,7 +785,9 @@ const rootMutations = {
         batch_size:
           campaign.batch_size ||
           Number(getConfig("DEFAULT_BATCHSIZE", organization) || 300),
-        response_window: campaign.response_window,
+        response_window:
+          campaign.response_window ||
+          Number(getConfig("DEFAULT_RESPONSEWINDOW", organization) || 48),
         is_started: false,
         is_archived: false,
         join_token: uuidv4()
