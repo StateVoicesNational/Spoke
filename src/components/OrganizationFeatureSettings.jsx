@@ -142,7 +142,7 @@ const configurableFields = {
             fullWidth
           />
           <div style={{ padding: "8px" }}>
-            For Dynamic Assignment, what period in minutes before contacts might
+            For Dynamic Assignment, what period in hours before contacts might
             be reassigned without a response from the texter? This is used for
             Message Review querying with the "Expired Needs Response" message
             status filter, nothing automated.

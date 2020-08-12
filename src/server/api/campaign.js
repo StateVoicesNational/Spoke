@@ -287,7 +287,6 @@ export const resolvers = {
         "useOwnMessagingService",
         "messageserviceSid",
         "overrideOrganizationTextingHours",
-        "responseWindow",
         "textingHoursEnforced",
         "textingHoursStart",
         "textingHoursEnd",
@@ -309,6 +308,7 @@ export const resolvers = {
       return campaign.join_token;
     },
     batchSize: campaign => campaign.batch_size || 300,
+    responseWindow: campaign => campaign.response_window || 48,
     organization: async (campaign, _, { loaders }) =>
       campaign.organization ||
       loaders.organization.load(campaign.organization_id),

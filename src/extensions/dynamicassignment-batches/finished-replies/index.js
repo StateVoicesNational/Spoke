@@ -1,3 +1,5 @@
+import { getContacts } from "../../../server/api/assignment";
+
 export const requestNewBatchCount = async ({
   organization,
   campaign,
@@ -23,17 +25,19 @@ export const requestNewBatchCount = async ({
       })
       .whereNull("assignment_id")
   );
-
   // Make sure they don't have any needsResponse(s)
   if (availableCount) {
-    const hasOpenReplies = await r
-      .knex("campaign_contact")
-      .where({
-        campaign_id: campaign.id,
-        message_status: "needsResponse",
-        assignment_id: assignment.id
-      })
-      .first();
+    const hasOpenReplies = await getContacts(
+      assignment,
+      {
+        messageStatus: "needsResponse",
+        validTimezone: true,
+        isOptedOut: false
+      },
+      organization,
+      campaign,
+      true // forCount=true because we don't care about ordering
+    ).first();
     if (hasOpenReplies) {
       return 0;
     }
