@@ -13,9 +13,9 @@ import {
 } from "../../../test_helpers";
 
 import * as Mutations from "../../../../src/server/api/mutations/";
-const ActionHandlers = require("../../../../src/integrations/action-handlers");
-const ComplexTestActionHandler = require("../../../../src/integrations/action-handlers/complex-test-action");
-import { jobRunner } from "../../../../src/integrations/job-runners";
+const ActionHandlers = require("../../../../src/extensions/action-handlers");
+const ComplexTestActionHandler = require("../../../../src/extensions/action-handlers/complex-test-action");
+import { jobRunner } from "../../../../src/extensions/job-runners";
 
 import { r, cacheableData, createLoaders } from "../../../../src/server/models";
 const errors = require("../../../../src/server/api/errors");
@@ -30,7 +30,7 @@ import {
 } from "../../../../src/containers/AssignmentTexterContact";
 import { AssignmentTexterContactControls } from "../../../../src/components/AssignmentTexter/Controls";
 import {
-  dataQueryString as assignmentQueryString,
+  campaignQuery,
   contactDataFragment
 } from "../../../../src/containers/TexterTodo";
 
@@ -241,7 +241,7 @@ describe("mutations.updateQuestionResponses", () => {
           value: colorInteractionSteps[0].answerOption
         },
         {
-          campaignContactId: contacts[0].id.toString(),
+          campaignContactId: contacts[0].id,
           interactionStepId: redInteractionStep.id,
           value: shadesOfRedInteractionSteps[0].answerOption
         }
@@ -331,14 +331,11 @@ describe("mutations.updateQuestionResponses", () => {
 
       beforeEach(async () => {
         const variables = {
-          contactsFilter: {
-            messageStatus: "messaged"
-          },
           assignmentId: assignment.id.toString()
         };
 
         const retrievedAssignment = await runGql(
-          assignmentQueryString,
+          campaignQuery,
           variables,
           adminUser
         );
@@ -564,6 +561,17 @@ describe("mutations.updateQuestionResponses", () => {
               parentInteractionId: "new_1",
               isDeleted: false,
               interactionSteps: []
+            },
+            {
+              id: "new_4",
+              questionText: "",
+              script: "Blue is an awesome color, {firstName}!",
+              answerOption: "Blue",
+              answerActions: "complex-test-action",
+              answerActionsData: "blue answer actions data",
+              parentInteractionId: "new_1",
+              isDeleted: false,
+              interactionSteps: []
             }
           ]
         }
@@ -589,7 +597,7 @@ describe("mutations.updateQuestionResponses", () => {
             value: colorInteractionSteps[0].answerOption
           },
           {
-            campaignContactId: contacts[0].id.toString(),
+            campaignContactId: contacts[0].id,
             interactionStepId: redInteractionStep.id,
             value: shadesOfRedInteractionSteps[0].answerOption
           }
@@ -634,7 +642,15 @@ describe("mutations.updateQuestionResponses", () => {
       beforeEach(async () => {
         expect.extend({
           objectWithId: (received, expectedObject) => {
-            const pass = received.id === Number(expectedObject.id);
+            let pass = false;
+            if (
+              received &&
+              received.id &&
+              expectedObject &&
+              expectedObject.id
+            ) {
+              pass = Number(received.id) === Number(expectedObject.id);
+            }
             const message = pass ? "ok" : "fail";
             return {
               message,
@@ -660,7 +676,7 @@ describe("mutations.updateQuestionResponses", () => {
             value: colorInteractionSteps[0].answerOption
           },
           {
-            campaignContactId: contacts[0].id.toString(),
+            campaignContactId: contacts[0].id,
             interactionStepId: redInteractionStep.id,
             value: shadesOfRedInteractionSteps[0].answerOption
           }
@@ -680,6 +696,7 @@ describe("mutations.updateQuestionResponses", () => {
         );
 
         await sleep(100);
+
         expect(ActionHandlers.rawAllActionHandlers).toHaveBeenCalledTimes(1);
         expect(ActionHandlers.rawAllActionHandlers.mock.results).toEqual([
           {
@@ -703,23 +720,251 @@ describe("mutations.updateQuestionResponses", () => {
         expect(ComplexTestActionHandler.processAction.mock.calls).toEqual(
           expect.arrayContaining([
             [
-              expect.objectContaining(questionResponses[0]),
-              expect.objectWithId(colorInteractionSteps[0]),
-              Number(contacts[0].id),
-              expect.objectWithId(contacts[0]),
-              expect.objectWithId(campaign),
-              expect.objectWithId(organization)
+              {
+                questionResponse: expect.objectContaining(questionResponses[0]),
+                interactionStep: expect.objectWithId(colorInteractionSteps[0]),
+                campaignContactId: Number(contacts[0].id),
+                contact: expect.objectWithId(contacts[0]),
+                campaign: expect.objectWithId(campaign),
+                organization: expect.objectWithId(organization),
+                previousValue: null
+              }
             ],
             [
-              expect.objectContaining(questionResponses[1]),
-              expect.objectWithId(shadesOfRedInteractionSteps[0]),
-              Number(contacts[0].id),
-              expect.objectWithId(contacts[0]),
-              expect.objectWithId(campaign),
-              expect.objectWithId(organization)
+              {
+                questionResponse: expect.objectContaining(questionResponses[1]),
+                interactionStep: expect.objectWithId(
+                  shadesOfRedInteractionSteps[0]
+                ),
+                campaignContactId: Number(contacts[0].id),
+                contact: expect.objectWithId(contacts[0]),
+                campaign: expect.objectWithId(campaign),
+                organization: expect.objectWithId(organization),
+                previousValue: null
+              }
             ]
           ])
         );
+      });
+
+      describe("when a response is added", () => {
+        beforeEach(async () => {
+          questionResponses = [
+            {
+              campaignContactId: contacts[0].id,
+              interactionStepId: interactionSteps[0].id,
+              value: colorInteractionSteps[0].answerOption
+            },
+            {
+              campaignContactId: contacts[0].id,
+              interactionStepId: redInteractionStep.id,
+              value: shadesOfRedInteractionSteps[0].answerOption
+            }
+          ];
+
+          await Mutations.updateQuestionResponses(
+            undefined,
+            {
+              questionResponses: [questionResponses[0]],
+              campaignContactId: contacts[0].id
+            },
+            { loaders, user: texterUser }
+          );
+
+          jest.spyOn(ComplexTestActionHandler, "processAction");
+          jest.spyOn(
+            ComplexTestActionHandler,
+            "processDeletedQuestionResponse"
+          );
+        });
+
+        it("calls the action handler for the new response", async () => {
+          await Mutations.updateQuestionResponses(
+            undefined,
+            { questionResponses, campaignContactId: contacts[0].id },
+            { loaders, user: texterUser }
+          );
+
+          await sleep(100);
+
+          expect(
+            ComplexTestActionHandler.processDeletedQuestionResponse
+          ).not.toHaveBeenCalled();
+
+          expect(ComplexTestActionHandler.processAction).toHaveBeenCalled();
+
+          expect(
+            ComplexTestActionHandler.processAction.mock.calls[0][0]
+              .questionResponse
+          ).toEqual(questionResponses[1]);
+
+          expect(
+            ComplexTestActionHandler.processAction.mock.calls[0][0].interactionStep.id.toString()
+          ).toEqual(shadesOfRedInteractionSteps[0].id);
+
+          expect(
+            ComplexTestActionHandler.processAction.mock.calls[0][0]
+              .campaignContactId
+          ).toEqual(contacts[0].id);
+
+          expect(
+            ComplexTestActionHandler.processAction.mock.calls[0][0].contact.id
+          ).toEqual(contacts[0].id);
+
+          expect(
+            ComplexTestActionHandler.processAction.mock.calls[0][0].campaign.id.toString()
+          ).toEqual(campaign.id);
+
+          expect(
+            ComplexTestActionHandler.processAction.mock.calls[0][0].organization.id.toString()
+          ).toEqual(organization.id);
+
+          expect(
+            ComplexTestActionHandler.processAction.mock.calls[0][0]
+              .previousValue
+          ).toBeNull();
+        });
+      });
+
+      describe("when responses are added, resubmitted with no change, updated, and deleted", () => {
+        beforeEach(async () => {
+          questionResponses = [
+            {
+              campaignContactId: contacts[0].id,
+              interactionStepId: interactionSteps[0].id,
+              value: colorInteractionSteps[0].answerOption
+            },
+            {
+              campaignContactId: contacts[0].id,
+              interactionStepId: redInteractionStep.id,
+              value: shadesOfRedInteractionSteps[0].answerOption
+            }
+          ];
+
+          await Mutations.updateQuestionResponses(
+            undefined,
+            {
+              questionResponses,
+              campaignContactId: contacts[0].id
+            },
+            { loaders, user: texterUser }
+          );
+
+          jest.spyOn(ComplexTestActionHandler, "processAction");
+          jest.spyOn(
+            ComplexTestActionHandler,
+            "processDeletedQuestionResponse"
+          );
+        });
+
+        describe("when one of the question responses has already been saved with the same value", () => {
+          it("calls processAction for the new question response", async () => {
+            await Mutations.updateQuestionResponses(
+              undefined,
+              { questionResponses, campaignContactId: contacts[0].id },
+              { loaders, user: texterUser }
+            );
+
+            await sleep(100);
+
+            expect(
+              ComplexTestActionHandler.processAction
+            ).not.toHaveBeenCalled();
+            expect(
+              ComplexTestActionHandler.processDeletedQuestionResponse
+            ).not.toHaveBeenCalled();
+          });
+        });
+
+        describe("when one of the question responses was updated", () => {
+          beforeEach(async () => {
+            questionResponses[0].value = "Blue";
+          });
+
+          it("calls processAction for for the updated response, and it passes in previousValue", async () => {
+            await Mutations.updateQuestionResponses(
+              undefined,
+              { questionResponses, campaignContactId: contacts[0].id },
+              { loaders, user: texterUser }
+            );
+
+            expect(
+              ComplexTestActionHandler.processDeletedQuestionResponse
+            ).not.toHaveBeenCalled();
+            expect(ComplexTestActionHandler.processAction.mock.calls).toEqual(
+              expect.arrayContaining([
+                [
+                  expect.objectContaining({
+                    questionResponse: expect.objectContaining(
+                      questionResponses[0]
+                    ),
+                    interactionStep: expect.objectWithId(
+                      colorInteractionSteps[2]
+                    ),
+                    campaignContactId: Number(contacts[0].id),
+                    contact: expect.objectWithId(contacts[0]),
+                    campaign: expect.objectWithId(campaign),
+                    organization: expect.objectWithId(organization),
+                    previousValue: "Red"
+                  })
+                ]
+              ])
+            );
+          });
+        });
+
+        describe("when one of the question responses is deleted", () => {
+          it("calls processDeletedQuestionResponse", async () => {
+            await Mutations.updateQuestionResponses(
+              undefined,
+              {
+                questionResponses: [questionResponses[0]],
+                campaignContactId: contacts[0].id
+              },
+              { loaders, user: texterUser }
+            );
+
+            expect(
+              ComplexTestActionHandler.processAction
+            ).not.toHaveBeenCalled();
+
+            expect(
+              ComplexTestActionHandler.processDeletedQuestionResponse
+            ).toHaveBeenCalled();
+
+            expect(
+              ComplexTestActionHandler.processDeletedQuestionResponse.mock
+                .calls[0][0].questionResponse
+            ).toEqual(questionResponses[1]);
+
+            expect(
+              ComplexTestActionHandler.processDeletedQuestionResponse.mock.calls[0][0].interactionStep.id.toString()
+            ).toEqual(shadesOfRedInteractionSteps[0].id);
+
+            expect(
+              ComplexTestActionHandler.processDeletedQuestionResponse.mock
+                .calls[0][0].campaignContactId
+            ).toEqual(contacts[0].id);
+
+            expect(
+              ComplexTestActionHandler.processDeletedQuestionResponse.mock
+                .calls[0][0].contact.id
+            ).toEqual(contacts[0].id);
+
+            expect(
+              ComplexTestActionHandler.processDeletedQuestionResponse.mock.calls[0][0].campaign.id.toString()
+            ).toEqual(campaign.id);
+
+            expect(
+              ComplexTestActionHandler.processDeletedQuestionResponse.mock.calls[0][0].organization.id.toString()
+            ).toEqual(organization.id);
+
+            expect(
+              ComplexTestActionHandler.processDeletedQuestionResponse.mock
+                .calls[0][0].previousValue
+            ).toEqual("Crimson");
+          });
+        });
       });
 
       describe("when no action handlers are configured", async () => {
@@ -782,12 +1027,17 @@ describe("mutations.updateQuestionResponses", () => {
           );
           expect(ComplexTestActionHandler.processAction.mock.calls).toEqual([
             [
-              expect.objectContaining(questionResponses[1]),
-              expect.objectWithId(shadesOfRedInteractionSteps[0]),
-              Number(contacts[0].id),
-              expect.objectWithId(contacts[0]),
-              expect.objectWithId(campaign),
-              expect.objectWithId(organization)
+              {
+                questionResponse: expect.objectContaining(questionResponses[1]),
+                interactionStep: expect.objectWithId(
+                  shadesOfRedInteractionSteps[0]
+                ),
+                campaignContactId: Number(contacts[0].id),
+                contact: expect.objectWithId(contacts[0]),
+                campaign: expect.objectWithId(campaign),
+                organization: expect.objectWithId(organization),
+                previousValue: null
+              }
             ]
           ]);
         });
@@ -827,20 +1077,34 @@ describe("mutations.updateQuestionResponses", () => {
           expect(ComplexTestActionHandler.processAction.mock.calls).toEqual(
             expect.arrayContaining([
               [
-                expect.objectContaining(questionResponses[0]),
-                expect.objectWithId(colorInteractionSteps[0]),
-                Number(contacts[0].id),
-                expect.objectWithId(contacts[0]),
-                expect.objectWithId(campaign),
-                expect.objectWithId(organization)
+                {
+                  questionResponse: expect.objectContaining(
+                    questionResponses[0]
+                  ),
+                  interactionStep: expect.objectWithId(
+                    colorInteractionSteps[0]
+                  ),
+                  campaignContactId: Number(contacts[0].id),
+                  contact: expect.objectWithId(contacts[0]),
+                  campaign: expect.objectWithId(campaign),
+                  organization: expect.objectWithId(organization),
+                  previousValue: null
+                }
               ],
               [
-                expect.objectContaining(questionResponses[1]),
-                expect.objectWithId(shadesOfRedInteractionSteps[0]),
-                Number(contacts[0].id),
-                expect.objectWithId(contacts[0]),
-                expect.objectWithId(campaign),
-                expect.objectWithId(organization)
+                {
+                  questionResponse: expect.objectContaining(
+                    questionResponses[1]
+                  ),
+                  interactionStep: expect.objectWithId(
+                    shadesOfRedInteractionSteps[0]
+                  ),
+                  campaignContactId: Number(contacts[0].id),
+                  contact: expect.objectWithId(contacts[0]),
+                  campaign: expect.objectWithId(campaign),
+                  organization: expect.objectWithId(organization),
+                  previousValue: null
+                }
               ]
             ])
           );

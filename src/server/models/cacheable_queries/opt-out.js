@@ -1,4 +1,5 @@
 import { r, OptOut } from "../../models";
+import campaignCache from "./campaign";
 
 // STRUCTURE
 // SET by organization, so optout-<organization_id> has a <cell> key
@@ -105,7 +106,14 @@ const optOutCache = {
       .limit(1);
     return dbResult.length > 0;
   },
-  save: async ({ cell, campaignContactId, campaign, assignmentId, reason }) => {
+  save: async ({
+    cell,
+    campaignContactId,
+    campaign,
+    assignmentId,
+    reason,
+    noReply
+  }) => {
     const organizationId = campaign.organization_id;
     if (r.redis) {
       const hashKey = orgCacheKey(organizationId);
@@ -144,6 +152,9 @@ const optOutCache = {
       .update({
         is_opted_out: true
       });
+    if (noReply) {
+      await campaignCache.incrCount(campaign.id, "needsResponseCount", -1);
+    }
   },
   loadMany
 };

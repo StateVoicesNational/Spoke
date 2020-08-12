@@ -256,8 +256,8 @@ export const resolvers = {
           organization_id: organizationId,
           is_archived: false
         })("left"),
-    profileComplete: async (user, { organizationId }) => {
-      const org = await cacheableData.organization.load(organizationId);
+    profileComplete: async (user, { organizationId }, { loaders }) => {
+      const org = await loaders.organization.load(organizationId);
       // @todo: standardize on escaped or not once there's an interface.
       const profileFields = getFeatures(org).profile_fields;
       const fields =

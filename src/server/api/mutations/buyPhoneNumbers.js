@@ -2,7 +2,7 @@ import serviceMap from "../lib/services";
 import { accessRequired } from "../errors";
 import { getConfig } from "../lib/config";
 import { cacheableData } from "../../models";
-import { jobRunner } from "../../../integrations/job-runners";
+import { jobRunner } from "../../../extensions/job-runners";
 import { Jobs } from "../../../workers/job-processes";
 
 export const buyPhoneNumbers = async (
@@ -12,7 +12,10 @@ export const buyPhoneNumbers = async (
 ) => {
   await accessRequired(user, organizationId, "OWNER");
   const org = await cacheableData.organization.load(organizationId);
-  if (!getConfig("EXPERIMENTAL_PHONE_INVENTORY", org, { truthy: true })) {
+  if (
+    !getConfig("EXPERIMENTAL_PHONE_INVENTORY", org, { truthy: true }) &&
+    !getConfig("PHONE_INVENTORY", org, { truthy: true })
+  ) {
     throw new Error("Phone inventory management is not enabled");
   }
   const serviceName = getConfig("DEFAULT_SERVICE", org);
