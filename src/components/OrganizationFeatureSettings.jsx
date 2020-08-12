@@ -108,7 +108,11 @@ const configurableFields = {
     }
   },
   DEFAULT_BATCHSIZE: {
-    schema: () => yup.number().integer(),
+    schema: () =>
+      yup
+        .number()
+        .integer()
+        .notRequired(),
     ready: true,
     component: props => {
       return (
@@ -126,8 +130,33 @@ const configurableFields = {
       );
     }
   },
+  DEFAULT_RESPONSEWINDOW: {
+    schema: () => yup.number().notRequired(),
+    ready: true,
+    component: props => {
+      return (
+        <div>
+          <Form.Field
+            label="Default Response Window"
+            name="DEFAULT_RESPONSEWINDOW"
+            fullWidth
+          />
+          <div style={{ padding: "8px" }}>
+            For Dynamic Assignment, what period in minutes before contacts might
+            be reassigned without a response from the texter? This is used for
+            Message Review querying with the "Expired Needs Response" message
+            status filter, nothing automated.
+          </div>
+        </div>
+      );
+    }
+  },
   MAX_CONTACTS_PER_TEXTER: {
-    schema: () => yup.number().integer(),
+    schema: () =>
+      yup
+        .number()
+        .integer()
+        .notRequired(),
     ready: true,
     component: props => {
       return (
@@ -152,7 +181,11 @@ const configurableFields = {
     }
   },
   MAX_MESSAGE_LENGTH: {
-    schema: () => yup.number().integer(),
+    schema: () =>
+      yup
+        .number()
+        .integer()
+        .notRequired(),
     ready: true,
     component: props => {
       return (

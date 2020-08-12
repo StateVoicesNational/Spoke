@@ -72,6 +72,7 @@ const rootSchema = gql`
     useDynamicAssignment: Boolean
     requestAfterReply: Boolean
     batchSize: Int
+    responseWindow: Float
     ingestMethod: String
     contactData: String
     organizationId: String

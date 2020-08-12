@@ -171,6 +171,7 @@ async function editCampaign(id, campaign, loaders, user, origCampaignRecord) {
     dueBy,
     useDynamicAssignment,
     batchSize,
+    responseWindow,
     logoImageUrl,
     introHtml,
     primaryColor,
@@ -207,6 +208,7 @@ async function editCampaign(id, campaign, loaders, user, origCampaignRecord) {
     use_own_messaging_service: useOwnMessagingService,
     messageservice_sid: messageserviceSid,
     batch_size: batchSize,
+    response_window: responseWindow,
     timezone
   };
 
@@ -755,6 +757,9 @@ const rootMutations = {
         is_archived: false,
         join_token: uuidv4(),
         batch_size: Number(getConfig("DEFAULT_BATCHSIZE", organization) || 300),
+        response_window: getConfig("DEFAULT_RESPONSEWINDOW", organization, {
+          default: null
+        }),
         use_own_messaging_service: false
       });
       const newCampaign = await campaignInstance.save();
@@ -780,6 +785,7 @@ const rootMutations = {
         batch_size:
           campaign.batch_size ||
           Number(getConfig("DEFAULT_BATCHSIZE", organization) || 300),
+        response_window: campaign.response_window,
         is_started: false,
         is_archived: false,
         join_token: uuidv4()

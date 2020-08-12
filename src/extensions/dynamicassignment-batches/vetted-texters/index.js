@@ -1,4 +1,4 @@
-import { accessRequired } from "../../../server/api/errors";
+import { cacheableData } from "../../../server/models";
 
 export const requestNewBatchCount = async ({
   organization,
@@ -17,9 +17,12 @@ export const requestNewBatchCount = async ({
     return 0;
   }
   // ACCESS
-  try {
-    await accessRequired(texter, organization.id, "VETTED_TEXTER");
-  } catch (err) {
+  const isVetted = await cacheableData.user.userHasRole(
+    texter.id === assignment.user_id ? texter : { id: assignment.user_id },
+    campaign.organization_id,
+    "VETTED_TEXTER"
+  );
+  if (!isVetted) {
     return 0;
   }
 
