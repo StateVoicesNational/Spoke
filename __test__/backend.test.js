@@ -528,8 +528,17 @@ describe("graphql test suite", async () => {
           description: "This is my new campaign",
           is_started: false,
           is_archived: false,
-          use_dynamic_assignment: true,
-          due_by: new Date()
+          due_by: new Date(),
+          features: '{ "MY_FEATURE": "value 1" }',
+          intro_html: "<p>This is my intro HTML.</p>",
+          primary_color: "#112233",
+          logo_image_url: "https://www.example.com/image1",
+          override_organization_texting_hours: true,
+          texting_hours_enforced: true,
+          texting_hours_start: 13,
+          texting_hours_end: 14,
+          timezone: "MY_TZ",
+          use_dynamic_assignment: true
         }).save();
         grandpaInteraction = new InteractionStep({
           campaign_id: campaign.id,
@@ -595,9 +604,33 @@ describe("graphql test suite", async () => {
         );
       });
       test("creates and returns a copy of the campaign", () => {
+        // The IDs should be different.
         expect(campaign.id).not.toEqual(copiedCampaign.id);
-        expect(campaign.description).toEqual(copiedCampaign.description);
+        // The title should start with the "COPY - " prefix.
         expect(copiedCampaign.title).toEqual(`COPY - ${campaign.title}`);
+        // All of the other properties should be identical.
+        expect(campaign.description).toEqual(copiedCampaign.description);
+        expect(campaign.due_by).toEqual(copiedCampaign.due_by);
+        expect(campaign.features).toEqual(copiedCampaign.features);
+        expect(campaign.intro_html).toEqual(copiedCampaign.intro_html);
+        expect(campaign.primary_color).toEqual(copiedCampaign.primary_color);
+        expect(campaign.logo_image_url).toEqual(copiedCampaign.logo_image_url);
+        expect(campaign.override_organization_texting_hours).toEqual(
+          copiedCampaign.override_organization_texting_hours
+        );
+        expect(campaign.texting_hours_enforced).toEqual(
+          copiedCampaign.texting_hours_enforced
+        );
+        expect(campaign.texting_hours_start).toEqual(
+          copiedCampaign.texting_hours_start
+        );
+        expect(campaign.texting_hours_end).toEqual(
+          copiedCampaign.texting_hours_end
+        );
+        expect(campaign.timezone).toEqual(copiedCampaign.timezone);
+        expect(campaign.use_dynamic_assignment).toEqual(
+          copiedCampaign.use_dynamic_assignment
+        );
       });
       test("the copied campaign has the same canned response as the original one", async () => {
         const originalCannedResponseP = queryHelper(
