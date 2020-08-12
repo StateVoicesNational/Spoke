@@ -529,7 +529,7 @@ describe("graphql test suite", async () => {
           is_started: false,
           is_archived: false,
           due_by: new Date(),
-          features: '{ "MY_FEATURE": "value 1" }',
+          features: JSON.stringify({ MY_FEATURE: "value 1" }),
           intro_html: "<p>This is my intro HTML.</p>",
           primary_color: "#112233",
           logo_image_url: "https://www.example.com/image1",
@@ -605,7 +605,7 @@ describe("graphql test suite", async () => {
       });
       test("creates and returns a copy of the campaign", () => {
         // The IDs should be different.
-        expect(campaign.id).not.toEqual(copiedCampaign.id);
+        expect(copiedCampaign.id).not.toEqual(campaign.id);
         // The title should start with the "COPY - " prefix.
         expect(copiedCampaign.title).toEqual(`COPY - ${campaign.title}`);
         // The copy should not be started.
@@ -613,32 +613,40 @@ describe("graphql test suite", async () => {
         // The copy should not be archived.
         expect(copiedCampaign.is_archived).toEqual(false);
         // All of the other properties should be identical.
-        expect(campaign.description).toEqual(copiedCampaign.description);
+        expect(copiedCampaign.description).toEqual(campaign.description);
         if (typeof copiedCampaign.due_by === "number") {
           let parsedDate = new Date(copiedCampaign.due_by);
-          expect(campaign.due_by).toEqual(parsedDate);
+          expect(parsedDate).toEqual(campaign.due_by);
         } else {
-          expect(campaign.due_by).toEqual(copiedCampaign.due_by);
+          expect(copiedCampaign.due_by).toEqual(campaign.due_by);
         }
-        expect(campaign.features).toEqual(copiedCampaign.features);
-        expect(campaign.intro_html).toEqual(copiedCampaign.intro_html);
-        expect(campaign.primary_color).toEqual(copiedCampaign.primary_color);
-        expect(campaign.logo_image_url).toEqual(copiedCampaign.logo_image_url);
-        expect(!!campaign.override_organization_texting_hours).toEqual(
-          !!copiedCampaign.override_organization_texting_hours
+        if (
+          typeof copiedCampaign.features === "object" &&
+          copiedCampaign.features
+        ) {
+          let jsonString = JSON.stringify(copiedCampaign.features);
+          expect(jsonString).toEqual(campaign.features);
+        } else {
+          expect(copiedCampaign.features).toEqual(campaign.features);
+        }
+        expect(copiedCampaign.intro_html).toEqual(campaign.intro_html);
+        expect(copiedCampaign.primary_color).toEqual(campaign.primary_color);
+        expect(copiedCampaign.logo_image_url).toEqual(campaign.logo_image_url);
+        expect(!!copiedCampaign.override_organization_texting_hours).toEqual(
+          !!campaign.override_organization_texting_hours
         );
-        expect(!!campaign.texting_hours_enforced).toEqual(
-          !!copiedCampaign.texting_hours_enforced
+        expect(!!copiedCampaign.texting_hours_enforced).toEqual(
+          !!campaign.texting_hours_enforced
         );
-        expect(campaign.texting_hours_start).toEqual(
-          copiedCampaign.texting_hours_start
+        expect(copiedCampaign.texting_hours_start).toEqual(
+          campaign.texting_hours_start
         );
-        expect(campaign.texting_hours_end).toEqual(
-          copiedCampaign.texting_hours_end
+        expect(copiedCampaign.texting_hours_end).toEqual(
+          campaign.texting_hours_end
         );
-        expect(campaign.timezone).toEqual(copiedCampaign.timezone);
-        expect(!!campaign.use_dynamic_assignment).toEqual(
-          !!copiedCampaign.use_dynamic_assignment
+        expect(copiedCampaign.timezone).toEqual(campaign.timezone);
+        expect(!!copiedCampaign.use_dynamic_assignment).toEqual(
+          !!campaign.use_dynamic_assignment
         );
       });
       test("the copied campaign has the same canned response as the original one", async () => {
