@@ -5,6 +5,7 @@ import Chart from "../components/Chart";
 import { Card, CardTitle, CardText } from "material-ui/Card";
 import LinearProgress from "material-ui/LinearProgress";
 import TexterStats from "../components/TexterStats";
+import OrganizationJoinLink from "../components/OrganizationJoinLink";
 import Snackbar from "material-ui/Snackbar";
 import { withRouter } from "react-router";
 import { StyleSheet, css } from "aphrodite";
@@ -179,9 +180,8 @@ class AdminCampaignStats extends React.Component {
 
   render() {
     const { data, params } = this.props;
-    const { organizationId, campaignId } = params;
+    const { adminPerms, organizationId, campaignId } = params;
     const campaign = data.campaign;
-    const { adminPerms } = this.props.params;
     const currentExportJob = this.props.data.campaign.pendingJobs.filter(
       job => job.jobType === "export"
     )[0];
@@ -311,6 +311,13 @@ class AdminCampaignStats extends React.Component {
             </div>
           </div>
         </div>
+        {campaign.joinToken && campaign.useDynamicAssignment ? (
+          <OrganizationJoinLink
+            organizationUuid={campaign.joinToken}
+            campaignId={campaignId}
+          />
+        ) : null}
+
         <div className={css(styles.container)}>
           <div className={css(styles.flexColumn, styles.spacer)}>
             <Stat title="Contacts" count={campaign.contactsCount} />
@@ -376,6 +383,7 @@ const queries = {
           title
           isArchived
           isArchivedPermanently
+          joinToken
           useDynamicAssignment
           useOwnMessagingService
           messageserviceSid
