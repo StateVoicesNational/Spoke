@@ -8,3 +8,4 @@ Previously roles on Spoke included 'Admin', 'Texter', and 'Owner'. We currently 
     * Edit the interaction script.
     * Create canned responses for a campaign.
 4) Texter - This user can only see their todos for their assigned campaigns
+5) Suspended - This user should have no access

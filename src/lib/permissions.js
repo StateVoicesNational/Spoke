@@ -1,6 +1,7 @@
 export const ROLE_HIERARCHY = [
   "SUSPENDED",
   "TEXTER",
+  "VETTED_TEXTER",
   "SUPERVOLUNTEER",
   "ADMIN",
   "OWNER"
@@ -20,3 +21,6 @@ export const hasRole = (role, roles) =>
 
 export const rolesEqualOrGreater = role =>
   ROLE_HIERARCHY.slice(ROLE_HIERARCHY.indexOf(role));
+
+export const rolesEqualOrLess = role =>
+  ROLE_HIERARCHY.slice(0, ROLE_HIERARCHY.indexOf(role) + 1);

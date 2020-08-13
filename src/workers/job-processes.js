@@ -1,3 +1,7 @@
+// Jobs are potentially long-running background processing operations
+// that are tracked in the database via the JobRequest table.
+// See src/extensions/job-runners/README.md for more details
+
 import { r } from "../server/models";
 import { sleep, getNextJob } from "./lib";
 import { log } from "../lib";
@@ -11,28 +15,48 @@ import {
   fixOrgless,
   clearOldJobs,
   importScript,
-  buyPhoneNumbers
+  buyPhoneNumbers,
+  startCampaignWithPhoneNumbers
 } from "./jobs";
 import { setupUserNotificationObservers } from "../server/notifications";
 
 export { seedZipCodes } from "../server/seeds/seed-zip-codes";
 
-/* Two process models are supported in this file.
+/* For the 'legacy' job runner when JOBS_SAME_PROCESS is false:
    The main in both cases is to process jobs and send/receive messages
    on separate loop(s) from the web server.
    * job processing (e.g. contact loading) shouldn't delay text message processing
 
    The two process models:
    * Run the 'scripts' in dev-tools/Procfile.dev
- */
+*/
 
 const JOBS_SAME_PROCESS = !!process.env.JOBS_SAME_PROCESS;
 
-const jobMap = {
-  export: exportCampaign,
-  assign_texters: assignTexters,
-  import_script: importScript,
-  buy_phone_numbers: buyPhoneNumbers
+export const Jobs = Object.freeze({
+  EXPORT: "export",
+  ASSIGN_TEXTERS: "assign_texters",
+  IMPORT_SCRIPT: "import_script",
+  BUY_PHONE_NUMBERS: "buy_phone_numbers",
+  START_CAMPAIGN_WITH_PHONE_NUMBERS: "start_campaign_with_phone_numbers"
+});
+
+const jobMap = Object.freeze({
+  [Jobs.EXPORT]: exportCampaign,
+  [Jobs.ASSIGN_TEXTERS]: assignTexters,
+  [Jobs.IMPORT_SCRIPT]: importScript,
+  [Jobs.BUY_PHONE_NUMBERS]: buyPhoneNumbers,
+  [Jobs.START_CAMPAIGN_WITH_PHONE_NUMBERS]: startCampaignWithPhoneNumbers
+});
+
+export const invokeJobFunction = async job => {
+  if (job.job_type in jobMap) {
+    await jobMap[job.job_type](job);
+  } else if (job.job_type.startsWith("ingest.")) {
+    await dispatchContactIngestLoad(job);
+  } else {
+    throw new Error(`Job of type ${job.job_type} not found`);
+  }
 };
 
 export async function processJobs() {

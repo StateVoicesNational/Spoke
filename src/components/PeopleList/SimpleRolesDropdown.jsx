@@ -18,6 +18,7 @@ const SimpleRolesDropdown = props => (
         value={option}
         primaryText={`${option.charAt(0).toUpperCase()}${option
           .substring(1)
+          .replace("_", " ")
           .toLowerCase()}`}
       />
     ))}
@@ -25,7 +26,7 @@ const SimpleRolesDropdown = props => (
 );
 
 SimpleRolesDropdown.propTypes = {
-  selectedRole: type.object,
+  selectedRole: type.string,
   onChange: type.func
 };
 

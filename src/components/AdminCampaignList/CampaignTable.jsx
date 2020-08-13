@@ -11,6 +11,7 @@ import theme from "../../styles/theme";
 import Empty from "../Empty";
 import DataTables from "material-ui-datatables";
 import { CircularProgress } from "material-ui";
+import { SORTS, TIMEZONE_SORT } from "./SortBy";
 
 const inlineStyles = {
   past: {
@@ -62,7 +63,8 @@ export class CampaignTable extends React.Component {
     onPreviousPageClick: PropTypes.func,
     onRowSizeChange: PropTypes.func,
     campaignsToArchive: PropTypes.array,
-    campaignsWithChangingStatus: PropTypes.array
+    campaignsWithChangingStatus: PropTypes.array,
+    currentSortBy: PropTypes.oneOf(SORTS.map(s => s.value))
   };
 
   state = {
@@ -78,6 +80,9 @@ export class CampaignTable extends React.Component {
       return <CircularProgress size={25} />;
     }
     if (campaign.isArchived) {
+      if (campaign.isArchivedPermanently) {
+        return null;
+      }
       return (
         <IconButton
           tooltip="Unarchive"
@@ -117,8 +122,21 @@ export class CampaignTable extends React.Component {
     return sorts[key];
   }
 
-  prepareTableColumns(organization) {
+  prepareTableColumns(organization, campaigns) {
     const extraRows = [];
+    const needsResponseCol = campaigns.some(
+      c => c.completionStats.needsResponseCount
+    );
+    if (needsResponseCol) {
+      extraRows.push({
+        label: "Needs Response",
+        render: (columnKey, row) =>
+          row.completionStats.needsResponseCount || "",
+        style: {
+          width: "5em"
+        }
+      });
+    }
     if (this.props.adminPerms) {
       extraRows.push({
         label: "Archive",
@@ -129,8 +147,21 @@ export class CampaignTable extends React.Component {
       });
     }
 
+    const timezoneColumn = [];
+    // only show the timezone column when we're currently sorting by timezone
+    if (this.props.currentSortBy === TIMEZONE_SORT.value) {
+      timezoneColumn.push({
+        key: "timezone",
+        label: "Timezone",
+        sortable: false,
+        style: {
+          width: "5em"
+        }
+      });
+    }
+
     return [
-      // id, title, user, contactcount, unassigned, unmessaged, due date, archive
+      // id, timezone (if current sort), title, user, contactcount, unassigned, unmessaged, due date, archive
       {
         key: "id",
         label: "id",
@@ -139,6 +170,7 @@ export class CampaignTable extends React.Component {
           width: "5em"
         }
       },
+      ...timezoneColumn,
       {
         key: "title",
         label: "Campaign",
@@ -195,6 +227,12 @@ export class CampaignTable extends React.Component {
                     )
                   ))) ||
                   ""}
+                {campaign.completionStats.errorCount &&
+                campaign.completionStats.errorCount > 50 ? (
+                  <span> Errors: {campaign.completionStats.errorCount} </span>
+                ) : (
+                  ""
+                )}
               </div>
             </div>
           );
@@ -278,7 +316,6 @@ export class CampaignTable extends React.Component {
     const { campaigns, pageInfo } = this.props.data.organization.campaigns;
     const { limit, offset, total } = pageInfo;
     const displayPage = Math.floor(offset / limit) + 1;
-    console.log("CampaignTable", campaigns);
     return campaigns.length === 0 ? (
       <Empty title="No campaigns" icon={<SpeakerNotesIcon />} />
     ) : (
@@ -286,7 +323,10 @@ export class CampaignTable extends React.Component {
         <DataTables
           key={this.state.dataTableKey}
           data={campaigns}
-          columns={this.prepareTableColumns(this.props.data.organization)}
+          columns={this.prepareTableColumns(
+            this.props.data.organization,
+            campaigns
+          )}
           multiSelectable={this.props.selectMultiple}
           selectable={this.props.selectMultiple}
           enableSelectAll={true}

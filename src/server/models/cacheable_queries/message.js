@@ -1,7 +1,7 @@
 import { r, Message } from "../../models";
 import campaignCache from "./campaign";
 import campaignContactCache from "./campaign-contact";
-import { getMessageHandlers } from "../../../integrations/message-handlers";
+import { getMessageHandlers } from "../../../extensions/message-handlers";
 // QUEUE
 // messages-<contactId>
 // Expiration: 24 hours after last message added
@@ -221,7 +221,8 @@ const messageCache = {
     messageInstance,
     contact,
     /* unreliable: */ campaign,
-    organization
+    organization,
+    texter
   }) => {
     // 0. Gathers any missing data in the case of is_from_contact: campaign_contact_id
     // 1. Saves the messageInstance
@@ -229,7 +230,7 @@ const messageCache = {
     // 3. Updates all the related caches
 
     // console.log('message SAVE', contact, messageInstance)
-    const messageToSave = { ...messageInstance };
+    let messageToSave = { ...messageInstance };
     const handlers = getMessageHandlers();
     let newStatus = "needsResponse";
     let activeCellFound = null;
@@ -280,6 +281,7 @@ const messageCache = {
         )
         .map(h => handlers[h]);
       for (let i = 0, l = availableHandlers.length; i < l; i++) {
+        // NOTE: these handlers can alter messageToSave properties
         const result = await availableHandlers[i].preMessageSave({
           messageToSave,
           activeCellFound,
@@ -287,10 +289,14 @@ const messageCache = {
           newStatus,
           contact,
           campaign,
-          organization
+          organization,
+          texter
         });
-        if (result.cancel) {
+        if (result && result.cancel) {
           return result; // return without saving
+        }
+        if (result && result.messageToSave) {
+          messageToSave = result.messageToSave;
         }
         if (result && "matchError" in result) {
           matchError = result.matchError;
@@ -330,6 +336,11 @@ const messageCache = {
       await campaignCache.incrCount(campaignId, "needsResponseCount", 1);
     }
 
+    const retVal = {
+      message: messageToSave,
+      contactStatus: newStatus
+    };
+
     if (Object.keys(handlers).length && organization) {
       const availableHandlers = Object.keys(handlers)
         .filter(
@@ -346,18 +357,21 @@ const messageCache = {
           newStatus,
           contact,
           campaign,
-          organization
+          organization,
+          texter
         });
-        if (result && "newStatus" in result) {
-          newStatus = result.newStatus;
+        if (result) {
+          if ("newStatus" in result) {
+            retVal.contactStatus = result.newStatus;
+          }
+          if ("blockSend" in result) {
+            retVal.blockSend = result.blockSend;
+          }
         }
       }
     }
 
-    return {
-      message: messageToSave,
-      contactStatus: newStatus
-    };
+    return retVal;
   }
 };
 
