@@ -117,7 +117,14 @@ class AdminPhoneNumberInventory extends React.Component {
       {
         key: "areaCode",
         label: "Area Code",
-        style: inlineStyles.column
+        style: inlineStyles.column,
+        sortable: true
+      },
+      {
+        key: "state",
+        label: "State",
+        style: inlineStyles.column,
+        sortable: true
       },
       {
         key: "allocatedCount",
@@ -208,6 +215,16 @@ class AdminPhoneNumberInventory extends React.Component {
         availableCount: 0
       }));
     const tableData = [...newAreaCodeRows, ...phoneNumberCounts];
+    const handleSortOrderChange = (key, order) => {
+      tableData.sort((a, b) => {
+        if (order == "asc") {
+          return a[key] < b[key] ? 1 : -1;
+        }
+        if (order == "desc") {
+          return a[key] > b[key] ? 1 : -1;
+        }
+      });
+    };
     return (
       <div>
         <DataTables
@@ -217,6 +234,8 @@ class AdminPhoneNumberInventory extends React.Component {
           count={tableData.length}
           showFooterToolbar={false}
           showRowHover
+          initialSort={{ column: "areaCode", order: "desc" }}
+          onSortOrderChange={handleSortOrderChange}
         />
         <FloatingActionButton
           {...dataTest("buyPhoneNumbers")}
@@ -247,6 +266,7 @@ const queries = {
           twilioMessageServiceSid
           phoneNumberCounts {
             areaCode
+            state
             availableCount
             allocatedCount
           }

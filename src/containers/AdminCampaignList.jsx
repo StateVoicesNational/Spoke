@@ -363,6 +363,7 @@ const campaignInfoFragment = `
   title
   isStarted
   isArchived
+  isArchivedPermanently
   hasUnassignedContacts
   hasUnsentInitialMessages
   description

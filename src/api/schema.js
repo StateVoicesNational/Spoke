@@ -70,7 +70,9 @@ const rootSchema = gql`
     primaryColor: String
     introHtml: String
     useDynamicAssignment: Boolean
+    requestAfterReply: Boolean
     batchSize: Int
+    responseWindow: Float
     ingestMethod: String
     contactData: String
     organizationId: String
@@ -86,10 +88,12 @@ const rootSchema = gql`
     textingHoursEnd: Int
     texterUIConfig: TexterUIConfigInput
     timezone: String
+    inventoryPhoneNumberCounts: [CampaignPhoneNumberInput!]
   }
 
   input OrganizationInput {
     texterUIConfig: TexterUIConfigInput
+    settings: OrgSettingsInput
   }
 
   input MessageInput {
@@ -158,6 +162,7 @@ const rootSchema = gql`
 
   type FoundContact {
     found: Boolean
+    assignment: Assignment
   }
 
   type PageInfo {
@@ -226,7 +231,7 @@ const rootSchema = gql`
       filterString: String
       filterBy: FilterPeopleBy
     ): UsersReturn
-    user(organizationId: ID!, userId: Int!): User
+    user(organizationId: String!, userId: Int): User
   }
 
   type RootMutation {
@@ -287,6 +292,7 @@ const rootSchema = gql`
     createOptOut(
       optOut: OptOutInput!
       campaignContactId: String!
+      noReply: Boolean
     ): CampaignContact
     editCampaignContactMessageStatus(
       messageStatus: String!
@@ -343,6 +349,7 @@ const rootSchema = gql`
       limit: Int!
       addToOrganizationMessagingService: Boolean
     ): JobRequest
+    releaseCampaignNumbers(campaignId: ID!): Campaign!
   }
 
   schema {
