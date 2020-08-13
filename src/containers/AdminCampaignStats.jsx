@@ -5,6 +5,7 @@ import Chart from "../components/Chart";
 import { Card, CardTitle, CardText } from "material-ui/Card";
 import LinearProgress from "material-ui/LinearProgress";
 import TexterStats from "../components/TexterStats";
+import OrganizationJoinLink from "../components/OrganizationJoinLink";
 import Snackbar from "material-ui/Snackbar";
 import { withRouter } from "react-router";
 import { StyleSheet, css } from "aphrodite";
@@ -179,9 +180,8 @@ class AdminCampaignStats extends React.Component {
 
   render() {
     const { data, params } = this.props;
-    const { organizationId, campaignId } = params;
+    const { adminPerms, organizationId, campaignId } = params;
     const campaign = data.campaign;
-    const { adminPerms } = this.props.params;
     const currentExportJob = this.props.data.campaign.pendingJobs.filter(
       job => job.jobType === "export"
     )[0];
@@ -191,7 +191,11 @@ class AdminCampaignStats extends React.Component {
     const exportLabel = currentExportJob
       ? `Exporting (${currentExportJob.status}%)`
       : "Export Data";
-
+    const {
+      campaignPhoneNumbersEnabled
+    } = this.props.organizationData.organization;
+    const showReleaseNumbers =
+      campaign.isArchived && campaignPhoneNumbersEnabled;
     return (
       <div>
         <div className={css(styles.container)}>
@@ -251,6 +255,7 @@ class AdminCampaignStats extends React.Component {
                         />, // unarchive
                         campaign.isArchived ? (
                           <RaisedButton
+                            disabled={campaign.isArchivedPermanently}
                             onTouchTap={async () =>
                               await this.props.mutations.unarchiveCampaign(
                                 campaignId
@@ -258,7 +263,7 @@ class AdminCampaignStats extends React.Component {
                             }
                             label="Unarchive"
                           />
-                        ) : null, // archive
+                        ) : null,
                         !campaign.isArchived ? (
                           <RaisedButton
                             onTouchTap={async () =>
@@ -288,6 +293,16 @@ class AdminCampaignStats extends React.Component {
                             }
                             label="Messaging Service"
                           />
+                        ) : null,
+                        showReleaseNumbers ? (
+                          <RaisedButton
+                            onTouchTap={async () =>
+                              this.props.mutations.releaseCampaignNumbers(
+                                campaignId
+                              )
+                            }
+                            label="Release Numbers"
+                          />
                         ) : null
                       ]
                     : null}
@@ -296,6 +311,13 @@ class AdminCampaignStats extends React.Component {
             </div>
           </div>
         </div>
+        {campaign.joinToken && campaign.useDynamicAssignment ? (
+          <OrganizationJoinLink
+            organizationUuid={campaign.joinToken}
+            campaignId={campaignId}
+          />
+        ) : null}
+
         <div className={css(styles.container)}>
           <div className={css(styles.flexColumn, styles.spacer)}>
             <Stat title="Contacts" count={campaign.contactsCount} />
@@ -360,8 +382,11 @@ const queries = {
           id
           title
           isArchived
+          isArchivedPermanently
+          joinToken
           useDynamicAssignment
           useOwnMessagingService
+          messageserviceSid
           assignments(assignmentsFilter: $assignmentsFilter) {
             id
             texter {
@@ -417,6 +442,21 @@ const queries = {
       },
       pollInterval: 5000
     })
+  },
+  organizationData: {
+    query: gql`
+      query getOrganizationData($organizationId: String!) {
+        organization(id: $organizationId) {
+          id
+          campaignPhoneNumbersEnabled
+        }
+      }
+    `,
+    options: ownProps => ({
+      variables: {
+        organizationId: ownProps.params.organizationId
+      }
+    })
   }
 };
 
@@ -462,6 +502,18 @@ const mutations = {
       }
     `,
     variables: { campaignId }
+  }),
+  releaseCampaignNumbers: ownProps => campaignId => ({
+    mutation: gql`
+      mutation releaseCampaignNumbers($campaignId: ID!) {
+        releaseCampaignNumbers(campaignId: $campaignId) {
+          id
+          messageserviceSid
+        }
+      }
+    `,
+    variables: { campaignId },
+    refetchQueries: () => ["getOrganizationData"]
   })
 };
 
