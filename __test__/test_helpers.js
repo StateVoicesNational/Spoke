@@ -261,7 +261,8 @@ export async function saveCampaign(
   user,
   campaign,
   title = "test campaign",
-  useOwnMessagingService = "false"
+  useOwnMessagingService = "false",
+  inventoryPhoneNumberCounts = undefined
 ) {
   const rootValue = {};
   const description = "test description";
@@ -281,7 +282,8 @@ export async function saveCampaign(
       title,
       description,
       organizationId,
-      useOwnMessagingService
+      useOwnMessagingService,
+      inventoryPhoneNumberCounts
     },
     campaignId: campaign.id
   };
