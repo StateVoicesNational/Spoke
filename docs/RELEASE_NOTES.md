@@ -24,7 +24,7 @@ This is a major release and therefore requires a schema change. See the deploy s
 - **_Experimental_ Phone number management for campaigns**: A much requested feature for scaling past the 400 phone numbers limit.
   - turn this on with `EXPERIMENTAL_CAMPAIGN_NUMBERS`
 - **_Experimental_ Release Texts**: Dynamic Assignment will also include a way for texters to release texts! That way when a texter is done for the day they can release texts without admin needing to go in and reassign them.
-  - Turn this on with <release texts var>
+  - Toggle this on and off in the settings menu
 - **texter-sidebox extension improvements**: (SummaryComponent, Empty context)
 - **new message-handler `to-ascii`**: converts smart quotes and special dash characters to ascii. That way unicode wont surprisingly enlarge the message size.
 - VAN action handler improvements
