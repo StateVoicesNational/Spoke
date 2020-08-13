@@ -10,12 +10,13 @@ import {
 import { log, gunzip, zipToTimeZone, convertOffsetsToStrings } from "../lib";
 import { updateJob } from "./lib";
 import serviceMap from "../server/api/lib/services";
+import twilio from "../server/api/lib/twilio";
 import {
   getLastMessage,
   saveNewIncomingMessage
 } from "../server/api/lib/message-sending";
 import importScriptFromDocument from "../server/api/lib/import-script";
-import { rawIngestMethod } from "../integrations/contact-loaders";
+import { rawIngestMethod } from "../extensions/contact-loaders";
 
 import AWS from "aws-sdk";
 import Papa from "papaparse";
@@ -23,6 +24,7 @@ import moment from "moment";
 import { sendEmail } from "../server/mail";
 import { Notifications, sendUserNotification } from "../server/notifications";
 import { getConfig } from "../server/api/lib/config";
+import { invokeTaskFunction, Tasks } from "./tasks";
 
 const defensivelyDeleteOldJobsForCampaignJobType = async job => {
   console.log("job", job);
@@ -564,6 +566,7 @@ export async function assignTexters(job) {
           .knex("assignment")
           .where({ id: existingAssignment.id })
           .update({ max_contacts: maxContacts });
+        cacheableData.assignment.clear(existingAssignment.id);
       }
     } else {
       assignment = await new Assignment({
@@ -626,21 +629,9 @@ export async function assignTexters(job) {
 
   if (campaign.is_started) {
     console.log("assignTexterscache1", job.campaign_id);
-    if (global.TEST_ENVIRONMENT) {
-      // await the full thing if we are testing to avoid async blocks
-      await cacheableData.campaignContact.updateCampaignAssignmentCache(
-        job.campaign_id
-      );
-    } else {
-      cacheableData.campaignContact
-        .updateCampaignAssignmentCache(job.campaign_id)
-        .then(res => {
-          console.log("assignTexterscache Loaded", job.campaign_id, res);
-        })
-        .catch(err => {
-          console.log("assignTexterscache Error", job.campaign_id, err);
-        });
-    }
+    await cacheableData.campaignContact.updateCampaignAssignmentCache(
+      job.campaign_id
+    );
   }
 
   if (job.id) {
@@ -759,6 +750,7 @@ export async function exportCampaign(job) {
         "contact[optOut]": optOuts.find(ele => ele.cell === contact.cell)
           ? "true"
           : "false",
+        "contact[optOutRecord]": contact.is_opted_out,
         "contact[messageStatus]": contact.message_status,
         "contact[errorCode]": contact.error_code,
         "contact[external_id]": contact.external_id,
@@ -1154,6 +1146,111 @@ export async function buyPhoneNumbers(job) {
     });
   } catch (err) {
     log.error(`JOB ${job.id} FAILED: ${err.message}`, err);
+  } finally {
+    await defensivelyDeleteJob(job);
+  }
+}
+
+// Prepares a messaging service with owned number for the campaign
+async function prepareTwilioCampaign(campaign, organization, trx) {
+  const ts = Math.floor(new Date() / 1000);
+  const friendlyName = `Campaign ${campaign.id}: ${campaign.organization_id}-${ts} [${process.env.BASE_URL}]`;
+  const messagingService = await twilio.createMessagingService(
+    organization,
+    friendlyName
+  );
+  const msgSrvSid = messagingService.sid;
+  if (!msgSrvSid) {
+    throw new Error("Failed to create messaging service!");
+  }
+  const phoneSids = await trx("owned_phone_number")
+    .select("service_id")
+    .where({
+      organization_id: campaign.organization_id,
+      service: "twilio",
+      allocated_to: "campaign",
+      allocated_to_id: campaign.id.toString()
+    })
+    .map(row => row.service_id);
+  console.log(`Transferring ${phoneSids.length} numbers to ${msgSrvSid}`);
+  try {
+    await twilio.addNumbersToMessagingService(
+      organization,
+      phoneSids,
+      msgSrvSid
+    );
+  } catch (e) {
+    console.error("Failed to add numbers to messaging service", e);
+    await twilio.deleteMessagingService(organization, msgSrvSid);
+    throw new Error("Failed to add numbers to messaging service");
+  }
+  return msgSrvSid;
+}
+
+// Start a campaign when EXPERIMENTAL_CAMPAIGN_PHONE_NUMBERS is enabled
+// TODO: refactor this to share more code with the startCampaign mutation
+export async function startCampaignWithPhoneNumbers(job) {
+  if (!job.campaign_id) {
+    throw new Error("Missing job.campaign_id");
+  }
+  try {
+    let organization;
+    await r.knex.transaction(async trx => {
+      const campaign = await trx("campaign")
+        .where("id", job.campaign_id)
+        // PG only: lock this campaign while starting, making this job idempotent
+        .forUpdate()
+        .first();
+      if (campaign.is_started) {
+        throw new Error("Campaign already started");
+      }
+      organization = await trx("organization")
+        .where("id", campaign.organization_id)
+        .first();
+      const service = getConfig("DEFAULT_SERVICE", organization);
+
+      let messagingServiceSid;
+      if (service === "twilio") {
+        messagingServiceSid = await prepareTwilioCampaign(
+          campaign,
+          organization,
+          trx
+        );
+      } else if (service === "fakeservice") {
+        // simulate some latency
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        messagingServiceSid = "FAKEMESSAGINGSERVICE";
+      } else {
+        throw new Error(
+          `Campaign phone numbers are not supported for service ${service}`
+        );
+      }
+
+      await trx("campaign")
+        .where("id", campaign.id)
+        .update({
+          is_started: true,
+          use_own_messaging_service: true,
+          messageservice_sid: messagingServiceSid
+        });
+    });
+
+    await cacheableData.campaign.clear(job.campaign_id);
+    const reloadedCampaign = await cacheableData.campaign.load(job.campaign_id);
+
+    await sendUserNotification({
+      type: Notifications.CAMPAIGN_STARTED,
+      campaignId: job.campaign_id
+    });
+
+    // We are already in an background job process, so invoke the task directly rather than
+    // kicking it off through the dispatcher
+    await invokeTaskFunction(Tasks.CAMPAIGN_START_CACHE, {
+      organization,
+      campaign: reloadedCampaign
+    });
+  } catch (e) {
+    console.error(`Job ${job.id} failed: ${e.message}`, e);
   } finally {
     await defensivelyDeleteJob(job);
   }

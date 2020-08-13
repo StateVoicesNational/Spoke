@@ -80,6 +80,9 @@ export class CampaignTable extends React.Component {
       return <CircularProgress size={25} />;
     }
     if (campaign.isArchived) {
+      if (campaign.isArchivedPermanently) {
+        return null;
+      }
       return (
         <IconButton
           tooltip="Unarchive"

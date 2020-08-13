@@ -21,7 +21,7 @@ Just enabling a contact loader is the first step, but contact loaders often
 have additional context required for them to be visible (e.g. for datawarehouse, many `WAREHOUSE_DB_*`
 environment variables need to be present (along with the user being a super-admin).
 
-The server admin can look at the ingest loader index.js file in `src/integrations/contact-loaders/<CONTACT LOADER NAME>`
+The server admin can look at the ingest loader index.js file in `src/extensions/contact-loaders/<CONTACT LOADER NAME>`
 inside the function `serverAdministratorInstructions`
 (this data might sometime be visible to superadmins on a documentation page)
 
@@ -34,7 +34,7 @@ DEFAULT_SERVICE=fakeservice
 The best way to make a new contact loader is something like this in the codebase:
 
 ```
-cd src/integrations/contact-loaders
+cd src/extensions/contact-loaders
 cp -rp test-fakedata <NEW_CONTACT_LOADER_NAME>
 ```
 

@@ -58,6 +58,10 @@ export const MESSAGE_STATUSES = {
   closed: {
     name: "Closed",
     children: []
+  },
+  needsResponseExpired: {
+    name: "Expired Needs Response",
+    children: []
   }
 };
 

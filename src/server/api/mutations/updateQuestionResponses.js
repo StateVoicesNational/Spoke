@@ -1,16 +1,17 @@
 import { log } from "../../../lib";
 import { assignmentRequiredOrAdminRole } from "../errors";
 import { cacheableData } from "../../models";
-import { jobRunner } from "../../../integrations/job-runners";
+import { jobRunner } from "../../../extensions/job-runners";
 import { Tasks } from "../../../workers/tasks";
 
-const ActionHandlers = require("../../../integrations/action-handlers");
+const ActionHandlers = require("../../../extensions/action-handlers");
 
 const dispatchActionHandlers = async ({
   user,
   contact,
   campaign,
-  questionResponses
+  questionResponses,
+  questionResponsesStatus
 }) => {
   const actionHandlersConfigured =
     Object.keys(ActionHandlers.rawAllActionHandlers()).length > 0;
@@ -32,36 +33,75 @@ const dispatchActionHandlers = async ({
       campaign.organization_id
     );
 
-    await Promise.all(
-      questionResponses.map(async questionResponse => {
+    const findInteractionStep = (value, interactionStepId) => {
+      return interactionSteps.find(is => {
+        return (
+          is.answer_actions &&
+          is.answer_option === value &&
+          is.parent_interaction_id === Number(interactionStepId)
+        );
+      });
+    };
+
+    return Promise.all([
+      ...questionResponses.map(async questionResponse => {
         const { interactionStepId, value } = questionResponse;
 
-        const questionResponseInteractionStep = interactionSteps.find(
-          is =>
-            is.answer_actions &&
-            is.answer_option === value &&
-            is.parent_interaction_id === Number(interactionStepId)
-        );
+        const updatedPreviousValue =
+          questionResponsesStatus.newOrUpdated[interactionStepId.toString()];
 
-        const interactionStepAction =
-          questionResponseInteractionStep &&
-          questionResponseInteractionStep.answer_actions;
-
-        if (!interactionStepAction) {
-          return;
+        if (updatedPreviousValue === undefined) {
+          return Promise.resolve();
         }
 
-        await jobRunner.dispatchTask(Tasks.ACTION_HANDLER_QUESTION_RESPONSE, {
+        const interactionStep = findInteractionStep(value, interactionStepId);
+
+        const interactionStepAction =
+          interactionStep && interactionStep.answer_actions;
+
+        if (!interactionStepAction) {
+          return Promise.resolve();
+        }
+        return jobRunner.dispatchTask(Tasks.ACTION_HANDLER_QUESTION_RESPONSE, {
           name: interactionStepAction,
           organization,
           user,
           questionResponse,
-          questionResponseInteractionStep,
+          interactionStep,
           campaign,
-          contact
+          contact,
+          wasDeleted: false,
+          previousValue: updatedPreviousValue
+        });
+      }),
+      ...questionResponsesStatus.deleted.map(async deletedQr => {
+        const { interactionStepId, value } = deletedQr;
+        const interactionStep = findInteractionStep(value, interactionStepId);
+
+        const interactionStepAction =
+          interactionStep && interactionStep.answer_actions;
+
+        if (!interactionStepAction) {
+          return Promise.resolve();
+        }
+
+        return jobRunner.dispatchTask(Tasks.ACTION_HANDLER_QUESTION_RESPONSE, {
+          name: interactionStepAction,
+          organization,
+          user,
+          questionResponse: {
+            interactionStepId: interactionStepId.toString(),
+            value,
+            campaignContactId: contact.id
+          },
+          interactionStep,
+          campaign,
+          contact,
+          wasDeleted: true,
+          previousValue: value
         });
       })
-    );
+    ]);
   }
 };
 
@@ -79,7 +119,30 @@ export const updateQuestionResponses = async (
     contact
   );
 
-  await cacheableData.questionResponse
+  const questionResponsesHash = {};
+  questionResponses.forEach(questionResponse => {
+    questionResponsesHash[
+      questionResponse.interactionStepId
+    ] = questionResponse;
+  });
+
+  const oldQuestionResponses = await cacheableData.questionResponse.query(
+    campaignContactId
+  );
+  oldQuestionResponses.forEach(oldQuestionResponse => {
+    const newQuestionResponse =
+      questionResponsesHash[oldQuestionResponse.interaction_step_id];
+    if (
+      newQuestionResponse &&
+      newQuestionResponse.value === oldQuestionResponse.value
+    ) {
+      delete questionResponsesHash[
+        oldQuestionResponse.interaction_step_id.toString()
+      ];
+    }
+  });
+
+  const questionResponsesStatus = await cacheableData.questionResponse
     .save(campaignContactId, questionResponses)
     .catch(err => {
       log.error(
@@ -94,7 +157,8 @@ export const updateQuestionResponses = async (
       user,
       questionResponses,
       campaign,
-      contact
+      contact,
+      questionResponsesStatus
     });
   } catch (e) {
     console.error("Dispatching to one or more action handlers failed", e);
