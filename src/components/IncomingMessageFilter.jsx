@@ -75,7 +75,7 @@ class IncomingMessageFilter extends Component {
 
     this.state = {
       selectedCampaigns: [],
-      messageTextFilter: "",
+      messageTextFilter: this.props.messageTextFilter,
       tagsFilter: this.props.tagsFilter
     };
   }
@@ -220,6 +220,8 @@ class IncomingMessageFilter extends Component {
       return left.text.localeCompare(right.text, "en", { sensitivity: "base" });
     });
 
+    this.state.texterSearchText = this.props.texterSearchText;
+
     return (
       <Card>
         <CardHeader title="Message Filter" actAsExpander showExpandableButton />
@@ -324,6 +326,7 @@ class IncomingMessageFilter extends Component {
               <TextField
                 hintText="Search message text"
                 floatingLabelText="Search message text"
+                value={this.state.messageTextFilter}
                 onChange={(_, messageTextFilter) => {
                   this.setState({ messageTextFilter });
                 }}
@@ -377,7 +380,9 @@ IncomingMessageFilter.propTypes = {
   }).isRequired,
   onTagsFilterChanged: type.func.isRequired,
   tags: type.arrayOf(type.object).isRequired,
-  tagsFilter: type.object.isRequired
+  tagsFilter: type.object.isRequired,
+  messageTextFilter: type.string,
+  texterSearchText: type.string
 };
 
 export default IncomingMessageFilter;
