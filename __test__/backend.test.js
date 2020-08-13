@@ -614,7 +614,10 @@ describe("graphql test suite", async () => {
         expect(copiedCampaign.is_archived).toEqual(false);
         // All of the other properties should be identical.
         expect(copiedCampaign.description).toEqual(campaign.description);
-        if (typeof copiedCampaign.due_by === "number") {
+        if (
+          typeof copiedCampaign.due_by === "number" ||
+          typeof copiedCampaign.due_by === "string"
+        ) {
           let parsedDate = new Date(copiedCampaign.due_by);
           expect(parsedDate).toEqual(campaign.due_by);
         } else {
