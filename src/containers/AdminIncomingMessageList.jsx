@@ -12,6 +12,7 @@ import gql from "graphql-tag";
 import loadData from "./hoc/load-data";
 import { withRouter } from "react-router";
 import PaginatedUsersRetriever from "./PaginatedUsersRetriever";
+import * as queryString from "query-string";
 
 function getCampaignsFilterForCampaignArchiveStatus(
   includeActiveCampaigns,
@@ -73,13 +74,14 @@ export class AdminIncomingMessageList extends Component {
   constructor(props) {
     super(props);
 
+    const params = queryString.parse(document.location.search);
     this.state = {
       page: 0,
       pageSize: 10,
       campaignsFilter: { isArchived: false },
       contactsFilter: { isOptedOut: false },
-      messageTextFilter: "",
-      assignmentsFilter: {},
+      messageTextFilter: params.messagetext ? params.messagetext : "",
+      assignmentsFilter: params.texterId ? { texterId: params.texterId } : {},
       needsRender: false,
       utc: Date.now().toString(),
       campaigns: [],
@@ -224,7 +226,20 @@ export class AdminIncomingMessageList extends Component {
 
   handleCampaignTextersReceived = async campaignTexters => {
     console.log("handleCampaignTextersReceived", campaignTexters.length);
-    this.setState({ campaignTexters, needsRender: true });
+    let texterDisplayName = "";
+    if (this.state.assignmentsFilter.texterId) {
+      const texter = campaignTexters.find(texter => {
+        return texter.id === this.state.assignmentsFilter.texterId;
+      });
+      if (texter) {
+        texterDisplayName = texter.displayName;
+      }
+    }
+    this.setState({
+      campaignTexters,
+      texterSearchText: texterDisplayName,
+      needsRender: true
+    });
   };
 
   handleReassignmentTextersReceived = async reassignmentTexters => {
@@ -398,6 +413,8 @@ export class AdminIncomingMessageList extends Component {
             onTagsFilterChanged={this.handleTagsFilterChanged}
             tagsFilter={this.state.tagsFilter}
             tags={this.props.organization.organization.tags}
+            messageTextFilter={this.state.messageTextFilter}
+            texterSearchText={this.state.texterSearchText}
           />
           <br />
           <IncomingMessageActions
