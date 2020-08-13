@@ -8,7 +8,7 @@ _August 2020:_ Version 8.0
 This is a major release and therefore requires a schema change. See the deploy steps section for details. Anything marked as experimental has not yet been tested on a production texting campaign. We're marking this as a major version update 8.0 because there are several backwards-incompatible changes that we believe are important and valuable.
 
 ### Backwards incompatible Changes
-- **Dynamic Assignment is changing**: After a lot of feedback and some great inspiration from the [Warren Spoke](https://github.com/Elizabeth-Warren/Spoke) we're modifying dynamic assign. Texters will now request batch sizes instead of getting an endless stream of texts. The admin can customize the batch size and who is allowed to click request after their first batch. This feature is also optionally complemented by the new "release texts" feature which is mentioned under "New Features/Improvements"
+- **Dynamic Assignment is changing**: After a lot of feedback and some great inspiration from the [Warren Spoke](https://github.com/Elizabeth-Warren/Spoke) we're modifying dynamic assign. Texters will now request batch sizes instead of getting an endless stream of texts. The admin can customize the batch size and who is allowed to click request after their first batch. There is more documentation on this feature [here](https://github.com/MoveOnOrg/Spoke/blob/main/docs/HOWTO-use-dynamicassignment-batches.md).This feature is also optionally complemented by the new "release texts" feature which is mentioned under "New Features/Improvements"
 - **Old Texter UI is _no longer supported_**: We removed the `DEPRECATED_TEXTERUI` env variable and the old Texter UI is officially phased out
 - **Texter Sideboxes are now off by default**: You now need to enable options in organization Settings tab (they previously were just automatically enabled from the variable)
   - If your previously set TEXTER_SIDEBOXES, then you must add `default-dynamicassignment` (and we recommend adding other new ones listed in new features) for dynamic assignment to work. 
@@ -20,11 +20,11 @@ This is a major release and therefore requires a schema change. See the deploy s
 - There is a small migration to the `campaign` table which needs to be run before/during migration (either by leaving/disabling SUPPRESS_MIGRATIONS="" or for [AWS Lambda, see the db migration instructions](https://github.com/MoveOnOrg/Spoke/blob/main/docs/DEPLOYING_AWS_LAMBDA.md#migrating-the-database)
 
 ### New Features/Improvements
-- Use of Spoke is subject to legal restrictions which each organization should review and understand, including recent guidance from an FCC ruling. Spoke 8.0 has several changes related to this guidance and we recommend system administrators review the settings outlined in [link here](https://github.com/MoveOnOrg/Spoke/blob/stage-main-80-a/docs/REFERENCE-best-practices-conformance-messaging.md) along with consulting your own legal advice.
+- Use of Spoke is subject to legal restrictions which each organization should review and understand, including recent guidance from an FCC ruling. Spoke 8.0 has several changes related to this guidance and we recommend system administrators review the settings outlined [here](https://github.com/MoveOnOrg/Spoke/blob/main/docs/REFERENCE-best-practices-conformance-messaging.md) along with consulting your own legal advice.
 - **_Experimental_ Phone number management for campaigns**: A much requested feature for scaling past the 400 phone numbers limit.
   - turn this on with `EXPERIMENTAL_CAMPAIGN_NUMBERS`
 - **_Experimental_ Release Texts**: Dynamic Assignment will also include a way for texters to release texts! That way when a texter is done for the day they can release texts without admin needing to go in and reassign them.
-  - Turn this on with <release texts var>
+  - Toggle this on and off in the settings menu
 - **texter-sidebox extension improvements**: (SummaryComponent, Empty context)
 - **new message-handler `to-ascii`**: converts smart quotes and special dash characters to ascii. That way unicode wont surprisingly enlarge the message size.
 - VAN action handler improvements
