@@ -29,6 +29,10 @@ const getDocument = async documentId => {
   return result;
 };
 
+let actionHandlers = {};
+let namedStyles = [];
+const getNamedStyle = style =>
+  namedStyles.find(x => x.namedStyleType === style);
 const getParagraphStyle = getOr("", "paragraph.paragraphStyle.namedStyleType");
 const getTextRun = getOr("", "textRun.content");
 const sanitizeTextRun = textRun => textRun.replace("\n", "");
@@ -49,10 +53,26 @@ const getParagraphBold = compose(
   find(getTextRun),
   getOr([], "paragraph.elements")
 );
+const namedStyleBold = compose(
+  getOr(false, "textStyle.bold"),
+  getNamedStyle,
+  getParagraphStyle
+);
+const getParagraphItalic = compose(
+  getOr(false, "textRun.textStyle.italic"),
+  find(getTextRun),
+  getOr([], "paragraph.elements")
+);
+const namedStyleItalic = compose(
+  getOr(false, "textStyle.italic"),
+  getNamedStyle,
+  getParagraphStyle
+);
 const getParagraph = element => ({
   style: getParagraphStyle(element),
   indent: getParagraphIndent(element),
-  isParagraphBold: getParagraphBold(element),
+  isParagraphBold: namedStyleBold(element) || getParagraphBold(element),
+  isParagraphItalic: namedStyleItalic(element) || getParagraphItalic(element),
   text: getParagraphText(element)
 });
 const hasParagraph = has("paragraph");
@@ -113,6 +133,8 @@ const getInteractions = sections =>
   getSectionParagraphs(sections, "Interactions");
 const getCannedResponses = sections =>
   getSectionParagraphs(sections, "Canned Responses");
+const getActionHandlers = sections =>
+  getSectionParagraphs(sections, "Action Handlers");
 
 const isNextChunkAQuestion = (interactionParagraphs, currentIndent) =>
   interactionParagraphs.length > 1 &&
@@ -192,7 +214,17 @@ const makeInteractionHierarchy = (
       !interactionParagraphs[0].isParagraphBold
     ) {
       const interactionParagraph = interactionParagraphs.shift();
-      interactionsHierarchyNode.script.push(interactionParagraph.text);
+      if (interactionParagraph.isParagraphItalic) {
+        // Italic = action handler.
+        const handlerLabel = interactionParagraph.text.trim().toLowerCase();
+        const handler = actionHandlers[handlerLabel];
+        if (!handler) continue;
+        interactionsHierarchyNode.action = handler.name;
+        interactionsHierarchyNode.action_data = handler.data;
+      } else {
+        // Regular text, add to script.
+        interactionsHierarchyNode.script.push(interactionParagraph.text);
+      }
     }
 
     if (!interactionsHierarchyNode.script[0]) {
@@ -244,8 +276,8 @@ const saveInteractionsHierarchyNode = async (
       question: interactionsHierarchyNode.question || "",
       script: interactionsHierarchyNode.script.join("\n") || "",
       answer_option: interactionsHierarchyNode.answer || "",
-      answer_actions: "",
-      answer_actions_data: "",
+      answer_actions: interactionsHierarchyNode.action || "",
+      answer_actions_data: interactionsHierarchyNode.action_data || "",
       campaign_id: campaignId,
       is_deleted: false
     })
@@ -353,6 +385,39 @@ const replaceCannedResponsesInDatabase = async (
   });
 };
 
+const makeActionHandlersList = actionHandlerParagraphs => {
+  const actionHandlers = {};
+  while (actionHandlerParagraphs[0]) {
+    const handler = {};
+
+    const paragraph = actionHandlerParagraphs.shift();
+    if (!paragraph.isParagraphItalic) {
+      throw new Error(
+        `Action handler format error -- can't find a italic paragraph. Look for [${paragraph.text}]`
+      );
+    }
+    handler.label = paragraph.text;
+
+    while (
+      actionHandlerParagraphs[0] &&
+      !actionHandlerParagraphs[0].isParagraphItalic
+    ) {
+      handler.name = actionHandlerParagraphs.shift().text;
+      handler.data = actionHandlerParagraphs.shift().text;
+    }
+
+    if (!handler.name || !handler.data) {
+      throw new Error(
+        `Action handler format error -- handler missing name or data. Look for [${handler.label}]`
+      );
+    }
+
+    actionHandlers[handler.label.trim().toLowerCase()] = handler;
+  }
+
+  return actionHandlers;
+};
+
 const importScriptFromDocument = async (campaignId, scriptUrl) => {
   const match = scriptUrl.match(/document\/d\/(.*)\//);
   if (!match || !match[1]) {
@@ -369,7 +434,11 @@ const importScriptFromDocument = async (campaignId, scriptUrl) => {
     );
   }
   const document = result.data.body.content;
+  namedStyles = result.data.namedStyles.styles;
   const sections = getSections(document);
+
+  const actionHandlerParagraphs = getActionHandlers(sections) || [];
+  actionHandlers = makeActionHandlersList(_.clone(actionHandlerParagraphs));
 
   const interactionParagraphs = getInteractions(sections);
   const interactionsHierarchy = makeInteractionHierarchy(

@@ -12,7 +12,7 @@ import { r } from "../../../src/server/models";
 
 import { operations as assignmentTexterOps } from "../../../src/containers/AssignmentTexterContact";
 
-const ComplexTestActionHandler = require("../../../src/integrations/action-handlers/complex-test-action");
+const ComplexTestActionHandler = require("../../../src/extensions/action-handlers/complex-test-action");
 
 describe("mutations.updateContactTags", () => {
   let campaign;
