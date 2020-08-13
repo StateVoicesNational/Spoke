@@ -15,30 +15,43 @@ export const tests = testName => {
     ? String(global.document.location.search).match(/sideboxes=([^&]*)/)
     : null;
   const sideboxes = sideboxParam ? sideboxParam[1] : global.TEXTER_SIDEBOXES;
+  const sideboxChoices = (sideboxes && sideboxes.split(",")) || [];
+  const sideboxOptions = {};
+  sideboxChoices.forEach(sb => {
+    sideboxOptions[sb] = 1;
+  });
 
   const testData = {
     a: {
+      // initial message sending
       disabled: false,
       messageStatusFilter: "needsMessage",
       navigationToolbarChildren: {
-        onNext: logFunction,
+        onNext: null,
         onPrevious: logFunction,
-        title: "21 of 42",
+        title: "42 of 42",
         total: 42,
-        currentIndex: 21
+        currentIndex: 42
       },
       assignment: {
+        id: "-1",
+        hasUnassignedContactsForTexter: 200,
+        allContactsCount: 42,
+        unrepliedCount: 12,
         campaign: {
           id: 10123,
           title: "GOT Progressive Vote",
-          useDynamicAssignment: false,
+          useDynamicAssignment: true,
+          batchSize: 200,
           organization: {
+            id: 0,
             optOutMessage:
-              "Sorry about that, removing you immediately -- have a good day!"
+              "Sorry about that, removing you immediately -- have a good day!",
+            tags: []
           },
           texterUIConfig: {
-            options: '{"tag-contact": 1, "contact-reference": 1}',
-            sideboxChoices: (sideboxes && sideboxes.split(",")) || []
+            options: JSON.stringify(sideboxOptions),
+            sideboxChoices
           },
           interactionSteps: [
             {
@@ -47,10 +60,9 @@ export const tests = testName => {
                 "Hi {firstName}, it's {texterAliasOrFirstName} a volunteer with MoveOn. There is an election in Arizona coming Tuesday. Will you vote progressive?",
               question: { text: "", answerOptions: [] }
             }
-          ]
-        },
-        campaignCannedResponses: [],
-        userCannedResponses: []
+          ],
+          cannedResponses: []
+        }
       },
       texter: {
         firstName: "Carlos",
@@ -75,6 +87,7 @@ export const tests = testName => {
       }
     },
     b: {
+      // first reply
       disabled: false,
       messageStatusFilter: "needsResponse",
       navigationToolbarChildren: {
@@ -85,11 +98,14 @@ export const tests = testName => {
         currentIndex: 12012
       },
       assignment: {
+        id: "-1",
+        allContactsCount: 18000,
         campaign: {
           id: 10123,
           title: "GOT Progressive Vote",
           useDynamicAssignment: false,
           organization: {
+            id: 0,
             optOutMessage:
               "Sorry about that, removing you immediately -- have a good day!",
             tags: [
@@ -98,8 +114,8 @@ export const tests = testName => {
             ]
           },
           texterUIConfig: {
-            options: '{"tag-contact": 1, "contact-reference": 1}',
-            sideboxChoices: (sideboxes && sideboxes.split(",")) || []
+            options: JSON.stringify(sideboxOptions),
+            sideboxChoices
           },
           interactionSteps: [
             {
@@ -155,24 +171,23 @@ export const tests = testName => {
               }
             }
           ],
-          customFields: ["donationLink", "vendor_id"]
-        },
-        campaignCannedResponses: [
-          {
-            id: "1",
-            title: "Moved",
-            text:
-              "I'm sorry, we'll update your address -- what is your current zip code?",
-            isUserCreated: false
-          },
-          {
-            id: "2",
-            title: "Wrong number",
-            text: "Ok, we'll remove you from our list, {firstName}.",
-            isUserCreated: false
-          }
-        ],
-        userCannedResponses: []
+          customFields: ["donationLink", "vendor_id"],
+          cannedResponses: [
+            {
+              id: "1",
+              title: "Moved",
+              text:
+                "I'm sorry, we'll update your address -- what is your current zip code?",
+              isUserCreated: false
+            },
+            {
+              id: "2",
+              title: "Wrong number",
+              text: "Ok, we'll remove you from our list, {firstName}.",
+              isUserCreated: false
+            }
+          ]
+        }
       },
       texter: {
         firstName: "Christine",
@@ -213,6 +228,7 @@ export const tests = testName => {
       }
     },
     c: {
+      // second reply
       disabled: false,
       messageStatusFilter: "needsResponse",
       navigationToolbarChildren: {
@@ -223,11 +239,16 @@ export const tests = testName => {
         currentIndex: 88
       },
       assignment: {
+        id: "-1",
+        allContactsCount: 88,
+        hasUnassignedContactsForTexter: 200,
         campaign: {
           id: 10123,
           title: "Event Recruitment for Saving the World",
-          useDynamicAssignment: false,
+          useDynamicAssignment: true,
+          batchSize: 200,
           organization: {
+            id: 0,
             optOutMessage:
               "Sorry about that, removing you immediately -- have a good day!",
             tags: [
@@ -236,8 +257,8 @@ export const tests = testName => {
             ]
           },
           texterUIConfig: {
-            options: '{"tag-contact": 1, "contact-reference": 1}',
-            sideboxChoices: (sideboxes && sideboxes.split(",")) || []
+            options: JSON.stringify(sideboxOptions),
+            sideboxChoices
           },
           interactionSteps: [
             {
@@ -336,66 +357,65 @@ export const tests = testName => {
               }
             }
           ],
-          customFields: ["donationLink", "vendor_id"]
-        },
-        campaignCannedResponses: [
-          {
-            id: "1",
-            title: "Moved",
-            text:
-              "I'm sorry, we'll update your address -- what is your current zip code?",
-            isUserCreated: false
-          },
-          {
-            id: "2",
-            title: "Wrong number",
-            text: "Ok, we'll remove you from our list, {firstName}.",
-            isUserCreated: false
-          },
-          {
-            id: "3",
-            title: "Moved3",
-            text:
-              "I'm sorry, we'll update your address -- what is your current zip code?",
-            isUserCreated: false
-          },
-          {
-            id: "4",
-            title: "Moved4",
-            text:
-              "I'm sorry, we'll update your address -- what is your current zip code?",
-            isUserCreated: false
-          },
-          {
-            id: "5",
-            title: "Moved5",
-            text:
-              "I'm sorry, we'll update your address -- what is your current zip code?",
-            isUserCreated: false
-          },
-          {
-            id: "6",
-            title: "Moved6",
-            text:
-              "I'm sorry, we'll update your address -- what is your current zip code?",
-            isUserCreated: false
-          },
-          {
-            id: "7",
-            title: "Moved7",
-            text:
-              "I'm sorry, we'll update your address -- what is your current zip code?",
-            isUserCreated: false
-          },
-          {
-            id: "8",
-            title: "Moved8",
-            text:
-              "I'm sorry, we'll update your address -- what is your current zip code?",
-            isUserCreated: false
-          }
-        ],
-        userCannedResponses: []
+          customFields: ["donationLink", "vendor_id"],
+          cannedResponses: [
+            {
+              id: "1",
+              title: "Moved",
+              text:
+                "I'm sorry, we'll update your address -- what is your current zip code?",
+              isUserCreated: false
+            },
+            {
+              id: "2",
+              title: "Wrong number",
+              text: "Ok, we'll remove you from our list, {firstName}.",
+              isUserCreated: false
+            },
+            {
+              id: "3",
+              title: "Moved3",
+              text:
+                "I'm sorry, we'll update your address -- what is your current zip code?",
+              isUserCreated: false
+            },
+            {
+              id: "4",
+              title: "Moved4",
+              text:
+                "I'm sorry, we'll update your address -- what is your current zip code?",
+              isUserCreated: false
+            },
+            {
+              id: "5",
+              title: "Moved5",
+              text:
+                "I'm sorry, we'll update your address -- what is your current zip code?",
+              isUserCreated: false
+            },
+            {
+              id: "6",
+              title: "Moved6",
+              text:
+                "I'm sorry, we'll update your address -- what is your current zip code?",
+              isUserCreated: false
+            },
+            {
+              id: "7",
+              title: "Moved7",
+              text:
+                "I'm sorry, we'll update your address -- what is your current zip code?",
+              isUserCreated: false
+            },
+            {
+              id: "8",
+              title: "Moved8",
+              text:
+                "I'm sorry, we'll update your address -- what is your current zip code?",
+              isUserCreated: false
+            }
+          ]
+        }
       },
       texter: {
         firstName: "Texterfirst",
@@ -465,6 +485,53 @@ export const tests = testName => {
         customFields:
           '{"donationLink": "https://d.example.com/abc123", "vendor_id": "abc123"}'
       }
+    },
+    d: {
+      // empty contact list, dynamic assignment
+      disabled: false,
+      messageStatusFilter: "needsMessage",
+      navigationToolbarChildren: {
+        onNext: null,
+        onPrevious: null,
+        title: "0 of 0",
+        total: 0,
+        currentIndex: 0
+      },
+      assignment: {
+        id: "-1",
+        unrepliedCount: 0,
+        allContactsCount: 0,
+        campaign: {
+          id: 10123,
+          title: "GOT Progressive Vote",
+          useDynamicAssignment: true,
+          batchSize: 200,
+          organization: {
+            id: 0,
+            optOutMessage:
+              "Sorry about that, removing you immediately -- have a good day!",
+            tags: []
+          },
+          texterUIConfig: {
+            options: JSON.stringify(sideboxOptions),
+            sideboxChoices
+          },
+          interactionSteps: [
+            {
+              id: "13",
+              script:
+                "Hi {firstName}, it's {texterAliasOrFirstName} a volunteer with MoveOn. There is an election in Arizona coming Tuesday. Will you vote progressive?",
+              question: { text: "", answerOptions: [] }
+            }
+          ],
+          cannedResponses: []
+        },
+        hasUnassignedContactsForTexter: 200
+      },
+      texter: {
+        firstName: "Carlos",
+        lastName: "Tlastname"
+      }
     }
 
     // other tests:
@@ -500,14 +567,21 @@ export function generateDemoTexterContact(testName) {
         texter={test.texter}
         assignment={test.assignment}
         navigationToolbarChildren={test.navigationToolbarChildren}
+        enabledSideboxes={props.enabledSideboxes}
         messageStatusFilter={test.messageStatusFilter}
         disabled={test.disabled}
-        onMessageFormSubmit={logFunction}
+        onMessageFormSubmit={data => {
+          console.log("logging data onMessageFormSubmit", data);
+
+          props.onFinishContact(1);
+        }}
         onOptOut={logFunction}
         onQuestionResponseChange={logFunction}
         onCreateCannedResponse={logFunction}
         onExitTexter={logFunction}
         onEditStatus={logFunction}
+        onUpdateTags={async data => logFunction(data)}
+        refreshData={logFunction}
         getMessageTextFromScript={getMessageTextFromScript}
       />
     );
@@ -517,18 +591,18 @@ export function generateDemoTexterContact(testName) {
     return (
       <ContactController
         assignment={test.assignment}
-        contacts={[{ id: test.contact.id }]}
+        campaign={test.assignment.campaign}
+        contacts={test.contact ? [{ id: test.contact.id }] : []}
         allContactsCount={test.navigationToolbarChildren.total}
-        assignContactsIfNeeded={test.assignContactsIfNeeded}
         refreshData={logFunction}
         loadContacts={contactIds => {
           console.log("loadContacts", contactIds);
           return { data: { getAssignmentContacts: [test.contact] } };
         }}
-        getNewContacts={logFunction}
         onRefreshAssignmentContacts={logFunction}
         organizationId={"1"}
         ChildComponent={DemoAssignmentTexterContact}
+        messageStatusFilter={test.messageStatusFilter}
       />
     );
   };
@@ -538,6 +612,5 @@ export function generateDemoTexterContact(testName) {
 
 export const DemoTexterNeedsMessage = generateDemoTexterContact("a");
 export const DemoTexterNeedsResponse = generateDemoTexterContact("b");
-export const DemoTexterNeedsResponse2ndQuestion = generateDemoTexterContact(
-  "c"
-);
+export const DemoTexter2ndQuestion = generateDemoTexterContact("c");
+export const DemoTexterDynAssign = generateDemoTexterContact("d");

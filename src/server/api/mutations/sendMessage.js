@@ -3,7 +3,7 @@ import { GraphQLError } from "graphql/error";
 import { Message, cacheableData } from "../../models";
 
 import { getSendBeforeTimeUtc } from "../../../lib/timezones";
-import { jobRunner } from "../../../integrations/job-runners";
+import { jobRunner } from "../../../extensions/job-runners";
 import { Tasks } from "../../../workers/tasks";
 
 const JOBS_SAME_PROCESS = !!(
@@ -131,7 +131,8 @@ export const sendMessage = async (
     messageInstance,
     contact,
     campaign,
-    organization
+    organization,
+    texter: user
   });
   if (!saveResult.message) {
     throw new GraphQLError(
