@@ -16,6 +16,7 @@ import Toggle from "material-ui/Toggle";
 import DeleteIcon from "material-ui/svg-icons/action/delete";
 import { dataTest } from "../lib/attributes";
 import { dataSourceItem } from "./utils";
+import { getHighestRole } from "../lib/permissions";
 
 const styles = StyleSheet.create({
   sliderContainer: {
@@ -274,6 +275,7 @@ export default class CampaignTextersForm extends React.Component {
 
     const dataSource = orgTexters
       .filter(orgTexter => !texters.find(texter => texter.id === orgTexter.id))
+      .filter(orgTexter => getHighestRole(orgTexter.roles) !== "SUSPENDED")
       .map(orgTexter => dataSourceItem(orgTexter.displayName, orgTexter.id));
 
     const filter = (searchText, key) =>
@@ -342,8 +344,10 @@ export default class CampaignTextersForm extends React.Component {
   }
 
   getDisplayName(texterId) {
-    let texterObj = this.props.orgTexters.find(o => o.id === texterId);
-    return texterObj.displayName;
+    const texterObj = this.props.orgTexters.find(o => o.id === texterId);
+    const suffix =
+      getHighestRole(texterObj.roles) === "SUSPENDED" ? " (Suspended)" : "";
+    return texterObj.displayName + suffix;
   }
 
   showTexters() {

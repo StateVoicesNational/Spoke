@@ -2,8 +2,6 @@ import thinky from "./thinky";
 const type = thinky.type;
 import { requiredString, optionalString, timestamp } from "./custom-types";
 
-import Organization from "./organization";
-
 const Campaign = thinky.createModel(
   "campaign",
   type
@@ -19,6 +17,7 @@ const Campaign = thinky.createModel(
       description: optionalString(),
       join_token: optionalString().allowNull(true),
       batch_size: type.integer().allowNull(true),
+      response_window: type.number().allowNull(true),
       features: type.string().allowNull(true),
       is_started: type.boolean().required(),
       due_by: type

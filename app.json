@@ -70,6 +70,18 @@
       "value": "https://<changeme>.herokuapp.com/twilio-message-report"
     },
 
+    "TWILIO_MULTI_ORG": {
+      "description": "Allows each organization in the Spoke instance to set Twilio variables within the app",
+      "required": false,
+      "value": "1"
+    },
+
+    "PHONE_INVENTORY": {
+      "description": "Enables organization owners to be able to buy Twilio phone numbers within the app",
+      "required": false,
+      "value": "1"
+    },
+
     "EMAIL_HOST": {
       "description": "for email notification integration",
       "required": false,
@@ -124,6 +136,12 @@
       "value": ""
     },
 
+    "OWNER_CONFIGURABLE": {
+      "description": "Allows organization owners to edit variables",
+      "required": false,
+      "value": "ALL"
+    },
+
     "NODE_ENV": {
       "description": "node environment determines the application start process",
       "required": true,
@@ -165,5 +183,14 @@
       "value": "true"
     }
   },
-  "addons": ["heroku-postgresql:hobby-dev", "mailgun:starter"]
+  "addons": [
+    "heroku-postgresql:hobby-dev",
+    {
+      "plan": "heroku-redis:hobby-dev",
+      "options": {
+        "maxmemory-policy": "volatile-lru"
+      }
+    },
+    "mailgun:starter"
+  ]
 }

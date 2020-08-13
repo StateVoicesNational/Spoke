@@ -19,7 +19,7 @@ export default class GSScriptField extends GSFormField {
     super(props);
     this.state = {
       open: false,
-      script: props.value
+      script: props.value || ""
     };
   }
 
@@ -51,7 +51,6 @@ export default class GSScriptField extends GSFormField {
     const { open } = this.state;
     const { customFields, sampleContact } = this.props;
     const scriptFields = allScriptFields(customFields);
-
     return (
       <Dialog
         style={styles.dialog}
@@ -91,6 +90,19 @@ export default class GSScriptField extends GSFormField {
           multiLine
           onTouchTap={event => {
             this.handleOpenDialog(event);
+          }}
+          onFocus={event => {
+            // HACK
+            // frustratingly, without onFocus, this editor breaks when tabbing into
+            // the field -- no editor dialog comes up
+            // However, on Safari, when the field is created, Safari seems to auto-focus
+            // which triggers a disruptive (early) dialog open, e.g. in Admin Interactions
+            const isSafari = /^((?!chrome|android).)*safari/i.test(
+              navigator.userAgent
+            );
+            if (!isSafari) {
+              this.handleOpenDialog(event);
+            }
           }}
           floatingLabelText={this.floatingLabelText()}
           floatingLabelStyle={{

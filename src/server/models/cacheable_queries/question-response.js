@@ -50,8 +50,12 @@ const questionResponseCache = {
   save: async (campaignContactId, questionResponses) => {
     // This is a bit elaborate because we want to preserve the created_at time
     // Otherwise, we could just delete all and recreate
+    const toReturn = {
+      newOrUpdated: {},
+      deleted: []
+    };
     if (!campaignContactId) {
-      return; // guard for delete command
+      return toReturn; // guard for delete command
     }
     const deleteQuery = r
       .knex("question_response")
@@ -68,9 +72,9 @@ const questionResponseCache = {
             .forUpdate()
             .where("question_response.campaign_contact_id", campaignContactId)
             .select("value", "interaction_step_id");
+          const newIds = {};
           const insertQuestionResponses = [];
           const updateStepIds = [];
-          const newIds = {};
           questionResponses.forEach(qr => {
             newIds[qr.interactionStepId] = 1;
             const existing = dbResponses.filter(
@@ -83,15 +87,25 @@ const questionResponseCache = {
             };
             if (!existing.length) {
               insertQuestionResponses.push(newObj);
+              toReturn.newOrUpdated[Number(qr.interactionStepId)] = null;
             } else if (existing[0].value !== qr.value) {
               updateStepIds.push(qr.interactionStepId);
+              toReturn.newOrUpdated[Number(qr.interactionStepId)] =
+                existing[0].value;
               // will be both deleted and inserted
               insertQuestionResponses.push(newObj);
             }
           });
-          const deletes = dbResponses
-            .map(db => db.interaction_step_id)
-            .filter(id => !(id in newIds));
+          const toDelete = dbResponses.filter(
+            dbqr => !(dbqr.interaction_step_id in newIds)
+          );
+          toDelete.forEach(dbqr => {
+            toReturn.deleted.push({
+              value: dbqr.value,
+              interactionStepId: dbqr.interaction_step_id
+            });
+          });
+          const deletes = toDelete.map(db => db.interaction_step_id);
           deletes.push(...updateStepIds);
           if (deletes.length) {
             await deleteQuery
@@ -107,6 +121,7 @@ const questionResponseCache = {
           await trx.commit();
         });
       } catch (error) {
+        // eslint-disable-next-line no-console
         console.log("questionResponse cache transaction error", error);
       }
     }
@@ -126,6 +141,8 @@ const questionResponseCache = {
         .expire(cacheKey, 43200)
         .execAsync();
     }
+
+    return toReturn;
   },
   reloadQuery: async campaignContactId => {
     if (r.redis && CONTACT_CACHE_ENABLED) {

@@ -23,7 +23,14 @@ function getConversationsJoinsAndWhereClause(
   if (forData || (assignmentsFilter && assignmentsFilter.texterId)) {
     query = query
       .leftJoin("assignment", "campaign_contact.assignment_id", "assignment.id")
-      .leftJoin("user", "assignment.user_id", "user.id");
+      .leftJoin("user", "assignment.user_id", "user.id")
+      .leftJoin("user_organization", function joinUserOrg() {
+        this.on("user_organization.user_id", "=", "user.id").andOn(
+          "user_organization.organization_id",
+          "=",
+          "campaign.organization_id"
+        );
+      });
   }
 
   if (messageTextFilter && !forData) {
@@ -153,6 +160,7 @@ export async function getConversations(
     "user.id as u_id",
     "user.first_name as u_first_name",
     "user.last_name as u_last_name",
+    "user_organization.role as u_role",
     "campaign.id as cmp_id",
     "campaign.title",
     "campaign.due_by",
@@ -411,7 +419,8 @@ export const resolvers = {
       return mapQueryFieldsToResolverFields(queryResult, {
         u_id: "id",
         u_first_name: "first_name",
-        u_last_name: "last_name"
+        u_last_name: "last_name",
+        u_role: "role"
       });
     },
     contact: queryResult => {

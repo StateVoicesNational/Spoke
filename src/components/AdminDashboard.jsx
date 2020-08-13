@@ -13,7 +13,7 @@ const styles = StyleSheet.create({
     ...theme.layouts.multiColumn.container
   },
   sidebar: {
-    minHeight: "calc(100vh - 56px)"
+    minHeight: "calc(100vh - 65px)"
   },
   content: {
     ...theme.layouts.multiColumn.flexColumn,

@@ -1,4 +1,6 @@
+import { getFeatures } from "./lib/config";
 import { mapFieldsToModel } from "./lib/utils";
+import { rolesEqualOrLess } from "../../lib/permissions";
 import { r, User, cacheableData } from "../models";
 
 const firstName = '"user"."first_name"';
@@ -56,12 +58,15 @@ export function buildUsersQuery(
   filterBy
 ) {
   const queryParam = buildSelect(sortBy);
-  const roleFilter = role ? { role } : {};
+  const roleFilter = role && role !== "ANY" ? { role } : {};
+  const suspendedFilter =
+    role === "SUSPENDED" || role === "ANY" ? {} : { role: "SUSPENDED" };
 
   let query = queryParam
     .from("user_organization")
     .innerJoin("user", "user_organization.user_id", "user.id")
     .where(roleFilter)
+    .whereNot(suspendedFilter)
     .whereRaw('"user_organization"."organization_id" = ?', organizationId)
     .distinct();
 
@@ -202,6 +207,10 @@ export const resolvers = {
       ],
       User
     ),
+    extra: user =>
+      user.extra && typeof user.extra === "object"
+        ? JSON.stringify(user.extra)
+        : user.extra || null,
     displayName: user =>
       `${user.first_name}${user.alias ? ` (${user.alias}) ` : " "}${
         user.last_name
@@ -232,8 +241,11 @@ export const resolvers = {
       // Note: this only returns {id, name}, but that is all apis need here
       return await cacheableData.user.userOrgs(user.id, role);
     },
-    roles: async (user, { organizationId }) =>
-      cacheableData.user.orgRoles(user.id, organizationId),
+    roles: async (user, { organizationId }) => {
+      return user.role
+        ? rolesEqualOrLess(user.role)
+        : await cacheableData.user.orgRoles(user.id, organizationId);
+    },
     todos: async (user, { organizationId }) =>
       r
         .table("assignment")
@@ -244,6 +256,21 @@ export const resolvers = {
           organization_id: organizationId,
           is_archived: false
         })("left"),
+    profileComplete: async (user, { organizationId }, { loaders }) => {
+      const org = await loaders.organization.load(organizationId);
+      // @todo: standardize on escaped or not once there's an interface.
+      const profileFields = getFeatures(org).profile_fields;
+      const fields =
+        typeof profileFields === "string"
+          ? JSON.parse(profileFields)
+          : getFeatures(org).profile_fields || [];
+      for (const field of fields) {
+        if (!user.extra || !user.extra[field.name]) {
+          return false;
+        }
+      }
+      return true;
+    },
     cacheable: () => false // FUTURE: Boolean(r.redis) when full assignment data is cached
   }
 };

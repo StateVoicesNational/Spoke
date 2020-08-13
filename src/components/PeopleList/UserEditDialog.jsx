@@ -8,10 +8,11 @@ import { dataTest } from "../../lib/attributes";
 const UserEditDialog = props => (
   <Dialog
     {...dataTest("editPersonDialog")}
-    title="Edit user"
+    title={`Edit user (${props.userId})`}
     modal={false}
     open={props.open}
     onRequestClose={props.requestClose}
+    autoScrollBodyContent={true}
   >
     <UserEdit
       organizationId={props.organizationId}
