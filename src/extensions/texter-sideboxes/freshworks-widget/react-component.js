@@ -30,16 +30,11 @@ export class TexterSidebox extends React.Component {
   addGlobalFunction = widgetId => {
     if (typeof window.FreshworksWidget !== "function") {
       window.fwSettings = { widget_id: widgetId };
-      function init() {
-        if (typeof window.FreshworksWidget !== "function") {
-          const n = function(...args) {
-            n.q.push(args);
-          };
-          n.q = [];
-          window.FreshworksWidget = n;
-        }
-      }
-      init();
+      const n = (...args) => {
+        n.q.push(args);
+      };
+      n.q = [];
+      window.FreshworksWidget = n;
     }
   };
 
