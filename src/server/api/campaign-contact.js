@@ -102,7 +102,10 @@ export const resolvers = {
         return campaignContact.tags;
       }
 
-      return cacheableData.tagCampaignContact.query(campaignContact.id, true);
+      return cacheableData.tagCampaignContact.query({
+        campaignContactId: campaignContact.id,
+        minimalObj: true
+      });
     },
     optOut: async (campaignContact, _, { loaders }) => {
       let isOptedOut = null;
