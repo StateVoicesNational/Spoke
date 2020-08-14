@@ -288,6 +288,7 @@ const rootSchema = gql`
     sendMessage(
       message: MessageInput!
       campaignContactId: String!
+      cannedResponseId: String
     ): CampaignContact
     createOptOut(
       optOut: OptOutInput!
