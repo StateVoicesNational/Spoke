@@ -64,29 +64,51 @@ export const tagCampaignContactCache = {
       includeResolved: true
     });
 
-    const tagsById = {};
+    const allTagsById = {};
+    const updatedTagsById = {};
+    const newTagsById = {};
+
     existingTags.forEach(existingTag => {
-      tagsById[existingTag.id] = existingTag.value;
+      allTagsById[existingTag.id] = existingTag.value;
     });
 
     tags.forEach(tag => {
       if (tag.id) {
-        tagsById[tag.id] = tag.value;
+        if (tag.id.toString() in allTagsById) {
+          updatedTagsById[tag.id] = tag.value;
+        } else {
+          newTagsById[tag.id] = tag.value;
+        }
+        allTagsById[tag.id] = tag.value;
       }
     });
 
-    const newTags = Object.entries(tagsById).map(([tagId, value]) => ({
-      tag_id: tagId,
-      campaign_contact_id: campaignContactId,
-      value: value || null
-    }));
+    const toArray = tagDictionary => {
+      return Object.entries(tagDictionary).map(([tagId, value]) => ({
+        tag_id: tagId,
+        campaign_contact_id: campaignContactId,
+        value: value || null
+      }));
+    };
+
+    const newTags = toArray(newTagsById);
+    const updatedTags = toArray(updatedTagsById);
+    const allTags = toArray(allTagsById);
 
     await r.knex.transaction(async trx => {
-      await trx("tag_campaign_contact")
-        .delete()
-        .where({ campaign_contact_id: campaignContactId });
+      const promises = updatedTags.map(tag => {
+        return trx("tag_campaign_contact")
+          .update({ value: tag.value || null })
+          .where({
+            tag_id: tag.tag_id,
+            campaign_contact_id: campaignContactId
+          });
+      });
 
-      await trx("tag_campaign_contact").insert(newTags);
+      const insertPromise = await trx("tag_campaign_contact").insert(newTags);
+      promises.push(insertPromise);
+
+      await Promise.all(promises);
     });
     if (r.redis && CONTACT_CACHE_ENABLED) {
       const cacheKey = tagCacheKey(campaignContactId);
@@ -95,7 +117,7 @@ export const tagCampaignContactCache = {
         .set(
           cacheKey,
           JSON.stringify(
-            newTags.map(t => ({
+            allTags.map(t => ({
               value: t.value || null,
               id: Number(t.tag_id)
             }))
