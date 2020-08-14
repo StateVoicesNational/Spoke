@@ -15,7 +15,7 @@ import { dataTest } from "../lib/attributes";
 import {
   getSideboxes,
   renderSummary
-} from "../integrations/texter-sideboxes/components";
+} from "../extensions/texter-sideboxes/components";
 
 export const inlineStyles = {
   badge: {
@@ -143,8 +143,6 @@ export class AssignmentSummary extends Component {
     const sideboxList = enabledSideboxes.map(sb =>
       renderSummary(sb, settingsData, this, sideboxProps)
     );
-    const maxContacts = assignment.maxContacts;
-
     const cardTitleTextColor = setContrastingColor(primaryColor);
 
     return (
@@ -183,7 +181,7 @@ export class AssignmentSummary extends Component {
                   title: "Send first texts",
                   count: unmessagedCount,
                   primary: true,
-                  disabled: maxContacts === 0,
+                  disabled: false,
                   contactsFilter: "text",
                   hideIfZero: true
                 })}

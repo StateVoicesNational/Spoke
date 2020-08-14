@@ -19,7 +19,7 @@ import { seedZipCodes } from "./seeds/seed-zip-codes";
 import { setupUserNotificationObservers } from "./notifications";
 import { twiml } from "twilio";
 import { existsSync } from "fs";
-import { rawAllMethods } from "../integrations/contact-loaders";
+import { rawAllMethods } from "../extensions/contact-loaders";
 
 process.on("uncaughtException", ex => {
   log.error(ex);

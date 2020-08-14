@@ -1,8 +1,8 @@
 // Tasks are lightweight, fire-and-forget functions run in the background.
 // Unlike Jobs, tasks are not tracked in the database.
-// See src/integrations/job-runners/README.md for more details
+// See src/extensions/job-runners/README.md for more details
 import serviceMap from "../server/api/lib/services";
-import * as ActionHandlers from "../integrations/action-handlers";
+import * as ActionHandlers from "../extensions/action-handlers";
 import { cacheableData } from "../server/models";
 
 export const Tasks = Object.freeze({

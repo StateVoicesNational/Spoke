@@ -18,7 +18,7 @@ import DeleteIcon from "material-ui/svg-icons/action/delete";
 import { dataTest } from "../lib/attributes";
 import { dataSourceItem } from "./utils";
 
-import sideboxes from "../integrations/texter-sideboxes/components";
+import sideboxes from "../extensions/texter-sideboxes/components";
 
 export default class CampaignTexterUIForm extends React.Component {
   constructor(props) {

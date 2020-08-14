@@ -44,6 +44,7 @@ function genComponent(assignment, propertyOverrides = {}) {
   const wrapper = shallow(
     <ContactController
       assignment={assignment}
+      campaign={assignment.campaign}
       contacts={assignment.contacts}
       allContactsCount={assignment.allContactsCount}
       router={{ push: () => {} }}

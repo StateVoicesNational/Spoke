@@ -72,6 +72,7 @@ const rootSchema = gql`
     useDynamicAssignment: Boolean
     requestAfterReply: Boolean
     batchSize: Int
+    responseWindow: Float
     ingestMethod: String
     contactData: String
     organizationId: String
@@ -235,7 +236,7 @@ const rootSchema = gql`
       filterString: String
       filterBy: FilterPeopleBy
     ): UsersReturn
-    user(organizationId: ID!, userId: Int!): User
+    user(organizationId: String!, userId: Int): User
   }
 
   type RootMutation {

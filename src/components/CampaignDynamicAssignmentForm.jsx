@@ -34,7 +34,8 @@ export default class CampaignDynamicAssignmentForm extends React.Component {
   };
 
   formSchema = yup.object({
-    batchSize: yup.number().integer()
+    batchSize: yup.number().integer(),
+    responseWindow: yup.number()
   });
 
   render() {
@@ -94,6 +95,19 @@ export default class CampaignDynamicAssignmentForm extends React.Component {
               replacement dynamicassignment sidebox.
             </div>
           ) : null}
+          <div>
+            <Form.Field
+              name="responseWindow"
+              type="number"
+              label="Expected Response Window (hours)"
+            />
+            <p style={{ paddingLeft: "8px" }}>
+              How long (in hours) before we should consider reassignment without
+              a texter response. This relates to the "Expired Needs Response"
+              message status filter in Message Review. You might set this to 48
+              hours for slower campaigns or 2 hours or less for GOTV campaigns.
+            </p>
+          </div>
           <Form.Button
             type="submit"
             onTouchTap={this.props.onSubmit}
@@ -117,5 +131,6 @@ CampaignDynamicAssignmentForm.propTypes = {
   saveLabel: type.string,
   saveDisabled: type.bool,
   joinToken: type.string,
+  responseWindow: type.number,
   batchSize: type.string
 };

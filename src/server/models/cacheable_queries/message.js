@@ -1,7 +1,7 @@
 import { r, Message } from "../../models";
 import campaignCache from "./campaign";
 import campaignContactCache from "./campaign-contact";
-import { getMessageHandlers } from "../../../integrations/message-handlers";
+import { getMessageHandlers } from "../../../extensions/message-handlers";
 // QUEUE
 // messages-<contactId>
 // Expiration: 24 hours after last message added

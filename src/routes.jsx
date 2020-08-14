@@ -108,6 +108,18 @@ export default function makeRoutes(requireAuth = () => {}) {
               }}
             />
             <Route
+              path="other/:userId"
+              components={{
+                main: TexterTodoList,
+                topNav: p => (
+                  <TopNav
+                    title="Spoke Texting"
+                    orgId={p.params.organizationId}
+                  />
+                )
+              }}
+            />
+            <Route
               path="review/:reviewContactId"
               components={{
                 fullScreen: props => <TexterTodo {...props} />,

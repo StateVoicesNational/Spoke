@@ -1,7 +1,7 @@
 import { log } from "../../../lib";
 import { Assignment, Campaign, r, cacheableData } from "../../models";
 import { assignmentRequiredOrAdminRole } from "../errors";
-import { getDynamicAssignmentBatchPolicy } from "../../../integrations/dynamicassignment-batches";
+import { getDynamicAssignmentBatchPolicy } from "../../../extensions/dynamicassignment-batches";
 
 export const findNewCampaignContact = async (
   _,
@@ -99,8 +99,8 @@ export const findNewCampaignContact = async (
       "in",
       r
         .knex("campaign_contact")
+        .whereNull("assignment_id")
         .where({
-          assignment_id: null,
           // FUTURE: a function in the batch policy could allow convo contacts, too
           message_status: "needsMessage",
           campaign_id: campaign.id
