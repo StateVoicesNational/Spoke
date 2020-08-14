@@ -8,7 +8,7 @@ import { capitalizeWord } from "./lib/utils";
 import twilio from "./lib/twilio";
 import ownedPhoneNumber from "./lib/owned-phone-number";
 
-import { getIngestMethod } from "../../integrations/contact-loaders";
+import { getIngestMethod } from "../../extensions/contact-loaders";
 import {
   Campaign,
   CannedResponse,
@@ -66,8 +66,8 @@ import {
   releaseCampaignNumbers
 } from "./mutations";
 
-const ActionHandlers = require("../../integrations/action-handlers");
-import { jobRunner } from "../../integrations/job-runners";
+const ActionHandlers = require("../../extensions/action-handlers");
+import { jobRunner } from "../../extensions/job-runners";
 import { Jobs } from "../../workers/job-processes";
 import { Tasks } from "../../workers/tasks";
 
@@ -171,6 +171,7 @@ async function editCampaign(id, campaign, loaders, user, origCampaignRecord) {
     dueBy,
     useDynamicAssignment,
     batchSize,
+    responseWindow,
     logoImageUrl,
     introHtml,
     primaryColor,
@@ -207,6 +208,7 @@ async function editCampaign(id, campaign, loaders, user, origCampaignRecord) {
     use_own_messaging_service: useOwnMessagingService,
     messageservice_sid: messageserviceSid,
     batch_size: batchSize,
+    response_window: responseWindow,
     timezone
   };
 
@@ -755,6 +757,9 @@ const rootMutations = {
         is_archived: false,
         join_token: uuidv4(),
         batch_size: Number(getConfig("DEFAULT_BATCHSIZE", organization) || 300),
+        response_window: getConfig("DEFAULT_RESPONSEWINDOW", organization, {
+          default: 48
+        }),
         use_own_messaging_service: false
       });
       const newCampaign = await campaignInstance.save();
@@ -780,6 +785,9 @@ const rootMutations = {
         batch_size:
           campaign.batch_size ||
           Number(getConfig("DEFAULT_BATCHSIZE", organization) || 300),
+        response_window:
+          campaign.response_window ||
+          Number(getConfig("DEFAULT_RESPONSEWINDOW", organization) || 48),
         is_started: false,
         is_archived: false,
         join_token: uuidv4()
@@ -1269,7 +1277,7 @@ const rootResolvers = {
   },
   RootQuery: {
     campaign: async (_, { id }, { loaders, user }) => {
-      const campaign = await Campaign.get(id);
+      const campaign = await loaders.campaign.load(id);
       await accessRequired(user, campaign.organization_id, "SUPERVOLUNTEER");
       return campaign;
     },
@@ -1403,7 +1411,9 @@ const rootResolvers = {
     },
     user: async (_, { organizationId, userId }, { user }) => {
       // This is somewhat redundant to people and getCurrentUser above
-      if (user.id !== userId) {
+      if (user && !userId) {
+        return user;
+      } else if (user.id !== userId) {
         // User can view themselves
         await accessRequired(user, organizationId, "ADMIN", true);
       }
@@ -1415,6 +1425,11 @@ const rootResolvers = {
           "user_organization.organization_id": organizationId,
           "user.id": userId
         })
+        .select(
+          "user_organization.organization_id",
+          "user_organization.role",
+          "user.*"
+        )
         .first();
     }
   }

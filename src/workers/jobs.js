@@ -16,7 +16,7 @@ import {
   saveNewIncomingMessage
 } from "../server/api/lib/message-sending";
 import importScriptFromDocument from "../server/api/lib/import-script";
-import { rawIngestMethod } from "../integrations/contact-loaders";
+import { rawIngestMethod } from "../extensions/contact-loaders";
 
 import AWS from "aws-sdk";
 import Papa from "papaparse";
@@ -566,6 +566,7 @@ export async function assignTexters(job) {
           .knex("assignment")
           .where({ id: existingAssignment.id })
           .update({ max_contacts: maxContacts });
+        cacheableData.assignment.clear(existingAssignment.id);
       }
     } else {
       assignment = await new Assignment({
@@ -749,6 +750,7 @@ export async function exportCampaign(job) {
         "contact[optOut]": optOuts.find(ele => ele.cell === contact.cell)
           ? "true"
           : "false",
+        "contact[optOutRecord]": contact.is_opted_out,
         "contact[messageStatus]": contact.message_status,
         "contact[errorCode]": contact.error_code,
         "contact[external_id]": contact.external_id,

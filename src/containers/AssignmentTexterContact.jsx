@@ -159,7 +159,7 @@ export class AssignmentTexterContact extends React.Component {
   };
 
   handleMessageFormSubmit = async ({ messageText }) => {
-    const { contact } = this.props;
+    const { contact, messageStatusFilter } = this.props;
     try {
       const message = this.createMessageToContact(messageText);
       if (this.state.disabled) {
@@ -167,9 +167,21 @@ export class AssignmentTexterContact extends React.Component {
       }
       this.setState({ disabled: true });
       console.log("sendMessage", contact.id);
-      await this.props.mutations.sendMessage(message, contact.id);
-
-      await this.handleSubmitSurveys();
+      if (
+        messageStatusFilter === "needsMessage" &&
+        /fast=1/.test(document.location.search)
+      ) {
+        // FUTURE: this can cause some confusion especially when a texter
+        // thinks they completed sending, but there are still waiting requests
+        // This probably needs some interface tweaks to communicate something
+        // to the texter.
+        this.props.mutations.sendMessage(message, contact.id).then(() => {
+          console.log("sentMessage", contact.id);
+        });
+      } else {
+        await this.props.mutations.sendMessage(message, contact.id);
+        await this.handleSubmitSurveys();
+      }
       this.props.onFinishContact(contact.id);
     } catch (e) {
       this.handleSendMessageError(e);

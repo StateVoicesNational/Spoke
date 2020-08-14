@@ -14,7 +14,7 @@ export const bulkSendMessages = async (
   { assignmentId },
   { user, loaders }
 ) => {
-  const assignment = await Assignment.get(assignmentId);
+  const assignment = await cacheableData.assignment.load(assignmentId);
   const organization = await cacheableData.campaign.loadCampaignOrganization({
     campaignId: assignment.campaign_id
   });

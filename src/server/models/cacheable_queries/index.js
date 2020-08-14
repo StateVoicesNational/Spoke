@@ -1,3 +1,4 @@
+import assignment from "./assignment";
 import campaign from "./campaign";
 import campaignContact from "./campaign-contact";
 import cannedResponse from "./canned-response";
@@ -9,6 +10,7 @@ import { tagCampaignContactCache as tagCampaignContact } from "./tag-campaign-co
 import user from "./user";
 
 const cacheableData = {
+  assignment,
   campaign,
   campaignContact,
   cannedResponse,

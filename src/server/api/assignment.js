@@ -1,7 +1,7 @@
 import { mapFieldsToModel } from "./lib/utils";
 import { Assignment, r, cacheableData } from "../models";
 import { getOffsets, defaultTimezoneIsBetweenTextingHours } from "../../lib";
-import { getDynamicAssignmentBatchPolicy } from "../../integrations/dynamicassignment-batches";
+import { getDynamicAssignmentBatchPolicy } from "../../extensions/dynamicassignment-batches";
 
 export function addWhereClauseForContactsFilterMessageStatusIrrespectiveOfPastDue(
   queryParameter,
@@ -16,8 +16,19 @@ export function addWhereClauseForContactsFilterMessageStatusIrrespectiveOfPastDu
     query.whereIn("message_status", ["needsResponse", "needsMessage"]);
   } else if (messageStatusFilter === "allReplies") {
     query.whereNotIn("message_status", ["messaged", "needsMessage"]);
+  } else if (messageStatusFilter === "needsResponseExpired") {
+    query
+      .where("message_status", "needsResponse")
+      .whereNotNull("campaign.response_window")
+      .whereRaw(
+        /sqlite/.test(r.knex.client.config.client)
+          ? // SQLITE:
+            "24 * (julianday('now') - julianday(campaign_contact.updated_at)) > campaign.response_window"
+          : // POSTGRES:
+            "now() - campaign_contact.updated_at > interval '1 hour' * campaign.response_window"
+      );
   } else {
-    query = query.whereIn("message_status", messageStatusFilter.split(","));
+    query.whereIn("message_status", messageStatusFilter.split(","));
   }
   return query;
 }
@@ -167,7 +178,6 @@ export const resolvers = {
         assignment,
         texter: user
       });
-
       const suggestedCount = Math.min(
         assignment.max_contacts || campaign.batch_size,
         campaign.batch_size,

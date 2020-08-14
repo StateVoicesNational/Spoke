@@ -70,6 +70,18 @@
       "value": "https://<changeme>.herokuapp.com/twilio-message-report"
     },
 
+    "TWILIO_MULTI_ORG": {
+      "description": "Allows each organization in the Spoke instance to set Twilio variables within the app",
+      "required": false,
+      "value": "1"
+    },
+
+    "PHONE_INVENTORY": {
+      "description": "Enables organization owners to be able to buy Twilio phone numbers within the app",
+      "required": false,
+      "value": "1"
+    },
+
     "EMAIL_HOST": {
       "description": "for email notification integration",
       "required": false,
