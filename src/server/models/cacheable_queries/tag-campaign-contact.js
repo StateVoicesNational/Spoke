@@ -105,7 +105,7 @@ export const tagCampaignContactCache = {
           });
       });
 
-      const insertPromise = await trx("tag_campaign_contact").insert(newTags);
+      const insertPromise = trx("tag_campaign_contact").insert(newTags);
       promises.push(insertPromise);
 
       await Promise.all(promises);
