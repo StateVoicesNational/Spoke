@@ -74,14 +74,15 @@ export class AdminIncomingMessageList extends Component {
   constructor(props) {
     super(props);
 
-    const params = queryString.parse(document.location.search);
+    const query = props.location.query;
+    console.log("constructor");
     this.state = {
       page: 0,
       pageSize: 10,
       campaignsFilter: { isArchived: false },
       contactsFilter: { isOptedOut: false },
-      messageTextFilter: params.messagetext ? params.messagetext : "",
-      assignmentsFilter: params.texterId ? { texterId: params.texterId } : {},
+      messageTextFilter: query.messagetext ? query.messagetext : "",
+      assignmentsFilter: query.texterId ? { texterId: query.texterId } : {},
       needsRender: false,
       utc: Date.now().toString(),
       campaigns: [],
@@ -95,6 +96,9 @@ export class AdminIncomingMessageList extends Component {
       clearSelectedMessages: false,
       tagsFilter: { ignoreTags: true }
     };
+    if (query.campaigns) {
+      this.state.campaignsFilter.campaignIds = query.campaigns.split(",");
+    }
   }
 
   shouldComponentUpdate = (dummy, nextState) => {
@@ -117,6 +121,26 @@ export class AdminIncomingMessageList extends Component {
         clearSelectedMessages: false,
         needsRender: true
       });
+    }
+  };
+
+  componentWillUpdate = (nextProps, nextState) => {
+    if (nextState !== this.state) {
+      const query = {};
+      if (nextState.messageTextFilter) {
+        query.messageText = nextState.messageTextFilter;
+      }
+      if (nextState.assignmentsFilter.texterId) {
+        query.texterId = nextState.assignmentsFilter.texterId;
+      }
+      if (nextState.campaignsFilter.campaignIds) {
+        query.campaigns = nextState.campaignsFilter.campaignIds.join(",");
+      }
+      history.pushState(
+        null,
+        "Message Review",
+        "?" + queryString.stringify(query)
+      );
     }
   };
 
@@ -221,6 +245,10 @@ export class AdminIncomingMessageList extends Component {
   };
 
   handleCampaignsReceived = async campaigns => {
+    console.log("campaigns:", campaigns);
+    if (this.state.campaignsFilter.campaignIds) {
+      // handle campaign ids
+    }
     this.setState({ campaigns, needsRender: true });
   };
 
