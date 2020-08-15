@@ -14,7 +14,7 @@ import WarningIcon from "material-ui/svg-icons/alert/warning";
 import ErrorIcon from "material-ui/svg-icons/alert/error";
 import InfoIcon from "material-ui/svg-icons/action/info";
 import theme from "../styles/theme";
-import components from "../integrations/contact-loaders/components";
+import components from "../extensions/contact-loaders/components";
 import yup from "yup";
 
 const check = <CheckIcon color={theme.colors.green} />;
