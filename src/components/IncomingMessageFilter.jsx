@@ -84,6 +84,12 @@ class IncomingMessageFilter extends Component {
     };
   }
 
+  componentWillUpdate = (nextProps, nextState) => {
+    if (nextProps.texterSearchText && !this.state.texterSearchText) {
+      this.state.texterSearchText = nextProps.texterSearchText;
+    }
+  };
+
   onMessageFilterSelectChanged = (event, index, values) => {
     this.setState({ messageFilter: values });
     const messageStatuses = new Set();
@@ -224,7 +230,7 @@ class IncomingMessageFilter extends Component {
       return left.text.localeCompare(right.text, "en", { sensitivity: "base" });
     });
 
-    this.state.texterSearchText = this.props.texterSearchText;
+    //this.state.texterSearchText = this.props.texterSearchText;
 
     return (
       <Card>
