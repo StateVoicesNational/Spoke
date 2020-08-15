@@ -134,6 +134,8 @@ export const resolvers = {
     fullyConfigured: async organization => {
       const serviceName =
         getConfig("service", organization) || getConfig("DEFAULT_SERVICE");
+      // Any addition to this list of configuration incompleteness failure should be added
+      // below in orgConfigurationFailureInfoList as well.
       if (serviceName === "twilio") {
         const {
           authToken,
@@ -147,6 +149,27 @@ export const resolvers = {
         }
       }
       return true;
+    },
+    fullyConfiguredFailureInstructions: async organization => {
+      const failureInstructions = [];
+      const serviceName =
+        getConfig("service", organization) || getConfig("DEFAULT_SERVICE");
+      if (serviceName === "twilio") {
+        const {
+          authToken,
+          accountSid
+        } = await cacheableData.organization.getTwilioAuth(organization);
+        const messagingServiceSid = await cacheableData.organization.getMessageServiceSid(
+          organization
+        );
+        if (!(authToken && accountSid && messagingServiceSid)) {
+          failureInstructions.push(
+            "Twilio settings are not properly set up - Ensure authToken,\
+            accountSid, and messagingServiceSid are set."
+          );
+        }
+      }
+      return failureInstructions;
     },
     phoneInventoryEnabled: async (organization, _, { user }) => {
       await accessRequired(user, organization.id, "SUPERVOLUNTEER");
