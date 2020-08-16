@@ -112,7 +112,7 @@ Twilio provides [test credentials](https://www.twilio.com/docs/iam/test-credenti
 - More Development documentation
 
   - [A request example](https://github.com/MoveOnOrg/Spoke/blob/main/docs/EXPLANATION-request-example.md) pointing to different code points that all connect to it.
-  - [GraphQL Debugging](https://github.com/MoveOnOrg/Spoke/blob/main/docs/graphql_debug.md)
+  - [GraphQL Debugging](https://github.com/MoveOnOrg/Spoke/blob/main/docs/GRAPHQL_DEBUG.md)
   - [Environment Variable Reference](https://github.com/MoveOnOrg/Spoke/blob/main/docs/REFERENCE-environment_variables.md)
   - [QA Guide](https://github.com/MoveOnOrg/Spoke/blob/main/docs/QA_GUIDE.md)
 
