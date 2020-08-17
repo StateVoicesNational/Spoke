@@ -166,7 +166,8 @@ class AdminPhoneNumberInventory extends React.Component {
             {...dataTest("areaCode")}
           />
           <Form.Field label="Limit" name="limit" {...dataTest("limit")} />
-          {this.props.data.organization.twilioMessageServiceSid ? (
+          {this.props.data.organization.twilioMessageServiceSid
+            && !this.props.data.organization.campaignPhoneNumbersEnabled ? (
             <Form.Field
               label="Add to this organization's Messaging Service"
               name="addToOrganizationMessagingService"
@@ -264,6 +265,7 @@ const queries = {
         organization(id: $organizationId) {
           id
           twilioMessageServiceSid
+          campaignPhoneNumbersEnabled
           phoneNumberCounts {
             areaCode
             state
