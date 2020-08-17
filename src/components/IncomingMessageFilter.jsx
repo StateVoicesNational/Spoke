@@ -88,6 +88,9 @@ class IncomingMessageFilter extends Component {
     if (nextProps.texterSearchText && !this.state.texterSearchText) {
       this.state.texterSearchText = nextProps.texterSearchText;
     }
+    if (nextProps.selectedCampaigns && !this.state.selectedCampaigns.length) {
+      this.state.selectedCampaigns = nextProps.selectedCampaigns;
+    }
   };
 
   onMessageFilterSelectChanged = (event, index, values) => {
@@ -170,7 +173,10 @@ class IncomingMessageFilter extends Component {
   };
 
   fireCampaignChanged = selectedCampaigns => {
-    this.props.onCampaignChanged(this.selectedCampaignIds(selectedCampaigns));
+    this.props.onCampaignChanged(
+      this.selectedCampaignIds(selectedCampaigns),
+      selectedCampaigns
+    );
   };
 
   removeAllCampaignsFromCampaignsArray = campaign =>
@@ -392,7 +398,8 @@ IncomingMessageFilter.propTypes = {
   tags: type.arrayOf(type.object).isRequired,
   tagsFilter: type.object.isRequired,
   messageTextFilter: type.string,
-  texterSearchText: type.string
+  texterSearchText: type.string,
+  selectedCampaigns: type.array
 };
 
 export default IncomingMessageFilter;

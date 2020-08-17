@@ -82,17 +82,27 @@ export class AdminIncomingMessageList extends Component {
       campaignsFilter: { isArchived: false },
       contactsFilter: { isOptedOut: false },
       messageTextFilter: query.messagetext ? query.messagetext : "",
-      assignmentsFilter: query.texterId ? { texterId: query.texterId } : {},
+      assignmentsFilter: query.texterId
+        ? { texterId: Number(query.texterId) }
+        : {},
       needsRender: false,
       utc: Date.now().toString(),
       campaigns: [],
       reassignmentTexters: [],
       campaignTexters: [],
-      includeArchivedCampaigns: false,
+      includeArchivedCampaigns: query.archived
+        ? Boolean(parseInt(query.archived))
+        : false,
       conversationCount: 0,
-      includeActiveCampaigns: true,
-      includeNotOptedOutConversations: true,
-      includeOptedOutConversations: false,
+      includeActiveCampaigns: query.active
+        ? Boolean(parseInt(query.active))
+        : true,
+      includeNotOptedOutConversations: query.notOptedOut
+        ? Boolean(parseInt(query.notOptedOut))
+        : true,
+      includeOptedOutConversations: query.optedOut
+        ? Boolean(parseInt(query.optedOut))
+        : false,
       clearSelectedMessages: false,
       tagsFilter: { ignoreTags: true }
     };
@@ -133,8 +143,25 @@ export class AdminIncomingMessageList extends Component {
       if (nextState.assignmentsFilter.texterId) {
         query.texterId = nextState.assignmentsFilter.texterId;
       }
-      if (nextState.campaignsFilter.campaignIds) {
+      if (
+        nextState.campaignsFilter.campaignIds &&
+        nextState.campaignsFilter.campaignIds.length
+      ) {
         query.campaigns = nextState.campaignsFilter.campaignIds.join(",");
+      }
+      //default false
+      if (nextState.includeArchivedCampaigns) {
+        query.archived = 1;
+      }
+      if (nextState.includeOptedOutConversations) {
+        query.optedOut = 1;
+      }
+      //default true
+      if (!nextState.includeActiveCampaigns) {
+        query.active = 0;
+      }
+      if (!nextState.includeNotOptedOutConversations) {
+        query.notOptedOut = 0;
       }
       history.pushState(
         null,
@@ -144,7 +171,7 @@ export class AdminIncomingMessageList extends Component {
     }
   };
 
-  handleCampaignChanged = async campaignIds => {
+  handleCampaignChanged = async (campaignIds, selectedCampaigns) => {
     const campaignsFilter = getCampaignsFilterForCampaignArchiveStatus(
       this.state.includeActiveCampaigns,
       this.state.includeArchivedCampaigns
@@ -155,6 +182,7 @@ export class AdminIncomingMessageList extends Component {
 
     await this.setState({
       campaignsFilter,
+      selectedCampaigns,
       needsRender: true
     });
   };
@@ -246,10 +274,15 @@ export class AdminIncomingMessageList extends Component {
 
   handleCampaignsReceived = async campaigns => {
     console.log("campaigns:", campaigns);
+    let selectedCampaigns = [];
     if (this.state.campaignsFilter.campaignIds) {
-      // handle campaign ids
+      this.state.campaignsFilter.campaignIds.forEach(campaignId => {
+        const campaign = campaigns.find(campaign => campaign.id == campaignId);
+        const campaignDisplay = `${campaignId}: ${campaign.title}`;
+        selectedCampaigns.push({ key: campaign.id, text: campaignDisplay });
+      });
     }
-    this.setState({ campaigns, needsRender: true });
+    this.setState({ campaigns, selectedCampaigns, needsRender: true });
   };
 
   handleCampaignTextersReceived = async campaignTexters => {
@@ -257,7 +290,9 @@ export class AdminIncomingMessageList extends Component {
     let texterDisplayName = "";
     if (this.state.assignmentsFilter.texterId) {
       const texter = campaignTexters.find(texter => {
-        return texter.id === this.state.assignmentsFilter.texterId;
+        return (
+          parseInt(texter.id, 10) === this.state.assignmentsFilter.texterId
+        );
       });
       if (texter) {
         texterDisplayName = texter.displayName;
@@ -443,6 +478,7 @@ export class AdminIncomingMessageList extends Component {
             tags={this.props.organization.organization.tags}
             messageTextFilter={this.state.messageTextFilter}
             texterSearchText={this.state.texterSearchText}
+            selectedCampaigns={this.state.selectedCampaigns}
           />
           <br />
           <IncomingMessageActions
