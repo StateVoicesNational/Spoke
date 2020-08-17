@@ -15,12 +15,20 @@ import CannedResponseForm from "../CannedResponseForm";
 import GSSubmitButton from "../forms/GSSubmitButton";
 import Form from "react-formal";
 import { log } from "../../lib";
+import GSTextField from "../forms/GSTextField";
 
 // import { insert, update, remove } from '../../api/scripts/methods'
 
 const styles = {
   dialog: {
     zIndex: 10001
+  },
+  overflowHidden: {
+    overflow: "hidden"
+  },
+  search: {
+    paddingLeft: 16,
+    paddingRight: 16
   }
 };
 
@@ -28,7 +36,8 @@ class ScriptList extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      dialogOpen: false
+      dialogOpen: false,
+      search: null
     };
   }
 
@@ -73,7 +82,17 @@ class ScriptList extends React.Component {
     };
 
     const rightIconButton = null;
-    const listItems = scripts.map(script => (
+
+    const search = this.state.search && this.state.search.toLowerCase();
+    const filteredScripts = search
+      ? scripts.filter(
+          script =>
+            script.text.toLowerCase().includes(search) ||
+            script.title.toLowerCase().includes(search)
+        )
+      : scripts;
+
+    const listItems = filteredScripts.map(script => (
       <ListItem
         value={script.text}
         onClick={() => onSelectCannedResponse(script)}
@@ -97,8 +116,16 @@ class ScriptList extends React.Component {
 
     const list =
       scripts.length === 0 ? null : (
-        <List>
-          <Subheader>{subheader}</Subheader>
+        <List style={styles.overflowHidden}>
+          {subheader ? <Subheader>{subheader}</Subheader> : ""}
+          <GSTextField
+            name="search"
+            floatingLabelText="Search for canned responses"
+            value={this.state.search}
+            onChange={text => this.setState({ search: text })}
+            style={styles.search}
+            fullWidth
+          />
           {listItems}
           <Divider />
         </List>
