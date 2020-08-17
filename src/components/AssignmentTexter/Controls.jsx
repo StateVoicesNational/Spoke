@@ -428,21 +428,31 @@ export class AssignmentTexterContactControls extends React.Component {
         targetOrigin={{ horizontal: "left", vertical: "bottom" }}
         onRequestClose={this.handleCloseAnswerPopover}
       >
-        <Survey
-          contact={contact}
-          interactionSteps={availableInteractionSteps}
-          onQuestionResponseChange={this.handleQuestionResponseChange}
-          currentInteractionStep={this.state.currentInteractionStep}
-          listHeader={otherResponsesLink}
-          questionResponses={questionResponses}
-          onRequestClose={this.handleCloseAnswerPopover}
-        />
+        {!window.HIDE_BRANCHED_SCRIPTS ? (
+          <Survey
+            contact={contact}
+            interactionSteps={availableInteractionSteps}
+            onQuestionResponseChange={this.handleQuestionResponseChange}
+            currentInteractionStep={this.state.currentInteractionStep}
+            listHeader={otherResponsesLink}
+            questionResponses={questionResponses}
+            onRequestClose={this.handleCloseAnswerPopover}
+          />
+        ) : (
+          ""
+        )}
         <ScriptList
           scripts={campaign.cannedResponses}
           showAddScriptButton={false}
           customFields={campaign.customFields}
           currentCannedResponseScript={cannedResponseScript}
-          subheader={<div id="otherresponses">Other Responses</div>}
+          subheader={
+            window.HIDE_BRANCHED_SCRIPTS ? (
+              ""
+            ) : (
+              <div id="otherresponses">Other Responses</div>
+            )
+          }
           onSelectCannedResponse={this.handleCannedResponseChange}
           onCreateCannedResponse={this.props.onCreateCannedResponse}
         />

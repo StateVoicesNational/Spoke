@@ -207,6 +207,10 @@ export default class CampaignInteractionStepsForm extends React.Component {
       instructions = answerActions.instructions;
     }
 
+    const initialSubtitleText = window.HIDE_BRANCHED_SCRIPTS
+      ? "Enter an initial script for your texter."
+      : "Enter a script for your texter along with the question you want the texter be able to answer on behalf of the contact.";
+
     return (
       <div>
         <Card
@@ -218,9 +222,7 @@ export default class CampaignInteractionStepsForm extends React.Component {
             style={styles.cardHeader}
             title={title}
             subtitle={
-              interactionStep.parentInteractionId
-                ? ""
-                : "Enter a script for your texter along with the question you want the texter be able to answer on behalf of the contact."
+              interactionStep.parentInteractionId ? "" : initialSubtitleText
             }
           />
           <CardText>
@@ -320,13 +322,17 @@ export default class CampaignInteractionStepsForm extends React.Component {
                 multiLine
                 hintText="This is what your texters will send to your contacts. E.g. Hi, {firstName}. It's {texterFirstName} here."
               />
-              <Form.Field
-                {...dataTest("questionText")}
-                name="questionText"
-                label="Question"
-                fullWidth
-                hintText="A question for texters to answer. E.g. Can this person attend the event?"
-              />
+              {!window.HIDE_BRANCHED_SCRIPTS ? (
+                <Form.Field
+                  {...dataTest("questionText")}
+                  name="questionText"
+                  label="Question"
+                  fullWidth
+                  hintText="A question for texters to answer. E.g. Can this person attend the event?"
+                />
+              ) : (
+                ""
+              )}
             </GSForm>
           </CardText>
         </Card>
@@ -377,11 +383,15 @@ export default class CampaignInteractionStepsForm extends React.Component {
 
     const tree = makeTree(this.state.interactionSteps);
 
+    const sectionSubtitle = window.HIDE_BRANCHED_SCRIPTS
+      ? "Add an initial outbound message to begin your conversation, then add canned responses below to continue the conversation."
+      : "You can add scripts and questions and your texters can indicate responses from your contacts. For example, you might want to collect RSVPs to an event or find out whether to follow up about a different volunteer activity.";
+
     return (
       <div>
         <CampaignFormSectionHeading
           title="What do you want to discuss?"
-          subtitle="You can add scripts and questions and your texters can indicate responses from your contacts. For example, you might want to collect RSVPs to an event or find out whether to follow up about a different volunteer activity."
+          subtitle={sectionSubtitle}
         />
         {this.renderInteractionStep(tree, availableActions)}
         <RaisedButton

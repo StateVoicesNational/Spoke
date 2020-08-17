@@ -167,6 +167,10 @@ export default class CampaignCannedResponsesForm extends React.Component {
         </List>
       );
 
+    const sectionSubtitle = window.HIDE_BRANCHED_SCRIPTS
+      ? "Save some scripts for your texters to use to answer survey questions and additional FAQs that may come up."
+      : "Save some scripts for your texters to use to answer additional FAQs that may come up outside of the survey questions and scripts you already set up.";
+
     return (
       <GSForm
         schema={this.formSchema}
@@ -176,7 +180,7 @@ export default class CampaignCannedResponsesForm extends React.Component {
       >
         <CampaignFormSectionHeading
           title="Canned responses for texters"
-          subtitle="Save some scripts for your texters to use to answer additional FAQs that may come up outside of the survey questions and scripts you already set up."
+          subtitle={sectionSubtitle}
         />
         {list}
         {this.showAddForm()}

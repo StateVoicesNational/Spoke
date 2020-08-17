@@ -98,6 +98,8 @@ class AdminCampaignStats extends React.Component {
   renderSurveyStats() {
     const { interactionSteps } = this.props.data.campaign;
 
+    if (window.HIDE_BRANCHED_SCRIPTS) return "";
+
     return interactionSteps.map(step => {
       if (step.question === "") {
         return <div></div>;
@@ -338,7 +340,11 @@ class AdminCampaignStats extends React.Component {
             <Stat title="Opt-outs" count={campaign.stats.optOutsCount} />
           </div>
         </div>
-        <div className={css(styles.header)}>Survey Questions</div>
+        {window.HIDE_BRANCHED_SCRIPTS ? (
+          ""
+        ) : (
+          <div className={css(styles.header)}>Survey Questions</div>
+        )}
         {this.renderSurveyStats()}
         {campaign.stats.errorCounts.length > 0 ? (
           <div>
