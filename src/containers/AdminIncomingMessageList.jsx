@@ -109,6 +109,9 @@ export class AdminIncomingMessageList extends Component {
     if (query.campaigns) {
       this.state.campaignsFilter.campaignIds = query.campaigns.split(",");
     }
+    if (query.messageStatus) {
+      this.state.contactsFilter.messageStatus = query.messageStatus;
+    }
   }
 
   shouldComponentUpdate = (dummy, nextState) => {
@@ -148,6 +151,9 @@ export class AdminIncomingMessageList extends Component {
         nextState.campaignsFilter.campaignIds.length
       ) {
         query.campaigns = nextState.campaignsFilter.campaignIds.join(",");
+      }
+      if (nextState.contactsFilter.messageStatus) {
+        query.messageStatus = nextState.contactsFilter.messageStatus;
       }
       //default false
       if (nextState.includeArchivedCampaigns) {
@@ -479,6 +485,7 @@ export class AdminIncomingMessageList extends Component {
             messageTextFilter={this.state.messageTextFilter}
             texterSearchText={this.state.texterSearchText}
             selectedCampaigns={this.state.selectedCampaigns}
+            messageFilter={this.state.contactsFilter.messageStatus}
           />
           <br />
           <IncomingMessageActions
