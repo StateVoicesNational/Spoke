@@ -364,7 +364,6 @@ it("should save campaign canned responses across copies and match saved data", a
     { campaignId: testCampaign.id },
     testAdminUser
   );
-
   expect(campaignDataResults.data.campaign.cannedResponses.length).toEqual(6);
   for (let i = 0; i < 6; i++) {
     expect(campaignDataResults.data.campaign.cannedResponses[i].title).toEqual(

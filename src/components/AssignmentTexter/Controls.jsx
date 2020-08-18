@@ -582,13 +582,16 @@ export class AssignmentTexterContactControls extends React.Component {
   }
 
   renderMessagingRowMessage() {
+    const { cannedResponseScript } = this.state;
     return (
       <div className={css(flexStyles.sectionMessageField)}>
         <GSForm
           ref="form"
           schema={this.messageSchema}
           value={{ messageText: this.state.messageText }}
-          onSubmit={this.props.onMessageFormSubmit}
+          onSubmit={this.props.onMessageFormSubmit(
+            cannedResponseScript && cannedResponseScript.id
+          )}
           onChange={
             this.state.messageReadOnly
               ? null // message is uneditable for firstMessage
