@@ -160,6 +160,11 @@ const rootSchema = gql`
     organizationId: String
   }
 
+  input ContactTagInput {
+    id: String
+    value: String
+  }
+
   type FoundContact {
     found: Boolean
     assignment: Assignment
@@ -303,7 +308,10 @@ const rootSchema = gql`
       interactionStepIds: [String]
       campaignContactId: String!
     ): CampaignContact
-    updateContactTags(tags: [TagInput], campaignContactId: String!): String
+    updateContactTags(
+      tags: [ContactTagInput]
+      campaignContactId: String!
+    ): String
     updateQuestionResponses(
       questionResponses: [QuestionResponseInput]
       campaignContactId: String!
