@@ -284,7 +284,6 @@ export default class CampaignTextersForm extends React.Component {
     const autocomplete = (
       <AutoComplete
         ref="autocomplete"
-        s
         style={inlineStyles.autocomplete}
         autoFocus
         onFocus={() => this.setState({ searchText: "" })}
