@@ -79,10 +79,20 @@ class IncomingMessageFilter extends Component {
 
     this.state = {
       selectedCampaigns: [],
-      messageTextFilter: "",
+      messageTextFilter: this.props.messageTextFilter,
+      messageFilter: this.props.messageFilter,
       tagsFilter: this.props.tagsFilter
     };
   }
+
+  componentWillUpdate = (nextProps, nextState) => {
+    if (nextProps.texterSearchText && !this.state.texterSearchText) {
+      this.state.texterSearchText = nextProps.texterSearchText;
+    }
+    if (nextProps.selectedCampaigns && !this.state.selectedCampaigns.length) {
+      this.state.selectedCampaigns = nextProps.selectedCampaigns;
+    }
+  };
 
   onMessageFilterSelectChanged = (event, index, values) => {
     this.setState({ messageFilter: values });
@@ -164,7 +174,10 @@ class IncomingMessageFilter extends Component {
   };
 
   fireCampaignChanged = selectedCampaigns => {
-    this.props.onCampaignChanged(this.selectedCampaignIds(selectedCampaigns));
+    this.props.onCampaignChanged(
+      this.selectedCampaignIds(selectedCampaigns),
+      selectedCampaigns
+    );
   };
 
   removeAllCampaignsFromCampaignsArray = campaign =>
@@ -223,6 +236,8 @@ class IncomingMessageFilter extends Component {
     campaignNodes.sort((left, right) => {
       return left.text.localeCompare(right.text, "en", { sensitivity: "base" });
     });
+
+    //this.state.texterSearchText = this.props.texterSearchText;
 
     return (
       <Card>
@@ -328,6 +343,7 @@ class IncomingMessageFilter extends Component {
               <TextField
                 hintText="Search message text"
                 floatingLabelText="Search message text"
+                value={this.state.messageTextFilter}
                 onChange={(_, messageTextFilter) => {
                   this.setState({ messageTextFilter });
                 }}
@@ -381,7 +397,10 @@ IncomingMessageFilter.propTypes = {
   }).isRequired,
   onTagsFilterChanged: type.func.isRequired,
   tags: type.arrayOf(type.object).isRequired,
-  tagsFilter: type.object.isRequired
+  tagsFilter: type.object.isRequired,
+  messageTextFilter: type.string,
+  texterSearchText: type.string,
+  selectedCampaigns: type.array
 };
 
 export default IncomingMessageFilter;
