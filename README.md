@@ -24,74 +24,7 @@ Follow up instructions located [here](https://github.com/MoveOnOrg/Spoke/blob/ma
 
 Please let us know if you deployed by filling out this form [here](https://act.moveon.org/survey/tech/)
 
-## Getting started
-### Downloading
 
-1. Install the Node version listed in `.nvmrc`. [NVM](https://github.com/creationix/nvm) is one way to do this (from the spoke directory):
-   ```
-   nvm install
-   nvm use
-   ```
-2. Install yarn.
-
-- Yarn is a package manager that will download all required packages to run Spoke.
-- Install using the [directions provided by Yarn](https://yarnpkg.com/en/docs/install).
-
-3. Install the packages.
-   ```
-   yarn install
-   ```
-4. Create a real environment file:
-   ```
-   cp .env.example .env
-   ```
-
-- This creates a copy of `.env.example`, but renames it `.env` so the system will use it. _Make sure you use this new file._
-
-### Your Database
-
-We have 2 recommended ways to set up your databse for your development environment and you can choose either based on your preference or comfort level. You can use sqlite (which is the default DB so you can proceed to the next section if you choose this) or postgres. At this time, all production Spoke instances use postgres.
-
-#### Using Docker to run postgres
-
-Docker is optional, but can help with a consistent development environment using postgres. You can also set up postgres without docker ([documented here](https://github.com/MoveOnOrg/Spoke/blob/main/docs/HOWTO_USE_POSTGRESQL.md)) but we recommend the docker route.
-
-1. Install docker and docker compose
-
-- Docker allows you to run apps in containers and can be installed [here with Docker's instructions](https://docs.docker.com/desktop/)
-- Docker Compose is the tool used to create and run docker configurations. If you installed Docker on Mac, you already have Docker Compose, if you're using Linux or Windows you can install Docker Compose [with these instructions](https://docs.docker.com/compose/install/)
-
-2. Run `./dev-tools/create-test-database` to populate the test database
-
-3. Make sure Docker is running on your machine and then build and run Spoke with `docker-compose up -d` to run redis and postgres in the background
-   - You can stop docker compose at any time with `docker-compose down`, and data will persist next time you run `docker-compose up`.
-4. When done testing, clean up resources with `docker-compose down`, or `docker-compose down -v` to **_completely destroy_** your Postgres database & Redis datastore volumes.
-
-### Your `.env` file
-
-If you're using postgres, you should set `DB_TYPE=pg` and if you're using sqlite, you don't need to change anything about your .env file.
-
-We use environment variables to allow instance admins to customize their Spoke experience. If you end up doing dev work on an area that is configured through environment variables, it will be helpful to be familiar with the patterns used. Because of this, we recommend that you take a look at the [environment variable reference](https://github.com/MoveOnOrg/Spoke/blob/main/docs/REFERENCE-environment_variables.md) to get a lay of the land.
-
-### Getting the app running
-
-At this point, you should be ready to start your app in development mode.
-
-1. Run `yarn dev` to create and populate the tables.
-   - Wait until you see both "Node app is running ..." and "webpack: Compiled successfully." before attempting to connect. (make sure environment variable `JOBS_SAME_PROCESS=1`)
-2. Go to `http://localhost:3000` to load the app. (Note: the terminal will say it's running on port 8090 -- don't believe it :-)
-3. As long as you leave `SUPPRESS_SELF_INVITE=` blank in your `.env` you should be able to invite yourself from the homepage.
-   - If you DO set that variable, then spoke will be invite-only and you'll need to generate an invite. Run:
-     ```
-     echo "INSERT INTO invite (hash,is_valid) VALUES ('E4502B28-301E-4E63-9A97-ACA14E8160C8', 1);" |sqlite3 mydb.sqlite
-     # Note: When doing this with PostgreSQL, you would replace the `1` with `true`
-     ```
-   - Then use the generated key to visit an invite link, e.g.: http://localhost:3000/invite/E4502B28-301E-4E63-9A97-ACA14E8160C8. This should redirect you to the login screen. Use the "Sign Up" option to create your account.
-4. You should then be prompted to create an organization. Create it.
-5. Once you've created your organization, we recommend setting the env var `SUPPRESS_SELF_INVITE=1` so you don't get prompted to create a new org every time you log in
-6. See the [Admin](https://youtu.be/PTMykMX8gII) and [Texter](https://youtu.be/EqE1UDvKGco) demos to learn about how Spoke works.
-7. See [Getting Started with Development](#more-documentation) below.
-8. See [How to Run Tests](https://github.com/MoveOnOrg/Spoke/blob/main/docs/HOWTO-run_tests.md)
 
 ### SMS
 
