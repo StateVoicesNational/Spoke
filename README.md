@@ -9,32 +9,39 @@ Spoke was created by Saikat Chakrabarti and Sheena Pakanati, and is now maintain
 
 The latest version is [8.1](https://github.com/MoveOnOrg/Spoke/tree/v8.1) (see [release notes](https://github.com/MoveOnOrg/Spoke/blob/main/docs/RELEASE_NOTES.md#v81))
 
-## Deploy to Heroku
 
-Use the Heroku Button to deploy a version of Spoke suitable for testing. This won't cost any money and will not support production usage. It's a great way to practice deploying Spoke or see it in action.
-<a href="https://heroku.com/deploy?template=https://github.com/MoveOnOrg/Spoke/tree/v8.1">
+
+##Get Started:
+
+
+The easiest way to get started is with the [Quick Start with Heroku] section below.  You can also learn about Spoke through the [user] and [admin] video demos or in the explanation on [how to decide if Spoke is right for you.](/EXPLANATION_DECIDING_ON_SPOKE.md)
+
+For developers, please see our recomendations for [deploying locally for development](/HOWTO_DEVELOPMENT_LOCAL_SETUP.md).
+
+
+
+### Quick Start with Heroku
+This version of Spoke suitable for testing and, potentially, for small campaigns. This won't cost any money and will not support production usage. It's a great way to practice deploying Spoke or see it in action.  
+<a href="https://heroku.com/deploy?template=https://github.com/MoveOnOrg/Spoke/tree/v8.0">
+
   <img src="https://www.herokucdn.com/deploy/button.svg" alt="Deploy">
 </a>
 
-Or click [this link to deploy with a prod infrastructure set up to get up and running!](https://heroku.com/deploy?template=https://github.com/MoveOnOrg/Spoke/tree/heroku-button-paid)
-
-**NOTE:** Deploying with prod infrastructure will cost $75 ($25 dyno + $50 postgres) a month and should be suitable for production level usage for most organizations.
-
 Follow up instructions located [here](https://github.com/MoveOnOrg/Spoke/blob/main/docs/HOWTO_HEROKU_DEPLOY.md).
+
+**NOTE:** You can upgrade this deployment later for use in a production (aka large-scale) setting, but keep in mind you will lose the data from any prior campaigns.  Thus it is best to upgrade before you start any live campaigns.  This will cost $75 ($25 dyno + $50 postgres) a month and should be suitable for production level usage for most organizations. Alternatively, you can click [this link to deploy with a production infrastructure from the start!](https://heroku.com/deploy?template=https://github.com/MoveOnOrg/Spoke/tree/heroku-button-paid) 
 
 Please let us know if you deployed by filling out this form [here](https://act.moveon.org/survey/tech/)
 
 
+### Other Options for Production Use 
 
-### SMS
+You can also[deploy on AWS Lambda.](https://github.com/MoveOnOrg/Spoke/blob/main/docs/DEPLOYING_AWS_LAMBDA.md) 
 
-For development, you can set `DEFAULT_SERVICE=fakeservice` to skip using an SMS provider (Twilio or Nexmo) and insert the message directly into the database.
+Additional guidance:
+*[Choosing a set-up for production](/EXPLANATION_CHOOSE_A_SETUP.md)
+*[How to hire someone to install Spoke](/HOWTO_HIRE_SOMEONE_TO_INSTALL_SPOKE.md)
 
-To simulate receiving a reply from a contact you can use the Send Replies utility: `http://localhost:3000/admin/1/campaigns/1/send-replies`, updating the app and campaign IDs as necessary. You can also include "autorespond" in the script message text, and an automatic reply will be generated (just for `fakeservice`!)
-
-**Twilio**
-
-Twilio provides [test credentials](https://www.twilio.com/docs/iam/test-credentials) that will not charge your account as described in their documentation. To setup Twilio follow our [Twilio setup guide](https://github.com/MoveOnOrg/Spoke/blob/main/docs/HOWTO_INTEGRATE_TWILIO.md).
 
 ## More Documentation
 
@@ -53,6 +60,7 @@ Twilio provides [test credentials](https://www.twilio.com/docs/iam/test-credenti
 
   - [Deploying with Heroku](https://github.com/MoveOnOrg/Spoke/blob/main/docs/HOWTO_HEROKU_DEPLOY.md) (and see Heroku deploy button above)
   - [Deploying on AWS Lambda](https://github.com/MoveOnOrg/Spoke/blob/main/docs/DEPLOYING_AWS_LAMBDA.md)
+  - [Deploying Minimally](./docs/HOWTO_MINIMALIST_DEPLOY.md)
   - We recommend using [Auth0 for authentication](https://github.com/MoveOnOrg/Spoke/blob/main/docs/HOWTO-configure-auth0.md) in deployed environments (Heroku docs have their own instructions)
   - [How to setup Twilio](https://github.com/MoveOnOrg/Spoke/blob/main/docs/HOWTO_INTEGRATE_TWILIO.md)
   - [Configuring Email](https://github.com/MoveOnOrg/Spoke/blob/main/docs/EMAIL_CONFIGURATION.md)

@@ -1,4 +1,7 @@
 ## Getting started
+
+The following is the reccomended developer set-up.  If you prefer, [click here for instructions for a minimalist set-up.](HOWTO_MINIMALIST_DEPLOY.md)
+
 ### Downloading
 
 1. Install the Node version listed in `.nvmrc`. [NVM](https://github.com/creationix/nvm) is one way to do this (from the spoke directory):
@@ -67,3 +70,12 @@ At this point, you should be ready to start your app in development mode.
 6. See the [Admin](https://youtu.be/PTMykMX8gII) and [Texter](https://youtu.be/EqE1UDvKGco) demos to learn about how Spoke works.
 7. See [Getting Started with Development](#more-documentation) below.
 8. See [How to Run Tests](https://github.com/MoveOnOrg/Spoke/blob/main/docs/HOWTO-run_tests.md)
+
+### SMS and Twilio in development
+
+For development, you can set `DEFAULT_SERVICE=fakeservice` to skip using an SMS provider (Twilio or Nexmo) and insert the message directly into the database.
+
+To simulate receiving a reply from a contact you can use the Send Replies utility: `http://localhost:3000/admin/1/campaigns/1/send-replies`, updating the app and campaign IDs as necessary. You can also include "autorespond" in the script message text, and an automatic reply will be generated (just for `fakeservice`!)
+
+If you need to use Twilio in development but with live keys, click [here](HOWTO_INTEGRATE_TWILIO.md) for instructions.
+When using instructions, please remember that references to NGROK urls should change to your Heroku app url.
