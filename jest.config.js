@@ -27,8 +27,7 @@ module.exports = {
     TWILIO_MESSAGE_SERVICE_SID: "TEST_MESSAGE_SID",
     TEST_ENVIRONMENT: "1",
     TEST_ENVIRONMENT_FAKE: "0",
-    TEST_ENVIRONMENT_FAKE2: "false",
-    EXPERIMENTAL_TAGS: "1"
+    TEST_ENVIRONMENT_FAKE2: "false"
   },
   moduleFileExtensions: ["js", "jsx"],
   transform: {

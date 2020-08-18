@@ -10,6 +10,7 @@ function getComponents() {
           "default-releasecontacts",
           "celebration-gif",
           "contact-reference",
+          "tag-contact",
           "default-editinitial"
         ];
   const components = {};
