@@ -168,14 +168,12 @@ export class CampaignCannedResponsesForm extends React.Component {
       >
         <div className={css(styles.title)}>{response.title}</div>
         <div className={css(styles.text)}>{response.text}</div>
-        {window.EXPERIMENTAL_TAGS &&
-          response.tagIds &&
-          response.tagIds.length > 0 && (
-            <TagChips
-              tags={this.props.data.organization.tags}
-              tagIds={response.tagIds}
-            />
-          )}
+        {response.tagIds && response.tagIds.length > 0 && (
+          <TagChips
+            tags={this.props.data.organization.tags}
+            tagIds={response.tagIds}
+          />
+        )}
       </ListItem>
     ));
     return listItems;

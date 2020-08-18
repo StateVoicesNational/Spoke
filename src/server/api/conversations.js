@@ -53,11 +53,7 @@ function getConversationsJoinsAndWhereClause(
     query = query.where("is_opted_out", contactsFilter.isOptedOut);
   }
 
-  if (
-    getConfig("EXPERIMENTAL_TAGS", null, { truthy: 1 }) &&
-    contactsFilter &&
-    contactsFilter.tags
-  ) {
+  if (contactsFilter && contactsFilter.tags) {
     const tags = contactsFilter.tags;
 
     let tagsSubquery = r.knex
@@ -229,7 +225,7 @@ export async function getConversations(
   }
 
   // tags query
-  if (getConfig("EXPERIMENTAL_TAGS", null, { truthy: 1 }) && includeTags) {
+  if (includeTags) {
     const tagsQuery = r.knex
       .select(
         "tag_campaign_contact.campaign_contact_id as campaign_contact_id",

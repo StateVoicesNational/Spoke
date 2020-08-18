@@ -71,39 +71,35 @@ export default class CannedResponseForm extends React.Component {
             multiLine
             fullWidth
           />
-          {window.EXPERIMENTAL_TAGS && (
-            <AutoComplete
-              ref="autocompleteInput"
-              floatingLabelText="Tags"
-              filter={AutoComplete.fuzzyFilter}
-              dataSource={
-                tags && tags.filter(t => this.state.tagIds.indexOf(t.id) === -1)
-              }
-              maxSearchResults={8}
-              onNewRequest={({ id }) => {
-                this.refs.autocompleteInput.setState({ searchText: "" });
-                this.setState({ tagIds: [...this.state.tagIds, id] });
-              }}
-              dataSourceConfig={{
-                text: "name",
-                value: "id"
-              }}
-              fullWidth
-            />
-          )}
-          {window.EXPERIMENTAL_TAGS && (
-            <TagChips
-              tags={tags}
-              tagIds={this.state.tagIds}
-              onRequestDelete={listedTag => {
-                this.setState({
-                  tagIds: this.state.tagIds.filter(
-                    tagId => tagId !== listedTag.id
-                  )
-                });
-              }}
-            />
-          )}
+          <AutoComplete
+            ref="autocompleteInput"
+            floatingLabelText="Tags"
+            filter={AutoComplete.fuzzyFilter}
+            dataSource={
+              tags && tags.filter(t => this.state.tagIds.indexOf(t.id) === -1)
+            }
+            maxSearchResults={8}
+            onNewRequest={({ id }) => {
+              this.refs.autocompleteInput.setState({ searchText: "" });
+              this.setState({ tagIds: [...this.state.tagIds, id] });
+            }}
+            dataSourceConfig={{
+              text: "name",
+              value: "id"
+            }}
+            fullWidth
+          />
+          <TagChips
+            tags={tags}
+            tagIds={this.state.tagIds}
+            onRequestDelete={listedTag => {
+              this.setState({
+                tagIds: this.state.tagIds.filter(
+                  tagId => tagId !== listedTag.id
+                )
+              });
+            }}
+          />
           <div className={css(styles.buttonRow)}>
             <FlatButton
               {...dataTest("addResponse")}

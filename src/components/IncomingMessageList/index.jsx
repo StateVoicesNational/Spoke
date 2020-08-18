@@ -203,7 +203,7 @@ export class IncomingMessageList extends Component {
               }}
               icon={<ActionOpenInNew />}
             />
-            {window.EXPERIMENTAL_TAGS && this.renderTags(row.tags)}
+            {this.renderTags(row.tags)}
           </div>
         )
     }
@@ -299,9 +299,7 @@ export class IncomingMessageList extends Component {
           selectedRows={clearSelectedMessages ? null : this.state.selectedRows}
         />
         <ConversationPreviewModal
-          {...(window.EXPERIMENTAL_TAGS && {
-            organizationTags: this.state.tags
-          })}
+          organizationTags={this.state.tags}
           conversation={this.state.activeConversation}
           onRequestClose={this.handleCloseConversation}
           onForceRefresh={this.props.onForceRefresh}

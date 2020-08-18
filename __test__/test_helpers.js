@@ -168,7 +168,17 @@ export async function createOrganization(user, invite) {
     name,
     inviteId
   };
-  return await graphql(mySchema, orgQuery, rootValue, context, variables);
+  const result = await graphql(
+    mySchema,
+    orgQuery,
+    rootValue,
+    context,
+    variables
+  );
+  if (result && result.errors) {
+    throw new Exception("createOrganization failed " + JSON.stringify(result));
+  }
+  return result;
 }
 
 export async function setTwilioAuth(user, organization) {
