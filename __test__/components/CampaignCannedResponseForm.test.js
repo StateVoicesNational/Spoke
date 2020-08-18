@@ -14,13 +14,38 @@ describe("CampaignCannedResponseForm component", () => {
     defaultValue: {
       id: 1,
       title: "Response1",
-      text: "Response1 desc"
-    }
+      text: "Response1 desc",
+      tagIds: [1, 2]
+    },
+    tags: [
+      {
+        id: 1,
+        name: "Tag1",
+        description: "Tag1Desc"
+      },
+      {
+        id: 2,
+        name: "Tag2",
+        description: "Tag2Desc"
+      }
+    ]
   };
 
   const props2 = {
     formButtonText: "Add Response",
-    defaultValue: {}
+    defaultValue: {},
+    tags: [
+      {
+        id: 1,
+        name: "Tag1",
+        description: "Tag1Desc"
+      },
+      {
+        id: 2,
+        name: "Tag2",
+        description: "Tag2Desc"
+      }
+    ]
   };
 
   // when
@@ -43,6 +68,19 @@ describe("CampaignCannedResponseForm component", () => {
         .find("button")
         .text()
     ).toBe("Edit Response");
+    expect(wrapper.find("TagChips").prop("tagIds")).toEqual([1, 2]);
+    expect(wrapper.find("TagChips").prop("tags")).toEqual([
+      {
+        id: 1,
+        name: "Tag1",
+        description: "Tag1Desc"
+      },
+      {
+        id: 2,
+        name: "Tag2",
+        description: "Tag2Desc"
+      }
+    ]);
   });
 
   test("Renders form with correct fields and label for adding", () => {
@@ -64,5 +102,18 @@ describe("CampaignCannedResponseForm component", () => {
         .find("button")
         .text()
     ).toBe("Add Response");
+    expect(wrapper.find("TagChips").prop("tagIds")).toEqual([]);
+    expect(wrapper.find("TagChips").prop("tags")).toEqual([
+      {
+        id: 1,
+        name: "Tag1",
+        description: "Tag1Desc"
+      },
+      {
+        id: 2,
+        name: "Tag2",
+        description: "Tag2Desc"
+      }
+    ]);
   });
 });

@@ -2,9 +2,9 @@ import GraphQLDate from "graphql-date";
 import GraphQLJSON from "graphql-type-json";
 import { GraphQLError } from "graphql/error";
 import isUrl from "is-url";
-
+import _ from "lodash";
 import { gzip, makeTree, getHighestRole } from "../../lib";
-import { capitalizeWord } from "./lib/utils";
+import { capitalizeWord, groupCannedResponses } from "./lib/utils";
 import twilio from "./lib/twilio";
 import ownedPhoneNumber from "./lib/owned-phone-number";
 
@@ -311,12 +311,42 @@ async function editCampaign(id, campaign, loaders, user, origCampaignRecord) {
       });
     }
 
-    await r
-      .table("canned_response")
-      .getAll(id, { index: "campaign_id" })
-      .filter({ user_id: "" })
-      .delete();
-    await CannedResponse.save(convertedResponses);
+    // delete canned response / tag relations from tag_canned_response
+    await r.knex.transaction(async trx => {
+      await trx("tag_canned_response")
+        .whereIn(
+          "canned_response_id",
+          r
+            .knex("canned_response")
+            .select("id")
+            .where({ campaign_id: id })
+        )
+        .delete();
+      // delete canned responses
+      await trx("canned_response")
+        .where({ campaign_id: id })
+        .delete();
+
+      // save new canned responses and add their ids with related tag ids to tag_canned_response
+      const saveCannedResponse = async cannedResponse => {
+        const [res] = await trx("canned_response").insert(cannedResponse, [
+          "id"
+        ]);
+        return res.id;
+      };
+      const tagCannedResponses = await Promise.all(
+        convertedResponses.map(async response => {
+          const { tagIds, ...filteredResponse } = response;
+          const responseId = await saveCannedResponse(filteredResponse);
+          return (tagIds || []).map(t => ({
+            tag_id: t,
+            canned_response_id: responseId
+          }));
+        })
+      );
+      await trx("tag_canned_response").insert(_.flatten(tagCannedResponses));
+    });
+
     await cacheableData.cannedResponse.clearQuery({
       userId: "",
       campaignId: id
@@ -843,17 +873,41 @@ const rootMutations = {
 
       const originalCannedResponses = await r
         .knex("canned_response")
-        .where({ campaign_id: oldCampaignId });
-      const copiedCannedResponsePromises = originalCannedResponses.map(
+        .leftJoin(
+          "tag_canned_response",
+          "canned_response.id",
+          "tag_canned_response.canned_response_id"
+        )
+        .where({ campaign_id: oldCampaignId })
+        .select("canned_response.*", "tag_canned_response.tag_id");
+      const groupedCannedResponses = groupCannedResponses(
+        originalCannedResponses
+      );
+      const tagCannedResponses = [];
+      const copiedCannedResponsePromises = groupedCannedResponses.map(
         response => {
-          return new CannedResponse({
-            campaign_id: newCampaignId,
-            title: response.title,
-            text: response.text
-          }).save();
+          return r
+            .knex("canned_response")
+            .insert(
+              {
+                campaign_id: newCampaignId,
+                title: response.title,
+                text: response.text
+              },
+              ["id"]
+            )
+            .then(([res]) => {
+              response.tagIds.forEach(t => {
+                tagCannedResponses.push({
+                  canned_response_id: res.id,
+                  tag_id: t
+                });
+              });
+            });
         }
       );
       await Promise.all(copiedCannedResponsePromises);
+      await r.knex("tag_canned_response").insert(tagCannedResponses);
 
       return newCampaign;
     },

@@ -146,7 +146,9 @@ describe("mutations.updateContactTags", () => {
       );
 
       expect(result.errors[0].message).toEqual(
-        expect.stringMatching(/^Cannot convert `undefined`.*/)
+        expect.stringMatching(
+          /^The loader.load\(\) function must be called with a value,but got: undefined.*/
+        )
       );
 
       expect(console.error).toHaveBeenCalledTimes(1); // eslint-disable-line no-console
