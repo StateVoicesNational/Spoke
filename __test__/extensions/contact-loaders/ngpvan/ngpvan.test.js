@@ -426,9 +426,12 @@ describe("ngpvan", () => {
       expect(config.getConfig.mock.calls).toEqual([
         ["NGP_VAN_WEBHOOK_BASE_URL", organization],
         ["NGP_VAN_API_BASE_URL", organization],
+        ["NGP_VAN_TIMEOUT", organization],
         ["NGP_VAN_APP_NAME", organization],
         ["NGP_VAN_API_KEY", organization],
+        ["NGP_VAN_DATABASE_MODE", organization],
         ["NGP_VAN_EXPORT_JOB_TYPE_ID", organization],
+        ["NGP_VAN_TIMEOUT", organization],
         ["NGP_VAN_CAUTIOUS_CELL_PHONE_SELECTION", organization]
       ]);
 
