@@ -122,6 +122,9 @@ export class AssignmentTexterContactControls extends React.Component {
     }
   };
 
+  getTextOverflowEllipsis = (text, limit) =>
+    text.slice(0, limit) + (text.length > limit ? "..." : "");
+
   blockWithCtrl = evt => {
     // HACK: This blocks Ctrl-Enter from triggering 'click'
     // after a shortcut key has been pressed (instead of doing a send)
@@ -652,7 +655,8 @@ export class AssignmentTexterContactControls extends React.Component {
       availableSteps,
       questionResponses,
       currentInteractionStep,
-      cannedResponseScript
+      cannedResponseScript,
+      messageText
     } = this.state;
 
     let joinedLength = 0;
@@ -695,25 +699,45 @@ export class AssignmentTexterContactControls extends React.Component {
         joinedLength = 0;
       }
     }
+
     // 2. Canned Response Shortcuts
     let shortCannedResponses = [];
+    const messageTextLowerCase = messageText.toLowerCase();
     // If there's a current interaction step but we aren't showing choices
     // then don't show canned response shortcuts either or it can
     // cause confusion.
     if (!currentStepHasAnswerOptions || joinedLength !== 0) {
-      shortCannedResponses = campaign.cannedResponses
-        .filter(
+      if (window.HIDE_BRANCHED_SCRIPTS) {
+        shortCannedResponses = campaign.cannedResponses.filter(
+          script =>
+            script.title.toLowerCase().includes(messageTextLowerCase) ||
+            script.text.toLowerCase().includes(messageTextLowerCase)
+        );
+      } else {
+        shortCannedResponses = campaign.cannedResponses.filter(
           // allow for "Wrong Number", prefixes of + or - can force add or remove
           script =>
             (script.title.length < 13 || script.title[0] === "+") &&
             script.title[0] !== "-"
-        )
-        .filter(script => {
-          if (joinedLength + 1 + script.title.length < 80) {
+        );
+      }
+
+      shortCannedResponses = shortCannedResponses.filter(script => {
+        if (joinedLength + 1 + script.title.length < 80) {
+          if (window.HIDE_BRANCHED_SCRIPTS) {
+            joinedLength +=
+              1 +
+              this.getTextOverflowEllipsis(
+                script.title.replace(/^(\+|\-)/, ""),
+                13
+              ).length;
+          } else {
             joinedLength += 1 + script.title.length;
-            return true;
           }
-        });
+
+          return true;
+        }
+      });
     }
 
     if (!joinedLength) {
@@ -756,12 +780,15 @@ export class AssignmentTexterContactControls extends React.Component {
         {shortCannedResponses.map(script => (
           <FlatButton
             key={`shortcutScript_${script.id}`}
-            label={script.title.replace(/^(\+|\-)/, "")}
+            label={this.getTextOverflowEllipsis(
+              script.title.replace(/^(\+|\-)/, ""),
+              13
+            )}
             onClick={evt => {
               this.handleCannedResponseChange(script);
             }}
             className={css(flexStyles.flatButton)}
-            style={{ marginLeft: "9px" }}
+            style={{ marginRight: "9px" }}
             labelStyle={{
               ...inlineStyles.flatButtonLabel,
               color: isCurrentCannedResponse(script) ? "white" : "#494949"
@@ -769,6 +796,7 @@ export class AssignmentTexterContactControls extends React.Component {
             backgroundColor={
               isCurrentCannedResponse(script) ? "#727272" : "white"
             }
+            title={script.title}
           />
         ))}
       </div>
