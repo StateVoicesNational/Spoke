@@ -1,8 +1,8 @@
+# Instructions for using Redis in Development and Production
 Redis is a caching technology that can greatly speed up the application.  We recommend every
 production instance of Spoke to use Redis -- even if it's a very small size -- 'micro' or 'hobby-dev'
 will still have a very positive impact on scaling.
 
-# Instructions for using Redis in Development and Production
 - To add a caching layer to your development and production environments, follow the below instructions to get setup.
 
 ## Development
