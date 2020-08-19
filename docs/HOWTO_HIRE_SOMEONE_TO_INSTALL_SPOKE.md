@@ -2,7 +2,7 @@
 
 ## Before you start the hiring process
 
-Before you start the hiring process, you will need to [decide spoke is right for you](EXPLANATION_DECIDING_ON_SPOKE.md) and[decide how you want to deploy Spoke](EXPLANATION_CHOOSE_A_SETUP.md).  This will dictate what skills you are looking for.  
+Before you start the hiring process, you will need to [decide spoke is right for you](EXPLANATION_DECIDING_ON_SPOKE.md) and [decide how you want to deploy Spoke](EXPLANATION_CHOOSE_A_SETUP.md).  This will dictate what skills you are looking for.  
 
 
 ## Who should you hire and what skills should they have?
