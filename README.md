@@ -11,17 +11,18 @@ The latest version is [8.1](https://github.com/MoveOnOrg/Spoke/tree/v8.1) (see [
 
 
 
-##Get Started:
+## Get Started:
 
 
-The easiest way to get started is with the [Quick Start with Heroku] section below.  You can also learn about Spoke through the [user] and [admin] video demos or in the explanation on [how to decide if Spoke is right for you.](/EXPLANATION_DECIDING_ON_SPOKE.md)
+The easiest way to get started is with Heroku.  You can also learn about Spoke through the [user] and [admin] video demos or in the explanation on [how to decide if Spoke is right for you.](/EXPLANATION_DECIDING_ON_SPOKE.md)
 
 For developers, please see our recomendations for [deploying locally for development](/HOWTO_DEVELOPMENT_LOCAL_SETUP.md).
 
 
 
-### Quick Start with Heroku
+## Quick Start with Heroku
 This version of Spoke suitable for testing and, potentially, for small campaigns. This won't cost any money and will not support production usage. It's a great way to practice deploying Spoke or see it in action.  
+
 <a href="https://heroku.com/deploy?template=https://github.com/MoveOnOrg/Spoke/tree/v8.0">
 
   <img src="https://www.herokucdn.com/deploy/button.svg" alt="Deploy">
@@ -29,18 +30,19 @@ This version of Spoke suitable for testing and, potentially, for small campaigns
 
 Follow up instructions located [here](https://github.com/MoveOnOrg/Spoke/blob/main/docs/HOWTO_HEROKU_DEPLOY.md).
 
+
 **NOTE:** You can upgrade this deployment later for use in a production (aka large-scale) setting, but keep in mind you will lose the data from any prior campaigns.  Thus it is best to upgrade before you start any live campaigns.  This will cost $75 ($25 dyno + $50 postgres) a month and should be suitable for production level usage for most organizations. Alternatively, you can click [this link to deploy with a production infrastructure from the start!](https://heroku.com/deploy?template=https://github.com/MoveOnOrg/Spoke/tree/heroku-button-paid) 
 
 Please let us know if you deployed by filling out this form [here](https://act.moveon.org/survey/tech/)
 
 
-### Other Options for Production Use 
+## Other Options for Production Use 
 
-You can also[deploy on AWS Lambda.](https://github.com/MoveOnOrg/Spoke/blob/main/docs/DEPLOYING_AWS_LAMBDA.md) 
+You can also [deploy on AWS Lambda.](https://github.com/MoveOnOrg/Spoke/blob/main/docs/DEPLOYING_AWS_LAMBDA.md) 
 
 Additional guidance:
-*[Choosing a set-up for production](/EXPLANATION_CHOOSE_A_SETUP.md)
-*[How to hire someone to install Spoke](/HOWTO_HIRE_SOMEONE_TO_INSTALL_SPOKE.md)
+- [Choosing a set-up for production](/EXPLANATION_CHOOSE_A_SETUP.md)
+- [How to hire someone to install Spoke](/HOWTO_HIRE_SOMEONE_TO_INSTALL_SPOKE.md)
 
 
 ## More Documentation
