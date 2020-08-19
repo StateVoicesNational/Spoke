@@ -119,7 +119,7 @@ export async function getClientChoiceData(organization, campaign, user) {
         Authorization: Van.getAuth(organization)
       },
       retries: 0,
-      timeout: 5000
+      timeout: Van.getNgpVanTimeout(organization)
     });
 
     responseJson = await response.json();
@@ -268,7 +268,7 @@ export async function processContactLoad(job, maxContacts, organization) {
     const response = await HttpRequest(url, {
       method: "POST",
       retries: 0,
-      timeout: 5000,
+      timeout: Van.getNgpVanTimeout(organization),
       headers: {
         Authorization: Van.getAuth(organization),
         "Content-Type": "application/json"
@@ -319,7 +319,7 @@ export async function processContactLoad(job, maxContacts, organization) {
     vanResponse = await HttpRequest(downloadUrl, {
       method: "GET",
       retries: 0,
-      timeout: 5000
+      timeout: Van.getNgpVanTimeout(organization)
     });
   } catch (error) {
     await exports.handleFailedContactLoad(
