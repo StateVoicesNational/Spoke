@@ -2,6 +2,7 @@ import { getConfig } from "../../../server/api/lib/config";
 
 export const DEFAULT_NGP_VAN_API_BASE_URL = "https://api.securevan.com";
 export const DEFAULT_NGP_VAN_DATABASE_MODE = 0;
+export const DEFAULT_NGPVAN_TIMEOUT = 32000;
 
 export default class Van {
   static getAuth = organization => {
@@ -26,5 +27,9 @@ export default class Van {
       getConfig("NGP_VAN_API_BASE_URL", organization) ||
       DEFAULT_NGP_VAN_API_BASE_URL;
     return `${baseUrl}/${pathAndQuery}`;
+  };
+
+  static getNgpVanTimeout = organization => {
+    return getConfig("NGP_VAN_TIMEOUT", organization) || DEFAULT_NGPVAN_TIMEOUT;
   };
 }
