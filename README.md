@@ -11,7 +11,7 @@ The latest version is [8.1](https://github.com/MoveOnOrg/Spoke/tree/v8.1) (see [
 
 
 
-## Get Started:
+## Get Started
 
 
 The easiest way to get started is with Heroku.  You can also learn about Spoke through the [user] and [admin] video demos or in the explanation on [how to decide if Spoke is right for you.](/EXPLANATION_DECIDING_ON_SPOKE.md)
