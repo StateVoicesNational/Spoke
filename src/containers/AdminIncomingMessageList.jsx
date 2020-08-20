@@ -81,7 +81,7 @@ export class AdminIncomingMessageList extends Component {
       pageSize: 10,
       campaignsFilter: { isArchived: false },
       contactsFilter: { isOptedOut: false },
-      messageTextFilter: query.messagetext ? query.messagetext : "",
+      messageTextFilter: query.messageText ? query.messageText : "",
       assignmentsFilter: query.texterId
         ? { texterId: Number(query.texterId) }
         : {},
@@ -169,7 +169,7 @@ export class AdminIncomingMessageList extends Component {
       if (!nextState.includeNotOptedOutConversations) {
         query.notOptedOut = 0;
       }
-      history.pushState(
+      history.replaceState(
         null,
         "Message Review",
         "?" + queryString.stringify(query)
