@@ -214,6 +214,7 @@ const deliveryReport = async ({
     .update(changes);
 
   if (process.env.EXPERIMENTAL_STICKY_SENDER && newStatus === "DELIVERED") {
+    // Assign user number to contact/organization
     const campaignContact = await campaignContactCache.load(
       message.campaign_contact_id
     );

@@ -1,6 +1,10 @@
 exports.up = async function up(knex, Promise) {
+  await knex.schema.alterTable("message", t => {
+    t.index(["contact_number", "user_number"], "cell_user_number_idx");
+  });
+
   if (!(await knex.schema.hasTable("contact_user_number"))) {
-    return knex.schema.createTable("contact_user_number", t => {
+    await knex.schema.createTable("contact_user_number", t => {
       t.increments("id");
       t.text("organization_id");
       t.text("contact_number");
@@ -12,16 +16,14 @@ exports.up = async function up(knex, Promise) {
       );
 
       t.unique(["organization_id", "contact_number"]);
-
-      knex
-        .table("message")
-        .index(["contact_number", "user_number"], "cell_user_number_idx");
     });
   }
-
-  return Promise.resolve();
 };
 
-exports.down = function down(knex, Promise) {
-  return knex.schema.dropTableIfExists("contact_user_number");
+exports.down = async function down(knex, Promise) {
+  await knex.schema.alterTable("message", t => {
+    t.dropIndex("cell_user_number_idx");
+  });
+
+  await knex.schema.dropTableIfExists("contact_user_number");
 };
