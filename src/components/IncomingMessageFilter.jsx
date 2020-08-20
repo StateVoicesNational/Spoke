@@ -80,7 +80,8 @@ class IncomingMessageFilter extends Component {
     this.state = {
       selectedCampaigns: [],
       messageTextFilter: this.props.messageTextFilter,
-      messageFilter: this.props.messageFilter,
+      messageFilter:
+        this.props.messageFilter && this.props.messageFilter.split(","),
       tagsFilter: this.props.tagsFilter
     };
   }
