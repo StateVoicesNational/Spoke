@@ -451,12 +451,13 @@ const campaignContactCache = {
     }
   },
   updateStatus: async (contact, newStatus, messageServiceOrUserNumber) => {
-    // console.log('updateSTATUS', newStatus, contact)
     try {
-      await r
-        .knex("campaign_contact")
-        .where("id", contact.id)
-        .update({ message_status: newStatus, updated_at: new Date() });
+      if (newStatus) {
+        await r
+          .knex("campaign_contact")
+          .where("id", contact.id)
+          .update({ message_status: newStatus, updated_at: new Date() });
+      }
 
       if (r.redis && CONTACT_CACHE_ENABLED) {
         const contactKey = cacheKey(contact.id);
