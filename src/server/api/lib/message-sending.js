@@ -3,12 +3,14 @@ import { r, cacheableData } from "../../models";
 export async function getLastMessage({
   contactNumber,
   service,
-  messageServiceSid
+  messageServiceSid,
+  userNumber
 }) {
   const lookup = await cacheableData.campaignContact.lookupByCell(
     contactNumber,
     service,
-    messageServiceSid
+    messageServiceSid,
+    userNumber
   );
   return lookup;
 }

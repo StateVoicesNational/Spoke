@@ -959,7 +959,8 @@ export async function handleIncomingMessageParts() {
         .count();
       const lastMessage = await getLastMessage({
         contactNumber: part.contact_number,
-        service: serviceKey
+        service: serviceKey,
+        userNumber: part.user_number
       });
       const duplicateMessageToSaveExists = !!messagesToSave.find(
         message => message.service_id === serviceMessageId
