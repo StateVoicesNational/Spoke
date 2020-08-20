@@ -1,18 +1,28 @@
 import PropTypes from "prop-types";
 import React from "react";
+import { Link } from "react-router";
 import LinearProgress from "material-ui/LinearProgress";
 import { getHighestRole } from "../lib/permissions";
 
 class TexterStats extends React.Component {
-  renderAssignment(assignment) {
-    const { contactsCount, unmessagedCount, texter, id } = assignment;
+  renderAssignment(assignment, campaign) {
+    const {
+      contactsCount,
+      unmessagedCount,
+      unrepliedCount,
+      texter,
+      id
+    } = assignment;
     if (contactsCount === 0) {
       return <div key={id} />;
     }
+    let percentComplete = null;
 
-    const percentComplete = Math.round(
-      ((contactsCount - unmessagedCount) * 100) / contactsCount
-    );
+    if (!campaign.useDynamicAssignment) {
+      percentComplete = Math.round(
+        ((contactsCount - unmessagedCount) * 100) / contactsCount
+      );
+    }
 
     let displayName = `${texter.firstName} ${texter.lastName}`;
     if (getHighestRole(texter.roles) === "SUSPENDED") {
@@ -21,23 +31,38 @@ class TexterStats extends React.Component {
 
     return (
       <div key={id}>
-        {displayName}
-        <div>{percentComplete}%</div>
-        <LinearProgress mode="determinate" value={percentComplete} />
-      </div>
-    );
-  }
-
-  renderAssignmentDynamic(assignment) {
-    const { contactsCount, unmessagedCount, texter, id } = assignment;
-    if (contactsCount === 0) {
-      return <div key={id} />;
-    }
-
-    return (
-      <div key={id}>
-        {texter.firstName}
-        <div>{contactsCount - unmessagedCount} initial messages sent</div>
+        <Link
+          to={`/admin/${this.props.organizationId}/incoming?campaigns=${campaign.id}&texterId=${texter.id}`}
+        >
+          {displayName}
+        </Link>
+        {percentComplete ? (
+          <div>
+            <div>{percentComplete}%</div>
+            <LinearProgress mode="determinate" value={percentComplete} />
+          </div>
+        ) : (
+          <div>
+            {contactsCount - unmessagedCount} initial messages sent.{" "}
+            {unmessagedCount ? (
+              <Link
+                to={`/admin/${this.props.organizationId}/incoming?campaigns=${campaign.id}&texterId=${texter.id}&messageStatus=needsMessage`}
+              >
+                Unmessaged: {unmessagedCount}
+              </Link>
+            ) : null}
+          </div>
+        )}
+        {unrepliedCount ? (
+          <div>
+            {unrepliedCount} contacts{" "}
+            <Link
+              to={`/admin/${this.props.organizationId}/incoming?campaigns=${campaign.id}&texterId=${texter.id}&messageStatus=needsResponse`}
+            >
+              awaiting a reply
+            </Link>
+          </div>
+        ) : null}
       </div>
     );
   }
@@ -48,9 +73,7 @@ class TexterStats extends React.Component {
     return (
       <div>
         {assignments.map(assignment =>
-          campaign.useDynamicAssignment
-            ? this.renderAssignmentDynamic(assignment)
-            : this.renderAssignment(assignment)
+          this.renderAssignment(assignment, campaign)
         )}
       </div>
     );
@@ -58,6 +81,7 @@ class TexterStats extends React.Component {
 }
 
 TexterStats.propTypes = {
-  campaign: PropTypes.object
+  campaign: PropTypes.object,
+  organizationId: PropTypes.string
 };
 export default TexterStats;

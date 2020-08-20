@@ -130,9 +130,7 @@ export const updateUserRoles = async (
   };
   const result = await runGql(query, variables, adminUser);
   if (result && result.errors) {
-    throw new Exception(
-      "editOrganizationRoles failed " + JSON.stringify(result)
-    );
+    throw new Error("editOrganizationRoles failed " + JSON.stringify(result));
   }
   return result;
 };
@@ -176,7 +174,7 @@ export async function createOrganization(user, invite) {
     variables
   );
   if (result && result.errors) {
-    throw new Exception("createOrganization failed " + JSON.stringify(result));
+    throw new Error("createOrganization failed " + JSON.stringify(result));
   }
   return result;
 }
@@ -262,7 +260,7 @@ export async function createCampaign(
     variables
   );
   if (result.errors) {
-    throw new Exception("Create campaign failed " + JSON.stringify(result));
+    throw new Error("Create campaign failed " + JSON.stringify(result));
   }
   return result.data.createCampaign;
 }
@@ -305,7 +303,7 @@ export async function saveCampaign(
     variables
   );
   if (result.errors) {
-    throw new Exception("Create campaign failed " + JSON.stringify(result));
+    throw new Error("Create campaign failed " + JSON.stringify(result));
   }
   return result.data.editCampaign;
 }
@@ -336,7 +334,7 @@ export async function createTexter(organization, userInfo = {}) {
     "TEXTER"
   );
   if (user.errors) {
-    throw new Exception("createUsers failed " + JSON.stringify(user));
+    throw new Error("createUsers failed " + JSON.stringify(user));
   }
   const joinQuery = `
   mutation joinOrganization($organizationUuid: String!) {
@@ -356,7 +354,7 @@ export async function createTexter(organization, userInfo = {}) {
     variables
   );
   if (result.errors) {
-    throw new Exception("joinOrganization failed " + JSON.stringify(result));
+    throw new Error("joinOrganization failed " + JSON.stringify(result));
   }
   return user;
 }
@@ -396,7 +394,7 @@ export async function assignTexter(admin, user, campaign, assignments) {
     variables
   );
   if (result.errors) {
-    throw new Exception("assignTexter failed " + JSON.stringify(result));
+    throw new Error("assignTexter failed " + JSON.stringify(result));
   }
   return result;
 }
