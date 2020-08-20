@@ -381,7 +381,7 @@ export function postMessageSend(
       updateQuery.update(changesToSave),
       cacheableData.campaignContact.updateStatus(
         contact,
-        null,
+        undefined,
         changesToSave.messageservice_sid || changesToSave.user_number
       )
     ])
