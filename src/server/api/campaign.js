@@ -450,6 +450,9 @@ export const resolvers = {
               r.knex.raw(
                 "SUM(CASE WHEN campaign_contact.message_status = 'needsMessage' THEN 1 ELSE 0 END) as needs_message_count"
               ),
+              r.knex.raw(
+                "SUM(CASE WHEN campaign_contact.message_status = 'needsResponse' THEN 1 ELSE 0 END) as unrepliedcount"
+              ),
               r.knex.raw("COUNT(*) as contacts_count")
             )
             .groupBy(...fields)

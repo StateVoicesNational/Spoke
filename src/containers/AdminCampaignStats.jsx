@@ -216,6 +216,15 @@ class AdminCampaignStats extends React.Component {
             <div className={css(styles.rightAlign)}>
               <div className={css(styles.inline)}>
                 <div className={css(styles.inline)}>
+                  <RaisedButton
+                    {...dataTest("convoCampaign")}
+                    onTouchTap={() =>
+                      this.props.router.push(
+                        `/admin/${organizationId}/incoming?campaigns=${campaignId}`
+                      )
+                    }
+                    label="Convos"
+                  />
                   {!campaign.isArchived ? (
                     // edit
                     <RaisedButton
@@ -348,7 +357,7 @@ class AdminCampaignStats extends React.Component {
         ) : null}
         <div className={css(styles.header)}>Texter stats</div>
         <div className={css(styles.secondaryHeader)}>% of first texts sent</div>
-        <TexterStats campaign={campaign} />
+        <TexterStats campaign={campaign} organizationId={organizationId} />
         <Snackbar
           open={this.state.exportMessageOpen}
           message="Export started - we'll e-mail you when it's done"
@@ -376,6 +385,7 @@ const queries = {
         $campaignId: String!
         $organizationId: String!
         $contactsFilter: ContactsFilter!
+        $needsResponseFilter: ContactsFilter!
         $assignmentsFilter: AssignmentsFilter
       ) {
         campaign(id: $campaignId) {
@@ -396,6 +406,7 @@ const queries = {
               lastName
             }
             unmessagedCount: contactsCount(contactsFilter: $contactsFilter)
+            unrepliedCount: contactsCount(contactsFilter: $needsResponseFilter)
             contactsCount
           }
           pendingJobs {
@@ -438,6 +449,10 @@ const queries = {
         },
         contactsFilter: {
           messageStatus: "needsMessage"
+        },
+        needsResponseFilter: {
+          messageStatus: "needsResponse",
+          isOptedOut: false
         }
       },
       pollInterval: 5000
