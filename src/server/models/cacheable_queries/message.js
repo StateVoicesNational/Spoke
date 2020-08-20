@@ -206,12 +206,12 @@ const deliveryReport = async ({
     }
   }
 
-  const message = await r
+  const [message] = await r
     .knex("message")
     .where("service_id", messageSid)
     .limit(1)
-    .update(changes)
-    .returning("*");
+    .returning("*")
+    .update(changes);
 
   if (process.env.EXPERIMENTAL_STICKY_SENDER && newStatus === "DELIVERED") {
     const campaignContact = await campaignContactCache.load(
