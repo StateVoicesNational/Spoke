@@ -50,7 +50,6 @@ Additional guidance:
 Want to know more?
 [Click here to visit the Spoke Documentation microsite!](????)
 
-[Release notes](RELEASE_NOTES.md)
 
 ## Big Thanks
 
