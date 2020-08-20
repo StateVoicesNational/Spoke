@@ -104,7 +104,7 @@ export async function processAction({
 
 async function getContactTypeIdAndInputTypeId(organization) {
   const contactTypesPromise = httpRequest(
-    `https://api.securevan.com/v4/canvassResponses/contactTypes`,
+    Van.makeUrl(`v4/canvassResponses/contactTypes`),
     {
       method: "GET",
       timeout: Van.getNgpVanTimeout(organization),
@@ -122,7 +122,7 @@ async function getContactTypeIdAndInputTypeId(organization) {
     });
 
   const inputTypesPromise = httpRequest(
-    `https://api.securevan.com/v4/canvassResponses/inputTypes`,
+    Van.makeUrl(`v4/canvassResponses/inputTypes`),
     {
       method: "GET",
       timeout: Van.getNgpVanTimeout(organization),
@@ -205,7 +205,7 @@ export async function getClientChoiceData(organization) {
   const cycle = await getConfig("NGP_VAN_ELECTION_CYCLE_FILTER", organization);
   const cycleFilter = (cycle && `&cycle=${cycle}`) || "";
   const surveyQuestionsPromise = httpRequest(
-    `https://api.securevan.com/v4/surveyQuestions?statuses=Active${cycleFilter}`,
+    Van.makeUrl(`v4/surveyQuestions?statuses=Active${cycleFilter}&$top=200`),
     {
       method: "GET",
       timeout: Van.getNgpVanTimeout(organization),
@@ -223,7 +223,7 @@ export async function getClientChoiceData(organization) {
     });
 
   const activistCodesPromise = httpRequest(
-    `https://api.securevan.com/v4/activistCodes?statuses=Active`,
+    Van.makeUrl(`v4/activistCodes?statuses=Active&$top=200`),
     {
       method: "GET",
       timeout: Van.getNgpVanTimeout(organization),
@@ -241,7 +241,7 @@ export async function getClientChoiceData(organization) {
     });
 
   const canvassResultCodesPromise = httpRequest(
-    `https://api.securevan.com/v4/canvassResponses/resultCodes`,
+    Van.makeUrl(`v4/canvassResponses/resultCodes?$top=200`),
     {
       method: "GET",
       timeout: Van.getNgpVanTimeout(organization),
