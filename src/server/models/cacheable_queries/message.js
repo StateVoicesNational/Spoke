@@ -1,6 +1,7 @@
 import { r, Message } from "../../models";
 import campaignCache from "./campaign";
 import campaignContactCache from "./campaign-contact";
+import contactUserNumberCache from "./contact-user-number";
 import { getMessageHandlers } from "../../../extensions/message-handlers";
 // QUEUE
 // messages-<contactId>
@@ -51,6 +52,7 @@ const contactIdFromOther = async ({
       cell,
       service || "",
       messageServiceSid,
+      null, // is this even used?
       /* bailWithoutCache*/ true
     );
     if (cellLookup) {
@@ -172,6 +174,7 @@ const incomingMessageMatching = async (messageInstance, activeCellFound) => {
 
 const deliveryReport = async ({
   contactNumber,
+  userNumber,
   messageSid,
   service,
   messageServiceSid,
@@ -188,7 +191,8 @@ const deliveryReport = async ({
     const lookup = await campaignContactCache.lookupByCell(
       contactNumber,
       service || "",
-      messageServiceSid
+      messageServiceSid,
+      userNumber
     );
     if (lookup && lookup.campaign_contact_id) {
       await r
@@ -201,11 +205,33 @@ const deliveryReport = async ({
       campaignCache.incrCount(lookup.campaign_id, "errorCount");
     }
   }
-  await r
+
+  const message = await r
     .knex("message")
     .where("service_id", messageSid)
     .limit(1)
-    .update(changes);
+    .update(changes)
+    .returning("*");
+
+  if (process.env.EXPERIMENTAL_STICKY_SENDER && newStatus === "DELIVERED") {
+    const campaignContact = await campaignContactCache.load(
+      message.campaign_contact_id
+    );
+    const organizationId = await campaignContactCache.orgId(campaignContact);
+
+    const contactUserNumber = await contactUserNumberCache.query({
+      organizationId,
+      contactNumber
+    });
+
+    if (!contactUserNumber) {
+      await contactUserNumberCache.save({
+        organizationId: organizationId,
+        contactNumber: contactNumber,
+        userNumber: userNumber
+      });
+    }
+  }
 };
 
 const messageCache = {
@@ -241,7 +267,8 @@ const messageCache = {
       activeCellFound = await campaignContactCache.lookupByCell(
         messageInstance.contact_number,
         messageInstance.service,
-        messageInstance.messageservice_sid
+        messageInstance.messageservice_sid,
+        messageInstance.user_number
       );
       // console.log("messageCache activeCellFound", activeCellFound);
       const matchError = await incomingMessageMatching(
@@ -318,11 +345,14 @@ const messageCache = {
     const contactData = {
       id: messageToSave.campaign_contact_id,
       cell: messageToSave.contact_number,
-      messageservice_sid: messageToSave.messageservice_sid,
       campaign_id: campaignId
     };
     // console.log("messageCache hi saveMsg3", messageToSave.id, newStatus, contactData);
-    await campaignContactCache.updateStatus(contactData, newStatus);
+    await campaignContactCache.updateStatus(
+      contactData,
+      newStatus,
+      messageToSave.messageservice_sid || messageToSave.user_number
+    );
     // console.log("messageCache saveMsg4", newStatus);
 
     // update campaign counts

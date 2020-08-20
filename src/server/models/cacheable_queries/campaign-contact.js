@@ -335,7 +335,13 @@ const campaignContactCache = {
   orgId: async contact =>
     contact.organization_id ||
     ((await campaignCache.load(contact.campaign_id)) || {}).organization_id,
-  lookupByCell: async (cell, service, messageServiceSid, bailWithoutCache) => {
+  lookupByCell: async (
+    cell,
+    service,
+    messageServiceSid,
+    userNumber,
+    bailWithoutCache
+  ) => {
     // Used to lookup contact/campaign information by cell number for incoming messages
     // in order to map it to the existing campaign, since Twilio, etc "doesn't know"
     // what campaign or other objects this is.
@@ -346,7 +352,7 @@ const campaignContactCache = {
     // which is called for incoming AND outgoing messages.
     if (r.redis && CONTACT_CACHE_ENABLED) {
       const cellData = await r.redis.getAsync(
-        cellTargetKey(cell, messageServiceSid)
+        cellTargetKey(cell, messageServiceSid || userNumber)
       );
       // console.log('lookupByCell cache', cell, service, messageServiceSid, cellData)
       if (cellData) {
@@ -367,15 +373,23 @@ const campaignContactCache = {
         return false;
       }
     }
+
+    const fromFilter = messageServiceSid
+      ? { messageservice_sid: messageServiceSid }
+      : { user_number: userNumber };
     let messageQuery = r
       .knex("message")
       .select("campaign_contact_id")
-      .where({
-        is_from_contact: false,
-        contact_number: cell,
-        messageservice_sid: messageServiceSid,
-        service
-      })
+      .where(
+        Object.assign(
+          {
+            is_from_contact: false,
+            contact_number: cell,
+            service
+          },
+          fromFilter
+        )
+      )
       .orderBy("message.created_at", "desc")
       .limit(1);
     if (r.redis) {
@@ -436,7 +450,7 @@ const campaignContactCache = {
       console.log("updateCampaignAssignmentCache", data[0], data.length);
     }
   },
-  updateStatus: async (contact, newStatus) => {
+  updateStatus: async (contact, newStatus, messageServiceOrUserNumber) => {
     // console.log('updateSTATUS', newStatus, contact)
     try {
       await r
@@ -447,33 +461,41 @@ const campaignContactCache = {
       if (r.redis && CONTACT_CACHE_ENABLED) {
         const contactKey = cacheKey(contact.id);
         const statusKey = messageStatusKey(contact.id);
-        // NOTE: contact.messageservice_sid is not a field, but will have been
-        //       added on to the contact object from message.save
-        // Other contexts don't really need to update the cell key -- just the status
-        const cellKey = cellTargetKey(contact.cell, contact.messageservice_sid);
-        // console.log('contact updateStatus', cellKey, newStatus, contact)
+
         let redisQuery = r.redis
-          .multi()
-          // We update the cell info on status updates, because this happens
-          // during message sending -- this is exactly the moment we want to
-          // 'steal' a cell from one (presumably older) campaign into another
-          // delay expiration for contacts we continue to update
-          .set(
-            cellKey,
-            [
-              contact.id,
-              "",
-              contact.timezone_offset || "",
-              contact.campaign_id || ""
-            ].join(":")
-          )
+          .mulit()
           // delay expiration for contacts we continue to update
           .expire(contactKey, 43200)
-          .expire(statusKey, 43200)
-          .expire(cellKey, 43200);
+          .expire(statusKey, 43200);
+
+        if (messageServiceOrUserNumber) {
+          // Other contexts don't really need to update the cell key -- just the status
+          const cellKey = cellTargetKey(
+            contact.cell,
+            messageServiceOrUserNumber
+          );
+
+          redisQuery = redisQuery
+            // We update the cell info on status updates, because this happens
+            // during message sending -- this is exactly the moment we want to
+            // 'steal' a cell from one (presumably older) campaign into another
+            // delay expiration for contacts we continue to update
+            .set(
+              cellKey,
+              [
+                contact.id,
+                "",
+                contact.timezone_offset || "",
+                contact.campaign_id || ""
+              ].join(":")
+            )
+            .expire(cellKey, 43200);
+        }
+
         if (newStatus) {
           redisQuery = redisQuery.set(statusKey, newStatus);
         }
+
         await redisQuery.execAsync();
         //await updateAssignmentContact(contact, newStatus);
       }
