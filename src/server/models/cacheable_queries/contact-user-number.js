@@ -9,7 +9,7 @@ import { r } from "../../models";
 
 const getCacheKey = (organizationId, contactNumber) =>
   `${process.env.CACHE_PREFIX ||
-    ""}-contact-user-number-${organizationId}-${contactNumber}`;
+    ""}contact-user-number-${organizationId}-${contactNumber}`;
 
 const contactUserNumberCache = {
   query: async ({ organizationId, contactNumber }) => {
@@ -23,11 +23,16 @@ const contactUserNumberCache = {
       }
     }
 
-    const [contactUserNumber] = await r
-      .knex("contact_user_number")
-      .where({ organization_id: organizationId, contact_number: contactNumber })
-      .select("organization_id", "contact_number", "user_number")
-      .limit(1);
+    const contactUserNumber = await r
+      .table("contact_user_number")
+      .filter({
+        organization_id: organizationId,
+        contact_number: contactNumber
+      })
+      .limit(1)(0)
+      .default(null);
+
+    console.log(contactUserNumber);
 
     if (r.redis) {
       await r.redis

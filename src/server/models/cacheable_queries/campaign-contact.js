@@ -452,19 +452,17 @@ const campaignContactCache = {
   },
   updateStatus: async (contact, newStatus, messageServiceOrUserNumber) => {
     try {
-      if (newStatus) {
-        await r
-          .knex("campaign_contact")
-          .where("id", contact.id)
-          .update({ message_status: newStatus, updated_at: new Date() });
-      }
+      await r
+        .knex("campaign_contact")
+        .where("id", contact.id)
+        .update({ message_status: newStatus, updated_at: new Date() });
 
       if (r.redis && CONTACT_CACHE_ENABLED) {
         const contactKey = cacheKey(contact.id);
         const statusKey = messageStatusKey(contact.id);
 
         let redisQuery = r.redis
-          .mulit()
+          .multi()
           // delay expiration for contacts we continue to update
           .expire(contactKey, 43200)
           .expire(statusKey, 43200);
