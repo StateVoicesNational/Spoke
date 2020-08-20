@@ -191,12 +191,10 @@ async function sendMessage(message, contact, trx, organization, campaign) {
 
   let userNumber;
   if (process.env.EXPERIMENTAL_STICKY_SENDER) {
-    console.log("getting user number", organization.id, contact.cell);
     const contactUserNumber = await getContactUserNumber(
       organization.id,
       contact.cell
     );
-    console.log("got user number", userNumber);
 
     if (contactUserNumber) {
       userNumber = contactUserNumber.user_number;
@@ -563,12 +561,9 @@ async function addNumberToMessagingService(
  * Buy a phone number and add it to the owned_phone_number table
  */
 async function buyNumber(organization, twilioInstance, phoneNumber, opts = {}) {
-  const twilioBaseUrl = getConfig("TWILIO_BASE_CALLBACK_URL", organization);
-
   const response = await twilioInstance.incomingPhoneNumbers.create({
     phoneNumber,
     friendlyName: `Managed by Spoke [${process.env.BASE_URL}]: ${phoneNumber}`,
-    smsUrl: urlJoin(twilioBaseUrl, "twilio", organization.id.toString()),
     voiceUrl: getConfig("TWILIO_VOICE_URL", organization) // will use default twilio recording if undefined
   });
 

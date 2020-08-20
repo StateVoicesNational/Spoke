@@ -374,7 +374,7 @@ const campaignContactCache = {
       }
     }
 
-    const fromFilter = messageServiceSid
+    const assignmentFilter = messageServiceSid
       ? { messageservice_sid: messageServiceSid }
       : { user_number: userNumber };
     let messageQuery = r
@@ -387,7 +387,7 @@ const campaignContactCache = {
             contact_number: cell,
             service
           },
-          fromFilter
+          assignmentFilter
         )
       )
       .orderBy("message.created_at", "desc")
