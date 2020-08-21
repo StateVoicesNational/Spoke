@@ -10,6 +10,7 @@ import {
 import { graphql } from "graphql";
 
 export async function setupTest() {
+  // FUTURE: only run this once maybe and then truncateTables() from models?
   await createTables();
 }
 
