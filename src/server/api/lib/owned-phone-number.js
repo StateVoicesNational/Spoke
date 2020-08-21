@@ -54,17 +54,9 @@ async function listCampaignNumbers(campaignId) {
 
 async function getOwnedPhoneNumberForStickySender(organizationId, cell) {
   const areaCode = cell.slice(2, 5);
-  console.log({ organizationId, cell, areaCode });
 
-  let secondaryAreaCode;
-  switch (areaCode) {
-    case "303":
-      secondaryAreaCode = "720";
-      break;
-    case "720":
-      secondaryAreaCode = "303";
-      break;
-  }
+  const secondaryAreaCodesMap = JSON.parse(getConfig("SECONDARY_AREA_CODES"));
+  const secondaryAreaCodes = secondaryAreaCodesMap[areaCode];
 
   return await r
     .knex("owned_phone_number")
@@ -79,8 +71,8 @@ async function getOwnedPhoneNumberForStickySender(organizationId, cell) {
         areaCode
       ),
       r.knex.raw(
-        "CASE WHEN area_code = '?' THEN 1 ELSE 0 END AS matching_secondary_area_code",
-        secondaryAreaCode || ""
+        "CASE WHEN area_code IN ('?') THEN 1 ELSE 0 END AS matching_secondary_area_code",
+        secondaryAreaCodes ? secondaryAreaCodes.join("', '") : ""
       ),
       r.knex.raw("CEILING((stuck_contacts + 1.0) / 50) AS priority_grouping"), // Prioritize numbers with 0 - 49 stuck contacts, followed by 50 - 99, etc.
       r.knex.raw("random()")

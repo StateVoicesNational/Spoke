@@ -164,16 +164,15 @@ async function getContactUserNumber(organization, contactNumber) {
     return contactUserNumber.user_number;
   }
 
-  const inventoryEnabled =
-    getConfig("EXPERIMENTAL_PHONE_INVENTORY", organization, { truthy: true }) ||
-    getConfig("PHONE_INVENTORY", organization, { truthy: true });
-
   if (
-    (!inventoryEnabled || !getConfig("SKIP_TWILIO_MESSAGING_SERVICE"),
-    organization,
-    { truthy: true })
-  )
+    (getConfig("EXPERIMENTAL_PHONE_INVENTORY", organization, {
+      truthy: true
+    }) ||
+      getConfig("PHONE_INVENTORY", organization, { truthy: true })) &&
+    getConfig("SKIP_TWILIO_MESSAGING_SERVICE", organization, { truthy: true })
+  ) {
     return null;
+  }
 
   const randomOwnedPhoneNumber = await ownedPhoneNumber.getOwnedPhoneNumberForStickySender(
     organization.id,
