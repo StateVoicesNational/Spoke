@@ -49,29 +49,39 @@ function getConversationsJoinsAndWhereClause(
     contactsFilter && contactsFilter.messageStatus
   );
 
-  if (contactsFilter && "isOptedOut" in contactsFilter) {
-    query = query.where("is_opted_out", contactsFilter.isOptedOut);
-  }
+  if (contactsFilter) {
+    if ("isOptedOut" in contactsFilter) {
+      query.where("is_opted_out", contactsFilter.isOptedOut);
+    }
 
-  if (contactsFilter && contactsFilter.tags) {
-    const tags = contactsFilter.tags;
+    if (contactsFilter.errorCode && contactsFilter.errorCode.length) {
+      if (contactsFilter.errorCode[0] === 0) {
+        query.whereNull("campaign_contact.error_code");
+      } else {
+        query.whereIn("campaign_contact.error_code", contactsFilter.errorCode);
+      }
+    }
 
-    let tagsSubquery = r.knex
-      .select(1)
-      .from("tag_campaign_contact")
-      .whereRaw(
-        "campaign_contact.id = tag_campaign_contact.campaign_contact_id"
-      );
+    if (contactsFilter.tags) {
+      const tags = contactsFilter.tags;
 
-    if (tags.length === 0) {
-      // no tags
-      query = query.whereNotExists(tagsSubquery);
-    } else if (tags.length === 1 && tags[0] === "*") {
-      // any tag
-      query = query.whereExists(tagsSubquery);
-    } else {
-      tagsSubquery = tagsSubquery.whereIn("tag_id", tags);
-      query = query.whereExists(tagsSubquery);
+      let tagsSubquery = r.knex
+        .select(1)
+        .from("tag_campaign_contact")
+        .whereRaw(
+          "campaign_contact.id = tag_campaign_contact.campaign_contact_id"
+        );
+
+      if (tags.length === 0) {
+        // no tags
+        query = query.whereNotExists(tagsSubquery);
+      } else if (tags.length === 1 && tags[0] === "*") {
+        // any tag
+        query = query.whereExists(tagsSubquery);
+      } else {
+        tagsSubquery = tagsSubquery.whereIn("tag_id", tags);
+        query = query.whereExists(tagsSubquery);
+      }
     }
   }
 
@@ -149,6 +159,7 @@ export async function getConversations(
     "campaign_contact.first_name as cc_first_name",
     "campaign_contact.last_name as cc_last_name",
     "campaign_contact.cell",
+    "campaign_contact.error_code",
     "campaign_contact.message_status",
     "campaign_contact.is_opted_out",
     "campaign_contact.updated_at",
@@ -215,6 +226,7 @@ export async function getConversations(
       ccId = conversationRow.cc_id;
       conversation = _.omit(conversationRow, messageFields);
       conversation.messages = [];
+      conversation.organization_id = Number(organizationId);
       conversations.push(conversation);
     }
     conversation.messages.push(
