@@ -159,7 +159,7 @@ describe("cacheable_queries.tagCampaignContactCache", () => {
       );
     });
 
-    describe("when a tag's value is updated", () => {
+    describe("when a tag value is updated", () => {
       beforeEach(async () => {
         expectedQueryReturn = expect.arrayContaining([
           {
@@ -173,7 +173,7 @@ describe("cacheable_queries.tagCampaignContactCache", () => {
         ]);
       });
 
-      it("updates the value and doesn't save another instance of the tag", async () => {
+      it("updates the value and does not save another instance of the tag", async () => {
         await cacheableData.tagCampaignContact.save(contacts[0].id, [
           {
             id: 1,

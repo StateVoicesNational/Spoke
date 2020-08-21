@@ -334,17 +334,21 @@ async function editCampaign(id, campaign, loaders, user, origCampaignRecord) {
         ]);
         return res.id;
       };
-      const tagCannedResponses = await Promise.all(
-        convertedResponses.map(async response => {
-          const { tagIds, ...filteredResponse } = response;
-          const responseId = await saveCannedResponse(filteredResponse);
-          return (tagIds || []).map(t => ({
-            tag_id: t,
-            canned_response_id: responseId
-          }));
-        })
+      const tagCannedResponses = _.flatten(
+        await Promise.all(
+          convertedResponses.map(async response => {
+            const { tagIds, ...filteredResponse } = response;
+            const responseId = await saveCannedResponse(filteredResponse);
+            return (tagIds || []).map(t => ({
+              tag_id: t,
+              canned_response_id: responseId
+            }));
+          })
+        )
       );
-      await trx("tag_canned_response").insert(_.flatten(tagCannedResponses));
+      if (tagCannedResponses.length) {
+        await trx("tag_canned_response").insert(tagCannedResponses);
+      }
     });
 
     await cacheableData.cannedResponse.clearQuery({
@@ -863,7 +867,6 @@ const rootMutations = {
           interactionsArr.push(is);
         }
       });
-
       await updateInteractionSteps(
         newCampaignId,
         [makeTree(interactionsArr, (id = null))],
@@ -888,14 +891,11 @@ const rootMutations = {
         response => {
           return r
             .knex("canned_response")
-            .insert(
-              {
-                campaign_id: newCampaignId,
-                title: response.title,
-                text: response.text
-              },
-              ["id"]
-            )
+            .insert({
+              campaign_id: newCampaignId,
+              title: response.title,
+              text: response.text
+            })
             .then(([res]) => {
               response.tagIds.forEach(t => {
                 tagCannedResponses.push({
@@ -907,8 +907,9 @@ const rootMutations = {
         }
       );
       await Promise.all(copiedCannedResponsePromises);
-      await r.knex("tag_canned_response").insert(tagCannedResponses);
-
+      if (tagCannedResponses.length) {
+        await r.knex("tag_canned_response").insert(tagCannedResponses);
+      }
       return newCampaign;
     },
     unarchiveCampaign: async (_, { id }, { user }) => {

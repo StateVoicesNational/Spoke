@@ -104,9 +104,10 @@ export const tagCampaignContactCache = {
             campaign_contact_id: campaignContactId
           });
       });
-
-      const insertPromise = trx("tag_campaign_contact").insert(newTags);
-      promises.push(insertPromise);
+      if (newTags.length) {
+        const insertPromise = trx("tag_campaign_contact").insert(newTags);
+        promises.push(insertPromise);
+      }
 
       await Promise.all(promises);
     });
