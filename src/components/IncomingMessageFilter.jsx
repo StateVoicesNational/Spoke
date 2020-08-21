@@ -82,7 +82,8 @@ class IncomingMessageFilter extends Component {
       messageTextFilter: this.props.messageTextFilter,
       messageFilter:
         this.props.messageFilter && this.props.messageFilter.split(","),
-      tagsFilter: this.props.tagsFilter
+      tagsFilter: this.props.tagsFilter,
+      errorCode: this.props.errorCode
     };
   }
 
@@ -278,6 +279,14 @@ class IncomingMessageFilter extends Component {
                 toggled={this.props.includeOptedOutConversations}
               />
             </div>
+            <div className={css(styles.spacer)} />
+            <div className={css(styles.toggleFlexColumn)}>
+              <SelectedCampaigns
+                campaigns={this.state.selectedCampaigns}
+                onDeleteRequested={this.handleCampaignRemoved}
+                onClear={this.handleClearCampaigns}
+              />
+            </div>
           </div>
 
           <div className={css(styles.container)}>
@@ -357,16 +366,28 @@ class IncomingMessageFilter extends Component {
                 }}
               />
             </div>
-            <div>
+            <div className={css(styles.spacer)} />
+            <div className={css(styles.flexColumn)}>
               <TagsSelector
                 onChange={this.onTagsFilterChanged}
                 tagsFilter={this.state.tagsFilter}
                 tags={this.props.tags}
               />
-              <SelectedCampaigns
-                campaigns={this.state.selectedCampaigns}
-                onDeleteRequested={this.handleCampaignRemoved}
-                onClear={this.handleClearCampaigns}
+            </div>
+            <div className={css(styles.spacer)} />
+            <div className={css(styles.flexColumn)}>
+              <TextField
+                hintText="Error code number"
+                floatingLabelText="Error codes"
+                value={this.state.errorCode}
+                onChange={(_, errorCode) => {
+                  this.setState({ errorCode });
+                }}
+                onKeyPress={evt => {
+                  if (evt.key === "Enter") {
+                    this.props.onErrorCodeChanged(this.state.errorCode);
+                  }
+                }}
               />
             </div>
           </div>
@@ -380,6 +401,7 @@ IncomingMessageFilter.propTypes = {
   onCampaignChanged: type.func.isRequired,
   onTexterChanged: type.func.isRequired,
   onMessageTextFilterChanged: type.func.isRequired,
+  onErrorCodeChanged: type.func.isRequired,
   onActiveCampaignsToggled: type.func.isRequired,
   onArchivedCampaignsToggled: type.func.isRequired,
   includeArchivedCampaigns: type.bool.isRequired,
@@ -399,6 +421,7 @@ IncomingMessageFilter.propTypes = {
   tagsFilter: type.object.isRequired,
   messageTextFilter: type.string,
   texterSearchText: type.string,
+  errorCode: type.arrayOf(type.number),
   selectedCampaigns: type.array
 };
 

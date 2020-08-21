@@ -2,6 +2,7 @@ import { CampaignContact, r, cacheableData } from "../models";
 import { mapFieldsToModel } from "./lib/utils";
 import { getConfig } from "./lib/config";
 import { log, getTopMostParent, zipToTimeZone } from "../../lib";
+import { accessRequired } from "./errors";
 
 export const resolvers = {
   Location: {
@@ -34,6 +35,15 @@ export const resolvers = {
       return await cacheableData.campaignContact.getMessageStatus(
         campaignContact.id
       );
+    },
+    errorCode: async (campaignContact, _, { user }) => {
+      await accessRequired(
+        user,
+        campaignContact.organization_id,
+        "SUPERVOLUNTEER",
+        true
+      );
+      return campaignContact.error_code;
     },
     campaign: async (campaignContact, _, { loaders }) =>
       loaders.campaign.load(campaignContact.campaign_id),

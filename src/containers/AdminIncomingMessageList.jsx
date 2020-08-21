@@ -112,6 +112,9 @@ export class AdminIncomingMessageList extends Component {
     if (query.messageStatus) {
       this.state.contactsFilter.messageStatus = query.messageStatus;
     }
+    if (query.errorCode) {
+      this.state.contactsFilter.errorCode = query.errorCode.split(",");
+    }
   }
 
   shouldComponentUpdate = (dummy, nextState) => {
@@ -154,6 +157,9 @@ export class AdminIncomingMessageList extends Component {
       }
       if (nextState.contactsFilter.messageStatus) {
         query.messageStatus = nextState.contactsFilter.messageStatus;
+      }
+      if (nextState.contactsFilter.errorCode) {
+        query.errorCode = nextState.contactsFilter.errorCode.join(",");
       }
       //default false
       if (nextState.includeArchivedCampaigns) {
@@ -216,6 +222,17 @@ export class AdminIncomingMessageList extends Component {
       _.omit(this.state.contactsFilter, ["messageStatus"]),
       { messageStatus: messagesFilter }
     );
+    await this.setState({
+      contactsFilter,
+      needsRender: true
+    });
+  };
+
+  handleErrorCodeChange = async errorCode => {
+    const contactsFilter = {
+      ...this.state.contactsFilter,
+      errorCode: errorCode ? errorCode.split(",") : null
+    };
     await this.setState({
       contactsFilter,
       needsRender: true
@@ -462,6 +479,7 @@ export class AdminIncomingMessageList extends Component {
             onTexterChanged={this.handleTexterChanged}
             onMessageFilterChanged={this.handleMessageFilterChange}
             onMessageTextFilterChanged={this.handleMessageTextFilterChange}
+            onErrorCodeChanged={this.handleErrorCodeChange}
             assignmentsFilter={this.state.assignmentsFilter}
             onActiveCampaignsToggled={this.handleActiveCampaignsToggled}
             onArchivedCampaignsToggled={this.handleArchivedCampaignsToggled}
@@ -486,6 +504,7 @@ export class AdminIncomingMessageList extends Component {
             texterSearchText={this.state.texterSearchText}
             selectedCampaigns={this.state.selectedCampaigns}
             messageFilter={this.state.contactsFilter.messageStatus}
+            errorCode={this.state.contactsFilter.errorCode}
           />
           <br />
           <IncomingMessageActions

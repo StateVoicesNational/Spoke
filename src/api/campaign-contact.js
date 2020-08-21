@@ -6,6 +6,7 @@ export const schema = `
     includePastDue: Boolean
     tags: [String]
     contactId: String
+    errorCode: [Int]
   }
 
   type Timezone {
@@ -36,5 +37,6 @@ export const schema = `
     interactionSteps: [InteractionStep]
     messageStatus: String
     assignmentId: String
+    errorCode: Int
   }
 `;

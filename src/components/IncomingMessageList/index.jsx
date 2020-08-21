@@ -11,7 +11,7 @@ import DataTables from "material-ui-datatables";
 import ConversationPreviewModal from "./ConversationPreviewModal";
 import TagChip from "../TagChip";
 import moment from "moment";
-
+import theme from "../../styles/theme";
 import { MESSAGE_STATUSES } from "../../components/IncomingMessageFilter";
 
 export const prepareDataTableData = conversations =>
@@ -33,6 +33,7 @@ export const prepareDataTableData = conversations =>
     campaignContactId: conversation.contact.id,
     assignmentId: conversation.contact.assignmentId,
     status: conversation.contact.messageStatus,
+    errorCode: conversation.contact.errorCode,
     messages: conversation.contact.messages,
     tags: conversation.contact.tags
   }));
@@ -144,7 +145,16 @@ export class IncomingMessageList extends Component {
         overflow: "scroll",
         whiteSpace: "pre-line"
       },
-      render: (columnKey, row) => MESSAGE_STATUSES[row.status].name
+      render: (columnKey, row) => (
+        <div>
+          {MESSAGE_STATUSES[row.status].name}
+          {row.errorCode ? (
+            <div style={{ color: theme.colors.darkRed }}>
+              error: {row.errorCode}
+            </div>
+          ) : null}
+        </div>
+      )
     },
     {
       key: "latestMessage",
@@ -367,6 +377,7 @@ const queries = {
               lastName
               cell
               messageStatus
+              errorCode
               messages {
                 id
                 text
