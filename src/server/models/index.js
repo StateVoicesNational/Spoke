@@ -89,6 +89,20 @@ function dropTables() {
   });
 }
 
+const truncateTables = async () => {
+  // FUTURE: maybe this would speed up tests?
+  // Tentative experiments suggest it might shave a minute off
+  const isSqlite = /sqlite/.test(thinky.k.client.config.client);
+  if (isSqlite) {
+    await Promise.all(tableList.map(t => thinky.k(t).truncate()));
+  } else {
+    // Postgres lets (and requires) that you drop them all at once
+    await thinky.k.raw(
+      'TRUNCATE "' + tableList.join('", "') + '" RESTART IDENTITY'
+    );
+  }
+};
+
 const createLoaders = () => ({
   // Note: loaders with cacheObj should also run loaders.XX.clear(id)
   //  on clear on the cache as well.
@@ -131,6 +145,7 @@ export {
   createTablesIfNecessary,
   dropTables,
   datawarehouse,
+  truncateTables,
   Assignment,
   Campaign,
   CampaignAdmin,
