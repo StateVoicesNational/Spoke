@@ -266,20 +266,15 @@ const messageCache = {
       (contact && contact.campaign_id) ||
       (activeCellFound && activeCellFound.campaign_id);
 
-    if (Object.keys(handlers).length && (organization || campaignId)) {
+    if (handlers.length && (organization || campaignId)) {
       if (!organization) {
         organization = await campaignCache.loadCampaignOrganization({
           campaignId
         });
       }
-      const availableHandlers = Object.keys(handlers)
-        .filter(
-          h =>
-            handlers[h].available &&
-            handlers[h].preMessageSave &&
-            handlers[h].available(organization)
-        )
-        .map(h => handlers[h]);
+      const availableHandlers = handlers.filter(
+        h => h.available && h.preMessageSave && h.available(organization)
+      );
       for (let i = 0, l = availableHandlers.length; i < l; i++) {
         // NOTE: these handlers can alter messageToSave properties
         const result = await availableHandlers[i].preMessageSave({
@@ -341,15 +336,10 @@ const messageCache = {
       contactStatus: newStatus
     };
 
-    if (Object.keys(handlers).length && organization) {
-      const availableHandlers = Object.keys(handlers)
-        .filter(
-          h =>
-            handlers[h].available &&
-            handlers[h].postMessageSave &&
-            handlers[h].available(organization)
-        )
-        .map(h => handlers[h]);
+    if (handlers.length && organization) {
+      const availableHandlers = handlers.filter(
+        h => h.available && h.postMessageSave && h.available(organization)
+      );
       for (let i = 0, l = availableHandlers.length; i < l; i++) {
         const result = await availableHandlers[i].postMessageSave({
           message: messageToSave,
