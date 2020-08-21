@@ -7,7 +7,7 @@ import LinearProgress from "material-ui/LinearProgress";
 import TexterStats from "../components/TexterStats";
 import OrganizationJoinLink from "../components/OrganizationJoinLink";
 import Snackbar from "material-ui/Snackbar";
-import { withRouter } from "react-router";
+import { withRouter, Link } from "react-router";
 import { StyleSheet, css } from "aphrodite";
 import loadData from "./hoc/load-data";
 import gql from "graphql-tag";
@@ -137,6 +137,7 @@ class AdminCampaignStats extends React.Component {
   }
 
   renderErrorCounts() {
+    const { campaignId, organizationId } = this.props.params;
     const { errorCounts } = this.props.data.campaign.stats;
     const { contactsCount } = this.props.data.campaign;
     console.log("errorcounts", contactsCount, errorCounts);
@@ -155,7 +156,13 @@ class AdminCampaignStats extends React.Component {
               error.code
             )}{" "}
             {error.description || null}
-            <div>{error.count} errors</div>
+            <div>
+              <Link
+                to={`/admin/${organizationId}/incoming?campaigns=${campaignId}&errorCode=${error.code}`}
+              >
+                {error.count} errors
+              </Link>
+            </div>
             <LinearProgress
               color="red"
               mode="determinate"
