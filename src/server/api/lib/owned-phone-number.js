@@ -67,12 +67,13 @@ async function getOwnedPhoneNumberForStickySender(organizationId, cell) {
         getConfig("CONTACTS_PER_PHONE_NUMBER") || 200
       ),
       r.knex.raw(
-        "CASE WHEN area_code = '?' THEN 1 ELSE 0 END AS matching_area_code",
+        "CASE WHEN area_code = '??' THEN 1 ELSE 0 END AS matching_area_code",
         areaCode
       ),
       r.knex.raw(
-        "CASE WHEN area_code IN ('?') THEN 1 ELSE 0 END AS matching_secondary_area_code",
-        secondaryAreaCodes ? secondaryAreaCodes.join("', '") : ""
+        `CASE WHEN area_code IN ('${
+          secondaryAreaCodes ? secondaryAreaCodes.join("','") : ""
+        }') THEN 1 ELSE 0 END AS matching_secondary_area_code`
       ),
       r.knex.raw("CEILING((stuck_contacts + 1.0) / 50) AS priority_grouping"), // Prioritize numbers with 0 - 49 stuck contacts, followed by 50 - 99, etc.
       r.knex.raw("random()")

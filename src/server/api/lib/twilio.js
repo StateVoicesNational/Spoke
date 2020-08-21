@@ -171,15 +171,16 @@ async function getContactUserNumber(organization, contactNumber) {
       getConfig("PHONE_INVENTORY", organization, { truthy: true })) &&
     getConfig("SKIP_TWILIO_MESSAGING_SERVICE", organization, { truthy: true })
   ) {
-    return null;
+    const phoneNumber = await ownedPhoneNumber.getOwnedPhoneNumberForStickySender(
+      organization.id,
+      contactNumber
+    );
+
+    console.log({ phoneNumber });
+    return phoneNumber && phoneNumber.phone_number;
   }
 
-  const randomOwnedPhoneNumber = await ownedPhoneNumber.getOwnedPhoneNumberForStickySender(
-    organization.id,
-    contactNumber
-  );
-
-  return randomOwnedPhoneNumber && randomOwnedPhoneNumber.phone_number;
+  return null;
 }
 
 async function sendMessage(message, contact, trx, organization, campaign) {
