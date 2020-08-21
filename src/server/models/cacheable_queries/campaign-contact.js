@@ -35,8 +35,9 @@ const messageStatusKey = id =>
   `${process.env.CACHE_PREFIX || ""}contactstatus-${id}`;
 
 // allows a lookup of contact_id, assignment_id, and timezone_offset by cell+messageservice_sid
-const cellTargetKey = (cell, messageServiceSid) =>
-  `${process.env.CACHE_PREFIX || ""}cell-${cell}-${messageServiceSid || "x"}`;
+const cellTargetKey = (cell, messageServiceOrUserNumber) =>
+  `${process.env.CACHE_PREFIX || ""}cell-${cell}-${messageServiceOrUserNumber ||
+    "x"}`;
 
 // HASH<campaignId> assignment_id and user_id (sometimes) of assignment
 // This allows us to clear assignment cache all at once for a campaign
