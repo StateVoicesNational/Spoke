@@ -37,11 +37,13 @@ export function clientChoiceDataCacheKey(organization) {
   return `${organization.id}`;
 }
 
-export const postCanvassResponse = async (contact, organization, body) => {
+export const postCanvassResponse = async (contact, organization, bodyInput) => {
   let vanId;
+  let vanPhoneId;
   try {
     const customFields = JSON.parse(contact.custom_fields || "{}");
     vanId = customFields.VanID || customFields.vanid;
+    vanPhoneId = customFields.VanPhoneId || customFields.vanPhoneId;
   } catch (caughtException) {
     // eslint-disable-next-line no-console
     console.error(
@@ -58,6 +60,13 @@ export const postCanvassResponse = async (contact, organization, body) => {
     return {};
   }
 
+  const body = {
+    ...bodyInput
+  };
+
+  if (vanPhoneId) {
+    body.canvassContext.phoneId = vanPhoneId;
+  }
   const url = Van.makeUrl(`v4/people/${vanId}/canvassResponses`, organization);
 
   // eslint-disable-next-line no-console
