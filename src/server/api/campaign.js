@@ -45,14 +45,23 @@ export function addCampaignsFilterToQuery(
     }
 
     if ("searchString" in campaignsFilter && campaignsFilter.searchString) {
+      var neg =
+        campaignsFilter.searchString.length > 0 &&
+        campaignsFilter.searchString[0] === "-";
       const searchStringWithPercents = (
         "%" +
-        campaignsFilter.searchString +
+        campaignsFilter.searchString.slice(neg) +
         "%"
       ).toLocaleLowerCase();
-      query = query.andWhere(
-        r.knex.raw(`${title} like ?`, [searchStringWithPercents])
-      );
+      if (neg) {
+        query = query.andWhere(
+          r.knex.raw(`${title} not like ?`, [searchStringWithPercents])
+        );
+      } else {
+        query = query.andWhere(
+          r.knex.raw(`${title} like ?`, [searchStringWithPercents])
+        );
+      }
     }
 
     if (resultSize && !pageSize) {
