@@ -6,11 +6,11 @@ export function getMessageHandlers(organization) {
   const enabledHandlers =
     (configuredHandlers && configuredHandlers.split(",")) || [];
 
-  const handlers = {};
+  const handlers = [];
   enabledHandlers.forEach(name => {
     try {
       const c = require(`./${name}/index.js`);
-      handlers[name] = c;
+      handlers.push(c);
     } catch (err) {
       console.error(
         `${handlerKey} failed to load message handler ${name} -- ${err}`

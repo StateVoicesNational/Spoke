@@ -1,7 +1,7 @@
 import { log } from "../../../lib";
 import { Assignment, Campaign, r, cacheableData } from "../../models";
 import { assignmentRequiredOrAdminRole } from "../errors";
-import { getDynamicAssignmentBatchPolicy } from "../../../extensions/dynamicassignment-batches";
+import { getDynamicAssignmentBatchPolicies } from "../../../extensions/dynamicassignment-batches";
 
 export const findNewCampaignContact = async (
   _,
@@ -45,12 +45,15 @@ export const findNewCampaignContact = async (
     const organization = await loaders.organization.load(
       campaign.organization_id
     );
-    const policy = getDynamicAssignmentBatchPolicy({ organization, campaign });
-    if (!policy || !policy.requestNewBatchCount) {
+    const policies = getDynamicAssignmentBatchPolicies({
+      organization,
+      campaign
+    });
+    if (!policies.length || !policies[0].requestNewBatchCount) {
       return falseRetVal; // to be safe, default to never
     }
     // default is finished-replies
-    availableCount = await policy.requestNewBatchCount({
+    availableCount = await policies[0].requestNewBatchCount({
       r,
       loaders,
       cacheableData,
