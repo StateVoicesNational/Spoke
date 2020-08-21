@@ -113,7 +113,7 @@ class AdminPhoneNumberInventory extends React.Component {
 
   tableColumns() {
     const { pendingPhoneNumberJobs } = this.props.data.organization;
-    return [
+    const columns = [
       {
         key: "areaCode",
         label: "Area Code",
@@ -127,27 +127,47 @@ class AdminPhoneNumberInventory extends React.Component {
         sortable: true
       },
       {
-        key: "allocatedCount",
-        label: "Allocated",
-        style: inlineStyles.column
-      },
-      {
         key: "availableCount",
         label: "Available",
         style: inlineStyles.column
-      },
-      // TODO: display additional information here about pending and past jobs
-      {
-        key: "pendingJobs",
-        label: "",
-        style: inlineStyles.column,
-        render: (columnKey, row) => {
-          if (pendingPhoneNumberJobs.some(j => j.areaCode === row.areaCode)) {
-            return <CircularProgress size={25} />;
-          }
-        }
       }
     ];
+
+    if (window.EXPERIMENTAL_STICKY_SENDER) {
+      columns.push({
+        key: "minStuckContacts",
+        label: "Min Stuck Contacts",
+        style: inlineStyles.column
+      });
+
+      columns.push({
+        key: "maxStuckContacts",
+        label: "Max Stuck Contacts",
+        style: inlineStyles.column
+      });
+    }
+
+    if (!window.SKIP_TWILIO_MESSAGING_SERVICE) {
+      columns.push({
+        key: "allocatedCount",
+        label: "Allocated",
+        style: inlineStyles.column
+      });
+    }
+
+    // TODO: display additional information here about pending and past jobs
+    columns.push({
+      key: "pendingJobs",
+      label: "",
+      style: inlineStyles.column,
+      render: (columnKey, row) => {
+        if (pendingPhoneNumberJobs.some(j => j.areaCode === row.areaCode)) {
+          return <CircularProgress size={25} />;
+        }
+      }
+    });
+
+    return columns;
   }
 
   renderBuyNumbersForm() {
@@ -269,6 +289,8 @@ const queries = {
             state
             availableCount
             allocatedCount
+            minStuckContacts
+            maxStuckContacts
           }
           pendingPhoneNumberJobs {
             id

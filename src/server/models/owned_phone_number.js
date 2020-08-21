@@ -21,7 +21,8 @@ const OwnedPhoneNumber = thinky.createModel(
       allocated_to: optionalString(),
       allocated_to_id: optionalString().stopReference(),
       allocated_at: optionalTimestamp(),
-      created_at: timestamp()
+      created_at: timestamp(),
+      stuck_contacts: type.integer()
     })
     .allowExtra(false)
 );

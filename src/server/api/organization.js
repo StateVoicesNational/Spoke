@@ -351,7 +351,9 @@ export const resolvers = {
           r.knex.raw("COUNT(allocated_to) as allocated_count"),
           r.knex.raw(
             "SUM(CASE WHEN allocated_to IS NULL THEN 1 END) as available_count"
-          )
+          ),
+          r.knex.raw("MIN(stuck_contacts) as min_stuck_contacts"),
+          r.knex.raw("MAX(stuck_contacts) as max_stuck_contacts")
         )
         .where({
           service,
@@ -362,7 +364,9 @@ export const resolvers = {
         areaCode: row.area_code,
         state: usAreaCodes.get(Number(row.area_code)),
         allocatedCount: Number(row.allocated_count),
-        availableCount: Number(row.available_count)
+        availableCount: Number(row.available_count),
+        minStuckContacts: Number(row.min_stuck_contacts),
+        maxStuckContacts: Number(row.max_stuck_contacts)
       }));
     }
   }

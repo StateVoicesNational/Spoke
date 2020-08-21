@@ -1,5 +1,6 @@
 import { r, OptOut } from "../../models";
 import campaignCache from "./campaign";
+import contactUserNumberCache from "./contact-user-number";
 
 // STRUCTURE
 // SET by organization, so optout-<organization_id> has a <cell> key
@@ -138,6 +139,7 @@ const optOutCache = {
           "campaign.is_archived": false
         }
       : { "campaign_contact.cell": cell, "campaign.is_archived": false };
+
     await r
       .knex("campaign_contact")
       .where(
@@ -154,6 +156,13 @@ const optOutCache = {
       });
     if (noReply) {
       await campaignCache.incrCount(campaign.id, "needsResponseCount", -1);
+    }
+
+    if (process.env.EXPERIMENTAL_STICKY_SENDER) {
+      await contactUserNumberCache.remove({
+        organizationId,
+        contactNumber: cell
+      });
     }
   },
   loadMany

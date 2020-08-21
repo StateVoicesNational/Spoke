@@ -238,6 +238,11 @@ class Settings extends React.Component {
                 label="Default Message Service SID"
                 name="messageServiceSid"
                 fullWidth
+                style={{
+                  dislay: window.SKIP_TWILIO_MESSAGING_SERVICE
+                    ? "none"
+                    : "block"
+                }}
               />
 
               <Form.Button

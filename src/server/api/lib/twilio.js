@@ -13,6 +13,7 @@ import { saveNewIncomingMessage } from "./message-sending";
 import { getConfig } from "./config";
 import urlJoin from "url-join";
 import _ from "lodash";
+import ownedPhoneNumber from "./owned-phone-number";
 
 // TWILIO error_codes:
 // > 1 (i.e. positive) error_codes are reserved for Twilio error codes
@@ -153,11 +154,33 @@ async function getMessagingServiceSid(
   );
 }
 
-async function getContactUserNumber(organizationId, contactNumber) {
-  return await cacheableData.contactUserNumber.query({
-    organizationId,
+async function getContactUserNumber(organization, contactNumber) {
+  const contactUserNumber = await cacheableData.contactUserNumber.query({
+    organizationId: organization.id,
     contactNumber
   });
+
+  if (contactUserNumber && contactUserNumber.user_number) {
+    return contactUserNumber.user_number;
+  }
+
+  const inventoryEnabled =
+    getConfig("EXPERIMENTAL_PHONE_INVENTORY", organization, { truthy: true }) ||
+    getConfig("PHONE_INVENTORY", organization, { truthy: true });
+
+  if (
+    (!inventoryEnabled || !getConfig("SKIP_TWILIO_MESSAGING_SERVICE"),
+    organization,
+    { truthy: true })
+  )
+    return null;
+
+  const randomOwnedPhoneNumber = await ownedPhoneNumber.getOwnedPhoneNumberForStickySender(
+    organization.id,
+    contactNumber
+  );
+
+  return randomOwnedPhoneNumber && randomOwnedPhoneNumber.phone_number;
 }
 
 async function sendMessage(message, contact, trx, organization, campaign) {
@@ -190,15 +213,10 @@ async function sendMessage(message, contact, trx, organization, campaign) {
   );
 
   let userNumber;
-  if (process.env.EXPERIMENTAL_STICKY_SENDER) {
-    const contactUserNumber = await getContactUserNumber(
-      organization.id,
-      contact.cell
-    );
-
-    if (contactUserNumber) {
-      userNumber = contactUserNumber.user_number;
-    }
+  if (
+    (getConfig("EXPERIMENTAL_STICKY_SENDER"), organization, { truthy: true })
+  ) {
+    userNumber = await getContactUserNumber(organization, contact.cell);
   }
 
   return new Promise((resolve, reject) => {
@@ -248,7 +266,8 @@ async function sendMessage(message, contact, trx, organization, campaign) {
       {
         to: message.contact_number,
         body: message.text,
-        statusCallback: process.env.TWILIO_STATUS_CALLBACK_URL
+        statusCallback: process.env.TWILIO_STATUS_CALLBACK_URL,
+        smartEncoded: true
       },
       twilioValidityPeriod ? { validityPeriod: twilioValidityPeriod } : {},
       parseMessageText(message),
@@ -561,10 +580,12 @@ async function addNumberToMessagingService(
  * Buy a phone number and add it to the owned_phone_number table
  */
 async function buyNumber(organization, twilioInstance, phoneNumber, opts = {}) {
+  const twilioBaseUrl = getConfig("TWILIO_BASE_CALLBACK_URL", organization);
   const response = await twilioInstance.incomingPhoneNumbers.create({
     phoneNumber,
     friendlyName: `Managed by Spoke [${process.env.BASE_URL}]: ${phoneNumber}`,
-    voiceUrl: getConfig("TWILIO_VOICE_URL", organization) // will use default twilio recording if undefined
+    voiceUrl: getConfig("TWILIO_VOICE_URL", organization), // will use default twilio recording if undefined
+    smsUrl: urlJoin(twilioBaseUrl, "twilio", organization.id.toString())
   });
 
   if (response.error) {

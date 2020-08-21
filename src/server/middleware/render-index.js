@@ -115,7 +115,21 @@ export default function renderIndex(html, css, assetMap) {
         100};
       window.CONTACTS_PER_PHONE_NUMBER=${getConfig(
         "CONTACTS_PER_PHONE_NUMBER"
-      ) || 200};      
+      ) || 200};
+      window.SKIP_TWILIO_MESSAGING_SERVICE=${getConfig(
+        "SKIP_TWILIO_MESSAGING_SERVICE",
+        null,
+        {
+          truthy: 1
+        }
+      ) || false}
+      window.EXPERIMENTAL_STICKY_SENDER=${getConfig(
+        "EXPERIMENTAL_STICKY_SENDER",
+        null,
+        {
+          truthy: 1
+        }
+      ) || false}
     </script>
     <script src="${assetMap["bundle.js"]}"></script>
   </body>

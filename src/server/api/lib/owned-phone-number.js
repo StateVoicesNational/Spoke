@@ -1,4 +1,5 @@
 import { r } from "../../models";
+import { getConfig } from "./config";
 
 async function allocateCampaignNumbers(
   { organizationId, campaignId, areaCode, amount },
@@ -51,8 +52,49 @@ async function listCampaignNumbers(campaignId) {
     .groupBy("area_code");
 }
 
+async function getOwnedPhoneNumberForStickySender(organizationId, cell) {
+  const areaCode = cell.slice(2, 5);
+  console.log({ organizationId, cell, areaCode });
+
+  let secondaryAreaCode;
+  switch (areaCode) {
+    case "303":
+      secondaryAreaCode = "720";
+      break;
+    case "720":
+      secondaryAreaCode = "303";
+      break;
+  }
+
+  return await r
+    .knex("owned_phone_number")
+    .select(
+      "phone_number",
+      r.knex.raw(
+        "CASE WHEN stuck_contacts > ? THEN 1 ELSE 0 END AS over_contact_per_phone_number_limit",
+        getConfig("CONTACTS_PER_PHONE_NUMBER") || 200
+      ),
+      r.knex.raw(
+        "CASE WHEN area_code = '?' THEN 1 ELSE 0 END AS matching_area_code",
+        areaCode
+      ),
+      r.knex.raw(
+        "CASE WHEN area_code = '?' THEN 1 ELSE 0 END AS matching_secondary_area_code",
+        secondaryAreaCode || ""
+      ),
+      r.knex.raw("CEILING((stuck_contacts + 1.0) / 50) AS priority_grouping"), // Prioritize numbers with 0 - 49 stuck contacts, followed by 50 - 99, etc.
+      r.knex.raw("random()")
+    )
+    .where({
+      organization_id: organizationId
+    })
+    .orderByRaw("2, 3 DESC, 4 DESC, 5, 6")
+    .first();
+}
+
 export default {
   allocateCampaignNumbers,
   releaseCampaignNumbers,
-  listCampaignNumbers
+  listCampaignNumbers,
+  getOwnedPhoneNumberForStickySender
 };
