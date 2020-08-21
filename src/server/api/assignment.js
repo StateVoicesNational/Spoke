@@ -1,7 +1,7 @@
 import { mapFieldsToModel } from "./lib/utils";
 import { Assignment, r, cacheableData } from "../models";
 import { getOffsets, defaultTimezoneIsBetweenTextingHours } from "../../lib";
-import { getDynamicAssignmentBatchPolicy } from "../../extensions/dynamicassignment-batches";
+import { getDynamicAssignmentBatchPolicies } from "../../extensions/dynamicassignment-batches";
 
 export function addWhereClauseForContactsFilterMessageStatusIrrespectiveOfPastDue(
   queryParameter,
@@ -161,15 +161,15 @@ export const resolvers = {
       const organization = await loaders.organization.load(
         campaign.organization_id
       );
-      const policy = getDynamicAssignmentBatchPolicy({
+      const policies = getDynamicAssignmentBatchPolicies({
         organization,
         campaign
       });
-      if (!policy || !policy.requestNewBatchCount) {
+      if (!policies.length || !policies[0].requestNewBatchCount) {
         return 0; // to be safe, default to never
       }
       // default is finished-replies
-      const availableCount = await policy.requestNewBatchCount({
+      const availableCount = await policies[0].requestNewBatchCount({
         r,
         loaders,
         cacheableData,
