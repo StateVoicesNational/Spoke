@@ -103,7 +103,7 @@ const cacheDbResult = async dbResult => {
   }
 };
 
-const query = async ({ campaignContactId }) => {
+const query = async ({ campaignContactId, justCache }) => {
   // queryObj ~ { campaignContactId, assignmentId, cell, service, messageServiceSid }
   if (r.redis && CONTACT_CACHE_ENABLED) {
     // campaignContactId = await contactIdFromOther(queryObj);
@@ -119,6 +119,9 @@ const query = async ({ campaignContactId }) => {
         return messages.reverse().map(m => JSON.parse(m));
       }
     }
+  }
+  if (justCache) {
+    return null;
   }
   // console.log('dbQuery', campaignContactId)
   const dbResult = await dbQuery({ campaignContactId });
@@ -253,6 +256,24 @@ const messageCache = {
         (activeCellFound && activeCellFound.campaign_contact_id);
       messageToSave.campaign_contact_id = contactId;
     } else {
+      if (
+        r.redis &&
+        CONTACT_CACHE_ENABLED &&
+        contact.message_status !== "needsMessage"
+      ) {
+        const messages = await query({
+          campaignContactId: contact.id,
+          justCache: true
+        });
+        if (messages && messages.length) {
+          const duplicate = messages.find(
+            m => m.text === messageToSave.text && m.is_from_contact === false
+          );
+          if (duplicate) {
+            matchError = "DUPLICATE MESSAGE DB";
+          }
+        }
+      }
       // is NOT from contact:
       newStatus =
         contact.message_status === "needsResponse" ||
