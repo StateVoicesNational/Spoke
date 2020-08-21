@@ -32,8 +32,6 @@ const contactUserNumberCache = {
       .limit(1)(0)
       .default(null);
 
-    console.log(contactUserNumber);
-
     if (r.redis) {
       await r.redis
         .multi()
