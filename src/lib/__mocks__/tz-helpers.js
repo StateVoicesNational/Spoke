@@ -1,5 +1,5 @@
 const tzHelpers = jest.genMockFromModule("../tz-helpers");
 
-tzHelpers.getProcessEnvDstReferenceTimezone = () => "America/New_York";
+tzHelpers.getProcessEnvDstReferenceTimezone = () => "US/Eastern";
 
 module.exports = tzHelpers;
