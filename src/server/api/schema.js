@@ -63,7 +63,8 @@ import {
   startCampaign,
   updateContactTags,
   updateQuestionResponses,
-  releaseCampaignNumbers
+  releaseCampaignNumbers,
+  clearExtensionCaches
 } from "./mutations";
 
 const ActionHandlers = require("../../extensions/action-handlers");
@@ -444,6 +445,7 @@ const rootMutations = {
     sendMessage,
     startCampaign,
     releaseCampaignNumbers,
+    clearExtensionCaches,
     userAgreeTerms: async (_, { userId }, { user }) => {
       // We ignore userId: you can only agree to terms for yourself
       await r
