@@ -9,8 +9,45 @@ export const availabilityCacheKey = (name, organization, userId) =>
   }-${userId}`;
 
 export const choiceDataCacheKey = (name, organization, suffix) =>
-  `${getConfig("CACHE_PREFIX", organization) ||
-    ""}action-choices-${name}-${suffix}`;
+  `${getConfig("CACHE_PREFIX", organization) || ""}action-choices-${name}-${
+    organization.id
+  }-${suffix || ""}`;
+
+export const clearCacheForOrganization = async (
+  handlerName,
+  organizationId
+) => {
+  if (!r.redis) {
+    return;
+  }
+
+  const promises = [
+    r.redis.keysAsync(
+      `${choiceDataCacheKey(
+        handlerName,
+        {
+          id: organizationId
+        },
+        "*"
+      )}`
+    ),
+    r.redis.keysAsync(
+      `${availabilityCacheKey(
+        handlerName,
+        {
+          id: organizationId
+        },
+        "*"
+      )}`
+    )
+  ];
+
+  const keysResults = await Promise.all(promises);
+  const keys = [...keysResults[0], ...keysResults[1]];
+
+  const delPromises = keys.map(key => r.redis.delAsync(key));
+  await Promise.all(delPromises);
+};
 
 // TODO: organization is never actually passed to this method so action handlers
 //   are not actually configurable at the organization level
@@ -154,8 +191,7 @@ export async function getAvailableActionHandlers(organization, user) {
 }
 
 export async function getActionChoiceData(actionHandler, organization, user) {
-  const cacheKeyFunc =
-    actionHandler.clientChoiceDataCacheKey || (org => `${org.id}`);
+  const cacheKeyFunc = actionHandler.clientChoiceDataCacheKey || (() => "");
   const clientChoiceDataFunc =
     actionHandler.getClientChoiceData || (() => ({ data: "{}" }));
 
@@ -164,7 +200,7 @@ export async function getActionChoiceData(actionHandler, organization, user) {
     cacheKey = exports.choiceDataCacheKey(
       actionHandler.name,
       organization,
-      cacheKeyFunc(organization, user)
+      cacheKeyFunc(user)
     );
   } catch (caughtException) {
     log.error(

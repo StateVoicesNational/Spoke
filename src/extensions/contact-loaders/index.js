@@ -4,8 +4,33 @@ import { r } from "../../server/models";
 const availabilityCacheKey = (name, organizationId, userId) =>
   `${process.env.CACHE_PREFIX ||
     ""}ingestavail-${name}-${organizationId}-${userId}`;
-const choiceDataCacheKey = (name, suffix) =>
-  `${process.env.CACHE_PREFIX || ""}ingestchoices-${name}-${suffix}`;
+const choiceDataCacheKey = (name, organizationId, suffix) =>
+  `${process.env.CACHE_PREFIX ||
+    ""}ingestchoices-${name}-${organizationId}-${suffix}`;
+
+export const clearCacheForOrganization = async (
+  handlerName,
+  organizationId
+) => {
+  if (!r.redis) {
+    return;
+  }
+
+  const promises = [
+    r.redis.keysAsync(
+      `${choiceDataCacheKey(handlerName, organizationId, "*")}`
+    ),
+    r.redis.keysAsync(
+      `${availabilityCacheKey(handlerName, organizationId, "*")}`
+    )
+  ];
+
+  const keysResults = await Promise.all(promises);
+  const keys = [...keysResults[0], ...keysResults[1]];
+
+  const delPromises = keys.map(key => r.redis.delAsync(key));
+  await Promise.all(delPromises);
+};
 
 function getIngestMethods() {
   const enabledIngestMethods = (
@@ -96,11 +121,11 @@ export async function getMethodChoiceData(
   campaign,
   user
 ) {
-  const cacheFunc =
-    ingestMethod.clientChoiceDataCacheKey || (org => `${org.id}`);
+  const cacheFunc = ingestMethod.clientChoiceDataCacheKey || (() => "");
   const cacheKey = choiceDataCacheKey(
     ingestMethod.name,
-    cacheFunc(organization, campaign, user)
+    organization.id,
+    cacheFunc(campaign, user)
   );
   return (
     await getSetCacheableResult(cacheKey, async () =>
