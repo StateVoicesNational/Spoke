@@ -166,6 +166,12 @@
       "value": "US/Eastern"
     },
 
+    "DEFAULT_TZ": {
+      "description": "Timezone",
+      "required": true,
+      "value": "US/Eastern"
+    },
+
     "HEROKU_APP_NAME": {
       "description": "Name of your Heroku app (not used if BASE_URL is set)",
       "required": false
