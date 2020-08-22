@@ -891,15 +891,18 @@ const rootMutations = {
         response => {
           return r
             .knex("canned_response")
-            .insert({
-              campaign_id: newCampaignId,
-              title: response.title,
-              text: response.text
-            })
-            .then(([res]) => {
+            .insert(
+              {
+                campaign_id: newCampaignId,
+                title: response.title,
+                text: response.text
+              },
+              ["id"]
+            )
+            .then(res => {
               response.tagIds.forEach(t => {
                 tagCannedResponses.push({
-                  canned_response_id: res.id,
+                  canned_response_id: res[0].id,
                   tag_id: t
                 });
               });
