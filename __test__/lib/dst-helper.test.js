@@ -10,26 +10,18 @@ describe("test DstHelper", () => {
 
   it("helps us figure out if we're in DST in February in New York", () => {
     MockDate.set("2018-02-01T15:00:00Z");
-    let d = new DateTime(
-      new Date(),
-      DateFunctions.Get,
-      zone("America/New_York")
-    );
-    expect(DstHelper.isOffsetDst(d.offset(), "America/New_York")).toBeFalsy();
-    expect(DstHelper.isDateTimeDst(d, "America/New_York")).toBeFalsy();
-    expect(DstHelper.isDateDst(new Date(), "America/New_York")).toBeFalsy();
+    let d = new DateTime(new Date(), DateFunctions.Get, zone("US/Eastern"));
+    expect(DstHelper.isOffsetDst(d.offset(), "US/Eastern")).toBeFalsy();
+    expect(DstHelper.isDateTimeDst(d, "US/Eastern")).toBeFalsy();
+    expect(DstHelper.isDateDst(new Date(), "US/Eastern")).toBeFalsy();
   });
 
   it("helps us figure out if we're in DST in July in New York", () => {
     MockDate.set("2018-07-21T15:00:00Z");
-    let d = new DateTime(
-      new Date(),
-      DateFunctions.Get,
-      zone("America/New_York")
-    );
-    expect(DstHelper.isOffsetDst(d.offset(), "America/New_York")).toBeTruthy();
-    expect(DstHelper.isDateTimeDst(d, "America/New_York")).toBeTruthy();
-    expect(DstHelper.isDateDst(new Date(), "America/New_York")).toBeTruthy();
+    let d = new DateTime(new Date(), DateFunctions.Get, zone("US/Eastern"));
+    expect(DstHelper.isOffsetDst(d.offset(), "US/Eastern")).toBeTruthy();
+    expect(DstHelper.isDateTimeDst(d, "US/Eastern")).toBeTruthy();
+    expect(DstHelper.isDateDst(new Date(), "US/Eastern")).toBeTruthy();
   });
 
   it("helps us figure out if we're in DST in February in Sydney", () => {
@@ -89,8 +81,8 @@ describe("test DstHelper", () => {
   });
 
   it("correctly reports a timezone's offset and whether it has DST", () => {
-    expect(DstHelper.getTimezoneOffsetHours("America/New_York")).toEqual(-5);
-    expect(DstHelper.timezoneHasDst("America/New_York")).toBeTruthy();
+    expect(DstHelper.getTimezoneOffsetHours("US/Eastern")).toEqual(-5);
+    expect(DstHelper.timezoneHasDst("US/Eastern")).toBeTruthy();
     expect(DstHelper.getTimezoneOffsetHours("US/Arizona")).toEqual(-7);
     expect(DstHelper.timezoneHasDst("US/Arizona")).toBeFalsy();
     expect(DstHelper.getTimezoneOffsetHours("Europe/Paris")).toEqual(1);

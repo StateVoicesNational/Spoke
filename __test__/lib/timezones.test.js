@@ -101,7 +101,7 @@ const buildIsBetweenTextingHoursExpectWithNoOffset = (start, end) => {
         0,
         0,
         false,
-        makeCampignTextingHoursConfig(true, start, end, "America/New_York")
+        makeCampignTextingHoursConfig(true, start, end, "US/Eastern")
       )
     )
   );
@@ -566,7 +566,11 @@ describe("test defaultTimezoneIsBetweenTextingHours", () => {
 
 describe("test convertOffsetsToStrings", () => {
   it("works", () => {
-    let test_offsets = [[1, true], [2, false], [-1, true]];
+    let test_offsets = [
+      [1, true],
+      [2, false],
+      [-1, true]
+    ];
     let strings_returned = convertOffsetsToStrings(test_offsets);
     expect(strings_returned).toHaveLength(3);
     expect(strings_returned[0]).toBe("1_1");
@@ -664,7 +668,7 @@ describe("test getContactTimezone", () => {
           true,
           14,
           16,
-          "America/New_York"
+          "US/Eastern"
         ),
         {}
       )
@@ -885,7 +889,11 @@ describe("test defaultTimezoneIsBetweenTextingHours", () => {
 
 describe("test convertOffsetsToStrings", () => {
   it("works", () => {
-    let test_offsets = [[1, true], [2, false], [-1, true]];
+    let test_offsets = [
+      [1, true],
+      [2, false],
+      [-1, true]
+    ];
     let strings_returned = convertOffsetsToStrings(test_offsets);
     expect(strings_returned).toHaveLength(3);
     expect(strings_returned[0]).toBe("1_1");
@@ -983,7 +991,7 @@ describe("test getContactTimezone", () => {
           true,
           14,
           16,
-          "America/New_York"
+          "US/Eastern"
         ),
         {}
       )
@@ -1004,7 +1012,7 @@ describe("test getContactTimezone", () => {
           true,
           14,
           16,
-          "America/New_York"
+          "US/Eastern"
         ),
         {}
       )
@@ -1024,7 +1032,7 @@ describe("test getContactTimezone", () => {
           true,
           14,
           16,
-          "America/New_York"
+          "US/Eastern"
         ),
         {}
       )
@@ -1044,37 +1052,37 @@ describe("test getUtcFromOffsetAndHour", () => {
 
   it("returns the correct UTC during northern hemisphere summer", () => {
     MockDate.set("2018-07-01T11:00:00.000-05:00");
-    expect(
-      getUtcFromOffsetAndHour(-5, true, 12, "America/New_York").unix()
-    ).toEqual(moment("2018-07-01T16:00:00.000Z").unix());
+    expect(getUtcFromOffsetAndHour(-5, true, 12, "US/Eastern").unix()).toEqual(
+      moment("2018-07-01T16:00:00.000Z").unix()
+    );
   });
 
   it("returns the correct UTC during northern hemisphere summer with result being next day", () => {
     MockDate.set("2018-07-01T11:00:00.000-05:00");
-    expect(
-      getUtcFromOffsetAndHour(-5, true, 23, "America/New_York").unix()
-    ).toEqual(moment("2018-07-02T03:00:00.000Z").unix());
+    expect(getUtcFromOffsetAndHour(-5, true, 23, "US/Eastern").unix()).toEqual(
+      moment("2018-07-02T03:00:00.000Z").unix()
+    );
   });
 
   it("returns the correct UTC during northern hemisphere winter", () => {
     MockDate.set("2018-02-01T11:00:00.000-05:00");
-    expect(
-      getUtcFromOffsetAndHour(-5, true, 12, "America/New_York").unix()
-    ).toEqual(moment("2018-02-01T17:00:00.000Z").unix());
+    expect(getUtcFromOffsetAndHour(-5, true, 12, "US/Eastern").unix()).toEqual(
+      moment("2018-02-01T17:00:00.000Z").unix()
+    );
   });
 
   it("returns the correct UTC during northern hemisphere summer if offset doesn't have DST", () => {
     MockDate.set("2018-07-01T11:00:00.000-05:00");
-    expect(
-      getUtcFromOffsetAndHour(-5, false, 12, "America/New_York").unix()
-    ).toEqual(moment("2018-07-01T17:00:00.000Z").unix());
+    expect(getUtcFromOffsetAndHour(-5, false, 12, "US/Eastern").unix()).toEqual(
+      moment("2018-07-01T17:00:00.000Z").unix()
+    );
   });
 
   it("returns the correct UTC during northern hemisphere winter if offset doesn't have DST", () => {
     MockDate.set("2018-02-01T11:00:00.000-05:00");
-    expect(
-      getUtcFromOffsetAndHour(-5, false, 12, "America/New_York").unix()
-    ).toEqual(moment("2018-02-01T17:00:00.000Z").unix());
+    expect(getUtcFromOffsetAndHour(-5, false, 12, "US/Eastern").unix()).toEqual(
+      moment("2018-02-01T17:00:00.000Z").unix()
+    );
   });
 });
 
@@ -1085,21 +1093,21 @@ describe("test getUtcFromTimezoneAndHour", () => {
 
   it("returns the correct UTC during northern hemisphere summer", () => {
     MockDate.set("2018-07-01T11:00:00.000-05:00");
-    expect(getUtcFromTimezoneAndHour("America/New_York", 12).unix()).toEqual(
+    expect(getUtcFromTimezoneAndHour("US/Eastern", 12).unix()).toEqual(
       moment("2018-07-01T16:00:00.000Z").unix()
     );
   });
 
   it("returns the correct UTC during northern hemisphere summer with result being next day", () => {
     MockDate.set("2018-07-01T11:00:00.000-05:00");
-    expect(getUtcFromTimezoneAndHour("America/New_York", 23).unix()).toEqual(
+    expect(getUtcFromTimezoneAndHour("US/Eastern", 23).unix()).toEqual(
       moment("2018-07-02T03:00:00.000Z").unix()
     );
   });
 
   it("returns the correct UTC during northern hemisphere winter", () => {
     MockDate.set("2018-02-01T11:00:00.000-05:00");
-    expect(getUtcFromTimezoneAndHour("America/New_York", 12).unix()).toEqual(
+    expect(getUtcFromTimezoneAndHour("US/Eastern", 12).unix()).toEqual(
       moment("2018-02-01T17:00:00.000Z").unix()
     );
   });
@@ -1171,7 +1179,7 @@ describe("test getSendBeforeTimewUtc", () => {
           overrideOrganizationTextingHours: true,
           textingHoursEnforced: true,
           textingHoursEnd: 21,
-          timezone: "America/New_York"
+          timezone: "US/Eastern"
         }
       ).unix()
     ).toEqual(moment("2018-09-04T01:00:00.000Z").unix());
@@ -1190,14 +1198,14 @@ describe("test getSendBeforeTimewUtc", () => {
           overrideOrganizationTextingHours: true,
           textingHoursEnforced: true,
           textingHoursEnd: 21,
-          timezone: "America/New_York"
+          timezone: "US/Eastern"
         }
       ).unix()
     ).toEqual(moment("2018-09-04T01:00:00.000Z").unix());
   });
 
   it("returns correct time if campaign does not override and TZ is set", () => {
-    tzHelpers.getProcessEnvTz.mockImplementation(() => "America/New_York");
+    tzHelpers.getProcessEnvTz.mockImplementation(() => "US/Eastern");
     expect(
       getSendBeforeTimeUtc(
         {},

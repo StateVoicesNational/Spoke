@@ -87,7 +87,7 @@ export default function renderIndex(html, css, assetMap) {
       window.CONTACT_LOADERS="${process.env.CONTACT_LOADERS ||
         "csv-upload,test-fakedata,datawarehouse"}"
       window.DST_REFERENCE_TIMEZONE="${process.env.DST_REFERENCE_TIMEZONE ||
-        "America/New_York"}"
+        "US/Eastern"}"
       window.PASSPORT_STRATEGY="${process.env.PASSPORT_STRATEGY || "auth0"}"
       window.PEOPLE_PAGE_CAMPAIGN_FILTER_SORT = "${process.env
         .PEOPLE_PAGE_CAMPAIGN_FILTER_SORT || ""}"
