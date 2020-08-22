@@ -1,4 +1,5 @@
 import { log } from "../../../lib";
+import telemetry from "../../telemetry";
 import { Assignment, Campaign, r, cacheableData } from "../../models";
 import { assignmentRequiredOrAdminRole } from "../errors";
 import { getDynamicAssignmentBatchPolicies } from "../../../extensions/dynamicassignment-batches";
@@ -122,6 +123,12 @@ export const findNewCampaignContact = async (
       "assignedCount",
       updatedCount
     );
+
+    await telemetry.reportEvent("Assignment Dynamic", {
+      count: updatedCount,
+      organizationId: campaign.organization_id
+    });
+
     return {
       ...falseRetVal,
       found: true

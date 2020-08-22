@@ -7,6 +7,7 @@ import {
   User,
   UserOrganization
 } from "../server/models";
+import telemetry from "../server/telemetry";
 import { log, gunzip, zipToTimeZone, convertOffsetsToStrings } from "../lib";
 import { updateJob } from "./lib";
 import serviceMap from "../server/api/lib/services";
@@ -253,10 +254,16 @@ export async function failedContactLoad(
     });
   if (job.id) {
     await r
-      .table("job_request")
-      .get(job.id)
+      .knex("job_request")
+      .where("id", job.id)
       .delete();
   }
+  await telemetry.reportEvent("Contact Load Failure", {
+    count: finalContactCount,
+    jobId: job.id,
+    campaignId,
+    ingestResult
+  });
 }
 
 export async function completeContactLoad(
@@ -325,14 +332,21 @@ export async function completeContactLoad(
       ingest_result: ingestResult || null,
       ingest_data_reference: ingestDataReference || null
     });
-
   if (job.id) {
     await r
-      .table("job_request")
-      .get(job.id)
+      .knex("job_request")
+      .where("id", job.id)
       .delete();
   }
   await cacheableData.campaign.reload(campaignId);
+  await telemetry.reportEvent("Contact Load", {
+    count: finalContactCount,
+    jobId: job.id,
+    campaignId,
+    deleteOptOutCells,
+    deleteDuplicateCells,
+    ingestResult
+  });
 }
 
 export async function unzipPayload(job) {

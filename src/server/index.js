@@ -13,6 +13,7 @@ import cookieSession from "cookie-session";
 import passportSetup from "./auth-passport";
 import wrap from "./wrap";
 import { log } from "../lib";
+import telemetry from "./telemetry";
 import nexmo from "./api/lib/nexmo";
 import twilio from "./api/lib/twilio";
 import { seedZipCodes } from "./seeds/seed-zip-codes";
@@ -197,6 +198,10 @@ app.use(
         request.awsContext && request.awsContext.getRemainingTimeInMillis
           ? request.awsContext.getRemainingTimeInMillis()
           : 5 * 60 * 1000 // default saying 5 min, no matter what
+    },
+    formatError: async error => {
+      await telemetry.formatRequestError(error, request);
+      return error;
     }
   }))
 );

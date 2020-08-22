@@ -1,4 +1,5 @@
 import { r, CampaignContact } from "../../models";
+import telemetry from "../../telemetry";
 import campaignCache from "./campaign";
 import optOutCache from "./opt-out";
 import organizationCache from "./organization";
@@ -294,6 +295,8 @@ const campaignContactCache = {
     // For docs see:
     // https://knexjs.org/#Interfaces-Streams
     // https://github.com/substack/stream-handbook#creating-a-writable-stream
+    let contactCachedCount = 0;
+    let timeout = false;
     await query.stream(stream => {
       const cacheSaver = new Writable({ objectMode: true });
       // eslint-disable-next-line no-underscore-dangle
@@ -309,6 +312,7 @@ const campaignContactCache = {
           campaign
         ).then(
           () => {
+            contactCachedCount += 1;
             // If we are passed a remainingMilliseconds function, then
             // run it and see if we're almost at-time.
             // The rest of the cache loading will have to be done later
@@ -317,6 +321,7 @@ const campaignContactCache = {
               typeof remainingMilliseconds === "function" &&
               remainingMilliseconds() < 2000
             ) {
+              timeout = true;
               stream.end();
             }
             next();
@@ -330,6 +335,16 @@ const campaignContactCache = {
       };
       stream.pipe(cacheSaver);
     });
+    await telemetry.reportEvent("Contact Cache Load", {
+      count: contactCachedCount,
+      organizationId: String((organization && organization.id) || "")
+    });
+    if (timeout) {
+      await telemetry.reportEvent("Contact Cache Timeout", {
+        count: contactCachedCount,
+        organizationId: String((organization && organization.id) || "")
+      });
+    }
     console.log("contact loadMany finish stream", campaign.id);
   },
   orgId: async contact =>

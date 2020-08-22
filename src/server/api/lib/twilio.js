@@ -9,6 +9,7 @@ import {
   Campaign
 } from "../../models";
 import { log } from "../../../lib";
+import telemetry from "../../telemetry";
 import { saveNewIncomingMessage } from "./message-sending";
 import { getConfig } from "./config";
 import urlJoin from "url-join";
@@ -334,7 +335,16 @@ export function postMessageSend(
 
     updateQuery = updateQuery.update(changesToSave);
 
-    Promise.all([updateQuery, contactUpdateQuery]).then(() => {
+    Promise.all([
+      updateQuery,
+      contactUpdateQuery,
+      telemetry.reportEvent("Twilio Send Failure", {
+        count: 1,
+        messageServiceSid: message.messageservice_sid || "",
+        errorCode: String(changesToSave.error_code),
+        organizationId: String((organization && organization.id) || "")
+      })
+    ]).then(() => {
       console.log("Saved message error status", changesToSave, err);
       reject(
         err ||
@@ -355,6 +365,11 @@ export function postMessageSend(
       cacheableData.campaignContact.updateStatus({
         ...contact,
         messageservice_sid: changesToSave.messageservice_sid
+      }),
+      telemetry.reportEvent("Twilio Send", {
+        count: 1,
+        messageServiceSid: changesToSave.messageservice_sid || "",
+        organizationId: String((organization && organization.id) || "")
       })
     ])
       .then((newMessage, cacheResult) => {
@@ -383,7 +398,12 @@ export async function handleDeliveryReport(report) {
     // Log just in case we need to debug something. Detailed logs can be viewed here:
     // https://www.twilio.com/log/sms/logs/<SID>
     log.info(`Message status ${messageSid}: ${messageStatus}`);
+
     if (messageStatus === "queued" || messageStatus === "sent") {
+      await telemetry.reportEvent(`Twilio Delivery ${messageStatus}`, {
+        count: 1,
+        messageServiceSid: report.MessagingServiceSid
+      });
       return;
     }
 
@@ -410,6 +430,12 @@ export async function handleDeliveryReport(report) {
         messageServiceSid: report.MessagingServiceSid,
         newStatus: messageStatus === "delivered" ? "DELIVERED" : "ERROR",
         errorCode: Number(report.ErrorCode || 0) || 0
+      });
+      await telemetry.reportEvent(`Twilio Delivery ${messageStatus}`, {
+        count: 1,
+        messageServiceSid: report.MessagingServiceSid,
+        errorCode: report.ErrorCode || "",
+        userNumber: report.From
       });
     }
   }
