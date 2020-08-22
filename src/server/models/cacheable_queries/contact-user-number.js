@@ -49,7 +49,7 @@ const contactUserNumberCache = {
       user_number: userNumber
     };
 
-    await r.knex("contact_phone_number").insert(contactUserNumber);
+    await r.knex("contact_user_number").insert(contactUserNumber);
 
     await r
       .knex("owned_phone_number")
