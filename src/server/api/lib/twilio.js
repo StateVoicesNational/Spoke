@@ -214,9 +214,13 @@ async function sendMessage(message, contact, trx, organization, campaign) {
 
   let userNumber;
   if (
+    organization &&
     (getConfig("EXPERIMENTAL_STICKY_SENDER"), organization, { truthy: true })
   ) {
-    userNumber = await getContactUserNumber(organization, contact.cell);
+    userNumber = await getContactUserNumber(
+      organization,
+      message.contact_number
+    );
   }
 
   return new Promise((resolve, reject) => {
@@ -580,7 +584,8 @@ async function addNumberToMessagingService(
  * Buy a phone number and add it to the owned_phone_number table
  */
 async function buyNumber(organization, twilioInstance, phoneNumber, opts = {}) {
-  const twilioBaseUrl = getConfig("TWILIO_BASE_CALLBACK_URL", organization);
+  const twilioBaseUrl =
+    getConfig("TWILIO_BASE_CALLBACK_URL", organization) || "";
   const response = await twilioInstance.incomingPhoneNumbers.create({
     phoneNumber,
     friendlyName: `Managed by Spoke [${process.env.BASE_URL}]: ${phoneNumber}`,
