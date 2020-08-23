@@ -8,46 +8,6 @@ const choiceDataCacheKey = (name, organizationId, suffix) =>
   `${process.env.CACHE_PREFIX ||
     ""}ingestchoices-${name}-${organizationId}-${suffix}`;
 
-export const clearCacheForOrganization = async (
-  handlerName,
-  organizationId
-) => {
-  if (!r.redis) {
-    return;
-  }
-
-  const promises = [
-    r.redis.keysAsync(
-      `${choiceDataCacheKey(handlerName, organizationId, "*")}`
-    ),
-    r.redis.keysAsync(
-      `${availabilityCacheKey(handlerName, organizationId, "*")}`
-    )
-  ];
-
-  const keysResults = await Promise.all(promises);
-  const keys = [...keysResults[0], ...keysResults[1]];
-
-  const delPromises = keys.map(key => r.redis.delAsync(key));
-  await Promise.all(delPromises);
-};
-
-function getIngestMethods() {
-  const enabledIngestMethods = (
-    getConfig("CONTACT_LOADERS") || "csv-upload,test-fakedata,datawarehouse"
-  ).split(",");
-  const ingestMethods = {};
-  enabledIngestMethods.forEach(name => {
-    try {
-      const c = require(`./${name}/index.js`);
-      ingestMethods[name] = c;
-    } catch (err) {
-      console.error("CONTACT_LOADERS failed to load ingestMethod", name, err);
-    }
-  });
-  return ingestMethods;
-}
-
 const CONFIGURED_INGEST_METHODS = getIngestMethods();
 
 async function getSetCacheableResult(cacheKey, fallbackFunc) {
@@ -132,4 +92,50 @@ export async function getMethodChoiceData(
       ingestMethod.getClientChoiceData(organization, campaign, user)
     )
   ).data;
+}
+
+export const clearCacheForOrganization = async organizationId => {
+  if (!r.redis) {
+    return;
+  }
+
+  const handlerNames = Object.keys(CONFIGURED_INGEST_METHODS);
+  const promiseArray = handlerNames.map(handlerName => [
+    r.redis.keysAsync(
+      `${choiceDataCacheKey(handlerName, organizationId, "*")}`
+    ),
+    r.redis.keysAsync(
+      `${availabilityCacheKey(handlerName, organizationId, "*")}`
+    )
+  ]);
+
+  const flattenedPromises = [];
+  promiseArray.forEach(promises => {
+    flattenedPromises.push(...promises);
+  });
+
+  const keysResults = await Promise.all(flattenedPromises);
+  const keys = [];
+  keysResults.forEach(keysResult => {
+    keys.push(...keysResult);
+  });
+
+  const delPromises = keys.map(key => r.redis.delAsync(key));
+  await Promise.all(delPromises);
+};
+
+function getIngestMethods() {
+  const enabledIngestMethods = (
+    getConfig("CONTACT_LOADERS") || "csv-upload,test-fakedata,datawarehouse"
+  ).split(",");
+  const ingestMethods = {};
+  enabledIngestMethods.forEach(name => {
+    try {
+      const c = require(`./${name}/index.js`);
+      ingestMethods[name] = c;
+    } catch (err) {
+      console.error("CONTACT_LOADERS failed to load ingestMethod", name, err);
+    }
+  });
+  return ingestMethods;
 }
