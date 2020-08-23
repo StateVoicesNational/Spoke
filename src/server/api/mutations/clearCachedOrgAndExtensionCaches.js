@@ -4,7 +4,11 @@ import { clearCacheForOrganization as clearActionHandlerCaches } from "../../../
 import cacheable from "../../../server/models/cacheable_queries";
 import { r } from "../../../server/models";
 
-export const clearExtensionCaches = async (_, { organizationId }, { user }) => {
+export const clearCachedOrgAndExtensionCaches = async (
+  _,
+  { organizationId },
+  { user }
+) => {
   await accessRequired(user, organizationId, "SUPERVOLUNTEER", true);
 
   if (!r.redis) {

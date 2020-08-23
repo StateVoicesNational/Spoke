@@ -350,7 +350,7 @@ const rootSchema = gql`
       addToOrganizationMessagingService: Boolean
     ): JobRequest
     releaseCampaignNumbers(campaignId: ID!): Campaign!
-    clearExtensionCaches(organizationId: String!): String
+    clearCachedOrgAndExtensionCaches(organizationId: String!): String
   }
 
   schema {
