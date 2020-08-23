@@ -5,7 +5,6 @@ import isUrl from "is-url";
 
 import { gzip, makeTree, getHighestRole } from "../../lib";
 import { capitalizeWord } from "./lib/utils";
-import twilio from "./lib/twilio";
 import ownedPhoneNumber from "./lib/owned-phone-number";
 
 import { getIngestMethod } from "../../extensions/contact-loaders";
@@ -67,7 +66,6 @@ import {
   clearExtensionCaches
 } from "./mutations";
 
-const ActionHandlers = require("../../extensions/action-handlers");
 import { jobRunner } from "../../extensions/job-runners";
 import { Jobs } from "../../workers/job-processes";
 import { Tasks } from "../../workers/tasks";

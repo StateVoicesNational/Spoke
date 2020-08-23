@@ -7,6 +7,7 @@ import Form from "react-formal";
 import Dialog from "material-ui/Dialog";
 import GSSubmitButton from "../components/forms/GSSubmitButton";
 import FlatButton from "material-ui/FlatButton";
+import RaisedButton from "material-ui/RaisedButton";
 import DisplayLink from "../components/DisplayLink";
 import yup from "yup";
 import { Card, CardText, CardActions, CardHeader } from "material-ui/Card";
@@ -377,6 +378,14 @@ class Settings extends React.Component {
               showExpandableButton={true}
             />
             <CardText expandable>
+              <RaisedButton
+                label="Clear Organization And Extension Caches"
+                secondary
+                style={inlineStyles.dialogButton}
+                onTouchTap={
+                  this.props.mutations.clearOrganizationAndExtensionCaches
+                }
+              />
               <OrganizationFeatureSettings
                 formValues={this.props.data.organization}
                 organization={this.props.data.organization}
@@ -566,6 +575,16 @@ const mutations = {
       twilioAccountSid: accountSid,
       twilioAuthToken: authToken,
       twilioMessageServiceSid: messageServiceSid
+    }
+  }),
+  clearOrganizationAndExtensionCaches: ownProps => () => ({
+    mutation: gql`
+      mutation clearExtensionCaches($organizationId: String!) {
+        clearExtensionCaches(organizationId: $organizationId)
+      }
+    `,
+    variables: {
+      organizationId: ownProps.params.organizationId
     }
   })
 };
