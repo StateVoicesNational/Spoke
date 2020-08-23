@@ -11,7 +11,7 @@ export const availabilityCacheKey = (name, organization, userId) =>
 export const choiceDataCacheKey = (name, organization, suffix) =>
   `${getConfig("CACHE_PREFIX", organization) || ""}action-choices-${name}-${
     organization.id
-  }-${suffix || ""}`;
+  }${suffix ? "-" : ""}${suffix || ""}`;
 
 // TODO: organization is never actually passed to this method so action handlers
 //   are not actually configurable at the organization level
