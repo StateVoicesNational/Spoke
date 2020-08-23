@@ -160,11 +160,6 @@ const rootSchema = gql`
     organizationId: String
   }
 
-  input ClearExtensionCacheInput {
-    extensionType: String!
-    name: String!
-  }
-
   type FoundContact {
     found: Boolean
     assignment: Assignment
@@ -355,10 +350,7 @@ const rootSchema = gql`
       addToOrganizationMessagingService: Boolean
     ): JobRequest
     releaseCampaignNumbers(campaignId: ID!): Campaign!
-    clearExtensionCaches(
-      organizationId: String!
-      cachesToClear: [ClearExtensionCacheInput]
-    ): String
+    clearExtensionCaches(organizationId: String!): String
   }
 
   schema {
