@@ -94,6 +94,7 @@ if (process.env.ENABLE_CLOUDWATCH_REPORTING === "1") {
         payload
       });
     }
+    console.log("telemetry.reportEvent", detailType, details);
   });
 
   expressMiddlewareCallbacks.push(async (err, req) => {
