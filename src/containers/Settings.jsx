@@ -379,11 +379,11 @@ class Settings extends React.Component {
             />
             <CardText expandable>
               <RaisedButton
-                label="Clear Organization And Extension Caches"
+                label="Clear Cached Organization And Extension Caches"
                 secondary
                 style={inlineStyles.dialogButton}
                 onTouchTap={
-                  this.props.mutations.clearOrganizationAndExtensionCaches
+                  this.props.mutations.clearCachedOrgAndExtensionCaches
                 }
               />
               <OrganizationFeatureSettings
@@ -577,10 +577,10 @@ const mutations = {
       twilioMessageServiceSid: messageServiceSid
     }
   }),
-  clearOrganizationAndExtensionCaches: ownProps => () => ({
+  clearCachedOrgAndExtensionCaches: ownProps => () => ({
     mutation: gql`
-      mutation clearExtensionCaches($organizationId: String!) {
-        clearExtensionCaches(organizationId: $organizationId)
+      mutation clearCachedOrgAndExtensionCaches($organizationId: String!) {
+        clearCachedOrgAndExtensionCaches(organizationId: $organizationId)
       }
     `,
     variables: {

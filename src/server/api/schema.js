@@ -63,7 +63,7 @@ import {
   updateContactTags,
   updateQuestionResponses,
   releaseCampaignNumbers,
-  clearExtensionCaches
+  clearCachedOrgAndExtensionCaches
 } from "./mutations";
 
 import { jobRunner } from "../../extensions/job-runners";
@@ -443,7 +443,7 @@ const rootMutations = {
     sendMessage,
     startCampaign,
     releaseCampaignNumbers,
-    clearExtensionCaches,
+    clearCachedOrgAndExtensionCaches,
     userAgreeTerms: async (_, { userId }, { user }) => {
       // We ignore userId: you can only agree to terms for yourself
       await r

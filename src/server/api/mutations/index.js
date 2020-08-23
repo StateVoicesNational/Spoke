@@ -9,7 +9,7 @@ import { startCampaign } from "./startCampaign";
 import { updateContactTags } from "./updateContactTags";
 import { updateQuestionResponses } from "./updateQuestionResponses";
 import { releaseCampaignNumbers } from "./releaseCampaignNumbers";
-import { clearExtensionCaches } from "./clearExtensionCaches";
+import { clearCachedOrgAndExtensionCaches } from "./clearCachedOrgAndExtensionCaches";
 
 export {
   bulkSendMessages,
@@ -23,5 +23,5 @@ export {
   updateContactTags,
   updateQuestionResponses,
   releaseCampaignNumbers,
-  clearExtensionCaches
+  clearCachedOrgAndExtensionCaches
 };
