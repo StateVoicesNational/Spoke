@@ -6,7 +6,7 @@ import { getDynamicAssignmentBatchPolicies } from "../../../extensions/dynamicas
 
 export const findNewCampaignContact = async (
   _,
-  { assignment: bulKSendAssignment, assignmentId, numberContacts },
+  { assignment: bulKSendAssignment, assignmentId, numberContacts, batchType },
   { user, loaders }
 ) => {
   const falseRetVal = {
@@ -42,27 +42,31 @@ export const findNewCampaignContact = async (
   }
 
   let availableCount = Infinity;
+  let policy = null;
+  const organization = await loaders.organization.load(
+    campaign.organization_id
+  );
+  const policyArgs = {
+    r,
+    loaders,
+    cacheableData,
+    organization,
+    campaign,
+    assignment,
+    texter: user
+  };
+
   if (!bulKSendAssignment) {
-    const organization = await loaders.organization.load(
-      campaign.organization_id
-    );
     const policies = getDynamicAssignmentBatchPolicies({
       organization,
       campaign
     });
-    if (!policies.length || !policies[0].requestNewBatchCount) {
+    policy = batchType ? policies.find(p => p.name === batchType) : policies[0];
+    if (!policies.length || !policy || !policy.requestNewBatchCount) {
       return falseRetVal; // to be safe, default to never
     }
     // default is finished-replies
-    availableCount = await policies[0].requestNewBatchCount({
-      r,
-      loaders,
-      cacheableData,
-      organization,
-      campaign,
-      assignment,
-      texter: user
-    });
+    availableCount = await policy.requestNewBatchCount(policyArgs);
   }
 
   const contactsCount = await r.getCount(
@@ -84,34 +88,49 @@ export const findNewCampaignContact = async (
     numberContacts = assignment.max_contacts - contactsCount;
   }
 
+  let batchQuery = r
+    .knex("campaign_contact")
+    .select("id")
+    .limit(numberContacts);
+  let hasCurrentQuery = r.knex("campaign_contact").where({
+    assignment_id: assignmentId,
+    message_status: "needsMessage",
+    is_opted_out: false,
+    campaign_id: campaign.id
+  });
+  if (policy && policy.selectContacts) {
+    const policySelect = await policy.selectContacts(
+      batchQuery,
+      hasCurrentQuery,
+      policyArgs
+    );
+    if (policySelect) {
+      batchQuery = policySelect.batchQuery
+        ? policySelect.batchQuery
+        : batchQuery;
+      hasCurrentQuery = policySelect.hasCurrentQuery
+        ? policySelect.hasCurrentQuery
+        : hasCurrentQuery;
+    }
+  } else {
+    batchQuery = batchQuery
+      .where({
+        message_status: "needsMessage",
+        is_opted_out: false,
+        campaign_id: campaign.id
+      })
+      .whereNull("assignment_id");
+  }
+
   // Don't add more if they already have that many
-  const result = await r.getCount(
-    r.knex("campaign_contact").where({
-      assignment_id: assignmentId,
-      message_status: "needsMessage",
-      is_opted_out: false
-    })
-  );
-  if (result >= numberContacts) {
+  const hasCurrent = await r.getCount(hasCurrentQuery);
+  if (hasCurrent >= numberContacts) {
     return falseRetVal;
   }
 
   const updatedCount = await r
     .knex("campaign_contact")
-    .where(
-      "id",
-      "in",
-      r
-        .knex("campaign_contact")
-        .whereNull("assignment_id")
-        .where({
-          // FUTURE: a function in the batch policy could allow convo contacts, too
-          message_status: "needsMessage",
-          campaign_id: campaign.id
-        })
-        .limit(numberContacts)
-        .select("id")
-    )
+    .whereIn("id", batchQuery)
     .update({
       assignment_id: assignmentId
     })

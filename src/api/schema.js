@@ -72,6 +72,7 @@ const rootSchema = gql`
     useDynamicAssignment: Boolean
     requestAfterReply: Boolean
     batchSize: Int
+    batchPolicies: [String]
     responseWindow: Float
     ingestMethod: String
     contactData: String
@@ -329,6 +330,7 @@ const rootSchema = gql`
     findNewCampaignContact(
       assignmentId: String!
       numberContacts: Int!
+      batchType: String
     ): FoundContact
     releaseContacts(
       assignmentId: String!

@@ -35,6 +35,7 @@ const campaignInfoFragment = `
   dueBy
   joinToken
   batchSize
+  batchPolicies
   responseWindow
   isStarted
   isArchived
@@ -467,14 +468,20 @@ export class AdminCampaignEdit extends React.Component {
       {
         title: "Dynamic Assignment",
         content: CampaignDynamicAssignmentForm,
-        keys: ["batchSize", "useDynamicAssignment", "responseWindow"],
+        keys: [
+          "batchSize",
+          "useDynamicAssignment",
+          "responseWindow",
+          "batchPolicies"
+        ],
         checkCompleted: () => true,
         blocksStarting: false,
         expandAfterCampaignStarts: true,
         expandableBySuperVolunteers: true,
         extraProps: {
           joinToken: this.props.campaignData.campaign.joinToken,
-          campaignId: this.props.campaignData.campaign.id
+          campaignId: this.props.campaignData.campaign.id,
+          organization: this.props.organizationData.organization
         }
       },
       {
@@ -913,6 +920,7 @@ const queries = {
           uuid
           fullyConfigured
           campaignPhoneNumbersEnabled
+          batchPolicies
           texters: people(role: "ANY") {
             id
             roles(organizationId: $organizationId)

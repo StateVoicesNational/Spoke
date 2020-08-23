@@ -9,7 +9,7 @@ import {
   getMethodChoiceData
 } from "../../extensions/contact-loaders";
 import twilio from "./lib/twilio";
-import { getConfig } from "./lib/config";
+import { getConfig, getFeatures } from "./lib/config";
 import ownedPhoneNumber from "./lib/owned-phone-number";
 const title = 'lower("campaign"."title")';
 import { camelizeKeys } from "humps";
@@ -308,6 +308,12 @@ export const resolvers = {
       return campaign.join_token;
     },
     batchSize: campaign => campaign.batch_size || 300,
+    batchPolicies: campaign => {
+      const features = getFeatures(campaign);
+      return features.DYNAMICASSIGNMENT_BATCHES
+        ? features.DYNAMICASSIGNMENT_BATCHES.split(",")
+        : [];
+    },
     responseWindow: campaign => campaign.response_window || 48,
     organization: async (campaign, _, { loaders }) =>
       campaign.organization ||
