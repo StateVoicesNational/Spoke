@@ -10,9 +10,9 @@ const styles = StyleSheet.create({
   }
 });
 
-const TagChips = ({ tags, tagIds, onRequestDelete }) => (
+const TagChips = ({ tags, tagIds, onRequestDelete, extraProps }) => (
   <div className={css(styles.tagChips)}>
-    {tagIds.map(id => {
+    {tagIds.map((id, i) => {
       const listedTag = tags.find(t => t.id === id);
       return (
         listedTag && (
@@ -25,6 +25,7 @@ const TagChips = ({ tags, tagIds, onRequestDelete }) => (
             deleteIconStyle={{
               marginBottom: "4px"
             }}
+            {...(extraProps ? extraProps(listedTag, i) : {})}
           />
         )
       );
@@ -35,6 +36,7 @@ const TagChips = ({ tags, tagIds, onRequestDelete }) => (
 TagChips.propTypes = {
   tags: type.array,
   tagIds: type.array,
+  extraProps: type.func,
   onRequestDelete: type.func
 };
 

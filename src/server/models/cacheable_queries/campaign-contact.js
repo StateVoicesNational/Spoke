@@ -451,13 +451,17 @@ const campaignContactCache = {
       console.log("updateCampaignAssignmentCache", data[0], data.length);
     }
   },
-  updateStatus: async (contact, newStatus) => {
+  updateStatus: async (contact, newStatus, moreUpdates) => {
     // console.log('updateSTATUS', newStatus, contact)
     try {
       await r
         .knex("campaign_contact")
         .where("id", contact.id)
-        .update({ message_status: newStatus, updated_at: new Date() });
+        .update({
+          message_status: newStatus,
+          updated_at: new Date(),
+          ...(moreUpdates || {})
+        });
 
       if (r.redis && CONTACT_CACHE_ENABLED) {
         const contactKey = cacheKey(contact.id);

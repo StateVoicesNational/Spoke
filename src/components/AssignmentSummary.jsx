@@ -248,7 +248,8 @@ AssignmentSummary.propTypes = {
   organizationId: PropTypes.string,
   router: PropTypes.object,
   assignment: PropTypes.object,
-  texter: PropTypes.object
+  texter: PropTypes.object,
+  refreshData: PropTypes.func
 };
 
 export default withRouter(AssignmentSummary);

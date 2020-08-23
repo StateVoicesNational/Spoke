@@ -171,6 +171,7 @@ async function editCampaign(id, campaign, loaders, user, origCampaignRecord) {
     dueBy,
     useDynamicAssignment,
     batchSize,
+    batchPolicies,
     responseWindow,
     logoImageUrl,
     introHtml,
@@ -227,6 +228,12 @@ async function editCampaign(id, campaign, loaders, user, origCampaignRecord) {
   if (campaign.texterUIConfig && campaign.texterUIConfig.options) {
     Object.assign(features, {
       TEXTER_UI_SETTINGS: campaign.texterUIConfig.options
+    });
+    campaignUpdates.features = JSON.stringify(features);
+  }
+  if (batchPolicies) {
+    Object.assign(features, {
+      DYNAMICASSIGNMENT_BATCHES: batchPolicies.join(",")
     });
     campaignUpdates.features = JSON.stringify(features);
   }
@@ -816,6 +823,7 @@ const rootMutations = {
         title: "COPY - " + campaign.title,
         description: campaign.description,
         due_by: campaign.dueBy,
+        features: campaign.features,
         batch_size:
           campaign.batch_size ||
           Number(getConfig("DEFAULT_BATCHSIZE", organization) || 300),

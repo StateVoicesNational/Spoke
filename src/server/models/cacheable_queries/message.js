@@ -238,6 +238,7 @@ const messageCache = {
     let newStatus = "needsResponse";
     let activeCellFound = null;
     let matchError = null;
+    let contactUpdates = {};
 
     if (messageInstance.is_from_contact) {
       // console.log("messageCache SAVE lookup");
@@ -305,17 +306,23 @@ const messageCache = {
           newStatus,
           contact,
           campaign,
+          campaignId,
           organization,
           texter
         });
-        if (result && result.cancel) {
-          return result; // return without saving
-        }
-        if (result && result.messageToSave) {
-          messageToSave = result.messageToSave;
-        }
-        if (result && "matchError" in result) {
-          matchError = result.matchError;
+        if (result) {
+          if (result.cancel) {
+            return result; // return without saving
+          }
+          if (result.messageToSave) {
+            messageToSave = result.messageToSave;
+          }
+          if ("matchError" in result) {
+            matchError = result.matchError;
+          }
+          if (result.contactUpdates) {
+            Object.assign(contactUpdates, result.contactUpdates);
+          }
         }
       }
     }
@@ -338,7 +345,11 @@ const messageCache = {
       campaign_id: campaignId
     };
     // console.log("messageCache hi saveMsg3", messageToSave.id, newStatus, contactData);
-    await campaignContactCache.updateStatus(contactData, newStatus);
+    await campaignContactCache.updateStatus(
+      contactData,
+      newStatus,
+      contactUpdates
+    );
     // console.log("messageCache saveMsg4", newStatus);
 
     // update campaign counts
@@ -368,6 +379,7 @@ const messageCache = {
           newStatus,
           contact,
           campaign,
+          campaignId,
           organization,
           texter
         });

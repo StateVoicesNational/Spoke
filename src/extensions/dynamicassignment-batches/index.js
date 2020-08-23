@@ -5,12 +5,17 @@ export const getDynamicAssignmentBatchPolicies = ({
   campaign
 }) => {
   const handlerKey = "DYNAMICASSIGNMENT_BATCHES";
+  const campaignEnabled = getConfig(handlerKey, campaign, { onlyLocal: true });
   const configuredHandlers =
-    getConfig(handlerKey, campaign, { onlyLocal: true }) ||
+    campaignEnabled ||
     getConfig(handlerKey, organization) ||
     "finished-replies,vetted-texters";
   const enabledHandlers =
     (configuredHandlers && configuredHandlers.split(",")) || [];
+  if (!campaignEnabled) {
+    // remove everything except the first one for non-campaign enabled choices
+    enabledHandlers.splice(1);
+  }
 
   const handlers = [];
   enabledHandlers.forEach(name => {

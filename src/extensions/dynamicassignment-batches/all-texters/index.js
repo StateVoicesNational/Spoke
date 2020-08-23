@@ -1,8 +1,8 @@
 import { cacheableData } from "../../../server/models";
 
-export const name = "vetted-texters";
+export const name = "all-texters";
 
-export const displayName = () => "Vetted Texters can request a new batch";
+export const displayName = () => "Everyone can request a new batch";
 
 export const requestNewBatchCount = async ({
   organization,
@@ -18,15 +18,6 @@ export const requestNewBatchCount = async ({
     return 0;
   }
   if (assignment.max_contacts === 0 || !campaign.batch_size) {
-    return 0;
-  }
-  // ACCESS
-  const isVetted = await cacheableData.user.userHasRole(
-    texter.id === assignment.user_id ? texter : { id: assignment.user_id },
-    campaign.organization_id,
-    "VETTED_TEXTER"
-  );
-  if (!isVetted) {
     return 0;
   }
 

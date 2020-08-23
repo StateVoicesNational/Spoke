@@ -36,6 +36,7 @@ class TexterTodoList extends React.Component {
               key={assignment.id}
               assignment={assignment}
               texter={this.props.data.user}
+              refreshData={() => this.props.data.refetch()}
             />
           );
         }
