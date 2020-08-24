@@ -24,6 +24,7 @@ You will need to create a Twilio account in order to test outgoing and incoming 
     - Make sure `SEND A WEBHOOK` is selected
     - `REQUEST URL` is `https://<YOUR_APP_URL>/twilio` using `HTTP POST`
     - Set `FALLBACK URL` to the same as `REQUEST URL`
+    - In your .env file, set `TWILIO_MESSAGE_CALLBACK_URL` to this same URL
   - Under `Outbound Settings`
     - `STATUS CALLBACK URL` in your Twilio console is `https://<YOUR_APP_URL>/twilio-message-report`
     - In your .env file, set `TWILIO_STATUS_CALLBACK_URL` to this same URL
