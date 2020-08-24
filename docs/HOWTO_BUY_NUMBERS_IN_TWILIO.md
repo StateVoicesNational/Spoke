@@ -10,7 +10,7 @@ If you are comfortable using the Linux command line, and/or will be buying many 
    ![sms menu](images/twilio_number_buying_guide/sms_menu.png "SMS Menu")
 3. Select "Messaging Services"
    ![messaging services](images/twilio_number_buying_guide/messaging_services.png "SMS Menu")
-4. Click the app on this screen that's corresponding to whatever you chose when you created the [Spoke messaging service in step 5 here](/HOWTO_INTEGRATE_TWILIO.md) - You should see a sub menu with "numbers", "features", "settings"
+4. Click the app on this screen that's corresponding to whatever you chose when you created the [Spoke messaging service in step 5 here](HOWTO_INTEGRATE_TWILIO.md) - You should see a sub menu with "numbers", "features", "settings"
    ![spoke app name](images/twilio_number_buying_guide/spoke_app_name.png "Click your app")
 5. Click numbers
    ![numbers menu](images/twilio_number_buying_guide/numbers_menu.png "Numbers Menu")

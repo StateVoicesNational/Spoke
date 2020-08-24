@@ -48,7 +48,7 @@ Additional guidance:
 ## More Documentation
 
 Want to know more?
-[Click here to visit the Spoke Documentation microsite!](????)
+[Click here to visit the Spoke Documentation microsite!](https://github.com/MoveOnOrg/Spoke/tree/main/docs)
 
 
 ## Big Thanks

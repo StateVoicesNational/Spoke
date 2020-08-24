@@ -117,7 +117,7 @@ Action handlers ***may*** export the following:
   refer to the [Using addServerEndpoints](#Using-addServerEndpoints) below.
 
 These exports are documented in comments in the reference implementation
-[complex-text-action](../src/extensions/action-handlers/complex-test-action.jsr)
+[complex-text-action](../src/extensions/action-handlers/complex-test-action.js)
 (_Coming soon!_)
 
 ### Using addServerEndpoints
