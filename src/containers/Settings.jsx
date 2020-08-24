@@ -395,16 +395,6 @@ class Settings extends React.Component {
                 saveLabel="Save settings"
                 saveDisabled={!this.state.settings}
               />
-              <h2>DEBUG Zone</h2>
-              <p>Only take actions here if you know what you&rquo;re doing</p>
-              <RaisedButton
-                label="Clear Cached Organization And Extension Caches"
-                secondary
-                style={inlineStyles.dialogButton}
-                onTouchTap={
-                  this.props.mutations.clearCachedOrgAndExtensionCaches
-                }
-              />
             </CardText>
           </Card>
         ) : null}
@@ -418,6 +408,8 @@ class Settings extends React.Component {
               showExpandableButton={true}
             />
             <CardText expandable>
+              <h2>DEBUG Zone</h2>
+              <p>Only take actions here if you know what you&rsquo;re doing</p>
               <RaisedButton
                 label="Clear Cached Organization And Extension Caches"
                 secondary
