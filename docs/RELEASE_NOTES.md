@@ -6,10 +6,10 @@ _August 2020:_ Version 8.1
 
 ### New Features/Improvements
 - **Tagging:** The tags feature is no longer experimental! This release includes a few adjustments to tags that finish the tagging story:
-  - **Resolve tags:** tags can now be resolved in message review
-  - **Canned response tagging:** you can apply 1 or more tags to a canned response which will automatically apply that tags when a texter uses that canned response
+  - **Resolve tags:** tags can now be resolved in message review by clicking the 'x' in their upper right corner.
+  - **Canned response tagging:** you can apply 1 or more tags to a canned response which will automatically apply that tags when a texter uses that canned response.
 - **Remove the Opt Outs sidebar menu:** this menu did not scale well and wasn't being used by many orgs. All it did was print a long list of all of the phone numbers that had opted out across the organization. You can easily query the database to get that same list of numbers.
-- **Addressable message review queries:** message review now has "addressable urls" meaning that the url is changed whenever you make a query. This now allows you to directly link to a specific query.
+- **Addressable message review queries:** message review now has "addressable urls" meaning that the url is changed whenever you make a query. This now allows you to directly link to a specific query. Because of this, there are now links in the texter stats section of the campaign page that link to a filter for that specific texter and a new "convos" button that takes you directly to a view that filters down to only messages within the campaign.
 - UI button in the settings page for clearing the organization and extension cache. If an admin uses a SQL client to modify `organization.features` or metadata changes in an external resource, such as NGP VAN (the use cases in VAN is that a saved list was added or survey questions or activists code were modified; Spoke's VAN integration won't go back to VAN through the API if those metadata are present in the cache)
 - Allow search terms to be _excluded_ from the campaign search.  If a search starts with "-", it filters out campaigns that match the rest of the search term.
 - Foundation for a documentation microsite to help our docs stay readable and accessible to devs and admin
