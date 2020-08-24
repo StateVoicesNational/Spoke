@@ -1,4 +1,9 @@
-import { CampaignContact, r, cacheableData } from "../models";
+import {
+  CampaignContact,
+  TagCampaignContact,
+  r,
+  cacheableData
+} from "../models";
 import { mapFieldsToModel } from "./lib/utils";
 import { getConfig } from "./lib/config";
 import { log, getTopMostParent, zipToTimeZone } from "../../lib";
@@ -13,6 +18,10 @@ export const resolvers = {
   Timezone: {
     offset: zipCode => zipCode.timezone_offset || null,
     hasDST: zipCode => zipCode.has_dst || null
+  },
+  ContactTag: {
+    ...mapFieldsToModel(["id", "value"], TagCampaignContact),
+    campaignContactId: tag => tag.campaign_contact_id || null
   },
   CampaignContact: {
     ...mapFieldsToModel(

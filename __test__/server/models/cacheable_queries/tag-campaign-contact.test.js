@@ -98,8 +98,16 @@ describe("cacheable_queries.tagCampaignContactCache", () => {
 
       expect(tagCampaignContacts).toEqual(
         expect.arrayContaining([
-          expect.objectContaining({ tag_id: 1, value: null }),
-          expect.objectContaining({ tag_id: 2, value: "Everyone votes!" })
+          expect.objectContaining({
+            tag_id: 1,
+            value: null,
+            campaign_contact_id: 1
+          }),
+          expect.objectContaining({
+            tag_id: 2,
+            value: "Everyone votes!",
+            campaign_contact_id: 1
+          })
         ])
       );
     });
@@ -122,11 +130,13 @@ describe("cacheable_queries.tagCampaignContactCache", () => {
       expectedQueryReturn = expect.arrayContaining([
         {
           id: 1,
-          value: null
+          value: null,
+          campaign_contact_id: 1
         },
         {
           id: 2,
-          value: "Everyone votes!"
+          value: "Everyone votes!",
+          campaign_contact_id: 1
         }
       ]);
 
@@ -164,11 +174,13 @@ describe("cacheable_queries.tagCampaignContactCache", () => {
         expectedQueryReturn = expect.arrayContaining([
           {
             id: 1,
-            value: "4th of July, Asbury Park"
+            value: "4th of July, Asbury Park",
+            campaign_contact_id: 1
           },
           {
             id: 2,
-            value: "Everyone votes!"
+            value: "Everyone votes!",
+            campaign_contact_id: 1
           }
         ]);
       });
@@ -189,9 +201,14 @@ describe("cacheable_queries.tagCampaignContactCache", () => {
           expect.arrayContaining([
             expect.objectContaining({
               tag_id: 1,
-              value: "4th of July, Asbury Park"
+              value: "4th of July, Asbury Park",
+              campaign_contact_id: 1
             }),
-            expect.objectContaining({ tag_id: 2, value: "Everyone votes!" })
+            expect.objectContaining({
+              tag_id: 2,
+              value: "Everyone votes!",
+              campaign_contact_id: 1
+            })
           ])
         );
 

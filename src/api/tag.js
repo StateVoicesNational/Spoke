@@ -11,6 +11,7 @@ export const schema = gql`
   }
 
   type ContactTag {
+    campaignContactId: String
     id: ID
     value: String
   }

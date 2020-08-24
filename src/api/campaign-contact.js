@@ -29,7 +29,7 @@ export const schema = `
     external_id: String
     customFields: JSON
     messages: [Message]
-    tags: [ContactTag]
+    tags(tagId: String): [ContactTag]
     location: Location
     optOut: OptOut
     campaign: Campaign
