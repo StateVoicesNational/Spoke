@@ -62,6 +62,7 @@ const headerValidator = () => {
 export const errorDescriptions = {
   12400: "Internal (Twilio) Failure",
   21211: "Invalid 'To' Phone Number",
+  21408: "Attempt to send to disabled region",
   21602: "Message body is required",
   21610: "Attempt to send to unsubscribed recipient",
   21611: "Source number has exceeded max number of queued messages",
