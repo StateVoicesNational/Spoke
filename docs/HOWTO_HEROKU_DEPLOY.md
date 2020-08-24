@@ -11,7 +11,7 @@
 
 ## Instructions for Auth0 configuration variable setup
 
-- Follow the instructions at [Auth0 for authentication](https://github.com/MoveOnOrg/Spoke/blob/main/docs/HOWTO-configure-auth0.md)
+- Follow the instructions at [Auth0 for authentication](HOWTO-configure-auth0.md)
   - Where the instructions mention `yourspoke.example.com`, replace it with `<YOUR SPOKE APP>.herokuapp.com` (or in production, possibly the domain you aliased to it in your DNS config)
 
 
@@ -57,11 +57,11 @@ There is another mode mostly for non-Twilio backends, where you may need to run 
 
 ## Email configuration
 
-See [this guide](EMAIL_CONFIGURATION.md) for instructions.
+See [this guide](HOWTO_EMAIL_CONFIGURATION.md) for instructions.
 
 ## Data exporting
 
-In order to export data from campaigns (such as contacts' responses to questions), you need to configure S3 or Bucketeer. See [this guide](DATA_EXPORTING.md) for instructions.
+In order to export data from campaigns (such as contacts' responses to questions), you need to configure S3 or Bucketeer. See [this guide](HOWTO_DATA_EXPORTING.md) for instructions.
 
 ## Upgrading an existing Heroku app
 

@@ -14,9 +14,9 @@ Reasons to be ok with less control:
 
 There are many ways to deploy software onto hardware and many cloud computing providers. In this set of documentation, we use Heroku and Amazon AWS. AWS is more work to setup than Heroku, but gives you more control over scaling and security. In our experience, a full stack engineer with 2+ yrs experience that includes AWS can set this up in 5 days. There is also a Spoke open source community anchored in the Progressive Coders Network slack who can help with setup.
 
-If you're ok with less control, you can follow the instructions [here](https://github.com/MoveOnOrg/Spoke/blob/main/docs/HOWTO_HEROKU_DEPLOY.md) to deploy an instance of Spoke to Heroku  
+If you're ok with less control, you can follow the instructions [here](/HOWTO_HEROKU_DEPLOY.md) to deploy an instance of Spoke to Heroku  
 
-If you want more control, you can follow the instructions [here](https://github.com/MoveOnOrg/Spoke/blob/main/docs/DEPLOYING_AWS_LAMBDA.md) to deploy an instance of Spoke onto Amazon AWS. Many people use dedicated EC2 servers for deployment, but we've found lambda (pay-per-invocation vs hour) to be more cost effective for bursty traffic.
+If you want more control, you can follow the instructions [here](/HOWTO_DEPLOYING_AWS_LAMBDA.md) to deploy an instance of Spoke onto Amazon AWS. Many people use dedicated EC2 servers for deployment, but we've found lambda (pay-per-invocation vs hour) to be more cost effective for bursty traffic.
 
 
 ## What else do I need to worry about?
