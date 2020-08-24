@@ -395,8 +395,21 @@ class Settings extends React.Component {
                 saveLabel="Save settings"
                 saveDisabled={!this.state.settings}
               />
+            </CardText>
+          </Card>
+        ) : null}
+
+        {this.props.data.organization && this.props.params.adminPerms ? (
+          <Card>
+            <CardHeader
+              title="External configuration"
+              style={{ backgroundColor: theme.colors.green }}
+              actAsExpander={true}
+              showExpandableButton={true}
+            />
+            <CardText expandable>
               <h2>DEBUG Zone</h2>
-              <p>Only take actions here if you know what you&rquo;re doing</p>
+              <p>Only take actions here if you know what you&rsquo;re doing</p>
               <RaisedButton
                 label="Clear Cached Organization And Extension Caches"
                 secondary
