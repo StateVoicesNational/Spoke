@@ -1,6 +1,6 @@
 # How to Buy Numbers in Twilio
 
-This guide assumes you already have twilio set up with Spoke. If you don't, check out our guide on [integrating Twilio](/HOWTO_INTEGRATE_TWILIO.md).
+This guide assumes you already have twilio set up with Spoke. If you don't, check out our guide on [integrating Twilio](HOWTO_INTEGRATE_TWILIO.md).
 
 If you are comfortable using the Linux command line, and/or will be buying many numbers across many area codes, you should take a look at the [switchboard-twilio tool](https://github.com/MoveOnOrg/switchboard-twilio) which is here to help you buy in higher quantities.
 
