@@ -408,6 +408,27 @@ class Settings extends React.Component {
             </CardText>
           </Card>
         ) : null}
+
+        {this.props.data.organization && this.props.params.adminPerms ? (
+          <Card>
+            <CardHeader
+              title="External configuration"
+              style={{ backgroundColor: theme.colors.green }}
+              actAsExpander={true}
+              showExpandableButton={true}
+            />
+            <CardText expandable>
+              <RaisedButton
+                label="Clear Cached Organization And Extension Caches"
+                secondary
+                style={inlineStyles.dialogButton}
+                onTouchTap={
+                  this.props.mutations.clearCachedOrgAndExtensionCaches
+                }
+              />
+            </CardText>
+          </Card>
+        ) : null}
       </div>
     );
   }
