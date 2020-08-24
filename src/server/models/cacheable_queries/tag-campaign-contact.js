@@ -15,7 +15,7 @@ export const loadToCache = async campaignContactId => {
   const tagValues = await r
     .knex("tag_campaign_contact")
     .where("campaign_contact_id", campaignContactId)
-    .select("value", "tag_id as id");
+    .select("campaign_contact_id", "value", "tag_id as id");
 
   if (r.redis && CONTACT_CACHE_ENABLED) {
     const cacheKey = tagCacheKey(campaignContactId);
@@ -37,9 +37,12 @@ export const tagCampaignContactCache = {
       const cacheKey = tagCacheKey(campaignContactId);
       const cachedResponse = await r.redis.getAsync(cacheKey);
       if (cachedResponse) {
-        return JSON.parse(cachedResponse).filter(
-          t => includeResolved || t.value !== "RESOLVED"
-        );
+        return JSON.parse(cachedResponse)
+          .filter(t => includeResolved || t.value !== "RESOLVED")
+          .map(t => ({
+            ...t,
+            campaign_contact_id: campaignContactId
+          }));
       }
     }
     return (await exports.loadToCache(campaignContactId)).filter(

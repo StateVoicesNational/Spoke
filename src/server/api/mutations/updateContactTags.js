@@ -53,5 +53,9 @@ export const updateContactTags = async (
     throw err;
   }
 
-  return contact.id;
+  // just enough so the client can update apollo cache
+  return {
+    id: contact.id,
+    tags: tags.map(t => ({ ...t, campaign_contact_id: campaignContactId }))
+  };
 };

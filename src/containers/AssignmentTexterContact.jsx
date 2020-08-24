@@ -539,7 +539,9 @@ const mutations = {
         $tags: [ContactTagInput]
         $campaignContactId: String!
       ) {
-        updateContactTags(tags: $tags, campaignContactId: $campaignContactId)
+        updateContactTags(tags: $tags, campaignContactId: $campaignContactId) {
+          id
+        }
       }
     `,
     variables: {

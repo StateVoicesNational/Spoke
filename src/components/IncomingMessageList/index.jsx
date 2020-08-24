@@ -213,7 +213,7 @@ export class IncomingMessageList extends Component {
               }}
               icon={<ActionOpenInNew />}
             />
-            {this.renderTags(row.tags)}
+            {this.renderTags(row.tags, row)}
           </div>
         )
     }
@@ -260,20 +260,38 @@ export class IncomingMessageList extends Component {
     this.setState({ activeConversation: undefined });
   };
 
-  renderTags = tags => {
+  renderTags = (tags, row) => {
     // dedupe names from server
     const tagNames = {};
     tags &&
       tags
         .filter(tag => !tag.resolvedAt)
         .forEach(tag => {
-          tagNames[this.state.tags[tag.id]] = 1;
+          tagNames[this.state.tags[tag.id]] = tag;
         });
-    console.log("tagnames", tagNames);
     return (
       <div>
         {Object.keys(tagNames).map(name => (
-          <TagChip text={name} />
+          <TagChip
+            text={name}
+            backgroundColor={
+              tagNames[name].value !== "RESOLVED"
+                ? null
+                : theme.colors.lightGray
+            }
+            onRequestDelete={
+              tagNames[name].value !== "RESOLVED"
+                ? async () => {
+                    console.log("resolving tag", name, tagNames[name]);
+                    const res = await this.props.mutations.updateTag(
+                      row.campaignContactId,
+                      tagNames[name].id,
+                      "RESOLVED"
+                    );
+                  }
+                : null
+            }
+          />
         ))}
       </div>
     );
@@ -386,6 +404,8 @@ const queries = {
               }
               tags {
                 id
+                value
+                campaignContactId
               }
               optOut {
                 id
@@ -414,4 +434,32 @@ const queries = {
   }
 };
 
-export default loadData({ queries })(withRouter(IncomingMessageList));
+const mutations = {
+  updateTag: ownProps => (campaignContactId, id, value) => ({
+    mutation: gql`
+      mutation updateContactTags(
+        $tags: [ContactTagInput]
+        $campaignContactId: String!
+        $tagId: String!
+      ) {
+        updateContactTags(tags: $tags, campaignContactId: $campaignContactId) {
+          id
+          tags(tagId: $tagId) {
+            id
+            value
+            campaignContactId
+          }
+        }
+      }
+    `,
+    variables: {
+      tags: [{ id, value }],
+      campaignContactId,
+      tagId: id
+    }
+  })
+};
+
+export default loadData({ queries, mutations })(
+  withRouter(IncomingMessageList)
+);

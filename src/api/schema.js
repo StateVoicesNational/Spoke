@@ -312,7 +312,7 @@ const rootSchema = gql`
     updateContactTags(
       tags: [ContactTagInput]
       campaignContactId: String!
-    ): String
+    ): CampaignContact
     updateQuestionResponses(
       questionResponses: [QuestionResponseInput]
       campaignContactId: String!

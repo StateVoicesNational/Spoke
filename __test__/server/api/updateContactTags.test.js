@@ -109,7 +109,9 @@ describe("mutations.updateContactTags", () => {
       contacts[0].id
     );
 
-    expect(result.data.updateContactTags).toEqual(contacts[0].id.toString());
+    expect(result.data.updateContactTags).toEqual({
+      id: contacts[0].id.toString()
+    });
 
     const tagged = await r.knex("tag_campaign_contact");
 

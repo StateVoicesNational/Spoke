@@ -242,6 +242,7 @@ export async function getConversations(
       .select(
         "tag_campaign_contact.campaign_contact_id as campaign_contact_id",
         "tag.name as name",
+        "tag.id as id",
         "tag_campaign_contact.value as value"
       )
       .from("tag_campaign_contact")
@@ -259,7 +260,7 @@ export async function getConversations(
 
     conversations.forEach(convo => {
       // eslint-disable-next-line no-param-reassign
-      convo.tags = contactTags[convo.ccId];
+      convo.tags = contactTags[convo.cc_id];
     });
   }
 
