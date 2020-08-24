@@ -127,7 +127,7 @@ If you want to use the knex CLI, run with `yarn knex` which will leverage your `
 
 ## Apollo/GraphQL structure and gotchas
 
-See [EXPLANATION-request-example.md](/EXPLANATION-request-example.md) for a great run-down all the
+See [EXPLANATION-request-example.md](EXPLANATION-request-example.md) for a great run-down all the
 way through the call stack on the client and server.
 
 See the [Apollo documentation](https://www.apollographql.com/docs/react/v2.5) for more details.
