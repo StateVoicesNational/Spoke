@@ -214,15 +214,6 @@ class AdminCampaignStats extends React.Component {
             <div className={css(styles.rightAlign)}>
               <div className={css(styles.inline)}>
                 <div className={css(styles.inline)}>
-                  <RaisedButton
-                    {...dataTest("convoCampaign")}
-                    onTouchTap={() =>
-                      this.props.router.push(
-                        `/admin/${organizationId}/incoming?campaigns=${campaignId}`
-                      )
-                    }
-                    label="Convos"
-                  />
                   {!campaign.isArchived ? (
                     // edit
                     <RaisedButton
@@ -235,6 +226,15 @@ class AdminCampaignStats extends React.Component {
                       label="Edit"
                     />
                   ) : null}
+                  <RaisedButton
+                    {...dataTest("convoCampaign")}
+                    onTouchTap={() =>
+                      this.props.router.push(
+                        `/admin/${organizationId}/incoming?campaigns=${campaignId}`
+                      )
+                    }
+                    label="Convos"
+                  />
                   {adminPerms
                     ? [
                         // Buttons for Admins (and not Supervolunteers)
