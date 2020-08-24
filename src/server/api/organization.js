@@ -208,16 +208,17 @@ export const resolvers = {
     texterUIConfig: async (organization, _, { user }) => {
       try {
         await accessRequired(user, organization.id, "OWNER");
-        const options = getConfig("TEXTER_UI_SETTINGS", organization) || null;
-        // note this is global, since we need the set that's globally enabled/allowed to choose from
-        const sideboxChoices = getSideboxChoices();
-        return {
-          options,
-          sideboxChoices
-        };
       } catch (caught) {
         return null;
       }
+
+      const options = getConfig("TEXTER_UI_SETTINGS", organization) || null;
+      // note this is global, since we need the set that's globally enabled/allowed to choose from
+      const sideboxChoices = getSideboxChoices();
+      return {
+        options,
+        sideboxChoices
+      };
     },
     cacheable: (org, _, { user }) =>
       //quanery logic.  levels are 0, 1, 2
