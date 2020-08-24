@@ -9,7 +9,7 @@ export const clearCachedOrgAndExtensionCaches = async (
   { organizationId },
   { user }
 ) => {
-  await accessRequired(user, organizationId, "ADMIN", true);
+  await accessRequired(user, organizationId, "OWNER");
 
   if (!r.redis) {
     return "Redis not configured. No need to clear organization caches";
