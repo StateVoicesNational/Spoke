@@ -33,8 +33,8 @@ export const DEFAULT_NGP_VAN_CONTACT_TYPE = "SMS Text";
 export const DEFAULT_NGP_VAN_INPUT_TYPE = "API";
 export const DEFAULT_NGP_VAN_ACTION_HANDLER_CACHE_TTL = 600;
 
-export function clientChoiceDataCacheKey(organization) {
-  return `${organization.id}`;
+export function clientChoiceDataCacheKey() {
+  return "";
 }
 
 export const postCanvassResponse = async (contact, organization, bodyInput) => {

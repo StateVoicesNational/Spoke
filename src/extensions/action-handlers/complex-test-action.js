@@ -24,7 +24,7 @@ export function serverAdministratorInstructions() {
 }
 
 export function clientChoiceDataCacheKey(organization, user) {
-  return `${organization.id}`;
+  return "";
 }
 
 // return true, if the action is usable and available for the organizationId
