@@ -1,6 +1,6 @@
 # How to Buy Numbers in Twilio
 
-This guide assumes you already have twilio set up with Spoke. If you don't, check out our guide on [integrating Twilio](https://github.com/MoveOnOrg/Spoke/blob/main/docs/HOWTO_INTEGRATE_TWILIO.md).
+This guide assumes you already have twilio set up with Spoke. If you don't, check out our guide on [integrating Twilio](/HOWTO_INTEGRATE_TWILIO.md).
 
 If you are comfortable using the Linux command line, and/or will be buying many numbers across many area codes, you should take a look at the [switchboard-twilio tool](https://github.com/MoveOnOrg/switchboard-twilio) which is here to help you buy in higher quantities.
 
@@ -10,7 +10,7 @@ If you are comfortable using the Linux command line, and/or will be buying many 
    ![sms menu](images/twilio_number_buying_guide/sms_menu.png "SMS Menu")
 3. Select "Messaging Services"
    ![messaging services](images/twilio_number_buying_guide/messaging_services.png "SMS Menu")
-4. Click the app on this screen that's corresponding to whatever you chose when you created the [Spoke messaging service in step 5 here](https://github.com/MoveOnOrg/Spoke/blob/main/docs/HOWTO_INTEGRATE_TWILIO.md) - You should see a sub menu with "numbers", "features", "settings"
+4. Click the app on this screen that's corresponding to whatever you chose when you created the [Spoke messaging service in step 5 here](/HOWTO_INTEGRATE_TWILIO.md) - You should see a sub menu with "numbers", "features", "settings"
    ![spoke app name](images/twilio_number_buying_guide/spoke_app_name.png "Click your app")
 5. Click numbers
    ![numbers menu](images/twilio_number_buying_guide/numbers_menu.png "Numbers Menu")

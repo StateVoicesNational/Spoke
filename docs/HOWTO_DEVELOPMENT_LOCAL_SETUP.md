@@ -27,7 +27,7 @@ The following is the reccomended developer set-up.  If you prefer, [click here f
 
 ### Your `.env` file
 
-We use environment variables to allow instance admins to customize their Spoke experience. If you end up doing dev work on an area that is configured through environment variables, it will be helpful to be familiar with the patterns used. Because of this, we recommend that you take a look at the [environment variable reference](https://github.com/MoveOnOrg/Spoke/blob/main/docs/REFERENCE-environment_variables.md) to get a lay of the land.  
+We use environment variables to allow instance admins to customize their Spoke experience. If you end up doing dev work on an area that is configured through environment variables, it will be helpful to be familiar with the patterns used. Because of this, we recommend that you take a look at the [environment variable reference](REFERENCE-environment_variables.md) to get a lay of the land.  
 
 ### Your Database
 
@@ -38,7 +38,7 @@ If you're using postgres (see below), you should set `DB_TYPE=pg` and if you're 
 
 #### Using Docker to run postgres (optional)
 
-Docker is optional, but can help with a consistent development environment using postgres. You can also set up postgres without docker ([documented here](https://github.com/MoveOnOrg/Spoke/blob/main/docs/HOWTO_USE_POSTGRESQL.md)) but we recommend the docker route.
+Docker is optional, but can help with a consistent development environment using postgres. You can also set up postgres without docker ([documented here](HOWTO_USE_POSTGRESQL.md)) but we recommend the docker route.
 
 1. Install docker and docker compose
 
@@ -68,8 +68,8 @@ At this point, you should be ready to start your app in development mode.
 4. You should then be prompted to create an organization. Create it.
 5. Once you've created your organization, we recommend setting the env var `SUPPRESS_SELF_INVITE=1` so you don't get prompted to create a new org every time you log in
 6. See the [Admin](https://youtu.be/PTMykMX8gII) and [Texter](https://youtu.be/EqE1UDvKGco) demos to learn about how Spoke works.
-7. See [Getting Started with Development](#more-documentation) below.
-8. See [How to Run Tests](https://github.com/MoveOnOrg/Spoke/blob/main/docs/HOWTO-run_tests.md)
+7. See [the development guidelines](EXPLANATION-development-guidelines.md)
+8. See [How to Run Tests](HOWTO-run_tests.md)
 
 ### SMS and Twilio in development
 
