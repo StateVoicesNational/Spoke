@@ -120,7 +120,10 @@ export default class CampaignDynamicAssignmentForm extends React.Component {
             {organization.batchPolicies.length > 1 ? (
               <div>
                 <h3>Batch Strategy</h3>
-                <p>Explain batch strategies here TKTK</p>
+                <p>
+                  Batch strategies determine the rule for how texters are able
+                  to get new batches.
+                </p>
                 <b>Current Selected:</b>
                 <TagChips
                   tags={organization.batchPolicies.map(p => ({
