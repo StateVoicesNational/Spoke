@@ -1,7 +1,7 @@
 # How to Code Review
-Thank you for stepping up to code review changes for Spoke! Check out [our developer docs](https://github.com/MoveOnOrg/Spoke#more-documentation) for more information about how we write code.
+Thank you for stepping up to code review changes for Spoke! Check out [our developer docs](https://github.com/MoveOnOrg/Spoke/tree/main/docs) for more information about how we write code.
 ## Pre-Review
-- Put your mentor hat on — be respectful and gentle — the Spoke project encourages contributions from beginner-developers, and we want to make their early experiences with open-source contributions as positive as possible. We have a [Code of Conduct](./CODE_OF_CONDUCT.md) that we expect all members of the community to follow, and is especially important in the position of being a reviewer.
+- Put your mentor hat on — be respectful and gentle — the Spoke project encourages contributions from beginner-developers, and we want to make their early experiences with open-source contributions as positive as possible. We have a [Code of Conduct](../CODE_OF_CONDUCT.md) that we expect all members of the community to follow, and is especially important in the position of being a reviewer.
 
 - If you are unable to complete a review that you’re tagged in within a [48 hour window](#why-review-quickly), comment to let us know and reassign to another reviewer. For large pull requests that will take longer to review, please comment on the issue with a deadline for yourself to complete the review.
 
