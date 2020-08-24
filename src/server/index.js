@@ -108,7 +108,7 @@ Object.keys(configuredIngestMethods).forEach(ingestMethodName => {
 
 app.post(
   "/twilio/:orgId?",
-  twilio.headerValidator(),
+  twilio.headerValidator(process.env.TWILIO_MESSAGE_CALLBACK_URL || global.TWILIO_MESSAGE_CALLBACK_URL),
   wrap(async (req, res) => {
     try {
       await twilio.handleIncomingMessage(req.body);
@@ -152,6 +152,7 @@ if (process.env.NEXMO_API_KEY) {
 
 app.post(
   "/twilio-message-report",
+  twilio.headerValidator(process.env.TWILIO_STATUS_CALLBACK_URL || global.TWILIO_STATUS_CALLBACK_URL),
   wrap(async (req, res) => {
     try {
       const body = req.body;
