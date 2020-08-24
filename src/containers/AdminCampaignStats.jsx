@@ -91,6 +91,8 @@ Stat.propTypes = {
 
 class AdminCampaignStats extends React.Component {
   state = {
+    copyCampaignId: null, // This is the ID of the most-recently created copy of the campaign.
+    copyMessageOpen: false, // This is true when the copy snackbar should be shown.
     exportMessageOpen: false,
     disableExportButton: false
   };
@@ -171,17 +173,6 @@ class AdminCampaignStats extends React.Component {
           </div>
         ))}
       </div>
-    );
-  }
-
-  renderCopyButton() {
-    return (
-      <RaisedButton
-        label="Copy Campaign"
-        onTouchTap={async () =>
-          await this.props.mutations.copyCampaign(this.props.params.campaignId)
-        }
-      />
     );
   }
 
@@ -293,11 +284,15 @@ class AdminCampaignStats extends React.Component {
                         <RaisedButton
                           {...dataTest("copyCampaign")}
                           label="Copy Campaign"
-                          onTouchTap={async () =>
-                            await this.props.mutations.copyCampaign(
+                          onTouchTap={async () => {
+                            let result = await this.props.mutations.copyCampaign(
                               this.props.params.campaignId
-                            )
-                          }
+                            );
+                            this.setState({
+                              copyCampaignId: result.data.copyCampaign.id,
+                              copyMessageOpen: true
+                            });
+                          }}
                         />,
                         campaign.useOwnMessagingService ? (
                           <RaisedButton
@@ -371,6 +366,24 @@ class AdminCampaignStats extends React.Component {
           autoHideDuration={5000}
           onRequestClose={() => {
             this.setState({ exportMessageOpen: false });
+          }}
+        />
+        <Snackbar
+          open={this.state.copyMessageOpen}
+          message="A new copy has been made."
+          action="Edit"
+          onActionClick={() => {
+            this.props.router.push(
+              "/admin/" +
+                encodeURIComponent(organizationId) +
+                "/campaigns/" +
+                encodeURIComponent(this.state.copyCampaignId) +
+                "/edit"
+            );
+          }}
+          autoHideDuration={5000}
+          onRequestClose={() => {
+            this.setState({ copyMessageOpen: false });
           }}
         />
       </div>

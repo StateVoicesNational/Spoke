@@ -528,8 +528,17 @@ describe("graphql test suite", async () => {
           description: "This is my new campaign",
           is_started: false,
           is_archived: false,
-          use_dynamic_assignment: true,
-          due_by: new Date()
+          due_by: new Date(),
+          features: JSON.stringify({ MY_FEATURE: "value 1" }),
+          intro_html: "<p>This is my intro HTML.</p>",
+          primary_color: "#112233",
+          logo_image_url: "https://www.example.com/image1",
+          override_organization_texting_hours: true,
+          texting_hours_enforced: true,
+          texting_hours_start: 13,
+          texting_hours_end: 14,
+          timezone: "MY_TZ",
+          use_dynamic_assignment: true
         }).save();
         grandpaInteraction = new InteractionStep({
           campaign_id: campaign.id,
@@ -595,9 +604,53 @@ describe("graphql test suite", async () => {
         );
       });
       test("creates and returns a copy of the campaign", () => {
-        expect(campaign.id).not.toEqual(copiedCampaign.id);
-        expect(campaign.description).toEqual(copiedCampaign.description);
+        // The IDs should be different.
+        expect(copiedCampaign.id).not.toEqual(campaign.id);
+        // The title should start with the "COPY - " prefix.
         expect(copiedCampaign.title).toEqual(`COPY - ${campaign.title}`);
+        // The copy should not be started.
+        expect(copiedCampaign.is_started).toEqual(false);
+        // The copy should not be archived.
+        expect(copiedCampaign.is_archived).toEqual(false);
+        // All of the other properties should be identical.
+        expect(copiedCampaign.description).toEqual(campaign.description);
+        if (
+          typeof copiedCampaign.due_by === "number" ||
+          typeof copiedCampaign.due_by === "string"
+        ) {
+          let parsedDate = new Date(copiedCampaign.due_by);
+          expect(parsedDate).toEqual(campaign.due_by);
+        } else {
+          expect(copiedCampaign.due_by).toEqual(campaign.due_by);
+        }
+        if (
+          typeof copiedCampaign.features === "object" &&
+          copiedCampaign.features
+        ) {
+          let jsonString = JSON.stringify(copiedCampaign.features);
+          expect(jsonString).toEqual(campaign.features);
+        } else {
+          expect(copiedCampaign.features).toEqual(campaign.features);
+        }
+        expect(copiedCampaign.intro_html).toEqual(campaign.intro_html);
+        expect(copiedCampaign.primary_color).toEqual(campaign.primary_color);
+        expect(copiedCampaign.logo_image_url).toEqual(campaign.logo_image_url);
+        expect(!!copiedCampaign.override_organization_texting_hours).toEqual(
+          !!campaign.override_organization_texting_hours
+        );
+        expect(!!copiedCampaign.texting_hours_enforced).toEqual(
+          !!campaign.texting_hours_enforced
+        );
+        expect(copiedCampaign.texting_hours_start).toEqual(
+          campaign.texting_hours_start
+        );
+        expect(copiedCampaign.texting_hours_end).toEqual(
+          campaign.texting_hours_end
+        );
+        expect(copiedCampaign.timezone).toEqual(campaign.timezone);
+        expect(!!copiedCampaign.use_dynamic_assignment).toEqual(
+          !!campaign.use_dynamic_assignment
+        );
       });
       test("the copied campaign has the same canned response as the original one", async () => {
         const originalCannedResponseP = queryHelper(
