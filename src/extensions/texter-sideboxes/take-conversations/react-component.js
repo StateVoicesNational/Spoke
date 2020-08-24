@@ -4,6 +4,7 @@ import yup from "yup";
 import Form from "react-formal";
 import Badge from "material-ui/Badge";
 import RaisedButton from "material-ui/RaisedButton";
+import Toggle from "material-ui/Toggle";
 import { withRouter } from "react-router";
 import gql from "graphql-tag";
 
@@ -20,7 +21,8 @@ export const showSidebox = ({ contact, currentUser, settingsData }) => {
     // TODO: vetted_texter role + in ?replies?
     // + settingsData.takeConversationsBatchType
     !contact &&
-    currentUser.roles.indexOf("VETTED_TEXTER") >= 0
+    currentUser.roles.indexOf("VETTED_TEXTER") >= 0 &&
+    settingsData.takeConversationsBatchSize
   ) {
     return true;
   }
@@ -72,8 +74,7 @@ export class TexterSideboxClass extends React.Component {
     } = this.props;
     // need to see whether they have already texted anyone and if there are replies
     const headerStyle = messageStatusFilter ? { textAlign: "center" } : {};
-    const batchSize =
-      settingsData.takeConversationsBatchSize || campaign.batchSize;
+    const batchSize = settingsData.takeConversationsBatchSize;
     return (
       <div style={headerStyle}>
         <div>
@@ -128,9 +129,7 @@ export const mutations = {
     `,
     variables: {
       assignmentId: ownProps.assignment.id,
-      numberContacts:
-        ownProps.settingsData.takeConversationsBatchSize ||
-        ownProps.campaign.batchSize,
+      numberContacts: ownProps.settingsData.takeConversationsBatchSize,
       batchType: batchType || ownProps.settingsData.takeConversationsBatchType
     }
   })
@@ -170,11 +169,30 @@ export class AdminConfig extends React.Component {
             "vetted-takeconversations"
           }
         />
+        <p>If batchsize is set to 0 it will stop showing this side panel</p>
         <Form.Field
           name="takeConversationsBatchSize"
           label="Batch size (number) to take conversations button"
           fullWidth
           hintText=""
+          defaultValue={
+            this.props.settingsData.takeConversationsBatchSize || 20
+          }
+        />
+        <p>
+          Outbound Unassignment (only works if message handler
+          "outbound-unassign" is enabled) means after initial text messages are
+          sent, the conversation is automatically unassigned from the initial
+          texter. With Take Conversations enabled, then a set of Vetted Texters
+          can take replies. This splits up initial text senders from texters
+          that reply.
+        </p>
+        <Toggle
+          label="Enable initial outbound unassign"
+          toggled={this.props.settingsData.takeConversationsOutboundUnassign}
+          onToggle={(toggler, val) =>
+            this.props.onToggle("takeConversationsOutboundUnassign", val)
+          }
         />
       </div>
     );

@@ -1,16 +1,17 @@
-import { getConfig } from "../../../server/api/lib/config";
+import { getConfig, getFeatures } from "../../../server/api/lib/config";
 import { r, cacheableData } from "../../../server/models";
 
 export const serverAdministratorInstructions = () => {
   return {
     description: `
-      When enabled, campaigns with the description containing the text
-      "outbound-unassign" upon a contact replying to the initial
-      message the contact will be unassigned from the initial texter.
+      When enabled, campaigns with texter-sidebox "take-conversations"
+      and the "Enable initial outbound unassign" feature enabled
+      will unassign the texter of the initial message upon
+      the first message being sent.
       This allows separation of initial texters and repliers.
       It pairs well with texter-sidebox "take-conversations"
     `,
-    setupInstructions: `Just enable it and mark relevant campaigns`,
+    setupInstructions: `Just enable it and the texter-sidebox "take-conversations"`,
     environmentVariables: []
   };
 };
@@ -25,20 +26,25 @@ export const preMessageSave = async ({ contact, campaign, messageToSave }) => {
     contact.assignment_id &&
     contact.message_status === "needsMessage" &&
     r.redis &&
-    campaign &&
-    campaign.description &&
-    /outbound-unassign/.test(campaign.description)
+    campaign
   ) {
-    await cacheableData.campaignContact.updateAssignmentCache(
-      contact.id,
-      null,
-      null,
-      contact.campaign_id
-    );
-    contact.assignment_id = null;
-    return {
-      contactUpdates: { assignment_id: null }
-    };
+    const features = getFeatuers(campaign);
+    if (
+      features &&
+      features.TEXTER_UI_SETTINGS &&
+      JSON.parse(features.TEXTER_UI_SETTINGS).takeConversationsOutboundUnassign
+    ) {
+      await cacheableData.campaignContact.updateAssignmentCache(
+        contact.id,
+        null,
+        null,
+        contact.campaign_id
+      );
+      contact.assignment_id = null;
+      return {
+        contactUpdates: { assignment_id: null }
+      };
+    }
   }
   return {};
 };
