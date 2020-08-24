@@ -864,7 +864,7 @@ describe("ngpvn-action", () => {
       const cacheKey = NgpVanAction.clientChoiceDataCacheKey(
         veryFakeOrganization
       );
-      expect(cacheKey).toEqual("3");
+      expect(cacheKey).toEqual("");
     });
   });
 

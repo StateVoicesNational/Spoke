@@ -63,10 +63,10 @@ import {
   startCampaign,
   updateContactTags,
   updateQuestionResponses,
-  releaseCampaignNumbers
+  releaseCampaignNumbers,
+  clearCachedOrgAndExtensionCaches
 } from "./mutations";
 
-const ActionHandlers = require("../../extensions/action-handlers");
 import { jobRunner } from "../../extensions/job-runners";
 import { Jobs } from "../../workers/job-processes";
 import { Tasks } from "../../workers/tasks";
@@ -485,6 +485,7 @@ const rootMutations = {
     sendMessage,
     startCampaign,
     releaseCampaignNumbers,
+    clearCachedOrgAndExtensionCaches,
     userAgreeTerms: async (_, { userId }, { user }) => {
       // We ignore userId: you can only agree to terms for yourself
       await r
