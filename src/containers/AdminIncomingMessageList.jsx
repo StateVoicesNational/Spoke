@@ -115,6 +115,23 @@ export class AdminIncomingMessageList extends Component {
     if (query.errorCode) {
       this.state.contactsFilter.errorCode = query.errorCode.split(",");
     }
+    if (query.tags) {
+      if (/^[a-z]/.test(query.tags)) {
+        this.state.tagsFilter = { [query.tags]: true };
+      } else {
+        const selectedTags = {};
+        query.tags.split(",").forEach(t => {
+          selectedTags[t] = props.organization.organization.tags.find(
+            ot => ot.id === t
+          );
+        });
+        this.state.tagsFilter = { selectedTags };
+      }
+    }
+    const newTagsFilter = AdminIncomingMessageList.tagsFilterStateFromTagsFilter(
+      this.state.tagsFilter
+    );
+    this.state.contactsFilter.tags = newTagsFilter;
   }
 
   shouldComponentUpdate = (dummy, nextState) => {
@@ -161,6 +178,18 @@ export class AdminIncomingMessageList extends Component {
       if (nextState.contactsFilter.errorCode) {
         query.errorCode = nextState.contactsFilter.errorCode.join(",");
       }
+      if (nextState.tagsFilter && !nextState.tagsFilter.ignoreTags) {
+        if (nextState.tagsFilter.anyTag) {
+          query.tags = "anyTag";
+        } else if (nextState.tagsFilter.noTag) {
+          query.tags = "noTag";
+        } else {
+          const selectedTags = Object.keys(
+            nextState.tagsFilter.selectedTags || {}
+          ).filter(t => t);
+          query.tags = selectedTags.join(",");
+        }
+      }
       //default false
       if (nextState.includeArchivedCampaigns) {
         query.archived = 1;
@@ -175,6 +204,7 @@ export class AdminIncomingMessageList extends Component {
       if (!nextState.includeNotOptedOutConversations) {
         query.notOptedOut = 0;
       }
+
       history.replaceState(
         null,
         "Message Review",

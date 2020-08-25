@@ -202,10 +202,9 @@ export class IncomingMessageList extends Component {
         overflow: "hidden",
         whiteSpace: "pre-line"
       },
-      render: (columnKey, row) =>
-        row.messages &&
-        row.messages.length > 1 && (
-          <div>
+      render: (columnKey, row) => (
+        <div>
+          {row.messages && row.messages.length > 1 && (
             <FlatButton
               onClick={event => {
                 event.stopPropagation();
@@ -213,9 +212,10 @@ export class IncomingMessageList extends Component {
               }}
               icon={<ActionOpenInNew />}
             />
-            {this.renderTags(row.tags, row)}
-          </div>
-        )
+          )}
+          {this.renderTags(row.tags, row)}
+        </div>
+      )
     }
   ];
 
