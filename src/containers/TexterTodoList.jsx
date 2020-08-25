@@ -126,6 +126,7 @@ export const dataQuery = gql`
       terms
       profileComplete(organizationId: $organizationId)
       cacheable
+      roles(organizationId: $organizationId)
       todos(organizationId: $organizationId) {
         id
         hasUnassignedContactsForTexter

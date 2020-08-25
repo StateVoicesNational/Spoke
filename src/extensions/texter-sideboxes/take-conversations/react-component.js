@@ -22,19 +22,26 @@ export const showSidebox = ({ contact, currentUser, settingsData }) => {
     // + settingsData.takeConversationsBatchType
     !contact &&
     currentUser.roles.indexOf("VETTED_TEXTER") >= 0 &&
-    settingsData.takeConversationsBatchSize
+    settingsData.takeConversationsBatchSize != 0
   ) {
     return true;
   }
 };
 
-export const showSummary = ({ texter, settingsData }) => true; // vetted_texter role + in replies
+export const showSummary = ({ texter, settingsData }) =>
+  texter.roles &&
+  texter.roles.indexOf("VETTED_TEXTER") >= 0 &&
+  settingsData.takeConversationsBatchSize != 0;
 
 export class TexterSideboxClass extends React.Component {
   requestNewContacts = async () => {
     const didAddContacts = (await this.props.mutations.findNewCampaignContact())
       .data.findNewCampaignContact;
-    console.log("take-conversations:requestNewContacts added?", didAddContacts);
+    console.log(
+      "take-conversations:requestNewContacts added?",
+      didAddContacts,
+      this.props.settingsData.takeConversationsBatchType
+    );
     if (didAddContacts && didAddContacts.found) {
       this.props.refreshData();
     }
@@ -74,14 +81,14 @@ export class TexterSideboxClass extends React.Component {
     } = this.props;
     // need to see whether they have already texted anyone and if there are replies
     const headerStyle = messageStatusFilter ? { textAlign: "center" } : {};
-    const batchSize = settingsData.takeConversationsBatchSize;
+    const batchSize =
+      settingsData.takeConversationsBatchSize || campaign.batchSize;
     return (
       <div style={headerStyle}>
         <div>
           <h3>Take Conversations</h3>
-          <p>Take one batch at a time</p>
           <RaisedButton
-            label={`Take another ${batchSize} conversations`}
+            label={`Take a batch of ${batchSize} conversations`}
             primary
             onClick={this.requestNewContacts}
           />
@@ -129,8 +136,11 @@ export const mutations = {
     `,
     variables: {
       assignmentId: ownProps.assignment.id,
-      numberContacts: ownProps.settingsData.takeConversationsBatchSize,
-      batchType: batchType || ownProps.settingsData.takeConversationsBatchType
+      numberContacts: ownProps.settingsData.takeConversationsBatchSize || 20,
+      batchType:
+        batchType ||
+        ownProps.settingsData.takeConversationsBatchType ||
+        "vetted-takeconversations"
     }
   })
 };

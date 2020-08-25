@@ -3,6 +3,13 @@ import { GraphQLError } from "graphql/error";
 import { r, cacheableData } from "../../models";
 import { hasRole } from "../../../lib";
 import { getConfig } from "../lib/config";
+import telemetry from "../../telemetry";
+
+const INVALID_JOIN = () => {
+  const error = new GraphQLError("Invalid join request");
+  error.code = "INVALID_JOIN";
+  return error;
+};
 
 export const joinOrganization = async (
   _,
@@ -35,13 +42,15 @@ export const joinOrganization = async (
           r.knex("assignment").where("campaign_id", campaignId)
         );
         if (campaignTexterCount >= maxTextersPerCampaign) {
-          throw new GraphQLError(
+          const error = new GraphQLError(
             "Sorry, this campaign has too many texters already"
           );
+          error.code = "FAILEDJOIN_TOOMANYTEXTERS";
+          throw error;
         }
       }
     } else {
-      throw new GraphQLError("Invalid join request");
+      throw INVALID_JOIN();
     }
   } else {
     organization = await r
@@ -50,7 +59,7 @@ export const joinOrganization = async (
       .first();
   }
   if (!organization) {
-    throw new GraphQLError("Invalid join request");
+    throw INVALID_JOIN();
   }
   userOrg = await r
     .knex("user_organization")
@@ -66,13 +75,17 @@ export const joinOrganization = async (
       getConfig("CAMPAIGN_INVITES_CURRENT_USERS_ONLY", organization)
     ) {
       // only organization joins are valid with this setting
-      throw new GraphQLError("Invalid join request");
+      throw INVALID_JOIN();
     }
     try {
       await r.knex("user_organization").insert({
         user_id: user.id,
         organization_id: organization.id,
         role: "TEXTER"
+      });
+      await telemetry.reportEvent("User Join Organization", {
+        count: 1,
+        organizationId: organization.id
       });
     } catch (error) {
       // Unexpected errors
@@ -95,6 +108,11 @@ export const joinOrganization = async (
         user_id: user.id,
         campaign_id: campaign.id,
         max_contacts: maxContacts ? Number(maxContacts) : null
+      });
+      await telemetry.reportEvent("User Join Assignment", {
+        count: 1,
+        campaignId: campaign.id,
+        organizationId: organization.id
       });
     }
   }

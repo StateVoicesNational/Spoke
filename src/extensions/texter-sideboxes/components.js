@@ -8,7 +8,6 @@ function getComponents() {
           "celebration-gif",
           "default-dynamicassignment",
           "default-releasecontacts",
-          "celebration-gif",
           "contact-reference",
           "tag-contact",
           "default-editinitial"
@@ -73,6 +72,7 @@ export const getSideboxes = (
           componentList[sb].showSummary
         ) {
           res = componentList[sb].showSummary({
+            isSummary: true,
             settingsData,
             campaign,
             assignment,

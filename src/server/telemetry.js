@@ -22,7 +22,8 @@ const TELEMETRY_IGNORED_ERROR_CODES = [
   "DUPLICATE_MESSAGE",
   "TEXTING_HOURS",
   "CAMPAIGN_CLOSED",
-  "CAMPAIGN_CLOSED_FOR_INITIAL_SENDS"
+  "CAMPAIGN_CLOSED_FOR_INITIAL_SENDS",
+  "FAILEDJOIN_TOOMANYTEXTERS"
 ];
 
 const makeCloudwatchEvent = (detailType, details) => {
@@ -175,11 +176,6 @@ async function formatRequestError(err, req) {
   }
   err.code = code;
   await Promise.all(formatRequestErrorCallbacks.map(cb => cb(err, req)));
-  log.error({
-    userId: req.user && req.user.id,
-    err,
-    msg: "GraphQL error"
-  });
 }
 
 function expressMiddleware(err, req, res, next) {
