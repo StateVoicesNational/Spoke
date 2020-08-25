@@ -28,7 +28,7 @@ export const preMessageSave = async ({ contact, campaign, messageToSave }) => {
     r.redis &&
     campaign
   ) {
-    const features = getFeatuers(campaign);
+    const features = getFeatures(campaign);
     if (
       features &&
       features.TEXTER_UI_SETTINGS &&

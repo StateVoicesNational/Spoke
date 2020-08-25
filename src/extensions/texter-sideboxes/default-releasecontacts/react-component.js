@@ -21,7 +21,8 @@ export const showSidebox = ({
   messageStatusFilter,
   assignment,
   campaign,
-  finished
+  finished,
+  isSummary
 }) => {
   // Return anything False-y to not show
   // Return anything Truth-y to show
@@ -32,9 +33,12 @@ export const showSidebox = ({
     (campaign.useDynamicAssignment ||
       settingsData.releaseContactsNonDynamicToo) &&
     (settingsData.releaseContactsReleaseConvos ||
-      (messageStatusFilter === "needsMessage" && assignment.unmessagedCount))
+      (messageStatusFilter === "needsMessage" && assignment.unmessagedCount) ||
+      (isSummary && assignment.unmessagedCount))
   );
 };
+
+export const showSummary = showSidebox;
 
 export class TexterSideboxClass extends React.Component {
   handleReleaseContacts = async releaseConversations => {
@@ -147,6 +151,12 @@ export const mutations = {
 export const TexterSidebox = loadData({ mutations })(
   withRouter(TexterSideboxClass)
 );
+
+// This is a bit of a trick
+// Normally we'd want to implement a separate component,
+// but we have crafted it to work in both contexts.
+// If you make changes, make sure you test in both!
+export const SummaryComponent = TexterSidebox;
 
 export const adminSchema = () => ({
   releaseContactsReleaseConvos: yup.boolean(),
