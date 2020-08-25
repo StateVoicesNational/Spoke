@@ -62,7 +62,7 @@ class CreateAdditionalOrganization extends React.Component {
                   this.props.userData.currentUser.id,
                   this.props.inviteData.inviteByHash[0].id
                 );
-                this.props.router.push(`/adminOrganizations`);
+                this.props.router.push(`/organizations`);
               }}
             >
               <Form.Field
@@ -89,8 +89,12 @@ class CreateAdditionalOrganization extends React.Component {
   }
 
   render() {
-    if (!this.props.userData.currentUser.is_superadmin){
-      return (<div>You must be a super admin to create an additional organization.</div>)
+    if (!this.props.userData.currentUser.is_superadmin) {
+      return (
+        <div>
+          You must be a super admin to create an additional organization.
+        </div>
+      );
     }
     return (
       <div>

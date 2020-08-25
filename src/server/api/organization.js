@@ -23,7 +23,11 @@ export const resolvers = {
     },
     campaignsCount: async (organization, _, { user }) => {
       await accessRequired(user, organization.id, "OWNER", true);
-      return getCampaignsCount(organization.id);
+      return r.getCount(
+        r
+          .knex("campaign")
+          .where({ organization_id: organization.id, is_archived: false })
+      );
     },
     numTextsInLastDay: async (organization, _, { user }) => {
       await accessRequired(user, organization.id, "OWNER", true);

@@ -177,10 +177,7 @@ export default function makeRoutes(requireAuth = () => {}) {
         </Route>
       </Route>
       <Route path="login" component={Login} />
-      <Route
-        path="adminOrganizations"
-        component={AdminOrganizationsDashboard}
-      />
+      <Route path="organizations" component={AdminOrganizationsDashboard} />
       <Route path="terms" component={Terms} />
       <Route path="reset/:resetHash" component={Home} onEnter={requireAuth} />
       <Route

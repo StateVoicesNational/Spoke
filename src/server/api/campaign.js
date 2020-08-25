@@ -127,13 +127,6 @@ const buildSelectClause = sortBy => {
   return r.knex.select(r.knex.raw(fragmentArray.join(", ")));
 };
 
-export async function getCampaignsCount(organizationId) {
-  const campaignsCount = await r.getCount(
-    buildCampaignQuery(r.knex, organizationId, { isArchived: false })
-  );
-  return campaignsCount;
-}
-
 export async function getCampaigns(
   organizationId,
   cursor,
