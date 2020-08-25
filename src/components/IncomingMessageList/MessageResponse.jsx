@@ -24,7 +24,8 @@ class MessageResponse extends Component {
     this.state = {
       messageText: "",
       isSending: false,
-      sendError: ""
+      sendError: "",
+      doneFirstClick: false
     };
 
     this.handleCloseErrorDialog = this.handleCloseErrorDialog.bind(this);
@@ -43,14 +44,21 @@ class MessageResponse extends Component {
   handleMessageFormChange = ({ messageText }) => this.setState({ messageText });
 
   handleMessageFormSubmit = async ({ messageText }) => {
-    const { campaignContactId } = this.props.conversation;
-    const message = this.createMessageToContact(messageText);
     if (this.state.isSending) {
       return; // stops from multi-send
     }
+
+    if (window.TEXTER_TWOCLICK && !this.state.doneFirstClick) {
+      this.setState({ doneFirstClick: true }); // Enforce TEXTER_TWOCLICK
+      return;
+    }
+
+    const { campaignContactId } = this.props.conversation;
+    const message = this.createMessageToContact(messageText);
+
     this.setState({ isSending: true });
 
-    const finalState = { isSending: false };
+    const finalState = { isSending: false, doneFirstClick: false };
     try {
       const response = await this.props.mutations.sendMessage(
         message,
@@ -82,7 +90,7 @@ class MessageResponse extends Component {
         .max(window.MAX_MESSAGE_LENGTH)
     });
 
-    const { messageText, isSending } = this.state;
+    const { messageText, isSending, doneFirstClick } = this.state;
     const isSendDisabled = isSending || messageText.trim() === "";
 
     const errorActions = [
@@ -114,6 +122,7 @@ class MessageResponse extends Component {
               <SendButton
                 onFinalTouchTap={this.handleClickSendMessageButton}
                 disabled={isSendDisabled}
+                doneFirstClick={doneFirstClick}
               />
             </div>
             <div style={{ marginRight: "120px" }}>
