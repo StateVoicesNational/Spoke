@@ -74,7 +74,7 @@ export class UserMenu extends Component {
 
   handleAdminOrganizations = e => {
     e.preventDefault();
-    this.props.router.push(`/adminOrganizations`);
+    this.props.router.push(`/organizations`);
   };
 
   renderAvatar(user, size) {
@@ -112,8 +112,7 @@ export class UserMenu extends Component {
       return <div />;
     }
     const organizations = currentUser.texterOrganizations;
-    const isSuperAdmin = currentUser.is_superadmin;
-    //const isSuperAdmin = true;
+    const isSuperAdmin = currentUser.isSuperAdmin;
     return (
       <div>
         <IconButton
@@ -141,11 +140,7 @@ export class UserMenu extends Component {
               {currentUser.email}
             </MenuItem>
             <Divider />
-            {window.MULTI_TENANT && isSuperAdmin ? (
-              this.renderAdminTools()
-            ) : (
-              <div />
-            )}
+            {isSuperAdmin ? this.renderAdminTools() : <div />}
             <Subheader>Teams</Subheader>
             {organizations.map(organization => (
               <MenuItem
