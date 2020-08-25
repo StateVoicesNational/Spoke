@@ -708,14 +708,15 @@ export class AssignmentTexterContactControls extends React.Component {
     // cause confusion.
     if (!currentStepHasAnswerOptions || joinedLength !== 0) {
       if (window.HIDE_BRANCHED_SCRIPTS) {
-        shortCannedResponses = campaign.cannedResponses.filter(
-          script =>
-            script.title.toLowerCase().includes(messageTextLowerCase) ||
-            this.props
-              .getMessageTextFromScript(script.text)
-              .toLowerCase()
-              .includes(messageTextLowerCase)
-        );
+        if (cannedResponseScript) {
+          shortCannedResponses = [cannedResponseScript];
+        } else {
+          shortCannedResponses = campaign.cannedResponses.filter(
+            script =>
+              script.title.toLowerCase().includes(messageTextLowerCase) ||
+              script.text.toLowerCase().includes(messageTextLowerCase)
+          );
+        }
       } else {
         shortCannedResponses = campaign.cannedResponses.filter(
           // allow for "Wrong Number", prefixes of + or - can force add or remove
@@ -732,7 +733,7 @@ export class AssignmentTexterContactControls extends React.Component {
               1 +
               this.getTextOverflowEllipsis(
                 script.title.replace(/^(\+|\-)/, ""),
-                13
+                cannedResponseScript ? 40 : 13
               ).length;
           } else {
             joinedLength += 1 + script.title.length;
@@ -785,7 +786,7 @@ export class AssignmentTexterContactControls extends React.Component {
             key={`shortcutScript_${script.id}`}
             label={this.getTextOverflowEllipsis(
               script.title.replace(/^(\+|\-)/, ""),
-              13
+              cannedResponseScript ? 40 : 13
             )}
             onClick={evt => {
               this.handleCannedResponseChange(script);
