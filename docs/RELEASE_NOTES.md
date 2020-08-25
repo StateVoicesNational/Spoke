@@ -30,7 +30,7 @@ number outside of your "Geo-Permissions" settings
 
 ### Appreciations
 
-Thanks to [inorvig](https://github/inorvig), [oburbank](https://github/oburbank), [aschneit](https://github/aschneit), [jeffm2001](https://github/jeffm2001), [lperson](https://github/lperson), [ibrand](https://github/ibrand), [bdatkins](https://github/bdatkins), [JeremyParker](https://github/JeremyParker), [tekkamanendless ](https://github/tekkamanendless), [sharonsolomon](https://github/sharonsolomon) and [schuyler1d](https://github/schuyler1d)
+Thanks to [inorvig](https://github/inorvig), [oburbank](https://github/oburbank), [aschneit](https://github/aschneit), [jeffm2001](https://github/jeffm2001), [lperson](https://github/lperson), [ibrand](https://github/ibrand), [bdatkins](https://github/bdatkins), [JeremyParker](https://github/JeremyParker), [tekkamanendless ](https://github/tekkamanendless), [sharonsolomon](https://github/sharonsolomon), [nke5ka](https://github/nke5ka) and [schuyler1d](https://github/schuyler1d)
 
 ## v8.0
 
