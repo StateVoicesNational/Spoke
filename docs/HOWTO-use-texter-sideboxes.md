@@ -115,7 +115,7 @@ The best way to make a new texter sidebox is to copy an existing one and then ed
 
 ```
 cd src/extensions/texter-sideboxes
-cp -rp celebration-gif <NEW_STRATEGY_NAME>
+cp -rp celebration-gif <NEW_NAME>
 ```
 
 Then edit react-component.js in that directory.
