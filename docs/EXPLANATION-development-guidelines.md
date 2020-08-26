@@ -37,7 +37,7 @@ diverse group of organizations and deployment contexts, which means a lot of con
 Some important places to update or consider updating when you are creating a new
 environment variable:
 
-* Documentation: Be sure to update or add your variable to [REFERENCE-environment_variables.md](./REFERENCE-environment_variables.md)
+* Documentation: Be sure to update or add your variable to [REFERENCE-environment_variables.md](REFERENCE-environment_variables.md)
 * Make sure the default value will not break the application for users that upgrade from a context before the variable existed.
 * Only add to `.env.example` if it's an important variable to know about (e.g. the default value will often be wrong) or the development value will often be different (e.g. a DEBUG_ type variable)
 * `src/server/middleware/render-index.js` is important to update if this variable is needed on the client/React side and can't/shouldn't be sent through a GraphQL api/object.  In this case, see the bottom of that file.  Be careful since you are printing the variable in *raw javascript* -- so include a `|| <default>` value within the `${...}` context.
@@ -127,7 +127,7 @@ If you want to use the knex CLI, run with `yarn knex` which will leverage your `
 
 ## Apollo/GraphQL structure and gotchas
 
-See [EXPLANATION-request-example.md](./EXPLANATION-request-example.md) for a great run-down all the
+See [EXPLANATION-request-example.md](EXPLANATION-request-example.md) for a great run-down all the
 way through the call stack on the client and server.
 
 See the [Apollo documentation](https://www.apollographql.com/docs/react/v2.5) for more details.
