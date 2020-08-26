@@ -162,7 +162,7 @@ class AssignmentTexterSurveys extends Component {
             style={styles.pastQuestionsLink}
           />
         ) : null}
-        {step.question.answerOptions.map((answerOption, index) => (
+        {step.question.filteredAnswerOptions.map((answerOption, index) => (
           <ListItem
             value={answerOption.value}
             onClick={() => {
