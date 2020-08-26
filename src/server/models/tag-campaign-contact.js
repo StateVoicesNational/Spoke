@@ -19,7 +19,7 @@ const TagCampaignContact = thinky.createModel(
     .allowExtra(false),
   {
     noAutoCreation: true,
-    depenencies: [Tag, CampaignContact]
+    dependencies: [Tag, CampaignContact]
   }
 );
 

@@ -168,11 +168,12 @@ export class AssignmentSummary extends Component {
             }
           />
           <Divider />
-          <div style={{ margin: "20px" }}>
-            <div dangerouslySetInnerHTML={{ __html: introHtml }} />
-          </div>
+          {introHtml ? (
+            <div style={{ margin: "20px" }}>
+              <div dangerouslySetInnerHTML={{ __html: introHtml }} />
+            </div>
+          ) : null}
           <CardActions>
-            {sideboxList}
             {window.NOT_IN_USA && window.ALLOW_SEND_ALL
               ? ""
               : this.renderBadgedButton({
@@ -230,14 +231,28 @@ export class AssignmentSummary extends Component {
               : ""}
             {this.renderBadgedButton({
               assignment,
-              title: "Send later",
+              title: "Send later (outside timezone)",
               count: badTimezoneCount,
               primary: false,
               disabled: true,
               contactsFilter: null,
               hideIfZero: true
             })}
+            {sideboxList.length ? (
+              <div style={{ paddingLeft: "14px", paddingBottom: "10px" }}>
+                {sideboxList}
+              </div>
+            ) : null}
           </CardActions>
+          {!sideboxList.length &&
+          !unmessagedCount &&
+          !unrepliedCount &&
+          !pastMessagesCount &&
+          !skippedMessagesCount &&
+          !badTimezoneCount ? (
+            <div style={{ padding: "0 20px 20px 20px" }}>Nothing to do</div>
+          ) : null}
+          }
         </Card>
       </div>
     );
@@ -248,7 +263,8 @@ AssignmentSummary.propTypes = {
   organizationId: PropTypes.string,
   router: PropTypes.object,
   assignment: PropTypes.object,
-  texter: PropTypes.object
+  texter: PropTypes.object,
+  refreshData: PropTypes.func
 };
 
 export default withRouter(AssignmentSummary);

@@ -78,7 +78,12 @@ exports.handler = async (event, context) => {
         : 0;
       if (endTime - startTime > 3000) {
         //3 seconds
-        console.log("SLOW_RESPONSE milliseconds:", endTime - startTime, event);
+        console.log(
+          "SLOW_RESPONSE milliseconds:",
+          endTime - startTime,
+          event,
+          webResponse
+        );
       }
     }
 

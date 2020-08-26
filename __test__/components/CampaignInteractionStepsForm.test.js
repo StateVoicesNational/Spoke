@@ -706,9 +706,7 @@ describe("CampaignInteractionStepsForm", () => {
               mutations={wrappedMutations}
               params={params}
               location={{
-                query: {
-                  new: true
-                }
+                query: {}
               }}
             />
           </MuiThemeProvider>

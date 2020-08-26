@@ -1,18 +1,32 @@
 import { getConfig } from "../../server/api/lib/config";
 
-export const getDynamicAssignmentBatchPolicy = ({ organization, campaign }) => {
+export const getDynamicAssignmentBatchPolicies = ({
+  organization,
+  campaign
+}) => {
   const handlerKey = "DYNAMICASSIGNMENT_BATCHES";
-  const name =
-    getConfig(handlerKey, campaign, { onlyLocal: true }) ||
+  const campaignEnabled = getConfig(handlerKey, campaign, { onlyLocal: true });
+  const configuredHandlers =
+    campaignEnabled ||
     getConfig(handlerKey, organization) ||
-    "finished-replies";
-  let handler = null;
-  try {
-    handler = require(`./${name}/index.js`);
-  } catch (err) {
-    console.error(
-      `${handlerKey} failed to load message handler ${name} -- ${err}`
-    );
+    "finished-replies,vetted-texters";
+  const enabledHandlers =
+    (configuredHandlers && configuredHandlers.split(",")) || [];
+  if (!campaignEnabled) {
+    // remove everything except the first one for non-campaign enabled choices
+    enabledHandlers.splice(1);
   }
-  return handler;
+
+  const handlers = [];
+  enabledHandlers.forEach(name => {
+    try {
+      const c = require(`./${name}/index.js`);
+      handlers.push(c);
+    } catch (err) {
+      console.error(
+        `${handlerKey} failed to load dynamicassignment-batches handler ${name} -- ${err}`
+      );
+    }
+  });
+  return handlers;
 };

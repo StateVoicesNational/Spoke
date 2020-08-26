@@ -7,6 +7,7 @@ import {
   User,
   UserOrganization
 } from "../server/models";
+import telemetry from "../server/telemetry";
 import { log, gunzip, zipToTimeZone, convertOffsetsToStrings } from "../lib";
 import { updateJob } from "./lib";
 import serviceMap from "../server/api/lib/services";
@@ -253,10 +254,16 @@ export async function failedContactLoad(
     });
   if (job.id) {
     await r
-      .table("job_request")
-      .get(job.id)
+      .knex("job_request")
+      .where("id", job.id)
       .delete();
   }
+  await telemetry.reportEvent("Contact Load Failure", {
+    count: finalContactCount,
+    jobId: job.id,
+    campaignId,
+    ingestResult
+  });
 }
 
 export async function completeContactLoad(
@@ -325,14 +332,21 @@ export async function completeContactLoad(
       ingest_result: ingestResult || null,
       ingest_data_reference: ingestDataReference || null
     });
-
   if (job.id) {
     await r
-      .table("job_request")
-      .get(job.id)
+      .knex("job_request")
+      .where("id", job.id)
       .delete();
   }
   await cacheableData.campaign.reload(campaignId);
+  await telemetry.reportEvent("Contact Load", {
+    count: finalContactCount,
+    jobId: job.id,
+    campaignId,
+    deleteOptOutCells,
+    deleteDuplicateCells,
+    ingestResult
+  });
 }
 
 export async function unzipPayload(job) {
@@ -872,7 +886,23 @@ export async function sendMessages(queryFunc, defaultStatus) {
     try {
       let messageQuery = trx("message")
         .forUpdate()
-        .where({ send_status: defaultStatus || "QUEUED" });
+        .where({ send_status: defaultStatus || "QUEUED" })
+        .join(
+          "campaign_contact",
+          "campaign_contact.id",
+          "message.campaign_contact_id"
+        )
+        .join("campaign", "campaign.id", "campaign_contact.campaign_id")
+        .join("organization", "organization.id", "campaign.organization_id")
+        .select(
+          "message.*",
+          // These are the fields we need for message sending
+          "campaign_contact.campaign_id",
+          "campaign_contact.message_status",
+          "campaign.messageservice_sid",
+          "campaign.organization_id",
+          "organization.features"
+        );
       if (queryFunc) {
         messageQuery = queryFunc(messageQuery);
       }
@@ -902,7 +932,27 @@ export async function sendMessages(queryFunc, defaultStatus) {
           `Sending (${message.service}): ${message.user_number} -> ${message.contact_number}\nMessage: ${message.text}`
         );
         try {
-          await service.sendMessage(message, null, trx);
+          await service.sendMessage(
+            message,
+            {
+              // reconstruct contact
+              id: message.campaign_contact_id,
+              message_status: message.message_status,
+              campaign_id: message.campaign_id
+            },
+            trx,
+            {
+              // organization
+              id: message.organization_id,
+              features: message.features
+            },
+            {
+              // campaign
+              id: message.campaign_id,
+              organization_id: message.organization_id,
+              messageservice_sid: message.messageservice_sid
+            }
+          );
           pastMessages.push(message.id);
           pastMessages = pastMessages.slice(-100); // keep the last 100
         } catch (err) {
