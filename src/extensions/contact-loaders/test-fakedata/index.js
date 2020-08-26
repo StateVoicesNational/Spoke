@@ -43,9 +43,9 @@ export function addServerEndpoints(expressApp) {
   return;
 }
 
-export function clientChoiceDataCacheKey(organization, campaign, user) {
+export function clientChoiceDataCacheKey(campaign, user) {
   /// returns a string to cache getClientChoiceData -- include items that relate to cacheability
-  return `${organization.id}-${campaign.id}`;
+  return `${campaign.id}`;
 }
 
 export async function getClientChoiceData(organization, campaign, user) {

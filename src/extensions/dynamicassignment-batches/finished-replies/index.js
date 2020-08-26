@@ -1,5 +1,9 @@
 import { getContacts } from "../../../server/api/assignment";
 
+export const name = "finished-replies";
+
+export const displayName = () => "After finishing current replies";
+
 export const requestNewBatchCount = async ({
   organization,
   campaign,
@@ -21,6 +25,7 @@ export const requestNewBatchCount = async ({
       .knex("campaign_contact")
       .where({
         campaign_id: campaign.id,
+        is_opted_out: false,
         message_status: "needsMessage"
       })
       .whereNull("assignment_id")

@@ -49,7 +49,9 @@ class AdminPhoneNumberInventory extends React.Component {
       buyNumbersDialogOpen: false,
       buyNumbersFormValues: {
         addToOrganizationMessagingService: false
-      }
+      },
+      sortCol: 'areaCode',
+      sortOrder: 'asc'
     };
   }
 
@@ -150,6 +152,17 @@ class AdminPhoneNumberInventory extends React.Component {
     ];
   }
 
+  sortTable(table, key, order) {
+    table.sort((a, b) => {
+      if (order == 'desc') {
+        return a[key] < b[key] ? 1 : -1;
+      }
+      if (order == 'asc') {
+        return a[key] > b[key] ? 1 : -1;
+      }
+    });
+  }
+
   renderBuyNumbersForm() {
     return (
       <GSForm
@@ -166,7 +179,8 @@ class AdminPhoneNumberInventory extends React.Component {
             {...dataTest("areaCode")}
           />
           <Form.Field label="Limit" name="limit" {...dataTest("limit")} />
-          {this.props.data.organization.twilioMessageServiceSid ? (
+          {this.props.data.organization.twilioMessageServiceSid
+            && !this.props.data.organization.campaignPhoneNumbersEnabled ? (
             <Form.Field
               label="Add to this organization's Messaging Service"
               name="addToOrganizationMessagingService"
@@ -215,16 +229,14 @@ class AdminPhoneNumberInventory extends React.Component {
         availableCount: 0
       }));
     const tableData = [...newAreaCodeRows, ...phoneNumberCounts];
+    this.sortTable(tableData, this.state.sortCol, this.state.sortOrder);
     const handleSortOrderChange = (key, order) => {
-      tableData.sort((a,b) => {
-        if (order == 'asc') {
-          return a[key] < b[key] ? 1 : -1;
-        }
-        if (order == 'desc') {
-          return a[key] > b[key] ? 1 : -1;
-        }
-      })
-    }
+      this.setState({
+        sortCol: key,
+        sortOrder: order
+      });
+      this.sortTable(tableData, key, order);
+    };
     return (
       <div>
         <DataTables
@@ -234,7 +246,7 @@ class AdminPhoneNumberInventory extends React.Component {
           count={tableData.length}
           showFooterToolbar={false}
           showRowHover
-          initialSort={{column: 'areaCode', order: 'desc'}}
+          initialSort={{column: 'areaCode', order: 'asc'}}
           onSortOrderChange={handleSortOrderChange}
         />
         <FloatingActionButton
@@ -264,6 +276,7 @@ const queries = {
         organization(id: $organizationId) {
           id
           twilioMessageServiceSid
+          campaignPhoneNumbersEnabled
           phoneNumberCounts {
             areaCode
             state

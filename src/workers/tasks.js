@@ -78,14 +78,14 @@ const tagUpdateActionHandler = async ({
   await handler.onTagUpdate(tags, contact, campaign, organization, texter);
 };
 
-const startCampaignCache = async ({ campaign, organization }) => {
+const startCampaignCache = async ({ campaign, organization }, contextVars) => {
   // Refresh all the campaign data into cache
   // This should refresh/clear any corruption
   const loadAssignments = cacheableData.campaignContact.updateCampaignAssignmentCache(
     campaign.id
   );
   const loadContacts = cacheableData.campaignContact
-    .loadMany(campaign, organization, {})
+    .loadMany(campaign, organization, contextVars || {})
     .then(() => {
       // eslint-disable-next-line no-console
       console.log("FINISHED contact loadMany", campaign.id);

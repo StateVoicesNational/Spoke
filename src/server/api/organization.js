@@ -43,9 +43,9 @@ export const getSideboxChoices = organization => {
           "celebration-gif",
           "default-dynamicassignment",
           "default-releasecontacts",
-          "celebration-gif",
           "contact-reference",
-          "default-editinitial"
+          "default-editinitial",
+          "tag-contact"
         ]
       : (sideboxes && sideboxes.split(",")) || [];
   return sideboxChoices;
@@ -113,6 +113,15 @@ export const resolvers = {
         groupFilter = "texter-tags";
       }
       return getTags(organization, groupFilter);
+    },
+    batchPolicies: organization => {
+      const batchPolicies = getConfig(
+        "DYNAMICASSIGNMENT_BATCHES",
+        organization
+      );
+      return batchPolicies
+        ? batchPolicies.split(",")
+        : ["finished-replies", "vetted-texters"];
     },
     profileFields: organization =>
       // @todo: standardize on escaped or not once there's an interface.
