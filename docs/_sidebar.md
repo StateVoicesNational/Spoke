@@ -11,9 +11,11 @@
   - [OUTDATED: How to buy numbers in Twilio](HOWTO_BUY_NUMBERS_IN_TWILIO.md)
 
 - Extensions Docs
-
+  - [Extending Spoke](HOWTO-extend-spoke.md)
   - [Action handlers](HOWTO-use-action-handlers.md)
   - [Contact loaders](HOWTO-use-contact-loaders.md)
+  - [Texter sideboxes](HOWTO-use-texter-sideboxes.md)
+  - [Message handlers](HOWTO-use-message-handlers.md)
   - [Dynamic assigment batches](HOWTO-use-dynamicassignment-batches.md)
 
 - Deployment
