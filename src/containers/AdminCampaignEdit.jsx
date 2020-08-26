@@ -35,6 +35,7 @@ const campaignInfoFragment = `
   dueBy
   joinToken
   batchSize
+  batchPolicies
   responseWindow
   isStarted
   isArchived
@@ -79,6 +80,7 @@ const campaignInfoFragment = `
     id
     title
     text
+    tagIds
   }
   ingestMethodsAvailable {
     name
@@ -459,20 +461,27 @@ export class AdminCampaignEdit extends React.Component {
         expandAfterCampaignStarts: true,
         expandableBySuperVolunteers: true,
         extraProps: {
-          customFields: this.props.campaignData.campaign.customFields
+          customFields: this.props.campaignData.campaign.customFields,
+          organizationId: this.props.organizationData.organization.id
         }
       },
       {
         title: "Dynamic Assignment",
         content: CampaignDynamicAssignmentForm,
-        keys: ["batchSize", "useDynamicAssignment", "responseWindow"],
+        keys: [
+          "batchSize",
+          "useDynamicAssignment",
+          "responseWindow",
+          "batchPolicies"
+        ],
         checkCompleted: () => true,
         blocksStarting: false,
         expandAfterCampaignStarts: true,
         expandableBySuperVolunteers: true,
         extraProps: {
           joinToken: this.props.campaignData.campaign.joinToken,
-          campaignId: this.props.campaignData.campaign.id
+          campaignId: this.props.campaignData.campaign.id,
+          organization: this.props.organizationData.organization
         }
       },
       {
@@ -911,6 +920,7 @@ const queries = {
           uuid
           fullyConfigured
           campaignPhoneNumbersEnabled
+          batchPolicies
           texters: people(role: "ANY") {
             id
             roles(organizationId: $organizationId)

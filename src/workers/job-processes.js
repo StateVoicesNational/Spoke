@@ -162,7 +162,7 @@ export const failedMessageSender = messageSenderCreator(function(mQuery) {
   // any failure path that stops the status from updating, then users might keep getting
   // texts over and over
   const fiveMinutesAgo = new Date(new Date() - 1000 * 60 * 5);
-  return mQuery.where("created_at", ">", fiveMinutesAgo);
+  return mQuery.where("message.created_at", ">", fiveMinutesAgo);
 }, "SENDING");
 
 export const failedDayMessageSender = messageSenderCreator(function(mQuery) {
@@ -173,7 +173,7 @@ export const failedDayMessageSender = messageSenderCreator(function(mQuery) {
   // any failure path that stops the status from updating, then users might keep getting
   // texts over and over
   const oneDayAgo = new Date(new Date() - 1000 * 60 * 60 * 24);
-  return mQuery.where("created_at", ">", oneDayAgo);
+  return mQuery.where("message.created_at", ">", oneDayAgo);
 }, "SENDING");
 
 export const erroredMessageSender = messageSenderCreator(function(mQuery) {
@@ -185,8 +185,8 @@ export const erroredMessageSender = messageSenderCreator(function(mQuery) {
   // It's important though that runs are never in parallel
   const twentyMinutesAgo = new Date(new Date() - 1000 * 60 * 20);
   return mQuery
-    .where("created_at", ">", twentyMinutesAgo)
-    .where("error_code", "<", 0);
+    .where("message.created_at", ">", twentyMinutesAgo)
+    .where("message.error_code", "<", 0);
 }, "SENDING");
 
 export async function handleIncomingMessages() {

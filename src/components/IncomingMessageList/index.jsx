@@ -11,7 +11,7 @@ import DataTables from "material-ui-datatables";
 import ConversationPreviewModal from "./ConversationPreviewModal";
 import TagChip from "../TagChip";
 import moment from "moment";
-
+import theme from "../../styles/theme";
 import { MESSAGE_STATUSES } from "../../components/IncomingMessageFilter";
 
 export const prepareDataTableData = conversations =>
@@ -33,6 +33,7 @@ export const prepareDataTableData = conversations =>
     campaignContactId: conversation.contact.id,
     assignmentId: conversation.contact.assignmentId,
     status: conversation.contact.messageStatus,
+    errorCode: conversation.contact.errorCode,
     messages: conversation.contact.messages,
     tags: conversation.contact.tags
   }));
@@ -123,7 +124,7 @@ export class IncomingMessageList extends Component {
       label: "Texter",
       style: {
         textOverflow: "ellipsis",
-        overflow: "scroll",
+        overflow: "hidden",
         whiteSpace: "pre-line"
       }
     },
@@ -132,7 +133,7 @@ export class IncomingMessageList extends Component {
       label: "To",
       style: {
         textOverflow: "ellipsis",
-        overflow: "scroll",
+        overflow: "hidden",
         whiteSpace: "pre-line"
       }
     },
@@ -141,17 +142,26 @@ export class IncomingMessageList extends Component {
       label: "Conversation Status",
       style: {
         textOverflow: "ellipsis",
-        overflow: "scroll",
+        overflow: "hidden",
         whiteSpace: "pre-line"
       },
-      render: (columnKey, row) => MESSAGE_STATUSES[row.status].name
+      render: (columnKey, row) => (
+        <div>
+          {MESSAGE_STATUSES[row.status].name}
+          {row.errorCode ? (
+            <div style={{ color: theme.colors.darkRed }}>
+              error: {row.errorCode}
+            </div>
+          ) : null}
+        </div>
+      )
     },
     {
       key: "latestMessage",
       label: "Latest Message",
       style: {
         textOverflow: "ellipsis",
-        overflow: "scroll",
+        overflow: "hidden",
         whiteSpace: "pre-line"
       },
       render: (columnKey, row) => {
@@ -189,13 +199,12 @@ export class IncomingMessageList extends Component {
       label: "View Conversation",
       style: {
         textOverflow: "ellipsis",
-        overflow: "scroll",
+        overflow: "hidden",
         whiteSpace: "pre-line"
       },
-      render: (columnKey, row) =>
-        row.messages &&
-        row.messages.length > 1 && (
-          <div>
+      render: (columnKey, row) => (
+        <div>
+          {row.messages && row.messages.length > 1 && (
             <FlatButton
               onClick={event => {
                 event.stopPropagation();
@@ -203,9 +212,10 @@ export class IncomingMessageList extends Component {
               }}
               icon={<ActionOpenInNew />}
             />
-            {window.EXPERIMENTAL_TAGS && this.renderTags(row.tags)}
-          </div>
-        )
+          )}
+          {this.renderTags(row.tags, row)}
+        </div>
+      )
     }
   ];
 
@@ -250,20 +260,38 @@ export class IncomingMessageList extends Component {
     this.setState({ activeConversation: undefined });
   };
 
-  renderTags = tags => {
+  renderTags = (tags, row) => {
     // dedupe names from server
     const tagNames = {};
     tags &&
       tags
         .filter(tag => !tag.resolvedAt)
         .forEach(tag => {
-          tagNames[this.state.tags[tag.id]] = 1;
+          tagNames[this.state.tags[tag.id]] = tag;
         });
-    console.log("tagnames", tagNames);
     return (
       <div>
         {Object.keys(tagNames).map(name => (
-          <TagChip text={name} />
+          <TagChip
+            text={name}
+            backgroundColor={
+              tagNames[name].value !== "RESOLVED"
+                ? null
+                : theme.colors.lightGray
+            }
+            onRequestDelete={
+              tagNames[name].value !== "RESOLVED"
+                ? async () => {
+                    console.log("resolving tag", name, tagNames[name]);
+                    const res = await this.props.mutations.updateTag(
+                      row.campaignContactId,
+                      tagNames[name].id,
+                      "RESOLVED"
+                    );
+                  }
+                : null
+            }
+          />
         ))}
       </div>
     );
@@ -299,9 +327,7 @@ export class IncomingMessageList extends Component {
           selectedRows={clearSelectedMessages ? null : this.state.selectedRows}
         />
         <ConversationPreviewModal
-          {...(window.EXPERIMENTAL_TAGS && {
-            organizationTags: this.state.tags
-          })}
+          organizationTags={this.state.tags}
           conversation={this.state.activeConversation}
           onRequestClose={this.handleCloseConversation}
           onForceRefresh={this.props.onForceRefresh}
@@ -369,6 +395,7 @@ const queries = {
               lastName
               cell
               messageStatus
+              errorCode
               messages {
                 id
                 text
@@ -377,6 +404,8 @@ const queries = {
               }
               tags {
                 id
+                value
+                campaignContactId
               }
               optOut {
                 id
@@ -405,4 +434,32 @@ const queries = {
   }
 };
 
-export default loadData({ queries })(withRouter(IncomingMessageList));
+const mutations = {
+  updateTag: ownProps => (campaignContactId, id, value) => ({
+    mutation: gql`
+      mutation updateContactTags(
+        $tags: [ContactTagInput]
+        $campaignContactId: String!
+        $tagId: String!
+      ) {
+        updateContactTags(tags: $tags, campaignContactId: $campaignContactId) {
+          id
+          tags(tagId: $tagId) {
+            id
+            value
+            campaignContactId
+          }
+        }
+      }
+    `,
+    variables: {
+      tags: [{ id, value }],
+      campaignContactId,
+      tagId: id
+    }
+  })
+};
+
+export default loadData({ queries, mutations })(
+  withRouter(IncomingMessageList)
+);

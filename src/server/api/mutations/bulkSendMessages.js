@@ -84,7 +84,7 @@ export const bulkSendMessages = async (
     return sendMessage(
       undefined,
       { message: contactMessage, campaignContactId: contact.id },
-      { user }
+      { user, loaders }
     );
   });
 

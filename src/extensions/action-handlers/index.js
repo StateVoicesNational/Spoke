@@ -9,8 +9,9 @@ export const availabilityCacheKey = (name, organization, userId) =>
   }-${userId}`;
 
 export const choiceDataCacheKey = (name, organization, suffix) =>
-  `${getConfig("CACHE_PREFIX", organization) ||
-    ""}action-choices-${name}-${suffix}`;
+  `${getConfig("CACHE_PREFIX", organization) || ""}action-choices-${name}-${
+    organization.id
+  }${suffix ? "-" : ""}${suffix || ""}`;
 
 // TODO: organization is never actually passed to this method so action handlers
 //   are not actually configurable at the organization level
@@ -154,8 +155,7 @@ export async function getAvailableActionHandlers(organization, user) {
 }
 
 export async function getActionChoiceData(actionHandler, organization, user) {
-  const cacheKeyFunc =
-    actionHandler.clientChoiceDataCacheKey || (org => `${org.id}`);
+  const cacheKeyFunc = actionHandler.clientChoiceDataCacheKey || (() => "");
   const clientChoiceDataFunc =
     actionHandler.getClientChoiceData || (() => ({ data: "{}" }));
 
@@ -164,7 +164,7 @@ export async function getActionChoiceData(actionHandler, organization, user) {
     cacheKey = exports.choiceDataCacheKey(
       actionHandler.name,
       organization,
-      cacheKeyFunc(organization, user)
+      cacheKeyFunc(user)
     );
   } catch (caughtException) {
     log.error(
@@ -206,3 +206,45 @@ export async function getActionChoiceData(actionHandler, organization, user) {
   }
   return items || [];
 }
+
+export const clearCacheForOrganization = async organizationId => {
+  if (!r.redis) {
+    return;
+  }
+
+  const handlerNames = Object.keys(CONFIGURED_ACTION_HANDLERS);
+  const promiseArray = handlerNames.map(handlerName => [
+    r.redis.keysAsync(
+      `${choiceDataCacheKey(
+        handlerName,
+        {
+          id: organizationId
+        },
+        "*"
+      )}`
+    ),
+    r.redis.keysAsync(
+      `${availabilityCacheKey(
+        handlerName,
+        {
+          id: organizationId
+        },
+        "*"
+      )}`
+    )
+  ]);
+
+  const flattenedPromises = [];
+  promiseArray.forEach(promises => {
+    flattenedPromises.push(...promises);
+  });
+
+  const keysResults = await Promise.all(flattenedPromises);
+  const keys = [];
+  keysResults.forEach(keysResult => {
+    keys.push(...keysResult);
+  });
+
+  const delPromises = keys.map(key => r.redis.delAsync(key));
+  await Promise.all(delPromises);
+};

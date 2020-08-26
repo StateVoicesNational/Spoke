@@ -5,6 +5,7 @@ import { Message, cacheableData } from "../../models";
 import { getSendBeforeTimeUtc } from "../../../lib/timezones";
 import { jobRunner } from "../../../extensions/job-runners";
 import { Tasks } from "../../../workers/tasks";
+import { updateContactTags } from "./updateContactTags";
 
 const JOBS_SAME_PROCESS = !!(
   process.env.JOBS_SAME_PROCESS || global.JOBS_SAME_PROCESS
@@ -12,12 +13,12 @@ const JOBS_SAME_PROCESS = !!(
 
 export const sendMessage = async (
   _,
-  { message, campaignContactId },
-  { user }
+  { message, campaignContactId, cannedResponseId },
+  { user, loaders }
 ) => {
   // contact is mutated, so we don't use a loader
   let contact = await cacheableData.campaignContact.load(campaignContactId);
-  const campaign = await cacheableData.campaign.load(contact.campaign_id);
+  const campaign = await loaders.campaign.load(contact.campaign_id);
   if (
     contact.assignment_id !== parseInt(message.assignmentId) ||
     campaign.is_archived
@@ -28,7 +29,7 @@ export const sendMessage = async (
       message: "Your assignment has changed"
     });
   }
-  const organization = await cacheableData.organization.load(
+  const organization = await loaders.organization.load(
     campaign.organization_id
   );
   const orgFeatures = JSON.parse(organization.features || "{}");
@@ -132,7 +133,8 @@ export const sendMessage = async (
     contact,
     campaign,
     organization,
-    texter: user
+    texter: user,
+    cannedResponseId
   });
   if (!saveResult.message) {
     throw new GraphQLError(
@@ -150,6 +152,34 @@ export const sendMessage = async (
       organization,
       campaign
     });
+  }
+
+  if (cannedResponseId) {
+    const cannedResponses = await cacheableData.cannedResponse.query({
+      campaignId: campaign.id,
+      cannedResponseId
+    });
+    if (cannedResponses && cannedResponses.length) {
+      const cannedResponse = cannedResponses.find(
+        res => res.id === Number(cannedResponseId)
+      );
+      if (
+        cannedResponse &&
+        cannedResponse.tagIds &&
+        cannedResponse.tagIds.length
+      ) {
+        await updateContactTags(
+          null,
+          {
+            campaignContactId,
+            tags: cannedResponse.tagIds.map(t => ({
+              id: t
+            }))
+          },
+          { user, loaders }
+        );
+      }
+    }
   }
 
   if (initialMessageStatus === "needsMessage") {

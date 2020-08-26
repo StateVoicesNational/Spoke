@@ -52,6 +52,25 @@ export const campaignQuery = gql`
   ) {
     assignment(assignmentId: $assignmentId, contactId: $contactId) {
       id
+      userCannedResponses {
+        id
+        title
+        text
+        isUserCreated
+      }
+      campaignCannedResponses {
+        id
+        title
+        text
+        isUserCreated
+        tagIds
+      }
+      texter {
+        id
+        firstName
+        lastName
+        alias
+      }
       campaign {
         id
         title
