@@ -10,7 +10,7 @@ export const messageListStyles = {
     maxWidth: "574px"
   },
   messageSent: {
-    textAlign: "right",
+    textAlign: "left",
     marginLeft: "20%",
     marginRight: "10px",
     backgroundColor: "white",
@@ -48,7 +48,8 @@ export const inlineStyles = {
     fontWeight: "bold"
   },
   popoverSidebox: {
-    backgroundColor: "rgb(240, 240, 240)"
+    backgroundColor: "rgb(240, 240, 240)",
+    padding: "20px"
   }
 };
 
@@ -213,7 +214,6 @@ export const flexStyles = StyleSheet.create({
   sectionSend: {
     //sendButtonWrapper
     flex: `0 0 auto`,
-    height: "36px",
     display: "flex",
     flexDirection: "column",
     flexWrap: "wrap",

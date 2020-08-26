@@ -3,10 +3,6 @@ import { Tag, r } from "../models";
 import { getConfig } from "../api/lib/config";
 
 export async function getTags(organization, group) {
-  if (getConfig("EXPERIMENTAL_TAGS", null, { truthy: 1 }) === false) {
-    return [];
-  }
-
   // TODO: need to cache this on organization object
   let query = r.knex
     .select("*")

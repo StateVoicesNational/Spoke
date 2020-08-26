@@ -1,5 +1,96 @@
 # Release Notes
 
+## v8.0
+
+_August 2020:_ Version 8.0
+**Note: Dynamic assignment is changing!** Pay special attention to the write up. This new and improved dynamic assignment should make the dynamic assignment flow friendlier to coaching new texters, and assist the reassignment flow.
+
+This is a major release and therefore requires a schema change. See the deploy steps section for details. Anything marked as experimental has not yet been tested on a production texting campaign. We're marking this as a major version update 8.0 because there are several backwards-incompatible changes that we believe are important and valuable.
+
+### Backwards incompatible Changes
+- **Dynamic Assignment is changing**: After a lot of feedback and some great inspiration from the [Warren Spoke](https://github.com/Elizabeth-Warren/Spoke) we're modifying dynamic assign. Texters will now request batch sizes instead of getting an endless stream of texts. The admin can customize the batch size and who is allowed to click request after their first batch. There is more documentation on this feature [here](https://github.com/MoveOnOrg/Spoke/blob/main/docs/HOWTO-use-dynamicassignment-batches.md).This feature is also optionally complemented by the new "release texts" feature which is mentioned under "New Features/Improvements"
+- **Old Texter UI is _no longer supported_**: We removed the `DEPRECATED_TEXTERUI` env variable and the old Texter UI is officially phased out
+- **Texter Sideboxes are now off by default**: You now need to enable options in organization Settings tab (they previously were just automatically enabled from the variable)
+  - If your previously set TEXTER_SIDEBOXES, then you must add `default-dynamicassignment` (and we recommend adding other new ones listed in new features) for dynamic assignment to work. 
+  - If you are not using additional/experimental sideboxes, we recommend removing this environment variable entirely, so new texter sideboxes in later versions will automatically be available.
+  - HOLD_ENTER_KEY no longer exists as an option (it was deprecated in our last major version)
+- For non-US or subscriber-only mode users ONLY -- if you enabled ALLOW_SEND_ALL=1 (if you did not, then DO not do this), then you'll need to check to enable that feature in the Settings panel of your organization (as a is_superadmin user)
+- Initial text messages are editable -- we recommend allowing the (default) TEXTER_SIDEBOXES= to include `default-editinitial` to make this option more muted.
+- the src/integrations/ directory is renamed src/extensions/ to indicate that it's not just integrations with 3rd parties but also components that extend the system itself (message-handlers, texter-sideboxes, dynamicassignment-batches, job-runners). If you added your own src/integrations/ items make sure they are moved, and relevant imports are changed.
+- There is a small migration to the `campaign` table which needs to be run before/during migration (either by leaving/disabling SUPPRESS_MIGRATIONS="" or for [AWS Lambda, see the db migration instructions](https://github.com/MoveOnOrg/Spoke/blob/main/docs/DEPLOYING_AWS_LAMBDA.md#migrating-the-database)
+
+### New Features/Improvements
+- Use of Spoke is subject to legal restrictions which each organization should review and understand, including recent guidance from an FCC ruling. Spoke 8.0 has several changes related to this guidance and we recommend system administrators review the settings outlined [here](https://github.com/MoveOnOrg/Spoke/blob/main/docs/REFERENCE-best-practices-conformance-messaging.md) along with consulting your own legal advice.
+- **_Experimental_ Phone number management for campaigns**: A much requested feature for scaling past the 400 phone numbers limit.
+  - turn this on with `EXPERIMENTAL_CAMPAIGN_NUMBERS`
+- **_Experimental_ Release Texts**: Dynamic Assignment will also include a way for texters to release texts! That way when a texter is done for the day they can release texts without admin needing to go in and reassign them.
+  - Toggle this on and off in the settings menu
+- **texter-sidebox extension improvements**: (SummaryComponent, Empty context)
+- **new message-handler `to-ascii`**: converts smart quotes and special dash characters to ascii. That way unicode wont surprisingly enlarge the message size.
+- VAN action handler improvements
+- Allow for action handlers to be included in google doc imports
+- Better docs for developer onboarding
+- Ctrl-z and Ctrl-Enter to Send (and any letter key/Enter sends on initial texting page)
+- For phone number purchase interface, entering "800" will buy toll-free numbers (instead of by-areacode)
+- Admins can visit app/:organizationId/todos/other/:userId to look at another user's todos page.
+- Additional organization settings available from the Settings section (If you have an existing instance, enable this with OWNER_CONFIGURABLE=ALL
+- Phone number buying and Twilio multi org enabled by default for new installs -- 
+- Phone number buying can purchase toll-free numbers with "800"
+- Campaign "response window" defaults to 48 hours and can be changed per campaign and then queries in Message Review to find who hasn't responded past the window.  A default can be set in Organization Settings page (overriding defaults)
+
+### Bug Fixes
+- Fix VAN action handler with warehouse loader
+- Block blank message sending
+- Fixes needsResponseCount out of sync with optouts (auto and no message)
+- fix GSScriptEditor for Safari browsers that auto-focus
+
+### Appreciations
+
+Thanks to [jasterix](https://github/jasterix), [ibrand](https://github/ibrand), [jeffm2001](https://github/jeffm2001), [lperson](https://github/lperson), [matteosb](https://github/matteosb), [tekkamanendless ](https://github/tekkamanendless), and [schuyler1d](https://github/schuyler1d)
+
+## v7.1
+
+_July 2020:_ Release 7.1 is a testament to the community working together -- several organizations using Spoke contributed features along with several open-source progressive volunteers (several as their first contribution)!  Thank you to all who contributed.  At the top in "Significant for deployments" there are top-lines for what to know before or during upgrade.  As usual, please let us know if you have any issues.
+
+### Significant for deployments:
+
+* After changing the texter send keyboard shortcut to Ctrl-X we have moved it (again) to Ctrl-Enter (to avoid conflict with OS 'cut' shortcuts)
+* There is a small migration to the user table which needs to be run before/during migration (either by leaving/disabling SUPPRESS_MIGRATIONS="" or for [AWS Lambda, see the db migration instructions](https://github.com/MoveOnOrg/Spoke/blob/main/docs/DEPLOYING_AWS_LAMBDA.md#migrating-the-database)
+* If you are running on lambda, you might consider setting JOB_RUNNER="lambda-async" for better scaling/performance
+
+### New Features
+* Suspending texters: marking a texter Suspended in the People page immediately stops them from being able to text - @JeremyParker
+* Zapier action handler support for triggering when contact tags are updated - @lperson (enable with adding `zapier-action` in your ACTION_HANDLERS env var)
+* Extra Profile Fields -- by setting an organization features variable in the database, additional profile fields can be added during signup, which can be required even for existing users to complete. - @jeffm2001
+* [Slack Authentication](./HOWTO_INTEGRATE_SLACK_AUTH.md) (alternative to Auth0 or local)  - @matteosb
+* Tag data in campaign export files - @jeffm2001
+* DataWarehouse contact loader bugfixes (actually works now) - @jeffm2001
+* Edit canned responses (you used to just be able to add/remove -- now you can edit) - @aschneit
+* Reduced 'flash' while sending initial text messages -- now the Send button just blinks instead of the whole screen for reduced visual strain - @eamouzou
+* Character and segment counts in the Script Editor - @hiemanshu
+* Timezone sorting on the Campaign Admin List - @alliejones
+* "Needs Response" count on Campaign Admin List, when [Redis is configured](./HOWTO_CONNECT_WITH_REDIS.md) - @schuyler1d
+* Improved NGP VAN cell selection from lists - @lperson
+* More experimental message-handler extensions: "auto-optout" allows automatic optout based on certain text coming in from a contact. and "profanity-tagger" gains an option to block a message on-send based on content. - @schuyler1d
+* An exciting new "dispatch" framework to send jobs and tasks asynchronously for tracking which can differ by framework -- especially supporting AWS Lambda, but there is also an experimental "bull" implementation using Redis that we may want to default on Heroku deployments.  Please tell us of your experience here.  This should resolve a large number of bugs and improve performance in many places. - @matteosb
+* Documenting Progressive Hacknight - @ibrand
+
+### Bugs fixed
+* weird [Object object] when tabbing into canned response text issue - @eamouzou
+* simplified docker-compose file - @matteosb
+* fix action handler select menu in Campaign Admin Interactions section - @matteosb
+
+### Appreciations
+
+Thanks to [alliejones](https://github/alliejones), [aschneit](https://github/aschneit), [eamouzou](https://github/eamouzou), [hiemanshu](https://github/hiemanshu), [ibrand](https://github/ibrand), [jeffm2001](https://github/jeffm2001), [JeremyParker](https://github/JeremyParker), [lperson](https://github/lperson), [matteosb](https://github/matteosb), and [schuyler1d](https://github/schuyler1d).
+
+Also to AFL-CIO, MoveOn, NYCET, Scale to Win, and Working Families Party for sending their contributions and giving early feedback/debugging time.
+
+### Coming up
+
+In our next release, we're hoping to have even more VAN support in message handlers, some timezone config flexibility, some changes and features related to the recent FCC court decision, and hopefully a new dynamic assignment model. -- of course, along with a whole lot more -- send us your changes now, so we can bring it in to the next version!
+
+
 ## v7.0
 _June 2020:_ Version 7.0 (or 6.19 in honor of Juneteenth!)
 **Note:** This is a major release and therefore requires a schema change. See the deploy steps section for details. Anything marked as *experimental* has not yet been tested on a production texting campaign.

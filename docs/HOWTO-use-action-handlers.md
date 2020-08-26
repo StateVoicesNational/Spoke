@@ -20,8 +20,8 @@ external systems:
 In addition, there are two action handlers that don't do much, but they serve
 as reference implementations:
 
-- [test-action](../src/integrations/action-handlers/test-action.js)
-- [complex-text-action](../src/integrations/action-handlers/complex-test-action.js)
+- [test-action](../src/extensions/action-handlers/test-action.js)
+- [complex-text-action](../src/extensions/action-handlers/complex-test-action.js)
 
 ## Using action handlers in the script editor
 
@@ -46,7 +46,7 @@ available to any organization using the Spoke installation. Separate the names o
 action handlers with `,` (commas), without any spaces before or after the comma.
 E.g., to enable ActionKit RSVPs and Mobile Commons signup: `actionkit-rsvp,mobilecommons-signup`
 (The name listed in `ACTION_HANDLERS` must correspond to the name of a file
-in `../src/integrations/action-handlers` with the `.js` extension removed.)
+in `../src/extensions/action-handlers` with the `.js` extension removed.)
 
 The system administrator can further restrict the action handlers available
 to specific organizations sharing a Spoke instance by setting `ACTION_HANDLERS` in
@@ -56,7 +56,7 @@ Just enabling a contact loader is the first step, but action handlers often
 have additional context required for them to be visible. Please refer to the [documentation
 for the individual action handlers](#Action-handlers-included-with-Spoke).
 
-The server admin can look at the action handler implementation file in `../src/integrations/action-handlers`
+The server admin can look at the action handler implementation file in `../src/extensions/action-handlers`
 inside the function `serverAdministratorInstructions`
 (this data might sometime be visible to superadmins on a documentation page)
 
@@ -65,7 +65,7 @@ inside the function `serverAdministratorInstructions`
 The best way to make a new action handler is something like this in the codebase:
 
 ```
-cd src/integrations/contact-loaders
+cd src/extensions/contact-loaders
 cp -rp test-action.js <NEW_CONTACT_LOADER_NAME>.js
 ```
 
@@ -92,7 +92,7 @@ _Coming in a future iteration of this document._
 
 ### What to implement
 
-The implementation of an action handler is encapsulated in a single file in the `../src/integrations/action-handlers` folder.
+The implementation of an action handler is encapsulated in a single file in the `../src/extensions/action-handlers` folder.
 The name of the file (minus the `.js` extension) is what must appear in `ACTION_HANDLERS` to enable the action handler.
 
 All action handlers ***must*** export the following:
@@ -104,7 +104,7 @@ All action handlers ***must*** export the following:
   be used to send information in an external system, update the database, or enqueue a job.
 
 These exports are documented in comments in the reference implementation
-[test-action](../src/integrations/action-handlers/test-action.js).
+[test-action](../src/extensions/action-handlers/test-action.js).
 (_Coming soon!_)
 
 Action handlers that provide client-choice data  ***must*** export the following:
@@ -117,7 +117,7 @@ Action handlers ***may*** export the following:
   refer to the [Using addServerEndpoints](#Using-addServerEndpoints) below.
 
 These exports are documented in comments in the reference implementation
-[complex-text-action](../src/integrations/action-handlers/complex-test-action.jsr)
+[complex-text-action](../src/extensions/action-handlers/complex-test-action.jsr)
 (_Coming soon!_)
 
 ### Using addServerEndpoints

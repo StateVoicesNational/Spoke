@@ -70,7 +70,10 @@ const rootSchema = gql`
     primaryColor: String
     introHtml: String
     useDynamicAssignment: Boolean
+    requestAfterReply: Boolean
     batchSize: Int
+    batchPolicies: [String]
+    responseWindow: Float
     ingestMethod: String
     contactData: String
     organizationId: String
@@ -86,10 +89,12 @@ const rootSchema = gql`
     textingHoursEnd: Int
     texterUIConfig: TexterUIConfigInput
     timezone: String
+    inventoryPhoneNumberCounts: [CampaignPhoneNumberInput!]
   }
 
   input OrganizationInput {
     texterUIConfig: TexterUIConfigInput
+    settings: OrgSettingsInput
   }
 
   input MessageInput {
@@ -156,8 +161,14 @@ const rootSchema = gql`
     organizationId: String
   }
 
+  input ContactTagInput {
+    id: String
+    value: String
+  }
+
   type FoundContact {
     found: Boolean
+    assignment: Assignment
   }
 
   type PageInfo {
@@ -226,7 +237,7 @@ const rootSchema = gql`
       filterString: String
       filterBy: FilterPeopleBy
     ): UsersReturn
-    user(organizationId: ID!, userId: Int!): User
+    user(organizationId: String!, userId: Int): User
   }
 
   type RootMutation {
@@ -283,10 +294,12 @@ const rootSchema = gql`
     sendMessage(
       message: MessageInput!
       campaignContactId: String!
+      cannedResponseId: String
     ): CampaignContact
     createOptOut(
       optOut: OptOutInput!
       campaignContactId: String!
+      noReply: Boolean
     ): CampaignContact
     editCampaignContactMessageStatus(
       messageStatus: String!
@@ -296,7 +309,10 @@ const rootSchema = gql`
       interactionStepIds: [String]
       campaignContactId: String!
     ): CampaignContact
-    updateContactTags(tags: [TagInput], campaignContactId: String!): String
+    updateContactTags(
+      tags: [ContactTagInput]
+      campaignContactId: String!
+    ): CampaignContact
     updateQuestionResponses(
       questionResponses: [QuestionResponseInput]
       campaignContactId: String!
@@ -314,6 +330,7 @@ const rootSchema = gql`
     findNewCampaignContact(
       assignmentId: String!
       numberContacts: Int!
+      batchType: String
     ): FoundContact
     releaseContacts(
       assignmentId: String!
@@ -343,6 +360,8 @@ const rootSchema = gql`
       limit: Int!
       addToOrganizationMessagingService: Boolean
     ): JobRequest
+    releaseCampaignNumbers(campaignId: ID!): Campaign!
+    clearCachedOrgAndExtensionCaches(organizationId: String!): String
   }
 
   schema {

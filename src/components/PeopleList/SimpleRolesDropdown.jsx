@@ -18,6 +18,7 @@ const SimpleRolesDropdown = props => (
         value={option}
         primaryText={`${option.charAt(0).toUpperCase()}${option
           .substring(1)
+          .replace("_", " ")
           .toLowerCase()}`}
       />
     ))}

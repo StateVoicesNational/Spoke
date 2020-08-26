@@ -1,6 +1,6 @@
 // Jobs are potentially long-running background processing operations
 // that are tracked in the database via the JobRequest table.
-// See src/integrations/job-runners/README.md for more details
+// See src/extensions/job-runners/README.md for more details
 
 import { r } from "../server/models";
 import { sleep, getNextJob } from "./lib";
@@ -15,7 +15,8 @@ import {
   fixOrgless,
   clearOldJobs,
   importScript,
-  buyPhoneNumbers
+  buyPhoneNumbers,
+  startCampaignWithPhoneNumbers
 } from "./jobs";
 import { setupUserNotificationObservers } from "../server/notifications";
 
@@ -36,14 +37,16 @@ export const Jobs = Object.freeze({
   EXPORT: "export",
   ASSIGN_TEXTERS: "assign_texters",
   IMPORT_SCRIPT: "import_script",
-  BUY_PHONE_NUMBERS: "buy_phone_numbers"
+  BUY_PHONE_NUMBERS: "buy_phone_numbers",
+  START_CAMPAIGN_WITH_PHONE_NUMBERS: "start_campaign_with_phone_numbers"
 });
 
 const jobMap = Object.freeze({
   [Jobs.EXPORT]: exportCampaign,
   [Jobs.ASSIGN_TEXTERS]: assignTexters,
   [Jobs.IMPORT_SCRIPT]: importScript,
-  [Jobs.BUY_PHONE_NUMBERS]: buyPhoneNumbers
+  [Jobs.BUY_PHONE_NUMBERS]: buyPhoneNumbers,
+  [Jobs.START_CAMPAIGN_WITH_PHONE_NUMBERS]: startCampaignWithPhoneNumbers
 });
 
 export const invokeJobFunction = async job => {
@@ -159,7 +162,7 @@ export const failedMessageSender = messageSenderCreator(function(mQuery) {
   // any failure path that stops the status from updating, then users might keep getting
   // texts over and over
   const fiveMinutesAgo = new Date(new Date() - 1000 * 60 * 5);
-  return mQuery.where("created_at", ">", fiveMinutesAgo);
+  return mQuery.where("message.created_at", ">", fiveMinutesAgo);
 }, "SENDING");
 
 export const failedDayMessageSender = messageSenderCreator(function(mQuery) {
@@ -170,7 +173,7 @@ export const failedDayMessageSender = messageSenderCreator(function(mQuery) {
   // any failure path that stops the status from updating, then users might keep getting
   // texts over and over
   const oneDayAgo = new Date(new Date() - 1000 * 60 * 60 * 24);
-  return mQuery.where("created_at", ">", oneDayAgo);
+  return mQuery.where("message.created_at", ">", oneDayAgo);
 }, "SENDING");
 
 export const erroredMessageSender = messageSenderCreator(function(mQuery) {
@@ -182,8 +185,8 @@ export const erroredMessageSender = messageSenderCreator(function(mQuery) {
   // It's important though that runs are never in parallel
   const twentyMinutesAgo = new Date(new Date() - 1000 * 60 * 20);
   return mQuery
-    .where("created_at", ">", twentyMinutesAgo)
-    .where("error_code", "<", 0);
+    .where("message.created_at", ">", twentyMinutesAgo)
+    .where("message.error_code", "<", 0);
 }, "SENDING");
 
 export async function handleIncomingMessages() {

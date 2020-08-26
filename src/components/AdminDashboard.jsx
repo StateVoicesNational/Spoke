@@ -13,7 +13,7 @@ const styles = StyleSheet.create({
     ...theme.layouts.multiColumn.container
   },
   sidebar: {
-    minHeight: "calc(100vh - 56px)"
+    minHeight: "calc(100vh - 65px)"
   },
   content: {
     ...theme.layouts.multiColumn.flexColumn,
@@ -79,11 +79,6 @@ class AdminDashboard extends React.Component {
         role: "ADMIN"
       },
       {
-        name: "Opt-outs",
-        path: "optouts",
-        role: "ADMIN"
-      },
-      {
         name: "Message Review",
         path: "incoming",
         role: "SUPERVOLUNTEER"
@@ -104,10 +99,6 @@ class AdminDashboard extends React.Component {
         role: "OWNER"
       }
     ];
-
-    if (window.EXPERIMENTAL_TAGS === false) {
-      sections = sections.filter(section => section.name !== "Tags");
-    }
 
     if (!this.props.data.organization.phoneInventoryEnabled) {
       sections = sections.filter(section => section.name !== "Phone Numbers");

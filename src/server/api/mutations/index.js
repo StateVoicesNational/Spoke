@@ -5,8 +5,11 @@ import { findNewCampaignContact } from "./findNewCampaignContact";
 import { joinOrganization } from "./joinOrganization";
 import { releaseContacts } from "./releaseContacts";
 import { sendMessage } from "./sendMessage";
+import { startCampaign } from "./startCampaign";
 import { updateContactTags } from "./updateContactTags";
 import { updateQuestionResponses } from "./updateQuestionResponses";
+import { releaseCampaignNumbers } from "./releaseCampaignNumbers";
+import { clearCachedOrgAndExtensionCaches } from "./clearCachedOrgAndExtensionCaches";
 
 export {
   bulkSendMessages,
@@ -16,6 +19,9 @@ export {
   joinOrganization,
   releaseContacts,
   sendMessage,
+  startCampaign,
   updateContactTags,
-  updateQuestionResponses
+  updateQuestionResponses,
+  releaseCampaignNumbers,
+  clearCachedOrgAndExtensionCaches
 };

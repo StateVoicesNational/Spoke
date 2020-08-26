@@ -1,8 +1,8 @@
 // Tasks are lightweight, fire-and-forget functions run in the background.
 // Unlike Jobs, tasks are not tracked in the database.
-// See src/integrations/job-runners/README.md for more details
+// See src/extensions/job-runners/README.md for more details
 import serviceMap from "../server/api/lib/services";
-import * as ActionHandlers from "../integrations/action-handlers";
+import * as ActionHandlers from "../extensions/action-handlers";
 import { cacheableData } from "../server/models";
 
 export const Tasks = Object.freeze({
@@ -78,14 +78,14 @@ const tagUpdateActionHandler = async ({
   await handler.onTagUpdate(tags, contact, campaign, organization, texter);
 };
 
-const startCampaignCache = async ({ campaign, organization }) => {
+const startCampaignCache = async ({ campaign, organization }, contextVars) => {
   // Refresh all the campaign data into cache
   // This should refresh/clear any corruption
   const loadAssignments = cacheableData.campaignContact.updateCampaignAssignmentCache(
     campaign.id
   );
   const loadContacts = cacheableData.campaignContact
-    .loadMany(campaign, organization, {})
+    .loadMany(campaign, organization, contextVars || {})
     .then(() => {
       // eslint-disable-next-line no-console
       console.log("FINISHED contact loadMany", campaign.id);

@@ -21,6 +21,7 @@ import CampaignInteractionStepsForm from "../components/CampaignInteractionSteps
 import CampaignCannedResponsesForm from "../components/CampaignCannedResponsesForm";
 import CampaignDynamicAssignmentForm from "../components/CampaignDynamicAssignmentForm";
 import CampaignTexterUIForm from "../components/CampaignTexterUIForm";
+import CampaignPhoneNumbersForm from "../components/CampaignPhoneNumbersForm";
 import { dataTest, camelCase } from "../lib/attributes";
 import CampaignTextingHoursForm from "../components/CampaignTextingHoursForm";
 
@@ -34,6 +35,8 @@ const campaignInfoFragment = `
   dueBy
   joinToken
   batchSize
+  batchPolicies
+  responseWindow
   isStarted
   isArchived
   contactsCount
@@ -77,6 +80,7 @@ const campaignInfoFragment = `
     id
     title
     text
+    tagIds
   }
   ingestMethodsAvailable {
     name
@@ -101,6 +105,10 @@ const campaignInfoFragment = `
     status
     resultMessage
   }
+  inventoryPhoneNumberCounts {
+    areaCode
+    count
+  }
 `;
 
 export const campaignDataQuery = gql`query getCampaign($campaignId: String!) {
@@ -113,8 +121,15 @@ export class AdminCampaignEdit extends React.Component {
   constructor(props) {
     super(props);
     const isNew = props.location.query.new;
+    const section = props.location.query.section;
+    console.log("SECTION", section);
+    const expandedSection = section
+      ? this.sections().findIndex(s => s.title === section)
+      : isNew
+      ? 0
+      : null;
     this.state = {
-      expandedSection: isNew ? 0 : null,
+      expandedSection,
       campaignFormValues: props.campaignData.campaign,
       startingCampaign: false,
       isPolling: false
@@ -263,6 +278,7 @@ export class AdminCampaignEdit extends React.Component {
     if (!section.doNotSaveAfterSubmit) {
       await this.handleSave();
     }
+
     this.setState(
       {
         expandedSection:
@@ -276,6 +292,10 @@ export class AdminCampaignEdit extends React.Component {
         // that componentWillReceiveProps does not ignore server results for
         // the section we just saved.
         this.props.campaignData.refetch();
+        // hack to update phone counts, probably should make phone reservation its own mutation
+        if (this.props.organizationData.campaignPhoneNumbersEnabled) {
+          this.props.organizationData.refetch();
+        }
       }
     );
   };
@@ -441,20 +461,27 @@ export class AdminCampaignEdit extends React.Component {
         expandAfterCampaignStarts: true,
         expandableBySuperVolunteers: true,
         extraProps: {
-          customFields: this.props.campaignData.campaign.customFields
+          customFields: this.props.campaignData.campaign.customFields,
+          organizationId: this.props.organizationData.organization.id
         }
       },
       {
         title: "Dynamic Assignment",
         content: CampaignDynamicAssignmentForm,
-        keys: ["batchSize", "useDynamicAssignment"],
+        keys: [
+          "batchSize",
+          "useDynamicAssignment",
+          "responseWindow",
+          "batchPolicies"
+        ],
         checkCompleted: () => true,
         blocksStarting: false,
         expandAfterCampaignStarts: true,
         expandableBySuperVolunteers: true,
         extraProps: {
           joinToken: this.props.campaignData.campaign.joinToken,
-          campaignId: this.props.campaignData.campaign.id
+          campaignId: this.props.campaignData.campaign.id,
+          organization: this.props.organizationData.organization
         }
       },
       {
@@ -494,6 +521,39 @@ export class AdminCampaignEdit extends React.Component {
         blocksStarting: false,
         expandAfterCampaignStarts: false,
         expandableBySuperVolunteers: false
+      });
+    }
+    if (this.props.organizationData.organization.campaignPhoneNumbersEnabled) {
+      const contactsPerPhoneNumber = window.CONTACTS_PER_PHONE_NUMBER;
+      finalSections.push({
+        title: "Phone Numbers",
+        content: CampaignPhoneNumbersForm,
+        keys: ["inventoryPhoneNumberCounts"],
+        checkCompleted: () => {
+          const {
+            contactsCount,
+            inventoryPhoneNumberCounts
+          } = this.props.campaignData.campaign;
+          const numbersNeeded = Math.ceil(
+            contactsCount / contactsPerPhoneNumber
+          );
+          const numbersReserved = (inventoryPhoneNumberCounts || []).reduce(
+            (acc, entry) => acc + entry.count,
+            0
+          );
+          return numbersReserved >= numbersNeeded;
+        },
+        blocksStarting: true,
+        expandAfterCampaignStarts: false,
+        expandableBySuperVolunteers: false,
+        extraProps: {
+          contactsPerPhoneNumber: contactsPerPhoneNumber,
+          isStarted: this.props.campaignData.campaign.isStarted,
+          availablePhoneNumbers: this.props.organizationData.organization.phoneNumberCounts.filter(
+            c => c.availableCount
+          ),
+          contactsCount: this.state.campaignFormValues.contactsCount
+        }
       });
     }
     if (window.CAN_GOOGLE_IMPORT) {
@@ -586,6 +646,10 @@ export class AdminCampaignEdit extends React.Component {
   }
 
   renderHeader() {
+    let startJob = this.props.campaignData.campaign.pendingJobs.filter(
+      job => job.jobType === "start_campaign_with_phone_numbers"
+    )[0];
+    const isStarting = startJob || this.state.startingCampaign;
     const notStarting = this.props.campaignData.campaign.isStarted ? (
       <div
         {...dataTest("campaignIsStarted")}
@@ -612,7 +676,7 @@ export class AdminCampaignEdit extends React.Component {
             fontSize: 16
           }}
         >
-          {this.state.startingCampaign ? (
+          {isStarting ? (
             <div
               style={{
                 color: theme.colors.gray,
@@ -620,11 +684,12 @@ export class AdminCampaignEdit extends React.Component {
               }}
             >
               <CircularProgress
-                size={0.5}
                 style={{
                   verticalAlign: "middle",
-                  display: "inline-block"
+                  display: "inline-block",
+                  marginRight: 10
                 }}
+                size={25}
               />
               Starting your campaign...
             </div>
@@ -643,6 +708,7 @@ export class AdminCampaignEdit extends React.Component {
     }
     const orgConfigured = this.props.organizationData.organization
       .fullyConfigured;
+    const { isArchived } = this.props.campaignData.campaign;
     const settingsLink = `/admin/${this.props.organizationData.organization.id}/settings`;
     let isCompleted = this.props.campaignData.campaign.pendingJobs.length === 0;
     this.sections().forEach(section => {
@@ -679,7 +745,7 @@ export class AdminCampaignEdit extends React.Component {
           {this.renderCurrentEditors()}
         </div>
         <div>
-          {this.props.campaignData.campaign.isArchived ? (
+          {isArchived ? (
             <RaisedButton
               label="Unarchive"
               onTouchTap={async () =>
@@ -702,7 +768,7 @@ export class AdminCampaignEdit extends React.Component {
             {...dataTest("startCampaign")}
             primary
             label="Start This Campaign!"
-            disabled={!isCompleted || !orgConfigured}
+            disabled={isArchived || !isCompleted || !orgConfigured}
             onTouchTap={async () => {
               if (!isCompleted || !orgConfigured) {
                 return;
@@ -853,6 +919,8 @@ const queries = {
           id
           uuid
           fullyConfigured
+          campaignPhoneNumbersEnabled
+          batchPolicies
           texters: people(role: "ANY") {
             id
             roles(organizationId: $organizationId)
@@ -868,6 +936,11 @@ const queries = {
               name
               details
             }
+          }
+          phoneNumberCounts {
+            areaCode
+            availableCount
+            allocatedCount
           }
         }
       }
