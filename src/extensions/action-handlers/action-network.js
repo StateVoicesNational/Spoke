@@ -74,19 +74,29 @@ const handlers = {
       }
     };
   },
-  tag: (email, actionData) => {}
+  tag: (email, actionData) => {
+    const tag = actionData.tag;
+    if (!tag) {
+      throw new Error("Missing tag");
+    }
+
+    return {
+      path: "people",
+      body: {
+        person: { email_addresses: [{ address: `${email}` }] },
+        add_tags: [tag]
+      }
+    };
+  }
 };
 
 // What happens when a texter saves the answer that triggers the action
 // This is presumably the meat of the action
-export async function processAction(
-  unusedQuestionResponse,
+export async function processAction({
   interactionStep,
-  unusedCampaignContactId,
   contact,
-  unusedCampaign,
   organization
-) {
+}) {
   try {
     const email = JSON.parse(contact.custom_fields || "{}").email;
     if (!email) {
