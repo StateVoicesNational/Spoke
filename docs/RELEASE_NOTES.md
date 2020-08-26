@@ -1,5 +1,40 @@
 # Release Notes
 
+## v8.1
+
+_August 2020:_ Version 8.1
+
+### New Features/Improvements
+- **Tagging:** The tags feature is no longer experimental! This release includes a few adjustments to tags that finish the tagging story:
+  - **Resolve tags:** tags can now be resolved in message review by clicking the 'x' in their upper right corner.
+  - **Canned response tagging:** you can apply 1 or more tags to a canned response which will automatically apply that tags when a texter uses that canned response.
+- **Remove the Opt Outs sidebar menu:** this menu did not scale well and wasn't being used by many orgs. All it did was print a long list of all of the phone numbers that had opted out across the organization. You can easily query the database to get that same list of numbers.
+- **Addressable message review queries:** message review now has "addressable urls" meaning that the url is changed whenever you make a query. This now allows you to directly link to a specific query. Because of this, there are now links in the texter stats section of the campaign page that link to a filter for that specific texter and a new "convos" button that takes you directly to a view that filters down to only messages within the campaign.
+- UI button in the settings page for clearing the organization and extension cache. If an admin uses a SQL client to modify `organization.features` or metadata changes in an external resource, such as NGP VAN (the use cases in VAN is that a saved list was added or survey questions or activists code were modified; Spoke's VAN integration won't go back to VAN through the API if those metadata are present in the cache)
+- Allow search terms to be _excluded_ from the campaign search.  If a search starts with "-", it filters out campaigns that match the rest of the search term.
+- Foundation for a documentation microsite to help our docs stay readable and accessible to devs and admin
+- New [Freshworks Freshdesk](https://freshdesk.com/) texter-sidebox for anyone using Freshdesk as a help hub for texters! Enable it by adding `freshworks-widget` to the texter-sideboxes env var list
+- Add support for Twilio error 21408 which happens when you try to send a message to a phone
+number outside of your "Geo-Permissions" settings
+- More clarity to the Redis docs
+- Receive Twilio messages from behind a proxy using TWILIO_MESSAGE_CALLBACK_URL
+- Dynamic Assignment Batch strategy can be chosen per-campaign
+- You can now search for error codes in message review!
+- [Documentation now exists for all of the extensions!](HOWTO-extend-spoke.md)
+
+### Bug Fixes
+- Copy all relevant campaign properties when copying a campaign (the whole campaign is now copied over and the interaction steps are copied in the right order)
+- Show a pop up when the copy campaign button is clicked to let you know it was copied
+- fix message sending where additional context info needs to be sent for service.sendMessage than previously -- e.g. for TWILIO auth, etc
+- Small phone inventory improvements
+- Small message aesthetic touch ups
+- Remove the scrollbars in every cell in the admin and people pages
+- Ensure that interactions are copied deterministically
+
+### Appreciations
+
+Thanks to [inorvig](https://github/inorvig), [oburbank](https://github/oburbank), [aschneit](https://github/aschneit), [jeffm2001](https://github/jeffm2001), [lperson](https://github/lperson), [ibrand](https://github/ibrand), [bdatkins](https://github/bdatkins), [JeremyParker](https://github/JeremyParker), [tekkamanendless ](https://github/tekkamanendless), [sharonsolomon](https://github/sharonsolomon), [nke5ka](https://github/nke5ka) and [schuyler1d](https://github/schuyler1d)
+
 ## v8.0
 
 _August 2020:_ Version 8.0
@@ -24,7 +59,7 @@ This is a major release and therefore requires a schema change. See the deploy s
 - **_Experimental_ Phone number management for campaigns**: A much requested feature for scaling past the 400 phone numbers limit.
   - turn this on with `EXPERIMENTAL_CAMPAIGN_NUMBERS`
 - **_Experimental_ Release Texts**: Dynamic Assignment will also include a way for texters to release texts! That way when a texter is done for the day they can release texts without admin needing to go in and reassign them.
-  - Toggle this on and off in the settings menu
+  - Toggle this on and off in the organization settings menu
 - **texter-sidebox extension improvements**: (SummaryComponent, Empty context)
 - **new message-handler `to-ascii`**: converts smart quotes and special dash characters to ascii. That way unicode wont surprisingly enlarge the message size.
 - VAN action handler improvements
