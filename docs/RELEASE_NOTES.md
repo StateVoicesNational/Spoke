@@ -18,6 +18,9 @@ _August 2020:_ Version 8.1
 number outside of your "Geo-Permissions" settings
 - More clarity to the Redis docs
 - Receive Twilio messages from behind a proxy using TWILIO_MESSAGE_CALLBACK_URL
+- Dynamic Assignment Batch strategy can be chosen per-campaign
+- You can now search for error codes in message review!
+- [Documentation now exists for all of the extensions!](HOWTO-extend-spoke.md)
 
 ### Bug Fixes
 - Copy all relevant campaign properties when copying a campaign (the whole campaign is now copied over and the interaction steps are copied in the right order)
