@@ -36,6 +36,7 @@ class TexterTodoList extends React.Component {
               key={assignment.id}
               assignment={assignment}
               texter={this.props.data.user}
+              refreshData={() => this.props.data.refetch()}
             />
           );
         }
@@ -125,6 +126,7 @@ export const dataQuery = gql`
       terms
       profileComplete(organizationId: $organizationId)
       cacheable
+      roles(organizationId: $organizationId)
       todos(organizationId: $organizationId) {
         id
         hasUnassignedContactsForTexter

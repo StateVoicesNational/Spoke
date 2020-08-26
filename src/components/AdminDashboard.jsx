@@ -100,10 +100,6 @@ class AdminDashboard extends React.Component {
       }
     ];
 
-    if (window.EXPERIMENTAL_TAGS === false) {
-      sections = sections.filter(section => section.name !== "Tags");
-    }
-
     if (!this.props.data.organization.phoneInventoryEnabled) {
       sections = sections.filter(section => section.name !== "Phone Numbers");
     }
