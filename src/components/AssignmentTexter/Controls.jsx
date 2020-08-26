@@ -19,7 +19,9 @@ import yup from "yup";
 import theme from "../../styles/theme";
 import Form from "react-formal";
 import Popover from "material-ui/Popover";
+import SearchBar from "material-ui-search-bar";
 import { messageListStyles, inlineStyles, flexStyles } from "./StyleControls";
+import { searchFor } from "../../lib/search-helpers";
 
 import { renderSidebox } from "../../extensions/texter-sideboxes/components";
 
@@ -48,8 +50,17 @@ export class AssignmentTexterContactControls extends React.Component {
       questionResponses,
       props.campaign.interactionSteps
     );
+
+    let currentInteractionStep = null;
+    if (availableSteps.length > 0) {
+      currentInteractionStep = availableSteps[availableSteps.length - 1];
+      currentInteractionStep.question.filteredAnswerOptions =
+        currentInteractionStep.question.answerOptions;
+    }
+
     this.state = {
       questionResponses,
+      filteredCannedResponses: props.campaign.cannedResponses,
       optOutMessageText: props.campaign.organization.optOutMessage,
       responsePopoverOpen: false,
       answerPopoverOpen: false,
@@ -60,12 +71,9 @@ export class AssignmentTexterContactControls extends React.Component {
       optOutDialogOpen: false,
       currentShortcutSpace: 0,
       messageFocus: false,
-      availableSteps: availableSteps,
+      availableSteps,
       messageReadOnly: false,
-      currentInteractionStep:
-        availableSteps.length > 0
-          ? availableSteps[availableSteps.length - 1]
-          : null
+      currentInteractionStep
     };
   }
 
@@ -79,13 +87,6 @@ export class AssignmentTexterContactControls extends React.Component {
     document.body.addEventListener("keypress", this.blockWithCtrl);
     window.addEventListener("resize", this.onResize);
     window.addEventListener("orientationchange", this.onResize);
-  }
-
-  componentWillUnmount() {
-    document.body.removeEventListener("keyup", this.onKeyUp);
-    document.body.removeEventListener("keypress", this.blockWithCtrl);
-    window.removeEventListener("resize", this.onResize);
-    window.removeEventListener("orientationchange", this.onResize);
   }
 
   componentWillUpdate(nextProps, nextState) {
@@ -102,6 +103,13 @@ export class AssignmentTexterContactControls extends React.Component {
     newPopups.forEach(sb => {
       nextState.sideboxOpens[sb] = (nextState.sideboxOpens[sb] || 0) + 1;
     });
+  }
+
+  componentWillUnmount() {
+    document.body.removeEventListener("keyup", this.onKeyUp);
+    document.body.removeEventListener("keypress", this.blockWithCtrl);
+    window.removeEventListener("resize", this.onResize);
+    window.removeEventListener("orientationchange", this.onResize);
   }
 
   getStartingMessageText() {
@@ -226,6 +234,30 @@ export class AssignmentTexterContactControls extends React.Component {
       this.refs.form.submit();
       this.setState({ doneFirstClick: false });
     }
+  };
+
+  handleSearchChange = searchValue => {
+    // filter answerOptions for this step's question
+    const answerOptions = this.state.currentInteractionStep.question
+      .answerOptions;
+    const keysToSearch = ["value", "nextInteractionStep.script"];
+    const filteredAnswerOptions = searchFor(
+      searchValue,
+      answerOptions,
+      keysToSearch
+    );
+    this.state.currentInteractionStep.question.filteredAnswerOptions = filteredAnswerOptions;
+
+    const filteredCannedResponses = searchFor(
+      searchValue,
+      this.props.campaign.cannedResponses,
+      ["title", "text"]
+    );
+
+    this.setState({
+      currentInteractionStep: this.state.currentInteractionStep,
+      filteredCannedResponses
+    });
   };
 
   handleCannedResponseChange = cannedResponseScript => {
@@ -428,6 +460,12 @@ export class AssignmentTexterContactControls extends React.Component {
         targetOrigin={{ horizontal: "left", vertical: "bottom" }}
         onRequestClose={this.handleCloseAnswerPopover}
       >
+        <SearchBar
+          onRequestSearch={this.handleSearchChange}
+          onChange={this.handleSearchChange}
+          value={""}
+          hintText={"Search replies..."}
+        />
         <Survey
           contact={contact}
           interactionSteps={availableInteractionSteps}
@@ -438,7 +476,7 @@ export class AssignmentTexterContactControls extends React.Component {
           onRequestClose={this.handleCloseAnswerPopover}
         />
         <ScriptList
-          scripts={campaign.cannedResponses}
+          scripts={this.state.filteredCannedResponses}
           showAddScriptButton={false}
           customFields={campaign.customFields}
           currentCannedResponseScript={cannedResponseScript}
