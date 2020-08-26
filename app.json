@@ -184,13 +184,21 @@
     }
   },
   "addons": [
-    "heroku-postgresql:hobby-dev",
+    "heroku-postgresql:standard-0",
     {
-      "plan": "heroku-redis:hobby-dev",
+      "plan": "heroku-postgresql:standard-0",
       "options": {
         "maxmemory-policy": "volatile-lru"
       }
     },
-    "mailgun:starter"
-  ]
+    "mailgun:starter",
+    "heroku-redis:hobby-dev",
+    "bucketeer:hobbyist"
+  ],
+  "formation": {
+    "web": {
+      "quantity": 1,
+      "size": "standard-1x"
+    }
+  }
 }
