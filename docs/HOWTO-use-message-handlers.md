@@ -68,7 +68,7 @@ The best way to make a new message handler is something like this in the codebas
 
 ```
 cd src/extensions/message-handlers
-cp -rp initaltext-guard <NEW_STRATEGY_NAME>
+cp -rp initaltext-guard <NEW_NAME>
 ```
 
 Then edit index.js in that directory.
