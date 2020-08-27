@@ -12,14 +12,25 @@ We will be upgrading this weekend and the great thing about Spoke is it scales "
 
 But because of the timing it was ambiguous whether we 'just' hit scaling issues yesterday or whether there were bugs in Spoke 8.1. @schuyler1d spent the day tracking everything that went wrong and determined that it was scaling. This prompted some urgent improvements to make our queries more efficient with increased focus on more improvements so the application can do its part in keeping scaling costs as low as possible. But these last set are pretty impactful -- even without upgrading our system with almost the same texting volume as yesterday we are seeing *half the database load.*
 
-Changes:
+### 9.0 Changes
 
-- This does include a schema change on the opt_out table (please see instructions for migrating)
+- Schema change on the opt_out table (please see instructions for migrating)
 - Drastically improves the query efficiency for the Texter Todos page
 - Removes some liability of thrashing with auto-optout updating.
 
-**Appreciations**
-Big thanks to quick and impactful work from [schuyler1d](https://github/schuyler1d) to get 8.1 to a better more stable 9.0!
+## 8.1 Highlights
+8.1 still makes up the bulk of 9.0's featureset, so here's what to look out for and check out the [8.1 section](RELEASE_NOTES.md#v81) for the full list of awesome changes
+
+- **Tagging:** The tags feature is no longer experimental! This release includes a few adjustments to tags that finish the tagging story:
+  - **Resolve tags:** tags can now be resolved in message review by clicking the 'x' in their upper right corner.
+  - **Canned response tagging:** you can apply 1 or more tags to a canned response which will automatically apply that tags when a texter uses that canned response.
+- **Addressable message review queries:** message review now has "addressable urls" meaning that the url is changed whenever you make a query. This now allows you to directly link to a specific query. Because of this, there are now links in the texter stats section of the campaign page that link to a filter for that specific texter and a new "convos" button that takes you directly to a view that filters down to only messages within the campaign.
+- **Allow search terms to be _excluded_ from the campaign search:**  If a search starts with "-", it filters out campaigns that match the rest of the search term.
+- **Documentation microsite:** our docs now exist on an [external microsite](https://moveonorg.github.io/Spoke) to help our docs
+- [Documentation now exists for all of the extensions!](HOWTO-extend-spoke.md)
+
+### Appreciations
+Thanks for quick and impactful work from [schuyler1d](https://github/schuyler1d) to get 8.1 to a better more stable 9.0! Thank you so much to the **11** community contributors that made all the features and bug fixes possible: [inorvig](https://github/inorvig), [oburbank](https://github/oburbank), [aschneit](https://github/aschneit), [jeffm2001](https://github/jeffm2001), [lperson](https://github/lperson), [ibrand](https://github/ibrand), [bdatkins](https://github/bdatkins), [JeremyParker](https://github/JeremyParker), [tekkamanendless ](https://github/tekkamanendless), [sharonsolomon](https://github/sharonsolomon), [nke5ka](https://github/nke5ka)
 
 ## v8.1
 
