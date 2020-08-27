@@ -1,4 +1,4 @@
-import { getFeatures } from "./lib/config";
+import { getConfig, getFeatures } from "./lib/config";
 import { mapFieldsToModel } from "./lib/utils";
 import { rolesEqualOrLess } from "../../lib/permissions";
 import { r, User, cacheableData } from "../models";
@@ -246,16 +246,29 @@ export const resolvers = {
         ? rolesEqualOrLess(user.role)
         : await cacheableData.user.orgRoles(user.id, organizationId);
     },
-    todos: async (user, { organizationId }) =>
-      r
-        .table("assignment")
-        .getAll(user.id, { index: "assignment.user_id" })
-        .eqJoin("campaign_id", r.table("campaign"))
-        .filter({
+    todos: async (user, { organizationId }) => {
+      const fields = [
+        "assignment.id",
+        "assignment.campaign_id",
+        "assignment.user_id",
+        "assignment.max_contacts",
+        "assignment.created_at"
+      ];
+      let query = r
+        .knex("assignment")
+        .join("campaign", "assignment.campaign_id", "campaign.id")
+        .where({
           is_started: true,
           organization_id: organizationId,
           is_archived: false
-        })("left"),
+        })
+        .where("assignment.user_id", user.id)
+        .select(fields);
+      if (getConfig("FILTER_DUEBY", null, { truthy: 1 })) {
+        query = query.where("campaign.due_by", ">", new Date());
+      }
+      return await query;
+    },
     profileComplete: async (user, { organizationId }, { loaders }) => {
       const org = await loaders.organization.load(organizationId);
       // @todo: standardize on escaped or not once there's an interface.

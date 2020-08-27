@@ -123,12 +123,12 @@ const optOutCache = {
       }
     }
     // database
-    await new OptOut({
+    await r.knex("opt_out").insert({
       assignment_id: assignmentId,
       organization_id: organizationId,
       reason_code: reason,
       cell
-    }).save();
+    });
 
     // update all organization/instance's active campaigns as well
     const updateOrgOrInstanceOptOuts = !sharingOptOuts

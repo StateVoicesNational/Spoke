@@ -414,6 +414,21 @@ const campaignContactCache = {
     return false;
   },
   getMessageStatus,
+  updateCacheForOptOut: async contact => {
+    const newContact = {
+      ...contact,
+      is_opted_out: true
+    };
+    if (r.redis && CONTACT_CACHE_ENABLED) {
+      const contactKey = cacheKey(contact.id);
+      await r.redis
+        .multi()
+        .set(contactKey, JSON.stringify(newContact))
+        .expire(contactKey, 43200)
+        .execAsync();
+    }
+    return newContact;
+  },
   updateAssignmentCache: async (
     contactId,
     newAssignmentId,

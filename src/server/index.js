@@ -208,13 +208,16 @@ app.use(
     formatError: error => {
       log.error({
         userId: request.user && request.user.id,
+        code:
+          (error && error.originalError && error.originalError.code) ||
+          "INTERNAL_SERVER_ERROR",
         error,
         msg: "GraphQL error"
       });
       telemetry
         .formatRequestError(error, request)
         // drop if this fails
-        .catch()
+        .catch(() => {})
         .then(() => {});
       return error;
     }

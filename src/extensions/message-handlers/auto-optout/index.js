@@ -59,12 +59,14 @@ export const postMessageSave = async ({ message, organization }) => {
     });
 
     if (matches.length) {
-      console.log("auto-optout MATCH", matches);
+      console.log("auto-optout MATCH", message.campaign_contact_id, matches);
       const reason = matches[0].reason || "auto_optout";
-      // OPTOUT
+      // FUTURE: if we change assignment_id as NOT NULLable,
+      // then we can skip this load
       const contact = await cacheableData.campaignContact.load(
         message.campaign_contact_id
       );
+      // OPTOUT
       await cacheableData.optOut.save({
         cell: message.contact_number,
         campaignContactId: message.campaign_contact_id,
