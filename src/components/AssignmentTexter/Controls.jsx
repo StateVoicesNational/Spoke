@@ -346,10 +346,16 @@ export class AssignmentTexterContactControls extends React.Component {
 
   handleOpenAnswerPopover = event => {
     event.preventDefault();
-    this.setState({
+    const newState = {
       answerPopoverAnchorEl: event.currentTarget,
-      answerPopoverOpen: true
-    });
+      answerPopoverOpen: true,
+      filteredCannedResponses: this.props.campaign.cannedResponses
+    };
+    if (this.state.currentInteractionStep) {
+      this.state.currentInteractionStep.question.filteredAnswerOptions = this.state.currentInteractionStep.question.answerOptions;
+      newState.currentInteractionStep = this.state.currentInteractionStep;
+    }
+    this.setState(newState);
   };
 
   handleCloseAnswerPopover = () => {
