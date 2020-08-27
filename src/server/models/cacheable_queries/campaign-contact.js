@@ -244,6 +244,9 @@ const campaignContactCache = {
       // which seems slightly burdensome per-contact
       // FUTURE: Maybe we will revisit this after we see performance data
     }
+    if (opts && opts.cacheOnly) {
+      return null;
+    }
     return await CampaignContact.get(id);
   },
   loadMany: async (
