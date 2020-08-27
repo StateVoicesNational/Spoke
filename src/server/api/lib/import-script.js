@@ -340,7 +340,7 @@ const makeCannedResponsesList = cannedResponsesParagraphs => {
       if (textParagraph.isParagraphItalic) {
         // Italic = tag.
         const tagId = textParagraph.text.match(/^\d*\b/);
-        if (!!tagId[0]) {
+        if (tagId && !!tagId[0]) {
           cannedResponse.tagIds.push(tagId[0])
         }
       }
