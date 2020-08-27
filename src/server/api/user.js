@@ -246,7 +246,7 @@ export const resolvers = {
         ? rolesEqualOrLess(user.role)
         : await cacheableData.user.orgRoles(user.id, organizationId);
     },
-    todos: async (user, { organizationId }) => {
+    todos: async (user, { organizationId, withOutCounts }) => {
       const fields = [
         "assignment.id",
         "assignment.campaign_id",
@@ -262,12 +262,53 @@ export const resolvers = {
           organization_id: organizationId,
           is_archived: false
         })
-        .where("assignment.user_id", user.id)
-        .select(fields);
+        .where("assignment.user_id", user.id);
+
       if (getConfig("FILTER_DUEBY", null, { truthy: 1 })) {
         query = query.where("campaign.due_by", ">", new Date());
       }
-      return await query;
+      if (withOutCounts) {
+        return await query.select(fields);
+      } else {
+        query
+          .leftJoin(
+            "campaign_contact",
+            "campaign_contact.assignment_id",
+            "assignment.id"
+          )
+          .groupBy(
+            ...fields,
+            "campaign_contact.timezone_offset",
+            "campaign_contact.message_status"
+          )
+          .where(function() {
+            // we need to allow null for empty assignments like dynamic assignment
+            this.where("campaign_contact.is_opted_out", false).orWhereNull(
+              "campaign_contact.is_opted_out"
+            );
+          })
+          .select(
+            ...fields,
+            "campaign_contact.timezone_offset",
+            "campaign_contact.message_status",
+            r.knex.raw("COUNT(*) as tz_status_count")
+          );
+        const result = await query;
+        const assignments = {};
+        result.forEach(assn => {
+          if (!assignments[assn.id]) {
+            assignments[assn.id] = { ...assn, tzStatusCounts: {} };
+          }
+          if (!assignments[assn.id].tzStatusCounts[assn.message_status]) {
+            assignments[assn.id].tzStatusCounts[assn.message_status] = [];
+          }
+          assignments[assn.id].tzStatusCounts[assn.message_status].push({
+            tz: assn.timezone_offset,
+            count: assn.tz_status_count
+          });
+        });
+        return Object.values(assignments);
+      }
     },
     profileComplete: async (user, { organizationId }, { loaders }) => {
       const org = await loaders.organization.load(organizationId);
