@@ -7,7 +7,7 @@
   - [Best practices on conformance and messaging](REFERENCE-best-practices-conformance-messaging.md)
   - [Texter Shortcuts and when they are displayed](REFERENCE-shortcut-rules.md)
   - [Sample SQL queries for tracking texter activity](REFERENCE_TEXTER_ACTIVITY_QUERIES.md)
-  - [Configuring texting hours enforcement](HOWTO_TEXTING-HOURS-ENFORCEMENT.md)
+  - [Configuring texting hours enforcement](HOWTO_TEXTING_HOURS_ENFORCEMENT.md)
   - [OUTDATED: How to buy numbers in Twilio](HOWTO_BUY_NUMBERS_IN_TWILIO.md)
   - [How to configure bulk sending outside the USA](HOWTO-use_bulk_sending_outside_the_USA.md)
 
