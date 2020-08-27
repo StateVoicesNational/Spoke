@@ -112,6 +112,7 @@ const optOutCache = {
     campaign,
     assignmentId,
     reason,
+    noContactUpdate,
     noReply
   }) => {
     const organizationId = campaign.organization_id;
@@ -129,6 +130,17 @@ const optOutCache = {
       reason_code: reason,
       cell
     });
+
+    if (noContactUpdate && r.redis) {
+      // this is a risky feature which will not update campaign_contacts
+      // Only use this when you are confident that at least the campaign's
+      // campaign_contact record will update.
+      // The first use-case was for auto-optout, where we update the contact
+      // during message save
+      // We only allow it when the cache is set, so other campaigns are still
+      // (mostly) assured to get the opt-out
+      return;
+    }
 
     // update all organization/instance's active campaigns as well
     const updateOrgOrInstanceOptOuts = !sharingOptOuts
