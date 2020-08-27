@@ -88,6 +88,7 @@ export const errorDescriptions = {
   "-3": "Spoke failed to send the message and will try again.",
   "-4": "Spoke failed to send the message and will try again.",
   "-5": "Spoke failed to send the message and will NOT try again.",
+  "-133": "Auto-optout (no error)",
   "-166":
     "Internal: Message blocked due to text match trigger (profanity-tagger)",
   "-167": "Internal: Initial message altered (initialtext-guard)"

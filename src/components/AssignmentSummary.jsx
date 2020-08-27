@@ -128,7 +128,6 @@ export class AssignmentSummary extends Component {
       id: campaignId,
       title,
       description,
-      dueBy,
       primaryColor,
       logoImageUrl,
       introHtml,
@@ -154,7 +153,7 @@ export class AssignmentSummary extends Component {
           <CardTitle
             title={title}
             titleStyle={{ color: cardTitleTextColor }}
-            subtitle={`${description} - ${moment(dueBy).format("MMM D YYYY")}`}
+            subtitle={description}
             subtitleStyle={{ color: cardTitleTextColor }}
             style={{
               backgroundColor: primaryColor
