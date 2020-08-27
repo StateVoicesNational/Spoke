@@ -7,8 +7,32 @@ Spoke is an open source text-distribution tool for organizations to mobilize sup
 
 Spoke was created by Saikat Chakrabarti and Sheena Pakanati, and is now maintained by MoveOn.org.
 
-The latest version is [8.1](https://github.com/MoveOnOrg/Spoke/tree/v8.1) (see [release notes](https://github.com/MoveOnOrg/Spoke/blob/main/docs/RELEASE_NOTES.md#v81))
+The latest version is [9.0](https://github.com/MoveOnOrg/Spoke/tree/v9.0) (see [release notes](https://github.com/MoveOnOrg/Spoke/blob/main/docs/RELEASE_NOTES.md#v90))
 
+
+
+Use the Heroku Button to deploy a version of Spoke suitable for testing. This won't cost any money and will not support production usage. It's a great way to practice deploying Spoke or see it in action.
+<a href="https://heroku.com/deploy?template=https://github.com/MoveOnOrg/Spoke/tree/v9.0">
+  <img src="https://www.herokucdn.com/deploy/button.svg" alt="Deploy">
+</a>
+
+Or click [this link to deploy with a prod infrastructure set up to get up and running!](https://heroku.com/deploy?template=https://github.com/MoveOnOrg/Spoke/tree/heroku-button-paid)
+
+**NOTE:** Deploying with prod infrastructure will cost $75 ($25 dyno + $50 postgres) a month and should be suitable for production level usage for most organizations.
+
+Follow up instructions located [here](https://github.com/MoveOnOrg/Spoke/blob/main/docs/HOWTO_HEROKU_DEPLOY.md).
+
+Please let us know if you deployed by filling out this form [here](https://act.moveon.org/survey/tech/)
+
+## Getting started
+### Downloading
+
+1. Install the Node version listed in `.nvmrc`. [NVM](https://github.com/creationix/nvm) is one way to do this (from the spoke directory):
+   ```
+   nvm install
+   nvm use
+   ```
+2. Install yarn.
 
 
 ## Get Started
