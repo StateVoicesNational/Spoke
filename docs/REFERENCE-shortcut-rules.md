@@ -1,15 +1,16 @@
 # Texter ShortCuts and when they are displayed
 
+testing...
 
 On the texter conversation screen, a texter may see "shortcut buttons" for some question responses and canned replies (aka other responses).
 
 Currently there is no Admin UI to choose the shortcuts or enable/disable them or preview their visibility. An intuitive Admin UI for specifying and labeling the buttons would be a welcome future contribution.
 
-In the meantime, you can reference a *set of rules* for when the shortcuts will show up automatically and then modify your scripted-responses to get them to appear as you wish.
+In the meantime, you can reference a /set of rules/ for when the shortcuts will show up automatically and then modify your scripted-responses to get them to appear as you wish.
 
 These rules try to balance two factors:
-	1. horizontal screen real-estate limits on common devices
-	2. avoiding confusion for the texter who wouldn’t understand why they don’t see all the buttons on a small screen.
+1. horizontal screen real-estate limits on common devices
+2. avoiding confusion for the texter who wouldn’t understand why they don’t see all the buttons on a small screen.
 
 ## Terminology
 
@@ -50,9 +51,9 @@ It doesn't include the "Who are you?" because the buttons included add up to 30 
 	* Canned Response Titles: "-Who are you?", +I don't understand", "+Wrong Number"
 	* Resulting Shortcuts: [Yes] [No] [I don't understand]
 	* Reasoning: "Yes: I voted" was shortened to "Yes" because there is punctuation right after the first word.
-"-Yes but I Moved" was excluded because it starts with a " - " sign.  
+"-Yes but I Moved" was excluded because it starts with a " - " sign.
 All the non-prefixed Question Responses fit, so we add Canned Responses in order.
-The first is excluded because it starts with "-".  
+The first is excluded because it starts with "-".
 "+I don't understand" would normally not be included because it has more than 12 characters, but it starts with a "+" so we include it anyway.
 "+Wrong Number" would be included if there was space but there is not.
 So, the shortcuts are just the three: [Yes] [No] [I don’t understand].
