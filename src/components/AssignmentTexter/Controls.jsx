@@ -344,11 +344,13 @@ export class AssignmentTexterContactControls extends React.Component {
 
   handleMessageFormChange = ({ messageText }) => this.setState({ messageText });
 
-  handleOpenAnswerPopover = event => {
+  handleOpenAnswerResponsePopover = event => {
     event.preventDefault();
     const newState = {
       answerPopoverAnchorEl: event.currentTarget,
       answerPopoverOpen: true,
+      responsePopoverAnchorEl: event.currentTarget,
+      responsePopoverOpen: true,
       filteredCannedResponses: this.props.campaign.cannedResponses
     };
     if (this.state.currentInteractionStep) {
@@ -358,21 +360,11 @@ export class AssignmentTexterContactControls extends React.Component {
     this.setState(newState);
   };
 
-  handleCloseAnswerPopover = () => {
+  handleCloseAnswerResponsePopover = () => {
     this.setState({
       answerPopoverOpen: false
     });
-  };
 
-  handleOpenResponsePopover = event => {
-    event.preventDefault();
-    this.setState({
-      responsePopoverAnchorEl: event.currentTarget,
-      responsePopoverOpen: true
-    });
-  };
-
-  handleCloseResponsePopover = () => {
     // delay to avoid accidental tap pass-through with focusing on
     // the text field -- this is annoying on mobile where the keyboard
     // pops up, inadvertantly
@@ -464,7 +456,7 @@ export class AssignmentTexterContactControls extends React.Component {
         anchorEl={this.state.answerPopoverAnchorEl}
         anchorOrigin={{ horizontal: "left", vertical: "bottom" }}
         targetOrigin={{ horizontal: "left", vertical: "bottom" }}
-        onRequestClose={this.handleCloseAnswerPopover}
+        onRequestClose={this.handleCloseAnswerResponsePopover}
       >
         <SearchBar
           onRequestSearch={this.handleSearchChange}
@@ -479,7 +471,7 @@ export class AssignmentTexterContactControls extends React.Component {
           currentInteractionStep={this.state.currentInteractionStep}
           listHeader={otherResponsesLink}
           questionResponses={questionResponses}
-          onRequestClose={this.handleCloseAnswerPopover}
+          onRequestClose={this.handleCloseAnswerResponsePopover}
         />
         <ScriptList
           scripts={this.state.filteredCannedResponses}
@@ -828,7 +820,9 @@ export class AssignmentTexterContactControls extends React.Component {
             </span>
           }
           role="button"
-          onClick={!disabled ? this.handleOpenAnswerPopover : noAction => {}}
+          onClick={
+            !disabled ? this.handleOpenAnswerResponsePopover : noAction => {}
+          }
           className={css(flexStyles.flatButton)}
           labelStyle={inlineStyles.flatButtonLabel}
           backgroundColor={
