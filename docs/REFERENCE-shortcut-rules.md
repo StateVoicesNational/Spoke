@@ -1,16 +1,11 @@
 # Texter ShortCuts and when they are displayed
-
-testing...
-
 On the texter conversation screen, a texter may see "shortcut buttons" for some question responses and canned replies (aka other responses).
 
-Currently there is no Admin UI to choose the shortcuts or enable/disable them or preview their visibility. An intuitive Admin UI for specifying and labeling the buttons would be a welcome future contribution.
+Currently, there is no Admin UI to choose the shortcuts or enable/disable them or preview their visibility. In the meantime, you can reference a set of rules for when the shortcuts will show up automatically and then modify your scripted-responses to get them to appear as you wish. (An intuitive Admin UI for specifying and labeling the buttons would be a welcome contribution to Spoke.)
 
-In the meantime, you can reference a /set of rules/ for when the shortcuts will show up automatically and then modify your scripted-responses to get them to appear as you wish.
+These rules try to balance two factors: (1) horizontal screen real-estate limits on common devices and (2) avoiding confusion for the texter who wouldn’t understand why they don’t see all the buttons on a small screen that texters with wider screens do see.
 
-These rules try to balance two factors:
-1. horizontal screen real-estate limits on common devices
-2. avoiding confusion for the texter who wouldn’t understand why they don’t see all the buttons on a small screen.
+The way Spoke currently works, the shortcut buttons appear in a single row and if a texters screen is not wide enough for them, they won't see the ones that get cut off. Also, on some very small devices (including iPhone SE) the row of shortcut buttons is not rendered at all in order to save vertical space for the conversation.
 
 ## Terminology
 
@@ -19,7 +14,7 @@ These rules try to balance two factors:
 * A 'label' is the option (question response or canned reply) in full, unless there is punctuation after the first word.  e.g. "Yes, but ..." will have a label of "Yes", but "Yes but X" will have a label of "Yes but X" -- A good way to add context to the All Responses menu is put something after a comma or a colon.
 
 ## Rules
-In a nutshell, you get 36 characters worth of shortcut button space. The space between buttons counts for 2 characters. You can use syntax (+ and -) before responses to force them in or out. You can use punctuation (e.g. a comma or colon) to shorten the text that gets displayed in the shortcut button label.  If your responses are very simple and there are only a few, the shortcut buttons will just appear to texters automatically. If you have a lot of responses with long titles, and you don’t do any modification, your texters won’t see any shortcut buttons at all. In most cases, you will need to do a little work to get shortcuts to show up using the following rules:
+In a nutshell, you get 36 characters worth of shortcut button space. The space between buttons counts for 2 characters. You can use syntax (+ and -) before responses to force them in or out. You can use punctuation (e.g. a comma or colon) to shorten the text that gets displayed in the shortcut button label.  If your responses consist of a few simple Question Responses, the shortcut buttons will just appear to texters automatically. If you have a lot of responses with long titles, and you don’t do any modification, your texters won’t see any shortcut buttons at all. In most cases, you will need to do a little work to get shortcuts to show up using the following rules:
 
 * Canned Responses, by default, will not show unless they have 12 characters or less.
 	* Prefix a Canned Response with a '+' (plus character) to force it to be shown (even with more than 12 characters)
@@ -50,10 +45,11 @@ It doesn't include the "Who are you?" because the buttons included add up to 30 
 	* Question Response Answers: "Yes: I voted", "No", "-Yes but I Moved"
 	* Canned Response Titles: "-Who are you?", +I don't understand", "+Wrong Number"
 	* Resulting Shortcuts: [Yes] [No] [I don't understand]
-	* Reasoning: "Yes: I voted" was shortened to "Yes" because there is punctuation right after the first word.
-"-Yes but I Moved" was excluded because it starts with a " - " sign.
-All the non-prefixed Question Responses fit, so we add Canned Responses in order.
-The first is excluded because it starts with "-".
-"+I don't understand" would normally not be included because it has more than 12 characters, but it starts with a "+" so we include it anyway.
-"+Wrong Number" would be included if there was space but there is not.
-So, the shortcuts are just the three: [Yes] [No] [I don’t understand].
+	* Reasoning:
+      * "Yes: I voted" was shortened to "Yes" because there is punctuation right after the first word.
+      * "-Yes but I Moved" was excluded because it starts with a " - " sign.
+      * All the non-prefixed Question Responses fit, so we add Canned Responses in order.
+      * The first Canned Response is excluded because it starts with "-".
+      * "+I don't understand" would normally not be included because it has more than 12 characters, but it starts with a "+" so we include it anyway.
+      * "+Wrong Number" would be included if there was space but there is not.
+      So, the shortcuts are just the three: [Yes] [No] [I don’t understand].
