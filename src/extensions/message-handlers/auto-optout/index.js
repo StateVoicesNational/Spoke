@@ -63,9 +63,11 @@ export const preMessageSave = async ({ messageToSave, organization }) => {
         matches
       );
       const reason = matches[0].reason || "auto_optout";
+      messageToSave.error_code = -133;
       return {
         contactUpdates: { is_opted_out: true, error_code: -133 },
-        hanlderContext: { autoOptOutReason: reason }
+        handlerContext: { autoOptOutReason: reason },
+        messageToSave
       };
     }
   }
@@ -77,8 +79,11 @@ export const postMessageSave = async ({
   handlerContext
 }) => {
   if (message.is_from_contact && handlerContext.autoOptOutReason) {
-    // FUTURE: if we change assignment_id as NOT NULLable,
-    // then we can skip this load
+    console.log(
+      "auto-optout.postMessageSave",
+      message.campaign_contact_id,
+      handlerContext.autoOptOutReason
+    );
     const contact = await cacheableData.campaignContact.load(
       message.campaign_contact_id,
       { cacheOnly: true }
