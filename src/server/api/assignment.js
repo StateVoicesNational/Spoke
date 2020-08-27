@@ -238,34 +238,25 @@ export const resolvers = {
           organization,
           contactsFilter && contactsFilter.validTimezone
         );
-        if (contactsFilter && !contactsFilter.messageStatus) {
-          // ASSUME: invalidTimezones
-          const invalidTzCount = Object.keys(assignment.tzStatusCounts)
-            .map(m => ({ key: m, val: assignment.tzStatusCounts[m] })) // .entries post-node10.x
-            .filter(
-              ({ key, val }) =>
-                key === "needsMessage" || key === "needsResponse"
-            )
-            .map(({ key, val }) =>
-              val
-                .filter(x => invalidOffsets.indexOf(x.tz) !== -1)
+        const filterCount = (statusFilter, offsetFilter) =>
+          Object.keys(assignment.tzStatusCounts) // .entries post-node10.x
+            .map(m => ({ status: m, offsets: assignment.tzStatusCounts[m] }))
+            .filter(statusFilter)
+            .map(({ offsets }) =>
+              offsets
+                .filter(offsetFilter)
                 .map(x => Number(x.count))
                 .reduce((a, b) => {
-                  console.log("reduce", a, b);
                   return a + b;
                 }, 0)
             )
             .reduce((a, b) => a + b, 0);
-          console.log(
-            "invalidTimezones",
-            invalidTzCount,
-            Object.values(assignment.tzStatusCounts).map(arr =>
-              arr
-                .filter(x => invalidOffsets.indexOf(x.tz) !== -1)
-                .map(x => Number(x.count))
-                .reduce((a, b) => a + b, 0)
-            ),
-            assignment.tzStatusCounts
+        if (contactsFilter && !contactsFilter.messageStatus) {
+          // ASSUME: invalidTimezones
+          const invalidTzCount = filterCount(
+            ({ status }) =>
+              status === "needsMessage" || status === "needsResponse",
+            offset => invalidOffsets.indexOf(offset.tz) !== -1
           );
           return invalidTzCount;
         }
@@ -273,13 +264,25 @@ export const resolvers = {
         if (
           contactsFilter &&
           contactsFilter.messageStatus &&
-          contactsFilter.validTimezones
+          contactsFilter.validTimezone
         ) {
-          return assignment.tzStatusCounts[contactsFilter.messageStatus]
-            .filter(x => validOffsets.indexOf(x.tz) !== -1)
-            .map(x => Number(x.count))
-            .reduce((a, b) => a + b, 0);
+          const validStatusCount = filterCount(
+            ({ status }) => status === contactsFilter.messageStatus,
+            offset => validOffsets.indexOf(offset.tz) !== -1
+          );
+          return validStatusCount;
+        } else if (!contactsFilter) {
+          return filterCount(
+            status => true,
+            offset => true
+          );
         }
+        console.log(
+          "assignment.contactsCount tzStatusCounts Data Match Failed",
+          hasAny,
+          contactsFilter,
+          assignment.tzStatusCounts
+        );
       }
       if (hasAny) {
         const exists = await getContacts(
