@@ -1,5 +1,5 @@
 import AuthHasher from "passport-local-authenticate";
-import { User, Invite, Organization } from "./models";
+import { User, Invite, Organization, r } from "./models";
 import { capitalizeWord } from "./api/lib/utils";
 
 const errorMessages = {
@@ -17,7 +17,24 @@ const validUuid = async (nextUrl, uuidMatch) => {
 
   let foundUUID;
   if (nextUrl.includes("join")) {
-    foundUUID = await Organization.filter({ uuid: uuidMatch[0] });
+    foundUUID = await r
+      .knex("organization")
+      .where("uuid", uuidMatch[0])
+      .first();
+    if (!foundUUID) {
+      const campaignId = nextUrl.match(/join\/(\d+)/);
+      if (campaignId) {
+        foundUUID = await r
+          .knex("campaign")
+          .where({
+            id: campaignId[1],
+            join_token: uuidMatch[0],
+            use_dynamic_assignment: true,
+            is_started: true
+          })
+          .first();
+      }
+    }
   } else if (nextUrl.includes("invite")) {
     foundUUID = await Invite.filter({ hash: uuidMatch[0] });
   }
@@ -79,6 +96,7 @@ const signup = async ({
         auth0_id: passwordToSave,
         first_name: capitalizeWord(reqBody.firstName),
         last_name: capitalizeWord(reqBody.lastName),
+        alias: reqBody.alias ? capitalizeWord(reqBody.alias) : null,
         cell: reqBody.cell,
         is_superadmin: false
       });

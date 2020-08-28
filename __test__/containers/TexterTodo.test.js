@@ -28,11 +28,14 @@ function genComponent(
       <TexterTodo
         messageStatus={statusMessage}
         params={{ organizationId: 123, assignmentId: assignmentId }}
-        data={{
+        contactData={{
           findNewCampaignContact: { found: false },
           refetch: function() {
             // console.log('REFETCHING')
           },
+          assignment: assignment
+        }}
+        campaignData={{
           assignment: assignment
         }}
         mutations={{

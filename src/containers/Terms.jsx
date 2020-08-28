@@ -7,7 +7,6 @@ import { Step, Stepper, StepLabel, StepContent } from "material-ui/Stepper";
 import FlatButton from "material-ui/FlatButton";
 import RaisedButton from "material-ui/RaisedButton";
 import Divider from "material-ui/Divider";
-import wrapMutations from "./hoc/wrap-mutations";
 import { withRouter } from "react-router";
 
 class Terms extends React.Component {
@@ -152,7 +151,7 @@ Terms.propTypes = {
   data: PropTypes.object
 };
 
-const mapQueriesToProps = () => ({
+const queries = {
   data: {
     query: gql`
       query getCurrentUser {
@@ -163,10 +162,10 @@ const mapQueriesToProps = () => ({
       }
     `
   }
-});
+};
 
-const mapMutationsToProps = ownProps => ({
-  userAgreeTerms: userId => ({
+const mutations = {
+  userAgreeTerms: ownProps => userId => ({
     mutation: gql`
       mutation userAgreeTerms($userId: String!) {
         userAgreeTerms(userId: $userId) {
@@ -179,9 +178,9 @@ const mapMutationsToProps = ownProps => ({
       userId
     }
   })
-});
+};
 
-export default loadData(wrapMutations(withRouter(Terms)), {
-  mapQueriesToProps,
-  mapMutationsToProps
-});
+export default loadData({
+  queries,
+  mutations
+})(withRouter(Terms));

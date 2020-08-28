@@ -1,16 +1,40 @@
 import { r } from "../../models";
 
-export async function hasAssignment(userId, assignmentId) {}
+const cacheKey = id => `${process.env.CACHE_PREFIX || ""}a-${id}`;
 
-export const assignmentCache = {
-  clear: async id => {},
-  load: async id => {
-    // should load cache of campaign by id separately, so that can be updated on campaign-save
-    // e.g. for script changes
-    // should include:
-    // texter: id, firstName, lastName, assignedCell, ?userCannedResponses
-    // campaignId
-    // organizationId
-    // ?should contact ids be key'd off of campaign or assignment?
+const load = async id => {
+  if (r.redis) {
+    const cachedData = await r.redis.getAsync(cacheKey(id));
+    if (cachedData) {
+      return JSON.parse(cachedData);
+    }
   }
+  const dbResult = await r
+    .knex("assignment")
+    .where("id", id)
+    .first();
+  if (r.redis) {
+    await r.redis
+      .multi()
+      .set(cacheKey(id), JSON.stringify(dbResult))
+      .expire(cacheKey(id), 14400) // 4 hours
+      .execAsync();
+  }
+  return dbResult;
 };
+
+const assignmentCache = {
+  clear: async id => {
+    if (r.redis) {
+      await r.redis.delAsync(cacheKey(id));
+    }
+  },
+  hasAssignment: async (userId, assignmentId) => {
+    const assignment = await load(assignmentId);
+    // assignment is also last so it's returned
+    return assignment && assignment.user_id === Number(userId) && assignment;
+  },
+  load
+};
+
+export default assignmentCache;

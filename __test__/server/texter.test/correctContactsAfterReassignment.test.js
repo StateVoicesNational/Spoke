@@ -1,5 +1,7 @@
 /* eslint-disable no-unused-expressions, consistent-return */
-import { runGql, getGql } from "../../test_helpers";
+import { runGql } from "../../test_helpers";
+import { operations as adminIncomingMessageOps } from "../../../src/containers/AdminIncomingMessageList";
+import { operations as texterTodoOps } from "../../../src/containers/TexterTodo";
 
 import {
   testAdminUser,
@@ -11,6 +13,13 @@ import {
   assignmentId
 } from "./common";
 
+function getAssignmentContactsMutAndVars(props, contactIds, findNew) {
+  const { mutation, variables } = texterTodoOps.mutations.getAssignmentContacts(
+    props
+  )(contactIds, findNew);
+  return [mutation, variables];
+}
+
 /*
 * NOTE:
 * beforeEach and afterEach are defined in ./common and are run before the tests in thie
@@ -20,21 +29,10 @@ import {
 */
 
 it("should return contacts after they are reassigned", async () => {
-  // set up graphQL call for reassignCampaignContacts
-  const { mutations: adminIncomingMessageListMutations } = getGql(
-    "../src/containers/AdminIncomingMessageList",
-    {
-      params: {
-        organizationId: testOrganization.id
-      }
-    },
-    "organization"
-  );
-
-  const [
-    reassignCampaignContacts,
-    reassignCampaignContactsVars
-  ] = adminIncomingMessageListMutations.reassignCampaignContacts(
+  const {
+    mutation: reassignCampaignContacts,
+    variables: reassignCampaignContactsVars
+  } = adminIncomingMessageOps.mutations.reassignCampaignContacts()(
     testOrganization.data.createOrganization.id,
     testContacts.map(c => {
       return {
@@ -46,21 +44,19 @@ it("should return contacts after they are reassigned", async () => {
     testTexterUser2.id
   );
 
-  // set up graphQL call for getAssignmentContacts
-  const { mutations: mutationsBefore } = getGql(
-    "../src/containers/TexterTodo",
+  const [
+    getAssignmentContactsBefore,
+    assignVarsBefore
+  ] = getAssignmentContactsMutAndVars(
     {
       messageStatus: "needsMessage",
       params: {
         assignmentId
       }
-    }
+    },
+    testContacts.map(e => e.id),
+    false
   );
-
-  const [
-    getAssignmentContactsBefore,
-    assignVarsBefore
-  ] = mutationsBefore.getAssignmentContacts(testContacts.map(e => e.id), false);
 
   // call getAssignmentContacts to get CampaignContacts into the DataLoader cache.
   await runGql(getAssignmentContactsBefore, assignVarsBefore, testTexterUser);
@@ -75,18 +71,19 @@ it("should return contacts after they are reassigned", async () => {
   const newAssignmentId =
     reassignReturn.data.reassignCampaignContacts[0].assignmentId;
 
-  // set up getAssignmentContacts to get the contacts so we can examine them
-  const { mutations: mutationsAfter } = getGql("../src/containers/TexterTodo", {
-    messageStatus: "needsMessage",
-    params: {
-      assignmentId: newAssignmentId
-    }
-  });
-
   const [
     getAssignmentContactsAfter,
     assignVarsAfter
-  ] = mutationsAfter.getAssignmentContacts(testContacts.map(e => e.id), false);
+  ] = getAssignmentContactsMutAndVars(
+    {
+      messageStatus: "needsMessage",
+      params: {
+        assignmentId: newAssignmentId
+      }
+    },
+    testContacts.map(e => e.id),
+    false
+  );
 
   // make getAssignmentContacts call
   const getAssignmentContactsResult = await runGql(
@@ -100,6 +97,6 @@ it("should return contacts after they are reassigned", async () => {
     100
   );
   expect(
-    getAssignmentContactsResult.data.getAssignmentContacts.map(c => c.id)
+    getAssignmentContactsResult.data.getAssignmentContacts.map(c => c && c.id)
   ).toEqual(testContacts.map(c => c.id.toString()));
 });

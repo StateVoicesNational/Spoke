@@ -14,6 +14,7 @@ const {
   DB_PASSWORD,
   DB_USER,
   DB_SCHEMA,
+  DB_DEBUG = "false",
   DATABASE_URL,
   NODE_ENV
 } = process.env;
@@ -32,7 +33,7 @@ if (DB_JSON) {
   config = JSON.parse(DB_JSON);
 } else if (DB_TYPE) {
   config = {
-    client: "pg",
+    client: DB_TYPE,
     connection: {
       host: DB_HOST,
       port: DB_PORT,
@@ -78,5 +79,7 @@ if (DB_JSON) {
     useNullAsDefault: true
   };
 }
+
+config.debug = DB_DEBUG === "1" || DB_DEBUG.toLowerCase() === "true";
 
 module.exports = config;

@@ -19,10 +19,9 @@ Generally, label by filename what kind of documentation it is in all-caps, one o
 * Reference
 
 ## Helpful Dev Tips
+
 * Run `sqlite3 mydb.sqlite` to connect to a SQL shell for the dev database
 * [Set up an ESLint plugin in your code editor so that you catch coding errors and follow code style guidelines more easily!](https://medium.com/planet-arkency/catch-mistakes-before-you-run-you-javascript-code-6e524c36f0c8#.oboqsse48)
-* [Install the redux-devtools-extension](https://github.com/zalmoxisus/redux-devtools-extension) in Chrome to get advanced Redux debugging features.
-* Right now there is a bug in Apollo (https://github.com/apollostack/react-apollo/issues/57) that means in one particular case, errors get swallowed.  If you end up with an app that is silently breaking, console.log(this.props.data) and check the errors property.
 
 ## Dependency Management
 
@@ -36,7 +35,7 @@ Environment Variables affect how the application is run. We aim to support a
 diverse group of organizations and deployment contexts, which means a lot of configuration.
 
 Some important places to update or consider updating when you are creating a new
-enviornment variable:
+environment variable:
 
 * Documentation: Be sure to update or add your variable to [REFERENCE-environment_variables.md](./REFERENCE-environment_variables.md)
 * Make sure the default value will not break the application for users that upgrade from a context before the variable existed.
@@ -45,7 +44,7 @@ enviornment variable:
 * For any variables that enable features that should not be enabled (for legal reasons) in the United States, always ALSO test for `process.env.NOT_IN_USA` -- this ensures that the code self-documents the context these features will be available (and not available in).
 
 
-## Understanding DB/.[ORM].(https://stackoverflow.com/questions/1279613/what-is-an-orm-and-where-can-i-learn-more-about-it) calls
+## Understanding DB/[ORM](https://stackoverflow.com/questions/1279613/what-is-an-orm-and-where-can-i-learn-more-about-it) calls
 
 ###TLDR
 
@@ -105,6 +104,9 @@ Sqlite does not support knex's `returning()` method.  This affects running `r.kn
     See for example: https://github.com/MoveOnOrg/Spoke/issues/817
     One solution is to use r.table(...).getAll which WILL convert them.
     Otherwise, make sure your code does the conversion when necessary.
+* Knex also has different behavior between database backends for `knex.raw()` queries.
+  Sqlite will return the results directly, while Postgres will return the data in a sub-field, `.rows`.
+
 
 ### Schema changes
 
@@ -125,14 +127,11 @@ If you want to use the knex CLI, run with `yarn knex` which will leverage your `
 
 ## Apollo/GraphQL structure and gotchas
 
-Spoke was originally generated from [react-apollo-starter-kit](https://github.com/saikat/react-apollo-starter-kit).  You can look at that project's README for info on some of the libraries used.
-
 See [EXPLANATION-request-example.md](./EXPLANATION-request-example.md) for a great run-down all the
 way through the call stack on the client and server.
 
-See Apollo documentation for more details. Note that Spoke currently runs an older version
-(`apollo-client: ^0.4.7` and `apollo-server-express": ^1.2.0`) -- we would like to upgrade, but
-this will require coordination and revisions on both the server and client side.
+See the [Apollo documentation](https://www.apollographql.com/docs/react/v2.5) for more details.
+Note that Spoke currently runs an older version of apollo server (`^1.2.0`).
 
 One common change is adding an additional field or value to an existing GraphQl query. Below, with
 AdminCampaignEdit.jsx as an example, we'll list the places you may need to add a value.  Let's say
@@ -140,7 +139,7 @@ we want to add a value to campaign info for that edit page. We might need to edi
 
 * At the top of `src/containers/AdminCampaignEdit.jsx` in `campaignInfoFragment`
 * ...which is referenced from several places at the bottom of the same file
-  inside `mapQueriesToProps` and `mapMutationsToProps` -- note, in most (simpler) containers/components
+  inside `queries` and `mutations` -- note, in most (simpler) containers/components
   on the front-end, it will just be in the bottom map definitions.
   Updating it here means that the client side will now *ask* for that field from the server. If you don't
   include it here, then even if the server *can* get the value, it won't.
@@ -163,8 +162,7 @@ we want to add a value to campaign info for that edit page. We might need to edi
 * Helper functions are in [server/api/errors.js](https://github.com/MoveOnOrg/Spoke/blob/main/src/server/api/errors.js) which should/will be optimized to use cached info, etc.  Each of them will throw an error and therefore cancel the request if the user doesn't have the appropriate access.
   * `authRequired(user)` establishes that the user is not anonymous
   * `accessRequired(user, orgId, role, allowSuperadmin = false)` will require the user to have a certain role or higher.  Pass in `true` to allowSuperadmin if superadmins should be allowed.  Generally they should be allowed to do things, but might as well be explicit.
-  * `assignmentRequired(user, assignmentId)` makes sure that the user has the assignment in question
-  * `superAdminRequired(user)` requires a super-admin user
+  * `assignmentRequiredOrAdminRole(user, organizationId, assignmentId)` makes sure that the user has the assignment in question and is a TEXTER or is an ADMIN.  (optional arguments after assignmentId are `contact, assignment` which if already available in the context can speed checking -- those arguments should be loaded manually, and never passed from the client, of course.
 
 
 ## Asynchronous tasks (workers)

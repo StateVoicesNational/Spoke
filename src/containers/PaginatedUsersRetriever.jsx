@@ -1,78 +1,33 @@
-import gql from "graphql-tag";
-import PropTypes from "prop-types";
 import { Component } from "react";
-import { withRouter } from "react-router";
-import loadData from "./hoc/load-data";
+import PropTypes from "prop-types";
+import gql from "graphql-tag";
+import isEqual from "lodash/isEqual";
 
-export class PaginatedUsersRetriever extends Component {
-  componentDidMount() {
-    this.handleUsersReceived();
-  }
+import apolloClient from "../network/apollo-client-singleton";
 
-  componentDidUpdate(prevProps) {
-    if (this.props.forceUpdateTime !== prevProps.forceUpdateTime) {
-      this.props.users.refetch();
-      return;
-    }
-    this.handleUsersReceived();
-  }
-
-  handleUsersReceived() {
-    if (!this.props.users || this.props.users.loading) {
-      return;
-    }
-
-    if (
-      this.props.users.people.users.length ===
-      this.props.users.people.pageInfo.total
-    ) {
-      this.props.onUsersReceived(this.props.users.people.users);
-    }
-
-    const newOffset =
-      this.props.users.people.pageInfo.offset + this.props.pageSize;
-    if (newOffset < this.props.users.people.pageInfo.total) {
-      this.props.users.fetchMore({
-        variables: {
-          cursor: {
-            offset: newOffset,
-            limit: this.props.pageSize
-          }
-        },
-        updateQuery: (prev, { fetchMoreResult }) => {
-          if (!fetchMoreResult) {
-            return prev;
-          }
-          const returnValue = Object.assign({}, prev);
-          returnValue.people.users = returnValue.people.users.concat(
-            fetchMoreResult.data.people.users
-          );
-          returnValue.people.pageInfo = fetchMoreResult.data.people.pageInfo;
-          return returnValue;
-        }
-      });
-    }
-  }
-
-  render() {
-    return null;
-  }
-}
-
-const mapQueriesToProps = ({ ownProps }) => ({
-  users: {
+const fetchPeople = async (
+  offset,
+  limit,
+  organizationId,
+  campaignsFilter,
+  sortBy,
+  role
+) =>
+  apolloClient.query({
     query: gql`
       query getUsers(
         $organizationId: String!
         $cursor: OffsetLimitCursor
         $campaignsFilter: CampaignsFilter
         $sortBy: SortPeopleBy
+        $role: String
       ) {
         people(
           organizationId: $organizationId
           cursor: $cursor
           campaignsFilter: $campaignsFilter
           sortBy: $sortBy
+          role: $role
         ) {
           ... on PaginatedUsers {
             pageInfo {
@@ -91,27 +46,71 @@ const mapQueriesToProps = ({ ownProps }) => ({
       }
     `,
     variables: {
-      cursor: { offset: 0, limit: ownProps.pageSize },
-      organizationId: ownProps.organizationId,
-      campaignsFilter: ownProps.campaignsFilter,
-      sortBy: ownProps.sortBy || "FIRST_NAME"
+      cursor: { offset, limit },
+      organizationId,
+      campaignsFilter,
+      sortBy,
+      role
     },
-    forceFetch: true
+    fetchPolicy: "network-only"
+  });
+
+export class PaginatedUsersRetriever extends Component {
+  static propTypes = {
+    organizationId: PropTypes.string.isRequired,
+    campaignsFilter: PropTypes.shape({
+      isArchived: PropTypes.bool,
+      campaignId: PropTypes.number
+    }),
+    sortBy: PropTypes.string,
+    onUsersReceived: PropTypes.func.isRequired,
+    pageSize: PropTypes.number.isRequired,
+    roleFilter: PropTypes.string
+  };
+
+  componentDidMount() {
+    this.handlePropsReceived();
   }
-});
 
-PaginatedUsersRetriever.propTypes = {
-  organizationId: PropTypes.string.isRequired,
-  campaignsFilter: PropTypes.shape({
-    isArchived: PropTypes.bool,
-    campaignId: PropTypes.number
-  }),
-  sortBy: PropTypes.string,
-  onUsersReceived: PropTypes.func.isRequired,
-  pageSize: PropTypes.number.isRequired,
-  forceUpdateTime: PropTypes.number
-};
+  componentDidUpdate(prevProps) {
+    this.handlePropsReceived(prevProps);
+  }
 
-export default loadData(withRouter(PaginatedUsersRetriever), {
-  mapQueriesToProps
-});
+  handlePropsReceived = async (prevProps = {}) => {
+    if (isEqual(prevProps, this.props)) return;
+
+    const {
+      organizationId,
+      campaignsFilter,
+      pageSize,
+      sortBy,
+      onUsersReceived,
+      roleFilter
+    } = this.props;
+
+    let offset = 0;
+    let total = undefined;
+    let users = [];
+    do {
+      const results = await fetchPeople(
+        offset,
+        pageSize,
+        organizationId,
+        campaignsFilter,
+        sortBy || "FIRST_NAME",
+        roleFilter
+      );
+      const { pageInfo, users: newUsers } = results.data.people;
+      users = users.concat(newUsers);
+      offset += pageSize;
+      total = pageInfo.total;
+      onUsersReceived(users);
+    } while (offset < total);
+  };
+
+  render() {
+    return null;
+  }
+}
+
+export default PaginatedUsersRetriever;

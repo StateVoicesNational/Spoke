@@ -1,19 +1,26 @@
 import { getLastMessage } from "./message-sending";
-import { Message, PendingMessagePart, r } from "../../models";
-import { log } from "../../../lib";
+import { Message, PendingMessagePart, r, cacheableData } from "../../models";
+import uuid from "uuid";
 
 // This 'fakeservice' allows for fake-sending messages
 // that end up just in the db appropriately and then using sendReply() graphql
 // queries for the reception (rather than a real service)
 
-async function sendMessage(message, contact, trx, organization) {
+async function sendMessage(message, contact, trx, organization, campaign) {
+  const errorCode = message.text.match(/error(\d+)/);
   const changes = {
     service: "fakeservice",
     messageservice_sid: "fakeservice",
     send_status: "SENT",
-    sent_at: new Date()
+    sent_at: new Date(),
+    error_code: errorCode ? errorCode[1] : null
   };
 
+  // console.log(
+  //   "fakeservice sendMessage",
+  //   message && message.id,
+  //   contact && contact.id
+  // );
   if (message && message.id) {
     let request = r.knex("message");
     if (trx) {
@@ -21,22 +28,30 @@ async function sendMessage(message, contact, trx, organization) {
     }
     // updating message!
     await request.where("id", message.id).update(changes);
+
+    if (errorCode && message.campaign_contact_id) {
+      await r
+        .knex("campaign_contact")
+        .where("id", message.campaign_contact_id)
+        .update("error_code", errorCode[1]);
+    }
   }
 
   if (contact && /autorespond/.test(message.text)) {
     // We can auto-respond to the the user if they include the text 'autorespond' in their message
-    await Message.save({
-      ...message,
-      ...changes,
-      // just flip/renew the vars for the contact
-      id: undefined,
-      service_id: `mockedresponse${Math.random()}`,
-      is_from_contact: true,
-      text: `responding to ${message.text}`,
-      send_status: "DELIVERED"
+    await cacheableData.message.save({
+      contact: contact,
+      messageInstance: new Message({
+        ...message,
+        ...changes,
+        // just flip/renew the vars for the contact
+        id: undefined,
+        service_id: `mockedresponse${Math.random()}`,
+        is_from_contact: true,
+        text: `responding to ${message.text}`,
+        send_status: "DELIVERED"
+      })
     });
-    contact.message_status = "needsResponse";
-    await contact.save();
   }
 }
 
@@ -89,8 +104,28 @@ async function handleIncomingMessage(message) {
   return part.id;
 }
 
+async function buyNumbersInAreaCode(organization, areaCode, limit) {
+  const rows = [];
+  for (let i = 0; i < limit; i++) {
+    const last4 = limit.toString().padStart(4, "0");
+    rows.push({
+      organization_id: organization.id,
+      area_code: areaCode,
+      phone_number: `+1${areaCode}XYZ${last4}`,
+      service: "fakeservice",
+      service_id: uuid.v4()
+    });
+  }
+
+  // add some latency
+  await new Promise(resolve => setTimeout(resolve, limit * 25));
+  await r.knex("owned_phone_number").insert(rows);
+  return limit;
+}
+
 export default {
   sendMessage,
+  buyNumbersInAreaCode,
   // useless unused stubs
   convertMessagePartsToMessage,
   handleIncomingMessage

@@ -3,6 +3,7 @@ export const schema = `
     assignmentsFilter: AssignmentsFilter
     campaignsFilter: CampaignsFilter
     contactsFilter: ContactsFilter
+    messageTextFilter: String
   }
 
   type Conversation {

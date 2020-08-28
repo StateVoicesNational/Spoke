@@ -8,6 +8,7 @@ export const schema = `
     parentInteractionId: String
     isDeleted: Boolean
     answerActions: String
+    answerActionsData: String
     questionResponse(campaignContactId: String): QuestionResponse
   }
 `;

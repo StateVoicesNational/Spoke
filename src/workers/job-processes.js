@@ -1,3 +1,7 @@
+// Jobs are potentially long-running background processing operations
+// that are tracked in the database via the JobRequest table.
+// See src/extensions/job-runners/README.md for more details
+
 import { r } from "../server/models";
 import { sleep, getNextJob } from "./lib";
 import { log } from "../lib";
@@ -10,25 +14,49 @@ import {
   handleIncomingMessageParts,
   fixOrgless,
   clearOldJobs,
-  importScript
+  importScript,
+  buyPhoneNumbers,
+  startCampaignWithPhoneNumbers
 } from "./jobs";
 import { setupUserNotificationObservers } from "../server/notifications";
 
 export { seedZipCodes } from "../server/seeds/seed-zip-codes";
 
-/* Two process models are supported in this file.
+/* For the 'legacy' job runner when JOBS_SAME_PROCESS is false:
    The main in both cases is to process jobs and send/receive messages
    on separate loop(s) from the web server.
    * job processing (e.g. contact loading) shouldn't delay text message processing
 
    The two process models:
    * Run the 'scripts' in dev-tools/Procfile.dev
- */
+*/
 
-const jobMap = {
-  export: exportCampaign,
-  assign_texters: assignTexters,
-  import_script: importScript
+const JOBS_SAME_PROCESS = !!process.env.JOBS_SAME_PROCESS;
+
+export const Jobs = Object.freeze({
+  EXPORT: "export",
+  ASSIGN_TEXTERS: "assign_texters",
+  IMPORT_SCRIPT: "import_script",
+  BUY_PHONE_NUMBERS: "buy_phone_numbers",
+  START_CAMPAIGN_WITH_PHONE_NUMBERS: "start_campaign_with_phone_numbers"
+});
+
+const jobMap = Object.freeze({
+  [Jobs.EXPORT]: exportCampaign,
+  [Jobs.ASSIGN_TEXTERS]: assignTexters,
+  [Jobs.IMPORT_SCRIPT]: importScript,
+  [Jobs.BUY_PHONE_NUMBERS]: buyPhoneNumbers,
+  [Jobs.START_CAMPAIGN_WITH_PHONE_NUMBERS]: startCampaignWithPhoneNumbers
+});
+
+export const invokeJobFunction = async job => {
+  if (job.job_type in jobMap) {
+    await jobMap[job.job_type](job);
+  } else if (job.job_type.startsWith("ingest.")) {
+    await dispatchContactIngestLoad(job);
+  } else {
+    throw new Error(`Job of type ${job.job_type} not found`);
+  }
 };
 
 export async function processJobs() {
@@ -134,7 +162,7 @@ export const failedMessageSender = messageSenderCreator(function(mQuery) {
   // any failure path that stops the status from updating, then users might keep getting
   // texts over and over
   const fiveMinutesAgo = new Date(new Date() - 1000 * 60 * 5);
-  return mQuery.where("created_at", ">", fiveMinutesAgo);
+  return mQuery.where("message.created_at", ">", fiveMinutesAgo);
 }, "SENDING");
 
 export const failedDayMessageSender = messageSenderCreator(function(mQuery) {
@@ -145,7 +173,7 @@ export const failedDayMessageSender = messageSenderCreator(function(mQuery) {
   // any failure path that stops the status from updating, then users might keep getting
   // texts over and over
   const oneDayAgo = new Date(new Date() - 1000 * 60 * 60 * 24);
-  return mQuery.where("created_at", ">", oneDayAgo);
+  return mQuery.where("message.created_at", ">", oneDayAgo);
 }, "SENDING");
 
 export const erroredMessageSender = messageSenderCreator(function(mQuery) {
@@ -157,15 +185,19 @@ export const erroredMessageSender = messageSenderCreator(function(mQuery) {
   // It's important though that runs are never in parallel
   const twentyMinutesAgo = new Date(new Date() - 1000 * 60 * 20);
   return mQuery
-    .where("created_at", ">", twentyMinutesAgo)
-    .where("error_code", "<", 0);
+    .where("message.created_at", ">", twentyMinutesAgo)
+    .where("message.error_code", "<", 0);
 }, "SENDING");
 
 export async function handleIncomingMessages() {
-  setupUserNotificationObservers();
   if (process.env.DEBUG_INCOMING_MESSAGES) {
     console.log("Running handleIncomingMessages");
   }
+  if (JOBS_SAME_PROCESS && process.env.DEFAULT_SERVICE === "twilio") {
+    // no need to handle incoming messages
+    return;
+  }
+  setupUserNotificationObservers();
   // eslint-disable-next-line no-constant-condition
   let i = 0;
   while (true) {
@@ -249,8 +281,6 @@ const syncProcessMap = {
   fixOrgless,
   clearOldJobs
 };
-
-const JOBS_SAME_PROCESS = !!process.env.JOBS_SAME_PROCESS;
 
 export async function dispatchProcesses(event, dispatcher, eventCallback) {
   const toDispatch =

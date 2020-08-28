@@ -26,7 +26,7 @@ DashboardLoader.propTypes = {
   path: PropTypes.string
 };
 
-const mapQueriesToProps = () => ({
+const queries = {
   data: {
     query: gql`
       query getCurrentUserForLoader {
@@ -38,8 +38,10 @@ const mapQueriesToProps = () => ({
         }
       }
     `,
-    forceFetch: true
+    options: {
+      fetchPolicy: "network-only"
+    }
   }
-});
+};
 
-export default loadData(withRouter(DashboardLoader), { mapQueriesToProps });
+export default loadData({ queries })(withRouter(DashboardLoader));

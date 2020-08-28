@@ -1,7 +1,17 @@
+# How to run the test suite
+
 There are current two ways to run tests, using either PostgreSQL or SQLite.
 
 ## PostgreSQL Testing (default, closer to most prod environments)
 
+### Running Postgres with Docker (recommended)
+
+1. Install [Docker](https://docs.docker.com/desktop/)
+2. Run redis and postgres using docker-compose: `docker-compose up`
+3. Create the test database: `./dev-tools/create-test-database`
+4. Run `yarn test`
+ 
+### Installing Postgres locally
 1) Install PostgreSQL - [Tips to installing Postgres](https://www.codementor.io/engineerapart/getting-started-with-postgresql-on-mac-osx-are8jcopb)
 2) In PostgreSQL, create a database and user named "spoke_test":
 ```
@@ -14,42 +24,17 @@ GRANT ALL PRIVILEGES ON DATABASE spoke_test TO spoke_test;
 ## SQLite Testing (simpler)
 
 1) Run `yarn run test-sqlite`
-  
+
 ## Test Redis Cache
 
 Redis is used for caching and is separate from the backend DB so can be used with sqlite *or* postgres. Redis cache testing defaults to postgres and functions like an 'addon' to the DB for improved speed/scalability.
 
 1) Run `yarn test-rediscache`
 
-## End-To-End (Interactive Browser) Testing
+## End-To-End Testing
 
-1. Remember to set `NODE_ENV=dev` 
-2. **Start DB** and **Start Spoke Server** as described in the [Getting Started](
-https://github.com/MoveOnOrg/Spoke/blob/main/README.md#getting-started) section. 
-1. Install browser driver(s)
-    
-    * Installing chromedriver on MacOS
-        ```
-        brew tap homebrew/cask
-        brew cask install chromedriver
-        ```
-    * References
-        * [Selenium HQ - JavaScript Docs](http://seleniumhq.github.io/selenium/docs/api/javascript/)
-        * [Homebrew - Casks - chromedriver](https://github.com/Homebrew/homebrew-cask/blob/master/Casks/chromedriver.rb)
-1. Running tests...
-    * ... using your local browser
-      ```
-      yarn run test-e2e
-      ```
-    * ... individually
-      ```
-      yarn run test-e2e <test name>
-      ```
-    * ... using Sauce Labs browser with your local host
-      
-      **Note:** You must first setup [Sauce Labs](https://github.com/MoveOnOrg/Spoke/blob/main/docs/EXPLANATION-end-to-end-tests.md#saucelabs)
-      ```
-      export SAUCE_USERNAME=<Sauce Labs user name>
-      export SAUCE_ACCESS_KEY=<Sauce Labs access key>
-      yarn run test-e2e <optional test name> --saucelabs
-      ```
+1. Run your local development environment with DEFAULT_SERVICE=fakeservice.
+2. Run `yarn run cypress open` for the interactive test runner. For non-interactive
+   run `yarn run cypress run --browser <browser>`.
+
+See [the Cypress documentation](https://docs.cypress.io/guides/guides/command-line.html) for more info.

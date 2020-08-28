@@ -3,7 +3,7 @@ import { google } from "googleapis";
 import _ from "lodash";
 import { compose, map, reduce, getOr, find, filter, has } from "lodash/fp";
 
-import { r } from "../../models";
+import { r, cacheableData } from "../../models";
 import { getConfig } from "./config";
 
 const textRegex = RegExp(".*[A-Za-z0-9]+.*");
@@ -29,13 +29,13 @@ const getDocument = async documentId => {
   return result;
 };
 
+let actionHandlers = {};
+let namedStyles = [];
+const getNamedStyle = style => namedStyles.find(x => x.namedStyleType === style);
 const getParagraphStyle = getOr("", "paragraph.paragraphStyle.namedStyleType");
 const getTextRun = getOr("", "textRun.content");
 const sanitizeTextRun = textRun => textRun.replace("\n", "");
-const getSanitizedTextRun = compose(
-  sanitizeTextRun,
-  getTextRun
-);
+const getSanitizedTextRun = compose(sanitizeTextRun, getTextRun);
 const concat = (left, right) => left.concat(right);
 const reduceStrings = reduce(concat, String());
 const getParagraphText = compose(
@@ -52,10 +52,26 @@ const getParagraphBold = compose(
   find(getTextRun),
   getOr([], "paragraph.elements")
 );
+const namedStyleBold = compose(
+  getOr(false, "textStyle.bold"),
+  getNamedStyle,
+  getParagraphStyle
+);
+const getParagraphItalic = compose(
+  getOr(false, "textRun.textStyle.italic"),
+  find(getTextRun),
+  getOr([], "paragraph.elements")
+);
+const namedStyleItalic = compose(
+  getOr(false, "textStyle.italic"),
+  getNamedStyle,
+  getParagraphStyle
+);
 const getParagraph = element => ({
   style: getParagraphStyle(element),
   indent: getParagraphIndent(element),
-  isParagraphBold: getParagraphBold(element),
+  isParagraphBold: namedStyleBold(element) || getParagraphBold(element),
+  isParagraphItalic: namedStyleItalic(element) || getParagraphItalic(element),
   text: getParagraphText(element)
 });
 const hasParagraph = has("paragraph");
@@ -107,7 +123,8 @@ const getSectionParagraphs = (sections, heading) =>
   (
     sections.find(
       section =>
-        section.text && section.text.toLowerCase() === heading.toLowerCase()
+        section.text &&
+        section.text.toLowerCase().match(new RegExp(heading.toLowerCase()))
     ) || {}
   ).paragraphs;
 
@@ -115,6 +132,8 @@ const getInteractions = sections =>
   getSectionParagraphs(sections, "Interactions");
 const getCannedResponses = sections =>
   getSectionParagraphs(sections, "Canned Responses");
+const getActionHandlers = sections =>
+  getSectionParagraphs(sections, "Action Handlers");
 
 const isNextChunkAQuestion = (interactionParagraphs, currentIndent) =>
   interactionParagraphs.length > 1 &&
@@ -194,7 +213,17 @@ const makeInteractionHierarchy = (
       !interactionParagraphs[0].isParagraphBold
     ) {
       const interactionParagraph = interactionParagraphs.shift();
-      interactionsHierarchyNode.script.push(interactionParagraph.text);
+      if (interactionParagraph.isParagraphItalic) {
+        // Italic = action handler.
+        const handlerLabel = interactionParagraph.text.trim().toLowerCase();
+        const handler = actionHandlers[handlerLabel];
+        if (!handler) continue;
+        interactionsHierarchyNode.action = handler.name;
+        interactionsHierarchyNode.action_data = handler.data;
+      } else {
+        // Regular text, add to script.
+        interactionsHierarchyNode.script.push(interactionParagraph.text);
+      }
     }
 
     if (!interactionsHierarchyNode.script[0]) {
@@ -246,7 +275,8 @@ const saveInteractionsHierarchyNode = async (
       question: interactionsHierarchyNode.question || "",
       script: interactionsHierarchyNode.script.join("\n") || "",
       answer_option: interactionsHierarchyNode.answer || "",
-      answer_actions: "",
+      answer_actions: interactionsHierarchyNode.action || "",
+      answer_actions_data: interactionsHierarchyNode.action_data || "",
       campaign_id: campaignId,
       is_deleted: false
     })
@@ -354,6 +384,39 @@ const replaceCannedResponsesInDatabase = async (
   });
 };
 
+const makeActionHandlersList = actionHandlerParagraphs => {
+  const actionHandlers = {};
+  while (actionHandlerParagraphs[0]) {
+    const handler = {};
+
+    const paragraph = actionHandlerParagraphs.shift();
+    if (!paragraph.isParagraphItalic) {
+      throw new Error(
+        `Action handler format error -- can't find a italic paragraph. Look for [${paragraph.text}]`
+      );
+    }
+    handler.label = paragraph.text;
+
+    while (
+      actionHandlerParagraphs[0] &&
+      !actionHandlerParagraphs[0].isParagraphItalic
+    ) {
+      handler.name = actionHandlerParagraphs.shift().text;
+      handler.data = actionHandlerParagraphs.shift().text;
+    }
+
+    if (!handler.name || !handler.data) {
+      throw new Error(
+        `Action handler format error -- handler missing name or data. Look for [${handler.label}]`
+      );
+    }
+
+    actionHandlers[handler.label.trim().toLowerCase()] = handler;
+  }
+
+  return actionHandlers;
+};
+
 const importScriptFromDocument = async (campaignId, scriptUrl) => {
   const match = scriptUrl.match(/document\/d\/(.*)\//);
   if (!match || !match[1]) {
@@ -363,12 +426,20 @@ const importScriptFromDocument = async (campaignId, scriptUrl) => {
   let result;
   try {
     result = await getDocument(documentId);
-  } catch(err) {
-    console.error('ImportScript Failed', err);
-    throw new Error(`Retrieving Google doc failed due to access, secret config, or invalid google url`);
+  } catch (err) {
+    console.error("ImportScript Failed", err);
+    throw new Error(
+      `Retrieving Google doc failed due to access, secret config, or invalid google url`
+    );
   }
   const document = result.data.body.content;
+  namedStyles = result.data.namedStyles.styles;
   const sections = getSections(document);
+
+  const actionHandlerParagraphs = getActionHandlers(sections) || [];
+  actionHandlers = makeActionHandlersList(
+    _.clone(actionHandlerParagraphs)
+  );
 
   const interactionParagraphs = getInteractions(sections);
   const interactionsHierarchy = makeInteractionHierarchy(
@@ -383,6 +454,8 @@ const importScriptFromDocument = async (campaignId, scriptUrl) => {
     _.clone(cannedResponsesParagraphs)
   );
   await replaceCannedResponsesInDatabase(campaignId, cannedResponsesList);
+  await cacheableData.campaign.reload(campaignId);
+  await cacheableData.cannedResponse.clearQuery({ campaignId });
 };
 
 export default importScriptFromDocument;

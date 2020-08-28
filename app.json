@@ -49,12 +49,7 @@
       "value": "twilio"
     },
 
-    "TWILIO_API_KEY": {
-      "description": "for twilio integration and connected to twilio account",
-      "required": true
-    },
-
-    "TWILIO_APPLICATION_SID": {
+    "TWILIO_ACCOUNT_SID": {
       "description": "for twilio integration and connected to twilio account",
       "required": true
     },
@@ -73,6 +68,18 @@
       "description": "for twilio integration and connected to twilio account",
       "required": true,
       "value": "https://<changeme>.herokuapp.com/twilio-message-report"
+    },
+
+    "TWILIO_MULTI_ORG": {
+      "description": "Allows each organization in the Spoke instance to set Twilio variables within the app",
+      "required": false,
+      "value": "1"
+    },
+
+    "PHONE_INVENTORY": {
+      "description": "Enables organization owners to be able to buy Twilio phone numbers within the app",
+      "required": false,
+      "value": "1"
     },
 
     "EMAIL_HOST": {
@@ -129,6 +136,12 @@
       "value": ""
     },
 
+    "OWNER_CONFIGURABLE": {
+      "description": "Allows organization owners to edit variables",
+      "required": false,
+      "value": "ALL"
+    },
+
     "NODE_ENV": {
       "description": "node environment determines the application start process",
       "required": true,
@@ -162,7 +175,22 @@
       "description": "sets path for migration directory - do not change",
       "required": true,
       "value": "/spoke/build/server/migrations/"
+    },
+
+    "DB_USE_SSL": {
+      "description": "ensures that the DB is connecting over SSL which is a requirement for Heroku DBs",
+      "required": true,
+      "value": "true"
     }
   },
-  "addons": ["heroku-postgresql:hobby-dev", "mailgun:starter"]
+  "addons": [
+    "heroku-postgresql:hobby-dev",
+    {
+      "plan": "heroku-redis:hobby-dev",
+      "options": {
+        "maxmemory-policy": "volatile-lru"
+      }
+    },
+    "mailgun:starter"
+  ]
 }

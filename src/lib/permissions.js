@@ -1,4 +1,11 @@
-export const ROLE_HIERARCHY = ["TEXTER", "SUPERVOLUNTEER", "ADMIN", "OWNER"];
+export const ROLE_HIERARCHY = [
+  "SUSPENDED",
+  "TEXTER",
+  "VETTED_TEXTER",
+  "SUPERVOLUNTEER",
+  "ADMIN",
+  "OWNER"
+];
 
 export const isRoleGreater = (role1, role2) =>
   ROLE_HIERARCHY.indexOf(role1) > ROLE_HIERARCHY.indexOf(role2);
@@ -11,3 +18,9 @@ export const getHighestRole = roles =>
 
 export const hasRole = (role, roles) =>
   hasRoleAtLeast(getHighestRole(roles), role);
+
+export const rolesEqualOrGreater = role =>
+  ROLE_HIERARCHY.slice(ROLE_HIERARCHY.indexOf(role));
+
+export const rolesEqualOrLess = role =>
+  ROLE_HIERARCHY.slice(0, ROLE_HIERARCHY.indexOf(role) + 1);

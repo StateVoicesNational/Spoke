@@ -2,17 +2,22 @@ import PropTypes from "prop-types";
 import React from "react";
 import loadData from "./hoc/load-data";
 import gql from "graphql-tag";
-import wrapMutations from "./hoc/wrap-mutations";
 import GSForm from "../components/forms/GSForm";
 import Form from "react-formal";
 import Dialog from "material-ui/Dialog";
 import GSSubmitButton from "../components/forms/GSSubmitButton";
 import FlatButton from "material-ui/FlatButton";
+import RaisedButton from "material-ui/RaisedButton";
+import DisplayLink from "../components/DisplayLink";
 import yup from "yup";
 import { Card, CardText, CardActions, CardHeader } from "material-ui/Card";
 import { StyleSheet, css } from "aphrodite";
+import theme from "../styles/theme";
 import Toggle from "material-ui/Toggle";
 import moment from "moment";
+import CampaignTexterUIForm from "../components/CampaignTexterUIForm";
+import OrganizationFeatureSettings from "../components/OrganizationFeatureSettings";
+
 const styles = StyleSheet.create({
   section: {
     margin: "10px 0"
@@ -35,6 +40,9 @@ const styles = StyleSheet.create({
 const inlineStyles = {
   dialogButton: {
     display: "inline-block"
+  },
+  shadeBox: {
+    backgroundColor: theme.colors.lightGray
   }
 };
 
@@ -69,33 +77,7 @@ class Settings extends React.Component {
       textingHoursEnd: yup.number().required()
     });
 
-    const hours = [
-      0,
-      1,
-      2,
-      3,
-      4,
-      5,
-      6,
-      7,
-      8,
-      9,
-      10,
-      11,
-      12,
-      13,
-      14,
-      15,
-      16,
-      17,
-      18,
-      19,
-      20,
-      21,
-      22,
-      23,
-      24
-    ];
+    const hours = new Array(24).fill(0).map((_, i) => i);
     const hourChoices = hours.map(hour => ({
       value: hour,
       label: formatTextingHours(hour)
@@ -143,6 +125,141 @@ class Settings extends React.Component {
     );
   }
 
+  handleOpenTwilioDialog = () => this.setState({ twilioDialogOpen: true });
+
+  handleCloseTwilioDialog = () => this.setState({ twilioDialogOpen: false });
+
+  handleSubmitTwilioAuthForm = async ({
+    accountSid,
+    authToken,
+    messageServiceSid
+  }) => {
+    const res = await this.props.mutations.updateTwilioAuth(
+      accountSid,
+      authToken === "<Encrypted>" ? false : authToken,
+      messageServiceSid
+    );
+    if (res.errors) {
+      this.setState({ twilioError: res.errors.message });
+    } else {
+      this.setState({ twilioError: undefined });
+    }
+    this.handleCloseTwilioDialog();
+  };
+
+  renderTwilioAuthForm() {
+    const { organization } = this.props.data;
+    const {
+      twilioAccountSid,
+      twilioAuthToken,
+      twilioMessageServiceSid
+    } = organization;
+    const allSet =
+      twilioAccountSid && twilioAuthToken && twilioMessageServiceSid;
+    let baseUrl = "http://base";
+    if (typeof window !== "undefined") {
+      baseUrl = window.location.origin;
+    }
+    const formSchema = yup.object({
+      accountSid: yup
+        .string()
+        .nullable()
+        .max(64),
+      authToken: yup
+        .string()
+        .nullable()
+        .max(64),
+      messageServiceSid: yup
+        .string()
+        .nullable()
+        .max(64)
+    });
+
+    const dialogActions = [
+      <FlatButton
+        label="Cancel"
+        style={inlineStyles.dialogButton}
+        onClick={this.handleCloseTwilioDialog}
+      />,
+      <Form.Button
+        type="submit"
+        label="Save"
+        style={inlineStyles.dialogButton}
+        component={GSSubmitButton}
+      />
+    ];
+
+    return (
+      <Card>
+        <CardHeader
+          title="Twilio Credentials"
+          style={{
+            backgroundColor: allSet ? theme.colors.green : theme.colors.yellow
+          }}
+        />
+        {allSet && (
+          <CardText style={inlineStyles.shadeBox}>
+            <DisplayLink
+              url={`${baseUrl}/twilio/${organization.id}`}
+              textContent="Twilio credentials are configured for this organization. You should set the inbound Request URL in your Twilio messaging service to this link."
+            />
+          </CardText>
+        )}
+        {this.state.twilioError && (
+          <CardText style={inlineStyles.shadeBox}>
+            {this.state.twilioError}
+          </CardText>
+        )}
+        <CardText>
+          <div className={css(styles.section)}>
+            <span className={css(styles.sectionLabel)}>
+              You can set Twilio API credentials specifically for this
+              Organization by entering them here.
+            </span>
+            <GSForm
+              schema={formSchema}
+              onSubmit={this.handleSubmitTwilioAuthForm}
+              defaultValue={{
+                accountSid: twilioAccountSid,
+                authToken: twilioAuthToken,
+                messageServiceSid: twilioMessageServiceSid
+              }}
+            >
+              <Form.Field
+                label="Twilio Account SID"
+                name="accountSid"
+                fullWidth
+              />
+              <Form.Field
+                label="Twilio Auth Token"
+                name="authToken"
+                fullWidth
+              />
+              <Form.Field
+                label="Default Message Service SID"
+                name="messageServiceSid"
+                fullWidth
+              />
+
+              <Form.Button
+                label={this.props.saveLabel || "Save Twilio Credentials"}
+                onClick={this.handleOpenTwilioDialog}
+              />
+              <Dialog
+                actions={dialogActions}
+                modal={true}
+                open={this.state.twilioDialogOpen}
+              >
+                Changing the Account SID or Messaging Service SID will break any
+                campaigns that are currently running. Do you want to contunue?
+              </Dialog>
+            </GSForm>
+          </div>
+        </CardText>
+      </Card>
+    );
+  }
+
   render() {
     const { organization } = this.props.data;
     const { optOutMessage } = organization;
@@ -153,7 +270,10 @@ class Settings extends React.Component {
     return (
       <div>
         <Card>
-          <CardHeader title="Settings" />
+          <CardHeader
+            title="Settings"
+            style={{ backgroundColor: theme.colors.green }}
+          />
           <CardText>
             <div className={css(styles.section)}>
               <GSForm
@@ -217,6 +337,90 @@ class Settings extends React.Component {
           </CardActions>
         </Card>
         <div>{this.renderTextingHoursForm()}</div>
+        {window.TWILIO_MULTI_ORG && this.renderTwilioAuthForm()}
+        {this.props.data.organization &&
+        this.props.data.organization.texterUIConfig.sideboxChoices.length ? (
+          <Card>
+            <CardHeader
+              title="Texter UI Defaults"
+              style={{ backgroundColor: theme.colors.green }}
+              actAsExpander={true}
+              showExpandableButton={true}
+            />
+            <CardText expandable>
+              <CampaignTexterUIForm
+                formValues={this.props.data.organization}
+                organization={this.props.data.organization}
+                onSubmit={async () => {
+                  const { texterUIConfig } = this.state;
+                  await this.props.mutations.editOrganization({
+                    texterUIConfig
+                  });
+                  this.setState({ texterUIConfig: null });
+                }}
+                onChange={formValues => {
+                  console.log("change", formValues);
+                  this.setState(formValues);
+                }}
+                saveLabel="Save Texter UI Campaign Defaults"
+                saveDisabled={!this.state.texterUIConfig}
+              />
+            </CardText>
+          </Card>
+        ) : null}
+        {this.props.data.organization &&
+        this.props.data.organization.settings ? (
+          <Card>
+            <CardHeader
+              title="Overriding default settings"
+              style={{ backgroundColor: theme.colors.green }}
+              actAsExpander={true}
+              showExpandableButton={true}
+            />
+            <CardText expandable>
+              <OrganizationFeatureSettings
+                formValues={this.props.data.organization}
+                organization={this.props.data.organization}
+                onSubmit={async () => {
+                  const { settings } = this.state;
+                  await this.props.mutations.editOrganization({
+                    settings
+                  });
+                  this.setState({ settings: null });
+                }}
+                onChange={formValues => {
+                  console.log("change", formValues);
+                  this.setState(formValues);
+                }}
+                saveLabel="Save settings"
+                saveDisabled={!this.state.settings}
+              />
+            </CardText>
+          </Card>
+        ) : null}
+
+        {this.props.data.organization && this.props.params.adminPerms ? (
+          <Card>
+            <CardHeader
+              title="External configuration"
+              style={{ backgroundColor: theme.colors.green }}
+              actAsExpander={true}
+              showExpandableButton={true}
+            />
+            <CardText expandable>
+              <h2>DEBUG Zone</h2>
+              <p>Only take actions here if you know what you&rsquo;re doing</p>
+              <RaisedButton
+                label="Clear Cached Organization And Extension Caches"
+                secondary
+                style={inlineStyles.dialogButton}
+                onTouchTap={
+                  this.props.mutations.clearCachedOrgAndExtensionCaches
+                }
+              />
+            </CardText>
+          </Card>
+        ) : null}
       </div>
     );
   }
@@ -228,8 +432,72 @@ Settings.propTypes = {
   mutations: PropTypes.object
 };
 
-const mapMutationsToProps = ({ ownProps }) => ({
-  updateTextingHours: (textingHoursStart, textingHoursEnd) => ({
+const queries = {
+  data: {
+    query: gql`
+      query adminGetCampaigns($organizationId: String!) {
+        organization(id: $organizationId) {
+          id
+          name
+          textingHoursEnforced
+          textingHoursStart
+          textingHoursEnd
+          optOutMessage
+          settings {
+            messageHandlers
+            actionHandlers
+            featuresJSON
+            unsetFeatures
+          }
+          texterUIConfig {
+            options
+            sideboxChoices
+          }
+          twilioAccountSid
+          twilioAuthToken
+          twilioMessageServiceSid
+        }
+      }
+    `,
+    options: ownProps => ({
+      variables: {
+        organizationId: ownProps.params.organizationId
+      },
+      fetchPolicy: "network-only"
+    })
+  }
+};
+
+export const editOrganizationGql = gql`
+  mutation editOrganization(
+    $organizationId: String!
+    $organizationChanges: OrganizationInput!
+  ) {
+    editOrganization(id: $organizationId, organization: $organizationChanges) {
+      id
+      settings {
+        messageHandlers
+        actionHandlers
+        featuresJSON
+        unsetFeatures
+      }
+      texterUIConfig {
+        options
+        sideboxChoices
+      }
+    }
+  }
+`;
+
+const mutations = {
+  editOrganization: ownProps => organizationChanges => ({
+    mutation: editOrganizationGql,
+    variables: {
+      organizationId: ownProps.params.organizationId,
+      organizationChanges
+    }
+  }),
+  updateTextingHours: ownProps => (textingHoursStart, textingHoursEnd) => ({
     mutation: gql`
       mutation updateTextingHours(
         $textingHoursStart: Int!
@@ -254,7 +522,7 @@ const mapMutationsToProps = ({ ownProps }) => ({
       textingHoursEnd
     }
   }),
-  updateTextingHoursEnforcement: textingHoursEnforced => ({
+  updateTextingHoursEnforcement: ownProps => textingHoursEnforced => ({
     mutation: gql`
       mutation updateTextingHoursEnforcement(
         $textingHoursEnforced: Boolean!
@@ -276,7 +544,7 @@ const mapMutationsToProps = ({ ownProps }) => ({
       textingHoursEnforced
     }
   }),
-  updateOptOutMessage: ({ optOutMessage }) => ({
+  updateOptOutMessage: ownProps => ({ optOutMessage }) => ({
     mutation: gql`
       mutation updateOptOutMessage(
         $optOutMessage: String!
@@ -295,31 +563,45 @@ const mapMutationsToProps = ({ ownProps }) => ({
       organizationId: ownProps.params.organizationId,
       optOutMessage
     }
-  })
-});
-
-const mapQueriesToProps = ({ ownProps }) => ({
-  data: {
-    query: gql`
-      query adminGetCampaigns($organizationId: String!) {
-        organization(id: $organizationId) {
+  }),
+  updateTwilioAuth: ownProps => (accountSid, authToken, messageServiceSid) => ({
+    mutation: gql`
+      mutation updateTwilioAuth(
+        $twilioAccountSid: String
+        $twilioAuthToken: String
+        $twilioMessageServiceSid: String
+        $organizationId: String!
+      ) {
+        updateTwilioAuth(
+          twilioAccountSid: $twilioAccountSid
+          twilioAuthToken: $twilioAuthToken
+          twilioMessageServiceSid: $twilioMessageServiceSid
+          organizationId: $organizationId
+        ) {
           id
-          name
-          textingHoursEnforced
-          textingHoursStart
-          textingHoursEnd
-          optOutMessage
+          twilioAccountSid
+          twilioAuthToken
+          twilioMessageServiceSid
         }
       }
     `,
     variables: {
+      organizationId: ownProps.params.organizationId,
+      twilioAccountSid: accountSid,
+      twilioAuthToken: authToken,
+      twilioMessageServiceSid: messageServiceSid
+    }
+  }),
+  clearCachedOrgAndExtensionCaches: ownProps => () => ({
+    mutation: gql`
+      mutation clearCachedOrgAndExtensionCaches($organizationId: String!) {
+        clearCachedOrgAndExtensionCaches(organizationId: $organizationId)
+      }
+    `,
+    variables: {
       organizationId: ownProps.params.organizationId
-    },
-    forceFetch: true
-  }
-});
+    }
+  })
+};
 
-export default loadData(wrapMutations(Settings), {
-  mapQueriesToProps,
-  mapMutationsToProps
-});
+export default loadData({ queries, mutations })(Settings);

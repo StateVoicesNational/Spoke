@@ -3,14 +3,15 @@ import React from "react";
 import RaisedButton from "material-ui/RaisedButton";
 import Chart from "../components/Chart";
 import { Card, CardTitle, CardText } from "material-ui/Card";
+import LinearProgress from "material-ui/LinearProgress";
 import TexterStats from "../components/TexterStats";
+import OrganizationJoinLink from "../components/OrganizationJoinLink";
 import Snackbar from "material-ui/Snackbar";
-import { withRouter } from "react-router";
+import { withRouter, Link } from "react-router";
 import { StyleSheet, css } from "aphrodite";
 import loadData from "./hoc/load-data";
 import gql from "graphql-tag";
 import theme from "../styles/theme";
-import wrapMutations from "./hoc/wrap-mutations";
 import { dataTest } from "../lib/attributes";
 
 const inlineStyles = {
@@ -90,6 +91,8 @@ Stat.propTypes = {
 
 class AdminCampaignStats extends React.Component {
   state = {
+    copyCampaignId: null, // This is the ID of the most-recently created copy of the campaign.
+    copyMessageOpen: false, // This is true when the copy snackbar should be shown.
     exportMessageOpen: false,
     disableExportButton: false
   };
@@ -135,22 +138,48 @@ class AdminCampaignStats extends React.Component {
     });
   }
 
-  renderCopyButton() {
+  renderErrorCounts() {
+    const { campaignId, organizationId } = this.props.params;
+    const { errorCounts } = this.props.data.campaign.stats;
+    const { contactsCount } = this.props.data.campaign;
+    console.log("errorcounts", contactsCount, errorCounts);
+    if (!errorCounts.length) {
+      return null;
+    }
     return (
-      <RaisedButton
-        label="Copy Campaign"
-        onTouchTap={async () =>
-          await this.props.mutations.copyCampaign(this.props.params.campaignId)
-        }
-      />
+      <div>
+        {errorCounts.map(error => (
+          <div key={error.code}>
+            {error.link ? (
+              <a href={error.link} target="_blank">
+                Error code {error.code}
+              </a>
+            ) : (
+              error.code
+            )}{" "}
+            {error.description || null}
+            <div>
+              <Link
+                to={`/admin/${organizationId}/incoming?campaigns=${campaignId}&errorCode=${error.code}`}
+              >
+                {error.count} errors
+              </Link>
+            </div>
+            <LinearProgress
+              color="red"
+              mode="determinate"
+              value={Math.round((100 * error.count) / contactsCount)}
+            />
+          </div>
+        ))}
+      </div>
     );
   }
 
   render() {
     const { data, params } = this.props;
-    const { organizationId, campaignId } = params;
+    const { adminPerms, organizationId, campaignId } = params;
     const campaign = data.campaign;
-    const { adminPerms } = this.props.params;
     const currentExportJob = this.props.data.campaign.pendingJobs.filter(
       job => job.jobType === "export"
     )[0];
@@ -160,7 +189,11 @@ class AdminCampaignStats extends React.Component {
     const exportLabel = currentExportJob
       ? `Exporting (${currentExportJob.status}%)`
       : "Export Data";
-
+    const {
+      campaignPhoneNumbersEnabled
+    } = this.props.organizationData.organization;
+    const showReleaseNumbers =
+      campaign.isArchived && campaignPhoneNumbersEnabled;
     return (
       <div>
         <div className={css(styles.container)}>
@@ -193,6 +226,15 @@ class AdminCampaignStats extends React.Component {
                       label="Edit"
                     />
                   ) : null}
+                  <RaisedButton
+                    {...dataTest("convoCampaign")}
+                    onTouchTap={() =>
+                      this.props.router.push(
+                        `/admin/${organizationId}/incoming?campaigns=${campaignId}`
+                      )
+                    }
+                    label="Convos"
+                  />
                   {adminPerms
                     ? [
                         // Buttons for Admins (and not Supervolunteers)
@@ -220,6 +262,7 @@ class AdminCampaignStats extends React.Component {
                         />, // unarchive
                         campaign.isArchived ? (
                           <RaisedButton
+                            disabled={campaign.isArchivedPermanently}
                             onTouchTap={async () =>
                               await this.props.mutations.unarchiveCampaign(
                                 campaignId
@@ -227,7 +270,7 @@ class AdminCampaignStats extends React.Component {
                             }
                             label="Unarchive"
                           />
-                        ) : null, // archive
+                        ) : null,
                         !campaign.isArchived ? (
                           <RaisedButton
                             onTouchTap={async () =>
@@ -241,12 +284,37 @@ class AdminCampaignStats extends React.Component {
                         <RaisedButton
                           {...dataTest("copyCampaign")}
                           label="Copy Campaign"
-                          onTouchTap={async () =>
-                            await this.props.mutations.copyCampaign(
+                          onTouchTap={async () => {
+                            let result = await this.props.mutations.copyCampaign(
                               this.props.params.campaignId
-                            )
-                          }
-                        />
+                            );
+                            this.setState({
+                              copyCampaignId: result.data.copyCampaign.id,
+                              copyMessageOpen: true
+                            });
+                          }}
+                        />,
+                        campaign.useOwnMessagingService ? (
+                          <RaisedButton
+                            {...dataTest("messagingService")}
+                            onTouchTap={() =>
+                              this.props.router.push(
+                                `/admin/${organizationId}/campaigns/${campaignId}/messaging-service`
+                              )
+                            }
+                            label="Messaging Service"
+                          />
+                        ) : null,
+                        showReleaseNumbers ? (
+                          <RaisedButton
+                            onTouchTap={async () =>
+                              this.props.mutations.releaseCampaignNumbers(
+                                campaignId
+                              )
+                            }
+                            label="Release Numbers"
+                          />
+                        ) : null
                       ]
                     : null}
                 </div>
@@ -254,6 +322,13 @@ class AdminCampaignStats extends React.Component {
             </div>
           </div>
         </div>
+        {campaign.joinToken && campaign.useDynamicAssignment ? (
+          <OrganizationJoinLink
+            organizationUuid={campaign.joinToken}
+            campaignId={campaignId}
+          />
+        ) : null}
+
         <div className={css(styles.container)}>
           <div className={css(styles.flexColumn, styles.spacer)}>
             <Stat title="Contacts" count={campaign.contactsCount} />
@@ -276,16 +351,39 @@ class AdminCampaignStats extends React.Component {
         </div>
         <div className={css(styles.header)}>Survey Questions</div>
         {this.renderSurveyStats()}
-
+        {campaign.stats.errorCounts.length > 0 ? (
+          <div>
+            <div className={css(styles.header)}>Sending Errors</div>
+            {this.renderErrorCounts()}{" "}
+          </div>
+        ) : null}
         <div className={css(styles.header)}>Texter stats</div>
         <div className={css(styles.secondaryHeader)}>% of first texts sent</div>
-        <TexterStats campaign={campaign} />
+        <TexterStats campaign={campaign} organizationId={organizationId} />
         <Snackbar
           open={this.state.exportMessageOpen}
           message="Export started - we'll e-mail you when it's done"
           autoHideDuration={5000}
           onRequestClose={() => {
             this.setState({ exportMessageOpen: false });
+          }}
+        />
+        <Snackbar
+          open={this.state.copyMessageOpen}
+          message="A new copy has been made."
+          action="Edit"
+          onActionClick={() => {
+            this.props.router.push(
+              "/admin/" +
+                encodeURIComponent(organizationId) +
+                "/campaigns/" +
+                encodeURIComponent(this.state.copyCampaignId) +
+                "/edit"
+            );
+          }}
+          autoHideDuration={5000}
+          onRequestClose={() => {
+            this.setState({ copyMessageOpen: false });
           }}
         />
       </div>
@@ -300,26 +398,35 @@ AdminCampaignStats.propTypes = {
   router: PropTypes.object
 };
 
-const mapQueriesToProps = ({ ownProps }) => ({
+const queries = {
   data: {
     query: gql`
       query getCampaign(
         $campaignId: String!
+        $organizationId: String!
         $contactsFilter: ContactsFilter!
+        $needsResponseFilter: ContactsFilter!
+        $assignmentsFilter: AssignmentsFilter
       ) {
         campaign(id: $campaignId) {
           id
           title
           isArchived
+          isArchivedPermanently
+          joinToken
           useDynamicAssignment
-          assignments {
+          useOwnMessagingService
+          messageserviceSid
+          assignments(assignmentsFilter: $assignmentsFilter) {
             id
             texter {
               id
+              roles(organizationId: $organizationId)
               firstName
               lastName
             }
             unmessagedCount: contactsCount(contactsFilter: $contactsFilter)
+            unrepliedCount: contactsCount(contactsFilter: $needsResponseFilter)
             contactsCount
           }
           pendingJobs {
@@ -343,22 +450,53 @@ const mapQueriesToProps = ({ ownProps }) => ({
             sentMessagesCount
             receivedMessagesCount
             optOutsCount
+            errorCounts {
+              code
+              count
+              description
+              link
+            }
           }
         }
       }
     `,
-    variables: {
-      campaignId: ownProps.params.campaignId,
-      contactsFilter: {
-        messageStatus: "needsMessage"
+    options: ownProps => ({
+      variables: {
+        campaignId: ownProps.params.campaignId,
+        organizationId: ownProps.params.organizationId,
+        assignmentsFilter: {
+          stats: true
+        },
+        contactsFilter: {
+          messageStatus: "needsMessage"
+        },
+        needsResponseFilter: {
+          messageStatus: "needsResponse",
+          isOptedOut: false
+        }
+      },
+      pollInterval: 5000
+    })
+  },
+  organizationData: {
+    query: gql`
+      query getOrganizationData($organizationId: String!) {
+        organization(id: $organizationId) {
+          id
+          campaignPhoneNumbersEnabled
+        }
       }
-    },
-    pollInterval: 5000
+    `,
+    options: ownProps => ({
+      variables: {
+        organizationId: ownProps.params.organizationId
+      }
+    })
   }
-});
+};
 
-const mapMutationsToProps = () => ({
-  archiveCampaign: campaignId => ({
+const mutations = {
+  archiveCampaign: ownProps => campaignId => ({
     mutation: gql`
       mutation archiveCampaign($campaignId: String!) {
         archiveCampaign(id: $campaignId) {
@@ -369,7 +507,7 @@ const mapMutationsToProps = () => ({
     `,
     variables: { campaignId }
   }),
-  unarchiveCampaign: campaignId => ({
+  unarchiveCampaign: ownProps => campaignId => ({
     mutation: gql`
       mutation unarchiveCampaign($campaignId: String!) {
         unarchiveCampaign(id: $campaignId) {
@@ -380,7 +518,7 @@ const mapMutationsToProps = () => ({
     `,
     variables: { campaignId }
   }),
-  exportCampaign: campaignId => ({
+  exportCampaign: ownProps => campaignId => ({
     mutation: gql`
       mutation exportCampaign($campaignId: String!) {
         exportCampaign(id: $campaignId) {
@@ -390,7 +528,7 @@ const mapMutationsToProps = () => ({
     `,
     variables: { campaignId }
   }),
-  copyCampaign: campaignId => ({
+  copyCampaign: ownProps => campaignId => ({
     mutation: gql`
       mutation copyCampaign($campaignId: String!) {
         copyCampaign(id: $campaignId) {
@@ -399,10 +537,19 @@ const mapMutationsToProps = () => ({
       }
     `,
     variables: { campaignId }
+  }),
+  releaseCampaignNumbers: ownProps => campaignId => ({
+    mutation: gql`
+      mutation releaseCampaignNumbers($campaignId: ID!) {
+        releaseCampaignNumbers(campaignId: $campaignId) {
+          id
+          messageserviceSid
+        }
+      }
+    `,
+    variables: { campaignId },
+    refetchQueries: () => ["getOrganizationData"]
   })
-});
+};
 
-export default loadData(withRouter(wrapMutations(AdminCampaignStats)), {
-  mapQueriesToProps,
-  mapMutationsToProps
-});
+export default loadData({ queries, mutations })(withRouter(AdminCampaignStats));

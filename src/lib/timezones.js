@@ -16,26 +16,28 @@ const TIMEZONE_CONFIG = {
 };
 
 export const getContactTimezone = (campaign, location) => {
-  const returnLocation = Object.assign({}, location);
-  if (location.timezone == null || location.timezone.offset == null) {
-    let timezoneData = null;
+  if (location) {
+    const returnLocation = Object.assign({}, location);
+    if (location.timezone == null || location.timezone.offset == null) {
+      let timezoneData = null;
 
-    if (campaign.overrideOrganizationTextingHours) {
-      const offset = DstHelper.getTimezoneOffsetHours(campaign.timezone);
-      const hasDST = DstHelper.timezoneHasDst(campaign.timezone);
-      timezoneData = { offset, hasDST };
-    } else if (getProcessEnvTz()) {
-      const offset = DstHelper.getTimezoneOffsetHours(getProcessEnvTz());
-      const hasDST = DstHelper.timezoneHasDst(getProcessEnvTz());
-      timezoneData = { offset, hasDST };
-    } else {
-      const offset = TIMEZONE_CONFIG.missingTimeZone.offset;
-      const hasDST = TIMEZONE_CONFIG.missingTimeZone.hasDST;
-      timezoneData = { offset, hasDST };
+      if (campaign.overrideOrganizationTextingHours) {
+        const offset = DstHelper.getTimezoneOffsetHours(campaign.timezone);
+        const hasDST = DstHelper.timezoneHasDst(campaign.timezone);
+        timezoneData = { offset, hasDST };
+      } else if (getProcessEnvTz()) {
+        const offset = DstHelper.getTimezoneOffsetHours(getProcessEnvTz());
+        const hasDST = DstHelper.timezoneHasDst(getProcessEnvTz());
+        timezoneData = { offset, hasDST };
+      } else {
+        const offset = TIMEZONE_CONFIG.missingTimeZone.offset;
+        const hasDST = TIMEZONE_CONFIG.missingTimeZone.hasDST;
+        timezoneData = { offset, hasDST };
+      }
+      returnLocation.timezone = timezoneData;
     }
-    returnLocation.timezone = timezoneData;
+    return returnLocation;
   }
-  return returnLocation;
 };
 
 export const getUtcFromOffsetAndHour = (

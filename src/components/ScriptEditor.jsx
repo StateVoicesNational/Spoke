@@ -1,5 +1,6 @@
 import PropTypes from "prop-types";
 import React from "react";
+import { Link } from "react-router";
 import {
   EditorState,
   ContentState,
@@ -10,6 +11,7 @@ import {
 import { delimit } from "../lib/scripts";
 import Chip from "./Chip";
 import { red400, green500, green600, grey100 } from "material-ui/styles/colors";
+import { getCharCount } from "@trt2/gsm-charset-utils";
 
 const styles = {
   editor: {
@@ -44,6 +46,21 @@ const styles = {
     padding: 5
   }
 };
+
+const gsmReplacements = [
+  ["‘", "'"],
+  ["’", "'"],
+  ["”", '"'],
+  ["”", '"'],
+  ["“", '"'],
+  ["–", "-"]
+];
+
+const replaceEasyGsmWins = text =>
+  gsmReplacements.reduce(
+    (acc, replacement) => acc.replace(replacement[0], replacement[1]),
+    text
+  );
 
 function findWithRegex(regex, contentBlock, callback) {
   const text = contentBlock.getText();
@@ -82,12 +99,19 @@ class ScriptEditor extends React.Component {
 
     const editorState = this.getEditorState();
     this.state = {
-      editorState
+      editorState,
+      readyToAdd: false
     };
 
     this.focus = () => this.refs.editor.focus();
     this.onChange = this.onChange.bind(this);
     this.addCustomField = this.addCustomField.bind(this);
+    // start out with buttons disabled for 200ms
+    // because sometimes the click to open lands
+    // on one of the items.  After it opens, we enable them.
+    setTimeout(() => {
+      this.setState({ readyToAdd: true });
+    }, 200);
   }
 
   componentWillReceiveProps() {
@@ -95,7 +119,6 @@ class ScriptEditor extends React.Component {
     const { editorState } = this.state;
     const decorator = this.getCompositeDecorator(scriptFields);
     EditorState.set(editorState, { decorator });
-
     // this.setState({ editorState: this.getEditorState() })
   }
 
@@ -152,8 +175,11 @@ class ScriptEditor extends React.Component {
   }
 
   addCustomField(field) {
+    const { editorState, readyToAdd } = this.state;
+    if (!readyToAdd) {
+      return;
+    }
     const textToInsert = delimit(field);
-    const { editorState } = this.state;
     const selection = editorState.getSelection();
     const contentState = editorState.getCurrentContent();
     const newContentState = Modifier.insertText(
@@ -186,9 +212,16 @@ class ScriptEditor extends React.Component {
 
   render() {
     const { name } = this.props;
-
+    const text = this.state.editorState.getCurrentContent().getPlainText();
+    const segmentInfo = getCharCount(replaceEasyGsmWins(text));
     return (
       <div>
+        <div style={segmentInfo.charCount > 1600 ? { color: "red" } : {}}>
+          Total characters: {segmentInfo.charCount}
+          {segmentInfo.charCount > 1600 ? (
+            <span> Exceeded MMS maximum </span>
+          ) : null}
+        </div>
         <div style={styles.editor} onClick={this.focus}>
           <Editor
             name={name}
@@ -199,6 +232,21 @@ class ScriptEditor extends React.Component {
           />
         </div>
         {this.renderCustomFields()}
+        <div>
+          Estimated{" "}
+          <Link
+            target="_blank"
+            to="https://www.twilio.com/blog/2017/03/what-the-heck-is-a-segment.html"
+          >
+            Segments
+          </Link>
+          : {segmentInfo.msgCount}
+          <br />
+          Characters left in current segment:{" "}
+          {segmentInfo.msgCount * segmentInfo.charsPerSegment -
+            segmentInfo.charCount}
+          <br />
+        </div>
       </div>
     );
   }

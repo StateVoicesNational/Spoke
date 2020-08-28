@@ -7,7 +7,7 @@ describe("TopNav", () => {
   it("can render only title", () => {
     const nav = shallow(<TopNav title="Welcome to my website" />);
     expect(nav.text()).toEqual(
-      "Welcome to my website<Connect(Apollo(withRouter(UserMenu))) />"
+      "Welcome to my website<Apollo(withRouter(UserMenu)) />"
     );
     expect(nav.find("Link").length).toBe(0);
   });
@@ -23,7 +23,7 @@ describe("TopNav", () => {
 
   it("renders UserMenu", () => {
     const nav = shallow(<TopNav title="Welcome to my website" />);
-    expect(nav.find("Connect(Apollo(withRouter(UserMenu)))").length).toBe(1);
+    expect(nav.find("Apollo(withRouter(UserMenu))").length).toBe(1);
   });
 });
 

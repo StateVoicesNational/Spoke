@@ -98,11 +98,11 @@ describe("test texter assignment in dynamic mode", () => {
   it("supports saving null or zero maxContacts", async () => {
     const zero = await r
       .knex("assignment")
-      .where({ campaign_id: testCampaign.id, user_id: "2" })
+      .where({ campaign_id: testCampaign.id, user_id: 2 })
       .select("max_contacts");
     const blank = await r
       .knex("assignment")
-      .where({ campaign_id: testCampaign.id, user_id: "1" })
+      .where({ campaign_id: testCampaign.id, user_id: 1 })
       .select("max_contacts");
     const maxContactsZero = zero[0]["max_contacts"];
     const maxContactsBlank = blank[0]["max_contacts"];

@@ -54,7 +54,6 @@ export function genAssignment(assignmentId, isArchived, hasContacts) {
         textingHoursEnforced: false,
         textingHoursStart: 9,
         textingHoursEnd: 15,
-        threeClickEnabled: false,
         optOutMessage: "We will remove you from any further communication."
       },
       customFields: ["customField"],

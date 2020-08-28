@@ -6,8 +6,8 @@ import GSForm from "./forms/GSForm";
 
 class CannedResponseForm extends React.Component {
   handleSave = formValues => {
-    const { onSaveCannedResponse } = this.props;
-    onSaveCannedResponse(formValues);
+    this.setState({ text: formValues.text });
+    this.props.onSaveCannedResponse(formValues);
   };
 
   render() {
@@ -22,7 +22,7 @@ class CannedResponseForm extends React.Component {
         <GSForm ref="form" schema={modelSchema} onSubmit={this.handleSave}>
           <Form.Field name="title" autoFocus fullWidth label="Title" />
           <Form.Field
-            customFields={customFields}
+            customFields={customFields || []}
             name="text"
             type="script"
             label="Script"
