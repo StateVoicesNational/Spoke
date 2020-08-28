@@ -18,7 +18,7 @@ But because of the timing it was ambiguous whether we 'just' hit scaling issues 
 - Drastically improves the query efficiency for the Texter Todos page
 - Removes some liability of thrashing with auto-optout updating.
 
-## 8.1 Highlights
+### 8.1 Highlights
 8.1 still makes up the bulk of 9.0's featureset, so here's what to look out for and check out the [8.1 section](RELEASE_NOTES.md#v81) for the full list of awesome changes
 
 - **Tagging:** The tags feature is no longer experimental! This release includes a few adjustments to tags that finish the tagging story:
