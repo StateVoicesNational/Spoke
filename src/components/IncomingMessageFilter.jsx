@@ -58,6 +58,10 @@ export const MESSAGE_STATUSES = {
   closed: {
     name: "Closed",
     children: []
+  },
+  needsResponseExpired: {
+    name: "Expired Needs Response",
+    children: []
   }
 };
 
@@ -75,10 +79,22 @@ class IncomingMessageFilter extends Component {
 
     this.state = {
       selectedCampaigns: [],
-      messageTextFilter: "",
-      tagsFilter: this.props.tagsFilter
+      messageTextFilter: this.props.messageTextFilter,
+      messageFilter:
+        this.props.messageFilter && this.props.messageFilter.split(","),
+      tagsFilter: this.props.tagsFilter,
+      errorCode: this.props.errorCode
     };
   }
+
+  componentWillUpdate = (nextProps, nextState) => {
+    if (nextProps.texterSearchText && !this.state.texterSearchText) {
+      this.state.texterSearchText = nextProps.texterSearchText;
+    }
+    if (nextProps.selectedCampaigns && !this.state.selectedCampaigns.length) {
+      this.state.selectedCampaigns = nextProps.selectedCampaigns;
+    }
+  };
 
   onMessageFilterSelectChanged = (event, index, values) => {
     this.setState({ messageFilter: values });
@@ -160,7 +176,10 @@ class IncomingMessageFilter extends Component {
   };
 
   fireCampaignChanged = selectedCampaigns => {
-    this.props.onCampaignChanged(this.selectedCampaignIds(selectedCampaigns));
+    this.props.onCampaignChanged(
+      this.selectedCampaignIds(selectedCampaigns),
+      selectedCampaigns
+    );
   };
 
   removeAllCampaignsFromCampaignsArray = campaign =>
@@ -220,6 +239,8 @@ class IncomingMessageFilter extends Component {
       return left.text.localeCompare(right.text, "en", { sensitivity: "base" });
     });
 
+    //this.state.texterSearchText = this.props.texterSearchText;
+
     return (
       <Card>
         <CardHeader title="Message Filter" actAsExpander showExpandableButton />
@@ -256,6 +277,14 @@ class IncomingMessageFilter extends Component {
                 label={"Opted Out"}
                 onToggle={this.props.onOptedOutConversationsToggled}
                 toggled={this.props.includeOptedOutConversations}
+              />
+            </div>
+            <div className={css(styles.spacer)} />
+            <div className={css(styles.toggleFlexColumn)}>
+              <SelectedCampaigns
+                campaigns={this.state.selectedCampaigns}
+                onDeleteRequested={this.handleCampaignRemoved}
+                onClear={this.handleClearCampaigns}
               />
             </div>
           </div>
@@ -324,6 +353,7 @@ class IncomingMessageFilter extends Component {
               <TextField
                 hintText="Search message text"
                 floatingLabelText="Search message text"
+                value={this.state.messageTextFilter}
                 onChange={(_, messageTextFilter) => {
                   this.setState({ messageTextFilter });
                 }}
@@ -336,18 +366,28 @@ class IncomingMessageFilter extends Component {
                 }}
               />
             </div>
-            <div>
-              {window.EXPERIMENTAL_TAGS === true && (
-                <TagsSelector
-                  onChange={this.onTagsFilterChanged}
-                  tagsFilter={this.state.tagsFilter}
-                  tags={this.props.tags}
-                />
-              )}
-              <SelectedCampaigns
-                campaigns={this.state.selectedCampaigns}
-                onDeleteRequested={this.handleCampaignRemoved}
-                onClear={this.handleClearCampaigns}
+            <div className={css(styles.spacer)} />
+            <div className={css(styles.flexColumn)}>
+              <TagsSelector
+                onChange={this.onTagsFilterChanged}
+                tagsFilter={this.state.tagsFilter}
+                tags={this.props.tags}
+              />
+            </div>
+            <div className={css(styles.spacer)} />
+            <div className={css(styles.flexColumn)}>
+              <TextField
+                hintText="Error code number"
+                floatingLabelText="Error codes"
+                value={this.state.errorCode}
+                onChange={(_, errorCode) => {
+                  this.setState({ errorCode });
+                }}
+                onKeyPress={evt => {
+                  if (evt.key === "Enter") {
+                    this.props.onErrorCodeChanged(this.state.errorCode);
+                  }
+                }}
               />
             </div>
           </div>
@@ -361,6 +401,7 @@ IncomingMessageFilter.propTypes = {
   onCampaignChanged: type.func.isRequired,
   onTexterChanged: type.func.isRequired,
   onMessageTextFilterChanged: type.func.isRequired,
+  onErrorCodeChanged: type.func.isRequired,
   onActiveCampaignsToggled: type.func.isRequired,
   onArchivedCampaignsToggled: type.func.isRequired,
   includeArchivedCampaigns: type.bool.isRequired,
@@ -377,7 +418,11 @@ IncomingMessageFilter.propTypes = {
   }).isRequired,
   onTagsFilterChanged: type.func.isRequired,
   tags: type.arrayOf(type.object).isRequired,
-  tagsFilter: type.object.isRequired
+  tagsFilter: type.object.isRequired,
+  messageTextFilter: type.string,
+  texterSearchText: type.string,
+  errorCode: type.arrayOf(type.number),
+  selectedCampaigns: type.array
 };
 
 export default IncomingMessageFilter;

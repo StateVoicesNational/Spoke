@@ -1,4 +1,9 @@
-import { testTexterUser, testContact, assignmentId } from "./common";
+import {
+  testOrganization,
+  testTexterUser,
+  testContact,
+  assignmentId
+} from "./common";
 /* eslint-disable no-unused-expressions, consistent-return */
 import { r } from "../../../src/server/models";
 
@@ -22,9 +27,9 @@ function getAssignmentContactsMutAndVars(props, contactIds, findNew) {
   return [mutation, variables];
 }
 
-const getContactsQuery = texterTodoOps.queries.data.query;
+const getContactsQuery = texterTodoOps.queries.contactData.query;
 const getContactsVars = props =>
-  texterTodoOps.queries.data.options(props).variables;
+  texterTodoOps.queries.contactData.options(props).variables;
 
 /*
 * NOTE:
@@ -34,9 +39,10 @@ const getContactsVars = props =>
 * We have one test per file to work around limitations with jest's require cache
 */
 it("should send an initial message to test contacts", async () => {
+  const organizationId = testOrganization.data.createOrganization.id;
   const texterTodoProps = {
     messageStatus: "needsMessage",
-    params: { assignmentId }
+    params: { assignmentId, organizationId }
   };
 
   const contactsResult = await runGql(
@@ -105,9 +111,10 @@ it("should send an initial message to test contacts", async () => {
 });
 
 it("should be able to receive a response and reply (using fakeService)", async () => {
+  const organizationId = testOrganization.data.createOrganization.id;
   const texterTodoProps = {
     messageStatus: "needsMessage",
-    params: { assignmentId }
+    params: { assignmentId, organizationId }
   };
 
   const contactsResult = await runGql(

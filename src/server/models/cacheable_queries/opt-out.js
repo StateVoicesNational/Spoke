@@ -1,4 +1,5 @@
 import { r, OptOut } from "../../models";
+import campaignCache from "./campaign";
 
 // STRUCTURE
 // SET by organization, so optout-<organization_id> has a <cell> key
@@ -105,7 +106,15 @@ const optOutCache = {
       .limit(1);
     return dbResult.length > 0;
   },
-  save: async ({ cell, campaignContactId, campaign, assignmentId, reason }) => {
+  save: async ({
+    cell,
+    campaignContactId,
+    campaign,
+    assignmentId,
+    reason,
+    noContactUpdate,
+    noReply
+  }) => {
     const organizationId = campaign.organization_id;
     if (r.redis) {
       const hashKey = orgCacheKey(organizationId);
@@ -115,12 +124,23 @@ const optOutCache = {
       }
     }
     // database
-    await new OptOut({
+    await r.knex("opt_out").insert({
       assignment_id: assignmentId,
       organization_id: organizationId,
       reason_code: reason,
       cell
-    }).save();
+    });
+
+    if (noContactUpdate && r.redis) {
+      // this is a risky feature which will not update campaign_contacts
+      // Only use this when you are confident that at least the campaign's
+      // campaign_contact record will update.
+      // The first use-case was for auto-optout, where we update the contact
+      // during message save
+      // We only allow it when the cache is set, so other campaigns are still
+      // (mostly) assured to get the opt-out
+      return;
+    }
 
     // update all organization/instance's active campaigns as well
     const updateOrgOrInstanceOptOuts = !sharingOptOuts
@@ -144,6 +164,9 @@ const optOutCache = {
       .update({
         is_opted_out: true
       });
+    if (noReply) {
+      await campaignCache.incrCount(campaign.id, "needsResponseCount", -1);
+    }
   },
   loadMany
 };

@@ -3,14 +3,16 @@ import { mapFieldsToModel } from "./lib/utils";
 import { errorDescriptions } from "./lib/twilio";
 import { Campaign, JobRequest, r, cacheableData } from "../models";
 import { getUsers } from "./user";
+import { getSideboxChoices } from "./organization";
 import {
   getAvailableIngestMethods,
   getMethodChoiceData
-} from "../../integrations/contact-loaders";
+} from "../../extensions/contact-loaders";
 import twilio from "./lib/twilio";
-import { getConfig } from "./lib/config";
-
+import { getConfig, getFeatures } from "./lib/config";
+import ownedPhoneNumber from "./lib/owned-phone-number";
 const title = 'lower("campaign"."title")';
+import { camelizeKeys } from "humps";
 
 export function addCampaignsFilterToQuery(
   queryParam,
@@ -43,14 +45,23 @@ export function addCampaignsFilterToQuery(
     }
 
     if ("searchString" in campaignsFilter && campaignsFilter.searchString) {
+      var neg =
+        campaignsFilter.searchString.length > 0 &&
+        campaignsFilter.searchString[0] === "-";
       const searchStringWithPercents = (
         "%" +
-        campaignsFilter.searchString +
+        campaignsFilter.searchString.slice(neg) +
         "%"
       ).toLocaleLowerCase();
-      query = query.andWhere(
-        r.knex.raw(`${title} like ?`, [searchStringWithPercents])
-      );
+      if (neg) {
+        query = query.andWhere(
+          r.knex.raw(`${title} not like ?`, [searchStringWithPercents])
+        );
+      } else {
+        query = query.andWhere(
+          r.knex.raw(`${title} like ?`, [searchStringWithPercents])
+        );
+      }
     }
 
     if (resultSize && !pageSize) {
@@ -276,7 +287,6 @@ export const resolvers = {
         "id",
         "title",
         "description",
-        "batchSize",
         "isStarted",
         "isArchived",
         "useDynamicAssignment",
@@ -306,6 +316,14 @@ export const resolvers = {
       );
       return campaign.join_token;
     },
+    batchSize: campaign => campaign.batch_size || 300,
+    batchPolicies: campaign => {
+      const features = getFeatures(campaign);
+      return features.DYNAMICASSIGNMENT_BATCHES
+        ? features.DYNAMICASSIGNMENT_BATCHES.split(",")
+        : [];
+    },
+    responseWindow: campaign => campaign.response_window || 48,
     organization: async (campaign, _, { loaders }) =>
       campaign.organization ||
       loaders.organization.load(campaign.organization_id),
@@ -429,6 +447,7 @@ export const resolvers = {
             "assignment.id",
             "assignment.user_id",
             "assignment.campaign_id",
+            "assignment.max_contacts",
             "user.first_name",
             "user.last_name",
             "user_organization.role"
@@ -446,14 +465,19 @@ export const resolvers = {
               r.knex.raw(
                 "SUM(CASE WHEN campaign_contact.message_status = 'needsMessage' THEN 1 ELSE 0 END) as needs_message_count"
               ),
+              r.knex.raw(
+                "SUM(CASE WHEN campaign_contact.message_status = 'needsResponse' THEN 1 ELSE 0 END) as unrepliedcount"
+              ),
               r.knex.raw("COUNT(*) as contacts_count")
             )
             .groupBy(...fields)
             .havingRaw("count(*) > 0");
         }
       }
-
-      return query;
+      return (await query).map(a => ({
+        ...a,
+        texter: { ...a, id: a.user_id }
+      }));
     },
     interactionSteps: async (campaign, _, { user }) => {
       await accessRequired(user, campaign.organization_id, "TEXTER", true);
@@ -481,8 +505,7 @@ export const resolvers = {
         // fallback on organization defaults
         options = getConfig("TEXTER_UI_SETTINGS", organization) || "";
       }
-      const sideboxes = getConfig("TEXTER_SIDEBOXES", organization);
-      const sideboxChoices = (sideboxes && sideboxes.split(",")) || [];
+      const sideboxChoices = getSideboxChoices(organization);
       return {
         options,
         sideboxChoices
@@ -576,14 +599,41 @@ export const resolvers = {
       }
       return "";
     },
-    phoneNumbers: async campaign => {
+    // TODO: rename to messagingServicePhoneNumbers
+    phoneNumbers: async (campaign, _, { user }) => {
+      await accessRequired(
+        user,
+        campaign.organization_id,
+        "SUPERVOLUNTEER",
+        true
+      );
       const phoneNumbers = await twilio.getPhoneNumbersForService(
         campaign.organization,
         campaign.messageservice_sid
       );
       return phoneNumbers.map(phoneNumber => phoneNumber.phoneNumber);
     },
+    inventoryPhoneNumberCounts: async (campaign, _, { user, loaders }) => {
+      await accessRequired(
+        user,
+        campaign.organization_id,
+        "SUPERVOLUNTEER",
+        true
+      );
+      const counts = await ownedPhoneNumber.listCampaignNumbers(campaign.id);
+      return camelizeKeys(counts);
+    },
     creator: async (campaign, _, { loaders }) =>
-      campaign.creator_id ? loaders.user.load(campaign.creator_id) : null
+      campaign.creator_id ? loaders.user.load(campaign.creator_id) : null,
+    isArchivedPermanently: campaign => {
+      // started campaigns that have had their message service sid deleted can't be restarted
+      // NOTE: this will need to change if campaign phone numbers are extended beyond twilio and fakeservice
+      return (
+        campaign.is_archived &&
+        campaign.is_started &&
+        campaign.use_own_messaging_service &&
+        !campaign.messageservice_sid
+      );
+    }
   }
 };

@@ -1,8 +1,8 @@
 // Tasks are lightweight, fire-and-forget functions run in the background.
 // Unlike Jobs, tasks are not tracked in the database.
-// See src/integrations/job-runners/README.md for more details
+// See src/extensions/job-runners/README.md for more details
 import serviceMap from "../server/api/lib/services";
-import * as ActionHandlers from "../integrations/action-handlers";
+import * as ActionHandlers from "../extensions/action-handlers";
 import { cacheableData } from "../server/models";
 
 export const Tasks = Object.freeze({
@@ -31,20 +31,39 @@ const questionResponseActionHandler = async ({
   name,
   organization,
   questionResponse,
-  questionResponseInteractionStep,
+  interactionStep,
   campaign,
-  contact
+  contact,
+  wasDeleted,
+  previousValue
 }) => {
   const handler = await ActionHandlers.rawActionHandler(name);
-  // TODO: clean up processAction interface
-  await handler.processAction(
-    questionResponse,
-    questionResponseInteractionStep,
-    contact.id,
-    contact,
-    campaign,
-    organization
-  );
+
+  if (!wasDeleted) {
+    // TODO: clean up processAction interface
+    return handler.processAction({
+      questionResponse,
+      interactionStep,
+      campaignContactId: contact.id,
+      contact,
+      campaign,
+      organization,
+      previousValue
+    });
+  } else if (
+    handler.processDeletedQuestionResponse &&
+    typeof handler.processDeletedQuestionResponse === "function"
+  ) {
+    return handler.processDeletedQuestionResponse({
+      questionResponse,
+      interactionStep,
+      campaignContactId: contact.id,
+      contact,
+      campaign,
+      organization,
+      previousValue
+    });
+  }
 };
 
 const tagUpdateActionHandler = async ({
@@ -59,19 +78,20 @@ const tagUpdateActionHandler = async ({
   await handler.onTagUpdate(tags, contact, campaign, organization, texter);
 };
 
-const startCampaignCache = async ({ campaign, organization }) => {
+const startCampaignCache = async ({ campaign, organization }, contextVars) => {
   // Refresh all the campaign data into cache
   // This should refresh/clear any corruption
-  console.log("loadCampaignCache async tasks...", campaign.id);
   const loadAssignments = cacheableData.campaignContact.updateCampaignAssignmentCache(
     campaign.id
   );
   const loadContacts = cacheableData.campaignContact
-    .loadMany(campaign, organization, {})
+    .loadMany(campaign, organization, contextVars || {})
     .then(() => {
+      // eslint-disable-next-line no-console
       console.log("FINISHED contact loadMany", campaign.id);
     })
     .catch(err => {
+      // eslint-disable-next-line no-console
       console.error("ERROR contact loadMany", campaign.id, err, campaign);
     });
   const loadOptOuts = cacheableData.optOut.loadMany(organization.id);

@@ -8,7 +8,72 @@ import { buildUsersQuery } from "./user";
 import {
   getAvailableActionHandlers,
   getActionChoiceData
-} from "../../integrations/action-handlers";
+} from "../../extensions/action-handlers";
+
+export const ownerConfigurable = {
+  // ACTION_HANDLERS: 1,
+  ALLOW_SEND_ALL_ENABLED: 1,
+  DEFAULT_BATCHSIZE: 1,
+  DEFAULT_RESPONSEWINDOW: 1,
+  MAX_CONTACTS_PER_TEXTER: 1,
+  MAX_MESSAGE_LENGTH: 1
+  // MESSAGE_HANDLERS: 1,
+  // There is already an endpoint and widget for this:
+  // opt_out_message: 1
+};
+
+export const getAllowed = (organization, user) => {
+  const configable = getConfig("OWNER_CONFIGURABLE", organization);
+  const allowed = {};
+  ((configable && configable.split(",")) || []).forEach(c => {
+    allowed[c] = 1;
+  });
+  if (user.is_superadmin) {
+    allowed["ALL"] = 1;
+  }
+  return Object.keys(allowed.ALL ? ownerConfigurable : allowed);
+};
+
+export const getSideboxChoices = organization => {
+  // should match defaults with src/extensions/texter-sideboxes/components.js
+  const sideboxes = getConfig("TEXTER_SIDEBOXES", organization);
+  const sideboxChoices =
+    sideboxes === undefined
+      ? [
+          "celebration-gif",
+          "default-dynamicassignment",
+          "default-releasecontacts",
+          "contact-reference",
+          "default-editinitial",
+          "tag-contact"
+        ]
+      : (sideboxes && sideboxes.split(",")) || [];
+  return sideboxChoices;
+};
+
+const campaignNumbersEnabled = organization => {
+  const inventoryEnabled =
+    getConfig("EXPERIMENTAL_PHONE_INVENTORY", organization, {
+      truthy: true
+    }) ||
+    getConfig("PHONE_INVENTORY", organization, {
+      truthy: true
+    });
+
+  return (
+    inventoryEnabled &&
+    getConfig("EXPERIMENTAL_CAMPAIGN_PHONE_NUMBERS", organization, {
+      truthy: true
+    })
+  );
+};
+
+const manualMessagingServicesEnabled = organization =>
+  getConfig(
+    "EXPERIMENTAL_TWILIO_PER_CAMPAIGN_MESSAGING_SERVICE",
+    organization,
+    { truthy: true }
+  );
 
 export const resolvers = {
   Organization: {
@@ -49,6 +114,15 @@ export const resolvers = {
       }
       return getTags(organization, groupFilter);
     },
+    batchPolicies: organization => {
+      const batchPolicies = getConfig(
+        "DYNAMICASSIGNMENT_BATCHES",
+        organization
+      );
+      return batchPolicies
+        ? batchPolicies.split(",")
+        : ["finished-replies", "vetted-texters"];
+    },
     profileFields: organization =>
       // @todo: standardize on escaped or not once there's an interface.
       typeof getFeatures(organization).profile_fields === "string"
@@ -76,6 +150,52 @@ export const resolvers = {
 
       return Promise.all(promises);
     },
+    allowSendAll: organization =>
+      Boolean(
+        // the first ALLOW_SEND_ALL is NOT per-org
+        // to make sure the system administrator has enabled it
+        getConfig("ALLOW_SEND_ALL", null, { truthy: 1 }) &&
+          getConfig("ALLOW_SEND_ALL", organization, { truthy: 1 }) &&
+          getFeatures(organization).ALLOW_SEND_ALL_ENABLED
+      ),
+    settings: async (organization, _, { user, loaders }) => {
+      try {
+        await accessRequired(user, organization.id, "OWNER", true);
+      } catch (err) {
+        return null;
+      }
+      let messageHandlers = [];
+      let actionHandlers = [];
+      const features = getFeatures(organization);
+      const visibleFeatures = {};
+      const unsetFeatures = [];
+      getAllowed(organization, user).forEach(f => {
+        if (features.hasOwnProperty(f)) {
+          visibleFeatures[f] = features[f];
+        } else if (getConfig(f)) {
+          visibleFeatures[f] = getConfig(f);
+        } else {
+          visibleFeatures[f] = "";
+          unsetFeatures.push(f);
+        }
+        if (f === "MESSAGE_HANDLERS") {
+          const globalMessageHandlers = getConfig("MESSAGE_HANDLERS");
+          messageHandlers =
+            (globalMessageHandlers && globalMessageHandlers.split(",")) || [];
+        } else if (f === "ACTION_HANDLERS") {
+          const globalActionHandlers = getConfig("ACTION_HANDLERS");
+          actionHandlers =
+            (globalActionHandlers && globalActionHandlers.split(",")) || [];
+        }
+      });
+
+      return {
+        messageHandlers,
+        actionHandlers,
+        unsetFeatures,
+        featuresJSON: JSON.stringify(visibleFeatures)
+      };
+    },
     textingHoursEnforced: organization => organization.texting_hours_enforced,
     optOutMessage: organization =>
       (organization.features &&
@@ -89,8 +209,7 @@ export const resolvers = {
       await accessRequired(user, organization.id, "OWNER");
       const options = getConfig("TEXTER_UI_SETTINGS", organization) || null;
       // note this is global, since we need the set that's globally enabled/allowed to choose from
-      const sideboxConfig = getConfig("TEXTER_SIDEBOXES");
-      const sideboxChoices = (sideboxConfig && sideboxConfig.split(",")) || [];
+      const sideboxChoices = getSideboxChoices();
       return {
         options,
         sideboxChoices
@@ -139,10 +258,20 @@ export const resolvers = {
           authToken,
           accountSid
         } = await cacheableData.organization.getTwilioAuth(organization);
-        const messagingServiceSid = await cacheableData.organization.getMessageServiceSid(
-          organization
-        );
-        if (!(authToken && accountSid && messagingServiceSid)) {
+
+        let messagingServiceConfigured;
+        if (
+          manualMessagingServicesEnabled(organization) ||
+          campaignNumbersEnabled(organization)
+        ) {
+          messagingServiceConfigured = true;
+        } else {
+          messagingServiceConfigured = await cacheableData.organization.getMessageServiceSid(
+            organization
+          );
+        }
+
+        if (!(authToken && accountSid && messagingServiceConfigured)) {
           return false;
         }
       }
@@ -150,9 +279,41 @@ export const resolvers = {
     },
     phoneInventoryEnabled: async (organization, _, { user }) => {
       await accessRequired(user, organization.id, "SUPERVOLUNTEER");
-      return getConfig("EXPERIMENTAL_PHONE_INVENTORY", organization, {
-        truthy: true
-      });
+      return (
+        getConfig("EXPERIMENTAL_PHONE_INVENTORY", organization, {
+          truthy: true
+        }) ||
+        getConfig("PHONE_INVENTORY", organization, {
+          truthy: true
+        })
+      );
+    },
+    campaignPhoneNumbersEnabled: async (organization, _, { user }) => {
+      await accessRequired(user, organization.id, "SUPERVOLUNTEER");
+      const inventoryEnabled =
+        getConfig("EXPERIMENTAL_PHONE_INVENTORY", organization, {
+          truthy: true
+        }) ||
+        getConfig("PHONE_INVENTORY", organization, {
+          truthy: true
+        });
+      const configured =
+        inventoryEnabled &&
+        getConfig("EXPERIMENTAL_CAMPAIGN_PHONE_NUMBERS", organization, {
+          truthy: true
+        });
+      // check that the incompatible strategies are not enabled
+      const manualMsgServiceFeatureEnabled = getConfig(
+        "EXPERIMENTAL_TWILIO_PER_CAMPAIGN_MESSAGING_SERVICE",
+        organization,
+        { truthy: true }
+      );
+      if (configured && manualMsgServiceFeatureEnabled) {
+        throw new Error(
+          "Incompatible phone number management features enabled"
+        );
+      }
+      return configured;
     },
     pendingPhoneNumberJobs: async (organization, _, { user }) => {
       await accessRequired(user, organization.id, "OWNER", true);
@@ -176,15 +337,22 @@ export const resolvers = {
       });
     },
     phoneNumberCounts: async (organization, _, { user }) => {
-      await accessRequired(user, organization.id, "ADMIN");
+      try {
+        await accessRequired(user, organization.id, "ADMIN");
+      } catch (err) {
+        // for SUPERVOLUNTEERS
+        return [];
+      }
       if (
         !getConfig("EXPERIMENTAL_PHONE_INVENTORY", organization, {
           truthy: true
         })
       ) {
-        throw Error("Twilio inventory management is not enabled");
+        return [];
       }
-      const service = getConfig("DEFAULT_SERVICE");
+      const usAreaCodes = require("us-area-codes");
+      const service =
+        getConfig("service", organization) || getConfig("DEFAULT_SERVICE");
       const counts = await r
         .knex("owned_phone_number")
         .select(
@@ -201,6 +369,7 @@ export const resolvers = {
         .groupBy("area_code");
       return counts.map(row => ({
         areaCode: row.area_code,
+        state: usAreaCodes.get(Number(row.area_code)),
         allocatedCount: Number(row.allocated_count),
         availableCount: Number(row.available_count)
       }));

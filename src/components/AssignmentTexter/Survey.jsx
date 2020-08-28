@@ -157,7 +157,7 @@ class AssignmentTexterSurveys extends Component {
               this.handleExpandChange(true);
             }}
             key={`pastquestions`}
-            primaryText={"Past Questions"}
+            primaryText={"All Questions"}
             rightIcon={<ArrowRightIcon />}
             style={styles.pastQuestionsLink}
           />

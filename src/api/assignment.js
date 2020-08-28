@@ -8,7 +8,8 @@ export const schema = `
     texter: User
     campaign: Campaign
     contacts(contactsFilter: ContactsFilter): [CampaignContact]
-    contactsCount(contactsFilter: ContactsFilter): Int
+    contactsCount(contactsFilter: ContactsFilter, hasAny: Boolean): Int
+    hasUnassignedContactsForTexter: Int
     userCannedResponses: [CannedResponse]
     campaignCannedResponses: [CannedResponse]
     maxContacts: Int

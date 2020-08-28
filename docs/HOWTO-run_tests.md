@@ -1,7 +1,17 @@
+# How to run the test suite
+
 There are current two ways to run tests, using either PostgreSQL or SQLite.
 
 ## PostgreSQL Testing (default, closer to most prod environments)
 
+### Running Postgres with Docker (recommended)
+
+1. Install [Docker](https://docs.docker.com/desktop/)
+2. Run redis and postgres using docker-compose: `docker-compose up`
+3. Create the test database: `./dev-tools/create-test-database`
+4. Run `yarn test`
+ 
+### Installing Postgres locally
 1) Install PostgreSQL - [Tips to installing Postgres](https://www.codementor.io/engineerapart/getting-started-with-postgresql-on-mac-osx-are8jcopb)
 2) In PostgreSQL, create a database and user named "spoke_test":
 ```

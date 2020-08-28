@@ -14,6 +14,7 @@ const {
   DB_PASSWORD,
   DB_USER,
   DB_SCHEMA,
+  DB_DEBUG = "false",
   DATABASE_URL,
   NODE_ENV
 } = process.env;
@@ -78,5 +79,7 @@ if (DB_JSON) {
     useNullAsDefault: true
   };
 }
+
+config.debug = DB_DEBUG === "1" || DB_DEBUG.toLowerCase() === "true";
 
 module.exports = config;

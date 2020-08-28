@@ -1,6 +1,6 @@
 {
   "name": "spoke",
-  "version": "7.0.0",
+  "version": "9.0.0",
   "description": "Spoke",
   "main": "src/server",
   "engines": {
@@ -159,6 +159,7 @@
     "timezonecomplete": "^5.5.0",
     "twilio": "^3.40.0",
     "url-join": "^4.0.1",
+    "us-area-codes": "^1.0.0",
     "uuid": "^3.1.0",
     "wait-for-expect": "^1.1.1",
     "webpack": "^3.8.1",

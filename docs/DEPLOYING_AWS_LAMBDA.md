@@ -167,6 +167,7 @@ Do **NOT** set:
 
 - `"SUPPRESS_SEED_CALLS": "1",`: This stops Spoke from trying to connect to the database every startup point. You will need to run the seed call once, directly to the database rather than through Lambda (or send us a PR to make it easy to do this and other jobs in Lambda :-)
 - `"JOBS_SAME_PROCESS": "1",`: This makes jobs get called semi-synchronously (as async in code, but triggered directly from the same Lambda instance as the originating web request
+- `"JOB_RUNNER": "lambda-async",`: This dispatches asynchronous tasks that occur after a web response to another Lambda invocation which improves performance and completion.
 - `"AWS_ACCESS_AVAILABLE": "1",`: This replaces the AWS\_ key variables for S3 bucket support
 - `STATIC_BASE_URL`: You will need to upload your ASSETS_DIR to an S3 bucket (or other static file site) and then set this to something like: `"https://s3.amazonaws.com/YOUR_BUCKET_AND_PATH/"` (don't forget the trailing '/')
 - `S3_STATIC_PATH`: This will be the s3cmd upload path that corresponds to STATIC_BASE_URL. So if `STATIC_BASE_URL=https://s3.amazon.com/spoke.example.com/static/` then `S3_STATIC_PATH=s3://spoke.example.com/static/` You will also need a ~/.s3cfg file that has the s3 upload credentials. See `package.json`'s postinstall script and more specifically `prod-static-upload`.

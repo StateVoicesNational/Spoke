@@ -92,7 +92,17 @@ export default class GSScriptField extends GSFormField {
             this.handleOpenDialog(event);
           }}
           onFocus={event => {
-            this.handleOpenDialog(event);
+            // HACK
+            // frustratingly, without onFocus, this editor breaks when tabbing into
+            // the field -- no editor dialog comes up
+            // However, on Safari, when the field is created, Safari seems to auto-focus
+            // which triggers a disruptive (early) dialog open, e.g. in Admin Interactions
+            const isSafari = /^((?!chrome|android).)*safari/i.test(
+              navigator.userAgent
+            );
+            if (!isSafari) {
+              this.handleOpenDialog(event);
+            }
           }}
           floatingLabelText={this.floatingLabelText()}
           floatingLabelStyle={{
