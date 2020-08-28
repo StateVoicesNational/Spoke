@@ -1190,9 +1190,8 @@ const rootMutations = {
         campaignContactId,
         contact.campaign_id
       );
-      await cacheableData.campaignContact.clear(campaignContactId.toString());
 
-      return cacheableData.campaignContact.load(campaignContactId);
+      return cacheableData.campaignContact.updateCacheForOptOut(contact);
     },
     deleteQuestionResponses: async (
       _,
