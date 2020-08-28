@@ -8,7 +8,13 @@ export const releaseContacts = async (
   { user }
 ) => {
   /* This releases contacts for an assignment, needsMessage by-default, and all if releaseConversations=true */
-  const assignment = await Assignment.get(assignmentId);
+  const assignment = await r
+    .knex("assignment")
+    .where("id", assignmentId)
+    .first();
+  if (!assignment) {
+    return null;
+  }
   const campaign = await cacheableData.campaign.load(assignment.campaign_id);
 
   await assignmentRequiredOrAdminRole(

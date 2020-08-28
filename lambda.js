@@ -10,7 +10,7 @@ try {
   app = require("./build/server/server/index");
   server = awsServerlessExpress.createServer(app.default);
   jobs = require("./build/server/workers/job-processes");
-  dispatcher = require("./build/server/integrations/job-runners/lambda-async/handler");
+  dispatcher = require("./build/server/extensions/job-runners/lambda-async/handler");
 
   app.default.set("awsContextGetter", function(req, res) {
     return [invocationEvent, invocationContext];
@@ -78,7 +78,12 @@ exports.handler = async (event, context) => {
         : 0;
       if (endTime - startTime > 3000) {
         //3 seconds
-        console.log("SLOW_RESPONSE milliseconds:", endTime - startTime, event);
+        console.log(
+          "SLOW_RESPONSE milliseconds:",
+          endTime - startTime,
+          event,
+          webResponse
+        );
       }
     }
 

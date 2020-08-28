@@ -1,26 +1,25 @@
 import type from "prop-types";
 import React from "react";
-import orderBy from "lodash/orderBy";
-import Slider from "./Slider";
-import AutoComplete from "material-ui/AutoComplete";
-import IconButton from "material-ui/IconButton";
-import RaisedButton from "material-ui/RaisedButton";
 import GSForm from "../components/forms/GSForm";
 import yup from "yup";
 import Form from "react-formal";
 import OrganizationJoinLink from "./OrganizationJoinLink";
-import CampaignFormSectionHeading from "./CampaignFormSectionHeading";
-import { StyleSheet, css } from "aphrodite";
-import theme from "../styles/theme";
 import Toggle from "material-ui/Toggle";
-import DeleteIcon from "material-ui/svg-icons/action/delete";
 import { dataTest } from "../lib/attributes";
-import { dataSourceItem } from "./utils";
+import cloneDeep from "lodash/cloneDeep";
+import TagChips from "./TagChips";
+import theme from "../styles/theme";
 
 export default class CampaignDynamicAssignmentForm extends React.Component {
-  state = {
-    ...this.props.formValues
-  };
+  constructor(props) {
+    super(props);
+    this.state = {
+      ...props.formValues
+    };
+    if (!props.formValues.batchPolicies.length) {
+      this.state.batchPolicies = [props.organization.batchPolicies[0]];
+    }
+  }
 
   onChange = formValues => {
     this.setState(formValues);
@@ -30,30 +29,38 @@ export default class CampaignDynamicAssignmentForm extends React.Component {
     });
   };
 
-  toggleChange = (toggler, useDynamicAssignment) => {
-    this.setState({ useDynamicAssignment });
+  toggleChange = (key, val) => {
+    this.setState({ [key]: val });
+
+    const formValues = cloneDeep(this.props.formValues);
+    formValues[key] = val;
+
     this.props.onChange({
       ...this.state,
-      useDynamicAssignment
+      ...formValues
     });
   };
 
   formSchema = yup.object({
-    batchSize: yup.number().integer()
+    batchSize: yup.number().integer(),
+    responseWindow: yup.number()
   });
 
   render() {
-    const { joinToken, campaignId } = this.props;
-    const { useDynamicAssignment } = this.state;
-    const subtitle = useDynamicAssignment ? <div></div> : "";
-
+    const { joinToken, campaignId, organization } = this.props;
+    const { useDynamicAssignment, batchPolicies } = this.state;
+    const unselectedPolicies = organization.batchPolicies
+      .filter(p => !batchPolicies.find(cur => cur === p))
+      .map(p => ({ id: p, name: p }));
     return (
       <div>
         <Toggle
           {...dataTest("useDynamicAssignment")}
           label="Allow texters with a link to join and start texting when the campaign is started?"
           toggled={useDynamicAssignment}
-          onToggle={this.toggleChange}
+          onToggle={(toggler, val) =>
+            this.toggleChange("useDynamicAssignment", val)
+          }
         />
         <GSForm
           schema={this.formSchema}
@@ -77,24 +84,93 @@ export default class CampaignDynamicAssignmentForm extends React.Component {
                   You can turn off dynamic assignment after starting a campaign
                   to disallow more new texters to join
                 </li>
-                <li style={{ display: "none" }}>
-                  Batch sizes are how many texts someone should send before they
-                  switch to replying This should be a low number (~50-300) for
-                  campaigns which expect many replies, and a higher number
-                  (~100-1000) for campaigns where deliverability of the first
-                  message is more urgent or important (e.g. Get-Out-The-Vote
-                  efforts).
-                </li>
               </ul>
+              <p>
+                Batch sizes are how many texts someone should send before they
+                switch to replying.
+              </p>
               <Form.Field
                 name="batchSize"
                 type="number"
                 label="How large should a batch be?"
-                initialValue={300}
-                style={{ display: "none" }}
+                initialValue={200}
               />
             </div>
           )}
+          {window.TEXTER_SIDEBOXES &&
+          !/dynamicassign/.test(window.TEXTER_SIDEBOXES) ? (
+            <div>
+              Warning: Spoke may be misconfigured: dynamic assignment depends on
+              TEXTER_SIDEBOXES= to include "default-dynamicassignment" or a
+              replacement dynamicassignment sidebox.
+            </div>
+          ) : null}
+          <div>
+            <Form.Field
+              name="responseWindow"
+              type="number"
+              label="Expected Response Window (hours)"
+            />
+            <p style={{ paddingLeft: "8px" }}>
+              How long (in hours) before we should consider reassignment without
+              a texter response. This relates to the "Expired Needs Response"
+              message status filter in Message Review. You might set this to 48
+              hours for slower campaigns or 2 hours or less for GOTV campaigns.
+            </p>
+            {organization.batchPolicies.length > 1 ? (
+              <div>
+                <h3>Batch Strategy</h3>
+                <p>
+                  Batch strategies determine the rule for how texters are able
+                  to get new batches.
+                </p>
+                <b>Current Selected:</b>
+                <TagChips
+                  tags={organization.batchPolicies.map(p => ({
+                    id: p,
+                    name: p
+                  }))}
+                  tagIds={batchPolicies}
+                  extraProps={(listedTag, i) => ({
+                    style: {
+                      height: i === 0 ? "30px" : "25px",
+                      borderColor: "black",
+                      borderWidth: "2px",
+                      borderStyle: "solid"
+                    },
+                    backgroundColor: theme.colors.white,
+                    onRequestDelete:
+                      i === 0
+                        ? null
+                        : () => {
+                            this.onChange({
+                              batchPolicies: batchPolicies.filter(
+                                p => p !== listedTag.id
+                              )
+                            });
+                          }
+                  })}
+                />
+                <span>Alternative Options: </span>
+                <TagChips
+                  tags={unselectedPolicies}
+                  tagIds={unselectedPolicies.map(p => p.id)}
+                  extraProps={listedTag => ({
+                    backgroundColor: theme.colors.lightGray,
+                    onClick: evt => {
+                      if (evt.ctrlKey) {
+                        this.onChange({
+                          batchPolicies: [...batchPolicies, listedTag.id]
+                        });
+                      } else {
+                        this.onChange({ batchPolicies: [listedTag.id] });
+                      }
+                    }
+                  })}
+                />
+              </div>
+            ) : null}
+          </div>
           <Form.Button
             type="submit"
             onTouchTap={this.props.onSubmit}
@@ -114,8 +190,11 @@ CampaignDynamicAssignmentForm.propTypes = {
   organizationId: type.string,
   campaignId: type.string,
   formValues: type.object,
+  organization: type.object,
   onSubmit: type.func,
   saveLabel: type.string,
   saveDisabled: type.bool,
-  joinToken: type.string
+  joinToken: type.string,
+  responseWindow: type.number,
+  batchSize: type.string
 };

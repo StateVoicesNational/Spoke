@@ -44,6 +44,7 @@ function genComponent(assignment, propertyOverrides = {}) {
   const wrapper = shallow(
     <ContactController
       assignment={assignment}
+      campaign={assignment.campaign}
       contacts={assignment.contacts}
       allContactsCount={assignment.allContactsCount}
       router={{ push: () => {} }}
@@ -69,15 +70,10 @@ describe("ContactController process flows", async () => {
       "needsMessage"
     );
     const createContact = contactGenerator(assignment.id, "needsMessage");
-    let calledAssignmentIfNeeded = false;
     let component;
     const wrapper = genComponent(assignment, {
       loadContacts: getIds => {
         return { data: { getAssignmentContacts: getIds.map(createContact) } };
-      },
-      assignContactsIfNeeded: (checkServer, curContactIndex) => {
-        calledAssignmentIfNeeded = true;
-        return Promise.resolve();
       }
     });
     component = wrapper.instance();
@@ -91,7 +87,6 @@ describe("ContactController process flows", async () => {
     component.handleFinishContact(wrapper.state("currentContactIndex"));
     contactsContacted += 1;
     await sleep(1);
-    expect(calledAssignmentIfNeeded).toBe(true);
     expect(contactsContacted).toBe(6);
   });
 });

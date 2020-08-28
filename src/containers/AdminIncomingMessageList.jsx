@@ -12,6 +12,7 @@ import gql from "graphql-tag";
 import loadData from "./hoc/load-data";
 import { withRouter } from "react-router";
 import PaginatedUsersRetriever from "./PaginatedUsersRetriever";
+import * as queryString from "query-string";
 
 function getCampaignsFilterForCampaignArchiveStatus(
   includeActiveCampaigns,
@@ -73,26 +74,64 @@ export class AdminIncomingMessageList extends Component {
   constructor(props) {
     super(props);
 
+    const query = props.location.query;
+    console.log("constructor");
     this.state = {
       page: 0,
       pageSize: 10,
       campaignsFilter: { isArchived: false },
       contactsFilter: { isOptedOut: false },
-      messageTextFilter: "",
-      assignmentsFilter: {},
+      messageTextFilter: query.messageText ? query.messageText : "",
+      assignmentsFilter: query.texterId
+        ? { texterId: Number(query.texterId) }
+        : {},
       needsRender: false,
       utc: Date.now().toString(),
       campaigns: [],
       reassignmentTexters: [],
       campaignTexters: [],
-      includeArchivedCampaigns: false,
+      includeArchivedCampaigns: query.archived
+        ? Boolean(parseInt(query.archived))
+        : false,
       conversationCount: 0,
-      includeActiveCampaigns: true,
-      includeNotOptedOutConversations: true,
-      includeOptedOutConversations: false,
+      includeActiveCampaigns: query.active
+        ? Boolean(parseInt(query.active))
+        : true,
+      includeNotOptedOutConversations: query.notOptedOut
+        ? Boolean(parseInt(query.notOptedOut))
+        : true,
+      includeOptedOutConversations: query.optedOut
+        ? Boolean(parseInt(query.optedOut))
+        : false,
       clearSelectedMessages: false,
       tagsFilter: { ignoreTags: true }
     };
+    if (query.campaigns) {
+      this.state.campaignsFilter.campaignIds = query.campaigns.split(",");
+    }
+    if (query.messageStatus) {
+      this.state.contactsFilter.messageStatus = query.messageStatus;
+    }
+    if (query.errorCode) {
+      this.state.contactsFilter.errorCode = query.errorCode.split(",");
+    }
+    if (query.tags) {
+      if (/^[a-z]/.test(query.tags)) {
+        this.state.tagsFilter = { [query.tags]: true };
+      } else {
+        const selectedTags = {};
+        query.tags.split(",").forEach(t => {
+          selectedTags[t] = props.organization.organization.tags.find(
+            ot => ot.id === t
+          );
+        });
+        this.state.tagsFilter = { selectedTags };
+      }
+    }
+    const newTagsFilter = AdminIncomingMessageList.tagsFilterStateFromTagsFilter(
+      this.state.tagsFilter
+    );
+    this.state.contactsFilter.tags = newTagsFilter;
   }
 
   shouldComponentUpdate = (dummy, nextState) => {
@@ -118,7 +157,63 @@ export class AdminIncomingMessageList extends Component {
     }
   };
 
-  handleCampaignChanged = async campaignIds => {
+  componentWillUpdate = (nextProps, nextState) => {
+    if (nextState !== this.state) {
+      const query = {};
+      if (nextState.messageTextFilter) {
+        query.messageText = nextState.messageTextFilter;
+      }
+      if (nextState.assignmentsFilter.texterId) {
+        query.texterId = nextState.assignmentsFilter.texterId;
+      }
+      if (
+        nextState.campaignsFilter.campaignIds &&
+        nextState.campaignsFilter.campaignIds.length
+      ) {
+        query.campaigns = nextState.campaignsFilter.campaignIds.join(",");
+      }
+      if (nextState.contactsFilter.messageStatus) {
+        query.messageStatus = nextState.contactsFilter.messageStatus;
+      }
+      if (nextState.contactsFilter.errorCode) {
+        query.errorCode = nextState.contactsFilter.errorCode.join(",");
+      }
+      if (nextState.tagsFilter && !nextState.tagsFilter.ignoreTags) {
+        if (nextState.tagsFilter.anyTag) {
+          query.tags = "anyTag";
+        } else if (nextState.tagsFilter.noTag) {
+          query.tags = "noTag";
+        } else {
+          const selectedTags = Object.keys(
+            nextState.tagsFilter.selectedTags || {}
+          ).filter(t => t);
+          query.tags = selectedTags.join(",");
+        }
+      }
+      //default false
+      if (nextState.includeArchivedCampaigns) {
+        query.archived = 1;
+      }
+      if (nextState.includeOptedOutConversations) {
+        query.optedOut = 1;
+      }
+      //default true
+      if (!nextState.includeActiveCampaigns) {
+        query.active = 0;
+      }
+      if (!nextState.includeNotOptedOutConversations) {
+        query.notOptedOut = 0;
+      }
+
+      history.replaceState(
+        null,
+        "Message Review",
+        "?" + queryString.stringify(query)
+      );
+    }
+  };
+
+  handleCampaignChanged = async (campaignIds, selectedCampaigns) => {
     const campaignsFilter = getCampaignsFilterForCampaignArchiveStatus(
       this.state.includeActiveCampaigns,
       this.state.includeArchivedCampaigns
@@ -129,6 +224,7 @@ export class AdminIncomingMessageList extends Component {
 
     await this.setState({
       campaignsFilter,
+      selectedCampaigns,
       needsRender: true
     });
   };
@@ -156,6 +252,17 @@ export class AdminIncomingMessageList extends Component {
       _.omit(this.state.contactsFilter, ["messageStatus"]),
       { messageStatus: messagesFilter }
     );
+    await this.setState({
+      contactsFilter,
+      needsRender: true
+    });
+  };
+
+  handleErrorCodeChange = async errorCode => {
+    const contactsFilter = {
+      ...this.state.contactsFilter,
+      errorCode: errorCode ? errorCode.split(",") : null
+    };
     await this.setState({
       contactsFilter,
       needsRender: true
@@ -219,12 +326,36 @@ export class AdminIncomingMessageList extends Component {
   };
 
   handleCampaignsReceived = async campaigns => {
-    this.setState({ campaigns, needsRender: true });
+    console.log("campaigns:", campaigns);
+    let selectedCampaigns = [];
+    if (this.state.campaignsFilter.campaignIds) {
+      this.state.campaignsFilter.campaignIds.forEach(campaignId => {
+        const campaign = campaigns.find(campaign => campaign.id == campaignId);
+        const campaignDisplay = `${campaignId}: ${campaign.title}`;
+        selectedCampaigns.push({ key: campaign.id, text: campaignDisplay });
+      });
+    }
+    this.setState({ campaigns, selectedCampaigns, needsRender: true });
   };
 
   handleCampaignTextersReceived = async campaignTexters => {
     console.log("handleCampaignTextersReceived", campaignTexters.length);
-    this.setState({ campaignTexters, needsRender: true });
+    let texterDisplayName = "";
+    if (this.state.assignmentsFilter.texterId) {
+      const texter = campaignTexters.find(texter => {
+        return (
+          parseInt(texter.id, 10) === this.state.assignmentsFilter.texterId
+        );
+      });
+      if (texter) {
+        texterDisplayName = texter.displayName;
+      }
+    }
+    this.setState({
+      campaignTexters,
+      texterSearchText: texterDisplayName,
+      needsRender: true
+    });
   };
 
   handleReassignmentTextersReceived = async reassignmentTexters => {
@@ -378,6 +509,7 @@ export class AdminIncomingMessageList extends Component {
             onTexterChanged={this.handleTexterChanged}
             onMessageFilterChanged={this.handleMessageFilterChange}
             onMessageTextFilterChanged={this.handleMessageTextFilterChange}
+            onErrorCodeChanged={this.handleErrorCodeChange}
             assignmentsFilter={this.state.assignmentsFilter}
             onActiveCampaignsToggled={this.handleActiveCampaignsToggled}
             onArchivedCampaignsToggled={this.handleArchivedCampaignsToggled}
@@ -398,6 +530,11 @@ export class AdminIncomingMessageList extends Component {
             onTagsFilterChanged={this.handleTagsFilterChanged}
             tagsFilter={this.state.tagsFilter}
             tags={this.props.organization.organization.tags}
+            messageTextFilter={this.state.messageTextFilter}
+            texterSearchText={this.state.texterSearchText}
+            selectedCampaigns={this.state.selectedCampaigns}
+            messageFilter={this.state.contactsFilter.messageStatus}
+            errorCode={this.state.contactsFilter.errorCode}
           />
           <br />
           <IncomingMessageActions

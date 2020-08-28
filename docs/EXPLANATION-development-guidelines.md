@@ -19,9 +19,9 @@ Generally, label by filename what kind of documentation it is in all-caps, one o
 * Reference
 
 ## Helpful Dev Tips
+
 * Run `sqlite3 mydb.sqlite` to connect to a SQL shell for the dev database
 * [Set up an ESLint plugin in your code editor so that you catch coding errors and follow code style guidelines more easily!](https://medium.com/planet-arkency/catch-mistakes-before-you-run-you-javascript-code-6e524c36f0c8#.oboqsse48)
-* [Install the redux-devtools-extension](https://github.com/zalmoxisus/redux-devtools-extension) in Chrome to get advanced Redux debugging features.
 
 ## Dependency Management
 

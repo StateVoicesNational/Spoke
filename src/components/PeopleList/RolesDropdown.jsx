@@ -25,6 +25,7 @@ const RolesDropdown = props => (
         }
         primaryText={`${option.charAt(0).toUpperCase()}${option
           .substring(1)
+          .replace("_", " ")
           .toLowerCase()}`}
       />
     ))}

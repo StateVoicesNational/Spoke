@@ -21,7 +21,7 @@ import Form from "react-formal";
 import Popover from "material-ui/Popover";
 import { messageListStyles, inlineStyles, flexStyles } from "./StyleControls";
 
-import sideboxes from "../../integrations/texter-sideboxes/components";
+import { renderSidebox } from "../../extensions/texter-sideboxes/components";
 
 import {
   getChildren,
@@ -55,13 +55,13 @@ export class AssignmentTexterContactControls extends React.Component {
       answerPopoverOpen: false,
       sideboxCloses: {},
       sideboxOpens: {},
-      enabledSideboxes: this.getSideboxes(this.props),
       messageText: this.getStartingMessageText(),
       cannedResponseScript: null,
       optOutDialogOpen: false,
       currentShortcutSpace: 0,
       messageFocus: false,
       availableSteps: availableSteps,
+      messageReadOnly: false,
       currentInteractionStep:
         availableSteps.length > 0
           ? availableSteps[availableSteps.length - 1]
@@ -75,28 +75,28 @@ export class AssignmentTexterContactControls extends React.Component {
     setTimeout(() => {
       node.scrollTop = Math.floor(node.scrollHeight);
     }, 0);
-    const keyAction = window.HOLD_ENTER_KEY ? "keydown" : "keyup";
-    document.body.addEventListener(keyAction, this.onKeyUp);
+    document.body.addEventListener("keyup", this.onKeyUp);
+    document.body.addEventListener("keypress", this.blockWithCtrl);
     window.addEventListener("resize", this.onResize);
     window.addEventListener("orientationchange", this.onResize);
   }
 
   componentWillUnmount() {
-    const keyAction = window.HOLD_ENTER_KEY ? "keydown" : "keyup";
-    document.body.removeEventListener(keyAction, this.onKeyUp);
+    document.body.removeEventListener("keyup", this.onKeyUp);
+    document.body.removeEventListener("keypress", this.blockWithCtrl);
     window.removeEventListener("resize", this.onResize);
     window.removeEventListener("orientationchange", this.onResize);
   }
 
   componentWillUpdate(nextProps, nextState) {
     // we refresh sideboxes here because we need to compare previous state
-    nextState.enabledSideboxes = this.getSideboxes(nextProps);
     const newPopups = [];
-    nextState.enabledSideboxes.popups.forEach((sb, i) => {
-      if (this.state.enabledSideboxes.popups.indexOf(sb) === -1) {
-        newPopups.push(sb);
-      }
-    });
+    nextProps.enabledSideboxes &&
+      nextProps.enabledSideboxes.popups.forEach((sb, i) => {
+        if (this.props.enabledSideboxes.popups.indexOf(sb) === -1) {
+          newPopups.push(sb);
+        }
+      });
     // For getDerivedStateFromProps in React 16:
     // newPopups increment open
     newPopups.forEach(sb => {
@@ -113,30 +113,6 @@ export class AssignmentTexterContactControls extends React.Component {
       : "";
   }
 
-  getSideboxes(props) {
-    const popups = [];
-    // TODO: need to filter texterUIConfig.options (and json parse) for which ones are marked as enabled
-    // and then pass options data into the component
-    const settingsData = JSON.parse(
-      props.campaign.texterUIConfig.options || "{}"
-    );
-    const enabledSideboxes = props.campaign.texterUIConfig.sideboxChoices
-      // TODO: filter for enabled in the campaign
-      .filter(sb => {
-        const res = sideboxes[sb].showSidebox({ settingsData, ...props });
-        if (res === "popup") {
-          popups.push(sb);
-        }
-        return res;
-      })
-      .map(sb => ({
-        name: sb,
-        Component: sideboxes[sb].TexterSidebox
-      }));
-    enabledSideboxes.popups = popups;
-    return enabledSideboxes;
-  }
-
   onResize = evt => {
     // trigger re-render to determine whether there's space for shortcuts
     if (this.refs.answerButtons) {
@@ -146,7 +122,32 @@ export class AssignmentTexterContactControls extends React.Component {
     }
   };
 
+  blockWithCtrl = evt => {
+    // HACK: This blocks Ctrl-Enter from triggering 'click'
+    // after a shortcut key has been pressed (instead of doing a send)
+    if (evt.ctrlKey && evt.key === "Enter") {
+      evt.preventDefault();
+    }
+  };
+
   onKeyUp = evt => {
+    if (
+      window.document &&
+      document.location &&
+      /keys=1/.test(document.location.search)
+    ) {
+      // for debugging when keys don't work
+      document.location = `#${evt.key}`;
+      console.log(
+        "keypress",
+        evt.key,
+        evt.ctrlKey,
+        evt.keyCode,
+        this.state.messageReadOnly,
+        this.props.messageStatusFilter
+      );
+    }
+
     if (evt.key === "Escape") {
       this.setState({
         optOutDialogOpen: false,
@@ -157,8 +158,8 @@ export class AssignmentTexterContactControls extends React.Component {
     // if document.activeElement then ignore a naked keypress to be safe
     // console.log('KEYBOARD', evt.key, document.activeElement);
     if (
-      // SEND: Ctrl-Enter
-      evt.key === "Enter" &&
+      // SEND: Ctrl-Enter/Ctrl-z
+      (evt.key === "Enter" || evt.key === "z") &&
       // need to use ctrlKey in non-first texting context for accessibility
       evt.ctrlKey
     ) {
@@ -167,7 +168,7 @@ export class AssignmentTexterContactControls extends React.Component {
         const { optOutMessageText } = this.state;
         this.props.onOptOut({ optOutMessageText });
       } else {
-        this.handleClickSendMessageButton();
+        this.handleClickSendMessageButton(true);
       }
       return;
     }
@@ -185,11 +186,13 @@ export class AssignmentTexterContactControls extends React.Component {
     // the texter can distribute which button to press across the keyboard
     if (
       this.props.messageStatusFilter === "needsMessage" &&
+      this.state.messageReadOnly &&
       !evt.ctrlKey &&
       !evt.metaKey &&
       !evt.altKey &&
-      ((evt.keyCode >= 65 /*a*/ && evt.keyCode <= 90) /*z*/ ||
+      (/[a-z,./;']/.test(evt.key) ||
         evt.key === "Enter" ||
+        evt.key === "Return" ||
         evt.key === "Space" ||
         evt.key === " " ||
         evt.key === "Semicolon")
@@ -207,12 +210,22 @@ export class AssignmentTexterContactControls extends React.Component {
   messageSchema = yup.object({
     messageText: yup
       .string()
+      .trim()
       .required("Can't send empty message")
       .max(window.MAX_MESSAGE_LENGTH)
   });
 
-  handleClickSendMessageButton = () => {
-    this.refs.form.submit();
+  handleClickSendMessageButton = doneClicked => {
+    if (
+      doneClicked !== true &&
+      window.TEXTER_TWOCLICK &&
+      !this.state.doneFirstClick
+    ) {
+      this.setState({ doneFirstClick: true });
+    } else {
+      this.refs.form.submit();
+      this.setState({ doneFirstClick: false });
+    }
   };
 
   handleCannedResponseChange = cannedResponseScript => {
@@ -335,19 +348,24 @@ export class AssignmentTexterContactControls extends React.Component {
     );
   };
 
+  closeSideboxDialog = () => {
+    const { enabledSideboxes } = this.props;
+    // Close the dialog
+    const sideboxCloses = { ...this.state.sideboxCloses };
+    // since we are closing, we need all opens to be reflected in sideboxCloses
+    enabledSideboxes.popups.forEach(popup => {
+      sideboxCloses[popup] = this.state.sideboxOpens[popup] || 0;
+    });
+    sideboxCloses.MANUAL = this.state.sideboxOpens.MANUAL || 0;
+    this.setState({ sideboxCloses });
+  };
+
   handleClickSideboxDialog = () => {
-    const { enabledSideboxes } = this.state;
+    const { enabledSideboxes } = this.props;
     console.log("handleClickSideboxDialog", enabledSideboxes);
     const sideboxOpen = this.getSideboxDialogOpen(enabledSideboxes);
     if (sideboxOpen) {
-      // Close the dialog
-      const sideboxCloses = { ...this.state.sideboxCloses };
-      // since we are closing, we need all opens to be reflected in sideboxCloses
-      enabledSideboxes.popups.forEach(popup => {
-        sideboxCloses[popup] = this.state.sideboxOpens[popup] || 0;
-      });
-      sideboxCloses.MANUAL = this.state.sideboxOpens.MANUAL || 0;
-      this.setState({ sideboxCloses });
+      this.closeSideboxDialog();
     } else {
       // Open the dialog
       const sideboxOpens = { ...this.state.sideboxOpens };
@@ -389,7 +407,7 @@ export class AssignmentTexterContactControls extends React.Component {
     const otherResponsesLink =
       this.state.currentInteractionStep &&
       this.state.currentInteractionStep.question.answerOptions.length > 6 &&
-      assignment.campaignCannedResponses.length ? (
+      campaign.cannedResponses.length ? (
         <div className={css(flexStyles.popoverLink)}>
           <a
             href="#otherresponses"
@@ -420,7 +438,7 @@ export class AssignmentTexterContactControls extends React.Component {
           onRequestClose={this.handleCloseAnswerPopover}
         />
         <ScriptList
-          scripts={assignment.campaignCannedResponses}
+          scripts={campaign.cannedResponses}
           showAddScriptButton={false}
           customFields={campaign.customFields}
           currentCannedResponseScript={cannedResponseScript}
@@ -563,16 +581,19 @@ export class AssignmentTexterContactControls extends React.Component {
     );
   }
 
-  renderMessagingRowMessage({ readOnly = false }) {
+  renderMessagingRowMessage() {
+    const { cannedResponseScript } = this.state;
     return (
       <div className={css(flexStyles.sectionMessageField)}>
         <GSForm
           ref="form"
           schema={this.messageSchema}
           value={{ messageText: this.state.messageText }}
-          onSubmit={this.props.onMessageFormSubmit}
+          onSubmit={this.props.onMessageFormSubmit(
+            cannedResponseScript && cannedResponseScript.id
+          )}
           onChange={
-            readOnly
+            this.state.messageReadOnly
               ? null // message is uneditable for firstMessage
               : this.handleMessageFormChange
           }
@@ -619,7 +640,7 @@ export class AssignmentTexterContactControls extends React.Component {
   }
 
   renderMessagingRowReplyShortcuts() {
-    const { assignment } = this.props;
+    const { assignment, campaign } = this.props;
     const {
       availableSteps,
       questionResponses,
@@ -673,7 +694,7 @@ export class AssignmentTexterContactControls extends React.Component {
     // then don't show canned response shortcuts either or it can
     // cause confusion.
     if (!currentStepHasAnswerOptions || joinedLength !== 0) {
-      shortCannedResponses = assignment.campaignCannedResponses
+      shortCannedResponses = campaign.cannedResponses
         .filter(
           // allow for "Wrong Number", prefixes of + or - can force add or remove
           script =>
@@ -747,9 +768,9 @@ export class AssignmentTexterContactControls extends React.Component {
     );
   }
 
-  renderMessagingRowReplyButtons(availableSteps, campaignCannedResponses) {
+  renderMessagingRowReplyButtons(availableSteps, cannedResponses) {
     const disabled =
-      !campaignCannedResponses.length &&
+      !cannedResponses.length &&
       availableSteps.length === 1 &&
       (!availableSteps[0].question ||
         !availableSteps[0].question.answerOptions ||
@@ -786,9 +807,12 @@ export class AssignmentTexterContactControls extends React.Component {
   }
 
   renderMessagingRowSendSkip(contact) {
-    console.log("this.props", this.props);
+    const firstMessage = this.props.messageStatusFilter === "needsMessage";
     return (
-      <div className={css(flexStyles.sectionSend)}>
+      <div
+        className={css(flexStyles.sectionSend)}
+        style={firstMessage ? { height: "54px" } : { height: "36px" }}
+      >
         <FlatButton
           {...dataTest("send")}
           onClick={this.handleClickSendMessageButton}
@@ -801,9 +825,15 @@ export class AssignmentTexterContactControls extends React.Component {
           backgroundColor={
             this.props.disabled
               ? theme.colors.coreBackgroundColorDisabled
+              : this.state.doneFirstClick
+              ? theme.colors.darkBlue
               : theme.colors.coreBackgroundColor
           }
-          hoverColor={theme.colors.coreHoverColor}
+          hoverColor={
+            this.state.doneFirstClick
+              ? theme.colors.lightBlue
+              : theme.colors.coreHoverColor
+          }
           primary
         />
         {this.renderNeedsResponseToggleButton(contact)}
@@ -812,7 +842,7 @@ export class AssignmentTexterContactControls extends React.Component {
   }
 
   renderMessageControls() {
-    const { contact, messageStatusFilter, assignment } = this.props;
+    const { contact, messageStatusFilter, assignment, campaign } = this.props;
     const {
       availableSteps,
       questionResponses,
@@ -849,7 +879,7 @@ export class AssignmentTexterContactControls extends React.Component {
 
         {this.renderMessagingRowReplyButtons(
           availableSteps,
-          assignment.campaignCannedResponses
+          campaign.cannedResponses
         )}
       </div>,
       this.renderMessagingRowSendSkip(contact),
@@ -866,7 +896,9 @@ export class AssignmentTexterContactControls extends React.Component {
           navigationToolbarChildren={this.props.navigationToolbarChildren}
           onExit={this.props.onExitTexter}
           onSideboxButtonClick={
-            enabledSideboxes.length > 0 ? this.handleClickSideboxDialog : null
+            enabledSideboxes && enabledSideboxes.length > 0
+              ? this.handleClickSideboxDialog
+              : null
           }
         />
       </div>
@@ -880,18 +912,9 @@ export class AssignmentTexterContactControls extends React.Component {
     const settingsData = JSON.parse(
       this.props.campaign.texterUIConfig.options || "{}"
     );
-    const sideboxList = enabledSideboxes.map(({ name, Component }) => (
-      <Component
-        key={name}
-        settingsData={settingsData}
-        {...this.props}
-        updateState={state => {
-          // allows a component to preserve state across dialog open/close
-          this.setState({ [`sideboxState${name}`]: state });
-        }}
-        persistedState={this.state[`sideboxState${name}`]}
-      />
-    ));
+    const sideboxList = enabledSideboxes.map(sidebox => {
+      return renderSidebox(sidebox, settingsData, this);
+    });
     const sideboxOpen = this.getSideboxDialogOpen(enabledSideboxes);
     if (sideboxOpen) {
       return (
@@ -940,13 +963,13 @@ export class AssignmentTexterContactControls extends React.Component {
         />,
         enabledSideboxes
       ),
-      this.renderMessagingRowMessage({ readOnly: true }),
+      this.renderMessagingRowMessage(),
       this.renderMessagingRowSendSkip(this.props.contact)
     ];
   }
 
   render() {
-    const { enabledSideboxes } = this.state;
+    const { enabledSideboxes } = this.props;
     const firstMessage = this.props.messageStatusFilter === "needsMessage";
     const content = firstMessage
       ? this.renderFirstMessage(enabledSideboxes)
@@ -971,23 +994,25 @@ AssignmentTexterContactControls.propTypes = {
   contact: PropTypes.object,
   campaign: PropTypes.object,
   assignment: PropTypes.object,
+  currentUser: PropTypes.object,
   texter: PropTypes.object,
 
   // parent state
   disabled: PropTypes.bool,
   navigationToolbarChildren: PropTypes.object,
   messageStatusFilter: PropTypes.string,
+  enabledSideboxes: PropTypes.arrayOf(PropTypes.object),
 
   // parent config/callbacks
   startingMessage: PropTypes.string,
   onMessageFormSubmit: PropTypes.func,
   onOptOut: PropTypes.func,
   onUpdateTags: PropTypes.func,
-  onReleaseContacts: PropTypes.func,
   onQuestionResponseChange: PropTypes.func,
   onCreateCannedResponse: PropTypes.func,
   onExitTexter: PropTypes.func,
   onEditStatus: PropTypes.func,
+  refreshData: PropTypes.func,
   getMessageTextFromScript: PropTypes.func
 };
 

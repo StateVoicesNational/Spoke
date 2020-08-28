@@ -26,9 +26,17 @@ describe("questionResponse cacheableData methods", async () => {
       choices: 2
     });
     const interactionSteps = await r.knex("interaction_step").select();
-    await cacheableData.questionResponse.save(cid, [
+
+    let saveResult = await cacheableData.questionResponse.save(cid, [
       { interactionStepId: "1", value: "hmm1" }
     ]);
+    expect(saveResult).toEqual({
+      newOrUpdated: {
+        "1": null
+      },
+      deleted: []
+    });
+
     let questionResponses = await r.knex("question_response").select();
     expect(questionResponses.length).toBe(1);
     expect(questionResponses[0].value).toBe("hmm1");
@@ -40,11 +48,19 @@ describe("questionResponse cacheableData methods", async () => {
     expect(questionResponses[0].value).toBe("hmm1");
     expect(questionResponses[0].interaction_step_id).toBe(1);
     await sleep(20);
+
     // change value adding one
-    await cacheableData.questionResponse.save(cid, [
+    saveResult = await cacheableData.questionResponse.save(cid, [
       { interactionStepId: "1", value: "hmm1" },
       { interactionStepId: "2", value: "1hmm2" }
     ]);
+    expect(saveResult).toEqual({
+      newOrUpdated: {
+        "2": null
+      },
+      deleted: []
+    });
+
     questionResponses = await r.knex("question_response").select();
     expect(questionResponses.length).toBe(2);
     expect(questionResponses[0].value).toBe("hmm1");
@@ -52,5 +68,50 @@ describe("questionResponse cacheableData methods", async () => {
     expect(Number(questionResponses[0].created_at)).toBe(
       Number(firstCreatedAt)
     );
+    expect(questionResponses[1].value).toBe("1hmm2");
+    expect(questionResponses[1].interaction_step_id).toBe(2);
+
+    // change value updating one
+    saveResult = await cacheableData.questionResponse.save(cid, [
+      { interactionStepId: "1", value: "hmm1" },
+      { interactionStepId: "2", value: "updated-1hmm2" }
+    ]);
+    expect(saveResult).toEqual({
+      newOrUpdated: {
+        "2": "1hmm2"
+      },
+      deleted: []
+    });
+
+    questionResponses = await r.knex("question_response").select();
+    expect(questionResponses.length).toBe(2);
+    expect(questionResponses[0].value).toBe("hmm1");
+    expect(questionResponses[0].interaction_step_id).toBe(1);
+    expect(Number(questionResponses[0].created_at)).toBe(
+      Number(firstCreatedAt)
+    );
+    expect(questionResponses[1].value).toBe("updated-1hmm2");
+    expect(questionResponses[1].interaction_step_id).toBe(2);
+
+    // change value, omitting one
+    saveResult = await cacheableData.questionResponse.save(cid, [
+      { interactionStepId: "2", value: "1hmm2" }
+    ]);
+    expect(saveResult).toEqual({
+      newOrUpdated: {
+        "2": "updated-1hmm2"
+      },
+      deleted: [
+        {
+          interactionStepId: 1,
+          value: "hmm1"
+        }
+      ]
+    });
+
+    questionResponses = await r.knex("question_response").select();
+    expect(questionResponses.length).toBe(1);
+    expect(questionResponses[0].value).toBe("1hmm2");
+    expect(questionResponses[0].interaction_step_id).toBe(2);
   });
 });

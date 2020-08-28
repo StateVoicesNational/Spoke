@@ -7,6 +7,7 @@ import Form from "react-formal";
 import Dialog from "material-ui/Dialog";
 import GSSubmitButton from "../components/forms/GSSubmitButton";
 import FlatButton from "material-ui/FlatButton";
+import RaisedButton from "material-ui/RaisedButton";
 import DisplayLink from "../components/DisplayLink";
 import yup from "yup";
 import { Card, CardText, CardActions, CardHeader } from "material-ui/Card";
@@ -15,6 +16,7 @@ import theme from "../styles/theme";
 import Toggle from "material-ui/Toggle";
 import moment from "moment";
 import CampaignTexterUIForm from "../components/CampaignTexterUIForm";
+import OrganizationFeatureSettings from "../components/OrganizationFeatureSettings";
 
 const styles = StyleSheet.create({
   section: {
@@ -342,8 +344,10 @@ class Settings extends React.Component {
             <CardHeader
               title="Texter UI Defaults"
               style={{ backgroundColor: theme.colors.green }}
+              actAsExpander={true}
+              showExpandableButton={true}
             />
-            <CardText>
+            <CardText expandable>
               <CampaignTexterUIForm
                 formValues={this.props.data.organization}
                 organization={this.props.data.organization}
@@ -360,6 +364,59 @@ class Settings extends React.Component {
                 }}
                 saveLabel="Save Texter UI Campaign Defaults"
                 saveDisabled={!this.state.texterUIConfig}
+              />
+            </CardText>
+          </Card>
+        ) : null}
+        {this.props.data.organization &&
+        this.props.data.organization.settings ? (
+          <Card>
+            <CardHeader
+              title="Overriding default settings"
+              style={{ backgroundColor: theme.colors.green }}
+              actAsExpander={true}
+              showExpandableButton={true}
+            />
+            <CardText expandable>
+              <OrganizationFeatureSettings
+                formValues={this.props.data.organization}
+                organization={this.props.data.organization}
+                onSubmit={async () => {
+                  const { settings } = this.state;
+                  await this.props.mutations.editOrganization({
+                    settings
+                  });
+                  this.setState({ settings: null });
+                }}
+                onChange={formValues => {
+                  console.log("change", formValues);
+                  this.setState(formValues);
+                }}
+                saveLabel="Save settings"
+                saveDisabled={!this.state.settings}
+              />
+            </CardText>
+          </Card>
+        ) : null}
+
+        {this.props.data.organization && this.props.params.adminPerms ? (
+          <Card>
+            <CardHeader
+              title="External configuration"
+              style={{ backgroundColor: theme.colors.green }}
+              actAsExpander={true}
+              showExpandableButton={true}
+            />
+            <CardText expandable>
+              <h2>DEBUG Zone</h2>
+              <p>Only take actions here if you know what you&rsquo;re doing</p>
+              <RaisedButton
+                label="Clear Cached Organization And Extension Caches"
+                secondary
+                style={inlineStyles.dialogButton}
+                onTouchTap={
+                  this.props.mutations.clearCachedOrgAndExtensionCaches
+                }
               />
             </CardText>
           </Card>
@@ -386,6 +443,12 @@ const queries = {
           textingHoursStart
           textingHoursEnd
           optOutMessage
+          settings {
+            messageHandlers
+            actionHandlers
+            featuresJSON
+            unsetFeatures
+          }
           texterUIConfig {
             options
             sideboxChoices
@@ -412,6 +475,12 @@ export const editOrganizationGql = gql`
   ) {
     editOrganization(id: $organizationId, organization: $organizationChanges) {
       id
+      settings {
+        messageHandlers
+        actionHandlers
+        featuresJSON
+        unsetFeatures
+      }
       texterUIConfig {
         options
         sideboxChoices
@@ -521,6 +590,16 @@ const mutations = {
       twilioAccountSid: accountSid,
       twilioAuthToken: authToken,
       twilioMessageServiceSid: messageServiceSid
+    }
+  }),
+  clearCachedOrgAndExtensionCaches: ownProps => () => ({
+    mutation: gql`
+      mutation clearCachedOrgAndExtensionCaches($organizationId: String!) {
+        clearCachedOrgAndExtensionCaches(organizationId: $organizationId)
+      }
+    `,
+    variables: {
+      organizationId: ownProps.params.organizationId
     }
   })
 };

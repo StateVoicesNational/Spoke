@@ -15,7 +15,7 @@ import {
   setupTest
 } from "../../test_helpers";
 
-const ActionHandlerFramework = require("../../../src/integrations/action-handlers");
+const ActionHandlerFramework = require("../../../src/extensions/action-handlers");
 
 describe("organization", async () => {
   let testTexterUser;
