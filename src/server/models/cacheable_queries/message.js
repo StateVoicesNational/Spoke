@@ -239,6 +239,7 @@ const messageCache = {
     let activeCellFound = null;
     let matchError = null;
     let contactUpdates = {};
+    let handlerContext = {};
 
     if (messageInstance.is_from_contact) {
       // console.log("messageCache SAVE lookup");
@@ -323,6 +324,9 @@ const messageCache = {
           if (result.contactUpdates) {
             Object.assign(contactUpdates, result.contactUpdates);
           }
+          if (result.handlerContext) {
+            Object.assign(handlerContext, result.handlerContext);
+          }
         }
       }
     }
@@ -381,7 +385,8 @@ const messageCache = {
           campaign,
           campaignId,
           organization,
-          texter
+          texter,
+          handlerContext
         });
         if (result) {
           if ("newStatus" in result) {

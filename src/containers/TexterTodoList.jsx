@@ -8,6 +8,8 @@ import loadData from "./hoc/load-data";
 import gql from "graphql-tag";
 import { withRouter } from "react-router";
 
+let refreshOnReturn = false;
+
 class TexterTodoList extends React.Component {
   constructor(props) {
     super(props);
@@ -45,7 +47,10 @@ class TexterTodoList extends React.Component {
       .filter(ele => ele !== null);
   }
   componentDidMount() {
-    this.props.data.refetch();
+    console.log("TexterTodoList componentDidMount");
+    if (refreshOnReturn) {
+      this.props.data.refetch();
+    }
     // stopPolling is broken (at least in currently used version), so we roll our own so we can unmount correctly
     if (
       this.props.data &&
@@ -67,6 +72,8 @@ class TexterTodoList extends React.Component {
       clearInterval(this.state.polling);
       this.setState({ polling: null });
     }
+    // not state: maintain this forever after
+    refreshOnReturn = true;
   }
 
   termsAgreed() {

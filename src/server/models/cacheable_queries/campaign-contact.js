@@ -244,6 +244,9 @@ const campaignContactCache = {
       // which seems slightly burdensome per-contact
       // FUTURE: Maybe we will revisit this after we see performance data
     }
+    if (opts && opts.cacheOnly) {
+      return null;
+    }
     return await CampaignContact.get(id);
   },
   loadMany: async (
@@ -414,6 +417,21 @@ const campaignContactCache = {
     return false;
   },
   getMessageStatus,
+  updateCacheForOptOut: async contact => {
+    const newContact = {
+      ...contact,
+      is_opted_out: true
+    };
+    if (r.redis && CONTACT_CACHE_ENABLED) {
+      const contactKey = cacheKey(contact.id);
+      await r.redis
+        .multi()
+        .set(contactKey, JSON.stringify(newContact))
+        .expire(contactKey, 43200)
+        .execAsync();
+    }
+    return newContact;
+  },
   updateAssignmentCache: async (
     contactId,
     newAssignmentId,
