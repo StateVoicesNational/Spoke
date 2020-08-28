@@ -8,29 +8,25 @@ import { makeExecutableSchema, addMockFunctionsToSchema } from "graphql-tools";
 import { createLoaders, createTablesIfNecessary, r } from "./models";
 import { resolvers } from "./api/schema";
 import { schema } from "../api/schema";
-import mocks from "./api/mocks";
 import passport from "passport";
 import cookieSession from "cookie-session";
 import passportSetup from "./auth-passport";
 import wrap from "./wrap";
 import { log } from "../lib";
+import telemetry from "./telemetry";
 import nexmo from "./api/lib/nexmo";
 import twilio from "./api/lib/twilio";
 import { seedZipCodes } from "./seeds/seed-zip-codes";
 import { setupUserNotificationObservers } from "./notifications";
-import { TwimlResponse } from "twilio";
+import { twiml } from "twilio";
 import { existsSync } from "fs";
-import { rawAllMethods } from "../integrations/contact-loaders";
+import { rawAllMethods } from "../extensions/contact-loaders";
 
 process.on("uncaughtException", ex => {
   log.error(ex);
   process.exit(1);
 });
 const DEBUG = process.env.NODE_ENV === "development";
-
-const loginCallbacks = passportSetup[
-  process.env.PASSPORT_STRATEGY || global.PASSPORT_STRATEGY || "auth0"
-]();
 
 if (!process.env.SUPPRESS_SEED_CALLS) {
   seedZipCodes();
@@ -94,6 +90,13 @@ app.use((req, res, next) => {
   next();
 });
 
+// Simulate latency in local development
+if (process.env.SIMULATE_DELAY_MILLIS) {
+  app.use((req, res, next) => {
+    setTimeout(next, Number(process.env.SIMULATE_DELAY_MILLIS));
+  });
+}
+
 // give contact loaders a chance
 const configuredIngestMethods = rawAllMethods();
 Object.keys(configuredIngestMethods).forEach(ingestMethodName => {
@@ -104,21 +107,11 @@ Object.keys(configuredIngestMethods).forEach(ingestMethodName => {
 });
 
 app.post(
-  "/nexmo",
-  wrap(async (req, res) => {
-    try {
-      const messageId = await nexmo.handleIncomingMessage(req.body);
-      res.send(messageId);
-    } catch (ex) {
-      log.error(ex);
-      res.send("done");
-    }
-  })
-);
-
-app.post(
-  "/twilio",
-  twilio.webhook(),
+  "/twilio/:orgId?",
+  twilio.headerValidator(
+    process.env.TWILIO_MESSAGE_CALLBACK_URL ||
+      global.TWILIO_MESSAGE_CALLBACK_URL
+  ),
   wrap(async (req, res) => {
     try {
       await twilio.handleIncomingMessage(req.body);
@@ -126,27 +119,45 @@ app.post(
       log.error(ex);
     }
 
-    const resp = new TwimlResponse();
+    const resp = new twiml.MessagingResponse();
     res.writeHead(200, { "Content-Type": "text/xml" });
     res.end(resp.toString());
   })
 );
 
-app.post(
-  "/nexmo-message-report",
-  wrap(async (req, res) => {
-    try {
-      const body = req.body;
-      await nexmo.handleDeliveryReport(body);
-    } catch (ex) {
-      log.error(ex);
-    }
-    res.send("done");
-  })
-);
+if (process.env.NEXMO_API_KEY) {
+  app.post(
+    "/nexmo",
+    wrap(async (req, res) => {
+      try {
+        const messageId = await nexmo.handleIncomingMessage(req.body);
+        res.send(messageId);
+      } catch (ex) {
+        log.error(ex);
+        res.send("done");
+      }
+    })
+  );
+
+  app.post(
+    "/nexmo-message-report",
+    wrap(async (req, res) => {
+      try {
+        const body = req.body;
+        await nexmo.handleDeliveryReport(body);
+      } catch (ex) {
+        log.error(ex);
+      }
+      res.send("done");
+    })
+  );
+}
 
 app.post(
   "/twilio-message-report",
+  twilio.headerValidator(
+    process.env.TWILIO_STATUS_CALLBACK_URL || global.TWILIO_STATUS_CALLBACK_URL
+  ),
   wrap(async (req, res) => {
     try {
       const body = req.body;
@@ -154,20 +165,21 @@ app.post(
     } catch (ex) {
       log.error(ex);
     }
-    const resp = new TwimlResponse();
+    const resp = new twiml.MessagingResponse();
     res.writeHead(200, { "Content-Type": "text/xml" });
     res.end(resp.toString());
   })
 );
 
-// const accountSid = process.env.TWILIO_API_KEY
-// const authToken = process.env.TWILIO_AUTH_TOKEN
-// const client = require('twilio')(accountSid, authToken)
-
 app.get("/logout-callback", (req, res) => {
   req.logOut();
   res.redirect("/");
 });
+
+const loginCallbacks = passportSetup[
+  process.env.PASSPORT_STRATEGY || global.PASSPORT_STRATEGY || "auth0"
+](app);
+
 if (loginCallbacks) {
   app.get("/login-callback", ...loginCallbacks.loginCallback);
   app.post("/login-callback", ...loginCallbacks.loginCallback);
@@ -177,11 +189,6 @@ const executableSchema = makeExecutableSchema({
   typeDefs: schema,
   resolvers,
   allowUndefinedInResolve: false
-});
-addMockFunctionsToSchema({
-  schema: executableSchema,
-  mocks,
-  preserveResolvers: true
 });
 
 app.use(
@@ -197,6 +204,22 @@ app.use(
         request.awsContext && request.awsContext.getRemainingTimeInMillis
           ? request.awsContext.getRemainingTimeInMillis()
           : 5 * 60 * 1000 // default saying 5 min, no matter what
+    },
+    formatError: error => {
+      log.error({
+        userId: request.user && request.user.id,
+        code:
+          (error && error.originalError && error.originalError.code) ||
+          "INTERNAL_SERVER_ERROR",
+        error,
+        msg: "GraphQL error"
+      });
+      telemetry
+        .formatRequestError(error, request)
+        // drop if this fails
+        .catch(() => {})
+        .then(() => {});
+      return error;
     }
   }))
 );

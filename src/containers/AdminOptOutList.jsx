@@ -28,7 +28,7 @@ AdminOptOutList.propTypes = {
   data: PropTypes.object
 };
 
-const mapQueriesToProps = ({ ownProps }) => ({
+const queries = {
   data: {
     query: gql`
       query getOptOuts($organizationId: String!) {
@@ -41,11 +41,13 @@ const mapQueriesToProps = ({ ownProps }) => ({
         }
       }
     `,
-    variables: {
-      organizationId: ownProps.params.organizationId
-    },
-    forceFetch: true
+    options: ownProps => ({
+      variables: {
+        organizationId: ownProps.params.organizationId
+      },
+      fetchPolicy: "network-only"
+    })
   }
-});
+};
 
-export default loadData(AdminOptOutList, { mapQueriesToProps });
+export default loadData({ queries })(AdminOptOutList);

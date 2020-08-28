@@ -10,7 +10,8 @@ const campaign = {
       texter: {
         id: "1",
         firstName: "Test",
-        lastName: "Tester"
+        lastName: "Tester",
+        roles: ["SUSPENDED", "TEXTER"]
       },
       unmessagedCount: 193,
       contactsCount: 238
@@ -20,7 +21,8 @@ const campaign = {
       texter: {
         id: "1",
         firstName: "Someone",
-        lastName: "Else"
+        lastName: "Else",
+        roles: ["SUSPENDED"]
       },
       unmessagedCount: 4,
       contactsCount: 545
@@ -36,7 +38,8 @@ const campaignDynamic = {
       texter: {
         id: "1",
         firstName: "Test",
-        lastName: "Tester"
+        lastName: "Tester",
+        roles: ["SUSPENDED", "TEXTER"]
       },
       unmessagedCount: 193,
       contactsCount: 238
@@ -46,7 +49,8 @@ const campaignDynamic = {
       texter: {
         id: "1",
         firstName: "Someone",
-        lastName: "Else"
+        lastName: "Else",
+        roles: ["SUSPENDED"]
       },
       unmessagedCount: 4,
       contactsCount: 545
@@ -56,10 +60,26 @@ const campaignDynamic = {
 
 describe("TexterStats (Non-dynamic campaign)", () => {
   it("contains the right text", () => {
-    const stats = shallow(<TexterStats campaign={campaign} />);
-    expect(stats.text()).toEqual(
-      "Test Tester19%<LinearProgress />Someone Else99%<LinearProgress />"
+    const stats = shallow(
+      <TexterStats campaign={campaign} organizationId="1" />
     );
+    expect(stats.text()).toEqual(
+      "<Link />19%<LinearProgress /><Link />99%<LinearProgress />"
+    );
+    expect(
+      stats
+        .find("Link")
+        .at(0)
+        .children()
+        .text()
+    ).toBe("Test Tester");
+    expect(
+      stats
+        .find("Link")
+        .at(1)
+        .children()
+        .text()
+    ).toBe("Someone Else (Suspended)");
   });
 
   it("creates linear progress correctly", () => {
@@ -80,7 +100,21 @@ describe("TexterStats (Dynamic campaign)", () => {
   it("contains the right text", () => {
     const stats = shallow(<TexterStats campaign={campaignDynamic} />);
     expect(stats.text()).toEqual(
-      "Test45 initial messages sentSomeone541 initial messages sent"
+      "<Link />45 initial messages sent. <Link /><Link />541 initial messages sent. <Link />"
     );
+    expect(
+      stats
+        .find("Link")
+        .at(0)
+        .children()
+        .text()
+    ).toBe("Test Tester");
+    expect(
+      stats
+        .find("Link")
+        .at(2)
+        .children()
+        .text()
+    ).toBe("Someone Else (Suspended)");
   });
 });

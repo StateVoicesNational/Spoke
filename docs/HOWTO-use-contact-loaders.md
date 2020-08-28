@@ -21,7 +21,7 @@ Just enabling a contact loader is the first step, but contact loaders often
 have additional context required for them to be visible (e.g. for datawarehouse, many `WAREHOUSE_DB_*`
 environment variables need to be present (along with the user being a super-admin).
 
-The server admin can look at the ingest loader index.js file in `src/integrations/contact-loaders/<CONTACT LOADER NAME>`
+The server admin can look at the ingest loader index.js file in `src/extensions/contact-loaders/<CONTACT LOADER NAME>`
 inside the function `serverAdministratorInstructions`
 (this data might sometime be visible to superadmins on a documentation page)
 
@@ -34,7 +34,7 @@ DEFAULT_SERVICE=fakeservice
 The best way to make a new contact loader is something like this in the codebase:
 
 ```
-cd src/integrations/contact-loaders
+cd src/extensions/contact-loaders
 cp -rp test-fakedata <NEW_CONTACT_LOADER_NAME>
 ```
 
@@ -68,7 +68,7 @@ Here are the methods you'll definitely need to implement:
 - `displayName()` -- what will campaign admins see to choose this option for contact loading
 - `available(organization, user)` -- is your contact loader to this user and organization
 - `processContactLoad(job, maxContacts)` -- the final processing of data based on the data you send back from the react-component to load the contacts. Be mindful of the requirements documented in the function.
-- Please refer to the same contact loaders for the other methods that will be useful to implement.
+- Please refer to the sample contact loaders for the other methods that will be useful to implement.
 
 Then you'll want to implement `react-component.js`. This file is passed whatever you sent back with
 `getClientChoiceData()` in the backend, along with some context for the component. It will be loaded

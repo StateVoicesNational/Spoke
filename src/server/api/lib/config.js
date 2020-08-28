@@ -8,18 +8,60 @@ import fs from "fs";
 
 let CONFIG = null;
 
-export function getConfig(key) {
-  if (key in global) {
-    return global[key];
-  } else if (key in process.env) {
-    return process.env[key];
-  } else if (CONFIG && key in CONFIG) {
-    return CONFIG[key];
+export function getFeatures(organization) {
+  if (!organization) {
+    return {};
   }
+  return (
+    organization.feature ||
+    (organization.features &&
+      typeof organization.features == "string" &&
+      JSON.parse(organization.features)) ||
+    organization.features ||
+    {}
+  );
 }
 
-export function hasConfig(key) {
-  const val = getConfig(key);
+export const getOrDefault = (value, defaultValue) =>
+  value === "" ? defaultValue : value;
+
+export function getConfig(key, organization, opts) {
+  if (organization) {
+    // TODO: update to not parse if features is an object (vs. a string)
+    let features = getFeatures(organization);
+    if (features.hasOwnProperty(key)) {
+      return getOrDefault(features[key], opts && opts.default);
+    }
+  }
+  if (opts && opts.onlyLocal) {
+    return opts.default;
+  }
+  if (key in global) {
+    if (opts && opts.truthy) {
+      return Boolean(
+        global[key] && global[key] !== "0" && global[key] !== "false"
+      );
+    }
+    return getOrDefault(global[key], opts && opts.default);
+  } else if (key in process.env) {
+    if (opts && opts.truthy) {
+      return Boolean(
+        process.env[key] &&
+          process.env[key] !== "0" &&
+          process.env[key] !== "false"
+      );
+    }
+    return getOrDefault(process.env[key], opts && opts.default);
+  } else if (CONFIG && key in CONFIG) {
+    return getOrDefault(CONFIG[key], opts && opts.default);
+  } else if (opts && opts.truthy) {
+    return false;
+  }
+  return opts && opts.default;
+}
+
+export function hasConfig(key, organization) {
+  const val = getConfig(key, organization);
   // we need to allow "" as no config since env vars will occasionally be set to that to undefine it
   return Boolean(typeof val !== "undefined" && val !== "");
 }

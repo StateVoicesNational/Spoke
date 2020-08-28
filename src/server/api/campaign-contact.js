@@ -1,6 +1,13 @@
-import { CampaignContact, r, cacheableData } from "../models";
+import {
+  CampaignContact,
+  TagCampaignContact,
+  r,
+  cacheableData
+} from "../models";
 import { mapFieldsToModel } from "./lib/utils";
+import { getConfig } from "./lib/config";
 import { log, getTopMostParent, zipToTimeZone } from "../../lib";
+import { accessRequired } from "./errors";
 
 export const resolvers = {
   Location: {
@@ -12,6 +19,10 @@ export const resolvers = {
     offset: zipCode => zipCode.timezone_offset || null,
     hasDST: zipCode => zipCode.has_dst || null
   },
+  ContactTag: {
+    ...mapFieldsToModel(["id", "value"], TagCampaignContact),
+    campaignContactId: tag => tag.campaign_contact_id || null
+  },
   CampaignContact: {
     ...mapFieldsToModel(
       [
@@ -21,7 +32,6 @@ export const resolvers = {
         "cell",
         "zip",
         "customFields",
-        "messageStatus",
         "assignmentId",
         "external_id"
       ],
@@ -31,7 +41,18 @@ export const resolvers = {
       if (campaignContact.message_status) {
         return campaignContact.message_status;
       }
-      // TODO: look it up via cacheing
+      return await cacheableData.campaignContact.getMessageStatus(
+        campaignContact.id
+      );
+    },
+    errorCode: async (campaignContact, _, { user }) => {
+      await accessRequired(
+        user,
+        campaignContact.organization_id,
+        "SUPERVOLUNTEER",
+        true
+      );
+      return campaignContact.error_code;
     },
     campaign: async (campaignContact, _, { loaders }) =>
       loaders.campaign.load(campaignContact.campaign_id),
@@ -42,83 +63,10 @@ export const resolvers = {
       if (campaignContact.message_status === "needsMessage") {
         return []; // it's the beginning, so there won't be any
       }
-      return await r
-        .knex("question_response")
-        .where("question_response.campaign_contact_id", campaignContact.id)
-        .select("value", "interaction_step_id");
-    },
-    questionResponses: async (campaignContact, _, { loaders }) => {
-      const results = await r
-        .knex("question_response as qres")
-        .where("qres.campaign_contact_id", campaignContact.id)
-        .join(
-          "interaction_step",
-          "qres.interaction_step_id",
-          "interaction_step.id"
-        )
-        .join(
-          "interaction_step as child",
-          "qres.interaction_step_id",
-          "child.parent_interaction_id"
-        )
-        .select(
-          "child.answer_option",
-          "child.id",
-          "child.parent_interaction_id",
-          "child.created_at",
-          "interaction_step.interaction_step_id",
-          "interaction_step.campaign_id",
-          "interaction_step.question",
-          "interaction_step.script",
-          "qres.id",
-          "qres.value",
-          "qres.created_at",
-          "qres.interaction_step_id"
-        )
-        .catch(log.error);
-
-      let formatted = {};
-
-      for (let i = 0; i < results.length; i++) {
-        const res = results[i];
-
-        const responseId = res["qres.id"];
-        const responseValue = res["qres.value"];
-        const answerValue = res["child.answer_option"];
-        const interactionStepId = res["child.id"];
-
-        if (responseId in formatted) {
-          formatted[responseId]["parent_interaction_step"][
-            "answer_options"
-          ].push({
-            value: answerValue,
-            interaction_step_id: interactionStepId
-          });
-          if (responseValue === answerValue) {
-            formatted[responseId]["interaction_step_id"] = interactionStepId;
-          }
-        } else {
-          formatted[responseId] = {
-            contact_response_value: responseValue,
-            interaction_step_id: interactionStepId,
-            parent_interaction_step: {
-              answer_option: "",
-              answer_options: [
-                { value: answerValue, interaction_step_id: interactionStepId }
-              ],
-              campaign_id: res["interaction_step.campaign_id"],
-              created_at: res["child.created_at"],
-              id: responseId,
-              parent_interaction_id:
-                res["interaction_step.parent_interaction_id"],
-              question: res["interaction_step.question"],
-              script: res["interaction_step.script"]
-            },
-            value: responseValue
-          };
-        }
-      }
-      return Object.values(formatted);
+      return await cacheableData.questionResponse.query(
+        campaignContact.id,
+        true // minimalObj: we might need more info one day
+      );
     },
     location: async (campaignContact, _, { loaders }) => {
       if (campaignContact.timezone_offset) {
@@ -154,40 +102,47 @@ export const resolvers = {
       if ("messages" in campaignContact) {
         return campaignContact.messages;
       }
-
-      const messages = await r
-        .knex("message")
-        .where("campaign_contact_id", campaignContact.id)
-        .orderBy("created_at");
-
+      const messages = cacheableData.message.query({
+        campaignContactId: campaignContact.id
+      });
       return messages;
     },
-    optOut: async (campaignContact, _, { loaders }) => {
-      if ("opt_out_cell" in campaignContact) {
-        return {
-          cell: campaignContact.opt_out_cell
-        };
-      } else {
-        let isOptedOut = null;
-        if (typeof campaignContact.is_opted_out !== "undefined") {
-          isOptedOut = campaignContact.is_opted_out;
-        } else {
-          let organizationId = campaignContact.organization_id;
-          if (!organizationId) {
-            const campaign = await loaders.campaign.load(
-              campaignContact.campaign_id
-            );
-            organizationId = campaign.organization_id;
-          }
-
-          const isOptedOut = await cacheableData.optOut.query({
-            cell: campaignContact.cell,
-            organizationId
-          });
-        }
-        // fake ID so we don't need to look up existance
-        return isOptedOut ? { id: "optout" } : null;
+    tags: async campaignContact => {
+      // TODO: there's more to do here to avoid cache-misses
+      // maybe preload with campaignContact.loadMany
+      if (campaignContact.message_status === "needsMessage") {
+        return []; // it's the beginning, so there won't be any
       }
+
+      if (campaignContact.tags) {
+        return campaignContact.tags;
+      }
+
+      return cacheableData.tagCampaignContact.query({
+        campaignContactId: campaignContact.id,
+        minimalObj: true
+      });
+    },
+    optOut: async (campaignContact, _, { loaders }) => {
+      let isOptedOut = null;
+      if (typeof campaignContact.is_opted_out !== "undefined") {
+        isOptedOut = campaignContact.is_opted_out;
+      } else {
+        let organizationId = campaignContact.organization_id;
+        if (!organizationId) {
+          const campaign = await loaders.campaign.load(
+            campaignContact.campaign_id
+          );
+          organizationId = campaign.organization_id;
+        }
+
+        const isOptedOut = await cacheableData.optOut.query({
+          cell: campaignContact.cell,
+          organizationId
+        });
+      }
+      // fake ID so we don't need to look up existance
+      return isOptedOut ? { id: "optout" } : null;
     }
   }
 };

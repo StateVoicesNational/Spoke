@@ -5,25 +5,37 @@ import ActionOpenInNew from "material-ui/svg-icons/action/open-in-new";
 import loadData from "../../containers/hoc/load-data";
 import { withRouter } from "react-router";
 import gql from "graphql-tag";
+import { getHighestRole } from "../../lib/permissions";
 import LoadingIndicator from "../../components/LoadingIndicator";
 import DataTables from "material-ui-datatables";
 import ConversationPreviewModal from "./ConversationPreviewModal";
-
+import TagChip from "../TagChip";
+import moment from "moment";
+import theme from "../../styles/theme";
 import { MESSAGE_STATUSES } from "../../components/IncomingMessageFilter";
 
-const prepareDataTableData = conversations =>
+export const prepareDataTableData = conversations =>
   conversations.map(conversation => ({
     campaignTitle: conversation.campaign.title,
-    texter: conversation.texter.displayName,
+    texter:
+      conversation.texter.displayName +
+      (getHighestRole(conversation.texter.roles) === "SUSPENDED"
+        ? " (Suspended)"
+        : ""),
     to:
       conversation.contact.firstName +
       " " +
       conversation.contact.lastName +
       // \u26d4 is the No Entry symbol: http://unicode.org/cldr/utility/character.jsp?a=26D4
       // including it directly breaks some text editors
-      (conversation.contact.optOut.cell ? "\u26d4" : ""),
+      (conversation.contact.optOut ? "\u26d4" : ""),
+    cell: conversation.contact.cell,
+    campaignContactId: conversation.contact.id,
+    assignmentId: conversation.contact.assignmentId,
     status: conversation.contact.messageStatus,
-    messages: conversation.contact.messages
+    errorCode: conversation.contact.errorCode,
+    messages: conversation.contact.messages,
+    tags: conversation.contact.tags
   }));
 
 const prepareSelectedRowsData = (conversations, rowsSelected) => {
@@ -48,10 +60,24 @@ export class IncomingMessageList extends Component {
   constructor(props) {
     super(props);
 
+    const tags = {};
+    (props.tags || []).forEach(tag => {
+      tags[tag.id] = tag.name;
+    });
+
     this.state = {
       selectedRows: [],
-      activeConversation: undefined
+      activeConversation: undefined,
+      tags
     };
+  }
+
+  componentDidMount() {
+    let conversationCount = 0;
+    if (this.props.conversations.conversations) {
+      conversationCount = this.props.conversations.conversations.pageInfo.total;
+    }
+    this.props.onConversationCountChanged(conversationCount);
   }
 
   componentDidUpdate = prevProps => {
@@ -98,7 +124,7 @@ export class IncomingMessageList extends Component {
       label: "Texter",
       style: {
         textOverflow: "ellipsis",
-        overflow: "scroll",
+        overflow: "hidden",
         whiteSpace: "pre-line"
       }
     },
@@ -107,7 +133,7 @@ export class IncomingMessageList extends Component {
       label: "To",
       style: {
         textOverflow: "ellipsis",
-        overflow: "scroll",
+        overflow: "hidden",
         whiteSpace: "pre-line"
       }
     },
@@ -116,17 +142,26 @@ export class IncomingMessageList extends Component {
       label: "Conversation Status",
       style: {
         textOverflow: "ellipsis",
-        overflow: "scroll",
+        overflow: "hidden",
         whiteSpace: "pre-line"
       },
-      render: (columnKey, row) => MESSAGE_STATUSES[row.status].name
+      render: (columnKey, row) => (
+        <div>
+          {MESSAGE_STATUSES[row.status].name}
+          {row.errorCode ? (
+            <div style={{ color: theme.colors.darkRed }}>
+              error: {row.errorCode}
+            </div>
+          ) : null}
+        </div>
+      )
     },
     {
       key: "latestMessage",
       label: "Latest Message",
       style: {
         textOverflow: "ellipsis",
-        overflow: "scroll",
+        overflow: "hidden",
         whiteSpace: "pre-line"
       },
       render: (columnKey, row) => {
@@ -141,6 +176,7 @@ export class IncomingMessageList extends Component {
                 overflow: "hidden",
                 whiteSpace: "nowrap"
               }}
+              title={lastMessage.text}
             >
               <span
                 style={{ color: lastMessage.isFromContact ? "blue" : "black" }}
@@ -148,6 +184,10 @@ export class IncomingMessageList extends Component {
                 <b>{lastMessage.isFromContact ? "Contact:" : "Texter:"} </b>
               </span>
               {lastMessage.text}
+              <br />
+              <span style={{ color: "gray", fontSize: "85%" }}>
+                {moment.utc(lastMessage.createdAt).fromNow()}
+              </span>
             </p>
           );
         }
@@ -159,12 +199,12 @@ export class IncomingMessageList extends Component {
       label: "View Conversation",
       style: {
         textOverflow: "ellipsis",
-        overflow: "scroll",
+        overflow: "hidden",
         whiteSpace: "pre-line"
       },
-      render: (columnKey, row) => {
-        if (row.messages && row.messages.length > 0) {
-          return (
+      render: (columnKey, row) => (
+        <div>
+          {row.messages && row.messages.length > 1 && (
             <FlatButton
               onClick={event => {
                 event.stopPropagation();
@@ -172,10 +212,10 @@ export class IncomingMessageList extends Component {
               }}
               icon={<ActionOpenInNew />}
             />
-          );
-        }
-        return "";
-      }
+          )}
+          {this.renderTags(row.tags, row)}
+        </div>
+      )
     }
   ];
 
@@ -220,6 +260,43 @@ export class IncomingMessageList extends Component {
     this.setState({ activeConversation: undefined });
   };
 
+  renderTags = (tags, row) => {
+    // dedupe names from server
+    const tagNames = {};
+    tags &&
+      tags
+        .filter(tag => !tag.resolvedAt)
+        .forEach(tag => {
+          tagNames[this.state.tags[tag.id]] = tag;
+        });
+    return (
+      <div>
+        {Object.keys(tagNames).map(name => (
+          <TagChip
+            text={name}
+            backgroundColor={
+              tagNames[name].value !== "RESOLVED"
+                ? null
+                : theme.colors.lightGray
+            }
+            onRequestDelete={
+              tagNames[name].value !== "RESOLVED"
+                ? async () => {
+                    console.log("resolving tag", name, tagNames[name]);
+                    const res = await this.props.mutations.updateTag(
+                      row.campaignContactId,
+                      tagNames[name].id,
+                      "RESOLVED"
+                    );
+                  }
+                : null
+            }
+          />
+        ))}
+      </div>
+    );
+  };
+
   render() {
     if (this.props.conversations.loading) {
       return <LoadingIndicator />;
@@ -230,6 +307,7 @@ export class IncomingMessageList extends Component {
     const { clearSelectedMessages } = this.props;
     const displayPage = Math.floor(offset / limit) + 1;
     const tableData = prepareDataTableData(conversations);
+
     return (
       <div>
         <DataTables
@@ -249,8 +327,11 @@ export class IncomingMessageList extends Component {
           selectedRows={clearSelectedMessages ? null : this.state.selectedRows}
         />
         <ConversationPreviewModal
+          organizationTags={this.state.tags}
           conversation={this.state.activeConversation}
           onRequestClose={this.handleCloseConversation}
+          onForceRefresh={this.props.onForceRefresh}
+          organizationId={this.props.organizationId}
         />
       </div>
     );
@@ -263,16 +344,19 @@ IncomingMessageList.propTypes = {
   contactsFilter: type.object,
   campaignsFilter: type.object,
   assignmentsFilter: type.object,
+  messageTextFilter: type.string,
   onPageChanged: type.func,
   onPageSizeChanged: type.func,
   onConversationSelected: type.func,
   onConversationCountChanged: type.func,
   utc: type.string,
   conversations: type.object,
-  clearSelectedMessages: type.bool
+  clearSelectedMessages: type.bool,
+  onForceRefresh: type.func,
+  tags: type.arrayOf(type.object)
 };
 
-const mapQueriesToProps = ({ ownProps }) => ({
+const queries = {
   conversations: {
     query: gql`
       query Q(
@@ -281,6 +365,7 @@ const mapQueriesToProps = ({ ownProps }) => ({
         $contactsFilter: ContactsFilter
         $campaignsFilter: CampaignsFilter
         $assignmentsFilter: AssignmentsFilter
+        $messageTextFilter: String
         $utc: String
       ) {
         conversations(
@@ -289,6 +374,7 @@ const mapQueriesToProps = ({ ownProps }) => ({
           campaignsFilter: $campaignsFilter
           contactsFilter: $contactsFilter
           assignmentsFilter: $assignmentsFilter
+          messageTextFilter: $messageTextFilter
           utc: $utc
         ) {
           pageInfo {
@@ -300,6 +386,7 @@ const mapQueriesToProps = ({ ownProps }) => ({
             texter {
               id
               displayName
+              roles(organizationId: $organizationId)
             }
             contact {
               id
@@ -308,13 +395,20 @@ const mapQueriesToProps = ({ ownProps }) => ({
               lastName
               cell
               messageStatus
+              errorCode
               messages {
                 id
                 text
                 isFromContact
+                createdAt
+              }
+              tags {
+                id
+                value
+                campaignContactId
               }
               optOut {
-                cell
+                id
               }
             }
             campaign {
@@ -325,16 +419,47 @@ const mapQueriesToProps = ({ ownProps }) => ({
         }
       }
     `,
-    variables: {
-      organizationId: ownProps.organizationId,
-      cursor: ownProps.cursor,
-      contactsFilter: ownProps.contactsFilter,
-      campaignsFilter: ownProps.campaignsFilter,
-      assignmentsFilter: ownProps.assignmentsFilter,
-      utc: ownProps.utc
-    },
-    forceFetch: true
+    options: ownProps => ({
+      variables: {
+        organizationId: ownProps.organizationId,
+        cursor: ownProps.cursor,
+        contactsFilter: ownProps.contactsFilter,
+        campaignsFilter: ownProps.campaignsFilter,
+        assignmentsFilter: ownProps.assignmentsFilter,
+        messageTextFilter: ownProps.messageTextFilter,
+        utc: ownProps.utc
+      },
+      fetchPolicy: "network-only"
+    })
   }
-});
+};
 
-export default loadData(withRouter(IncomingMessageList), { mapQueriesToProps });
+const mutations = {
+  updateTag: ownProps => (campaignContactId, id, value) => ({
+    mutation: gql`
+      mutation updateContactTags(
+        $tags: [ContactTagInput]
+        $campaignContactId: String!
+        $tagId: String!
+      ) {
+        updateContactTags(tags: $tags, campaignContactId: $campaignContactId) {
+          id
+          tags(tagId: $tagId) {
+            id
+            value
+            campaignContactId
+          }
+        }
+      }
+    `,
+    variables: {
+      tags: [{ id, value }],
+      campaignContactId,
+      tagId: id
+    }
+  })
+};
+
+export default loadData({ queries, mutations })(
+  withRouter(IncomingMessageList)
+);

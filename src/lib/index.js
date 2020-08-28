@@ -27,6 +27,7 @@ export {
   getInteractionTree,
   sortInteractionSteps,
   interactionStepForId,
+  getAvailableInteractionSteps,
   getTopMostParent,
   getChildren,
   makeTree
@@ -40,4 +41,8 @@ export {
 } from "./permissions";
 
 export { gzip, gunzip } from "./gzip";
-export { parseCSV } from "./parse_csv.js";
+export {
+  parseCSV,
+  organizationCustomFields,
+  requiredUploadFields
+} from "./parse_csv.js";

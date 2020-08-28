@@ -122,6 +122,7 @@ export function assembleAnswerOptions(allInteractionSteps) {
           nextInteractionStep: interactionStep,
           value: interactionStep.answer_option,
           action: interactionStep.answer_actions,
+          action_data: interactionStep.answer_actions_data,
           interaction_step_id: interactionStep.id,
           parent_interaction_step: interactionStep.parent_interaction_id
         });
@@ -129,4 +130,38 @@ export function assembleAnswerOptions(allInteractionSteps) {
     }
   });
   return interactionStepsCopy;
+}
+
+export function getAvailableInteractionSteps(
+  questionResponses,
+  allInteractionSteps
+) {
+  // helper for the client
+  // questionResponses: key=interactionStepId:value=questionResponse.value
+  // interactionSteps: all interaction steps
+  const availableSteps = [];
+
+  let step = getTopMostParent(allInteractionSteps);
+
+  while (step) {
+    availableSteps.push(step);
+    const questionResponseValue = questionResponses[step.id];
+    if (questionResponseValue) {
+      const matchingAnswerOption = step.question.answerOptions.find(
+        answerOption => answerOption.value === questionResponseValue
+      );
+      if (matchingAnswerOption && matchingAnswerOption.nextInteractionStep) {
+        step = interactionStepForId(
+          matchingAnswerOption.nextInteractionStep.id,
+          allInteractionSteps
+        );
+      } else {
+        step = null;
+      }
+    } else {
+      step = null;
+    }
+  }
+
+  return availableSteps;
 }

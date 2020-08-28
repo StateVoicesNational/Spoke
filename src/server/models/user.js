@@ -12,12 +12,14 @@ const User = thinky.createModel(
       auth0_id: requiredString().stopReference(),
       first_name: requiredString(),
       last_name: requiredString(),
+      alias: type.string().default(null),
       cell: requiredString(),
       email: requiredString(),
       created_at: timestamp(),
       assigned_cell: type.string(),
       is_superadmin: type.boolean(),
-      terms: type.boolean().default(false)
+      terms: type.boolean().default(false),
+      extra: type.string().default(null)
     })
     .allowExtra(false),
   { noAutoCreation: true }

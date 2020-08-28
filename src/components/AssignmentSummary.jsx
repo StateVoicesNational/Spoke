@@ -12,7 +12,12 @@ import Divider from "material-ui/Divider";
 import { withRouter } from "react-router";
 import { dataTest } from "../lib/attributes";
 
-const inlineStyles = {
+import {
+  getSideboxes,
+  renderSummary
+} from "../extensions/texter-sideboxes/components";
+
+export const inlineStyles = {
   badge: {
     fontSize: 12,
     top: 20,
@@ -108,36 +113,47 @@ export class AssignmentSummary extends Component {
   }
 
   render() {
+    const { assignment, texter } = this.props;
     const {
-      assignment,
+      campaign,
+      hasUnassignedContactsForTexter,
       unmessagedCount,
       unrepliedCount,
       badTimezoneCount,
       totalMessagedCount,
       pastMessagesCount,
       skippedMessagesCount
-    } = this.props;
+    } = assignment;
     const {
+      id: campaignId,
       title,
       description,
-      hasUnassignedContactsForTexter,
-      dueBy,
       primaryColor,
       logoImageUrl,
       introHtml,
+      texterUIConfig,
       useDynamicAssignment
-    } = assignment.campaign;
-    const maxContacts = assignment.maxContacts;
-
+    } = campaign;
+    const settingsData = JSON.parse(
+      (texterUIConfig && texterUIConfig.options) || "{}"
+    );
+    const sideboxProps = { assignment, campaign, texter, settingsData };
+    const enabledSideboxes = getSideboxes(sideboxProps, "TexterTodoList");
+    const sideboxList = enabledSideboxes.map(sb =>
+      renderSummary(sb, settingsData, this, sideboxProps)
+    );
     const cardTitleTextColor = setContrastingColor(primaryColor);
 
     return (
-      <div className={css(styles.container)}>
+      <div
+        className={css(styles.container)}
+        {...dataTest(`assignmentSummary-${campaignId}`)}
+      >
         <Card key={assignment.id}>
           <CardTitle
             title={title}
             titleStyle={{ color: cardTitleTextColor }}
-            subtitle={`${description} - ${moment(dueBy).format("MMM D YYYY")}`}
+            subtitle={description}
             subtitleStyle={{ color: cardTitleTextColor }}
             style={{
               backgroundColor: primaryColor
@@ -151,9 +167,11 @@ export class AssignmentSummary extends Component {
             }
           />
           <Divider />
-          <div style={{ margin: "20px" }}>
-            <div dangerouslySetInnerHTML={{ __html: introHtml }} />
-          </div>
+          {introHtml ? (
+            <div style={{ margin: "20px" }}>
+              <div dangerouslySetInnerHTML={{ __html: introHtml }} />
+            </div>
+          ) : null}
           <CardActions>
             {window.NOT_IN_USA && window.ALLOW_SEND_ALL
               ? ""
@@ -163,20 +181,16 @@ export class AssignmentSummary extends Component {
                   title: "Send first texts",
                   count: unmessagedCount,
                   primary: true,
-                  disabled:
-                    (useDynamicAssignment &&
-                      !hasUnassignedContactsForTexter &&
-                      unmessagedCount == 0) ||
-                    (useDynamicAssignment && maxContacts === 0),
+                  disabled: false,
                   contactsFilter: "text",
-                  hideIfZero: !useDynamicAssignment
+                  hideIfZero: true
                 })}
             {window.NOT_IN_USA && window.ALLOW_SEND_ALL
               ? ""
               : this.renderBadgedButton({
-                  dataTestText: "sendReplies",
+                  dataTestText: "Respond",
                   assignment,
-                  title: "Send replies",
+                  title: "Respond",
                   count: unrepliedCount,
                   primary: false,
                   disabled: false,
@@ -216,14 +230,28 @@ export class AssignmentSummary extends Component {
               : ""}
             {this.renderBadgedButton({
               assignment,
-              title: "Send later",
+              title: "Send later (outside timezone)",
               count: badTimezoneCount,
               primary: false,
               disabled: true,
               contactsFilter: null,
               hideIfZero: true
             })}
+            {sideboxList.length ? (
+              <div style={{ paddingLeft: "14px", paddingBottom: "10px" }}>
+                {sideboxList}
+              </div>
+            ) : null}
           </CardActions>
+          {!sideboxList.length &&
+          !unmessagedCount &&
+          !unrepliedCount &&
+          !pastMessagesCount &&
+          !skippedMessagesCount &&
+          !badTimezoneCount ? (
+            <div style={{ padding: "0 20px 20px 20px" }}>Nothing to do</div>
+          ) : null}
+          }
         </Card>
       </div>
     );
@@ -234,14 +262,8 @@ AssignmentSummary.propTypes = {
   organizationId: PropTypes.string,
   router: PropTypes.object,
   assignment: PropTypes.object,
-  unmessagedCount: PropTypes.number,
-  unrepliedCount: PropTypes.number,
-  badTimezoneCount: PropTypes.number,
-  totalMessagedCount: PropTypes.number,
-  pastMessagesCount: PropTypes.number,
-  skippedMessagesCount: PropTypes.number,
-  data: PropTypes.object,
-  mutations: PropTypes.object
+  texter: PropTypes.object,
+  refreshData: PropTypes.func
 };
 
 export default withRouter(AssignmentSummary);

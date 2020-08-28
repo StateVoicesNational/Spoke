@@ -1,0 +1,12 @@
+#!/bin/bash
+
+# Connect to the docker postgres database with the psql command line tool
+# without installing it locally
+#
+# Sample usage:
+#   * To open a shell: ./dev-tools/psql
+#   * Run a query:     ./dev-tools/psql  -c "SELECT COUNT(*) FROM campaign_contact"
+
+set -euo pipefail
+
+docker-compose exec postgres psql  -h localhost -p 5432 -U spoke spokedev "$@"

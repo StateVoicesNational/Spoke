@@ -65,25 +65,26 @@ export default class CampaignBasicsForm extends React.Component {
           value={this.formValues()}
           onChange={this.props.onChange}
           onSubmit={this.props.onSubmit}
+          {...dataTest("campaignBasicsForm")}
         >
           <Form.Field
             {...dataTest("title")}
             name="title"
-            label="Title"
+            label="Title (required)"
             hintText="e.g. Election Day 2016"
             fullWidth
           />
           <Form.Field
             {...dataTest("description")}
             name="description"
-            label="Description"
+            label="Description (required)"
             hintText="Get out the vote"
             fullWidth
           />
           <Form.Field
             {...dataTest("dueBy")}
             name="dueBy"
-            label="Due date"
+            label="Due date (required)"
             type="date"
             locale="en-US"
             shouldDisableDate={date => moment(date).diff(moment()) < 0}

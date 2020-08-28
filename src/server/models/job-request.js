@@ -10,7 +10,8 @@ const JobRequest = thinky.createModel(
     .object()
     .schema({
       id: type.string(),
-      campaign_id: requiredString(),
+      organization_id: type.string(),
+      campaign_id: type.string(),
       payload: requiredString(),
       queue_name: requiredString(),
       job_type: requiredString(),

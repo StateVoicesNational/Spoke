@@ -13,7 +13,15 @@ const UserOrganization = thinky.createModel(
       id: type.string(),
       user_id: requiredString(),
       organization_id: requiredString(),
-      role: requiredString().enum("OWNER", "ADMIN", "SUPERVOLUNTEER", "TEXTER")
+      role: requiredString().enum(
+        "OWNER",
+        "ADMIN",
+        "SUPERVOLUNTEER",
+        "TEXTER",
+        "VETTED_TEXTER",
+        "ORG_SUPERADMIN",
+        "SUSPENDED"
+      )
     })
     .allowExtra(false),
   { noAutoCreation: true, dependencies: [User, Organization] }
