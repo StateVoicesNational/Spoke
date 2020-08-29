@@ -58,7 +58,11 @@ if (process.env.NODE_ENV === "production") {
 
 app.use((req, res, next) => {
   if (req.path !== "/downtime") {
-    res.redirect(302, "/downtime");
+    if (/twilio|nexmo/.test(req.path) && process.env.DOWNTIME_NO_DB) {
+      res.status(500).send("Server is down");
+    } else {
+      res.redirect(302, "/downtime");
+    }
   } else {
     res.send(renderIndex("", "", assetMap));
   }
