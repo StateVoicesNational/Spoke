@@ -97,6 +97,7 @@ export default function renderIndex(html, css, assetMap) {
       window.CORE_BACKGROUND_COLOR="${process.env.CORE_BACKGROUND_COLOR || ""}"
       window.CAN_GOOGLE_IMPORT=${canGoogleImport}
       window.DOWNTIME="${process.env.DOWNTIME || ""}"
+      window.DOWNTIME_TEXTER="${process.env.DOWNTIME_TEXTER || ""}"
       window.EXPERIMENTAL_TWILIO_PER_CAMPAIGN_MESSAGING_SERVICE=${process.env
         .EXPERIMENTAL_TWILIO_PER_CAMPAIGN_MESSAGING_SERVICE || false}
       window.TWILIO_MULTI_ORG=${process.env.TWILIO_MULTI_ORG || false}

@@ -15,14 +15,21 @@ class Downtime extends React.Component {
           />
         </div>
         <div className={css(styles.content)}>
-          {window.DOWNTIME ? (
+          {window.DOWNTIME || window.DOWNTIME_TEXTER ? (
             <div>
               Spoke is not currently available.
-              {window.DOWNTIME != "1" && window.DOWNTIME != "true" ? (
+              {window.DOWNTIME &&
+              window.DOWNTIME != "1" &&
+              window.DOWNTIME != "true" ? (
                 <div>{window.DOWNTIME}</div>
               ) : (
                 "Please talk to your campaign manager or system administrator."
               )}
+              {window.DOWNTIME_TEXTER &&
+              window.DOWNTIME_TEXTER != "1" &&
+              window.DOWNTIME_TEXTER != "true" ? (
+                <div>{window.DOWNTIME_TEXTER}</div>
+              ) : null}
             </div>
           ) : (
             <div>

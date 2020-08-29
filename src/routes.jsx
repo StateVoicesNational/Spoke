@@ -42,6 +42,16 @@ const checkDowntime = (nextState, replace) => {
   }
 };
 
+const checkTexterDowntime = requireAuth => (nextState, replace) => {
+  if (global.DOWNTIME_TEXTER && nextState.location.pathname !== "/downtime") {
+    replace({
+      pathname: "/downtime"
+    });
+  } else {
+    return requireAuth(nextState, replace);
+  }
+};
+
 export default function makeRoutes(requireAuth = () => {}) {
   return (
     <Route path="/" component={App} onEnter={checkDowntime}>
@@ -71,7 +81,11 @@ export default function makeRoutes(requireAuth = () => {}) {
           <Route path="phone-numbers" component={AdminPhoneNumberInventory} />
         </Route>
       </Route>
-      <Route path="app" component={TexterDashboard} onEnter={requireAuth}>
+      <Route
+        path="app"
+        component={TexterDashboard}
+        onEnter={checkTexterDowntime(requireAuth)}
+      >
         <IndexRoute
           components={{
             main: () => <DashboardLoader path="/app" />,
