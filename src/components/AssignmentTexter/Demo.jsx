@@ -570,7 +570,7 @@ export function generateDemoTexterContact(testName) {
         enabledSideboxes={props.enabledSideboxes}
         messageStatusFilter={test.messageStatusFilter}
         disabled={test.disabled}
-        onMessageFormSubmit={data => {
+        onMessageFormSubmit={() => async data => {
           console.log("logging data onMessageFormSubmit", data);
 
           props.onFinishContact(1);
