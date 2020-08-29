@@ -16,6 +16,7 @@ import TexterTodoList from "./containers/TexterTodoList";
 import TexterTodo from "./containers/TexterTodo";
 import Login from "./components/Login";
 import Terms from "./containers/Terms";
+import Downtime from "./components/Downtime";
 import React from "react";
 import CreateOrganization from "./containers/CreateOrganization";
 import JoinTeam from "./containers/JoinTeam";
@@ -33,10 +34,19 @@ import {
 } from "./components/AssignmentTexter/Demo";
 import AdminPhoneNumberInventory from "./containers/AdminPhoneNumberInventory";
 
+const checkDowntime = (nextState, replace) => {
+  if (global.DOWNTIME && nextState.location.pathname !== "/downtime") {
+    replace({
+      pathname: "/downtime"
+    });
+  }
+};
+
 export default function makeRoutes(requireAuth = () => {}) {
   return (
-    <Route path="/" component={App}>
+    <Route path="/" component={App} onEnter={checkDowntime}>
       <IndexRoute component={Home} />
+      <Route path="downtime" component={Downtime} />
       <Route path="admin" component={AdminDashboard} onEnter={requireAuth}>
         <IndexRoute component={() => <DashboardLoader path="/admin" />} />
         <Route path=":organizationId">
