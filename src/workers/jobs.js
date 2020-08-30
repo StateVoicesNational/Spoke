@@ -148,20 +148,20 @@ export async function sendJobToAWSLambda(job) {
   return p;
 }
 
-export async function processSqsMessages() {
+export async function processSqsMessages(TWILIO_SQS_QUEUE_URL) {
   // hit endpoint on SQS
   // ask for a list of messages from SQS (with quantity tied to it)
   // if SQS has messages, process messages into pending_message_part and dequeue messages (mark them as handled)
   // if SQS doesnt have messages, exit
 
-  if (!process.env.TWILIO_SQS_QUEUE_URL) {
+  if (!TWILIO_SQS_QUEUE_URL) {
     return Promise.reject("TWILIO_SQS_QUEUE_URL not set");
   }
 
   const sqs = new AWS.SQS();
 
   const params = {
-    QueueUrl: process.env.TWILIO_SQS_QUEUE_URL,
+    QueueUrl: TWILIO_SQS_QUEUE_URL,
     AttributeNames: ["All"],
     MessageAttributeNames: ["string"],
     MaxNumberOfMessages: 10,
@@ -192,7 +192,7 @@ export async function processSqsMessages() {
             await serviceMap.twilio.handleIncomingMessage(twilioMessage);
             const delMessageData = await sqs
               .deleteMessage({
-                QueueUrl: process.env.TWILIO_SQS_QUEUE_URL,
+                QueueUrl: TWILIO_SQS_QUEUE_URL,
                 ReceiptHandle: message.ReceiptHandle
               })
               .promise()
@@ -1158,7 +1158,7 @@ export async function fixOrgless() {
 export async function clearOldJobs(event) {
   // to clear out old stuck jobs
   const twoHoursAgo = new Date(new Date() - 1000 * 60 * 60 * 2);
-  const delay = (event && event.delay) || twoHoursAgo;
+  const delay = (event && event.oldJobPast) || twoHoursAgo;
   return await r
     .knex("job_request")
     .where({ assigned: true })
