@@ -78,7 +78,7 @@ export async function processJobs() {
 
       const twoMinutesAgo = new Date(new Date() - 1000 * 60 * 2);
       // clear out stuck jobs
-      await clearOldJobs({ delay: twoMinutesAgo });
+      await clearOldJobs({ oldJobPast: twoMinutesAgo });
     } catch (ex) {
       log.error(ex);
     }
@@ -86,17 +86,20 @@ export async function processJobs() {
 }
 
 export async function checkMessageQueue(event, contextVars) {
-  if (!process.env.TWILIO_SQS_QUEUE_URL) {
+  console.log("checkMessageQueue", process.env.TWILIO_SQS_QUEUE_URL, event);
+  const twilioSqsQueue =
+    (event && event.TWILIO_SQS_QUEUE_URL) || process.env.TWILIO_SQS_QUEUE_URL;
+  if (!twilioSqsQueue) {
     return;
   }
 
   console.log("checking if messages are in message queue");
   while (true) {
     try {
-      if (process.env.DEBUG) {
-        await sleep(10000);
+      if (event && event.delay) {
+        await sleep(event.delay);
       }
-      await processSqsMessages();
+      await processSqsMessages(twilioSqsQueue);
       if (
         contextVars &&
         typeof contextVars.remainingMilliseconds === "function"
@@ -113,7 +116,7 @@ export async function checkMessageQueue(event, contextVars) {
 }
 
 const messageSenderCreator = (subQuery, defaultStatus) => {
-  return async event => {
+  return async (event, contextVars) => {
     console.log("Running a message sender");
     let sentCount = 0;
     setupUserNotificationObservers();
@@ -132,6 +135,14 @@ const messageSenderCreator = (subQuery, defaultStatus) => {
         sentCount += await sendMessages(subQuery, defaultStatus);
       } catch (ex) {
         log.error(ex);
+      }
+      if (
+        contextVars &&
+        typeof contextVars.remainingMilliseconds === "function"
+      ) {
+        if (contextVars.remainingMilliseconds() < 5000) {
+          return sentCount;
+        }
       }
     }
     return sentCount;
@@ -196,6 +207,7 @@ export const erroredMessageSender = messageSenderCreator(function(mQuery) {
   // This is OK to run in a scheduled event because we are specifically narrowing on the error_code
   // It's important though that runs are never in parallel
   const twentyMinutesAgo = new Date(new Date() - 1000 * 60 * 20);
+  console.log("erroredMessageSender", twentyMinutesAgo);
   return mQuery
     .where("message.created_at", ">", twentyMinutesAgo)
     .where("message.error_code", "<", 0);
@@ -294,13 +306,12 @@ export async function dispatchProcesses(event, context, eventCallback) {
   const toDispatch =
     event.processes || (JOBS_SAME_PROCESS ? syncProcessMap : processMap);
   await Promise.all(
-    Object.keys(toDispatch)
-      .filter(p => p in processMap)
-      .map(p =>
-        toDispatch[p](event, context).catch(err => {
-          console.error("Process Error", p, err);
-        })
-      )
+    Object.keys(toDispatch).map(p => {
+      const prom = toDispatch[p](event, context).catch(err => {
+        console.error("Process Error", p, err);
+      });
+      return prom;
+    })
   );
   return "completed";
 }
