@@ -9,7 +9,7 @@ import {
 } from "../server/models";
 import telemetry from "../server/telemetry";
 import { log, gunzip, zipToTimeZone, convertOffsetsToStrings } from "../lib";
-import { updateJob } from "./lib";
+import { sleep, updateJob } from "./lib";
 import serviceMap from "../server/api/lib/services";
 import twilio from "../server/api/lib/twilio";
 import {
@@ -173,33 +173,36 @@ export async function processSqsMessages() {
   const p = new Promise((resolve, reject) => {
     sqs.receiveMessage(params, async (err, data) => {
       if (err) {
-        console.log(err, err.stack);
+        console.log("processSqsMessages Error", err, err.stack);
         reject(err);
-      } else if (data.Messages) {
-        console.log(data);
-        for (let i = 0; i < data.Messages.length; i++) {
-          const message = data.Messages[i];
-          const body = message.Body;
-          console.log("processing sqs queue:", body);
-          const twilioMessage = JSON.parse(body);
-
-          await serviceMap.twilio.handleIncomingMessage(twilioMessage);
-
-          sqs.deleteMessage(
-            {
-              QueueUrl: process.env.TWILIO_SQS_QUEUE_URL,
-              ReceiptHandle: message.ReceiptHandle
-            },
-            (delMessageErr, delMessageData) => {
-              if (delMessageErr) {
-                console.log(delMessageErr, delMessageErr.stack); // an error occurred
-              } else {
-                console.log(delMessageData); // successful response
-              }
+      } else {
+        if (!data.Messages || !data.Messages.length) {
+          // Since we are likely in a while(true) loop let's avoid racing
+          await sleep(10000);
+          resolve();
+        } else {
+          console.log("processSqsMessages", data.Messages.length);
+          for (let i = 0; i < data.Messages.length; i++) {
+            const message = data.Messages[i];
+            const body = message.Body;
+            if (process.env.DEBUG) {
+              console.log("processSqsMessages message body", body);
             }
-          );
+            const twilioMessage = JSON.parse(body);
+            await serviceMap.twilio.handleIncomingMessage(twilioMessage);
+            const delMessageData = await sqs
+              .deleteMessage({
+                QueueUrl: process.env.TWILIO_SQS_QUEUE_URL,
+                ReceiptHandle: message.ReceiptHandle
+              })
+              .promise()
+              .catch(reject);
+            if (process.env.DEBUG) {
+              console.log("processSqsMessages deleteresult", delMessageData);
+            }
+          }
+          resolve();
         }
-        resolve();
       }
     });
   });
@@ -1152,10 +1155,10 @@ export async function fixOrgless() {
   } // if
 } // function
 
-export async function clearOldJobs(delay) {
+export async function clearOldJobs(event) {
   // to clear out old stuck jobs
   const twoHoursAgo = new Date(new Date() - 1000 * 60 * 60 * 2);
-  delay = delay || twoHoursAgo;
+  const delay = (event && event.delay) || twoHoursAgo;
   return await r
     .knex("job_request")
     .where({ assigned: true })
