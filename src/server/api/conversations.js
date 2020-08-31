@@ -112,7 +112,8 @@ export async function getConversations(
   { campaignsFilter, assignmentsFilter, contactsFilter, messageTextFilter },
   utc,
   includeTags,
-  awsContext
+  awsContext,
+  options
 ) {
   /* Query #1 == get campaign_contact.id for all the conversations matching
    * the criteria with offset and limit. */
@@ -129,9 +130,17 @@ export async function getConversations(
       messageTextFilter
     }
   );
+  if (options && options.justIdQuery) {
+    return { query: offsetLimitQuery };
+  }
 
   offsetLimitQuery = offsetLimitQuery.orderBy("cc_id", "desc");
-  offsetLimitQuery = offsetLimitQuery.limit(cursor.limit).offset(cursor.offset);
+
+  if (cursor.limit || cursor.offset) {
+    offsetLimitQuery = offsetLimitQuery
+      .limit(cursor.limit)
+      .offset(cursor.offset);
+  }
   console.log(
     "getConversations sql",
     awsContext && awsContext.awsRequestId,
@@ -151,7 +160,6 @@ export async function getConversations(
   const ccIds = ccIdRows.map(ccIdRow => {
     return ccIdRow.cc_id;
   });
-
   /* Query #2 -- get all the columns we need, including messages, using the
    * cc_ids from Query #1 to scope the results to limit, offset */
   let query = r.knex.select(
