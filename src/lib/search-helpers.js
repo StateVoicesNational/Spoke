@@ -1,8 +1,6 @@
-// pathsToSearch can search nested fields with ["field.subfield"]. Use [""] if objectsToSearch is an array of strings.
+// pathsToSearch can search nested fields with ["field.subfield"].
 export function searchFor(query, objectsToSearch, pathsToSearch) {
-  const results = [];
-
-  objectsToSearch.forEach(o => {
+  return objectsToSearch.filter(o => {
     for (let j = 0; j < pathsToSearch.length; j++) {
       const keys = pathsToSearch[j].split(".");
       let value = o;
@@ -14,11 +12,9 @@ export function searchFor(query, objectsToSearch, pathsToSearch) {
         value &&
         value.toLowerCase().indexOf(query.trim().toLowerCase()) !== -1
       ) {
-        results.push(o);
-        break; // Don't add it more than once if it matches on multiple fields.
+        return true;
       }
     }
+    return false;
   });
-
-  return results;
 }
