@@ -6,18 +6,24 @@ let app, server, jobs, dispatcher;
 let invocationContext = {};
 let invocationEvent = {};
 
-try {
-  app = require("./build/server/server/index");
+if (process.env.DOWNTIME_NO_DB) {
+  app = require("./build/server/server/downtime");
   server = awsServerlessExpress.createServer(app.default);
-  jobs = require("./build/server/workers/job-processes");
-  dispatcher = require("./build/server/extensions/job-runners/lambda-async/handler");
+  jobs = {};
+} else {
+  try {
+    app = require("./build/server/server/index");
+    server = awsServerlessExpress.createServer(app.default);
+    jobs = require("./build/server/workers/job-processes");
+    dispatcher = require("./build/server/extensions/job-runners/lambda-async/handler");
 
-  app.default.set("awsContextGetter", function(req, res) {
-    return [invocationEvent, invocationContext];
-  });
-} catch (err) {
-  if (!global.TEST_ENVIRONMENT) {
-    console.error(`Unable to load built server: ${err}`);
+    app.default.set("awsContextGetter", function(req, res) {
+      return [invocationEvent, invocationContext];
+    });
+  } catch (err) {
+    if (!global.TEST_ENVIRONMENT) {
+      console.error(`Unable to load built server: ${err}`);
+    }
   }
   /*
   app = require("./src/server/index");

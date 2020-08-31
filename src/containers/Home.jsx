@@ -6,7 +6,7 @@ import { StyleSheet, css } from "aphrodite";
 import theme from "../styles/theme";
 import { withRouter } from "react-router";
 
-const styles = StyleSheet.create({
+export const styles = StyleSheet.create({
   container: {
     marginTop: "5vh",
     textAlign: "center",
