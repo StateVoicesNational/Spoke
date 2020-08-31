@@ -17,8 +17,19 @@ import { withRouter } from "react-router";
 export class CampaignContactsFormInner extends React.Component {
   constructor(props) {
     super(props);
+    const { lastResult } = props;
+    let cur = {};
+    if (lastResult && lastResult.reference) {
+      cur = JSON.parse(lastResult.reference);
+    }
+    console.log("pastcontacts", lastResult, props);
     this.state = {
-      pastContactsQuery: props.location.query.pastContactsQuery || ""
+      pastContactsQuery:
+        props.location.query.pastContactsQuery || cur.pastContactsQuery || "",
+      questionResponseAnswer:
+        props.location.query.questionResponseAnswer ||
+        cur.questionResponseAnswer ||
+        ""
     };
   }
 
@@ -50,7 +61,11 @@ export class CampaignContactsFormInner extends React.Component {
           that if you load contacts across campaigns, the custom fields will be
           reduced to those that all contacts have in common.
         </p>
-        <Form.Field name="pastContactsQuery" label="Message Review URL" />
+        <Form.Field
+          name="pastContactsQuery"
+          label="Message Review URL"
+          fullWidth
+        />
         <p>
           You can narrow the result further with the exact text of the{" "}
           <b>Answer</b> for a question response

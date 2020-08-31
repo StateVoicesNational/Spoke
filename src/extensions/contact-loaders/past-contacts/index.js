@@ -108,9 +108,11 @@ export async function processContactLoad(job, maxContacts) {
     });
 
   if (contactData.pastContactsQuery) {
-    const params = queryString.parse(
-      contactData.pastContactsQuery.split("?").pop()
-    );
+    contactData.pastContactsQuery = contactData.pastContactsQuery
+      .split("?")
+      .pop();
+
+    const params = queryString.parse(contactData.pastContactsQuery);
     let organizationTags = [];
     if (params.tags) {
       organizationTags = await getTags(organization);
