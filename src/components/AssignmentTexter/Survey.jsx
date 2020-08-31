@@ -40,8 +40,8 @@ class AssignmentTexterSurveys extends Component {
   }
 
   getNextScript({ interactionStep, answerIndex }) {
-    const answerOption = interactionStep.question.answerOptions[answerIndex];
-
+    const answerOption =
+      interactionStep.question.filteredAnswerOptions[answerIndex];
     const { nextInteractionStep } = answerOption;
     return nextInteractionStep ? nextInteractionStep.script : null;
   }
@@ -137,7 +137,7 @@ class AssignmentTexterSurveys extends Component {
   }
 
   renderCurrentStep(step, oldStyle) {
-    const { onRequestClose, questionResponses, listHeader } = this.props;
+    const { questionResponses, listHeader } = this.props;
     if (oldStyle) {
       return this.renderStep(step, 1);
     }
