@@ -12,11 +12,15 @@ import WarningIcon from "material-ui/svg-icons/alert/warning";
 import ErrorIcon from "material-ui/svg-icons/alert/error";
 import { StyleSheet, css } from "aphrodite";
 import yup from "yup";
+import { withRouter } from "react-router";
 
-export class CampaignContactsForm extends React.Component {
-  state = {
-    errorResult: null
-  };
+export class CampaignContactsFormInner extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      pastContactsQuery: props.location.query.pastContactsQuery || ""
+    };
+  }
 
   render() {
     const { clientChoiceData, lastResult } = this.props;
@@ -24,8 +28,10 @@ export class CampaignContactsForm extends React.Component {
     return (
       <GSForm
         schema={yup.object({
-          requestContactCount: yup.number().integer()
+          pastContactsQuery: yup.string().required(),
+          questionResponseAnswer: yup.string()
         })}
+        value={this.state}
         onChange={formValues => {
           this.setState({ ...formValues });
           this.props.onChange(JSON.stringify(formValues));
@@ -39,11 +45,21 @@ export class CampaignContactsForm extends React.Component {
           this.props.onSubmit();
         }}
       >
+        <p>
+          Copy the url or the query string from a Message Review filter. Note
+          that if you load contacts across campaigns, the custom fields will be
+          reduced to those that all contacts have in common.
+        </p>
+        <Form.Field name="pastContactsQuery" label="Message Review URL" />
+        <p>
+          You can narrow the result further with the exact text of the{" "}
+          <b>Answer</b> for a question response
+        </p>
         <Form.Field
-          name="requestContactCount"
-          type="number"
-          label="How many fake contacts"
+          name="questionResponseAnswer"
+          label="Question Response Answer"
         />
+
         <List>
           <ListItem
             primaryText={clientChoiceData}
@@ -67,7 +83,7 @@ export class CampaignContactsForm extends React.Component {
   }
 }
 
-CampaignContactsForm.propTypes = {
+CampaignContactsFormInner.propTypes = {
   onChange: type.func,
   onSubmit: type.func,
   campaignIsStarted: type.bool,
@@ -79,5 +95,8 @@ CampaignContactsForm.propTypes = {
 
   clientChoiceData: type.string,
   jobResultMessage: type.string,
-  lastResult: type.object
+  lastResult: type.object,
+  location: type.object
 };
+
+export const CampaignContactsForm = withRouter(CampaignContactsFormInner);

@@ -1,18 +1,22 @@
 import { completeContactLoad, failedContactLoad } from "../../../workers/jobs";
-import { r } from "../../../server/models";
+import { r, cacheableData } from "../../../server/models";
 import { getConfig, hasConfig } from "../../../server/api/lib/config";
+import queryString from "query-string";
+import { getConversationFiltersFromQuery } from "../../../lib";
+import { getConversations } from "../../../server/api/conversations";
+import { getTags } from "../../../server/api/tag";
 
-export const name = "past-campaigns";
+export const name = "past-contacts";
 
 export function displayName() {
-  return "Past Campaigns";
+  return "Past Contacts";
 }
 
 export function serverAdministratorInstructions() {
   return {
     environmentVariables: [],
     description:
-      "Pull contacts from past campaigns, optionally based on a question response.",
+      "Pull contacts from past campaigns through a message review url, optionally also based on a question response.",
     setupInstructions:
       "Nothing is necessary to setup since this is default functionality"
   };
@@ -86,45 +90,96 @@ export async function processContactLoad(job, maxContacts) {
   /// * "Request of Doom" scenarios -- queries or jobs too big to complete
 
   const targetCampaignId = job.campaign_id;
-
-  await r
-    .knex("campaign_contact")
-    .where("campaign_id", targetCampaignId)
-    .delete();
-
   const contactData = JSON.parse(job.payload);
-  contactData.interactionStepId = 17;
-  contactData.sourceCampaignId = 14;
-  contactData.value = "a";
-  console.log("got here!!!", targetCampaignId, contactData);
+
+  const targetCampaign = await cacheableData.campaign.load(targetCampaignId);
+  const organization = await cacheableData.organization.load(
+    targetCampaign.organization_id
+  );
+  let minExtraFields = [];
+  let extraFieldsNeedsScrubbing = false;
 
   let query = r
     .knex("campaign_contact")
-    .where({ campaign_id: contactData.sourceCampaignId, is_opted_out: false });
-  if (contactData.interactionStepId === 0) {
-    // Include all responses, so no more filtering
-  } else if (contactData.interactionStepId === -1) {
-    // Include responses of contacts that did not respond at all
-    query = query
-      .leftJoin(
-        "question_response",
-        "question_response.campaign_contact_id",
-        "campaign_contact.id"
+    .join("campaign", "campaign_contact.campaign_id", "campaign.id")
+    .where({
+      is_opted_out: false,
+      organization_id: organization.id // security to restrict by organization
+    });
+
+  if (contactData.pastContactsQuery) {
+    const params = queryString.parse(
+      contactData.pastContactsQuery.split("?").pop()
+    );
+    let organizationTags = [];
+    if (params.tags) {
+      organizationTags = await getTags(organization);
+    }
+    const filters = getConversationFiltersFromQuery(params, organizationTags);
+    const ccIdQuery = await getConversations(
+      { offset: 0 }, // don't limit FUTURE: maybe DO have a limit?
+      organization.id,
+      filters,
+      null,
+      false, // includeTags only matters without justIds
+      null,
+      { justIdQuery: true }
+    );
+    console.log(
+      "contactData.pastContactsQuery",
+      contactData.pastContactsQuery,
+      params,
+      ccIdQuery.toString()
+    );
+    const campaignExtraFieldsQuery = ccIdQuery.query.clone();
+    const extraFields = await campaignExtraFieldsQuery
+      .clearSelect()
+      .select(
+        "campaign_contact.campaign_id",
+        r.knex.raw(
+          "max(campaign_contact.custom_fields) as custom_fields_example"
+        )
       )
-      .whereNull("question_response.id");
-  } else {
-    // select for a particular interactionStep
-    query = query
+      .groupBy("campaign_contact.campaign_id");
+    if (extraFields.length > 1) {
+      function intersection(o1, o2) {
+        const res = o1.filter(a => o2.indexOf(a) !== -1);
+        console.log("intersection", o1, o2, res);
+        return res;
+      }
+      const firstFields = Object.keys(
+        JSON.parse(extraFields[0].custom_fields_example)
+      );
+      minExtraFields = extraFields
+        .map(o => Object.keys(JSON.parse(o.custom_fields_example)))
+        .reduce(intersection, firstFields);
+      console.log("extraFieldsScrubbing", extraFields, "min", minExtraFields);
+      if (minExtraFields.length !== firstFields.length) {
+        extraFieldsNeedsScrubbing = true;
+      }
+    }
+    query.whereIn(
+      "campaign_contact.id",
+      ccIdQuery.query.clearSelect().select("campaign_contact.id")
+    );
+  }
+
+  if (contactData.questionResponseAnswer) {
+    query
       .join(
         "question_response",
         "question_response.campaign_contact_id",
         "campaign_contact.id"
       )
       .where({
-        interaction_step_id: contactData.interactionStepId,
-        value: contactData.value
+        value: contactData.questionResponseAnswer
       });
   }
+
+  await r
+    .knex("campaign_contact")
+    .where("campaign_id", targetCampaignId)
+    .delete();
 
   const copyColumns = [
     "external_id",
@@ -159,4 +214,26 @@ export async function processContactLoad(job, maxContacts) {
     JSON.stringify(contactData),
     String(result.rowCount)
   );
+
+  // This needs to be AFTER completeContactLoad
+  // because we need the first record AFTER, not before, records get scrubbed
+  if (extraFieldsNeedsScrubbing) {
+    const firstContact = await r
+      .knex("campaign_contact")
+      .select("id", "campaign_id", "custom_fields")
+      .where("campaign_id", targetCampaignId)
+      .orderBy("id")
+      .first();
+    if (firstContact) {
+      const firstContactFields = JSON.parse(firstContact.custom_fields);
+      const finalFields = {};
+      minExtraFields.forEach(f => {
+        finalFields[f] = firstContactFields[f];
+      });
+      await r
+        .knex("campaign_contact")
+        .where("id", firstContact.id)
+        .update({ custom_fields: JSON.stringify(finalFields) });
+    }
+  }
 }
