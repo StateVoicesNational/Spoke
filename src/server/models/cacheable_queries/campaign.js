@@ -30,8 +30,9 @@ const CONTACT_CACHE_ENABLED =
 
 const dbCustomFields = async id => {
   const campaignContacts = await r
-    .table("campaign_contact")
-    .getAll(id, { index: "campaign_id" })
+    .knex("campaign_contact")
+    .where("campaign_id", id)
+    .orderBy("id") // we order it to make this deterministic
     .limit(1);
   if (campaignContacts.length > 0) {
     return Object.keys(JSON.parse(campaignContacts[0].custom_fields));
