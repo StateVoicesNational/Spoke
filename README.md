@@ -35,7 +35,7 @@ Please let us know if you deployed by filling out this form [here](https://act.m
 2. Install yarn.
 
 
-## Get Started
+## Setting up Spoke
 
 
 The easiest way to get started is with Heroku.  You can also learn about Spoke through the [texter](https://youtu.be/EqE1UDvKGco) and [admin](https://youtu.be/PTMykMX8gII) video demos or in the explanation on [how to decide if Spoke is right for you.](/docs/EXPLANATION_DECIDING_ON_SPOKE.md)
@@ -44,7 +44,7 @@ For developers, please see our recomendations for [deploying locally for develop
 
 
 
-## Quick Start with Heroku
+### Quick Start with Heroku
 This version of Spoke suitable for testing and, potentially, for small campaigns. This won't cost any money and will not support production usage. It's a great way to practice deploying Spoke or see it in action.  
 
 <a href="https://heroku.com/deploy?template=https://github.com/MoveOnOrg/Spoke/tree/v9.0">
@@ -62,7 +62,7 @@ Please let us know if you deployed by filling out this form [here](https://act.m
 
 ## Other Options for Production Use 
 
-You can also [deploy on AWS Lambda.](/docs/HOWTO_DEPLOYING_AWS_LAMBDA.md) 
+You can also [deploy on AWS Lambda.](/docs/HOWTO_DEPLOYING_AWS_LAMBDA.md) which is a lot cheaper than Heroku at scale, but requires considerably more technical knowledge to deploy and maintain. We recommend this option for large scale campaigns with tech resources.
 
 Additional guidance:
 - [Choosing a set-up for production](/docs/EXPLANATION_CHOOSE_A_SETUP.md)

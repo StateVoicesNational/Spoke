@@ -1,6 +1,5 @@
 ## Getting started
 
-The following is the reccomended developer set-up.  If you prefer, [click here for instructions for a minimalist set-up.](HOWTO_MINIMALIST_DEPLOY.md)
 
 ### Downloading
 

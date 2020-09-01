@@ -1,5 +1,5 @@
 ## Deciding how to run Spoke
-
+After you have [decided Spoke is right for you](EXPLANATION_DECIDING_ON_SPOKE.md), you will need to decide how you want to deploy.
 At a high level, you need to decide how much control you want over your deployment architecture. Control over system scaling issues and security trades off against amount of time it'll take to setup and maintain your system. 
 
 For guidance on hiring someone to 
@@ -12,11 +12,13 @@ Reasons to be ok with less control:
 1. You aren't yet sure if you are able to / want to scale up your system and just want to try it out first
 1. The cost of devops time spent implementing control over your deployment architecture isn't worth the benefit textbanking has to your organization
 
-There are many ways to deploy software onto hardware and many cloud computing providers. In this set of documentation, we use Heroku and Amazon AWS. AWS is more work to setup than Heroku, but gives you more control over scaling and security. In our experience, a full stack engineer with 2+ yrs experience that includes AWS can set this up in 5 days. There is also a Spoke open source community anchored in the Progressive Coders Network slack who can help with setup.
+There are many ways to deploy software onto hardware and many cloud computing providers. In this set of documentation, we use Heroku and Amazon AWS. AWS is more work to setup than Heroku, but gives you more control over scaling and security. In our experience, a full stack engineer with 2+ yrs experience that includes AWS can set this up in 5 days. There is also a Spoke open source community anchored in the [Progressive Coders Network slack](https://www.progcode.org/) who can help with setup.
 
 If you're ok with less control, you can follow the instructions [here](HOWTO_HEROKU_DEPLOY.md) to deploy an instance of Spoke to Heroku  
 
 If you want more control, you can follow the instructions [here](HOWTO_DEPLOYING_AWS_LAMBDA.md) to deploy an instance of Spoke onto Amazon AWS. Many people use dedicated EC2 servers for deployment, but we've found lambda (pay-per-invocation vs hour) to be more cost effective for bursty traffic.
+
+For guidance on hiring someone to set up Spoke for you, see [here.](HOWTO_HIRE_SOMEONE_TO_INSTALL_SPOKE.md)
 
 
 ## What else do I need to worry about?
@@ -28,4 +30,3 @@ The AWS setup described above as of this writing is CPU-bound at the database le
 Amazon lambda automatically spins up more server containers when you send in more requests, but there is an undocumented data center specific limit on the number of simultaneous containers you can run at a time, which can cause problems with lots of simultaneous texting activity. Deploy to a data center that has a high concurrent lambda limit and ask your Amazon AWS rep which one this is.
 
 Carrier specific sending limits are a problem for all texting systems- ask your metered SMS API provider (Twilio in this example) for granular error messages and carrier status, so you can analyze and understand the real throughput of your texting program.
-
