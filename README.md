@@ -60,7 +60,7 @@ Follow up instructions located [here](/docs/HOWTO_HEROKU_DEPLOY.md).
 Please let us know if you deployed by filling out this form [here](https://act.moveon.org/survey/tech/)
 
 
-## Other Options for Production Use 
+### Other Options for Production Use 
 
 You can also [deploy on AWS Lambda.](/docs/HOWTO_DEPLOYING_AWS_LAMBDA.md) which is a lot cheaper than Heroku at scale, but requires considerably more technical knowledge to deploy and maintain. We recommend this option for large scale campaigns with tech resources.
 

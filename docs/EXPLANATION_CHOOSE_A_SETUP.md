@@ -2,7 +2,6 @@
 After you have [decided Spoke is right for you](EXPLANATION_DECIDING_ON_SPOKE.md), you will need to decide how you want to deploy.
 At a high level, you need to decide how much control you want over your deployment architecture. Control over system scaling issues and security trades off against amount of time it'll take to setup and maintain your system. 
 
-For guidance on hiring someone to 
 
 Reasons to want more control:
 1. High scale: you want to send millions of text messages, and/or anticipate having thousands of simultaneous texters
