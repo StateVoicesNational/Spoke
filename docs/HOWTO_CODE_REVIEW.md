@@ -1,15 +1,15 @@
 # How to Code Review
-Thank you for stepping up to code review changes for Spoke! Check out [our developer docs](https://github.com/MoveOnOrg/Spoke#more-documentation) for more information about how we write code.
+Thank you for stepping up to code review changes for Spoke! Check out [our developer docs](https://moveonorg.github.io/Spoke/#/EXPLANATION-development-guidelines) for more information about how we write code.
 ## Pre-Review
-- Put your mentor hat on — be respectful and gentle — the Spoke project encourages contributions from beginner-developers, and we want to make their early experiences with open-source contributions as positive as possible. We have a [Code of Conduct](https://github.com/MoveOnOrg/Spoke/blob/main/CODE_OF_CONDUCT.md) that we expect all members of the community to follow, and is especially important in the position of being a reviewer.
+- Put your mentor hat on — be respectful and gentle — the Spoke project encourages contributions from beginner-developers, and we want to make their early experiences with open-source contributions as positive as possible. We have a [Code of Conduct](../CODE_OF_CONDUCT.md) that we expect all members of the community to follow, and is especially important in the position of being a reviewer.
 
-- If you are unable to complete a review that you’re tagged in within a [48 hour window](https://github.com/MoveOnOrg/Spoke/new/main/docs#why-review-quickly), comment to let us know and reassign to another reviewer. For large pull requests that will take longer to review, please comment on the issue with a deadline for yourself to complete the review.
+- If you are unable to complete a review that you’re tagged in within a [48 hour window](#why-review-quickly), comment to let us know and reassign to another reviewer. For large pull requests that will take longer to review, please comment on the issue with a deadline for yourself to complete the review.
 
 - Check the automatically deployed heroku instance and ensure that the change is present and operates as expected.
 
 ## The Review
 
-- Look for blocking characteristics in the code. As you identify what you want to comment on remember to use [kind language and to critique the code rather than the author](https://github.com/MoveOnOrg/Spoke/new/main/docs#critique-the-code-not-the-author). We’re all a team and we want to affirm the efforts of people contributing. <sup>1</sup>
+- Look for blocking characteristics in the code. As you identify what you want to comment on remember to use [kind language and to critique the code rather than the author](#critique-the-code-not-the-author). We’re all a team and we want to affirm the efforts of people contributing. <sup>1</sup>
 
   - **Functional issues:** Does the code have any bugs in it? Does it do what it says it does? Does it break anything existing?
   - **Edge cases that aren’t covered:** Did the author miss any conditions or use cases?
