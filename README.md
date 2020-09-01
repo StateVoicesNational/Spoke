@@ -47,7 +47,7 @@ For developers, please see our recomendations for [deploying locally for develop
 ## Quick Start with Heroku
 This version of Spoke suitable for testing and, potentially, for small campaigns. This won't cost any money and will not support production usage. It's a great way to practice deploying Spoke or see it in action.  
 
-<a href="https://heroku.com/deploy?template=https://github.com/MoveOnOrg/Spoke/tree/v8.0">
+<a href="https://heroku.com/deploy?template=https://github.com/MoveOnOrg/Spoke/tree/v9.0">
 
   <img src="https://www.herokucdn.com/deploy/button.svg" alt="Deploy">
 </a>
