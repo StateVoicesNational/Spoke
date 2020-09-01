@@ -11,7 +11,6 @@ The latest version is [9.0](https://github.com/MoveOnOrg/Spoke/tree/v9.0) (see [
 
 
 
-Use the Heroku Button to deploy a version of Spoke suitable for testing. This won't cost any money and will not support production usage. It's a great way to practice deploying Spoke or see it in action.
 <a href="https://heroku.com/deploy?template=https://github.com/MoveOnOrg/Spoke/tree/v9.0">
   <img src="https://www.herokucdn.com/deploy/button.svg" alt="Deploy">
 </a>
@@ -32,7 +31,6 @@ Please let us know if you deployed by filling out this form [here](https://act.m
    nvm install
    nvm use
    ```
-2. Install yarn.
 
 
 ## Setting up Spoke
