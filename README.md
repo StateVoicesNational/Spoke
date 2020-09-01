@@ -17,6 +17,9 @@ The easiest way to get started is with Heroku.  You can also learn about Spoke t
 
 For developers, please see our recomendations for [deploying locally for development](/docs/HOWTO_DEVELOPMENT_LOCAL_SETUP.md).
 
+Want to know more?
+[Click here to visit the Spoke Documentation microsite!](https://moveonorg.github.io/Spoke/)
+
 
 ### Quick Start with Heroku
 This version of Spoke suitable for testing and, potentially, for small campaigns. This won't cost any money and will not support production(aka large-scale) usage. It's a great way to practice deploying Spoke or see it in action.  
@@ -43,11 +46,6 @@ Additional guidance:
 - [How to hire someone to install Spoke](/docs/HOWTO_HIRE_SOMEONE_TO_INSTALL_SPOKE.md)
 - [Option for minimalist deployment](docs/HOWTO_MINIMALIST_DEPLOY.md)
 
-
-## More Documentation
-
-Want to know more?
-[Click here to visit the Spoke Documentation microsite!](https://github.com/MoveOnOrg/Spoke/tree/main/docs)
 
 
 ## Big Thanks
