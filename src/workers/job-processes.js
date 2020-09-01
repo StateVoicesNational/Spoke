@@ -60,6 +60,7 @@ export const invokeJobFunction = async job => {
 };
 
 export async function processJobs() {
+  // DEPRECATED -- switch to job dispatchers. See src/extensions/job-runners/README.md
   setupUserNotificationObservers();
   console.log("Running processJobs");
   // eslint-disable-next-line no-constant-condition
@@ -77,23 +78,37 @@ export async function processJobs() {
 
       const twoMinutesAgo = new Date(new Date() - 1000 * 60 * 2);
       // clear out stuck jobs
-      await clearOldJobs(twoMinutesAgo);
+      await clearOldJobs({ oldJobPast: twoMinutesAgo });
     } catch (ex) {
       log.error(ex);
     }
   }
 }
 
-export async function checkMessageQueue() {
-  if (!process.env.TWILIO_SQS_QUEUE_URL) {
+export async function checkMessageQueue(event, contextVars) {
+  console.log("checkMessageQueue", process.env.TWILIO_SQS_QUEUE_URL, event);
+  const twilioSqsQueue =
+    (event && event.TWILIO_SQS_QUEUE_URL) || process.env.TWILIO_SQS_QUEUE_URL;
+  if (!twilioSqsQueue) {
     return;
   }
 
   console.log("checking if messages are in message queue");
   while (true) {
     try {
-      await sleep(10000);
-      processSqsMessages();
+      if (event && event.delay) {
+        await sleep(event.delay);
+      }
+      await processSqsMessages(twilioSqsQueue);
+      if (
+        contextVars &&
+        typeof contextVars.remainingMilliseconds === "function"
+      ) {
+        if (contextVars.remainingMilliseconds() < 5000) {
+          // rather than get caught half-way through a message batch, let's bail
+          return;
+        }
+      }
     } catch (ex) {
       log.error(ex);
     }
@@ -101,7 +116,7 @@ export async function checkMessageQueue() {
 }
 
 const messageSenderCreator = (subQuery, defaultStatus) => {
-  return async event => {
+  return async (event, contextVars) => {
     console.log("Running a message sender");
     let sentCount = 0;
     setupUserNotificationObservers();
@@ -120,6 +135,14 @@ const messageSenderCreator = (subQuery, defaultStatus) => {
         sentCount += await sendMessages(subQuery, defaultStatus);
       } catch (ex) {
         log.error(ex);
+      }
+      if (
+        contextVars &&
+        typeof contextVars.remainingMilliseconds === "function"
+      ) {
+        if (contextVars.remainingMilliseconds() < 5000) {
+          return sentCount;
+        }
       }
     }
     return sentCount;
@@ -184,6 +207,7 @@ export const erroredMessageSender = messageSenderCreator(function(mQuery) {
   // This is OK to run in a scheduled event because we are specifically narrowing on the error_code
   // It's important though that runs are never in parallel
   const twentyMinutesAgo = new Date(new Date() - 1000 * 60 * 20);
+  console.log("erroredMessageSender", twentyMinutesAgo);
   return mQuery
     .where("message.created_at", ">", twentyMinutesAgo)
     .where("message.error_code", "<", 0);
@@ -232,7 +256,7 @@ export async function handleIncomingMessages() {
   }
 }
 
-export async function runDatabaseMigrations(event, dispatcher, eventCallback) {
+export async function runDatabaseMigrations(event, context, eventCallback) {
   console.log("inside runDatabaseMigrations1");
   console.log("inside runDatabaseMigrations2", event);
   await r.k.migrate.latest();
@@ -243,11 +267,7 @@ export async function runDatabaseMigrations(event, dispatcher, eventCallback) {
   return "completed migrations runDatabaseMigrations";
 }
 
-export async function databaseMigrationChange(
-  event,
-  dispatcher,
-  eventCallback
-) {
+export async function databaseMigrationChange(event, context, eventCallback) {
   console.log("inside databaseMigrationChange", event);
   if (event.up) {
     await r.k.migrate.up();
@@ -282,26 +302,21 @@ const syncProcessMap = {
   clearOldJobs
 };
 
-export async function dispatchProcesses(event, dispatcher, eventCallback) {
+export async function dispatchProcesses(event, context, eventCallback) {
   const toDispatch =
     event.processes || (JOBS_SAME_PROCESS ? syncProcessMap : processMap);
-  for (let p in toDispatch) {
-    if (p in processMap) {
-      // / not using dispatcher, but another interesting model would be
-      // / to dispatch processes to other lambda invocations
-      // dispatcher({'command': p})
-      console.log("process", p);
-      toDispatch[p]()
-        .then()
-        .catch(err => {
-          console.error("Process Error", p, err);
-        });
-    }
-  }
+  await Promise.all(
+    Object.keys(toDispatch).map(p => {
+      const prom = toDispatch[p](event, context).catch(err => {
+        console.error("Process Error", p, err);
+      });
+      return prom;
+    })
+  );
   return "completed";
 }
 
-export async function ping(event, dispatcher) {
+export async function ping(event, context) {
   return "pong";
 }
 
