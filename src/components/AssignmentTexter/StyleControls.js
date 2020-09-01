@@ -92,6 +92,7 @@ export const flexStyles = StyleSheet.create({
     textAlign: "center",
     padding: "24px",
     maxWidth: "240px",
+    overflowY: "scroll",
     "@media(max-width: 575px)": {
       display: "none"
     }
