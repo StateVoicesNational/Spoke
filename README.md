@@ -10,11 +10,36 @@ Spoke was created by Saikat Chakrabarti and Sheena Pakanati, and is now maintain
 The latest version is [9.0](https://github.com/MoveOnOrg/Spoke/tree/v9.0) (see [release notes](https://github.com/MoveOnOrg/Spoke/blob/main/docs/RELEASE_NOTES.md#v90))
 
 
+
+<a href="https://heroku.com/deploy?template=https://github.com/MoveOnOrg/Spoke/tree/v9.0">
+  <img src="https://www.herokucdn.com/deploy/button.svg" alt="Deploy">
+</a>
+
+Or click [this link to deploy with a prod infrastructure set up to get up and running!](https://heroku.com/deploy?template=https://github.com/MoveOnOrg/Spoke/tree/heroku-button-paid)
+
+**NOTE:** Deploying with prod infrastructure will cost $75 ($25 dyno + $50 postgres) a month and should be suitable for production level usage for most organizations.
+
+Follow up instructions located [here](https://github.com/MoveOnOrg/Spoke/blob/main/docs/HOWTO_HEROKU_DEPLOY.md).
+
+Please let us know if you deployed by filling out this form [here](https://act.moveon.org/survey/tech/)
+
+## Getting started
+### Downloading
+
+1. Install the Node version listed in `.nvmrc`. [NVM](https://github.com/creationix/nvm) is one way to do this (from the spoke directory):
+   ```
+   nvm install
+   nvm use
+   ```
+
+
 ## Setting up Spoke
+
 
 The easiest way to get started is with Heroku.  You can also learn about Spoke through the [texter](https://youtu.be/EqE1UDvKGco) and [admin](https://youtu.be/PTMykMX8gII) video demos or in the explanation on [how to decide if Spoke is right for you.](/docs/EXPLANATION_DECIDING_ON_SPOKE.md)
 
 For developers, please see our recomendations for [deploying locally for development](/docs/HOWTO_DEVELOPMENT_LOCAL_SETUP.md).
+
 
 
 ### Quick Start with Heroku
