@@ -48,6 +48,25 @@ const loadMany = async organizationId => {
   }
 };
 
+const updateIsOptedOuts = async queryModifier => {
+  // update all organization/instance's active campaigns as well
+  const optOutContactQuery = r
+    .knex("campaign_contact")
+    .join("campaign", "campaign_contact.campaign_id", "campaign.id")
+    .where("campaign.is_archived", false)
+    .select("campaign_contact.id");
+
+  await r
+    .knex("campaign_contact")
+    .whereIn(
+      "id",
+      queryModifier ? queryModifier(optOutContactQuery) : optOutContactQuery
+    )
+    .update({
+      is_opted_out: true
+    });
+};
+
 const optOutCache = {
   clearQuery: async ({ cell, organizationId }) => {
     // remove cache by organization
@@ -142,33 +161,19 @@ const optOutCache = {
       return;
     }
 
-    // update all organization/instance's active campaigns as well
-    const updateOrgOrInstanceOptOuts = !sharingOptOuts
-      ? {
-          "campaign_contact.cell": cell,
-          "campaign.organization_id": organizationId,
-          "campaign.is_archived": false
-        }
-      : { "campaign_contact.cell": cell, "campaign.is_archived": false };
-    await r
-      .knex("campaign_contact")
-      .where(
-        "id",
-        "in",
-        r
-          .knex("campaign_contact")
-          .leftJoin("campaign", "campaign_contact.campaign_id", "campaign.id")
-          .where(updateOrgOrInstanceOptOuts)
-          .select("campaign_contact.id")
-      )
-      .update({
-        is_opted_out: true
-      });
+    await updateIsOptedOuts(query => {
+      if (!sharingOptOuts) {
+        query.where("campaign.organization_id", organizationId);
+      }
+      return query.where("campaign_contact.cell", cell);
+    });
+
     if (noReply) {
       await campaignCache.incrCount(campaign.id, "needsResponseCount", -1);
     }
   },
-  loadMany
+  loadMany,
+  updateIsOptedOuts
 };
 
 export default optOutCache;
