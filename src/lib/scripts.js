@@ -29,6 +29,19 @@ const CAPITALIZE_FIELDS = [
   "texterAliasOrFirstName"
 ];
 
+export const coreFields = {
+  firstName: 1,
+  lastName: 1,
+  texterFirstName: 1,
+  texterLastName: 1,
+  texterAliasOrFirstName: 1,
+  cell: 1,
+  zip: 1,
+  external_id: 1,
+  contactId: 1,
+  contactIdBase62: 1
+};
+
 // TODO: This will include zipCode even if you ddin't upload it
 export const allScriptFields = (customFields, includeDeprecated) =>
   TOP_LEVEL_UPLOAD_FIELDS.concat(TEXTER_SCRIPT_FIELDS)

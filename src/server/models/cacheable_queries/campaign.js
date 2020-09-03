@@ -1,6 +1,9 @@
 import { r, Campaign } from "../../models";
 import { modelWithExtraProps } from "./lib";
-import { assembleAnswerOptions } from "../../../lib/interaction-step-helpers";
+import {
+  assembleAnswerOptions,
+  getUsedScriptFields
+} from "../../../lib/interaction-step-helpers";
 import { getFeatures } from "../../api/lib/config";
 import organizationCache from "./organization";
 
@@ -82,6 +85,10 @@ const loadDeep = async id => {
     // console.log('campaign loaddeep', campaign)
     campaign.customFields = await dbCustomFields(id);
     campaign.interactionSteps = await dbInteractionSteps(id);
+    campaign.usedFields = getUsedScriptFields(
+      campaign.interactionSteps,
+      "script"
+    );
     campaign.contactTimezones = await dbContactTimezones(id);
     campaign.contactsCount = await r.getCount(
       r.knex("campaign_contact").where("campaign_id", id)

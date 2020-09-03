@@ -1,6 +1,6 @@
 import { r } from "../../models";
 import { groupCannedResponses } from "../../api/lib/utils";
-
+import { getUsedScriptFields } from "../../../lib/interaction-step-helpers";
 // Datastructure:
 // * regular GET/SET with JSON ordered list of the objects {id,title,text}
 // * keyed by campaignId-userId pairs -- userId is '' for global campaign records
@@ -50,6 +50,9 @@ const cannedResponseCache = {
         user_id: cannedRes.user_id,
         tagIds: cannedRes.tagIds
       }));
+      if (cacheData.length) {
+        cacheData[0].usedFields = getUsedScriptFields(cacheData, "text");
+      }
       await r.redis
         .multi()
         .set(cacheKey(campaignId, userId), JSON.stringify(cacheData))

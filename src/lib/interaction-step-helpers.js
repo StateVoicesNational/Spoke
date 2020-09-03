@@ -106,6 +106,17 @@ export function makeTree(interactionSteps, id = null) {
   };
 }
 
+export function getUsedScriptFields(allInteractionSteps, key) {
+  // problem: also need all the canned response fields
+  const usedFields = {};
+  allInteractionSteps.forEach(is => {
+    is[key].replace(/\{([^}]+)\}/g, (m, scriptField) => {
+      usedFields[scriptField] = 1;
+    });
+  });
+  return usedFields;
+}
+
 export function assembleAnswerOptions(allInteractionSteps) {
   // creates recursive array required for the graphQL query with 'answerOptions' key
   const interactionStepsCopy = allInteractionSteps.map(is => ({
