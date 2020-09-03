@@ -291,28 +291,25 @@ export async function completeContactLoad(
       console.log("Error deleting opt-outs:", campaignId, err);
     });
 
-  // delete duplicate cells
+  // delete duplicate cells (last wins)
   await r
     .knex("campaign_contact")
-    .whereIn(
+    .whereNotIn(
       "id",
       r
         .knex("campaign_contact")
-        .select("campaign_contact.id")
-        .leftJoin("campaign_contact AS c2", function joinSelf() {
-          this.on("c2.campaign_id", "=", "campaign_contact.campaign_id")
-            .andOn("c2.cell", "=", "campaign_contact.cell")
-            .andOn("c2.id", ">", "campaign_contact.id");
-        })
-        .where("campaign_contact.campaign_id", campaignId)
-        .whereNotNull("c2.id")
+        .select(r.knex.raw("max(id) as id"))
+        .where("campaign_id", campaignId)
+        .groupBy("cell")
     )
+    .where("campaign_contact.campaign_id", campaignId)
     .delete()
     .then(result => {
       deleteDuplicateCells = result;
       console.log("Deduplication result", campaignId, result);
     })
     .catch(err => {
+      deleteDuplicateCells = -1;
       console.error("Failed deduplication", campaignId, err);
     });
 

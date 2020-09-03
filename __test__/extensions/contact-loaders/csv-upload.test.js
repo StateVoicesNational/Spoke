@@ -54,6 +54,13 @@ const dupeContacts = [
     custom_fields: '{"custom1": "abc"}'
   },
   {
+    first_name: "second",
+    last_name: "thirdlast",
+    cell: "+12125550100",
+    zip: "10025",
+    custom_fields: '{"custom1": "xyz"}'
+  },
+  {
     first_name: "fdsa",
     last_name: "yyyy",
     cell: "+12125550100",
@@ -111,7 +118,7 @@ describe("ingest-contact-loader method: csv-upload backend", async () => {
     expect(dbContacts[0].last_name).toBe("xxxx");
     expect(dbContacts[0].custom_fields).toBe('{"custom1": "abc"}');
   });
-  it("csv-upload:processContactLoad dedupe", async () => {
+  it("csv-upload:processContactLoad dedupe last wins", async () => {
     const job = {
       payload: await gzip(JSON.stringify({ contacts: dupeContacts })),
       campaign_id: testCampaign.id,
@@ -127,7 +134,7 @@ describe("ingest-contact-loader method: csv-upload backend", async () => {
       .where("campaign_id", testCampaign.id)
       .first();
     expect(dbContacts.length).toBe(1);
-    expect(adminResult.duplicate_contacts_count).toBe(1);
+    expect(adminResult.duplicate_contacts_count).toBe(2);
     expect(adminResult.contacts_count).toBe(1);
     expect(dbContacts[0].first_name).toBe("fdsa");
     expect(dbContacts[0].last_name).toBe("yyyy");
