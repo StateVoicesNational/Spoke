@@ -21,6 +21,7 @@ export const serverAdministratorInstructions = () => {
 };
 
 export const available = organization =>
+  !!getConfig("NGP_VAN_API_KEY_ENCRYPTED", organization) &&
   !!getConfig("NGP_VAN_API_KEY", organization) &&
   !!getConfig("NGP_VAN_APP_NAME", organization);
 

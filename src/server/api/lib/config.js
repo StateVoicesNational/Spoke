@@ -1,4 +1,5 @@
 import fs from "fs";
+import { symmetricDecrypt } from "./crypto";
 
 // This is for centrally loading config from different environment sources
 // Especially for large config values (or many) some environments (like AWS Lambda) limit
@@ -30,7 +31,15 @@ export function getConfig(key, organization, opts) {
     // TODO: update to not parse if features is an object (vs. a string)
     let features = getFeatures(organization);
     if (features.hasOwnProperty(key)) {
-      return getOrDefault(features[key], opts && opts.default);
+      let value = features[key];
+      if (key.endsWith('_ENCRYPTED')) {
+        try {
+          value = symmetricDecrypt(value);
+        } catch (e) {
+          // Can't decrypt, return value as-is.
+        }
+      }
+      return getOrDefault(value, opts && opts.default);
     }
   }
   if (opts && opts.onlyLocal) {

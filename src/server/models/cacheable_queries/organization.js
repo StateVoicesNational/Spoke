@@ -1,6 +1,5 @@
 import { r } from "../../models";
 import { getConfig, hasConfig } from "../../api/lib/config";
-import { symmetricDecrypt } from "../../api/lib/crypto";
 
 const cacheKey = orgId => `${process.env.CACHE_PREFIX || ""}org-${orgId}`;
 
@@ -22,7 +21,7 @@ const organizationCache = {
     // Note, allows unencrypted auth tokens to be (manually) stored in the db
     // @todo: decide if this is necessary, or if UI/envars is sufficient.
     const authToken = hasOrgToken
-      ? symmetricDecrypt(getConfig("TWILIO_AUTH_TOKEN_ENCRYPTED", organization))
+      ? getConfig("TWILIO_AUTH_TOKEN_ENCRYPTED", organization)
       : getConfig("TWILIO_AUTH_TOKEN", organization);
     const accountSid = hasConfig("TWILIO_ACCOUNT_SID", organization)
       ? getConfig("TWILIO_ACCOUNT_SID", organization)

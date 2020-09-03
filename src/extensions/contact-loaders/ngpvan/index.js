@@ -58,6 +58,7 @@ export async function available(organization, user) {
   // / then it's better to allow the result to be cached
 
   const result =
+    !!getConfig("NGP_VAN_API_KEY_ENCRYPTED", organization) &&
     !!getConfig("NGP_VAN_API_KEY", organization) &&
     !!getConfig("NGP_VAN_APP_NAME", organization) &&
     !!getConfig("NGP_VAN_WEBHOOK_BASE_URL", organization);
