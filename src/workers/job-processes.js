@@ -2,7 +2,7 @@
 // that are tracked in the database via the JobRequest table.
 // See src/extensions/job-runners/README.md for more details
 
-import { r } from "../server/models";
+import { r, cacheableData } from "../server/models";
 import { sleep, getNextJob } from "./lib";
 import { log } from "../lib";
 import {
@@ -256,6 +256,29 @@ export async function handleIncomingMessages() {
   }
 }
 
+export async function updateOptOuts(event, context, eventCallback) {
+  // Especially for auto-optouts, campaign_contact.is_opted_out is not
+  // always updated and depends on this batch job to run
+  // We avoid it in-process to avoid db-write thrashing on optouts
+  // so they don't appear in queries
+  await cacheableData.optOut.updateIsOptedOuts(query =>
+    query
+      .join("opt_out", {
+        "opt_out.cell": "campaign_contact.cell",
+        ...(!process.env.OPTOUTS_SHARE_ALL_ORGS
+          ? { "opt_out.organization_id": "campaign.organization_id" }
+          : {})
+      })
+      .where(
+        "opt_out.created_at",
+        ">",
+        new Date(
+          new Date() - ((event && event.milliseconds_past) || 1000 * 60 * 60) // default 1 hour back
+        )
+      )
+  );
+}
+
 export async function runDatabaseMigrations(event, context, eventCallback) {
   console.log("inside runDatabaseMigrations1");
   console.log("inside runDatabaseMigrations2", event);
@@ -299,7 +322,8 @@ const syncProcessMap = {
   handleIncomingMessages,
   checkMessageQueue,
   fixOrgless,
-  clearOldJobs
+  clearOldJobs,
+  updateOptOuts
 };
 
 export async function dispatchProcesses(event, context, eventCallback) {
