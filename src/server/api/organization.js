@@ -3,7 +3,7 @@ import { getConfig, getFeatures } from "./lib/config";
 import { r, Organization, cacheableData } from "../models";
 import { getTags } from "./tag";
 import { accessRequired } from "./errors";
-import { getCampaigns } from "./campaign";
+import { getCampaigns, getCampaignsCount } from "./campaign";
 import { buildUsersQuery } from "./user";
 import {
   getAvailableActionHandlers,
@@ -86,8 +86,20 @@ export const resolvers = {
       await accessRequired(user, organization.id, "SUPERVOLUNTEER");
       return getCampaigns(organization.id, cursor, campaignsFilter, sortBy);
     },
+    campaignsCount: async (organization, _, { user }) => {
+      await accessRequired(user, organization.id, "OWNER", true);
+      return r.getCount(
+        r
+          .knex("campaign")
+          .where({ organization_id: organization.id, is_archived: false })
+      );
+    },
+    numTextsInLastDay: async (organization, _, { user }) => {
+      await accessRequired(user, organization.id, "OWNER", true);
+      return getNumTextsInLastDay(organization.id);
+    },
     uuid: async (organization, _, { user }) => {
-      await accessRequired(user, organization.id, "SUPERVOLUNTEER");
+      await accessRequired(user, organization.id, "OWNER");
       const result = await r
         .knex("organization")
         .column("uuid")
@@ -381,3 +393,21 @@ export const resolvers = {
     }
   }
 };
+
+export async function getNumTextsInLastDay(organizationId) {
+  var yesterday = new Date();
+  yesterday.setDate(yesterday.getDate() - 1);
+
+  const textsInLastDay = r.knex
+    .from("message")
+    .join(
+      "campaign_contact",
+      "message.campaign_contact_id",
+      "campaign_contact.id"
+    )
+    .join("campaign", "campaign.id", "campaign_contact.campaign_id")
+    .where({ "campaign.organization_id": organizationId })
+    .where("message.sent_at", ">=", yesterday);
+  const numTexts = await r.getCount(textsInLastDay);
+  return numTexts;
+}
