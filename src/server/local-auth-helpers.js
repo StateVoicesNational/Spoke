@@ -100,6 +100,13 @@ const signup = async ({
         cell: reqBody.cell,
         is_superadmin: false
       });
+      if (user && user.id === 1) {
+        await r
+          .knex("user")
+          .where("id", 1)
+          .update({ is_superadmin: true });
+        user.is_superadmin = true;
+      }
       resolve(user);
     });
   });
