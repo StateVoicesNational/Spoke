@@ -137,7 +137,7 @@ class AssignmentTexterSurveys extends Component {
   }
 
   renderCurrentStep(step, oldStyle) {
-    const { questionResponses, listHeader } = this.props;
+    const { onRequestClose, questionResponses, listHeader } = this.props;
     if (oldStyle) {
       return this.renderStep(step, 1);
     }

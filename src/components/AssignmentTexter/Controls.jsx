@@ -89,6 +89,13 @@ export class AssignmentTexterContactControls extends React.Component {
     window.addEventListener("orientationchange", this.onResize);
   }
 
+  componentWillUnmount() {
+    document.body.removeEventListener("keyup", this.onKeyUp);
+    document.body.removeEventListener("keypress", this.blockWithCtrl);
+    window.removeEventListener("resize", this.onResize);
+    window.removeEventListener("orientationchange", this.onResize);
+  }
+
   componentWillUpdate(nextProps, nextState) {
     // we refresh sideboxes here because we need to compare previous state
     const newPopups = [];
@@ -103,13 +110,6 @@ export class AssignmentTexterContactControls extends React.Component {
     newPopups.forEach(sb => {
       nextState.sideboxOpens[sb] = (nextState.sideboxOpens[sb] || 0) + 1;
     });
-  }
-
-  componentWillUnmount() {
-    document.body.removeEventListener("keyup", this.onKeyUp);
-    document.body.removeEventListener("keypress", this.blockWithCtrl);
-    window.removeEventListener("resize", this.onResize);
-    window.removeEventListener("orientationchange", this.onResize);
   }
 
   getStartingMessageText() {
