@@ -39,6 +39,7 @@ const inlineStyles = {
 class AdminPhoneNumberInventory extends React.Component {
   static propTypes = {
     data: PropTypes.object,
+    params: PropTypes.object,
     mutations: PropTypes.object
   };
 
@@ -249,13 +250,16 @@ class AdminPhoneNumberInventory extends React.Component {
           initialSort={{column: 'areaCode', order: 'asc'}}
           onSortOrderChange={handleSortOrderChange}
         />
-        <FloatingActionButton
-          {...dataTest("buyPhoneNumbers")}
-          style={theme.components.floatingButton}
-          onTouchTap={this.handleBuyNumbersOpen}
-        >
-          <ContentAdd />
-        </FloatingActionButton>
+        {this.props.params.ownerPerms ? (
+          <FloatingActionButton
+            {...dataTest("buyPhoneNumbers")}
+            style={theme.components.floatingButton}
+            onTouchTap={this.handleBuyNumbersOpen}
+          >
+            <ContentAdd />
+          </FloatingActionButton>
+        ) : null}
+
         <Dialog
           title="Buy Numbers"
           modal={false}
