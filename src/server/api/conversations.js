@@ -17,10 +17,24 @@ function getConversationsJoinsAndWhereClause(
 
   query = addCampaignsFilterToQuery(query, campaignsFilter, organizationId);
 
-  if (assignmentsFilter && assignmentsFilter.texterId) {
-    query = query.where({ "assignment.user_id": assignmentsFilter.texterId });
+  if (
+    assignmentsFilter &&
+    assignmentsFilter.texterId &&
+    !assignmentsFilter.sender
+  ) {
+    if (assignmentsFilter.texterId === -2) {
+      // unassigned
+      query = query.whereNull("campaign_contact.assignment_id");
+    } else {
+      query = query.where({ "assignment.user_id": assignmentsFilter.texterId });
+    }
   }
-  if (forData || (assignmentsFilter && assignmentsFilter.texterId)) {
+  if (
+    forData ||
+    (assignmentsFilter &&
+      assignmentsFilter.texterId &&
+      !assignmentsFilter.sender)
+  ) {
     query = query
       .leftJoin("assignment", "campaign_contact.assignment_id", "assignment.id")
       .leftJoin("user", "assignment.user_id", "user.id")
@@ -33,15 +47,26 @@ function getConversationsJoinsAndWhereClause(
       });
   }
 
-  if (messageTextFilter && !forData) {
+  if (
+    !forData &&
+    (messageTextFilter || (assignmentsFilter && assignmentsFilter.sender))
+  ) {
     // NOT forData -- just for filter -- and then we need ALL the messages
-    query = query
-      .join(
-        "message AS msgfilter",
-        "msgfilter.campaign_contact_id",
-        "campaign_contact.id"
-      )
-      .where("msgfilter.text", "LIKE", `%${messageTextFilter}%`);
+    query.join(
+      "message AS msgfilter",
+      "msgfilter.campaign_contact_id",
+      "campaign_contact.id"
+    );
+    if (messageTextFilter) {
+      query.where("msgfilter.text", "LIKE", `%${messageTextFilter}%`);
+    }
+    if (
+      assignmentsFilter &&
+      assignmentsFilter.sender &&
+      assignmentsFilter.texterId
+    ) {
+      query.where("msgfilter.user_id", assignmentsFilter.texterId);
+    }
   }
 
   query = addWhereClauseForContactsFilterMessageStatusIrrespectiveOfPastDue(

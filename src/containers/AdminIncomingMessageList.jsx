@@ -74,7 +74,11 @@ export class AdminIncomingMessageList extends Component {
       }
       if (nextState.assignmentsFilter.texterId) {
         query.texterId = nextState.assignmentsFilter.texterId;
+        if (nextState.assignmentsFilter.sender) {
+          query.sender = "1";
+        }
       }
+
       if (
         nextState.campaignsFilter.campaignIds &&
         nextState.campaignsFilter.campaignIds.length
@@ -138,10 +142,16 @@ export class AdminIncomingMessageList extends Component {
     });
   };
 
-  handleTexterChanged = async texterId => {
-    const assignmentsFilter = {};
-    if (texterId >= 0) {
-      assignmentsFilter.texterId = texterId;
+  handleTexterChanged = async (texterId, sender) => {
+    const assignmentsFilter = { ...this.state.assignmentsFilter };
+    if (sender !== undefined) {
+      assignmentsFilter.sender = sender;
+    } else {
+      if (texterId >= 0 || texterId === -2) {
+        assignmentsFilter.texterId = texterId;
+      } else {
+        delete assignmentsFilter.texterId;
+      }
     }
     await this.setState({
       assignmentsFilter,

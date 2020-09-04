@@ -18,10 +18,12 @@ export const prepareDataTableData = conversations =>
   conversations.map(conversation => ({
     campaignTitle: conversation.campaign.title,
     texter:
-      conversation.texter.displayName +
-      (getHighestRole(conversation.texter.roles) === "SUSPENDED"
-        ? " (Suspended)"
-        : ""),
+      conversation.texter.id !== null
+        ? conversation.texter.displayName +
+          (getHighestRole(conversation.texter.roles) === "SUSPENDED"
+            ? " (Suspended)"
+            : "")
+        : "unassigned",
     to:
       conversation.contact.firstName +
       " " +

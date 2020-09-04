@@ -1371,6 +1371,9 @@ const rootResolvers = {
         );
         assignmentId = campaignContact.assignment_id;
       }
+      if (!assignmentId) {
+        return null;
+      }
       const assignment = await loaders.assignment.load(assignmentId);
       if (!assignment) {
         return null;
