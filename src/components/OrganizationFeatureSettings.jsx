@@ -8,6 +8,7 @@ import { dataTest } from "../lib/attributes";
 
 const configurableFields = {
   ACTION_HANDLERS: {
+    category: 'defaults',
     ready: false, // TODO: let's wait for better interface
     schema: ({ formValues }) =>
       formValues.settings.actionHandlers
@@ -56,6 +57,7 @@ const configurableFields = {
     }
   },
   ALLOW_SEND_ALL_ENABLED: {
+    category: 'defaults',
     schema: () => yup.boolean(),
     ready: true,
     component: props => {
@@ -96,6 +98,7 @@ const configurableFields = {
     }
   },
   DEFAULT_BATCHSIZE: {
+    category: 'defaults',
     schema: () =>
       yup
         .number()
@@ -119,6 +122,7 @@ const configurableFields = {
     }
   },
   DEFAULT_RESPONSEWINDOW: {
+    category: 'defaults',
     schema: () => yup.number().notRequired(),
     ready: true,
     component: props => {
@@ -140,6 +144,7 @@ const configurableFields = {
     }
   },
   MAX_CONTACTS_PER_TEXTER: {
+    category: 'defaults',
     schema: () =>
       yup
         .number()
@@ -169,6 +174,7 @@ const configurableFields = {
     }
   },
   MAX_MESSAGE_LENGTH: {
+    category: 'defaults',
     schema: () =>
       yup
         .number()
@@ -204,12 +210,18 @@ export default class OrganizationFeatureSettings extends React.Component {
   }
 
   onChange = formValues => {
-    console.log("onChange", formValues);
-    this.setState(formValues, () => {
+    const newData = {
+      ...formValues,
+      unsetFeatures: Object.keys(formValues).filter(f => formValues[f] === "")
+    }
+    console.log("onChange", newData);
+    this.setState(newData, () => {
       this.props.onChange({
         settings: {
-          featuresJSON: JSON.stringify(this.state),
-          unsetFeatures: this.state.unsetFeatures
+          [this.props.category]: {
+            featuresJSON: JSON.stringify(this.state),
+            unsetFeatures: this.state.unsetFeatures
+          }
         }
       });
     });
@@ -227,10 +239,20 @@ export default class OrganizationFeatureSettings extends React.Component {
     });
   };
 
+  saveDisabled = () => {
+    if (this.props.saveDisabled !== undefined) {
+      return this.props.saveDisabled;
+    }
+    return !this.props.parentState
+      || !this.props.parentState[this.props.category]
+  };
+
   render() {
     const schemaObject = {};
     const adminItems = Object.keys(configurableFields)
-      .filter(f => configurableFields[f].ready && this.state.hasOwnProperty(f))
+      .filter(f => configurableFields[f].ready
+        && configurableFields[f].category === this.props.category
+        && this.state.hasOwnProperty(f))
       .map(f => {
         schemaObject[f] = configurableFields[f].schema({
           ...this.props,
@@ -250,7 +272,7 @@ export default class OrganizationFeatureSettings extends React.Component {
             type="submit"
             onClick={this.props.onSubmit}
             label={this.props.saveLabel}
-            disabled={this.props.saveDisabled}
+            disabled={this.saveDisabled()}
             {...dataTest("submitOrganizationFeatureSettings")}
           />
         </GSForm>
@@ -261,6 +283,8 @@ export default class OrganizationFeatureSettings extends React.Component {
 
 OrganizationFeatureSettings.propTypes = {
   formValues: type.object,
+  category: type.string,
+  parentState: type.object,
   organization: type.object,
   onChange: type.func,
   onSubmit: type.func,

@@ -375,17 +375,19 @@ class Settings extends React.Component {
             <CardHeader
               title="Overriding default settings"
               style={{ backgroundColor: theme.colors.green }}
-              actAsExpander={true}
-              showExpandableButton={true}
+              actAsExpander
+              showExpandableButton
             />
             <CardText expandable>
               <OrganizationFeatureSettings
+                category='defaults'
                 formValues={this.props.data.organization}
                 organization={this.props.data.organization}
+                parentState={this.state.settings}
                 onSubmit={async () => {
                   const { settings } = this.state;
                   await this.props.mutations.editOrganization({
-                    settings
+                    settings: settings.defaults
                   });
                   this.setState({ settings: null });
                 }}
@@ -394,7 +396,6 @@ class Settings extends React.Component {
                   this.setState(formValues);
                 }}
                 saveLabel="Save settings"
-                saveDisabled={!this.state.settings}
               />
             </CardText>
           </Card>
