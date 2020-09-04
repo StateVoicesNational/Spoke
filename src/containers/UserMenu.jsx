@@ -95,7 +95,7 @@ export class UserMenu extends Component {
   renderAdminTools() {
     return (
       <div>
-        <Subheader>Admin Tools</Subheader>
+        <Subheader>Superadmin Tools</Subheader>
         <MenuItem
           primaryText="Manage Organizations"
           value={"adminOrganizations"}
@@ -112,7 +112,7 @@ export class UserMenu extends Component {
       return <div />;
     }
     const organizations = currentUser.texterOrganizations;
-    const isSuperAdmin = currentUser.isSuperAdmin;
+    const isSuperAdmin = currentUser.is_superadmin;
     return (
       <div>
         <IconButton
