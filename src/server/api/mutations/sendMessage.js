@@ -65,7 +65,7 @@ export const sendMessage = async (
   //   })
   // }
 
-  const { contactNumber, text } = message;
+  const { text } = message;
 
   if (text.length > (process.env.MAX_MESSAGE_LENGTH || 99999)) {
     throw newError("Message was longer than the limit", "SENDERR_MAXLEN");
@@ -114,7 +114,7 @@ export const sendMessage = async (
   const finalText = replaceCurlyApostrophes(text);
   const messageInstance = new Message({
     text: finalText,
-    contact_number: contactNumber,
+    contact_number: contact.cell,
     user_number: "",
     user_id: user.id,
     campaign_contact_id: contact.id,
