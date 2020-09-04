@@ -38,9 +38,18 @@ const styles = StyleSheet.create({
 });
 
 export class CampaignContactsForm extends React.Component {
-  state = {
-    formValues: null
-  };
+  constructor(props) {
+    super(props);
+    const { lastResult } = props;
+    let cur = {};
+    if (lastResult && lastResult.reference) {
+      cur = JSON.parse(lastResult.reference);
+    }
+    console.log("datawarehouse", lastResult, props);
+    this.state = {
+      contactSql: cur.contactSql || ""
+    };
+  }
 
   validateSql = () => {
     const errors = [];
@@ -82,20 +91,34 @@ export class CampaignContactsForm extends React.Component {
 
   render() {
     const { contactSqlError } = this.state;
+    const { lastResult } = this.props;
+    let results = {};
+    if (lastResult && lastResult.result) {
+      results = JSON.parse(lastResult.result);
+    }
     return (
       <div>
-        {!this.props.jobResultMessage ? (
-          ""
-        ) : (
+        {results.errors ? (
           <div>
-            <CampaignFormSectionHeading title="Job Outcome" />
-            <div>{this.props.jobResultMessage}</div>
+            <h4 style={{ color: theme.colors.red }}>Previous Errors</h4>
+            <List>
+              {results.errors.map(e => (
+                <ListItem
+                  key={e}
+                  primaryText={e}
+                  leftIcon={this.props.icons.error}
+                />
+              ))}
+            </List>
           </div>
+        ) : (
+          ""
         )}
         <GSForm
           schema={yup.object({
             contactSql: yup.string()
           })}
+          defaultValue={this.state}
           onSubmit={formValues => {
             // sets values locally
             this.setState({ ...formValues });
