@@ -99,12 +99,8 @@ export const resolvers = {
       return getNumTextsInLastDay(organization.id);
     },
     uuid: async (organization, _, { user }) => {
-      await accessRequired(user, organization.id, "OWNER");
-      const result = await r
-        .knex("organization")
-        .column("uuid")
-        .where("id", organization.id);
-      return result[0].uuid;
+      await accessRequired(user, organization.id, "SUPERVOLUNTEER");
+      return organization.uuid;
     },
     optOuts: async (organization, _, { user }) => {
       await accessRequired(user, organization.id, "ADMIN");
