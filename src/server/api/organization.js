@@ -83,7 +83,7 @@ export const resolvers = {
       { cursor, campaignsFilter, sortBy },
       { user }
     ) => {
-      await accessRequired(user, organization.id, "SUPERVOLUNTEER");
+      await accessRequired(user, organization.id, "SUPERVOLUNTEER", true);
       return getCampaigns(organization.id, cursor, campaignsFilter, sortBy);
     },
     campaignsCount: async (organization, _, { user }) => {
@@ -291,7 +291,7 @@ export const resolvers = {
       return true;
     },
     phoneInventoryEnabled: async (organization, _, { user }) => {
-      await accessRequired(user, organization.id, "SUPERVOLUNTEER");
+      await accessRequired(user, organization.id, "SUPERVOLUNTEER", true);
       return (
         getConfig("EXPERIMENTAL_PHONE_INVENTORY", organization, {
           truthy: true
