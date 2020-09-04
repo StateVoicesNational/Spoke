@@ -1097,7 +1097,7 @@ const rootMutations = {
     getAssignmentContacts: async (
       _,
       { assignmentId, contactIds, findNew },
-      { user }
+      { user, loaders }
     ) => {
       if (contactIds.length === 0) {
         return [];
@@ -1147,7 +1147,29 @@ const rootMutations = {
         });
       }
       console.log("getAssignedContacts", contacts.length, updatedContacts);
-      return contacts.map(c => c && (updatedContacts[c.id] || c)).map(hasAssn);
+      const finalContacts = contacts
+        .map(c => c && (updatedContacts[c.id] || c))
+        .map(hasAssn);
+      if (finalContacts.length && r.redis) {
+        // find out used fields so we can only send back those
+        const campaign = await loaders.campaign.load(firstContact.campaign_id);
+        const cannedResponses = await cacheableData.cannedResponse.query({
+          campaignId: firstContact.campaign_id
+        });
+        if (
+          campaign.usedFields &&
+          (!cannedResponses.length || cannedResponses[0].usedFields)
+        ) {
+          const usedFields = campaign.usedFields;
+          if (cannedResponses.length && cannedResponses[0].usedFields) {
+            Object.keys(cannedResponses[0].usedFields).forEach(f => {
+              usedFields[f] = 1;
+            });
+          }
+          return finalContacts.map(c => (c && { ...c, usedFields }) || c);
+        }
+      }
+      return finalContacts;
     },
     createOptOut: async (
       _,

@@ -101,6 +101,7 @@ export default function renderIndex(html, css, assetMap) {
       window.EXPERIMENTAL_TWILIO_PER_CAMPAIGN_MESSAGING_SERVICE=${process.env
         .EXPERIMENTAL_TWILIO_PER_CAMPAIGN_MESSAGING_SERVICE || false}
       window.TWILIO_MULTI_ORG=${process.env.TWILIO_MULTI_ORG || false}
+      window.MULTI_TENANT=${process.env.MULTI_TENANT}
       window.DEPRECATED_TEXTERUI="${process.env.DEPRECATED_TEXTERUI || ""}"
       ${
         process.env.TEXTER_SIDEBOXES
