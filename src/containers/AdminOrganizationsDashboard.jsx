@@ -50,35 +50,12 @@ const styles = StyleSheet.create({
 });
 
 class AdminOrganizationsDashboard extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      active: "login"
-    };
-
-    this.isLocalAdminOrganizationsDashboard =
-      window.PASSPORT_STRATEGY === "local";
-  }
-
   componentDidMount = () => {
     const {
       location: {
         query: { nextUrl }
       }
     } = this.props;
-
-    if (!this.isLocalAdminOrganizationsDashboard) {
-      window.AuthService.login(nextUrl);
-      return;
-    }
-
-    if (nextUrl && nextUrl.includes("reset")) {
-      this.setState({ active: "reset" });
-    }
-  };
-
-  handleClick = e => {
-    this.setState({ active: e.target.name });
   };
 
   handleCreateOrgClick = async e => {
@@ -155,14 +132,6 @@ class AdminOrganizationsDashboard extends React.Component {
         style: {
           width: "5em"
         }
-      },
-      {
-        key: "numTextsInLastDay",
-        label: "Number of texts in last day",
-        sortable: true,
-        style: {
-          width: "5em"
-        }
       }
     ];
 
@@ -223,7 +192,6 @@ const queries = {
           id
           name
           campaignsCount
-          numTextsInLastDay
         }
       }
     `,
