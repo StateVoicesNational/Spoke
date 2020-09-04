@@ -401,6 +401,38 @@ class Settings extends React.Component {
           </Card>
         ) : null}
 
+        {this.props.data.organization &&
+        this.props.data.organization.settings ? (
+          <Card>
+            <CardHeader
+              title="NGP VAN API Settings"
+              style={{ backgroundColor: theme.colors.green }}
+              actAsExpander
+              showExpandableButton
+            />
+            <CardText expandable>
+              <OrganizationFeatureSettings
+                category='ngpvan'
+                formValues={this.props.data.organization}
+                organization={this.props.data.organization}
+                parentState={this.state.settings}
+                onSubmit={async () => {
+                  const { settings } = this.state;
+                  await this.props.mutations.editOrganization({
+                    settings: settings.ngpvan
+                  });
+                  this.setState({ settings: null });
+                }}
+                onChange={formValues => {
+                  console.log("change", formValues);
+                  this.setState(formValues);
+                }}
+                saveLabel="Save settings"
+              />
+            </CardText>
+          </Card>
+        ) : null}
+
         {this.props.data.organization && this.props.params.adminPerms ? (
           <Card>
             <CardHeader

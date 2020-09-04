@@ -195,7 +195,26 @@ const configurableFields = {
         </div>
       );
     }
-  }
+  },
+  NGP_VAN_API_KEY_ENCRYPTED: {
+    category: 'ngpvan',
+    schema: () =>
+      yup
+        .string()
+        .nullable()
+        .max(64)
+        .notRequired(),
+    ready: true,
+    component: props => {
+      return (
+        <Form.Field
+          label="NGPVAN API Key"
+          name="NGP_VAN_API_KEY_ENCRYPTED"
+          fullWidth
+        />
+      );
+    }
+  },
 };
 
 export default class OrganizationFeatureSettings extends React.Component {

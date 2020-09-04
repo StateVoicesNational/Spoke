@@ -1,4 +1,5 @@
 import { getConfig, getFeatures } from "../lib/config";
+import { symmetricEncrypt } from "../lib/crypto";
 import { accessRequired } from "../errors";
 import { r, cacheableData } from "../../models";
 import { getAllowed } from "../organization";
@@ -22,9 +23,14 @@ export const editOrganization = async (_, { id, organization }, { user }) => {
       if (
         newFeatureValues.hasOwnProperty(f) &&
         // don't save default values that aren't already overridden
-        (features.hasOwnProperty(f) || getConfig(f) != newFeatureValues[f])
+        (features.hasOwnProperty(f) || getConfig(f) != newFeatureValues[f]) &&
+        // don't save Encrypted placeholder
+        newFeatureValues[f] !== '<Encrypted>'
       ) {
         features[f] = newFeatureValues[f];
+        if (f.endsWith('_ENCRYPTED')) {
+          features[f] = symmetricEncrypt(newFeatureValues[f]);
+        }
       }
     });
     unsetFeatures.forEach(f => {
