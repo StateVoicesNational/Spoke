@@ -78,8 +78,9 @@ export const getConversationFiltersFromQuery = (query, organizationTags) => {
     ),
     messageTextFilter: query.messageText ? query.messageText : "",
     assignmentsFilter: query.texterId
-      ? { texterId: Number(query.texterId) }
+      ? { texterId: Number(query.texterId), sender: query.sender === "1" }
       : {},
+    texterSearchText: query.texterId == "-2" ? " Unassigned" : undefined,
     includeArchivedCampaigns,
     includeActiveCampaigns,
     includeNotOptedOutConversations,
