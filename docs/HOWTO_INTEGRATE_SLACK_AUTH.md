@@ -30,3 +30,4 @@ Set the following env vars:
 * SLACK_CLIENT_SECRET: Copy this from your Slack app's "Basic Information" page
 * SLACK_TEAM_NAME: The subdomain of your slack workspace https://<team name>.slack.com
 * SLACK_TEAM_ID: The ID of your team. This can be tricky to find, see [this SO thread.](https://stackoverflow.com/questions/40940327/what-is-the-simplest-way-to-find-a-slack-team-id-and-a-channel-id)
+* BASE_URL: `https://<your spoke domain>` - Not specific to Slack Auth but needs to be set for the handshake to work properly
