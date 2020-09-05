@@ -94,18 +94,3 @@ export async function getGroupMembers(groupId, limit) {
     limit
   );
 }
-
-async function main() {
-  for (const group of await searchGroups(" wa")) {
-    const members = await getGroupMembers(group.id, 10);
-    if (members.length) {
-      console.log(group.title, members.length);
-      break;
-    } else {
-      console.log("tick");
-    }
-  }
-}
-
-// debugger;
-// main();
