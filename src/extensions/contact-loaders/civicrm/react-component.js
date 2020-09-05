@@ -26,7 +26,7 @@ export class CampaignContactsForm extends React.Component {
       .then(res => res.json())
       .then(res => {
         if (res.error) {
-          this.setError(error);
+          this.setError(res.error);
         } else {
           this.setState({ result: res.groups, loading: false });
         }
