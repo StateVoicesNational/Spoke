@@ -80,30 +80,20 @@ export async function searchGroups(query) {
 
 export async function getGroupMembers(groupId, limit) {
   const get = getCivi();
-  const key = "api.contact.get";
 
-  let res = await paginate(
+  return await paginate(
     get,
-    "GroupContact",
+    "Contact",
     {
       debug: 1,
       sequential: 1,
       options: { limit: PAGE_SIZE },
-      return: [],
-      [key]: {
-        return: ["phone", "postal_code", "first_name", "id", "last_name"],
-        phone: { "IS NOT NULL": 1 }
-      },
-      [key + ".phone"]: { "IS NOT NULL": 1 },
-      "group_id.id": groupId
+      phone: { "IS NOT NULL": 1 },
+      return: ["id", "phone", "first_name", "last_name", "postal_code"],
+      "filter.group_id": parseInt(groupId)
     },
     limit
   );
-  res = res.map(item => item[key].values);
-  res = res.filter(item => !!item);
-  console.log(res[0]);
-
-  return res.filter(item => item.first_name && item.last_name && item.phone);
 }
 
 async function main() {
