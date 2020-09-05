@@ -26,14 +26,14 @@ export class CampaignContactsForm extends React.Component {
       .then(res => res.json())
       .then(res => {
         if (res.error) {
-          setError(error);
+          this.setError(error);
         } else {
           this.setState({ result: res.groups, loading: false });
         }
       })
       .catch(error => {
         console.error(error);
-        setError(error);
+        this.setError(error);
       });
   }
 
