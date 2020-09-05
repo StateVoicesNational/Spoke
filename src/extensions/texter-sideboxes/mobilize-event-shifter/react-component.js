@@ -19,7 +19,11 @@ export const showSidebox = ({ contact, messageStatusFilter }) =>
 
 const styles = StyleSheet.create({
   dialog: {
-    paddingTop: 0
+    paddingTop: 0,
+    zIndex: 5000
+  },
+  dialogContentStyle: {
+    width: "100%" // Still exists a maxWidth of 768px
   },
   iframe: {
     height: "80vh",
@@ -132,10 +136,9 @@ export class TexterSidebox extends React.Component {
             />
           ]}
           open={this.state.dialogOpen}
-          modal={true}
           onRequestClose={this.closeDialog}
-          maxWidth="lg"
           className={css(styles.dialog)}
+          contentClassName={css(styles.dialogContentStyle)}
         >
           {eventId ? (
             <Tabs value={this.state.dialogTab} onChange={this.changeTab}>
