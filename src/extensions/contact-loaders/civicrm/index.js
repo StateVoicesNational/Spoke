@@ -29,8 +29,9 @@ export async function available(organization, user) {
   /// If this is instantaneous, you can have it be 0 (i.e. always), but if it takes time
   /// to e.g. verify credentials or test server availability,
   /// then it's better to allow the result to be cached
-  const result = true;
-  // serverAdministratorInstructions().environmentVariables.every(name => hasConfig(name));
+  const result = serverAdministratorInstructions().environmentVariables.every(
+    name => hasConfig(name)
+  );
   return {
     result,
     expiresSeconds: 0
@@ -67,9 +68,7 @@ export async function getClientChoiceData(organization, campaign, user) {
   /// return a json object which will be cached for expiresSeconds long
   /// `data` should be a single string -- it can be JSON which you can parse in the client component
   return {
-    data: JSON.stringify({
-      choices: ["Southies", "Northies"]
-    }),
+    data: "{}",
     expiresSeconds: 0
   };
 }

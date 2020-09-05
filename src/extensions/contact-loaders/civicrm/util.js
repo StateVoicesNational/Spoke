@@ -26,13 +26,10 @@ function promisify(func) {
 
     return new Promise((resolve, reject) => {
       args.push(result => {
-        let values = result.values;
-        delete result.values;
-        // console.log(result);
         if (result.is_error) {
           reject(result.error_message);
         } else {
-          resolve(values);
+          resolve(result.values);
         }
       });
 
