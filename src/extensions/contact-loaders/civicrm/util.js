@@ -8,7 +8,7 @@ function getCivi() {
   const domain = parse(getConfig("CIVICRM_DOMAIN"));
 
   const config = {
-    server: domain.protocol + "//" + domain.hostname,
+    server: domain.protocol + "//" + domain.host,
     path: domain.pathname,
     debug: 1,
     key: getConfig("CIVICRM_SITE_KEY"),
