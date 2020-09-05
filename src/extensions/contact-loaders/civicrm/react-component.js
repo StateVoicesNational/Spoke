@@ -55,6 +55,7 @@ export class CampaignContactsForm extends React.Component {
         }}
       >
         <Form.Field
+          label="CiviCRM list"
           name="groupId"
           as="select"
           type={AutoComplete}
