@@ -22,7 +22,9 @@ export class CampaignContactsForm extends React.Component {
     }
 
     this.setState({ loading: true });
-    fetch("/integration/civicrm/groupsearch?query=" + query)
+    fetch("/integration/civicrm/groupsearch?query=" + query, {
+      credentials: "same-origin"
+    })
       .then(res => res.json())
       .then(res => {
         if (res.error) {

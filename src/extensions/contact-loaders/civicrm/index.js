@@ -44,8 +44,11 @@ export function addServerEndpoints(expressApp) {
   /// Be mindful of security and make sure there's
   /// This is NOT where or how the client send or receive contact data
   expressApp.get("/integration/civicrm/groupsearch", (req, res) => {
-    const { query } = req.query;
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({});
+    }
 
+    const { query } = req.query;
     if (query.length < 3) return res.json({ groups: [] }); // ignore dumb queries
 
     searchGroups(query || "")
