@@ -65,6 +65,11 @@ export class CampaignContactsForm extends React.Component {
         "Spoke currently does not support LIMIT statements of higher than 10000 (no limit is fine, though)"
       );
     }
+    if (!/ORDER BY/i.test(sql)) {
+      errors.push(
+        "An ORDER BY statement is required to ensure loading all the contacts."
+      );
+    }
     const requiredFields = ["first_name", "last_name", "cell"];
     requiredFields.forEach(f => {
       if (sql.indexOf(f) === -1) {
@@ -133,6 +138,10 @@ export class CampaignContactsForm extends React.Component {
               in contacts. The SQL requires some constraints:
               <ul>
                 <li>Start the query with "SELECT"</li>
+                <li>
+                  Finish with a required "ORDER BY" -- if there is not a
+                  reliable ordering then not all contacts may load.
+                </li>
                 <li>Do not include a trailing (or any) semicolon</li>
                 <li>
                   Three columns are necessary:
@@ -153,6 +162,10 @@ export class CampaignContactsForm extends React.Component {
                   sometimes.
                 </li>
                 <li>Other columns will be added to the customFields</li>
+                <li>
+                  During processing %&rsquo;s are not percentage complete, but
+                  every 10K contacts
+                </li>
               </ul>
             </div>
             <Form.Field

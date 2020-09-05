@@ -19,6 +19,7 @@ import {
   startCampaignWithPhoneNumbers
 } from "./jobs";
 import { setupUserNotificationObservers } from "../server/notifications";
+import { loadContactsFromDataWarehouseFragment } from "../extensions/contact-loaders/datawarehouse";
 
 export { seedZipCodes } from "../server/seeds/seed-zip-codes";
 
@@ -113,6 +114,27 @@ export async function checkMessageQueue(event, contextVars) {
       log.error(ex);
     }
   }
+}
+
+export async function loadContactsFromDataWarehouseFragmentJob(
+  event,
+  contextVars,
+  eventCallback
+) {
+  try {
+    const rv = await loadContactsFromDataWarehouseFragment(
+      event, // double up argument
+      event
+    );
+    if (eventCallback) {
+      eventCallback(null, rv);
+    }
+  } catch (err) {
+    if (eventCallback) {
+      eventCallback(err, null);
+    }
+  }
+  return "completed";
 }
 
 const messageSenderCreator = (subQuery, defaultStatus) => {
@@ -351,6 +373,7 @@ export default {
   ping,
   processJobs,
   checkMessageQueue,
+  loadContactsFromDataWarehouseFragmentJob,
   messageSender01,
   messageSender234,
   messageSender56,
