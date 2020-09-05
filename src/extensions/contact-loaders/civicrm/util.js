@@ -49,7 +49,7 @@ async function paginate(get, entity, options, limit) {
   while (true) {
     const once = await get(entity, options);
     if (!once.length) {
-      return [];
+      return res;
     }
 
     res = res.concat(once);
