@@ -432,6 +432,9 @@ export async function loadContactsFromDataWarehouse(job) {
     .delete();
 
   await loadContactsFromDataWarehouseFragment(job, {
+    id: job.id,
+    campaign_id: job.campaign_id,
+    job_type: "ingest.datawarehouse",
     jobId: job.id,
     query: sqlQuery,
     campaignId: job.campaign_id,
