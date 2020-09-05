@@ -46,13 +46,13 @@ export function addServerEndpoints(expressApp) {
   expressApp.get("/integration/civicrm/groupsearch", (req, res) => {
     const { query } = req.query;
 
-    if (query.length < 3) return res.json([]); // ignore dumb queries
+    if (query.length < 3) return res.json({ groups: [] }); // ignore dumb queries
 
     searchGroups(query || "")
-      .then(groups => res.json(groups))
+      .then(groups => res.json({ groups }))
       .catch(error => {
         console.error(error);
-        res.json([]);
+        res.json({ groups: [], error });
       });
   });
 }

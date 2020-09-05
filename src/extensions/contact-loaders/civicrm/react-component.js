@@ -24,7 +24,24 @@ export class CampaignContactsForm extends React.Component {
     this.setState({ loading: true });
     fetch("/integration/civicrm/groupsearch?query=" + query)
       .then(res => res.json())
-      .then(res => this.setState({ result: res, loading: false }));
+      .then(res => {
+        if (res.error) {
+          setError(error);
+        } else {
+          this.setState({ result: res.groups, loading: false });
+        }
+      })
+      .catch(error => {
+        console.error(error);
+        setError(error);
+      });
+  }
+
+  setError(error) {
+    this.setState({
+      loading: false,
+      lastResult: { result: JSON.stringify({ message: error.toString() }) }
+    });
   }
 
   render() {
