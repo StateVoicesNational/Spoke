@@ -111,7 +111,7 @@ export class TexterSidebox extends React.Component {
       phone: this.cleanPhoneNumber(contact.cell || ""),
       email: customFields.email || "",
       zip: customFields.zip || "",
-      source: `spoke-${campaign.organization.id}-${campaign.id}`
+      source: "P2P"
     };
 
     const urlParamString = this.buildUrlParamString(urlParams);
@@ -219,7 +219,7 @@ export class AdminConfig extends React.Component {
       <div>
         <Form.Field
           name="mobilizeEventShifterDefaultEventId"
-          label="Set a default Event ID for when none is provided in CSV"
+          label="Set a default Event ID for when none is provided in CSV under a column called event_id"
           fullWidth
         />
       </div>
