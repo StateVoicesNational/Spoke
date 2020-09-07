@@ -219,7 +219,16 @@ app.use(
         // drop if this fails
         .catch(() => {})
         .then(() => {});
-      return error;
+      if (process.env.SHOW_SERVER_ERROR || process.env.DEBUG) {
+        return error;
+      }
+      return new Error(
+        error &&
+        error.originalError &&
+        error.originalError.code === "UNAUTHORIZED"
+          ? "UNAUTHORIZED"
+          : "Internal server error"
+      );
     }
   }))
 );
