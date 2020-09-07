@@ -255,7 +255,7 @@ export const resolvers = {
         "assignment.created_at"
       ];
       let query = r
-        .knex("assignment")
+        .knexReadOnly("assignment")
         .join("campaign", "assignment.campaign_id", "campaign.id")
         .where({
           is_started: true,
