@@ -402,7 +402,7 @@ class Settings extends React.Component {
         ) : null}
 
         {this.props.data.organization &&
-        this.props.data.organization.settings ? (
+        this.props.data.organization.vanEnabled ? (
           <Card>
             <CardHeader
               title="NGP VAN API Settings"
@@ -490,6 +490,7 @@ const queries = {
           twilioAccountSid
           twilioAuthToken
           twilioMessageServiceSid
+          vanEnabled
         }
       }
     `,

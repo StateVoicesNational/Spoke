@@ -293,6 +293,20 @@ export const resolvers = {
       }
       return true;
     },
+    vanEnabled: async (organization, _, { user }) => {
+      await accessRequired(user, organization.id, "SUPERVOLUNTEER");
+      return (
+        getConfig("ACTION_HANDLERS", organization, {
+          default: ''
+        }).includes('ngpvan-action') ||
+        getConfig("CONTACT_LOADERS", organization, {
+          default: ''
+        }).includes('ngpvan') ||
+        getConfig("MESSAGE_HANDLERS", organization, {
+          default: ''
+        }).includes('ngpvan')
+      );
+    },
     phoneInventoryEnabled: async (organization, _, { user }) => {
       await accessRequired(user, organization.id, "SUPERVOLUNTEER", true);
       return (
