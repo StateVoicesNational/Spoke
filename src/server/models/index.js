@@ -36,7 +36,7 @@ function createLoader(model, opts) {
     }
     const docs = await thinky.r
       .knexReadOnly(model.tableName)
-      .whereIn(key, keys);
+      .whereIn(idKey, keys);
     return keys.map(
       key =>
         new model(docs.find(doc => doc[idKey].toString() === key.toString()))

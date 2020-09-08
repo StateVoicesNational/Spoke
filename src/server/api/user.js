@@ -291,7 +291,7 @@ export const resolvers = {
             ...fields,
             "campaign_contact.timezone_offset",
             "campaign_contact.message_status",
-            r.knex.raw(
+            r.knexReadOnly.raw(
               "SUM(CASE WHEN campaign_contact.id IS NOT NULL THEN 1 ELSE 0 END) as tz_status_count"
             )
           );
