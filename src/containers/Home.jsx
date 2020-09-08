@@ -6,7 +6,7 @@ import { StyleSheet, css } from "aphrodite";
 import theme from "../styles/theme";
 import { withRouter } from "react-router";
 
-const styles = StyleSheet.create({
+export const styles = StyleSheet.create({
   container: {
     marginTop: "5vh",
     textAlign: "center",
@@ -44,8 +44,8 @@ class Home extends React.Component {
   componentWillMount() {
     const user = this.props.data.currentUser;
     if (user) {
-      if (user.adminOrganizations.length > 0) {
-        this.props.router.push(`/admin/${user.adminOrganizations[0].id}`);
+      if (user.organizations.length > 0) {
+        this.props.router.push(`/admin/${user.organizations[0].id}`);
       } else if (user.ownerOrganizations.length > 0) {
         this.props.router.push(`/admin/${user.ownerOrganizations[0].id}`);
       } else if (user.texterOrganizations.length > 0) {
@@ -148,7 +148,7 @@ const queries = {
       query getCurrentUser {
         currentUser {
           id
-          adminOrganizations: organizations(role: "ADMIN") {
+          organizations: organizations(role: "ADMIN") {
             id
           }
           superVolOrganizations: organizations(role: "SUPERVOLUNTEER") {

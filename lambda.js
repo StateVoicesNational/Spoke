@@ -6,18 +6,24 @@ let app, server, jobs, dispatcher;
 let invocationContext = {};
 let invocationEvent = {};
 
-try {
-  app = require("./build/server/server/index");
+if (process.env.DOWNTIME_NO_DB) {
+  app = require("./build/server/server/downtime");
   server = awsServerlessExpress.createServer(app.default);
-  jobs = require("./build/server/workers/job-processes");
-  dispatcher = require("./build/server/extensions/job-runners/lambda-async/handler");
+  jobs = {};
+} else {
+  try {
+    app = require("./build/server/server/index");
+    server = awsServerlessExpress.createServer(app.default);
+    jobs = require("./build/server/workers/job-processes");
+    dispatcher = require("./build/server/extensions/job-runners/lambda-async/handler");
 
-  app.default.set("awsContextGetter", function(req, res) {
-    return [invocationEvent, invocationContext];
-  });
-} catch (err) {
-  if (!global.TEST_ENVIRONMENT) {
-    console.error(`Unable to load built server: ${err}`);
+    app.default.set("awsContextGetter", function(req, res) {
+      return [invocationEvent, invocationContext];
+    });
+  } catch (err) {
+    if (!global.TEST_ENVIRONMENT) {
+      console.error(`Unable to load built server: ${err}`);
+    }
   }
   /*
   app = require("./src/server/index");
@@ -101,27 +107,7 @@ exports.handler = async (event, context) => {
       const job = jobs[event.command];
       // behavior and arguments documented here:
       // https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/Lambda.html#invoke-property
-      const result = await job(event, function dispatcher(
-        dataToSend,
-        callback
-      ) {
-        const lambda = new AWS.Lambda();
-        return lambda.invoke(
-          {
-            FunctionName: functionName,
-            InvocationType: "Event", //asynchronous
-            Payload: JSON.stringify(dataToSend)
-          },
-          function(err, dataReceived) {
-            if (err) {
-              console.error("Failed to invoke Lambda job: ", err);
-            }
-            if (callback) {
-              callback(err, dataReceived);
-            }
-          }
-        );
-      });
+      const result = await job(event, context);
       return result;
     } else {
       console.error("Unfound command sent as a Lambda event: " + event.command);

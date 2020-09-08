@@ -2,6 +2,7 @@ export const schema = `
   input AssignmentsFilter {
     texterId: Int
     stats: Boolean
+    sender: Boolean
   }
   type Assignment {
     id: ID

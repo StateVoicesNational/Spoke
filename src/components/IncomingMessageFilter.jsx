@@ -5,6 +5,7 @@ import Toggle from "material-ui/Toggle";
 import _ from "lodash";
 import { Card, CardHeader, CardText } from "material-ui/Card";
 import AutoComplete from "material-ui/AutoComplete";
+import Checkbox from "material-ui/Checkbox";
 import SelectField from "material-ui/SelectField";
 import TextField from "material-ui/TextField";
 import MenuItem from "material-ui/MenuItem";
@@ -70,8 +71,12 @@ export const ALL_CAMPAIGNS = -1;
 export const CAMPAIGN_TYPE_FILTERS = [[ALL_CAMPAIGNS, "All Campaigns"]];
 
 export const ALL_TEXTERS = -1;
+export const UNASSIGNED = -2;
 
-export const TEXTER_FILTERS = [[ALL_TEXTERS, "All Texters"]];
+export const TEXTER_FILTERS = [
+  [ALL_TEXTERS, " All Texters"],
+  [UNASSIGNED, " Unassigned"]
+];
 
 class IncomingMessageFilter extends Component {
   constructor(props) {
@@ -347,6 +352,13 @@ class IncomingMessageFilter extends Component {
                 floatingLabelText={"Texter"}
                 onNewRequest={this.onTexterSelected}
               />
+              <div>
+                <Checkbox
+                  checked={this.props.assignmentsFilter.sender}
+                  onCheck={this.props.onTexterChanged}
+                />
+                search senders (instead of assignments)
+              </div>
             </div>
             <div className={css(styles.spacer)} />
             <div className={css(styles.flexColumn)}>
@@ -414,7 +426,8 @@ IncomingMessageFilter.propTypes = {
   texters: type.array.isRequired,
   onMessageFilterChanged: type.func.isRequired,
   assignmentsFilter: type.shape({
-    texterId: type.number
+    texterId: type.number,
+    sender: type.bool
   }).isRequired,
   onTagsFilterChanged: type.func.isRequired,
   tags: type.arrayOf(type.object).isRequired,

@@ -65,7 +65,13 @@ export function setupAuth0Passport() {
             email: req.user._json.email,
             is_superadmin: false
           };
-          await User.save(userData);
+          const finalUser = await User.save(userData);
+          if (finalUser && finalUser.id === 1) {
+            await r
+              .knex("user")
+              .where("id", 1)
+              .update({ is_superadmin: true });
+          }
           res.redirect(req.query.state || "terms");
           return;
         }
@@ -238,8 +244,13 @@ export function setupSlackPassport(app) {
           email: slackUser.email,
           is_superadmin: false
         };
-        await User.save(userData);
-
+        const finalUser = await User.save(userData);
+        if (finalUser && finalUser.id === 1) {
+          await r
+            .knex("user")
+            .where("id", 1)
+            .update({ is_superadmin: true });
+        }
         res.redirect(req.query.state || "/"); // TODO: terms?
       })
     ]
