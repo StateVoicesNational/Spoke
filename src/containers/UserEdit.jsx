@@ -262,6 +262,7 @@ export class UserEdit extends React.Component {
 
     return (
       <div>
+        {userId ? <div>User Id: {userId}</div> : null}
         <GSForm
           schema={formSchema}
           onSubmit={this.handleSave}
