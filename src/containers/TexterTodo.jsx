@@ -152,6 +152,7 @@ export const dataQuery = gql`
         firstName
         lastName
         alias
+        roles(organizationId: $organizationId)
       }
     }
   }

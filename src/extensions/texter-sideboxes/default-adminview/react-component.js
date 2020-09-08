@@ -1,27 +1,18 @@
 import type from "prop-types";
 import React from "react";
 import yup from "yup";
-import Form from "react-formal";
-import Popover from "material-ui/Popover";
-import FlatButton from "material-ui/FlatButton";
 import { withRouter } from "react-router";
 import gql from "graphql-tag";
 import loadData from "../../../containers/hoc/load-data";
-import SelectField from "material-ui/SelectField";
 import MenuItem from "material-ui/MenuItem";
 import { List, ListItem } from "material-ui/List";
 import IconButton from "material-ui/IconButton";
 import NavigationExpandMore from "material-ui/svg-icons/navigation/expand-more";
 import NavigationExpandLess from "material-ui/svg-icons/navigation/expand-less";
 import theme from "../../../styles/theme";
-import AutoComplete from "material-ui/AutoComplete";
-import { css } from "aphrodite";
-import {
-  flexStyles,
-  inlineStyles
-} from "../../../components/AssignmentTexter/StyleControls";
-import { dataSourceItem } from "../../../components/utils";
-import { getHighestRole } from "../../../lib/permissions";
+import { getHighestRole, isRoleGreater } from "../../../lib/permissions";
+import DropDownMenu from "material-ui/DropDownMenu";
+import ContactReassign from "./ContactReassign";
 
 export const displayName = () => "Admin Controls";
 
@@ -37,7 +28,8 @@ export class TexterSideboxClass extends React.Component {
     super(props);
     this.state = {
       expanded: {},
-      selectedRole: ""
+      selectedRole: "",
+      showContactReassign: false
     };
   }
 
@@ -51,23 +43,18 @@ export class TexterSideboxClass extends React.Component {
   };
 
   handleRoleChange = (event, index, value) => {
-    this.setState({ selectedRole: value });
-  };
-
-  handleRoleSubmit = async () => {
-    await this.props.mutations.editOrganizationRoles(
+    this.props.mutations.editOrganizationRoles(
       this.props.campaign.organization.id,
       this.props.campaign.id,
       this.props.texter.id,
-      [this.state.selectedRole]
+      [value]
     );
-    this.setState({ selectedRole: "" });
   };
 
-  handleReassignChanged = (selection, index) => {
+  handleReassignChanged = users => (selection, index) => {
     let texterUserId = undefined;
     if (index === -1) {
-      const texter = this.props.data.people.users.find(texter => {
+      const texter = users.find(texter => {
         this.setState({ reassignTo: undefined });
         return texter.displayName === selection;
       });
@@ -98,6 +85,10 @@ export class TexterSideboxClass extends React.Component {
     );
   };
 
+  handleReassignToggle = () => {
+    this.setState({ showContactReassign: !this.state.showContactReassign });
+  };
+
   render() {
     const {
       campaign,
@@ -106,18 +97,16 @@ export class TexterSideboxClass extends React.Component {
       settingsData,
       messageStatusFilter,
       texter
+      // currentUser
     } = this.props;
     console.log(this.props);
-    const { selectedRole } = this.state;
-    const roles = ["SUSPENDED", "VETTED_TEXTER"];
-
-    const texterNodes = !this.props.data.people.users
-      ? []
-      : this.props.data.people.users.map(user => {
-          const userId = parseInt(user.id, 10);
-          const label = `${user.displayName} ${getHighestRole(user.roles)}`;
-          return dataSourceItem(label, userId);
-        });
+    const {
+      expanded,
+      texterSearchText,
+      reassignTo,
+      showContactReassign
+    } = this.state;
+    const roles = ["SUSPENDED", "VETTED_TEXTER", "TEXTER"];
 
     const rightIconButton = id => (
       <IconButton
@@ -125,11 +114,7 @@ export class TexterSideboxClass extends React.Component {
         iconStyle={{ height: 20, width: 20 }}
         onClick={this.handleListToggle(id)}
       >
-        {this.state.expanded[id] ? (
-          <NavigationExpandLess />
-        ) : (
-          <NavigationExpandMore />
-        )}
+        {expanded[id] ? <NavigationExpandLess /> : <NavigationExpandMore />}
       </IconButton>
     );
 
@@ -139,20 +124,12 @@ export class TexterSideboxClass extends React.Component {
     const NestedListItem = props => (
       <StyledListItem
         {...props}
-        open={this.state.expanded[props.id]}
+        open={expanded[props.id]}
         rightIconButton={rightIconButton(props.id)}
       />
     );
 
     const { firstName, lastName, cell, ...otherContactItems } = contact;
-    // const nestedItems = Object.keys(otherContactItems).map(key => {
-    //   let newKey = key.split(/(?=[A-Z])/);
-    //   newKey[0] = newKey[0].charAt(0).toUpperCase() + newKey[0].slice(1);
-    //   newKey = newKey.join(" ");
-    //   let value = otherContactItems[key];
-    //   if (typeof value === "object") value = JSON.stringify(value);
-    //   return <ListItem {...listItemProps} primaryText={`${newKey}: ${value}`} />
-    // });
 
     const formatKey = key => {
       const newKey = key.split(/(?=[A-Z])/);
@@ -218,64 +195,53 @@ export class TexterSideboxClass extends React.Component {
             nestedItems={nestItems(otherContactItems)}
           />
         </List>
-        <SelectField
-          hintText="Change Role"
-          value={selectedRole}
-          onChange={this.handleRoleChange}
-          style={{ fontSize: theme.text.body.fontSize }}
-          iconStyle={{ fill: theme.colors.gray }}
-          fullWidth
+        {isRoleGreater("SUPERVOLUNTEER", getHighestRole(texter.roles)) ? (
+          <div>
+            <div>Change Texter Role</div>
+            <DropDownMenu
+              value={getHighestRole(texter.roles)}
+              onChange={this.handleRoleChange}
+              style={{ fontSize: theme.text.body.fontSize, width: "100%" }}
+              iconStyle={{ fill: theme.colors.gray }}
+              autoWidth={false}
+            >
+              {roles.map(option => (
+                <MenuItem
+                  key={`${texter.id}_${option}`}
+                  value={option}
+                  primaryText={`${option.charAt(0).toUpperCase()}${option
+                    .substring(1)
+                    .replace("_", " ")
+                    .toLowerCase()}`}
+                />
+              ))}
+            </DropDownMenu>
+          </div>
+        ) : null}
+        <a
+          style={{ textDecoration: "underline" }}
+          onClick={this.handleReassignToggle}
         >
-          {roles.map(option => (
-            <MenuItem
-              key={option}
-              value={option}
-              style={{ fontSize: theme.text.body.fontSize }}
-              primaryText={`${option.charAt(0).toUpperCase()}${option
-                .substring(1)
-                .replace("_", " ")
-                .toLowerCase()}`}
-            />
-          ))}
-        </SelectField>
-        <div>
-          <FlatButton
-            label={"Change role"}
-            onClick={this.handleRoleSubmit}
-            disabled={!this.state.selectedRole}
-            className={css(flexStyles.flatButton)}
-            labelStyle={inlineStyles.flatButtonLabel}
+          Reassign Contact
+        </a>
+        {showContactReassign ? (
+          <ContactReassign
+            onFocus={() =>
+              this.setState({
+                reassignTo: undefined,
+                texterSearchText: ""
+              })
+            }
+            onUpdateInput={texterSearchText =>
+              this.setState({ texterSearchText })
+            }
+            searchText={texterSearchText}
+            onReassignClick={this.handleReassignRequested}
+            onNewRequest={this.handleReassignChanged}
+            reassignTo={reassignTo}
+            organizationId={campaign.organization.id}
           />
-        </div>
-        <AutoComplete
-          textFieldStyle={{ fontSize: theme.text.body.fontSize }}
-          filter={AutoComplete.caseInsensitiveFilter}
-          maxSearchResults={8}
-          onFocus={() =>
-            this.setState({
-              reassignTo: undefined,
-              texterSearchText: ""
-            })
-          }
-          onUpdateInput={texterSearchText =>
-            this.setState({ texterSearchText })
-          }
-          searchText={this.state.texterSearchText}
-          dataSource={texterNodes}
-          hintText={"Search for a texter"}
-          floatingLabelText={"Reassign to ..."}
-          onNewRequest={this.handleReassignChanged}
-          fullWidth
-        />
-        <div>
-          <FlatButton
-            label={"Reassign selected"}
-            onClick={this.handleReassignRequested}
-            disabled={!this.state.reassignTo}
-            className={css(flexStyles.flatButton)}
-            labelStyle={inlineStyles.flatButtonLabel}
-          />
-        </div>
+        ) : null}
       </div>
     );
   }
@@ -295,50 +261,6 @@ TexterSideboxClass.propTypes = {
   // parent state
   navigationToolbarChildren: type.object,
   messageStatusFilter: type.string
-};
-
-export const queries = {
-  data: {
-    query: gql`
-      query getUsers(
-        $organizationId: String!
-        $cursor: OffsetLimitCursor
-        $campaignsFilter: CampaignsFilter
-        $sortBy: SortPeopleBy
-        $role: String
-      ) {
-        people(
-          organizationId: $organizationId
-          cursor: $cursor
-          campaignsFilter: $campaignsFilter
-          sortBy: $sortBy
-          role: $role
-        ) {
-          ... on PaginatedUsers {
-            pageInfo {
-              offset
-              limit
-              total
-            }
-            users {
-              id
-              displayName
-              email
-              roles(organizationId: $organizationId)
-            }
-          }
-        }
-      }
-    `,
-    options: ownProps => ({
-      variables: {
-        cursor: { limit: 1000, offset: 0 },
-        organizationId: ownProps.campaign.organization.id,
-        sortBy: "FIRST_NAME"
-      },
-      fetchPolicy: "network-only"
-    })
-  }
 };
 
 export const mutations = {
@@ -398,7 +320,7 @@ export const mutations = {
   })
 };
 
-export const TexterSidebox = loadData({ mutations, queries })(
+export const TexterSidebox = loadData({ mutations })(
   withRouter(TexterSideboxClass)
 );
 
