@@ -70,7 +70,7 @@ It's a horrible idea to publish live secrets to Github. You should never do that
 
 ## Create script documents
 
-1. Create a script from a Google Doc Spoke script template - see for example https://docs.google.com/document/d/1zKRbDU9vwetJlfWYgSGd1taBEVj_QrI7bhu4snvHlmg/edit
+1. Create a script from a Google Doc Spoke script template - see for example https://docs.google.com/document/d/1gFji2Vh_0svb4j7VUtmJZkqNhRWt3htp_bdGoWh6S6w/edit
 2. Copy the template, create a new draft doc with that and save it, then edit the new script doc, not the template :)
 3. Share the script document with your API user.
    - Go to the document in Google Docs.

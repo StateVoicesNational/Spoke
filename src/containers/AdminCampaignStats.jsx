@@ -33,7 +33,7 @@ const inlineStyles = {
   }
 };
 
-const styles = StyleSheet.create({
+export const styles = StyleSheet.create({
   container: {
     ...theme.layouts.multiColumn.container,
     marginBottom: 40,
