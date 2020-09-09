@@ -24,7 +24,8 @@ import CampaignTexterUIForm from "../components/CampaignTexterUIForm";
 import CampaignPhoneNumbersForm from "../components/CampaignPhoneNumbersForm";
 import { dataTest, camelCase } from "../lib/attributes";
 import CampaignTextingHoursForm from "../components/CampaignTextingHoursForm";
-
+import { css } from "aphrodite";
+import { styles } from "./AdminCampaignStats";
 import AdminScriptImport from "../containers/AdminScriptImport";
 import { makeTree } from "../lib";
 
@@ -650,6 +651,8 @@ export class AdminCampaignEdit extends React.Component {
       job => job.jobType === "start_campaign_with_phone_numbers"
     )[0];
     const isStarting = startJob || this.state.startingCampaign;
+    const organizationId = this.props.params.organizationId;
+    const campaign = this.props.campaignData.campaign;
     const notStarting = this.props.campaignData.campaign.isStarted ? (
       <div
         {...dataTest("campaignIsStarted")}
@@ -666,37 +669,67 @@ export class AdminCampaignEdit extends React.Component {
     );
 
     return (
-      <div>
-        {this.props.campaignData.campaign.title && (
-          <h2>{this.props.campaignData.campaign.title}</h2>
-        )}
-        <div
-          style={{
-            marginBottom: 15,
-            fontSize: 16
-          }}
-        >
-          {isStarting ? (
-            <div
-              style={{
-                color: theme.colors.gray,
-                fontWeight: 800
-              }}
-            >
-              <CircularProgress
+      <div className={css(styles.container)}>
+        {campaign.title && (
+          <div className={css(styles.header)}>
+            {campaign.title}
+            {isStarting ? (
+              <div
                 style={{
-                  verticalAlign: "middle",
-                  display: "inline-block",
-                  marginRight: 10
+                  marginBottom: 15,
+                  fontSize: 16
                 }}
-                size={25}
-              />
-              Starting your campaign...
+              >
+                <div
+                  style={{
+                    color: theme.colors.gray,
+                    fontWeight: 800
+                  }}
+                >
+                  <CircularProgress
+                    style={{
+                      verticalAlign: "middle",
+                      display: "inline-block",
+                      marginRight: 10
+                    }}
+                    size={25}
+                  />
+                  Starting your campaign...
+                </div>
+              </div>
+            ) : (
+              notStarting
+            )}
+          </div>
+        )}
+        {campaign.isStarted ? (
+          <div className={css(styles.flexColumn)}>
+            <div className={css(styles.rightAlign)}>
+              <div className={css(styles.inline)}>
+                <div className={css(styles.inline)}>
+                  <RaisedButton
+                    {...dataTest("statsCampaign")}
+                    onTouchTap={() =>
+                      this.props.router.push(
+                        `/admin/${organizationId}/campaigns/${campaign.id}`
+                      )
+                    }
+                    label="Stats"
+                  />
+                  <RaisedButton
+                    {...dataTest("convoCampaign")}
+                    onTouchTap={() =>
+                      this.props.router.push(
+                        `/admin/${organizationId}/incoming?campaigns=${campaign.id}`
+                      )
+                    }
+                    label="Convos"
+                  />
+                </div>
+              </div>
             </div>
-          ) : (
-            notStarting
-          )}
-        </div>
+          </div>
+        ) : null}
       </div>
     );
   }

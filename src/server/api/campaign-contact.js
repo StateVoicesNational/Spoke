@@ -7,6 +7,7 @@ import {
 import { mapFieldsToModel } from "./lib/utils";
 import { getConfig } from "./lib/config";
 import { log, getTopMostParent, zipToTimeZone } from "../../lib";
+import { coreFields } from "../../lib/scripts";
 import { accessRequired } from "./errors";
 
 export const resolvers = {
@@ -25,16 +26,7 @@ export const resolvers = {
   },
   CampaignContact: {
     ...mapFieldsToModel(
-      [
-        "id",
-        "firstName",
-        "lastName",
-        "cell",
-        "zip",
-        "customFields",
-        "assignmentId",
-        "external_id"
-      ],
+      ["id", "firstName", "lastName", "assignmentId", "external_id"],
       CampaignContact
     ),
     messageStatus: async (campaignContact, _, { loaders }) => {
@@ -53,6 +45,31 @@ export const resolvers = {
         true
       );
       return campaignContact.error_code;
+    },
+    cell: campaignContact =>
+      campaignContact.usedFields && !campaignContact.usedFields.cell
+        ? ""
+        : campaignContact.cell,
+    external_id: campaignContact =>
+      campaignContact.usedFields && !campaignContact.usedFields.external_id
+        ? ""
+        : campaignContact.external_id,
+    zip: campaignContact =>
+      campaignContact.usedFields && !campaignContact.usedFields.zip
+        ? ""
+        : campaignContact.zip,
+    customFields: async (campaignContact, _, { loaders }) => {
+      if (campaignContact.usedFields) {
+        const fullCustom = JSON.parse(campaignContact.custom_fields);
+        const filteredCustom = {};
+        Object.keys(campaignContact.usedFields).forEach(f => {
+          if (!coreFields[f]) {
+            filteredCustom[f] = fullCustom[f];
+          }
+        });
+        return JSON.stringify(filteredCustom);
+      }
+      return campaignContact.custom_fields;
     },
     campaign: async (campaignContact, _, { loaders }) =>
       loaders.campaign.load(campaignContact.campaign_id),

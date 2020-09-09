@@ -339,6 +339,7 @@ class Settings extends React.Component {
         <div>{this.renderTextingHoursForm()}</div>
         {window.TWILIO_MULTI_ORG && this.renderTwilioAuthForm()}
         {this.props.data.organization &&
+        this.props.data.organization.texterUIConfig &&
         this.props.data.organization.texterUIConfig.sideboxChoices.length ? (
           <Card>
             <CardHeader

@@ -1,5 +1,31 @@
 # Release Notes
 
+## v9.1
+
+_September 2020:_ Version 9.1
+
+### New Features/Improvements
+- **New UI for adding organizations to your instance:** There is now a page only accessible for users with `is_superadmin` set for adding orgs in a Spoke instance. You can access this screen through the user menu under "superadmin tools." We've gated this feature to only users with that privilege to keep any roles you already have on your instances from suddenly gaining the ability to add orgs. You can only change a user's `is_superadmin` status with a direct DB query at this time. *The first user on new instances will be a superadmin by default now*
+- **Past campaign contact loader:** Creates a contact loader that allows someone to select contacts from a past campaign and filter optionally for a particular question response (or no response) by entering a message review query into the contact loader. The contact loader has instructions inline.
+- **ActionNetwork action handler:** syncs TAGS and EVENT RSVPs back to ActionNetwork when linked to a question answer in an interaction script.
+- **Two new custom fields to track contact by id:** We're including `contactId` and `contactIdBase62` as custom fields to help with use cases around tracking link clicks. At MoveOn we have been using these fields as url params in our scripts for our data exports -- e.g. Hi will you rsvp to an event at someeventlink.com/source={contactIdBase62} the base62 variant is to keep the size of the text messages down.
+- **Downtime configuration:** new env vars `DOWNTIME` and `DOWNTIME_NO_DB` ([see reference](REFERENCE-environment_variables.md)) put Spoke in a downtime state that renders a downtime page to serve as a "kill switch" if there are problems with an instance. This is a useful tool for dealing with bugs, scaling issues or deployments that require manual intervention.
+- **Sqs batching and dispatchProcesses improvements:** improvements to the SQS functionality in Spoke to help set up AWS SQS queueing. Check out this [Twilio blog post for more information](https://www.twilio.com/blog/2017/07/handling-high-volume-inbound-sms-and-webhooks-with-twilio-functions-and-amazon-sqs.html).
+- **Add importing of response tags to google docs import:** You can now use italics to include tags your google script import templating. Check the default template in the [Google script import doc](HOWTO_IMPORT_GOOGLE_DOCS_SCRIPTS_TO_IMPORT.md) for details.
+- "Convos" and "Stats" buttons on the campaign edit page for live campaigns: The "stats" button will take you to the campaign stats page, the "convos" button will take you to message review pre-filtered to only show messages from that campaign. These changes make it easier to navigate back and forth between Campaign Edit/Stats pages.
+- Job to update optouts regularly: In case the update fails or in the case of autoupdates where it does not update by default you can get this job running to keep opt outs staying updated. For more information on how to run jobs in your build, check the Heroku (worker dynos), AWS (cron jobs) or your infra of choices's docs on running jobs.
+- To reduce the information sent to the texter, we filter out fields that aren't used in scripts or canned responses.
+- Speed up deduplication query
+
+### Bug Fixes
+- Allow admins and supervols to see organization settings
+- fixes allContactsCount: it should not always be 1
+- datawarehouse contact-loaders fixes
+
+### Appreciations
+
+Thanks to [lperson](https://github/lperson), [bdatkins](https://github/bdatkins), [hiemanshu](https://github.com/hiemanshu), [dcCoder9](https://github/dcCoder9), [kelwen-p](https://github/kelwen-p), [lesia-liao](https://github.com/lesia-liao), [abp5fn](https://github.com/abp5fn) and [schuyler1d](https://github/schuyler1d)
+
 ## v9.0
 
 _August 2020:_ Version 9.0

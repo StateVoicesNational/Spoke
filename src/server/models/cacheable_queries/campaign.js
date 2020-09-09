@@ -1,6 +1,9 @@
 import { r, Campaign } from "../../models";
 import { modelWithExtraProps } from "./lib";
-import { assembleAnswerOptions } from "../../../lib/interaction-step-helpers";
+import {
+  assembleAnswerOptions,
+  getUsedScriptFields
+} from "../../../lib/interaction-step-helpers";
 import { getFeatures } from "../../api/lib/config";
 import organizationCache from "./organization";
 
@@ -29,12 +32,23 @@ const CONTACT_CACHE_ENABLED =
   process.env.REDIS_CONTACT_CACHE || global.REDIS_CONTACT_CACHE;
 
 const dbCustomFields = async id => {
-  const campaignContacts = await r
-    .table("campaign_contact")
-    .getAll(id, { index: "campaign_id" })
-    .limit(1);
-  if (campaignContacts.length > 0) {
-    return Object.keys(JSON.parse(campaignContacts[0].custom_fields));
+  // This rather Byzantine query just to get the first record
+  // is due to postgres query planner (for 11.8 anyway) being particularly aggregious
+  // This forces the use of the campaign_id index to get the minimum contact.id
+  const firstContact = await r
+    .knex("campaign_contact")
+    .select("custom_fields")
+    .whereIn(
+      "campaign_contact.id",
+      r
+        .knex("campaign")
+        .join("campaign_contact", "campaign_contact.campaign_id", "campaign.id")
+        .select(r.knex.raw("min(campaign_contact.id) as id"))
+        .where("campaign.id", id)
+    )
+    .first();
+  if (firstContact) {
+    return Object.keys(JSON.parse(firstContact.custom_fields));
   }
   return [];
 };
@@ -67,7 +81,6 @@ const clear = async (id, campaign) => {
 };
 
 const loadDeep = async id => {
-  // console.log('load campaign deep', id)
   if (r.redis) {
     const campaign = await Campaign.get(id);
     if (Array.isArray(campaign) && campaign.length === 0) {
@@ -79,9 +92,12 @@ const loadDeep = async id => {
       // do not cache archived campaigns
       return campaign;
     }
-    // console.log('campaign loaddeep', campaign)
     campaign.customFields = await dbCustomFields(id);
     campaign.interactionSteps = await dbInteractionSteps(id);
+    campaign.usedFields = getUsedScriptFields(
+      campaign.interactionSteps,
+      "script"
+    );
     campaign.contactTimezones = await dbContactTimezones(id);
     campaign.contactsCount = await r.getCount(
       r.knex("campaign_contact").where("campaign_id", id)
