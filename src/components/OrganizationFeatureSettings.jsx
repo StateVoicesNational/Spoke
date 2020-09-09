@@ -1,14 +1,16 @@
-import type from "prop-types";
+import PropType from "prop-types";
 import React from "react";
+import loadData from "../containers/hoc/load-data";
+import gql from "graphql-tag";
 import GSForm from "../components/forms/GSForm";
 import yup from "yup";
 import Form from "react-formal";
 import Toggle from "material-ui/Toggle";
+import _ from "lodash";
 import { dataTest } from "../lib/attributes";
 
 const configurableFields = {
   ACTION_HANDLERS: {
-    category: 'defaults',
     ready: false, // TODO: let's wait for better interface
     schema: ({ formValues }) =>
       formValues.settings.actionHandlers
@@ -57,7 +59,6 @@ const configurableFields = {
     }
   },
   ALLOW_SEND_ALL_ENABLED: {
-    category: 'defaults',
     schema: () => yup.boolean(),
     ready: true,
     component: props => {
@@ -98,7 +99,6 @@ const configurableFields = {
     }
   },
   DEFAULT_BATCHSIZE: {
-    category: 'defaults',
     schema: () =>
       yup
         .number()
@@ -122,7 +122,6 @@ const configurableFields = {
     }
   },
   DEFAULT_RESPONSEWINDOW: {
-    category: 'defaults',
     schema: () => yup.number().notRequired(),
     ready: true,
     component: props => {
@@ -144,7 +143,6 @@ const configurableFields = {
     }
   },
   MAX_CONTACTS_PER_TEXTER: {
-    category: 'defaults',
     schema: () =>
       yup
         .number()
@@ -174,7 +172,6 @@ const configurableFields = {
     }
   },
   MAX_MESSAGE_LENGTH: {
-    category: 'defaults',
     schema: () =>
       yup
         .number()
@@ -196,88 +193,51 @@ const configurableFields = {
       );
     }
   },
-  NGP_VAN_API_KEY_ENCRYPTED: {
-    category: 'ngpvan',
-    schema: () =>
-      yup
-        .string()
-        .nullable()
-        .max(64)
-        .notRequired(),
-    ready: true,
-    component: props => {
-      return (
-        <Form.Field
-          label="NGPVAN API Key"
-          name="NGP_VAN_API_KEY_ENCRYPTED"
-          fullWidth
-        />
-      );
-    }
-  },
 };
 
-export default class OrganizationFeatureSettings extends React.Component {
+export class OrganizationFeatureSettings extends React.Component {
   constructor(props) {
     super(props);
-    const { formValues } = this.props;
+    this.fields = this.props.fields || configurableFields;
+    const { organization } = this.props;
     const settingsData =
-      (formValues.settings.featuresJSON &&
-        JSON.parse(formValues.settings.featuresJSON)) ||
+      (organization.settings.featuresJSON &&
+        JSON.parse(organization.settings.featuresJSON)) ||
       {};
-    this.state = { ...settingsData, unsetFeatures: [] };
+    this.state = { ...settingsData };
   }
 
   onChange = formValues => {
-    const newData = {
-      ...formValues,
-      unsetFeatures: Object.keys(formValues).filter(f => formValues[f] === "")
-    }
-    console.log("onChange", newData);
-    this.setState(newData, () => {
-      this.props.onChange({
-        settings: {
-          [this.props.category]: {
-            featuresJSON: JSON.stringify(this.state),
-            unsetFeatures: this.state.unsetFeatures
-          }
-        }
-      });
-    });
+    this.setState({...formValues, changed: true});
   };
 
   toggleChange = (key, value) => {
-    console.log("toggleChange", key, value);
-    this.setState({ [key]: value }, newData => {
-      this.props.onChange({
-        settings: {
-          featuresJSON: JSON.stringify(this.state),
-          unsetFeatures: this.state.unsetFeatures
-        }
-      });
-    });
+    this.setState({[key]: value, changed: true});
   };
 
-  saveDisabled = () => {
-    if (this.props.saveDisabled !== undefined) {
-      return this.props.saveDisabled;
+  onSubmit = async () => {
+    const formValues = _.pick(this.state, Object.keys(this.fields));
+    const settings = {
+      featuresJSON: JSON.stringify(formValues),
+      unsetFeatures: Object.keys(formValues).filter(f => formValues[f] === "")
     }
-    return !this.props.parentState
-      || !this.props.parentState[this.props.category]
-  };
+    await this.props.mutations.editOrganization({
+      settings
+    });
+    this.setState({ changed: false });
+  }
 
   render() {
     const schemaObject = {};
-    const adminItems = Object.keys(configurableFields)
-      .filter(f => configurableFields[f].ready
-        && configurableFields[f].category === this.props.category
+    const adminItems = Object.keys(this.fields)
+      .filter(f => this.fields[f].ready
         && this.state.hasOwnProperty(f))
       .map(f => {
-        schemaObject[f] = configurableFields[f].schema({
+        schemaObject[f] = this.fields[f].schema({
           ...this.props,
           ...this.state
         });
-        return configurableFields[f].component({ ...this.props, parent: this });
+        return this.fields[f].component({ ...this.props, parent: this });
       });
     return (
       <div>
@@ -289,9 +249,9 @@ export default class OrganizationFeatureSettings extends React.Component {
           {adminItems}
           <Form.Button
             type="submit"
-            onClick={this.props.onSubmit}
-            label={this.props.saveLabel}
-            disabled={this.saveDisabled()}
+            onClick={this.onSubmit}
+            label={this.props.saveLabel || "Save Settings"}
+            disabled={!this.state.changed}
             {...dataTest("submitOrganizationFeatureSettings")}
           />
         </GSForm>
@@ -301,12 +261,37 @@ export default class OrganizationFeatureSettings extends React.Component {
 }
 
 OrganizationFeatureSettings.propTypes = {
-  formValues: type.object,
-  category: type.string,
-  parentState: type.object,
-  organization: type.object,
-  onChange: type.func,
-  onSubmit: type.func,
-  saveLabel: type.string,
-  saveDisabled: type.bool
+  organization: PropType.object,
+  fields: PropType.object,
+  saveLabel: PropType.string,
+  mutations: PropType.object
 };
+
+export const editOrganizationGql = gql`
+  mutation editOrganization(
+    $organizationId: String!
+    $organizationChanges: OrganizationInput!
+  ) {
+    editOrganization(id: $organizationId, organization: $organizationChanges) {
+      id
+      settings {
+        messageHandlers
+        actionHandlers
+        featuresJSON
+        unsetFeatures
+      }
+    }
+  }
+`;
+
+const mutations = {
+  editOrganization: ownProps => organizationChanges => ({
+    mutation: editOrganizationGql,
+    variables: {
+      organizationId: ownProps.organization.id,
+      organizationChanges
+    }
+  }),
+};
+
+export default loadData({ mutations })(OrganizationFeatureSettings);

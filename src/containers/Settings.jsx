@@ -380,21 +380,7 @@ class Settings extends React.Component {
             />
             <CardText expandable>
               <OrganizationFeatureSettings
-                category='defaults'
-                formValues={this.props.data.organization}
                 organization={this.props.data.organization}
-                parentState={this.state.settings}
-                onSubmit={async () => {
-                  const { settings } = this.state;
-                  await this.props.mutations.editOrganization({
-                    settings: settings.defaults
-                  });
-                  this.setState({ settings: null });
-                }}
-                onChange={formValues => {
-                  console.log("change", formValues);
-                  this.setState(formValues);
-                }}
                 saveLabel="Save settings"
               />
             </CardText>
@@ -412,22 +398,47 @@ class Settings extends React.Component {
             />
             <CardText expandable>
               <OrganizationFeatureSettings
-                category='ngpvan'
-                formValues={this.props.data.organization}
                 organization={this.props.data.organization}
-                parentState={this.state.settings}
-                onSubmit={async () => {
-                  const { settings } = this.state;
-                  await this.props.mutations.editOrganization({
-                    settings: settings.ngpvan
-                  });
-                  this.setState({ settings: null });
+                fields={{
+                  NGP_VAN_API_KEY_ENCRYPTED: {
+                    schema: () =>
+                      yup
+                        .string()
+                        .nullable()
+                        .max(64)
+                        .notRequired(),
+                    ready: true,
+                    component: props => {
+                      return (
+                        <Form.Field
+                          label="NGPVAN API Key"
+                          name="NGP_VAN_API_KEY_ENCRYPTED"
+                          fullWidth
+                        />
+                      );
+                    }
+                  },
+                  NGP_VAN_APP_NAME: {
+                    category: 'ngpvan',
+                    schema: () =>
+                      yup
+                        .string()
+                        .nullable()
+                        .max(32)
+                        .notRequired(),
+                    ready: true,
+                    component: props => {
+                      return (
+                        <Form.Field
+                          label="NGPVAN App Name"
+                          name="NGP_VAN_APP_NAME"
+                          fullWidth
+                        />
+                      );
+                    }
+                  },
                 }}
-                onChange={formValues => {
-                  console.log("change", formValues);
-                  this.setState(formValues);
-                }}
-                saveLabel="Save settings"
+                saveLabel="Save VAN Settings"
               />
             </CardText>
           </Card>
