@@ -95,7 +95,7 @@ export class TexterSidebox extends React.Component {
               // TODO: include old tags as well, not just new tags
               const tags = Object.keys(newTags)
                 .filter(tid => newTags[tid])
-                .map(tid => ({ id: tid, name: newTags[tid] }));
+                .map(tid => ({ id: tid }));
               self.props
                 .onUpdateTags(tags)
                 .then(() => {

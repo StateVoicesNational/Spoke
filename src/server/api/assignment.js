@@ -1,7 +1,7 @@
 import { mapFieldsToModel } from "./lib/utils";
 import { Assignment, r, cacheableData } from "../models";
 import { getOffsets, defaultTimezoneIsBetweenTextingHours } from "../../lib";
-import { getDynamicAssignmentBatchPolicy } from "../../extensions/dynamicassignment-batches";
+import { getDynamicAssignmentBatchPolicies } from "../../extensions/dynamicassignment-batches";
 
 export function addWhereClauseForContactsFilterMessageStatusIrrespectiveOfPastDue(
   queryParameter,
@@ -33,23 +33,10 @@ export function addWhereClauseForContactsFilterMessageStatusIrrespectiveOfPastDu
   return query;
 }
 
-export function getContacts(
-  assignment,
-  contactsFilter,
-  organization,
-  campaign,
-  forCount = false
-) {
-  // / returns list of contacts eligible for contacting _now_ by a particular user
+export function getCampaignOffsets(campaign, organization, timezoneFilter) {
   const textingHoursEnforced = organization.texting_hours_enforced;
   const textingHoursStart = organization.texting_hours_start;
   const textingHoursEnd = organization.texting_hours_end;
-
-  // 24-hours past due - why is this 24 hours offset?
-  const includePastDue = contactsFilter && contactsFilter.includePastDue;
-  const pastDue =
-    campaign.due_by &&
-    Number(campaign.due_by) + 24 * 60 * 60 * 1000 < Number(new Date());
   const config = { textingHoursStart, textingHoursEnd, textingHoursEnforced };
 
   if (campaign.override_organization_texting_hours) {
@@ -65,8 +52,39 @@ export function getContacts(
       timezone
     };
   }
-
   const [validOffsets, invalidOffsets] = getOffsets(config);
+  const defaultIsValid = defaultTimezoneIsBetweenTextingHours(config);
+  if (timezoneFilter === true && defaultIsValid) {
+    // missing timezone ok
+    validOffsets.push("");
+  } else if (timezoneFilter === false && !defaultIsValid) {
+    invalidOffsets.push("");
+  }
+
+  return {
+    validOffsets,
+    invalidOffsets
+  };
+}
+
+export function getContacts(
+  assignment,
+  contactsFilter,
+  organization,
+  campaign,
+  forCount = false
+) {
+  // / returns list of contacts eligible for contacting _now_ by a particular user
+  // 24-hours past due - why is this 24 hours offset?
+  const includePastDue = contactsFilter && contactsFilter.includePastDue;
+  const pastDue =
+    campaign.due_by &&
+    Number(campaign.due_by) + 24 * 60 * 60 * 1000 < Number(new Date());
+  const { validOffsets, invalidOffsets } = getCampaignOffsets(
+    campaign,
+    organization,
+    contactsFilter && contactsFilter.validTimezone
+  );
   if (
     !includePastDue &&
     pastDue &&
@@ -87,16 +105,8 @@ export function getContacts(
       const validTimezone = contactsFilter.validTimezone;
       if (validTimezone !== null) {
         if (validTimezone === true) {
-          if (defaultTimezoneIsBetweenTextingHours(config)) {
-            // missing timezone ok
-            validOffsets.push("");
-          }
           query = query.whereIn("timezone_offset", validOffsets);
         } else if (validTimezone === false) {
-          if (!defaultTimezoneIsBetweenTextingHours(config)) {
-            // missing timezones are not ok to text
-            invalidOffsets.push("");
-          }
           query = query.whereIn("timezone_offset", invalidOffsets);
         }
       }
@@ -161,15 +171,15 @@ export const resolvers = {
       const organization = await loaders.organization.load(
         campaign.organization_id
       );
-      const policy = getDynamicAssignmentBatchPolicy({
+      const policies = getDynamicAssignmentBatchPolicies({
         organization,
         campaign
       });
-      if (!policy || !policy.requestNewBatchCount) {
+      if (!policies.length || !policies[0].requestNewBatchCount) {
         return 0; // to be safe, default to never
       }
       // default is finished-replies
-      const availableCount = await policy.requestNewBatchCount({
+      const availableCount = await policies[0].requestNewBatchCount({
         r,
         loaders,
         cacheableData,
@@ -187,7 +197,7 @@ export const resolvers = {
     },
     contactsCount: async (
       assignment,
-      { contactsFilter },
+      { contactsFilter, hasAny },
       { loaders },
       apolloRequestContext
     ) => {
@@ -214,12 +224,87 @@ export const resolvers = {
       const organization = await loaders.organization.load(
         campaign.organization_id
       );
-
-      return await r.getCount(
-        getContacts(assignment, contactsFilter, organization, campaign, true)
-      );
+      if (assignment.tzStatusCounts) {
+        // TODO: when there is no contacts filter
+        if (
+          contactsFilter &&
+          contactsFilter.messageStatus &&
+          !assignment.tzStatusCounts[contactsFilter.messageStatus]
+        ) {
+          return 0; // that was easy
+        }
+        const { validOffsets, invalidOffsets } = getCampaignOffsets(
+          campaign,
+          organization,
+          contactsFilter && contactsFilter.validTimezone
+        );
+        const filterCount = (statusFilter, offsetFilter) =>
+          Object.keys(assignment.tzStatusCounts) // .entries post-node10.x
+            .map(m => ({ status: m, offsets: assignment.tzStatusCounts[m] }))
+            .filter(statusFilter)
+            .map(({ offsets }) =>
+              offsets
+                .filter(offsetFilter)
+                .map(x => Number(x.count))
+                .reduce((a, b) => {
+                  return a + b;
+                }, 0)
+            )
+            .reduce((a, b) => a + b, 0);
+        if (contactsFilter && !contactsFilter.messageStatus) {
+          // ASSUME: invalidTimezones
+          const invalidTzCount = filterCount(
+            ({ status }) =>
+              status === "needsMessage" || status === "needsResponse",
+            offset => invalidOffsets.indexOf(offset.tz) !== -1
+          );
+          return invalidTzCount;
+        }
+        // ASSUME: messageStatus with validTimezones
+        if (
+          contactsFilter &&
+          contactsFilter.messageStatus &&
+          contactsFilter.validTimezone
+        ) {
+          const validStatusCount = filterCount(
+            ({ status }) => status === contactsFilter.messageStatus,
+            offset => validOffsets.indexOf(offset.tz) !== -1
+          );
+          return validStatusCount;
+        } else if (!contactsFilter) {
+          return filterCount(
+            status => true,
+            offset => true
+          );
+        }
+        console.log(
+          "assignment.contactsCount tzStatusCounts Data Match Failed",
+          hasAny,
+          contactsFilter,
+          assignment.tzStatusCounts
+        );
+      }
+      if (hasAny) {
+        const exists = await getContacts(
+          assignment,
+          contactsFilter,
+          organization,
+          campaign,
+          true
+        )
+          .select("campaign_contact.id")
+          .first();
+        return exists ? 1 : 0;
+      } else {
+        return await r.getCount(
+          getContacts(assignment, contactsFilter, organization, campaign, true)
+        );
+      }
     },
     contacts: async (assignment, { contactsFilter }, { loaders }) => {
+      if (assignment.contacts) {
+        return assignment.contacts;
+      }
       const campaign = await cacheableData.campaign.load(
         assignment.campaign_id
       );

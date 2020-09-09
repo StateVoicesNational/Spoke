@@ -220,7 +220,7 @@ const initialize = async (knex, Promise) => {
       create: t => {
         t.increments("id");
         t.text("cell").notNullable();
-        t.integer("assignment_id").notNullable();
+        t.integer("assignment_id");
         t.integer("organization_id").notNullable();
         t.text("reason_code")
           .notNullable()
