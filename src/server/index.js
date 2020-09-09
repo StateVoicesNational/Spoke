@@ -18,7 +18,6 @@ import nexmo from "./api/lib/nexmo";
 import twilio from "./api/lib/twilio";
 import { seedZipCodes } from "./seeds/seed-zip-codes";
 import { setupUserNotificationObservers } from "./notifications";
-import { twiml } from "twilio";
 import { existsSync } from "fs";
 import { rawAllMethods } from "../extensions/contact-loaders";
 
@@ -106,24 +105,7 @@ Object.keys(configuredIngestMethods).forEach(ingestMethodName => {
   }
 });
 
-app.post(
-  "/twilio/:orgId?",
-  twilio.headerValidator(
-    process.env.TWILIO_MESSAGE_CALLBACK_URL ||
-      global.TWILIO_MESSAGE_CALLBACK_URL
-  ),
-  wrap(async (req, res) => {
-    try {
-      await twilio.handleIncomingMessage(req.body);
-    } catch (ex) {
-      log.error(ex);
-    }
-
-    const resp = new twiml.MessagingResponse();
-    res.writeHead(200, { "Content-Type": "text/xml" });
-    res.end(resp.toString());
-  })
-);
+twilio.addServerEndpoints(app);
 
 if (process.env.NEXMO_API_KEY) {
   app.post(
@@ -152,24 +134,6 @@ if (process.env.NEXMO_API_KEY) {
     })
   );
 }
-
-app.post(
-  "/twilio-message-report",
-  twilio.headerValidator(
-    process.env.TWILIO_STATUS_CALLBACK_URL || global.TWILIO_STATUS_CALLBACK_URL
-  ),
-  wrap(async (req, res) => {
-    try {
-      const body = req.body;
-      await twilio.handleDeliveryReport(body);
-    } catch (ex) {
-      log.error(ex);
-    }
-    const resp = new twiml.MessagingResponse();
-    res.writeHead(200, { "Content-Type": "text/xml" });
-    res.end(resp.toString());
-  })
-);
 
 app.get("/logout-callback", (req, res) => {
   req.logOut();
