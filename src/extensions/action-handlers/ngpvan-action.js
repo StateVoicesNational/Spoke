@@ -362,9 +362,10 @@ export async function getClientChoiceData(organization) {
 // process.env.ACTION_HANDLERS
 export async function available(organization) {
   let result =
-    !!getConfig("NGP_VAN_API_KEY_ENCRYPTED", organization) &&
-    !!getConfig("NGP_VAN_API_KEY", organization) &&
-    !!getConfig("NGP_VAN_APP_NAME", organization);
+    (
+      !!getConfig("NGP_VAN_API_KEY_ENCRYPTED", organization) ||
+      !!getConfig("NGP_VAN_API_KEY", organization)
+    ) && !!getConfig("NGP_VAN_APP_NAME", organization);
 
   if (!result) {
     // eslint-disable-next-line no-console
