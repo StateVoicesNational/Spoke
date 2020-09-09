@@ -10,7 +10,7 @@ export const messageListStyles = {
     maxWidth: "574px"
   },
   messageSent: {
-    textAlign: "right",
+    textAlign: "left",
     marginLeft: "20%",
     marginRight: "10px",
     backgroundColor: "white",

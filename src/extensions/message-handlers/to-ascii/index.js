@@ -31,7 +31,8 @@ export const preMessageSave = async ({ messageToSave }) => {
       .replace(/‘|’/g, "'")
       .replace(/“|”|„/g, '"');
     return {
-      messageToSave
+      messageToSave,
+      context: { messageAltered: true }
     };
   }
 };
