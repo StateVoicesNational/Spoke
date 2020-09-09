@@ -1,4 +1,5 @@
 import Twilio from "twilio";
+import { twiml } from "twilio";
 import { getFormattedPhoneNumber } from "../../../lib/phone-format";
 import {
   Log,
@@ -9,6 +10,7 @@ import {
   Campaign
 } from "../../models";
 import { log } from "../../../lib";
+import wrap from "../../wrap";
 import { saveNewIncomingMessage } from "./message-sending";
 import { getConfig } from "./config";
 import urlJoin from "url-join";
@@ -93,6 +95,54 @@ export const errorDescriptions = {
     "Internal: Message blocked due to text match trigger (profanity-tagger)",
   "-167": "Internal: Initial message altered (initialtext-guard)"
 };
+
+function addServerEndpoints(expressApp) {
+  expressApp.post(
+    "/twilio/:orgId?",
+    headerValidator(
+      process.env.TWILIO_MESSAGE_CALLBACK_URL ||
+        global.TWILIO_MESSAGE_CALLBACK_URL
+    ),
+    wrap(async (req, res) => {
+      try {
+        await handleIncomingMessage(req.body);
+      } catch (ex) {
+        log.error(ex);
+      }
+      const resp = new twiml.MessagingResponse();
+      res.writeHead(200, { "Content-Type": "text/xml" });
+      res.end(resp.toString());
+    })
+  );
+
+  const messageReportHooks = [];
+  if (
+    getConfig("TWILIO_STATUS_CALLBACK_URL") ||
+    getConfig("TWILIO_VALIDATION")
+  ) {
+    messageReportHooks.push(
+      headerValidator(
+        process.env.TWILIO_STATUS_CALLBACK_URL ||
+          global.TWILIO_STATUS_CALLBACK_URL
+      )
+    );
+  }
+  messageReportHooks.push(
+    wrap(async (req, res) => {
+      try {
+        const body = req.body;
+        await handleDeliveryReport(body);
+      } catch (ex) {
+        log.error(ex);
+      }
+      const resp = new twiml.MessagingResponse();
+      res.writeHead(200, { "Content-Type": "text/xml" });
+      res.end(resp.toString());
+    })
+  );
+
+  expressApp.post("/twilio-message-report/:orgId?", ...messageReportHooks);
+}
 
 async function convertMessagePartsToMessage(messageParts) {
   const firstPart = messageParts[0];
@@ -656,6 +706,7 @@ async function deleteMessagingService(organization, messagingServiceSid) {
 
 export default {
   syncMessagePartProcessing: !!process.env.JOBS_SAME_PROCESS,
+  addServerEndpoints,
   headerValidator,
   convertMessagePartsToMessage,
   sendMessage,
