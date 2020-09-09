@@ -14,8 +14,11 @@ import {
 
 export const displayName = () => "Mobilize Event Shifter";
 
-export const showSidebox = ({ contact, messageStatusFilter }) =>
-  contact && messageStatusFilter !== "needsMessage";
+export const showSidebox = ({ contact, messageStatusFilter, settingsData }) =>
+  contact &&
+  messageStatusFilter !== "needsMessage" &&
+  (settingsData.mobilizeEventShifterBaseUrl ||
+    window.MOBILIZE_EVENT_SHIFTER_URL);
 
 const styles = StyleSheet.create({
   dialog: {
@@ -119,6 +122,10 @@ export class TexterSidebox extends React.Component {
       zip: customFields.zip || ""
     });
 
+    const mobilizeBaseUrl =
+      settingsData.mobilizeEventShifterBaseUrl ||
+      window.MOBILIZE_EVENT_SHIFTER_URL;
+
     return (
       <div>
         <FlatButton
@@ -161,7 +168,7 @@ export class TexterSidebox extends React.Component {
               )}
               <iframe
                 className={css(styles.iframe)}
-                src={`${window.MOBILIZE_EVENT_SHIFTER_URL}/event/${eventId}/?${urlParamString}`}
+                src={`${mobilizeBaseUrl}/event/${eventId}/?${urlParamString}`}
                 onLoad={() => this.iframeLoaded("eventiFrameLoading")}
                 style={{
                   display: this.state.eventiFrameLoading ? "none" : "block"
@@ -183,7 +190,7 @@ export class TexterSidebox extends React.Component {
             )}
             <iframe
               className={css(styles.iframe)}
-              src={`${window.MOBILIZE_EVENT_SHIFTER_URL}/?${allEventsUrlParams}`}
+              src={`${mobilizeBaseUrl}/?${allEventsUrlParams}`}
               onLoad={() => this.iframeLoaded("alliFrameLoading")}
               style={{
                 display: this.state.alliFrameLoading ? "none" : "block"
@@ -210,7 +217,8 @@ TexterSidebox.propTypes = {
 };
 
 export const adminSchema = () => ({
-  mobilizeEventShifterDefaultEventId: yup.string()
+  mobilizeEventShifterDefaultEventId: yup.string(),
+  mobilizeEventShifterBaseUrl: yup.string()
 });
 
 export class AdminConfig extends React.Component {
@@ -221,6 +229,16 @@ export class AdminConfig extends React.Component {
           name="mobilizeEventShifterDefaultEventId"
           label="Set a default Event ID for when none is provided in CSV under a column called event_id"
           fullWidth
+        />
+        <Form.Field
+          name="mobilizeEventShifterBaseUrl"
+          label="Set the Base Mobilize Url for the campaign."
+          fullWidth
+          hintText={
+            window.MOBILIZE_EVENT_SHIFTER_URL
+              ? "Default: " + window.MOBILIZE_EVENT_SHIFTER_URL
+              : ""
+          }
         />
       </div>
     );
