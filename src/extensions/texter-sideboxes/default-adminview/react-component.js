@@ -13,6 +13,7 @@ import theme from "../../../styles/theme";
 import { getHighestRole, isRoleGreater } from "../../../lib/permissions";
 import DropDownMenu from "material-ui/DropDownMenu";
 import ContactReassign from "./ContactReassign";
+import RolesDropdown from "../../../components/PeopleList/RolesDropdown";
 
 export const displayName = () => "Admin Controls";
 
@@ -42,11 +43,11 @@ export class TexterSideboxClass extends React.Component {
     }
   };
 
-  handleRoleChange = (event, index, value) => {
+  handleRoleChange = (texterId, value) => {
     this.props.mutations.editOrganizationRoles(
       this.props.campaign.organization.id,
       this.props.campaign.id,
-      this.props.texter.id,
+      texterId,
       [value]
     );
   };
@@ -96,8 +97,8 @@ export class TexterSideboxClass extends React.Component {
       contact,
       settingsData,
       messageStatusFilter,
-      texter
-      // currentUser
+      texter,
+      currentUser
     } = this.props;
     console.log(this.props);
     const {
@@ -106,7 +107,6 @@ export class TexterSideboxClass extends React.Component {
       reassignTo,
       showContactReassign
     } = this.state;
-    const roles = ["SUSPENDED", "VETTED_TEXTER", "TEXTER"];
 
     const rightIconButton = id => (
       <IconButton
@@ -187,7 +187,7 @@ export class TexterSideboxClass extends React.Component {
         <div>ADMIN</div>
         <div>Contact info</div>
         <List style={{ textAlign: "left" }}>
-          <StyledListItem primaryText={`Name: ${firstName}${lastName}`} />
+          <StyledListItem primaryText={`Name: ${firstName} ${lastName}`} />
           <StyledListItem primaryText={`Cell: ${cell}`} />
           <NestedListItem
             id="more"
@@ -198,24 +198,16 @@ export class TexterSideboxClass extends React.Component {
         {isRoleGreater("SUPERVOLUNTEER", getHighestRole(texter.roles)) ? (
           <div>
             <div>Change Texter Role</div>
-            <DropDownMenu
-              value={getHighestRole(texter.roles)}
+            <RolesDropdown
+              roles={texter.roles}
               onChange={this.handleRoleChange}
               style={{ fontSize: theme.text.body.fontSize, width: "100%" }}
               iconStyle={{ fill: theme.colors.gray }}
               autoWidth={false}
-            >
-              {roles.map(option => (
-                <MenuItem
-                  key={`${texter.id}_${option}`}
-                  value={option}
-                  primaryText={`${option.charAt(0).toUpperCase()}${option
-                    .substring(1)
-                    .replace("_", " ")
-                    .toLowerCase()}`}
-                />
-              ))}
-            </DropDownMenu>
+              texterId={texter.id}
+              currentUser={currentUser}
+              highestMenuRole="VETTED_TEXTER"
+            />
           </div>
         ) : null}
         <a

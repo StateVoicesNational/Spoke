@@ -44,7 +44,8 @@ export {
   ROLE_HIERARCHY,
   getHighestRole,
   hasRole,
-  isRoleGreater
+  isRoleGreater,
+  rolesEqualOrLess
 } from "./permissions";
 
 export { gzip, gunzip } from "./gzip";
