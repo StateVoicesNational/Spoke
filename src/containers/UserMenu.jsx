@@ -72,6 +72,11 @@ export class UserMenu extends Component {
     this.props.router.push(`/app/${orgId}/faqs`);
   };
 
+  handleAdminOrganizations = e => {
+    e.preventDefault();
+    this.props.router.push(`/organizations`);
+  };
+
   renderAvatar(user, size) {
     // Material-UI seems to not be handling this correctly when doing serverside rendering
     const inlineStyles = {
@@ -87,13 +92,27 @@ export class UserMenu extends Component {
     );
   }
 
+  renderAdminTools() {
+    return (
+      <div>
+        <Subheader>Superadmin Tools</Subheader>
+        <MenuItem
+          primaryText="Manage Organizations"
+          value={"adminOrganizations"}
+          onClick={this.handleAdminOrganizations}
+        />
+        <Divider />
+      </div>
+    );
+  }
+
   render() {
     const { currentUser } = this.props.data;
     if (!currentUser) {
       return <div />;
     }
     const organizations = currentUser.texterOrganizations;
-
+    const isSuperAdmin = currentUser.is_superadmin;
     return (
       <div>
         <IconButton
@@ -121,6 +140,7 @@ export class UserMenu extends Component {
               {currentUser.email}
             </MenuItem>
             <Divider />
+            {isSuperAdmin ? this.renderAdminTools() : <div />}
             <Subheader>Teams</Subheader>
             {organizations.map(organization => (
               <MenuItem
@@ -166,6 +186,7 @@ export default graphql(
         id
         displayName
         email
+        is_superadmin
         superVolOrganizations: organizations(role: "SUPERVOLUNTEER") {
           id
           name

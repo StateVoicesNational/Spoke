@@ -86,6 +86,11 @@ class IncomingMessageActions extends Component {
   }
 
   render() {
+    const showCreateCampaign =
+      this.props.conversationCount &&
+      document.location.search &&
+      /=/.test(document.location.search);
+
     const texterNodes = !this.props.people
       ? []
       : this.props.people.map(user => {
@@ -109,7 +114,6 @@ class IncomingMessageActions extends Component {
         onClick={this.handleConfirmDialogReassign}
       />
     ];
-
     return (
       <Card>
         <CardHeader

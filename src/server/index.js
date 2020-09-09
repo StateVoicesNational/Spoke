@@ -13,6 +13,7 @@ import cookieSession from "cookie-session";
 import passportSetup from "./auth-passport";
 import wrap from "./wrap";
 import { log } from "../lib";
+import telemetry from "./telemetry";
 import nexmo from "./api/lib/nexmo";
 import twilio from "./api/lib/twilio";
 import { seedZipCodes } from "./seeds/seed-zip-codes";
@@ -107,7 +108,10 @@ Object.keys(configuredIngestMethods).forEach(ingestMethodName => {
 
 app.post(
   "/twilio/:orgId?",
-  twilio.headerValidator(),
+  twilio.headerValidator(
+    process.env.TWILIO_MESSAGE_CALLBACK_URL ||
+      global.TWILIO_MESSAGE_CALLBACK_URL
+  ),
   wrap(async (req, res) => {
     try {
       await twilio.handleIncomingMessage(req.body);
@@ -151,6 +155,9 @@ if (process.env.NEXMO_API_KEY) {
 
 app.post(
   "/twilio-message-report",
+  twilio.headerValidator(
+    process.env.TWILIO_STATUS_CALLBACK_URL || global.TWILIO_STATUS_CALLBACK_URL
+  ),
   wrap(async (req, res) => {
     try {
       const body = req.body;
@@ -197,6 +204,22 @@ app.use(
         request.awsContext && request.awsContext.getRemainingTimeInMillis
           ? request.awsContext.getRemainingTimeInMillis()
           : 5 * 60 * 1000 // default saying 5 min, no matter what
+    },
+    formatError: error => {
+      log.error({
+        userId: request.user && request.user.id,
+        code:
+          (error && error.originalError && error.originalError.code) ||
+          "INTERNAL_SERVER_ERROR",
+        error,
+        msg: "GraphQL error"
+      });
+      telemetry
+        .formatRequestError(error, request)
+        // drop if this fails
+        .catch(() => {})
+        .then(() => {});
+      return error;
     }
   }))
 );

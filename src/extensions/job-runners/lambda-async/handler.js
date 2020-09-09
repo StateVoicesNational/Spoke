@@ -32,12 +32,12 @@ const handleJob = async event => {
   }
 };
 
-const handleTask = async event => {
+const handleTask = async (event, contextVars) => {
   requireKeys(event, ["taskName", "payload"]);
   const { taskName, payload } = event;
   console.log("Running task", taskName, payload);
   try {
-    await invokeTaskFunction(taskName, payload);
+    await invokeTaskFunction(taskName, payload, contextVars);
   } catch (e) {
     // For now suppress Lambda retries by not raising the exception.
     // In the future, we may want to mark jobs as retryable and let Lambda do
@@ -53,7 +53,12 @@ exports.handler = async (event, context) => {
   if (event.type === "JOB") {
     await handleJob(event);
   } else if (event.type === "TASK") {
-    await handleTask(event);
+    await handleTask(event, {
+      remainingMilliseconds: () =>
+        context && context.getRemainingTimeInMillis
+          ? context.getRemainingTimeInMillis()
+          : 5 * 60 * 1000
+    });
   } else {
     throw new Error(`Unknown event type: ${event.type}`);
   }
