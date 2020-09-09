@@ -425,7 +425,9 @@ export class AssignmentTexterContactControls extends React.Component {
     const {
       answerPopoverOpen,
       questionResponses,
-      cannedResponseScript
+      cannedResponseScript,
+      currentInteractionStep,
+      filteredCannedResponses
     } = this.state;
     const { messages } = contact;
 
@@ -435,9 +437,9 @@ export class AssignmentTexterContactControls extends React.Component {
     );
 
     const otherResponsesLink =
-      this.state.currentInteractionStep &&
-      this.state.currentInteractionStep.question.answerOptions.length > 6 &&
-      campaign.cannedResponses.length ? (
+      currentInteractionStep &&
+      currentInteractionStep.question.filteredAnswerOptions.length > 6 &&
+      filteredCannedResponses.length ? (
         <div className={css(flexStyles.popoverLink)}>
           <a
             href="#otherresponses"
@@ -446,6 +448,19 @@ export class AssignmentTexterContactControls extends React.Component {
             Other Responses
           </a>
         </div>
+      ) : null;
+
+    const searchBar =
+      currentInteractionStep &&
+      currentInteractionStep.question.answerOptions.length +
+        campaign.cannedResponses.length >
+        5 ? (
+        <SearchBar
+          onRequestSearch={this.handleSearchChange}
+          onChange={this.handleSearchChange}
+          value={""}
+          hintText={"Search replies..."}
+        />
       ) : null;
 
     return (
@@ -458,23 +473,18 @@ export class AssignmentTexterContactControls extends React.Component {
         targetOrigin={{ horizontal: "left", vertical: "bottom" }}
         onRequestClose={this.handleCloseAnswerResponsePopover}
       >
-        <SearchBar
-          onRequestSearch={this.handleSearchChange}
-          onChange={this.handleSearchChange}
-          value={""}
-          hintText={"Search replies..."}
-        />
+        {searchBar}
         <Survey
           contact={contact}
           interactionSteps={availableInteractionSteps}
           onQuestionResponseChange={this.handleQuestionResponseChange}
-          currentInteractionStep={this.state.currentInteractionStep}
+          currentInteractionStep={currentInteractionStep}
           listHeader={otherResponsesLink}
           questionResponses={questionResponses}
           onRequestClose={this.handleCloseAnswerResponsePopover}
         />
         <ScriptList
-          scripts={this.state.filteredCannedResponses}
+          scripts={filteredCannedResponses}
           showAddScriptButton={false}
           customFields={campaign.customFields}
           currentCannedResponseScript={cannedResponseScript}
