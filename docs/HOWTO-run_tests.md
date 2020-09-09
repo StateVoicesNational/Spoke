@@ -1,3 +1,5 @@
+# How to run the test suite
+
 There are current two ways to run tests, using either PostgreSQL or SQLite.
 
 ## PostgreSQL Testing (default, closer to most prod environments)

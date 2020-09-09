@@ -92,7 +92,7 @@ describe("action-handlers/index", () => {
       );
       expect(cacheKey).toEqual(
         `${process.env.CACHE_PREFIX ||
-          ""}action-choices-grateful-dead-1978.04.17`
+          ""}action-choices-grateful-dead-1-1978.04.17`
       );
     });
 
@@ -109,7 +109,7 @@ describe("action-handlers/index", () => {
         );
         expect(cacheKey).toEqual(
           `${process.env.CACHE_PREFIX ||
-            ""}action-choices-grateful-dead-1978.04.17`
+            ""}action-choices-grateful-dead-1-1978.04.17`
         );
       });
     });
@@ -560,7 +560,7 @@ describe("action-handlers/index", () => {
       expect(returned).toEqual(expectedReturn);
 
       expect(ComplexTestAction.clientChoiceDataCacheKey.mock.calls).toEqual([
-        [organization, user]
+        [user]
       ]);
 
       expect(ComplexTestAction.getClientChoiceData.mock.calls).toEqual([
@@ -577,8 +577,8 @@ describe("action-handlers/index", () => {
       expect(secondCallReturned).toEqual(expectedReturn);
 
       expect(ComplexTestAction.clientChoiceDataCacheKey.mock.calls).toEqual([
-        [organization, user],
-        [organization, user]
+        [user],
+        [user]
       ]);
 
       expect(ComplexTestAction.getClientChoiceData.mock.calls).toEqual([

@@ -40,7 +40,12 @@ async function getTwilio(organization) {
   return null;
 }
 
-const headerValidator = () => {
+/**
+ * Validate that the message came from Twilio before proceeding.
+ *
+ * @param url The external-facing URL; this may be omitted to use the URL from the request.
+ */
+const headerValidator = url => {
   if (!!TWILIO_SKIP_VALIDATION) return (req, res, next) => next();
 
   return async (req, res, next) => {
@@ -52,7 +57,8 @@ const headerValidator = () => {
     );
     const options = {
       validate: true,
-      protocol: "https"
+      protocol: "https",
+      url: url
     };
 
     return Twilio.webhook(authToken, options)(req, res, next);
@@ -62,11 +68,13 @@ const headerValidator = () => {
 export const errorDescriptions = {
   12400: "Internal (Twilio) Failure",
   21211: "Invalid 'To' Phone Number",
+  21408: "Attempt to send to disabled region",
   21602: "Message body is required",
   21610: "Attempt to send to unsubscribed recipient",
   21611: "Source number has exceeded max number of queued messages",
   21612: "Unreachable via SMS or MMS",
   21614: "Invalid mobile number",
+  21621: "From-number is not enabled for MMS (note 800 nums can't send MMS)",
   30001: "Queue overflow",
   30002: "Account suspended",
   30003: "Unreachable destination handset",
@@ -75,6 +83,12 @@ export const errorDescriptions = {
   30006: "Landline or unreachable carrier",
   30007: "Message Delivery - Carrier violation",
   30008: "Message Delivery - Unknown error",
+  "-1": "Spoke failed to send the message and will try again.",
+  "-2": "Spoke failed to send the message and will try again.",
+  "-3": "Spoke failed to send the message and will try again.",
+  "-4": "Spoke failed to send the message and will try again.",
+  "-5": "Spoke failed to send the message and will NOT try again.",
+  "-133": "Auto-optout (no error)",
   "-166":
     "Internal: Message blocked due to text match trigger (profanity-tagger)",
   "-167": "Internal: Initial message altered (initialtext-guard)"
