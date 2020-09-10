@@ -16,6 +16,7 @@ import { log } from "../lib";
 import telemetry from "./telemetry";
 import nexmo from "./api/lib/nexmo";
 import twilio from "./api/lib/twilio";
+import { getConfig } from "./api/lib/config";
 import { seedZipCodes } from "./seeds/seed-zip-codes";
 import { setupUserNotificationObservers } from "./notifications";
 import { existsSync } from "fs";
@@ -27,21 +28,21 @@ process.on("uncaughtException", ex => {
 });
 const DEBUG = process.env.NODE_ENV === "development";
 
-if (!process.env.SUPPRESS_SEED_CALLS) {
+if (!getConfig("SUPPRESS_SEED_CALLS", null, { truthy: 1 })) {
   seedZipCodes();
 }
 
-if (!process.env.SUPPRESS_DATABASE_AUTOCREATE) {
+if (!getConfig("SUPPRESS_DATABASE_AUTOCREATE", null, { truthy: 1 })) {
   createTablesIfNecessary().then(didCreate => {
     // seed above won't have succeeded if we needed to create first
-    if (didCreate && !process.env.SUPPRESS_SEED_CALLS) {
+    if (didCreate && !getConfig("SUPPRESS_SEED_CALLS", null, { truthy: 1 })) {
       seedZipCodes();
     }
-    if (!didCreate && !process.env.SUPPRESS_MIGRATIONS) {
+    if (!didCreate && !getConfig("SUPPRESS_MIGRATIONS", null, { truthy: 1 })) {
       r.k.migrate.latest();
     }
   });
-} else if (!process.env.SUPPRESS_MIGRATIONS) {
+} else if (!getConfig("SUPPRESS_MIGRATIONS", null, { truthy: 1 })) {
   r.k.migrate.latest();
 }
 
