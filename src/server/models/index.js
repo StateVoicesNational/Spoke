@@ -37,10 +37,10 @@ function createLoader(model, opts) {
     const docs = await thinky.r
       .knexReadOnly(model.tableName)
       .whereIn(idKey, keys);
-    return keys.map(
-      key =>
-        new model(docs.find(doc => doc[idKey].toString() === key.toString()))
-    );
+    return keys.map(key => {
+      const result = docs.find(doc => doc[idKey].toString() === key.toString());
+      return result ? new model(result) : null;
+    });
   });
 }
 
