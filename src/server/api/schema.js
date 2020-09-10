@@ -764,13 +764,13 @@ const rootMutations = {
 
       return await Organization.get(organizationId);
     },
-    createInvite: async (_, { user }) => {
+    createInvite: async (_, { invite }, { user }) => {
       if (
         (user && user.is_superadmin) ||
         !getConfig("SUPPRESS_SELF_INVITE", null, { truthy: true })
       ) {
         const inviteInstance = new Invite({
-          is_valid: true,
+          is_valid: invite.is_valid,
           hash: uuidv4()
         });
         const newInvite = await inviteInstance.save();
