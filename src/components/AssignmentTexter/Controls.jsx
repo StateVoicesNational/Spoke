@@ -240,11 +240,10 @@ export class AssignmentTexterContactControls extends React.Component {
     // filter answerOptions for this step's question
     const answerOptions = this.state.currentInteractionStep.question
       .answerOptions;
-    const keysToSearch = ["value", "nextInteractionStep.script"];
     const filteredAnswerOptions = searchFor(
       searchValue,
       answerOptions,
-      keysToSearch
+      ["value", "nextInteractionStep.script"]
     );
     this.state.currentInteractionStep.question.filteredAnswerOptions = filteredAnswerOptions;
 
