@@ -19,7 +19,8 @@ during QA and review and to evaluate the release 'at scale'.  Without this final
 to release readiness.
 
 However, we want to track these improvements, so we will be maintaining two 'experimental' PRs -- one more conservative
-with small changes and mostly bug fixes. The other with larger features.  If a hosting partner steps up to
+with small changes and mostly bug fixes: [stage-main-postelection2020-stable](https://github.com/MoveOnOrg/Spoke/pull/1830).
+The other with larger changes but riskier to deploy before the election: [stage-main-postelection2020-unstable](https://github.com/MoveOnOrg/Spoke/pull/1831).  If a hosting partner steps up to
 run one of these at any time and affirms its stability, we will mark that.  Additionally, in the conservative PR,
 we will link to specific PRs that if you run into a particular bug in production you can cherry-pick that PR to fix that issue.
 
