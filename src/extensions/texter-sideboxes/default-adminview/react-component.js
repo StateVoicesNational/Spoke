@@ -1,19 +1,24 @@
 import type from "prop-types";
 import React from "react";
-import yup from "yup";
 import { withRouter } from "react-router";
 import gql from "graphql-tag";
 import loadData from "../../../containers/hoc/load-data";
-import MenuItem from "material-ui/MenuItem";
 import { List, ListItem } from "material-ui/List";
 import IconButton from "material-ui/IconButton";
 import NavigationExpandMore from "material-ui/svg-icons/navigation/expand-more";
 import NavigationExpandLess from "material-ui/svg-icons/navigation/expand-less";
 import theme from "../../../styles/theme";
 import { getHighestRole, isRoleGreater } from "../../../lib/permissions";
-import DropDownMenu from "material-ui/DropDownMenu";
-import ContactReassign from "./ContactReassign";
+import ContactReassign from "../../../components/ContactReassign";
 import RolesDropdown from "../../../components/PeopleList/RolesDropdown";
+import TextField from "material-ui/TextField";
+import FlatButton from "material-ui/FlatButton";
+import {
+  flexStyles,
+  inlineStyles
+} from "../../../components/AssignmentTexter/StyleControls";
+import { css } from "aphrodite";
+import TagChip from "../../../components/TagChip";
 
 export const displayName = () => "Admin Controls";
 
@@ -30,23 +35,21 @@ export class TexterSideboxClass extends React.Component {
     this.state = {
       expanded: {},
       selectedRole: "",
-      showContactReassign: false
+      showContactReassign: false,
+      maxContacts: this.props.assignment.maxContacts
     };
   }
 
   handleListToggle = id => () => {
     const { expanded } = this.state;
-    if (expanded[id]) {
-      this.setState({ expanded: { ...expanded, [id]: false } });
-    } else {
-      this.setState({ expanded: { ...expanded, [id]: true } });
-    }
+    this.setState({ expanded: { ...expanded, [id]: !expanded[id] } });
   };
 
   handleRoleChange = (texterId, value) => {
-    this.props.mutations.editOrganizationRoles(
-      this.props.campaign.organization.id,
-      this.props.campaign.id,
+    const { mutations, campaign } = this.props;
+    mutations.editOrganizationRoles(
+      campaign.organization.id,
+      campaign.id,
       texterId,
       [value]
     );
@@ -90,6 +93,21 @@ export class TexterSideboxClass extends React.Component {
     this.setState({ showContactReassign: !this.state.showContactReassign });
   };
 
+  handleMaxContactsChange = e => {
+    this.setState({ maxContacts: e.currentTarget.value });
+  };
+
+  handleUpdateMaxContacts = () => {
+    const { mutations, campaign, assignment } = this.props;
+    mutations.updateAssignmentMaxContacts(
+      campaign.organization.id,
+      parseInt(this.state.maxContacts, 10),
+      assignment.id
+    );
+  };
+
+  handleResolveTag = () => {};
+
   render() {
     const {
       campaign,
@@ -105,7 +123,8 @@ export class TexterSideboxClass extends React.Component {
       expanded,
       texterSearchText,
       reassignTo,
-      showContactReassign
+      showContactReassign,
+      maxContacts
     } = this.state;
 
     const rightIconButton = id => (
@@ -182,10 +201,14 @@ export class TexterSideboxClass extends React.Component {
       return nestedItems;
     };
 
+    const escalatedTags = campaign.organization.tags.filter(tag =>
+      contact.tags.find(t => t.id === tag.id)
+    );
+
     return (
       <div>
         <div>ADMIN</div>
-        <div>Contact info</div>
+        <div style={{ marginTop: "12px" }}>Contact info</div>
         <List style={{ textAlign: "left" }}>
           <StyledListItem primaryText={`Name: ${firstName} ${lastName}`} />
           <StyledListItem primaryText={`Cell: ${cell}`} />
@@ -197,7 +220,7 @@ export class TexterSideboxClass extends React.Component {
         </List>
         {isRoleGreater("SUPERVOLUNTEER", getHighestRole(texter.roles)) ? (
           <div>
-            <div>Change Texter Role</div>
+            <div style={{ marginTop: "12px" }}>Change Texter Role</div>
             <RolesDropdown
               roles={texter.roles}
               onChange={this.handleRoleChange}
@@ -211,7 +234,7 @@ export class TexterSideboxClass extends React.Component {
           </div>
         ) : null}
         <a
-          style={{ textDecoration: "underline" }}
+          style={{ textDecoration: "underline", marginTop: "12px" }}
           onClick={this.handleReassignToggle}
         >
           Reassign Contact
@@ -224,6 +247,7 @@ export class TexterSideboxClass extends React.Component {
                 texterSearchText: ""
               })
             }
+            texterId={texter.id}
             onUpdateInput={texterSearchText =>
               this.setState({ texterSearchText })
             }
@@ -233,6 +257,51 @@ export class TexterSideboxClass extends React.Component {
             reassignTo={reassignTo}
             organizationId={campaign.organization.id}
           />
+        ) : null}
+        {campaign.useDynamicAssignment ? (
+          <div>
+            <div
+              style={{
+                marginTop: "12px",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between"
+              }}
+            >
+              <span>Update Max Contacts</span>
+              <TextField
+                style={{ width: 50, fontSize: theme.text.body.fontSize }}
+                hintText="Max"
+                value={maxContacts}
+                onChange={this.handleMaxContactsChange}
+              />
+            </div>
+            <div>
+              <FlatButton
+                label={"Update"}
+                onClick={this.handleUpdateMaxContacts}
+                disabled={
+                  parseInt(this.state.maxContacts, 10) ===
+                  this.props.assignment.maxContacts
+                }
+                className={css(flexStyles.flatButton)}
+                labelStyle={inlineStyles.flatButtonLabel}
+              />
+            </div>
+          </div>
+        ) : null}
+        {escalatedTags.length > 0 ? (
+          <div>
+            <div style={{ marginTop: "12px" }}>Resolve Tags</div>
+            {escalatedTags.map(tag => (
+              <TagChip
+                text={tag.name}
+                backgroundColor={theme.colors.white}
+                onRequestDelete={this.handleResolveTag(tag.id)}
+                deleteIconStyle={{ marginBottom: "4px" }}
+              />
+            ))}
+          </div>
         ) : null}
       </div>
     );
@@ -249,9 +318,9 @@ TexterSideboxClass.propTypes = {
   campaign: type.object,
   assignment: type.object,
   texter: type.object,
+  currentUser: type.object,
 
   // parent state
-  navigationToolbarChildren: type.object,
   messageStatusFilter: type.string
 };
 
@@ -309,22 +378,32 @@ export const mutations = {
       }
     `,
     variables: { organizationId, campaignIdsContactIds, newTexterUserId }
+  }),
+  updateAssignmentMaxContacts: ownProps => (
+    organizationId,
+    maxContacts,
+    assignmentId
+  ) => ({
+    mutation: gql`
+      mutation updateAssignmentMaxContacts(
+        $organizationId: String!
+        $maxContacts: Int!
+        $assignmentId: String!
+      ) {
+        updateAssignmentMaxContacts(
+          organizationId: $organizationId
+          maxContacts: $maxContacts
+          assignmentId: $assignmentId
+        ) {
+          id
+          maxContacts
+        }
+      }
+    `,
+    variables: { organizationId, maxContacts, assignmentId }
   })
 };
 
 export const TexterSidebox = loadData({ mutations })(
   withRouter(TexterSideboxClass)
 );
-
-export const adminSchema = () => ({});
-
-export class AdminConfig extends React.Component {
-  render() {
-    return <div></div>;
-  }
-}
-
-AdminConfig.propTypes = {
-  settingsData: type.object,
-  onToggle: type.func
-};

@@ -1,17 +1,14 @@
 import React from "react";
 import type from "prop-types";
 import gql from "graphql-tag";
-import loadData from "../../../containers/hoc/load-data";
+import loadData from "../containers/hoc/load-data";
 import FlatButton from "material-ui/FlatButton";
 import AutoComplete from "material-ui/AutoComplete";
 import { css } from "aphrodite";
-import {
-  flexStyles,
-  inlineStyles
-} from "../../../components/AssignmentTexter/StyleControls";
-import theme from "../../../styles/theme";
-import { dataSourceItem } from "../../../components/utils";
-import { getHighestRole } from "../../../lib/permissions";
+import { flexStyles, inlineStyles } from "./AssignmentTexter/StyleControls";
+import theme from "../styles/theme";
+import { dataSourceItem } from "./utils";
+import { getHighestRole } from "../lib/permissions";
 
 const ContactReassign = ({
   onFocus,
@@ -22,15 +19,18 @@ const ContactReassign = ({
     people: { users }
   },
   onNewRequest,
-  onReassignClick
+  onReassignClick,
+  texterId
 }) => {
   const texterNodes = !users
     ? []
-    : users.map(user => {
-        const userId = parseInt(user.id, 10);
-        const label = `${user.displayName} ${getHighestRole(user.roles)}`;
-        return dataSourceItem(label, userId);
-      });
+    : users
+        .filter(user => user.id !== texterId)
+        .map(user => {
+          const userId = parseInt(user.id, 10);
+          const label = `${user.displayName} ${getHighestRole(user.roles)}`;
+          return dataSourceItem(label, userId);
+        });
 
   return (
     <div>
@@ -68,7 +68,8 @@ ContactReassign.propTypes = {
   reassignTo: type.number,
   onReassignClick: type.func,
   onNewRequest: type.func,
-  data: type.object
+  data: type.object,
+  texterId: type.string
 };
 
 export const queries = {

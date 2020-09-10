@@ -362,6 +362,11 @@ const rootSchema = gql`
     ): JobRequest
     releaseCampaignNumbers(campaignId: ID!): Campaign!
     clearCachedOrgAndExtensionCaches(organizationId: String!): String
+    updateAssignmentMaxContacts(
+      organizationId: String!
+      maxContacts: Int!
+      assignmentId: String!
+    ): Assignment
   }
 
   schema {
