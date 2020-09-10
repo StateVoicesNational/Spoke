@@ -49,10 +49,15 @@ with all your campaigns -- let's win!
 - Fixed a regression in 9.1 where /twilio-message-report Twilio validation would fail if TWILIO_MULTI_ORG=1 but
   TWILIO_MESSAGE_CALLBACK_URL was NOT set.  We reverted that behavior, but recommend that you update your
   twilio config to `/twilio-message-report/<org id>` in this configuration and then set TWILIO_VALIDATION=1
+- Fixed a but in 9.1 on the superadmin organizations page where creating an organization did not work.
 - Fixed two minor security issues to restrict post-login redirect and hide errors on the front-end by-default.
   If you want to re-enable errors on the front-end, set SHOW_SERVER_ERROR=1
 - Fixed issue with Release Contacts texter sidebox where clicking "Done for the day" would not give feedback on
   the todos screen -- it now clears the 'send first messages' and 'replies' buttons where appropriate.
+
+### Appreciations
+
+Thanks to [jeffm2001](https://github.com/jeffm2001) and [schuyler1d](https://github/schuyler1d)
 
 ## v9.1
 
