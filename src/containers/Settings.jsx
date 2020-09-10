@@ -404,9 +404,8 @@ class Settings extends React.Component {
                     schema: () =>
                       yup
                         .string()
-                        .nullable()
                         .max(64)
-                        .notRequired(),
+                        .notRequired().nullable(),
                     ready: true,
                     component: props => {
                       return (
@@ -419,13 +418,11 @@ class Settings extends React.Component {
                     }
                   },
                   NGP_VAN_APP_NAME: {
-                    category: 'ngpvan',
                     schema: () =>
                       yup
                         .string()
-                        .nullable()
-                        .max(32)
-                        .notRequired(),
+                        .notRequired().nullable()
+                        .max(32),
                     ready: true,
                     component: props => {
                       return (
@@ -433,6 +430,28 @@ class Settings extends React.Component {
                           label="NGPVAN App Name"
                           name="NGP_VAN_APP_NAME"
                           fullWidth
+                        />
+                      );
+                    }
+                  },
+                  NGP_VAN_DATABASE_MODE: {
+                    schema: () =>
+                      yup.number()
+                        .oneOf([0, 1, null])
+                        .nullable()
+                        .transform(val => isNaN(val) ? null : val),
+                    ready: true,
+                    component: props => {
+                      return (
+                        <Form.Field
+                          type="select"
+                          label="NGP VAN Database Mode"
+                          name="NGP_VAN_DATABASE_MODE"
+                          choices={[
+                            {value: "", label: ""},
+                            {value: "0", label: "My Voters"},
+                            {value: "1", label: "My Campaign"},
+                          ]}
                         />
                       );
                     }

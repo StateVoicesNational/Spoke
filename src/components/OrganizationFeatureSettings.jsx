@@ -101,9 +101,9 @@ const configurableFields = {
   DEFAULT_BATCHSIZE: {
     schema: () =>
       yup
-        .number()
-        .integer()
-        .notRequired(),
+        .number().integer()
+        .notRequired().nullable()
+        .transform(val => isNaN(val) ? null : val),
     ready: true,
     component: props => {
       return (
@@ -122,7 +122,10 @@ const configurableFields = {
     }
   },
   DEFAULT_RESPONSEWINDOW: {
-    schema: () => yup.number().notRequired(),
+    schema: () => yup
+      .number().integer()
+      .notRequired().nullable()
+      .transform(val => isNaN(val) ? null : val),
     ready: true,
     component: props => {
       return (
@@ -145,9 +148,9 @@ const configurableFields = {
   MAX_CONTACTS_PER_TEXTER: {
     schema: () =>
       yup
-        .number()
-        .integer()
-        .notRequired(),
+        .number().integer()
+        .notRequired().nullable()
+        .transform(val => isNaN(val) ? null : val),
     ready: true,
     component: props => {
       return (
@@ -174,9 +177,9 @@ const configurableFields = {
   MAX_MESSAGE_LENGTH: {
     schema: () =>
       yup
-        .number()
-        .integer()
-        .notRequired(),
+        .number().integer()
+        .notRequired().notRequired()
+        .transform(val => isNaN(val) ? null : val),
     ready: true,
     component: props => {
       return (

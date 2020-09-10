@@ -19,6 +19,7 @@ export const ownerConfigurable = {
   MAX_MESSAGE_LENGTH: 1,
   NGP_VAN_API_KEY_ENCRYPTED: 1,
   NGP_VAN_APP_NAME: 1,
+  NGP_VAN_DATABASE_MODE: 1,
   // MESSAGE_HANDLERS: 1,
   // There is already an endpoint and widget for this:
   // opt_out_message: 1
