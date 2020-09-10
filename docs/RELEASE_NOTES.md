@@ -1,8 +1,65 @@
 # Release Notes
 
+## v9.2
+
+_September 2020:_ Version 9.2
+
+### Spoke Project Status Update
+
+As we are getting closer to the 2020 election, MoveOn is 'code-freezing' changes on our production instance.
+We believe campaigns and Spoke hosters would be well-advised to do the same and aim for stability over this time.
+The only releases before November 3rd, 2020 will be for security updates.
+
+We will also continue to merge additions to documentation and integration test PRs directly into our `main` branch.
+
+That said, other hosters and developers are continuing to make bug fixes and add important features for their
+own texting programs.  Normally, MoveOn's release process involves first gathering a release candidate, then
+running QA on the changes, and finally running it in production for a day or two to shake out any bugs missed
+during QA and review and to evaluate the release 'at scale'.  Without this final step, we can't make a strong commitment
+to release readiness.
+
+However, we want to track these improvements, so we will be maintaining two 'experimental' PRs -- one more conservative
+with small changes and mostly bug fixes. The other with larger features.  If a hosting partner steps up to
+run one of these at any time and affirms its stability, we will mark that.  Additionally, in the conservative PR,
+we will link to specific PRs that if you run into a particular bug in production you can cherry-pick that PR to fix that issue.
+
+After the election, I'm sure there will be a lot of changes and diverged branches from different organizations.
+We will be here to try to gather those changes, but we'd like to note that will be significant work and can't happen
+without those organizations also making an effort to separate their 'hacks' to make something work vs. changes that
+will be maintainable and support the long-term architecture and stability of Spoke for the community.  We recommend
+whenever possible, opening a PR on specific small changes -- these are more likely to be mergeable after the election.
+If that's not possible due to time/development constraints, we ask that you at least open a 'organization dev' PR that
+just includes all your changes -- then post-election we can at least sort out the features and the community can
+have a place to see what was done.
+
+I'd like to take a moment to celebrate this amazing community -- so many progressive orgs and campaigns are using Spoke and
+contributing back to it -- along with a cadre of committed volunteer developers, designers and texters.  Good luck
+with all your campaigns -- let's win!
+
+### New Features/Improvements
+
+- Throughout the admin on the People page, Message Review, and Campaign stats, there are little links to the texter's
+  own Todos page view. This can be useful for admins to see what campaigns a texter is part of and debug any
+  issues where seeing the texter view can help.
+- Experimental DB_READONLY_HOST variable which can connect to a replica/read-only instance for some specific queries.
+  In the event of high database stress, setting this may help relieve IO on the 'writer' database instance.
+
+### Bug Fixes
+
+- Fixed a regression in 9.1 where /twilio-message-report Twilio validation would fail if TWILIO_MULTI_ORG=1 but
+  TWILIO_MESSAGE_CALLBACK_URL was NOT set.  We reverted that behavior, but recommend that you update your
+  twilio config to `/twilio-message-report/<org id>` in this configuration and then set TWILIO_VALIDATION=1
+- Fixed two minor security issues to restrict post-login redirect and hide errors on the front-end by-default.
+  If you want to re-enable errors on the front-end, set SHOW_SERVER_ERROR=1
+- Fixed issue with Release Contacts texter sidebox where clicking "Done for the day" would not give feedback on
+  the todos screen -- it now clears the 'send first messages' and 'replies' buttons where appropriate.
+
 ## v9.1
 
 _September 2020:_ Version 9.1
+
+* Regression notice: When TWILIO_MULTI_ORG=1 is set but TWILIO_MESSAGE_CALLBACK_URL is not, /twilio-message-report
+  fails.  There is a [fix](https://github.com/MoveOnOrg/Spoke/pull/1826) that is also available in 9.2 (above).
 
 ### New Features/Improvements
 - **New UI for adding organizations to your instance:** There is now a page only accessible for users with `is_superadmin` set for adding orgs in a Spoke instance. You can access this screen through the user menu under "superadmin tools." We've gated this feature to only users with that privilege to keep any roles you already have on your instances from suddenly gaining the ability to add orgs. You can only change a user's `is_superadmin` status with a direct DB query at this time. *The first user on new instances will be a superadmin by default now*
