@@ -44,7 +44,7 @@ But because of the timing it was ambiguous whether we 'just' hit scaling issues 
 - Drastically improves the query efficiency for the Texter Todos page
 - Removes some liability of thrashing with auto-optout updating.
 
-## 8.1 Highlights
+### 8.1 Highlights
 8.1 still makes up the bulk of 9.0's featureset, so here's what to look out for and check out the [8.1 section](RELEASE_NOTES.md#v81) for the full list of awesome changes
 
 - **Tagging:** The tags feature is no longer experimental! This release includes a few adjustments to tags that finish the tagging story:
@@ -56,7 +56,7 @@ But because of the timing it was ambiguous whether we 'just' hit scaling issues 
 - [Documentation now exists for all of the extensions!](HOWTO-extend-spoke.md)
 
 ### Appreciations
-Thanks for quick and impactful work from [schuyler1d](https://github/schuyler1d) to get 8.1 to a better more stable 9.0! Thank you so much to the **11** community contributors that made all the features and bug fixes possible: [inorvig](https://github/inorvig), [oburbank](https://github/oburbank), [aschneit](https://github/aschneit), [jeffm2001](https://github/jeffm2001), [lperson](https://github/lperson), [ibrand](https://github/ibrand), [bdatkins](https://github/bdatkins), [JeremyParker](https://github/JeremyParker), [tekkamanendless ](https://github/tekkamanendless), [sharonsolomon](https://github/sharonsolomon), [nke5ka](https://github/nke5ka)
+Thanks for quick and impactful work from [schuyler1d](https://github.com/schuyler1d) to get 8.1 to a better more stable 9.0! Thank you so much to the **11** community contributors that made all the features and bug fixes possible: [inorvig](https://github.com/inorvig), [oburbank](https://github.com/oburbank), [aschneit](https://github.com/aschneit), [jeffm2001](https://github.com/jeffm2001), [lperson](https://github.com/lperson), [ibrand](https://github.com/ibrand), [bdatkins](https://github.com/bdatkins), [JeremyParker](https://github.com/JeremyParker), [tekkamanendless ](https://github.com/tekkamanendless), [sharonsolomon](https://github.com/sharonsolomon), [nke5ka](https://github.com/nke5ka)
 
 ## v8.1
 
@@ -93,7 +93,7 @@ number outside of your "Geo-Permissions" settings
 
 ### Appreciations
 
-Thanks to [inorvig](https://github/inorvig), [oburbank](https://github/oburbank), [aschneit](https://github/aschneit), [jeffm2001](https://github/jeffm2001), [lperson](https://github/lperson), [ibrand](https://github/ibrand), [bdatkins](https://github/bdatkins), [JeremyParker](https://github/JeremyParker), [tekkamanendless ](https://github/tekkamanendless), [sharonsolomon](https://github/sharonsolomon), [nke5ka](https://github/nke5ka) and [schuyler1d](https://github/schuyler1d)
+Thanks to [inorvig](https://github.com/inorvig), [oburbank](https://github.com/oburbank), [aschneit](https://github.com/aschneit), [jeffm2001](https://github.com/jeffm2001), [lperson](https://github.com/lperson), [ibrand](https://github.com/ibrand), [bdatkins](https://github.com/bdatkins), [JeremyParker](https://github.com/JeremyParker), [tekkamanendless ](https://github.com/tekkamanendless), [sharonsolomon](https://github.com/sharonsolomon), [nke5ka](https://github.com/nke5ka) and [schuyler1d](https://github.com/schuyler1d)
 
 ## v8.0
 
@@ -141,7 +141,7 @@ This is a major release and therefore requires a schema change which you can run
 
 ### Appreciations
 
-Thanks to [jasterix](https://github/jasterix), [ibrand](https://github/ibrand), [jeffm2001](https://github/jeffm2001), [lperson](https://github/lperson), [matteosb](https://github/matteosb), [tekkamanendless ](https://github/tekkamanendless), and [schuyler1d](https://github/schuyler1d)
+Thanks to [jasterix](https://github.com/jasterix), [ibrand](https://github.com/ibrand), [jeffm2001](https://github.com/jeffm2001), [lperson](https://github.com/lperson), [matteosb](https://github.com/matteosb), [tekkamanendless ](https://github.com/tekkamanendless), and [schuyler1d](https://github.com/schuyler1d)
 
 ## v7.1
 
@@ -177,7 +177,7 @@ _July 2020:_ Release 7.1 is a testament to the community working together -- sev
 
 ### Appreciations
 
-Thanks to [alliejones](https://github/alliejones), [aschneit](https://github/aschneit), [eamouzou](https://github/eamouzou), [hiemanshu](https://github/hiemanshu), [ibrand](https://github/ibrand), [jeffm2001](https://github/jeffm2001), [JeremyParker](https://github/JeremyParker), [lperson](https://github/lperson), [matteosb](https://github/matteosb), and [schuyler1d](https://github/schuyler1d).
+Thanks to [alliejones](https://github.com/alliejones), [aschneit](https://github.com/aschneit), [eamouzou](https://github.com/eamouzou), [hiemanshu](https://github.com/hiemanshu), [ibrand](https://github.com/ibrand), [jeffm2001](https://github.com/jeffm2001), [JeremyParker](https://github.com/JeremyParker), [lperson](https://github.com/lperson), [matteosb](https://github.com/matteosb), and [schuyler1d](https://github.com/schuyler1d).
 
 Also to AFL-CIO, MoveOn, NYCET, Scale to Win, and Working Families Party for sending their contributions and giving early feedback/debugging time.
 
