@@ -289,8 +289,7 @@ async function sendMessage(message, contact, trx, organization, campaign) {
       {
         to: message.contact_number,
         body: message.text,
-        messagingServiceSid: messagingServiceSid,
-        statusCallback: process.env.TWILIO_STATUS_CALLBACK_URL
+        messagingServiceSid
       },
       twilioValidityPeriod ? { validityPeriod: twilioValidityPeriod } : {},
       parseMessageText(message)
@@ -538,7 +537,11 @@ async function createMessagingService(organization, friendlyName) {
   const twilioBaseUrl = getConfig("TWILIO_BASE_CALLBACK_URL", organization);
   return await twilio.messaging.services.create({
     friendlyName,
-    statusCallback: urlJoin(twilioBaseUrl, "twilio-message-report"),
+    statusCallback: urlJoin(
+      twilioBaseUrl,
+      "twilio-message-report",
+      organization.id.toString()
+    ),
     inboundRequestUrl: urlJoin(
       twilioBaseUrl,
       "twilio",
