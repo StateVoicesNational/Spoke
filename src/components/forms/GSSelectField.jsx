@@ -5,18 +5,25 @@ import { MenuItem } from "material-ui/Menu";
 import GSFormField from "./GSFormField";
 
 export default class GSSelectField extends GSFormField {
-  createMenuItems() {
-    return this.props.choices.map(({ value, label }) => (
+  createMenuItems(choices) {
+    return choices.map(({ value, label }) => (
       <MenuItem value={value} key={value} primaryText={label} />
     ));
   }
 
   render() {
+    const {
+      choices,
+      errors,
+      invalid,
+      ...extraProps
+    } = this.props;
+
     return (
       <SelectField
-        children={this.createMenuItems()}
+        children={this.createMenuItems(choices)}
         floatingLabelText={this.props.label}
-        {...this.props}
+        {...extraProps}
         onChange={(event, index, value) => {
           this.props.onChange(value);
         }}

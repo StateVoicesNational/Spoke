@@ -4,7 +4,13 @@ import GSFormField from "./GSFormField";
 
 export default class GSTextField extends GSFormField {
   render() {
-    let value = this.props.value;
+    const {
+      value,
+      errors,
+      invalid,
+      ...extraProps
+    } = this.props;
+
     return (
       <TextField
         floatingLabelText={this.floatingLabelText()}
@@ -12,7 +18,7 @@ export default class GSTextField extends GSFormField {
           zIndex: 0
         }}
         onFocus={event => event.target.select()}
-        {...this.props}
+        {...extraProps}
         value={value}
         onChange={event => {
           this.props.onChange(event.target.value);

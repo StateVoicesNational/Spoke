@@ -49,7 +49,9 @@ const inlineStyles = {
 const formatTextingHours = hour => moment(hour, "H").format("h a");
 class Settings extends React.Component {
   state = {
-    formIsSubmitting: false
+    formIsSubmitting: false,
+    textingHoursDialogOpen: false,
+    twilioDialogOpen: false
   };
 
   handleSubmitTextingHoursForm = async ({

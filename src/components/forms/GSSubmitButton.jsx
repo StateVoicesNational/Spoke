@@ -11,12 +11,12 @@ const styles = {
 
 const GSSubmitButton = props => {
   let icon = "";
-  const extraProps = {};
-  if (props.isSubmitting) {
+  const { isSubmitting, ...extraProps } = props;
+  if (isSubmitting) {
     extraProps.disabled = true;
     icon = (
       <CircularProgress
-        size={0.5}
+        size={25}
         style={{
           verticalAlign: "middle",
           display: "inline-block"
@@ -26,12 +26,11 @@ const GSSubmitButton = props => {
   }
 
   return (
-    <div style={styles.button} {...props}>
+    <div style={styles.button}>
       <RaisedButton
         primary
         type="submit"
         value="submit"
-        {...props}
         {...extraProps}
       />
       {icon}

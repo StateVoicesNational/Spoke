@@ -178,7 +178,7 @@ const configurableFields = {
     schema: () =>
       yup
         .number().integer()
-        .notRequired().notRequired()
+        .notRequired().nullable()
         .transform(val => isNaN(val) ? null : val),
     ready: true,
     component: props => {
@@ -240,7 +240,11 @@ export class OrganizationFeatureSettings extends React.Component {
           ...this.props,
           ...this.state
         });
-        return this.fields[f].component({ ...this.props, parent: this });
+        return (
+          <div key={f}>
+            {this.fields[f].component({ ...this.props, parent: this })}
+          </div>
+        );
       });
     return (
       <div>
