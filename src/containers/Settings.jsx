@@ -201,7 +201,12 @@ class Settings extends React.Component {
           <CardText style={inlineStyles.shadeBox}>
             <DisplayLink
               url={`${baseUrl}/twilio/${organization.id}`}
-              textContent="Twilio credentials are configured for this organization. You should set the inbound Request URL in your Twilio messaging service to this link."
+              label="Request URL"
+              textContent="Twilio credentials are configured for this organization. If you are mannually configiring a Twilio messaging service you should use these URLs."
+            />
+            <DisplayLink
+              url={`${baseUrl}/twilio-message-report/${organization.id}`}
+              label="Status Callback URL"
             />
           </CardText>
         )}
