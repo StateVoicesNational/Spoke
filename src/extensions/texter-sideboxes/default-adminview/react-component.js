@@ -32,11 +32,17 @@ export const showSidebox = ({ currentUser }) => {
 export class TexterSideboxClass extends React.Component {
   constructor(props) {
     super(props);
+    const tags = {};
+    (this.props.campaign.organization.tags || []).forEach(tag => {
+      tags[tag.id] = tag.name;
+    });
+
     this.state = {
       expanded: {},
       selectedRole: "",
       showContactReassign: false,
-      maxContacts: this.props.assignment.maxContacts
+      maxContacts: this.props.assignment.maxContacts,
+      tags
     };
   }
 
@@ -105,8 +111,6 @@ export class TexterSideboxClass extends React.Component {
       assignment.id
     );
   };
-
-  handleResolveTag = () => {};
 
   render() {
     const {
@@ -201,9 +205,10 @@ export class TexterSideboxClass extends React.Component {
       return nestedItems;
     };
 
-    const escalatedTags = campaign.organization.tags.filter(tag =>
-      contact.tags.find(t => t.id === tag.id)
-    );
+    const escalatedTags = contact.tags.map(tag => ({
+      ...tag,
+      name: this.state.tags[tag.id]
+    }));
 
     return (
       <div>
@@ -296,8 +301,20 @@ export class TexterSideboxClass extends React.Component {
             {escalatedTags.map(tag => (
               <TagChip
                 text={tag.name}
-                backgroundColor={theme.colors.white}
-                onRequestDelete={this.handleResolveTag(tag.id)}
+                backgroundColor={
+                  tag.value !== "RESOLVED" ? null : theme.colors.lightGray
+                }
+                onRequestDelete={
+                  tag.value !== "RESOLVED"
+                    ? async () => {
+                        await this.props.mutations.updateTag(
+                          this.props.contact.id,
+                          tag.id,
+                          "RESOLVED"
+                        );
+                      }
+                    : null
+                }
                 deleteIconStyle={{ marginBottom: "4px" }}
               />
             ))}
@@ -401,6 +418,29 @@ export const mutations = {
       }
     `,
     variables: { organizationId, maxContacts, assignmentId }
+  }),
+  updateTag: ownProps => (campaignContactId, id, value) => ({
+    mutation: gql`
+      mutation updateContactTags(
+        $tags: [ContactTagInput]
+        $campaignContactId: String!
+        $tagId: String!
+      ) {
+        updateContactTags(tags: $tags, campaignContactId: $campaignContactId) {
+          id
+          tags(tagId: $tagId) {
+            id
+            value
+            campaignContactId
+          }
+        }
+      }
+    `,
+    variables: {
+      tags: [{ id, value }],
+      campaignContactId,
+      tagId: id
+    }
   })
 };
 

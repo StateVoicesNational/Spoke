@@ -38,6 +38,7 @@ export const contactDataFragment = `
         }
         tags {
           id
+          value
         }
 `;
 
