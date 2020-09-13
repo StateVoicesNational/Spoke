@@ -75,7 +75,6 @@ export default function makeRoutes(requireAuth = () => {}) {
             </Route>
           </Route>
           <Route path="people" component={AdminPersonList} />
-          <Route path="optouts" component={AdminOptOutList} />
           <Route path="incoming" component={AdminIncomingMessageList} />
           <Route path="tags" component={Tags} />
           <Route path="settings" component={Settings} />
