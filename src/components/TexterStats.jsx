@@ -1,8 +1,10 @@
 import PropTypes from "prop-types";
 import React from "react";
 import { Link } from "react-router";
+import ActionOpenInNew from "material-ui/svg-icons/action/open-in-new";
 import LinearProgress from "material-ui/LinearProgress";
 import { getHighestRole } from "../lib/permissions";
+import theme from "../styles/theme";
 
 class TexterStats extends React.Component {
   renderAssignment(assignment, campaign) {
@@ -28,41 +30,65 @@ class TexterStats extends React.Component {
     if (getHighestRole(texter.roles) === "SUSPENDED") {
       displayName += " (Suspended)";
     }
+    const bottomLinks = [
+      <Link
+        key={id}
+        to={`/admin/${this.props.organizationId}/incoming?campaigns=${campaign.id}&texterId=${texter.id}`}
+      >
+        Review conversations
+      </Link>
+    ];
 
+    if (unmessagedCount) {
+      bottomLinks.push(
+        <Link
+          to={`/admin/${this.props.organizationId}/incoming?campaigns=${campaign.id}&texterId=${texter.id}&messageStatus=needsMessage`}
+        >
+          Unmessaged: {unmessagedCount}
+        </Link>
+      );
+    }
+    if (unrepliedCount) {
+      bottomLinks.push(
+        <span>
+          {unrepliedCount} contacts{" "}
+          <Link
+            to={`/admin/${this.props.organizationId}/incoming?campaigns=${campaign.id}&texterId=${texter.id}&messageStatus=needsResponse`}
+          >
+            awaiting a reply
+          </Link>
+        </span>
+      );
+    }
     return (
       <div key={id}>
-        <Link
-          to={`/admin/${this.props.organizationId}/incoming?campaigns=${campaign.id}&texterId=${texter.id}`}
-        >
-          {displayName}
-        </Link>
+        <h3>
+          {displayName}{" "}
+          <Link
+            target="_blank"
+            to={`/app/${this.props.organizationId}/todos/other/${texter.id}`}
+          >
+            <ActionOpenInNew
+              style={{ width: 14, height: 14, color: theme.colors.green }}
+            />
+          </Link>
+        </h3>
         {percentComplete ? (
           <div>
             <div>{percentComplete}%</div>
             <LinearProgress mode="determinate" value={percentComplete} />
           </div>
         ) : (
-          <div>
-            {contactsCount - unmessagedCount} initial messages sent.{" "}
-            {unmessagedCount ? (
-              <Link
-                to={`/admin/${this.props.organizationId}/incoming?campaigns=${campaign.id}&texterId=${texter.id}&messageStatus=needsMessage`}
-              >
-                Unmessaged: {unmessagedCount}
-              </Link>
-            ) : null}
-          </div>
+          <div>{contactsCount - unmessagedCount} initial messages sent. </div>
         )}
-        {unrepliedCount ? (
-          <div>
-            {unrepliedCount} contacts{" "}
-            <Link
-              to={`/admin/${this.props.organizationId}/incoming?campaigns=${campaign.id}&texterId=${texter.id}&messageStatus=needsResponse`}
-            >
-              awaiting a reply
-            </Link>
-          </div>
-        ) : null}
+        <div>
+          {bottomLinks.map((link, i) => (
+            <span key={`${texter.id}_${i}`}>
+              {i ? <span>&nbsp;&nbsp;|&nbsp;&nbsp;</span> : null}
+              {link}
+            </span>
+          ))}
+        </div>
       </div>
     );
   }

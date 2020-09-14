@@ -16,9 +16,9 @@ import { log } from "../lib";
 import telemetry from "./telemetry";
 import nexmo from "./api/lib/nexmo";
 import twilio from "./api/lib/twilio";
+import { getConfig } from "./api/lib/config";
 import { seedZipCodes } from "./seeds/seed-zip-codes";
 import { setupUserNotificationObservers } from "./notifications";
-import { twiml } from "twilio";
 import { existsSync } from "fs";
 import { rawAllMethods } from "../extensions/contact-loaders";
 
@@ -28,21 +28,21 @@ process.on("uncaughtException", ex => {
 });
 const DEBUG = process.env.NODE_ENV === "development";
 
-if (!process.env.SUPPRESS_SEED_CALLS) {
+if (!getConfig("SUPPRESS_SEED_CALLS", null, { truthy: 1 })) {
   seedZipCodes();
 }
 
-if (!process.env.SUPPRESS_DATABASE_AUTOCREATE) {
+if (!getConfig("SUPPRESS_DATABASE_AUTOCREATE", null, { truthy: 1 })) {
   createTablesIfNecessary().then(didCreate => {
     // seed above won't have succeeded if we needed to create first
-    if (didCreate && !process.env.SUPPRESS_SEED_CALLS) {
+    if (didCreate && !getConfig("SUPPRESS_SEED_CALLS", null, { truthy: 1 })) {
       seedZipCodes();
     }
-    if (!didCreate && !process.env.SUPPRESS_MIGRATIONS) {
+    if (!didCreate && !getConfig("SUPPRESS_MIGRATIONS", null, { truthy: 1 })) {
       r.k.migrate.latest();
     }
   });
-} else if (!process.env.SUPPRESS_MIGRATIONS) {
+} else if (!getConfig("SUPPRESS_MIGRATIONS", null, { truthy: 1 })) {
   r.k.migrate.latest();
 }
 
@@ -106,24 +106,7 @@ Object.keys(configuredIngestMethods).forEach(ingestMethodName => {
   }
 });
 
-app.post(
-  "/twilio/:orgId?",
-  twilio.headerValidator(
-    process.env.TWILIO_MESSAGE_CALLBACK_URL ||
-      global.TWILIO_MESSAGE_CALLBACK_URL
-  ),
-  wrap(async (req, res) => {
-    try {
-      await twilio.handleIncomingMessage(req.body);
-    } catch (ex) {
-      log.error(ex);
-    }
-
-    const resp = new twiml.MessagingResponse();
-    res.writeHead(200, { "Content-Type": "text/xml" });
-    res.end(resp.toString());
-  })
-);
+twilio.addServerEndpoints(app);
 
 if (process.env.NEXMO_API_KEY) {
   app.post(
@@ -152,24 +135,6 @@ if (process.env.NEXMO_API_KEY) {
     })
   );
 }
-
-app.post(
-  "/twilio-message-report",
-  twilio.headerValidator(
-    process.env.TWILIO_STATUS_CALLBACK_URL || global.TWILIO_STATUS_CALLBACK_URL
-  ),
-  wrap(async (req, res) => {
-    try {
-      const body = req.body;
-      await twilio.handleDeliveryReport(body);
-    } catch (ex) {
-      log.error(ex);
-    }
-    const resp = new twiml.MessagingResponse();
-    res.writeHead(200, { "Content-Type": "text/xml" });
-    res.end(resp.toString());
-  })
-);
 
 app.get("/logout-callback", (req, res) => {
   req.logOut();
@@ -219,7 +184,16 @@ app.use(
         // drop if this fails
         .catch(() => {})
         .then(() => {});
-      return error;
+      if (process.env.SHOW_SERVER_ERROR || process.env.DEBUG) {
+        return error;
+      }
+      return new Error(
+        error &&
+        error.originalError &&
+        error.originalError.code === "UNAUTHORIZED"
+          ? "UNAUTHORIZED"
+          : "Internal server error"
+      );
     }
   }))
 );

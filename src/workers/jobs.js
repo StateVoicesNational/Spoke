@@ -800,7 +800,7 @@ export async function exportCampaign(job) {
   const messageCsv = Papa.unparse(finalCampaignMessages);
 
   if (
-    process.env.AWS_ACCESS_AVAILABLE ||
+    getConfig("AWS_ACCESS_AVAILABLE") ||
     (process.env.AWS_ACCESS_KEY_ID && process.env.AWS_SECRET_ACCESS_KEY)
   ) {
     try {

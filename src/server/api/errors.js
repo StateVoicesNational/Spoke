@@ -72,7 +72,11 @@ export async function assignmentRequiredOrAdminRole(
     roleRequired
   );
   if (!hasPermission) {
-    throw new GraphQLError("You are not authorized to access that resource.");
+    const error = new GraphQLError(
+      "You are not authorized to access that resource."
+    );
+    error.code = "UNAUTHORIZED";
+    throw error;
   }
   return userHasAssignment || true;
 }
