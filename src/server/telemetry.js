@@ -1,9 +1,10 @@
 import moment from "moment";
 import AWS from "aws-sdk";
 import { log } from "../lib";
+import { getConfig } from "./api/lib/config";
 import _ from "lodash";
 
-const stage = process.env.STAGE || "local";
+const stage = getConfig("STAGE") || "local";
 const functionName = process.env.AWS_LAMBDA_FUNCTION_NAME || "NOT_SET";
 
 const reportEventCallbacks = [];
@@ -53,7 +54,7 @@ const makeCloudwatchErrorEvent = (err, details) => {
 };
 
 // Specific to the Warren AWS deploy: report a cloudwatch event to "Mission Control"
-if (process.env.ENABLE_CLOUDWATCH_REPORTING === "1") {
+if (getConfig("ENABLE_CLOUDWATCH_REPORTING", null, { truthy: 1 })) {
   const cloudwatchEventsClient = new AWS.CloudWatchEvents();
   const cloudwatchMetricsClient = new AWS.CloudWatch();
 

@@ -28,7 +28,7 @@ export const showSidebox = ({
   // Return anything Truth-y to show
   // Return 'popup' to force a popup on mobile screens (instead of letting it hide behind a button)
   return (
-    assignment.allContactsCount &&
+    (assignment.hasContacts || assignment.allContactsCount) &&
     !finished &&
     (campaign.useDynamicAssignment ||
       settingsData.releaseContactsNonDynamicToo) &&
@@ -55,10 +55,13 @@ export class TexterSideboxClass extends React.Component {
     const { settingsData, messageStatusFilter, assignment } = this.props;
     const showReleaseConvos =
       settingsData.releaseContactsReleaseConvos &&
-      (messageStatusFilter !== "needsMessage" || assignment.unrepliedCount);
+      ((messageStatusFilter && messageStatusFilter !== "needsMessage") ||
+        assignment.unrepliedCount ||
+        assignment.hasUnreplied);
     return (
       <div style={{}}>
-        {assignment.unmessagedCount ? (
+        {assignment.unmessagedCount ||
+        (messageStatusFilter === "needsMessage" && assignment.hasUnmessaged) ? (
           <div>
             <div>
               {settingsData.releaseContactsBatchTitle ? (
@@ -122,6 +125,7 @@ export const mutations = {
       mutation releaseContacts(
         $assignmentId: String!
         $contactsFilter: ContactsFilter!
+        $needsResponseFilter: ContactsFilter!
         $releaseConversations: Boolean
       ) {
         releaseContacts(
@@ -132,7 +136,11 @@ export const mutations = {
           contacts(contactsFilter: $contactsFilter) {
             id
           }
-          allContactsCount: contactsCount
+          unmessagedCount: contactsCount(contactsFilter: $contactsFilter)
+          hasUnmessaged: contactsCount(contactsFilter: $contactsFilter)
+          maybeUnrepliedCount: contactsCount(
+            contactsFilter: $needsResponseFilter
+          )
         }
       }
     `,
@@ -140,7 +148,12 @@ export const mutations = {
       assignmentId: ownProps.assignment.id,
       releaseConversations,
       contactsFilter: {
-        messageStatus: ownProps.messageStatusFilter,
+        messageStatus: "needsMessage",
+        isOptedOut: false,
+        validTimezone: true
+      },
+      needsResponseFilter: {
+        messageStatus: releaseConversations ? "needsResponse" : "needsMessage",
         isOptedOut: false,
         validTimezone: true
       }

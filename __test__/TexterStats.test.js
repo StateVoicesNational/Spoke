@@ -64,22 +64,8 @@ describe("TexterStats (Non-dynamic campaign)", () => {
       <TexterStats campaign={campaign} organizationId="1" />
     );
     expect(stats.text()).toEqual(
-      "<Link />19%<LinearProgress /><Link />99%<LinearProgress />"
+      "Test Tester <Link />19%<LinearProgress /><Link />  |  <Link />Someone Else (Suspended) <Link />99%<LinearProgress /><Link />  |  <Link />"
     );
-    expect(
-      stats
-        .find("Link")
-        .at(0)
-        .children()
-        .text()
-    ).toBe("Test Tester");
-    expect(
-      stats
-        .find("Link")
-        .at(1)
-        .children()
-        .text()
-    ).toBe("Someone Else (Suspended)");
   });
 
   it("creates linear progress correctly", () => {
@@ -100,21 +86,7 @@ describe("TexterStats (Dynamic campaign)", () => {
   it("contains the right text", () => {
     const stats = shallow(<TexterStats campaign={campaignDynamic} />);
     expect(stats.text()).toEqual(
-      "<Link />45 initial messages sent. <Link /><Link />541 initial messages sent. <Link />"
+      "Test Tester <Link />45 initial messages sent. <Link />  |  <Link />Someone Else (Suspended) <Link />541 initial messages sent. <Link />  |  <Link />"
     );
-    expect(
-      stats
-        .find("Link")
-        .at(0)
-        .children()
-        .text()
-    ).toBe("Test Tester");
-    expect(
-      stats
-        .find("Link")
-        .at(2)
-        .children()
-        .text()
-    ).toBe("Someone Else (Suspended)");
   });
 });

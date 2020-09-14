@@ -34,10 +34,13 @@ function createLoader(model, opts) {
     if (cacheObj && cacheObj.load) {
       return keys.map(async key => await cacheObj.load(key));
     }
-    const docs = await model.getAll(...keys, { index: idKey });
-    return keys.map(key =>
-      docs.find(doc => doc[idKey].toString() === key.toString())
-    );
+    const docs = await thinky.r
+      .knexReadOnly(model.tableName)
+      .whereIn(idKey, keys);
+    return keys.map(key => {
+      const result = docs.find(doc => doc[idKey].toString() === key.toString());
+      return result ? new model(result) : null;
+    });
   });
 }
 
