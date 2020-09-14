@@ -29,6 +29,8 @@
     "install-config-file": "if [ \"$CONFIG_FILE\" != \"\" ] ; then cp $CONFIG_FILE ./CONFIG_FILE.json; fi",
     "start": "node ./build/server/server",
     "start:heroku": "BASE_URL=$(node ./build/server/heroku/print-base-url) npm start",
+    "dev-heroku-dispatch": "nodemon --signal SIGTERM -e js,jsx -w ./src --exec ./dev-tools/babel-run-with-env.js -- ./src/workers/heroku-dispatch",
+    "prod-heroku-dispatch": "./dev-tools/babel-run ./src/workers/heroku-dispatch.js",
     "dev-message-sender-01": "nodemon --signal SIGTERM -e js,jsx -w ./src --exec ./dev-tools/babel-run -- ./src/workers/message-sender-01",
     "prod-message-sender-01": "./dev-tools/babel-run ./src/workers/message-sender-01.js",
     "dev-message-sender-234": "nodemon --signal SIGTERM -e js,jsx -w ./src --exec ./dev-tools/babel-run -- ./src/workers/message-sender-234",
