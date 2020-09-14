@@ -1,4 +1,4 @@
-import { dispatchProcesses } from "./job-processes";
+import { dispatchProcesses } from "../workers/job-processes";
 
 const event = {};
 dispatchProcesses(event).catch(err => {
