@@ -159,9 +159,11 @@ export async function getConversations(
     return { query: offsetLimitQuery };
   }
 
-  offsetLimitQuery = offsetLimitQuery.orderBy("cc_id", "desc");
-
   if (cursor.limit || cursor.offset) {
+    if (!getConfig("CONVERSATIONS_RECENT")) {
+      offsetLimitQuery = offsetLimitQuery.orderBy("cc_id", "desc");
+    }
+
     offsetLimitQuery = offsetLimitQuery
       .limit(cursor.limit)
       .offset(cursor.offset);
