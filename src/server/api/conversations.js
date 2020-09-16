@@ -386,6 +386,10 @@ export async function reassignConversations(
   // ensure existence of assignments
   const campaignIdAssignmentIdMap = new Map();
   for (const [campaignId, _] of campaignIdContactIdsMap) {
+    if (newTexterUserId === null || newTexterUserId === "-2") {
+      campaignIdAssignmentIdMap.set(campaignId, null);
+      continue;
+    }
     let assignment = await r
       .table("assignment")
       .getAll(newTexterUserId, { index: "user_id" })
@@ -434,7 +438,7 @@ export async function reassignConversations(
 
       returnCampaignIdAssignmentIds.push({
         campaignId,
-        assignmentId: assignmentId.toString()
+        assignmentId: assignmentId ? assignmentId.toString() : null
       });
     }
   } catch (error) {
