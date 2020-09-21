@@ -1276,7 +1276,7 @@ describe("per-campaign phone numbers", async () => {
   beforeAll(() => {
     process.env = {
       ...process.env,
-      EXPERIMENTAL_PHONE_INVENTORY: "1",
+      PHONE_INVENTORY: "1",
       EXPERIMENTAL_CAMPAIGN_PHONE_NUMBERS: "1"
     };
   });
