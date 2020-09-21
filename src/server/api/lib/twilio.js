@@ -69,6 +69,7 @@ const headerValidator = url => {
 
 export const errorDescriptions = {
   12400: "Internal (Twilio) Failure",
+  20429: "Too Many Requests: Twilio queue is full. OK to retry",
   21211: "Invalid 'To' Phone Number",
   21408: "Attempt to send to disabled region",
   21602: "Message body is required",
