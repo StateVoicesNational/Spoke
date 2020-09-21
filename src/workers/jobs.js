@@ -1154,8 +1154,8 @@ export async function fixOrgless() {
 
 export async function clearOldJobs(event) {
   // to clear out old stuck jobs
-  const twoHoursAgo = new Date(new Date() - 1000 * 60 * 60 * 2);
-  const delay = (event && event.oldJobPast) || twoHoursAgo;
+  const sixHoursAgo = new Date(new Date() - 1000 * 60 * 60 * 6);
+  const delay = (event && event.oldJobPast) || sixHoursAgo;
   return await r
     .knex("job_request")
     .where({ assigned: true })
