@@ -14,7 +14,7 @@ export async function getOrCreateTestOrganization() {
       .insert({
         name: DEFAULT_ORGANIZATION_NAME,
         uuid: uuid.v4(),
-        features: JSON.stringify({ EXPERIMENTAL_PHONE_INVENTORY: true })
+        features: JSON.stringify({ PHONE_INVENTORY: true })
       })
       .returning("*");
   }
