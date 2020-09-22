@@ -64,9 +64,9 @@ export class TexterSideboxClass extends React.Component {
   handleReassignChanged = users => (selection, index) => {
     let texterUserId = undefined;
     if (index === -1) {
-      const texter = users.find(texter => {
+      const texter = users.find(t => {
         this.setState({ reassignTo: undefined });
-        return texter.displayName === selection;
+        return t.displayName === selection;
       });
       if (texter) {
         texterUserId = texter.id;
@@ -82,13 +82,14 @@ export class TexterSideboxClass extends React.Component {
   };
 
   handleReassignRequested = () => {
-    this.props.mutations.reassignCampaignContacts(
-      this.props.campaign.organization.id,
+    const { mutations, campaign, contact } = this.props;
+    mutations.reassignCampaignContacts(
+      campaign.organization.id,
       [
         {
-          campaignId: this.props.campaign.id,
-          campaignContactId: this.props.contact.id,
-          messageIds: this.props.contact.messages.map(message => message.id)
+          campaignId: campaign.id,
+          campaignContactId: contact.id,
+          messageIds: contact.messages.map(message => message.id)
         }
       ],
       this.state.reassignTo
@@ -113,16 +114,8 @@ export class TexterSideboxClass extends React.Component {
   };
 
   render() {
-    const {
-      campaign,
-      assignment,
-      contact,
-      settingsData,
-      messageStatusFilter,
-      texter,
-      currentUser
-    } = this.props;
-    console.log(this.props);
+    const { campaign, contact, texter, currentUser, mutations } = this.props;
+
     const {
       expanded,
       texterSearchText,
@@ -144,6 +137,7 @@ export class TexterSideboxClass extends React.Component {
     const StyledListItem = props => (
       <ListItem {...props} style={{ fontSize: "90%", padding: 4 }} disabled />
     );
+
     const NestedListItem = props => (
       <StyledListItem
         {...props}
@@ -210,22 +204,27 @@ export class TexterSideboxClass extends React.Component {
       name: this.state.tags[tag.id]
     }));
 
+    const sectionStyle = { padding: "12px 0" };
+    const headingStyle = { margin: "0 0 6px" };
+
     return (
       <div>
-        <div>ADMIN</div>
-        <div style={{ marginTop: "12px" }}>Contact info</div>
-        <List style={{ textAlign: "left" }}>
-          <StyledListItem primaryText={`Name: ${firstName} ${lastName}`} />
-          <StyledListItem primaryText={`Cell: ${cell}`} />
-          <NestedListItem
-            id="more"
-            primaryText="More Info"
-            nestedItems={nestItems(otherContactItems)}
-          />
-        </List>
+        <h3>Admin Tools</h3>
+        <div style={sectionStyle}>
+          <h4 style={headingStyle}>Contact info</h4>
+          <List style={{ textAlign: "left", wordWrap: "break-word" }}>
+            <StyledListItem primaryText={`Name: ${firstName} ${lastName}`} />
+            <StyledListItem primaryText={`Cell: ${cell}`} />
+            <NestedListItem
+              id="more"
+              primaryText="More Info"
+              nestedItems={nestItems(otherContactItems)}
+            />
+          </List>
+        </div>
         {isRoleGreater("SUPERVOLUNTEER", getHighestRole(texter.roles)) ? (
-          <div>
-            <div style={{ marginTop: "12px" }}>Change Texter Role</div>
+          <div style={sectionStyle}>
+            <h4 style={headingStyle}>Change Texter Role</h4>
             <RolesDropdown
               roles={texter.roles}
               onChange={this.handleRoleChange}
@@ -238,36 +237,41 @@ export class TexterSideboxClass extends React.Component {
             />
           </div>
         ) : null}
-        <a
-          style={{ textDecoration: "underline", marginTop: "12px" }}
-          onClick={this.handleReassignToggle}
-        >
-          Reassign Contact
-        </a>
-        {showContactReassign ? (
-          <ContactReassign
-            onFocus={() =>
-              this.setState({
-                reassignTo: undefined,
-                texterSearchText: ""
-              })
-            }
-            texterId={texter.id}
-            onUpdateInput={texterSearchText =>
-              this.setState({ texterSearchText })
-            }
-            searchText={texterSearchText}
-            onReassignClick={this.handleReassignRequested}
-            onNewRequest={this.handleReassignChanged}
-            reassignTo={reassignTo}
-            organizationId={campaign.organization.id}
-          />
-        ) : null}
+        <div style={sectionStyle}>
+          <a
+            style={{
+              display: "inline-block",
+              textDecoration: "underline",
+              cursor: "pointer"
+            }}
+            onClick={this.handleReassignToggle}
+          >
+            <h4 style={headingStyle}>Reassign Contact</h4>
+          </a>
+          {showContactReassign ? (
+            <ContactReassign
+              onFocus={() =>
+                this.setState({
+                  reassignTo: undefined,
+                  texterSearchText: ""
+                })
+              }
+              texterId={texter.id}
+              onUpdateInput={texterSearchText =>
+                this.setState({ texterSearchText })
+              }
+              searchText={texterSearchText}
+              onReassignClick={this.handleReassignRequested}
+              onNewRequest={this.handleReassignChanged}
+              reassignTo={reassignTo}
+              organizationId={campaign.organization.id}
+            />
+          ) : null}
+        </div>
         {campaign.useDynamicAssignment ? (
-          <div>
+          <div style={sectionStyle}>
             <div
               style={{
-                marginTop: "12px",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "space-between"
@@ -286,8 +290,9 @@ export class TexterSideboxClass extends React.Component {
                 label={"Update"}
                 onClick={this.handleUpdateMaxContacts}
                 disabled={
+                  !this.state.maxContacts ||
                   parseInt(this.state.maxContacts, 10) ===
-                  this.props.assignment.maxContacts
+                    this.props.assignment.maxContacts
                 }
                 className={css(flexStyles.flatButton)}
                 labelStyle={inlineStyles.flatButtonLabel}
@@ -296,8 +301,8 @@ export class TexterSideboxClass extends React.Component {
           </div>
         ) : null}
         {escalatedTags.length > 0 ? (
-          <div>
-            <div style={{ marginTop: "12px" }}>Resolve Tags</div>
+          <div style={sectionStyle}>
+            <h4 style={headingStyle}>Resolve Tags</h4>
             {escalatedTags.map(tag => (
               <TagChip
                 text={tag.name}
@@ -307,8 +312,8 @@ export class TexterSideboxClass extends React.Component {
                 onRequestDelete={
                   tag.value !== "RESOLVED"
                     ? async () => {
-                        await this.props.mutations.updateTag(
-                          this.props.contact.id,
+                        await mutations.updateTag(
+                          contact.id,
                           tag.id,
                           "RESOLVED"
                         );
@@ -326,19 +331,13 @@ export class TexterSideboxClass extends React.Component {
 }
 
 TexterSideboxClass.propTypes = {
-  router: type.object,
   mutations: type.object,
-
   // data
-  data: type.object,
   contact: type.object,
   campaign: type.object,
   assignment: type.object,
   texter: type.object,
-  currentUser: type.object,
-
-  // parent state
-  messageStatusFilter: type.string
+  currentUser: type.object
 };
 
 export const mutations = {
