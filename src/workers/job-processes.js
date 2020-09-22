@@ -357,7 +357,7 @@ const syncProcessMap = {
 export async function dispatchProcesses(event, context, eventCallback) {
   const toDispatch =
     event.processes || (JOBS_SAME_PROCESS ? syncProcessMap : processMap);
-  const allResults = await Promise.all(
+  await Promise.all(
     Object.keys(toDispatch).map(p => {
       const prom = toDispatch[p](event, context).catch(err => {
         console.error("dispatchProcesses Process Error", p, err);
@@ -366,7 +366,6 @@ export async function dispatchProcesses(event, context, eventCallback) {
       return prom;
     })
   );
-  console.log("dispatchProcesses results", allResults);
   return "completed";
 }
 
