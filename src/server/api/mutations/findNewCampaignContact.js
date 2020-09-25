@@ -91,9 +91,7 @@ export const findNewCampaignContact = async (
   let batchQuery = r
     .knex("campaign_contact")
     .select("id")
-    .limit(numberContacts)
-    .forUpdate()
-    .skipLocked();
+    .limit(numberContacts);
   let hasCurrentQuery = r.knex("campaign_contact").where({
     assignment_id: assignmentId,
     message_status: "needsMessage",
@@ -132,7 +130,7 @@ export const findNewCampaignContact = async (
 
   const updatedCount = await r
     .knex("campaign_contact")
-    .whereIn("id", batchQuery)
+    .whereIn("id", batchQuery.forUpdate().skipLocked())
     .update({
       assignment_id: assignmentId
     })
