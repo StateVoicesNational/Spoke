@@ -354,20 +354,18 @@ const syncProcessMap = {
   updateOptOuts
 };
 
+const envProcessMap = String(process.env.JOB_PROCESS_MAP || "")
+  .replace(/ /g, "")
+  .split(",");
+
 export async function dispatchProcesses(event, context, eventCallback) {
   const toDispatch =
     event.processes || (JOBS_SAME_PROCESS ? syncProcessMap : processMap);
 
   const allResults = await Promise.all(
     Object.keys(toDispatch).map(p => {
-      if (process.env.JOB_PROCESS_MAP) {
-        const envProcessMap = String(process.env.JOB_PROCESS_MAP)
-          .replace(/ /g, "")
-          .split(",");
-
-        if (!envProcessMap.includes(p)) {
-          return true;
-        }
+      if (envProcessMap && !envProcessMap.includes(p)) {
+        return true;
       }
 
       const prom = toDispatch[p](event, context).catch(err => {
