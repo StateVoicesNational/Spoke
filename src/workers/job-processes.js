@@ -354,6 +354,21 @@ let syncProcessMap = {
   updateOptOuts
 };
 
+if (process.env.SYNC_PROCESS_MAP) {
+  try {
+    // allow user-defined jobs via env var,
+    // removing any that are not in provided comma-separated list
+    const envSyncProcessMap = String(process.env.SYNC_PROCESS_MAP).split(",");
+    Object.keys(syncProcessMap).forEach(key => {
+      if (envSyncProcessMap.includes(key.trim())) {
+        delete syncProcessMap[key.trim()];
+      }
+    });
+  } catch (err) {
+    console.log(err);
+  }
+}
+
 export async function dispatchProcesses(event, context, eventCallback) {
   const toDispatch =
     event.processes || (JOBS_SAME_PROCESS ? syncProcessMap : processMap);
