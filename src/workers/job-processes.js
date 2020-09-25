@@ -344,7 +344,7 @@ const processMap = {
 
 // if process.env.JOBS_SAME_PROCESS then we don't need to run
 // the others and messageSender should just pick up the stragglers
-let syncProcessMap = {
+const syncProcessMap = {
   // 'failedMessageSender': failedMessageSender, //see method for danger
   erroredMessageSender,
   handleIncomingMessages,
@@ -354,42 +354,22 @@ let syncProcessMap = {
   updateOptOuts
 };
 
-if (process.env.SYNC_PROCESS_MAP) {
-  try {
-    // allow user-defined jobs via env var,
-    // removing any that are not in provided comma-separated list
-    const envSyncProcessMap = String(process.env.SYNC_PROCESS_MAP).split(",");
-    Object.keys(syncProcessMap).forEach(key => {
-      if (envSyncProcessMap.includes(key.trim())) {
-        delete syncProcessMap[key.trim()];
-      }
-    });
-  } catch (err) {
-    console.log(err);
-  }
-}
-
 export async function dispatchProcesses(event, context, eventCallback) {
   const toDispatch =
     event.processes || (JOBS_SAME_PROCESS ? syncProcessMap : processMap);
 
-  if (process.env.PROCESS_MAP) {
-    try {
-      // allow user-defined jobs via env var,
-      // removing any that are not in provided comma-separated list
-      const envProcessMap = String(process.env.PROCESS_MAP).split(",");
-      Object.keys(toDispatch).forEach(key => {
-        if (!envProcessMap.includes(key.trim())) {
-          delete toDispatch[key.trim()];
-        }
-      });
-    } catch (err) {
-      console.log(err);
-    }
-  }
-
   const allResults = await Promise.all(
     Object.keys(toDispatch).map(p => {
+      if (process.env.JOB_PROCESS_MAP) {
+        const envProcessMap = String(process.env.JOB_PROCESS_MAP)
+          .replace(/ /g, "")
+          .split(",");
+
+        if (!envProcessMap.includes(p)) {
+          return true;
+        }
+      }
+
       const prom = toDispatch[p](event, context).catch(err => {
         console.error("dispatchProcesses Process Error", p, err);
       });
@@ -397,7 +377,6 @@ export async function dispatchProcesses(event, context, eventCallback) {
       return prom;
     })
   );
-  console.log("dispatchProcesses results", allResults);
   return "completed";
 }
 
