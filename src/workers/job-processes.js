@@ -62,6 +62,9 @@ export const invokeJobFunction = async job => {
 
 export async function processJobs() {
   // DEPRECATED -- switch to job dispatchers. See src/extensions/job-runners/README.md
+  if (JOBS_SAME_PROCESS || process.env.JOB_RUNNER) {
+    return;
+  }
   setupUserNotificationObservers();
   console.log("Running processJobs");
   // eslint-disable-next-line no-constant-condition
@@ -283,7 +286,7 @@ export async function updateOptOuts(event, context, eventCallback) {
   // always updated and depends on this batch job to run
   // We avoid it in-process to avoid db-write thrashing on optouts
   // so they don't appear in queries
-  await cacheableData.optOut.updateIsOptedOuts(query =>
+  const res = await cacheableData.optOut.updateIsOptedOuts(query =>
     query
       .join("opt_out", {
         "opt_out.cell": "campaign_contact.cell",
@@ -299,6 +302,9 @@ export async function updateOptOuts(event, context, eventCallback) {
         )
       )
   );
+  if (res) {
+    console.log("updateOptOuts contacts updated", res);
+  }
 }
 
 export async function runDatabaseMigrations(event, context, eventCallback) {
@@ -338,7 +344,7 @@ const processMap = {
 
 // if process.env.JOBS_SAME_PROCESS then we don't need to run
 // the others and messageSender should just pick up the stragglers
-const syncProcessMap = {
+let syncProcessMap = {
   // 'failedMessageSender': failedMessageSender, //see method for danger
   erroredMessageSender,
   handleIncomingMessages,
@@ -351,14 +357,32 @@ const syncProcessMap = {
 export async function dispatchProcesses(event, context, eventCallback) {
   const toDispatch =
     event.processes || (JOBS_SAME_PROCESS ? syncProcessMap : processMap);
-  await Promise.all(
+
+  if (process.env.PROCESS_MAP) {
+    try {
+      // allow user-defined jobs via env var,
+      // removing any that are not in provided comma-separated list
+      const envProcessMap = String(process.env.PROCESS_MAP).split(",");
+      Object.keys(toDispatch).forEach(key => {
+        if (!envProcessMap.includes(key.trim())) {
+          delete toDispatch[key.trim()];
+        }
+      });
+    } catch (err) {
+      console.log(err);
+    }
+  }
+
+  const allResults = await Promise.all(
     Object.keys(toDispatch).map(p => {
       const prom = toDispatch[p](event, context).catch(err => {
-        console.error("Process Error", p, err);
+        console.error("dispatchProcesses Process Error", p, err);
       });
+      console.log("dispatchProcesses", p);
       return prom;
     })
   );
+  console.log("dispatchProcesses results", allResults);
   return "completed";
 }
 
