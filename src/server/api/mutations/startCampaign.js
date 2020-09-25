@@ -20,7 +20,7 @@ export const startCampaign = async (
   );
 
   if (
-    getConfig("EXPERIMENTAL_CAMPAIGN_PHONE_NUMBERS", null, {
+    getConfig("EXPERIMENTAL_CAMPAIGN_PHONE_NUMBERS", organization, {
       truthy: true
     })
   ) {
