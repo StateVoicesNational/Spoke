@@ -344,7 +344,7 @@ const processMap = {
 
 // if process.env.JOBS_SAME_PROCESS then we don't need to run
 // the others and messageSender should just pick up the stragglers
-const syncProcessMap = {
+let syncProcessMap = {
   // 'failedMessageSender': failedMessageSender, //see method for danger
   erroredMessageSender,
   handleIncomingMessages,
