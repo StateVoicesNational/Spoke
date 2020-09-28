@@ -91,7 +91,9 @@ export const findNewCampaignContact = async (
   let batchQuery = r
     .knex("campaign_contact")
     .select("id")
-    .limit(numberContacts);
+    .limit(numberContacts)
+    .forUpdate();
+
   let hasCurrentQuery = r.knex("campaign_contact").where({
     assignment_id: assignmentId,
     message_status: "needsMessage",
@@ -128,9 +130,13 @@ export const findNewCampaignContact = async (
     return falseRetVal;
   }
 
+  if (batchQuery.skipLocked && /pg|mysql/.test(r.knex.client.config.client)) {
+    batchQuery.skipLocked();
+  }
+
   const updatedCount = await r
     .knex("campaign_contact")
-    .whereIn("id", batchQuery.forUpdate().skipLocked())
+    .whereIn("id", batchQuery)
     .update({
       assignment_id: assignmentId
     })
