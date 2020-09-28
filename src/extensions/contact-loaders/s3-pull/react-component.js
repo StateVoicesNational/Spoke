@@ -38,8 +38,8 @@ export class CampaignContactsForm extends React.Component {
             <List>
               {results.errors.map(e => (
                 <ListItem
-                  key={e}
-                  primaryText={e}
+                  key={e.code || e}
+                  primaryText={e.message || e}
                   leftIcon={this.props.icons.error}
                 />
               ))}
