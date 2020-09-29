@@ -13705,10 +13705,10 @@ ret@~0.1.10:
   resolved "https://registry.yarnpkg.com/ret/-/ret-0.1.15.tgz#b8a4825d5bdb1fc3f6f53c2bc33f81388681c7bc"
   integrity sha512-TTlYpa+OL+vMMNG24xSlQGEJ3B/RzEfUlLct7b5G/ytav+wPrplCpVMFuwzXbkecJrb6IYo1iFb0S9v37754mg==
 
-rethink-knex-adapter@^0.4.18:
-  version "0.4.18"
-  resolved "https://registry.yarnpkg.com/rethink-knex-adapter/-/rethink-knex-adapter-0.4.18.tgz#5b5b4d074dcef2ce593ba69159fe62e88afd80a8"
-  integrity sha512-eP4L9MlxPvDCoHodkP1zZ9HYMqyj0KrgsJYIequW6A1+WettdLEZUmJmc4yP/i87ibBIleHO/pcNHYLB4SU+qA==
+rethink-knex-adapter@0.4.20:
+  version "0.4.20"
+  resolved "https://registry.yarnpkg.com/rethink-knex-adapter/-/rethink-knex-adapter-0.4.20.tgz#7fe7a9d37ec5d47465881f75af78905d6fcd873d"
+  integrity sha512-PCOlG67U1rkZt2zGSLUeIGnbc0yJKu4gjGUEgLj1k1Q7GfRgYvxXPzyJ5ZyrCc8fuuOwhuqFRCBGFtZcvWy6fQ==
   dependencies:
     bluebird "~2.10.2"
     knex "^0.17.5"
