@@ -10,7 +10,7 @@ services:
     volumes:
       - postgres:/var/lib/postgresql/data
     ports:
-      - 5432:5432
+      - ${DB_HOST_PORT:-5432}:5432
   redis:
     image: redis:alpine
     restart: always
