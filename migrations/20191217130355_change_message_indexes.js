@@ -1,4 +1,4 @@
-exports.up = function(knex, Promise) {
+exports.up = function(knex) {
   return knex.schema.alterTable("message", table => {
     const isSqlite = /sqlite/.test(knex.client.config.client);
     // NOTE: this could be an expensive migration which locks tables for some time, if you have millions of message rows
@@ -20,7 +20,7 @@ exports.up = function(knex, Promise) {
   });
 };
 
-exports.down = function(knex, Promise) {
+exports.down = function(knex) {
   return knex.schema.alterTable("message", table => {
     table.dropIndex(
       ["contact_number", "messageservice_sid"],
