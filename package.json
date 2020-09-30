@@ -114,6 +114,7 @@
     "graphql-tag": "^2.10.3",
     "graphql-tools": "^2.8.0",
     "graphql-type-json": "^0.1.4",
+    "heroku-ssl-redirect": "^0.1.1",
     "humps": "^1.1.0",
     "is-url": "^1.2.2",
     "isomorphic-fetch": "^2.2.1",
