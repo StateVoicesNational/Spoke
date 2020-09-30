@@ -159,7 +159,7 @@ export class AssignmentTexterContactControls extends React.Component {
     // console.log('KEYBOARD', evt.key, document.activeElement);
     if (
       // SEND: Ctrl-Enter/Ctrl-z
-      (evt.key === "Enter" || evt.key === "z") &&
+      evt.key === "Enter" &&
       // need to use ctrlKey in non-first texting context for accessibility
       evt.ctrlKey
     ) {
