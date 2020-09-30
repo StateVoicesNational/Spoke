@@ -1,5 +1,5 @@
 // Add VETTED_TEXTER, ORG_SUPERADMIN, and SUSPENDED as a values in the `role` enumeration
-exports.up = (knex, Promise) => {
+exports.up = knex => {
   const isSqlite = /sqlite/.test(knex.client.config.client);
   if (isSqlite) {
     return Promise.resolve();
@@ -18,7 +18,7 @@ exports.up = (knex, Promise) => {
   `);
 };
 
-exports.down = (knex, Promise) => {
+exports.down = knex => {
   const isSqlite = /sqlite/.test(knex.client.config.client);
   if (isSqlite) {
     return Promise.resolve();
