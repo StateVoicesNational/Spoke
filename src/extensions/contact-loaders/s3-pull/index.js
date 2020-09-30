@@ -71,7 +71,7 @@ export async function getClientChoiceData(organization, campaign, user) {
   /// return a json object which will be cached for expiresSeconds long
   /// `data` should be a single string -- it can be JSON which you can parse in the client component
 
-  // TODO: maybe expose list of exports visible
+  // FUTURE: maybe expose list of exports visible
   return {
     data: "",
     expiresSeconds: 0
@@ -94,6 +94,15 @@ export async function loadContactS3PullProcessFile(jobEvent, contextVars) {
     signatureVersion: "v4"
   });
 
+  if (jobEvent.completeContactLoad) {
+    await completeContactLoad(
+      jobEvent,
+      null,
+      jobEvent.completeContactLoad.ingestDataReference,
+      jobEvent.completeContactLoad.ingestResult
+    );
+    return;
+  }
   const fileData = await s3
     .getObject({
       Bucket: s3Bucket,
@@ -107,6 +116,7 @@ export async function loadContactS3PullProcessFile(jobEvent, contextVars) {
   const fileString = await gunzip(fileData.Body);
   const { data, errors } = await new Promise((resolve, reject) => {
     Papa.parse(fileString.toString(), {
+      delimiter: "|",
       skipEmptyLines: true,
       escapeChar: "\\",
       error: (err, file, inputElem, reason) => {
@@ -166,6 +176,14 @@ export async function loadContactS3PullProcessFile(jobEvent, contextVars) {
   }
 
   if (fileIndex < manifestData.entries.length - 1) {
+    await r
+      .knex("job_request")
+      .where("id", jobEvent.id)
+      .update({
+        status: Math.round(
+          (100 * (fileIndex + 1)) / manifestData.entries.length
+        )
+      });
     const newJobEvent = {
       ...jobEvent,
       fileIndex: fileIndex + 1,
@@ -196,13 +214,24 @@ export async function loadContactS3PullProcessFile(jobEvent, contextVars) {
         );
         validationStats.invalidCellCount = result;
       });
-
-    await completeContactLoad(
-      jobEvent,
-      null,
-      { manifestData, s3Path },
-      { errors, validationStats }
-    );
+    if (process.env.WAREHOUSE_DB_LAMBDA_ITERATION) {
+      await completeContactLoad(
+        jobEvent,
+        null,
+        { manifestData, s3Path },
+        { errors, validationStats }
+      );
+    } else {
+      const newJobEvent = {
+        ...jobEvent,
+        completeContactLoad: {
+          ingestDataReference: { manifestData, s3Path },
+          ingestResult: { errors, validationStats }
+        },
+        command: "loadContactS3PullProcessFileJob"
+      };
+      await sendJobToAWSLambda(newJobEvent);
+    }
   }
 }
 
@@ -220,6 +249,7 @@ export async function processContactLoad(job, maxContacts, organization) {
   const manifestPath = s3Path.endsWith("manifest")
     ? s3Path
     : path.join(s3Path, "manifest");
+  console.log("s3-pull manifest path: ", manifestPath.replace(/^\//, ""));
   let manifestData;
   try {
     const manifestFile = await s3
@@ -235,7 +265,8 @@ export async function processContactLoad(job, maxContacts, organization) {
       null,
       { s3Path },
       {
-        errors: [err]
+        errors: [err],
+        manifestPath: manifestPath.replace(/^\//, "")
       }
     );
     return;
