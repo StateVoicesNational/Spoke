@@ -40,6 +40,11 @@ export class CampaignContactsForm extends React.Component {
                 <ListItem
                   key={e.code || e}
                   primaryText={e.message || e}
+                  secondaryText={
+                    e.code === "AccessDenied"
+                      ? "Make sure the file exists and you are uploading to the correct S3 bucket"
+                      : null
+                  }
                   leftIcon={this.props.icons.error}
                 />
               ))}
@@ -80,8 +85,8 @@ export class CampaignContactsForm extends React.Component {
                   TO
                   's3://&lt;YOUR_S3_BUCKET>/&lt;some_path_for_this_campaign>/'
                   <br />
-                  credentials
-                  'aws_access_key_id=&lt;AWS_ACCESS_KEY>;aws_secret_access_key=&lt;AWS_SECRET>'
+                  iam_role
+                  'arn:aws:iam::&lt;AWS_ACCOUNT_ID>:role/&lt;AWS_ROLE_FOR_UNLOAD>'
                   <br />
                   manifest verbose gzip ESCAPE ALLOWOVERWRITE region
                   '&lt;REGION>'
