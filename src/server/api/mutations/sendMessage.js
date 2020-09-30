@@ -137,6 +137,7 @@ export const sendMessage = async (
     cannedResponseId
   });
   if (!saveResult.message) {
+    console.log("SENDERR_SAVEFAIL", saveResult);
     throw newError(
       `Message send error ${saveResult.texterError || ""}`,
       "SENDERR_SAVEFAIL"
