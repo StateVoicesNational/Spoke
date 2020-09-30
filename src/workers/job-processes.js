@@ -20,6 +20,7 @@ import {
 } from "./jobs";
 import { setupUserNotificationObservers } from "../server/notifications";
 import { loadContactsFromDataWarehouseFragment } from "../extensions/contact-loaders/datawarehouse";
+import { loadContactS3PullProcessFile } from "../extensions/contact-loaders/s3-pull";
 
 export { seedZipCodes } from "../server/seeds/seed-zip-codes";
 
@@ -129,6 +130,24 @@ export async function loadContactsFromDataWarehouseFragmentJob(
       event, // double up argument
       event
     );
+    if (eventCallback) {
+      eventCallback(null, rv);
+    }
+  } catch (err) {
+    if (eventCallback) {
+      eventCallback(err, null);
+    }
+  }
+  return "completed";
+}
+
+export async function loadContactS3PullProcessFileJob(
+  event,
+  contextVars,
+  eventCallback
+) {
+  try {
+    const rv = await loadContactS3PullProcessFile(event, contextVars);
     if (eventCallback) {
       eventCallback(null, rv);
     }
