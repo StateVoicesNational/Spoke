@@ -7474,6 +7474,11 @@ he@1.2.x:
   resolved "https://registry.yarnpkg.com/he/-/he-1.2.0.tgz#84ae65fa7eafb165fddb61566ae14baf05664f0f"
   integrity sha512-F/1DnUGPopORZi0ni+CvrCgHQ5FyEAHRLSApuYWMmrbSwoN2Mn/7k+Gl38gJnR7yyDZk6WLXwiGod1JOWNDKGw==
 
+heroku-ssl-redirect@^0.1.1:
+  version "0.1.1"
+  resolved "https://registry.yarnpkg.com/heroku-ssl-redirect/-/heroku-ssl-redirect-0.1.1.tgz#c55d60c0ec4473358ead66c75e8c7e99d9e8a689"
+  integrity sha512-kL/DvLR2J53iB3TXasQlo5JwF/j2L2zkala6Ddk9o6JwIPeDvbTGT9Aty8WElxcF389ObICCeyf2m7RKpCg5Bg==
+
 hex-color-regex@^1.1.0:
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/hex-color-regex/-/hex-color-regex-1.1.0.tgz#4c06fccb4602fe2602b3c93df82d7e7dbf1a8a8e"
@@ -13705,10 +13710,10 @@ ret@~0.1.10:
   resolved "https://registry.yarnpkg.com/ret/-/ret-0.1.15.tgz#b8a4825d5bdb1fc3f6f53c2bc33f81388681c7bc"
   integrity sha512-TTlYpa+OL+vMMNG24xSlQGEJ3B/RzEfUlLct7b5G/ytav+wPrplCpVMFuwzXbkecJrb6IYo1iFb0S9v37754mg==
 
-rethink-knex-adapter@^0.4.18:
-  version "0.4.18"
-  resolved "https://registry.yarnpkg.com/rethink-knex-adapter/-/rethink-knex-adapter-0.4.18.tgz#5b5b4d074dcef2ce593ba69159fe62e88afd80a8"
-  integrity sha512-eP4L9MlxPvDCoHodkP1zZ9HYMqyj0KrgsJYIequW6A1+WettdLEZUmJmc4yP/i87ibBIleHO/pcNHYLB4SU+qA==
+rethink-knex-adapter@0.4.20:
+  version "0.4.20"
+  resolved "https://registry.yarnpkg.com/rethink-knex-adapter/-/rethink-knex-adapter-0.4.20.tgz#7fe7a9d37ec5d47465881f75af78905d6fcd873d"
+  integrity sha512-PCOlG67U1rkZt2zGSLUeIGnbc0yJKu4gjGUEgLj1k1Q7GfRgYvxXPzyJ5ZyrCc8fuuOwhuqFRCBGFtZcvWy6fQ==
   dependencies:
     bluebird "~2.10.2"
     knex "^0.17.5"
