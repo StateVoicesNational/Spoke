@@ -257,6 +257,10 @@ const messageCache = {
         messageInstance.campaign_contact_id ||
         (activeCellFound && activeCellFound.campaign_contact_id);
       messageToSave.campaign_contact_id = contactId;
+      messageToSave.media =
+        messageInstance.media && messageInstance.media.length
+          ? JSON.stringify(messageInstance.media)
+          : null;
     } else {
       if (
         r.redis &&

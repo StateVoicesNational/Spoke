@@ -155,11 +155,24 @@ async function convertMessagePartsToMessage(messageParts) {
     .map(serviceMessage => serviceMessage.Body)
     .join("")
     .replace(/\0/g, ""); // strip all UTF-8 null characters (0x00)
+  const media = serviceMessages
+    .map(serviceMessage => {
+      const mediaItems = [];
+      for (let m = 0; m < Number(serviceMessage.NumMedia); m++) {
+        mediaItems.push({
+          type: serviceMessage[`MediaContentType${m}`],
+          url: serviceMessage[`MediaUrl${m}`]
+        });
+      }
+      return mediaItems;
+    })
+    .reduce((acc, val) => acc.concat(val), []); // flatten array
   return new Message({
     contact_number: contactNumber,
     user_number: userNumber,
     is_from_contact: true,
     text,
+    media,
     error_code: null,
     service_id: firstPart.service_id,
     // will be set during cacheableData.message.save()
