@@ -7,6 +7,7 @@ export const resolvers = {
       ["text", "userNumber", "contactNumber", "createdAt", "isFromContact"],
       Message
     ),
+    media: msg => msg.media,
     // cached messages don't have message.id -- why bother
     id: msg => msg.id || `fake${Math.random()}`
   }
