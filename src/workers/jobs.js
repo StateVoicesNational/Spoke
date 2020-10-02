@@ -710,12 +710,12 @@ export async function exportCampaign(job) {
       .getAll(assignment.id, { index: "assignment_id" });
 
     const contacts = await r
-      .knex("campaign_contact")
+      .knexReadOnly("campaign_contact")
       .leftJoin("zip_code", "zip_code.zip", "campaign_contact.zip")
       .select()
       .where("assignment_id", assignment.id);
     const messages = await r
-      .knex("message")
+      .knexReadOnly("message")
       .leftJoin(
         "campaign_contact",
         "campaign_contact.id",
@@ -742,7 +742,7 @@ export async function exportCampaign(job) {
     finalCampaignMessages = finalCampaignMessages.concat(convertedMessages);
     let convertedContacts = contacts.map(async contact => {
       const tags = await r
-        .knex("tag_campaign_contact")
+        .knexReadOnly("tag_campaign_contact")
         .where("campaign_contact_id", contact.id)
         .leftJoin("tag", "tag.id", "tag_campaign_contact.tag_id");
 
@@ -857,6 +857,7 @@ export async function exportCampaign(job) {
 
   await defensivelyDeleteJob(job);
 }
+
 export async function importScript(job) {
   const payload = await unzipPayload(job);
   try {
