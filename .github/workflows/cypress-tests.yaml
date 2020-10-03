@@ -1,6 +1,6 @@
 name: End-to-End Tests
 
-on: [push, pull_request]
+on: [push]
 
 jobs:
   test:
@@ -8,7 +8,7 @@ jobs:
     timeout-minutes: 10
     strategy:
       matrix:
-        node-version: [10.x, 11.x, 12.x]
+        node-version: [12.x]
     services:
       redis:
         image: redis
@@ -39,5 +39,5 @@ jobs:
       uses: cypress-io/github-action@v2
       with:
         env: NODE_ENV=production,OUTPUT_DIR=./build,ASSETS_DIR=./build/client/assets,ASSETS_MAP_FILE=assets.json
-        start: npm run prod-build && npm run cypress-start
+        start: npm prod-build && npm cypress-start
         wait-on: 'http://localhost:3001'
