@@ -2,7 +2,7 @@ const path = require("path");
 const webpack = require("webpack");
 const ManifestPlugin = require("webpack-manifest-plugin");
 
-const DEBUG = process.env.NODE_ENV !== "production";
+const DEBUG = process.env.NODE_ENV === "development";
 
 const plugins = [
   new webpack.DefinePlugin({

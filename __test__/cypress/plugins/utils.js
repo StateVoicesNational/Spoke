@@ -8,15 +8,14 @@ export async function getOrCreateTestOrganization() {
     .knex("organization")
     .where("name", DEFAULT_ORGANIZATION_NAME)
     .first();
-  if (!org) {
-    org = await r
-      .knex("organization")
-      .insert({
-        name: DEFAULT_ORGANIZATION_NAME,
-        uuid: uuid.v4(),
-        features: JSON.stringify({ EXPERIMENTAL_PHONE_INVENTORY: true })
-      })
-      .returning("*");
-  }
-  return org.id;
+
+  if (org) return org;
+
+  await r.knex("organization").insert({
+    name: DEFAULT_ORGANIZATION_NAME,
+    uuid: uuid.v4(),
+    features: JSON.stringify({ EXPERIMENTAL_PHONE_INVENTORY: true })
+  });
+
+  return await getOrCreateTestOrganization();
 }

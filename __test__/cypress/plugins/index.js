@@ -27,7 +27,8 @@ module.exports = async (on, config) => {
     );
   }
   if (!config.env.TEST_ORGANIZATION_ID) {
-    config.env.TEST_ORGANIZATION_ID = await utils.getOrCreateTestOrganization();
+    const org = await utils.getOrCreateTestOrganization();
+    config.env.TEST_ORGANIZATION_ID = org.id;
   }
 
   // TODO: use the API to determine what service is being used rather

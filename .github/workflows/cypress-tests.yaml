@@ -38,10 +38,16 @@ jobs:
     - name: Cypress run
       uses: cypress-io/github-action@v2
       env: 
-        NODE_ENV: production
+        NODE_ENV: test
         OUTPUT_DIR: ./build
         ASSETS_DIR: ./build/client/assets
         ASSETS_MAP_FILE: assets.json
+        DB_TYPE: pg
+        DEFAULT_SERVICE: fakeservice
+        SESSION_SECRET: secret
+        DB_NAME: spoke_test
+        DB_USER: spoke_test
+        DB_PASSWORD: spoke_test
       with:
         build: npm run prod-build
         start: npm run cypress-start
