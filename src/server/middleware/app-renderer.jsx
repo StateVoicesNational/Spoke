@@ -10,7 +10,7 @@ import path from "path";
 let assetMap = {
   "bundle.js": "/assets/bundle.js"
 };
-if (process.env.NODE_ENV === "production") {
+if (process.env.NODE_ENV !== "development") {
   const assetMapData = JSON.parse(
     fs.readFileSync(
       // this is a bit overly complicated for the use case
