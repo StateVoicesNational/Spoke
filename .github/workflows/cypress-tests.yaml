@@ -37,8 +37,12 @@ jobs:
           ${{ runner.os }}-${{ matrix.node-version }}-yarn-
     - name: Cypress run
       uses: cypress-io/github-action@v2
+      env: 
+        NODE_ENV: production
+        OUTPUT_DIR: ./build
+        ASSETS_DIR: ./build/client/assets
+        ASSETS_MAP_FILE: assets.json
       with:
-        # env: NODE_ENV=production,OUTPUT_DIR=./build,ASSETS_DIR=./build/client/assets,ASSETS_MAP_FILE=assets.json
-        build: NODE_ENV=production OUTPUT_DIR=./build ASSETS_DIR=./build/client/assets ASSETS_MAP_FILE=assets.json npm run prod-build
+        build: npm run prod-build
         start: npm run cypress-start
         wait-on: 'http://localhost:3001'
