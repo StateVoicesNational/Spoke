@@ -21,7 +21,7 @@ const jsxLoaders = [{ loader: "babel-loader" }];
 const assetsDir = process.env.ASSETS_DIR;
 const assetMapFile = process.env.ASSETS_MAP_FILE;
 const outputFile = DEBUG ? "[name].js" : "[name].[chunkhash].js";
-console.log("Webpack starting with config", {
+console.log("Configuring Webpack with", {
   assetsDir,
   assetMapFile,
   outputFile
