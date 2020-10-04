@@ -52,3 +52,8 @@ jobs:
         build: npm run prod-build
         start: npm run cypress-start
         wait-on: 'http://localhost:3001'
+    - uses: actions/upload-artifact@v1
+      if: failure()
+      with:
+        name: cypress-screenshots
+        path: cypress/screenshots
