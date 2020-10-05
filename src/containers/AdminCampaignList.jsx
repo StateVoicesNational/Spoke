@@ -155,7 +155,6 @@ export class AdminCampaignList extends React.Component {
           onSearchRequested={this.handleSearchRequested}
           searchString={this.state.campaignsFilter.searchString}
           onCancelSearch={this.handleCancelSearch}
-          hintText="Search for campaign title. Hit enter to search."
           style={{ width: "50%" }}
         />
       )
