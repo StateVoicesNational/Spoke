@@ -685,119 +685,94 @@ export async function exportCampaign(job) {
       allQuestions[step.id] = step.question;
     }
   });
+  const questionResponses = await r
+    .knexReadOnly("question_response")
+    .join("campaign_contact", "campaign_contact.id", "campaign_contact_id")
+    .where("campaign_id", campaign.id)
+    .select("campaign_contact_id", "interaction_step_id", "value");
 
-  let finalCampaignResults = [];
-  let finalCampaignMessages = [];
-  const assignments = await r
-    .knex("assignment")
-    .where("campaign_id", id)
-    .join("user", "user_id", "user.id")
-    .select(
-      "assignment.id as id",
-      // user fields
-      "first_name",
-      "last_name",
-      "email",
-      "cell",
-      "assigned_cell"
-    );
-  const assignmentCount = assignments.length;
+  const tags = await r
+    .knexReadOnly("tag_campaign_contact")
+    .join("campaign_contact", "campaign_contact.id", "campaign_contact_id")
+    .join("tag", "tag.id", "tag_id")
+    .where("campaign_id", campaign.id)
+    .select("campaign_contact_id", "name");
 
-  for (let index = 0; index < assignmentCount; index++) {
-    const assignment = assignments[index];
-    const optOuts = await r
-      .table("opt_out")
-      .getAll(assignment.id, { index: "assignment_id" });
+  const contacts = await r
+    .knexReadOnly("campaign_contact")
+    .join("assignment", "campaign_contact.assignment_id", "assignment.id")
+    .join("user", "assignment.user_id", "user.id")
+    .leftJoin("zip_code", "zip_code.zip", "campaign_contact.zip")
+    .column([
+      "campaign_contact.id",
+      "campaign_contact.campaign_id",
+      "campaign_contact.assignment_id",
+      {texterFirst: "user.first_name"},
+      {texterLast: "user.last_name"},
+      {texterEmail: "user.email"},
+      {texterCell: "user.cell"},
+      {texterAlias: "user.alias"},
+      "user.extra",
+      "campaign_contact.external_id",
+      "campaign_contact.first_name",
+      "campaign_contact.last_name",
+      "campaign_contact.cell",
+      "zip_code.city",
+      "zip_code.state",
+      "campaign_contact.zip",
+      "campaign_contact.custom_fields",
+      "campaign_contact.is_opted_out",
+      "campaign_contact.message_status",
+      "campaign_contact.error_code",
+    ])
+    .select()
+    .where("campaign_contact.campaign_id", campaign.id);
 
-    const contacts = await r
-      .knexReadOnly("campaign_contact")
-      .leftJoin("zip_code", "zip_code.zip", "campaign_contact.zip")
-      .select()
-      .where("assignment_id", assignment.id);
-    const messages = await r
-      .knexReadOnly("message")
-      .leftJoin(
-        "campaign_contact",
-        "campaign_contact.id",
-        "message.campaign_contact_id"
-      )
-      .select("message.*", "campaign_contact.assignment_id")
-      .where("campaign_contact.assignment_id", assignment.id);
-    let convertedMessages = messages.map(message => {
-      const messageRow = {
-        assignmentId: message.assignment_id,
-        campaignId: campaign.id,
-        userNumber: message.user_number,
-        contactNumber: message.contact_number,
-        isFromContact: message.is_from_contact,
-        sendStatus: message.send_status,
-        attemptedAt: moment(message.created_at).toISOString(),
-        text: message.text,
-        errorCode: message.error_code
-      };
-      return messageRow;
+  contacts.forEach((row, index) => {
+    // Split Custom fields into columns
+    const customFields = JSON.parse(row.custom_fields);
+    delete row.custom_fields;
+
+    // Add question response columns
+    const responses = {};
+    Object.keys(allQuestions).forEach(stepId => {
+      const {value=""} = questionResponses.find(response => {
+        return response.campaign_contact_id === row.id
+          && response.interaction_step_id === Number(stepId)
+      }) || {};
+      responses[`question[${allQuestions[stepId]}]`] = value;
     });
 
-    convertedMessages = await Promise.all(convertedMessages);
-    finalCampaignMessages = finalCampaignMessages.concat(convertedMessages);
-    let convertedContacts = contacts.map(async contact => {
-      const tags = await r
-        .knexReadOnly("tag_campaign_contact")
-        .where("campaign_contact_id", contact.id)
-        .leftJoin("tag", "tag.id", "tag_campaign_contact.tag_id");
+    contacts[index] = {
+      ...row,
+      ...customFields,
+      tags: tags.reduce((acc, cur) => {
+        if (cur.campaign_contact_id == row.id)
+          acc.push(cur.name)
+        }, []),
+      ...responses
+    }
+  });
 
-      const contactRow = {
-        campaignId: campaign.id,
-        campaign: campaign.title,
-        assignmentId: assignment.id,
-        "texter[firstName]": assignment.first_name,
-        "texter[lastName]": assignment.last_name,
-        "texter[email]": assignment.email,
-        "texter[cell]": assignment.cell,
-        "texter[assignedCell]": assignment.assigned_cell,
-        "contact[firstName]": contact.first_name,
-        "contact[lastName]": contact.last_name,
-        "contact[cell]": contact.cell,
-        "contact[zip]": contact.zip,
-        "contact[city]": contact.city ? contact.city : null,
-        "contact[state]": contact.state ? contact.state : null,
-        "contact[optOut]": optOuts.find(ele => ele.cell === contact.cell)
-          ? "true"
-          : "false",
-        "contact[optOutRecord]": contact.is_opted_out,
-        "contact[messageStatus]": contact.message_status,
-        "contact[errorCode]": contact.error_code,
-        "contact[external_id]": contact.external_id,
-        "contact[tags]": tags.length > 0 ? tags.map(tag => tag.name) : null
-      };
-      const customFields = JSON.parse(contact.custom_fields);
-      Object.keys(customFields).forEach(fieldName => {
-        contactRow[`contact[${fieldName}]`] = customFields[fieldName];
-      });
+  const messages = await r
+    .knexReadOnly("message")
+    .join("campaign_contact", "campaign_contact.id", "campaign_contact_id")
+    .column([
+      "campaign_contact_id",
+      "campaign_id",
+      "user_number",
+      "contact_number",
+      "is_from_contact",
+      "send_status",
+      { attempted_at: "message.created_at"},
+      "text",
+      "message.error_code"
+    ])
+    .select()
+    .where("campaign_contact.campaign_id", campaign.id);
 
-      const questionResponses = await r
-        .table("question_response")
-        .getAll(contact.id, { index: "campaign_contact_id" });
-
-      Object.keys(allQuestions).forEach(stepId => {
-        let value = "";
-        questionResponses.forEach(response => {
-          if (response.interaction_step_id === parseInt(stepId, 10)) {
-            value = response.value;
-          }
-        });
-
-        contactRow[`question[${allQuestions[stepId]}]`] = value;
-      });
-
-      return contactRow;
-    });
-    convertedContacts = await Promise.all(convertedContacts);
-    finalCampaignResults = finalCampaignResults.concat(convertedContacts);
-    await updateJob(job, Math.round((index / assignmentCount) * 100));
-  }
-  const campaignCsv = Papa.unparse(finalCampaignResults);
-  const messageCsv = Papa.unparse(finalCampaignMessages);
+  const campaignCsv = Papa.unparse(contacts);
+  const messageCsv = Papa.unparse(messages);
 
   if (
     getConfig("AWS_ACCESS_AVAILABLE") ||
