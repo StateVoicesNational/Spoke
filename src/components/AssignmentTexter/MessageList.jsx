@@ -37,10 +37,6 @@ const MessageList = function MessageList(props) {
   const { contact, styles } = props;
   const { optOut, messages } = contact;
 
-  messages.forEach(m => {
-    console.log(m);
-  });
-
   const received = (styles && styles.messageReceived) || defaultStyles.received;
   const sent = (styles && styles.messageSent) || defaultStyles.sent;
   const listStyle = (styles && styles.messageList) || {};
