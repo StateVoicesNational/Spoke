@@ -33,10 +33,13 @@ export class TexterSideboxClass extends React.Component {
   constructor(props) {
     super(props);
     const tags = {};
-    (this.props.campaign.organization.tags || []).forEach(tag => {
-      tags[tag.id] = tag.name;
+    this.props.contact.tags.forEach(tag => {
+      tags[tag.id] = {
+        ...tag,
+        name: this.props.campaign.organization.tags.find(t => t.id === tag.id)
+          .name
+      };
     });
-
     this.state = {
       expanded: {},
       selectedRole: "",
@@ -115,13 +118,13 @@ export class TexterSideboxClass extends React.Component {
 
   render() {
     const { campaign, contact, texter, currentUser, mutations } = this.props;
-
     const {
       expanded,
       texterSearchText,
       reassignTo,
       showContactReassign,
-      maxContacts
+      maxContacts,
+      tags
     } = this.state;
 
     const rightIconButton = id => (
@@ -199,13 +202,10 @@ export class TexterSideboxClass extends React.Component {
       return nestedItems;
     };
 
-    const escalatedTags = contact.tags.map(tag => ({
-      ...tag,
-      name: this.state.tags[tag.id]
-    }));
-
     const sectionStyle = { padding: "12px 0" };
     const headingStyle = { margin: "0 0 6px" };
+
+    const tagsArray = Object.keys(tags).map(key => tags[key]);
 
     return (
       <div>
@@ -300,10 +300,10 @@ export class TexterSideboxClass extends React.Component {
             </div>
           </div>
         ) : null}
-        {escalatedTags.length > 0 ? (
+        {tagsArray.length > 0 ? (
           <div style={sectionStyle}>
             <h4 style={headingStyle}>Resolve Tags</h4>
-            {escalatedTags.map(tag => (
+            {tagsArray.map(tag => (
               <TagChip
                 text={tag.name}
                 backgroundColor={
@@ -317,6 +317,12 @@ export class TexterSideboxClass extends React.Component {
                           tag.id,
                           "RESOLVED"
                         );
+                        this.setState({
+                          tags: {
+                            ...tags,
+                            [tag.id]: { ...tags[tag.id], value: "RESOLVED" }
+                          }
+                        });
                       }
                     : null
                 }
