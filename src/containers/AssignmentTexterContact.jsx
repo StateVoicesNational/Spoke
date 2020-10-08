@@ -399,10 +399,12 @@ export class AssignmentTexterContact extends React.Component {
           texter={this.props.texter}
           assignment={this.props.assignment}
           currentUser={this.props.currentUser}
+          organizationId={this.props.organizationId}
           navigationToolbarChildren={this.props.navigationToolbarChildren}
           messageStatusFilter={this.props.messageStatusFilter}
           disabled={this.state.disabled}
           enabledSideboxes={this.props.enabledSideboxes}
+          review={this.props.location.query.review}
           onMessageFormSubmit={this.handleMessageFormSubmit}
           onOptOut={this.handleOptOut}
           onUpdateTags={this.handleUpdateTags}
@@ -452,7 +454,8 @@ AssignmentTexterContact.propTypes = {
   mutations: PropTypes.object,
   refreshData: PropTypes.func,
   onExitTexter: PropTypes.func,
-  messageStatusFilter: PropTypes.string
+  messageStatusFilter: PropTypes.string,
+  organizationId: PropTypes.string
 };
 
 const mutations = {
