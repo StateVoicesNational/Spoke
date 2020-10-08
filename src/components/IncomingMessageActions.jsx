@@ -25,6 +25,11 @@ const styles = StyleSheet.create({
   },
   spacer: {
     marginRight: "30px"
+  },
+  warning: {
+    color: "#d68916",
+    fontSize: "1.2em",
+    fontWeight: "bold"
   }
 });
 
@@ -86,11 +91,6 @@ class IncomingMessageActions extends Component {
   }
 
   render() {
-    const showCreateCampaign =
-      this.props.conversationCount &&
-      document.location.search &&
-      /=/.test(document.location.search);
-
     const texterNodes = !this.props.people
       ? []
       : this.props.people.map(user => {
@@ -102,15 +102,19 @@ class IncomingMessageActions extends Component {
       return left.text.localeCompare(right.text, "en", { sensitivity: "base" });
     });
 
+    const hasCampaignsFilter =
+      this.props.campaignsFilter &&
+      (this.props.campaignsFilter.campaignIds || []).length;
+
     const confirmDialogActions = [
       <FlatButton
         label="Cancel"
-        primary={true}
+        primary
         onClick={this.handleConfirmDialogCancel}
       />,
       <FlatButton
         label="Reassign"
-        primary={true}
+        primary
         onClick={this.handleConfirmDialogReassign}
       />
     ];
@@ -165,10 +169,30 @@ class IncomingMessageActions extends Component {
             <Dialog
               actions={confirmDialogActions}
               open={this.state.confirmDialogOpen}
-              modal={true}
+              modal
               onRequestClose={this.handleConfirmDialogCancel}
             >
-              {`Reassign all ${this.props.conversationCount} matching conversations?`}
+              <div>
+                {!hasCampaignsFilter && (
+                  <div>
+                    <span className={css(styles.warning)}>
+                      WARNING: you have no campaign filter selected!
+                    </span>
+                    <br />
+                  </div>
+                )}
+                <div>
+                  <b>
+                    {"Are you absolutely sure you want to reassign all"}
+                    <span className={css(styles.warning)}>
+                      {` ${Number(
+                        this.props.conversationCount || 0
+                      ).toLocaleString()} `}
+                    </span>
+                    {"matching conversations?"}
+                  </b>
+                </div>
+              </div>
             </Dialog>
           </div>
         </CardText>
@@ -181,7 +205,9 @@ IncomingMessageActions.propTypes = {
   people: type.array,
   onReassignRequested: type.func.isRequired,
   onReassignAllMatchingRequested: type.func.isRequired,
-  conversationCount: type.number
+  conversationCount: type.number,
+  campaignsFilter: type.object,
+  texters: type.array
 };
 
 export default IncomingMessageActions;
