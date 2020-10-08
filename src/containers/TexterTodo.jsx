@@ -35,6 +35,7 @@ export const contactDataFragment = `
           createdAt
           text
           isFromContact
+          userId
         }
         tags {
           id
@@ -140,6 +141,7 @@ export const dataQuery = gql`
     }
     assignment(assignmentId: $assignmentId, contactId: $contactId) {
       id
+      feedback
       hasUnassignedContactsForTexter
       contacts(contactsFilter: $contactsFilter) {
         id

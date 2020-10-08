@@ -377,7 +377,7 @@ async function editCampaign(id, campaign, loaders, user, origCampaignRecord) {
         if (pc.count) {
           await ownedPhoneNumber.allocateCampaignNumbers(
             {
-              organizationId: organizationId,
+              organizationId,
               campaignId: id,
               areaCode: pc.areaCode,
               amount: pc.count
@@ -498,6 +498,14 @@ const rootMutations = {
       return {
         ...user,
         terms: true
+      };
+    },
+
+    updateFeedback: async (_, { assignmentId, feedback }, { user }) => {
+      // todo real save
+      return {
+        id: assignmentId,
+        feedback
       };
     },
 

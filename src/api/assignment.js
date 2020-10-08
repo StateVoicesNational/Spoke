@@ -14,5 +14,6 @@ export const schema = `
     userCannedResponses: [CannedResponse]
     campaignCannedResponses: [CannedResponse]
     maxContacts: Int
+    feedback: String
   }
 `;
