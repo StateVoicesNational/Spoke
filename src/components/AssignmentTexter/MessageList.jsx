@@ -1,5 +1,6 @@
 import PropTypes from "prop-types";
 import React from "react";
+import { Link } from "react-router";
 import { List, ListItem } from "material-ui/List";
 import moment from "moment";
 import ProhibitedIcon from "material-ui/svg-icons/av/not-interested";
@@ -22,8 +23,38 @@ const defaultStyles = {
   }
 };
 
+function SecondaryText(props) {
+  const { message, review, currentUser, organizationId } = props;
+
+  // Add link to account info page for sender if currentUser is an admin in
+  // "review mode" (as indicated by URL param)
+  if (
+    review === "1" &&
+    currentUser.roles.includes("ADMIN") &&
+    !message.isFromContact
+  ) {
+    return (
+      <span style={{ fontSize: "90%", display: "block", paddingTop: "5px" }}>
+        Sent {moment.utc(message.createdAt).fromNow()} by{" "}
+        <Link
+          target="_blank"
+          to={`/app/${organizationId}/account/${message.userId}`}
+        >
+          User {message.userId}
+        </Link>
+      </span>
+    );
+  }
+
+  return (
+    <span style={{ fontSize: "90%", display: "block", paddingTop: "5px" }}>
+      {moment.utc(message.createdAt).fromNow()}
+    </span>
+  );
+}
+
 const MessageList = function MessageList(props) {
-  const { contact, styles } = props;
+  const { contact, styles, review, currentUser, organizationId } = props;
   const { optOut, messages } = contact;
 
   const received = (styles && styles.messageReceived) || defaultStyles.received;
@@ -55,11 +86,12 @@ const MessageList = function MessageList(props) {
           key={message.id}
           primaryText={message.text}
           secondaryText={
-            <span
-              style={{ fontSize: "90%", display: "block", paddingTop: "5px" }}
-            >
-              {moment.utc(message.createdAt).fromNow()}
-            </span>
+            <SecondaryText
+              message={message}
+              review={review}
+              currentUser={currentUser}
+              organizationId={organizationId}
+            />
           }
         />
       ))}
@@ -70,6 +102,9 @@ const MessageList = function MessageList(props) {
 
 MessageList.propTypes = {
   contact: PropTypes.object,
+  currentUser: PropTypes.object,
+  organizationId: PropTypes.string,
+  review: PropTypes.string,
   styles: PropTypes.object
 };
 

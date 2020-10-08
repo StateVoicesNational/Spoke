@@ -445,6 +445,7 @@ export class ContactController extends React.Component {
         refreshData={this.props.refreshData}
         onExitTexter={this.handleExitTexter}
         messageStatusFilter={this.props.messageStatusFilter}
+        organizationId={this.props.organizationId}
       />
     );
   }
