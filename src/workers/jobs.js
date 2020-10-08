@@ -660,6 +660,7 @@ export async function exportCampaign(job) {
   const payload = JSON.parse(job.payload);
   const id = job.campaign_id;
   const campaign = await Campaign.get(id);
+  const organization = await Organization.get(campaign.organization_id);
   const requester = payload.requester;
   const user = await User.get(requester);
   const allQuestions = {};
@@ -667,6 +668,12 @@ export async function exportCampaign(job) {
   const interactionSteps = await r
     .table("interaction_step")
     .getAll(id, { index: "campaign_id" });
+
+  const combineSameQuestions = getConfig(
+    "EXPORT_COMBINE_SAME_QUESTIONS",
+    organization,
+    { truthy: 1 }
+  );
 
   interactionSteps.forEach(step => {
     if (!step.question || step.question.trim() === "") {
@@ -679,7 +686,8 @@ export async function exportCampaign(job) {
       questionCount[step.question] = 0;
     }
     const currentCount = questionCount[step.question];
-    if (currentCount > 0) {
+
+    if (currentCount > 0 && !combineSameQuestions) {
       allQuestions[step.id] = `${step.question}_${currentCount}`;
     } else {
       allQuestions[step.id] = step.question;
@@ -787,7 +795,18 @@ export async function exportCampaign(job) {
           }
         });
 
-        contactRow[`question[${allQuestions[stepId]}]`] = value;
+        if (value) {
+          if (
+            combineSameQuestions &&
+            contactRow[`question[${allQuestions[stepId]}]`] &&
+            contactRow[`question[${allQuestions[stepId]}]`] !== value
+          ) {
+            // join multiple different answers, otherwise combine answers too
+            contactRow[`question[${allQuestions[stepId]}]`] += `, ${value}`;
+          } else {
+            contactRow[`question[${allQuestions[stepId]}]`] = value;
+          }
+        }
       });
 
       return contactRow;
@@ -828,6 +847,7 @@ export async function exportCampaign(job) {
         "getObject",
         params
       );
+
       await sendEmail({
         to: user.email,
         subject: `Export ready for ${campaign.title}`,
@@ -1214,15 +1234,16 @@ async function prepareTwilioCampaign(campaign, organization, trx) {
   if (!msgSrvSid) {
     throw new Error("Failed to create messaging service!");
   }
-  const phoneSids = await trx("owned_phone_number")
+  let phoneSids = await trx("owned_phone_number")
     .select("service_id")
     .where({
       organization_id: campaign.organization_id,
       service: "twilio",
       allocated_to: "campaign",
       allocated_to_id: campaign.id.toString()
-    })
-    .map(row => row.service_id);
+    });
+  phoneSids = (phoneSids || []).map(row => row.service_id);
+
   console.log(`Transferring ${phoneSids.length} numbers to ${msgSrvSid}`);
   try {
     await twilio.addNumbersToMessagingService(
