@@ -21,6 +21,7 @@ import { seedZipCodes } from "./seeds/seed-zip-codes";
 import { setupUserNotificationObservers } from "./notifications";
 import { existsSync } from "fs";
 import { rawAllMethods } from "../extensions/contact-loaders";
+import herokuSslRedirect from "heroku-ssl-redirect";
 
 process.on("uncaughtException", ex => {
   log.error(ex);
@@ -53,6 +54,11 @@ const port = process.env.DEV_APP_PORT || process.env.PORT;
 
 // Don't rate limit heroku
 app.enable("trust proxy");
+
+if (process.env.HEROKU_APP_NAME) {
+  // if on Heroku redirect to https if accessed via http
+  app.use(herokuSslRedirect());
+}
 
 // Serve static assets
 if (existsSync(process.env.ASSETS_DIR)) {

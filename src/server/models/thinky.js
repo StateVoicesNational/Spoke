@@ -12,10 +12,13 @@ bluebird.promisifyAll(redis.Multi.prototype);
 const knexConn = knex(config);
 const thinkyConn = dumbThinky(config, knexConn);
 
-if (process.env.DB_READONLY_HOST && config.connection) {
+if (
+  (process.env.DB_READONLY_HOST || process.env.READONLY_DATABASE_URL) &&
+  config.connection
+) {
   const roConfig = {
     ...config,
-    connection: {
+    connection: process.env.READONLY_DATABASE_URL || {
       ...config.connection,
       host: process.env.DB_READONLY_HOST
     }

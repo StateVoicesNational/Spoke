@@ -1204,7 +1204,8 @@ export async function buyPhoneNumbers(job) {
 // Prepares a messaging service with owned number for the campaign
 async function prepareTwilioCampaign(campaign, organization, trx) {
   const ts = Math.floor(new Date() / 1000);
-  const friendlyName = `Campaign ${campaign.id}: ${campaign.organization_id}-${ts} [${process.env.BASE_URL}]`;
+  const baseUrl = getConfig("BASE_URL", organization);
+  const friendlyName = `Campaign ${campaign.id}: ${campaign.organization_id}-${ts} [${baseUrl}]`;
   const messagingService = await twilio.createMessagingService(
     organization,
     friendlyName
