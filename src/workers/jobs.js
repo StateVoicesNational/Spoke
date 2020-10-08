@@ -1214,15 +1214,16 @@ async function prepareTwilioCampaign(campaign, organization, trx) {
   if (!msgSrvSid) {
     throw new Error("Failed to create messaging service!");
   }
-  const phoneSids = await trx("owned_phone_number")
+  let phoneSids = await trx("owned_phone_number")
     .select("service_id")
     .where({
       organization_id: campaign.organization_id,
       service: "twilio",
       allocated_to: "campaign",
       allocated_to_id: campaign.id.toString()
-    })
-    .map(row => row.service_id);
+    });
+  phoneSids = (phoneSids || []).map(row => row.service_id);
+
   console.log(`Transferring ${phoneSids.length} numbers to ${msgSrvSid}`);
   try {
     await twilio.addNumbersToMessagingService(
