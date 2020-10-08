@@ -141,6 +141,7 @@ export const dataQuery = gql`
     }
     assignment(assignmentId: $assignmentId, contactId: $contactId) {
       id
+      feedback
       hasUnassignedContactsForTexter
       contacts(contactsFilter: $contactsFilter) {
         id

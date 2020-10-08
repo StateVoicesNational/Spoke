@@ -323,6 +323,7 @@ export const resolvers = {
       await cacheableData.cannedResponse.query({
         userId: assignment.user_id,
         campaignId: assignment.campaign_id
-      })
+      }),
+    feedback: async assignment => assignment.feedback || "hello"
   }
 };
