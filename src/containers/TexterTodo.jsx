@@ -229,18 +229,26 @@ const queries = {
     query: dataQuery,
     options: ownProps => {
       console.log("TexterTodo ownProps", ownProps);
-      // FUTURE: based on ?review=1 in location.search
-      //         exclude isOptedOut: false, validTimezone: true
-      return {
-        variables: {
-          contactsFilter: {
+      // based on ?review=1 in location.search
+      // exclude isOptedOut: false, validTimezone: true
+      const contactsFilter = ownProps.location.query.review
+        ? {
+            messageStatus: ownProps.messageStatus,
+            ...(ownProps.params.reviewContactId && {
+              contactId: ownProps.params.reviewContactId
+            })
+          }
+        : {
             messageStatus: ownProps.messageStatus,
             ...(!ownProps.params.reviewContactId && { isOptedOut: false }),
             ...(ownProps.params.reviewContactId && {
               contactId: ownProps.params.reviewContactId
             }),
             validTimezone: true
-          },
+          };
+      return {
+        variables: {
+          contactsFilter,
           needsMessageFilter: {
             messageStatus: "needsMessage",
             isOptedOut: false,

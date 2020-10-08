@@ -76,6 +76,13 @@ export class IncomingMessageList extends Component {
     this.props.onConversationCountChanged(conversationCount);
   }
 
+  componentWillUpdate = () => {
+    this.state.showAllRepliesLink =
+      this.props.conversations.conversations.pageInfo.total > 0 &&
+      this.props.campaignsFilter.campaignIds &&
+      this.props.campaignsFilter.campaignIds.length === 1 &&
+      this.props.assignmentsFilter.texterId;
+  };
   componentDidUpdate = prevProps => {
     if (
       this.props.clearSelectedMessages &&
@@ -325,9 +332,25 @@ export class IncomingMessageList extends Component {
     const { clearSelectedMessages } = this.props;
     const displayPage = Math.floor(offset / limit) + 1;
     const tableData = prepareDataTableData(conversations);
+    const firstAssignmentid = conversations.length
+      ? conversations[0].contact.assignmentId
+      : null;
 
     return (
       <div>
+        {this.state.showAllRepliesLink && (
+          <div>
+            View all replies
+            <Link
+              target="_blank"
+              to={`/app/${this.props.organizationId}/todos/${firstAssignmentid}/allreplies?review=1`}
+            >
+              <ActionOpenInNew
+                style={{ width: 14, height: 14, color: theme.colors.green }}
+              />
+            </Link>
+          </div>
+        )}
         <DataTables
           data={tableData}
           columns={this.prepareTableColumns()}
