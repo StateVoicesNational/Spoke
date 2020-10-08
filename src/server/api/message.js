@@ -4,7 +4,14 @@ import { Message } from "../models";
 export const resolvers = {
   Message: {
     ...mapFieldsToModel(
-      ["text", "userNumber", "contactNumber", "createdAt", "isFromContact"],
+      [
+        "text",
+        "userNumber",
+        "contactNumber",
+        "createdAt",
+        "isFromContact",
+        "userId"
+      ],
       Message
     ),
     // cached messages don't have message.id -- why bother
