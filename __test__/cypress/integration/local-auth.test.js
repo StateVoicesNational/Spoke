@@ -22,9 +22,7 @@ describe("Login with the local passport strategy", () => {
     cy.get("[data-test=userEditForm]").submit();
     // The next page is different depending on whether SUPPRESS_SELF_INVITE is
     // set, so we just assert that we are not still on the login page
-    // the wait is required because cypress doesn't know how long to wait for the url to change
-    cy.wait(500);
-    cy.url().then(url => expect(url).not.to.match(/.*login.*/));
+    cy.waitUntil(() => cy.url().then(url => !url.match(/login/)));
   });
 
   // sign in as the user
@@ -33,7 +31,6 @@ describe("Login with the local passport strategy", () => {
     cy.get("input[name='email']").type(`spoke.itest.${ts}@example.com`);
     cy.get("input[name='password']").type("SignupTestUser1!", { delay: 10 });
     cy.get("[data-test=userEditForm]").submit();
-    cy.wait(500);
-    cy.url().then(url => expect(url).not.to.match(/.*login.*/));
+    cy.waitUntil(() => cy.url().then(url => !url.match(/login/)));
   });
 });
