@@ -795,17 +795,21 @@ export async function exportCampaign(job) {
           }
         });
 
-        if (value) {
-          if (
-            combineSameQuestions &&
-            contactRow[`question[${allQuestions[stepId]}]`] &&
-            contactRow[`question[${allQuestions[stepId]}]`] !== value
-          ) {
-            // join multiple different answers, otherwise combine answers too
-            contactRow[`question[${allQuestions[stepId]}]`] += `, ${value}`;
-          } else {
-            contactRow[`question[${allQuestions[stepId]}]`] = value;
-          }
+        if (
+          value === "" &&
+          !contactRow.hasOwnProperty(`question[${allQuestions[stepId]}]`)
+        ) {
+          contactRow[`question[${allQuestions[stepId]}]`] = "";
+        } else if (
+          value !== "" &&
+          combineSameQuestions &&
+          contactRow[`question[${allQuestions[stepId]}]`] &&
+          contactRow[`question[${allQuestions[stepId]}]`] !== value
+        ) {
+          // join multiple different answers, otherwise combine answers too
+          contactRow[`question[${allQuestions[stepId]}]`] += `, ${value}`;
+        } else if (value !== "") {
+          contactRow[`question[${allQuestions[stepId]}]`] = value;
         }
       });
 
