@@ -796,6 +796,11 @@ export async function exportCampaign(job) {
         });
 
         if (
+          value === "" &&
+          !contactRow.hasOwnProperty(`question[${allQuestions[stepId]}]`)
+        ) {
+          contactRow[`question[${allQuestions[stepId]}]`] = "";
+        } else if (
           value !== "" &&
           combineSameQuestions &&
           contactRow[`question[${allQuestions[stepId]}]`] &&
@@ -803,7 +808,7 @@ export async function exportCampaign(job) {
         ) {
           // join multiple different answers, otherwise combine answers too
           contactRow[`question[${allQuestions[stepId]}]`] += `, ${value}`;
-        } else {
+        } else if (value !== "") {
           contactRow[`question[${allQuestions[stepId]}]`] = value;
         }
       });
