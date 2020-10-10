@@ -265,7 +265,6 @@ export class AdminCampaignEdit extends React.Component {
   }
 
   handleChange = formValues => {
-    console.log("handleChange", formValues);
     this.setState({
       campaignFormValues: {
         ...this.state.campaignFormValues,
@@ -294,7 +293,9 @@ export class AdminCampaignEdit extends React.Component {
         // the section we just saved.
         this.props.campaignData.refetch();
         // hack to update phone counts, probably should make phone reservation its own mutation
-        if (this.props.organizationData.campaignPhoneNumbersEnabled) {
+        if (
+          this.props.organizationData.organization.campaignPhoneNumbersEnabled
+        ) {
           this.props.organizationData.refetch();
         }
       }
@@ -334,7 +335,7 @@ export class AdminCampaignEdit extends React.Component {
         newCampaign.interactionSteps = makeTree(newCampaign.interactionSteps);
       }
 
-      return await this.props.mutations.editCampaign(
+      await this.props.mutations.editCampaign(
         this.props.campaignData.campaign.id,
         newCampaign
       );
@@ -545,15 +546,16 @@ export class AdminCampaignEdit extends React.Component {
           return numbersReserved >= numbersNeeded;
         },
         blocksStarting: true,
-        expandAfterCampaignStarts: false,
+        expandAfterCampaignStarts: true,
         expandableBySuperVolunteers: false,
         extraProps: {
-          contactsPerPhoneNumber: contactsPerPhoneNumber,
+          contactsPerPhoneNumber,
           isStarted: this.props.campaignData.campaign.isStarted,
-          availablePhoneNumbers: this.props.organizationData.organization.phoneNumberCounts.filter(
-            c => c.availableCount
-          ),
-          contactsCount: this.state.campaignFormValues.contactsCount
+          phoneNumberCounts: this.props.organizationData.organization
+            .phoneNumberCounts,
+          contactsCount: this.state.campaignFormValues.contactsCount,
+          inventoryCounts: this.props.campaignData.campaign
+            .inventoryPhoneNumberCounts
         }
       });
     }
@@ -637,7 +639,7 @@ export class AdminCampaignEdit extends React.Component {
       <ContentComponent
         onChange={this.handleChange}
         formValues={formValues}
-        saveLabel={this.isNew() ? "Save and goto next section" : "Save"}
+        saveLabel={this.isNew() ? "Save and go to next section" : "Save"}
         saveDisabled={shouldDisable}
         ensureComplete={this.props.campaignData.campaign.isStarted}
         onSubmit={this.handleSubmit}
@@ -972,6 +974,7 @@ const queries = {
           }
           phoneNumberCounts {
             areaCode
+            state
             availableCount
             allocatedCount
           }

@@ -1,20 +1,20 @@
 import React from "react";
 import type from "prop-types";
 import { StyleSheet, css } from "aphrodite";
+import { orderBy } from "lodash";
 import GSForm from "../components/forms/GSForm";
 import yup from "yup";
 import Form from "react-formal";
 import CampaignFormSectionHeading from "../components/CampaignFormSectionHeading";
 import { ListItem, List } from "material-ui/List";
-import { dataSourceItem } from "../components/utils";
 import AutoComplete from "material-ui/AutoComplete";
 import IconButton from "material-ui/IconButton/IconButton";
-import DeleteIcon from "material-ui/svg-icons/action/delete";
+import AddIcon from "material-ui/svg-icons/content/add-circle";
+import RemoveIcon from "material-ui/svg-icons/content/remove-circle";
 import theme from "../styles/theme";
-import { dataTest } from "../lib/attributes";
+// import { dataTest } from "../lib/attributes";
 
 const maxNumbersPerCampaign = 400;
-const maxAreaCodesPerCampaign = 3;
 
 const styles = StyleSheet.create({
   container: {
@@ -49,7 +49,8 @@ const styles = StyleSheet.create({
 
 const inlineStyles = {
   autocomplete: {
-    marginBottom: 24
+    marginBottom: 24,
+    width: "100%"
   },
   header: {
     ...theme.text.header
@@ -62,11 +63,13 @@ export default class CampaignPhoneNumbersForm extends React.Component {
     onChange: type.func,
     customFields: type.array,
     saveLabel: type.string,
-    availablePhoneNumbers: type.array,
+    phoneNumberCounts: type.array,
     contactsCount: type.number,
     onSubmit: type.func,
     saveDisabled: type.bool,
-    contactsPerPhoneNumber: type.number
+    contactsPerPhoneNumber: type.number,
+    inventoryCounts: type.array,
+    isStarted: type.bool
   };
 
   state = {
@@ -90,155 +93,196 @@ export default class CampaignPhoneNumbersForm extends React.Component {
   getTotalNumberCount = numbers =>
     numbers.reduce((acc, entry) => (acc = acc + entry.count), 0);
 
-  subtitle = () => (
-    <div>
-      Select what area codes you would like to use for your campaign.
-      <ul>
-        <li>Contact an owner of the organization if you need more numbers.</li>
-        <li>
-          If you no longer need the numbers reserved for this campaign, remove
-          them so that other campaigns may use them.
-        </li>
-      </ul>
-    </div>
-  );
+  subtitle = () => {
+    const { contactsPerPhoneNumber } = this.props;
+    return (
+      <div>
+        Select the area codes you would like to use for your campaign.
+        <ul>
+          <li>Contact an admin if you need more numbers.</li>
+          <li>
+            You can only assign one phone number for every{" "}
+            {contactsPerPhoneNumber} contacts.
+          </li>
+          <li>
+            When done texting and replying, you will need to archive the
+            campaign
+            <br />
+            and release the phone numbers so other campaigns can use them.
+          </li>
+        </ul>
+      </div>
+    );
+  };
 
   showSearch() {
-    const {
-      availablePhoneNumbers,
-      contactsCount,
-      contactsPerPhoneNumber
-    } = this.props;
-    const { inventoryPhoneNumberCounts: reservedNumbers } = this.formValues();
+    const { isStarted, phoneNumberCounts } = this.props;
 
-    if (availablePhoneNumbers.length === 0) {
+    if (phoneNumberCounts.length === 0) {
       return (
         <div style={inlineStyles.autocomplete}>No phone numbers available</div>
       );
     }
 
-    const dataSource = availablePhoneNumbers
-      .filter(
-        numbersForAreaCode =>
-          !reservedNumbers.find(
-            reservedNumber =>
-              reservedNumber.areaCode === numbersForAreaCode.areaCode
-          )
-      )
-      .map(numbersForAreaCode =>
-        dataSourceItem(numbersForAreaCode.areaCode, numbersForAreaCode.areaCode)
-      );
-
     const filter = (searchText, key) =>
       key === "allphoneNumbers"
         ? true
         : AutoComplete.caseInsensitiveFilter(searchText, key);
-    const campaignStarted = this.props.isStarted;
+
     const autocomplete = (
       <AutoComplete
         ref="autocomplete"
         style={inlineStyles.autocomplete}
-        autoFocus
-        onFocus={() => this.setState({ searchText: "" })}
         onUpdateInput={searchText => this.setState({ searchText })}
         searchText={this.state.searchText}
         filter={filter}
-        hintText="Area Code"
+        hintText="Find State or Area Code"
         name="areaCode"
-        label="Area Code"
-        dataSource={dataSource}
-        onNewRequest={value => {
-          if (typeof value === "object") {
-            const assignedNumberCount = this.getTotalNumberCount(
-              reservedNumbers
-            );
-
-            if (reservedNumbers.length === maxAreaCodesPerCampaign) {
-              this.setState({
-                error: `Only ${maxAreaCodesPerCampaign} area codes per campaign allowed! Please remove one and try again.`
-              });
-              return;
-            }
-            const numbersNeeded = Math.ceil(
-              contactsCount / contactsPerPhoneNumber
-            );
-            const remainingNeeded = numbersNeeded - assignedNumberCount;
-            const areaCode = value.value.key;
-            const newAreaCode = availablePhoneNumbers.find(
-              number => number.areaCode === areaCode
-            );
-            const availForAreaCode = newAreaCode.availableCount || 0;
-            const numberToReserve =
-              remainingNeeded >= availForAreaCode
-                ? availForAreaCode
-                : remainingNeeded;
-
-            this.props.onChange({
-              inventoryPhoneNumberCounts: [
-                ...this.formValues().inventoryPhoneNumberCounts,
-                {
-                  areaCode: newAreaCode.areaCode,
-                  count: numberToReserve
-                }
-              ]
-            });
-          }
-          this.setState({ searchText: "", error: "" });
-        }}
+        label="Find State or Area Code"
+        dataSource={[]}
       />
     );
-    const showAutocomplete =
-      !campaignStarted && availablePhoneNumbers.length > 0;
+    const showAutocomplete = !isStarted && phoneNumberCounts.length > 0;
     return <div>{showAutocomplete ? autocomplete : ""}</div>;
   }
 
   getNumbersCount = count => (count === 1 ? "number" : "numbers");
 
   showPhoneNumbers() {
-    const {
-      formValues: { inventoryPhoneNumberCounts }
-    } = this.props;
-    const { availablePhoneNumbers } = this.props;
+    const { searchText } = this.state;
+    const { isStarted, contactsCount, contactsPerPhoneNumber } = this.props;
+    const { inventoryPhoneNumberCounts: reservedNumbers } = this.formValues();
+    const assignedNumberCount = this.getTotalNumberCount(reservedNumbers);
+    const numbersNeeded = Math.ceil(contactsCount / contactsPerPhoneNumber);
 
-    const getAvailableCount = areaCode => {
-      const remaining = availablePhoneNumbers.find(
-        item => item.areaCode === areaCode
+    /* need to add selected phone counts to available phones;
+       if navigated away after initial selection, the selected
+       area codes will be removed from the counts passed down (from org) */
+    let areaCodes = orderBy(
+      this.props.phoneNumberCounts
+        .map(phoneNumber => {
+          const foundReserved = this.props.inventoryCounts.find(
+            reserved => reserved.areaCode === phoneNumber.areaCode
+          ) || { count: 0 };
+
+          return {
+            ...phoneNumber,
+            allocatedCount: isStarted
+              ? foundReserved.count
+              : phoneNumber.allocatedCount + foundReserved.count,
+            availableCount: phoneNumber.availableCount + foundReserved.count
+          };
+        })
+        .filter(phoneNumber => (isStarted ? phoneNumber.allocatedCount : true)),
+      ["state", "areaCode"]
+    );
+
+    if (searchText) {
+      if (!isNaN(searchText) && searchText.length <= 3) {
+        const foundAreaCode = areaCodes.find(({ areaCode }) =>
+          areaCode.includes(searchText)
+        );
+        areaCodes = foundAreaCode ? [foundAreaCode] : [];
+      } else if (isNaN(searchText)) {
+        areaCodes = areaCodes.filter(({ state }) =>
+          state.toLowerCase().includes(searchText.toLowerCase())
+        );
+      }
+    }
+
+    const states = Array.from(new Set(areaCodes.map(({ state }) => state)));
+
+    const getAssignedCount = areaCode => {
+      const inventory = this.formValues().inventoryPhoneNumberCounts;
+      return (
+        (inventory.find(item => item.areaCode === areaCode) || {}).count || 0
       );
-      return (remaining && remaining.availableCount) || 0;
+    };
+
+    const assignAreaCode = areaCode => {
+      const inventory = this.formValues().inventoryPhoneNumberCounts;
+      this.props.onChange({
+        inventoryPhoneNumberCounts: inventory.find(
+          item => item.areaCode === areaCode
+        )
+          ? inventory.map(item =>
+              item.areaCode === areaCode
+                ? { ...item, count: item.count + 1 }
+                : item
+            )
+          : [...inventory, { areaCode, count: 1 }]
+      });
+    };
+
+    const unassignAreaCode = async areaCode => {
+      const inventory = this.formValues().inventoryPhoneNumberCounts;
+      this.props.onChange({
+        inventoryPhoneNumberCounts: inventory
+          .map(item =>
+            item.areaCode === areaCode
+              ? { ...item, count: item.count - 1 }
+              : item
+          )
+          .filter(item => item.count)
+      });
     };
 
     return (
       <List>
-        {inventoryPhoneNumberCounts.map((item, index) => (
+        {states.map(state => (
           <ListItem
-            primaryText={item.areaCode}
-            secondaryTextLines={2}
-            secondaryText={
-              <div>
-                <div>{`Using ${item.count} ${this.getNumbersCount(
-                  item.count
-                )} (${getAvailableCount(item.areaCode)} available)`}</div>
-              </div>
-            }
-            {...dataTest("areaCodeRow")}
-            key={item.areaCode}
-            rightIconButton={
-              !this.props.isStarted && (
-                <IconButton
-                  onClick={async () => {
-                    const currentFormValues = this.formValues();
-                    const newFormValues = {
-                      ...currentFormValues
-                    };
-                    newFormValues.inventoryPhoneNumberCounts = newFormValues.inventoryPhoneNumberCounts.slice();
-                    newFormValues.inventoryPhoneNumberCounts.splice(index, 1);
-                    this.props.onChange(newFormValues);
-                  }}
-                >
-                  <DeleteIcon />
-                </IconButton>
-              )
-            }
+            key={state}
+            primaryText={state}
+            primaryTogglesNestedList
+            initiallyOpen
+            nestedItems={areaCodes
+              .filter(areaCode => areaCode.state === state)
+              .map(({ areaCode, availableCount }) => {
+                const assignedCount = getAssignedCount(areaCode);
+                return (
+                  <ListItem
+                    key={areaCode}
+                    style={{
+                      marginBottom: 15,
+                      height: 16,
+                      border: "1px solid rgb(225, 228, 224)",
+                      borderRadius: 8
+                    }}
+                    disabled
+                    primaryText={
+                      <span>
+                        <span style={{ marginRight: "20%" }}>{areaCode}</span>
+                        <span style={{ color: "#888" }}>
+                          {`${assignedCount}${
+                            !isStarted ? ` / ${availableCount}` : ""
+                          }`}
+                        </span>
+                      </span>
+                    }
+                    rightIconButton={
+                      !isStarted && (
+                        <div style={{ marginRight: 50 }}>
+                          <IconButton
+                            disabled={!assignedCount}
+                            onClick={() => unassignAreaCode(areaCode)}
+                          >
+                            <RemoveIcon />
+                          </IconButton>
+                          <IconButton
+                            disabled={
+                              assignedCount === availableCount ||
+                              assignedNumberCount === numbersNeeded
+                            }
+                            onClick={() => assignAreaCode(areaCode)}
+                          >
+                            <AddIcon />
+                          </IconButton>
+                        </div>
+                      )
+                    }
+                  />
+                );
+              })}
           />
         ))}
       </List>
@@ -280,16 +324,17 @@ export default class CampaignPhoneNumbersForm extends React.Component {
   }
 
   render() {
+    const { inventoryPhoneNumberCounts: reservedNumbers } = this.formValues();
+    const assignedNumberCount = this.getTotalNumberCount(reservedNumbers);
+    const { contactsCount, contactsPerPhoneNumber } = this.props;
+    const numbersNeeded = Math.ceil(contactsCount / contactsPerPhoneNumber);
+
     return (
       <GSForm
         schema={this.formSchema}
         value={this.formValues()}
         onChange={this.props.onChange}
-        onSubmit={val => {
-          const { inventoryPhoneNumberCounts } = this.formValues();
-          const assignedNumberCount = this.getTotalNumberCount(
-            inventoryPhoneNumberCounts
-          );
+        onSubmit={() => {
           if (assignedNumberCount > maxNumbersPerCampaign) {
             this.setState({
               error: `Only ${maxNumbersPerCampaign} numbers can be reserved for a single campaign. Please remove some and try again!`
@@ -303,13 +348,15 @@ export default class CampaignPhoneNumbersForm extends React.Component {
           title="Phone Numbers"
           subtitle={this.subtitle()}
         />
-        <div>
+        <div style={{ maxWidth: 440 }}>
           {this.showSearch()}
           {this.state.error && this.renderErrorMessage()}
           {this.areaCodeTable()}
           <Form.Button
             type="submit"
-            disabled={this.props.saveDisabled}
+            disabled={
+              this.props.saveDisabled || assignedNumberCount !== numbersNeeded
+            }
             label={this.props.saveLabel}
           />
         </div>
