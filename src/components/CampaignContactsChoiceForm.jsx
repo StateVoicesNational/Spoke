@@ -72,13 +72,18 @@ export class CampaignContactsChoiceForm extends React.Component {
 
   handleChange(contactData) {
     this.props.onChange({
-      contactData: contactData,
+      contactData,
       ingestMethod: this.getCurrentMethod().name
     });
   }
 
   render() {
-    const { ingestMethodChoices, pastIngestMethod } = this.props;
+    const {
+      maxNumbersPerCampaign,
+      contactsPerPhoneNumber,
+      ingestMethodChoices,
+      pastIngestMethod
+    } = this.props;
     const ingestMethod = this.getCurrentMethod();
     const ingestMethodName = ingestMethod && ingestMethod.name;
     const lastResult =
@@ -86,9 +91,33 @@ export class CampaignContactsChoiceForm extends React.Component {
         ? pastIngestMethod
         : null;
     const IngestComponent = components[ingestMethodName];
+
     return (
       <div>
         <CampaignFormSectionHeading title="Who are you contacting?" />
+
+        {contactsPerPhoneNumber && maxNumbersPerCampaign && (
+          <div
+            style={{
+              marginBottom: 10,
+              fontSize: 17,
+              color: theme.colors.darkBlue
+            }}
+          >
+            <div>
+              You can only upload a max of{" "}
+              {Number(
+                contactsPerPhoneNumber * maxNumbersPerCampaign
+              ).toLocaleString()}{" "}
+              contacts per campaign.
+            </div>
+            <div>
+              Each campaign can be assigned {maxNumbersPerCampaign} numbers max
+              with {contactsPerPhoneNumber} contacts per phone.
+            </div>
+          </div>
+        )}
+
         <div>
           {!this.props.contactsCount ? (
             ""
@@ -151,6 +180,8 @@ export class CampaignContactsChoiceForm extends React.Component {
               clientChoiceData={ingestMethod && ingestMethod.clientChoiceData}
               lastResult={lastResult}
               jobResultMessage={null}
+              contactsPerPhoneNumber={contactsPerPhoneNumber}
+              maxNumbersPerCampaign={maxNumbersPerCampaign}
             />
           )}
         </div>
@@ -173,7 +204,9 @@ CampaignContactsChoiceForm.propTypes = {
   jobResultMessage: type.string,
   ingestMethodChoices: type.array.isRequired,
   pastIngestMethod: type.object,
-  contactsCount: type.number
+  contactsCount: type.number,
+  maxNumbersPerCampaign: type.number,
+  contactsPerPhoneNumber: type.number
 };
 
 export default withRouter(CampaignContactsChoiceForm);

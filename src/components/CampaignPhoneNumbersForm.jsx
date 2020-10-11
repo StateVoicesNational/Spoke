@@ -1,13 +1,15 @@
 import React from "react";
 import type from "prop-types";
 import { StyleSheet, css } from "aphrodite";
-import { orderBy } from "lodash";
+import { orderBy, flatten, sampleSize } from "lodash";
 import GSForm from "../components/forms/GSForm";
 import yup from "yup";
 import Form from "react-formal";
 import CampaignFormSectionHeading from "../components/CampaignFormSectionHeading";
 import { ListItem, List } from "material-ui/List";
 import AutoComplete from "material-ui/AutoComplete";
+import RaisedButton from "material-ui/RaisedButton";
+import Checkbox from "material-ui/Checkbox";
 import IconButton from "material-ui/IconButton/IconButton";
 import AddIcon from "material-ui/svg-icons/content/add-circle";
 import RemoveIcon from "material-ui/svg-icons/content/remove-circle";
@@ -19,7 +21,6 @@ const maxNumbersPerCampaign = 400;
 const styles = StyleSheet.create({
   container: {
     border: `1px solid ${theme.colors.lightGray}`,
-    padding: 10,
     borderRadius: 8
   },
   removeButton: {
@@ -29,8 +30,8 @@ const styles = StyleSheet.create({
     display: "flex",
     alignItems: "center",
     borderBottom: `1px solid ${theme.colors.lightGray}`,
-    marginBottom: 20,
-    padding: "10px 0px"
+    marginBottom: 0,
+    padding: 10
   },
   input: {
     width: 50,
@@ -74,6 +75,7 @@ export default class CampaignPhoneNumbersForm extends React.Component {
 
   state = {
     searchText: "",
+    showOnlySelected: false,
     error: ""
   };
 
@@ -149,7 +151,7 @@ export default class CampaignPhoneNumbersForm extends React.Component {
   getNumbersCount = count => (count === 1 ? "number" : "numbers");
 
   showPhoneNumbers() {
-    const { searchText } = this.state;
+    const { searchText, showOnlySelected } = this.state;
     const { isStarted, contactsCount, contactsPerPhoneNumber } = this.props;
     const { inventoryPhoneNumberCounts: reservedNumbers } = this.formValues();
     const assignedNumberCount = this.getTotalNumberCount(reservedNumbers);
@@ -176,6 +178,12 @@ export default class CampaignPhoneNumbersForm extends React.Component {
         .filter(phoneNumber => (isStarted ? phoneNumber.allocatedCount : true)),
       ["state", "areaCode"]
     );
+
+    if (showOnlySelected) {
+      areaCodes = areaCodes.filter(item =>
+        reservedNumbers.find(reserved => reserved.areaCode === item.areaCode)
+      );
+    }
 
     if (searchText) {
       if (!isNaN(searchText) && searchText.length <= 3) {
@@ -214,21 +222,29 @@ export default class CampaignPhoneNumbersForm extends React.Component {
       });
     };
 
-    const unassignAreaCode = async areaCode => {
+    const unassignAreaCode = areaCode => {
       const inventory = this.formValues().inventoryPhoneNumberCounts;
-      this.props.onChange({
-        inventoryPhoneNumberCounts: inventory
-          .map(item =>
-            item.areaCode === areaCode
-              ? { ...item, count: item.count - 1 }
-              : item
-          )
-          .filter(item => item.count)
-      });
+      const inventoryPhoneNumberCounts = inventory
+        .map(item =>
+          item.areaCode === areaCode ? { ...item, count: item.count - 1 } : item
+        )
+        .filter(item => item.count);
+
+      this.props.onChange({ inventoryPhoneNumberCounts });
+
+      if (!inventoryPhoneNumberCounts.length && showOnlySelected) {
+        this.setState({ showOnlySelected: false });
+      }
     };
 
     return (
-      <List>
+      <List
+        style={{
+          maxHeight: 340,
+          overflowY: "auto",
+          padding: "0 15px 0 0"
+        }}
+      >
         {states.map(state => (
           <ListItem
             key={state}
@@ -297,25 +313,117 @@ export default class CampaignPhoneNumbersForm extends React.Component {
   areaCodeTable() {
     const { inventoryPhoneNumberCounts: reservedNumbers } = this.formValues();
     const assignedNumberCount = this.getTotalNumberCount(reservedNumbers);
-    const { contactsCount, contactsPerPhoneNumber } = this.props;
+    const {
+      isStarted,
+      inventoryCounts,
+      contactsCount,
+      contactsPerPhoneNumber
+    } = this.props;
     const numbersNeeded = Math.ceil(contactsCount / contactsPerPhoneNumber);
+    const remaining = numbersNeeded - assignedNumberCount;
 
     const headerColor =
       assignedNumberCount === numbersNeeded
         ? theme.colors.darkBlue
         : theme.colors.red;
 
+    const assignRandom = () => {
+      let inventory = this.formValues().inventoryPhoneNumberCounts;
+
+      const availableAreaCodes = flatten(
+        this.props.phoneNumberCounts.map(phoneNumber => {
+          const foundAllocated = inventory.find(
+            ({ areaCode }) => areaCode === phoneNumber.areaCode
+          ) || { count: 0 };
+
+          /* until we save and navigate back and props.inventoryCounts
+             has values, the phoneNumberCounts will need to have the
+             "form state inventory" subtracted from the available count */
+          const availableCount = !inventoryCounts.length
+            ? phoneNumber.availableCount - foundAllocated.count
+            : phoneNumber.availableCount;
+
+          return Array.from(Array(availableCount)).map(
+            () => phoneNumber.areaCode
+          );
+        })
+      );
+
+      const randomSample = sampleSize(availableAreaCodes, remaining).reduce(
+        (obj, sample) => {
+          obj[sample] = (obj[sample] || 0) + 1;
+          return obj;
+        },
+        {}
+      );
+
+      inventory = inventory.map(inventoryItem => {
+        let count = inventoryItem.count;
+        if (randomSample[inventoryItem.areaCode]) {
+          count += randomSample[inventoryItem.areaCode];
+          delete randomSample[inventoryItem.areaCode];
+        }
+
+        return {
+          ...inventoryItem,
+          count
+        };
+      });
+
+      this.props.onChange({
+        inventoryPhoneNumberCounts: [
+          ...inventory,
+          ...Object.entries(randomSample).map(([areaCode, count]) => ({
+            areaCode,
+            count
+          }))
+        ]
+      });
+    };
+
     return (
       <div className={css(styles.container)}>
         <div className={css(styles.headerContainer)}>
           <div
             style={{
-              ...inlineStyles.header,
-              color: headerColor,
-              flex: "1 1 50%"
+              flex: "1 1 50%",
+              fontSize: 22,
+              color: headerColor
             }}
           >
-            {`Reserved phone numbers: ${assignedNumberCount}/${numbersNeeded}`}
+            <div style={{ margin: "5px 0 10px 5px" }}>
+              {`Reserved phone numbers: ${assignedNumberCount}/${numbersNeeded}`}
+            </div>
+            {!isStarted && (
+              <div style={{ display: "flex" }}>
+                <RaisedButton
+                  style={{ margin: "0 0 5px 5px" }}
+                  label={`Randomly Assign Remaining ${remaining}`}
+                  secondary
+                  disabled={!remaining}
+                  onClick={() => assignRandom()}
+                />
+
+                <Checkbox
+                  style={{
+                    margin: "5px 5px 0 auto",
+                    fontSize: 14,
+                    width: "auto"
+                  }}
+                  iconStyle={{ marginLeft: 4 }}
+                  disabled={!reservedNumbers.length}
+                  labelPosition="left"
+                  label="Only show selected"
+                  checked={this.state.showOnlySelected}
+                  onCheck={() => {
+                    this.setState(({ showOnlySelected }) => ({
+                      showOnlySelected: !showOnlySelected,
+                      searchText: ""
+                    }));
+                  }}
+                />
+              </div>
+            )}
           </div>
         </div>
         {this.showPhoneNumbers()}
@@ -335,31 +443,40 @@ export default class CampaignPhoneNumbersForm extends React.Component {
         value={this.formValues()}
         onChange={this.props.onChange}
         onSubmit={() => {
-          if (assignedNumberCount > maxNumbersPerCampaign) {
-            this.setState({
-              error: `Only ${maxNumbersPerCampaign} numbers can be reserved for a single campaign. Please remove some and try again!`
-            });
-            return;
+          if (assignedNumberCount === numbersNeeded) {
+            this.props.onSubmit();
           }
-          this.props.onSubmit();
         }}
       >
         <CampaignFormSectionHeading
           title="Phone Numbers"
           subtitle={this.subtitle()}
         />
-        <div style={{ maxWidth: 440 }}>
-          {this.showSearch()}
-          {this.state.error && this.renderErrorMessage()}
-          {this.areaCodeTable()}
-          <Form.Button
-            type="submit"
-            disabled={
-              this.props.saveDisabled || assignedNumberCount !== numbersNeeded
-            }
-            label={this.props.saveLabel}
-          />
-        </div>
+        {numbersNeeded <= maxNumbersPerCampaign ? (
+          <div style={{ maxWidth: 500 }}>
+            {this.showSearch()}
+            {this.state.error && this.renderErrorMessage()}
+            {this.areaCodeTable()}
+
+            <Form.Button
+              type="submit"
+              disabled={
+                this.props.saveDisabled || assignedNumberCount !== numbersNeeded
+              }
+              label={this.props.saveLabel}
+            />
+          </div>
+        ) : (
+          <div
+            style={{
+              flex: "1 1 50%",
+              fontSize: 22,
+              color: theme.colors.red
+            }}
+          >
+            Sorry, you need to upload fewer contacts!
+          </div>
+        )}
       </GSForm>
     );
   }
