@@ -527,6 +527,34 @@ export const resolvers = {
         r.knex("campaign_contact").where({ campaign_id: campaign.id })
       );
     },
+    contactsAreaCodeCounts: async (campaign, _, { user }) => {
+      if (!process.env.EXPERIMENTAL_CAMPAIGN_PHONE_NUMBERS) return [];
+
+      await accessRequired(
+        user,
+        campaign.organization_id,
+        "SUPERVOLUNTEER",
+        true
+      );
+
+      const usAreaCodes = require("us-area-codes");
+      const areaCodes = await r
+        .knex("campaign_contact")
+        .select(
+          r.knex.raw(`
+          substring(cell, 3, 3) AS area_code,
+          count(*)
+        `)
+        )
+        .where({ campaign_id: campaign.id })
+        .groupBy(1);
+
+      return areaCodes.map(data => ({
+        areaCode: data.area_code,
+        state: usAreaCodes.get(Number(data.area_code)),
+        count: parseInt(data.count, 10)
+      }));
+    },
     hasUnassignedContactsForTexter: async (campaign, _, { user }) => {
       // This is the same as hasUnassignedContacts, but the access control
       // is different because for TEXTERs it's just for dynamic campaigns

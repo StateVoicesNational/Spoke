@@ -1,7 +1,7 @@
 import React from "react";
 import type from "prop-types";
 import { StyleSheet, css } from "aphrodite";
-import { orderBy, flatten, sampleSize } from "lodash";
+import _ from "lodash";
 import GSForm from "../components/forms/GSForm";
 import yup from "yup";
 import Form from "react-formal";
@@ -70,7 +70,8 @@ export default class CampaignPhoneNumbersForm extends React.Component {
     saveDisabled: type.bool,
     contactsPerPhoneNumber: type.number,
     inventoryCounts: type.array,
-    isStarted: type.bool
+    isStarted: type.bool,
+    contactsAreaCodeCounts: type.array
   };
 
   state = {
@@ -105,6 +106,13 @@ export default class CampaignPhoneNumbersForm extends React.Component {
           <li>
             You can only assign one phone number for every{" "}
             {contactsPerPhoneNumber} contacts.
+          </li>
+          <li>
+            Auto-Reserve first tries to find an exact match on area code,
+            <br />
+            then tries to find other area codes in the same state,
+            <br />
+            finally falling back to randomly assigning remaining area codes.
           </li>
           <li>
             When done texting and replying, you will need to archive the
@@ -160,7 +168,7 @@ export default class CampaignPhoneNumbersForm extends React.Component {
     /* need to add selected phone counts to available phones;
        if navigated away after initial selection, the selected
        area codes will be removed from the counts passed down (from org) */
-    let areaCodes = orderBy(
+    let areaCodes = _.orderBy(
       this.props.phoneNumberCounts
         .map(phoneNumber => {
           const foundReserved = this.props.inventoryCounts.find(
@@ -209,17 +217,20 @@ export default class CampaignPhoneNumbersForm extends React.Component {
 
     const assignAreaCode = areaCode => {
       const inventory = this.formValues().inventoryPhoneNumberCounts;
-      this.props.onChange({
-        inventoryPhoneNumberCounts: inventory.find(
-          item => item.areaCode === areaCode
-        )
-          ? inventory.map(item =>
-              item.areaCode === areaCode
-                ? { ...item, count: item.count + 1 }
-                : item
-            )
-          : [...inventory, { areaCode, count: 1 }]
-      });
+      const inventoryPhoneNumberCounts = inventory.find(
+        item => item.areaCode === areaCode
+      )
+        ? inventory.map(item =>
+            item.areaCode === areaCode
+              ? { ...item, count: item.count + 1 }
+              : item
+          )
+        : [...inventory, { areaCode, count: 1 }];
+
+      this.props.onChange({ inventoryPhoneNumberCounts });
+      if (_.sumBy(inventoryPhoneNumberCounts, "count") === numbersNeeded) {
+        this.setState({ showOnlySelected: true });
+      }
     };
 
     const unassignAreaCode = areaCode => {
@@ -240,7 +251,8 @@ export default class CampaignPhoneNumbersForm extends React.Component {
     return (
       <List
         style={{
-          maxHeight: 340,
+          maxHeight: 360,
+          minHeight: 360,
           overflowY: "auto",
           padding: "0 15px 0 0"
         }}
@@ -317,6 +329,7 @@ export default class CampaignPhoneNumbersForm extends React.Component {
       isStarted,
       inventoryCounts,
       contactsCount,
+      contactsAreaCodeCounts,
       contactsPerPhoneNumber
     } = this.props;
     const numbersNeeded = Math.ceil(contactsCount / contactsPerPhoneNumber);
@@ -330,7 +343,7 @@ export default class CampaignPhoneNumbersForm extends React.Component {
     const assignRandom = () => {
       let inventory = this.formValues().inventoryPhoneNumberCounts;
 
-      const availableAreaCodes = flatten(
+      const availableAreaCodes = _.flatten(
         this.props.phoneNumberCounts.map(phoneNumber => {
           const foundAllocated = inventory.find(
             ({ areaCode }) => areaCode === phoneNumber.areaCode
@@ -343,25 +356,85 @@ export default class CampaignPhoneNumbersForm extends React.Component {
             ? phoneNumber.availableCount - foundAllocated.count
             : phoneNumber.availableCount;
 
-          return Array.from(Array(availableCount)).map(
-            () => phoneNumber.areaCode
-          );
+          return Array.from(Array(availableCount)).map(() => ({
+            areaCode: phoneNumber.areaCode,
+            state: phoneNumber.state
+          }));
         })
       );
 
-      const randomSample = sampleSize(availableAreaCodes, remaining).reduce(
-        (obj, sample) => {
-          obj[sample] = (obj[sample] || 0) + 1;
+      let remainingToSample = remaining;
+
+      /* eslint-disable no-param-reassign */
+
+      const matchedFromContacts = contactsAreaCodeCounts.reduce(
+        (obj, contacts) => {
+          // ignore area codes without significant contacts count
+          if (contacts.count < 20) return obj;
+
+          const needed = Math.ceil(contacts.count / 200);
+          let foundAvailable = availableAreaCodes.filter(
+            avail => avail.areaCode === contacts.areaCode
+          );
+
+          if (!foundAvailable.length) {
+            // if no exact match, try to fall back to state match
+            foundAvailable = availableAreaCodes.filter(
+              avail => avail.state === contacts.state
+            );
+          }
+
+          // if nothing found, skip to be randomly assigned
+          if (!foundAvailable.length) return obj;
+
+          if (foundAvailable.length > needed) {
+            // if we've got more than needed, randomly pick them
+            foundAvailable = _.shuffle(foundAvailable).slice(0, needed);
+            // otherwise use them all!
+          }
+
+          foundAvailable.forEach(avail => {
+            obj[avail.areaCode] = (obj[avail.areaCode] || 0) + 1;
+          });
+
+          // now remove these from available
+          foundAvailable.forEach(found => {
+            availableAreaCodes.splice(
+              availableAreaCodes.findIndex(
+                avail => avail.areaCode === found.areaCode
+              ),
+              1
+            );
+          });
+
           return obj;
         },
         {}
       );
 
+      remainingToSample -= _.sum(Object.values(matchedFromContacts));
+
+      const randomSample = _.sampleSize(
+        availableAreaCodes,
+        remainingToSample
+      ).reduce((obj, sample) => {
+        obj[sample.areaCode] = (obj[sample.areaCode] || 0) + 1;
+        return obj;
+      }, {});
+
+      /* eslint-enable no-param-reassign */
+
+      // if these area codes are already selected, add the new counts
       inventory = inventory.map(inventoryItem => {
         let count = inventoryItem.count;
         if (randomSample[inventoryItem.areaCode]) {
           count += randomSample[inventoryItem.areaCode];
           delete randomSample[inventoryItem.areaCode];
+        }
+
+        if (matchedFromContacts[inventoryItem.areaCode]) {
+          count += matchedFromContacts[inventoryItem.areaCode];
+          delete matchedFromContacts[inventoryItem.areaCode];
         }
 
         return {
@@ -373,20 +446,28 @@ export default class CampaignPhoneNumbersForm extends React.Component {
       this.props.onChange({
         inventoryPhoneNumberCounts: [
           ...inventory,
-          ...Object.entries(randomSample).map(([areaCode, count]) => ({
+          ...Object.entries({
+            ...matchedFromContacts,
+            ...randomSample
+          }).map(([areaCode, count]) => ({
             areaCode,
             count
           }))
         ]
       });
+
+      this.setState({ showOnlySelected: true });
     };
 
     return (
-      <div className={css(styles.container)}>
-        <div className={css(styles.headerContainer)}>
+      <div
+        className={css(styles.container)}
+        style={{ flex: 1, marginRight: 50, maxWidth: 500 }}
+      >
+        <div className={css(styles.headerContainer)} style={{ height: 90 }}>
           <div
             style={{
-              flex: "1 1 50%",
+              flex: 1,
               fontSize: 22,
               color: headerColor
             }}
@@ -398,7 +479,7 @@ export default class CampaignPhoneNumbersForm extends React.Component {
               <div style={{ display: "flex" }}>
                 <RaisedButton
                   style={{ margin: "0 0 5px 5px" }}
-                  label={`Randomly Assign Remaining ${remaining}`}
+                  label={`Auto-Reserve Remaining ${remaining}`}
                   secondary
                   disabled={!remaining}
                   onClick={() => assignRandom()}
@@ -413,7 +494,7 @@ export default class CampaignPhoneNumbersForm extends React.Component {
                   iconStyle={{ marginLeft: 4 }}
                   disabled={!reservedNumbers.length}
                   labelPosition="left"
-                  label="Only show selected"
+                  label="Only show reserved"
                   checked={this.state.showOnlySelected}
                   onCheck={() => {
                     this.setState(({ showOnlySelected }) => ({
@@ -427,6 +508,117 @@ export default class CampaignPhoneNumbersForm extends React.Component {
           </div>
         </div>
         {this.showPhoneNumbers()}
+      </div>
+    );
+  }
+
+  contactsAreaCodesTable() {
+    const { searchText } = this.state;
+    const { contactsCount } = this.props;
+
+    let areaCodes = _.orderBy(this.props.contactsAreaCodeCounts, [
+      "state",
+      "areaCode"
+    ]);
+
+    const states = Array.from(new Set(areaCodes.map(({ state }) => state)));
+
+    const getIsAssigned = areaCode => {
+      const inventory = this.formValues().inventoryPhoneNumberCounts;
+      return !!(inventory.find(item => item.areaCode === areaCode) || {}).count;
+    };
+
+    if (searchText) {
+      if (!isNaN(searchText) && searchText.length <= 3) {
+        const foundAreaCode = areaCodes.find(({ areaCode }) =>
+          areaCode.includes(searchText)
+        );
+        areaCodes = foundAreaCode ? [foundAreaCode] : [];
+      } else if (isNaN(searchText)) {
+        areaCodes = areaCodes.filter(({ state }) =>
+          state.toLowerCase().includes(searchText.toLowerCase())
+        );
+      }
+    }
+
+    return (
+      <div className={css(styles.container)} style={{ flex: 1, maxWidth: 300 }}>
+        <div className={css(styles.headerContainer)} style={{ height: 30 }}>
+          <div
+            style={{
+              fontSize: 15,
+              color: theme.colors.darkBlue
+            }}
+          >
+            Area Codes in Contacts List
+          </div>
+        </div>
+        <List
+          style={{
+            maxHeight: 420,
+            minHeight: 420,
+            overflowY: "auto",
+            padding: "0 15px 0 0"
+          }}
+        >
+          {states.map(state => (
+            <ListItem
+              key={state}
+              primaryText={state}
+              primaryTogglesNestedList
+              initiallyOpen
+              nestedItems={areaCodes
+                .filter(areaCode => areaCode.state === state)
+                .map(({ areaCode, count }) => {
+                  const isAssigned = getIsAssigned(areaCode);
+                  return (
+                    <ListItem
+                      key={areaCode}
+                      style={{
+                        marginBottom: 15,
+                        height: 16,
+                        border: "1px solid rgb(225, 228, 224)",
+                        borderRadius: 8
+                      }}
+                      leftCheckbox={
+                        <Checkbox disabled={!isAssigned} checked={isAssigned} />
+                      }
+                      primaryText={
+                        <div
+                          style={{
+                            display: "flex",
+                            alignItems: "center"
+                          }}
+                        >
+                          <span style={{ marginRight: "20%" }}>{areaCode}</span>
+                          <span
+                            style={{
+                              width: "30%",
+                              fontSize: 14,
+                              color: theme.colors.blue
+                            }}
+                          >
+                            {count}
+                          </span>
+
+                          <span
+                            style={{
+                              marginLeft: "10%",
+                              fontSize: 16,
+                              color: theme.colors.blue
+                            }}
+                          >
+                            {((count / contactsCount) * 100).toFixed(2)}
+                          </span>
+                          <span style={{ marginLeft: 2, fontSize: 14 }}>%</span>
+                        </div>
+                      }
+                    />
+                  );
+                })}
+            />
+          ))}
+        </List>
       </div>
     );
   }
@@ -453,10 +645,17 @@ export default class CampaignPhoneNumbersForm extends React.Component {
           subtitle={this.subtitle()}
         />
         {numbersNeeded <= maxNumbersPerCampaign ? (
-          <div style={{ maxWidth: 500 }}>
+          <div>
             {this.showSearch()}
             {this.state.error && this.renderErrorMessage()}
-            {this.areaCodeTable()}
+            <div
+              style={{
+                display: "flex"
+              }}
+            >
+              {this.areaCodeTable()}
+              {this.contactsAreaCodesTable()}
+            </div>
 
             <Form.Button
               type="submit"
