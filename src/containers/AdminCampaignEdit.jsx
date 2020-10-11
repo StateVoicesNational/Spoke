@@ -410,7 +410,14 @@ export class AdminCampaignEdit extends React.Component {
               pendingJobs
                 .filter(job => /ingest/.test(job.jobType))
                 .reverse()[0] || {}
-            ).resultMessage || ""
+            ).resultMessage || "",
+          ...(this.props.organizationData.organization
+            .campaignPhoneNumbersEnabled
+            ? {
+                contactsPerPhoneNumber: window.CONTACTS_PER_PHONE_NUMBER,
+                maxNumbersPerCampaign: 400
+              }
+            : {})
         }
       },
       {
