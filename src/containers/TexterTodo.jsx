@@ -211,6 +211,7 @@ export class TexterTodo extends React.Component {
         organizationId={this.props.params.organizationId}
         ChildComponent={AssignmentTexterContact}
         messageStatusFilter={this.props.messageStatus}
+        location={this.props.location}
       />
     );
   }
