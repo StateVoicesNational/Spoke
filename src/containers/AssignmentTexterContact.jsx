@@ -65,7 +65,10 @@ export class AssignmentTexterContact extends React.Component {
     ) {
       disabledText = "Skipping opt-out...";
       disabled = true;
-    } else if (!this.isContactBetweenTextingHours(contact)) {
+    } else if (
+      !(this.props.location.query.review === "1") &&
+      !this.isContactBetweenTextingHours(contact)
+    ) {
       disabledText = "Refreshing ...";
       disabled = true;
     }
