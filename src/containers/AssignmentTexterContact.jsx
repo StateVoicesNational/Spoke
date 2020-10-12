@@ -61,11 +61,14 @@ export class AssignmentTexterContact extends React.Component {
     } else if (
       contact.optOut &&
       !this.props.reviewContactId &&
-      !this.props.location.query.review
+      !(this.props.location.query.review === "1")
     ) {
       disabledText = "Skipping opt-out...";
       disabled = true;
-    } else if (!this.isContactBetweenTextingHours(contact)) {
+    } else if (
+      !(this.props.location.query.review === "1") &&
+      !this.isContactBetweenTextingHours(contact)
+    ) {
       disabledText = "Refreshing ...";
       disabled = true;
     }
@@ -441,7 +444,7 @@ export class AssignmentTexterContact extends React.Component {
 }
 
 AssignmentTexterContact.propTypes = {
-  reviewContactid: PropTypes.string,
+  reviewContactId: PropTypes.string,
   contact: PropTypes.object,
   campaign: PropTypes.object,
   assignment: PropTypes.object,
@@ -455,7 +458,8 @@ AssignmentTexterContact.propTypes = {
   refreshData: PropTypes.func,
   onExitTexter: PropTypes.func,
   messageStatusFilter: PropTypes.string,
-  organizationId: PropTypes.string
+  organizationId: PropTypes.string,
+  location: PropTypes.object
 };
 
 const mutations = {
