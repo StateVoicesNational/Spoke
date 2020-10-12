@@ -22,7 +22,7 @@ function buildSelect(sortBy) {
   } else if (sortBy === "OLDEST") {
     fragmentArray = [userStar];
   } else {
-    //FIRST_NAME, LAST_NAME, Default
+    // FIRST_NAME, LAST_NAME, Default
     fragmentArray = [userStar, lower(lastName), lower(firstName)];
   }
   return r.knex.select(r.knex.raw(fragmentArray.join(", ")));
@@ -252,21 +252,30 @@ export const resolvers = {
         "assignment.campaign_id",
         "assignment.user_id",
         "assignment.max_contacts",
-        "assignment.created_at"
+        "assignment.created_at",
+        "assignment.feedback"
       ];
       let query = r
         .knexReadOnly("assignment")
         .join("campaign", "assignment.campaign_id", "campaign.id")
-        .where({
+        .whereRaw(
+          `(
+          is_archived = false
+          OR is_archived =
+            case when feedback->>'isAcknowledged' = 'false' then true
+            else false end
+        )`
+        )
+        .andWhere({
           is_started: true,
-          organization_id: organizationId,
-          is_archived: false
+          organization_id: organizationId
         })
-        .where("assignment.user_id", user.id);
+        .andWhere("assignment.user_id", user.id);
 
       if (getConfig("FILTER_DUEBY", null, { truthy: 1 })) {
         query = query.where("campaign.due_by", ">", new Date());
       }
+
       if (withOutCounts) {
         return await query.select(fields);
       } else {
@@ -296,8 +305,9 @@ export const resolvers = {
             )
           );
         const result = await query;
+
         const assignments = {};
-        result.forEach(assn => {
+        for (const assn of result) {
           if (!assignments[assn.id]) {
             assignments[assn.id] = { ...assn, tzStatusCounts: {} };
           }
@@ -308,7 +318,30 @@ export const resolvers = {
             tz: assn.timezone_offset,
             count: assn.tz_status_count
           });
-        });
+
+          // we have allowUndefinedInResolve: false, have to send something..
+          const defaultFeedback = {
+            isAcknowledged: false,
+            message: "",
+            issueCounts: { optOuts: 0, tags: 0, responses: 0, hostile: 0 },
+            createdBy: { id: null, name: "" }
+          };
+
+          if (assn.feedback && !assn.feedback.hasAcknowledged) {
+            const createdBy = await r
+              .knexReadOnly("user")
+              .select("id", "first_name", "last_name")
+              .where("id", assn.feedback.createdBy)
+              .first();
+
+            assn.feedback.createdBy = {
+              id: createdBy.id,
+              name: `${createdBy.first_name} ${createdBy.last_name}`
+            };
+          }
+          assignments[assn.id].feedback = assn.feedback || defaultFeedback;
+        }
+
         return Object.values(assignments);
       }
     },
