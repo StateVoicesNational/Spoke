@@ -110,6 +110,11 @@ const campaignInfoFragment = `
     areaCode
     count
   }
+  contactsAreaCodeCounts {
+    areaCode
+    state
+    count
+  }
 `;
 
 export const campaignDataQuery = gql`query getCampaign($campaignId: String!) {
@@ -561,6 +566,8 @@ export class AdminCampaignEdit extends React.Component {
           phoneNumberCounts: this.props.organizationData.organization
             .phoneNumberCounts,
           contactsCount: this.state.campaignFormValues.contactsCount,
+          contactsAreaCodeCounts: this.props.campaignData.campaign
+            .contactsAreaCodeCounts,
           inventoryCounts: this.props.campaignData.campaign
             .inventoryPhoneNumberCounts
         }
