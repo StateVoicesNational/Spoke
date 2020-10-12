@@ -197,6 +197,8 @@
     "saucelabs": "^1.5.0",
     "selenium-webdriver": "^3.6.0",
     "sqlite3": "^4.1.1",
+    "ts-loader": "^8.0.4",
+    "typescript": "^4.0.3",
     "wait-on": "^2.1.0",
     "webpack-dev-server": "^2.9.4"
   },

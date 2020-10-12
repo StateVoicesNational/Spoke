@@ -29,7 +29,7 @@ const Message = thinky.createModel(
         .required()
         .allowNull(false),
       text: optionalString(),
-      assignment_id: optionalString(), //deprecated: use refs by campaign_contact_id or user_id
+      assignment_id: optionalString(), // deprecated: use refs by campaign_contact_id or user_id
       campaign_contact_id: optionalString(),
       messageservice_sid: optionalString().stopReference(),
       service: optionalString(),
@@ -58,10 +58,10 @@ const Message = thinky.createModel(
 );
 
 Message.ensureIndex("user_id");
-//Message.ensureIndex("assignment_id");
+// Message.ensureIndex("assignment_id");
 Message.ensureIndex("campaign_contact_id");
 Message.ensureIndex("send_status");
-//Message.ensureIndex("contact_number");
+// Message.ensureIndex("contact_number");
 Message.ensureIndex("service_id");
 Message.ensureIndex("cell_messageservice_sid_idx", doc => [
   doc("contact_number"),

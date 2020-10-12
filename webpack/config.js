@@ -50,6 +50,8 @@ const config = {
   },
   module: {
     rules: [
+      // matches ts and tsx
+      { test: /\.tsx?$/, loader: "ts-loader" },
       {
         test: /\.css$/,
         use: [{ loader: "style-loader" }, { loader: "css-loader" }]

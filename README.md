@@ -15,7 +15,7 @@ The latest version is [9.0](https://github.com/MoveOnOrg/Spoke/tree/v9.0) (see [
 
 The easiest way to get started is with Heroku.  You can also learn about Spoke through the [texter](https://youtu.be/EqE1UDvKGco) and [admin](https://youtu.be/PTMykMX8gII) video demos or in the explanation on [how to decide if Spoke is right for you.](/docs/EXPLANATION_DECIDING_ON_SPOKE.md)
 
-For developers, please see our recomendations for [deploying locally for development](/docs/HOWTO_DEVELOPMENT_LOCAL_SETUP.md).
+For developers, please see our recommendations for [deploying locally for development](/docs/HOWTO_DEVELOPMENT_LOCAL_SETUP.md).
 
 Want to know more?
 [Click here to visit the Spoke Documentation microsite!](https://moveonorg.github.io/Spoke/)

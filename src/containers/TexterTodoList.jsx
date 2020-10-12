@@ -47,7 +47,6 @@ class TexterTodoList extends React.Component {
       .filter(ele => ele !== null);
   }
   componentDidMount() {
-    console.log("TexterTodoList componentDidMount");
     if (refreshOnReturn) {
       this.props.data.refetch();
     }
