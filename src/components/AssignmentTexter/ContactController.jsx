@@ -446,6 +446,7 @@ export class ContactController extends React.Component {
         onExitTexter={this.handleExitTexter}
         messageStatusFilter={this.props.messageStatusFilter}
         organizationId={this.props.organizationId}
+        location={this.props.location}
       />
     );
   }
@@ -541,7 +542,8 @@ ContactController.propTypes = {
   loadContacts: PropTypes.func,
   organizationId: PropTypes.string,
   ChildComponent: PropTypes.func,
-  messageStatusFilter: PropTypes.string
+  messageStatusFilter: PropTypes.string,
+  location: PropTypes.object
 };
 
 export default withRouter(ContactController);
