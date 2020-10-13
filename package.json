@@ -14,7 +14,7 @@
     "test-rediscache-contactcache": "REDIS_URL=redis://localhost:6379 CACHE_PREFIX=test REDIS_CONTACT_CACHE=1 jest --runInBand --forceExit --detectOpenHandles",
     "test-e2e": "jest --runInBand --config jest.config.e2e.js",
     "test-cypress": "NODE_ENV=test DB_TYPE=pg DEFAULT_SERVICE=fakeservice SESSION_SECRET=secret DB_NAME=spoke_test DB_USER=spoke_test DB_PASSWORD=spoke_test cypress open",
-    "cypress-start": "NODE_ENV=test DB_TYPE=pg PORT=3001 ASSETS_DIR=./build/client/assets ASSETS_MAP_FILE=assets.json DEFAULT_SERVICE=fakeservice SESSION_SECRET=secret PASSPORT_STRATEGY=local DB_NAME=spoke_test DB_USER=spoke_test DB_PASSWORD=spoke_test node ./build/server/server",
+    "cypress-start": "NODE_ENV=test DB_TYPE=pg PORT=3001 ASSETS_DIR=./build/client/assets ASSETS_MAP_FILE=assets.json DEFAULT_SERVICE=fakeservice JOBS_SAME_PROCESS=1 SESSION_SECRET=secret PASSPORT_STRATEGY=local DB_NAME=spoke_test DB_USER=spoke_test DB_PASSWORD=spoke_test node ./build/server/server",
     "test-sqlite": "jest --config jest.config.sqlite.js --runInBand --forceExit --detectOpenHandles",
     "test-coverage": "jest --coverage --detectOpenHandles --runInBand",
     "test-coverage-bothbackends": "jest --runInBand --config jest.config.sqlite.js -- __test__/backend.test.js && jest --coverage",

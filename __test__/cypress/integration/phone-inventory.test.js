@@ -3,13 +3,12 @@ if (Cypress.env("DEFAULT_SERVICE") === "fakeservice") {
     const testAreaCode = "212";
 
     beforeEach(() => {
-      cy.login("admin1");
-      cy.visit("/");
       cy.task("clearTestOrgPhoneNumbers", testAreaCode);
+      cy.login("admin1");
+      cy.visit("/admin/1/phone-numbers");
     });
 
     it("shows numbers by area code and allows OWNERs to buy more", () => {
-      cy.get("[data-test=navPhoneNumbers]").click();
       cy.get("th").contains("Area Code");
       cy.get("th").contains("Allocated");
       cy.get("th").contains("Available");
@@ -23,15 +22,11 @@ if (Cypress.env("DEFAULT_SERVICE") === "fakeservice") {
       cy.get("input[data-test=limit]").type("1");
       cy.get("[data-test=buyNumbersForm]").submit();
 
-      // Skip testing pending jobs logic now. Just refresh the page
-      // and check that we have one number available
-      cy.wait(200);
-      cy.reload();
-
       // "Available" column of the row containing the test areaCode
-      cy.get(`tr:contains(${testAreaCode}) td:nth-child(3)`).then(td => {
-        expect(td).to.have.text("1");
-      });
+      // Waits until job run completes
+      cy.waitUntil(() =>
+        cy.get(`tr:contains(${testAreaCode}) td:nth-child(4)`).contains("1")
+      );
     });
   });
 } else {
