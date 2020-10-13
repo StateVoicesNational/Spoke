@@ -1,3 +1,4 @@
+import moment from "moment-timezone";
 import TestData from "../fixtures/test-data";
 
 describe("End-to-end campaign flow", () => {
@@ -8,8 +9,12 @@ describe("End-to-end campaign flow", () => {
 
   it("with an assigned texter", () => {
     // ADMIN
-    const campaignTitle = `E2E basic flow ${new Date().getTime()}`;
+    const campaignTitle = `E2E basic flow ${moment().toString()}`;
     const campaignDescription = "Basic campaign with assignments";
+    const campaignDueBy = moment()
+      .add(1, "month")
+      .startOf("month")
+      .format("M/D/YYYY");
 
     cy.login("admin1");
     cy.visit("/");
@@ -18,20 +23,22 @@ describe("End-to-end campaign flow", () => {
     // Fill out basics
     cy.get("input[data-test=title]").type(campaignTitle);
     cy.get("input[data-test=description]").type(campaignDescription);
-    cy.get("input[data-test=dueBy]").click();
+
+    // DatePicker is difficult to interact with as its components have no ids or classes
+    // So set date directly for test and ignore picker
+    cy.get("input[data-test=dueBy]").type(campaignDueBy, { force: true });
 
     // Very brittle DatePicker interaction to pick the first day of the next month
     // Note: newer versions of Material UI appear to have better hooks for integration
     // testing.
-    cy.get(
-      "body > div:nth-child(5) > div > div:nth-child(1) > div > div > div > div > div:nth-child(2) > div:nth-child(1) > div:nth-child(1) > button:nth-child(3)"
-    ).click();
-    cy.get("button")
-      .contains("1")
-      .click();
+    // cy.get(
+    //   "body > div:nth-child(5) > div > div:nth-child(1) > div > div > div > div > div:nth-child(2) > div:nth-child(1) > div:nth-child(1) > button:nth-child(3)"
+    // ).click();
+    // cy.get("button")
+    //   .contains("1")
+    //   .click();
+    // cy.wait(500);
 
-    // wait for modal to get dismissed, maybe use https://www.npmjs.com/package/cypress-wait-until
-    cy.wait(500);
     cy.get("[data-test=campaignBasicsForm]").submit();
 
     // Upload Contacts
