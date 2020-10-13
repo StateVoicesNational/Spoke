@@ -12,12 +12,15 @@ export const updateFeedback = async (
       campaignId: assignment.campaign_id
     });
     await accessRequired(user, organization.id, "SUPERVOLUNTEER");
+    if (!feedback.createdBy || isNaN(feedback.createdBy)) {
+      /* eslint-disable no-param-reassign */
+      feedback.createdBy = user.id;
+    }
     await r
       .knex("assignment")
       .where("id", assignmentId)
       .update({ feedback });
-
-    return true;
+    return { id: assignmentId };
   } catch (err) {
     // eslint-disable-next-line no-console
     console.error(
