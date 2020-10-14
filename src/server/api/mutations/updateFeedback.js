@@ -19,6 +19,7 @@ export const updateFeedback = async (
     if (!feedback.createdBy || isNaN(feedback.createdBy)) {
       feedback.createdBy = user.id;
     }
+    if (feedback.isAcknowledged === undefined) feedback.isAcknowledged = false;
     /* eslint-disable no-underscore-dangle */
     if (feedback.__typename) delete feedback.__typename;
     if (feedback.issueCounts.__typename) delete feedback.issueCounts.__typename;
