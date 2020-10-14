@@ -40,17 +40,15 @@ export const showSidebox = ({
 };
 
 const schema = yup.object({
-  message: yup.string(),
-  optOuts: yup.number(),
-  tags: yup.number(),
-  responses: yup.number(),
-  hostile: yup.number()
-  // issueCounts: yup.object({
-  // optOuts: yup.number(),
-  // tags: yup.number(),
-  // responses: yup.number(),
-  // hostile: yup.number(),
-  // })
+  feedback: yup.object({
+    message: yup.string(),
+    issueCounts: yup.object({
+      optOuts: yup.number(),
+      tags: yup.number(),
+      responses: yup.number(),
+      hostile: yup.number()
+    })
+  })
 });
 
 export class TexterSideboxClass extends React.Component {
@@ -110,7 +108,7 @@ export class TexterSideboxClass extends React.Component {
         <h3>Feedback</h3>
         <GSForm
           schema={schema}
-          value={this.state.feedback}
+          value={this.state}
           onChange={formValues => {
             console.log("form values: ", formValues);
             this.setState(formValues);
@@ -121,7 +119,7 @@ export class TexterSideboxClass extends React.Component {
             await this.props.mutations.updateFeedback(feedbackString);
           }}
         >
-          <Form.Field name="message" fullWidth multiLine />
+          <Form.Field name="feedback.message" fullWidth multiLine />
           Opt Out errors:
           <IssueCounter value={issueCounts.optOuts} issueType="optOuts" />
           Tag errors:
