@@ -332,7 +332,19 @@ export const resolvers = {
         createdBy: { id: null, name: "" }
       };
 
-      return assignment.feedback || defaultFeedback;
+      const { feedback } = await r
+        .knex("assignment")
+        .select("feedback")
+        .where({
+          id: assignment.id
+        })
+        .first();
+
+      if (feedback) {
+        feedback.createdBy = defaultFeedback.createdBy;
+      }
+
+      return feedback || defaultFeedback;
     }
   }
 };
