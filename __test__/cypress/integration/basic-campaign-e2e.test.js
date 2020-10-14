@@ -42,7 +42,7 @@ describe("End-to-end campaign flow", () => {
     cy.get("[data-test=campaignBasicsForm]").submit();
 
     // Upload Contacts
-    cy.get("#contact-upload").attachFile("two-contacts.csv");
+    cy.get("#contact-upload").attachFile("two-contacts.csv"), { force: true };
     cy.get("button[data-test=submitContactsCsvUpload]").click();
 
     // Assignments
