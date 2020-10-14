@@ -162,8 +162,8 @@ const rootSchema = gql`
   }
 
   input ContactTagInput {
-    id: String,
-    name: String,
+    id: String
+    name: String
     value: String
   }
 
@@ -310,6 +310,7 @@ const rootSchema = gql`
       interactionStepIds: [String]
       campaignContactId: String!
     ): CampaignContact
+    updateFeedback(assignmentId: String!, feedback: String): Assignment
     updateContactTags(
       tags: [ContactTagInput]
       campaignContactId: String!

@@ -58,10 +58,17 @@ export class AssignmentTexterContact extends React.Component {
       snackbarError = "Your assignment has changed";
       snackbarOnTouchTap = this.goBackToTodos;
       snackbarActionTitle = "Back to Todos";
-    } else if (contact.optOut && !this.props.reviewContactId) {
+    } else if (
+      contact.optOut &&
+      !this.props.reviewContactId &&
+      !(this.props.location.query.review === "1")
+    ) {
       disabledText = "Skipping opt-out...";
       disabled = true;
-    } else if (!this.isContactBetweenTextingHours(contact)) {
+    } else if (
+      !(this.props.location.query.review === "1") &&
+      !this.isContactBetweenTextingHours(contact)
+    ) {
       disabledText = "Refreshing ...";
       disabled = true;
     }
@@ -395,10 +402,12 @@ export class AssignmentTexterContact extends React.Component {
           texter={this.props.texter}
           assignment={this.props.assignment}
           currentUser={this.props.currentUser}
+          organizationId={this.props.organizationId}
           navigationToolbarChildren={this.props.navigationToolbarChildren}
           messageStatusFilter={this.props.messageStatusFilter}
           disabled={this.state.disabled}
           enabledSideboxes={this.props.enabledSideboxes}
+          review={this.props.location.query.review}
           onMessageFormSubmit={this.handleMessageFormSubmit}
           onOptOut={this.handleOptOut}
           onUpdateTags={this.handleUpdateTags}
@@ -435,7 +444,7 @@ export class AssignmentTexterContact extends React.Component {
 }
 
 AssignmentTexterContact.propTypes = {
-  reviewContactid: PropTypes.string,
+  reviewContactId: PropTypes.string,
   contact: PropTypes.object,
   campaign: PropTypes.object,
   assignment: PropTypes.object,
@@ -448,7 +457,9 @@ AssignmentTexterContact.propTypes = {
   mutations: PropTypes.object,
   refreshData: PropTypes.func,
   onExitTexter: PropTypes.func,
-  messageStatusFilter: PropTypes.string
+  messageStatusFilter: PropTypes.string,
+  organizationId: PropTypes.string,
+  location: PropTypes.object
 };
 
 const mutations = {
