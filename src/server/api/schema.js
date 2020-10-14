@@ -64,7 +64,8 @@ import {
   updateContactTags,
   updateQuestionResponses,
   releaseCampaignNumbers,
-  clearCachedOrgAndExtensionCaches
+  clearCachedOrgAndExtensionCaches,
+  updateFeedback
 } from "./mutations";
 
 import { jobRunner } from "../../extensions/job-runners";
@@ -501,13 +502,7 @@ const rootMutations = {
       };
     },
 
-    updateFeedback: async (_, { assignmentId, feedback }, { user }) => {
-      // todo real save
-      return {
-        id: assignmentId,
-        feedback
-      };
-    },
+    updateFeedback,
 
     sendReply: async (_, { id, message }, { user, loaders }) => {
       const contact = await cacheableData.campaignContact.load(id);
