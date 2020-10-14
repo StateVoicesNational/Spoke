@@ -324,6 +324,15 @@ export const resolvers = {
         userId: assignment.user_id,
         campaignId: assignment.campaign_id
       }),
-    feedback: async assignment => assignment.feedback || "hello"
+    feedback: async assignment => {
+      const defaultFeedback = {
+        isAcknowledged: false,
+        message: "",
+        issueCounts: { optOuts: 0, tags: 0, responses: 0, hostile: 0 },
+        createdBy: { id: null, name: "" }
+      };
+
+      return assignment.feedback || defaultFeedback;
+    }
   }
 };
