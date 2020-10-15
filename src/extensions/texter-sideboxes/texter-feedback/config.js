@@ -55,8 +55,7 @@ export default [
   },
   {
     key: "engagement",
-    warningMessage: "Please DO engage with undecided voters and supporters, and DO NOT engage from non-supporters and trolls.
-",
+    warningMessage: "Please DO engage with undecided voters and supporters, and DO NOT engage from non-supporters and trolls.",
     successMessage: "Your messages showed good engagement with voters!",
     content: (
       <p>
