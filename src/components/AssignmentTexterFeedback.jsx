@@ -239,7 +239,9 @@ export const mutations = {
       mutation updateFeedback($assignmentId: String!, $feedback: String!) {
         updateFeedback(assignmentId: $assignmentId, feedback: $feedback) {
           id
-          feedback
+          feedback {
+            isAcknowledged
+          }
         }
       }
     `,
