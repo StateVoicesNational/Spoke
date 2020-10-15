@@ -1,6 +1,6 @@
 import type from "prop-types";
 import React from "react";
-import { Link } from "react-router";
+import { Link, withRouter } from "react-router";
 import yup from "yup";
 import Form from "react-formal";
 import FlatButton from "material-ui/FlatButton";
@@ -14,10 +14,11 @@ import RemoveIcon from "material-ui/svg-icons/content/remove-circle";
 import DoneIcon from "material-ui/svg-icons/action/done";
 import { css } from "aphrodite";
 import GSForm from "../../../components/forms/GSForm";
-import { withRouter } from "react-router";
 import loadData from "../../../containers/hoc/load-data";
 import isEqual from "lodash/isEqual";
 import gql from "graphql-tag";
+import _ from "lodash";
+import issueItems from "./config";
 
 import {
   flexStyles,
@@ -36,12 +37,13 @@ export const showSidebox = ({ currentUser, review }) => {
 const schema = yup.object({
   feedback: yup.object({
     message: yup.string(),
-    issueCounts: yup.object({
-      optOuts: yup.number(),
-      tags: yup.number(),
-      responses: yup.number(),
-      hostile: yup.number()
-    })
+    issueCounts: yup.object(
+      issueItems.reduce((obj, item) => {
+        /* eslint-disable no-param-reassign*/
+        obj[item.key] = yup.number();
+        return obj;
+      }, {})
+    )
   })
 });
 
@@ -51,18 +53,24 @@ export class TexterSideboxClass extends React.Component {
     this.state = { feedback: props.assignment.feedback };
   }
 
-  async componentDidUpdate(prevProps, prevState) {
-    if (isEqual(prevState, this.state)) return;
-
-    let feedbackString = JSON.stringify(this.state.feedback);
-    console.log("componentDidUpdate: ", this.state.feedback);
-    await this.props.mutations.updateFeedback(feedbackString);
+  componentDidUpdate(prevProps, prevState) {
+    if (!_.isEqual(prevState.feedback, this.state.feedback)) {
+      this.debouncedUpdate();
+    }
   }
 
+  debouncedUpdate = _.debounce(
+    async () => {
+      const feedbackString = JSON.stringify(this.state.feedback);
+      console.log("componentDidUpdate: ", this.state.feedback);
+      await this.props.mutations.updateFeedback(feedbackString);
+    },
+    500,
+    { leading: false, trailing: true }
+  );
+
   render() {
-    const { assignment } = this.props;
-    const { message, issueCounts } = this.state.feedback;
-    const { optOuts, tags, responses, hostile } = issueCounts;
+    const { issueCounts } = this.state.feedback;
 
     console.log("state on render: ", this.state);
 
@@ -77,7 +85,7 @@ export class TexterSideboxClass extends React.Component {
                   ...this.state.feedback,
                   issueCounts: {
                     ...issueCounts,
-                    [issueType]: issueCounts[issueType] - 1
+                    [issueType]: (issueCounts[issueType] || 0) - 1
                   }
                 }
               });
@@ -85,7 +93,7 @@ export class TexterSideboxClass extends React.Component {
           >
             <RemoveIcon />
           </IconButton>
-          {issueCounts[issueType]}
+          {issueCounts[issueType] || "0"}
           <IconButton
             onClick={() => {
               this.setState({
@@ -93,7 +101,7 @@ export class TexterSideboxClass extends React.Component {
                   ...this.state.feedback,
                   issueCounts: {
                     ...issueCounts,
-                    [issueType]: issueCounts[issueType] + 1
+                    [issueType]: (issueCounts[issueType] || 0) + 1
                   }
                 }
               });
@@ -122,14 +130,20 @@ export class TexterSideboxClass extends React.Component {
           }}
         >
           <Form.Field name="feedback.message" fullWidth multiLine />
-          Opt Out errors:
-          <IssueCounter value={issueCounts.optOuts} issueType="optOuts" />
-          Tag errors:
-          <IssueCounter value={issueCounts.tags} issueType="tags" />
-          Better response suggested:
-          <IssueCounter value={issueCounts.responses} issueType="responses" />
-          Hostile, rude, feeding trolls:
-          <IssueCounter value={issueCounts.hostile} issueType="hostile" />
+
+          {issueItems.map(({ key }) => {
+            const count = (Object.entries(issueCounts).find(
+              issueCount => issueCount[0] === key
+            ) || [])[1];
+
+            return (
+              <div>
+                <span>{_.startCase(key)} Errors:</span>
+                <IssueCounter value={count} issueType={key} />
+              </div>
+            );
+          })}
+
           <Form.Button type="submit" label="save" disabled={false} />
         </GSForm>
       </div>
@@ -159,12 +173,7 @@ export const mutations = {
           id
           feedback {
             message
-            issueCounts {
-              optOuts
-              tags
-              responses
-              hostile
-            }
+            issueCounts
           }
         }
       }
