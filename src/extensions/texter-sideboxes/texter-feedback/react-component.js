@@ -16,6 +16,7 @@ import { css } from "aphrodite";
 import GSForm from "../../../components/forms/GSForm";
 import { withRouter } from "react-router";
 import loadData from "../../../containers/hoc/load-data";
+import isEqual from "lodash/isEqual";
 import gql from "graphql-tag";
 
 import {
@@ -55,6 +56,14 @@ export class TexterSideboxClass extends React.Component {
   constructor(props) {
     super(props);
     this.state = { feedback: props.assignment.feedback };
+  }
+
+  async componentDidUpdate(prevProps, prevState) {
+    if (isEqual(prevState, this.state)) return;
+
+    let feedbackString = JSON.stringify(this.state.feedback);
+    console.log("componentDidUpdate: ", this.state.feedback);
+    await this.props.mutations.updateFeedback(feedbackString);
   }
 
   render() {
@@ -155,6 +164,15 @@ export const mutations = {
       mutation updateFeedback($assignmentId: String!, $feedback: String!) {
         updateFeedback(assignmentId: $assignmentId, feedback: $feedback) {
           id
+          feedback {
+            message
+            issueCounts {
+              optOuts
+              tags
+              responses
+              hostile
+            }
+          }
         }
       }
     `,
