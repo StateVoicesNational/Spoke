@@ -527,8 +527,18 @@ export const resolvers = {
         r.knex("campaign_contact").where({ campaign_id: campaign.id })
       );
     },
-    contactsAreaCodeCounts: async (campaign, _, { user }) => {
-      if (!process.env.EXPERIMENTAL_CAMPAIGN_PHONE_NUMBERS) return [];
+    contactsAreaCodeCounts: async (campaign, _, { user, loaders }) => {
+      const organization = await loaders.organization.load(
+        campaign.organization_id
+      );
+
+      if (
+        !getConfig("EXPERIMENTAL_CAMPAIGN_PHONE_NUMBERS", organization, {
+          truthy: 1
+        })
+      ) {
+        return [];
+      }
 
       await accessRequired(
         user,
@@ -542,9 +552,9 @@ export const resolvers = {
         .knex("campaign_contact")
         .select(
           r.knex.raw(`
-          substring(cell, 3, 3) AS area_code,
-          count(*)
-        `)
+            substring(cell, 3, 3) AS area_code,
+            count(*)
+          `)
         )
         .where({ campaign_id: campaign.id })
         .groupBy(1);

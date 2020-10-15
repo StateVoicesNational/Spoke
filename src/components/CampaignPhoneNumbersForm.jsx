@@ -75,6 +75,7 @@ export default class CampaignPhoneNumbersForm extends React.Component {
   };
 
   state = {
+    isRendering: true,
     searchText: "",
     showOnlySelected: false,
     error: ""
@@ -84,6 +85,13 @@ export default class CampaignPhoneNumbersForm extends React.Component {
     areaCode: yup.string(), // TODO: validate
     count: yup.number()
   });
+
+  componentDidMount() {
+    // let the component initially render before rendering lists
+    setTimeout(() => {
+      this.setState({ isRendering: false });
+    });
+  }
 
   formValues() {
     return {
@@ -159,7 +167,7 @@ export default class CampaignPhoneNumbersForm extends React.Component {
   getNumbersCount = count => (count === 1 ? "number" : "numbers");
 
   showPhoneNumbers() {
-    const { searchText, showOnlySelected } = this.state;
+    const { isRendering, searchText, showOnlySelected } = this.state;
     const { isStarted, contactsCount, contactsPerPhoneNumber } = this.props;
     const { inventoryPhoneNumberCounts: reservedNumbers } = this.formValues();
     const assignedNumberCount = this.getTotalNumberCount(reservedNumbers);
@@ -257,62 +265,63 @@ export default class CampaignPhoneNumbersForm extends React.Component {
           padding: "0 15px 0 0"
         }}
       >
-        {states.map(state => (
-          <ListItem
-            key={state}
-            primaryText={state}
-            primaryTogglesNestedList
-            initiallyOpen
-            nestedItems={areaCodes
-              .filter(areaCode => areaCode.state === state)
-              .map(({ areaCode, availableCount }) => {
-                const assignedCount = getAssignedCount(areaCode);
-                return (
-                  <ListItem
-                    key={areaCode}
-                    style={{
-                      marginBottom: 15,
-                      height: 16,
-                      border: "1px solid rgb(225, 228, 224)",
-                      borderRadius: 8
-                    }}
-                    disabled
-                    primaryText={
-                      <span>
-                        <span style={{ marginRight: "20%" }}>{areaCode}</span>
-                        <span style={{ color: "#888" }}>
-                          {`${assignedCount}${
-                            !isStarted ? ` / ${availableCount}` : ""
-                          }`}
+        {!isRendering &&
+          states.map(state => (
+            <ListItem
+              key={state}
+              primaryText={state}
+              primaryTogglesNestedList
+              initiallyOpen
+              nestedItems={areaCodes
+                .filter(areaCode => areaCode.state === state)
+                .map(({ areaCode, availableCount }) => {
+                  const assignedCount = getAssignedCount(areaCode);
+                  return (
+                    <ListItem
+                      key={areaCode}
+                      style={{
+                        marginBottom: 15,
+                        height: 16,
+                        border: "1px solid rgb(225, 228, 224)",
+                        borderRadius: 8
+                      }}
+                      disabled
+                      primaryText={
+                        <span>
+                          <span style={{ marginRight: "20%" }}>{areaCode}</span>
+                          <span style={{ color: "#888" }}>
+                            {`${assignedCount}${
+                              !isStarted ? ` / ${availableCount}` : ""
+                            }`}
+                          </span>
                         </span>
-                      </span>
-                    }
-                    rightIconButton={
-                      !isStarted && (
-                        <div style={{ marginRight: 50 }}>
-                          <IconButton
-                            disabled={!assignedCount}
-                            onClick={() => unassignAreaCode(areaCode)}
-                          >
-                            <RemoveIcon />
-                          </IconButton>
-                          <IconButton
-                            disabled={
-                              assignedCount === availableCount ||
-                              assignedNumberCount === numbersNeeded
-                            }
-                            onClick={() => assignAreaCode(areaCode)}
-                          >
-                            <AddIcon />
-                          </IconButton>
-                        </div>
-                      )
-                    }
-                  />
-                );
-              })}
-          />
-        ))}
+                      }
+                      rightIconButton={
+                        !isStarted && (
+                          <div style={{ marginRight: 50 }}>
+                            <IconButton
+                              disabled={!assignedCount}
+                              onClick={() => unassignAreaCode(areaCode)}
+                            >
+                              <RemoveIcon />
+                            </IconButton>
+                            <IconButton
+                              disabled={
+                                assignedCount === availableCount ||
+                                assignedNumberCount === numbersNeeded
+                              }
+                              onClick={() => assignAreaCode(areaCode)}
+                            >
+                              <AddIcon />
+                            </IconButton>
+                          </div>
+                        )
+                      }
+                    />
+                  );
+                })}
+            />
+          ))}
       </List>
     );
   }
@@ -333,14 +342,14 @@ export default class CampaignPhoneNumbersForm extends React.Component {
       contactsPerPhoneNumber
     } = this.props;
     const numbersNeeded = Math.ceil(contactsCount / contactsPerPhoneNumber);
-    const remaining = numbersNeeded - assignedNumberCount;
+    let remaining = numbersNeeded - assignedNumberCount;
 
     const headerColor =
       assignedNumberCount === numbersNeeded
         ? theme.colors.darkBlue
         : theme.colors.red;
 
-    const assignRandom = () => {
+    const autoAssignRemaining = () => {
       let inventory = this.formValues().inventoryPhoneNumberCounts;
 
       const availableAreaCodes = _.flatten(
@@ -363,64 +372,67 @@ export default class CampaignPhoneNumbersForm extends React.Component {
         })
       );
 
-      let remainingToSample = remaining;
-
       /* eslint-disable no-param-reassign */
 
-      const matchedFromContacts = contactsAreaCodeCounts.reduce(
-        (obj, contacts) => {
-          // ignore area codes without significant contacts count
-          if (contacts.count < 20) return obj;
+      const matchedFromContacts = _.orderBy(
+        contactsAreaCodeCounts,
+        ["count"],
+        ["desc"]
+      ).reduce((obj, contacts) => {
+        // ignore outlier area codes
+        if (contacts.count < 20 || !remaining) return obj;
 
-          const needed = Math.ceil(contacts.count / 200);
-          let foundAvailable = availableAreaCodes.filter(
-            avail => avail.areaCode === contacts.areaCode
+        const needed = Math.ceil(contacts.count / contactsPerPhoneNumber);
+        let foundAvailable = availableAreaCodes.filter(
+          avail => avail.areaCode === contacts.areaCode
+        );
+
+        if (!foundAvailable.length) {
+          // if no exact match, try to fall back to state match
+          foundAvailable = availableAreaCodes.filter(
+            avail => avail.state === contacts.state
           );
+        }
 
-          if (!foundAvailable.length) {
-            // if no exact match, try to fall back to state match
-            foundAvailable = availableAreaCodes.filter(
-              avail => avail.state === contacts.state
-            );
+        // if nothing found, skip to be randomly assigned
+        if (!foundAvailable.length) return obj;
+
+        if (foundAvailable.length > needed) {
+          // if we've got more than needed, randomly pick them
+          foundAvailable = _.shuffle(foundAvailable).slice(0, needed);
+          // otherwise use them all!
+        }
+
+        foundAvailable.forEach(avail => {
+          obj[avail.areaCode] = (obj[avail.areaCode] || 0) + 1;
+        });
+
+        // now remove these from available
+        foundAvailable.forEach(found => {
+          availableAreaCodes.splice(
+            availableAreaCodes.findIndex(
+              avail => avail.areaCode === found.areaCode
+            ),
+            1
+          );
+        });
+
+        remaining -= foundAvailable.length;
+
+        return obj;
+      }, {});
+
+      const randomSample = _.sampleSize(availableAreaCodes, remaining).reduce(
+        (obj, sample) => {
+          if (matchedFromContacts[sample.areaCode]) {
+            matchedFromContacts[sample.areaCode] += 1;
+          } else {
+            obj[sample.areaCode] = (obj[sample.areaCode] || 0) + 1;
           }
-
-          // if nothing found, skip to be randomly assigned
-          if (!foundAvailable.length) return obj;
-
-          if (foundAvailable.length > needed) {
-            // if we've got more than needed, randomly pick them
-            foundAvailable = _.shuffle(foundAvailable).slice(0, needed);
-            // otherwise use them all!
-          }
-
-          foundAvailable.forEach(avail => {
-            obj[avail.areaCode] = (obj[avail.areaCode] || 0) + 1;
-          });
-
-          // now remove these from available
-          foundAvailable.forEach(found => {
-            availableAreaCodes.splice(
-              availableAreaCodes.findIndex(
-                avail => avail.areaCode === found.areaCode
-              ),
-              1
-            );
-          });
-
           return obj;
         },
         {}
       );
-
-      remainingToSample -= _.sum(Object.values(matchedFromContacts));
-
-      const randomSample = _.sampleSize(
-        availableAreaCodes,
-        remainingToSample
-      ).reduce((obj, sample) => {
-        obj[sample.areaCode] = (obj[sample.areaCode] || 0) + 1;
-        return obj;
-      }, {});
 
       /* eslint-enable no-param-reassign */
 
@@ -482,7 +494,7 @@ export default class CampaignPhoneNumbersForm extends React.Component {
                   label={`Auto-Reserve Remaining ${remaining}`}
                   secondary
                   disabled={!remaining}
-                  onClick={() => assignRandom()}
+                  onClick={() => autoAssignRemaining()}
                 />
 
                 <Checkbox
@@ -513,13 +525,14 @@ export default class CampaignPhoneNumbersForm extends React.Component {
   }
 
   contactsAreaCodesTable() {
-    const { searchText } = this.state;
+    const { isRendering, searchText } = this.state;
     const { contactsCount } = this.props;
 
-    let areaCodes = _.orderBy(this.props.contactsAreaCodeCounts, [
-      "state",
-      "areaCode"
-    ]);
+    let areaCodes = _.orderBy(
+      this.props.contactsAreaCodeCounts,
+      ["count", "state", "areaCode"],
+      ["desc"]
+    );
 
     const states = Array.from(new Set(areaCodes.map(({ state }) => state)));
 
@@ -561,63 +574,71 @@ export default class CampaignPhoneNumbersForm extends React.Component {
             padding: "0 15px 0 0"
           }}
         >
-          {states.map(state => (
-            <ListItem
-              key={state}
-              primaryText={state}
-              primaryTogglesNestedList
-              initiallyOpen
-              nestedItems={areaCodes
-                .filter(areaCode => areaCode.state === state)
-                .map(({ areaCode, count }) => {
-                  const isAssigned = getIsAssigned(areaCode);
-                  return (
-                    <ListItem
-                      key={areaCode}
-                      style={{
-                        marginBottom: 15,
-                        height: 16,
-                        border: "1px solid rgb(225, 228, 224)",
-                        borderRadius: 8
-                      }}
-                      leftCheckbox={
-                        <Checkbox disabled={!isAssigned} checked={isAssigned} />
-                      }
-                      primaryText={
-                        <div
-                          style={{
-                            display: "flex",
-                            alignItems: "center"
-                          }}
-                        >
-                          <span style={{ marginRight: "20%" }}>{areaCode}</span>
-                          <span
+          {!isRendering &&
+            states.map(state => (
+              <ListItem
+                key={state}
+                primaryText={state}
+                primaryTogglesNestedList
+                initiallyOpen
+                nestedItems={areaCodes
+                  .filter(areaCode => areaCode.state === state)
+                  .map(({ areaCode, count }) => {
+                    const isAssigned = getIsAssigned(areaCode);
+                    return (
+                      <ListItem
+                        key={areaCode}
+                        style={{
+                          marginBottom: 15,
+                          height: 16,
+                          border: "1px solid rgb(225, 228, 224)",
+                          borderRadius: 8
+                        }}
+                        leftCheckbox={
+                          <Checkbox
+                            disabled={!isAssigned}
+                            checked={isAssigned}
+                          />
+                        }
+                        primaryText={
+                          <div
                             style={{
-                              width: "30%",
-                              fontSize: 14,
-                              color: theme.colors.blue
+                              display: "flex",
+                              alignItems: "center"
                             }}
                           >
-                            {count}
-                          </span>
+                            <span style={{ marginRight: "20%" }}>
+                              {areaCode}
+                            </span>
+                            <span
+                              style={{
+                                width: "30%",
+                                fontSize: 14,
+                                color: theme.colors.blue
+                              }}
+                            >
+                              {count}
+                            </span>
 
-                          <span
-                            style={{
-                              marginLeft: "10%",
-                              fontSize: 16,
-                              color: theme.colors.blue
-                            }}
-                          >
-                            {((count / contactsCount) * 100).toFixed(2)}
-                          </span>
-                          <span style={{ marginLeft: 2, fontSize: 14 }}>%</span>
-                        </div>
-                      }
-                    />
-                  );
-                })}
-            />
-          ))}
+                            <span
+                              style={{
+                                marginLeft: "10%",
+                                fontSize: 16,
+                                color: theme.colors.blue
+                              }}
+                            >
+                              {((count / contactsCount) * 100).toFixed(2)}
+                            </span>
+                            <span style={{ marginLeft: 2, fontSize: 14 }}>
+                              %
+                            </span>
+                          </div>
+                        }
+                      />
+                    );
+                  })}
+              />
+            ))}
         </List>
       </div>
     );
