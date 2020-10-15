@@ -507,7 +507,7 @@ export class ContactController extends React.Component {
         campaign.texterUIConfig.options) ||
         "{}"
     );
-    const review = this.props.location.review;
+    const review = this.props.location.query.review;
     const sideboxProps = {
       assignment,
       campaign,

@@ -30,8 +30,6 @@ export const showSidebox = ({ currentUser, review }) => {
   // Return anything False-y to not show
   // Return anything Truth-y to show
   // Return 'popup' to force a popup on mobile screens (instead of letting it hide behind a button)
-  // console.log("showsidebox", messageStatusFilter, contact, campaign);
-  // only show if in review mode and an admin
   return review === "1" && currentUser.roles.includes("ADMIN");
 };
 
