@@ -150,11 +150,7 @@ export class AssignmentSummary extends Component {
       >
         <Card
           style={
-            hasFeedbackToAcknowledge
-              ? {
-                  border: "4px solid #FFD700"
-                }
-              : {}
+            hasFeedbackToAcknowledge ? { border: `4px solid #2265d7` } : {}
           }
         >
           <CardTitle
