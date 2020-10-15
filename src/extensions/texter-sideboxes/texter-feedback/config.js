@@ -64,14 +64,4 @@ export default [
       </p>
     )
   },
-  {
-    key: "remove",
-    warningMessage: "remove",
-    successMessage: "remove",
-    content: (
-      <p>
-        remove this one please.
-      </p>
-    )
-  }
 ];
