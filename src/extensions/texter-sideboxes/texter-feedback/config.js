@@ -3,7 +3,7 @@ import React from "react";
 export default [
   {
     key: "optOuts",
-    warningMessage: "Please review the Opt-Out Policy",
+    warningMessage: "Please Review the Opt-Out Policy",
     successMessage: "You had no issues with Opt Outs!",
     content: (
       <p>
@@ -50,14 +50,14 @@ export default [
   {
     key: "script",
     warningMessage: "Missing Ask or Included Unofficial Info",
-    successMessage: "You made the risk asks and provided accurate info!",
+    successMessage: "You made the right asks and provided accurate info!",
     content: (
       <p>
         Let’s stick to the scripted responses as much as possible! If a scripted
         message will not address the particular issue, make sure to always
         include the appropriate ask at the end of the message and make sure the
         source of your information is coming from an official campaign source or
-        local government source for voter information.
+        local government source for voter information. 
       </p>
     )
   },
