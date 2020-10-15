@@ -5,13 +5,6 @@ export const schema = `
     sender: Boolean
   }
 
-  type AssignmentFeedbackCounts {
-    optOuts: Int
-    tags: Int
-    responses: Int
-    hostile: Int
-  }
-
   type FeedbackCreatedBy {
     id: Int
     name: String
@@ -19,7 +12,7 @@ export const schema = `
 
   type AssignmentFeedback {
     message: String!
-    issueCounts: AssignmentFeedbackCounts!
+    issueCounts: JSON!
     isAcknowledged: Boolean!
     createdBy: FeedbackCreatedBy!
   }
