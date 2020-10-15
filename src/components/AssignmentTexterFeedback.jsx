@@ -110,7 +110,6 @@ export class AssignmentTexterFeedback extends Component {
 
     const getWarningContent = type => {
       const configItem = configItems.find(({ key }) => key === type);
-      console.log(type, configItem);
       if (!configItem) return null;
       return (
         <Step>
@@ -126,7 +125,6 @@ export class AssignmentTexterFeedback extends Component {
 
     const getSuccessContent = type => {
       const configItem = configItems.find(({ key }) => key === type);
-      console.log(type, configItem);
       if (!configItem) return null;
       return <Alert type="success" message={configItem.successMessage} />;
     };
@@ -142,7 +140,14 @@ export class AssignmentTexterFeedback extends Component {
           <StepLabel style={inlineStyles.stepLabel}>
             {createdBy.name}'s Feedback:
           </StepLabel>
-          <StepContent style={inlineStyles.stepContent}>{message}</StepContent>
+          <StepContent style={inlineStyles.stepContent}>
+            {message.split("\n").map((line, key) => (
+              <span key={key}>
+                {line}
+                <br />
+              </span>
+            ))}
+          </StepContent>
         </Step>
         {warningItems.map(([type]) => getWarningContent(type))}
         <Step>
