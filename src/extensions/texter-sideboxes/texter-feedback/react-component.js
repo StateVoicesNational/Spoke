@@ -8,6 +8,9 @@ import TagChip from "../../../components/TagChip";
 import theme from "../../../styles/theme";
 import CheckIcon from "material-ui/svg-icons/action/check-circle";
 import CircularProgress from "material-ui/CircularProgress";
+import IconButton from "material-ui/IconButton/IconButton";
+import AddIcon from "material-ui/svg-icons/content/add-circle";
+import RemoveIcon from "material-ui/svg-icons/content/remove-circle";
 import DoneIcon from "material-ui/svg-icons/action/done";
 import { css } from "aphrodite";
 import GSForm from "../../../components/forms/GSForm";
@@ -32,10 +35,21 @@ export const showSidebox = ({
   // Return anything Truth-y to show
   // Return 'popup' to force a popup on mobile screens (instead of letting it hide behind a button)
   // console.log("showsidebox", messageStatusFilter, contact, campaign);
+  // only show if in review mode and an admin
   return true;
 };
 
-const schema = yup.object({ feedback: yup.string() });
+const schema = yup.object({
+  feedback: yup.object({
+    message: yup.string(),
+    issueCounts: yup.object({
+      optOuts: yup.number(),
+      tags: yup.number(),
+      responses: yup.number(),
+      hostile: yup.number()
+    })
+  })
+});
 
 export class TexterSideboxClass extends React.Component {
   constructor(props) {
@@ -45,7 +59,49 @@ export class TexterSideboxClass extends React.Component {
 
   render() {
     const { assignment } = this.props;
-    const { feedback } = this.state;
+    const { message, issueCounts } = this.state.feedback;
+    const { optOuts, tags, responses, hostile } = issueCounts;
+
+    console.log("state on render: ", this.state);
+
+    const IssueCounter = ({ value, issueType }) => {
+      return (
+        <div>
+          <IconButton
+            disabled={!value}
+            onClick={() => {
+              this.setState({
+                feedback: {
+                  ...this.state.feedback,
+                  issueCounts: {
+                    ...issueCounts,
+                    [issueType]: issueCounts[issueType] - 1
+                  }
+                }
+              });
+            }}
+          >
+            <RemoveIcon />
+          </IconButton>
+          {issueCounts[issueType]}
+          <IconButton
+            onClick={() => {
+              this.setState({
+                feedback: {
+                  ...this.state.feedback,
+                  issueCounts: {
+                    ...issueCounts,
+                    [issueType]: issueCounts[issueType] + 1
+                  }
+                }
+              });
+            }}
+          >
+            <AddIcon />
+          </IconButton>
+        </div>
+      );
+    };
 
     return (
       <div>
@@ -53,12 +109,25 @@ export class TexterSideboxClass extends React.Component {
         <GSForm
           schema={schema}
           value={this.state}
-          onChange={formValues => this.setState(formValues)}
-          onSubmit={() => {
-            this.props.mutations.updateFeedback(this.state.feedback);
+          onChange={formValues => {
+            console.log("form values: ", formValues);
+            this.setState(formValues);
+          }}
+          onSubmit={async () => {
+            let feedbackString = JSON.stringify(this.state.feedback);
+            console.log("feedback on submit: ", this.state.feedback);
+            await this.props.mutations.updateFeedback(feedbackString);
           }}
         >
-          <Form.Field name="feedback" fullWidth multiLine />
+          <Form.Field name="feedback.message" fullWidth multiLine />
+          Opt Out errors:
+          <IssueCounter value={issueCounts.optOuts} issueType="optOuts" />
+          Tag errors:
+          <IssueCounter value={issueCounts.tags} issueType="tags" />
+          Response errors:
+          <IssueCounter value={issueCounts.responses} issueType="responses" />
+          Hostile errors:
+          <IssueCounter value={issueCounts.hostile} issueType="hostile" />
           <Form.Button type="submit" label="save" disabled={false} />
         </GSForm>
       </div>
@@ -86,7 +155,6 @@ export const mutations = {
       mutation updateFeedback($assignmentId: String!, $feedback: String!) {
         updateFeedback(assignmentId: $assignmentId, feedback: $feedback) {
           id
-          feedback
         }
       }
     `,

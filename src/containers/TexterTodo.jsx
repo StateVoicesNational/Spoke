@@ -141,7 +141,18 @@ export const dataQuery = gql`
     }
     assignment(assignmentId: $assignmentId, contactId: $contactId) {
       id
-      feedback
+      feedback {
+        createdBy {
+          name
+        }
+        message
+        issueCounts {
+          optOuts
+          tags
+          responses
+          hostile
+        }
+      }
       hasUnassignedContactsForTexter
       contacts(contactsFilter: $contactsFilter) {
         id
@@ -211,6 +222,7 @@ export class TexterTodo extends React.Component {
         organizationId={this.props.params.organizationId}
         ChildComponent={AssignmentTexterContact}
         messageStatusFilter={this.props.messageStatus}
+        location={this.props.location}
       />
     );
   }
