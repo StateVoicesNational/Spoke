@@ -3,14 +3,12 @@ import React, { Component } from "react";
 import { Card, CardActions, CardTitle } from "material-ui/Card";
 import FlatButton from "material-ui/FlatButton";
 import RaisedButton from "material-ui/RaisedButton";
-import Divider from "material-ui/Divider";
-import Paper from "material-ui/Paper";
 import { Step, Stepper, StepLabel, StepContent } from "material-ui/Stepper";
-import { List, ListItem } from "material-ui/List";
 import WarningIcon from "material-ui/svg-icons/alert/warning";
 import SuccessIcon from "material-ui/svg-icons/action/check-circle";
 import { StyleSheet, css } from "aphrodite";
-import _ from "lodash";
+import loadData from "../containers/hoc/load-data";
+import gql from "graphql-tag";
 
 import theme from "../styles/theme";
 
@@ -275,10 +273,10 @@ export class AssignmentTexterFeedback extends Component {
         </Step>
         {issueItems.map(([type, count], i) => getIssueContent(type, count, i))}
         <Step>
-          <StepLabel style={inlineStyles.stepLabel}>Thank You</StepLabel>
+          <StepLabel style={inlineStyles.stepLabel}>Thank You!</StepLabel>
           <StepContent>
             {positiveItems.map(([type]) => getPositiveContent(type))}
-            {issueItems.length && (
+            {!!issueItems.length && (
               <Alert type="success" message="Keep up the great work! 🎉" />
             )}
           </StepContent>
@@ -297,6 +295,13 @@ export class AssignmentTexterFeedback extends Component {
     this.setState(({ stepIndex }) => ({
       stepIndex: stepIndex ? stepIndex - 1 : stepIndex
     }));
+
+  handleDone = async () => {
+    const { feedback, mutations } = this.props;
+    feedback.isAcknowledged = true;
+    const feedbackString = JSON.stringify(feedback);
+    await mutations.updateFeedback(feedbackString);
+  };
 
   render() {
     const { stepIndex } = this.state;
@@ -339,9 +344,7 @@ export class AssignmentTexterFeedback extends Component {
                   label={stepIndex >= totalSteps ? "Done" : "Next"}
                   primary
                   onClick={
-                    stepIndex < totalSteps
-                      ? this.handleNext
-                      : this.props.handleDone
+                    stepIndex < totalSteps ? this.handleNext : this.handleDone
                   }
                 />
               </CardActions>
@@ -354,7 +357,27 @@ export class AssignmentTexterFeedback extends Component {
 }
 
 AssignmentTexterFeedback.propTypes = {
-  feedback: PropTypes.object
+  feedback: PropTypes.object,
+  mutations: PropTypes.func
 };
 
-export default AssignmentTexterFeedback;
+export const mutations = {
+  updateFeedback: ownProps => feedback => ({
+    mutation: gql`
+      mutation updateFeedback($assignmentId: String!, $feedback: String!) {
+        updateFeedback(assignmentId: $assignmentId, feedback: $feedback) {
+          id
+          feedback {
+            isAcknowledged
+          }
+        }
+      }
+    `,
+    variables: {
+      assignmentId: ownProps.assignmentId,
+      feedback
+    }
+  })
+};
+
+export default loadData({ mutations })(AssignmentTexterFeedback);
