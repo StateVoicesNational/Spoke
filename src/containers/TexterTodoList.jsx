@@ -160,12 +160,7 @@ export const dataQuery = gql`
             name
           }
           message
-          issueCounts {
-            optOuts
-            tags
-            responses
-            hostile
-          }
+          issueCounts
         }
         allContactsCount: contactsCount
         unmessagedCount: contactsCount(contactsFilter: $needsMessageFilter)

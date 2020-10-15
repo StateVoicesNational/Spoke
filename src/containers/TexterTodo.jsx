@@ -146,12 +146,7 @@ export const dataQuery = gql`
           name
         }
         message
-        issueCounts {
-          optOuts
-          tags
-          responses
-          hostile
-        }
+        issueCounts
       }
       hasUnassignedContactsForTexter
       contacts(contactsFilter: $contactsFilter) {
