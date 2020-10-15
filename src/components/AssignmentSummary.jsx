@@ -141,7 +141,11 @@ export class AssignmentSummary extends Component {
     const cardTitleTextColor = setContrastingColor(primaryColor);
 
     const hasFeedbackToAcknowledge =
-      feedback.message && feedback.isAcknowledged === false;
+      feedback && feedback.isAcknowledged === false;
+
+    // NOTE: we bring back archived campaigns if they have feedback
+    // but want to get rid of them once feedback is acknowledged
+    if (campaign.is_archived && hasFeedbackToAcknowledge) return null;
 
     return (
       <div
@@ -177,7 +181,10 @@ export class AssignmentSummary extends Component {
           ) : null}
           <CardActions>
             {hasFeedbackToAcknowledge && (
-              <AssignmentTexterFeedback feedback={feedback} />
+              <AssignmentTexterFeedback
+                assignmentId={assignment.id}
+                feedback={feedback}
+              />
             )}
             {(window.NOT_IN_USA && window.ALLOW_SEND_ALL) ||
             hasFeedbackToAcknowledge
