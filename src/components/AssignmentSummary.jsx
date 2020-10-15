@@ -2,15 +2,13 @@ import PropTypes from "prop-types";
 import React, { Component } from "react";
 import { Card, CardActions, CardTitle } from "material-ui/Card";
 import { StyleSheet, css } from "aphrodite";
-import loadData from "../containers/hoc/load-data";
 import { setContrastingColor } from "../lib/color-contrast-helper";
-import gql from "graphql-tag";
 import RaisedButton from "material-ui/RaisedButton";
 import Badge from "material-ui/Badge";
-import moment from "moment";
 import Divider from "material-ui/Divider";
 import { withRouter } from "react-router";
 import { dataTest } from "../lib/attributes";
+import AssignmentTexterFeedback from "./AssignmentTexterFeedback";
 
 import {
   getSideboxes,
@@ -116,13 +114,12 @@ export class AssignmentSummary extends Component {
     const { assignment, texter } = this.props;
     const {
       campaign,
-      hasUnassignedContactsForTexter,
       unmessagedCount,
       unrepliedCount,
       badTimezoneCount,
-      totalMessagedCount,
       pastMessagesCount,
-      skippedMessagesCount
+      skippedMessagesCount,
+      feedback
     } = assignment;
     const {
       id: campaignId,
@@ -131,8 +128,7 @@ export class AssignmentSummary extends Component {
       primaryColor,
       logoImageUrl,
       introHtml,
-      texterUIConfig,
-      useDynamicAssignment
+      texterUIConfig
     } = campaign;
     const settingsData = JSON.parse(
       (texterUIConfig && texterUIConfig.options) || "{}"
@@ -144,12 +140,19 @@ export class AssignmentSummary extends Component {
     );
     const cardTitleTextColor = setContrastingColor(primaryColor);
 
+    const hasFeedbackToAcknowledge =
+      feedback.message && feedback.isAcknowledged === false;
+
     return (
       <div
         className={css(styles.container)}
         {...dataTest(`assignmentSummary-${campaignId}`)}
       >
-        <Card key={assignment.id}>
+        <Card
+          style={
+            hasFeedbackToAcknowledge ? { border: `4px solid #2265d7` } : {}
+          }
+        >
           <CardTitle
             title={title}
             titleStyle={{ color: cardTitleTextColor }}
@@ -173,7 +176,11 @@ export class AssignmentSummary extends Component {
             </div>
           ) : null}
           <CardActions>
-            {window.NOT_IN_USA && window.ALLOW_SEND_ALL
+            {hasFeedbackToAcknowledge && (
+              <AssignmentTexterFeedback feedback={feedback} />
+            )}
+            {(window.NOT_IN_USA && window.ALLOW_SEND_ALL) ||
+            hasFeedbackToAcknowledge
               ? ""
               : this.renderBadgedButton({
                   dataTestText: "sendFirstTexts",
@@ -185,7 +192,8 @@ export class AssignmentSummary extends Component {
                   contactsFilter: "text",
                   hideIfZero: true
                 })}
-            {window.NOT_IN_USA && window.ALLOW_SEND_ALL
+            {(window.NOT_IN_USA && window.ALLOW_SEND_ALL) ||
+            hasFeedbackToAcknowledge
               ? ""
               : this.renderBadgedButton({
                   dataTestText: "Respond",
@@ -217,7 +225,9 @@ export class AssignmentSummary extends Component {
               contactsFilter: "skipped",
               hideIfZero: true
             })}
-            {window.NOT_IN_USA && window.ALLOW_SEND_ALL
+            {window.NOT_IN_USA &&
+            window.ALLOW_SEND_ALL &&
+            !hasFeedbackToAcknowledge
               ? this.renderBadgedButton({
                   assignment,
                   title: "Send messages",
@@ -237,7 +247,7 @@ export class AssignmentSummary extends Component {
               contactsFilter: null,
               hideIfZero: true
             })}
-            {sideboxList.length ? (
+            {sideboxList.length && !hasFeedbackToAcknowledge ? (
               <div style={{ paddingLeft: "14px", paddingBottom: "10px" }}>
                 {sideboxList}
               </div>

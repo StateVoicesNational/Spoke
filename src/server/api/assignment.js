@@ -324,6 +324,36 @@ export const resolvers = {
         userId: assignment.user_id,
         campaignId: assignment.campaign_id
       }),
-    feedback: async assignment => assignment.feedback || "hello"
+    feedback: async assignment => {
+      const defaultFeedback = {
+        isAcknowledged: false,
+        message: "",
+        issueCounts: { optOuts: 0, tags: 0, responses: 0, hostile: 0 },
+        createdBy: { id: null, name: "" }
+      };
+
+      const { feedback } = await r
+        .knex("assignment")
+        .select("feedback")
+        .where({ id: assignment.id })
+        .first();
+
+      if (feedback && !feedback.isAcknowledged) {
+        const createdBy = await r
+          .knexReadOnly("user")
+          .select("id", "first_name", "last_name")
+          .where("id", feedback.createdBy)
+          .first();
+
+        feedback.createdBy = {
+          id: createdBy.id,
+          name: `${createdBy.first_name} ${createdBy.last_name}`
+        };
+      } else if (feedback) {
+        feedback.createdBy = defaultFeedback.createdBy;
+      }
+
+      return feedback || defaultFeedback;
+    }
   }
 };

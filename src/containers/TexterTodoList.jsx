@@ -154,6 +154,19 @@ export const dataQuery = gql`
             id
           }
         }
+        feedback {
+          isAcknowledged
+          createdBy {
+            name
+          }
+          message
+          issueCounts {
+            optOuts
+            tags
+            responses
+            hostile
+          }
+        }
         allContactsCount: contactsCount
         unmessagedCount: contactsCount(contactsFilter: $needsMessageFilter)
         unrepliedCount: contactsCount(contactsFilter: $needsResponseFilter)
