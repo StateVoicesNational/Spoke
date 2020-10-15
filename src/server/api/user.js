@@ -323,7 +323,7 @@ export const resolvers = {
           const defaultFeedback = {
             isAcknowledged: false,
             message: "",
-            issueCounts: { optOuts: 0, tags: 0, responses: 0, hostile: 0 },
+            issueCounts: {},
             createdBy: { id: null, name: "" }
           };
 
