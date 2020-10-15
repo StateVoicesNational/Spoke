@@ -507,6 +507,7 @@ export class ContactController extends React.Component {
         campaign.texterUIConfig.options) ||
         "{}"
     );
+    const review = this.props.location.review;
     const sideboxProps = {
       assignment,
       campaign,
@@ -517,7 +518,8 @@ export class ContactController extends React.Component {
       messageStatusFilter,
       finished,
       loading,
-      settingsData
+      settingsData,
+      review
     };
     const enabledSideboxes = getSideboxes(sideboxProps, "TexterTodo");
     return (

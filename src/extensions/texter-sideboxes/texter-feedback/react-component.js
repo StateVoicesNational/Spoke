@@ -26,18 +26,13 @@ import {
 
 export const displayName = () => "Texter feedback";
 
-export const showSidebox = ({
-  contact,
-  campaign,
-  messageStatusFilter,
-  assignment
-}) => {
+export const showSidebox = ({ currentUser, review }) => {
   // Return anything False-y to not show
   // Return anything Truth-y to show
   // Return 'popup' to force a popup on mobile screens (instead of letting it hide behind a button)
   // console.log("showsidebox", messageStatusFilter, contact, campaign);
   // only show if in review mode and an admin
-  return true;
+  return review === "1" && currentUser.roles.includes("ADMIN");
 };
 
 const schema = yup.object({
@@ -133,9 +128,9 @@ export class TexterSideboxClass extends React.Component {
           <IssueCounter value={issueCounts.optOuts} issueType="optOuts" />
           Tag errors:
           <IssueCounter value={issueCounts.tags} issueType="tags" />
-          Response errors:
+          Better response suggested:
           <IssueCounter value={issueCounts.responses} issueType="responses" />
-          Hostile errors:
+          Hostile, rude, feeding trolls:
           <IssueCounter value={issueCounts.hostile} issueType="hostile" />
           <Form.Button type="submit" label="save" disabled={false} />
         </GSForm>
