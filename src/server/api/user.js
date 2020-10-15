@@ -327,7 +327,7 @@ export const resolvers = {
             createdBy: { id: null, name: "" }
           };
 
-          if (assn.feedback && !assn.feedback.hasAcknowledged) {
+          if (assn.feedback && !assn.feedback.isAcknowledged) {
             const createdBy = await r
               .knexReadOnly("user")
               .select("id", "first_name", "last_name")
@@ -339,6 +339,7 @@ export const resolvers = {
               name: `${createdBy.first_name} ${createdBy.last_name}`
             };
           }
+
           assignments[assn.id].feedback = assn.feedback || defaultFeedback;
         }
 
