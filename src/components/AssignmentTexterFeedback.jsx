@@ -69,7 +69,11 @@ export const inlineStyles = {
     fontSize: 16
   },
   stepContent: {
-    paddingTop: 10
+    fontSize: 15,
+    paddingTop: 10,
+    overflowWrap: "break-word",
+    overflow: "inherit",
+    hyphens: "manual"
   }
 };
 
@@ -138,9 +142,7 @@ export class AssignmentTexterFeedback extends Component {
           <StepLabel style={inlineStyles.stepLabel}>
             {createdBy.name}'s Feedback:
           </StepLabel>
-          <StepContent style={{ fontSize: 15, paddingTop: 10 }}>
-            {message}
-          </StepContent>
+          <StepContent style={inlineStyles.stepContent}>{message}</StepContent>
         </Step>
         {warningItems.map(([type]) => getWarningContent(type))}
         <Step>
