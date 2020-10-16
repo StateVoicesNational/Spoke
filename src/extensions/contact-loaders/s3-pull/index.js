@@ -172,6 +172,21 @@ export async function loadContactS3PullProcessFile(jobEvent, contextVars) {
         return r;
       });
     }
+    // In case the job was discarded, before we save,
+    // we confirm the job still exists.
+    const jobCompleted = await r
+      .knex("job_request")
+      .where("id", jobEvent.id)
+      .select("status")
+      .first();
+    if (!jobCompleted) {
+      console.log(
+        "loadContactS3PullProcessFile job no longer exists",
+        jobEvent
+      );
+      return { alreadyComplete: 1 };
+    }
+
     await r.knex.batchInsert("campaign_contact", insertRows);
   }
 
