@@ -43,11 +43,6 @@ export const inlineStyles = {
     fontSize: 14,
     color: theme.colors.lightGray
   },
-  actions: {
-    margin: "10px 25%",
-    display: "flex",
-    justifyContent: "space-around"
-  },
   alertIcon: type => ({
     marginRight: 6,
     transform: "scale(.9)",
@@ -64,6 +59,10 @@ export const inlineStyles = {
       type === "warning" ? "rgb(255, 244, 229)" : "rgb(237, 247, 237)",
     color: type === "warning" ? "rgb(102, 60, 0)" : "rgb(30, 70, 32)"
   }),
+  stepper: {
+    paddingLeft: 30,
+    paddingBottom: 50
+  },
   stepLabel: {
     fontWeight: "bolder",
     fontSize: 16
@@ -74,6 +73,10 @@ export const inlineStyles = {
     overflowWrap: "break-word",
     overflow: "inherit",
     hyphens: "manual"
+  },
+  stepActions: {
+    margin: "20px 0 10px 0",
+    display: "flex"
   }
 };
 
@@ -108,6 +111,26 @@ export class AssignmentTexterFeedback extends Component {
       ([, count]) => count === 0
     );
 
+    const totalSteps = 1 + warningItems.length;
+
+    const StepActions = () => (
+      <div style={inlineStyles.stepActions}>
+        {stepIndex !== 0 && (
+          <FlatButton
+            label="Back"
+            style={{ marginRight: 50 }}
+            disabled={stepIndex === 0}
+            onClick={this.handlePrev}
+          />
+        )}
+        <RaisedButton
+          label={stepIndex >= totalSteps ? "Done" : "Next"}
+          primary
+          onClick={stepIndex < totalSteps ? this.handleNext : this.handleDone}
+        />
+      </div>
+    );
+
     const getWarningContent = type => {
       const configItem = configItems.find(({ key }) => key === type);
       if (!configItem) return null;
@@ -118,6 +141,7 @@ export class AssignmentTexterFeedback extends Component {
           </StepLabel>
           <StepContent style={inlineStyles.stepContent}>
             {configItem.content}
+            <StepActions />
           </StepContent>
         </Step>
       );
@@ -131,7 +155,7 @@ export class AssignmentTexterFeedback extends Component {
 
     return (
       <Stepper
-        style={{ paddingLeft: 30 }}
+        style={inlineStyles.stepper}
         activeStep={stepIndex}
         linear={false}
         orientation="vertical"
@@ -147,6 +171,7 @@ export class AssignmentTexterFeedback extends Component {
                 <br />
               </span>
             ))}
+            <StepActions />
           </StepContent>
         </Step>
         {warningItems.map(([type]) => getWarningContent(type))}
@@ -155,6 +180,7 @@ export class AssignmentTexterFeedback extends Component {
           <StepContent>
             {successItems.map(([type]) => getSuccessContent(type))}
             <Alert type="success" message="Keep up the great work! 🎉" />
+            <StepActions />
           </StepContent>
         </Step>
       </Stepper>
@@ -180,17 +206,6 @@ export class AssignmentTexterFeedback extends Component {
   };
 
   render() {
-    const { stepIndex } = this.state;
-    const {
-      feedback: { issueCounts }
-    } = this.props;
-
-    const issuesCount = Object.entries(issueCounts).filter(
-      ([, count]) => count && !isNaN(count)
-    ).length;
-
-    const totalSteps = 1 + issuesCount;
-
     const title = "Please review your feedback on this campaign!";
     const subtitle =
       "You can send more texts once you read and acknowledge this.";
@@ -208,24 +223,6 @@ export class AssignmentTexterFeedback extends Component {
 
           <Card>
             <div style={{ minHeight: 480 }}>{this.getStepContent()}</div>
-
-            <div>
-              <CardActions style={inlineStyles.actions}>
-                <FlatButton
-                  label="Back"
-                  disabled={stepIndex === 0}
-                  onClick={this.handlePrev}
-                  style={{ marginRight: 12 }}
-                />
-                <RaisedButton
-                  label={stepIndex >= totalSteps ? "Done" : "Next"}
-                  primary
-                  onClick={
-                    stepIndex < totalSteps ? this.handleNext : this.handleDone
-                  }
-                />
-              </CardActions>
-            </div>
           </Card>
         </Card>
       </div>
