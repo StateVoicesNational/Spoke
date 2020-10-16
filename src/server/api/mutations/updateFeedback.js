@@ -20,6 +20,7 @@ export const updateFeedback = async (
       feedback.createdBy = user.id;
     }
     if (feedback.isAcknowledged === undefined) feedback.isAcknowledged = false;
+    if (feedback.sweepComplete === undefined) feedback.sweepComplete = false;
     /* eslint-disable no-underscore-dangle */
     if (feedback.__typename) delete feedback.__typename;
     if (feedback.issueCounts.__typename) delete feedback.issueCounts.__typename;

@@ -161,6 +161,7 @@ export const dataQuery = gql`
           }
           message
           issueCounts
+          sweepComplete
         }
         allContactsCount: contactsCount
         unmessagedCount: contactsCount(contactsFilter: $needsMessageFilter)

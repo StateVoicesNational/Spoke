@@ -324,7 +324,8 @@ export const resolvers = {
             isAcknowledged: false,
             message: "",
             issueCounts: {},
-            createdBy: { id: null, name: "" }
+            createdBy: { id: null, name: "" },
+            sweepComplete: false
           };
 
           if (assn.feedback && !assn.feedback.isAcknowledged) {
