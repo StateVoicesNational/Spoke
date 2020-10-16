@@ -15,6 +15,7 @@ export const schema = `
     issueCounts: JSON!
     isAcknowledged: Boolean!
     createdBy: FeedbackCreatedBy!
+    sweepComplete: Boolean!
   }
 
   type Assignment {
