@@ -369,6 +369,9 @@ const campaignInfoFragment = `
   description
   timezone
   dueBy
+  organization {
+    id
+  }
   creator {
     displayName
   }

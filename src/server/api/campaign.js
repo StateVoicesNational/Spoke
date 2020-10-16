@@ -21,7 +21,14 @@ export function addCampaignsFilterToQuery(
 ) {
   let query = queryParam;
 
-  if (organizationId) {
+  if (
+    organizationId &&
+    !(
+      campaignsFilter &&
+      campaignsFilter.searchString &&
+      campaignsFilter.searchString === "allorgs"
+    )
+  ) {
     query = query.where("campaign.organization_id", organizationId);
   }
 
@@ -44,7 +51,11 @@ export function addCampaignsFilterToQuery(
       query = query.whereIn("campaign.id", campaignsFilter.campaignIds);
     }
 
-    if ("searchString" in campaignsFilter && campaignsFilter.searchString) {
+    if (
+      "searchString" in campaignsFilter &&
+      campaignsFilter.searchString &&
+      campaignsFilter.searchString !== "allorgs"
+    ) {
       var neg =
         campaignsFilter.searchString.length > 0 &&
         campaignsFilter.searchString[0] === "-";
