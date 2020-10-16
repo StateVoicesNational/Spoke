@@ -64,6 +64,9 @@ export class TexterSideboxClass extends React.Component {
       const feedbackString = JSON.stringify(this.state.feedback);
       console.log("componentDidUpdate: ", this.state.feedback);
       await this.props.mutations.updateFeedback(feedbackString);
+      if (this.state.feedback.sweepComplete) {
+        this.props.router.push(`/app/${this.props.organizationId}`);
+      }
     },
     500,
     { leading: false, trailing: true }
@@ -160,6 +163,8 @@ TexterSideboxClass.propTypes = {
   campaign: type.object,
   assignment: type.object,
   texter: type.object,
+  router: type.object,
+  organizationId: type.string,
 
   // parent state
   disabled: type.bool,
