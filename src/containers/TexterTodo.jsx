@@ -147,6 +147,7 @@ export const dataQuery = gql`
         }
         message
         issueCounts
+        skillCounts
       }
       hasUnassignedContactsForTexter
       contacts(contactsFilter: $contactsFilter) {
