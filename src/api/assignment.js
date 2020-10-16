@@ -13,6 +13,7 @@ export const schema = `
   type AssignmentFeedback {
     message: String!
     issueCounts: JSON!
+    skillCounts: JSON!
     isAcknowledged: Boolean!
     createdBy: FeedbackCreatedBy!
     sweepComplete: Boolean!

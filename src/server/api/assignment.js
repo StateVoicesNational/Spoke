@@ -329,6 +329,7 @@ export const resolvers = {
         isAcknowledged: false,
         message: "",
         issueCounts: {},
+        skillCounts: {},
         createdBy: { id: null, name: "" },
         sweepComplete: false
       };
