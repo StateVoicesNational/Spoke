@@ -161,6 +161,7 @@ export const dataQuery = gql`
           }
           message
           issueCounts
+          skillCounts
           sweepComplete
         }
         allContactsCount: contactsCount

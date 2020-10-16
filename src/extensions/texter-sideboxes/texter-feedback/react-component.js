@@ -1,9 +1,9 @@
-import type from "prop-types";
+import PropTypes from "prop-types";
 import React from "react";
 import { withRouter } from "react-router";
 import yup from "yup";
 import Form from "react-formal";
-import { Paper } from "material-ui";
+import { Paper, Checkbox } from "material-ui";
 import IconButton from "material-ui/IconButton/IconButton";
 import AddIcon from "material-ui/svg-icons/content/add-circle";
 import RemoveIcon from "material-ui/svg-icons/content/remove-circle";
@@ -12,7 +12,7 @@ import loadData from "../../../containers/hoc/load-data";
 import gql from "graphql-tag";
 import _ from "lodash";
 import theme from "../../../styles/theme";
-import issueItems from "./config";
+import { issues, skills } from "./config";
 
 const inlineStyles = {
   wrapper: {
@@ -23,23 +23,24 @@ const inlineStyles = {
     padding: "0 20px 20px",
     zIndex: 999,
     borderLeft: `3px solid ${theme.colors.gray}`,
-    height: "85.7vh",
+    height: "calc(100% - 130px)",
     overflowY: "auto"
   },
   counterColumns: {
     marginTop: -20,
     display: "flex",
-    justifyContent: "space-between"
+    justifyContent: "space-around"
   },
   counterWrapper: {
     borderRadius: 3,
     marginBottom: 8,
     padding: 6,
     height: 74,
+    minWidth: 130,
     fontSize: 10
   },
   counterKey: {
-    color: theme.colors.blue,
+    color: theme.colors.red,
     fontSize: 13
   },
   counter: {
@@ -47,6 +48,14 @@ const inlineStyles = {
     alignItems: "center",
     justifyContent: "center",
     fontSize: 18
+  },
+  skillsWrapper: {
+    padding: "10px 0 4px",
+    minWidth: 170
+  },
+  skillCheckbox: {
+    marginBottom: 10,
+    padding: "6px 0"
   },
   messageInputWrapper: {
     marginTop: -20
@@ -74,7 +83,14 @@ const schema = yup.object({
   feedback: yup.object({
     message: yup.string(),
     issueCounts: yup.object(
-      issueItems.reduce((obj, item) => {
+      issues.reduce((obj, item) => {
+        /* eslint-disable no-param-reassign*/
+        obj[item.key] = yup.number();
+        return obj;
+      }, {})
+    ),
+    skillCounts: yup.object(
+      skills.reduce((obj, item) => {
         /* eslint-disable no-param-reassign*/
         obj[item.key] = yup.number();
         return obj;
@@ -86,7 +102,13 @@ const schema = yup.object({
 export class TexterSideboxClass extends React.Component {
   constructor(props) {
     super(props);
-    this.state = { feedback: props.assignment.feedback };
+    this.state = {
+      feedback: {
+        issueCounts: {},
+        skillCounts: {},
+        ...props.assignment.feedback
+      }
+    };
   }
 
   componentDidUpdate(prevProps, prevState) {
@@ -99,46 +121,54 @@ export class TexterSideboxClass extends React.Component {
     async () => {
       const feedbackString = JSON.stringify(this.state.feedback);
       await this.props.mutations.updateFeedback(feedbackString);
+      if (this.state.feedback.sweepComplete) {
+        this.props.router.push(`/app/${this.props.organizationId}`);
+      }
     },
     500,
     { leading: false, trailing: true }
   );
 
-  render() {
-    const { message, issueCounts } = this.state.feedback;
+  handleCounterChange = (type, key, direction) => {
+    this.setState(({ feedback }) => {
+      const prevCount = feedback[type][key] || 0;
+      /* eslint-disable no-nested-ternary */
+      return {
+        feedback: {
+          ...feedback,
+          [type]: {
+            ...(feedback[type] || {}),
+            [key]:
+              direction === "increment"
+                ? prevCount + 1
+                : type === "skillCounts"
+                ? 0
+                : prevCount - 1
+          }
+        }
+      };
+    });
+  };
 
-    const IssueCounter = ({ value, issueType }) => {
+  render() {
+    const { feedback } = this.state;
+
+    const Counter = ({ value, type, countKey }) => {
       return (
-        <div style={inlineStyles.counter}>
+        <div key={countKey} style={inlineStyles.counter}>
           <IconButton
             disabled={!value}
-            onClick={() => {
-              this.setState({
-                feedback: {
-                  ...this.state.feedback,
-                  issueCounts: {
-                    ...issueCounts,
-                    [issueType]: (issueCounts[issueType] || 0) - 1
-                  }
-                }
-              });
-            }}
+            onClick={() =>
+              this.handleCounterChange(type, countKey, "decrement")
+            }
           >
             <RemoveIcon />
           </IconButton>
-          {issueCounts[issueType] || "0"}
+          {feedback[type][countKey] || "0"}
           <IconButton
-            onClick={() => {
-              this.setState({
-                feedback: {
-                  ...this.state.feedback,
-                  issueCounts: {
-                    ...issueCounts,
-                    [issueType]: (issueCounts[issueType] || 0) + 1
-                  }
-                }
-              });
-            }}
+            onClick={() =>
+              this.handleCounterChange(type, countKey, "increment")
+            }
           >
             <AddIcon />
           </IconButton>
@@ -165,28 +195,56 @@ export class TexterSideboxClass extends React.Component {
           }}
         >
           <div style={inlineStyles.counterColumns}>
-            <div>
-              <h3>Issues</h3>
-              {issueItems.map(({ key }) => {
-                const count = (Object.entries(issueCounts).find(
-                  issueCount => issueCount[0] === key
-                ) || [])[1];
+            {!!issues.length && (
+              <div>
+                <h3 style={{ color: theme.colors.darkRed }}>Issues</h3>
+                {issues.map(({ key }) => {
+                  const count = (Object.entries(
+                    feedback.issueCounts || []
+                  ).find(issueCount => issueCount[0] === key) || [])[1];
 
-                return (
-                  <Paper style={inlineStyles.counterWrapper}>
-                    <span style={inlineStyles.counterKey}>
-                      {_.startCase(key)}
-                    </span>
-                    <span> Issues</span>
-                    <IssueCounter value={count} issueType={key} />
-                  </Paper>
-                );
-              })}
-            </div>
-            <div>
-              <h3>Mastery Skills</h3>
-              {/* TODO: add masterySkills to config */}
-            </div>
+                  return (
+                    <Paper key={key} style={inlineStyles.counterWrapper}>
+                      <span style={inlineStyles.counterKey}>
+                        {_.startCase(key)}
+                      </span>
+                      <Counter
+                        value={count}
+                        type="issueCounts"
+                        countKey={key}
+                      />
+                    </Paper>
+                  );
+                })}
+              </div>
+            )}
+            {!!skills.length && (
+              <div>
+                <h3 style={{ color: theme.colors.darkGreen }}>Skills</h3>
+                <Paper style={inlineStyles.skillsWrapper}>
+                  {skills.map(({ key }) => {
+                    const isChecked = (Object.entries(
+                      feedback.skillCounts || []
+                    ).find(skillCounts => skillCounts[0] === key) || [])[1];
+
+                    return (
+                      <Checkbox
+                        label={_.startCase(key)}
+                        style={inlineStyles.skillCheckbox}
+                        checked={isChecked}
+                        onCheck={() =>
+                          this.handleCounterChange(
+                            "skillCounts",
+                            key,
+                            isChecked ? "decrement" : "increment"
+                          )
+                        }
+                      />
+                    );
+                  })}
+                </Paper>
+              </div>
+            )}
           </div>
 
           <h3>Your Feedback Message</h3>
@@ -206,7 +264,7 @@ export class TexterSideboxClass extends React.Component {
             labelStyle={{ fontSize: 17 }}
             type="submit"
             label="Sweep Complete"
-            disabled={!message}
+            disabled={!feedback.message}
           />
         </GSForm>
       </div>
@@ -216,18 +274,20 @@ export class TexterSideboxClass extends React.Component {
 
 TexterSideboxClass.propTypes = {
   // data
-  contact: type.object,
-  campaign: type.object,
-  assignment: type.object,
-  texter: type.object,
+  contact: PropTypes.object,
+  campaign: PropTypes.object,
+  assignment: PropTypes.object,
+  texter: PropTypes.object,
+  router: PropTypes.object,
+  organizationId: PropTypes.string,
 
   // parent state
-  disabled: type.bool,
-  navigationToolbarChildren: type.object,
-  messageStatusFilter: type.string,
-  onUpdateTags: type.func,
+  disabled: PropTypes.bool,
+  navigationToolbarChildren: PropTypes.object,
+  messageStatusFilter: PropTypes.string,
+  onUpdateTags: PropTypes.func,
 
-  mutations: type.object
+  mutations: PropTypes.object
 };
 
 export const mutations = {
@@ -239,6 +299,7 @@ export const mutations = {
           feedback {
             message
             issueCounts
+            skillCounts
           }
         }
       }
