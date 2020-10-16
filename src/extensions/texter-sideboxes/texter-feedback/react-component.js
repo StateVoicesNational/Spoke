@@ -1,29 +1,65 @@
 import type from "prop-types";
 import React from "react";
-import { Link, withRouter } from "react-router";
+import { withRouter } from "react-router";
 import yup from "yup";
 import Form from "react-formal";
-import FlatButton from "material-ui/FlatButton";
-import TagChip from "../../../components/TagChip";
-import theme from "../../../styles/theme";
-import CheckIcon from "material-ui/svg-icons/action/check-circle";
-import CircularProgress from "material-ui/CircularProgress";
+import { Paper } from "material-ui";
 import IconButton from "material-ui/IconButton/IconButton";
 import AddIcon from "material-ui/svg-icons/content/add-circle";
 import RemoveIcon from "material-ui/svg-icons/content/remove-circle";
-import DoneIcon from "material-ui/svg-icons/action/done";
-import { css } from "aphrodite";
 import GSForm from "../../../components/forms/GSForm";
 import loadData from "../../../containers/hoc/load-data";
-import isEqual from "lodash/isEqual";
 import gql from "graphql-tag";
 import _ from "lodash";
+import theme from "../../../styles/theme";
 import issueItems from "./config";
 
-import {
-  flexStyles,
-  inlineStyles
-} from "../../../components/AssignmentTexter/StyleControls";
+const inlineStyles = {
+  wrapper: {
+    position: "absolute",
+    top: 112,
+    right: 0,
+    width: 340,
+    padding: "0 20px 20px",
+    zIndex: 999,
+    borderLeft: `3px solid ${theme.colors.gray}`,
+    height: "85.7vh",
+    overflowY: "auto"
+  },
+  counterColumns: {
+    marginTop: -20,
+    display: "flex",
+    justifyContent: "space-between"
+  },
+  counterWrapper: {
+    borderRadius: 3,
+    marginBottom: 8,
+    padding: 6,
+    height: 74,
+    fontSize: 10
+  },
+  counterKey: {
+    color: theme.colors.blue,
+    fontSize: 13
+  },
+  counter: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    fontSize: 18
+  },
+  messageInputWrapper: {
+    marginTop: -20
+  },
+  messageInput: {
+    background: "#fff",
+    padding: 4
+  },
+  submitButton: {
+    marginTop: 15,
+    fontSize: "17px !important"
+  }
+};
 
 export const displayName = () => "Texter feedback";
 
@@ -62,7 +98,6 @@ export class TexterSideboxClass extends React.Component {
   debouncedUpdate = _.debounce(
     async () => {
       const feedbackString = JSON.stringify(this.state.feedback);
-      console.log("componentDidUpdate: ", this.state.feedback);
       await this.props.mutations.updateFeedback(feedbackString);
       if (this.state.feedback.sweepComplete) {
         this.props.router.push(`/app/${this.props.organizationId}`);
@@ -73,13 +108,11 @@ export class TexterSideboxClass extends React.Component {
   );
 
   render() {
-    const { issueCounts } = this.state.feedback;
-
-    console.log("state on render: ", this.state);
+    const { message, issueCounts } = this.state.feedback;
 
     const IssueCounter = ({ value, issueType }) => {
       return (
-        <div>
+        <div style={inlineStyles.counter}>
           <IconButton
             disabled={!value}
             onClick={() => {
@@ -117,13 +150,12 @@ export class TexterSideboxClass extends React.Component {
     };
 
     return (
-      <div>
-        <h3>Feedback</h3>
+      <div style={inlineStyles.wrapper}>
+        <h2>Texter Feedback</h2>
         <GSForm
           schema={schema}
           value={this.state}
           onChange={formValues => {
-            console.log("form values: ", formValues);
             this.setState(formValues);
           }}
           onSubmit={async () => {
@@ -135,22 +167,50 @@ export class TexterSideboxClass extends React.Component {
             });
           }}
         >
-          <Form.Field name="feedback.message" fullWidth multiLine />
+          <div style={inlineStyles.counterColumns}>
+            <div>
+              <h3>Issues</h3>
+              {issueItems.map(({ key }) => {
+                const count = (Object.entries(issueCounts).find(
+                  issueCount => issueCount[0] === key
+                ) || [])[1];
 
-          {issueItems.map(({ key }) => {
-            const count = (Object.entries(issueCounts).find(
-              issueCount => issueCount[0] === key
-            ) || [])[1];
+                return (
+                  <Paper style={inlineStyles.counterWrapper}>
+                    <span style={inlineStyles.counterKey}>
+                      {_.startCase(key)}
+                    </span>
+                    <span> Issues</span>
+                    <IssueCounter value={count} issueType={key} />
+                  </Paper>
+                );
+              })}
+            </div>
+            <div>
+              <h3>Mastery Skills</h3>
+              {/* TODO: add masterySkills to config */}
+            </div>
+          </div>
 
-            return (
-              <div>
-                <span>{_.startCase(key)} Errors:</span>
-                <IssueCounter value={count} issueType={key} />
-              </div>
-            );
-          })}
+          <h3>Your Feedback Message</h3>
 
-          <Form.Button type="submit" label="Sweep Complete" disabled={false} />
+          <Form.Field
+            name="feedback.message"
+            style={inlineStyles.messageInputWrapper}
+            textareaStyle={inlineStyles.messageInput}
+            fullWidth
+            multiLine
+            rows={4}
+            rowsMax={6}
+          />
+
+          <Form.Button
+            style={inlineStyles.submitButton}
+            labelStyle={{ fontSize: 17 }}
+            type="submit"
+            label="Sweep Complete"
+            disabled={!message}
+          />
         </GSForm>
       </div>
     );
@@ -170,7 +230,9 @@ TexterSideboxClass.propTypes = {
   disabled: type.bool,
   navigationToolbarChildren: type.object,
   messageStatusFilter: type.string,
-  onUpdateTags: type.func
+  onUpdateTags: type.func,
+
+  mutations: type.object
 };
 
 export const mutations = {
