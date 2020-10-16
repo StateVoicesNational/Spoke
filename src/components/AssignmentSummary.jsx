@@ -141,7 +141,10 @@ export class AssignmentSummary extends Component {
     const cardTitleTextColor = setContrastingColor(primaryColor);
 
     const hasFeedbackToAcknowledge =
-      feedback && feedback.message && feedback.isAcknowledged === false;
+      feedback &&
+      feedback.message &&
+      feedback.sweepComplete &&
+      feedback.isAcknowledged === false;
 
     // NOTE: we bring back archived campaigns if they have feedback
     // but want to get rid of them once feedback is acknowledged

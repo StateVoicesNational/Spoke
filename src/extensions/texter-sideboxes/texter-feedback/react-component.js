@@ -124,9 +124,12 @@ export class TexterSideboxClass extends React.Component {
             this.setState(formValues);
           }}
           onSubmit={async () => {
-            let feedbackString = JSON.stringify(this.state.feedback);
-            console.log("feedback on submit: ", this.state.feedback);
-            await this.props.mutations.updateFeedback(feedbackString);
+            this.setState({
+              feedback: {
+                ...this.state.feedback,
+                sweepComplete: true
+              }
+            });
           }}
         >
           <Form.Field name="feedback.message" fullWidth multiLine />
@@ -144,7 +147,7 @@ export class TexterSideboxClass extends React.Component {
             );
           })}
 
-          <Form.Button type="submit" label="save" disabled={false} />
+          <Form.Button type="submit" label="Sweep Complete" disabled={false} />
         </GSForm>
       </div>
     );
