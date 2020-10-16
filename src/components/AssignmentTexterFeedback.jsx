@@ -1,6 +1,6 @@
 import PropTypes from "prop-types";
 import React, { Component } from "react";
-import { Card, CardActions, CardTitle } from "material-ui/Card";
+import { Card, CardTitle } from "material-ui/Card";
 import FlatButton from "material-ui/FlatButton";
 import RaisedButton from "material-ui/RaisedButton";
 import { Step, Stepper, StepLabel, StepContent } from "material-ui/Stepper";
@@ -10,7 +10,10 @@ import { StyleSheet, css } from "aphrodite";
 import loadData from "../containers/hoc/load-data";
 import gql from "graphql-tag";
 
-import configItems from "../extensions/texter-sideboxes/texter-feedback/config";
+import {
+  issues,
+  skills
+} from "../extensions/texter-sideboxes/texter-feedback/config";
 
 import theme from "../styles/theme";
 
@@ -44,6 +47,7 @@ export const inlineStyles = {
     color: theme.colors.lightGray
   },
   alertIcon: type => ({
+    minWidth: 24,
     marginRight: 6,
     transform: "scale(.9)",
     color: type === "warning" ? "#ff9800" : "#4caf50"
@@ -100,18 +104,35 @@ export class AssignmentTexterFeedback extends Component {
   getStepContent = () => {
     const { stepIndex } = this.state;
     const {
-      feedback: { createdBy, message, issueCounts }
+      feedback: { createdBy, message, issueCounts, skillCounts }
     } = this.props;
 
-    const warningItems = Object.entries(issueCounts).filter(
-      ([, count]) => count && !isNaN(count)
-    );
+    const issueItems = Object.entries(issueCounts)
+      .map(([key, count]) => {
+        const item = issues.find(issue => issue.key === key);
+        if (count && !isNaN(count) && item) return item;
+        return null;
+      })
+      .filter(Boolean);
 
-    const successItems = Object.entries(issueCounts).filter(
-      ([, count]) => count === 0
-    );
+    const successItems = [
+      // issueItems with successMessage and no count
+      ...Object.entries(issueCounts)
+        .map(([key, count]) => {
+          const item = issues.find(issue => issue.key === key);
+          if (count === 0 && item && item.successMessage) return item;
+          return null;
+        })
+        .filter(Boolean),
+      // skillCounts items
+      ...Object.entries(skillCounts).map(([key, count]) => {
+        const item = skills.find(skill => skill.key === key);
+        if (count && !isNaN(count) && item) return item;
+        return null;
+      })
+    ].filter(Boolean);
 
-    const totalSteps = 1 + warningItems.length;
+    const totalSteps = 1 + issueItems.length;
 
     const StepActions = () => (
       <div style={inlineStyles.stepActions}>
@@ -131,27 +152,17 @@ export class AssignmentTexterFeedback extends Component {
       </div>
     );
 
-    const getWarningContent = type => {
-      const configItem = configItems.find(({ key }) => key === type);
-      if (!configItem) return null;
-      return (
-        <Step>
-          <StepLabel>
-            <Alert type="warning" message={configItem.warningMessage} />
-          </StepLabel>
-          <StepContent style={inlineStyles.stepContent}>
-            {configItem.content}
-            <StepActions />
-          </StepContent>
-        </Step>
-      );
-    };
-
-    const getSuccessContent = type => {
-      const configItem = configItems.find(({ key }) => key === type);
-      if (!configItem) return null;
-      return <Alert type="success" message={configItem.successMessage} />;
-    };
+    const getIssueContent = ({ warningMessage, content }) => (
+      <Step>
+        <StepLabel>
+          <Alert type="warning" message={warningMessage} />
+        </StepLabel>
+        <StepContent style={inlineStyles.stepContent}>
+          {content}
+          <StepActions />
+        </StepContent>
+      </Step>
+    );
 
     return (
       <Stepper
@@ -174,12 +185,18 @@ export class AssignmentTexterFeedback extends Component {
             <StepActions />
           </StepContent>
         </Step>
-        {warningItems.map(([type]) => getWarningContent(type))}
+        {issueItems.map(item => getIssueContent(item))}
         <Step>
-          <StepLabel style={inlineStyles.stepLabel}>Thank You!</StepLabel>
+          <StepLabel style={inlineStyles.stepLabel}>
+            {!!successItems.length ? "Skills Mastery" : "Thank You!"}
+          </StepLabel>
           <StepContent>
-            {successItems.map(([type]) => getSuccessContent(type))}
-            <Alert type="success" message="Keep up the great work! 🎉" />
+            {successItems.map(({ successMessage }) => (
+              <Alert type="success" message={successMessage} />
+            ))}
+            {!successItems.length && (
+              <Alert type="success" message="Keep up the great work! 🎉" />
+            )}
             <StepActions />
           </StepContent>
         </Step>

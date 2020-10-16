@@ -2,11 +2,10 @@ import React from "react";
 import { FlatButton } from "material-ui";
 import LinkIcon from "material-ui/svg-icons/content/link";
 
-export default [
+export const issues = [
   {
     key: "optOut",
     warningMessage: "Please review the Opt-Out Policy",
-    successMessage: "You had no issues with Opt-Outs!",
     content: (
       <p>
         At WFP, we <b>DO</b> Opt Out voters who ask to be removed from texting
@@ -30,7 +29,6 @@ export default [
   {
     key: "tagging",
     warningMessage: "Issue with Tagging",
-    successMessage: "Nice work applying appropriate tags!",
     content: (
       <p>
         Please make sure that you are using tags for all updates to voter
@@ -83,8 +81,7 @@ export default [
   },
   {
     key: "scriptEdit",
-    warningMessage: "Please review our guidelines for editing messages.",
-    successMessage: "You made the right asks and provided accurate info!",
+    warningMessage: "Please review our guidelines for editing messages",
     content: (
       <p>
         Let’s stick to the scripted responses as much as possible! If a scripted
@@ -107,7 +104,8 @@ export default [
   },
   {
     key: "engagement",
-    warningMessage: "Improper engagement with voters, supporters, or trolls.",
+    warningMessage:
+      "Engage with questions from supportive voters; NOT non-supporters!",
     successMessage: "Your messages showed good engagement with voters!",
     content: (
       <p>
@@ -127,5 +125,51 @@ export default [
         />
       </p>
     )
+  }
+];
+
+export const skills = [
+  {
+    key: "undecided",
+    content:
+      "Undecided - texter sent Undecided response for vague asks of more info",
+    successMessage:
+      "Nice work identifying undecided voters and engaging with the Undecided Survey Response!"
+  },
+  {
+    key: "persuasiveNo",
+    content: "Texter sent No Vague for vague “No” replies",
+    successMessage:
+      "Nice work sending the No VAGUE Survey Response to engage with vague voters!"
+  },
+  {
+    key: "tagging",
+    content: "Appropriate use of tags",
+    successMessage:
+      "Nice job identifying updates to voter info, tagging, and saving tags!"
+  },
+  {
+    key: "jumpAhead",
+    content: "Texter logs multiple Survey Response at once",
+    successMessage:
+      "This is a big Level-Up skill! You logged multiple Survey Responses at once when the voter answered the next question in the script!"
+  },
+  {
+    key: "extraOptOut",
+    content: "Texter identifies a nestled opt out request ",
+    successMessage:
+      "  Sometimes a request to Opt Out is hidden among other info, but you saw it and stuck to our Opt Out policy. Nice!"
+  },
+  {
+    key: "multiMessage",
+    content: "Texter sends multiple responses with attention to convo flow",
+    successMessage:
+      "Nice work sending multiple responses when answering a voter’s questions and for paying attention to the flow of the conversation!"
+  },
+  {
+    key: "composing",
+    content: "Texter restates ask and stays w/in char limit when composing",
+    successMessage:
+      "Nice job composing a message when the script didn’t quite fit; you stayed within the 306 character limit and stuck to the ask!"
   }
 ];
