@@ -200,6 +200,9 @@ class AdminCampaignStats extends React.Component {
           {campaign.isArchived ? (
             <div className={css(styles.archivedBanner)}>
               This campaign is archived
+              {campaign.isArchivedPermanently
+                ? " and its phone numbers have been released"
+                : ""}
             </div>
           ) : (
             ""
@@ -297,6 +300,7 @@ class AdminCampaignStats extends React.Component {
                         campaign.useOwnMessagingService ? (
                           <RaisedButton
                             {...dataTest("messagingService")}
+                            disabled={campaign.isArchivedPermanently}
                             onTouchTap={() =>
                               this.props.router.push(
                                 `/admin/${organizationId}/campaigns/${campaignId}/messaging-service`
@@ -307,6 +311,7 @@ class AdminCampaignStats extends React.Component {
                         ) : null,
                         showReleaseNumbers ? (
                           <RaisedButton
+                            disabled={campaign.isArchivedPermanently}
                             onTouchTap={async () =>
                               this.props.mutations.releaseCampaignNumbers(
                                 campaignId
