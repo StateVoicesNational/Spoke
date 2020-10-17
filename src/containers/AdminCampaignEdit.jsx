@@ -565,7 +565,7 @@ export class AdminCampaignEdit extends React.Component {
           isStarted: this.props.campaignData.campaign.isStarted,
           phoneNumberCounts: this.props.organizationData.organization
             .phoneNumberCounts,
-          contactsCount: this.state.campaignFormValues.contactsCount,
+          contactsCount: this.props.campaignData.campaign.contactsCount,
           contactsAreaCodeCounts: this.props.campaignData.campaign
             .contactsAreaCodeCounts,
           inventoryCounts: this.props.campaignData.campaign
