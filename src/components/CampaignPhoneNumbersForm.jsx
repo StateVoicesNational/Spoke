@@ -453,11 +453,18 @@ export default class CampaignPhoneNumbersForm extends React.Component {
           avail => avail.areaCode === contacts.areaCode
         );
 
+        if (remaining < needed) {
+          /* if we can only select less than are needed for full
+             coverage on this areacode then we should select none.
+             see NOTE in componentDidMount */
+          foundAvailable = [];
+        }
+
         if (!foundAvailable.length) {
           // if no exact match, try to fall back to state match
-          foundAvailable = _.shuffle(foundAvailable).filter(
-            avail => avail.state === contacts.state
-          );
+          foundAvailable = _.shuffle(availableAreaCodes)
+            .filter(avail => avail.state === contacts.state)
+            .slice(0, remaining);
         }
 
         // if nothing found, skip to be randomly assigned
@@ -605,10 +612,30 @@ export default class CampaignPhoneNumbersForm extends React.Component {
       ["desc"]
     );
 
-    const states = Array.from(new Set(areaCodes.map(({ state }) => state)));
+    const states = Object.entries(
+      areaCodes.reduce((obj, item) => {
+        return {
+          ...obj,
+          [item.state]: (obj[item.state] || 0) + item.count
+        };
+      }, {})
+    ).map(([state, count]) => ({
+      state,
+      needed: Math.ceil(count / contactsPerPhoneNumber)
+    }));
 
-    const getAssignedCount = areaCode => {
+    const getAssignedCount = ({ state, areaCode }) => {
       const inventory = this.formValues().inventoryPhoneNumberCounts;
+      if (state) {
+        return _.sumBy(
+          inventory.filter(invItem =>
+            areaCodes.find(
+              item => item.areaCode === invItem.areaCode && item.state === state
+            )
+          ),
+          "count"
+        );
+      }
       return (inventory.find(item => item.areaCode === areaCode) || {}).count;
     };
 
@@ -626,7 +653,7 @@ export default class CampaignPhoneNumbersForm extends React.Component {
     }
 
     return (
-      <div className={css(styles.container)} style={{ flex: 1, maxWidth: 300 }}>
+      <div className={css(styles.container)} style={{ flex: 1, maxWidth: 340 }}>
         <div className={css(styles.headerContainer)} style={{ height: 30 }}>
           <div
             style={{
@@ -634,7 +661,7 @@ export default class CampaignPhoneNumbersForm extends React.Component {
               color: theme.colors.darkBlue
             }}
           >
-            Area Codes in Contacts List
+            Top Area Codes in Contacts List
           </div>
         </div>
         <List
@@ -646,72 +673,100 @@ export default class CampaignPhoneNumbersForm extends React.Component {
           }}
         >
           {!isRendering &&
-            states.map(state => (
-              <ListItem
-                key={state}
-                primaryText={state}
-                primaryTogglesNestedList
-                initiallyOpen
-                nestedItems={areaCodes
-                  .filter(areaCode => areaCode.state === state)
-                  .map(({ areaCode, count }) => {
-                    const assignedCount = getAssignedCount(areaCode);
-                    const needed = Math.ceil(count / contactsPerPhoneNumber);
-                    return (
-                      <ListItem
-                        key={areaCode}
+            states.map(({ state, needed: stateNeeded }) => {
+              const stateAssigned = getAssignedCount({ state });
+              return (
+                <ListItem
+                  key={state}
+                  primaryText={
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center"
+                      }}
+                    >
+                      <span style={{ width: 170 }}>{state}</span>
+                      <span
                         style={{
-                          marginLeft: 15,
-                          marginBottom: 15,
-                          border: "1px solid rgb(225, 228, 224)",
-                          borderRadius: 8
+                          width: 70,
+                          fontSize: 14,
+                          color:
+                            stateAssigned && stateAssigned >= stateNeeded
+                              ? theme.colors.green
+                              : stateAssigned
+                              ? theme.colors.blue
+                              : theme.colors.black
                         }}
-                        primaryText={
-                          <div
-                            style={{
-                              display: "flex",
-                              alignItems: "center"
-                            }}
-                          >
-                            <span style={{ marginLeft: -15, width: 80 }}>
-                              {areaCode}
-                            </span>
-                            <span
+                      >
+                        {stateAssigned || 0}
+                        {" / "}
+                        {stateNeeded}
+                      </span>
+                    </div>
+                  }
+                  primaryTogglesNestedList
+                  initiallyOpen
+                  nestedItems={areaCodes
+                    .filter(areaCode => areaCode.state === state)
+                    .map(({ areaCode, count }) => {
+                      const needed = Math.ceil(count / contactsPerPhoneNumber);
+                      const assignedCount = getAssignedCount({ areaCode });
+                      return (
+                        <ListItem
+                          key={areaCode}
+                          style={{
+                            marginLeft: 15,
+                            marginBottom: 15,
+                            border: "1px solid rgb(225, 228, 224)",
+                            borderRadius: 8
+                          }}
+                          primaryText={
+                            <div
                               style={{
-                                width: 70,
-                                fontSize: 14,
-                                color:
-                                  assignedCount && assignedCount >= needed
-                                    ? theme.colors.green
-                                    : assignedCount
-                                    ? theme.colors.red
-                                    : theme.colors.black
+                                display: "flex",
+                                alignItems: "center"
                               }}
                             >
-                              {assignedCount || 0}
-                              {" / "}
-                              {needed}
-                            </span>
+                              <span style={{ marginLeft: -15, width: 80 }}>
+                                {areaCode}
+                              </span>
+                              <span
+                                style={{
+                                  width: 70,
+                                  fontSize: 14,
+                                  color:
+                                    assignedCount && assignedCount >= needed
+                                      ? theme.colors.green
+                                      : assignedCount
+                                      ? theme.colors.red
+                                      : theme.colors.black
+                                }}
+                              >
+                                {assignedCount || 0}
+                                {" / "}
+                                {needed}
+                              </span>
 
-                            <span
-                              style={{
-                                marginLeft: "10%",
-                                fontSize: 15,
-                                color: theme.colors.blue
-                              }}
-                            >
-                              {((count / contactsCount) * 100).toFixed(2)}
-                            </span>
-                            <span style={{ marginLeft: 2, fontSize: 14 }}>
-                              %
-                            </span>
-                          </div>
-                        }
-                      />
-                    );
-                  })}
-              />
-            ))}
+                              <span
+                                style={{
+                                  marginLeft: "auto",
+                                  fontSize: 14,
+                                  color: theme.colors.blue
+                                }}
+                              >
+                                {((count / contactsCount) * 100).toFixed(1)}
+                              </span>
+                              <span style={{ marginLeft: 2, fontSize: 14 }}>
+                                %
+                              </span>
+                            </div>
+                          }
+                        />
+                      );
+                    })}
+                />
+              );
+            })}
         </List>
       </div>
     );
