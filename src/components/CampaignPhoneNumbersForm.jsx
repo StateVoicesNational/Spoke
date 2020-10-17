@@ -78,7 +78,8 @@ export default class CampaignPhoneNumbersForm extends React.Component {
     isRendering: true,
     searchText: "",
     showOnlySelected: false,
-    error: ""
+    error: "",
+    suppressedAreaCodes: []
   };
 
   formSchema = yup.object({
@@ -87,9 +88,35 @@ export default class CampaignPhoneNumbersForm extends React.Component {
   });
 
   componentDidMount() {
-    // let the component initially render before rendering lists
+    const {
+      phoneNumberCounts,
+      contactsAreaCodeCounts,
+      contactsPerPhoneNumber
+    } = this.props;
+
     setTimeout(() => {
-      this.setState({ isRendering: false });
+      /* okay this is wonky, but twilio confirmed that if you have
+         Area Code Geo-Match enabled, it will always choose the phone
+         with the matching area code. this means if you have a list
+         of 50k contacts all in a 917 area code but only one phone
+         in 917, they will all send from that phone. they will also be
+         throttled at 1message per second. not good. so we need to not
+         use matching area codes if there are too few to cover our list */
+      const suppressedAreaCodes = contactsAreaCodeCounts
+        .map(contacts => {
+          const needed = Math.ceil(contacts.count / contactsPerPhoneNumber);
+          const { availableCount } =
+            phoneNumberCounts.find(
+              phones =>
+                phones.areaCode === contacts.areaCode && phones.availableCount
+            ) || {};
+
+          if (availableCount < needed) return contacts.areaCode;
+          return null;
+        })
+        .filter(Boolean);
+
+      this.setState({ suppressedAreaCodes, isRendering: false });
     });
   }
 
@@ -167,7 +194,12 @@ export default class CampaignPhoneNumbersForm extends React.Component {
   getNumbersCount = count => (count === 1 ? "number" : "numbers");
 
   showPhoneNumbers() {
-    const { isRendering, searchText, showOnlySelected } = this.state;
+    const {
+      isRendering,
+      searchText,
+      showOnlySelected,
+      suppressedAreaCodes
+    } = this.state;
     const { isStarted, contactsCount, contactsPerPhoneNumber } = this.props;
     const { inventoryPhoneNumberCounts: reservedNumbers } = this.formValues();
     const assignedNumberCount = this.getTotalNumberCount(reservedNumbers);
@@ -276,6 +308,7 @@ export default class CampaignPhoneNumbersForm extends React.Component {
                 .filter(areaCode => areaCode.state === state)
                 .map(({ areaCode, availableCount }) => {
                   const assignedCount = getAssignedCount(areaCode);
+                  const isSuppressed = suppressedAreaCodes.includes(areaCode);
                   return (
                     <ListItem
                       key={areaCode}
@@ -288,8 +321,21 @@ export default class CampaignPhoneNumbersForm extends React.Component {
                       disabled
                       primaryText={
                         <span>
-                          <span style={{ marginRight: "20%" }}>{areaCode}</span>
-                          <span style={{ color: "#888" }}>
+                          <span
+                            style={{
+                              marginRight: 90,
+                              width: 50
+                            }}
+                          >
+                            {areaCode}
+                          </span>
+                          <span
+                            style={{
+                              color: isSuppressed
+                                ? theme.colors.red
+                                : theme.colors.gray
+                            }}
+                          >
                             {`${assignedCount}${
                               !isStarted ? ` / ${availableCount}` : ""
                             }`}
@@ -297,7 +343,8 @@ export default class CampaignPhoneNumbersForm extends React.Component {
                         </span>
                       }
                       rightIconButton={
-                        !isStarted && (
+                        !isStarted &&
+                        (!isSuppressed ? (
                           <div style={{ marginRight: 50 }}>
                             <IconButton
                               disabled={!assignedCount}
@@ -315,7 +362,18 @@ export default class CampaignPhoneNumbersForm extends React.Component {
                               <AddIcon />
                             </IconButton>
                           </div>
-                        )
+                        ) : (
+                          <div
+                            style={{
+                              marginTop: 15,
+                              marginRight: 10,
+                              color: theme.colors.red,
+                              fontSize: 14
+                            }}
+                          >
+                            Not Enough to Reserve
+                          </div>
+                        ))
                       }
                     />
                   );
@@ -351,25 +409,32 @@ export default class CampaignPhoneNumbersForm extends React.Component {
 
     const autoAssignRemaining = () => {
       let inventory = this.formValues().inventoryPhoneNumberCounts;
+      const { suppressedAreaCodes } = this.state;
 
       const availableAreaCodes = _.flatten(
-        this.props.phoneNumberCounts.map(phoneNumber => {
-          const foundAllocated = inventory.find(
-            ({ areaCode }) => areaCode === phoneNumber.areaCode
-          ) || { count: 0 };
+        this.props.phoneNumberCounts
+          .filter(
+            phoneNumber =>
+              // see NOTE in componentDidMount
+              !suppressedAreaCodes.includes(phoneNumber.areaCode)
+          )
+          .map(phoneNumber => {
+            const foundAllocated = inventory.find(
+              ({ areaCode }) => areaCode === phoneNumber.areaCode
+            ) || { count: 0 };
 
-          /* until we save and navigate back and props.inventoryCounts
+            /* until we save and navigate back and props.inventoryCounts
              has values, the phoneNumberCounts will need to have the
              "form state inventory" subtracted from the available count */
-          const availableCount = !inventoryCounts.length
-            ? phoneNumber.availableCount - foundAllocated.count
-            : phoneNumber.availableCount;
+            const availableCount = !inventoryCounts.length
+              ? phoneNumber.availableCount - foundAllocated.count
+              : phoneNumber.availableCount;
 
-          return Array.from(Array(availableCount)).map(() => ({
-            areaCode: phoneNumber.areaCode,
-            state: phoneNumber.state
-          }));
-        })
+            return Array.from(Array(availableCount)).map(() => ({
+              areaCode: phoneNumber.areaCode,
+              state: phoneNumber.state
+            }));
+          })
       );
 
       /* eslint-disable no-param-reassign */
@@ -378,18 +443,19 @@ export default class CampaignPhoneNumbersForm extends React.Component {
         contactsAreaCodeCounts,
         ["count"],
         ["desc"]
+        // prioritze assigning the area codes with the most contacts
       ).reduce((obj, contacts) => {
-        // ignore outlier area codes
-        if (contacts.count < 20 || !remaining) return obj;
-
         const needed = Math.ceil(contacts.count / contactsPerPhoneNumber);
+        // ignore outlier (less than .5% coverage) area codes
+        if ((contactsCount / needed) * 100 < 1) return obj;
+
         let foundAvailable = availableAreaCodes.filter(
           avail => avail.areaCode === contacts.areaCode
         );
 
         if (!foundAvailable.length) {
           // if no exact match, try to fall back to state match
-          foundAvailable = availableAreaCodes.filter(
+          foundAvailable = _.shuffle(foundAvailable).filter(
             avail => avail.state === contacts.state
           );
         }
@@ -422,19 +488,21 @@ export default class CampaignPhoneNumbersForm extends React.Component {
         return obj;
       }, {});
 
-      const randomSample = _.sampleSize(availableAreaCodes, remaining).reduce(
-        (obj, sample) => {
-          if (matchedFromContacts[sample.areaCode]) {
-            matchedFromContacts[sample.areaCode] += 1;
-          } else {
-            obj[sample.areaCode] = (obj[sample.areaCode] || 0) + 1;
-          }
-          return obj;
-        },
-        {}
-      );
+      let randomSample = {};
 
-      /* eslint-enable no-param-reassign */
+      if (remaining) {
+        randomSample = _.sampleSize(availableAreaCodes, remaining).reduce(
+          (obj, sample) => {
+            if (matchedFromContacts[sample.areaCode]) {
+              matchedFromContacts[sample.areaCode] += 1;
+            } else {
+              obj[sample.areaCode] = (obj[sample.areaCode] || 0) + 1;
+            }
+            return obj;
+          },
+          {}
+        );
+      }
 
       // if these area codes are already selected, add the new counts
       inventory = inventory.map(inventoryItem => {
@@ -526,19 +594,22 @@ export default class CampaignPhoneNumbersForm extends React.Component {
 
   contactsAreaCodesTable() {
     const { isRendering, searchText } = this.state;
-    const { contactsCount } = this.props;
+    const { contactsCount, contactsPerPhoneNumber } = this.props;
 
     let areaCodes = _.orderBy(
-      this.props.contactsAreaCodeCounts,
+      // filter outlying with less than 1% of contacts
+      this.props.contactsAreaCodeCounts.filter(
+        item => (item.count / contactsCount) * 100 >= 1
+      ),
       ["count", "state", "areaCode"],
       ["desc"]
     );
 
     const states = Array.from(new Set(areaCodes.map(({ state }) => state)));
 
-    const getIsAssigned = areaCode => {
+    const getAssignedCount = areaCode => {
       const inventory = this.formValues().inventoryPhoneNumberCounts;
-      return !!(inventory.find(item => item.areaCode === areaCode) || {}).count;
+      return (inventory.find(item => item.areaCode === areaCode) || {}).count;
     };
 
     if (searchText) {
@@ -584,22 +655,17 @@ export default class CampaignPhoneNumbersForm extends React.Component {
                 nestedItems={areaCodes
                   .filter(areaCode => areaCode.state === state)
                   .map(({ areaCode, count }) => {
-                    const isAssigned = getIsAssigned(areaCode);
+                    const assignedCount = getAssignedCount(areaCode);
+                    const needed = Math.ceil(count / contactsPerPhoneNumber);
                     return (
                       <ListItem
                         key={areaCode}
                         style={{
+                          marginLeft: 15,
                           marginBottom: 15,
-                          height: 16,
                           border: "1px solid rgb(225, 228, 224)",
                           borderRadius: 8
                         }}
-                        leftCheckbox={
-                          <Checkbox
-                            disabled={!isAssigned}
-                            checked={isAssigned}
-                          />
-                        }
                         primaryText={
                           <div
                             style={{
@@ -607,23 +673,30 @@ export default class CampaignPhoneNumbersForm extends React.Component {
                               alignItems: "center"
                             }}
                           >
-                            <span style={{ marginRight: "20%" }}>
+                            <span style={{ marginLeft: -15, width: 80 }}>
                               {areaCode}
                             </span>
                             <span
                               style={{
-                                width: "30%",
+                                width: 70,
                                 fontSize: 14,
-                                color: theme.colors.blue
+                                color:
+                                  assignedCount && assignedCount >= needed
+                                    ? theme.colors.green
+                                    : assignedCount
+                                    ? theme.colors.red
+                                    : theme.colors.black
                               }}
                             >
-                              {count}
+                              {assignedCount || 0}
+                              {" / "}
+                              {needed}
                             </span>
 
                             <span
                               style={{
                                 marginLeft: "10%",
-                                fontSize: 16,
+                                fontSize: 15,
                                 color: theme.colors.blue
                               }}
                             >
