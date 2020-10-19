@@ -146,6 +146,7 @@ export const dataQuery = gql`
           introHtml
           primaryColor
           logoImageUrl
+          isArchived
           texterUIConfig {
             options
             sideboxChoices
