@@ -332,15 +332,21 @@ export class IncomingMessageList extends Component {
     const { clearSelectedMessages } = this.props;
     const displayPage = Math.floor(offset / limit) + 1;
     const tableData = prepareDataTableData(conversations);
-    const firstAssignmentid = conversations.length
-      ? conversations[0].contact.assignmentId
-      : null;
+    let firstAssignmentid = null;
+    let firstAssignmentTexter = null;
+    let firstAssignmentCampaignTitle = null;
+    if (tableData.length) {
+      firstAssignmentid = tableData[0].assignmentId;
+      firstAssignmentTexter = tableData[0].texter.displayName;
+      firstAssignmentCampaignTitle = tableData[0].campaignTitle;
+    }
 
     return (
       <div>
         {this.state.showAllRepliesLink && (
           <div>
-            View all replies
+            Review {firstAssignmentTexter}'s messages in{" "}
+            {firstAssignmentCampaignTitle}
             <Link
               target="_blank"
               to={`/app/${this.props.organizationId}/todos/${firstAssignmentid}/allreplies?review=1`}
