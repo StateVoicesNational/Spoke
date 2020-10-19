@@ -1,65 +1,286 @@
-import type from "prop-types";
+import PropTypes from "prop-types";
 import React from "react";
-import { Link } from "react-router";
+import { withRouter } from "react-router";
+import ReactTooltip from "react-tooltip";
 import yup from "yup";
 import Form from "react-formal";
-import FlatButton from "material-ui/FlatButton";
-import TagChip from "../../../components/TagChip";
-import theme from "../../../styles/theme";
-import CheckIcon from "material-ui/svg-icons/action/check-circle";
-import CircularProgress from "material-ui/CircularProgress";
-import DoneIcon from "material-ui/svg-icons/action/done";
-import { css } from "aphrodite";
+import { Paper, Checkbox } from "material-ui";
+import IconButton from "material-ui/IconButton/IconButton";
+import AddIcon from "material-ui/svg-icons/content/add-circle";
+import RemoveIcon from "material-ui/svg-icons/content/remove-circle";
 import GSForm from "../../../components/forms/GSForm";
-import { withRouter } from "react-router";
 import loadData from "../../../containers/hoc/load-data";
 import gql from "graphql-tag";
+import _ from "lodash";
+import theme from "../../../styles/theme";
+import { issues, skills } from "./config";
 
-import {
-  flexStyles,
-  inlineStyles
-} from "../../../components/AssignmentTexter/StyleControls";
+const inlineStyles = {
+  wrapper: {
+    position: "absolute",
+    top: 112,
+    right: 0,
+    width: 340,
+    padding: "0 20px 20px",
+    zIndex: 999,
+    borderLeft: `3px solid ${theme.colors.gray}`,
+    height: "calc(100% - 130px)",
+    overflowY: "auto"
+  },
+  counterColumns: {
+    marginTop: -20,
+    display: "flex",
+    justifyContent: "space-around"
+  },
+  counterWrapper: {
+    borderRadius: 3,
+    marginBottom: 8,
+    padding: 6,
+    height: 74,
+    minWidth: 130,
+    fontSize: 10
+  },
+  counterKey: {
+    color: theme.colors.red,
+    fontSize: 13
+  },
+  counter: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    fontSize: 18
+  },
+  skillsWrapper: {
+    padding: "10px 0 4px",
+    minWidth: 170
+  },
+  skillCheckbox: {
+    marginBottom: 10,
+    padding: "6px 0"
+  },
+  messageInputWrapper: {
+    marginTop: -20
+  },
+  messageInput: {
+    background: "#fff",
+    padding: 4
+  },
+  submitButton: {
+    marginTop: 15,
+    fontSize: "17px !important"
+  }
+};
 
 export const displayName = () => "Texter feedback";
 
-export const showSidebox = ({
-  contact,
-  campaign,
-  messageStatusFilter,
-  assignment
-}) => {
+export const showSidebox = ({ currentUser, review }) => {
   // Return anything False-y to not show
   // Return anything Truth-y to show
   // Return 'popup' to force a popup on mobile screens (instead of letting it hide behind a button)
-  // console.log("showsidebox", messageStatusFilter, contact, campaign);
-  return true;
+  return review === "1" && currentUser.roles.includes("ADMIN");
 };
 
-const schema = yup.object({ feedback: yup.string() });
+const schema = yup.object({
+  feedback: yup.object({
+    message: yup.string(),
+    issueCounts: yup.object(
+      issues.reduce((obj, item) => {
+        /* eslint-disable no-param-reassign*/
+        obj[item.key] = yup.number();
+        return obj;
+      }, {})
+    ),
+    skillCounts: yup.object(
+      skills.reduce((obj, item) => {
+        /* eslint-disable no-param-reassign*/
+        obj[item.key] = yup.number();
+        return obj;
+      }, {})
+    )
+  })
+});
 
 export class TexterSideboxClass extends React.Component {
   constructor(props) {
     super(props);
-    this.state = { feedback: props.assignment.feedback };
+    this.state = {
+      feedback: {
+        issueCounts: {},
+        skillCounts: {},
+        ...props.assignment.feedback
+      }
+    };
   }
 
+  componentDidUpdate(prevProps, prevState) {
+    if (!_.isEqual(prevState.feedback, this.state.feedback)) {
+      this.debouncedUpdate();
+    }
+  }
+
+  debouncedUpdate = _.debounce(
+    async () => {
+      const feedbackString = JSON.stringify(this.state.feedback);
+      await this.props.mutations.updateFeedback(feedbackString);
+      if (this.state.feedback.sweepComplete) {
+        this.props.router.push(`/app/${this.props.organizationId}`);
+      }
+    },
+    500,
+    { leading: false, trailing: true }
+  );
+
+  handleCounterChange = (type, key, direction) => {
+    this.setState(({ feedback }) => {
+      const prevCount = feedback[type][key] || 0;
+      /* eslint-disable no-nested-ternary */
+      return {
+        feedback: {
+          ...feedback,
+          [type]: {
+            ...(feedback[type] || {}),
+            [key]:
+              direction === "increment"
+                ? prevCount + 1
+                : type === "skillCounts"
+                ? 0
+                : prevCount - 1
+          }
+        }
+      };
+    });
+  };
+
   render() {
-    const { assignment } = this.props;
     const { feedback } = this.state;
 
+    const Counter = ({ value, type, countKey }) => {
+      return (
+        <div key={countKey} style={inlineStyles.counter}>
+          <IconButton
+            disabled={!value}
+            onClick={() =>
+              this.handleCounterChange(type, countKey, "decrement")
+            }
+          >
+            <RemoveIcon />
+          </IconButton>
+          {feedback[type][countKey] || "0"}
+          <IconButton
+            onClick={() =>
+              this.handleCounterChange(type, countKey, "increment")
+            }
+          >
+            <AddIcon />
+          </IconButton>
+        </div>
+      );
+    };
+
     return (
-      <div>
-        <h3>Feedback</h3>
+      <div style={inlineStyles.wrapper}>
+        <h2>Texter Feedback</h2>
         <GSForm
           schema={schema}
           value={this.state}
-          onChange={formValues => this.setState(formValues)}
-          onSubmit={() => {
-            this.props.mutations.updateFeedback(this.state.feedback);
+          onChange={formValues => {
+            this.setState(formValues);
+          }}
+          onSubmit={async () => {
+            this.setState({
+              feedback: {
+                ...this.state.feedback,
+                sweepComplete: true
+              }
+            });
           }}
         >
-          <Form.Field name="feedback" fullWidth multiLine />
-          <Form.Button type="submit" label="save" disabled={false} />
+          <div style={inlineStyles.counterColumns}>
+            {!!issues.length && (
+              <div>
+                <h3 style={{ color: theme.colors.darkRed }}>Issues</h3>
+                {issues.map(({ key, tooltip }) => {
+                  const count = (Object.entries(
+                    feedback.issueCounts || []
+                  ).find(issueCount => issueCount[0] === key) || [])[1];
+
+                  return (
+                    <Paper key={key} style={inlineStyles.counterWrapper}>
+                      <span
+                        style={inlineStyles.counterKey}
+                        data-tip
+                        data-for={`${key}-issues`}
+                      >
+                        {_.startCase(key)}
+                      </span>
+                      <ReactTooltip id={`${key}-issues`}>
+                        {tooltip}
+                      </ReactTooltip>
+                      <Counter
+                        value={count}
+                        type="issueCounts"
+                        countKey={key}
+                      />
+                    </Paper>
+                  );
+                })}
+              </div>
+            )}
+            {!!skills.length && (
+              <div>
+                <h3 style={{ color: theme.colors.darkGreen }}>Skills</h3>
+                <Paper style={inlineStyles.skillsWrapper}>
+                  {skills.map(({ key, content }) => {
+                    const isChecked = (Object.entries(
+                      feedback.skillCounts || []
+                    ).find(skillCounts => skillCounts[0] === key) || [])[1];
+
+                    return (
+                      <div>
+                        <Checkbox
+                          label={_.startCase(key)}
+                          style={inlineStyles.skillCheckbox}
+                          checked={isChecked}
+                          data-tip
+                          data-for={`${key}-skills`}
+                          onCheck={() =>
+                            this.handleCounterChange(
+                              "skillCounts",
+                              key,
+                              isChecked ? "decrement" : "increment"
+                            )
+                          }
+                        />
+                        <ReactTooltip id={`${key}-skills`} place="left">
+                          {content}
+                        </ReactTooltip>
+                      </div>
+                    );
+                  })}
+                </Paper>
+              </div>
+            )}
+          </div>
+
+          <h3>Your Feedback Message</h3>
+
+          <Form.Field
+            name="feedback.message"
+            style={inlineStyles.messageInputWrapper}
+            textareaStyle={inlineStyles.messageInput}
+            fullWidth
+            multiLine
+            rows={4}
+            rowsMax={6}
+          />
+
+          <Form.Button
+            style={inlineStyles.submitButton}
+            labelStyle={{ fontSize: 17 }}
+            type="submit"
+            label="Sweep Complete"
+            disabled={!feedback.message}
+          />
         </GSForm>
       </div>
     );
@@ -68,16 +289,20 @@ export class TexterSideboxClass extends React.Component {
 
 TexterSideboxClass.propTypes = {
   // data
-  contact: type.object,
-  campaign: type.object,
-  assignment: type.object,
-  texter: type.object,
+  contact: PropTypes.object,
+  campaign: PropTypes.object,
+  assignment: PropTypes.object,
+  texter: PropTypes.object,
+  router: PropTypes.object,
+  organizationId: PropTypes.string,
 
   // parent state
-  disabled: type.bool,
-  navigationToolbarChildren: type.object,
-  messageStatusFilter: type.string,
-  onUpdateTags: type.func
+  disabled: PropTypes.bool,
+  navigationToolbarChildren: PropTypes.object,
+  messageStatusFilter: PropTypes.string,
+  onUpdateTags: PropTypes.func,
+
+  mutations: PropTypes.object
 };
 
 export const mutations = {
@@ -86,7 +311,11 @@ export const mutations = {
       mutation updateFeedback($assignmentId: String!, $feedback: String!) {
         updateFeedback(assignmentId: $assignmentId, feedback: $feedback) {
           id
-          feedback
+          feedback {
+            message
+            issueCounts
+            skillCounts
+          }
         }
       }
     `,

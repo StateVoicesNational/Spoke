@@ -4,6 +4,21 @@ export const schema = `
     stats: Boolean
     sender: Boolean
   }
+
+  type FeedbackCreatedBy {
+    id: Int
+    name: String
+  }
+
+  type AssignmentFeedback {
+    message: String!
+    issueCounts: JSON!
+    skillCounts: JSON!
+    isAcknowledged: Boolean!
+    createdBy: FeedbackCreatedBy!
+    sweepComplete: Boolean!
+  }
+
   type Assignment {
     id: ID
     texter: User
@@ -14,6 +29,6 @@ export const schema = `
     userCannedResponses: [CannedResponse]
     campaignCannedResponses: [CannedResponse]
     maxContacts: Int
-    feedback: String
+    feedback: AssignmentFeedback
   }
 `;

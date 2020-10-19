@@ -37,7 +37,8 @@ export const getSideboxes = (
     navigationToolbarChildren,
     messageStatusFilter,
     finished,
-    loading
+    loading,
+    review
   },
   context
 ) => {
@@ -65,7 +66,8 @@ export const getSideboxes = (
             navigationToolbarChildren,
             messageStatusFilter,
             finished,
-            loading
+            loading,
+            review
           });
         } else if (
           context === "TexterTodoList" &&
