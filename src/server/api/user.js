@@ -259,11 +259,12 @@ export const resolvers = {
         .join("campaign", "assignment.campaign_id", "campaign.id")
         .where({
           is_started: true,
-          organization_id: organizationId,
           is_archived: false
         })
         .where("assignment.user_id", user.id);
-
+      if (organizationId) {
+        query.where("organization_id", organizationId);
+      }
       if (getConfig("FILTER_DUEBY", null, { truthy: 1 })) {
         query = query.where("campaign.due_by", ">", new Date());
       }
