@@ -632,7 +632,7 @@ export default class CampaignPhoneNumbersForm extends React.Component {
               <div style={{ display: "flex" }}>
                 <RaisedButton
                   style={{
-                    width: 240,
+                    width: 250,
                     height: 40,
                     fontSize: 17,
                     margin: "0 0 5px 5px"
@@ -684,8 +684,7 @@ export default class CampaignPhoneNumbersForm extends React.Component {
       contactsPerPhoneNumber
     } = this.props;
 
-    let areaCodes = _.orderBy(
-      // filter outlying with less than 1% of contacts
+    const areaCodes = _.orderBy(
       contactsAreaCodeCounts,
       ["count", "state", "areaCode"],
       ["desc"]
@@ -713,10 +712,6 @@ export default class CampaignPhoneNumbersForm extends React.Component {
       []
     );
 
-    areaCodes = areaCodes.filter(
-      item => (item.count / contactsCount) * 100 >= 1
-    );
-
     const getAssignedCount = ({ state, areaCode }) => {
       const inventory = this.formValues().inventoryPhoneNumberCounts;
       if (state) {
@@ -732,14 +727,19 @@ export default class CampaignPhoneNumbersForm extends React.Component {
       return (inventory.find(item => item.areaCode === areaCode) || {}).count;
     };
 
+    // only display area codes with more than 1% coverage
+    let filteredAreaCodes = areaCodes.filter(
+      item => (item.count / contactsCount) * 100 >= 1
+    );
+
     if (searchText) {
       if (!isNaN(searchText) && searchText.length <= 3) {
-        const foundAreaCode = areaCodes.find(({ areaCode }) =>
+        const foundAreaCode = filteredAreaCodes.find(({ areaCode }) =>
           areaCode.includes(searchText)
         );
-        areaCodes = foundAreaCode ? [foundAreaCode] : [];
+        filteredAreaCodes = foundAreaCode ? [foundAreaCode] : [];
       } else if (isNaN(searchText)) {
-        areaCodes = areaCodes.filter(({ state }) =>
+        filteredAreaCodes = filteredAreaCodes.filter(({ state }) =>
           state.toLowerCase().includes(searchText.toLowerCase())
         );
       }
@@ -788,8 +788,6 @@ export default class CampaignPhoneNumbersForm extends React.Component {
                           color:
                             stateAssigned && stateAssigned >= stateNeeded
                               ? theme.colors.green
-                              : stateAssigned
-                              ? theme.colors.blue
                               : theme.colors.black
                         }}
                       >
@@ -801,7 +799,7 @@ export default class CampaignPhoneNumbersForm extends React.Component {
                   }
                   primaryTogglesNestedList
                   initiallyOpen
-                  nestedItems={areaCodes
+                  nestedItems={filteredAreaCodes
                     .filter(areaCode => areaCode.state === state)
                     .map(({ areaCode, count }) => {
                       const needed = Math.ceil(count / contactsPerPhoneNumber);
