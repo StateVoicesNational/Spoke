@@ -334,11 +334,17 @@ export const resolvers = {
         sweepComplete: false
       };
 
-      const { feedback } = await r
+      let { feedback } = await r
         .knex("assignment")
         .select("feedback")
         .where({ id: assignment.id })
         .first();
+
+      try {
+        feedback = JSON.parse(feedback);
+      } catch (err) {
+        // do nothing
+      }
 
       if (feedback && !feedback.isAcknowledged) {
         const createdBy = await r
