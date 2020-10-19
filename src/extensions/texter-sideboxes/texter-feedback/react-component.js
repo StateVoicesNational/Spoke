@@ -1,6 +1,7 @@
 import PropTypes from "prop-types";
 import React from "react";
 import { withRouter } from "react-router";
+import ReactTooltip from "react-tooltip";
 import yup from "yup";
 import Form from "react-formal";
 import { Paper, Checkbox } from "material-ui";
@@ -198,16 +199,23 @@ export class TexterSideboxClass extends React.Component {
             {!!issues.length && (
               <div>
                 <h3 style={{ color: theme.colors.darkRed }}>Issues</h3>
-                {issues.map(({ key }) => {
+                {issues.map(({ key, tooltip }) => {
                   const count = (Object.entries(
                     feedback.issueCounts || []
                   ).find(issueCount => issueCount[0] === key) || [])[1];
 
                   return (
                     <Paper key={key} style={inlineStyles.counterWrapper}>
-                      <span style={inlineStyles.counterKey}>
+                      <span
+                        style={inlineStyles.counterKey}
+                        data-tip
+                        data-for={`${key}-issues`}
+                      >
                         {_.startCase(key)}
                       </span>
+                      <ReactTooltip id={`${key}-issues`}>
+                        {tooltip}
+                      </ReactTooltip>
                       <Counter
                         value={count}
                         type="issueCounts"
@@ -222,24 +230,31 @@ export class TexterSideboxClass extends React.Component {
               <div>
                 <h3 style={{ color: theme.colors.darkGreen }}>Skills</h3>
                 <Paper style={inlineStyles.skillsWrapper}>
-                  {skills.map(({ key }) => {
+                  {skills.map(({ key, content }) => {
                     const isChecked = (Object.entries(
                       feedback.skillCounts || []
                     ).find(skillCounts => skillCounts[0] === key) || [])[1];
 
                     return (
-                      <Checkbox
-                        label={_.startCase(key)}
-                        style={inlineStyles.skillCheckbox}
-                        checked={isChecked}
-                        onCheck={() =>
-                          this.handleCounterChange(
-                            "skillCounts",
-                            key,
-                            isChecked ? "decrement" : "increment"
-                          )
-                        }
-                      />
+                      <div>
+                        <Checkbox
+                          label={_.startCase(key)}
+                          style={inlineStyles.skillCheckbox}
+                          checked={isChecked}
+                          data-tip
+                          data-for={`${key}-skills`}
+                          onCheck={() =>
+                            this.handleCounterChange(
+                              "skillCounts",
+                              key,
+                              isChecked ? "decrement" : "increment"
+                            )
+                          }
+                        />
+                        <ReactTooltip id={`${key}-skills`} place="left">
+                          {content}
+                        </ReactTooltip>
+                      </div>
                     );
                   })}
                 </Paper>
