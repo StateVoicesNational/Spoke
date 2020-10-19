@@ -10,7 +10,7 @@ export const buyPhoneNumbers = async (
   { organizationId, areaCode, limit, addToOrganizationMessagingService },
   { user }
 ) => {
-  await accessRequired(user, organizationId, "OWNER");
+  await accessRequired(user, organizationId, "ADMIN");
   const org = await cacheableData.organization.load(organizationId);
   if (
     !getConfig("EXPERIMENTAL_PHONE_INVENTORY", org, { truthy: true }) &&
