@@ -5,6 +5,7 @@ import LinkIcon from "material-ui/svg-icons/content/link";
 export const issues = [
   {
     key: "optOut",
+    tooltip: "Texter misses an Opt-Out or incorrectly Opts Out a contact",
     warningMessage: "Please review the Opt-Out Policy",
     content: (
       <p>
@@ -28,6 +29,7 @@ export const issues = [
   },
   {
     key: "tagging",
+    tooltip: "Texter misses a Tag or incorrectly Tags a contact",
     warningMessage: "Issue with Tagging",
     content: (
       <p>
@@ -49,6 +51,8 @@ export const issues = [
   },
   {
     key: "response",
+    tooltip:
+      "Texter should have selected a better response or inappropriately skipped a message (please elaborate in notes)",
     warningMessage:
       "Please review our priority of responses and “skipping” policy",
     successMessage: "Nice work selecting the best responses!",
@@ -81,6 +85,8 @@ export const issues = [
   },
   {
     key: "scriptEdit",
+    tooltip:
+      "Texter edited a message in a way that exceeds the character limit, ignores the ask, or uses an inappropriate source",
     warningMessage: "Please review our guidelines for editing messages",
     content: (
       <p>
@@ -104,6 +110,8 @@ export const issues = [
   },
   {
     key: "engagement",
+    tooltip:
+      "Texter missed engaging with an undecided voter or supporter OR inappropriately engaged with a non-supporter.",
     warningMessage:
       "Engage with questions from supportive voters; NOT non-supporters!",
     successMessage: "Your messages showed good engagement with voters!",
