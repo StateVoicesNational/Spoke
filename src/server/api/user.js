@@ -262,7 +262,7 @@ export const resolvers = {
           `(
           is_archived = false
           OR is_archived =
-            case when feedback like '%"isAcknowledged": false%' then true
+            case when feedback like '%"isAcknowledged":false%' then true
             else false end
         )`
         )
