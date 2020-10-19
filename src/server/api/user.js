@@ -262,7 +262,7 @@ export const resolvers = {
           `(
           is_archived = false
           OR is_archived =
-            case when feedback->>'isAcknowledged' = 'false' then true
+            case when feedback like '%"isAcknowledged": false%' then true
             else false end
         )`
         )
@@ -329,6 +329,14 @@ export const resolvers = {
             sweepComplete: false
           };
 
+          if (assn.feedback) {
+            try {
+              assn.feedback = JSON.parse(assn.feedback);
+            } catch (err) {
+              // do nothing
+            }
+          }
+
           if (assn.feedback && !assn.feedback.isAcknowledged) {
             const createdBy = await r
               .knexReadOnly("user")
@@ -336,10 +344,12 @@ export const resolvers = {
               .where("id", assn.feedback.createdBy)
               .first();
 
-            assn.feedback.createdBy = {
-              id: createdBy.id,
-              name: `${createdBy.first_name} ${createdBy.last_name}`
-            };
+            if (createdBy) {
+              assn.feedback.createdBy = {
+                id: createdBy.id,
+                name: `${createdBy.first_name} ${createdBy.last_name}`
+              };
+            }
           }
 
           assignments[assn.id].feedback = assn.feedback || defaultFeedback;
