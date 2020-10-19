@@ -178,7 +178,7 @@ This is a major release and therefore requires a schema change which you can run
 - There is a small migration to the `campaign` table which needs to be run before/during migration (either by leaving/disabling SUPPRESS_MIGRATIONS="" or for [AWS Lambda, see the db migration instructions](https://github.com/MoveOnOrg/Spoke/blob/main/docs/DEPLOYING_AWS_LAMBDA.md#migrating-the-database)
 
 ### New Features/Improvements
-- Use of Spoke is subject to legal restrictions which each organization should review and understand, including recent guidance from an FCC ruling. Spoke 8.0 has several changes related to this guidance and we recommend system administrators review the settings outlined [here](https://github.com/MoveOnOrg/Spoke/blob/main/docs/REFERENCE-best-practices-conformance-messaging.md) along with consulting your own legal advice.
+- Use of Spoke is subject to legal restrictions which each organization should review and understand, including recent guidance from an FCC ruling. We recommend system administrators review the settings outlined [here](https://github.com/MoveOnOrg/Spoke/blob/main/docs/REFERENCE-best-practices-conformance-messaging.md) along with consulting your own legal advice.
 - **_Experimental_ Phone number management for campaigns**: A much requested feature for scaling past the 400 phone numbers limit.
   - turn this on with `EXPERIMENTAL_CAMPAIGN_NUMBERS`
 - **_Experimental_ Release Texts**: Dynamic Assignment will also include a way for texters to release texts! That way when a texter is done for the day they can release texts without admin needing to go in and reassign them.
