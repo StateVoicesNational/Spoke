@@ -148,7 +148,7 @@ export class AssignmentSummary extends Component {
 
     // NOTE: we bring back archived campaigns if they have feedback
     // but want to get rid of them once feedback is acknowledged
-    if (campaign.is_archived && hasFeedbackToAcknowledge) return null;
+    if (campaign.isArchived && !hasFeedbackToAcknowledge) return null;
 
     return (
       <div
