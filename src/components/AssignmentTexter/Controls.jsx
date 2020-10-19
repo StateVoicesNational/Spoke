@@ -583,9 +583,9 @@ export class AssignmentTexterContactControls extends React.Component {
 
   renderMessagingRowMessage(enabledSideboxes) {
     const { cannedResponseScript } = this.state;
-    const isFeedbackEnabled = !!enabledSideboxes.find(
-      sidebox => sidebox.name === "texter-feedback"
-    );
+    const isFeedbackEnabled =
+      !!enabledSideboxes &&
+      !!enabledSideboxes.find(sidebox => sidebox.name === "texter-feedback");
     return (
       <div
         className={css(flexStyles.sectionMessageField)}
@@ -942,9 +942,9 @@ export class AssignmentTexterContactControls extends React.Component {
   }
 
   renderMessageBox(internalComponent, enabledSideboxes) {
-    const isFeedbackEnabled = !!enabledSideboxes.find(
-      sidebox => sidebox.name === "texter-feedback"
-    );
+    const isFeedbackEnabled =
+      !!enabledSideboxes &&
+      !!enabledSideboxes.find(sidebox => sidebox.name === "texter-feedback");
     return (
       <div
         ref="messageBox"
