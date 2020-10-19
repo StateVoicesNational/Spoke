@@ -22,7 +22,7 @@ This document is meant to detail the default configurations and how as a system 
 
 ## One click or keypress per-message
 
-Spoke’s default requires the texter to make a single click or key-press for each message sent. Each time a texter presses a key or clicks their mouse button from their queued list of contacts, it will send another message. Spoke cannot send a message unless an individual clicks or presses a key.
+Spoke’s default requires the texter to make a single click or key-press, one message at a time, for each message sent. Each time a texter presses a key or clicks their mouse button from their queued list of contacts, it will send another message. Spoke cannot send a message unless an individual clicks or presses a key.
 
 ### Use cases for sending fewer messages:
 
