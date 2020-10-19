@@ -1,6 +1,6 @@
 exports.up = knex => {
   return knex.schema.table("assignment", table => {
-    table.jsonb("feedback").defaultTo(null);
+    table.text("feedback").defaultTo(null);
   });
 };
 
