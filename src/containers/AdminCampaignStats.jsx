@@ -13,6 +13,7 @@ import loadData from "./hoc/load-data";
 import gql from "graphql-tag";
 import theme from "../styles/theme";
 import { dataTest } from "../lib/attributes";
+import { campaignCostCalculator } from "../components/helpers/CostCalculator";
 
 const inlineStyles = {
   stat: {
@@ -102,7 +103,7 @@ class AdminCampaignStats extends React.Component {
 
     return interactionSteps.map(step => {
       if (step.question === "") {
-        return <div></div>;
+        return <div />;
       }
 
       const totalResponseCount = step.question.answerOptions.reduce(
@@ -142,7 +143,6 @@ class AdminCampaignStats extends React.Component {
     const { campaignId, organizationId } = this.props.params;
     const { errorCounts } = this.props.data.campaign.stats;
     const { contactsCount } = this.props.data.campaign;
-    console.log("errorcounts", contactsCount, errorCounts);
     if (!errorCounts.length) {
       return null;
     }
@@ -194,6 +194,7 @@ class AdminCampaignStats extends React.Component {
     } = this.props.organizationData.organization;
     const showReleaseNumbers =
       campaign.isArchived && campaignPhoneNumbersEnabled;
+
     return (
       <div>
         <div className={css(styles.container)}>
@@ -348,6 +349,16 @@ class AdminCampaignStats extends React.Component {
           <div className={css(styles.flexColumn)}>
             <Stat title="Opt-outs" count={campaign.stats.optOutsCount} />
           </div>
+          <div className={css(styles.flexColumn)}>
+            <Stat
+              title="Estimated Cost ($)"
+              count={campaignCostCalculator(
+                campaign.stats.sentMessagesCount,
+                campaign.stats.receivedMessagesCount,
+                campaign.outgoingMessageCost
+              )}
+            />
+          </div>
         </div>
         <div className={css(styles.header)}>Survey Questions</div>
         {this.renderSurveyStats()}
@@ -417,6 +428,7 @@ const queries = {
           useDynamicAssignment
           useOwnMessagingService
           messageserviceSid
+          outgoingMessageCost
           assignments(assignmentsFilter: $assignmentsFilter) {
             id
             texter {

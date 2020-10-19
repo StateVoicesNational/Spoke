@@ -74,6 +74,7 @@ const rootSchema = gql`
     batchSize: Int
     batchPolicies: [String]
     responseWindow: Float
+    outgoingMessageCost: Float
     ingestMethod: String
     contactData: String
     organizationId: String

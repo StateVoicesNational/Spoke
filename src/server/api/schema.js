@@ -173,6 +173,7 @@ async function editCampaign(id, campaign, loaders, user, origCampaignRecord) {
     batchSize,
     batchPolicies,
     responseWindow,
+    outgoingMessageCost,
     logoImageUrl,
     introHtml,
     primaryColor,
@@ -210,6 +211,7 @@ async function editCampaign(id, campaign, loaders, user, origCampaignRecord) {
     messageservice_sid: messageserviceSid,
     batch_size: batchSize,
     response_window: responseWindow,
+    outgoing_message_cost: outgoingMessageCost,
     timezone
   };
 
@@ -802,6 +804,7 @@ const rootMutations = {
         response_window: getConfig("DEFAULT_RESPONSEWINDOW", organization, {
           default: 48
         }),
+        outgoing_message_cost: 0.1,
         use_own_messaging_service: false
       });
       const newCampaign = await campaignInstance.save();
@@ -835,6 +838,7 @@ const rootMutations = {
         texting_hours_end: campaign.texting_hours_end,
         timezone: campaign.timezone,
         use_dynamic_assignment: campaign.use_dynamic_assignment,
+        outgoing_message_cost: campaign.outgoing_message_cost || 0.1,
         batch_size:
           campaign.batch_size ||
           Number(getConfig("DEFAULT_BATCHSIZE", organization) || 300),

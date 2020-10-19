@@ -299,7 +299,8 @@ export const resolvers = {
         "textingHoursEnforced",
         "textingHoursStart",
         "textingHoursEnd",
-        "timezone"
+        "timezone",
+        "outgoingMessageCost"
       ],
       Campaign
     ),
@@ -324,6 +325,7 @@ export const resolvers = {
         : [];
     },
     responseWindow: campaign => campaign.response_window || 48,
+    outgoingMessageCost: campaign => campaign.outgoing_message_cost,
     organization: async (campaign, _, { loaders }) =>
       campaign.organization ||
       loaders.organization.load(campaign.organization_id),
