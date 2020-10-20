@@ -140,6 +140,14 @@ export const dataQuery = gql`
     }
     assignment(assignmentId: $assignmentId, contactId: $contactId) {
       id
+      feedback {
+        createdBy {
+          name
+        }
+        message
+        issueCounts
+        skillCounts
+      }
       hasUnassignedContactsForTexter
       contacts(contactsFilter: $contactsFilter) {
         id
@@ -209,6 +217,7 @@ export class TexterTodo extends React.Component {
         organizationId={this.props.params.organizationId}
         ChildComponent={AssignmentTexterContact}
         messageStatusFilter={this.props.messageStatus}
+        location={this.props.location}
       />
     );
   }
@@ -229,18 +238,26 @@ const queries = {
     query: dataQuery,
     options: ownProps => {
       console.log("TexterTodo ownProps", ownProps);
-      // FUTURE: based on ?review=1 in location.search
-      //         exclude isOptedOut: false, validTimezone: true
-      return {
-        variables: {
-          contactsFilter: {
+      // based on ?review=1 in location.search
+      // exclude isOptedOut: false, validTimezone: true
+      const contactsFilter = ownProps.location.query.review
+        ? {
+            messageStatus: ownProps.messageStatus,
+            ...(ownProps.params.reviewContactId && {
+              contactId: ownProps.params.reviewContactId
+            })
+          }
+        : {
             messageStatus: ownProps.messageStatus,
             ...(!ownProps.params.reviewContactId && { isOptedOut: false }),
             ...(ownProps.params.reviewContactId && {
               contactId: ownProps.params.reviewContactId
             }),
             validTimezone: true
-          },
+          };
+      return {
+        variables: {
+          contactsFilter,
           needsMessageFilter: {
             messageStatus: "needsMessage",
             isOptedOut: false,

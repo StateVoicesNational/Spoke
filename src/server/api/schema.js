@@ -64,7 +64,8 @@ import {
   updateContactTags,
   updateQuestionResponses,
   releaseCampaignNumbers,
-  clearCachedOrgAndExtensionCaches
+  clearCachedOrgAndExtensionCaches,
+  updateFeedback
 } from "./mutations";
 
 import { jobRunner } from "../../extensions/job-runners";
@@ -377,7 +378,7 @@ async function editCampaign(id, campaign, loaders, user, origCampaignRecord) {
         if (pc.count) {
           await ownedPhoneNumber.allocateCampaignNumbers(
             {
-              organizationId: organizationId,
+              organizationId,
               campaignId: id,
               areaCode: pc.areaCode,
               amount: pc.count
@@ -500,6 +501,8 @@ const rootMutations = {
         terms: true
       };
     },
+
+    updateFeedback,
 
     sendReply: async (_, { id, message }, { user, loaders }) => {
       const contact = await cacheableData.campaignContact.load(id);

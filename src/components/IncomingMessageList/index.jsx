@@ -12,7 +12,14 @@ import ConversationPreviewModal from "./ConversationPreviewModal";
 import TagChip from "../TagChip";
 import moment from "moment";
 import theme from "../../styles/theme";
+import { StyleSheet, css } from "aphrodite";
 import { MESSAGE_STATUSES } from "../../components/IncomingMessageFilter";
+
+const styles = StyleSheet.create({
+  link_light_bg: {
+    ...theme.text.link_light_bg
+  }
+});
 
 export const prepareDataTableData = conversations =>
   conversations.map(conversation => ({
@@ -76,6 +83,13 @@ export class IncomingMessageList extends Component {
     this.props.onConversationCountChanged(conversationCount);
   }
 
+  componentWillUpdate = () => {
+    this.state.showAllRepliesLink =
+      this.props.conversations.conversations.pageInfo.total > 0 &&
+      this.props.campaignsFilter.campaignIds &&
+      this.props.campaignsFilter.campaignIds.length === 1 &&
+      this.props.assignmentsFilter.texterId;
+  };
   componentDidUpdate = prevProps => {
     if (
       this.props.clearSelectedMessages &&
@@ -325,9 +339,32 @@ export class IncomingMessageList extends Component {
     const { clearSelectedMessages } = this.props;
     const displayPage = Math.floor(offset / limit) + 1;
     const tableData = prepareDataTableData(conversations);
+    let firstAssignmentid = null;
+    let firstAssignmentTexter = null;
+    let firstAssignmentCampaignTitle = null;
+    if (tableData.length) {
+      firstAssignmentid = tableData[0].assignmentId;
+      firstAssignmentTexter = tableData[0].texter.displayName;
+      firstAssignmentCampaignTitle = tableData[0].campaignTitle;
+    }
 
     return (
       <div>
+        {this.state.showAllRepliesLink && (
+          <div>
+            <Link
+              className={css(styles.link_light_bg)}
+              target="_blank"
+              to={`/app/${this.props.organizationId}/todos/${firstAssignmentid}/allreplies?review=1`}
+            >
+              Sweep {firstAssignmentTexter}'s messages in{" "}
+              {firstAssignmentCampaignTitle}
+              <ActionOpenInNew
+                style={{ width: 14, height: 14, color: theme.colors.green }}
+              />
+            </Link>
+          </div>
+        )}
         <DataTables
           data={tableData}
           columns={this.prepareTableColumns()}
