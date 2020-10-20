@@ -60,7 +60,7 @@ const headerValidator = url => {
     const options = {
       validate: true,
       protocol: "https",
-      url: url
+      url
     };
 
     return Twilio.webhook(authToken, options)(req, res, next);
@@ -166,7 +166,8 @@ async function convertMessagePartsToMessage(messageParts) {
     // campaign_contact_id: lastMessage.campaign_contact_id,
     messageservice_sid: serviceMessages[0].MessagingServiceSid,
     service: "twilio",
-    send_status: "DELIVERED"
+    send_status: "DELIVERED",
+    user_id: null
   });
 }
 
@@ -289,7 +290,7 @@ async function sendMessage(message, contact, trx, organization, campaign) {
       {
         to: message.contact_number,
         body: message.text,
-        messagingServiceSid: messagingServiceSid,
+        messagingServiceSid,
         statusCallback: process.env.TWILIO_STATUS_CALLBACK_URL
       },
       twilioValidityPeriod ? { validityPeriod: twilioValidityPeriod } : {},
