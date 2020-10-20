@@ -617,16 +617,18 @@ export default class CampaignPhoneNumbersForm extends React.Component {
                 {`${assignedNumberCount}/${numbersNeeded}`}
               </span>
 
-              <FlatButton
-                style={{
-                  marginLeft: "auto",
-                  fontSize: 12
-                }}
-                label="Reset"
-                secondary
-                disabled={!assignedNumberCount || isRendering}
-                onClick={() => resetReserved()}
-              />
+              {!isStarted && (
+                <FlatButton
+                  style={{
+                    marginLeft: "auto",
+                    fontSize: 12
+                  }}
+                  label="Reset"
+                  secondary
+                  disabled={!assignedNumberCount || isRendering}
+                  onClick={() => resetReserved()}
+                />
+              )}
             </div>
             {!isStarted && (
               <div style={{ display: "flex" }}>
