@@ -48,6 +48,7 @@ function genComponent(
           }
         }}
         router={routerPushes} // used to push redirect
+        location={{ query: {} }}
       />
     </MuiThemeProvider>
   );

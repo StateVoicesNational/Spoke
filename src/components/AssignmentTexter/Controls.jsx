@@ -60,7 +60,7 @@ export class AssignmentTexterContactControls extends React.Component {
       optOutDialogOpen: false,
       currentShortcutSpace: 0,
       messageFocus: false,
-      availableSteps: availableSteps,
+      availableSteps,
       messageReadOnly: false,
       currentInteractionStep:
         availableSteps.length > 0
@@ -475,7 +475,7 @@ export class AssignmentTexterContactControls extends React.Component {
           label="Skip"
           className={css(flexStyles.flatButton)}
           style={{
-            /*WTF: TODO resolve with reopen and labelStyle */
+            /* WTF: TODO resolve with reopen and labelStyle */
             flex: "1 2 auto"
           }}
           labelStyle={{ ...inlineStyles.flatButtonLabel, flex: "1 1 auto" }}
@@ -581,10 +581,16 @@ export class AssignmentTexterContactControls extends React.Component {
     );
   }
 
-  renderMessagingRowMessage() {
+  renderMessagingRowMessage(enabledSideboxes) {
     const { cannedResponseScript } = this.state;
+    const isFeedbackEnabled =
+      !!enabledSideboxes &&
+      !!enabledSideboxes.find(sidebox => sidebox.name === "texter-feedback");
     return (
-      <div className={css(flexStyles.sectionMessageField)}>
+      <div
+        className={css(flexStyles.sectionMessageField)}
+        style={isFeedbackEnabled ? { width: "calc(100% - 390px)" } : undefined}
+      >
         <GSForm
           ref="form"
           schema={this.messageSchema}
@@ -841,7 +847,7 @@ export class AssignmentTexterContactControls extends React.Component {
     );
   }
 
-  renderMessageControls() {
+  renderMessageControls(enabledSideboxes) {
     const { contact, messageStatusFilter, assignment, campaign } = this.props;
     const {
       availableSteps,
@@ -860,7 +866,7 @@ export class AssignmentTexterContactControls extends React.Component {
       currentQuestionAnswered = questionResponses[currentInteractionStep.id];
     }
     return [
-      this.renderMessagingRowMessage({}),
+      this.renderMessagingRowMessage(enabledSideboxes),
       <div key="sectionButtons" className={css(flexStyles.sectionButtons)}>
         <div
           className={css(flexStyles.subButtonsAnswerButtons)}
@@ -936,8 +942,15 @@ export class AssignmentTexterContactControls extends React.Component {
   }
 
   renderMessageBox(internalComponent, enabledSideboxes) {
+    const isFeedbackEnabled =
+      !!enabledSideboxes &&
+      !!enabledSideboxes.find(sidebox => sidebox.name === "texter-feedback");
     return (
-      <div ref="messageBox" className={css(flexStyles.superSectionMessageBox)}>
+      <div
+        ref="messageBox"
+        className={css(flexStyles.superSectionMessageBox)}
+        style={isFeedbackEnabled ? { width: "calc(100% - 382px)" } : undefined}
+      >
         <div
           {...dataTest("messageList")}
           key="messageScrollContainer"
@@ -978,7 +991,10 @@ export class AssignmentTexterContactControls extends React.Component {
           this.renderMessageBox(
             <MessageList
               contact={this.props.contact}
+              currentUser={this.props.currentUser}
               messages={this.props.contact.messages}
+              organizationId={this.props.organizationId}
+              review={this.props.review}
               styles={messageListStyles}
             />,
             enabledSideboxes
@@ -996,12 +1012,14 @@ AssignmentTexterContactControls.propTypes = {
   assignment: PropTypes.object,
   currentUser: PropTypes.object,
   texter: PropTypes.object,
+  organizationId: PropTypes.string,
 
   // parent state
   disabled: PropTypes.bool,
   navigationToolbarChildren: PropTypes.object,
   messageStatusFilter: PropTypes.string,
   enabledSideboxes: PropTypes.arrayOf(PropTypes.object),
+  review: PropTypes.string,
 
   // parent config/callbacks
   startingMessage: PropTypes.string,

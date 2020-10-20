@@ -146,6 +146,7 @@ export const dataQuery = gql`
           introHtml
           primaryColor
           logoImageUrl
+          isArchived
           texterUIConfig {
             options
             sideboxChoices
@@ -153,6 +154,16 @@ export const dataQuery = gql`
           organization {
             id
           }
+        }
+        feedback {
+          isAcknowledged
+          createdBy {
+            name
+          }
+          message
+          issueCounts
+          skillCounts
+          sweepComplete
         }
         allContactsCount: contactsCount
         unmessagedCount: contactsCount(contactsFilter: $needsMessageFilter)

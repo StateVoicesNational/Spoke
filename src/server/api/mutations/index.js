@@ -10,6 +10,7 @@ import { updateContactTags } from "./updateContactTags";
 import { updateQuestionResponses } from "./updateQuestionResponses";
 import { releaseCampaignNumbers } from "./releaseCampaignNumbers";
 import { clearCachedOrgAndExtensionCaches } from "./clearCachedOrgAndExtensionCaches";
+import { updateFeedback } from "./updateFeedback";
 
 export {
   bulkSendMessages,
@@ -23,5 +24,6 @@ export {
   updateContactTags,
   updateQuestionResponses,
   releaseCampaignNumbers,
-  clearCachedOrgAndExtensionCaches
+  clearCachedOrgAndExtensionCaches,
+  updateFeedback
 };
