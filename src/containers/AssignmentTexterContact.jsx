@@ -87,7 +87,8 @@ export class AssignmentTexterContact extends React.Component {
 
   componentDidMount() {
     const { contact } = this.props;
-    if (contact.optOut) {
+    const { review } = this.props.location.query;
+    if (contact.optOut && !review) {
       if (!this.props.reviewContactId) {
         this.skipContact();
       }
