@@ -12,7 +12,14 @@ import ConversationPreviewModal from "./ConversationPreviewModal";
 import TagChip from "../TagChip";
 import moment from "moment";
 import theme from "../../styles/theme";
+import { StyleSheet, css } from "aphrodite";
 import { MESSAGE_STATUSES } from "../../components/IncomingMessageFilter";
+
+const styles = StyleSheet.create({
+  link_light_bg: {
+    ...theme.text.link_light_bg
+  }
+});
 
 export const prepareDataTableData = conversations =>
   conversations.map(conversation => ({
@@ -345,12 +352,13 @@ export class IncomingMessageList extends Component {
       <div>
         {this.state.showAllRepliesLink && (
           <div>
-            Review {firstAssignmentTexter}'s messages in{" "}
-            {firstAssignmentCampaignTitle}
             <Link
+              className={css(styles.link_light_bg)}
               target="_blank"
               to={`/app/${this.props.organizationId}/todos/${firstAssignmentid}/allreplies?review=1`}
             >
+              Sweep {firstAssignmentTexter}'s messages in{" "}
+              {firstAssignmentCampaignTitle}
               <ActionOpenInNew
                 style={{ width: 14, height: 14, color: theme.colors.green }}
               />
