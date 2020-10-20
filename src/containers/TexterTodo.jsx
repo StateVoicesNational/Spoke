@@ -35,7 +35,6 @@ export const contactDataFragment = `
           createdAt
           text
           isFromContact
-          userId
         }
         tags {
           id
