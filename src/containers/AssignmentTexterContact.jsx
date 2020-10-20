@@ -88,11 +88,14 @@ export class AssignmentTexterContact extends React.Component {
   componentDidMount() {
     const { contact } = this.props;
     const { review } = this.props.location.query;
-    if (contact.optOut && !review) {
+    if (contact.optOut && !(review === "1")) {
       if (!this.props.reviewContactId) {
         this.skipContact();
       }
-    } else if (!this.isContactBetweenTextingHours(contact)) {
+    } else if (
+      !this.isContactBetweenTextingHours(contact) &&
+      !(review === "1")
+    ) {
       setTimeout(() => {
         this.props.refreshData();
         this.setState({ disabled: false });
