@@ -1,5 +1,4 @@
-import { accessRequired } from "../errors";
-import { r, cacheableData } from "../../models";
+import { r } from "../../models";
 
 export const updateFeedback = async (
   _,
@@ -7,12 +6,6 @@ export const updateFeedback = async (
   { user }
 ) => {
   try {
-    const assignment = await cacheableData.assignment.load(assignmentId);
-    const organization = await cacheableData.campaign.loadCampaignOrganization({
-      campaignId: assignment.campaign_id
-    });
-    await accessRequired(user, organization.id, "SUPERVOLUNTEER");
-
     /* eslint-disable no-param-reassign */
     feedback = JSON.parse(feedback);
 
@@ -24,6 +17,7 @@ export const updateFeedback = async (
     /* eslint-disable no-underscore-dangle */
     if (feedback.__typename) delete feedback.__typename;
     if (feedback.issueCounts.__typename) delete feedback.issueCounts.__typename;
+    if (feedback.skillCounts.__typename) delete feedback.skillCounts.__typename;
 
     await r
       .knex("assignment")
