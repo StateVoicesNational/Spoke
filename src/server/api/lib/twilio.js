@@ -714,7 +714,7 @@ async function clearMessagingServicePhones(organization, messagingServiceSid) {
   const twilioInstance = await getTwilio(organization);
   console.log("Deleting phones from messaging service", messagingServiceSid);
 
-  const { phone_numbers: phones } = await twilioInstance.messaging
+  const phones = await twilioInstance.messaging
     .services(messagingServiceSid)
     .phoneNumbers.list();
 
