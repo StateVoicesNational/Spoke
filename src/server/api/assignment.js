@@ -124,6 +124,17 @@ export function getContacts(
       if (Object.prototype.hasOwnProperty.call(contactsFilter, "isOptedOut")) {
         query = query.where("is_opted_out", contactsFilter.isOptedOut);
       }
+
+      if (contactsFilter.errorCode && contactsFilter.errorCode.length) {
+        if (contactsFilter.errorCode[0] === 0) {
+          query.whereNull("campaign_contact.error_code");
+        } else {
+          query.whereIn(
+            "campaign_contact.error_code",
+            contactsFilter.errorCode
+          );
+        }
+      }
     }
   }
 
