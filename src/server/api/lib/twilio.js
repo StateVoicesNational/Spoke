@@ -68,6 +68,7 @@ const headerValidator = url => {
 };
 
 export const errorDescriptions = {
+  12300: "Twilio is unable to process the Content-Type of the provided URL.",
   12400: "Internal (Twilio) Failure",
   21211: "Invalid 'To' Phone Number",
   21408: "Attempt to send to disabled region",
