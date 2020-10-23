@@ -33,10 +33,18 @@ export const releaseCampaignNumbers = async (_, { campaignId }, { user }) => {
   }
 
   if (service === "twilio") {
-    await twilio.deleteMessagingService(
-      organization,
-      campaign.messageservice_sid
-    );
+    if (process.env.CAMPAIGN_PHONES_RETAIN_MESSAGING_SERVICES) {
+      // retain messaging services for analytics, just clear phones
+      await twilio.clearMessagingServicePhones(
+        organization,
+        campaign.messageservice_sid
+      );
+    } else {
+      await twilio.deleteMessagingService(
+        organization,
+        campaign.messageservice_sid
+      );
+    }
   }
 
   await r
