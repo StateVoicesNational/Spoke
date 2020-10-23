@@ -718,23 +718,24 @@ async function clearMessagingServicePhones(organization, messagingServiceSid) {
     .services(messagingServiceSid)
     .phoneNumbers.list();
 
-  for (const phone of phones) {
-    let retries = 0;
-    const tryDeletePhone = async () => {
-      try {
-        await twilioInstance.messaging
-          .services(messagingServiceSid)
-          .phoneNumbers(phone.sid)
-          .remove();
-      } catch (err) {
-        if (retries >= 5) throw err;
-        retries += 1;
-        await new Promise(res => setTimeout(res, 500));
-        await tryDeletePhone();
-      }
-    };
+  let retries = 0;
+  const tryRemovePhone = async phone => {
+    try {
+      await twilioInstance.messaging
+        .services(messagingServiceSid)
+        .phoneNumbers(phone.sid)
+        .remove();
+      retries = 0;
+    } catch (err) {
+      if (retries >= 5) throw err;
+      retries += 1;
+      await new Promise(res => setTimeout(res, 500));
+      await tryRemovePhone(phone);
+    }
+  };
 
-    await tryDeletePhone();
+  for (const phone of phones) {
+    await tryRemovePhone(phone);
   }
 }
 
