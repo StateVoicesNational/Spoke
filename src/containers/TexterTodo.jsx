@@ -35,7 +35,6 @@ export const contactDataFragment = `
           createdAt
           text
           isFromContact
-          userId
         }
         tags {
           id
@@ -244,6 +243,7 @@ const queries = {
       const contactsFilter = ownProps.location.query.review
         ? {
             messageStatus: ownProps.messageStatus,
+            errorCode: ["0"],
             ...(ownProps.params.reviewContactId && {
               contactId: ownProps.params.reviewContactId
             })
