@@ -123,7 +123,7 @@ export class TexterSideboxClass extends React.Component {
       const feedbackString = JSON.stringify(this.state.feedback);
       await this.props.mutations.updateFeedback(feedbackString);
       if (this.state.feedback.sweepComplete) {
-        this.props.router.push(`/app/${this.props.organizationId}`);
+        this.props.router.push(`/admin/${this.props.organizationId}/incoming`);
       }
     },
     500,

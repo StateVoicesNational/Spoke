@@ -138,6 +138,18 @@ export const issues = [
 
 export const skills = [
   {
+    key: "extraOptOut",
+    content: "Texter identifies a nestled opt out request ",
+    successMessage:
+      "  Sometimes a request to Opt Out is hidden among other info, but you saw it and stuck to our Opt Out policy. Nice!"
+  },
+  {
+    key: "tagging",
+    content: "Appropriate use of tags",
+    successMessage:
+      "Nice job identifying updates to voter info, tagging, and saving tags!"
+  },
+  {
     key: "undecided",
     content:
       "Undecided - texter sent Undecided response for vague asks of more info",
@@ -151,22 +163,10 @@ export const skills = [
       "Nice work sending the No VAGUE Survey Response to engage with vague voters!"
   },
   {
-    key: "tagging",
-    content: "Appropriate use of tags",
-    successMessage:
-      "Nice job identifying updates to voter info, tagging, and saving tags!"
-  },
-  {
     key: "jumpAhead",
     content: "Texter logs multiple Survey Response at once",
     successMessage:
       "This is a big Level-Up skill! You logged multiple Survey Responses at once when the voter answered the next question in the script!"
-  },
-  {
-    key: "extraOptOut",
-    content: "Texter identifies a nestled opt out request ",
-    successMessage:
-      "  Sometimes a request to Opt Out is hidden among other info, but you saw it and stuck to our Opt Out policy. Nice!"
   },
   {
     key: "multiMessage",
