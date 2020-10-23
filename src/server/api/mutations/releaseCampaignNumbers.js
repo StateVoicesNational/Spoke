@@ -33,7 +33,13 @@ export const releaseCampaignNumbers = async (_, { campaignId }, { user }) => {
   }
 
   if (service === "twilio") {
-    if (process.env.CAMPAIGN_PHONES_RETAIN_MESSAGING_SERVICES) {
+    const shouldRetainServices = getConfig(
+      "CAMPAIGN_PHONES_RETAIN_MESSAGING_SERVICES",
+      organization,
+      { truthy: 1 }
+    );
+
+    if (shouldRetainServices) {
       // retain messaging services for analytics, just clear phones
       await twilio.clearMessagingServicePhones(
         organization,
