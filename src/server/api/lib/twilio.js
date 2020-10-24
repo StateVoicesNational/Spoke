@@ -710,6 +710,35 @@ async function deleteMessagingService(organization, messagingServiceSid) {
   return twilioInstance.messaging.services(messagingServiceSid).remove();
 }
 
+async function clearMessagingServicePhones(organization, messagingServiceSid) {
+  const twilioInstance = await getTwilio(organization);
+  console.log("Deleting phones from messaging service", messagingServiceSid);
+
+  const phones = await twilioInstance.messaging
+    .services(messagingServiceSid)
+    .phoneNumbers.list();
+
+  let retries = 0;
+  const tryRemovePhone = async phone => {
+    try {
+      await twilioInstance.messaging
+        .services(messagingServiceSid)
+        .phoneNumbers(phone.sid)
+        .remove();
+      retries = 0;
+    } catch (err) {
+      if (retries >= 5) throw err;
+      retries += 1;
+      await new Promise(res => setTimeout(res, 500));
+      await tryRemovePhone(phone);
+    }
+  };
+
+  for (const phone of phones) {
+    await tryRemovePhone(phone);
+  }
+}
+
 export default {
   syncMessagePartProcessing: !!process.env.JOBS_SAME_PROCESS,
   addServerEndpoints,
@@ -723,5 +752,6 @@ export default {
   getPhoneNumbersForService,
   buyNumbersInAreaCode,
   addNumbersToMessagingService,
-  deleteMessagingService
+  deleteMessagingService,
+  clearMessagingServicePhones
 };
