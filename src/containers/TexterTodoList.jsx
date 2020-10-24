@@ -27,6 +27,19 @@ class TexterTodoList extends React.Component {
         }
         return xToText > yToText ? -1 : 1;
       })
+      .sort((x, y) => {
+        // sort again to bring feedback to the top
+        const xHasFeedback =
+          x.feedback && x.feedback.sweepComplete && !x.feedback.isAcknowledged;
+        const yHasFeedback =
+          y.feedback && y.feedback.sweepComplete && !y.feedback.isAcknowledged;
+        if (xHasFeedback && yHasFeedback) {
+          return 0;
+        } else if (xHasFeedback && !yHasFeedback) {
+          return -1;
+        }
+        return 1;
+      })
       .map(assignment => {
         if (
           assignment.allContactsCount > 0 ||
