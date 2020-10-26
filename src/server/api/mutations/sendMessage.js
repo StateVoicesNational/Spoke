@@ -210,7 +210,7 @@ export const sendMessage = async (
 
       return res;
     } catch (err) {
-      if (saveRetries <= 4) {
+      if (!err.message.includes("DUPLICATE MESSAGE") && saveRetries <= 4) {
         saveRetries += 1;
         log.info(`SAVEFAIL: user ${user.id} to ${contact.cell}, retrying...`);
         await new Promise(res => setTimeout(res, 500));
