@@ -190,26 +190,43 @@ export const sendMessage = async (
 
   const initialMessageStatus = contact.message_status;
 
-  const saveResult = await cacheableData.message.save({
-    messageInstance,
-    contact,
-    campaign,
-    organization,
-    texter: user,
-    cannedResponseId
-  });
-  if (!saveResult.message) {
-    throw newError(
-      `Message send error ${saveResult.texterError || ""}`,
-      "SENDERR_SAVEFAIL",
-      {
+  let saveRetries = 0;
+
+  const trySave = async () => {
+    try {
+      const res = await cacheableData.message.save({
+        messageInstance,
+        contact,
+        campaign,
+        organization,
+        texter: user,
+        cannedResponseId
+      });
+
+      if (!res.message) {
+        const details = JSON.stringify(res || {}, null, 2);
+        throw new Error(details);
+      }
+
+      return res;
+    } catch (err) {
+      if (!err.message.includes("DUPLICATE MESSAGE") && saveRetries <= 4) {
+        saveRetries += 1;
+        log.info(`SAVEFAIL: user ${user.id} to ${contact.cell}, retrying...`);
+        await new Promise(res => setTimeout(res, 500));
+        return await trySave();
+      }
+      throw newError(`Message send error ${err.message}`, "SENDERR_SAVEFAIL", {
         message,
         campaignContactId,
         user,
         campaign
-      }
-    );
-  }
+      });
+    }
+  };
+
+  const saveResult = await trySave();
+
   contact.message_status = saveResult.contactStatus;
 
   if (!saveResult.blockSend) {
