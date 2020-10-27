@@ -289,8 +289,7 @@ async function sendMessage(message, contact, trx, organization, campaign) {
       {
         to: message.contact_number,
         body: message.text,
-        messagingServiceSid: messagingServiceSid,
-        statusCallback: process.env.TWILIO_STATUS_CALLBACK_URL
+        messagingServiceSid
       },
       twilioValidityPeriod ? { validityPeriod: twilioValidityPeriod } : {},
       parseMessageText(message)
