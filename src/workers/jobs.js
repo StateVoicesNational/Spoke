@@ -707,11 +707,11 @@ export async function exportCampaign(job) {
       "campaign_contact.id",
       "campaign_contact.campaign_id",
       "campaign_contact.assignment_id",
-      {texterFirst: "user.first_name"},
-      {texterLast: "user.last_name"},
-      {texterEmail: "user.email"},
-      {texterCell: "user.cell"},
-      {texterAlias: "user.alias"},
+      { texterFirst: "user.first_name" },
+      { texterLast: "user.last_name" },
+      { texterEmail: "user.email" },
+      { texterCell: "user.cell" },
+      { texterAlias: "user.alias" },
       "user.extra",
       "campaign_contact.external_id",
       "campaign_contact.first_name",
@@ -723,7 +723,7 @@ export async function exportCampaign(job) {
       "campaign_contact.custom_fields",
       "campaign_contact.is_opted_out",
       "campaign_contact.message_status",
-      "campaign_contact.error_code",
+      "campaign_contact.error_code"
     ])
     .select()
     .where("campaign_contact.campaign_id", campaign.id);
@@ -736,10 +736,13 @@ export async function exportCampaign(job) {
     // Add question response columns
     const responses = {};
     Object.keys(allQuestions).forEach(stepId => {
-      const {value=""} = questionResponses.find(response => {
-        return response.campaign_contact_id === row.id
-          && response.interaction_step_id === Number(stepId)
-      }) || {};
+      const { value = "" } =
+        questionResponses.find(response => {
+          return (
+            response.campaign_contact_id === row.id &&
+            response.interaction_step_id === Number(stepId)
+          );
+        }) || {};
       responses[`question[${allQuestions[stepId]}]`] = value;
     });
 
@@ -747,11 +750,13 @@ export async function exportCampaign(job) {
       ...row,
       ...customFields,
       tags: tags.reduce((acc, cur) => {
-        if (cur.campaign_contact_id == row.id)
-          acc.push(cur.name)
-        }, []),
+        if (cur.campaign_contact_id === row.id) {
+          acc.push(cur.name);
+        }
+        return acc;
+      }, []),
       ...responses
-    }
+    };
   });
 
   const messages = await r
@@ -764,7 +769,7 @@ export async function exportCampaign(job) {
       "contact_number",
       "is_from_contact",
       "send_status",
-      { attempted_at: "message.created_at"},
+      { attempted_at: "message.created_at" },
       "text",
       "message.error_code"
     ])
