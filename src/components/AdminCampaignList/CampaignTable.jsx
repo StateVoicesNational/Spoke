@@ -12,6 +12,10 @@ import Empty from "../Empty";
 import DataTables from "material-ui-datatables";
 import { CircularProgress } from "material-ui";
 import { SORTS, TIMEZONE_SORT } from "./SortBy";
+import {
+  getBudgetUsedPercentage,
+  shouldShowCampaignBudgetColumn
+} from "../helpers/CostCalculator";
 
 const inlineStyles = {
   past: {
@@ -160,6 +164,34 @@ export class CampaignTable extends React.Component {
       });
     }
 
+    const budgetColumn = [];
+    const orgCampaigns = this.props.data.organization.campaigns.campaigns;
+
+    if (shouldShowCampaignBudgetColumn(orgCampaigns)) {
+      budgetColumn.push({
+        key: "budgetStatus",
+        label: "Budget Status",
+        sortable: true,
+        style: {
+          width: "7em"
+        },
+        render: (columnKey, row) => {
+          console.log(row);
+          if (row.useBudget) {
+            const budgetUsedPercentage = getBudgetUsedPercentage(
+              row.stats.sentMessagesCount,
+              row.stats.receivedMessagesCount,
+              row.outgoingMessageCost,
+              row.incomingMessageCost,
+              row.budget
+            );
+            return `${budgetUsedPercentage}% used`;
+          }
+          return "no budget";
+        }
+      });
+    }
+
     return [
       // id, timezone (if current sort), title, user, contactcount, unassigned, unmessaged, due date, archive
       {
@@ -171,6 +203,7 @@ export class CampaignTable extends React.Component {
         }
       },
       ...timezoneColumn,
+      ...budgetColumn,
       {
         key: "title",
         label: "Campaign",

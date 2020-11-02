@@ -2,13 +2,13 @@ import PropTypes from "prop-types";
 import React from "react";
 import RaisedButton from "material-ui/RaisedButton";
 import Chart from "../components/Chart";
-import { Card, CardTitle, CardText } from "material-ui/Card";
+import { Card, CardText, CardTitle } from "material-ui/Card";
 import LinearProgress from "material-ui/LinearProgress";
 import TexterStats from "../components/TexterStats";
 import OrganizationJoinLink from "../components/OrganizationJoinLink";
 import Snackbar from "material-ui/Snackbar";
-import { withRouter, Link } from "react-router";
-import { StyleSheet, css } from "aphrodite";
+import { Link, withRouter } from "react-router";
+import { css, StyleSheet } from "aphrodite";
 import loadData from "./hoc/load-data";
 import gql from "graphql-tag";
 import theme from "../styles/theme";
@@ -349,16 +349,19 @@ class AdminCampaignStats extends React.Component {
           <div className={css(styles.flexColumn)}>
             <Stat title="Opt-outs" count={campaign.stats.optOutsCount} />
           </div>
-          <div className={css(styles.flexColumn)}>
-            <Stat
-              title="Estimated Cost ($)"
-              count={campaignCostCalculator(
-                campaign.stats.sentMessagesCount,
-                campaign.stats.receivedMessagesCount,
-                campaign.outgoingMessageCost
-              )}
-            />
-          </div>
+          {campaign.useBudget ? (
+            <div className={css(styles.flexColumn)}>
+              <Stat
+                title="Estimated Cost ($)"
+                count={campaignCostCalculator(
+                  campaign.stats.sentMessagesCount,
+                  campaign.stats.receivedMessagesCount,
+                  campaign.outgoingMessageCost,
+                  campaign.incomingMessageCost
+                )}
+              />
+            </div>
+          ) : null}
         </div>
         <div className={css(styles.header)}>Survey Questions</div>
         {this.renderSurveyStats()}
@@ -429,6 +432,8 @@ const queries = {
           useOwnMessagingService
           messageserviceSid
           outgoingMessageCost
+          incomingMessageCost
+          useBudget
           assignments(assignmentsFilter: $assignmentsFilter) {
             id
             texter {

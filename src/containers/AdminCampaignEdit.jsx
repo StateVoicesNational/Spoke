@@ -8,7 +8,7 @@ import CancelIcon from "material-ui/svg-icons/navigation/cancel";
 import Avatar from "material-ui/Avatar";
 import theme from "../styles/theme";
 import CircularProgress from "material-ui/CircularProgress";
-import { Card, CardHeader, CardText, CardActions } from "material-ui/Card";
+import { Card, CardActions, CardHeader, CardText } from "material-ui/Card";
 import { Link } from "react-router";
 import gql from "graphql-tag";
 import loadData from "./hoc/load-data";
@@ -22,11 +22,12 @@ import CampaignCannedResponsesForm from "../components/CampaignCannedResponsesFo
 import CampaignDynamicAssignmentForm from "../components/CampaignDynamicAssignmentForm";
 import CampaignTexterUIForm from "../components/CampaignTexterUIForm";
 import CampaignPhoneNumbersForm from "../components/CampaignPhoneNumbersForm";
-import { dataTest, camelCase } from "../lib/attributes";
+import { camelCase, dataTest } from "../lib/attributes";
 import CampaignTextingHoursForm from "../components/CampaignTextingHoursForm";
 
 import AdminScriptImport from "../containers/AdminScriptImport";
 import { makeTree } from "../lib";
+import CampaignBudgetForm from "../components/CampaignBudgetForm";
 
 const campaignInfoFragment = `
   id
@@ -46,6 +47,10 @@ const campaignInfoFragment = `
   introHtml
   primaryColor
   useOwnMessagingService
+  outgoingMessageCost
+  incomingMessageCost
+  budget
+  useBudget
   messageserviceSid
   overrideOrganizationTextingHours
   textingHoursEnforced
@@ -122,7 +127,6 @@ export class AdminCampaignEdit extends React.Component {
     super(props);
     const isNew = props.location.query.new;
     const section = props.location.query.section;
-    console.log("SECTION", section);
     const expandedSection = section
       ? this.sections().findIndex(s => s.title === section)
       : isNew
@@ -264,7 +268,6 @@ export class AdminCampaignEdit extends React.Component {
   }
 
   handleChange = formValues => {
-    console.log("handleChange", formValues);
     this.setState({
       campaignFormValues: {
         ...this.state.campaignFormValues,
@@ -512,6 +515,20 @@ export class AdminCampaignEdit extends React.Component {
         expandableBySuperVolunteers: false
       }
     ];
+    finalSections.push({
+      title: "Campaign Budget",
+      content: CampaignBudgetForm,
+      keys: [
+        "outgoingMessageCost",
+        "incomingMessageCost",
+        "budget",
+        "useBudget"
+      ],
+      checkCompleted: () => true,
+      blocksStarting: false,
+      expandAfterCampaignStarts: true,
+      expandableBySuperVolunteers: false
+    });
     if (window.EXPERIMENTAL_TWILIO_PER_CAMPAIGN_MESSAGING_SERVICE) {
       finalSections.push({
         title: "Messaging Service",

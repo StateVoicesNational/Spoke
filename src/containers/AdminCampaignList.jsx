@@ -19,7 +19,7 @@ import SortBy, {
 } from "../components/AdminCampaignList/SortBy";
 import Paper from "material-ui/Paper";
 import Search from "../components/Search";
-import { StyleSheet, css } from "aphrodite";
+import { css, StyleSheet } from "aphrodite";
 import CampaignTable from "../components/AdminCampaignList/CampaignTable";
 
 const styles = StyleSheet.create({
@@ -368,13 +368,21 @@ const campaignInfoFragment = `
   hasUnsentInitialMessages
   description
   timezone
-  dueBy
+  outgoingMessageCost
+  incomingMessageCost
+  budget
+  useBudget
+  dueBy 
   creator {
     displayName
   }
   ingestMethod {
     success
     contactsCount
+  }
+  stats {
+    sentMessagesCount
+    receivedMessagesCount
   }
   completionStats {
     assignedCount

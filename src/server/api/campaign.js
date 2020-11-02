@@ -1,18 +1,18 @@
 import { accessRequired } from "./errors";
 import { mapFieldsToModel } from "./lib/utils";
-import { errorDescriptions } from "./lib/twilio";
-import { Campaign, JobRequest, r, cacheableData } from "../models";
+import twilio, { errorDescriptions } from "./lib/twilio";
+import { cacheableData, Campaign, JobRequest, r } from "../models";
 import { getUsers } from "./user";
 import { getSideboxChoices } from "./organization";
 import {
   getAvailableIngestMethods,
   getMethodChoiceData
 } from "../../extensions/contact-loaders";
-import twilio from "./lib/twilio";
 import { getConfig, getFeatures } from "./lib/config";
 import ownedPhoneNumber from "./lib/owned-phone-number";
-const title = 'lower("campaign"."title")';
 import { camelizeKeys } from "humps";
+
+const title = 'lower("campaign"."title")';
 
 export function addCampaignsFilterToQuery(
   queryParam,
@@ -326,6 +326,9 @@ export const resolvers = {
     },
     responseWindow: campaign => campaign.response_window || 48,
     outgoingMessageCost: campaign => campaign.outgoing_message_cost,
+    incomingMessageCost: campaign => campaign.incoming_message_cost,
+    budget: campaign => campaign.budget,
+    useBudget: campaign => campaign.use_budget,
     organization: async (campaign, _, { loaders }) =>
       campaign.organization ||
       loaders.organization.load(campaign.organization_id),

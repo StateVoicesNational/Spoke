@@ -84,6 +84,9 @@ export const schema = gql`
     batchPolicies: [String]
     responseWindow: Float
     outgoingMessageCost: Float
+    incomingMessageCost: Float
+    budget: Float
+    useBudget: Boolean
     dueBy: Date
     isStarted: Boolean
     isArchived: Boolean

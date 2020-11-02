@@ -3,31 +3,30 @@ import GraphQLJSON from "graphql-type-json";
 import { GraphQLError } from "graphql/error";
 import isUrl from "is-url";
 import _ from "lodash";
-import { gzip, makeTree, getHighestRole } from "../../lib";
+import { getHighestRole, gzip, makeTree } from "../../lib";
 import { capitalizeWord, groupCannedResponses } from "./lib/utils";
-import twilio from "./lib/twilio";
 import ownedPhoneNumber from "./lib/owned-phone-number";
 
 import { getIngestMethod } from "../../extensions/contact-loaders";
 import {
+  cacheableData,
   Campaign,
   CannedResponse,
   InteractionStep,
   Invite,
   Message,
   Organization,
-  Tag,
-  UserOrganization,
   r,
-  cacheableData
+  Tag,
+  UserOrganization
 } from "../models";
 import { resolvers as assignmentResolvers } from "./assignment";
 import { getCampaigns, resolvers as campaignResolvers } from "./campaign";
 import { resolvers as campaignContactResolvers } from "./campaign-contact";
 import { resolvers as cannedResponseResolvers } from "./canned-response";
 import {
-  getConversations,
   getCampaignIdContactIdsMaps,
+  getConversations,
   reassignConversations,
   resolvers as conversationsResolver
 } from "./conversations";
@@ -55,16 +54,16 @@ import Twilio from "twilio";
 import {
   bulkSendMessages,
   buyPhoneNumbers,
+  clearCachedOrgAndExtensionCaches,
+  editOrganization,
   findNewCampaignContact,
   joinOrganization,
-  editOrganization,
+  releaseCampaignNumbers,
   releaseContacts,
   sendMessage,
   startCampaign,
   updateContactTags,
-  updateQuestionResponses,
-  releaseCampaignNumbers,
-  clearCachedOrgAndExtensionCaches
+  updateQuestionResponses
 } from "./mutations";
 
 import { jobRunner } from "../../extensions/job-runners";
@@ -174,6 +173,9 @@ async function editCampaign(id, campaign, loaders, user, origCampaignRecord) {
     batchPolicies,
     responseWindow,
     outgoingMessageCost,
+    incomingMessageCost,
+    budget,
+    useBudget,
     logoImageUrl,
     introHtml,
     primaryColor,
@@ -212,6 +214,9 @@ async function editCampaign(id, campaign, loaders, user, origCampaignRecord) {
     batch_size: batchSize,
     response_window: responseWindow,
     outgoing_message_cost: outgoingMessageCost,
+    incoming_message_cost: incomingMessageCost,
+    use_budget: useBudget,
+    budget,
     timezone
   };
 
@@ -839,6 +844,8 @@ const rootMutations = {
         timezone: campaign.timezone,
         use_dynamic_assignment: campaign.use_dynamic_assignment,
         outgoing_message_cost: campaign.outgoing_message_cost || 0.1,
+        incoming_message_cost: campaign.incoming_message_cost || 0.01,
+        budget: campaign.budget,
         batch_size:
           campaign.batch_size ||
           Number(getConfig("DEFAULT_BATCHSIZE", organization) || 300),
