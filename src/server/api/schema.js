@@ -55,6 +55,7 @@ import Twilio from "twilio";
 import {
   bulkSendMessages,
   buyPhoneNumbers,
+  deletePhoneNumbers,
   findNewCampaignContact,
   joinOrganization,
   editOrganization,
@@ -478,6 +479,7 @@ const rootMutations = {
   RootMutation: {
     bulkSendMessages,
     buyPhoneNumbers,
+    deletePhoneNumbers,
     editOrganization,
     findNewCampaignContact,
     joinOrganization,

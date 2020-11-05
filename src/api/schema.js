@@ -360,6 +360,7 @@ const rootSchema = gql`
       limit: Int!
       addToOrganizationMessagingService: Boolean
     ): JobRequest
+    deletePhoneNumbers(organizationId: ID!, areaCode: String!): JobRequest
     releaseCampaignNumbers(campaignId: ID!): Campaign!
     clearCachedOrgAndExtensionCaches(organizationId: String!): String
   }

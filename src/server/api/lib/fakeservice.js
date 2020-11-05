@@ -1,6 +1,7 @@
 import { getLastMessage } from "./message-sending";
 import { Message, PendingMessagePart, r, cacheableData } from "../../models";
 import uuid from "uuid";
+import { CountryInstance } from "twilio/lib/rest/pricing/v1/voice/country";
 
 // This 'fakeservice' allows for fake-sending messages
 // that end up just in the db appropriately and then using sendReply() graphql
@@ -123,9 +124,32 @@ async function buyNumbersInAreaCode(organization, areaCode, limit) {
   return limit;
 }
 
+async function deleteNumbersInAreaCode(organization, areaCode) {
+  const numbersToDelete = (
+    await r
+      .knex("owned_phone_number")
+      .select("service_id")
+      .where({
+        organization_id: organization.id,
+        area_code: areaCode,
+        service: "fakeservice",
+        allocated_to: null
+      })
+  ).map(row => row.service_id);
+  const count = numbersToDelete.length;
+  // add some latency
+  await new Promise(resolve => setTimeout(resolve, count * 25));
+  await r
+    .knex("owned_phone_number")
+    .del()
+    .whereIn("service_id", numbersToDelete);
+  return count;
+}
+
 export default {
   sendMessage,
   buyNumbersInAreaCode,
+  deleteNumbersInAreaCode,
   // useless unused stubs
   convertMessagePartsToMessage,
   handleIncomingMessage
