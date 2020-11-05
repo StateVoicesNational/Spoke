@@ -3,6 +3,7 @@ import React from "react";
 import gql from "graphql-tag";
 
 import ContentAdd from "material-ui/svg-icons/content/add";
+import DeleteIcon from "material-ui/svg-icons/action/delete-forever";
 import DataTables from "material-ui-datatables";
 import Dialog from "material-ui/Dialog";
 import FloatingActionButton from "material-ui/FloatingActionButton";
@@ -13,7 +14,12 @@ import Form from "react-formal";
 import theme from "../styles/theme";
 import { dataTest } from "../lib/attributes";
 import loadData from "./hoc/load-data";
-import { CircularProgress, FlatButton, Toggle } from "material-ui";
+import {
+  CircularProgress,
+  FlatButton,
+  RaisedButton,
+  Toggle
+} from "material-ui";
 
 const inlineStyles = {
   column: {
@@ -50,8 +56,9 @@ class AdminPhoneNumberInventory extends React.Component {
       buyNumbersFormValues: {
         addToOrganizationMessagingService: false
       },
-      sortCol: 'areaCode',
-      sortOrder: 'asc'
+      deleteNumbersDialogOpen: false,
+      sortCol: "areaCode",
+      sortOrder: "asc"
     };
   }
 
@@ -113,6 +120,30 @@ class AdminPhoneNumberInventory extends React.Component {
     });
   };
 
+  handleDeleteNumbersOpen = areaCode => {
+    this.setState({
+      deleteNumbersDialogOpen: true,
+      deleteNumbersAreaCode: areaCode
+    });
+  };
+
+  handleDeleteNumbersCancel = () => {
+    this.setState({
+      deleteNumbersDialogOpen: false,
+      deleteNumbersAreaCode: null
+    });
+  };
+
+  handleDeletePhoneNumbersSubmit = async () => {
+    await this.props.mutations.deletePhoneNumbers(
+      this.state.deleteNumbersAreaCode
+    );
+    this.setState({
+      deleteNumbersDialogOpen: false,
+      deleteNumbersAreaCode: null
+    });
+  };
+
   tableColumns() {
     const { pendingPhoneNumberJobs } = this.props.data.organization;
     return [
@@ -138,6 +169,18 @@ class AdminPhoneNumberInventory extends React.Component {
         label: "Available",
         style: inlineStyles.column
       },
+      {
+        key: "deleteButton",
+        label: "",
+        style: inlineStyles.column,
+        render: (columnKey, row) =>
+          this.props.params.ownerPerms ? (
+            <FlatButton
+              icon={<DeleteIcon />}
+              onTouchTap={() => this.handleDeleteNumbersOpen(row.areaCode)}
+            />
+          ) : null
+      },
       // TODO: display additional information here about pending and past jobs
       {
         key: "pendingJobs",
@@ -154,10 +197,10 @@ class AdminPhoneNumberInventory extends React.Component {
 
   sortTable(table, key, order) {
     table.sort((a, b) => {
-      if (order == 'desc') {
+      if (order == "desc") {
         return a[key] < b[key] ? 1 : -1;
       }
-      if (order == 'asc') {
+      if (order == "asc") {
         return a[key] > b[key] ? 1 : -1;
       }
     });
@@ -179,8 +222,8 @@ class AdminPhoneNumberInventory extends React.Component {
             {...dataTest("areaCode")}
           />
           <Form.Field label="Limit" name="limit" {...dataTest("limit")} />
-          {this.props.data.organization.twilioMessageServiceSid
-            && !this.props.data.organization.campaignPhoneNumbersEnabled ? (
+          {this.props.data.organization.twilioMessageServiceSid &&
+          !this.props.data.organization.campaignPhoneNumbersEnabled ? (
             <Form.Field
               label="Add to this organization's Messaging Service"
               name="addToOrganizationMessagingService"
@@ -246,7 +289,7 @@ class AdminPhoneNumberInventory extends React.Component {
           count={tableData.length}
           showFooterToolbar={false}
           showRowHover
-          initialSort={{column: 'areaCode', order: 'asc'}}
+          initialSort={{ column: "areaCode", order: "asc" }}
           onSortOrderChange={handleSortOrderChange}
         />
         <FloatingActionButton
@@ -263,6 +306,29 @@ class AdminPhoneNumberInventory extends React.Component {
           onRequestClose={this.handleBuyNumbersCancel}
         >
           {this.renderBuyNumbersForm()}
+        </Dialog>
+        <Dialog
+          title="Delete Numbers"
+          modal={false}
+          open={this.state.deleteNumbersDialogOpen}
+          onRequestClose={this.handleDeleteNumbersCancel}
+          actions={[
+            <FlatButton
+              label="Cancel"
+              style={inlineStyles.cancelButton}
+              onClick={this.handleDeleteNumbersCancel}
+            />,
+            <RaisedButton
+              label="Delete"
+              secondary
+              onClick={this.handleDeletePhoneNumbersSubmit}
+            />
+          ]}
+        >
+          Do you want to delete availale numbers for the&nbsp;
+          <b>{this.state.deleteNumbersAreaCode}</b> area code? This will
+          permanently remove numbers not allocated to a campaign/messaging
+          service from both Spoke and your Twilio account.
         </Dialog>
       </div>
     );
@@ -332,6 +398,23 @@ const mutations = {
       areaCode,
       limit,
       addToOrganizationMessagingService
+    },
+    refetchQueries: () => ["getOrganizationData"]
+  }),
+  deletePhoneNumbers: ownProps => areaCode => ({
+    mutation: gql`
+      mutation deletePhoneNumbers($organizationId: ID!, $areaCode: String!) {
+        deletePhoneNumbers(
+          organizationId: $organizationId
+          areaCode: $areaCode
+        ) {
+          id
+        }
+      }
+    `,
+    variables: {
+      organizationId: ownProps.params.organizationId,
+      areaCode
     },
     refetchQueries: () => ["getOrganizationData"]
   })

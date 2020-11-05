@@ -702,6 +702,44 @@ async function addNumbersToMessagingService(
   );
 }
 
+/**
+ * Release a phone number and delete it from the owned_phone_number table
+ */
+async function deleteNumber(twilioInstance, phoneSid, phoneNumber) {
+  const response = await twilioInstance.incomingPhoneNumbers(phoneSid).remove();
+  if (response.error) {
+    throw new Error(`Error deleting twilio number: ${response.error}`);
+  }
+  log.debug(`Deleted number ${phoneNumber} [${phoneSid}]`);
+  return await r
+    .knex("owned_phone_number")
+    .del()
+    .where("service_id", phoneSid);
+}
+
+/**
+ * Delete all non-allocted phone numbers in an area code
+ */
+async function deleteNumbersInAreaCode(organization, areaCode) {
+  const twilioInstance = await getTwilio(organization);
+  const numbersToDelete = await r
+    .knex("owned_phone_number")
+    .select("service_id", "phone_number")
+    .where({
+      organization_id: organization.id,
+      area_code: areaCode,
+      service: "twilio",
+      allocated_to: null
+    });
+  let successCount = 0;
+  for (const n of numbersToDelete) {
+    await deleteNumber(twilioInstance, n.service_id, n.phone_number);
+    successCount++;
+  }
+  log.debug(`Successfully deleted ${successCount} number(s)`);
+  return successCount;
+}
+
 async function deleteMessagingService(organization, messagingServiceSid) {
   const twilioInstance = await getTwilio(organization);
   console.log("Deleting messaging service", messagingServiceSid);
@@ -720,6 +758,7 @@ export default {
   createMessagingService,
   getPhoneNumbersForService,
   buyNumbersInAreaCode,
+  deleteNumbersInAreaCode,
   addNumbersToMessagingService,
   deleteMessagingService
 };

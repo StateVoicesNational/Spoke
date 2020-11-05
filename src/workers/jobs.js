@@ -1201,6 +1201,36 @@ export async function buyPhoneNumbers(job) {
   }
 }
 
+export async function deletePhoneNumbers(job) {
+  try {
+    if (!job.organization_id) {
+      throw Error("organization_id is required");
+    }
+    const { areaCode } = JSON.parse(job.payload);
+    if (!areaCode) {
+      throw new Error("areaCode and is required");
+    }
+    const organization = await cacheableData.organization.load(
+      job.organization_id
+    );
+    const service = serviceMap[getConfig("DEFAULT_SERVICE", organization)];
+    const totalDeleted = await service.deleteNumbersInAreaCode(
+      organization,
+      areaCode
+    );
+    log.info(`Deleted ${totalDeleted} number(s)`, {
+      status: "COMPLETE",
+      areaCode,
+      totalDeleted,
+      organization_id: job.organization_id
+    });
+  } catch (err) {
+    log.error(`JOB ${job.id} FAILED: ${err.message}`, err);
+  } finally {
+    await defensivelyDeleteJob(job);
+  }
+}
+
 // Prepares a messaging service with owned number for the campaign
 async function prepareTwilioCampaign(campaign, organization, trx) {
   const ts = Math.floor(new Date() / 1000);
