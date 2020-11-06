@@ -26,7 +26,17 @@ describe("End-to-end campaign flow", () => {
 
     // DatePicker is difficult to interact with as its components have no ids or classes
     // So set date directly for test and ignore picker  (interaction commented-out below)
+
+    // cy.get("input[data-test=dueBy]").focus();
     cy.get("input[data-test=dueBy]").type(campaignDueBy, { force: true });
+    cy.get("button")
+      .contains("Cancel")
+      .click();
+    cy.wait(200);
+    cy.pause();
+    cy.get("input[data-test=dueBy]").then(input => {
+      input.val(campaignDueBy);
+    });
 
     // Very brittle DatePicker interaction to pick the first day of the next month
     // Note: newer versions of Material UI appear to have better hooks for integration
