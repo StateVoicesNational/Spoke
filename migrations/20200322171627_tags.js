@@ -16,7 +16,9 @@ exports.up = async knex => {
         t.timestamp("updated_at")
           .notNullable()
           .defaultTo(knex.fn.now());
-        t.integer("organization_id").notNullable();
+        t.integer("organization_id")
+          .unsigned()
+          .notNullable();
 
         if (!isSqlite) {
           t.foreign("organization_id").references("organization.id");
@@ -29,8 +31,12 @@ exports.up = async knex => {
       create: t => {
         t.increments("id").primary();
         t.text("value");
-        t.integer("tag_id").notNullable();
-        t.integer("campaign_contact_id").notNullable();
+        t.integer("tag_id")
+          .unsigned()
+          .notNullable();
+        t.integer("campaign_contact_id")
+          .unsigned()
+          .notNullable();
         t.timestamp("created_at")
           .notNullable()
           .defaultTo(knex.fn.now());

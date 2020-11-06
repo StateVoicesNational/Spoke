@@ -6,8 +6,8 @@ exports.up = function(knex) {
         .nullable()
         .default(null);
       table.dropColumn("service_response");
-      if (!/sqlite/.test(knex.client.config.client)) {
-        // sqlite doesn't find it
+      if (/pg/.test(knex.client.config.client)) {
+        // sqlite/mysql doesn't find it
         table.dropIndex("user_number");
       }
     }),

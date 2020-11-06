@@ -26,7 +26,10 @@ export function addWhereClauseForContactsFilterMessageStatusIrrespectiveOfPastDu
           ? // SQLITE:
             "24 * (julianday('now') - julianday(campaign_contact.updated_at)) > campaign.response_window"
           : // POSTGRES:
-            "now() - campaign_contact.updated_at > interval '1 hour' * campaign.response_window"
+          /pg/.test(r.knex.client.config.client)
+          ? "now() - campaign_contact.updated_at > interval '1 hour' * campaign.response_window"
+          : // MYSQL
+            "now() - campaign_contact.updated_at > interval campaign.response_window hour"
       );
   } else {
     query.whereIn("message_status", messageStatusFilter.split(","));

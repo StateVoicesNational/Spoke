@@ -7,13 +7,14 @@ exports.up = async knex => {
     table.string("service_id"); // id of the phone number resource
     table
       .integer("organization_id")
+      .unsigned()
       .notNullable()
       .references("id")
       .inTable("organization")
       .index();
     table.string("phone_number").notNullable();
     table
-      .string("area_code")
+      .string("area_code", 3)
       .notNullable()
       .index();
 
@@ -32,6 +33,7 @@ exports.up = async knex => {
       t.increments("id");
       t.integer("campaign_id").nullable();
       t.integer("organization_id")
+        .unsigned()
         .nullable()
         .references("id")
         .inTable("organization")
@@ -55,16 +57,23 @@ exports.up = async knex => {
     });
   } else {
     await knex.schema.alterTable("job_request", table => {
+      table.dropForeign("campaign_id");
+    });
+    await knex.schema.alterTable("job_request", table => {
       table
         .integer("campaign_id")
         .alter()
-        .nullable();
+        .unsigned()
+        .nullable()
+        .index();
       table
         .integer("organization_id")
+        .unsigned()
         .nullable()
         .references("id")
         .inTable("organization")
         .index();
+      table.foreign("campaign_id").references("campaign.id");
     });
   }
 };

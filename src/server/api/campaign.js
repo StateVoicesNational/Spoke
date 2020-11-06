@@ -11,7 +11,7 @@ import {
 import twilio from "./lib/twilio";
 import { getConfig, getFeatures } from "./lib/config";
 import ownedPhoneNumber from "./lib/owned-phone-number";
-const title = 'lower("campaign"."title")';
+const title = "lower(campaign.title)";
 import { camelizeKeys } from "humps";
 
 export function addCampaignsFilterToQuery(
@@ -92,8 +92,8 @@ export function buildCampaignQuery(
   return query;
 }
 
-const id = '"campaign"."id"';
-const dueDate = '"campaign"."due_by"';
+const id = "campaign.id";
+const dueDate = "campaign.due_by";
 
 const asc = column => `${column} ASC`;
 const desc = column => `${column} DESC`;
@@ -111,7 +111,7 @@ const buildOrderByClause = (query, sortBy) => {
       fragmentArray = [title];
       break;
     case "TIMEZONE":
-      fragmentArray = ['"campaign"."timezone"'];
+      fragmentArray = ["campaign.timezone"];
       break;
     case "ID_DESC":
       fragmentArray = [desc(id)];

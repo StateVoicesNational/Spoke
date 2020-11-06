@@ -3,16 +3,16 @@ import { mapFieldsToModel } from "./lib/utils";
 import { rolesEqualOrLess } from "../../lib/permissions";
 import { r, User, cacheableData } from "../models";
 
-const firstName = '"user"."first_name"';
-const lastName = '"user"."last_name"';
-const created = '"user"."created_at"';
+const firstName = "user.first_name";
+const lastName = "user.last_name";
+const created = "user.created_at";
 const oldest = created;
-const newest = '"user"."id" desc';
+const newest = "user.id desc";
 
 const lower = column => `lower(${column})`;
 
 function buildSelect(sortBy) {
-  const userStar = '"user".*';
+  const userStar = "user.*";
 
   let fragmentArray = undefined;
   if (sortBy === "COUNT_ONLY") {
@@ -67,7 +67,7 @@ export function buildUsersQuery(
     .innerJoin("user", "user_organization.user_id", "user.id")
     .where(roleFilter)
     .whereNot(suspendedFilter)
-    .whereRaw('"user_organization"."organization_id" = ?', organizationId)
+    .whereRaw("user_organization.organization_id = ?", organizationId)
     .distinct();
 
   if (filterString) {
@@ -118,7 +118,7 @@ export function buildUsersQuery(
         .join(",");
       query = addLeftOuterJoin(query);
       query = query.whereRaw(
-        `"assignment"."campaign_id" in (${questionMarks})`,
+        `assignment.campaign_id in (${questionMarks})`,
         campaignsFilter.campaignIds
       );
     }
@@ -143,7 +143,6 @@ export async function getUsers(
     filterString,
     filterBy
   );
-
   if (cursor) {
     usersQuery = usersQuery.limit(cursor.limit).offset(cursor.offset);
     const users = await usersQuery;
@@ -153,7 +152,6 @@ export async function getUsers(
       "COUNT_ONLY",
       campaignsFilter
     );
-
     const usersCount = await r.getCount(usersCountQuery);
     const pageInfo = {
       limit: cursor.limit,
