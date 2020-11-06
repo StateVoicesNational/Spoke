@@ -1208,7 +1208,7 @@ export async function deletePhoneNumbers(job) {
     }
     const { areaCode } = JSON.parse(job.payload);
     if (!areaCode) {
-      throw new Error("areaCode and is required");
+      throw new Error("areaCode is required");
     }
     const organization = await cacheableData.organization.load(
       job.organization_id
