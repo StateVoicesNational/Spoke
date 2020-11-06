@@ -25,7 +25,7 @@ describe("End-to-end campaign flow", () => {
     cy.get("input[data-test=description]").type(campaignDescription);
 
     // DatePicker is difficult to interact with as its components have no ids or classes
-    // So set date directly for test and ignore picker (interaction commented-out below)
+    // So set date directly for test and ignore picker  (interaction commented-out below)
     cy.get("input[data-test=dueBy]").type(campaignDueBy, { force: true });
 
     // Very brittle DatePicker interaction to pick the first day of the next month
