@@ -2,7 +2,9 @@ exports.up = async function up(knex) {
   if (!(await knex.schema.hasTable("campaign_admin"))) {
     return knex.schema.createTable("campaign_admin", t => {
       t.increments("id");
-      t.integer("campaign_id").notNullable();
+      t.integer("campaign_id")
+        .unsigned()
+        .notNullable();
       t.text("ingest_method");
       t.text("ingest_data_reference");
       t.text("ingest_result");

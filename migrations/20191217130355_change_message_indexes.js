@@ -6,6 +6,7 @@ exports.up = function(knex) {
     if (!isSqlite) {
       // sqlite is not good at dropping indexes
       table.dropIndex("contact_number"); // Will be recreated with messageservice_sid
+      table.dropForeign("assignment_id");
       table.dropIndex("assignment_id"); // SHOULD NO LONGER BE REQUIRED
     }
     // For Postgres, consider concurrent creation with manual command:

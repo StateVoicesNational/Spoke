@@ -135,6 +135,7 @@ export async function processContactLoad(job, maxContacts, organization) {
       // https://www.businessinsider.com/555-phone-number-tv-movies-telephone-exchange-names-ghostbusters-2018-3
       cell: `+1${ac}555${suffix}`,
       zip: "10011",
+      external_id: "",
       custom_fields: genCustomFields(i, campaignId),
       message_status: "needsMessage",
       campaign_id: campaignId

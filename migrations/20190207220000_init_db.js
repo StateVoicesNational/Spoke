@@ -23,9 +23,9 @@ const initialize = async knex => {
       tableName: "pending_message_part",
       create: t => {
         t.increments("id").primary();
-        t.text("service").notNullable();
+        t.string("service", 16).notNullable();
         t.text("service_id").notNullable();
-        t.text("parent_id").defaultTo("");
+        t.string("parent_id", 256).defaultTo("");
         t.text("service_message").notNullable();
         t.text("user_number")
           .notNullable()
@@ -58,7 +58,9 @@ const initialize = async knex => {
       tableName: "campaign",
       create: t => {
         t.increments("id");
-        t.integer("organization_id").notNullable();
+        t.integer("organization_id")
+          .unsigned()
+          .notNullable();
         t.text("title")
           .notNullable()
           .defaultTo("");
@@ -95,8 +97,12 @@ const initialize = async knex => {
       tableName: "assignment",
       create: t => {
         t.increments("id");
-        t.integer("user_id").notNullable();
-        t.integer("campaign_id").notNullable();
+        t.integer("user_id")
+          .unsigned()
+          .notNullable();
+        t.integer("campaign_id")
+          .unsigned()
+          .notNullable();
         t.timestamp("created_at")
           .defaultTo(knex.fn.now())
           .notNullable();
@@ -112,8 +118,10 @@ const initialize = async knex => {
       tableName: "campaign_contact",
       create: t => {
         t.increments("id");
-        t.integer("campaign_id").notNullable();
-        t.integer("assignment_id");
+        t.integer("campaign_id")
+          .unsigned()
+          .notNullable();
+        t.integer("assignment_id").unsigned();
         t.text("external_id")
           .notNullable()
           .defaultTo("");
@@ -123,7 +131,7 @@ const initialize = async knex => {
         t.text("last_name")
           .notNullable()
           .defaultTo("");
-        t.text("cell").notNullable();
+        t.string("cell", 64).notNullable();
         t.text("zip")
           .defaultTo("")
           .notNullable();
@@ -147,7 +155,7 @@ const initialize = async knex => {
           .defaultTo("needsMessage")
           .notNullable();
         t.boolean("is_opted_out").defaultTo(false);
-        t.text("timezone_offset").defaultTo("");
+        t.string("timezone_offset", 5).defaultTo("");
         if (!isSqlite) {
           t.index("assignment_id");
           t.foreign("assignment_id").references("assignment.id");
@@ -169,7 +177,9 @@ const initialize = async knex => {
       tableName: "interaction_step",
       create: t => {
         t.increments("id");
-        t.integer("campaign_id").notNullable();
+        t.integer("campaign_id")
+          .unsigned()
+          .notNullable();
         t.text("question")
           .notNullable()
           .defaultTo("");
@@ -181,7 +191,7 @@ const initialize = async knex => {
           .defaultTo(knex.fn.now());
 
         // FIELDS FOR SUB-INTERACTIONS (only):
-        t.integer("parent_interaction_id");
+        t.integer("parent_interaction_id").unsigned();
         t.text("answer_option")
           .notNullable()
           .defaultTo("");
@@ -202,8 +212,12 @@ const initialize = async knex => {
       tableName: "question_response",
       create: t => {
         t.increments("id");
-        t.integer("campaign_contact_id").notNullable();
-        t.integer("interaction_step_id").notNullable();
+        t.integer("campaign_contact_id")
+          .unsigned()
+          .notNullable();
+        t.integer("interaction_step_id")
+          .unsigned()
+          .notNullable();
         t.text("value").notNullable();
         t.timestamp("created_at")
           .notNullable()
@@ -219,9 +233,11 @@ const initialize = async knex => {
       tableName: "opt_out",
       create: t => {
         t.increments("id");
-        t.text("cell").notNullable();
-        t.integer("assignment_id");
-        t.integer("organization_id").notNullable();
+        t.string("cell", 64).notNullable();
+        t.integer("assignment_id").unsigned();
+        t.integer("organization_id")
+          .unsigned()
+          .notNullable();
         t.text("reason_code")
           .notNullable()
           .defaultTo("");
@@ -241,9 +257,11 @@ const initialize = async knex => {
       tableName: "job_request",
       create: t => {
         t.increments("id");
-        t.integer("campaign_id").notNullable();
+        t.integer("campaign_id")
+          .unsigned()
+          .notNullable();
         t.text("payload").notNullable();
-        t.text("queue_name").notNullable();
+        t.string("queue_name", 64).notNullable();
         t.text("job_type").notNullable();
         t.text("result_message").defaultTo("");
         t.boolean("locks_queue").defaultTo(false);
@@ -277,10 +295,12 @@ const initialize = async knex => {
       tableName: "canned_response",
       create: t => {
         t.increments("id");
-        t.integer("campaign_id").notNullable();
+        t.integer("campaign_id")
+          .unsigned()
+          .notNullable();
         t.text("text").notNullable();
         t.text("title").notNullable();
-        t.integer("user_id");
+        t.integer("user_id").unsigned();
         t.timestamp("created_at")
           .notNullable()
           .defaultTo(knex.fn.now());
@@ -295,8 +315,12 @@ const initialize = async knex => {
       tableName: "user_organization",
       create: t => {
         t.increments("id");
-        t.integer("user_id").notNullable();
-        t.integer("organization_id").notNullable();
+        t.integer("user_id")
+          .unsigned()
+          .notNullable();
+        t.integer("organization_id")
+          .unsigned()
+          .notNullable();
 
         const roles = ["OWNER", "ADMIN", "SUPERVOLUNTEER", "TEXTER"];
         // In `20200512143258_add_user_roles` we use raw SQL to add some roles for Postgres DBs. For Sqlite DBs we init with all the values because that same raw SQL won't work.
@@ -320,7 +344,9 @@ const initialize = async knex => {
       create: t => {
         t.increments("id").primary();
         t.text("cell").notNullable();
-        t.integer("user_id").notNullable();
+        t.integer("user_id")
+          .unsigned()
+          .notNullable();
         t.enu("service", ["nexmo", "twilio"]);
         t.boolean("is_primary");
 
@@ -331,11 +357,11 @@ const initialize = async knex => {
       tableName: "message",
       create: t => {
         t.increments("id").primary();
-        t.text("user_number")
+        t.string("user_number", 64)
           .notNullable()
           .defaultTo("");
-        t.integer("user_id");
-        t.text("contact_number").notNullable();
+        t.integer("user_id").unsigned();
+        t.string("contact_number", 64).notNullable();
         t.boolean("is_from_contact").notNullable();
         t.text("text")
           .notNullable()
@@ -343,11 +369,13 @@ const initialize = async knex => {
         t.text("service_response")
           .notNullable()
           .defaultTo("");
-        t.integer("assignment_id");
+        t.integer("assignment_id")
+          .unsigned()
+          .nullable();
         t.text("service")
           .notNullable()
           .defaultTo("");
-        t.text("service_id")
+        t.string("service_id", 64)
           .notNullable()
           .defaultTo("");
         t.enu("send_status", [
@@ -371,7 +399,7 @@ const initialize = async knex => {
         t.timestamp("service_response_at")
           .defaultTo(knex.fn.now())
           .notNullable();
-        t.timestamp("send_before");
+        t.timestamp("send_before").nullable();
 
         t.index("assignment_id");
         if (!isSqlite) {
@@ -388,7 +416,7 @@ const initialize = async knex => {
     {
       tableName: "zip_code",
       create: t => {
-        t.text("zip")
+        t.string("zip", 8)
           .notNullable()
           .primary();
         t.text("city").notNullable();

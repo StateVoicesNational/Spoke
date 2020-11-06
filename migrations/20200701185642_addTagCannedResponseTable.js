@@ -3,12 +3,14 @@ exports.up = async knex => {
     table.increments();
     table
       .integer("canned_response_id")
+      .unsigned()
       .notNullable()
       .references("id")
       .inTable("canned_response")
       .index();
     table
       .integer("tag_id")
+      .unsigned()
       .notNullable()
       .references("id")
       .inTable("tag");

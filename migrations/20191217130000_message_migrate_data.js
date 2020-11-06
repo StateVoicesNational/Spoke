@@ -1,8 +1,7 @@
 exports.up = function(knex) {
   // NOTE: this could be an expensive migration which locks tables for some time, if you have millions of message rows
   // In that case, we recommend performing this migration manually during planned downtime
-  const isPostgres = knex.client.config.client === "pg";
-  const isSqlite = /sqlite/.test(knex.client.config.client);
+  const isPostgres = /pg/.test(knex.client.config.client);
   let query = null;
 
   if (isPostgres) {
@@ -27,21 +26,6 @@ exports.up = function(knex) {
         .table("message")
         .update("messageservice_sid", process.env.TWILIO_MESSAGE_SERVICE_SID);
     });
-  }
-  if (isSqlite) {
-    // since altering tables isn't possible in sqlite from the previous migration, we want to delete and re-add the column
-    // AFTER we have copied the campaign_contact_ids based on the assignment_id column
-    query = query
-      .then(() => {
-        return knex.schema.alterTable("message", table => {
-          table.dropColumn("assignment_id");
-        });
-      })
-      .then(() => {
-        return knex.schema.alterTable("message", table => {
-          table.integer("assignment_id").nullable();
-        });
-      });
   }
   return query;
 };

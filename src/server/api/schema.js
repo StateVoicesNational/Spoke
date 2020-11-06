@@ -430,11 +430,11 @@ async function updateInteractionSteps(
     if (is.id.indexOf("new") !== -1) {
       const newIstep = await InteractionStep.save({
         parent_interaction_id: is.parentInteractionId || null,
-        question: is.questionText,
+        question: is.questionText || "",
         script: is.script,
-        answer_option: is.answerOption,
-        answer_actions: is.answerActions,
-        answer_actions_data: is.answerActionsData,
+        answer_option: is.answerOption || "",
+        answer_actions: is.answerActions || "",
+        answer_actions_data: is.answerActionsData || "",
         campaign_id: campaignId,
         is_deleted: false
       });
