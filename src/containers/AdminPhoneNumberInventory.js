@@ -120,17 +120,19 @@ class AdminPhoneNumberInventory extends React.Component {
     });
   };
 
-  handleDeleteNumbersOpen = areaCode => {
+  handleDeleteNumbersOpen = row => {
     this.setState({
       deleteNumbersDialogOpen: true,
-      deleteNumbersAreaCode: areaCode
+      deleteNumbersAreaCode: row.areaCode,
+      deleteNumbersCount: row.availableCount
     });
   };
 
   handleDeleteNumbersCancel = () => {
     this.setState({
       deleteNumbersDialogOpen: false,
-      deleteNumbersAreaCode: null
+      deleteNumbersAreaCode: null,
+      deleteNumbersCount: 0
     });
   };
 
@@ -177,7 +179,7 @@ class AdminPhoneNumberInventory extends React.Component {
           this.props.params.ownerPerms ? (
             <FlatButton
               icon={<DeleteIcon />}
-              onTouchTap={() => this.handleDeleteNumbersOpen(row.areaCode)}
+              onTouchTap={() => this.handleDeleteNumbersOpen(row)}
             />
           ) : null
       },
@@ -319,7 +321,7 @@ class AdminPhoneNumberInventory extends React.Component {
               onClick={this.handleDeleteNumbersCancel}
             />,
             <RaisedButton
-              label="Delete"
+              label={`Delete ${this.state.deleteNumbersCount} Numbers`}
               secondary
               onClick={this.handleDeletePhoneNumbersSubmit}
             />
