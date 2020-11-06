@@ -1,7 +1,6 @@
 import { getLastMessage } from "./message-sending";
 import { Message, PendingMessagePart, r, cacheableData } from "../../models";
 import uuid from "uuid";
-import { CountryInstance } from "twilio/lib/rest/pricing/v1/voice/country";
 
 // This 'fakeservice' allows for fake-sending messages
 // that end up just in the db appropriately and then using sendReply() graphql
