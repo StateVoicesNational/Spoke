@@ -25,30 +25,21 @@ describe("End-to-end campaign flow", () => {
     cy.get("input[data-test=description]").type(campaignDescription);
 
     // DatePicker is difficult to interact with as its components have no ids or classes
-    // So set date directly for test and ignore picker  (interaction commented-out below)
+    // Selectors are fairly brittle, consider upgrading material-ui for easier test interaction
 
-    // cy.get("input[data-test=dueBy]").focus();
-    cy.get("input[data-test=dueBy]").type(campaignDueBy, { force: true });
-    cy.get("button")
-      .contains("Cancel")
+    // Open picker by focusing input
+    cy.get("input[data-test=dueBy]").click();
+    // Click next month (>)
+    cy.get("body > div:nth-of-type(2) button:nth-of-type(2)")
+      .first()
       .click();
+    // Click first of the month
+    cy.get("body > div:nth-of-type(2) button:contains(1)")
+      .first()
+      .click();
+
+    // Wait for modal to close then submit
     cy.wait(200);
-    cy.pause();
-    cy.get("input[data-test=dueBy]").then(input => {
-      input.val(campaignDueBy);
-    });
-
-    // Very brittle DatePicker interaction to pick the first day of the next month
-    // Note: newer versions of Material UI appear to have better hooks for integration
-    // testing.
-    // cy.get(
-    //   "body > div:nth-child(5) > div > div:nth-child(1) > div > div > div > div > div:nth-child(2) > div:nth-child(1) > div:nth-child(1) > button:nth-child(3)"
-    // ).click();
-    // cy.get("button")
-    //   .contains("1")
-    //   .click();
-    // cy.wait(500);
-
     cy.get("[data-test=campaignBasicsForm]").submit();
 
     // Upload Contacts
