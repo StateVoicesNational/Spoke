@@ -77,9 +77,9 @@ describe("End-to-end campaign flow", () => {
       .contains("This campaign is running")
       .should("exist");
 
+    // Login as TEXTER and send messages to contacts
     cy.url().then(url => {
       const campaignId = url.match(/campaigns\/(\d+)/)[1];
-      // TEXTER
       cy.login("texter1");
       cy.visit("/app");
       const cardSelector = `div[data-test=assignmentSummary-${campaignId}]`;
@@ -92,26 +92,27 @@ describe("End-to-end campaign flow", () => {
       cy.get(cardSelector)
         .find("button[data-test=sendFirstTexts]")
         .click();
-      // TODO: handle when order of contacts is reversed
       cy.get("textArea[name=messageText]").then(el => {
-        expect(el).to.have.text(
-          "Hi Contactfirst1 this is Texter1first, how are you?"
+        expect(el.text()).to.match(
+          /Hi ContactFirst(\d) this is Texter1First, how are you\?/
         );
       });
 
       if (Cypress.env("DEFAULT_SERVICE") === "fakeservice") {
         cy.get("button[data-test=send]").click();
-        // wait advance to next contact
+        // Message next contact
         cy.wait(200);
         cy.get("textArea[name=messageText]").then(el => {
-          expect(el).to.have.text(
-            "Hi Contactfirst2 this is Texter1first, how are you?"
+          expect(el.text()).to.match(
+            /Hi ContactFirst(\d) this is Texter1First, how are you\?/
           );
         });
         cy.get("button[data-test=send]").click();
-        // Go back to TODOS
-        cy.wait(200);
-        cy.url().should("include", "/todos");
+
+        // Shows we're done and click back to /todos
+        cy.get("body").contains("You've messaged all your assigned contacts.");
+        cy.get("button:contains(Back To Todos)").click();
+        cy.waitUntil(() => cy.url().then(url => url.match(/\/todos$/)));
       }
     });
   });
