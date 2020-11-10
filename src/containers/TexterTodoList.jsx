@@ -27,7 +27,7 @@ class TexterTodoList extends React.Component {
       })
       .map(assignment => {
         if (
-          assignment.allContactsCount > 0 ||
+          assignment.hasContacts ||
           assignment.campaign.useDynamicAssignment
         ) {
           return (
@@ -120,6 +120,7 @@ export const dataQuery = gql`
     $completedConvosFilter: ContactsFilter
     $pastMessagesFilter: ContactsFilter
     $skippedMessagesFilter: ContactsFilter
+    $hasAny: Boolean
   ) {
     user(organizationId: $organizationId, userId: $userId) {
       id
@@ -147,7 +148,7 @@ export const dataQuery = gql`
             id
           }
         }
-        allContactsCount: contactsCount
+        hasContacts: contactsCount(hasAny: $hasAny)
         unmessagedCount: contactsCount(contactsFilter: $needsMessageFilter)
         unrepliedCount: contactsCount(contactsFilter: $needsResponseFilter)
         badTimezoneCount: contactsCount(contactsFilter: $badTimezoneFilter)
@@ -192,6 +193,7 @@ const queries = {
       variables: {
         userId: ownProps.params.userId || null,
         organizationId: ownProps.params.organizationId,
+        hasAny: true,
         needsMessageFilter: {
           messageStatus: "needsMessage",
           isOptedOut: false,

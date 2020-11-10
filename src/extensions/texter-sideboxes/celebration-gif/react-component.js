@@ -20,8 +20,8 @@ export const showSidebox = ({
   if (
     (contact && finished) ||
     (messageStatusFilter === "needsMessage" &&
-      assignment.allContactsCount &&
-      assignment.unmessagedCount === 0)
+      assignment.hasContacts &&
+      !assignment.hasUnmessaged)
   ) {
     return "popup";
   }

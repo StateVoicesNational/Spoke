@@ -29,7 +29,7 @@ export const showSidebox = ({
     campaign.useDynamicAssignment &&
     (assignment.hasUnassignedContactsForTexter ||
       messageStatusFilter === "needsMessage" ||
-      assignment.unmessagedCount) &&
+      assignment.hasUnmessaged) &&
     (messageStatusFilter === "needsMessage" ||
       messageStatusFilter === "needsResponse")
   ) {
@@ -90,18 +90,17 @@ export class TexterSideboxClass extends React.Component {
       assignment,
       contact,
       settingsData,
-      messageStatusFilter
+      messageStatusFilter,
+      isSummary
     } = this.props;
     // need to see whether they have already texted anyone and if there are replies
-    const nextBatchMessage =
-      assignment.allContactsCount === 0
-        ? "Start texting with your first batch"
-        : settingsData.dynamicAssignmentRequestMoreMessage ||
-          "Finished sending all your messages, and want to send more?";
-    const nextBatchMoreLabel =
-      assignment.allContactsCount === 0
-        ? "Start texting"
-        : settingsData.dynamicAssignmentRequestMoreLabel || "Send more texts";
+    const nextBatchMessage = assignment.hasContacts
+      ? settingsData.dynamicAssignmentRequestMoreMessage ||
+        "Finished sending all your messages, and want to send more?"
+      : "Start texting with your first batch";
+    const nextBatchMoreLabel = assignment.hasContacts
+      ? settingsData.dynamicAssignmentRequestMoreLabel || "Send more texts"
+      : "Start texting";
     const headerStyle = messageStatusFilter ? { textAlign: "center" } : {};
     return (
       <div style={headerStyle}>
@@ -115,11 +114,11 @@ export class TexterSideboxClass extends React.Component {
             />
           </div>
         ) : null}
-        {messageStatusFilter === "needsMessage" && assignment.unrepliedCount ? (
+        {messageStatusFilter === "needsMessage" && assignment.hasUnreplied ? (
           <div style={{ marginBottom: "8px", paddingLeft: "12px" }}>
             <Badge
               badgeStyle={{ ...inlineStyles.badge }}
-              badgeContent={assignment.unrepliedCount}
+              badgeContent={assignment.unrepliedCount || "+"}
               primary={true}
               secondary={false}
             >
@@ -129,11 +128,11 @@ export class TexterSideboxClass extends React.Component {
         ) : null}
         {messageStatusFilter &&
         messageStatusFilter !== "needsMessage" &&
-        assignment.unmessagedCount ? (
+        assignment.hasUnmessaged ? (
           <div style={{ marginBottom: "8px", paddingLeft: "12px" }}>
             <Badge
               badgeStyle={{ ...inlineStyles.badge }}
-              badgeContent={assignment.unmessagedCount}
+              badgeContent={assignment.unmessagedCount || "+"}
               primary={true}
               secondary={false}
             >
@@ -150,7 +149,7 @@ export class TexterSideboxClass extends React.Component {
           </div>
         ) : null}
         {!assignment.hasUnassignedContactsForTexter &&
-        !contact &&
+        isSummary &&
         !assignment.unmessagedCount &&
         !assignment.unrepliedCount &&
         settingsData.dynamicAssignmentNothingToDoMessage ? (

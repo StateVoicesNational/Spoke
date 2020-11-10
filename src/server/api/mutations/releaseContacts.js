@@ -31,6 +31,9 @@ export const releaseContacts = async (
   });
   if (!releaseConversations) {
     releaseQuery = releaseQuery.where("message_status", "needsMessage");
+  } else {
+    assignment.allcontactscount = 0;
+    assignment.hascontacts = 0;
   }
   const updateCount = await releaseQuery.update("assignment_id", null);
   if (updateCount) {
@@ -40,5 +43,10 @@ export const releaseContacts = async (
       -updateCount
     );
   }
-  return assignment;
+  return {
+    ...assignment,
+    contacts: [],
+    unmessagedcount: 0,
+    hasunmessaged: 0
+  };
 };

@@ -28,12 +28,12 @@ export const showSidebox = ({
   // Return anything Truth-y to show
   // Return 'popup' to force a popup on mobile screens (instead of letting it hide behind a button)
   return (
-    assignment.allContactsCount &&
+    (assignment.hasContacts || assignment.allContactsCount) &&
     !finished &&
     (campaign.useDynamicAssignment ||
       settingsData.releaseContactsNonDynamicToo) &&
     (settingsData.releaseContactsReleaseConvos ||
-      (messageStatusFilter === "needsMessage" && assignment.unmessagedCount) ||
+      (messageStatusFilter === "needsMessage" && assignment.hasUnmessaged) ||
       (isSummary && assignment.unmessagedCount))
   );
 };
@@ -55,10 +55,13 @@ export class TexterSideboxClass extends React.Component {
     const { settingsData, messageStatusFilter, assignment } = this.props;
     const showReleaseConvos =
       settingsData.releaseContactsReleaseConvos &&
-      (messageStatusFilter !== "needsMessage" || assignment.unrepliedCount);
+      (messageStatusFilter !== "needsMessage" ||
+        assignment.unrepliedCount ||
+        assignment.hasUnreplied);
     return (
       <div style={{}}>
-        {assignment.unmessagedCount ? (
+        {assignment.unmessagedCount ||
+        (messageStatusFilter === "needsMessage" && assignment.hasUnmessaged) ? (
           <div>
             <div>
               {settingsData.releaseContactsBatchTitle ? (
@@ -123,6 +126,7 @@ export const mutations = {
         $assignmentId: String!
         $contactsFilter: ContactsFilter!
         $releaseConversations: Boolean
+        $hasAny: Boolean
       ) {
         releaseContacts(
           assignmentId: $assignmentId
@@ -132,7 +136,14 @@ export const mutations = {
           contacts(contactsFilter: $contactsFilter) {
             id
           }
-          allContactsCount: contactsCount
+          unmessagedCount: contactsCount(
+            contactsFilter: $contactsFilter
+            hasAny: $hasAny
+          )
+          hasUnmessaged: contactsCount(
+            contactsFilter: $contactsFilter
+            hasAny: $hasAny
+          )
         }
       }
     `,
@@ -143,7 +154,8 @@ export const mutations = {
         messageStatus: ownProps.messageStatusFilter,
         isOptedOut: false,
         validTimezone: true
-      }
+      },
+      hasAny: true
     }
   })
 };

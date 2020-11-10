@@ -133,6 +133,7 @@ export const dataQuery = gql`
     $contactsFilter: ContactsFilter!
     $needsMessageFilter: ContactsFilter
     $needsResponseFilter: ContactsFilter
+    $hasAny: Boolean
   ) {
     currentUser {
       id
@@ -144,9 +145,15 @@ export const dataQuery = gql`
       contacts(contactsFilter: $contactsFilter) {
         id
       }
-      allContactsCount: contactsCount
-      unmessagedCount: contactsCount(contactsFilter: $needsMessageFilter)
-      unrepliedCount: contactsCount(contactsFilter: $needsResponseFilter)
+      hasContacts: contactsCount(hasAny: $hasAny)
+      hasUnmessaged: contactsCount(
+        contactsFilter: $needsMessageFilter
+        hasAny: $hasAny
+      )
+      hasUnreplied: contactsCount(
+        contactsFilter: $needsResponseFilter
+        hasAny: $hasAny
+      )
       texter {
         id
         firstName
@@ -194,7 +201,7 @@ export class TexterTodo extends React.Component {
       assignment: { campaign }
     } = this.props.campaignData;
     const contacts = assignment ? assignment.contacts : [];
-    const allContactsCount = assignment ? assignment.allContactsCount : 0;
+    const allContactsCount = assignment ? assignment.contacts.length : 0;
     return (
       <ContactController
         assignment={assignment}
@@ -233,6 +240,7 @@ const queries = {
       //         exclude isOptedOut: false, validTimezone: true
       return {
         variables: {
+          hasAny: true,
           contactsFilter: {
             messageStatus: ownProps.messageStatus,
             ...(!ownProps.params.reviewContactId && { isOptedOut: false }),

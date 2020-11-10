@@ -36,8 +36,8 @@ export const tests = testName => {
       assignment: {
         id: "-1",
         hasUnassignedContactsForTexter: 200,
-        allContactsCount: 42,
-        unrepliedCount: 12,
+        hasContacts: 42,
+        hasUnreplied: 12,
         campaign: {
           id: 10123,
           title: "GOT Progressive Vote",
@@ -99,7 +99,7 @@ export const tests = testName => {
       },
       assignment: {
         id: "-1",
-        allContactsCount: 18000,
+        hasContacts: 18000,
         campaign: {
           id: 10123,
           title: "GOT Progressive Vote",
@@ -240,7 +240,7 @@ export const tests = testName => {
       },
       assignment: {
         id: "-1",
-        allContactsCount: 88,
+        hasContacts: 88,
         hasUnassignedContactsForTexter: 200,
         campaign: {
           id: 10123,
@@ -499,8 +499,8 @@ export const tests = testName => {
       },
       assignment: {
         id: "-1",
-        unrepliedCount: 0,
-        allContactsCount: 0,
+        hasUnreplied: 0,
+        hasContacts: 0,
         campaign: {
           id: 10123,
           title: "GOT Progressive Vote",

@@ -450,7 +450,7 @@ export class ContactController extends React.Component {
   }
 
   renderEmpty(enabledSideboxes, sideboxProps) {
-    const { assignment, messageStatusFilter, allContactsCount } = this.props;
+    const { assignment, messageStatusFilter } = this.props;
     let sideboxList = null;
     if (enabledSideboxes.length) {
       sideboxList = enabledSideboxes.map(sidebox =>
@@ -459,12 +459,11 @@ export class ContactController extends React.Component {
     }
     const initials = messageStatusFilter === "needsMessage";
     const action = initials ? "messaged" : "replied to";
-    const emptyMessage =
-      allContactsCount === 0
-        ? "No current contacts"
-        : `You've ${action} all your assigned contacts${
-            initials ? "" : " for now"
-          }.`;
+    const emptyMessage = !assignment.hasContacts
+      ? "No current contacts"
+      : `You've ${action} all your assigned contacts${
+          initials ? "" : " for now"
+        }.`;
     return (
       <div key="empty">
         <Empty
