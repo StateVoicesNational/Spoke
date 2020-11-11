@@ -39,7 +39,8 @@ describe("End-to-end campaign flow", () => {
       .click();
 
     // Wait for modal to close then submit
-    cy.wait(200);
+    // TODO: use cy.waitUntil() instead of wait()
+    cy.wait(400);
     cy.get("[data-test=campaignBasicsForm]").submit();
 
     // Upload Contacts
