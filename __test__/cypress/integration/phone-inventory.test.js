@@ -24,8 +24,10 @@ if (Cypress.env("DEFAULT_SERVICE") === "fakeservice") {
 
       // "Available" column of the row containing the test areaCode
       // Waits until job run completes
-      cy.waitUntil(() =>
-        cy.get(`tr:contains(${testAreaCode}) td:nth-child(4)`).contains("1")
+      cy.waitUntil(
+        () =>
+          cy.get(`tr:contains(${testAreaCode}) td:nth-child(4)`).contains("1"),
+        { timeout: 1000 }
       );
     });
   });
