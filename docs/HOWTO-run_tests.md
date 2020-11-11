@@ -33,8 +33,13 @@ Redis is used for caching and is separate from the backend DB so can be used wit
 
 ## End-To-End Testing
 
-1. Run your local development environment with DEFAULT_SERVICE=fakeservice.
-2. Run `yarn run cypress open` for the interactive test runner. For non-interactive
-   run `yarn run cypress run --browser <browser>`.
+The end-to-end testing suite uses [Cypress]((https://docs.cypress.io/guides/guides/command-line.html)) to drive and test user experience scenarios. It runs a separate test instance of Spoke, configured separately from the config in your `.env`, using the `spoke_test` PostgreSQL database, and running at `http://localhost:3001`.
 
-See [the Cypress documentation](https://docs.cypress.io/guides/guides/command-line.html) for more info.
+To run the end-to-end suite in development:
+
+1. Set up PostgreSQL as described above
+2. Build assets with `NODE_ENV=test OUTPUT_DIR=./build ASSETS_DIR=./build/client/assets ASSETS_MAP_FILE=assets.json yarn prod-build`
+3. Start test instance of Spoke with `yarn cypress-start`
+4. Run end-to-end test suite interactively with `yarn test-cypress`
+
+The end-to-end suite runs in CI using a Github Actions workflow defined in `.github/workflows/cypress-tests.yaml`.
