@@ -39,6 +39,7 @@ jobs:
         DB_USER: spoke_test
         DB_PASSWORD: spoke_test
       with:
+        browser: chrome
         build: npm run prod-build
         start: npm run cypress-start
         wait-on: 'http://localhost:3001'
