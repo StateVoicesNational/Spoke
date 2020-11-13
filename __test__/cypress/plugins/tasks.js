@@ -18,11 +18,6 @@ export function makeTasks(config) {
         .first();
 
       if (!user) {
-        // TODO[matteosb]: support Auth0 and consider creating users through
-        // the API rather than with direct database access, which would be
-        // better when running against remote envs. Alternatively, we could
-        // simply not support user creation when running against a remove
-        // env, similar to SUPPRESS_ORG_CREATION.
         user = await new Promise((resolve, reject) => {
           AuthHasher.hash(userData.password, async (err, hashed) => {
             if (err) reject(err);
