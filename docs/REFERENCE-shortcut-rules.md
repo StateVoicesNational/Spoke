@@ -1,13 +1,29 @@
 # Texter ShortCuts and when they are displayed
 
-On the texter conversation screen, the UI creates "shortcut buttons" for some question responses
-and canned replies.
+On the texter conversation screen, the UI creates "shortcut buttons" for some question responses and canned replies. 
 
-Currently there is no UI to choose the shortcuts or enable/disable them or preview their visibility,
-however we hope to do that in the future.
+Currently there is no UI to choose the shortcuts or enable/disable them or preview their visibility (the hope is that one will exist in the future). In the meantime, there is a set of rules around character count and punctuation usage that cause shortcut buttons to be shown automatically based on the way the titles of responses are crafted.  
 
-In the meantime we document the rules of when they are shown automatically.  These rules are meant
-to balance real-estate on the screen while avoiding confusion for the texter in some situations.
+The rules assume that buttons will have short labels and that there won't be too many buttons. The general idea is that a texter using a mobile device will see some shortcut buttons and still be able to read the conversation.
+
+## Illustration
+![](https://i.imgur.com/rlTEhos.png)
+*Above: Some survey responses show up as shortcuts because they are under 36 characters (Yes, No, Undecided, Already Voted + 2 spaces for each = 28+2+2+2+2 = 36). After the survey responses some Other Responses are displayed (Empty text, Who are you?, Wrong Number).* 
+
+![](https://i.imgur.com/lPZKFNG.png)
+*Above: The corresponding "All Responses" menu may show more survey responses and way more Other Responses. For the survey responses, you can exclude the less used options with a "-" use the "+" ...read more about the logic of what shows up when below.*
+
+## TL;DR
+Use short labels or strategically use punctuation to get the labels of responses short enough that shortcut buttons will appear.
+
+Survey responses can be **excluded** by starting with a "-"
+
+Other responses can be **included** by starting with a "+"
+
+Adding a punctuation mark will after the first word in a response label will truncate that label to just one word (e.g. "**Yes,** you can count on me" -> "**Yes**")
+
+Tip: Use the staging server and open two tabs to test out a set of responses and see what will work. In one tab edit your interactions and canned responses. In the other tab, keep the responding ui open and refresh. This is the best way to experiment quickly and learn the rules either by trial and error or by reading below and trying out each permutation.
+
 
 ## Terminology
 
