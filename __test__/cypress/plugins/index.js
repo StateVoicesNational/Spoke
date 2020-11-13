@@ -20,11 +20,6 @@ const makeTasks = require("./tasks").makeTasks;
 const utils = require("./utils");
 
 module.exports = async (on, config) => {
-  if (config.env.SUPPRESS_ORG_CREATION && !config.env.TEST_ORGANIZATION_ID) {
-    throw new Error(
-      "Missing TEST_ORGANIZATION_ID and org creation is disabled"
-    );
-  }
   if (!config.env.TEST_ORGANIZATION_ID) {
     const org = await utils.getOrCreateTestOrganization();
     config.env.TEST_ORGANIZATION_ID = org.id;

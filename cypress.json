@@ -7,7 +7,6 @@
   "testFiles": "*.test.js",
   "video": true,
   "env": {
-    "SUPPRESS_ORG_CREATION": false,
     "TEST_ORGANIZATION_ID": null
   }
 }
