@@ -1,14 +1,20 @@
+import TestData from "../fixtures/test-data";
+
 if (Cypress.env("DEFAULT_SERVICE") === "fakeservice") {
   describe("Phone number management screen in the Admin interface", () => {
     const testAreaCode = "212";
 
-    beforeEach(() => {
-      cy.task("clearTestOrgPhoneNumbers", testAreaCode);
-      cy.login("admin1");
-      cy.visit("/admin/1/phone-numbers");
+    before(() => {
+      cy.task("getOrCreateTestOrganization").then(org => {
+        cy.task("createOrUpdateUser", { userData: TestData.users.admin1, org });
+        cy.task("clearTestOrgPhoneNumbers", { areaCode: testAreaCode, org });
+      });
     });
 
     it("shows numbers by area code and allows OWNERs to buy more", () => {
+      cy.login("admin1");
+      cy.visit("/admin/1/phone-numbers");
+
       cy.get("th").contains("Area Code");
       cy.get("th").contains("Allocated");
       cy.get("th").contains("Available");

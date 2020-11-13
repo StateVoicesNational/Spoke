@@ -11,7 +11,6 @@ Cypress.Commands.add("login", testDataId => {
     throw Error(`Unknown test user ${testDataId}`);
   }
 
-  cy.task("createOrUpdateUser", userData);
   cy.request("POST", "/login-callback", {
     nextUrl: "/",
     authType: "login",

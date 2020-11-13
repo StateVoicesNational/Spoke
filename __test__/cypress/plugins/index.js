@@ -17,14 +17,8 @@ if (process.env.DB_TYPE !== "pg") {
 }
 
 const makeTasks = require("./tasks").makeTasks;
-const utils = require("./utils");
 
 module.exports = async (on, config) => {
-  if (!config.env.TEST_ORGANIZATION_ID) {
-    const org = await utils.getOrCreateTestOrganization();
-    config.env.TEST_ORGANIZATION_ID = org.id;
-  }
-
   // TODO: use the API to determine what service is being used rather
   //   than relying on .env.
   config.env.DEFAULT_SERVICE = process.env.DEFAULT_SERVICE;
