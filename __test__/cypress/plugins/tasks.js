@@ -1,3 +1,4 @@
+import uuid from "uuid";
 import { r, User } from "../../../src/server/models";
 import AuthHasher from "passport-local-authenticate";
 
@@ -8,10 +9,28 @@ import AuthHasher from "passport-local-authenticate";
  */
 export function makeTasks(config) {
   return {
+    getOrCreateTestOrganization: async () => {
+      const defaultOrganizationName = "E2E Test Organization";
+      let org = await r
+        .knex("organization")
+        .where("name", defaultOrganizationName)
+        .first();
+
+      if (org) return org;
+
+      await r.knex("organization").insert({
+        name: defaultOrganizationName,
+        uuid: uuid.v4(),
+        features: JSON.stringify({ EXPERIMENTAL_PHONE_INVENTORY: true })
+      });
+
+      return await getOrCreateTestOrganization();
+    },
+
     /**
      * Create a user and add it to the test organization with the specified role.
      */
-    createOrUpdateUser: async userData => {
+    createOrUpdateUser: async ({ userData, org }) => {
       let user = await r
         .knex("user")
         .where("email", userData.email)
@@ -39,7 +58,7 @@ export function makeTasks(config) {
       const role = await r
         .knex("user_organization")
         .where({
-          organization_id: config.env.TEST_ORGANIZATION_ID,
+          organization_id: org.id,
           user_id: user.id
         })
         .first();
@@ -47,7 +66,7 @@ export function makeTasks(config) {
       if (!role) {
         await r.knex("user_organization").insert({
           user_id: user.id,
-          organization_id: config.env.TEST_ORGANIZATION_ID,
+          organization_id: org.id,
           role: userData.role
         });
       }
@@ -55,18 +74,18 @@ export function makeTasks(config) {
       if (role !== userData.role) {
         await r
           .knex("user_organization")
-          .where({ organization_id: config.env.TEST_ORGANIZATION_ID })
+          .where({ organization_id: org.id })
           .update({ role: userData.role });
       }
 
       return user.id;
     },
 
-    clearTestOrgPhoneNumbers: async areaCode => {
+    clearTestOrgPhoneNumbers: async ({ areaCode, org }) => {
       await r
         .knex("owned_phone_number")
         .where({
-          organization_id: config.env.TEST_ORGANIZATION_ID,
+          organization_id: org.id,
           service: "fakeservice",
           area_code: areaCode
         })

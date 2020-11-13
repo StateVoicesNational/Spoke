@@ -3,8 +3,11 @@ import TestData from "../fixtures/test-data";
 
 describe("End-to-end campaign flow", () => {
   before(() => {
-    // ensure texter one exists so they can be assigned
-    cy.task("createOrUpdateUser", TestData.users.texter1);
+    cy.task("getOrCreateTestOrganization").then(org => {
+      cy.task("createOrUpdateUser", { userData: TestData.users.admin1, org });
+      // ensure texter one exists so they can be assigned
+      cy.task("createOrUpdateUser", { userData: TestData.users.texter1, org });
+    });
   });
 
   it("with an assigned texter", () => {

@@ -1,13 +1,17 @@
-import testData from "../fixtures/test-data";
+import TestData from "../fixtures/test-data";
 
 describe("The user edit screen", () => {
-  beforeEach(() => {
-    cy.login("admin1");
-    cy.visit("/");
+  before(() => {
+    cy.task("getOrCreateTestOrganization").then(org => {
+      cy.task("createOrUpdateUser", { userData: TestData.users.admin1, org });
+    });
   });
 
   it("displays the current user's and allows them to edit it", () => {
-    const userDetails = testData.users.admin1;
+    cy.login("admin1");
+    cy.visit("/");
+
+    const userDetails = TestData.users.admin1;
     cy.get("[data-test=userMenuButton]").click();
     cy.get("[data-test=userMenuDisplayName]").click();
     cy.get("input[data-test=email]").should("have.value", userDetails.email);
