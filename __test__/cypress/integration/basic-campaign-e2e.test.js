@@ -1,4 +1,3 @@
-import moment from "moment-timezone";
 import TestData from "../fixtures/test-data";
 
 describe("End-to-end campaign flow", () => {
@@ -23,12 +22,8 @@ describe("End-to-end campaign flow", () => {
 
   it("with an assigned texter", () => {
     // ADMIN
-    const campaignTitle = `E2E basic flow ${moment().toString()}`;
+    const campaignTitle = "Integration Test Campaign";
     const campaignDescription = "Basic campaign with assignments";
-    const campaignDueBy = moment()
-      .add(1, "month")
-      .startOf("month")
-      .format("M/D/YYYY");
 
     cy.login("admin1");
     cy.visit("/");
