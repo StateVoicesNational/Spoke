@@ -7,9 +7,9 @@ import AuthHasher from "passport-local-authenticate";
  *
  * https://docs.cypress.io/api/commands/task.html#Syntax
  */
-export function makeTasks(config) {
-  return {
-    getOrCreateTestOrganization: async () => {
+export function makeTasks(on, config) {
+  on("task", {
+    async getOrCreateTestOrganization() {
       const defaultOrganizationName = "E2E Test Organization";
       let org = await r
         .knex("organization")
@@ -24,13 +24,16 @@ export function makeTasks(config) {
         features: JSON.stringify({ EXPERIMENTAL_PHONE_INVENTORY: true })
       });
 
-      return await getOrCreateTestOrganization();
+      return await r
+        .knex("organization")
+        .where("name", defaultOrganizationName)
+        .first();
     },
 
     /**
      * Create a user and add it to the test organization with the specified role.
      */
-    createOrUpdateUser: async ({ userData, org }) => {
+    async createOrUpdateUser({ userData, org }) {
       let user = await r
         .knex("user")
         .where("email", userData.email)
@@ -74,14 +77,14 @@ export function makeTasks(config) {
       if (role !== userData.role) {
         await r
           .knex("user_organization")
-          .where({ organization_id: org.id })
+          .where({ user_id: user.id, organization_id: org.id })
           .update({ role: userData.role });
       }
 
       return user.id;
     },
 
-    clearTestOrgPhoneNumbers: async ({ areaCode, org }) => {
+    async clearTestOrgPhoneNumbers({ areaCode, org }) {
       await r
         .knex("owned_phone_number")
         .where({
@@ -92,5 +95,5 @@ export function makeTasks(config) {
         .delete();
       return null;
     }
-  };
+  });
 }

@@ -22,7 +22,7 @@ module.exports = async (on, config) => {
   // TODO: use the API to determine what service is being used rather
   //   than relying on .env.
   config.env.DEFAULT_SERVICE = process.env.DEFAULT_SERVICE;
-  on("task", makeTasks(config));
+  makeTasks(on, config);
 
   return config;
 };
