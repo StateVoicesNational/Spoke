@@ -49,6 +49,7 @@ export function defineTasks(on, config) {
           resolve(u);
         });
       });
+      user.password = userInfo.password;
       return user;
     }
   });

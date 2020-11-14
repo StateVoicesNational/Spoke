@@ -1,19 +1,24 @@
-import TestData from "../fixtures/test-data";
-
 describe("End-to-end campaign flow", () => {
-  let admin,
-    texter = null;
+  const adminInfo = { email: "admin@example.com", password: "Admin1!" };
+  const texterInfo = {
+    email: "texter@example.com",
+    password: "Texter1!",
+    first_name: "TexterFirst",
+    last_name: "TexterLast"
+  };
+  let admin = null;
+  let texter = null;
 
   beforeEach(() => {
     cy.task("createOrganization").then(org => {
       // Admin creates a campaign and assigns contacts to the texter
       cy.task("createUser", {
-        userInfo: TestData.users.admin1,
+        userInfo: adminInfo,
         org,
         role: "OWNER"
       }).then(user => (admin = user));
       cy.task("createUser", {
-        userInfo: TestData.users.texter1,
+        userInfo: texterInfo,
         org,
         role: "TEXTER"
       }).then(user => (texter = user));
@@ -25,7 +30,7 @@ describe("End-to-end campaign flow", () => {
     const campaignTitle = "Integration Test Campaign";
     const campaignDescription = "Basic campaign with assignments";
 
-    cy.login("admin1");
+    cy.login(admin);
     cy.visit("/");
     cy.get("button[data-test=addCampaign]").click();
 
@@ -59,10 +64,10 @@ describe("End-to-end campaign flow", () => {
     // Assignments
     // Note: Material UI v0 AutoComplete component appears to require a click on the element
     // later versions should just allow you to hit enter
-    cy.get("input[data-test=texterSearch]").type("Texter1First");
+    cy.get("input[data-test=texterSearch]").type("Texter");
     // see if there is a better way to select the search result
     cy.get("body")
-      .contains("Texter1First Texter1Last")
+      .contains(`${texter.first_name} ${texter.last_name}`)
       .click();
     cy.get("input[data-test=autoSplit]").click();
     cy.get("button[data-test=submitCampaignTextersForm]").click();
@@ -90,7 +95,7 @@ describe("End-to-end campaign flow", () => {
     // Login as TEXTER and send messages to contacts
     cy.url().then(url => {
       const campaignId = url.match(/campaigns\/(\d+)/)[1];
-      cy.login("texter1");
+      cy.login(texter);
       cy.visit("/app");
       const cardSelector = `div[data-test=assignmentSummary-${campaignId}]`;
       cy.get(cardSelector)
@@ -104,7 +109,7 @@ describe("End-to-end campaign flow", () => {
         .click();
       cy.get("textArea[name=messageText]").then(el => {
         expect(el.text()).to.match(
-          /Hi ContactFirst(\d) this is Texter1First, how are you\?/
+          /Hi ContactFirst(\d) this is TexterFirst, how are you\?/
         );
       });
 
@@ -113,7 +118,7 @@ describe("End-to-end campaign flow", () => {
       cy.wait(200);
       cy.get("textArea[name=messageText]").then(el => {
         expect(el.text()).to.match(
-          /Hi ContactFirst(\d) this is Texter1First, how are you\?/
+          /Hi ContactFirst(\d) this is TexterFirst, how are you\?/
         );
       });
       cy.get("button[data-test=send]").click();

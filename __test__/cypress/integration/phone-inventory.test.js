@@ -1,13 +1,12 @@
-import TestData from "../fixtures/test-data";
-
 describe("Phone number management screen in the Admin interface", () => {
   const testAreaCode = "212";
+  const adminInfo = { email: "admin@example.com", password: "Admin1!" };
   let admin = null;
 
   beforeEach(() => {
     cy.task("createOrganization").then(org => {
       cy.task("createUser", {
-        userInfo: TestData.users.admin1,
+        userInfo: adminInfo,
         org,
         role: "OWNER"
       }).then(user => (admin = user));
@@ -15,7 +14,7 @@ describe("Phone number management screen in the Admin interface", () => {
   });
 
   it("shows numbers by area code and allows OWNERs to buy more", () => {
-    cy.login("admin1");
+    cy.login(admin);
     cy.visit("/admin/1/phone-numbers");
 
     cy.get("th").contains("Area Code");
