@@ -102,22 +102,20 @@ describe("End-to-end campaign flow", () => {
         );
       });
 
-      if (Cypress.env("DEFAULT_SERVICE") === "fakeservice") {
-        cy.get("button[data-test=send]").click();
-        // Message next contact
-        cy.wait(200);
-        cy.get("textArea[name=messageText]").then(el => {
-          expect(el.text()).to.match(
-            /Hi ContactFirst(\d) this is Texter1First, how are you\?/
-          );
-        });
-        cy.get("button[data-test=send]").click();
+      cy.get("button[data-test=send]").click();
+      // Message next contact
+      cy.wait(200);
+      cy.get("textArea[name=messageText]").then(el => {
+        expect(el.text()).to.match(
+          /Hi ContactFirst(\d) this is Texter1First, how are you\?/
+        );
+      });
+      cy.get("button[data-test=send]").click();
 
-        // Shows we're done and click back to /todos
-        cy.get("body").contains("You've messaged all your assigned contacts.");
-        cy.get("button:contains(Back To Todos)").click();
-        cy.waitUntil(() => cy.url().then(url => url.match(/\/todos$/)));
-      }
+      // Shows we're done and click back to /todos
+      cy.get("body").contains("You've messaged all your assigned contacts.");
+      cy.get("button:contains(Back To Todos)").click();
+      cy.waitUntil(() => cy.url().then(url => url.match(/\/todos$/)));
     });
   });
 });

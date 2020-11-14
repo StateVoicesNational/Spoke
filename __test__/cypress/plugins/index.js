@@ -5,23 +5,18 @@ require("babel-register");
 require("babel-polyfill");
 
 if (process.env.DEFAULT_SERVICE !== "fakeservice") {
-  console.log("Not using fakeservice, some tests will be disabled");
+  throw "Integration tests require DEFAULT_SERVICE=fakesevice";
 }
 
 if (process.env.DB_TYPE !== "pg") {
   // Not supported because of a conflict between the sqlite and electron binaries
   // See: https://github.com/MoveOnOrg/Spoke/issues/1529#issuecomment-623680962
-  throw Error(
-    "Running Cypress tests against Sqlite is not currently supported"
-  );
+  throw "Running Cypress tests against Sqlite is not currently supported";
 }
 
 const makeTasks = require("./tasks").makeTasks;
 
 module.exports = async (on, config) => {
-  // TODO: use the API to determine what service is being used rather
-  //   than relying on .env.
-  config.env.DEFAULT_SERVICE = process.env.DEFAULT_SERVICE;
   makeTasks(on, config);
 
   return config;
