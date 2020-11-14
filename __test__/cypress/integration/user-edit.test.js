@@ -1,9 +1,15 @@
 import TestData from "../fixtures/test-data";
 
 describe("The user edit screen", () => {
-  before(() => {
-    cy.task("getOrCreateTestOrganization").then(org => {
-      cy.task("createOrUpdateUser", { userData: TestData.users.admin1, org });
+  let admin = null;
+
+  beforeEach(() => {
+    cy.task("createOrganization").then(org => {
+      cy.task("createUser", {
+        userInfo: TestData.users.admin1,
+        org,
+        role: "OWNER"
+      }).then(user => (admin = user));
     });
   });
 
