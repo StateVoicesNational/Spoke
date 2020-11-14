@@ -7,7 +7,7 @@ import AuthHasher from "passport-local-authenticate";
  *
  * https://docs.cypress.io/api/commands/task.html#Syntax
  */
-export function makeTasks(on, config) {
+export function defineTasks(on, config) {
   on("task", {
     async getOrCreateTestOrganization() {
       const defaultOrganizationName = "E2E Test Organization";
@@ -96,4 +96,6 @@ export function makeTasks(on, config) {
       return null;
     }
   });
+
+  return config;
 }

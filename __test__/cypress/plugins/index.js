@@ -8,16 +8,10 @@ if (process.env.DEFAULT_SERVICE !== "fakeservice") {
   throw "Integration tests require DEFAULT_SERVICE=fakesevice";
 }
 
+// PostgreSQL required because of a conflict between the sqlite and electron binaries
+// See: https://github.com/MoveOnOrg/Spoke/issues/1529#issuecomment-623680962
 if (process.env.DB_TYPE !== "pg") {
-  // Not supported because of a conflict between the sqlite and electron binaries
-  // See: https://github.com/MoveOnOrg/Spoke/issues/1529#issuecomment-623680962
   throw "Running Cypress tests against Sqlite is not currently supported";
 }
 
-const makeTasks = require("./tasks").makeTasks;
-
-module.exports = async (on, config) => {
-  makeTasks(on, config);
-
-  return config;
-};
+module.exports = require("./tasks").defineTasks;
