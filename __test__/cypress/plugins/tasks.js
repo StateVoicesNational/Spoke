@@ -49,7 +49,7 @@ export function defineTasks(on, config) {
               ...userInfo,
               auth0_id: hashedPassword
             },
-            org.id,
+            org ? org.id : null,
             role
           );
           resolve(u);
