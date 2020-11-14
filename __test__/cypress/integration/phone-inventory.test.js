@@ -2,11 +2,15 @@ import TestData from "../fixtures/test-data";
 
 describe("Phone number management screen in the Admin interface", () => {
   const testAreaCode = "212";
+  let admin = null;
 
-  before(() => {
-    cy.task("getOrCreateTestOrganization").then(org => {
-      cy.task("createOrUpdateUser", { userData: TestData.users.admin1, org });
-      cy.task("clearTestOrgPhoneNumbers", { areaCode: testAreaCode, org });
+  beforeEach(() => {
+    cy.task("createOrganization").then(org => {
+      cy.task("createUser", {
+        userInfo: TestData.users.admin1,
+        org,
+        role: "OWNER"
+      }).then(user => (admin = user));
     });
   });
 

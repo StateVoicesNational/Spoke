@@ -34,9 +34,15 @@ export function defineTasks(on, config) {
     async createOrganization() {
       const admin = await createUser();
       const invite = await createInvite();
-      const organization = (await createOrganization(admin, invite)).data
-        .createOrganization;
-      return organization;
+      const organizationResult = await createOrganization(admin, invite);
+      const org = organizationResult.data.createOrganization;
+      await r
+        .knex("organization")
+        .where({ id: org.id })
+        .update({
+          features: JSON.stringify({ EXPERIMENTAL_PHONE_INVENTORY: true })
+        });
+      return org;
     },
 
     async createUser({ userInfo, org, role }) {
