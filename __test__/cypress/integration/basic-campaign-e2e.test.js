@@ -2,11 +2,22 @@ import moment from "moment-timezone";
 import TestData from "../fixtures/test-data";
 
 describe("End-to-end campaign flow", () => {
-  before(() => {
-    cy.task("getOrCreateTestOrganization").then(org => {
-      cy.task("createOrUpdateUser", { userData: TestData.users.admin1, org });
-      // ensure texter one exists so they can be assigned
-      cy.task("createOrUpdateUser", { userData: TestData.users.texter1, org });
+  let admin,
+    texter = null;
+
+  beforeEach(() => {
+    cy.task("createOrganization").then(org => {
+      // Admin creates a campaign and assigns contacts to the texter
+      cy.task("createUser", {
+        userInfo: TestData.users.admin1,
+        org,
+        role: "OWNER"
+      }).then(user => (admin = user));
+      cy.task("createUser", {
+        userInfo: TestData.users.texter1,
+        org,
+        role: "TEXTER"
+      }).then(user => (texter = user));
     });
   });
 
