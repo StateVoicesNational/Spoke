@@ -1,6 +1,22 @@
 import uuid from "uuid";
 import { r, User } from "../../../src/server/models";
 import AuthHasher from "passport-local-authenticate";
+import {
+  createTables,
+  dropTables,
+  truncateTables
+} from "../../../src/server/models/";
+import {
+  createUser,
+  createInvite,
+  createOrganization,
+  createCampaign,
+  createTexter,
+  createContacts,
+  assignTexter,
+  updateUserRoles,
+  runGql
+} from "../../test_helpers";
 
 /**
  * Make Cypress tasks with access to the config.
@@ -9,6 +25,39 @@ import AuthHasher from "passport-local-authenticate";
  */
 export function defineTasks(on, config) {
   on("task", {
+    async resetDB() {
+      await createTables();
+      await truncateTables();
+      return null;
+    },
+
+    async createOrganization() {
+      const admin = await createUser();
+      const invite = await createInvite();
+      const organization = (await createOrganization(admin, invite)).data
+        .createOrganization;
+      return organization;
+    },
+
+    async createUser({ userInfo, org, role }) {
+      const user = await new Promise((resolve, reject) => {
+        AuthHasher.hash(userInfo.password, async (err, hashed) => {
+          if (err) reject(err);
+          const hashedPassword = `localauth|${hashed.salt}|${hashed.hash}`;
+          const u = await createUser(
+            {
+              ...userInfo,
+              auth0_id: hashedPassword
+            },
+            org.id,
+            role
+          );
+          resolve(u);
+        });
+      });
+      return user;
+    },
+
     async getOrCreateTestOrganization() {
       const defaultOrganizationName = "E2E Test Organization";
       let org = await r
