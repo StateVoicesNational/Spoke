@@ -47,6 +47,10 @@ sticking to.
 
 See [Best Practices on Conformance and Messaging](./REFERENCE-best-practices-conformance-messaging.md#modifying-the-initial-text-message)
 
+### default-adminview
+
+This sidebox includes a range of functionality that is helpful to admins as they are reviewing conversations. Currently, this includes in-depth contact info, reassigning a contact to another texter, updating the max contacts a texter will receive in dynamic assignment, changing a texter's role ("suspended", "vetted", etc.), and resolving tags applied by the texter. 
+
 ### celebration-gif
 
 After a texter completes their batch of messages show them a celebratory animated gif and message

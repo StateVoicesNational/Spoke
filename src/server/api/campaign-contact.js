@@ -46,30 +46,56 @@ export const resolvers = {
       );
       return campaignContact.error_code;
     },
-    cell: campaignContact =>
-      campaignContact.usedFields && !campaignContact.usedFields.cell
-        ? ""
-        : campaignContact.cell,
+    cell: async (campaignContact, _, { user, loaders }) => {
+      try {
+        const campaign = await loaders.campaign.load(
+          campaignContact.campaign_id
+        );
+        await accessRequired(user, campaign.organization_id, "ADMIN", true);
+        return campaignContact.cell;
+      } catch (error) {
+        return campaignContact.usedFields && !campaignContact.usedFields.cell
+          ? ""
+          : campaignContact.cell;
+      }
+    },
     external_id: campaignContact =>
       campaignContact.usedFields && !campaignContact.usedFields.external_id
         ? ""
         : campaignContact.external_id,
-    zip: campaignContact =>
-      campaignContact.usedFields && !campaignContact.usedFields.zip
-        ? ""
-        : campaignContact.zip,
-    customFields: async (campaignContact, _, { loaders }) => {
-      if (campaignContact.usedFields) {
-        const fullCustom = JSON.parse(campaignContact.custom_fields);
-        const filteredCustom = {};
-        Object.keys(campaignContact.usedFields).forEach(f => {
-          if (!coreFields[f]) {
-            filteredCustom[f] = fullCustom[f];
-          }
-        });
-        return JSON.stringify(filteredCustom);
+    zip: async (campaignContact, _, { user, loaders }) => {
+      try {
+        const campaign = await loaders.campaign.load(
+          campaignContact.campaign_id
+        );
+        await accessRequired(user, campaign.organization_id, "ADMIN", true);
+        return campaignContact.zip;
+      } catch (error) {
+        return campaignContact.usedFields && !campaignContact.usedFields.zip
+          ? ""
+          : campaignContact.zip;
       }
-      return campaignContact.custom_fields;
+    },
+    customFields: async (campaignContact, _, { user, loaders }) => {
+      try {
+        const campaign = await loaders.campaign.load(
+          campaignContact.campaign_id
+        );
+        await accessRequired(user, campaign.organization_id, "ADMIN", true);
+        return campaignContact.custom_fields;
+      } catch (error) {
+        if (campaignContact.usedFields) {
+          const fullCustom = JSON.parse(campaignContact.custom_fields);
+          const filteredCustom = {};
+          Object.keys(campaignContact.usedFields).forEach(f => {
+            if (!coreFields[f]) {
+              filteredCustom[f] = fullCustom[f];
+            }
+          });
+          return JSON.stringify(filteredCustom);
+        }
+        return campaignContact.custom_fields;
+      }
     },
     campaign: async (campaignContact, _, { loaders }) =>
       loaders.campaign.load(campaignContact.campaign_id),
@@ -137,7 +163,8 @@ export const resolvers = {
 
       return cacheableData.tagCampaignContact.query({
         campaignContactId: campaignContact.id,
-        minimalObj: true
+        minimalObj: true,
+        includeResolved: true
       });
     },
     optOut: async (campaignContact, _, { loaders }) => {

@@ -38,6 +38,8 @@ export const contactDataFragment = `
         }
         tags {
           id
+          value
+          campaignContactId
         }
 `;
 
@@ -140,6 +142,7 @@ export const dataQuery = gql`
     }
     assignment(assignmentId: $assignmentId, contactId: $contactId) {
       id
+      maxContacts
       hasUnassignedContactsForTexter
       contacts(contactsFilter: $contactsFilter) {
         id
@@ -152,6 +155,7 @@ export const dataQuery = gql`
         firstName
         lastName
         alias
+        roles(organizationId: $organizationId)
       }
     }
   }

@@ -3,25 +3,32 @@ import type from "prop-types";
 
 import DropDownMenu from "material-ui/DropDownMenu";
 import MenuItem from "material-ui/MenuItem";
-import { getHighestRole, ROLE_HIERARCHY } from "../../lib";
+import { getHighestRole, rolesEqualOrLess } from "../../lib";
 
-const RolesDropdown = props => (
+const RolesDropdown = ({
+  roles,
+  currentUser,
+  texterId,
+  onChange,
+  highestMenuRole,
+  ...props
+}) => (
   <DropDownMenu
-    value={getHighestRole(props.roles)}
+    {...props}
+    value={getHighestRole(roles)}
     disabled={
-      props.texterId === props.currentUser.id ||
-      (getHighestRole(props.roles) === "OWNER" &&
-        getHighestRole(props.currentUser.roles) !== "OWNER")
+      texterId === currentUser.id ||
+      (getHighestRole(roles) === "OWNER" &&
+        getHighestRole(currentUser.roles) !== "OWNER")
     }
-    onChange={(event, index, value) => props.onChange(props.texterId, value)}
+    onChange={(event, index, value) => onChange(texterId, value)}
   >
-    {ROLE_HIERARCHY.map(option => (
+    {rolesEqualOrLess(highestMenuRole).map(option => (
       <MenuItem
-        key={props.texterId + "_" + option}
+        key={`${texterId}_${option}`}
         value={option}
         disabled={
-          option === "OWNER" &&
-          getHighestRole(props.currentUser.roles) !== "OWNER"
+          option === "OWNER" && getHighestRole(currentUser.roles) !== "OWNER"
         }
         primaryText={`${option.charAt(0).toUpperCase()}${option
           .substring(1)
@@ -36,7 +43,12 @@ RolesDropdown.propTypes = {
   roles: type.array,
   texterId: type.string,
   currentUser: type.object,
-  onChange: type.func
+  onChange: type.func,
+  highestMenuRole: type.string
+};
+
+RolesDropdown.defaultProps = {
+  highestMenuRole: "OWNER"
 };
 
 export default RolesDropdown;

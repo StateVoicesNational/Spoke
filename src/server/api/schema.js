@@ -1361,6 +1361,19 @@ const rootMutations = {
         .where("id", id)
         .update({ is_deleted: true });
       return { id };
+    },
+    updateAssignmentMaxContacts: async (
+      _,
+      { organizationId, maxContacts, assignmentId },
+      { user }
+    ) => {
+      await accessRequired(user, organizationId, "ADMIN");
+      await r
+        .knex("assignment")
+        .where("id", assignmentId)
+        .update({ max_contacts: maxContacts });
+      await cacheableData.assignment.clear(assignmentId);
+      return { id: assignmentId, max_contacts: maxContacts };
     }
   }
 };
