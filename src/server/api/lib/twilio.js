@@ -706,10 +706,21 @@ async function addNumbersToMessagingService(
  * Release a phone number and delete it from the owned_phone_number table
  */
 async function deleteNumber(twilioInstance, phoneSid, phoneNumber) {
-  const response = await twilioInstance.incomingPhoneNumbers(phoneSid).remove();
-  if (response.error) {
-    throw new Error(`Error deleting twilio number: ${response.error}`);
-  }
+  await twilioInstance
+    .incomingPhoneNumbers(phoneSid)
+    .remove()
+    .catch(err => {
+      // Error 20404 means the number does not exist in Twilio. Should be
+      // safe to delete from Spoke inventory. Otherwise, throw error and
+      // don't delete from Spoke.
+      if (err.code === 20404) {
+        log.error(
+          `Number not found in Twilio, may have already been released: ${phoneNumber} [${phoneSid}]`
+        );
+      } else {
+        throw new Error(`Error deleting twilio number: ${err}`);
+      }
+    });
   log.debug(`Deleted number ${phoneNumber} [${phoneSid}]`);
   return await r
     .knex("owned_phone_number")
