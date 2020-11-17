@@ -49,7 +49,6 @@ module.exports = {
   setupTestFrameworkScriptFile: "<rootDir>/__test__/setup.js",
   testPathIgnorePatterns: [
     "<rootDir>/node_modules/",
-    "<rootDir>/__test__/cypress/",
-    "<rootDir>/__test__/e2e/"
+    "<rootDir>/__test__/cypress/"
   ]
 };
