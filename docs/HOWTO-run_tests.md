@@ -31,15 +31,16 @@ Redis is used for caching and is separate from the backend DB so can be used wit
 
 1) Run `yarn test-rediscache`
 
-## End-To-End Testing
+## Integration Testing
 
-The end-to-end testing suite uses [Cypress]((https://docs.cypress.io/guides/guides/command-line.html)) to drive and test user experience scenarios. It runs a separate test instance of Spoke, configured separately from the config in your `.env`, using the `spoke_test` PostgreSQL database, and running at `http://localhost:3001`.
+The integration test suite automates real world user scenarios to verify that Spoke behaves as intended. The integration testing suite uses [Cypress]((https://docs.cypress.io/guides/guides/command-line.html)) to drive a web browser to test user experience scenarios. It runs a separate test instance of Spoke, configured separately from the config in your `.env`, using the `spoke_test` PostgreSQL database, and running at `http://localhost:3001`.
 
-To run the end-to-end suite in development:
+To run the integration test suite in development:
 
 1. Set up PostgreSQL as described above
-2. Build assets with `NODE_ENV=test OUTPUT_DIR=./build ASSETS_DIR=./build/client/assets ASSETS_MAP_FILE=assets.json yarn prod-build`
-3. Start test instance of Spoke with `yarn cypress-start`
-4. Run end-to-end test suite interactively with `yarn test-cypress`
+3. Start test instance of Spoke with `yarn start:test`
+4. Run integration test suite interactively with `yarn test-cypress`
 
-The end-to-end suite runs in CI using a Github Actions workflow defined in `.github/workflows/cypress-tests.yaml`.
+The integration suite runs in CI using a Github Actions workflow defined in `.github/workflows/cypress-tests.yaml`.
+
+When developing new features for Spoke, please consider writing a Cypress tests. The test server will hot reload your code changes so that you can test drive your feature development.
