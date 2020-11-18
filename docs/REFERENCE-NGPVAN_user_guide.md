@@ -1,10 +1,10 @@
 # NGPVAN Integration User Guide
 
 - [Introduction](#introduction)
-- [Getting Started and Requesting an API Key](#getting-started)
-- [The Contact Loader](#contact-loader)
-- [The Action Handler](#action-handler)
-- [The Message Handler](#message-handler)
+- [Getting Started and Requesting an API Key](#getting-started-and-requesting-an-api-key)
+- [The Contact Loader](#the-contact-loader)
+- [The Action Handler](#the-action-handler)
+- [The Message Handler](#the-message-handler)
 
 ## Introduction
 
