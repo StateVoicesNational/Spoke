@@ -17,6 +17,8 @@ To request an API Key, go to the API integrations page from the sidebar menu, an
 
 You can use this integration with one API key for your whole Spoke build, or with different API keys for each organization in a multi-organization setup. Either way, you will likely want to set NGP_VAN_WEBHOOK_BASE_URL globally to the base URL for wherever you host spoke (i.e. the same value as BASE_URL).
 
+Regardless of whether you are using one key for your whole build or per-org keys, if you would like to use data from MyCampaign (as opposed to my voters), append |1 to the end of the API key you are given when saving it to your database or as an environment variable.
+
 ### Setting a single API key for your whole build
 
 Set the NGP_VAN_API_KEY environment variable to your API key, and the NGP_VAN_APP_NAME to the associated user name (usually something like NY001.spoke.api or similar).
@@ -31,6 +33,8 @@ You can set individual API keys for some or all of your organizations by editing
 
 After saving this change in your database, if you are using Redis, you should clear the cache for this organization by going to Settings in Spoke and clicking the "Clear Cached Organization and Extension Caches"
 button.
+
+When organizations do not have these variables individually set, if these variables are globally set, Spoke will fall back to using those credentials.
 
 ## The Contact Loader
 
