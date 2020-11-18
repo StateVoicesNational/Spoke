@@ -10,6 +10,7 @@
   - [Configuring texting hours enforcement](HOWTO_TEXTING_HOURS_ENFORCEMENT.md)
   - [OUTDATED: How to buy numbers in Twilio](HOWTO_BUY_NUMBERS_IN_TWILIO.md)
   - [How to configure bulk sending outside the USA](HOWTO-use_bulk_sending_outside_the_USA.md)
+  - [NGPVAN integration user guide](REFERENCE-NGPVAN_user_guide.md)
 
 - Extensions Docs
   - [Extending Spoke](HOWTO-extend-spoke.md)
