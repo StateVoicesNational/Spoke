@@ -7,7 +7,8 @@ import {
 } from "../../test_helpers";
 
 /**
- * Make Cypress tasks with access to the config.
+ * Cypress tasks run in the node process started by Cypress
+ * and are invoked by tests running in the browser.
  *
  * https://docs.cypress.io/api/commands/task.html#Syntax
  */
