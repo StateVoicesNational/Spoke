@@ -408,32 +408,39 @@ export async function reassignConversations(
     for (const [campaignId, campaignContactIds] of campaignIdContactIdsMap) {
       const assignmentId = campaignIdAssignmentIdMap.get(campaignId);
 
-      await r
-        .knex("campaign_contact")
-        .where("campaign_id", campaignId)
-        .whereIn("id", campaignContactIds)
-        .update({
-          assignment_id: assignmentId
+      /* NOTE: psql prepared statements can only handle a max of ~65k
+         so if a campaign is larger than that it has to be chunked
+         https://github.com/brianc/node-postgres/issues/1091
+         https://stackoverflow.com/questions/6581573/what-are-the-max-number-of-allowable-parameters-per-database-provider-type */
+
+      for (const ccIds of _.chunk(campaignContactIds, 65000)) {
+        await r
+          .knex("campaign_contact")
+          .where("campaign_id", campaignId)
+          .whereIn("id", ccIds)
+          .update({
+            assignment_id: assignmentId
+          });
+
+        // Clear the DataLoader cache for the campaign contacts affected by the foregoing
+        // SQL statement to keep the cache in sync.  This will force the campaignContact
+        // to be refreshed. We also update the assignment in the cache
+        await Promise.all(
+          ccIds.map(async campaignContactId =>
+            cacheableData.campaignContact.updateAssignmentCache(
+              campaignContactId,
+              assignmentId,
+              newTexterUserId,
+              campaignId
+            )
+          )
+        );
+
+        returnCampaignIdAssignmentIds.push({
+          campaignId,
+          assignmentId: assignmentId.toString()
         });
-
-      // Clear the DataLoader cache for the campaign contacts affected by the foregoing
-      // SQL statement to keep the cache in sync.  This will force the campaignContact
-      // to be refreshed. We also update the assignment in the cache
-      await Promise.all(
-        campaignContactIds.map(async campaignContactId => {
-          await cacheableData.campaignContact.updateAssignmentCache(
-            campaignContactId,
-            assignmentId,
-            newTexterUserId,
-            campaignId
-          );
-        })
-      );
-
-      returnCampaignIdAssignmentIds.push({
-        campaignId,
-        assignmentId: assignmentId.toString()
-      });
+      }
     }
   } catch (error) {
     log.error(error);
