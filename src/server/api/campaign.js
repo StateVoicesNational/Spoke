@@ -466,7 +466,7 @@ export const resolvers = {
                 "SUM(CASE WHEN campaign_contact.message_status = 'needsMessage' THEN 1 ELSE 0 END) as needs_message_count"
               ),
               r.knex.raw(
-                "SUM(CASE WHEN campaign_contact.message_status = 'needsResponse' THEN 1 ELSE 0 END) as unrepliedcount"
+                "SUM(CASE WHEN campaign_contact.message_status = 'needsResponse' AND NOT campaign_contact.is_opted_out THEN 1 ELSE 0 END) as unrepliedcount"
               ),
               r.knex.raw("COUNT(*) as contacts_count")
             )

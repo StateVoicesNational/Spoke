@@ -1178,8 +1178,8 @@ export async function fixOrgless() {
 
 export async function clearOldJobs(event) {
   // to clear out old stuck jobs
-  const twoHoursAgo = new Date(new Date() - 1000 * 60 * 60 * 2);
-  const delay = (event && event.oldJobPast) || twoHoursAgo;
+  const sixHoursAgo = new Date(new Date() - 1000 * 60 * 60 * 6);
+  const delay = (event && event.oldJobPast) || sixHoursAgo;
   return await r
     .knex("job_request")
     .where({ assigned: true })
@@ -1238,16 +1238,16 @@ async function prepareTwilioCampaign(campaign, organization, trx) {
   if (!msgSrvSid) {
     throw new Error("Failed to create messaging service!");
   }
-  let phoneSids = await trx("owned_phone_number")
-    .select("service_id")
-    .where({
-      organization_id: campaign.organization_id,
-      service: "twilio",
-      allocated_to: "campaign",
-      allocated_to_id: campaign.id.toString()
-    });
-  phoneSids = (phoneSids || []).map(row => row.service_id);
-
+  const phoneSids = (
+    await trx("owned_phone_number")
+      .select("service_id")
+      .where({
+        organization_id: campaign.organization_id,
+        service: "twilio",
+        allocated_to: "campaign",
+        allocated_to_id: campaign.id.toString()
+      })
+  ).map(row => row.service_id);
   console.log(`Transferring ${phoneSids.length} numbers to ${msgSrvSid}`);
   try {
     await twilio.addNumbersToMessagingService(
