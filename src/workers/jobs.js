@@ -776,8 +776,10 @@ export async function exportCampaign(job) {
         "contact[messageStatus]": contact.message_status,
         "contact[errorCode]": contact.error_code,
         "contact[external_id]": contact.external_id,
-        "contact[tags]": tags.length > 0 ? tags.map(tag => tag.name) : null
+        "contact[tags]":
+          tags.length > 0 ? tags.map(tag => tag.name).join(", ") : ""
       };
+
       const customFields = JSON.parse(contact.custom_fields);
       Object.keys(customFields).forEach(fieldName => {
         contactRow[`contact[${fieldName}]`] = customFields[fieldName];
