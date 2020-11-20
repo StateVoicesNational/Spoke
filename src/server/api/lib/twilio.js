@@ -70,6 +70,7 @@ const headerValidator = url => {
 export const errorDescriptions = {
   12300: "Twilio is unable to process the Content-Type of the provided URL.",
   12400: "Internal (Twilio) Failure",
+  20429: "Too Many Requests: Twilio queue is full. OK to retry",
   21211: "Invalid 'To' Phone Number",
   21408: "Attempt to send to disabled region",
   21602: "Message body is required",
@@ -77,6 +78,7 @@ export const errorDescriptions = {
   21611: "Source number has exceeded max number of queued messages",
   21612: "Unreachable via SMS or MMS",
   21614: "Invalid mobile number",
+  21617: "Message body exceeds the 1600 character limit",
   21621: "From-number is not enabled for MMS (note 800 nums can't send MMS)",
   30001: "Queue overflow",
   30002: "Account suspended",
@@ -290,10 +292,9 @@ async function sendMessage(message, contact, trx, organization, campaign) {
     const messageParams = Object.assign(
       {
         to: message.contact_number,
-        body: message.text,
-        messagingServiceSid,
-        statusCallback: process.env.TWILIO_STATUS_CALLBACK_URL
+        body: message.text
       },
+      messagingServiceSid ? { messagingServiceSid } : {},
       twilioValidityPeriod ? { validityPeriod: twilioValidityPeriod } : {},
       parseMessageText(message)
     );
@@ -380,6 +381,8 @@ export function postMessageSend(
 
   if (hasError) {
     if (err) {
+      // TODO: for some errors we should *not* retry
+      // e.g. 21617 is max character limit
       if (message.error_code <= -MAX_SEND_ATTEMPTS) {
         changesToSave.send_status = "ERROR";
       }
@@ -537,7 +540,9 @@ async function handleIncomingMessage(message) {
  */
 async function createMessagingService(organization, friendlyName) {
   const twilio = await getTwilio(organization);
-  const twilioBaseUrl = getConfig("TWILIO_BASE_CALLBACK_URL", organization);
+  const twilioBaseUrl =
+    getConfig("TWILIO_BASE_CALLBACK_URL", organization) ||
+    getConfig("BASE_URL");
   return await twilio.messaging.services.create({
     friendlyName,
     statusCallback: urlJoin(

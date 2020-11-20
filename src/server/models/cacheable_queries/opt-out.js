@@ -56,12 +56,13 @@ const updateIsOptedOuts = async queryModifier => {
     .where("campaign.is_archived", false)
     .select("campaign_contact.id");
 
-  await r
+  return await r
     .knex("campaign_contact")
     .whereIn(
       "id",
       queryModifier ? queryModifier(optOutContactQuery) : optOutContactQuery
     )
+    .where("is_opted_out", false)
     .update({
       is_opted_out: true
     });
