@@ -351,11 +351,13 @@ export const resolvers = {
         sweepComplete: false
       };
 
-      let { feedback } = await r
-        .knex("assignment")
-        .select("feedback")
-        .where({ id: assignment.id })
-        .first();
+      const assignmentFeedback = assignment.hasOwnProperty("feedback")
+        ? assignment
+        : await r
+            .knex("assignment")
+            .select("feedback")
+            .where({ id: assignment.id })
+            .first();
 
       try {
         feedback = JSON.parse(feedback);
