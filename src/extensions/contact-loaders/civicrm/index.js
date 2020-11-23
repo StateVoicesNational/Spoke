@@ -8,7 +8,7 @@ import { getFormattedPhoneNumber } from "../../../lib";
 export const name = "civicrm";
 
 export function displayName() {
-  return "CiviCrm";
+  return "CiviCRM";
 }
 
 export function serverAdministratorInstructions() {
