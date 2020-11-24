@@ -69,7 +69,7 @@ class MultiAutoCompleteSelect extends React.Component {
         <Paper zDepth={2} style={{ flexBasis: "50%" }}>
           <div style={{ padding: "5px" }}>
             <div style={{ display: "flex" }}>
-              <List style={{ flexBasis: "33.33%" }}>
+              <List style={{ flexBasis: "50%" }}>
                 <Subheader inset={true}>Selected groups</Subheader>
                 {(this.props.value || []).map(value => (
                   <ListItem
@@ -141,17 +141,13 @@ export class CampaignContactsForm extends React.Component {
     return (
       <GSForm
         schema={yup.object({
-          groupIds: yup
-            .array()
-            .of(
-              yup
-                .object()
-                .shape({
-                  count: yup.number(),
-                  id: yup.number(),
-                  title: yup.string()
-                })
-            )
+          groupIds: yup.array().of(
+            yup.object().shape({
+              count: yup.number(),
+              id: yup.number(),
+              title: yup.string()
+            })
+          )
         })}
         initialValues={{ groupIds: [] }}
         onChange={formValues => {
