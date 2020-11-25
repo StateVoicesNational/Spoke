@@ -6,5 +6,6 @@ export const schema = `
     contactNumber: String
     createdAt: Date
     isFromContact: Boolean
+    userId: String
   }
 `;
