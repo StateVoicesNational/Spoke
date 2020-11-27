@@ -325,6 +325,7 @@ export class IncomingMessageList extends Component {
     const { clearSelectedMessages } = this.props;
     const displayPage = Math.floor(offset / limit) + 1;
     const tableData = prepareDataTableData(conversations);
+    const tableBodyStyle = {overflowX: "auto"}
 
     return (
       <div>
@@ -343,6 +344,7 @@ export class IncomingMessageList extends Component {
           onRowSizeChange={this.handleRowSizeChanged}
           onRowSelection={this.handleRowsSelected}
           selectedRows={clearSelectedMessages ? null : this.state.selectedRows}
+          tableBodyStyle={tableBodyStyle}
         />
         <ConversationPreviewModal
           organizationTags={this.state.tags}
