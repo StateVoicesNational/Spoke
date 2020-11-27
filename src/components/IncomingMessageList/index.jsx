@@ -217,7 +217,7 @@ export class IncomingMessageList extends Component {
       label: "View Conversation",
       style: {
         textOverflow: "ellipsis",
-        overflow: "hidden",
+        overflow: "visible",
         whiteSpace: "pre-line"
       },
       render: (columnKey, row) => (
