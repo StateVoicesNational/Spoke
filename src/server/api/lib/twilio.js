@@ -85,7 +85,7 @@ export const errorDescriptions = {
   30006: "Landline or unreachable carrier",
   30007: "Message Delivery - Carrier violation",
   30008: "Message Delivery - Unknown error",
-  "-1": "Spoke failed to send the message and will try again.",
+  "-1": "Spoke failed to send the message, usually due to a temporary issue.",
   "-2": "Spoke failed to send the message and will try again.",
   "-3": "Spoke failed to send the message and will try again.",
   "-4": "Spoke failed to send the message and will try again.",
