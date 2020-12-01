@@ -310,7 +310,11 @@ const rootSchema = gql`
       interactionStepIds: [String]
       campaignContactId: String!
     ): CampaignContact
-    updateFeedback(assignmentId: String!, feedback: String): Assignment
+    updateFeedback(
+      assignmentId: String!
+      feedback: JSON
+      acknowledge: Boolean
+    ): Assignment
     updateContactTags(
       tags: [ContactTagInput]
       campaignContactId: String!

@@ -13,7 +13,7 @@ import loadData from "../../../containers/hoc/load-data";
 import gql from "graphql-tag";
 import _ from "lodash";
 import theme from "../../../styles/theme";
-import { issues, skills } from "./config";
+import { defaults } from "./config";
 
 const inlineStyles = {
   wrapper: {
@@ -83,20 +83,8 @@ export const showSidebox = ({ currentUser, review }) => {
 const schema = yup.object({
   feedback: yup.object({
     message: yup.string(),
-    issueCounts: yup.object(
-      issues.reduce((obj, item) => {
-        /* eslint-disable no-param-reassign*/
-        obj[item.key] = yup.number();
-        return obj;
-      }, {})
-    ),
-    skillCounts: yup.object(
-      skills.reduce((obj, item) => {
-        /* eslint-disable no-param-reassign*/
-        obj[item.key] = yup.number();
-        return obj;
-      }, {})
-    )
+    issueCounts: yup.object(),
+    skillCounts: yup.object()
   })
 });
 
@@ -120,8 +108,7 @@ export class TexterSideboxClass extends React.Component {
 
   debouncedUpdate = _.debounce(
     async () => {
-      const feedbackString = JSON.stringify(this.state.feedback);
-      await this.props.mutations.updateFeedback(feedbackString);
+      await this.props.mutations.updateFeedback(this.state.feedback);
       if (this.state.feedback.sweepComplete) {
         this.props.router.push(`/admin/${this.props.organizationId}/incoming`);
       }
@@ -196,10 +183,10 @@ export class TexterSideboxClass extends React.Component {
           }}
         >
           <div style={inlineStyles.counterColumns}>
-            {!!issues.length && (
+            {!!defaults.issues.length && (
               <div>
                 <h3 style={{ color: theme.colors.darkRed }}>Issues</h3>
-                {issues.map(({ key, tooltip }) => {
+                {defaults.issues.map(({ key, tooltip }) => {
                   const count = (Object.entries(
                     feedback.issueCounts || []
                   ).find(issueCount => issueCount[0] === key) || [])[1];
@@ -226,11 +213,11 @@ export class TexterSideboxClass extends React.Component {
                 })}
               </div>
             )}
-            {!!skills.length && (
+            {!!defaults.skills.length && (
               <div>
                 <h3 style={{ color: theme.colors.darkGreen }}>Skills</h3>
                 <Paper style={inlineStyles.skillsWrapper}>
-                  {skills.map(({ key, content }) => {
+                  {defaults.skills.map(({ key, content }) => {
                     const isChecked = (Object.entries(
                       feedback.skillCounts || []
                     ).find(skillCounts => skillCounts[0] === key) || [])[1];
@@ -308,7 +295,7 @@ TexterSideboxClass.propTypes = {
 export const mutations = {
   updateFeedback: ownProps => feedback => ({
     mutation: gql`
-      mutation updateFeedback($assignmentId: String!, $feedback: String!) {
+      mutation updateFeedback($assignmentId: String!, $feedback: JSON!) {
         updateFeedback(assignmentId: $assignmentId, feedback: $feedback) {
           id
           feedback {

@@ -253,24 +253,35 @@ export const resolvers = {
         "assignment.user_id",
         "assignment.max_contacts",
         "assignment.created_at",
-        "assignment.feedback"
+        "assignment_feedback.feedback",
+        "assignment_feedback.is_acknowledged",
+        "assignment_feedback.creator_id"
       ];
       let query = r
         .knexReadOnly("assignment")
         .join("campaign", "assignment.campaign_id", "campaign.id")
-        .whereRaw(
-          `(
-          is_archived = false
-          OR is_archived =
-            case when feedback like '%"isAcknowledged":false%' then true
-            else false end
-        )`
+        .leftJoin(
+          "assignment_feedback",
+          "assignment.id",
+          "assignment_feedback.assignment_id"
         )
         .andWhere({
           is_started: true,
           organization_id: organizationId
         })
         .andWhere("assignment.user_id", user.id);
+
+      if (/texter-feedback/.test(getConfig("TEXTER_SIDEBOXES"))) {
+        query = query.whereRaw(
+          `(
+          is_archived = false
+          OR (assignment_feedback.is_acknowledged = true
+              AND assignment_feedback.complete = true)
+          )`
+        );
+      } else {
+        query.andWhere("is_archived", false);
+      }
 
       if (getConfig("FILTER_DUEBY", null, { truthy: 1 })) {
         query = query.where("campaign.due_by", ">", new Date());
@@ -318,43 +329,7 @@ export const resolvers = {
             tz: assn.timezone_offset,
             count: assn.tz_status_count
           });
-
-          // we have allowUndefinedInResolve: false, have to send something..
-          const defaultFeedback = {
-            isAcknowledged: false,
-            message: "",
-            issueCounts: {},
-            skillCounts: {},
-            createdBy: { id: null, name: "" },
-            sweepComplete: false
-          };
-
-          if (assn.feedback) {
-            try {
-              assn.feedback = JSON.parse(assn.feedback);
-            } catch (err) {
-              // do nothing
-            }
-          }
-
-          if (assn.feedback && !assn.feedback.isAcknowledged) {
-            const createdBy = await r
-              .knexReadOnly("user")
-              .select("id", "first_name", "last_name")
-              .where("id", assn.feedback.createdBy)
-              .first();
-
-            if (createdBy) {
-              assn.feedback.createdBy = {
-                id: createdBy.id,
-                name: `${createdBy.first_name} ${createdBy.last_name}`
-              };
-            }
-          }
-
-          assignments[assn.id].feedback = assn.feedback || defaultFeedback;
         }
-
         return Object.values(assignments);
       }
     },

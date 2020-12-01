@@ -13,7 +13,8 @@ const AssignmentFeedback = thinky.createModel(
       assignment_id: requiredString(),
       created_at: timestamp(),
       feedback: optionalString(),
-      is_acknowledged: type.bool().default(false)
+      is_acknowledged: type.bool().default(false),
+      complete: type.bool().default(false)
     })
     .allowExtra(false),
   { noAutoCreation: true }
