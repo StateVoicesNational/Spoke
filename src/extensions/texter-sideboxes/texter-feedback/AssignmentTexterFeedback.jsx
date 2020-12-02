@@ -8,12 +8,12 @@ import WarningIcon from "material-ui/svg-icons/alert/warning";
 import SuccessIcon from "material-ui/svg-icons/action/check-circle";
 import LinkIcon from "material-ui/svg-icons/content/link";
 import { StyleSheet, css } from "aphrodite";
-import loadData from "../containers/hoc/load-data";
+import loadData from "../../../containers/hoc/load-data";
 import gql from "graphql-tag";
 
-import { defaults } from "../extensions/texter-sideboxes/texter-feedback/config";
+import { defaults } from "./config";
 
-import theme from "../styles/theme";
+import theme from "../../../styles/theme";
 
 const styles = StyleSheet.create({
   container: {
@@ -102,8 +102,20 @@ export class AssignmentTexterFeedback extends Component {
   getStepContent = () => {
     const { stepIndex } = this.state;
     const {
-      feedback: { createdBy, message, issueCounts, skillCounts }
+      assignment: {
+        feedback: { createdBy, message, issueCounts, skillCounts }
+      },
+      settingsData
     } = this.props;
+
+    let config = defaults;
+    if (settingsData && settingsData.texterFeedbackJSON) {
+      try {
+        config = JSON.parse(settingsData.texterFeedbackJSON);
+      } catch (err) {
+        console.log("Corrupted TexterFeedback JSON", err);
+      }
+    }
 
     const issueItems = Object.entries(issueCounts)
       .map(([key, count]) => {
@@ -170,7 +182,6 @@ export class AssignmentTexterFeedback extends Component {
         </StepContent>
       </Step>
     );
-
     return (
       <Stepper
         style={inlineStyles.stepper}
@@ -254,7 +265,9 @@ export class AssignmentTexterFeedback extends Component {
 
 AssignmentTexterFeedback.propTypes = {
   feedback: PropTypes.object,
-  mutations: PropTypes.func
+  mutations: PropTypes.func,
+  settingsData: PropTypes.object,
+  assignment: PropTypes.object
 };
 
 export const mutations = {
@@ -270,7 +283,7 @@ export const mutations = {
       }
     `,
     variables: {
-      assignmentId: ownProps.assignmentId,
+      assignmentId: ownProps.assignment.id,
       acknowledge
     }
   })

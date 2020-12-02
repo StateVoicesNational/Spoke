@@ -3,59 +3,48 @@ import { FlatButton } from "material-ui";
 import LinkIcon from "material-ui/svg-icons/content/link";
 
 export const defaults = {
-  description: "WFP example config",
+  description: "defaults",
   issues: [
     {
       key: "optOut",
       tooltip: "Texter misses an Opt-Out or incorrectly Opts Out a contact",
       warningMessage: "Please review the Opt-Out Policy",
       content:
-        "At WFP, we <b>DO</b> Opt Out voters who ask to be removed from texting (“Stop,” “please remove my number,” “don’t text me,” “unsubscribe”) or who send racist, sexist, or threatening replies. We <b>DO NOT</b> Opt Out voters who disagree with our views, simply send profanity, or who update their information with us (e.g. letting us know that they moved, that we have the wrong number, etc).",
-      moreInfo:
-        "https://docs.google.com/document/d/1Bi5ZBe4B1ctj4JoyxLh1GY36HwurfYFV6ZlP_2Veu-4/edit?ts=5f849e19#heading=h.6a3kq2vmqjfl"
+        "Opt Out contacts who ask to be removed from texting (“Stop,” “please remove my number,” “don’t text me,” “unsubscribe”) or other responses you have been instructed to opt out."
     },
     {
       key: "tagging",
       tooltip: "Texter misses a Tag or incorrectly Tags a contact",
       warningMessage: "Issue with Tagging",
       content:
-        "Please make sure that you are using tags for all updates to voter information like <b>Wrong Number, Out of District, and Cannot Vote</b>. That is a three step process to select the tag, save the tags, and then send the appropriate response.",
-      moreInfo:
-        "https://docs.google.com/document/d/1Bi5ZBe4B1ctj4JoyxLh1GY36HwurfYFV6ZlP_2Veu-4/edit?ts=5f849e19#heading=h.tv4n9bpi3n0"
+        "Please make sure that you are using tags as documented. There is a three step process to select the tag, save the tags, and then send the appropriate response."
     },
     {
       key: "response",
       tooltip:
         "Texter should have selected a better response or inappropriately skipped a message (please elaborate in notes)",
-      warningMessage:
-        "Please review our priority of responses and “skipping” policy",
+      warningMessage: "Be careful to pick the correct available response",
       successMessage: "Nice work selecting the best responses!",
       content:
-        "When a voter gives lots of information, \n <b>please remember our Priority of Responses! </b> If the voter answered the question at hand, send a Survey Response (the top list in the All Responses dropdown). When we send a Survey Response, the system also logs data for that conversation. Other Responses are used if none of the Survey Responses are appropriate.",
-      moreInfo:
-        "https://docs.google.com/document/d/1Bi5ZBe4B1ctj4JoyxLh1GY36HwurfYFV6ZlP_2Veu-4/edit?ts=5f849e19#heading=h.1nzxdmspjlv3"
+        "When a contact gives lots of information, if they answered the question at hand respond with the best option that's first in the list of All Responses (or on a button). Using the responses available allows us to track their answers."
     },
     {
       key: "scriptEdit",
       tooltip:
-        "Texter edited a message in a way that exceeds the character limit, ignores the ask, or uses an inappropriate source",
+        "Texter edited a message in a way that ignores the ask, or uses an inappropriate source",
       warningMessage: "Please review our guidelines for editing messages",
       content:
-        "Let’s stick to the scripted responses as much as possible! If a scripted message will not address the particular issue, make sure to always include the appropriate ask at the end of the message and make sure the source of your information is coming from an official campaign source or local government source for voter information. Let’s also limit our message to 306 characters or less.",
-      moreInfo:
-        "https://docs.google.com/document/d/1Bi5ZBe4B1ctj4JoyxLh1GY36HwurfYFV6ZlP_2Veu-4/edit?ts=5f849e19#heading=h.rdzii9tlwurh"
+        "Let’s stick to the scripted responses as much as possible! If a scripted message will not address the particular issue, make sure to always include the appropriate ask at the end of the message and verify any information included using authoritative sources."
     },
     {
       key: "engagement",
       tooltip:
         "Texter missed engaging with an undecided voter or supporter OR inappropriately engaged with a non-supporter.",
       warningMessage:
-        "Engage with questions from supportive voters; NOT non-supporters!",
-      successMessage: "Your messages showed good engagement with voters!",
+        "Engage with questions from supportive responses; NOT non-supporters!",
+      successMessage: "Your messages showed good engagement!",
       content:
-        "Let’s use our judgement about when to engage. If an undecided voter or a supporter asks questions, we should address those questions to the best of our ability. If a non-supporter or troll messages, please disengage, send the Nonsupporter response (or Refused for trolls), and skip future messages from this contact.",
-      moreInfo:
-        "https://docs.google.com/document/d/1Bi5ZBe4B1ctj4JoyxLh1GY36HwurfYFV6ZlP_2Veu-4/edit?ts=5f849e19#heading=h.t2f4xaxmvq10"
+        "Let’s use our judgement about when to engage. If a supportive contact asks questions, we should address those questions to the best of our ability. If a troll messages, please follow direction."
     }
   ],
   skills: [
@@ -70,19 +59,6 @@ export const defaults = {
       content: "Appropriate use of tags",
       successMessage:
         "Nice job identifying updates to voter info, tagging, and saving tags!"
-    },
-    {
-      key: "undecided",
-      content:
-        "Undecided - texter sent Undecided response for vague asks of more info",
-      successMessage:
-        "Nice work identifying undecided voters and engaging with the Undecided Survey Response!"
-    },
-    {
-      key: "persuasiveNo",
-      content: "Texter sent No Vague for vague “No” replies",
-      successMessage:
-        "Nice work sending the No VAGUE Survey Response to engage with vague voters!"
     },
     {
       key: "jumpAhead",
@@ -100,7 +76,7 @@ export const defaults = {
       key: "composing",
       content: "Texter restates ask and stays w/in char limit when composing",
       successMessage:
-        "Nice job composing a message when the script didn’t quite fit; you stayed within the 306 character limit and stuck to the ask!"
+        "Nice job composing a message when the script didn’t quite fit; you stayed within the recommended character limit and stuck to the ask!"
     }
   ]
 };
