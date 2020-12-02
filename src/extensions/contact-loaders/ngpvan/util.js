@@ -13,7 +13,7 @@ export default class Van {
       );
     }
 
-    const buffer = Buffer.from(`${appName}:${apiKey}|1`);
+    const buffer = Buffer.from(`${appName}:${apiKey}|0`);
     return `Basic ${buffer.toString("base64")}`;
   };
 
