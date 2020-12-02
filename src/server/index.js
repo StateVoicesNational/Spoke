@@ -19,7 +19,6 @@ import { seedZipCodes } from "./seeds/seed-zip-codes";
 import { setupUserNotificationObservers } from "./notifications";
 import { twiml } from "twilio";
 import { existsSync } from "fs";
-import Rollbar from "rollbar";
 import { rawAllMethods } from "../extensions/contact-loaders";
 
 process.on("uncaughtException", ex => {
@@ -95,16 +94,6 @@ if (process.env.SIMULATE_DELAY_MILLIS) {
   app.use((req, res, next) => {
     setTimeout(next, Number(process.env.SIMULATE_DELAY_MILLIS));
   });
-}
-
-if (process.env.NODE_ENV === "production" && process.env.ROLLBAR_ACCESS_TOKEN) {
-  const rollbar = new Rollbar({
-    accessToken: process.env.ROLLBAR_ACCESS_TOKEN,
-    captureUncaught: true,
-    captureUnhandledRejections: true
-  });
-
-  app.use(rollbar.errorHandler());
 }
 
 // give contact loaders a chance
