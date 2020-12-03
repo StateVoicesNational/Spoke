@@ -46,12 +46,6 @@ Additional guidance:
 - [How to hire someone to install Spoke](/docs/HOWTO_HIRE_SOMEONE_TO_INSTALL_SPOKE.md)
 - [Option for minimalist deployment](docs/HOWTO_MINIMALIST_DEPLOY.md)
 
-
-
-## Big Thanks
-
-Cross-browser Testing Platform and Open Source <3 Provided by [Sauce Labs](https://saucelabs.com).
-
 # License
 
 Spoke is licensed under the MIT license.
