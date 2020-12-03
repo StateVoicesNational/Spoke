@@ -805,7 +805,8 @@ const rootMutations = {
         response_window: getConfig("DEFAULT_RESPONSEWINDOW", organization, {
           default: 48
         }),
-        use_own_messaging_service: false
+        use_own_messaging_service: false,
+        timezone: getConfig("DST_REFERENCE_TIMEZONE", organization)
       });
       const newCampaign = await campaignInstance.save();
       await r.knex("campaign_admin").insert({
