@@ -84,11 +84,12 @@ const styles = StyleSheet.create({
     flexWrap: "wrap"
   },
   navigationTitle: {
-    flex: "1 1 auto",
     width: "4em",
     height: "100%",
     padding: "6px",
-    textAlign: "center"
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center"
   }
 });
 
