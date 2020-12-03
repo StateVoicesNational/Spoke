@@ -35,6 +35,7 @@ export const contactDataFragment = `
           createdAt
           text
           isFromContact
+          userId
         }
         tags {
           id
@@ -168,7 +169,11 @@ export const dataQuery = gql`
 export class TexterTodo extends React.Component {
   componentWillMount() {
     const { assignment } = this.props.campaignData;
-    if (!assignment || assignment.campaign.isArchived) {
+    if (
+      !assignment ||
+      (assignment.campaign.isArchived &&
+        !(this.props.location.query.review === "1"))
+    ) {
       this.props.router.push(`/app/${this.props.params.organizationId}/todos`);
     }
   }
@@ -240,22 +245,23 @@ const queries = {
       console.log("TexterTodo ownProps", ownProps);
       // based on ?review=1 in location.search
       // exclude isOptedOut: false, validTimezone: true
-      const contactsFilter = ownProps.location.query.review
-        ? {
-            messageStatus: ownProps.messageStatus,
-            errorCode: ["0"],
-            ...(ownProps.params.reviewContactId && {
-              contactId: ownProps.params.reviewContactId
-            })
-          }
-        : {
-            messageStatus: ownProps.messageStatus,
-            ...(!ownProps.params.reviewContactId && { isOptedOut: false }),
-            ...(ownProps.params.reviewContactId && {
-              contactId: ownProps.params.reviewContactId
-            }),
-            validTimezone: true
-          };
+      const contactsFilter =
+        ownProps.location.query.review === "1"
+          ? {
+              messageStatus: ownProps.messageStatus,
+              errorCode: ["0"],
+              ...(ownProps.params.reviewContactId && {
+                contactId: ownProps.params.reviewContactId
+              })
+            }
+          : {
+              messageStatus: ownProps.messageStatus,
+              ...(!ownProps.params.reviewContactId && { isOptedOut: false }),
+              ...(ownProps.params.reviewContactId && {
+                contactId: ownProps.params.reviewContactId
+              }),
+              validTimezone: true
+            };
       return {
         variables: {
           contactsFilter,
