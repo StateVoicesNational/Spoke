@@ -1,0 +1,58 @@
+name: Integration Tests
+
+on: [push]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    strategy:
+      matrix:
+        node-version: [12.x]
+    services:
+      redis:
+        image: redis
+        ports:
+        - 6379:6379
+      postgres:
+        image: postgres:10
+        env:
+          POSTGRES_USER: spoke_test
+          POSTGRES_PASSWORD: spoke_test
+          POSTGRES_DB: spoke_test
+        ports:
+        - 5432:5432
+        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+    steps:
+    - uses: actions/checkout@v2
+    - name: Cypress run
+      uses: cypress-io/github-action@v2
+      env: 
+        NODE_ENV: test
+        PORT: 3001
+        OUTPUT_DIR: ./build
+        ASSETS_DIR: ./build/client/assets
+        ASSETS_MAP_FILE: assets.json
+        DB_TYPE: pg
+        DB_NAME: spoke_test
+        DB_USER: spoke_test
+        DB_PASSWORD: spoke_test
+        SESSION_SECRET: secret
+        DEFAULT_SERVICE: fakeservice
+        JOBS_SAME_PROCESS: 1
+        PASSPORT_STRATEGY: local
+      with:
+        browser: chrome
+        build: npm run prod-build
+        start: npm start
+        wait-on: 'http://localhost:3001'
+    - uses: actions/upload-artifact@v1
+      if: failure()
+      with:
+        name: cypress-screenshots
+        path: cypress/screenshots
+    - uses: actions/upload-artifact@v1
+      if: failure()
+      with:
+        name: cypress-videos
+        path: cypress/videos
