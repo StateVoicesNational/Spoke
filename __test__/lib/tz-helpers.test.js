@@ -4,6 +4,6 @@ jest.unmock("../../src/lib/tz-helpers");
 
 describe("test getProcessEnvDstReferenceTimezone", () => {
   it("works", () => {
-    expect(getProcessEnvDstReferenceTimezone()).toEqual("America/New_York");
+    expect(getProcessEnvDstReferenceTimezone()).toEqual("US/Eastern");
   });
 });
