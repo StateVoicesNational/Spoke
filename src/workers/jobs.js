@@ -26,6 +26,7 @@ import { sendEmail } from "../server/mail";
 import { Notifications, sendUserNotification } from "../server/notifications";
 import { getConfig } from "../server/api/lib/config";
 import { invokeTaskFunction, Tasks } from "./tasks";
+import fs from "fs";
 
 const defensivelyDeleteOldJobsForCampaignJobType = async job => {
   console.log("job", job);
@@ -863,10 +864,17 @@ export async function exportCampaign(job) {
         Error: ${err.message}`
       });
     }
+  } else if (process.env.NODE_ENV !== "production") {
+    console.log("Writing CSV to ./");
+    fs.writeFileSync(`./campaign-export-${campaign.id}.csv`, campaignCsv);
+    fs.writeFileSync(
+      `./campaign-export-messages-${campaign.id}.csv`,
+      messageCsv
+    );
   } else {
-    log.debug("Would have saved the following to S3:");
-    log.debug(campaignCsv);
-    log.debug(messageCsv);
+    console.log("Would have saved the following to S3:");
+    console.log(campaignCsv);
+    console.log(messageCsv);
   }
 
   await defensivelyDeleteJob(job);
