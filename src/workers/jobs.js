@@ -657,6 +657,7 @@ export async function assignTexters(job) {
 }
 
 export async function exportCampaign(job) {
+  console.log("exportingCampaign", job);
   const payload = JSON.parse(job.payload);
   const id = job.campaign_id;
   const campaign = await Campaign.get(id);
@@ -706,16 +707,24 @@ export async function exportCampaign(job) {
     .where("campaign_id", campaign.id)
     .select("campaign_contact_id", "name");
 
+  const optOutJoins = process.env.OPTOUTS_SHARE_ALL_ORGS
+    ? { "opt_out.cell": "campaign_contact.cell" }
+    : {
+        "opt_out.cell": "campaign_contact.cell",
+        "opt_out.organization_id": r.knexReadOnly.raw(campaign.organization_id)
+      };
   const contacts = await r
     .knexReadOnly("campaign_contact")
     .join("assignment", "campaign_contact.assignment_id", "assignment.id")
     .join("user", "assignment.user_id", "user.id")
     .leftJoin("zip_code", "zip_code.zip", "campaign_contact.zip")
-    .leftJoin("opt_out", "campaign_contact.cell", "opt_out.cell")
+    .leftJoin("opt_out", optOutJoins)
     .column([
       "campaign_contact.id",
       "campaign_contact.campaign_id",
       "campaign_contact.assignment_id",
+      { optOutCampaign: "campaign_contact.is_opted_out" },
+      { optedOut: "opt_out.created_at" },
       { texterFirst: "user.first_name" },
       { texterLast: "user.last_name" },
       { texterEmail: "user.email" },
@@ -730,10 +739,8 @@ export async function exportCampaign(job) {
       "zip_code.state",
       "campaign_contact.zip",
       "campaign_contact.custom_fields",
-      "campaign_contact.is_opted_out",
       "campaign_contact.message_status",
-      "campaign_contact.error_code",
-      { inOptOuts: "opt_out.id" }
+      "campaign_contact.error_code"
     ])
     .select()
     .where("campaign_contact.campaign_id", campaign.id);
@@ -804,7 +811,7 @@ export async function exportCampaign(job) {
 
   const campaignCsv = Papa.unparse(contacts);
   const messageCsv = Papa.unparse(messages);
-
+  console.log("exportCampaign csvs", campaignCsv.length, messageCsv.length);
   if (
     getConfig("AWS_ACCESS_AVAILABLE") ||
     (process.env.AWS_ACCESS_KEY_ID && process.env.AWS_SECRET_ACCESS_KEY)
