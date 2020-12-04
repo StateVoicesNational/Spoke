@@ -116,6 +116,9 @@ export default function renderIndex(html, css, assetMap) {
       window.CONTACTS_PER_PHONE_NUMBER=${getConfig(
         "CONTACTS_PER_PHONE_NUMBER"
       ) || 200};      
+      window.MOBILIZE_EVENT_SHIFTER_URL='${getConfig(
+        "MOBILIZE_EVENT_SHIFTER_URL"
+      )}';
     </script>
     <script src="${assetMap["bundle.js"]}"></script>
   </body>
