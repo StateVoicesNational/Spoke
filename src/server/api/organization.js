@@ -329,7 +329,7 @@ export const resolvers = {
       return configured;
     },
     pendingPhoneNumberJobs: async (organization, _, { user }) => {
-      await accessRequired(user, organization.id, "OWNER", true);
+      await accessRequired(user, organization.id, "ADMIN", true);
       const jobs = await r
         .knex("job_request")
         .whereIn("job_type", ["buy_phone_numbers", "delete_phone_numbers"])
