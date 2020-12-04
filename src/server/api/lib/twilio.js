@@ -709,6 +709,55 @@ async function addNumbersToMessagingService(
   );
 }
 
+/**
+ * Release a phone number and delete it from the owned_phone_number table
+ */
+async function deleteNumber(twilioInstance, phoneSid, phoneNumber) {
+  await twilioInstance
+    .incomingPhoneNumbers(phoneSid)
+    .remove()
+    .catch(err => {
+      // Error 20404 means the number does not exist in Twilio. Should be
+      // safe to delete from Spoke inventory. Otherwise, throw error and
+      // don't delete from Spoke.
+      if (err.code === 20404) {
+        log.error(
+          `Number not found in Twilio, may have already been released: ${phoneNumber} [${phoneSid}]`
+        );
+      } else {
+        throw new Error(`Error deleting twilio number: ${err}`);
+      }
+    });
+  log.debug(`Deleted number ${phoneNumber} [${phoneSid}]`);
+  return await r
+    .knex("owned_phone_number")
+    .del()
+    .where("service_id", phoneSid);
+}
+
+/**
+ * Delete all non-allocted phone numbers in an area code
+ */
+async function deleteNumbersInAreaCode(organization, areaCode) {
+  const twilioInstance = await getTwilio(organization);
+  const numbersToDelete = await r
+    .knex("owned_phone_number")
+    .select("service_id", "phone_number")
+    .where({
+      organization_id: organization.id,
+      area_code: areaCode,
+      service: "twilio",
+      allocated_to: null
+    });
+  let successCount = 0;
+  for (const n of numbersToDelete) {
+    await deleteNumber(twilioInstance, n.service_id, n.phone_number);
+    successCount++;
+  }
+  log.debug(`Successfully deleted ${successCount} number(s)`);
+  return successCount;
+}
+
 async function deleteMessagingService(organization, messagingServiceSid) {
   const twilioInstance = await getTwilio(organization);
   console.log("Deleting messaging service", messagingServiceSid);
@@ -756,6 +805,7 @@ export default {
   createMessagingService,
   getPhoneNumbersForService,
   buyNumbersInAreaCode,
+  deleteNumbersInAreaCode,
   addNumbersToMessagingService,
   deleteMessagingService,
   clearMessagingServicePhones

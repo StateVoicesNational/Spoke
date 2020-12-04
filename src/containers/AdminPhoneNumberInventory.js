@@ -3,6 +3,7 @@ import React from "react";
 import gql from "graphql-tag";
 
 import ContentAdd from "material-ui/svg-icons/content/add";
+import DeleteIcon from "material-ui/svg-icons/action/delete-forever";
 import DataTables from "material-ui-datatables";
 import Dialog from "material-ui/Dialog";
 import Paper from "material-ui/Paper";
@@ -16,7 +17,12 @@ import Form from "react-formal";
 import theme from "../styles/theme";
 import { dataTest } from "../lib/attributes";
 import loadData from "./hoc/load-data";
-import { CircularProgress, FlatButton, Toggle } from "material-ui";
+import {
+  CircularProgress,
+  FlatButton,
+  RaisedButton,
+  Toggle
+} from "material-ui";
 
 const inlineStyles = {
   column: {
@@ -55,7 +61,8 @@ class AdminPhoneNumberInventory extends React.Component {
       },
       sortCol: "state",
       sortOrder: "asc",
-      filters: {}
+      filters: {},
+      deleteNumbersDialogOpen: false
     };
   }
 
@@ -124,6 +131,32 @@ class AdminPhoneNumberInventory extends React.Component {
     });
   };
 
+  handleDeleteNumbersOpen = row => {
+    this.setState({
+      deleteNumbersDialogOpen: true,
+      deleteNumbersAreaCode: row.areaCode,
+      deleteNumbersCount: row.availableCount
+    });
+  };
+
+  handleDeleteNumbersCancel = () => {
+    this.setState({
+      deleteNumbersDialogOpen: false,
+      deleteNumbersAreaCode: null,
+      deleteNumbersCount: 0
+    });
+  };
+
+  handleDeletePhoneNumbersSubmit = async () => {
+    await this.props.mutations.deletePhoneNumbers(
+      this.state.deleteNumbersAreaCode
+    );
+    this.setState({
+      deleteNumbersDialogOpen: false,
+      deleteNumbersAreaCode: null
+    });
+  };
+
   tableColumns() {
     const { pendingPhoneNumberJobs } = this.props.data.organization;
     return [
@@ -156,6 +189,18 @@ class AdminPhoneNumberInventory extends React.Component {
           fontSize: 16,
           textAlign: "center"
         }
+      },
+      {
+        key: "deleteButton",
+        label: "",
+        style: inlineStyles.column,
+        render: (columnKey, row) =>
+          this.props.params.ownerPerms ? (
+            <FlatButton
+              icon={<DeleteIcon />}
+              onTouchTap={() => this.handleDeleteNumbersOpen(row)}
+            />
+          ) : null
       },
       // TODO: display additional information here about pending and past jobs
       {
@@ -335,6 +380,29 @@ class AdminPhoneNumberInventory extends React.Component {
         >
           {this.renderBuyNumbersForm()}
         </Dialog>
+        <Dialog
+          title="Delete Numbers"
+          modal={false}
+          open={this.state.deleteNumbersDialogOpen}
+          onRequestClose={this.handleDeleteNumbersCancel}
+          actions={[
+            <FlatButton
+              label="Cancel"
+              style={inlineStyles.cancelButton}
+              onClick={this.handleDeleteNumbersCancel}
+            />,
+            <RaisedButton
+              label={`Delete ${this.state.deleteNumbersCount} Numbers`}
+              secondary
+              onClick={this.handleDeletePhoneNumbersSubmit}
+            />
+          ]}
+        >
+          Do you want to delete availale numbers for the&nbsp;
+          <b>{this.state.deleteNumbersAreaCode}</b> area code? This will
+          permanently remove numbers not allocated to a campaign/messaging
+          service from both Spoke and your Twilio account.
+        </Dialog>
       </div>
     );
   }
@@ -403,6 +471,23 @@ const mutations = {
       areaCode,
       limit,
       addToOrganizationMessagingService
+    },
+    refetchQueries: () => ["getOrganizationData"]
+  }),
+  deletePhoneNumbers: ownProps => areaCode => ({
+    mutation: gql`
+      mutation deletePhoneNumbers($organizationId: ID!, $areaCode: String!) {
+        deletePhoneNumbers(
+          organizationId: $organizationId
+          areaCode: $areaCode
+        ) {
+          id
+        }
+      }
+    `,
+    variables: {
+      organizationId: ownProps.params.organizationId,
+      areaCode
     },
     refetchQueries: () => ["getOrganizationData"]
   })
