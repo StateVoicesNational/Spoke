@@ -147,7 +147,7 @@ const optOutCache = {
     await r.knex("opt_out").insert({
       assignment_id: assignmentId,
       organization_id: organizationId,
-      reason_code: reason,
+      reason_code: reason || "",
       cell
     });
 
