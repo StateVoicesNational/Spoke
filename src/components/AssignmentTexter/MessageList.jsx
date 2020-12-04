@@ -2,10 +2,17 @@ import PropTypes from "prop-types";
 import React from "react";
 import { Link } from "react-router";
 import { List, ListItem } from "material-ui/List";
+import { Card, CardHeader, CardMedia } from "material-ui/Card";
+import Avatar from "material-ui/Avatar";
 import moment from "moment";
+import AttachmentIcon from "material-ui/svg-icons/file/attachment";
+import AudioIcon from "material-ui/svg-icons/hardware/headset";
+import ImageIcon from "material-ui/svg-icons/image/image";
+import VideoIcon from "material-ui/svg-icons/hardware/tv";
 import ProhibitedIcon from "material-ui/svg-icons/av/not-interested";
 import Divider from "material-ui/Divider";
 import { red300 } from "material-ui/styles/colors";
+import theme from "../../styles/theme";
 
 const defaultStyles = {
   optOut: {
@@ -20,6 +27,10 @@ const defaultStyles = {
   received: {
     fontSize: "13px",
     marginRight: "24px"
+  },
+  mediaItem: {
+    marginTop: "5px",
+    backgroundColor: "rgba(255,255,255,.5)"
   }
 };
 
@@ -77,6 +88,64 @@ const MessageList = function MessageList(props) {
     ""
   );
 
+  const renderMsg = message => (
+    <div>
+      <div>{message.text}</div>
+      {message.media && message.media.map(media => {
+        let type, icon, embed, subtitle;
+        if (media.type.startsWith('image')) {
+          type = 'Image';
+          icon = <ImageIcon />;
+          embed = <img src={media.url} alt="Media" />;
+        }
+        else if (media.type.startsWith('video')) {
+          type = 'Video';
+          icon = <VideoIcon />;
+          embed = (
+            <video controls>
+              <source src={media.url} type={media.type} />
+              Your browser can't play this file
+            </video>
+          );
+        }
+        else if (media.type.startsWith('audio')) {
+          type = 'Audio';
+          icon = <AudioIcon />;
+          embed = (
+            <audio controls>
+              <source src={media.url} type={media.type} />
+              Your browser can't play this file
+            </audio>
+          );
+        }
+        else {
+          type = 'Unsupprted media';
+          icon = <AttachmentIcon />;
+          subtitle = `Type: ${media.type}`;
+        }
+        return (
+          <Card style={defaultStyles.mediaItem}>
+            <CardHeader
+              actAsExpander
+              showExpandableButton={!!embed}
+              title={`${type} attached`}
+              subtitle={subtitle || "View media at your own risk"}
+              avatar={<Avatar
+                icon={icon}
+                backgroundColor={theme.colors.darkGray}
+              />}
+            />
+            {embed && (
+              <CardMedia expandable>
+                {embed}
+              </CardMedia>
+            )}
+          </Card>
+        )
+      })}
+    </div>
+  );
+
   return (
     <List style={listStyle}>
       {messages.map(message => (
@@ -84,7 +153,7 @@ const MessageList = function MessageList(props) {
           disabled
           style={message.isFromContact ? received : sent}
           key={message.id}
-          primaryText={message.text}
+          primaryText={renderMsg(message)}
           secondaryText={
             <SecondaryText
               message={message}
