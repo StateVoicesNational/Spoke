@@ -19,7 +19,9 @@ import yup from "yup";
 import theme from "../../styles/theme";
 import Form from "react-formal";
 import Popover from "material-ui/Popover";
+import SearchBar from "material-ui-search-bar";
 import { messageListStyles, inlineStyles, flexStyles } from "./StyleControls";
+import { searchFor } from "../../lib/search-helpers";
 
 import { renderSidebox } from "../../extensions/texter-sideboxes/components";
 
@@ -48,8 +50,17 @@ export class AssignmentTexterContactControls extends React.Component {
       questionResponses,
       props.campaign.interactionSteps
     );
+
+    let currentInteractionStep = null;
+    if (availableSteps.length > 0) {
+      currentInteractionStep = availableSteps[availableSteps.length - 1];
+      currentInteractionStep.question.filteredAnswerOptions =
+        currentInteractionStep.question.answerOptions;
+    }
+
     this.state = {
       questionResponses,
+      filteredCannedResponses: props.campaign.cannedResponses,
       optOutMessageText: props.campaign.organization.optOutMessage,
       responsePopoverOpen: false,
       answerPopoverOpen: false,
@@ -62,10 +73,7 @@ export class AssignmentTexterContactControls extends React.Component {
       messageFocus: false,
       availableSteps,
       messageReadOnly: false,
-      currentInteractionStep:
-        availableSteps.length > 0
-          ? availableSteps[availableSteps.length - 1]
-          : null
+      currentInteractionStep
     };
   }
 
@@ -228,6 +236,29 @@ export class AssignmentTexterContactControls extends React.Component {
     }
   };
 
+  handleSearchChange = searchValue => {
+    // filter answerOptions for this step's question
+    const answerOptions = this.state.currentInteractionStep.question
+      .answerOptions;
+    const filteredAnswerOptions = searchFor(
+      searchValue,
+      answerOptions,
+      ["value", "nextInteractionStep.script"]
+    );
+    this.state.currentInteractionStep.question.filteredAnswerOptions = filteredAnswerOptions;
+
+    const filteredCannedResponses = searchFor(
+      searchValue,
+      this.props.campaign.cannedResponses,
+      ["title", "text"]
+    );
+
+    this.setState({
+      currentInteractionStep: this.state.currentInteractionStep,
+      filteredCannedResponses
+    });
+  };
+
   handleCannedResponseChange = cannedResponseScript => {
     const currentCannedResponseId =
       this.state.cannedResponseScript && this.state.cannedResponseScript.id;
@@ -312,29 +343,27 @@ export class AssignmentTexterContactControls extends React.Component {
 
   handleMessageFormChange = ({ messageText }) => this.setState({ messageText });
 
-  handleOpenAnswerPopover = event => {
+  handleOpenAnswerResponsePopover = event => {
     event.preventDefault();
-    this.setState({
+    const newState = {
       answerPopoverAnchorEl: event.currentTarget,
-      answerPopoverOpen: true
-    });
+      answerPopoverOpen: true,
+      responsePopoverAnchorEl: event.currentTarget,
+      responsePopoverOpen: true,
+      filteredCannedResponses: this.props.campaign.cannedResponses
+    };
+    if (this.state.currentInteractionStep) {
+      this.state.currentInteractionStep.question.filteredAnswerOptions = this.state.currentInteractionStep.question.answerOptions;
+      newState.currentInteractionStep = this.state.currentInteractionStep;
+    }
+    this.setState(newState);
   };
 
-  handleCloseAnswerPopover = () => {
+  handleCloseAnswerResponsePopover = () => {
     this.setState({
       answerPopoverOpen: false
     });
-  };
 
-  handleOpenResponsePopover = event => {
-    event.preventDefault();
-    this.setState({
-      responsePopoverAnchorEl: event.currentTarget,
-      responsePopoverOpen: true
-    });
-  };
-
-  handleCloseResponsePopover = () => {
     // delay to avoid accidental tap pass-through with focusing on
     // the text field -- this is annoying on mobile where the keyboard
     // pops up, inadvertantly
@@ -395,7 +424,9 @@ export class AssignmentTexterContactControls extends React.Component {
     const {
       answerPopoverOpen,
       questionResponses,
-      cannedResponseScript
+      cannedResponseScript,
+      currentInteractionStep,
+      filteredCannedResponses
     } = this.state;
     const { messages } = contact;
 
@@ -405,9 +436,9 @@ export class AssignmentTexterContactControls extends React.Component {
     );
 
     const otherResponsesLink =
-      this.state.currentInteractionStep &&
-      this.state.currentInteractionStep.question.answerOptions.length > 6 &&
-      campaign.cannedResponses.length ? (
+      currentInteractionStep &&
+      currentInteractionStep.question.filteredAnswerOptions.length > 6 &&
+      filteredCannedResponses.length ? (
         <div className={css(flexStyles.popoverLink)}>
           <a
             href="#otherresponses"
@@ -418,6 +449,19 @@ export class AssignmentTexterContactControls extends React.Component {
         </div>
       ) : null;
 
+    const searchBar =
+      currentInteractionStep &&
+      currentInteractionStep.question.answerOptions.length +
+        campaign.cannedResponses.length >
+        5 ? (
+        <SearchBar
+          onRequestSearch={this.handleSearchChange}
+          onChange={this.handleSearchChange}
+          value={""}
+          hintText={"Search replies..."}
+        />
+      ) : null;
+
     return (
       <Popover
         style={inlineStyles.popover}
@@ -426,19 +470,20 @@ export class AssignmentTexterContactControls extends React.Component {
         anchorEl={this.state.answerPopoverAnchorEl}
         anchorOrigin={{ horizontal: "left", vertical: "bottom" }}
         targetOrigin={{ horizontal: "left", vertical: "bottom" }}
-        onRequestClose={this.handleCloseAnswerPopover}
+        onRequestClose={this.handleCloseAnswerResponsePopover}
       >
+        {searchBar}
         <Survey
           contact={contact}
           interactionSteps={availableInteractionSteps}
           onQuestionResponseChange={this.handleQuestionResponseChange}
-          currentInteractionStep={this.state.currentInteractionStep}
+          currentInteractionStep={currentInteractionStep}
           listHeader={otherResponsesLink}
           questionResponses={questionResponses}
-          onRequestClose={this.handleCloseAnswerPopover}
+          onRequestClose={this.handleCloseAnswerResponsePopover}
         />
         <ScriptList
-          scripts={campaign.cannedResponses}
+          scripts={filteredCannedResponses}
           showAddScriptButton={false}
           customFields={campaign.customFields}
           currentCannedResponseScript={cannedResponseScript}
@@ -790,7 +835,9 @@ export class AssignmentTexterContactControls extends React.Component {
             </span>
           }
           role="button"
-          onClick={!disabled ? this.handleOpenAnswerPopover : noAction => {}}
+          onClick={
+            !disabled ? this.handleOpenAnswerResponsePopover : noAction => {}
+          }
           className={css(flexStyles.flatButton)}
           labelStyle={inlineStyles.flatButtonLabel}
           backgroundColor={
