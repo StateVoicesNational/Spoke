@@ -280,22 +280,18 @@ export const resolvers = {
         return await query.select(fields);
       } else {
         query
-          .leftJoin(
-            "campaign_contact",
-            "campaign_contact.assignment_id",
-            "assignment.id"
-          )
+          .leftOuterJoin("campaign_contact", function() {
+            this.on("campaign_contact.assignment_id", "assignment.id").andOn(
+              "campaign_contact.is_opted_out",
+              r.knex.raw("?", [false])
+            );
+            // https://github.com/knex/knex/issues/1003#issuecomment-287302118
+          })
           .groupBy(
             ...fields,
             "campaign_contact.timezone_offset",
             "campaign_contact.message_status"
           )
-          .where(function() {
-            // we need to allow null for empty assignments like dynamic assignment
-            this.where("campaign_contact.is_opted_out", false).orWhereNull(
-              "campaign_contact.is_opted_out"
-            );
-          })
           .select(
             ...fields,
             "campaign_contact.timezone_offset",
