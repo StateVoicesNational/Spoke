@@ -327,6 +327,36 @@ class AdminCampaignStats extends React.Component {
             </div>
           </div>
         </div>
+        {campaign.exportResults ? (
+          <div>
+            {campaign.exportResults.error ? (
+              <div>Export failed: {campaign.exportResults.error}</div>
+            ) : null}
+            {campaign.exportResults.campaignExportUrl &&
+            campaign.exportResults.campaignExportUrl.startsWith("http") ? (
+              <div>
+                Most recent export:
+                <a href={campaign.exportResults.campaignExportUrl} download>
+                  Contacts Export CSV
+                </a>
+                <a
+                  href={campaign.exportResults.campaignMessagesExportUrl}
+                  download
+                >
+                  Messages Export CSV
+                </a>
+              </div>
+            ) : (
+              <div>
+                Local export was successful, saved on the server at:
+                <br />
+                {campaign.exportResults.campaignExportUrl}
+                <br />
+                {campaign.exportResults.campaignMessagesExportUrl}
+              </div>
+            )}
+          </div>
+        ) : null}
         {campaign.joinToken && campaign.useDynamicAssignment ? (
           <OrganizationJoinLink
             organizationUuid={campaign.joinToken}
@@ -433,6 +463,11 @@ const queries = {
             unmessagedCount: contactsCount(contactsFilter: $contactsFilter)
             unrepliedCount: contactsCount(contactsFilter: $needsResponseFilter)
             contactsCount
+          }
+          exportResults {
+            error
+            campaignExportUrl
+            campaignMessagesExportUrl
           }
           pendingJobs {
             id
