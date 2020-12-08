@@ -1,5 +1,5 @@
 import { accessRequired } from "./errors";
-import { mapFieldsToModel } from "./lib/utils";
+import { mapFieldsToModel, mapFieldsOrNull } from "./lib/utils";
 import { errorDescriptions } from "./lib/twilio";
 import { Campaign, JobRequest, r, cacheableData } from "../models";
 import { getUsers } from "./user";
@@ -281,6 +281,11 @@ export const resolvers = {
       return null;
     }
   },
+  CampaignExportData: mapFieldsOrNull([
+    "error",
+    "campaignExportUrl",
+    "campaignMessagesExportUrl"
+  ]),
   Campaign: {
     ...mapFieldsToModel(
       [
@@ -327,6 +332,14 @@ export const resolvers = {
     organization: async (campaign, _, { loaders }) =>
       campaign.organization ||
       loaders.organization.load(campaign.organization_id),
+    exportResults: async (campaign, _, { user }) => {
+      try {
+        await accessRequired(user, campaign.organization_id, "ADMIN", true);
+      } catch (err) {
+        return null;
+      }
+      return cacheableData.campaign.getExportData(campaign.id);
+    },
     pendingJobs: async (campaign, _, { user }) => {
       await accessRequired(
         user,

@@ -27,6 +27,7 @@ import { Notifications, sendUserNotification } from "../server/notifications";
 import { getConfig } from "../server/api/lib/config";
 import { invokeTaskFunction, Tasks } from "./tasks";
 import fs from "fs";
+import path from "path";
 
 const defensivelyDeleteOldJobsForCampaignJobType = async job => {
   console.log("job", job);
@@ -812,6 +813,7 @@ export async function exportCampaign(job) {
 
   const campaignCsv = Papa.unparse(contacts);
   const messageCsv = Papa.unparse(messages);
+  const exportResults = {};
   console.log("exportCampaign csvs", campaignCsv.length, messageCsv.length);
   if (
     getConfig("AWS_ACCESS_AVAILABLE") ||
@@ -842,6 +844,8 @@ export async function exportCampaign(job) {
         "getObject",
         params
       );
+      exportResults.campaignExportUrl = campaignExportUrl;
+      exportResults.campaignMessagesExportUrl = campaignMessagesExportUrl;
 
       await sendEmail({
         to: user.email,
@@ -857,6 +861,7 @@ export async function exportCampaign(job) {
       log.info(`Successfully exported ${id}`);
     } catch (err) {
       log.error(err);
+      exportResults.error = err.message;
       await sendEmail({
         to: user.email,
         subject: `Export failed for ${campaign.title}`,
@@ -865,18 +870,25 @@ export async function exportCampaign(job) {
       });
     }
   } else if (process.env.NODE_ENV !== "production") {
-    console.log("Writing CSV to ./");
-    fs.writeFileSync(`./campaign-export-${campaign.id}.csv`, campaignCsv);
-    fs.writeFileSync(
-      `./campaign-export-messages-${campaign.id}.csv`,
-      messageCsv
-    );
+    const contactsFile = `./campaign-export-${campaign.id}.csv`;
+    const messagesFile = `./campaign-export-${campaign.id}-message.csv`;
+    exportResults.campaignExportUrl =
+      "file://" + path.resolve("./", contactsFile);
+    exportResults.campaignMessagesExportUrl =
+      "file://" + path.resolve("./", messagesFile);
+
+    console.log(`Writing CSVs to ${contactsFile} and ${messagesFile}`);
+    fs.writeFileSync(contactsFile, campaignCsv);
+    fs.writeFileSync(messagesFile, messageCsv);
   } else {
     console.log("Would have saved the following to S3:");
-    console.log(campaignCsv);
-    console.log(messageCsv);
+    log.debug(campaignCsv);
+    log.debug(messageCsv);
   }
-
+  if (exportResults.campaignExportUrl) {
+    exportResults.createdAt = String(new Date());
+    await cacheableData.campaign.saveExportData(campaign.id, exportResults);
+  }
   await defensivelyDeleteJob(job);
 }
 
