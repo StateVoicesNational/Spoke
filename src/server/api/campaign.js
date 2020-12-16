@@ -20,14 +20,18 @@ export function addCampaignsFilterToQuery(
   organizationId
 ) {
   let query = queryParam;
-
+  let allOrgs = false;
+  const searchString =
+    campaignsFilter &&
+    campaignsFilter.searchString &&
+    campaignsFilter.searchString.replace(/\s*allorgs\s*/, () => {
+      allOrgs = true;
+      return "";
+    });
   if (
+    // OPTOUTS_SHARE_ALL_ORGS suggests non-hostile partner orgs
     organizationId &&
-    !(
-      campaignsFilter &&
-      campaignsFilter.searchString &&
-      campaignsFilter.searchString === "allorgs"
-    )
+    !(allOrgs && getConfig("OPTOUTS_SHARE_ALL_ORGS"))
   ) {
     query = query.where("campaign.organization_id", organizationId);
   }
@@ -51,17 +55,11 @@ export function addCampaignsFilterToQuery(
       query = query.whereIn("campaign.id", campaignsFilter.campaignIds);
     }
 
-    if (
-      "searchString" in campaignsFilter &&
-      campaignsFilter.searchString &&
-      campaignsFilter.searchString !== "allorgs"
-    ) {
-      var neg =
-        campaignsFilter.searchString.length > 0 &&
-        campaignsFilter.searchString[0] === "-";
+    if (searchString) {
+      var neg = searchString.length > 0 && searchString[0] === "-";
       const searchStringWithPercents = (
         "%" +
-        campaignsFilter.searchString.slice(neg) +
+        searchString.slice(neg) +
         "%"
       ).toLocaleLowerCase();
       if (neg) {
