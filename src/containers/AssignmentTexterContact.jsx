@@ -47,12 +47,15 @@ export class AssignmentTexterContact extends React.Component {
     const { contact } = this.props;
 
     let disabled = false;
+    let disabledSend = false;
     let disabledText = "Sending...";
     let snackbarOnTouchTap = null;
     let snackbarActionTitle = null;
     let snackbarError = null;
 
-    if (assignment.id !== contact.assignmentId || campaign.isArchived) {
+    if (campaign.isArchived && this.props.location.query.review === "1") {
+      disabledSend = true;
+    } else if (assignment.id !== contact.assignmentId || campaign.isArchived) {
       disabledText = "";
       disabled = true;
       snackbarError = "Your assignment has changed";
@@ -75,6 +78,7 @@ export class AssignmentTexterContact extends React.Component {
 
     this.state = {
       disabled,
+      disabledSend,
       disabledText,
       // this prevents jitter by not showing the optout/skip buttons right after sending
       snackbarError,
@@ -409,7 +413,7 @@ export class AssignmentTexterContact extends React.Component {
           organizationId={this.props.organizationId}
           navigationToolbarChildren={this.props.navigationToolbarChildren}
           messageStatusFilter={this.props.messageStatusFilter}
-          disabled={this.state.disabled}
+          disabled={this.state.disabled || this.state.disabledSend}
           enabledSideboxes={this.props.enabledSideboxes}
           review={this.props.location.query.review}
           onMessageFormSubmit={this.handleMessageFormSubmit}

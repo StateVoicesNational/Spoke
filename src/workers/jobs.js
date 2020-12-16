@@ -708,6 +708,14 @@ export async function exportCampaign(job) {
     .join("tag", "tag.id", "tag_id")
     .where("campaign_id", campaign.id)
     .select("campaign_contact_id", "name");
+  const contactTags = tags.reduce((acc, cur) => {
+    if (acc[cur.campaign_contact_id]) {
+      acc[cur.campaign_contact_id].push(cur.name);
+    } else {
+      acc[cur.campaign_contact_id] = [cur.name];
+    }
+    return acc;
+  }, {});
 
   const optOutJoins = process.env.OPTOUTS_SHARE_ALL_ORGS
     ? { "opt_out.cell": "campaign_contact.cell" }
@@ -783,15 +791,12 @@ export async function exportCampaign(job) {
 
     contacts[index] = {
       ...row,
+      texterExtra: row.extra ? JSON.stringify(row.extra) : "",
       ...customFields,
-      tags: tags.reduce((acc, cur) => {
-        if (cur.campaign_contact_id === row.id) {
-          acc.push(cur.name);
-        }
-        return acc;
-      }, []),
+      tags: contactTags[row.id] ? contactTags[row.id].join(", ") : "",
       ...responses
     };
+    delete contacts[index]["extra"];
   });
 
   const messages = await r
