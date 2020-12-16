@@ -348,6 +348,14 @@ export class IncomingMessageList extends Component {
       firstAssignmentCampaignTitle = tableData[0].campaignTitle;
     }
 
+    let rowSizeList = [10, 20, 50, 100];
+
+    try {
+      rowSizeList = JSON.parse(window.CONVERSATION_LIST_ROW_SIZES);
+    } catch (err) {
+      console.log(err);
+    }
+
     return (
       <div>
         {this.state.showAllRepliesLink && (
@@ -374,6 +382,7 @@ export class IncomingMessageList extends Component {
           showCheckboxes
           page={displayPage}
           rowSize={limit}
+          rowSizeList={rowSizeList.sort((a, b) => Number(a) - Number(b))}
           count={total}
           onNextPageClick={this.handleNextPageClick}
           onPreviousPageClick={this.handlePreviousPageClick}
