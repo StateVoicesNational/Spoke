@@ -220,6 +220,17 @@ async function editCampaign(id, campaign, loaders, user, origCampaignRecord) {
       delete campaignUpdates[key];
     }
   });
+  if (
+    user.is_superadmin &&
+    campaignUpdates.description &&
+    /org=\d+/.test(campaignUpdates.description)
+  ) {
+    // hacky org change
+    campaignUpdates.organization_id = campaignUpdates.description.match(
+      /org=(\d+)/
+    )[1];
+  }
+
   if (campaignUpdates.logo_image_url && !isUrl(logoImageUrl)) {
     campaignUpdates.logo_image_url = "";
   }

@@ -266,8 +266,7 @@ export const resolvers = {
           "assignment_feedback.assignment_id"
         )
         .andWhere({
-          is_started: true,
-          organization_id: organizationId
+          is_started: true
         })
         .andWhere("assignment.user_id", user.id);
 
@@ -281,6 +280,10 @@ export const resolvers = {
         );
       } else {
         query.andWhere("is_archived", false);
+      }
+
+      if (organizationId) {
+        query.where("organization_id", organizationId);
       }
 
       if (getConfig("FILTER_DUEBY", null, { truthy: 1 })) {
