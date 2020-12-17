@@ -400,12 +400,22 @@ class AdminCampaignStats extends React.Component {
           message={
             <span>
               Export started -
-              {organizationData.emailEnabled
+              {this.props.organizationData.emailEnabled
                 ? " we'll e-mail you when it's done."
                 : null}
-              {campaign.cacheable
-                ? ` When your export is finished, <a href="">reload the page</a> to see the download link.`
-                : null}
+              {campaign.cacheable ? (
+                <span>
+                  <a
+                    onClick={() => {
+                      this.props.data.refetch();
+                    }}
+                    style={{ textDecoration: "underline" }}
+                  >
+                    Reload the page
+                  </a>{" "}
+                  to see a download link when its ready.
+                </span>
+              ) : null}
             </span>
           }
           autoHideDuration={campaign.cacheable ? null : 5000}
