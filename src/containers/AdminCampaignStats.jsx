@@ -397,8 +397,18 @@ class AdminCampaignStats extends React.Component {
         <TexterStats campaign={campaign} organizationId={organizationId} />
         <Snackbar
           open={this.state.exportMessageOpen}
-          message="Export started - we'll e-mail you when it's done"
-          autoHideDuration={5000}
+          message={
+            <span>
+              Export started -
+              {organizationData.emailEnabled
+                ? " we'll e-mail you when it's done."
+                : null}
+              {campaign.cacheable
+                ? ` When your export is finished, <a href="">reload the page</a> to see the download link.`
+                : null}
+            </span>
+          }
+          autoHideDuration={campaign.cacheable ? null : 5000}
           onRequestClose={() => {
             this.setState({ exportMessageOpen: false });
           }}
@@ -497,6 +507,7 @@ const queries = {
               link
             }
           }
+          cacheable
         }
       }
     `,
@@ -524,6 +535,7 @@ const queries = {
         organization(id: $organizationId) {
           id
           campaignPhoneNumbersEnabled
+          emailEnabled
         }
       }
     `,

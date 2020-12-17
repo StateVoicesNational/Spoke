@@ -290,6 +290,10 @@ export const resolvers = {
       }
       return true;
     },
+    emailEnabled: async (organization, _, { user }) => {
+      await accessRequired(user, organization.id, "SUPERVOLUNTEER", true);
+      return Boolean(getConfig("EMAIL_HOST", organization));
+    },
     phoneInventoryEnabled: async (organization, _, { user }) => {
       await accessRequired(user, organization.id, "SUPERVOLUNTEER", true);
       return (
