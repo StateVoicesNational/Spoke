@@ -177,7 +177,7 @@ class AdminCampaignStats extends React.Component {
   }
 
   render() {
-    const { data, params } = this.props;
+    const { data, params, organizationData } = this.props;
     const { adminPerms, organizationId, campaignId } = params;
     const campaign = data.campaign;
     const currentExportJob = this.props.data.campaign.pendingJobs.filter(
