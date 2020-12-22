@@ -400,7 +400,8 @@ class AdminCampaignStats extends React.Component {
           message={
             <span>
               Export started -
-              {this.props.organizationData.emailEnabled
+              {this.props.organizationData &&
+              this.props.organizationData.emailEnabled
                 ? " we'll e-mail you when it's done."
                 : null}
               {campaign.cacheable ? (
