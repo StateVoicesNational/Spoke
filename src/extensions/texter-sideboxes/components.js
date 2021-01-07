@@ -10,7 +10,8 @@ function getComponents() {
           "default-releasecontacts",
           "contact-reference",
           "tag-contact",
-          "default-editinitial"
+          "default-editinitial",
+          "hide-media"
         ];
   const components = {};
   enabledComponents.forEach(componentName => {

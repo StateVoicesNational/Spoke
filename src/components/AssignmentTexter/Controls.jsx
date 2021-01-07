@@ -73,6 +73,7 @@ export class AssignmentTexterContactControls extends React.Component {
       messageFocus: false,
       availableSteps,
       messageReadOnly: false,
+      hideMedia: false,
       currentInteractionStep
     };
   }
@@ -240,11 +241,10 @@ export class AssignmentTexterContactControls extends React.Component {
     // filter answerOptions for this step's question
     const answerOptions = this.state.currentInteractionStep.question
       .answerOptions;
-    const filteredAnswerOptions = searchFor(
-      searchValue,
-      answerOptions,
-      ["value", "nextInteractionStep.script"]
-    );
+    const filteredAnswerOptions = searchFor(searchValue, answerOptions, [
+      "value",
+      "nextInteractionStep.script"
+    ]);
     this.state.currentInteractionStep.question.filteredAnswerOptions = filteredAnswerOptions;
 
     const filteredCannedResponses = searchFor(
@@ -1043,6 +1043,7 @@ export class AssignmentTexterContactControls extends React.Component {
               organizationId={this.props.organizationId}
               review={this.props.review}
               styles={messageListStyles}
+              hideMedia={this.state.hideMedia}
             />,
             enabledSideboxes
           ),
