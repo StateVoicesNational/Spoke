@@ -907,7 +907,7 @@ export async function importScript(job) {
     await r
       .knex("job_request")
       .where("id", job.id)
-      .update({ result_message: exception.message });
+      .update({ result_message: exception.message, status: -1 });
     console.warn(exception.message);
     return;
   }
