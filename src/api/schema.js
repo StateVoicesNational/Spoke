@@ -263,6 +263,7 @@ const rootSchema = gql`
       campaignId: String
       queryParams: String
     ): Organization
+    resetOrganizationJoinLink(organizationId: String!): Organization
     editOrganizationRoles(
       organizationId: String!
       userId: String!

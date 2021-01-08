@@ -1093,6 +1093,19 @@ const rootMutations = {
 
       return newOrganization;
     },
+    resetOrganizationJoinLink: async (_, { organizationId }, { user }) => {
+      await accessRequired(user, organizationId, "ADMIN");
+      const uuid = uuidv4();
+      await r
+        .knex("organization")
+        .where("id", organizationId)
+        .update({ uuid });
+      await cacheableData.organization.clear(organizationId);
+      return {
+        id: organizationId,
+        uuid
+      };
+    },
     editCampaignContactMessageStatus: async (
       _,
       { messageStatus, campaignContactId },
