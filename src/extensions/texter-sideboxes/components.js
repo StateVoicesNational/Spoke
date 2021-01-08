@@ -5,13 +5,14 @@ function getComponents() {
     "TEXTER_SIDEBOXES" in global
       ? (global.TEXTER_SIDEBOXES && global.TEXTER_SIDEBOXES.split(",")) || []
       : [
+          "hide-media",
+          "texter-feedback",
           "celebration-gif",
           "default-dynamicassignment",
           "default-releasecontacts",
           "contact-reference",
           "tag-contact",
-          "default-editinitial",
-          "hide-media"
+          "default-editinitial"
         ];
   const components = {};
   enabledComponents.forEach(componentName => {
