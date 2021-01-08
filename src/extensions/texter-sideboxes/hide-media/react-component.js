@@ -42,12 +42,11 @@ export class AdminConfig extends React.Component {
     return (
       <div>
         <p>
-          For compliance for person-to-person texting in the US, it&rsquo;s
-          important to allow the first message to be editable. By default, the
-          first message is editable. Turning on this sidebox, makes it editable
-          only after clicking the link text which properly discourages texters
-          from changing the script. You can modify the text on the sidebox
-          itself.
+          When contacts reply with images/media Spoke will have a prompt for the
+          contact to view the image/media. However, this is often a vehicle for
+          offensive and graphic responses. We recommend enabling hiding media
+          for most outreach campaigns, and to enable this for contacts that are
+          more likely allies.
         </p>
       </div>
     );
