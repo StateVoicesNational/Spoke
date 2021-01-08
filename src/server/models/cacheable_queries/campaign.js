@@ -100,6 +100,12 @@ const loadDeep = async id => {
       campaign.interactionSteps,
       "script"
     );
+    if (process.env.MOBILIZE_EVENT_SHIFTER_URL) {
+      campaign.usedFields.cell = 1;
+      campaign.usedFields.email = 1;
+      campaign.usedFields.zip = 1;
+      campaign.usedFields.event_id = 1;
+    }
     campaign.contactTimezones = await dbContactTimezones(id);
     campaign.contactsCount = await r.getCount(
       r.knex("campaign_contact").where("campaign_id", id)
