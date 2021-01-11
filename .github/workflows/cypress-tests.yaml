@@ -41,6 +41,7 @@ jobs:
         DEFAULT_SERVICE: fakeservice
         JOBS_SAME_PROCESS: 1
         PASSPORT_STRATEGY: local
+        PHONE_INVENTORY: 1
       with:
         browser: chrome
         build: npm run prod-build
