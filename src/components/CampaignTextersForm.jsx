@@ -374,7 +374,10 @@ export default class CampaignTextersForm extends React.Component {
             <Form.Field
               {...dataTest("texterAssignment")}
               name={`texters[${index}].assignment.needsMessageCount`}
-              mapToValue={_ => texter.assignment.needsMessageCount}
+              mapToValue={m =>
+                m.texters.find(t => t.id === texter.id).assignment
+                  .needsMessageCount
+              }
               hintText="Contacts"
               fullWidth
               onFocus={() => this.setState({ focusedTexterId: texter.id })}
