@@ -984,7 +984,7 @@ export class AssignmentTexterContactControls extends React.Component {
         </Popover>
       );
     }
-    // TODO: max height and scroll-y
+    // TODO: max height
     return <div className={css(flexStyles.sectionSideBox)}>{sideboxList}</div>;
   }
 
