@@ -1,3 +1,24 @@
+// Spoke: A mass-contact text/SMS peer-to-peer messaging tool
+// Copyright (c) 2016-2021 MoveOn Civic Action
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License version 3 as
+// published by the Free Software Foundation,
+// with the Additional Term under Section 7(b) to include preserving
+// the following author attribution statement in the Spoke application:
+//
+//    Spoke is developed and maintained by people committed to fighting
+//    oppressive systems and structures, including economic injustice,
+//    racism, patriarchy, and militarism
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program (see ./LICENSE). If not, see <https://www.gnu.org/licenses/>.
+
 import PropTypes from "prop-types";
 import React from "react";
 import loadData from "./hoc/load-data";
@@ -10,7 +31,7 @@ import Dialog from "material-ui/Dialog";
 import RaisedButton from "material-ui/RaisedButton";
 import { StyleSheet, css } from "aphrodite";
 import apolloClient from "../network/apollo-client-singleton";
-
+import { Card, CardText } from "material-ui/Card";
 import { dataTest } from "../lib/attributes";
 
 const styles = StyleSheet.create({
@@ -261,9 +282,10 @@ export class UserEdit extends React.Component {
     const fieldsNeeded = router && !!router.location.query.fieldsNeeded;
 
     return (
-      <div>
-        {userId ? <div>User Id: {userId}</div> : null}
+      <div style={{}}>
+        {userId ? <div style={{}}>User Id: {userId}</div> : null}
         <GSForm
+          style={{}}
           schema={formSchema}
           onSubmit={this.handleSave}
           defaultValue={user}
@@ -371,6 +393,13 @@ export class UserEdit extends React.Component {
             <RaisedButton onTouchTap={this.handleClose} label="OK" primary />
           </Dialog>
         </div>
+        <Card style={{ marginTop: "50px", maxWidth: "256px" }}>
+          <CardText style={{ fontSize: "90%" }}>
+            Spoke is developed and maintained by people committed to fighting
+            oppressive systems and structures, including economic injustice,
+            racism, patriarchy, and militarism
+          </CardText>
+        </Card>
       </div>
     );
   }
