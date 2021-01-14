@@ -43,7 +43,13 @@ export function getCampaignOffsets(campaign, organization, timezoneFilter) {
   const textingHoursEnforced = organization.texting_hours_enforced;
   const textingHoursStart = organization.texting_hours_start;
   const textingHoursEnd = organization.texting_hours_end;
-  const config = { textingHoursStart, textingHoursEnd, textingHoursEnforced };
+
+  const config = {
+    textingHoursStart,
+    textingHoursEnd,
+    textingHoursEnforced,
+    defaultTimezone: getConfig("DEFAULT_TZ", organization)
+  };
 
   if (campaign.override_organization_texting_hours) {
     const textingHoursStart = campaign.texting_hours_start;
