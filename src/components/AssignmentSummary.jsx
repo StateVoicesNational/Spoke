@@ -57,8 +57,10 @@ export class AssignmentSummary extends Component {
   };
 
   goToTodos(contactsFilter, assignmentId) {
-    const { organizationId, router } = this.props;
-
+    const { organizationId, router, todoLink } = this.props;
+    if (todoLink) {
+      return todoLink(contactsFilter, assignmentId, router);
+    }
     if (contactsFilter) {
       router.push(
         `/app/${organizationId}/todos/${assignmentId}/${contactsFilter}`
@@ -269,7 +271,8 @@ AssignmentSummary.propTypes = {
   router: PropTypes.object,
   assignment: PropTypes.object,
   texter: PropTypes.object,
-  refreshData: PropTypes.func
+  refreshData: PropTypes.func,
+  todoLink: PropTypes.func
 };
 
 export default withRouter(AssignmentSummary);
