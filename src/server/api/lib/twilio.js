@@ -1,20 +1,19 @@
-import Twilio from "twilio";
-import { twiml } from "twilio";
+/* eslint-disable no-use-before-define, no-console */
+import _ from "lodash";
+import Twilio, { twiml } from "twilio";
+import urlJoin from "url-join";
+import { log } from "../../../lib";
 import { getFormattedPhoneNumber } from "../../../lib/phone-format";
 import {
+  cacheableData,
   Log,
   Message,
   PendingMessagePart,
-  r,
-  cacheableData,
-  Campaign
+  r
 } from "../../models";
-import { log } from "../../../lib";
 import wrap from "../../wrap";
-import { saveNewIncomingMessage } from "./message-sending";
 import { getConfig } from "./config";
-import urlJoin from "url-join";
-import _ from "lodash";
+import { saveNewIncomingMessage } from "./message-sending";
 
 // TWILIO error_codes:
 // > 1 (i.e. positive) error_codes are reserved for Twilio error codes
@@ -37,7 +36,7 @@ async function getTwilio(organization) {
     accountSid
   } = await cacheableData.organization.getTwilioAuth(organization);
   if (accountSid && authToken) {
-    return Twilio(accountSid, authToken);
+    return Twilio(accountSid, authToken); // eslint-disable-line new-cap
   }
   return null;
 }
@@ -60,7 +59,7 @@ const headerValidator = url => {
     const options = {
       validate: true,
       protocol: "https",
-      url: url
+      url
     };
 
     return Twilio.webhook(authToken, options)(req, res, next);
@@ -189,7 +188,7 @@ async function getMessagingServiceSid(
   organization,
   contact,
   message,
-  campaign
+  _campaign
 ) {
   // NOTE: because of this check you can't switch back to organization/global
   // messaging service without breaking running campaigns.
@@ -204,7 +203,7 @@ async function getMessagingServiceSid(
     })
   ) {
     const campaign =
-      campaign || (await cacheableData.campaign.load(contact.campaign_id));
+      _campaign || (await cacheableData.campaign.load(contact.campaign_id));
     if (campaign.messageservice_sid) {
       return campaign.messageservice_sid;
     }
@@ -289,7 +288,7 @@ async function sendMessage(message, contact, trx, organization, campaign) {
       {
         to: message.contact_number,
         body: message.text,
-        messagingServiceSid: messagingServiceSid,
+        messagingServiceSid,
         statusCallback: process.env.TWILIO_STATUS_CALLBACK_URL
       },
       twilioValidityPeriod ? { validityPeriod: twilioValidityPeriod } : {},
@@ -421,18 +420,18 @@ export function postMessageSend(
         messageservice_sid: changesToSave.messageservice_sid
       })
     ])
-      .then((newMessage, cacheResult) => {
+      .then(() => {
         resolve({
           ...message,
           ...changesToSave
         });
       })
-      .catch(err => {
+      .catch(caught => {
         console.error(
           "Failed message and contact update on twilio postMessageSend",
-          err
+          caught
         );
-        reject(err);
+        reject(caught);
       });
   }
 }
