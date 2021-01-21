@@ -1,7 +1,14 @@
-import { CampaignContact, r, cacheableData } from "../models";
+import {
+  CampaignContact,
+  TagCampaignContact,
+  r,
+  cacheableData
+} from "../models";
 import { mapFieldsToModel } from "./lib/utils";
 import { getConfig } from "./lib/config";
 import { log, getTopMostParent, zipToTimeZone } from "../../lib";
+import { coreFields } from "../../lib/scripts";
+import { accessRequired } from "./errors";
 
 export const resolvers = {
   Location: {
@@ -13,18 +20,13 @@ export const resolvers = {
     offset: zipCode => zipCode.timezone_offset || null,
     hasDST: zipCode => zipCode.has_dst || null
   },
+  ContactTag: {
+    ...mapFieldsToModel(["id", "value"], TagCampaignContact),
+    campaignContactId: tag => tag.campaign_contact_id || null
+  },
   CampaignContact: {
     ...mapFieldsToModel(
-      [
-        "id",
-        "firstName",
-        "lastName",
-        "cell",
-        "zip",
-        "customFields",
-        "assignmentId",
-        "external_id"
-      ],
+      ["id", "firstName", "lastName", "assignmentId", "external_id"],
       CampaignContact
     ),
     messageStatus: async (campaignContact, _, { loaders }) => {
@@ -34,6 +36,40 @@ export const resolvers = {
       return await cacheableData.campaignContact.getMessageStatus(
         campaignContact.id
       );
+    },
+    errorCode: async (campaignContact, _, { user }) => {
+      await accessRequired(
+        user,
+        campaignContact.organization_id,
+        "SUPERVOLUNTEER",
+        true
+      );
+      return campaignContact.error_code;
+    },
+    cell: campaignContact =>
+      campaignContact.usedFields && !campaignContact.usedFields.cell
+        ? ""
+        : campaignContact.cell,
+    external_id: campaignContact =>
+      campaignContact.usedFields && !campaignContact.usedFields.external_id
+        ? ""
+        : campaignContact.external_id,
+    zip: campaignContact =>
+      campaignContact.usedFields && !campaignContact.usedFields.zip
+        ? ""
+        : campaignContact.zip,
+    customFields: async (campaignContact, _, { loaders }) => {
+      if (campaignContact.usedFields) {
+        const fullCustom = JSON.parse(campaignContact.custom_fields);
+        const filteredCustom = {};
+        Object.keys(campaignContact.usedFields).forEach(f => {
+          if (!coreFields[f]) {
+            filteredCustom[f] = fullCustom[f];
+          }
+        });
+        return JSON.stringify(filteredCustom);
+      }
+      return campaignContact.custom_fields;
     },
     campaign: async (campaignContact, _, { loaders }) =>
       loaders.campaign.load(campaignContact.campaign_id),
@@ -91,9 +127,6 @@ export const resolvers = {
     tags: async campaignContact => {
       // TODO: there's more to do here to avoid cache-misses
       // maybe preload with campaignContact.loadMany
-      if (!getConfig("EXPERIMENTAL_TAGS", null, { truthy: 1 })) {
-        return [];
-      }
       if (campaignContact.message_status === "needsMessage") {
         return []; // it's the beginning, so there won't be any
       }
@@ -102,7 +135,10 @@ export const resolvers = {
         return campaignContact.tags;
       }
 
-      return cacheableData.tagCampaignContact.query(campaignContact.id, true);
+      return cacheableData.tagCampaignContact.query({
+        campaignContactId: campaignContact.id,
+        minimalObj: true
+      });
     },
     optOut: async (campaignContact, _, { loaders }) => {
       let isOptedOut = null;
