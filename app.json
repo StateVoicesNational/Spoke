@@ -167,9 +167,9 @@
     },
 
     "DEFAULT_TZ": {
-      "description": "Timezone",
-      "required": true,
-      "value": "US/Eastern"
+      "description": "Default timezone region for determining timezone when a contact timezone is unavailable. If this is not set, then texting hours will fallback to 12pm Eastern to 9pm Eastern which is the most conservative value for texting hours in the continental US and probably the right default. Only set this if your entire audience is in a single timezone. Example: 'US/Eastern'",
+      "required": false,
+      "value": ""
     },
 
     "HEROKU_APP_NAME": {
