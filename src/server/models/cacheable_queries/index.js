@@ -7,7 +7,7 @@ import message from "./message";
 import optOut from "./opt-out";
 import organization from "./organization";
 import questionResponse from "./question-response";
-import tagCampaignContact from "./tag-campaign-contact";
+import { tagCampaignContactCache as tagCampaignContact } from "./tag-campaign-contact";
 import user from "./user";
 
 const cacheableData = {
