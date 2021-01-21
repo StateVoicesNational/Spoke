@@ -149,7 +149,7 @@ describe("ngpvn-action", () => {
         nock("https://api.securevan.com:443", {
           encodedQueryParams: true
         })
-          .get(`/v4/surveyQuestions?statuses=Active${extraParams}`)
+          .get(`/v4/surveyQuestions?statuses=Active${extraParams}&$top=200`)
           .reply(statusCode, {
             items: [
               {
@@ -236,7 +236,7 @@ describe("ngpvn-action", () => {
         nock("https://api.securevan.com:443", {
           encodedQueryParams: true
         })
-          .get("/v4/activistCodes?statuses=Active")
+          .get("/v4/activistCodes?statuses=Active&$top=200")
           .reply(200, {
             items: [
               {
@@ -270,7 +270,7 @@ describe("ngpvn-action", () => {
         nock("https://api.securevan.com:443", {
           encodedQueryParams: true
         })
-          .get("/v4/canvassResponses/resultCodes")
+          .get("/v4/canvassResponses/resultCodes?$top=200")
           .reply(200, [
             {
               resultCodeId: 18,
@@ -864,7 +864,7 @@ describe("ngpvn-action", () => {
       const cacheKey = NgpVanAction.clientChoiceDataCacheKey(
         veryFakeOrganization
       );
-      expect(cacheKey).toEqual("3");
+      expect(cacheKey).toEqual("");
     });
   });
 
@@ -949,7 +949,11 @@ describe("ngpvn-action", () => {
     let postPeopleCanvassResponsesNock;
 
     beforeEach(async () => {
-      interactionStepValue = '{"hex":"#B22222","rgb":{"r":178,"g":34,"b":34}}';
+      interactionStepValue = {
+        canvassContext: {},
+        hex: "#B22222",
+        rgb: { r: 178, g: 34, b: 34 }
+      };
       interactionStep = {
         id: "77",
         answer_actions_data: JSON.stringify({
@@ -963,7 +967,8 @@ describe("ngpvn-action", () => {
 
       contact = {
         custom_fields: JSON.stringify({
-          VanID: "8675309"
+          VanID: "8675309",
+          VanPhoneId: "3"
         })
       };
 
@@ -973,6 +978,7 @@ describe("ngpvn-action", () => {
     });
 
     beforeEach(async () => {
+      interactionStepValue.canvassContext.phoneId = "3";
       makePostPeopleCanvassResponsesNock = ({ statusCode = 204 } = {}) =>
         nock("https://api.securevan.com:443", {
           encodedQueryParams: true
@@ -1095,11 +1101,45 @@ describe("ngpvn-action", () => {
         };
 
         body = {
+          canvassContext: {},
           willVote: true
         };
       });
 
       it("calls the people endpoint", async () => {
+        const postPeopleCanvassResponsesNock = nock(
+          "https://api.securevan.com:443",
+          {
+            encodedQueryParams: true
+          }
+        )
+          .post(`/v4/people/8675309/canvassResponses`, JSON.stringify(body))
+          .reply(204);
+
+        await NgpVanAction.postCanvassResponse(contact, organization, body);
+
+        postPeopleCanvassResponsesNock.done();
+      });
+    });
+
+    describe("when the contact has a VanPhoneId", () => {
+      beforeEach(async () => {
+        contact = {
+          custom_fields: JSON.stringify({
+            VanID: "8675309",
+            VanPhoneId: "789"
+          })
+        };
+
+        body = {
+          canvassContext: {
+            phoneId: "789"
+          },
+          willVote: true
+        };
+      });
+
+      it("calls the people endpoint and includes VanPhoneId in the canvass context", async () => {
         const postPeopleCanvassResponsesNock = nock(
           "https://api.securevan.com:443",
           {

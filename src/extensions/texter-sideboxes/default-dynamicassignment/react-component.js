@@ -39,7 +39,6 @@ export const showSidebox = ({
 
 export const showSummary = ({ campaign, assignment, settingsData }) =>
   campaign.useDynamicAssignment &&
-  assignment.hasUnassignedContactsForTexter &&
   !assignment.unmessagedCount &&
   assignment.maxContacts !== 0;
 
@@ -150,6 +149,16 @@ export class TexterSideboxClass extends React.Component {
             <RaisedButton label="Back To Todos" onClick={this.gotoTodos} />
           </div>
         ) : null}
+        {!assignment.hasUnassignedContactsForTexter &&
+        !contact &&
+        !assignment.unmessagedCount &&
+        !assignment.unrepliedCount &&
+        settingsData.dynamicAssignmentNothingToDoMessage ? (
+          // assignment summary when there is nothing to do
+          <div style={{ marginBottom: "8px", marginLeft: "12px" }}>
+            {settingsData.dynamicAssignmentNothingToDoMessage}
+          </div>
+        ) : null}
       </div>
     );
   }
@@ -208,7 +217,8 @@ export const SummaryComponent = TexterSidebox;
 
 export const adminSchema = () => ({
   dynamicAssignmentRequestMoreLabel: yup.string(),
-  dynamicAssignmentRequestMoreMessage: yup.string()
+  dynamicAssignmentRequestMoreMessage: yup.string(),
+  dynamicAssignmentNothingToDoMessage: yup.string()
 });
 
 export class AdminConfig extends React.Component {
@@ -226,6 +236,11 @@ export class AdminConfig extends React.Component {
           label="Request More Top Message"
           fullWidth
           hintText="default: Finished sending all your messages, and want to send more?"
+        />
+        <Form.Field
+          name="dynamicAssignmentNothingToDoMessage"
+          label="Summary message when there is nothing to do"
+          fullWidth
         />
       </div>
     );

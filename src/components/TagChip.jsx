@@ -32,11 +32,12 @@ const inlineStyles = {
 
 export const TagChip = props => (
   <Chip
+    {...props}
     style={{
       ...inlineStyles.chip,
-      backgroundColor: props.backgroundColor || theme.colors.lightYellow
+      backgroundColor: props.backgroundColor || theme.colors.lightYellow,
+      ...(props.style ? props.style : {})
     }}
-    {...props}
   >
     <Avatar
       style={{

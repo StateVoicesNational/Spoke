@@ -21,20 +21,24 @@ export const showSidebox = ({
   messageStatusFilter,
   assignment,
   campaign,
-  finished
+  finished,
+  isSummary
 }) => {
   // Return anything False-y to not show
   // Return anything Truth-y to show
   // Return 'popup' to force a popup on mobile screens (instead of letting it hide behind a button)
   return (
-    assignment.allContactsCount &&
+    (assignment.hasContacts || assignment.allContactsCount) &&
     !finished &&
     (campaign.useDynamicAssignment ||
       settingsData.releaseContactsNonDynamicToo) &&
     (settingsData.releaseContactsReleaseConvos ||
-      (messageStatusFilter === "needsMessage" && assignment.unmessagedCount))
+      (messageStatusFilter === "needsMessage" && assignment.unmessagedCount) ||
+      (isSummary && assignment.unmessagedCount))
   );
 };
+
+export const showSummary = showSidebox;
 
 export class TexterSideboxClass extends React.Component {
   handleReleaseContacts = async releaseConversations => {
@@ -51,10 +55,13 @@ export class TexterSideboxClass extends React.Component {
     const { settingsData, messageStatusFilter, assignment } = this.props;
     const showReleaseConvos =
       settingsData.releaseContactsReleaseConvos &&
-      (messageStatusFilter !== "needsMessage" || assignment.unrepliedCount);
+      ((messageStatusFilter && messageStatusFilter !== "needsMessage") ||
+        assignment.unrepliedCount ||
+        assignment.hasUnreplied);
     return (
       <div style={{}}>
-        {assignment.unmessagedCount ? (
+        {assignment.unmessagedCount ||
+        (messageStatusFilter === "needsMessage" && assignment.hasUnmessaged) ? (
           <div>
             <div>
               {settingsData.releaseContactsBatchTitle ? (
@@ -118,6 +125,7 @@ export const mutations = {
       mutation releaseContacts(
         $assignmentId: String!
         $contactsFilter: ContactsFilter!
+        $needsResponseFilter: ContactsFilter!
         $releaseConversations: Boolean
       ) {
         releaseContacts(
@@ -128,7 +136,11 @@ export const mutations = {
           contacts(contactsFilter: $contactsFilter) {
             id
           }
-          allContactsCount: contactsCount
+          unmessagedCount: contactsCount(contactsFilter: $contactsFilter)
+          hasUnmessaged: contactsCount(contactsFilter: $contactsFilter)
+          maybeUnrepliedCount: contactsCount(
+            contactsFilter: $needsResponseFilter
+          )
         }
       }
     `,
@@ -136,7 +148,12 @@ export const mutations = {
       assignmentId: ownProps.assignment.id,
       releaseConversations,
       contactsFilter: {
-        messageStatus: ownProps.messageStatusFilter,
+        messageStatus: "needsMessage",
+        isOptedOut: false,
+        validTimezone: true
+      },
+      needsResponseFilter: {
+        messageStatus: releaseConversations ? "needsResponse" : "needsMessage",
         isOptedOut: false,
         validTimezone: true
       }
@@ -147,6 +164,12 @@ export const mutations = {
 export const TexterSidebox = loadData({ mutations })(
   withRouter(TexterSideboxClass)
 );
+
+// This is a bit of a trick
+// Normally we'd want to implement a separate component,
+// but we have crafted it to work in both contexts.
+// If you make changes, make sure you test in both!
+export const SummaryComponent = TexterSidebox;
 
 export const adminSchema = () => ({
   releaseContactsReleaseConvos: yup.boolean(),

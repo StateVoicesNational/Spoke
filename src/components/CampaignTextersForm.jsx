@@ -279,9 +279,7 @@ export default class CampaignTextersForm extends React.Component {
       .map(orgTexter => dataSourceItem(orgTexter.displayName, orgTexter.id));
 
     const filter = (searchText, key) =>
-      key === "allTexters"
-        ? true
-        : AutoComplete.caseInsensitiveFilter(searchText, key);
+      key === "allTexters" ? true : AutoComplete.fuzzyFilter(searchText, key);
 
     const autocomplete = (
       <AutoComplete

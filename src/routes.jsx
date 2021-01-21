@@ -16,8 +16,11 @@ import TexterTodoList from "./containers/TexterTodoList";
 import TexterTodo from "./containers/TexterTodo";
 import Login from "./components/Login";
 import Terms from "./containers/Terms";
+import Downtime from "./components/Downtime";
 import React from "react";
 import CreateOrganization from "./containers/CreateOrganization";
+import CreateAdditionalOrganization from "./containers/CreateAdditionalOrganization";
+import AdminOrganizationsDashboard from "./containers/AdminOrganizationsDashboard";
 import JoinTeam from "./containers/JoinTeam";
 import Home from "./containers/Home";
 import Settings from "./containers/Settings";
@@ -33,10 +36,29 @@ import {
 } from "./components/AssignmentTexter/Demo";
 import AdminPhoneNumberInventory from "./containers/AdminPhoneNumberInventory";
 
+const checkDowntime = (nextState, replace) => {
+  if (global.DOWNTIME && nextState.location.pathname !== "/downtime") {
+    replace({
+      pathname: "/downtime"
+    });
+  }
+};
+
+const checkTexterDowntime = requireAuth => (nextState, replace) => {
+  if (global.DOWNTIME_TEXTER && nextState.location.pathname !== "/downtime") {
+    replace({
+      pathname: "/downtime"
+    });
+  } else {
+    return requireAuth(nextState, replace);
+  }
+};
+
 export default function makeRoutes(requireAuth = () => {}) {
   return (
-    <Route path="/" component={App}>
+    <Route path="/" component={App} onEnter={checkDowntime}>
       <IndexRoute component={Home} />
+      <Route path="downtime" component={Downtime} />
       <Route path="admin" component={AdminDashboard} onEnter={requireAuth}>
         <IndexRoute component={() => <DashboardLoader path="/admin" />} />
         <Route path=":organizationId">
@@ -61,7 +83,11 @@ export default function makeRoutes(requireAuth = () => {}) {
           <Route path="phone-numbers" component={AdminPhoneNumberInventory} />
         </Route>
       </Route>
-      <Route path="app" component={TexterDashboard} onEnter={requireAuth}>
+      <Route
+        path="app"
+        component={TexterDashboard}
+        onEnter={checkTexterDowntime(requireAuth)}
+      >
         <IndexRoute
           components={{
             main: () => <DashboardLoader path="/app" />,
@@ -188,11 +214,17 @@ export default function makeRoutes(requireAuth = () => {}) {
         </Route>
       </Route>
       <Route path="login" component={Login} />
+      <Route path="organizations" component={AdminOrganizationsDashboard} />
       <Route path="terms" component={Terms} />
       <Route path="reset/:resetHash" component={Home} onEnter={requireAuth} />
       <Route
         path="invite/:inviteId"
         component={CreateOrganization}
+        onEnter={requireAuth}
+      />
+      <Route
+        path="addOrganization/:inviteId"
+        component={CreateAdditionalOrganization}
         onEnter={requireAuth}
       />
       <Route

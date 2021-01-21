@@ -7,6 +7,7 @@ import Form from "react-formal";
 import Dialog from "material-ui/Dialog";
 import GSSubmitButton from "../components/forms/GSSubmitButton";
 import FlatButton from "material-ui/FlatButton";
+import RaisedButton from "material-ui/RaisedButton";
 import DisplayLink from "../components/DisplayLink";
 import yup from "yup";
 import { Card, CardText, CardActions, CardHeader } from "material-ui/Card";
@@ -338,6 +339,7 @@ class Settings extends React.Component {
         <div>{this.renderTextingHoursForm()}</div>
         {window.TWILIO_MULTI_ORG && this.renderTwilioAuthForm()}
         {this.props.data.organization &&
+        this.props.data.organization.texterUIConfig &&
         this.props.data.organization.texterUIConfig.sideboxChoices.length ? (
           <Card>
             <CardHeader
@@ -393,6 +395,29 @@ class Settings extends React.Component {
                 }}
                 saveLabel="Save settings"
                 saveDisabled={!this.state.settings}
+              />
+            </CardText>
+          </Card>
+        ) : null}
+
+        {this.props.data.organization && this.props.params.adminPerms ? (
+          <Card>
+            <CardHeader
+              title="External configuration"
+              style={{ backgroundColor: theme.colors.green }}
+              actAsExpander={true}
+              showExpandableButton={true}
+            />
+            <CardText expandable>
+              <h2>DEBUG Zone</h2>
+              <p>Only take actions here if you know what you&rsquo;re doing</p>
+              <RaisedButton
+                label="Clear Cached Organization And Extension Caches"
+                secondary
+                style={inlineStyles.dialogButton}
+                onTouchTap={
+                  this.props.mutations.clearCachedOrgAndExtensionCaches
+                }
               />
             </CardText>
           </Card>
@@ -566,6 +591,16 @@ const mutations = {
       twilioAccountSid: accountSid,
       twilioAuthToken: authToken,
       twilioMessageServiceSid: messageServiceSid
+    }
+  }),
+  clearCachedOrgAndExtensionCaches: ownProps => () => ({
+    mutation: gql`
+      mutation clearCachedOrgAndExtensionCaches($organizationId: String!) {
+        clearCachedOrgAndExtensionCaches(organizationId: $organizationId)
+      }
+    `,
+    variables: {
+      organizationId: ownProps.params.organizationId
     }
   })
 };
