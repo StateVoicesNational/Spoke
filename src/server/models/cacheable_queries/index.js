@@ -2,7 +2,7 @@ import assignment from "./assignment";
 import campaign from "./campaign";
 import campaignContact from "./campaign-contact";
 import cannedResponse from "./canned-response";
-import contactUserNumber from "./contact-user-number";
+import organizationContact from "./organization-contact";
 import message from "./message";
 import optOut from "./opt-out";
 import organization from "./organization";
@@ -15,7 +15,7 @@ const cacheableData = {
   campaign,
   campaignContact,
   cannedResponse,
-  contactUserNumber,
+  organizationContact,
   message,
   optOut,
   organization,

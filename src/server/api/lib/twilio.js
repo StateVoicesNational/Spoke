@@ -217,11 +217,33 @@ async function getMessagingServiceSid(
   );
 }
 
-async function getContactUserNumber(organizationId, contactNumber) {
-  return await cacheableData.contactUserNumber.query({
-    organizationId,
+async function getOrganizationContact(organization, contactNumber) {
+  const organizationContact = await cacheableData.organizationContact.query({
+    organizationId: organization.id,
     contactNumber
   });
+
+  if (organizationContact && organizationContact.user_number) {
+    return organizationContact.user_number;
+  }
+
+  if (
+    (getConfig("EXPERIMENTAL_PHONE_INVENTORY", organization, {
+      truthy: true
+    }) ||
+      getConfig("PHONE_INVENTORY", organization, { truthy: true })) &&
+    getConfig("SKIP_TWILIO_MESSAGING_SERVICE", organization, { truthy: true })
+  ) {
+    const phoneNumber = await ownedPhoneNumber.getOwnedPhoneNumberForStickySender(
+      organization.id,
+      contactNumber
+    );
+
+    console.log({ phoneNumber });
+    return phoneNumber && phoneNumber.phone_number;
+  }
+
+  return null;
 }
 
 async function sendMessage(message, contact, trx, organization, campaign) {
@@ -255,13 +277,13 @@ async function sendMessage(message, contact, trx, organization, campaign) {
 
   let userNumber;
   if (process.env.EXPERIMENTAL_STICKY_SENDER) {
-    const contactUserNumber = await getContactUserNumber(
-      organization.id,
+    const organizationContact = await getOrganizationContact(
+      organization,
       contact.cell
     );
 
-    if (contactUserNumber) {
-      userNumber = contactUserNumber.user_number;
+    if (organizationContact) {
+      userNumber = organizationContact.user_number;
     }
   }
 
