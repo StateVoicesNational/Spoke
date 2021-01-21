@@ -3,8 +3,8 @@ const type = thinky.type;
 import { requiredString } from "./custom-types";
 
 // For documentation purposes only. Use knex queries instead of this model.
-const ContactUserNumber = thinky.createModel(
-  "contact_user_number",
+const OrganizationContact = thinky.createModel(
+  "organization_contact",
   type
     .object()
     .schema({
@@ -16,4 +16,4 @@ const ContactUserNumber = thinky.createModel(
     .allowExtra(false)
 );
 
-export default ContactUserNumber;
+export default OrganizationContact;

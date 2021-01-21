@@ -1,4 +1,4 @@
-import { r } from "../../models";
+import { r } from "..";
 
 // Datastructure:
 // * regular GET/SET with JSON ordered list of the objects {id,title,text}
@@ -9,22 +9,22 @@ import { r } from "../../models";
 
 const getCacheKey = (organizationId, contactNumber) =>
   `${process.env.CACHE_PREFIX ||
-    ""}contact-user-number-${organizationId}-${contactNumber}`;
+    ""}organization-contact-${organizationId}-${contactNumber}`;
 
-const contactUserNumberCache = {
+const organizationContactCache = {
   query: async ({ organizationId, contactNumber }) => {
     const cacheKey = getCacheKey(organizationId, contactNumber);
 
     if (r.redis) {
-      const contactUserNumber = await r.redis.getAsync(cacheKey);
+      const organizationContact = await r.redis.getAsync(cacheKey);
 
-      if (contactUserNumber) {
-        return JSON.parse(contactUserNumber);
+      if (organizationContact) {
+        return JSON.parse(organizationContact);
       }
     }
 
-    const contactUserNumber = await r
-      .table("contact_user_number")
+    const organizationContact = await r
+      .table("organization_contact")
       .filter({
         organization_id: organizationId,
         contact_number: contactNumber
@@ -35,28 +35,28 @@ const contactUserNumberCache = {
     if (r.redis) {
       await r.redis
         .multi()
-        .set(cacheKey, JSON.stringify(contactUserNumber))
+        .set(cacheKey, JSON.stringify(organizationContact))
         .expire(cacheKey, 43200) // 12 hours
         .execAsync();
     }
 
-    return contactUserNumber;
+    return organizationContact;
   },
   save: async ({ organizationId, contactNumber, userNumber }) => {
-    const contactUserNumber = {
+    const organizationContact = {
       organization_id: organizationId,
       contact_number: contactNumber,
       user_number: userNumber
     };
 
-    await r.knex("contact_user_number").insert(contactUserNumber);
+    await r.knex("organization_contact").insert(organizationContact);
 
     if (r.redis) {
       const cacheKey = getCacheKey(organizationId, contactNumber);
 
       await r.redis
         .multi()
-        .set(cacheKey, JSON.stringify(contactUserNumber))
+        .set(cacheKey, JSON.stringify(organizationContact))
         .expire(cacheKey, 43200) // 12 hours
         .execAsync();
     }
@@ -65,4 +65,4 @@ const contactUserNumberCache = {
   }
 };
 
-export default contactUserNumberCache;
+export default organizationContactCache;
