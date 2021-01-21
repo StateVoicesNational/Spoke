@@ -97,12 +97,21 @@ describe("mutations.updateContactTags", () => {
   });
 
   it("saves the tags", async () => {
+    const contactTags = dbExpectedTags.map(tag => ({
+      id: tag.id,
+      value: null
+    }));
+
+    contactTags[1].value = "Everyone votes!";
+
     const result = await wrappedMutations.updateContactTags(
-      dbExpectedTags,
+      contactTags,
       contacts[0].id
     );
 
-    expect(result.data.updateContactTags).toEqual(contacts[0].id.toString());
+    expect(result.data.updateContactTags).toEqual({
+      id: contacts[0].id.toString()
+    });
 
     const tagged = await r.knex("tag_campaign_contact");
 
@@ -115,7 +124,7 @@ describe("mutations.updateContactTags", () => {
         }),
         expect.objectContaining({
           tag_id: tags[1].id,
-          value: null,
+          value: "Everyone votes!",
           campaign_contact_id: contacts[0].id
         }),
         expect.objectContaining({
@@ -141,12 +150,17 @@ describe("mutations.updateContactTags", () => {
       jest.spyOn(console, "error");
 
       const result = await wrappedMutations.updateContactTags(
-        dbExpectedTags,
+        dbExpectedTags.map(tag => ({
+          id: tag.id,
+          value: tag.value
+        })),
         999999 // this will cause cacheableData.campaignContact.load to throw an exception
       );
 
       expect(result.errors[0].message).toEqual(
-        expect.stringMatching(/^Cannot convert `undefined`.*/)
+        expect.stringMatching(
+          /^The loader.load\(\) function must be called with a value,but got: undefined.*/
+        )
       );
 
       expect(console.error).toHaveBeenCalledTimes(1); // eslint-disable-line no-console

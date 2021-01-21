@@ -158,7 +158,7 @@ export class AssignmentTexterContact extends React.Component {
     }
   };
 
-  handleMessageFormSubmit = async ({ messageText }) => {
+  handleMessageFormSubmit = cannedResponseId => async ({ messageText }) => {
     const { contact, messageStatusFilter } = this.props;
     try {
       const message = this.createMessageToContact(messageText);
@@ -175,11 +175,17 @@ export class AssignmentTexterContact extends React.Component {
         // thinks they completed sending, but there are still waiting requests
         // This probably needs some interface tweaks to communicate something
         // to the texter.
-        this.props.mutations.sendMessage(message, contact.id).then(() => {
-          console.log("sentMessage", contact.id);
-        });
+        this.props.mutations
+          .sendMessage(message, contact.id, cannedResponseId)
+          .then(() => {
+            console.log("sentMessage", contact.id);
+          });
       } else {
-        await this.props.mutations.sendMessage(message, contact.id);
+        await this.props.mutations.sendMessage(
+          message,
+          contact.id,
+          cannedResponseId
+        );
         await this.handleSubmitSurveys();
       }
       this.props.onFinishContact(contact.id);
@@ -530,10 +536,12 @@ const mutations = {
   updateContactTags: ownProps => (tags, campaignContactId) => ({
     mutation: gql`
       mutation updateContactTags(
-        $tags: [TagInput]
+        $tags: [ContactTagInput]
         $campaignContactId: String!
       ) {
-        updateContactTags(tags: $tags, campaignContactId: $campaignContactId)
+        updateContactTags(tags: $tags, campaignContactId: $campaignContactId) {
+          id
+        }
       }
     `,
     variables: {
@@ -561,13 +569,18 @@ const mutations = {
       campaignContactId
     }
   }),
-  sendMessage: ownProps => (message, campaignContactId) => ({
+  sendMessage: ownProps => (message, campaignContactId, cannedResponseId) => ({
     mutation: gql`
       mutation sendMessage(
         $message: MessageInput!
         $campaignContactId: String!
+        $cannedResponseId: String
       ) {
-        sendMessage(message: $message, campaignContactId: $campaignContactId) {
+        sendMessage(
+          message: $message
+          campaignContactId: $campaignContactId
+          cannedResponseId: $cannedResponseId
+        ) {
           id
           messageStatus
           messages {
@@ -581,7 +594,8 @@ const mutations = {
     `,
     variables: {
       message,
-      campaignContactId
+      campaignContactId,
+      cannedResponseId
     }
   }),
   bulkSendMessages: ownProps => assignmentId => ({

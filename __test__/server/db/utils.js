@@ -15,7 +15,9 @@ export const tables = [
   "canned_response",
   "opt_out",
   "question_response",
-  "campaign_contact"
+  "campaign_contact",
+  "tag",
+  "tag_canned_response"
 ];
 
 // Adapted from https://dba.stackexchange.com/a/37068

@@ -321,7 +321,8 @@ const makeCannedResponsesList = cannedResponsesParagraphs => {
   const cannedResponses = [];
   while (cannedResponsesParagraphs[0]) {
     const cannedResponse = {
-      text: []
+      text: [],
+      tagIds: []
     };
 
     const paragraph = cannedResponsesParagraphs.shift();
@@ -337,7 +338,17 @@ const makeCannedResponsesList = cannedResponsesParagraphs => {
       !cannedResponsesParagraphs[0].isParagraphBold
     ) {
       const textParagraph = cannedResponsesParagraphs.shift();
-      cannedResponse.text.push(textParagraph.text);
+      if (textParagraph.isParagraphItalic) {
+        // Italic = tag.
+        const tagId = textParagraph.text.match(/^\d*\b/);
+        if (tagId && !!tagId[0]) {
+          cannedResponse.tagIds.push(tagId[0])
+        }
+      }
+      else {
+        // Regular text, add to response.
+        cannedResponse.text.push(textParagraph.text);
+      }
     }
 
     if (!cannedResponse.text[0]) {
@@ -356,32 +367,62 @@ const replaceCannedResponsesInDatabase = async (
   campaignId,
   cannedResponses
 ) => {
+  const convertedResponses = [];
+  for (let index = 0; index < cannedResponses.length; index++) {
+    const response = cannedResponses[index];
+    convertedResponses.push({
+      ...response,
+      text: response.text.join("\n"),
+      campaign_id: campaignId,
+      id: undefined
+    });
+  }
+
+  // delete canned response / tag relations from tag_canned_response
   await r.knex.transaction(async trx => {
-    try {
-      await r
+    await trx("tag_canned_response")
+      .whereIn(
+        "canned_response_id",
+        r
         .knex("canned_response")
-        .transacting(trx)
+        .select("id")
         .where({
           campaign_id: campaignId
         })
-        .whereNull("user_id")
-        .delete();
+      )
+      .delete();
+    // delete canned responses
+    await trx("canned_response")
+      .where({
+        campaign_id: campaignId
+      })
+      .whereNull("user_id")
+      .delete();
 
-      for (const cannedResponse of cannedResponses) {
-        await r.knex
-          .insert({
-            campaign_id: campaignId,
-            user_id: null,
-            title: cannedResponse.title,
-            text: cannedResponse.text.join("\n")
-          })
-          .into("canned_response")
-          .transacting(trx);
-      }
-    } catch (exception) {
-      console.log(exception);
-      throw exception;
-    }
+    // save new canned responses and add their ids with related tag ids to tag_canned_response
+    const saveCannedResponse = async cannedResponse => {
+      const [res] = await trx("canned_response").insert(
+        cannedResponse, [
+          "id"
+        ]);
+      return res.id;
+    };
+    const tagCannedResponses = await Promise.all(
+      convertedResponses.map(async response => {
+        const {
+          tagIds,
+          ...filteredResponse
+        } = response;
+        const responseId = await saveCannedResponse(
+          filteredResponse);
+        return (tagIds || []).map(t => ({
+          tag_id: t,
+          canned_response_id: responseId
+        }));
+      })
+    );
+    await trx("tag_canned_response").insert(_.flatten(
+    tagCannedResponses));
   });
 };
 

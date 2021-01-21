@@ -1,11 +1,169 @@
 # Release Notes
 
+## v9.2
+
+_September 2020:_ Version 9.2
+
+### Spoke Project Status Update
+
+As we are getting closer to the 2020 election, MoveOn is 'code-freezing' changes on our production instance.
+We believe campaigns and Spoke hosters would be well-advised to do the same and aim for stability over this time.
+The only releases before November 3rd, 2020 will be for security updates.
+
+We will also continue to merge additions to documentation and integration test PRs directly into our `main` branch.
+
+That said, other hosters and developers are continuing to make bug fixes and add important features for their
+own texting programs.  Normally, MoveOn's release process involves first gathering a release candidate, then
+running QA on the changes, and finally running it in production for a day or two to shake out any bugs missed
+during QA and review and to evaluate the release 'at scale'.  Without this final step, we can't make a strong commitment
+to release readiness.
+
+However, we want to track these improvements, so we will be maintaining two 'experimental' PRs -- one more conservative
+with small changes and mostly bug fixes: [stage-main-postelection2020-stable](https://github.com/MoveOnOrg/Spoke/pull/1830).
+The other with larger changes but riskier to deploy before the election: [stage-main-postelection2020-unstable](https://github.com/MoveOnOrg/Spoke/pull/1831).  If a hosting partner steps up to
+run one of these at any time and affirms its stability, we will mark that.  Additionally, in the conservative PR,
+we will link to specific PRs that if you run into a particular bug in production you can cherry-pick that PR to fix that issue.
+
+After the election, I'm sure there will be a lot of changes and diverged branches from different organizations.
+We will be here to try to gather those changes, but we'd like to note that will be significant work and can't happen
+without those organizations also making an effort to separate their 'hacks' to make something work vs. changes that
+will be maintainable and support the long-term architecture and stability of Spoke for the community.  We recommend
+whenever possible, opening a PR on specific small changes -- these are more likely to be mergeable after the election.
+If that's not possible due to time/development constraints, we ask that you at least open a 'organization dev' PR that
+just includes all your changes -- then post-election we can at least sort out the features and the community can
+have a place to see what was done.
+
+I'd like to take a moment to celebrate this amazing community -- so many progressive orgs and campaigns are using Spoke and
+contributing back to it -- along with a cadre of committed volunteer developers, designers and texters.  Good luck
+with all your campaigns -- let's win!
+
+### New Features/Improvements
+
+- Throughout the admin on the People page, Message Review, and Campaign stats, there are little links to the texter's
+  own Todos page view. This can be useful for admins to see what campaigns a texter is part of and debug any
+  issues where seeing the texter view can help.
+- Experimental DB_READONLY_HOST variable which can connect to a replica/read-only instance for some specific queries.
+  In the event of high database stress, setting this may help relieve IO on the 'writer' database instance.
+
+### Bug Fixes
+
+- Fixed a regression in 9.1 where /twilio-message-report Twilio validation would fail if TWILIO_MULTI_ORG=1 but
+  TWILIO_MESSAGE_CALLBACK_URL was NOT set.  We reverted that behavior, but recommend that you update your
+  twilio config to `/twilio-message-report/<org id>` in this configuration and then set TWILIO_VALIDATION=1
+- Fixed a but in 9.1 on the superadmin organizations page where creating an organization did not work.
+- Fixed two minor security issues to restrict post-login redirect and hide errors on the front-end by-default.
+  If you want to re-enable errors on the front-end, set SHOW_SERVER_ERROR=1
+- Fixed issue with Release Contacts texter sidebox where clicking "Done for the day" would not give feedback on
+  the todos screen -- it now clears the 'send first messages' and 'replies' buttons where appropriate.
+
+### Appreciations
+
+Thanks to [jeffm2001](https://github.com/jeffm2001) and [schuyler1d](https://github/schuyler1d)
+
+## v9.1
+
+_September 2020:_ Version 9.1
+
+* Regression notice: When TWILIO_MULTI_ORG=1 is set but TWILIO_MESSAGE_CALLBACK_URL is not, /twilio-message-report
+  fails.  There is a [fix](https://github.com/MoveOnOrg/Spoke/pull/1826) that is also available in 9.2 (above).
+
+### New Features/Improvements
+- **New UI for adding organizations to your instance:** There is now a page only accessible for users with `is_superadmin` set for adding orgs in a Spoke instance. You can access this screen through the user menu under "superadmin tools." We've gated this feature to only users with that privilege to keep any roles you already have on your instances from suddenly gaining the ability to add orgs. You can only change a user's `is_superadmin` status with a direct DB query at this time. *The first user on new instances will be a superadmin by default now*
+- **Past campaign contact loader:** Creates a contact loader that allows someone to select contacts from a past campaign and filter optionally for a particular question response (or no response) by entering a message review query into the contact loader. The contact loader has instructions inline.
+- **ActionNetwork action handler:** syncs TAGS and EVENT RSVPs back to ActionNetwork when linked to a question answer in an interaction script.
+- **Two new custom fields to track contact by id:** We're including `contactId` and `contactIdBase62` as custom fields to help with use cases around tracking link clicks. At MoveOn we have been using these fields as url params in our scripts for our data exports -- e.g. Hi will you rsvp to an event at someeventlink.com/source={contactIdBase62} the base62 variant is to keep the size of the text messages down.
+- **Downtime configuration:** new env vars `DOWNTIME` and `DOWNTIME_NO_DB` ([see reference](REFERENCE-environment_variables.md)) put Spoke in a downtime state that renders a downtime page to serve as a "kill switch" if there are problems with an instance. This is a useful tool for dealing with bugs, scaling issues or deployments that require manual intervention.
+- **Sqs batching and dispatchProcesses improvements:** improvements to the SQS functionality in Spoke to help set up AWS SQS queueing. Check out this [Twilio blog post for more information](https://www.twilio.com/blog/2017/07/handling-high-volume-inbound-sms-and-webhooks-with-twilio-functions-and-amazon-sqs.html).
+- **Add importing of response tags to google docs import:** You can now use italics to include tags your google script import templating. Check the default template in the [Google script import doc](HOWTO_IMPORT_GOOGLE_DOCS_SCRIPTS_TO_IMPORT.md) for details.
+- "Convos" and "Stats" buttons on the campaign edit page for live campaigns: The "stats" button will take you to the campaign stats page, the "convos" button will take you to message review pre-filtered to only show messages from that campaign. These changes make it easier to navigate back and forth between Campaign Edit/Stats pages.
+- Job to update optouts regularly: In case the update fails or in the case of autoupdates where it does not update by default you can get this job running to keep opt outs staying updated. For more information on how to run jobs in your build, check the Heroku (worker dynos), AWS (cron jobs) or your infra of choices's docs on running jobs.
+- To reduce the information sent to the texter, we filter out fields that aren't used in scripts or canned responses.
+- Speed up deduplication query
+
+### Bug Fixes
+- Allow admins and supervols to see organization settings
+- fixes allContactsCount: it should not always be 1
+- datawarehouse contact-loaders fixes
+
+### Appreciations
+
+Thanks to [lperson](https://github/lperson), [bdatkins](https://github/bdatkins), [hiemanshu](https://github.com/hiemanshu), [dcCoder9](https://github/dcCoder9), [kelwen-p](https://github/kelwen-p), [lesia-liao](https://github.com/lesia-liao), [abp5fn](https://github.com/abp5fn) and [schuyler1d](https://github/schuyler1d)
+
+## v9.0
+
+_August 2020:_ Version 9.0
+
+This is a major release and therefore requires a schema change. This is a minor schema change, which you can run before/during migration (either by leaving/disabling SUPPRESS_MIGRATIONS="" or for [AWS Lambda, see the db migration instructions](HOWTO_DEPLOYING_AWS_LAMBDA.md#migrating-the-database)
+
+We just (stealth) released 8.1 -- why the quick second release? Well, we deployed 8.1 at MoveOn on production and it was doing great for two days. On the third day there was a final set of tweaks and thus we cut the release for 8.1 on Wednesday 8/26. Well, Murphy's law -- two hours after we finished up the release we started hitting production issues. We have not yet scaled up for our "hockeystick" (where the participation graph looks like a hockey stick and surges) period and to prepare @schuyler1d asked the campaigners to "try to break Spoke this week." The team sent 1 million messages with 70K sent in a 5 minute period and our database started failing.
+
+We will be upgrading this weekend and the great thing about Spoke is it scales "linearly" -- if you double the resources, then you can roughly double the contacts/texters-per-day metrics.
+
+But because of the timing it was ambiguous whether we 'just' hit scaling issues yesterday or whether there were bugs in Spoke 8.1. @schuyler1d spent the day tracking everything that went wrong and determined that it was scaling. This prompted some urgent improvements to make our queries more efficient with increased focus on more improvements so the application can do its part in keeping scaling costs as low as possible. But these last set are pretty impactful -- even without upgrading our system with almost the same texting volume as yesterday we are seeing *half the database load.*
+
+### 9.0 Changes
+
+- Schema change on the opt_out table (please see instructions for migrating)
+- Drastically improves the query efficiency for the Texter Todos page
+- Removes some liability of thrashing with auto-optout updating.
+
+### 8.1 Highlights
+8.1 still makes up the bulk of 9.0's featureset, so here's what to look out for and check out the [8.1 section](RELEASE_NOTES.md#v81) for the full list of awesome changes
+
+- **Tagging:** The tags feature is no longer experimental! This release includes a few adjustments to tags that finish the tagging story:
+  - **Resolve tags:** tags can now be resolved in message review by clicking the 'x' in their upper right corner.
+  - **Canned response tagging:** you can apply 1 or more tags to a canned response which will automatically apply that tags when a texter uses that canned response.
+- **Addressable message review queries:** message review now has "addressable urls" meaning that the url is changed whenever you make a query. This now allows you to directly link to a specific query. Because of this, there are now links in the texter stats section of the campaign page that link to a filter for that specific texter and a new "convos" button that takes you directly to a view that filters down to only messages within the campaign.
+- **Allow search terms to be _excluded_ from the campaign search:**  If a search starts with "-", it filters out campaigns that match the rest of the search term.
+- **Documentation microsite:** our docs now exist on an [external microsite](https://moveonorg.github.io/Spoke) to help our docs
+- [Documentation now exists for all of the extensions!](HOWTO-extend-spoke.md)
+
+### Appreciations
+Thanks for quick and impactful work from [schuyler1d](https://github.com/schuyler1d) to get 8.1 to a better more stable 9.0! Thank you so much to the **11** community contributors that made all the features and bug fixes possible: [inorvig](https://github.com/inorvig), [oburbank](https://github.com/oburbank), [aschneit](https://github.com/aschneit), [jeffm2001](https://github.com/jeffm2001), [lperson](https://github.com/lperson), [ibrand](https://github.com/ibrand), [bdatkins](https://github.com/bdatkins), [JeremyParker](https://github.com/JeremyParker), [tekkamanendless ](https://github.com/tekkamanendless), [sharonsolomon](https://github.com/sharonsolomon), [nke5ka](https://github.com/nke5ka)
+
+## v8.1
+
+_August 2020:_ Version 8.1
+
+**Note: we highly recommend upgrading to v9.0 if you're on v8.1 since 9.0 helps a lot with election time scaling**
+
+### New Features/Improvements
+- **Tagging:** The tags feature is no longer experimental! This release includes a few adjustments to tags that finish the tagging story:
+  - **Resolve tags:** tags can now be resolved in message review by clicking the 'x' in their upper right corner.
+  - **Canned response tagging:** you can apply 1 or more tags to a canned response which will automatically apply that tags when a texter uses that canned response.
+- **Remove the Opt Outs sidebar menu:** this menu did not scale well and wasn't being used by many orgs. All it did was print a long list of all of the phone numbers that had opted out across the organization. You can easily query the database to get that same list of numbers.
+- **Addressable message review queries:** message review now has "addressable urls" meaning that the url is changed whenever you make a query. This now allows you to directly link to a specific query. Because of this, there are now links in the texter stats section of the campaign page that link to a filter for that specific texter and a new "convos" button that takes you directly to a view that filters down to only messages within the campaign.
+- UI button in the settings page for clearing the organization and extension cache. If an admin uses a SQL client to modify `organization.features` or metadata changes in an external resource, such as NGP VAN (the use cases in VAN is that a saved list was added or survey questions or activists code were modified; Spoke's VAN integration won't go back to VAN through the API if those metadata are present in the cache)
+- Allow search terms to be _excluded_ from the campaign search.  If a search starts with "-", it filters out campaigns that match the rest of the search term.
+- Foundation for a documentation microsite to help our docs stay readable and accessible to devs and admin
+- New [Freshworks Freshdesk](https://freshdesk.com/) texter-sidebox for anyone using Freshdesk as a help hub for texters! Enable it by adding `freshworks-widget` to the texter-sideboxes env var list
+- Add support for Twilio error 21408 which happens when you try to send a message to a phone
+number outside of your "Geo-Permissions" settings
+- More clarity to the Redis docs
+- Receive Twilio messages from behind a proxy using TWILIO_MESSAGE_CALLBACK_URL
+- Dynamic Assignment Batch strategy can be chosen per-campaign
+- You can now search for error codes in message review!
+- [Documentation now exists for all of the extensions!](HOWTO-extend-spoke.md)
+
+### Bug Fixes
+- Copy all relevant campaign properties when copying a campaign (the whole campaign is now copied over and the interaction steps are copied in the right order)
+- Show a pop up when the copy campaign button is clicked to let you know it was copied
+- fix message sending where additional context info needs to be sent for service.sendMessage than previously -- e.g. for TWILIO auth, etc
+- Small phone inventory improvements
+- Small message aesthetic touch ups
+- Remove the scrollbars in every cell in the admin and people pages
+- Ensure that interactions are copied deterministically
+
+### Appreciations
+
+Thanks to [inorvig](https://github.com/inorvig), [oburbank](https://github.com/oburbank), [aschneit](https://github.com/aschneit), [jeffm2001](https://github.com/jeffm2001), [lperson](https://github.com/lperson), [ibrand](https://github.com/ibrand), [bdatkins](https://github.com/bdatkins), [JeremyParker](https://github.com/JeremyParker), [tekkamanendless ](https://github.com/tekkamanendless), [sharonsolomon](https://github.com/sharonsolomon), [nke5ka](https://github.com/nke5ka) and [schuyler1d](https://github.com/schuyler1d)
+
 ## v8.0
 
 _August 2020:_ Version 8.0
 **Note: Dynamic assignment is changing!** Pay special attention to the write up. This new and improved dynamic assignment should make the dynamic assignment flow friendlier to coaching new texters, and assist the reassignment flow.
 
-This is a major release and therefore requires a schema change. See the deploy steps section for details. Anything marked as experimental has not yet been tested on a production texting campaign. We're marking this as a major version update 8.0 because there are several backwards-incompatible changes that we believe are important and valuable.
+This is a major release and therefore requires a schema change which you can run before/during migration (either by leaving/disabling SUPPRESS_MIGRATIONS="" or for [AWS Lambda, see the db migration instructions](DEPLOYING_AWS_LAMBDA.md#migrating-the-database). Anything marked as experimental has not yet been tested on a production texting campaign. We're marking this as a major version update 8.0 because there are several backwards-incompatible changes that we believe are important and valuable.
 
 ### Backwards incompatible Changes
 - **Dynamic Assignment is changing**: After a lot of feedback and some great inspiration from the [Warren Spoke](https://github.com/Elizabeth-Warren/Spoke) we're modifying dynamic assign. Texters will now request batch sizes instead of getting an endless stream of texts. The admin can customize the batch size and who is allowed to click request after their first batch. There is more documentation on this feature [here](https://github.com/MoveOnOrg/Spoke/blob/main/docs/HOWTO-use-dynamicassignment-batches.md).This feature is also optionally complemented by the new "release texts" feature which is mentioned under "New Features/Improvements"
@@ -20,11 +178,11 @@ This is a major release and therefore requires a schema change. See the deploy s
 - There is a small migration to the `campaign` table which needs to be run before/during migration (either by leaving/disabling SUPPRESS_MIGRATIONS="" or for [AWS Lambda, see the db migration instructions](https://github.com/MoveOnOrg/Spoke/blob/main/docs/DEPLOYING_AWS_LAMBDA.md#migrating-the-database)
 
 ### New Features/Improvements
-- Use of Spoke is subject to legal restrictions which each organization should review and understand, including recent guidance from an FCC ruling. Spoke 8.0 has several changes related to this guidance and we recommend system administrators review the settings outlined [here](https://github.com/MoveOnOrg/Spoke/blob/main/docs/REFERENCE-best-practices-conformance-messaging.md) along with consulting your own legal advice.
+- Use of Spoke is subject to legal restrictions which each organization should review and understand, including recent guidance from an FCC ruling. We recommend system administrators review the settings outlined [here](https://github.com/MoveOnOrg/Spoke/blob/main/docs/REFERENCE-best-practices-conformance-messaging.md) along with consulting your own legal advice.
 - **_Experimental_ Phone number management for campaigns**: A much requested feature for scaling past the 400 phone numbers limit.
   - turn this on with `EXPERIMENTAL_CAMPAIGN_NUMBERS`
 - **_Experimental_ Release Texts**: Dynamic Assignment will also include a way for texters to release texts! That way when a texter is done for the day they can release texts without admin needing to go in and reassign them.
-  - Toggle this on and off in the settings menu
+  - Toggle this on and off in the organization settings menu
 - **texter-sidebox extension improvements**: (SummaryComponent, Empty context)
 - **new message-handler `to-ascii`**: converts smart quotes and special dash characters to ascii. That way unicode wont surprisingly enlarge the message size.
 - VAN action handler improvements
@@ -46,7 +204,7 @@ This is a major release and therefore requires a schema change. See the deploy s
 
 ### Appreciations
 
-Thanks to [jasterix](https://github/jasterix), [ibrand](https://github/ibrand), [jeffm2001](https://github/jeffm2001), [lperson](https://github/lperson), [matteosb](https://github/matteosb), [tekkamanendless ](https://github/tekkamanendless), and [schuyler1d](https://github/schuyler1d)
+Thanks to [jasterix](https://github.com/jasterix), [ibrand](https://github.com/ibrand), [jeffm2001](https://github.com/jeffm2001), [lperson](https://github.com/lperson), [matteosb](https://github.com/matteosb), [tekkamanendless ](https://github.com/tekkamanendless), and [schuyler1d](https://github.com/schuyler1d)
 
 ## v7.1
 
@@ -82,7 +240,7 @@ _July 2020:_ Release 7.1 is a testament to the community working together -- sev
 
 ### Appreciations
 
-Thanks to [alliejones](https://github/alliejones), [aschneit](https://github/aschneit), [eamouzou](https://github/eamouzou), [hiemanshu](https://github/hiemanshu), [ibrand](https://github/ibrand), [jeffm2001](https://github/jeffm2001), [JeremyParker](https://github/JeremyParker), [lperson](https://github/lperson), [matteosb](https://github/matteosb), and [schuyler1d](https://github/schuyler1d).
+Thanks to [alliejones](https://github.com/alliejones), [aschneit](https://github.com/aschneit), [eamouzou](https://github.com/eamouzou), [hiemanshu](https://github.com/hiemanshu), [ibrand](https://github.com/ibrand), [jeffm2001](https://github.com/jeffm2001), [JeremyParker](https://github.com/JeremyParker), [lperson](https://github.com/lperson), [matteosb](https://github.com/matteosb), and [schuyler1d](https://github.com/schuyler1d).
 
 Also to AFL-CIO, MoveOn, NYCET, Scale to Win, and Working Families Party for sending their contributions and giving early feedback/debugging time.
 

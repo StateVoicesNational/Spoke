@@ -7,7 +7,7 @@ import LinearProgress from "material-ui/LinearProgress";
 import TexterStats from "../components/TexterStats";
 import OrganizationJoinLink from "../components/OrganizationJoinLink";
 import Snackbar from "material-ui/Snackbar";
-import { withRouter } from "react-router";
+import { withRouter, Link } from "react-router";
 import { StyleSheet, css } from "aphrodite";
 import loadData from "./hoc/load-data";
 import gql from "graphql-tag";
@@ -33,7 +33,7 @@ const inlineStyles = {
   }
 };
 
-const styles = StyleSheet.create({
+export const styles = StyleSheet.create({
   container: {
     ...theme.layouts.multiColumn.container,
     marginBottom: 40,
@@ -91,6 +91,8 @@ Stat.propTypes = {
 
 class AdminCampaignStats extends React.Component {
   state = {
+    copyCampaignId: null, // This is the ID of the most-recently created copy of the campaign.
+    copyMessageOpen: false, // This is true when the copy snackbar should be shown.
     exportMessageOpen: false,
     disableExportButton: false
   };
@@ -137,6 +139,7 @@ class AdminCampaignStats extends React.Component {
   }
 
   renderErrorCounts() {
+    const { campaignId, organizationId } = this.props.params;
     const { errorCounts } = this.props.data.campaign.stats;
     const { contactsCount } = this.props.data.campaign;
     console.log("errorcounts", contactsCount, errorCounts);
@@ -155,7 +158,13 @@ class AdminCampaignStats extends React.Component {
               error.code
             )}{" "}
             {error.description || null}
-            <div>{error.count} errors</div>
+            <div>
+              <Link
+                to={`/admin/${organizationId}/incoming?campaigns=${campaignId}&errorCode=${error.code}`}
+              >
+                {error.count} errors
+              </Link>
+            </div>
             <LinearProgress
               color="red"
               mode="determinate"
@@ -164,17 +173,6 @@ class AdminCampaignStats extends React.Component {
           </div>
         ))}
       </div>
-    );
-  }
-
-  renderCopyButton() {
-    return (
-      <RaisedButton
-        label="Copy Campaign"
-        onTouchTap={async () =>
-          await this.props.mutations.copyCampaign(this.props.params.campaignId)
-        }
-      />
     );
   }
 
@@ -228,6 +226,15 @@ class AdminCampaignStats extends React.Component {
                       label="Edit"
                     />
                   ) : null}
+                  <RaisedButton
+                    {...dataTest("convoCampaign")}
+                    onTouchTap={() =>
+                      this.props.router.push(
+                        `/admin/${organizationId}/incoming?campaigns=${campaignId}`
+                      )
+                    }
+                    label="Convos"
+                  />
                   {adminPerms
                     ? [
                         // Buttons for Admins (and not Supervolunteers)
@@ -277,11 +284,15 @@ class AdminCampaignStats extends React.Component {
                         <RaisedButton
                           {...dataTest("copyCampaign")}
                           label="Copy Campaign"
-                          onTouchTap={async () =>
-                            await this.props.mutations.copyCampaign(
+                          onTouchTap={async () => {
+                            let result = await this.props.mutations.copyCampaign(
                               this.props.params.campaignId
-                            )
-                          }
+                            );
+                            this.setState({
+                              copyCampaignId: result.data.copyCampaign.id,
+                              copyMessageOpen: true
+                            });
+                          }}
                         />,
                         campaign.useOwnMessagingService ? (
                           <RaisedButton
@@ -348,13 +359,31 @@ class AdminCampaignStats extends React.Component {
         ) : null}
         <div className={css(styles.header)}>Texter stats</div>
         <div className={css(styles.secondaryHeader)}>% of first texts sent</div>
-        <TexterStats campaign={campaign} />
+        <TexterStats campaign={campaign} organizationId={organizationId} />
         <Snackbar
           open={this.state.exportMessageOpen}
           message="Export started - we'll e-mail you when it's done"
           autoHideDuration={5000}
           onRequestClose={() => {
             this.setState({ exportMessageOpen: false });
+          }}
+        />
+        <Snackbar
+          open={this.state.copyMessageOpen}
+          message="A new copy has been made."
+          action="Edit"
+          onActionClick={() => {
+            this.props.router.push(
+              "/admin/" +
+                encodeURIComponent(organizationId) +
+                "/campaigns/" +
+                encodeURIComponent(this.state.copyCampaignId) +
+                "/edit"
+            );
+          }}
+          autoHideDuration={5000}
+          onRequestClose={() => {
+            this.setState({ copyMessageOpen: false });
           }}
         />
       </div>
@@ -376,6 +405,7 @@ const queries = {
         $campaignId: String!
         $organizationId: String!
         $contactsFilter: ContactsFilter!
+        $needsResponseFilter: ContactsFilter!
         $assignmentsFilter: AssignmentsFilter
       ) {
         campaign(id: $campaignId) {
@@ -396,6 +426,7 @@ const queries = {
               lastName
             }
             unmessagedCount: contactsCount(contactsFilter: $contactsFilter)
+            unrepliedCount: contactsCount(contactsFilter: $needsResponseFilter)
             contactsCount
           }
           pendingJobs {
@@ -438,6 +469,10 @@ const queries = {
         },
         contactsFilter: {
           messageStatus: "needsMessage"
+        },
+        needsResponseFilter: {
+          messageStatus: "needsResponse",
+          isOptedOut: false
         }
       },
       pollInterval: 5000
