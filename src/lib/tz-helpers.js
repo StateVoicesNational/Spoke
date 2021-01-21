@@ -4,9 +4,8 @@ export function getProcessEnvTz(defaultTimezone) {
   // TZ is a reserved env var in Lambda and always returns :UTC
   return (
     defaultTimezone ||
-    (process.env.TZ === ":UTC"
-      ? process.env.DEFAULT_TZ
-      : process.env.DEFAULT_TZ || process.env.TZ)
+    process.env.DEFAULT_TZ ||
+    (process.env.TZ === ":UTC" ? undefined : process.env.TZ)
   );
 }
 

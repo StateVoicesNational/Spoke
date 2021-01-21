@@ -7,7 +7,7 @@ import {
 import { DstHelper } from "./dst-helper";
 import { getConfig } from "../server/api/lib/config";
 
-const TIMEZONE_CONFIG = {
+const TIMEZONE_US_FALLBACK_WINDOW = {
   missingTimeZone: {
     offset: -5, // EST
     hasDST: true,
@@ -31,8 +31,8 @@ export const getContactTimezone = (campaign, location) => {
         const hasDST = DstHelper.timezoneHasDst(getProcessEnvTz());
         timezoneData = { offset, hasDST };
       } else {
-        const offset = TIMEZONE_CONFIG.missingTimeZone.offset;
-        const hasDST = TIMEZONE_CONFIG.missingTimeZone.hasDST;
+        const offset = TIMEZONE_US_FALLBACK_WINDOW.missingTimeZone.offset;
+        const hasDST = TIMEZONE_US_FALLBACK_WINDOW.missingTimeZone.hasDST;
         timezoneData = { offset, hasDST };
       }
       returnLocation.timezone = timezoneData;
@@ -97,13 +97,6 @@ export const getSendBeforeTimeUtc = (
   const defaultTimezone = getProcessEnvTz(
     getConfig("DEFAULT_TZ", organization)
   );
-  if (defaultTimezone) {
-    return getUtcFromTimezoneAndHour(
-      defaultTimezone,
-      organization.textingHoursEnd
-    );
-  }
-
   if (contactTimezone && contactTimezone.offset) {
     return getUtcFromOffsetAndHour(
       contactTimezone.offset,
@@ -111,10 +104,15 @@ export const getSendBeforeTimeUtc = (
       organization.textingHoursEnd,
       getProcessEnvDstReferenceTimezone()
     );
+  } else if (defaultTimezone) {
+    return getUtcFromTimezoneAndHour(
+      defaultTimezone,
+      organization.textingHoursEnd
+    );
   } else {
     return getUtcFromOffsetAndHour(
-      TIMEZONE_CONFIG.missingTimeZone.offset,
-      TIMEZONE_CONFIG.missingTimeZone.hasDST,
+      TIMEZONE_US_FALLBACK_WINDOW.missingTimeZone.offset,
+      TIMEZONE_US_FALLBACK_WINDOW.missingTimeZone.hasDST,
       organization.textingHoursEnd,
       getProcessEnvDstReferenceTimezone()
     );
@@ -202,7 +200,7 @@ export const isBetweenTextingHours = (offsetData, config) => {
     offsetData,
     config.textingHoursStart,
     config.textingHoursEnd,
-    TIMEZONE_CONFIG.missingTimeZone,
+    TIMEZONE_US_FALLBACK_WINDOW.missingTimeZone,
     getProcessEnvDstReferenceTimezone()
   );
 };
