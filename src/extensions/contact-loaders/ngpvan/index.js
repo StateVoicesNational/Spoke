@@ -183,7 +183,7 @@ const getPhoneNumberIfLikelyCell = (phoneType, row) => {
       treatAsCellPhone(row[isCellPhoneKey], phoneType.assumeCellIfPresent)
     ) {
       return {
-        number: `${row[dialingPrefixKey]}${row[phoneKey]}`,
+        number: `${row[dialingPrefixKey] || ""}${row[phoneKey]}`,
         id: row[phoneIdKey]
       };
     }
@@ -350,7 +350,6 @@ export async function processContactLoad(job, maxContacts, organization) {
       headerTransformer,
       additionalCustomFields: ["VanPhoneId"]
     });
-
     if (contacts.length === 0) {
       await exports.handleFailedContactLoad(
         job,

@@ -245,7 +245,7 @@ describe("ngpvan", () => {
 1286,6678759,"1229 Dubud Cir, Gujufbik, MA 67577",Zachary,Chapman,1229 Dubud Cir,Gujufbik,MA,,Suffolk,,,,(530) 591-9876,0,(770) 500-5813,,,(865) 787-7929,,,,001,004,002,O,,,
 1286,6687736,"1660 Tiwa Pike, Owucudji, MD 78594",Phoebe,König,1660 Tiwa Pike,Owucudji,MD,,Suffolk,,,,,,(765) 927-7705,,,(232) 872-2395,,,,001,004,002,D,,,
 1286,6687737,"1820 Kasi Plz, Uhokuicu, NJ 70521",Andrew,Coli,1820 Kasi Plz,Uhokuicu,NJ,,Suffolk,,,,,,(830) 978-5900,,,(256) 289-2236,,,,001,004,002,R,,,
-1286,6740265,"1864 Pohe Path, Lahutci, IA 21134",Francis,Anderson,1864 Pohe Path,Lahutci,IA,,Suffolk,,,,(229) 403-7155,0,,,,(839) 862-7352,,,,001,004,002,R,,,
+1286,6740265,"1864 Pohe Path, Lahutci, IA 21134",Francis,Anderson,1864 Pohe Path,Lahutci,IA,,Suffolk,,,,(229) 403-7155,0,,,,(879) 862-7352,,,,001,004,002,R,,,
 1286,6848857,"296 Bilez Sq, Efabodgun, NC 26984",Florence,Adkins,296 Bilez Sq,Efabodgun,NC,,Suffolk,,,,,,,,,,,,,001,004,002,D,,,
 1286,6870533,"701 Zetli Plz, Nuwdope, CA 62375",Leona,Orsini,701 Zetli Plz,Nuwdope,CA,,Suffolk,,,,(968) 346-8020,0,,,,(874) 366-8307,,,,001,004,002,R,,,
 1286,15597061,"1591 Zuote Rdg, Pudugpu, MA 56190",Francis,Reyes,1591 Zuote Rdg,Pudugpu,MA,,Suffolk,,,,,,,,,,,,,001,004,002,R,,,
@@ -338,7 +338,7 @@ describe("ngpvan", () => {
       jest.restoreAllMocks();
     });
 
-    it("calls the api and its dependencies", async () => {
+    it("calls the api and its dependencies for processContactLoad", async () => {
       const exportJobsNock = makeSuccessfulExportJobPostNock("Completed");
       const getCsvNock = makeSuccessfulGetCsvNock();
 
@@ -357,6 +357,8 @@ describe("ngpvan", () => {
 
       expect(helpers.finalizeContactLoad).toHaveBeenCalledTimes(1);
       expect(helpers.finalizeContactLoad.mock.calls[0][0]).toEqual(job);
+      // Should be only the rows that have a Phone value that's valid (w/getFormattedPhoneNumber)
+      // so e.g. 879 and 968 are not a valid area codes (yet) so Anderson and Orsini rows are excluded
       expect(helpers.finalizeContactLoad.mock.calls[0][1]).toEqual([
         {
           cell: "+13214028326",
