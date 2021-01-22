@@ -4,6 +4,7 @@ import Twilio, { twiml } from "twilio";
 import urlJoin from "url-join";
 import { log } from "../../lib";
 import { getFormattedPhoneNumber } from "../../lib/phone-format";
+import { getConfig } from "../../server/api/lib/config";
 import {
   cacheableData,
   Log,
@@ -12,7 +13,6 @@ import {
   r
 } from "../../server/models";
 import wrap from "../../server/wrap";
-import { getConfig } from "../../server/api/lib/config";
 import { saveNewIncomingMessage } from "./message-sending";
 
 // TWILIO error_codes:
