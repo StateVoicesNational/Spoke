@@ -15,7 +15,6 @@ import {
 } from "../../../../src/containers/AdminIncomingMessageList";
 
 import { makeTree } from "../../../../src/lib";
-import twilio from "../../../../src/server/api/lib/twilio";
 
 import {
   setupTest,
@@ -39,7 +38,7 @@ import {
   sleep
 } from "../../../test_helpers";
 
-jest.mock("../../../../src/server/api/lib/twilio");
+jest.mock("../../../../src/extensions/messaging_services/twilio");
 
 let testAdminUser;
 let testInvite;
