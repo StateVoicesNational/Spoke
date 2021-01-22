@@ -3,25 +3,18 @@ import _ from "lodash";
 import Twilio, { twiml } from "twilio";
 import urlJoin from "url-join";
 import { log } from "../../lib";
-import { getFormattedPhoneNumber } from "../../lib/phone-format";
 import { getConfig } from "../../server/api/lib/config";
-import {
-  cacheableData,
-  Log,
-  Message,
-  PendingMessagePart,
-  r
-} from "../../server/models";
+import { cacheableData, r } from "../../server/models";
 import wrap from "../../server/wrap";
-import { saveNewIncomingMessage } from "./message-sending";
-
 import {
+  convertMessagePartsToMessage as _convertMessagePartsToMessage,
+  handleDeliveryReport as _handleDeliveryReport,
+  handleIncomingMessage as _handleIncomingMessage,
   parseMessageText,
   postMessageSend as _postMessageSend,
   sendMessage as _sendMessage
 } from "./lib/laml_api_impl";
 
-// TWILIO error_codes:
 // > 1 (i.e. positive) error_codes are reserved for Twilio error codes
 // -1 - -MAX_SEND_ATTEMPTS (5): failed send messages
 // -100-....: custom local errors
@@ -31,12 +24,11 @@ import {
 export const MAX_SEND_ATTEMPTS = 5;
 const MESSAGE_VALIDITY_PADDING_SECONDS = 30;
 const MAX_TWILIO_MESSAGE_VALIDITY = 14400;
-const DISABLE_DB_LOG = getConfig("DISABLE_DB_LOG");
 const TWILIO_SKIP_VALIDATION = getConfig("TWILIO_SKIP_VALIDATION");
 const BULK_REQUEST_CONCURRENCY = 5;
 const MAX_NUMBERS_PER_BUY_JOB = getConfig("MAX_NUMBERS_PER_BUY_JOB") || 100;
 
-async function getTwilio(organization) {
+export async function getTwilio(organization) {
   const {
     authToken,
     accountSid
@@ -104,7 +96,7 @@ export const errorDescriptions = {
   "-167": "Internal: Initial message altered (initialtext-guard)"
 };
 
-function addServerEndpoints(expressApp) {
+export function addServerEndpoints(expressApp) {
   expressApp.post(
     "/twilio/:orgId?",
     headerValidator(
@@ -113,7 +105,7 @@ function addServerEndpoints(expressApp) {
     ),
     wrap(async (req, res) => {
       try {
-        await handleIncomingMessage(req.body);
+        await _handleIncomingMessage(req.body, "twilio");
       } catch (ex) {
         log.error(ex);
       }
@@ -139,7 +131,7 @@ function addServerEndpoints(expressApp) {
     wrap(async (req, res) => {
       try {
         const body = req.body;
-        await handleDeliveryReport(body);
+        await _handleDeliveryReport(body, "twilio");
       } catch (ex) {
         log.error(ex);
       }
@@ -152,47 +144,17 @@ function addServerEndpoints(expressApp) {
   expressApp.post("/twilio-message-report/:orgId?", ...messageReportHooks);
 }
 
-async function convertMessagePartsToMessage(messageParts) {
-  const firstPart = messageParts[0];
-  const userNumber = firstPart.user_number;
-  const contactNumber = firstPart.contact_number;
-  const serviceMessages = messageParts.map(part =>
-    JSON.parse(part.service_message)
-  );
-  const text = serviceMessages
-    .map(serviceMessage => serviceMessage.Body)
-    .join("")
-    .replace(/\0/g, ""); // strip all UTF-8 null characters (0x00)
-  const media = serviceMessages
-    .map(serviceMessage => {
-      const mediaItems = [];
-      for (let m = 0; m < Number(serviceMessage.NumMedia); m++) {
-        mediaItems.push({
-          type: serviceMessage[`MediaContentType${m}`],
-          url: serviceMessage[`MediaUrl${m}`]
-        });
-      }
-      return mediaItems;
-    })
-    .reduce((acc, val) => acc.concat(val), []); // flatten array
-  return new Message({
-    contact_number: contactNumber,
-    user_number: userNumber,
-    is_from_contact: true,
-    text,
-    media,
-    error_code: null,
-    service_id: firstPart.service_id,
-    // will be set during cacheableData.message.save()
-    // campaign_contact_id: lastMessage.campaign_contact_id,
-    messageservice_sid: serviceMessages[0].MessagingServiceSid,
-    service: "twilio",
-    send_status: "DELIVERED",
-    user_id: null
-  });
-}
+export const convertMessagePartsToMessage = messageParts => {
+  return _convertMessagePartsToMessage(messageParts, "twilio");
+};
 
-const sendMessage = async (message, contact, trx, organization, campaign) => {
+export const sendMessage = async (
+  message,
+  contact,
+  trx,
+  organization,
+  campaign
+) => {
   const settings = {
     maxSendAttempts: MAX_SEND_ATTEMPTS,
     messageValidityPaddingSeconds: MESSAGE_VALIDITY_PADDING_SECONDS,
@@ -204,7 +166,7 @@ const sendMessage = async (message, contact, trx, organization, campaign) => {
     apiUrl: "api.twilio.com"
   };
 
-  const twilio = await getTwilio(organization);
+  const twilio = await exports.getTwilio(organization);
 
   return _sendMessage(
     twilio,
@@ -243,104 +205,19 @@ export const postMessageSend = async (
   );
 };
 
-export async function handleDeliveryReport(report) {
-  const messageSid = report.MessageSid;
-  if (messageSid) {
-    const messageStatus = report.MessageStatus;
+export const handleDeliveryReport = async report => {
+  return _handleDeliveryReport(report, "twilio");
+};
 
-    // Scalability: we don't care about "queued" and "sent" status updates so
-    // we skip writing to the database.
-    // Log just in case we need to debug something. Detailed logs can be viewed here:
-    // https://www.twilio.com/log/sms/logs/<SID>
-    log.info(`Message status ${messageSid}: ${messageStatus}`);
-    if (messageStatus === "queued" || messageStatus === "sent") {
-      return;
-    }
-
-    if (!DISABLE_DB_LOG) {
-      await Log.save({
-        message_sid: report.MessageSid,
-        body: JSON.stringify(report),
-        error_code: Number(report.ErrorCode || 0) || 0,
-        from_num: report.From || null,
-        to_num: report.To || null
-      });
-    }
-
-    if (
-      messageStatus === "delivered" ||
-      messageStatus === "failed" ||
-      messageStatus === "undelivered"
-    ) {
-      await cacheableData.message.deliveryReport({
-        contactNumber: report.To,
-        userNumber: report.From,
-        messageSid: report.MessageSid,
-        service: "twilio",
-        messageServiceSid: report.MessagingServiceSid,
-        newStatus: messageStatus === "delivered" ? "DELIVERED" : "ERROR",
-        errorCode: Number(report.ErrorCode || 0) || 0
-      });
-    }
-  }
-}
-
-async function handleIncomingMessage(message) {
-  if (
-    !message.hasOwnProperty("From") ||
-    !message.hasOwnProperty("To") ||
-    !message.hasOwnProperty("Body") ||
-    !message.hasOwnProperty("MessageSid")
-  ) {
-    log.error(`This is not an incoming message: ${JSON.stringify(message)}`);
-  }
-
-  const { From, To, MessageSid } = message;
-  const contactNumber = getFormattedPhoneNumber(From);
-  const userNumber = To ? getFormattedPhoneNumber(To) : "";
-
-  const pendingMessagePart = new PendingMessagePart({
-    service: "twilio",
-    service_id: MessageSid,
-    parent_id: null,
-    service_message: JSON.stringify(message),
-    user_number: userNumber,
-    contact_number: contactNumber
-  });
-  if (process.env.JOBS_SAME_PROCESS || global.JOBS_SAME_PROCESS) {
-    // Handle the message directly and skip saving an intermediate part
-    const finalMessage = await convertMessagePartsToMessage([
-      pendingMessagePart
-    ]);
-    console.log("Contact reply", finalMessage, pendingMessagePart);
-    if (finalMessage) {
-      if (message.spokeCreatedAt) {
-        finalMessage.created_at = message.spokeCreatedAt;
-      }
-      await saveNewIncomingMessage(finalMessage);
-    }
-  } else {
-    // If multiple processes, just insert the message part and let another job handle it
-    await r.knex("pending_message_part").insert(pendingMessagePart);
-  }
-
-  // store mediaurl data in Log, so it can be extracted manually
-  if (message.MediaUrl0 && (!DISABLE_DB_LOG || getConfig("LOG_MEDIA_URL"))) {
-    await Log.save({
-      message_sid: MessageSid,
-      body: JSON.stringify(message),
-      error_code: -101,
-      from_num: From || null,
-      to_num: To || null
-    });
-  }
-}
+export const handleIncomingMessage = async message => {
+  return _handleIncomingMessage(message, "twilio");
+};
 
 /**
  * Create a new Twilio messaging service
  */
-async function createMessagingService(organization, friendlyName) {
-  const twilio = await getTwilio(organization);
+export async function createMessagingService(organization, friendlyName) {
+  const twilio = await exports.getTwilio(organization);
   const twilioBaseUrl =
     getConfig("TWILIO_BASE_CALLBACK_URL", organization) ||
     getConfig("BASE_URL");
@@ -362,7 +239,7 @@ async function createMessagingService(organization, friendlyName) {
 /**
  * Search for phone numbers available for purchase
  */
-async function searchForAvailableNumbers(
+export async function searchForAvailableNumbers(
   twilioInstance,
   countryCode,
   areaCode,
@@ -387,8 +264,11 @@ async function searchForAvailableNumbers(
 /**
  * Fetch Phone Numbers assigned to Messaging Service
  */
-async function getPhoneNumbersForService(organization, messagingServiceSid) {
-  const twilio = await getTwilio(organization);
+export async function getPhoneNumbersForService(
+  organization,
+  messagingServiceSid
+) {
+  const twilio = await exports.getTwilio(organization);
   return await twilio.messaging
     .services(messagingServiceSid)
     .phoneNumbers.list({ limit: 400 });
@@ -397,7 +277,7 @@ async function getPhoneNumbersForService(organization, messagingServiceSid) {
 /**
  * Add bought phone number to a Messaging Service
  */
-async function addNumberToMessagingService(
+export async function addNumberToMessagingService(
   twilioInstance,
   phoneNumberSid,
   messagingServiceSid
@@ -410,7 +290,12 @@ async function addNumberToMessagingService(
 /**
  * Buy a phone number and add it to the owned_phone_number table
  */
-async function buyNumber(organization, twilioInstance, phoneNumber, opts = {}) {
+export async function buyNumber(
+  organization,
+  twilioInstance,
+  phoneNumber,
+  opts = {}
+) {
   const response = await twilioInstance.incomingPhoneNumbers.create({
     phoneNumber,
     friendlyName: `Managed by Spoke [${process.env.BASE_URL}]: ${phoneNumber}`,
@@ -448,7 +333,7 @@ async function buyNumber(organization, twilioInstance, phoneNumber, opts = {}) {
   });
 }
 
-async function bulkRequest(array, fn) {
+export async function bulkRequest(array, fn) {
   const chunks = _.chunk(array, BULK_REQUEST_CONCURRENCY);
   const results = [];
   for (const chunk of chunks) {
@@ -460,8 +345,13 @@ async function bulkRequest(array, fn) {
 /**
  * Buy up to <limit> numbers in <areaCode>
  */
-async function buyNumbersInAreaCode(organization, areaCode, limit, opts = {}) {
-  const twilioInstance = await getTwilio(organization);
+export async function buyNumbersInAreaCode(
+  organization,
+  areaCode,
+  limit,
+  opts = {}
+) {
+  const twilioInstance = await exports.getTwilio(organization);
   const countryCode = getConfig("PHONE_NUMBER_COUNTRY ", organization) || "US";
   async function buyBatch(size) {
     let successCount = 0;
@@ -497,12 +387,12 @@ async function buyNumbersInAreaCode(organization, areaCode, limit, opts = {}) {
   return totalPurchased;
 }
 
-async function addNumbersToMessagingService(
+export async function addNumbersToMessagingService(
   organization,
   phoneSids,
   messagingServiceSid
 ) {
-  const twilioInstance = await getTwilio(organization);
+  const twilioInstance = await exports.getTwilio(organization);
   return await bulkRequest(phoneSids, async phoneNumberSid =>
     twilioInstance.messaging
       .services(messagingServiceSid)
@@ -513,7 +403,7 @@ async function addNumbersToMessagingService(
 /**
  * Release a phone number and delete it from the owned_phone_number table
  */
-async function deleteNumber(twilioInstance, phoneSid, phoneNumber) {
+export async function deleteNumber(twilioInstance, phoneSid, phoneNumber) {
   await twilioInstance
     .incomingPhoneNumbers(phoneSid)
     .remove()
@@ -539,8 +429,8 @@ async function deleteNumber(twilioInstance, phoneSid, phoneNumber) {
 /**
  * Delete all non-allocted phone numbers in an area code
  */
-async function deleteNumbersInAreaCode(organization, areaCode) {
-  const twilioInstance = await getTwilio(organization);
+export async function deleteNumbersInAreaCode(organization, areaCode) {
+  const twilioInstance = await exports.getTwilio(organization);
   const numbersToDelete = await r
     .knex("owned_phone_number")
     .select("service_id", "phone_number")
@@ -559,14 +449,20 @@ async function deleteNumbersInAreaCode(organization, areaCode) {
   return successCount;
 }
 
-async function deleteMessagingService(organization, messagingServiceSid) {
-  const twilioInstance = await getTwilio(organization);
+export async function deleteMessagingService(
+  organization,
+  messagingServiceSid
+) {
+  const twilioInstance = await exports.getTwilio(organization);
   console.log("Deleting messaging service", messagingServiceSid);
   return twilioInstance.messaging.services(messagingServiceSid).remove();
 }
 
-async function clearMessagingServicePhones(organization, messagingServiceSid) {
-  const twilioInstance = await getTwilio(organization);
+export async function clearMessagingServicePhones(
+  organization,
+  messagingServiceSid
+) {
+  const twilioInstance = await exports.getTwilio(organization);
   console.log("Deleting phones from messaging service", messagingServiceSid);
 
   const phones = await twilioInstance.messaging
@@ -609,5 +505,6 @@ export default {
   deleteNumbersInAreaCode,
   addNumbersToMessagingService,
   deleteMessagingService,
-  clearMessagingServicePhones
+  clearMessagingServicePhones,
+  getTwilio
 };

@@ -1,7 +1,17 @@
 /* eslint-disable no-use-before-define, no-console */
 import { log } from "../../../lib";
+import { getFormattedPhoneNumber } from "../../../lib/phone-format";
 import { getConfig } from "../../../server/api/lib/config";
-import { cacheableData, r } from "../../../server/models";
+import {
+  cacheableData,
+  Log,
+  Message,
+  PendingMessagePart,
+  r
+} from "../../../server/models";
+import { saveNewIncomingMessage } from "../message-sending";
+
+const DISABLE_DB_LOG = getConfig("DISABLE_DB_LOG");
 
 const getMessagingServiceSid = async (
   organization,
@@ -68,7 +78,6 @@ export const sendMessage = async (
     serviceName,
     apiUrl
   } = settings;
-
   const APITEST = apiTestRegex.test(message.text);
   if (!serviceClient && !APITEST) {
     log.warn(
@@ -288,5 +297,143 @@ export const postMessageSend = async (
         );
         reject(caught);
       });
+  }
+};
+
+export const convertMessagePartsToMessage = (
+  messageParts,
+  messagingServiceName
+) => {
+  const firstPart = messageParts[0];
+  const userNumber = firstPart.user_number;
+  const contactNumber = firstPart.contact_number;
+  const serviceMessages = messageParts.map(part =>
+    JSON.parse(part.service_message)
+  );
+  const text = serviceMessages
+    .map(serviceMessage => serviceMessage.Body)
+    .join("")
+    .replace(/\0/g, ""); // strip all UTF-8 null characters (0x00)
+  const media = serviceMessages
+    .map(serviceMessage => {
+      const mediaItems = [];
+      for (let m = 0; m < Number(serviceMessage.NumMedia); m++) {
+        mediaItems.push({
+          type: serviceMessage[`MediaContentType${m}`],
+          url: serviceMessage[`MediaUrl${m}`]
+        });
+      }
+      return mediaItems;
+    })
+    .reduce((acc, val) => acc.concat(val), []); // flatten array
+
+  return new Message({
+    contact_number: contactNumber,
+    user_number: userNumber,
+    is_from_contact: true,
+    text,
+    media,
+    error_code: null,
+    service_id: firstPart.service_id,
+    // will be set during cacheableData.message.save()
+    // campaign_contact_id: lastMessage.campaign_contact_id,
+    messageservice_sid: serviceMessages[0].MessagingServiceSid,
+    service: messagingServiceName,
+    send_status: "DELIVERED",
+    user_id: null
+  });
+};
+
+export const handleIncomingMessage = async (message, messagingServiceName) => {
+  if (
+    !message.hasOwnProperty("From") ||
+    !message.hasOwnProperty("To") ||
+    !message.hasOwnProperty("Body") ||
+    !message.hasOwnProperty("MessageSid")
+  ) {
+    log.error(`This is not an incoming message: ${JSON.stringify(message)}`);
+  }
+
+  const { From, To, MessageSid } = message;
+  const contactNumber = getFormattedPhoneNumber(From);
+  const userNumber = To ? getFormattedPhoneNumber(To) : "";
+
+  const pendingMessagePart = new PendingMessagePart({
+    service: messagingServiceName,
+    service_id: MessageSid,
+    parent_id: null,
+    service_message: JSON.stringify(message),
+    user_number: userNumber,
+    contact_number: contactNumber
+  });
+  if (process.env.JOBS_SAME_PROCESS || global.JOBS_SAME_PROCESS) {
+    // Handle the message directly and skip saving an intermediate part
+    const finalMessage = await convertMessagePartsToMessage(
+      [pendingMessagePart],
+      messagingServiceName
+    );
+    console.log("Contact reply", finalMessage, pendingMessagePart);
+    if (finalMessage) {
+      if (message.spokeCreatedAt) {
+        finalMessage.created_at = message.spokeCreatedAt;
+      }
+      await saveNewIncomingMessage(finalMessage);
+    }
+  } else {
+    // If multiple processes, just insert the message part and let another job handle it
+    await r.knex("pending_message_part").insert(pendingMessagePart);
+  }
+
+  // store mediaurl data in Log, so it can be extracted manually
+  if (message.MediaUrl0 && (!DISABLE_DB_LOG || getConfig("LOG_MEDIA_URL"))) {
+    await Log.save({
+      message_sid: MessageSid,
+      body: JSON.stringify(message),
+      error_code: -101,
+      from_num: From || null,
+      to_num: To || null
+    });
+  }
+};
+
+export const handleDeliveryReport = async (report, messagingServiceName) => {
+  const messageSid = report.MessageSid;
+  if (messageSid) {
+    const messageStatus = report.MessageStatus;
+
+    // Scalability: we don't care about "queued" and "sent" status updates so
+    // we skip writing to the database.
+    // Log just in case we need to debug something. Detailed logs can be viewed here:
+    // https://www.twilio.com/log/sms/logs/<SID>
+    log.info(`Message status ${messageSid}: ${messageStatus}`);
+    if (messageStatus === "queued" || messageStatus === "sent") {
+      return;
+    }
+
+    if (!DISABLE_DB_LOG) {
+      await Log.save({
+        message_sid: report.MessageSid,
+        body: JSON.stringify(report),
+        error_code: Number(report.ErrorCode || 0) || 0,
+        from_num: report.From || null,
+        to_num: report.To || null
+      });
+    }
+
+    if (
+      messageStatus === "delivered" ||
+      messageStatus === "failed" ||
+      messageStatus === "undelivered"
+    ) {
+      await cacheableData.message.deliveryReport({
+        contactNumber: report.To,
+        userNumber: report.From,
+        messageSid: report.MessageSid,
+        service: messagingServiceName,
+        messageServiceSid: report.MessagingServiceSid,
+        newStatus: messageStatus === "delivered" ? "DELIVERED" : "ERROR",
+        errorCode: Number(report.ErrorCode || 0) || 0
+      });
+    }
   }
 };
