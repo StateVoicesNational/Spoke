@@ -1,9 +1,9 @@
 /* eslint-disable no-unused-expressions, consistent-return */
-import { getLastMessage } from "../../../../src/extensions/messaging_services/message-sending";
-import * as twilio from "../../../../src/extensions/messaging_services/twilio"; // } //   MAX_SEND_ATTEMPTS //   handleDeliveryReport, //   postMessageSend, // , {
-import { getConfig } from "../../../../src/server/api/lib/config";
-import { cacheableData, Message, r } from "../../../../src/server/models/";
-import { erroredMessageSender } from "../../../../src/workers/job-processes";
+import { r, Message, cacheableData } from "../../../src/server/models/";
+import { getConfig } from "../../../src/server/api/lib/config";
+import * as twilio from "../../../src/extensions/messaging_services/twilio";
+import { getLastMessage } from "../../../src/extensions/messaging_services/message-sending";
+import { erroredMessageSender } from "../../../src/workers/job-processes";
 import {
   assignTexter,
   cleanupTest,
@@ -18,7 +18,7 @@ import {
   setTwilioAuth,
   setupTest,
   startCampaign
-} from "../../../test_helpers";
+} from "../../test_helpers";
 
 describe("twilio", () => {
   let testAdminUser;
