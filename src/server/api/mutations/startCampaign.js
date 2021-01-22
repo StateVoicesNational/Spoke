@@ -2,7 +2,7 @@ import cacheableData from "../../models/cacheable_queries";
 import { r } from "../../models";
 import { accessRequired } from "../errors";
 import { Notifications, sendUserNotification } from "../../notifications";
-import twilio from "../../../extensions/messaging_services/twilio";
+import * as twilio from "../../../extensions/messaging_services/twilio";
 import { getConfig } from "../lib/config";
 import { jobRunner } from "../../../extensions/job-runners";
 import { Tasks } from "../../../workers/tasks";
