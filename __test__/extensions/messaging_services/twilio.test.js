@@ -1,12 +1,12 @@
 /* eslint-disable no-unused-expressions, consistent-return */
-import { r, Message, cacheableData } from "../../../../src/server/models/";
-import { getConfig } from "../../../../src/server/api/lib/config";
+import { r, Message, cacheableData } from "../../../src/server/models/";
+import { getConfig } from "../../../src/server/api/lib/config";
 import twilio, {
   postMessageSend,
   handleDeliveryReport
-} from "../../../../src/extensions/messaging_services/twilio";
-import { getLastMessage } from "../../../../src/extensions/messaging_services/message-sending";
-import { erroredMessageSender } from "../../../../src/workers/job-processes";
+} from "../../../src/extensions/messaging_services/twilio";
+import { getLastMessage } from "../../../src/extensions/messaging_services/message-sending";
+import { erroredMessageSender } from "../../../src/workers/job-processes";
 import {
   setupTest,
   cleanupTest,
@@ -21,7 +21,7 @@ import {
   createScript,
   startCampaign,
   getCampaignContact
-} from "../../../test_helpers";
+} from "../../test_helpers";
 
 let testAdminUser;
 let testInvite;
