@@ -1,5 +1,10 @@
 import { getLastMessage } from "./message-sending";
-import { Message, PendingMessagePart, r, cacheableData } from "../../models";
+import {
+  Message,
+  PendingMessagePart,
+  r,
+  cacheableData
+} from "../../server/models";
 import uuid from "uuid";
 
 // This 'fakeservice' allows for fake-sending messages
@@ -48,7 +53,7 @@ async function sendMessage(message, contact, trx, organization, campaign) {
         ]
       : null;
     await cacheableData.message.save({
-      contact: contact,
+      contact,
       messageInstance: new Message({
         ...message,
         ...changes,

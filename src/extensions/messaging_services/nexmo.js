@@ -1,8 +1,8 @@
 import Nexmo from "nexmo";
-import { getFormattedPhoneNumber } from "../../../lib/phone-format";
-import { Message, PendingMessagePart } from "../../models";
+import { getFormattedPhoneNumber } from "../../lib/phone-format";
+import { Message, PendingMessagePart } from "../../server/models";
 import { getLastMessage } from "./message-sending";
-import { log } from "../../../lib";
+import { log } from "../../lib";
 
 // NEXMO error_codes:
 // If status is a number, then it will be the number
@@ -148,7 +148,7 @@ async function sendMessage(message, contact, trx, organization, campaign) {
         }
 
         messageToSave.service = "nexmo";
-        //userNum is required so can be tracked as messageservice_sid
+        // userNum is required so can be tracked as messageservice_sid
         messageToSave.messageservice_sid = getFormattedPhoneNumber(userNumber);
         messageToSave.campaign_contact_id = contact.id;
 

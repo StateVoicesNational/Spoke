@@ -4,8 +4,8 @@ import { getConfig } from "../../../../src/server/api/lib/config";
 import twilio, {
   postMessageSend,
   handleDeliveryReport
-} from "../../../../src/server/api/lib/twilio";
-import { getLastMessage } from "../../../../src/server/api/lib/message-sending";
+} from "../../../../src/extensions/messaging_services/twilio";
+import { getLastMessage } from "../../../../src/extensions/messaging_services/message-sending";
 import { erroredMessageSender } from "../../../../src/workers/job-processes";
 import {
   setupTest,
