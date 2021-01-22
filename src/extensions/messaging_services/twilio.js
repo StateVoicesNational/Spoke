@@ -30,7 +30,7 @@ const TWILIO_SKIP_VALIDATION = getConfig("TWILIO_SKIP_VALIDATION");
 const BULK_REQUEST_CONCURRENCY = 5;
 const MAX_NUMBERS_PER_BUY_JOB = getConfig("MAX_NUMBERS_PER_BUY_JOB") || 100;
 
-async function getTwilio(organization) {
+export async function getTwilio(organization) {
   const {
     authToken,
     accountSid
@@ -233,8 +233,14 @@ async function getMessagingServiceSid(
   );
 }
 
-async function sendMessage(message, contact, trx, organization, campaign) {
-  const twilio = await getTwilio(organization);
+export async function sendMessage(
+  message,
+  contact,
+  trx,
+  organization,
+  campaign
+) {
+  const twilio = await exports.getTwilio(organization);
   const APITEST = /twilioapitest/.test(message.text);
   if (!twilio && !APITEST) {
     log.warn(
@@ -496,7 +502,7 @@ export async function handleDeliveryReport(report) {
   }
 }
 
-async function handleIncomingMessage(message) {
+export async function handleIncomingMessage(message) {
   if (
     !message.hasOwnProperty("From") ||
     !message.hasOwnProperty("To") ||
@@ -550,8 +556,8 @@ async function handleIncomingMessage(message) {
 /**
  * Create a new Twilio messaging service
  */
-async function createMessagingService(organization, friendlyName) {
-  const twilio = await getTwilio(organization);
+export async function createMessagingService(organization, friendlyName) {
+  const twilio = await exports.getTwilio(organization);
   const twilioBaseUrl =
     getConfig("TWILIO_BASE_CALLBACK_URL", organization) ||
     getConfig("BASE_URL");
@@ -599,7 +605,7 @@ async function searchForAvailableNumbers(
  * Fetch Phone Numbers assigned to Messaging Service
  */
 async function getPhoneNumbersForService(organization, messagingServiceSid) {
-  const twilio = await getTwilio(organization);
+  const twilio = await exports.getTwilio(organization);
   return await twilio.messaging
     .services(messagingServiceSid)
     .phoneNumbers.list({ limit: 400 });
@@ -671,8 +677,13 @@ async function bulkRequest(array, fn) {
 /**
  * Buy up to <limit> numbers in <areaCode>
  */
-async function buyNumbersInAreaCode(organization, areaCode, limit, opts = {}) {
-  const twilioInstance = await getTwilio(organization);
+export async function buyNumbersInAreaCode(
+  organization,
+  areaCode,
+  limit,
+  opts = {}
+) {
+  const twilioInstance = await exports.getTwilio(organization);
   const countryCode = getConfig("PHONE_NUMBER_COUNTRY ", organization) || "US";
   async function buyBatch(size) {
     let successCount = 0;
@@ -713,7 +724,7 @@ async function addNumbersToMessagingService(
   phoneSids,
   messagingServiceSid
 ) {
-  const twilioInstance = await getTwilio(organization);
+  const twilioInstance = await exports.getTwilio(organization);
   return await bulkRequest(phoneSids, async phoneNumberSid =>
     twilioInstance.messaging
       .services(messagingServiceSid)
@@ -751,7 +762,7 @@ async function deleteNumber(twilioInstance, phoneSid, phoneNumber) {
  * Delete all non-allocted phone numbers in an area code
  */
 async function deleteNumbersInAreaCode(organization, areaCode) {
-  const twilioInstance = await getTwilio(organization);
+  const twilioInstance = await exports.getTwilio(organization);
   const numbersToDelete = await r
     .knex("owned_phone_number")
     .select("service_id", "phone_number")
@@ -771,13 +782,13 @@ async function deleteNumbersInAreaCode(organization, areaCode) {
 }
 
 async function deleteMessagingService(organization, messagingServiceSid) {
-  const twilioInstance = await getTwilio(organization);
+  const twilioInstance = await exports.getTwilio(organization);
   console.log("Deleting messaging service", messagingServiceSid);
   return twilioInstance.messaging.services(messagingServiceSid).remove();
 }
 
 async function clearMessagingServicePhones(organization, messagingServiceSid) {
-  const twilioInstance = await getTwilio(organization);
+  const twilioInstance = await exports.getTwilio(organization);
   console.log("Deleting phones from messaging service", messagingServiceSid);
 
   const phones = await twilioInstance.messaging
@@ -820,5 +831,6 @@ export default {
   deleteNumbersInAreaCode,
   addNumbersToMessagingService,
   deleteMessagingService,
-  clearMessagingServicePhones
+  clearMessagingServicePhones,
+  getTwilio
 };
