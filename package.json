@@ -77,6 +77,7 @@
   "homepage": "https://github.com/MoveOnOrg/Spoke/#readme",
   "dependencies": {
     "@aoberoi/passport-slack": "^1.0.5",
+    "@signalwire/node": "^2.3.3",
     "@trt2/gsm-charset-utils": "^1.0.13",
     "aphrodite": "^2.3.1",
     "apollo-cache-inmemory": "^1.6.6",
