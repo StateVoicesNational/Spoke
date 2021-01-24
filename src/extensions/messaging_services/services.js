@@ -1,5 +1,6 @@
 import nexmo from "./nexmo";
 import twilio from "./twilio";
+import signalwire from "./signalwire";
 import fakeservice from "./fakeservice";
 
 // Each service needs the following api points:
@@ -17,6 +18,7 @@ import fakeservice from "./fakeservice";
 
 const serviceMap = {
   nexmo,
+  signalwire,
   twilio,
   fakeservice
 };

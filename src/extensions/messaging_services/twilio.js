@@ -15,6 +15,12 @@ import {
 import wrap from "../../server/wrap";
 import { saveNewIncomingMessage } from "./message-sending";
 
+import {
+  parseMessageText,
+  postMessageSend as _postMessageSend,
+  sendMessage as _sendMessage
+} from "./lib/laml_api_impl";
+
 // TWILIO error_codes:
 // > 1 (i.e. positive) error_codes are reserved for Twilio error codes
 // -1 - -MAX_SEND_ATTEMPTS (5): failed send messages
@@ -22,7 +28,7 @@ import { saveNewIncomingMessage } from "./message-sending";
 // -101: incoming message with a MediaUrl
 // -166: blocked send for profanity message_handler match
 
-const MAX_SEND_ATTEMPTS = 5;
+export const MAX_SEND_ATTEMPTS = 5;
 const MESSAGE_VALIDITY_PADDING_SECONDS = 30;
 const MAX_TWILIO_MESSAGE_VALIDITY = 14400;
 const DISABLE_DB_LOG = getConfig("DISABLE_DB_LOG");
@@ -186,176 +192,32 @@ async function convertMessagePartsToMessage(messageParts) {
   });
 }
 
-const mediaExtractor = new RegExp(/\[\s*(http[^\]\s]*)\s*\]/);
-
-function parseMessageText(message) {
-  const text = message.text || "";
-  const params = {
-    body: text.replace(mediaExtractor, "")
+const sendMessage = async (message, contact, trx, organization, campaign) => {
+  const settings = {
+    maxSendAttempts: MAX_SEND_ATTEMPTS,
+    messageValidityPaddingSeconds: MESSAGE_VALIDITY_PADDING_SECONDS,
+    maxServiceMessageValidity: MAX_TWILIO_MESSAGE_VALIDITY,
+    messageServiceValidityPeriod: process.env.TWILIO_MESSAGE_VALIDITY_PERIOD,
+    apiTestRegex: /twilioapitest/,
+    apiTestTimeoutRegex: /twilioapitesterrortimeout/,
+    serviceName: "twilio",
+    apiUrl: "api.twilio.com"
   };
-  // Image extraction
-  const results = text.match(mediaExtractor);
-  if (results) {
-    params.mediaUrl = results[1];
-  }
-  return params;
-}
 
-async function getMessagingServiceSid(
-  organization,
-  contact,
-  message,
-  _campaign
-) {
-  // NOTE: because of this check you can't switch back to organization/global
-  // messaging service without breaking running campaigns.
-  if (
-    getConfig(
-      "EXPERIMENTAL_TWILIO_PER_CAMPAIGN_MESSAGING_SERVICE",
-      organization,
-      { truthy: true }
-    ) ||
-    getConfig("EXPERIMENTAL_CAMPAIGN_PHONE_NUMBERS", organization, {
-      truthy: true
-    })
-  ) {
-    const campaign =
-      _campaign || (await cacheableData.campaign.load(contact.campaign_id));
-    if (campaign.messageservice_sid) {
-      return campaign.messageservice_sid;
-    }
-  }
-
-  return await cacheableData.organization.getMessageServiceSid(
-    organization,
-    contact,
-    message.text
-  );
-}
-
-async function sendMessage(message, contact, trx, organization, campaign) {
   const twilio = await getTwilio(organization);
-  const APITEST = /twilioapitest/.test(message.text);
-  if (!twilio && !APITEST) {
-    log.warn(
-      "cannot actually send SMS message -- twilio is not fully configured:",
-      message.id
-    );
-    if (message.id) {
-      let updateQuery = r
-        .knex("message")
-        .where("id", message.id)
-        .update({ send_status: "SENT", sent_at: new Date() });
-      if (trx) {
-        updateQuery = updateQuery.transacting(trx);
-      }
-      await updateQuery;
-    }
-    return "test_message_uuid";
-  }
 
-  // Note organization won't always be available, so then contact can trace to it
-  const messagingServiceSid = await getMessagingServiceSid(
-    organization,
-    contact,
+  return _sendMessage(
+    twilio,
     message,
-    campaign
+    contact,
+    trx,
+    organization,
+    campaign,
+    settings
   );
+};
 
-  return new Promise((resolve, reject) => {
-    if (message.service !== "twilio") {
-      log.warn("Message not marked as a twilio message", message.id);
-    }
-
-    let twilioValidityPeriod = process.env.TWILIO_MESSAGE_VALIDITY_PERIOD;
-
-    if (message.send_before) {
-      // the message is valid no longer than the time between now and
-      // the send_before time, less 30 seconds
-      // we subtract the MESSAGE_VALIDITY_PADDING_SECONDS seconds to allow time for the message to be sent by
-      // a downstream service
-      const messageValidityPeriod =
-        Math.ceil((message.send_before - Date.now()) / 1000) -
-        MESSAGE_VALIDITY_PADDING_SECONDS;
-
-      if (messageValidityPeriod < 0) {
-        // this is an edge case
-        // it means the message arrived in this function already too late to be sent
-        // pass the negative validity period to twilio, and let twilio respond with an error
-      }
-
-      if (twilioValidityPeriod) {
-        twilioValidityPeriod = Math.min(
-          twilioValidityPeriod,
-          messageValidityPeriod,
-          MAX_TWILIO_MESSAGE_VALIDITY
-        );
-      } else {
-        twilioValidityPeriod = Math.min(
-          messageValidityPeriod,
-          MAX_TWILIO_MESSAGE_VALIDITY
-        );
-      }
-    }
-    const changes = {};
-
-    changes.messageservice_sid = messagingServiceSid;
-
-    const messageParams = Object.assign(
-      {
-        to: message.contact_number,
-        body: message.text
-      },
-      messagingServiceSid ? { messagingServiceSid } : {},
-      twilioValidityPeriod ? { validityPeriod: twilioValidityPeriod } : {},
-      parseMessageText(message)
-    );
-
-    console.log("twilioMessage", messageParams);
-    if (APITEST) {
-      let fakeErr = null;
-      let fakeResponse = null;
-      if (/twilioapitesterrortimeout/.test(message.text)) {
-        fakeErr = {
-          status: "ESOCKETTIMEDOUT",
-          message:
-            'FAKE TRIGGER(apierrortest) Unable to reach host: "api.twilio.com"'
-        };
-      } else {
-        fakeResponse = {
-          sid: `FAKETWILIIO${Math.random()}`
-        };
-      }
-      postMessageSend(
-        message,
-        contact,
-        trx,
-        resolve,
-        reject,
-        fakeErr,
-        fakeResponse,
-        organization,
-        changes
-      );
-    } else {
-      twilio.messages.create(messageParams, (err, response) => {
-        postMessageSend(
-          message,
-          contact,
-          trx,
-          resolve,
-          reject,
-          err,
-          response,
-          organization,
-          changes
-        );
-      });
-    }
-  });
-}
-
-export function postMessageSend(
+export const postMessageSend = async (
   message,
   contact,
   trx,
@@ -364,95 +226,22 @@ export function postMessageSend(
   err,
   response,
   organization,
-  changes
-) {
-  let changesToSave = changes
-    ? {
-        ...changes
-      }
-    : {};
-  log.info("postMessageSend", message, changes, response, err);
-  let hasError = false;
-  if (err) {
-    hasError = true;
-    log.error("Error sending message", err);
-    console.log("Error sending message", err);
-  }
-  if (response) {
-    changesToSave.service_id = response.sid;
-    hasError = !!response.error_code;
-    if (hasError) {
-      changesToSave.error_code = response.error_code;
-      changesToSave.send_status = "ERROR";
-    }
-  }
-  let updateQuery = r.knex("message").where("id", message.id);
-  if (trx) {
-    updateQuery = updateQuery.transacting(trx);
-  }
-
-  if (hasError) {
-    if (err) {
-      // TODO: for some errors we should *not* retry
-      // e.g. 21617 is max character limit
-      if (message.error_code <= -MAX_SEND_ATTEMPTS) {
-        changesToSave.send_status = "ERROR";
-      }
-      // decrement error code starting from zero
-      changesToSave.error_code = Number(message.error_code || 0) - 1;
-    }
-
-    let contactUpdateQuery = Promise.resolve(1);
-    if (message.campaign_contact_id && changesToSave.error_code) {
-      contactUpdateQuery = r
-        .knex("campaign_contact")
-        .where("id", message.campaign_contact_id)
-        .update("error_code", changesToSave.error_code);
-      if (trx) {
-        contactUpdateQuery = contactUpdateQuery.transacting(trx);
-      }
-    }
-
-    updateQuery = updateQuery.update(changesToSave);
-
-    Promise.all([updateQuery, contactUpdateQuery]).then(() => {
-      console.log("Saved message error status", changesToSave, err);
-      reject(
-        err ||
-          (response
-            ? new Error(JSON.stringify(response))
-            : new Error("Encountered unknown error"))
-      );
-    });
-  } else {
-    changesToSave = {
-      ...changesToSave,
-      send_status: "SENT",
-      service: "twilio",
-      sent_at: new Date()
-    };
-    Promise.all([
-      updateQuery.update(changesToSave),
-      cacheableData.campaignContact.updateStatus({
-        ...contact,
-        messageservice_sid: changesToSave.messageservice_sid
-      })
-    ])
-      .then(() => {
-        resolve({
-          ...message,
-          ...changesToSave
-        });
-      })
-      .catch(caught => {
-        console.error(
-          "Failed message and contact update on twilio postMessageSend",
-          caught
-        );
-        reject(caught);
-      });
-  }
-}
+  changes,
+  settings
+) => {
+  return _postMessageSend(
+    message,
+    contact,
+    trx,
+    resolve,
+    reject,
+    err,
+    response,
+    organization,
+    changes,
+    settings
+  );
+};
 
 export async function handleDeliveryReport(report) {
   const messageSid = report.MessageSid;

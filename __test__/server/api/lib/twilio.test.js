@@ -3,7 +3,8 @@ import { r, Message, cacheableData } from "../../../../src/server/models/";
 import { getConfig } from "../../../../src/server/api/lib/config";
 import twilio, {
   postMessageSend,
-  handleDeliveryReport
+  handleDeliveryReport,
+  MAX_SEND_ATTEMPTS
 } from "../../../../src/extensions/messaging_services/twilio";
 import { getLastMessage } from "../../../../src/extensions/messaging_services/message-sending";
 import { erroredMessageSender } from "../../../../src/workers/job-processes";
@@ -204,7 +205,13 @@ it("postMessageSend network error should decrement on err/failure ", async () =>
           reject,
           // err, resposne
           { status: "ETIMEDOUT" },
-          null
+          null,
+          null,
+          null,
+          {
+            maxSendAttempts: MAX_SEND_ATTEMPTS,
+            serviceName: "twilio"
+          }
         );
       });
       expect("above statement to throw error w/ reject").toEqual(true);
