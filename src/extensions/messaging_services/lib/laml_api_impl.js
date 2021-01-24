@@ -37,7 +37,7 @@ const getMessagingServiceSid = async (
 
 const mediaExtractor = new RegExp(/\[\s*(http[^\]\s]*)\s*\]/);
 
-function parseMessageText(message) {
+export const parseMessageText = message => {
   const text = message.text || "";
   const params = {
     body: text.replace(mediaExtractor, "")
@@ -48,7 +48,7 @@ function parseMessageText(message) {
     params.mediaUrl = results[1];
   }
   return params;
-}
+};
 
 export const sendMessage = async (
   serviceClient,
