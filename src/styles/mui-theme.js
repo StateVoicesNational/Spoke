@@ -1,6 +1,6 @@
 import getMuiTheme from "material-ui/styles/getMuiTheme";
 import theme from "./theme";
-import { grey400, grey500 } from "material-ui/styles/colors";
+import { grey400, grey500, darkBlack } from "material-ui/styles/colors";
 import { fade } from "material-ui/utils/colorManipulator";
 
 const muiTheme = getMuiTheme(
@@ -17,7 +17,7 @@ const muiTheme = getMuiTheme(
       alternateTextColor: theme.colors.white,
       canvasColor: theme.colors.white,
       borderColor: theme.colors.lightGray,
-      disabledColor: fade(theme.colors.white, 0.3)
+      disabledColor: fade(darkBlack, 0.3)
     }
   },
   { userAgent: "all" }
