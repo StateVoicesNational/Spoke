@@ -44,7 +44,7 @@ See links and notes from the [10.0 pull request](https://github.com/MoveOnOrg/Sp
 
 ### Appreciations
 
-* [codygordon](https://github.com/codygordon) [mayefsky](https://github.com/mayefsky) [jeffm2001](https://github.com/jeffm2001) [oburbank](https://github.com/oburbank) [asalant](https://github.com/asalant) [matteosb](https://github.com/matteosb) [lperson](https://github.com/lperson) [agreenspan24](https://github.com/agreenspan24) [navinsivakumar](https://github.com/navinsivakumar) [JeremyParker](https://github.com/JeremyParker) [inorvig](https://github.com/inorvig) [schuyler1d](https://github.com/schuyler1d)
+* [agreenspan24](https://github.com/agreenspan24), [asalant](https://github.com/asalant), [codygordon](https://github.com/codygordon), [ibrand](https://github.com/ibrand), [inorvig](https://github.com/inorvig), [jeffm2001](https://github.com/jeffm2001), [JeremyParker](https://github.com/JeremyParker), [lperson](https://github.com/lperson), [matteosb](https://github.com/matteosb), [mayefsky](https://github.com/mayefsky), [navinsivakumar](https://github.com/navinsivakumar), [oburbank](https://github.com/oburbank), [schuyler1d](https://github.com/schuyler1d)
 * Mark Houghton and [Arena Reed](https://github.com/arena) for QA and design help
 * Everyone that worked to make positive change this past year!
 
