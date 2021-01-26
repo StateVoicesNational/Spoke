@@ -65,7 +65,11 @@ export const preMessageSave = async ({ messageToSave, organization }) => {
       const reason = matches[0].reason || "auto_optout";
       messageToSave.error_code = -133;
       return {
-        contactUpdates: { is_opted_out: true, error_code: -133 },
+        contactUpdates: {
+          is_opted_out: true,
+          error_code: -133,
+          message_status: "closed"
+        },
         handlerContext: { autoOptOutReason: reason },
         messageToSave
       };
