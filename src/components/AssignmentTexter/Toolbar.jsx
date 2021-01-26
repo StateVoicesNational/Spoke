@@ -89,6 +89,12 @@ const styles = StyleSheet.create({
     height: "100%",
     padding: "6px",
     textAlign: "center"
+  },
+  arrowIcon: {
+    color: "white"
+  },
+  arrowIconDisabled: {
+    fill: "rgba(255, 255, 255,0.3)"
   }
 });
 
@@ -199,11 +205,11 @@ const ContactToolbar = function ContactToolbar(props) {
             style={{ flex: "0 0 56px", width: "45px" }}
           >
             <ArrowBackIcon
-              color={
+              className={css(
                 navigationToolbarChildren.onPrevious
-                  ? "white"
-                  : "rgb(176, 176, 176)"
-              }
+                  ? styles.arrowIcon
+                  : styles.arrowIconDisabled
+              )}
             />
           </IconButton>
           <div className={css(styles.navigationTitle)}>
@@ -217,11 +223,11 @@ const ContactToolbar = function ContactToolbar(props) {
             style={{ flex: "0 0 56px", width: "45px" }}
           >
             <ArrowForwardIcon
-              color={
+              className={css(
                 navigationToolbarChildren.onNext
-                  ? "white"
-                  : "rgb(176, 176, 176)"
-              }
+                  ? styles.arrowIcon
+                  : styles.arrowIconDisabled
+              )}
             />
           </IconButton>
         </div>
