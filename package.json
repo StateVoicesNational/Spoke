@@ -70,7 +70,7 @@
     "field"
   ],
   "author": "Axle Factory",
-  "license": "GPL-3.0 with section 7 additions, see LICENSE",
+  "license": "GPL-3.0-only",
   "bugs": {
     "url": "https://github.com/MoveOnOrg/Spoke/issues"
   },
