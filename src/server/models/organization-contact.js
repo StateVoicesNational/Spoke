@@ -1,6 +1,6 @@
 import thinky from "./thinky";
 const type = thinky.type;
-import { requiredString } from "./custom-types";
+import { optionalString, requiredString } from "./custom-types";
 
 // For documentation purposes only. Use knex queries instead of this model.
 const OrganizationContact = thinky.createModel(
@@ -11,7 +11,7 @@ const OrganizationContact = thinky.createModel(
       id: type.string(),
       organization_id: requiredString(),
       contact_number: requiredString(),
-      user_number: requiredString()
+      user_number: optionalString()
     })
     .allowExtra(false)
 );
