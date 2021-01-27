@@ -155,6 +155,7 @@ class AdminOrganizationsDashboard extends React.Component {
                 this.props.data.organizations.reverse();
               }
             }}
+            initialSort={{ column: "id", order: "desc" }}
           />
         </div>
         {this.renderActionButton()}

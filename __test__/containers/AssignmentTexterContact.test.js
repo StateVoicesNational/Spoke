@@ -50,7 +50,7 @@ const propsWithEnforcedTextingHoursCampaign = {
     lastName: "person",
     assignedCell: null
   },
-  campaign: campaign,
+  campaign,
   assignment: {
     id: 9,
     texter: {
@@ -59,7 +59,7 @@ const propsWithEnforcedTextingHoursCampaign = {
       lastName: "person",
       assignedCell: null
     },
-    campaign: campaign,
+    campaign,
     contacts: [
       {
         id: 19
@@ -99,7 +99,8 @@ const propsWithEnforcedTextingHoursCampaign = {
     title: "1 of 2",
     total: 2,
     currentIndex: 1
-  }
+  },
+  location: { query: {} }
 };
 
 describe("when contact is not within texting hours...", () => {
@@ -126,6 +127,7 @@ describe("when contact is not within texting hours...", () => {
           navigationToolbarChildren={
             propsWithEnforcedTextingHoursCampaign.navigationToolbarChildren
           }
+          location={propsWithEnforcedTextingHoursCampaign.location}
         />
       </MuiThemeProvider>
     );
@@ -157,6 +159,7 @@ describe("when contact is within texting hours...", () => {
           navigationToolbarChildren={
             propsWithEnforcedTextingHoursCampaign.navigationToolbarChildren
           }
+          location={propsWithEnforcedTextingHoursCampaign.location}
         />
       </MuiThemeProvider>
     );

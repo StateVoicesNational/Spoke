@@ -43,7 +43,7 @@ const env_production = {
   ROLLBAR_ACCESS_TOKEN:'',
   ROLLBAR_ENDPOINT:'https://api.rollbar.com/api/1/item/',
   ALLOW_SEND_ALL: false,
-  DST_REFERENCE_TIMEZONE: 'America/New_York'
+  DST_REFERENCE_TIMEZONE: 'US/Eastern'
 }
 
 module.exports = {
