@@ -247,10 +247,8 @@ async function getOrganizationContact(organization, contactNumber) {
   }
 
   if (
-    (getConfig("EXPERIMENTAL_PHONE_INVENTORY", organization, {
-      truthy: true
-    }) ||
-      getConfig("PHONE_INVENTORY", organization, { truthy: true })) &&
+    (getConfig("EXPERIMENTAL_PHONE_INVENTORY", organization, { truthy: true}) 
+      || getConfig("PHONE_INVENTORY", organization, { truthy: true })) &&
     getConfig("SKIP_TWILIO_MESSAGING_SERVICE", organization, { truthy: true })
   ) {
     const phoneNumber = await ownedPhoneNumber.getOwnedPhoneNumberForStickySender(

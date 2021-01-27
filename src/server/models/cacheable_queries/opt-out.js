@@ -1,6 +1,6 @@
 import { r, OptOut } from "../../models";
 import campaignCache from "./campaign";
-import contactUserNumberCache from "./contact-user-number";
+import organizationContactCache from "./organization-contact";
 
 // STRUCTURE
 // SET by organization, so optout-<organization_id> has a <cell> key
@@ -193,13 +193,13 @@ const optOutCache = {
       .update({
         is_opted_out: true
       });
-      
+
     if (noReply) {
       await campaignCache.incrCount(campaign.id, "needsResponseCount", -1);
     }
 
     if (process.env.EXPERIMENTAL_STICKY_SENDER) {
-      await contactUserNumberCache.remove({
+      await organizationContactCache.remove({
         organizationId,
         contactNumber: cell
       });

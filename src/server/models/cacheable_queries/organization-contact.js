@@ -60,8 +60,8 @@ const organizationContactCache = {
     }
   },
   remove: async ({ organizationId, contactNumber }) => {
-    const [contactUserNumber] = await r
-      .knex("contact_user_number")
+    const [organizationContact] = await r
+      .knex("organization_contact")
       .where({
         organization_id: organizationId,
         contact_number: contactNumber
@@ -69,10 +69,10 @@ const organizationContactCache = {
       .returning("*")
       .delete();
 
-    if (contactUserNumber) {
+    if (organizationContact) {
       await r
         .knex("owned_phone_number")
-        .where({ phone_number: contactUserNumber.user_number })
+        .where({ phone_number: organizationContact.user_number })
         .increment("stuck_contacts", -1);
     }
   }
