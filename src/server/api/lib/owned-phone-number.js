@@ -75,7 +75,8 @@ async function getOwnedPhoneNumberForStickySender(organizationId, cell) {
           secondaryAreaCodes ? secondaryAreaCodes.join("','") : ""
         }') THEN 1 ELSE 0 END AS matching_secondary_area_code`
       ),
-      r.knex.raw("CEILING((stuck_contacts + 1.0) / 50) AS priority_grouping"), // Prioritize numbers with 0 - 49 stuck contacts, followed by 50 - 99, etc.
+      // Prioritize numbers with 0 - 49 stuck contacts, followed by 50 - 99, etc.
+      r.knex.raw("CEILING((stuck_contacts + 1.0) / 50) AS priority_grouping"),
       r.knex.raw("random()")
     )
     .where({

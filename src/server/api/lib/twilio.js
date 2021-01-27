@@ -256,7 +256,6 @@ async function getOrganizationContact(organization, contactNumber) {
       contactNumber
     );
 
-    console.log({ phoneNumber });
     return phoneNumber && phoneNumber.phone_number;
   }
 

@@ -176,12 +176,32 @@ class AdminPhoneNumberInventory extends React.Component {
       {
         key: "allocatedCount",
         label: "Allocated",
-        style: inlineStyles.column
+        style: {
+          ...inlineStyles.column,
+          fontSize: 16,
+          textAlign: "center"
+        }
       },
       {
         key: "availableCount",
         label: "Available",
-        style: inlineStyles.column
+        style: {
+          ...inlineStyles.column,
+          fontSize: 16,
+          textAlign: "center"
+        }
+      },
+      {
+        key: "deleteButton",
+        label: "",
+        style: inlineStyles.column,
+        render: (columnKey, row) =>
+          this.props.params.ownerPerms ? (
+            <FlatButton
+              icon={<DeleteIcon />}
+              onTouchTap={() => this.handleDeleteNumbersOpen(row)}
+            />
+          ) : null
       },
       // TODO: display additional information here about pending and past jobs
       {
