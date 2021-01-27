@@ -103,14 +103,14 @@ export class AdminIncomingMessageList extends Component {
           query.tags = selectedTags.join(",");
         }
       }
-      //default false
+      // default false
       if (nextState.includeArchivedCampaigns) {
         query.archived = 1;
       }
       if (nextState.includeOptedOutConversations) {
         query.optedOut = 1;
       }
-      //default true
+      // default true
       if (!nextState.includeActiveCampaigns) {
         query.active = 0;
       }
@@ -461,6 +461,7 @@ export class AdminIncomingMessageList extends Component {
               this.handleReassignAllMatchingRequested
             }
             conversationCount={this.state.conversationCount}
+            campaignsFilter={this.state.campaignsFilter}
           />
           <br />
           <IncomingMessageList

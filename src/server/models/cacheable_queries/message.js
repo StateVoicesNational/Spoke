@@ -188,6 +188,9 @@ const deliveryReport = async ({
     service_response_at: new Date(),
     send_status: newStatus
   };
+  if (userNumber) {
+    changes.user_number = userNumber;
+  }
   if (newStatus === "ERROR") {
     changes.error_code = errorCode;
 
@@ -285,6 +288,10 @@ const messageCache = {
         messageInstance.campaign_contact_id ||
         (activeCellFound && activeCellFound.campaign_contact_id);
       messageToSave.campaign_contact_id = contactId;
+      messageToSave.media =
+        messageInstance.media && messageInstance.media.length
+          ? JSON.stringify(messageInstance.media)
+          : null;
     } else {
       if (
         r.redis &&
@@ -351,6 +358,9 @@ const messageCache = {
           }
           if (result.contactUpdates) {
             Object.assign(contactUpdates, result.contactUpdates);
+            if (result.contactUpdates.message_status) {
+              newStatus = result.contactUpdates.message_status;
+            }
           }
           if (result.handlerContext) {
             Object.assign(handlerContext, result.handlerContext);

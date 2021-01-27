@@ -1,0 +1,5 @@
+# Starts a Spoke server against which integration tests will run
+# Enables babel and webpack hot reloading so you can do TDD :)
+# Usage: yarn start:test
+server: npm run start:test-babel
+webpack: ./dev-tools/babel-run ./webpack/server.js

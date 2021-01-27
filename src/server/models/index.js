@@ -53,6 +53,7 @@ const tableList = [
   "campaign_admin",
   "assignment",
   // the rest are alphabetical
+  "assignment_feedback",
   "campaign_contact", // ?good candidate (or by cell)
   "canned_response", // good candidate
   "organization_contact",

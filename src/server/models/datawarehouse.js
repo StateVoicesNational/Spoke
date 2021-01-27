@@ -8,11 +8,11 @@ const {
   WAREHOUSE_DB_PASSWORD,
   WAREHOUSE_DB_USER,
   WAREHOUSE_DB_SCHEMA = "",
-  WAREHOUSE_USE_SSL = "false",
+  WAREHOUSE_USE_SSL = "false"
 } = process.env;
 
-const useSSL = WAREHOUSE_USE_SSL === "1"
-  || WAREHOUSE_USE_SSL.toLowerCase() === "true";
+const useSSL =
+  WAREHOUSE_USE_SSL === "1" || WAREHOUSE_USE_SSL.toLowerCase() === "true";
 
 let config;
 
