@@ -177,30 +177,13 @@ class AdminPhoneNumberInventory extends React.Component {
         key: "availableCount",
         label: "Available",
         style: inlineStyles.column
-      }
-    ];
-
-    if (window.EXPERIMENTAL_STICKY_SENDER) {
-      columns.push({
-        key: "minStuckContacts",
-        label: "Min Stuck Contacts",
-        style: inlineStyles.column
-      });
-
-      columns.push({
-        key: "maxStuckContacts",
-        label: "Max Stuck Contacts",
-        style: inlineStyles.column
-      });
-    }
-
-    if (!window.SKIP_TWILIO_MESSAGING_SERVICE) {
-      columns.push({
+      },
+      {
         key: "allocatedCount",
         label: "Allocated",
         style: inlineStyles.column
-      });
-    }
+      }
+    ];
 
     // TODO: display additional information here about pending and past jobs
     columns.push({
@@ -425,8 +408,6 @@ const queries = {
             state
             availableCount
             allocatedCount
-            minStuckContacts
-            maxStuckContacts
           }
           pendingPhoneNumberJobs {
             id
