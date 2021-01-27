@@ -127,12 +127,10 @@ class ConversationPreviewBody extends Component {
   render() {
     return (
       <div>
-        {window.EXPERIMENTAL_TAGS && (
-          <TagList
-            organizationTags={this.props.organizationTags}
-            tags={this.props.conversation.tags}
-          />
-        )}
+        <TagList
+          organizationTags={this.props.organizationTags}
+          tags={this.props.conversation.tags}
+        />
         <MessageList messages={this.state.messages} />
         <MessageResponse
           conversation={this.props.conversation}

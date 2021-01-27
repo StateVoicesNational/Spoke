@@ -43,9 +43,9 @@ export function addServerEndpoints(expressApp) {
   return;
 }
 
-export function clientChoiceDataCacheKey(organization, campaign, user) {
+export function clientChoiceDataCacheKey(campaign, user) {
   /// returns a string to cache getClientChoiceData -- include items that relate to cacheability
-  return `${organization.id}-${campaign.id}`;
+  return `${campaign.id}`;
 }
 
 export async function getClientChoiceData(organization, campaign, user) {
@@ -113,11 +113,28 @@ export async function processContactLoad(job, maxContacts, organization) {
     return; // bail early
   }
   const areaCodes = ["213", "323", "212", "718", "646", "661"];
+  // FUTURE -- maybe based on campaign default use 'surrounding' offsets
+  const timezones = [
+    "-12_1",
+    "-11_0",
+    "-5_1",
+    "-4_1",
+    "0_0",
+    "5_0",
+    "10_0",
+    ""
+  ];
   const contactCount = Math.min(
     contactData.requestContactCount || 0,
     maxContacts ? maxContacts : areaCodes.length * 100,
     areaCodes.length * 100
   );
+  function genCustomFields(i, campaignId) {
+    return JSON.stringify({
+      campaignIndex: String(i),
+      [`custom${campaignId}`]: String(Math.random()).slice(3, 8)
+    });
+  }
   const newContacts = [];
   for (let i = 0; i < contactCount; i++) {
     const ac = areaCodes[parseInt(i / 100, 10)];
@@ -129,7 +146,9 @@ export async function processContactLoad(job, maxContacts, organization) {
       // https://www.businessinsider.com/555-phone-number-tv-movies-telephone-exchange-names-ghostbusters-2018-3
       cell: `+1${ac}555${suffix}`,
       zip: "10011",
-      custom_fields: "{}",
+      custom_fields: genCustomFields(i, campaignId),
+      timezone_offset:
+        timezones[parseInt(Math.random() * timezones.length, 10)],
       message_status: "needsMessage",
       campaign_id: campaignId
     });

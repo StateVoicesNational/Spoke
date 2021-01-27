@@ -55,6 +55,7 @@ function genComponent(assignment, propertyOverrides = {}) {
         Promise.resolve()
       }
       organizationId={"123"}
+      location={{ query: {} }}
       {...propertyOverrides}
     />
   );

@@ -7,8 +7,9 @@ import {
   User,
   UserOrganization
 } from "../server/models";
+import telemetry from "../server/telemetry";
 import { log, gunzip, zipToTimeZone, convertOffsetsToStrings } from "../lib";
-import { updateJob } from "./lib";
+import { sleep, updateJob } from "./lib";
 import serviceMap from "../server/api/lib/services";
 import twilio from "../server/api/lib/twilio";
 import {
@@ -25,6 +26,8 @@ import { sendEmail } from "../server/mail";
 import { Notifications, sendUserNotification } from "../server/notifications";
 import { getConfig } from "../server/api/lib/config";
 import { invokeTaskFunction, Tasks } from "./tasks";
+import fs from "fs";
+import path from "path";
 
 const defensivelyDeleteOldJobsForCampaignJobType = async job => {
   console.log("job", job);
@@ -147,20 +150,20 @@ export async function sendJobToAWSLambda(job) {
   return p;
 }
 
-export async function processSqsMessages() {
+export async function processSqsMessages(TWILIO_SQS_QUEUE_URL) {
   // hit endpoint on SQS
   // ask for a list of messages from SQS (with quantity tied to it)
   // if SQS has messages, process messages into pending_message_part and dequeue messages (mark them as handled)
   // if SQS doesnt have messages, exit
 
-  if (!process.env.TWILIO_SQS_QUEUE_URL) {
+  if (!TWILIO_SQS_QUEUE_URL) {
     return Promise.reject("TWILIO_SQS_QUEUE_URL not set");
   }
 
   const sqs = new AWS.SQS();
 
   const params = {
-    QueueUrl: process.env.TWILIO_SQS_QUEUE_URL,
+    QueueUrl: TWILIO_SQS_QUEUE_URL,
     AttributeNames: ["All"],
     MessageAttributeNames: ["string"],
     MaxNumberOfMessages: 10,
@@ -172,33 +175,36 @@ export async function processSqsMessages() {
   const p = new Promise((resolve, reject) => {
     sqs.receiveMessage(params, async (err, data) => {
       if (err) {
-        console.log(err, err.stack);
+        console.log("processSqsMessages Error", err, err.stack);
         reject(err);
-      } else if (data.Messages) {
-        console.log(data);
-        for (let i = 0; i < data.Messages.length; i++) {
-          const message = data.Messages[i];
-          const body = message.Body;
-          console.log("processing sqs queue:", body);
-          const twilioMessage = JSON.parse(body);
-
-          await serviceMap.twilio.handleIncomingMessage(twilioMessage);
-
-          sqs.deleteMessage(
-            {
-              QueueUrl: process.env.TWILIO_SQS_QUEUE_URL,
-              ReceiptHandle: message.ReceiptHandle
-            },
-            (delMessageErr, delMessageData) => {
-              if (delMessageErr) {
-                console.log(delMessageErr, delMessageErr.stack); // an error occurred
-              } else {
-                console.log(delMessageData); // successful response
-              }
+      } else {
+        if (!data.Messages || !data.Messages.length) {
+          // Since we are likely in a while(true) loop let's avoid racing
+          await sleep(10000);
+          resolve();
+        } else {
+          console.log("processSqsMessages", data.Messages.length);
+          for (let i = 0; i < data.Messages.length; i++) {
+            const message = data.Messages[i];
+            const body = message.Body;
+            if (process.env.DEBUG) {
+              console.log("processSqsMessages message body", body);
             }
-          );
+            const twilioMessage = JSON.parse(body);
+            await serviceMap.twilio.handleIncomingMessage(twilioMessage);
+            const delMessageData = await sqs
+              .deleteMessage({
+                QueueUrl: TWILIO_SQS_QUEUE_URL,
+                ReceiptHandle: message.ReceiptHandle
+              })
+              .promise()
+              .catch(reject);
+            if (process.env.DEBUG) {
+              console.log("processSqsMessages deleteresult", delMessageData);
+            }
+          }
+          resolve();
         }
-        resolve();
       }
     });
   });
@@ -253,10 +259,16 @@ export async function failedContactLoad(
     });
   if (job.id) {
     await r
-      .table("job_request")
-      .get(job.id)
+      .knex("job_request")
+      .where("id", job.id)
       .delete();
   }
+  await telemetry.reportEvent("Contact Load Failure", {
+    count: finalContactCount,
+    jobId: job.id,
+    campaignId,
+    ingestResult
+  });
 }
 
 export async function completeContactLoad(
@@ -284,28 +296,25 @@ export async function completeContactLoad(
       console.log("Error deleting opt-outs:", campaignId, err);
     });
 
-  // delete duplicate cells
+  // delete duplicate cells (last wins)
   await r
     .knex("campaign_contact")
-    .whereIn(
+    .whereNotIn(
       "id",
       r
         .knex("campaign_contact")
-        .select("campaign_contact.id")
-        .leftJoin("campaign_contact AS c2", function joinSelf() {
-          this.on("c2.campaign_id", "=", "campaign_contact.campaign_id")
-            .andOn("c2.cell", "=", "campaign_contact.cell")
-            .andOn("c2.id", ">", "campaign_contact.id");
-        })
-        .where("campaign_contact.campaign_id", campaignId)
-        .whereNotNull("c2.id")
+        .select(r.knex.raw("max(id) as id"))
+        .where("campaign_id", campaignId)
+        .groupBy("cell")
     )
+    .where("campaign_contact.campaign_id", campaignId)
     .delete()
     .then(result => {
       deleteDuplicateCells = result;
       console.log("Deduplication result", campaignId, result);
     })
     .catch(err => {
+      deleteDuplicateCells = -1;
       console.error("Failed deduplication", campaignId, err);
     });
 
@@ -325,14 +334,21 @@ export async function completeContactLoad(
       ingest_result: ingestResult || null,
       ingest_data_reference: ingestDataReference || null
     });
-
   if (job.id) {
     await r
-      .table("job_request")
-      .get(job.id)
+      .knex("job_request")
+      .where("id", job.id)
       .delete();
   }
   await cacheableData.campaign.reload(campaignId);
+  await telemetry.reportEvent("Contact Load", {
+    count: finalContactCount,
+    jobId: job.id,
+    campaignId,
+    deleteOptOutCells,
+    deleteDuplicateCells,
+    ingestResult
+  });
 }
 
 export async function unzipPayload(job) {
@@ -643,9 +659,11 @@ export async function assignTexters(job) {
 }
 
 export async function exportCampaign(job) {
+  console.log("exportingCampaign", job);
   const payload = JSON.parse(job.payload);
   const id = job.campaign_id;
   const campaign = await Campaign.get(id);
+  const organization = await Organization.get(campaign.organization_id);
   const requester = payload.requester;
   const user = await User.get(requester);
   const allQuestions = {};
@@ -653,6 +671,12 @@ export async function exportCampaign(job) {
   const interactionSteps = await r
     .table("interaction_step")
     .getAll(id, { index: "campaign_id" });
+
+  const combineSameQuestions = getConfig(
+    "EXPORT_COMBINE_SAME_QUESTIONS",
+    organization,
+    { truthy: 1 }
+  );
 
   interactionSteps.forEach(step => {
     if (!step.question || step.question.trim() === "") {
@@ -665,128 +689,139 @@ export async function exportCampaign(job) {
       questionCount[step.question] = 0;
     }
     const currentCount = questionCount[step.question];
-    if (currentCount > 0) {
+
+    if (currentCount > 0 && !combineSameQuestions) {
       allQuestions[step.id] = `${step.question}_${currentCount}`;
     } else {
       allQuestions[step.id] = step.question;
     }
   });
+  const questionResponses = await r
+    .knexReadOnly("question_response")
+    .join("campaign_contact", "campaign_contact.id", "campaign_contact_id")
+    .where("campaign_id", campaign.id)
+    .select("campaign_contact_id", "interaction_step_id", "value");
 
-  let finalCampaignResults = [];
-  let finalCampaignMessages = [];
-  const assignments = await r
-    .knex("assignment")
-    .where("campaign_id", id)
-    .join("user", "user_id", "user.id")
-    .select(
-      "assignment.id as id",
-      // user fields
-      "first_name",
-      "last_name",
-      "email",
-      "cell",
-      "assigned_cell"
-    );
-  const assignmentCount = assignments.length;
+  const tags = await r
+    .knexReadOnly("tag_campaign_contact")
+    .join("campaign_contact", "campaign_contact.id", "campaign_contact_id")
+    .join("tag", "tag.id", "tag_id")
+    .where("campaign_id", campaign.id)
+    .select("campaign_contact_id", "name");
+  const contactTags = tags.reduce((acc, cur) => {
+    if (acc[cur.campaign_contact_id]) {
+      acc[cur.campaign_contact_id].push(cur.name);
+    } else {
+      acc[cur.campaign_contact_id] = [cur.name];
+    }
+    return acc;
+  }, {});
 
-  for (let index = 0; index < assignmentCount; index++) {
-    const assignment = assignments[index];
-    const optOuts = await r
-      .table("opt_out")
-      .getAll(assignment.id, { index: "assignment_id" });
-
-    const contacts = await r
-      .knex("campaign_contact")
-      .leftJoin("zip_code", "zip_code.zip", "campaign_contact.zip")
-      .select()
-      .where("assignment_id", assignment.id);
-    const messages = await r
-      .knex("message")
-      .leftJoin(
-        "campaign_contact",
-        "campaign_contact.id",
-        "message.campaign_contact_id"
-      )
-      .select("message.*", "campaign_contact.assignment_id")
-      .where("campaign_contact.assignment_id", assignment.id);
-    let convertedMessages = messages.map(message => {
-      const messageRow = {
-        assignmentId: message.assignment_id,
-        campaignId: campaign.id,
-        userNumber: message.user_number,
-        contactNumber: message.contact_number,
-        isFromContact: message.is_from_contact,
-        sendStatus: message.send_status,
-        attemptedAt: moment(message.created_at).toISOString(),
-        text: message.text,
-        errorCode: message.error_code
+  const optOutJoins = process.env.OPTOUTS_SHARE_ALL_ORGS
+    ? { "opt_out.cell": "campaign_contact.cell" }
+    : {
+        "opt_out.cell": "campaign_contact.cell",
+        "opt_out.organization_id": r.knexReadOnly.raw(campaign.organization_id)
       };
-      return messageRow;
+  const contacts = await r
+    .knexReadOnly("campaign_contact")
+    .join("assignment", "campaign_contact.assignment_id", "assignment.id")
+    .join("user", "assignment.user_id", "user.id")
+    .leftJoin("zip_code", "zip_code.zip", "campaign_contact.zip")
+    .leftJoin("opt_out", optOutJoins)
+    .column([
+      "campaign_contact.id",
+      "campaign_contact.campaign_id",
+      "campaign_contact.assignment_id",
+      { optOutCampaign: "campaign_contact.is_opted_out" },
+      { optedOut: "opt_out.created_at" },
+      { texterFirst: "user.first_name" },
+      { texterLast: "user.last_name" },
+      { texterEmail: "user.email" },
+      { texterCell: "user.cell" },
+      { texterAlias: "user.alias" },
+      "user.extra",
+      "campaign_contact.external_id",
+      "campaign_contact.first_name",
+      "campaign_contact.last_name",
+      "campaign_contact.cell",
+      "zip_code.city",
+      "zip_code.state",
+      "campaign_contact.zip",
+      "campaign_contact.custom_fields",
+      "campaign_contact.message_status",
+      "campaign_contact.error_code"
+    ])
+    .select()
+    .where("campaign_contact.campaign_id", campaign.id);
+
+  contacts.forEach((row, index) => {
+    // Split Custom fields into columns
+    const customFields = JSON.parse(row.custom_fields);
+    delete row.custom_fields;
+
+    // Add question response columns
+    const responses = {};
+    Object.keys(allQuestions).forEach(stepId => {
+      const { value = "" } =
+        questionResponses.find(response => {
+          return (
+            response.campaign_contact_id === row.id &&
+            response.interaction_step_id === Number(stepId)
+          );
+        }) || {};
+
+      if (
+        value === "" &&
+        !responses.hasOwnProperty(`question[${allQuestions[stepId]}]`)
+      ) {
+        responses[`question[${allQuestions[stepId]}]`] = "";
+      } else if (
+        value !== "" &&
+        combineSameQuestions &&
+        responses[`question[${allQuestions[stepId]}]`] &&
+        responses[`question[${allQuestions[stepId]}]`] !== value
+      ) {
+        // join multiple different answers, otherwise combine answers too
+        responses[`question[${allQuestions[stepId]}]`] += `, ${value}`;
+      } else if (value !== "") {
+        responses[`question[${allQuestions[stepId]}]`] = value;
+      }
     });
 
-    convertedMessages = await Promise.all(convertedMessages);
-    finalCampaignMessages = finalCampaignMessages.concat(convertedMessages);
-    let convertedContacts = contacts.map(async contact => {
-      const tags = await r
-        .knex("tag_campaign_contact")
-        .where("campaign_contact_id", contact.id)
-        .leftJoin("tag", "tag.id", "tag_campaign_contact.tag_id");
+    contacts[index] = {
+      ...row,
+      texterExtra: row.extra ? JSON.stringify(row.extra) : "",
+      ...customFields,
+      tags: contactTags[row.id] ? contactTags[row.id].join(", ") : "",
+      ...responses
+    };
+    delete contacts[index]["extra"];
+  });
 
-      const contactRow = {
-        campaignId: campaign.id,
-        campaign: campaign.title,
-        assignmentId: assignment.id,
-        "texter[firstName]": assignment.first_name,
-        "texter[lastName]": assignment.last_name,
-        "texter[email]": assignment.email,
-        "texter[cell]": assignment.cell,
-        "texter[assignedCell]": assignment.assigned_cell,
-        "contact[firstName]": contact.first_name,
-        "contact[lastName]": contact.last_name,
-        "contact[cell]": contact.cell,
-        "contact[zip]": contact.zip,
-        "contact[city]": contact.city ? contact.city : null,
-        "contact[state]": contact.state ? contact.state : null,
-        "contact[optOut]": optOuts.find(ele => ele.cell === contact.cell)
-          ? "true"
-          : "false",
-        "contact[optOutRecord]": contact.is_opted_out,
-        "contact[messageStatus]": contact.message_status,
-        "contact[errorCode]": contact.error_code,
-        "contact[external_id]": contact.external_id,
-        "contact[tags]": tags.length > 0 ? tags.map(tag => tag.name) : null
-      };
-      const customFields = JSON.parse(contact.custom_fields);
-      Object.keys(customFields).forEach(fieldName => {
-        contactRow[`contact[${fieldName}]`] = customFields[fieldName];
-      });
+  const messages = await r
+    .knexReadOnly("message")
+    .join("campaign_contact", "campaign_contact.id", "campaign_contact_id")
+    .column([
+      "campaign_contact_id",
+      "campaign_id",
+      "user_number",
+      "contact_number",
+      "is_from_contact",
+      "send_status",
+      { attempted_at: "message.created_at" },
+      "text",
+      "message.error_code"
+    ])
+    .select()
+    .where("campaign_contact.campaign_id", campaign.id);
 
-      const questionResponses = await r
-        .table("question_response")
-        .getAll(contact.id, { index: "campaign_contact_id" });
-
-      Object.keys(allQuestions).forEach(stepId => {
-        let value = "";
-        questionResponses.forEach(response => {
-          if (response.interaction_step_id === parseInt(stepId, 10)) {
-            value = response.value;
-          }
-        });
-
-        contactRow[`question[${allQuestions[stepId]}]`] = value;
-      });
-
-      return contactRow;
-    });
-    convertedContacts = await Promise.all(convertedContacts);
-    finalCampaignResults = finalCampaignResults.concat(convertedContacts);
-    await updateJob(job, Math.round((index / assignmentCount) * 100));
-  }
-  const campaignCsv = Papa.unparse(finalCampaignResults);
-  const messageCsv = Papa.unparse(finalCampaignMessages);
-
+  const campaignCsv = Papa.unparse(contacts);
+  const messageCsv = Papa.unparse(messages);
+  const exportResults = {};
+  console.log("exportCampaign csvs", campaignCsv.length, messageCsv.length);
   if (
-    process.env.AWS_ACCESS_AVAILABLE ||
+    getConfig("AWS_ACCESS_AVAILABLE") ||
     (process.env.AWS_ACCESS_KEY_ID && process.env.AWS_SECRET_ACCESS_KEY)
   ) {
     try {
@@ -814,6 +849,9 @@ export async function exportCampaign(job) {
         "getObject",
         params
       );
+      exportResults.campaignExportUrl = campaignExportUrl;
+      exportResults.campaignMessagesExportUrl = campaignMessagesExportUrl;
+
       await sendEmail({
         to: user.email,
         subject: `Export ready for ${campaign.title}`,
@@ -828,6 +866,7 @@ export async function exportCampaign(job) {
       log.info(`Successfully exported ${id}`);
     } catch (err) {
       log.error(err);
+      exportResults.error = err.message;
       await sendEmail({
         to: user.email,
         subject: `Export failed for ${campaign.title}`,
@@ -835,14 +874,29 @@ export async function exportCampaign(job) {
         Error: ${err.message}`
       });
     }
+  } else if (process.env.NODE_ENV !== "production") {
+    const contactsFile = `./campaign-export-${campaign.id}.csv`;
+    const messagesFile = `./campaign-export-${campaign.id}-message.csv`;
+    exportResults.campaignExportUrl =
+      "file://" + path.resolve("./", contactsFile);
+    exportResults.campaignMessagesExportUrl =
+      "file://" + path.resolve("./", messagesFile);
+
+    console.log(`Writing CSVs to ${contactsFile} and ${messagesFile}`);
+    fs.writeFileSync(contactsFile, campaignCsv);
+    fs.writeFileSync(messagesFile, messageCsv);
   } else {
-    log.debug("Would have saved the following to S3:");
+    console.log("Would have saved the following to S3:");
     log.debug(campaignCsv);
     log.debug(messageCsv);
   }
-
+  if (exportResults.campaignExportUrl) {
+    exportResults.createdAt = String(new Date());
+    await cacheableData.campaign.saveExportData(campaign.id, exportResults);
+  }
   await defensivelyDeleteJob(job);
 }
+
 export async function importScript(job) {
   const payload = await unzipPayload(job);
   try {
@@ -853,7 +907,7 @@ export async function importScript(job) {
     await r
       .knex("job_request")
       .where("id", job.id)
-      .update({ result_message: exception.message });
+      .update({ result_message: exception.message, status: -1 });
     console.warn(exception.message);
     return;
   }
@@ -872,7 +926,23 @@ export async function sendMessages(queryFunc, defaultStatus) {
     try {
       let messageQuery = trx("message")
         .forUpdate()
-        .where({ send_status: defaultStatus || "QUEUED" });
+        .where({ send_status: defaultStatus || "QUEUED" })
+        .join(
+          "campaign_contact",
+          "campaign_contact.id",
+          "message.campaign_contact_id"
+        )
+        .join("campaign", "campaign.id", "campaign_contact.campaign_id")
+        .join("organization", "organization.id", "campaign.organization_id")
+        .select(
+          "message.*",
+          // These are the fields we need for message sending
+          "campaign_contact.campaign_id",
+          "campaign_contact.message_status",
+          "campaign.messageservice_sid",
+          "campaign.organization_id",
+          "organization.features"
+        );
       if (queryFunc) {
         messageQuery = queryFunc(messageQuery);
       }
@@ -902,7 +972,27 @@ export async function sendMessages(queryFunc, defaultStatus) {
           `Sending (${message.service}): ${message.user_number} -> ${message.contact_number}\nMessage: ${message.text}`
         );
         try {
-          await service.sendMessage(message, null, trx);
+          await service.sendMessage(
+            message,
+            {
+              // reconstruct contact
+              id: message.campaign_contact_id,
+              message_status: message.message_status,
+              campaign_id: message.campaign_id
+            },
+            trx,
+            {
+              // organization
+              id: message.organization_id,
+              features: message.features
+            },
+            {
+              // campaign
+              id: message.campaign_id,
+              organization_id: message.organization_id,
+              messageservice_sid: message.messageservice_sid
+            }
+          );
           pastMessages.push(message.id);
           pastMessages = pastMessages.slice(-100); // keep the last 100
         } catch (err) {
@@ -1103,10 +1193,10 @@ export async function fixOrgless() {
   } // if
 } // function
 
-export async function clearOldJobs(delay) {
+export async function clearOldJobs(event) {
   // to clear out old stuck jobs
-  const twoHoursAgo = new Date(new Date() - 1000 * 60 * 60 * 2);
-  delay = delay || twoHoursAgo;
+  const sixHoursAgo = new Date(new Date() - 1000 * 60 * 60 * 6);
+  const delay = (event && event.oldJobPast) || sixHoursAgo;
   return await r
     .knex("job_request")
     .where({ assigned: true })
@@ -1152,10 +1242,41 @@ export async function buyPhoneNumbers(job) {
   }
 }
 
+export async function deletePhoneNumbers(job) {
+  try {
+    if (!job.organization_id) {
+      throw Error("organization_id is required");
+    }
+    const { areaCode } = JSON.parse(job.payload);
+    if (!areaCode) {
+      throw new Error("areaCode is required");
+    }
+    const organization = await cacheableData.organization.load(
+      job.organization_id
+    );
+    const service = serviceMap[getConfig("DEFAULT_SERVICE", organization)];
+    const totalDeleted = await service.deleteNumbersInAreaCode(
+      organization,
+      areaCode
+    );
+    log.info(`Deleted ${totalDeleted} number(s)`, {
+      status: "COMPLETE",
+      areaCode,
+      totalDeleted,
+      organization_id: job.organization_id
+    });
+  } catch (err) {
+    log.error(`JOB ${job.id} FAILED: ${err.message}`, err);
+  } finally {
+    await defensivelyDeleteJob(job);
+  }
+}
+
 // Prepares a messaging service with owned number for the campaign
 async function prepareTwilioCampaign(campaign, organization, trx) {
   const ts = Math.floor(new Date() / 1000);
-  const friendlyName = `Campaign ${campaign.id}: ${campaign.organization_id}-${ts} [${process.env.BASE_URL}]`;
+  const baseUrl = getConfig("BASE_URL", organization);
+  const friendlyName = `Campaign ${campaign.id}: ${campaign.organization_id}-${ts} [${baseUrl}]`;
   const messagingService = await twilio.createMessagingService(
     organization,
     friendlyName
@@ -1164,15 +1285,16 @@ async function prepareTwilioCampaign(campaign, organization, trx) {
   if (!msgSrvSid) {
     throw new Error("Failed to create messaging service!");
   }
-  const phoneSids = await trx("owned_phone_number")
-    .select("service_id")
-    .where({
-      organization_id: campaign.organization_id,
-      service: "twilio",
-      allocated_to: "campaign",
-      allocated_to_id: campaign.id.toString()
-    })
-    .map(row => row.service_id);
+  const phoneSids = (
+    await trx("owned_phone_number")
+      .select("service_id")
+      .where({
+        organization_id: campaign.organization_id,
+        service: "twilio",
+        allocated_to: "campaign",
+        allocated_to_id: campaign.id.toString()
+      })
+  ).map(row => row.service_id);
   console.log(`Transferring ${phoneSids.length} numbers to ${msgSrvSid}`);
   try {
     await twilio.addNumbersToMessagingService(

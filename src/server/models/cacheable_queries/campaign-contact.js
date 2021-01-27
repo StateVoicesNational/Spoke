@@ -1,4 +1,5 @@
 import { r, CampaignContact } from "../../models";
+import telemetry from "../../telemetry";
 import campaignCache from "./campaign";
 import optOutCache from "./opt-out";
 import organizationCache from "./organization";
@@ -244,6 +245,9 @@ const campaignContactCache = {
       // which seems slightly burdensome per-contact
       // FUTURE: Maybe we will revisit this after we see performance data
     }
+    if (opts && opts.cacheOnly) {
+      return null;
+    }
     return await CampaignContact.get(id);
   },
   loadMany: async (
@@ -295,6 +299,8 @@ const campaignContactCache = {
     // For docs see:
     // https://knexjs.org/#Interfaces-Streams
     // https://github.com/substack/stream-handbook#creating-a-writable-stream
+    let contactCachedCount = 0;
+    let timeout = false;
     await query.stream(stream => {
       const cacheSaver = new Writable({ objectMode: true });
       // eslint-disable-next-line no-underscore-dangle
@@ -310,6 +316,7 @@ const campaignContactCache = {
           campaign
         ).then(
           () => {
+            contactCachedCount += 1;
             // If we are passed a remainingMilliseconds function, then
             // run it and see if we're almost at-time.
             // The rest of the cache loading will have to be done later
@@ -318,6 +325,7 @@ const campaignContactCache = {
               typeof remainingMilliseconds === "function" &&
               remainingMilliseconds() < 2000
             ) {
+              timeout = true;
               stream.end();
             }
             next();
@@ -331,6 +339,16 @@ const campaignContactCache = {
       };
       stream.pipe(cacheSaver);
     });
+    await telemetry.reportEvent("Contact Cache Load", {
+      count: contactCachedCount,
+      organizationId: String((organization && organization.id) || "")
+    });
+    if (timeout) {
+      await telemetry.reportEvent("Contact Cache Timeout", {
+        count: contactCachedCount,
+        organizationId: String((organization && organization.id) || "")
+      });
+    }
     console.log("contact loadMany finish stream", campaign.id);
   },
   orgId: async contact =>
@@ -414,6 +432,21 @@ const campaignContactCache = {
     return false;
   },
   getMessageStatus,
+  updateCacheForOptOut: async contact => {
+    const newContact = {
+      ...contact,
+      is_opted_out: true
+    };
+    if (r.redis && CONTACT_CACHE_ENABLED) {
+      const contactKey = cacheKey(contact.id);
+      await r.redis
+        .multi()
+        .set(contactKey, JSON.stringify(newContact))
+        .expire(contactKey, 43200)
+        .execAsync();
+    }
+    return newContact;
+  },
   updateAssignmentCache: async (
     contactId,
     newAssignmentId,
@@ -451,12 +484,17 @@ const campaignContactCache = {
       console.log("updateCampaignAssignmentCache", data[0], data.length);
     }
   },
-  updateStatus: async (contact, newStatus, messageServiceOrUserNumber) => {
+  updateStatus: async (contact, newStatus, messageServiceOrUserNumber, moreUpdates) => {
+    // console.log('updateSTATUS', newStatus, contact)
     try {
       await r
         .knex("campaign_contact")
         .where("id", contact.id)
-        .update({ message_status: newStatus, updated_at: new Date() });
+        .update({
+          message_status: newStatus,
+          updated_at: new Date(),
+          ...(moreUpdates || {})
+        });
 
       if (r.redis && CONTACT_CACHE_ENABLED) {
         const contactKey = cacheKey(contact.id);

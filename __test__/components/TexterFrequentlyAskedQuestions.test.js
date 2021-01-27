@@ -19,7 +19,7 @@ describe("FAQs component", () => {
     const answer = wrapper.find("CardText p");
 
     // then
-    expect(question.prop("title")).toBe("1. q1");
-    expect(answer.text()).toBe("a2");
+    expect(question.at(0).prop("title")).toBe("1. q1");
+    expect(answer.at(0).text()).toBe("a2");
   });
 });

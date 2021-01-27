@@ -1,4 +1,4 @@
-const initialize = async (knex, Promise) => {
+const initialize = async knex => {
   // This object's keys are table names and each key's value is a function that defines that table's schema.
   const isSqlite = /sqlite/.test(knex.client.config.client);
   const buildTableSchema = [
@@ -220,7 +220,7 @@ const initialize = async (knex, Promise) => {
       create: t => {
         t.increments("id");
         t.text("cell").notNullable();
-        t.integer("assignment_id").notNullable();
+        t.integer("assignment_id");
         t.integer("organization_id").notNullable();
         t.text("reason_code")
           .notNullable()
@@ -427,7 +427,7 @@ const initialize = async (knex, Promise) => {
 
 module.exports = {
   up: initialize,
-  down: (knex, Promise) => {
+  down: knex => {
     // consider a rollback here that would simply drop all the tables
     Promise.resolve();
   }

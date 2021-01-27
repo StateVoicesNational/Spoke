@@ -29,14 +29,38 @@ const CAPITALIZE_FIELDS = [
   "texterAliasOrFirstName"
 ];
 
+const SYSTEM_FIELDS = ["contactId", "contactIdBase62"];
+
+export const coreFields = {
+  firstName: 1,
+  lastName: 1,
+  texterFirstName: 1,
+  texterLastName: 1,
+  texterAliasOrFirstName: 1,
+  cell: 1,
+  zip: 1,
+  external_id: 1,
+  contactId: 1,
+  contactIdBase62: 1
+};
+
 // TODO: This will include zipCode even if you ddin't upload it
 export const allScriptFields = (customFields, includeDeprecated) =>
   TOP_LEVEL_UPLOAD_FIELDS.concat(TEXTER_SCRIPT_FIELDS)
     .concat(customFields)
+    .concat(SYSTEM_FIELDS)
     .concat(includeDeprecated ? DEPRECATED_SCRIPT_FIELDS : []);
 
 const capitalize = str => {
   const strTrimmed = str.trim();
+  if (
+    strTrimmed.charAt(0).toUpperCase() == strTrimmed.charAt(0) &&
+    /[a-z]/.test(strTrimmed)
+  ) {
+    // first letter is upper-cased and some lowercase
+    // so then let's return as-is.
+    return strTrimmed;
+  }
   return strTrimmed.charAt(0).toUpperCase() + strTrimmed.slice(1).toLowerCase();
 };
 
@@ -48,6 +72,20 @@ const getScriptFieldValue = (contact, texter, fieldName) => {
     result = texter.firstName;
   } else if (fieldName === "texterLastName") {
     result = texter.lastName;
+  } else if (fieldName === "contactId") {
+    result = String(contact.id);
+  } else if (fieldName === "contactIdBase62") {
+    let n = Number(contact.id);
+    if (n === 0) {
+      return "0";
+    }
+    const digits =
+      "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    result = "";
+    while (n > 0) {
+      result = digits[n % digits.length] + result;
+      n = parseInt(n / digits.length, 10);
+    }
   } else if (TOP_LEVEL_UPLOAD_FIELDS.indexOf(fieldName) !== -1) {
     result = contact[fieldName];
   } else {

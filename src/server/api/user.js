@@ -1,4 +1,4 @@
-import { getFeatures } from "./lib/config";
+import { getConfig, getFeatures } from "./lib/config";
 import { mapFieldsToModel } from "./lib/utils";
 import { rolesEqualOrLess } from "../../lib/permissions";
 import { r, User, cacheableData } from "../models";
@@ -22,7 +22,7 @@ function buildSelect(sortBy) {
   } else if (sortBy === "OLDEST") {
     fragmentArray = [userStar];
   } else {
-    //FIRST_NAME, LAST_NAME, Default
+    // FIRST_NAME, LAST_NAME, Default
     fragmentArray = [userStar, lower(lastName), lower(firstName)];
   }
   return r.knex.select(r.knex.raw(fragmentArray.join(", ")));
@@ -246,16 +246,92 @@ export const resolvers = {
         ? rolesEqualOrLess(user.role)
         : await cacheableData.user.orgRoles(user.id, organizationId);
     },
-    todos: async (user, { organizationId }) =>
-      r
-        .table("assignment")
-        .getAll(user.id, { index: "assignment.user_id" })
-        .eqJoin("campaign_id", r.table("campaign"))
-        .filter({
-          is_started: true,
-          organization_id: organizationId,
-          is_archived: false
-        })("left"),
+    todos: async (user, { organizationId, withOutCounts }) => {
+      const fields = [
+        "assignment.id",
+        "assignment.campaign_id",
+        "assignment.user_id",
+        "assignment.max_contacts",
+        "assignment.created_at",
+        "assignment_feedback.feedback",
+        "assignment_feedback.is_acknowledged",
+        "assignment_feedback.creator_id"
+      ];
+      let query = r
+        .knexReadOnly("assignment")
+        .join("campaign", "assignment.campaign_id", "campaign.id")
+        .leftJoin(
+          "assignment_feedback",
+          "assignment.id",
+          "assignment_feedback.assignment_id"
+        )
+        .andWhere({
+          is_started: true
+        })
+        .andWhere("assignment.user_id", user.id);
+
+      if (/texter-feedback/.test(getConfig("TEXTER_SIDEBOXES"))) {
+        query = query.whereRaw(
+          `(
+          is_archived = false
+          OR (assignment_feedback.is_acknowledged = true
+              AND assignment_feedback.complete = true)
+          )`
+        );
+      } else {
+        query.andWhere("is_archived", false);
+      }
+
+      if (organizationId) {
+        query.where("organization_id", organizationId);
+      }
+
+      if (getConfig("FILTER_DUEBY", null, { truthy: 1 })) {
+        query = query.where("campaign.due_by", ">", new Date());
+      }
+
+      if (withOutCounts) {
+        return await query.select(fields);
+      } else {
+        query
+          .leftOuterJoin("campaign_contact", function() {
+            this.on("campaign_contact.assignment_id", "assignment.id").andOn(
+              "campaign_contact.is_opted_out",
+              r.knex.raw("?", [false])
+            );
+            // https://github.com/knex/knex/issues/1003#issuecomment-287302118
+          })
+          .groupBy(
+            ...fields,
+            "campaign_contact.timezone_offset",
+            "campaign_contact.message_status"
+          )
+          .select(
+            ...fields,
+            "campaign_contact.timezone_offset",
+            "campaign_contact.message_status",
+            r.knexReadOnly.raw(
+              "SUM(CASE WHEN campaign_contact.id IS NOT NULL THEN 1 ELSE 0 END) as tz_status_count"
+            )
+          );
+        const result = await query;
+
+        const assignments = {};
+        for (const assn of result) {
+          if (!assignments[assn.id]) {
+            assignments[assn.id] = { ...assn, tzStatusCounts: {} };
+          }
+          if (!assignments[assn.id].tzStatusCounts[assn.message_status]) {
+            assignments[assn.id].tzStatusCounts[assn.message_status] = [];
+          }
+          assignments[assn.id].tzStatusCounts[assn.message_status].push({
+            tz: assn.timezone_offset,
+            count: assn.tz_status_count
+          });
+        }
+        return Object.values(assignments);
+      }
+    },
     profileComplete: async (user, { organizationId }, { loaders }) => {
       const org = await loaders.organization.load(organizationId);
       // @todo: standardize on escaped or not once there's an interface.

@@ -1,5 +1,5 @@
 import { accessRequired } from "./errors";
-import { mapFieldsToModel } from "./lib/utils";
+import { mapFieldsToModel, mapFieldsOrNull } from "./lib/utils";
 import { errorDescriptions } from "./lib/twilio";
 import { Campaign, JobRequest, r, cacheableData } from "../models";
 import { getUsers } from "./user";
@@ -9,7 +9,7 @@ import {
   getMethodChoiceData
 } from "../../extensions/contact-loaders";
 import twilio from "./lib/twilio";
-import { getConfig } from "./lib/config";
+import { getConfig, getFeatures } from "./lib/config";
 import ownedPhoneNumber from "./lib/owned-phone-number";
 const title = 'lower("campaign"."title")';
 import { camelizeKeys } from "humps";
@@ -20,8 +20,19 @@ export function addCampaignsFilterToQuery(
   organizationId
 ) {
   let query = queryParam;
-
-  if (organizationId) {
+  let allOrgs = false;
+  const searchString =
+    campaignsFilter &&
+    campaignsFilter.searchString &&
+    campaignsFilter.searchString.replace(/\s*allorgs\s*/, () => {
+      allOrgs = true;
+      return "";
+    });
+  if (
+    // OPTOUTS_SHARE_ALL_ORGS suggests non-hostile partner orgs
+    organizationId &&
+    !(allOrgs && getConfig("OPTOUTS_SHARE_ALL_ORGS"))
+  ) {
     query = query.where("campaign.organization_id", organizationId);
   }
 
@@ -44,15 +55,22 @@ export function addCampaignsFilterToQuery(
       query = query.whereIn("campaign.id", campaignsFilter.campaignIds);
     }
 
-    if ("searchString" in campaignsFilter && campaignsFilter.searchString) {
+    if (searchString) {
+      var neg = searchString.length > 0 && searchString[0] === "-";
       const searchStringWithPercents = (
         "%" +
-        campaignsFilter.searchString +
+        searchString.slice(neg) +
         "%"
       ).toLocaleLowerCase();
-      query = query.andWhere(
-        r.knex.raw(`${title} like ?`, [searchStringWithPercents])
-      );
+      if (neg) {
+        query = query.andWhere(
+          r.knex.raw(`${title} not like ?`, [searchStringWithPercents])
+        );
+      } else {
+        query = query.andWhere(
+          r.knex.raw(`${title} like ?`, [searchStringWithPercents])
+        );
+      }
     }
 
     if (resultSize && !pageSize) {
@@ -272,6 +290,11 @@ export const resolvers = {
       return null;
     }
   },
+  CampaignExportData: mapFieldsOrNull([
+    "error",
+    "campaignExportUrl",
+    "campaignMessagesExportUrl"
+  ]),
   Campaign: {
     ...mapFieldsToModel(
       [
@@ -308,10 +331,24 @@ export const resolvers = {
       return campaign.join_token;
     },
     batchSize: campaign => campaign.batch_size || 300,
+    batchPolicies: campaign => {
+      const features = getFeatures(campaign);
+      return features.DYNAMICASSIGNMENT_BATCHES
+        ? features.DYNAMICASSIGNMENT_BATCHES.split(",")
+        : [];
+    },
     responseWindow: campaign => campaign.response_window || 48,
     organization: async (campaign, _, { loaders }) =>
       campaign.organization ||
       loaders.organization.load(campaign.organization_id),
+    exportResults: async (campaign, _, { user }) => {
+      try {
+        await accessRequired(user, campaign.organization_id, "ADMIN", true);
+      } catch (err) {
+        return null;
+      }
+      return cacheableData.campaign.getExportData(campaign.id);
+    },
     pendingJobs: async (campaign, _, { user }) => {
       await accessRequired(
         user,
@@ -450,6 +487,9 @@ export const resolvers = {
               r.knex.raw(
                 "SUM(CASE WHEN campaign_contact.message_status = 'needsMessage' THEN 1 ELSE 0 END) as needs_message_count"
               ),
+              r.knex.raw(
+                "SUM(CASE WHEN campaign_contact.message_status = 'needsResponse' AND NOT campaign_contact.is_opted_out THEN 1 ELSE 0 END) as unrepliedcount"
+              ),
               r.knex.raw("COUNT(*) as contacts_count")
             )
             .groupBy(...fields)
@@ -508,6 +548,44 @@ export const resolvers = {
       return await r.getCount(
         r.knex("campaign_contact").where({ campaign_id: campaign.id })
       );
+    },
+    contactsAreaCodeCounts: async (campaign, _, { user, loaders }) => {
+      const organization = await loaders.organization.load(
+        campaign.organization_id
+      );
+
+      if (
+        !getConfig("EXPERIMENTAL_CAMPAIGN_PHONE_NUMBERS", organization, {
+          truthy: 1
+        })
+      ) {
+        return [];
+      }
+
+      await accessRequired(
+        user,
+        campaign.organization_id,
+        "SUPERVOLUNTEER",
+        true
+      );
+
+      const usAreaCodes = require("us-area-codes");
+      const areaCodes = await r
+        .knex("campaign_contact")
+        .select(
+          r.knex.raw(`
+            substring(cell, 3, 3) AS area_code,
+            count(*)
+          `)
+        )
+        .where({ campaign_id: campaign.id })
+        .groupBy(1);
+
+      return areaCodes.map(data => ({
+        areaCode: data.area_code,
+        state: usAreaCodes.get(Number(data.area_code)),
+        count: parseInt(data.count, 10)
+      }));
     },
     hasUnassignedContactsForTexter: async (campaign, _, { user }) => {
       // This is the same as hasUnassignedContacts, but the access control

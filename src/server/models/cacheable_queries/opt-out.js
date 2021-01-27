@@ -49,6 +49,26 @@ const loadMany = async organizationId => {
   }
 };
 
+const updateIsOptedOuts = async queryModifier => {
+  // update all organization/instance's active campaigns as well
+  const optOutContactQuery = r
+    .knex("campaign_contact")
+    .join("campaign", "campaign_contact.campaign_id", "campaign.id")
+    .where("campaign.is_archived", false)
+    .select("campaign_contact.id");
+
+  return await r
+    .knex("campaign_contact")
+    .whereIn(
+      "id",
+      queryModifier ? queryModifier(optOutContactQuery) : optOutContactQuery
+    )
+    .where("is_opted_out", false)
+    .update({
+      is_opted_out: true
+    });
+};
+
 const optOutCache = {
   clearQuery: async ({ cell, organizationId }) => {
     // remove cache by organization
@@ -113,6 +133,7 @@ const optOutCache = {
     campaign,
     assignmentId,
     reason,
+    noContactUpdate,
     noReply
   }) => {
     const organizationId = campaign.organization_id;
@@ -124,12 +145,30 @@ const optOutCache = {
       }
     }
     // database
-    await new OptOut({
+    await r.knex("opt_out").insert({
       assignment_id: assignmentId,
       organization_id: organizationId,
-      reason_code: reason,
+      reason_code: reason || "",
       cell
-    }).save();
+    });
+
+    if (noContactUpdate && r.redis) {
+      // this is a risky feature which will not update campaign_contacts
+      // Only use this when you are confident that at least the campaign's
+      // campaign_contact record will update.
+      // The first use-case was for auto-optout, where we update the contact
+      // during message save
+      // We only allow it when the cache is set, so other campaigns are still
+      // (mostly) assured to get the opt-out
+      return;
+    }
+
+    await updateIsOptedOuts(query => {
+      if (!sharingOptOuts) {
+        query.where("campaign.organization_id", organizationId);
+      }
+      return query.where("campaign_contact.cell", cell);
+    });
 
     // update all organization/instance's active campaigns as well
     const updateOrgOrInstanceOptOuts = !sharingOptOuts
@@ -154,6 +193,7 @@ const optOutCache = {
       .update({
         is_opted_out: true
       });
+      
     if (noReply) {
       await campaignCache.incrCount(campaign.id, "needsResponseCount", -1);
     }
@@ -165,7 +205,8 @@ const optOutCache = {
       });
     }
   },
-  loadMany
+  loadMany,
+  updateIsOptedOuts
 };
 
 export default optOutCache;

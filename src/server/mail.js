@@ -1,41 +1,49 @@
 import { log } from "../lib";
+import { getConfig } from "./api/lib/config";
 import nodemailer from "nodemailer";
 import mailgunConstructor from "mailgun-js";
 
 const mailgun =
-  process.env.MAILGUN_API_KEY &&
-  process.env.MAILGUN_DOMAIN &&
+  getConfig("MAILGUN_API_KEY") &&
+  getConfig("MAILGUN_DOMAIN") &&
   mailgunConstructor({
-    apiKey: process.env.MAILGUN_API_KEY,
-    domain: process.env.MAILGUN_DOMAIN
+    apiKey: getConfig("MAILGUN_API_KEY"),
+    domain: getConfig("MAILGUN_DOMAIN")
   });
 
-const sender =
-  process.env.MAILGUN_API_KEY && process.env.MAILGUN_DOMAIN
-    ? {
-        sendMail: ({ from, to, subject, replyTo, text }) =>
-          mailgun.messages().send({
-            from,
-            "h:Reply-To": replyTo,
-            to,
-            subject,
-            text
-          })
-      }
-    : nodemailer.createTransport({
-        host: process.env.EMAIL_HOST,
-        port: process.env.EMAIL_HOST_PORT,
-        secure:
-          typeof process.env.EMAIL_HOST_SECURE !== "undefined"
-            ? process.env.EMAIL_HOST_SECURE
-            : true,
-        auth: {
-          user: process.env.EMAIL_HOST_USER,
-          pass: process.env.EMAIL_HOST_PASSWORD
-        }
-      });
+const nodeMailerConfig = {
+  host: getConfig("EMAIL_HOST"),
+  port: getConfig("EMAIL_HOST_PORT"),
+  secure:
+    typeof process.env.EMAIL_HOST_SECURE !== "undefined"
+      ? getConfig("EMAIL_HOST_SECURE", null, { truthy: 1 })
+      : true,
+  auth: {
+    user: getConfig("EMAIL_HOST_USER"),
+    pass: getConfig("EMAIL_HOST_PASSWORD")
+  }
+};
 
-export const sendEmail = async ({ to, subject, text, replyTo }) => {
+const sender =
+  getConfig("MAILGUN_API_KEY") && getConfig("MAILGUN_DOMAIN")
+    ? {
+        sendMail: ({ from, to, subject, replyTo, text, html }) =>
+          mailgun.messages().send(
+            {
+              from,
+              "h:Reply-To": replyTo,
+              to,
+              subject,
+              ...(html ? { html } : { text })
+            },
+            err => {
+              if (err) log.debug(err.message);
+            }
+          )
+      }
+    : nodemailer.createTransport(nodeMailerConfig);
+
+export const sendEmail = async ({ to, subject, text, html, replyTo }) => {
   log.info(`Sending e-mail to ${to} with subject ${subject}.`);
 
   if (process.env.NODE_ENV === "development") {
@@ -44,15 +52,15 @@ export const sendEmail = async ({ to, subject, text, replyTo }) => {
   }
 
   const params = {
-    from: process.env.EMAIL_FROM,
+    from: getConfig("EMAIL_FROM"),
     to,
     subject,
-    text
+    text,
+    html
   };
 
   if (replyTo) {
     params["replyTo"] = replyTo;
   }
-
   return sender.sendMail(params);
 };

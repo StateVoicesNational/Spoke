@@ -14,6 +14,23 @@ describe("Survey component", () => {
           value: "Foo is an animal",
           interactionStepId: 3,
           nextInteractionStep: { script: "foo" }
+        },
+        {
+          value: "Foo is a mineral",
+          interactionStepId: 3,
+          nextInteractionStep: { script: "bar" }
+        },
+        {
+          value: "Foo is a vegetable",
+          interactionStepId: 3,
+          nextInteractionStep: { script: "fizz" }
+        }
+      ],
+      filteredAnswerOptions: [
+        {
+          value: "Foo is a mineral",
+          interactionStepId: 3,
+          nextInteractionStep: { script: "bar" }
         }
       ]
     }
@@ -48,6 +65,6 @@ describe("Survey component", () => {
         interactionStep: currentInteractionStep,
         answerIndex: 0
       })
-    ).toBe("foo");
+    ).toBe("bar");
   });
 });
