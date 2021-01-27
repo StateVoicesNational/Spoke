@@ -18,8 +18,6 @@ export const schema = gql`
     state: String!
     availableCount: Int!
     allocatedCount: Int!
-    minStuckContacts: Int
-    maxStuckContacts: Int
   }
 
   type BuyPhoneNumbersJobRequest {
