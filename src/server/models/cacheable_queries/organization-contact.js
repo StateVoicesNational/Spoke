@@ -1,11 +1,4 @@
-import { r } from "..";
-
-// Datastructure:
-// * regular GET/SET with JSON ordered list of the objects {id,title,text}
-// * keyed by campaignId-userId pairs -- userId is '' for global campaign records
-// Requirements:
-// * needs an order
-// * needs to get by campaignId-userId pairs
+import { r } from "../../models";
 
 const getCacheKey = (organizationId, contactNumber) =>
   `${process.env.CACHE_PREFIX ||
@@ -60,8 +53,6 @@ const organizationContactCache = {
         .expire(cacheKey, 43200) // 12 hours
         .execAsync();
     }
-
-    return await knex.raw(query);
   }
 };
 
