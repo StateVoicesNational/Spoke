@@ -342,10 +342,9 @@ const makeCannedResponsesList = cannedResponsesParagraphs => {
         // Italic = tag.
         const tagId = textParagraph.text.match(/^\d*\b/);
         if (tagId && !!tagId[0]) {
-          cannedResponse.tagIds.push(tagId[0])
+          cannedResponse.tagIds.push(tagId[0]);
         }
-      }
-      else {
+      } else {
         // Regular text, add to response.
         cannedResponse.text.push(textParagraph.text);
       }
@@ -384,11 +383,11 @@ const replaceCannedResponsesInDatabase = async (
       .whereIn(
         "canned_response_id",
         r
-        .knex("canned_response")
-        .select("id")
-        .where({
-          campaign_id: campaignId
-        })
+          .knex("canned_response")
+          .select("id")
+          .where({
+            campaign_id: campaignId
+          })
       )
       .delete();
     // delete canned responses
@@ -401,28 +400,20 @@ const replaceCannedResponsesInDatabase = async (
 
     // save new canned responses and add their ids with related tag ids to tag_canned_response
     const saveCannedResponse = async cannedResponse => {
-      const [res] = await trx("canned_response").insert(
-        cannedResponse, [
-          "id"
-        ]);
+      const [res] = await trx("canned_response").insert(cannedResponse, ["id"]);
       return res.id;
     };
     const tagCannedResponses = await Promise.all(
       convertedResponses.map(async response => {
-        const {
-          tagIds,
-          ...filteredResponse
-        } = response;
-        const responseId = await saveCannedResponse(
-          filteredResponse);
+        const { tagIds, ...filteredResponse } = response;
+        const responseId = await saveCannedResponse(filteredResponse);
         return (tagIds || []).map(t => ({
           tag_id: t,
           canned_response_id: responseId
         }));
       })
     );
-    await trx("tag_canned_response").insert(_.flatten(
-    tagCannedResponses));
+    await trx("tag_canned_response").insert(_.flatten(tagCannedResponses));
   });
 };
 

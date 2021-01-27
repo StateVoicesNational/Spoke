@@ -47,27 +47,38 @@ export class AssignmentTexterContact extends React.Component {
     const { contact } = this.props;
 
     let disabled = false;
+    let disabledSend = false;
     let disabledText = "Sending...";
     let snackbarOnTouchTap = null;
     let snackbarActionTitle = null;
     let snackbarError = null;
 
-    if (assignment.id !== contact.assignmentId || campaign.isArchived) {
+    if (campaign.isArchived && this.props.location.query.review === "1") {
+      disabledSend = true;
+    } else if (assignment.id !== contact.assignmentId || campaign.isArchived) {
       disabledText = "";
       disabled = true;
       snackbarError = "Your assignment has changed";
       snackbarOnTouchTap = this.goBackToTodos;
       snackbarActionTitle = "Back to Todos";
-    } else if (contact.optOut && !this.props.reviewContactId) {
+    } else if (
+      contact.optOut &&
+      !this.props.reviewContactId &&
+      !(this.props.location.query.review === "1")
+    ) {
       disabledText = "Skipping opt-out...";
       disabled = true;
-    } else if (!this.isContactBetweenTextingHours(contact)) {
+    } else if (
+      !(this.props.location.query.review === "1") &&
+      !this.isContactBetweenTextingHours(contact)
+    ) {
       disabledText = "Refreshing ...";
       disabled = true;
     }
 
     this.state = {
       disabled,
+      disabledSend,
       disabledText,
       // this prevents jitter by not showing the optout/skip buttons right after sending
       snackbarError,
@@ -80,11 +91,15 @@ export class AssignmentTexterContact extends React.Component {
 
   componentDidMount() {
     const { contact } = this.props;
-    if (contact.optOut) {
+    const { review } = this.props.location.query;
+    if (contact.optOut && !(review === "1")) {
       if (!this.props.reviewContactId) {
         this.skipContact();
       }
-    } else if (!this.isContactBetweenTextingHours(contact)) {
+    } else if (
+      !this.isContactBetweenTextingHours(contact) &&
+      !(review === "1")
+    ) {
       setTimeout(() => {
         this.props.refreshData();
         this.setState({ disabled: false });
@@ -395,10 +410,12 @@ export class AssignmentTexterContact extends React.Component {
           texter={this.props.texter}
           assignment={this.props.assignment}
           currentUser={this.props.currentUser}
+          organizationId={this.props.organizationId}
           navigationToolbarChildren={this.props.navigationToolbarChildren}
           messageStatusFilter={this.props.messageStatusFilter}
-          disabled={this.state.disabled}
+          disabled={this.state.disabled || this.state.disabledSend}
           enabledSideboxes={this.props.enabledSideboxes}
+          review={this.props.location.query.review}
           onMessageFormSubmit={this.handleMessageFormSubmit}
           onOptOut={this.handleOptOut}
           onUpdateTags={this.handleUpdateTags}
@@ -435,7 +452,7 @@ export class AssignmentTexterContact extends React.Component {
 }
 
 AssignmentTexterContact.propTypes = {
-  reviewContactid: PropTypes.string,
+  reviewContactId: PropTypes.string,
   contact: PropTypes.object,
   campaign: PropTypes.object,
   assignment: PropTypes.object,
@@ -448,7 +465,9 @@ AssignmentTexterContact.propTypes = {
   mutations: PropTypes.object,
   refreshData: PropTypes.func,
   onExitTexter: PropTypes.func,
-  messageStatusFilter: PropTypes.string
+  messageStatusFilter: PropTypes.string,
+  organizationId: PropTypes.string,
+  location: PropTypes.object
 };
 
 const mutations = {

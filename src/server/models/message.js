@@ -29,6 +29,7 @@ const Message = thinky.createModel(
         .required()
         .allowNull(false),
       text: optionalString(),
+      media: type.string().default(null),
       assignment_id: optionalString(), //deprecated: use refs by campaign_contact_id or user_id
       campaign_contact_id: optionalString(),
       messageservice_sid: optionalString().stopReference(),

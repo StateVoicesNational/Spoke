@@ -397,6 +397,7 @@ describe("mutations.updateQuestionResponses", () => {
               refreshData={jest.fn()}
               contact={{ ...updatedContacts[0] }}
               navigationToolbarChildren={navigationToolbarChildren}
+              location={{ query: {} }}
             />
           </MuiThemeProvider>
         );
