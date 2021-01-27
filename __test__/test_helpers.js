@@ -9,6 +9,12 @@ import {
 } from "../src/server/models/";
 import { graphql } from "graphql";
 
+// Cypress integration tests do not use jest but do use these helpers
+// They would benefit from mocking mail services, though, so something to look in to.
+if (global.jest) {
+  global.jest.mock("../src/server/mail");
+}
+
 export async function setupTest() {
   // FUTURE: only run this once maybe and then truncateTables() from models?
   await createTables();
@@ -531,7 +537,6 @@ export async function createCannedResponses(admin, campaign, cannedResponses) {
   );
 }
 
-jest.mock("../src/server/mail");
 export async function startCampaign(admin, campaign) {
   const rootValue = {};
   const startCampaignQuery = `mutation startCampaign($campaignId: String!) {
