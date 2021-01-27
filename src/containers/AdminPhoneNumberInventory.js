@@ -160,7 +160,7 @@ class AdminPhoneNumberInventory extends React.Component {
 
   tableColumns() {
     const { pendingPhoneNumberJobs } = this.props.data.organization;
-    const columns = [
+    return [
       {
         key: "areaCode",
         label: "Area Code",
@@ -174,30 +174,27 @@ class AdminPhoneNumberInventory extends React.Component {
         sortable: true
       },
       {
+        key: "allocatedCount",
+        label: "Allocated",
+        style: inlineStyles.column
+      },
+      {
         key: "availableCount",
         label: "Available",
         style: inlineStyles.column
       },
+      // TODO: display additional information here about pending and past jobs
       {
-        key: "allocatedCount",
-        label: "Allocated",
-        style: inlineStyles.column
-      }
-    ];
-
-    // TODO: display additional information here about pending and past jobs
-    columns.push({
-      key: "pendingJobs",
-      label: "",
-      style: inlineStyles.column,
-      render: (columnKey, row) => {
-        if (pendingPhoneNumberJobs.some(j => j.areaCode === row.areaCode)) {
-          return <CircularProgress size={25} />;
+        key: "pendingJobs",
+        label: "",
+        style: inlineStyles.column,
+        render: (columnKey, row) => {
+          if (pendingPhoneNumberJobs.some(j => j.areaCode === row.areaCode)) {
+            return <CircularProgress size={25} />;
+          }
         }
       }
-    });
-
-    return columns;
+    ];
   }
 
   sortTable(table, key, order) {

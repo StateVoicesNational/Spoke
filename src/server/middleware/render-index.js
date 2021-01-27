@@ -123,13 +123,6 @@ export default function renderIndex(html, css, assetMap) {
           truthy: 1
         }
       ) || false};
-      window.EXPERIMENTAL_STICKY_SENDER=${getConfig(
-        "EXPERIMENTAL_STICKY_SENDER",
-        null,
-        {
-          truthy: 1
-        }
-      ) || false};   
       window.MOBILIZE_EVENT_SHIFTER_URL='${getConfig(
         "MOBILIZE_EVENT_SHIFTER_URL"
       )}';

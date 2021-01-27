@@ -354,8 +354,7 @@ async function sendMessage(message, contact, trx, organization, campaign) {
       {
         to: message.contact_number,
         body: message.text,
-        statusCallback: process.env.TWILIO_STATUS_CALLBACK_URL,
-        smartEncoded: true
+        statusCallback: process.env.TWILIO_STATUS_CALLBACK_URL
       },
       messagingServiceSid ? { messagingServiceSid } : {},
       twilioValidityPeriod ? { validityPeriod: twilioValidityPeriod } : {},
@@ -802,6 +801,14 @@ async function deleteNumber(twilioInstance, phoneSid, phoneNumber) {
       }
     });
   log.debug(`Deleted number ${phoneNumber} [${phoneSid}]`);
+
+  if (process.env.EXPERIMENTAL_STICKY_SENDER) {
+    await cacheableData.organizationContact.remove({
+      organizationId,
+      contactNumber: cell
+    });
+  }
+
   return await r
     .knex("owned_phone_number")
     .del()

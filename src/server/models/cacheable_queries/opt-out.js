@@ -170,30 +170,6 @@ const optOutCache = {
       return query.where("campaign_contact.cell", cell);
     });
 
-    // update all organization/instance's active campaigns as well
-    const updateOrgOrInstanceOptOuts = !sharingOptOuts
-      ? {
-          "campaign_contact.cell": cell,
-          "campaign.organization_id": organizationId,
-          "campaign.is_archived": false
-        }
-      : { "campaign_contact.cell": cell, "campaign.is_archived": false };
-
-    await r
-      .knex("campaign_contact")
-      .where(
-        "id",
-        "in",
-        r
-          .knex("campaign_contact")
-          .leftJoin("campaign", "campaign_contact.campaign_id", "campaign.id")
-          .where(updateOrgOrInstanceOptOuts)
-          .select("campaign_contact.id")
-      )
-      .update({
-        is_opted_out: true
-      });
-
     if (noReply) {
       await campaignCache.incrCount(campaign.id, "needsResponseCount", -1);
     }
