@@ -13,8 +13,6 @@ import {
 } from "../../models";
 import wrap from "../../wrap";
 import { getConfig } from "./config";
-import urlJoin from "url-join";
-import _ from "lodash";
 import ownedPhoneNumber from "./owned-phone-number";
 import { saveNewIncomingMessage } from "./message-sending";
 
@@ -247,8 +245,10 @@ async function getOrganizationContact(organization, contactNumber) {
   }
 
   if (
-    (getConfig("EXPERIMENTAL_PHONE_INVENTORY", organization, { truthy: true}) 
-      || getConfig("PHONE_INVENTORY", organization, { truthy: true })) &&
+    (getConfig("EXPERIMENTAL_PHONE_INVENTORY", organization, {
+      truthy: true
+    }) ||
+      getConfig("PHONE_INVENTORY", organization, { truthy: true })) &&
     getConfig("SKIP_TWILIO_MESSAGING_SERVICE", organization, { truthy: true })
   ) {
     const phoneNumber = await ownedPhoneNumber.getOwnedPhoneNumberForStickySender(
