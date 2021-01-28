@@ -296,14 +296,10 @@ async function sendMessage(message, contact, trx, organization, campaign) {
     organization &&
     getConfig("EXPERIMENTAL_STICKY_SENDER", organization, { truthy: true })
   ) {
-    const organizationContactUserNumber = await getOrganizationContactUserNumber(
+    userNumber = await getOrganizationContactUserNumber(
       organization,
       contact.cell
     );
-
-    if (organizationContactUserNumber) {
-      userNumber = organizationContactUserNumber;
-    }
   }
 
   return new Promise((resolve, reject) => {
