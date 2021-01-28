@@ -213,20 +213,24 @@ const deliveryReport = async ({
     }
   }
 
-  const [message] = await r
+  await r
     .knex("message")
     .where("service_id", messageSid)
     .limit(1)
-    .returning("*")
     .update(changes);
 
   if (process.env.EXPERIMENTAL_STICKY_SENDER && newStatus === "DELIVERED") {
+    const [message] = await r
+      .knex("message")
+      .where("service_id", messageSid)
+      .limit(1);
+
     // Assign user number to contact/organization
     const campaignContact = await campaignContactCache.load(
       message.campaign_contact_id
     );
-    const organizationId = await campaignContactCache.orgId(campaignContact);
 
+    const organizationId = await campaignContactCache.orgId(campaignContact);
     const organizationContact = await organizationContactCache.query({
       organizationId,
       contactNumber
