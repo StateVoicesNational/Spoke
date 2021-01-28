@@ -294,7 +294,7 @@ async function sendMessage(message, contact, trx, organization, campaign) {
   let userNumber;
   if (
     organization &&
-    (getConfig("EXPERIMENTAL_STICKY_SENDER"), organization, { truthy: true })
+    getConfig("EXPERIMENTAL_STICKY_SENDER", organization, { truthy: true })
   ) {
     const organizationContact = await getOrganizationContact(
       organization,
