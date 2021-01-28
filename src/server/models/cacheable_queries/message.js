@@ -233,7 +233,7 @@ const deliveryReport = async ({
     });
 
     if (!organizationContact) {
-      await organizationContact.save({
+      await organizationContactCache.save({
         organizationId: organizationId,
         contactNumber: contactNumber,
         userNumber: userNumber
