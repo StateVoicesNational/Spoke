@@ -234,7 +234,7 @@ async function getMessagingServiceSid(
   );
 }
 
-async function getOrganizationContact(organization, contactNumber) {
+async function getOrganizationContactUserNumber(organization, contactNumber) {
   const organizationContact = await cacheableData.organizationContact.query({
     organizationId: organization.id,
     contactNumber
@@ -296,13 +296,13 @@ async function sendMessage(message, contact, trx, organization, campaign) {
     organization &&
     getConfig("EXPERIMENTAL_STICKY_SENDER", organization, { truthy: true })
   ) {
-    const organizationContact = await getOrganizationContact(
+    const organizationContactUserNumber = await getOrganizationContactUserNumber(
       organization,
       contact.cell
     );
 
-    if (organizationContact) {
-      userNumber = organizationContact.user_number;
+    if (organizationContactUserNumber) {
+      userNumber = organizationContactUserNumber;
     }
   }
 
