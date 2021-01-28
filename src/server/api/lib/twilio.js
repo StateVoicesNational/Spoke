@@ -351,12 +351,13 @@ async function sendMessage(message, contact, trx, organization, campaign) {
         body: message.text,
         statusCallback: process.env.TWILIO_STATUS_CALLBACK_URL
       },
-      messagingServiceSid ? { messagingServiceSid } : {},
-      twilioValidityPeriod ? { validityPeriod: twilioValidityPeriod } : {},
-      parseMessageText(message),
       userNumber
         ? { from: userNumber }
-        : { messagingServiceSid: messagingServiceSid }
+        : messagingServiceSid
+        ? { messagingServiceSid }
+        : {},
+      twilioValidityPeriod ? { validityPeriod: twilioValidityPeriod } : {},
+      parseMessageText(message)
     );
 
     console.log("twilioMessage", messageParams);
