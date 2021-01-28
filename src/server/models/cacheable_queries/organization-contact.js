@@ -66,7 +66,14 @@ const organizationContactCache = {
         organization_id: organizationId,
         contact_number: contactNumber
       })
-      .returning("*")
+      .limit(1);
+
+    await r
+      .knex("organization_contact")
+      .where({
+        organization_id: organizationId,
+        contact_number: contactNumber
+      })
       .delete();
 
     if (organizationContact) {
