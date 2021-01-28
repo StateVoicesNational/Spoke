@@ -54,6 +54,7 @@ import Twilio from "twilio";
 
 import {
   bulkSendMessages,
+  bulkUpdateScript,
   buyPhoneNumbers,
   deletePhoneNumbers,
   findNewCampaignContact,
@@ -490,6 +491,7 @@ async function updateInteractionSteps(
 const rootMutations = {
   RootMutation: {
     bulkSendMessages,
+    bulkUpdateScript,
     buyPhoneNumbers,
     deletePhoneNumbers,
     editOrganization,

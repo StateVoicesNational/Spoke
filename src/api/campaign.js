@@ -139,6 +139,12 @@ export const schema = gql`
     campaigns: [Campaign]
   }
 
+  type ScriptUpdateResult {
+    campaign: Campaign!
+    found: String!
+    replaced: String!
+  }
+
   union CampaignsReturn = PaginatedCampaigns | CampaignsList
 
   type PaginatedCampaigns {
