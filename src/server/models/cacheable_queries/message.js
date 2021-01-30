@@ -331,6 +331,9 @@ const messageCache = {
           }
           if (result.contactUpdates) {
             Object.assign(contactUpdates, result.contactUpdates);
+            if (result.contactUpdates.message_status) {
+              newStatus = result.contactUpdates.message_status;
+            }
           }
           if (result.handlerContext) {
             Object.assign(handlerContext, result.handlerContext);
