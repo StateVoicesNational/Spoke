@@ -2,7 +2,7 @@ import thinky from "./thinky";
 const type = thinky.type;
 import { optionalString, requiredString } from "./custom-types";
 
-const ZipCode = thinky.createModel(
+const AreaCode = thinky.createModel(
   "area_code",
   type
     .object()
@@ -17,4 +17,4 @@ const ZipCode = thinky.createModel(
   { pk: "area_code", noAutoCreation: true }
 );
 
-export default ZipCode;
+export default AreaCode;
