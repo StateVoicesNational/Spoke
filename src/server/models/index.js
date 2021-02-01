@@ -18,6 +18,7 @@ import UserOrganization from "./user-organization";
 import UserCell from "./user-cell";
 import Message from "./message";
 import ZipCode from "./zip-code";
+import AreaCode from "./area-code";
 import Log from "./log";
 import Tag from "./tag";
 import TagCampaignContact from "./tag-campaign-contact";
@@ -71,6 +72,7 @@ const tableList = [
   "owned_phone_number",
   "user_cell",
   "user_organization",
+  "area_code",
   "zip_code" // good candidate (or by contact)?
 ];
 
@@ -124,6 +126,7 @@ const createLoaders = () => ({
     cacheObj: cacheableData.campaignContact
   }),
   zipCode: createLoader(ZipCode, { idKey: "zip" }),
+  areaCode: createLoader(AreaCode, { idKey: "area_code" }),
   log: createLoader(Log),
   cannedResponse: createLoader(CannedResponse),
   jobRequest: createLoader(JobRequest),
@@ -170,6 +173,7 @@ export {
   UserOrganization,
   User,
   ZipCode,
+  AreaCode,
   Log,
   Tag,
   TagCampaignContact

@@ -55,8 +55,12 @@ async function listCampaignNumbers(campaignId) {
 async function getOwnedPhoneNumberForStickySender(organizationId, cell) {
   const areaCode = cell.slice(2, 5);
 
-  const secondaryAreaCodesMap = JSON.parse(getConfig("SECONDARY_AREA_CODES"));
-  const secondaryAreaCodes = secondaryAreaCodesMap[areaCode];
+  const { overlay_area_codes, state_area_codes } = await r
+    .knex("area_code")
+    .where({
+      area_code: areaCode
+    })
+    .first();
 
   return await r
     .knex("owned_phone_number")
@@ -72,8 +76,13 @@ async function getOwnedPhoneNumberForStickySender(organizationId, cell) {
       ),
       r.knex.raw(
         `CASE WHEN area_code IN ('${
-          secondaryAreaCodes ? secondaryAreaCodes.join("','") : ""
-        }') THEN 1 ELSE 0 END AS matching_secondary_area_code`
+          overlay_area_codes ? overlay_area_codes.split("/").join("','") : ""
+        }') THEN 1 ELSE 0 END AS matching_overlay_area_code`
+      ),
+      r.knex.raw(
+        `CASE WHEN area_code IN ('${
+          state_area_codes ? state_area_codes.split("/").join("','") : ""
+        }') THEN 1 ELSE 0 END AS matching_state_area_code`
       ),
       // Prioritize numbers with 0 - 49 stuck contacts, followed by 50 - 99, etc.
       r.knex.raw("CEILING((stuck_contacts + 1.0) / 50) AS priority_grouping"),
@@ -82,7 +91,7 @@ async function getOwnedPhoneNumberForStickySender(organizationId, cell) {
     .where({
       organization_id: organizationId
     })
-    .orderByRaw("2, 3 DESC, 4 DESC, 5, 6")
+    .orderByRaw("2, 3 DESC, 4 DESC, 5 DESC, 6, 7")
     .first();
 }
 

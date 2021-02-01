@@ -25,6 +25,18 @@ exports.up = async function up(knex, Promise) {
       t.unique(["organization_id", "contact_number"]);
     });
   }
+
+  if (!(await knex.schema.hasTable("area_code"))) {
+    await knex.schema.createTable("area_code", t => {
+      t.text("area_code")
+        .notNullable()
+        .primary();
+      t.text("location");
+      t.text("country");
+      t.text("overlay_area_codes");
+      t.text("state_area_codes");
+    });
+  }
 };
 
 exports.down = async function down(knex, Promise) {
@@ -37,4 +49,5 @@ exports.down = async function down(knex, Promise) {
   });
 
   await knex.schema.dropTableIfExists("organization_contact");
+  await knex.schema.dropTableIfExists("area_code");
 };
