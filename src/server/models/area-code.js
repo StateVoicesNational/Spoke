@@ -10,7 +10,7 @@ const AreaCode = thinky.createModel(
       area_code: requiredString(),
       location: optionalString(),
       country: optionalString(),
-      overlays: optionalString(),
+      overlay_area_codes: optionalString(),
       state_area_codes: optionalString()
     })
     .allowExtra(false),

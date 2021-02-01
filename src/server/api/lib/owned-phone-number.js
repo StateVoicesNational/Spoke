@@ -74,6 +74,7 @@ async function getOwnedPhoneNumberForStickySender(organizationId, cell) {
         "CASE WHEN area_code = '??' THEN 1 ELSE 0 END AS matching_area_code",
         areaCode
       ),
+      // Overlay area codes, provided by the NANPA, are area codes used in the same geographic region, normally a large metro area
       r.knex.raw(
         `CASE WHEN area_code IN ('${
           overlay_area_codes ? overlay_area_codes.split("/").join("','") : ""
