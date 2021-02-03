@@ -1,4 +1,5 @@
 /* eslint-disable no-unused-expressions, consistent-return */
+import dotenv from "dotenv";
 import { r, Message, cacheableData } from "../../../src/server/models/";
 import { getConfig } from "../../../src/server/api/lib/config";
 import * as twilio from "../../../src/extensions/messaging_services/twilio";
@@ -115,38 +116,46 @@ describe("twilio", () => {
     if (r.redis) r.redis.flushdb();
   }, global.DATABASE_SETUP_TEARDOWN_TIMEOUT);
 
-  it("should send messages", async () => {
-    let message = await Message.save({
-      campaign_contact_id: dbCampaignContact.id,
-      messageservice_sid: "test_message_service",
-      contact_number: dbCampaignContact.cell,
-      is_from_contact: false,
-      send_status: "SENDING",
-      service: "twilio",
-      text: "blah blah blah",
-      user_id: testTexterUser.id
+  describe("send messages", () => {
+    beforeEach(async () => {
+      jest
+        .spyOn(cacheableData.organization, "getMessageServiceSid")
+        .mockResolvedValue("test_message_service");
     });
 
-    await setTwilioAuth(testAdminUser, testOrganization);
-    const org = await cacheableData.organization.load(organizationId);
+    it("should send messages", async () => {
+      let message = await Message.save({
+        campaign_contact_id: dbCampaignContact.id,
+        messageservice_sid: "test_message_service",
+        contact_number: dbCampaignContact.cell,
+        is_from_contact: false,
+        send_status: "SENDING",
+        service: "twilio",
+        text: "blah blah blah",
+        user_id: testTexterUser.id
+      });
 
-    mockMessageCreate.mockImplementation((payload, cb) => {
-      cb(null, { sid: "SM12345", error_code: null });
-    });
+      await setTwilioAuth(testAdminUser, testOrganization);
+      const org = await cacheableData.organization.load(organizationId);
 
-    await twilio.sendMessage(message, dbCampaignContact, null, org);
-    expect(mockMessageCreate).toHaveBeenCalledTimes(1);
-    const arg = mockMessageCreate.mock.calls[0][0];
-    expect(arg).toMatchObject({
-      to: dbCampaignContact.cell,
-      body: "blah blah blah",
-      messagingServiceSid: "test_message_service"
-    });
+      mockMessageCreate.mockImplementation((payload, cb) => {
+        cb(null, { sid: "SM12345", error_code: null });
+      });
 
-    message = await Message.get(message.id);
-    expect(message).toMatchObject({
-      service_id: "SM12345",
-      send_status: "SENT"
+      await twilio.sendMessage(message, dbCampaignContact, null, org);
+      expect(mockMessageCreate).toHaveBeenCalledTimes(1);
+      const arg = mockMessageCreate.mock.calls[0][0];
+      expect(arg).toMatchObject({
+        to: dbCampaignContact.cell,
+        body: "blah blah blah",
+        messagingServiceSid: "test_message_service"
+      });
+
+      message = await Message.get(message.id);
+      expect(message).toMatchObject({
+        service_id: "SM12345",
+        send_status: "SENT"
+      });
     });
   });
 
@@ -444,16 +453,26 @@ describe("twilio", () => {
     }
   });
 
-  it("orgs should have separate twilio credentials", async () => {
-    const org1 = await cacheableData.organization.load(organizationId);
-    const org1Auth = await cacheableData.organization.getTwilioAuth(org1);
-    expect(org1Auth.authToken).toBeUndefined();
-    expect(org1Auth.accountSid).toBeUndefined();
+  describe("foo", () => {
+    beforeEach(() => {
+      Object.keys(process.env)
+        .filter(key => key.startsWith("TWILIO"))
+        .forEach(key => {
+          delete process.env[key];
+        });
+    });
 
-    const org2 = await cacheableData.organization.load(organizationId2);
-    const org2Auth = await cacheableData.organization.getTwilioAuth(org2);
-    expect(org2Auth.authToken).toBe("test_twlio_auth_token");
-    expect(org2Auth.accountSid).toBe("test_twilio_account_sid");
+    it("orgs should have separate twilio credentials", async () => {
+      const org1 = await cacheableData.organization.load(organizationId);
+      const org1Auth = await cacheableData.organization.getTwilioAuth(org1);
+      expect(org1Auth.authToken).toBeUndefined();
+      expect(org1Auth.accountSid).toBeUndefined();
+
+      const org2 = await cacheableData.organization.load(organizationId2);
+      const org2Auth = await cacheableData.organization.getTwilioAuth(org2);
+      expect(org2Auth.authToken).toBe("test_twlio_auth_token");
+      expect(org2Auth.accountSid).toBe("test_twilio_account_sid");
+    });
   });
 
   describe("Number buying", () => {

@@ -10,8 +10,57 @@ import {
   r
 } from "../../../server/models";
 import { saveNewIncomingMessage } from "../message-sending";
+import wrap from "../../../server/wrap";
 
 const DISABLE_DB_LOG = getConfig("DISABLE_DB_LOG");
+
+export const addServerEndpoints = ({
+  expressApp,
+  serviceName,
+  messageCallbackUrl,
+  statusCallbackUrl,
+  validationFlag,
+  headerValidator,
+  twiml
+}) => {
+  expressApp.post(
+    `/${serviceName}/:orgId?`,
+    headerValidator(messageCallbackUrl),
+    wrap(async (req, res) => {
+      try {
+        await handleIncomingMessage(req.body, serviceName);
+      } catch (ex) {
+        log.error(ex);
+      }
+      const resp = new twiml.MessagingResponse();
+      res.writeHead(200, { "Content-Type": "text/xml" });
+      res.end(resp.toString());
+    })
+  );
+
+  const messageReportHooks = [];
+  if (statusCallbackUrl || validationFlag) {
+    messageReportHooks.push(headerValidator(statusCallbackUrl));
+  }
+  messageReportHooks.push(
+    wrap(async (req, res) => {
+      try {
+        const body = req.body;
+        await handleDeliveryReport(body, serviceName);
+      } catch (ex) {
+        log.error(ex);
+      }
+      const resp = new twiml.MessagingResponse();
+      res.writeHead(200, { "Content-Type": "text/xml" });
+      res.end(resp.toString());
+    })
+  );
+
+  expressApp.post(
+    `/${serviceName}-message-report/:orgId?`,
+    ...messageReportHooks
+  );
+};
 
 const getMessagingServiceSid = async (
   organization,

@@ -1,5 +1,5 @@
 import { r, cacheableData } from "../../../src/server/models";
-import serviceMap from "../../../src/extensions/messaging_services/services";
+import serviceMap from "../../../src/extensions/messaging_services";
 import {
   available,
   DEFAULT_PROFANITY_REGEX_BASE64

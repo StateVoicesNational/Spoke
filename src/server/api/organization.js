@@ -229,7 +229,7 @@ export const resolvers = {
       };
     },
     cacheable: (org, _, { user }) =>
-      //quanery logic.  levels are 0, 1, 2
+      // quanery logic.  levels are 0, 1, 2
       r.redis ? (getConfig("REDIS_CONTACT_CACHE", org) ? 2 : 1) : 0,
     twilioAccountSid: async (organization, _, { user }) => {
       try {
@@ -264,8 +264,9 @@ export const resolvers = {
       }
     },
     fullyConfigured: async organization => {
-      const serviceName =
-        getConfig("service", organization) || getConfig("DEFAULT_SERVICE");
+      const serviceName = cacheableData.organization.getMessageService(
+        organization
+      );
       if (serviceName === "twilio") {
         const {
           authToken,
@@ -285,6 +286,22 @@ export const resolvers = {
         }
 
         if (!(authToken && accountSid && messagingServiceConfigured)) {
+          return false;
+        }
+      } else if (serviceName === "signalwire") {
+        const {
+          authToken,
+          accountSid,
+          spaceUrl
+        } = await cacheableData.organization.getSignalwireAuth(organization);
+
+        const messagingServiceConfigured = await cacheableData.organization.getMessageServiceSid(
+          organization
+        );
+
+        if (
+          !(authToken && accountSid && spaceUrl && messagingServiceConfigured)
+        ) {
           return false;
         }
       }
@@ -366,8 +383,9 @@ export const resolvers = {
         return [];
       }
       const usAreaCodes = require("us-area-codes");
-      const service =
-        getConfig("service", organization) || getConfig("DEFAULT_SERVICE");
+      const service = cacheableData.organization.getMessageService(
+        organization
+      );
       const counts = await r
         .knex("owned_phone_number")
         .select(

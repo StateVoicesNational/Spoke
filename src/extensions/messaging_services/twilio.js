@@ -5,8 +5,8 @@ import urlJoin from "url-join";
 import { log } from "../../lib";
 import { getConfig } from "../../server/api/lib/config";
 import { cacheableData, r } from "../../server/models";
-import wrap from "../../server/wrap";
 import {
+  addServerEndpoints as _addServerEndpoints,
   convertMessagePartsToMessage as _convertMessagePartsToMessage,
   handleDeliveryReport as _handleDeliveryReport,
   handleIncomingMessage as _handleIncomingMessage,
@@ -96,53 +96,24 @@ export const errorDescriptions = {
   "-167": "Internal: Initial message altered (initialtext-guard)"
 };
 
-export function addServerEndpoints(expressApp) {
-  expressApp.post(
-    "/twilio/:orgId?",
-    headerValidator(
-      process.env.TWILIO_MESSAGE_CALLBACK_URL ||
-        global.TWILIO_MESSAGE_CALLBACK_URL
-    ),
-    wrap(async (req, res) => {
-      try {
-        await _handleIncomingMessage(req.body, "twilio");
-      } catch (ex) {
-        log.error(ex);
-      }
-      const resp = new twiml.MessagingResponse();
-      res.writeHead(200, { "Content-Type": "text/xml" });
-      res.end(resp.toString());
-    })
-  );
+export const addServerEndpoints = expressApp => {
+  const messageCallbackUrl =
+    process.env.TWILIO_MESSAGE_CALLBACK_URL ||
+    global.TWILIO_MESSAGE_CALLBACK_URL;
+  const statusCallbackUrl =
+    process.env.TWILIO_STATUS_CALLBACK_URL || global.TWILIO_STATUS_CALLBACK_URL;
+  const validationFlag = getConfig("TWILIO_VALIDATION");
 
-  const messageReportHooks = [];
-  if (
-    getConfig("TWILIO_STATUS_CALLBACK_URL") ||
-    getConfig("TWILIO_VALIDATION")
-  ) {
-    messageReportHooks.push(
-      headerValidator(
-        process.env.TWILIO_STATUS_CALLBACK_URL ||
-          global.TWILIO_STATUS_CALLBACK_URL
-      )
-    );
-  }
-  messageReportHooks.push(
-    wrap(async (req, res) => {
-      try {
-        const body = req.body;
-        await _handleDeliveryReport(body, "twilio");
-      } catch (ex) {
-        log.error(ex);
-      }
-      const resp = new twiml.MessagingResponse();
-      res.writeHead(200, { "Content-Type": "text/xml" });
-      res.end(resp.toString());
-    })
-  );
-
-  expressApp.post("/twilio-message-report/:orgId?", ...messageReportHooks);
-}
+  _addServerEndpoints({
+    expressApp,
+    serviceName: "twilio",
+    messageCallbackUrl,
+    statusCallbackUrl,
+    validationFlag,
+    headerValidator,
+    twiml
+  });
+};
 
 export const convertMessagePartsToMessage = messageParts => {
   return _convertMessagePartsToMessage(messageParts, "twilio");
