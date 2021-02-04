@@ -5,6 +5,8 @@ import FlatButton from "material-ui/FlatButton";
 import Paper from "material-ui/Paper";
 import RaisedButton from "material-ui/RaisedButton";
 import TextField from "material-ui/TextField";
+import SelectField from "material-ui/SelectField";
+import MenuItem from "material-ui/MenuItem";
 import Toggle from "material-ui/Toggle";
 import React, { Component } from "react";
 
@@ -176,7 +178,7 @@ class AdminBulkScriptEditor extends Component {
           </p>
         </Paper>
         <Paper style={styles.paddedPaper}>
-          <p style={styles.bold}>Filter campaigns</p>
+          <p style={styles.bold}>Filters</p>
           <Toggle
             label="Include archived campaigns"
             style={{ marginBottom: "25px" }}
@@ -184,6 +186,28 @@ class AdminBulkScriptEditor extends Component {
             disabled={isSubmitting}
             onToggle={this.handleToggleIncludeArchived}
           />
+
+          <SelectField
+            multiple
+            value={this.state.targetObject}
+            floatingLabelText={"Script Types Affected"}
+            floatingLabelFixed
+            onChange={(proxy, _, val) => this.setState({ targetObject: val })}
+            style={{ width: "100%" }}
+          >
+            <MenuItem
+              key="interactionStep"
+              value="interactionStep"
+              primaryText="Interaction Steps"
+              checked={this.state.targetObject.indexOf("interactionStep") != -1}
+            />
+            <MenuItem
+              key="cannedResponse"
+              value="cannedResponse"
+              primaryText="Canned Responses"
+              checked={this.state.targetObject.indexOf("cannedResponse") != -1}
+            />
+          </SelectField>
           {/* <p>Restrict to campaigns beginning with text (optional):</p>
           <CampaignPrefixSelector
             value={campaignTitlePrefixes}
