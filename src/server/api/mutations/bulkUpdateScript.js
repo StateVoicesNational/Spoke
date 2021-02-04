@@ -21,7 +21,8 @@ export const bulkUpdateScript = async (
       searchString,
       replaceString,
       includeArchived,
-      campaignTitlePrefixes
+      campaignTitlePrefixes,
+      targetObject
     } = findAndReplace;
     console.log(
       "2: after access required ",
@@ -31,6 +32,7 @@ export const bulkUpdateScript = async (
       campaignTitlePrefixes
     );
 
+    // TODO: turn into subquery
     let campaignIdQuery = r
       .knex("campaign")
       .transacting(trx)
@@ -47,33 +49,60 @@ export const bulkUpdateScript = async (
       });
     }
     const campaignIds = await campaignIdQuery;
-
-    // Using array_to_string is easier and faster than using unnest(script_options) (https://stackoverflow.com/a/7222285)
-    const interactionStepsToChange = await r
-      .knex("interaction_step")
-      .transacting(trx)
-      .select(["id", "campaign_id", "script"])
-      .whereRaw("script like ?", [`%${searchString}%`])
-      .whereIn("campaign_id", campaignIds);
-
     const scriptUpdates = [];
-    for (const step of interactionStepsToChange) {
-      const script = step.script;
-      const newValue = replaceAll(script, searchString, replaceString);
-      if (newValue !== script) {
-        scriptUpdates.push({
-          campaign: { id: step.campaign_id },
-          found: script,
-          replaced: newValue
-        });
-        await r
-          .knex("interaction_step")
-          .transacting(trx)
-          .update({ script: newValue })
-          .where({ id: step.id });
+
+    if (targetObject.indexOf("interactionStep") >= 0) {
+      const interactionStepsToChange = await r
+        .knex("interaction_step")
+        .transacting(trx)
+        .select(["id", "campaign_id", "script"])
+        .whereRaw("script like ?", [`%${searchString}%`])
+        .whereIn("campaign_id", campaignIds);
+
+      for (const step of interactionStepsToChange) {
+        const script = step.script;
+        const newValue = replaceAll(script, searchString, replaceString);
+        if (newValue !== script) {
+          scriptUpdates.push({
+            campaign: { id: step.campaign_id },
+            found: script,
+            replaced: newValue,
+            target: "interactionStep"
+          });
+          await r
+            .knex("interaction_step")
+            .transacting(trx)
+            .update({ script: newValue })
+            .where({ id: step.id });
+        }
       }
     }
+    if (targetObject.indexOf("cannedResponse") >= 0) {
+      const cannedResponsesToChange = await r
+        .knex("canned_response")
+        .transacting(trx)
+        .select(["id", "campaign_id", "text"])
+        .whereRaw("text like ?", [`%${searchString}%`])
+        .whereIn("campaign_id", campaignIds);
 
+      for (const response of cannedResponsesToChange) {
+        const text = response.text;
+        const newValue = replaceAll(text, searchString, replaceString);
+        if (newValue !== text) {
+          scriptUpdates.push({
+            campaign: { id: response.campaign_id },
+            found: text,
+            replaced: newValue,
+            target: "cannedResponse"
+          });
+          await r
+            .knex("canned_response")
+            .transacting(trx)
+            .update({ text: newValue })
+            .where({ id: response.id });
+        }
+      }
+    }
     return scriptUpdates;
   });
   // TODO: clear campaign_id caches
