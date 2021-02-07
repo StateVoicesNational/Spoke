@@ -28,6 +28,10 @@ const TWILIO_SKIP_VALIDATION = getConfig("TWILIO_SKIP_VALIDATION");
 const BULK_REQUEST_CONCURRENCY = 5;
 const MAX_NUMBERS_PER_BUY_JOB = getConfig("MAX_NUMBERS_PER_BUY_JOB") || 100;
 
+export const name = "twilio";
+
+export const getMessageReportPath = () => "twilio-message-report";
+
 export async function getTwilio(organization) {
   const {
     authToken,
@@ -106,7 +110,7 @@ export const addServerEndpoints = expressApp => {
 
   _addServerEndpoints({
     expressApp,
-    serviceName: "twilio",
+    service: exports,
     messageCallbackUrl,
     statusCallbackUrl,
     validationFlag,
@@ -196,7 +200,7 @@ export async function createMessagingService(organization, friendlyName) {
     friendlyName,
     statusCallback: urlJoin(
       twilioBaseUrl,
-      "twilio-message-report",
+      getMessageReportPath(),
       organization.id.toString()
     ),
     inboundRequestUrl: urlJoin(
@@ -477,5 +481,6 @@ export default {
   addNumbersToMessagingService,
   deleteMessagingService,
   clearMessagingServicePhones,
-  getTwilio
+  getTwilio,
+  getMessageReportPath
 };

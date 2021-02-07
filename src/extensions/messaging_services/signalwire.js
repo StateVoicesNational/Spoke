@@ -1,5 +1,5 @@
 /* eslint-disable no-use-before-define, no-console */
-import { RestClient, twiml } from "@signalwire/node";
+import { RestClient } from "@signalwire/node";
 import urlJoin from "url-join";
 import { getConfig } from "../../server/api/lib/config";
 import { cacheableData } from "../../server/models";
@@ -22,6 +22,14 @@ import {
 export const MAX_SEND_ATTEMPTS = 5;
 const MESSAGE_VALIDITY_PADDING_SECONDS = 30;
 const MAX_SIGNALWIRE_MESSAGE_VALIDITY = 14400;
+
+export const name = "signalwire";
+
+const getSignalwireBaseUrl = organization =>
+  getConfig("SIGNALWIRE_BASE_CALLBACK_URL", organization) ||
+  getConfig("BASE_URL");
+
+export const getMessageReportPath = () => "signalwire-message-report";
 
 export async function getSignalwire(organization) {
   const {
@@ -88,12 +96,12 @@ export const addServerEndpoints = expressApp => {
 
   _addServerEndpoints({
     expressApp,
-    serviceName: "signalwire",
+    service: exports,
     messageCallbackUrl,
     statusCallbackUrl,
     validationFlag,
     headerValidator,
-    twiml
+    twiml: RestClient.LaML
   });
 };
 
@@ -102,12 +110,17 @@ export const convertMessagePartsToMessage = messageParts => {
 };
 
 export const sendMessage = async (
-  message,
+  _message,
   contact,
   trx,
   organization,
   campaign
 ) => {
+  const message = _message;
+  message.status_callback = `${getSignalwireBaseUrl(
+    organization
+  )}/${getMessageReportPath()}/${organization.id}`;
+
   const settings = {
     maxSendAttempts: MAX_SEND_ATTEMPTS,
     messageValidityPaddingSeconds: MESSAGE_VALIDITY_PADDING_SECONDS,
@@ -163,8 +176,21 @@ export const handleDeliveryReport = async report => {
   return _handleDeliveryReport(report, "signalwire");
 };
 
-export const handleIncomingMessage = async message => {
-  return _handleIncomingMessage(message, "signalwire");
+export const handleIncomingMessage = async (
+  _message,
+  serviceName,
+  organization
+) => {
+  const message = _message;
+  if (!message.MessagingServiceSid) {
+    message.MessagingServiceSid = await cacheableData.organization.getMessageServiceSid(
+      organization,
+      null,
+      message.body
+    );
+  }
+
+  return _handleIncomingMessage(message, "signalwire", organization);
 };
 
 /**
@@ -172,14 +198,12 @@ export const handleIncomingMessage = async message => {
  */
 export async function createMessagingService(organization, friendlyName) {
   const signalwire = await exports.getSignalwire(organization);
-  const signalwireBaseUrl =
-    getConfig("SIGNALWIRE_BASE_CALLBACK_URL", organization) ||
-    getConfig("BASE_URL");
+  const signalwireBaseUrl = getSignalwireBaseUrl(organization);
   return await signalwire.messaging.services.create({
     friendlyName,
     statusCallback: urlJoin(
       signalwireBaseUrl,
-      "signalwire-message-report",
+      getMessageReportPath(),
       organization.id.toString()
     ),
     inboundRequestUrl: urlJoin(
@@ -200,5 +224,6 @@ export default {
   handleIncomingMessage,
   parseMessageText,
   createMessagingService,
-  getSignalwire
+  getSignalwire,
+  getMessageReportPath
 };

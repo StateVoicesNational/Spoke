@@ -9,14 +9,14 @@ import {
   PendingMessagePart,
   r
 } from "../../../server/models";
-import { saveNewIncomingMessage } from "../message-sending";
 import wrap from "../../../server/wrap";
+import { saveNewIncomingMessage } from "../message-sending";
 
 const DISABLE_DB_LOG = getConfig("DISABLE_DB_LOG");
 
 export const addServerEndpoints = ({
   expressApp,
-  serviceName,
+  service,
   messageCallbackUrl,
   statusCallbackUrl,
   validationFlag,
@@ -24,11 +24,16 @@ export const addServerEndpoints = ({
   twiml
 }) => {
   expressApp.post(
-    `/${serviceName}/:orgId?`,
+    `/${service.name}/:orgId?`,
     headerValidator(messageCallbackUrl),
     wrap(async (req, res) => {
       try {
-        await handleIncomingMessage(req.body, serviceName);
+        const organization = cacheableData.organization.load(req.params.orgId);
+        await service.handleIncomingMessage(
+          req.body,
+          service.name,
+          organization
+        );
       } catch (ex) {
         log.error(ex);
       }
@@ -46,7 +51,7 @@ export const addServerEndpoints = ({
     wrap(async (req, res) => {
       try {
         const body = req.body;
-        await handleDeliveryReport(body, serviceName);
+        await handleDeliveryReport(body, service.name);
       } catch (ex) {
         log.error(ex);
       }
@@ -57,7 +62,7 @@ export const addServerEndpoints = ({
   );
 
   expressApp.post(
-    `/${serviceName}-message-report/:orgId?`,
+    `/${service.getMessageReportPath()}/:orgId?`,
     ...messageReportHooks
   );
 };
@@ -192,17 +197,18 @@ export const sendMessage = async (
 
     changes.messageservice_sid = messagingServiceSid;
 
-    const messageParams = Object.assign(
-      {
-        to: message.contact_number,
-        body: message.text
-      },
-      messagingServiceSid ? { messagingServiceSid } : {},
-      effectiveMessageServiceValidityPeriod
-        ? { validityPeriod: effectiveMessageServiceValidityPeriod }
-        : {},
-      parseMessageText(message)
-    );
+    const messageParams = {
+      to: message.contact_number,
+      body: message.text,
+      ...(messagingServiceSid && { messagingServiceSid }),
+      ...(effectiveMessageServiceValidityPeriod && {
+        validityPeriod: effectiveMessageServiceValidityPeriod
+      }),
+      ...parseMessageText(message),
+      ...(message.status_callback && {
+        statusCallback: message.status_callback
+      })
+    };
 
     console.log(`${serviceName}Message`, messageParams);
     if (APITEST) {
