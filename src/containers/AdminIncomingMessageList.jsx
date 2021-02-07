@@ -12,86 +12,34 @@ import gql from "graphql-tag";
 import loadData from "./hoc/load-data";
 import { withRouter } from "react-router";
 import PaginatedUsersRetriever from "./PaginatedUsersRetriever";
-
-function getCampaignsFilterForCampaignArchiveStatus(
-  includeActiveCampaigns,
-  includeArchivedCampaigns
-) {
-  let isArchived = undefined;
-  if (!includeActiveCampaigns && includeArchivedCampaigns) {
-    isArchived = true;
-  } else if (
-    (includeActiveCampaigns && !includeArchivedCampaigns) ||
-    (!includeActiveCampaigns && !includeArchivedCampaigns)
-  ) {
-    isArchived = false;
-  }
-
-  if (isArchived !== undefined) {
-    return { isArchived };
-  }
-
-  return {};
-}
-
-function getContactsFilterForConversationOptOutStatus(
-  includeNotOptedOutConversations,
-  includeOptedOutConversations
-) {
-  let isOptedOut = undefined;
-  if (!includeNotOptedOutConversations && includeOptedOutConversations) {
-    isOptedOut = true;
-  } else if (
-    (includeNotOptedOutConversations && !includeOptedOutConversations) ||
-    (!includeNotOptedOutConversations && !includeOptedOutConversations)
-  ) {
-    isOptedOut = false;
-  }
-
-  if (isOptedOut !== undefined) {
-    return { isOptedOut };
-  }
-
-  return {};
-}
+import * as queryString from "query-string";
+import {
+  getConversationFiltersFromQuery,
+  tagsFilterStateFromTagsFilter,
+  getCampaignsFilterForCampaignArchiveStatus,
+  getContactsFilterForConversationOptOutStatus
+} from "../lib";
 
 export class AdminIncomingMessageList extends Component {
-  static tagsFilterStateFromTagsFilter = tagsFilter => {
-    let newTagsFilter = null;
-    if (tagsFilter.anyTag) {
-      newTagsFilter = ["*"];
-    } else if (tagsFilter.noTag) {
-      newTagsFilter = [];
-    } else if (!tagsFilter.ignoreTags) {
-      newTagsFilter = Object.values(tagsFilter.selectedTags).map(
-        tagFilter => tagFilter.id
-      );
-    }
-    return newTagsFilter;
-  };
-
   constructor(props) {
     super(props);
 
+    const query = props.location.query;
+    const filters = getConversationFiltersFromQuery(
+      props.location.query,
+      props.organization.organization.tags
+    );
     this.state = {
       page: 0,
       pageSize: 10,
-      campaignsFilter: { isArchived: false },
-      contactsFilter: { isOptedOut: false },
-      messageTextFilter: "",
-      assignmentsFilter: {},
       needsRender: false,
       utc: Date.now().toString(),
       campaigns: [],
       reassignmentTexters: [],
       campaignTexters: [],
-      includeArchivedCampaigns: false,
       conversationCount: 0,
-      includeActiveCampaigns: true,
-      includeNotOptedOutConversations: true,
-      includeOptedOutConversations: false,
       clearSelectedMessages: false,
-      tagsFilter: { ignoreTags: true }
+      ...filters
     };
   }
 
@@ -118,7 +66,67 @@ export class AdminIncomingMessageList extends Component {
     }
   };
 
-  handleCampaignChanged = async campaignIds => {
+  componentWillUpdate = (nextProps, nextState) => {
+    if (nextState !== this.state) {
+      const query = {};
+      if (nextState.messageTextFilter) {
+        query.messageText = nextState.messageTextFilter;
+      }
+      if (nextState.assignmentsFilter.texterId) {
+        query.texterId = nextState.assignmentsFilter.texterId;
+        if (nextState.assignmentsFilter.sender) {
+          query.sender = "1";
+        }
+      }
+
+      if (
+        nextState.campaignsFilter.campaignIds &&
+        nextState.campaignsFilter.campaignIds.length
+      ) {
+        query.campaigns = nextState.campaignsFilter.campaignIds.join(",");
+      }
+      if (nextState.contactsFilter.messageStatus) {
+        query.messageStatus = nextState.contactsFilter.messageStatus;
+      }
+      if (nextState.contactsFilter.errorCode) {
+        query.errorCode = nextState.contactsFilter.errorCode.join(",");
+      }
+      if (nextState.tagsFilter && !nextState.tagsFilter.ignoreTags) {
+        if (nextState.tagsFilter.anyTag) {
+          query.tags = "anyTag";
+        } else if (nextState.tagsFilter.noTag) {
+          query.tags = "noTag";
+        } else {
+          const selectedTags = Object.keys(
+            nextState.tagsFilter.selectedTags || {}
+          ).filter(t => t);
+          query.tags = selectedTags.join(",");
+        }
+      }
+      // default false
+      if (nextState.includeArchivedCampaigns) {
+        query.archived = 1;
+      }
+      if (nextState.includeOptedOutConversations) {
+        query.optedOut = 1;
+      }
+      // default true
+      if (!nextState.includeActiveCampaigns) {
+        query.active = 0;
+      }
+      if (!nextState.includeNotOptedOutConversations) {
+        query.notOptedOut = 0;
+      }
+
+      history.replaceState(
+        null,
+        "Message Review",
+        "?" + queryString.stringify(query)
+      );
+    }
+  };
+
+  handleCampaignChanged = async (campaignIds, selectedCampaigns) => {
     const campaignsFilter = getCampaignsFilterForCampaignArchiveStatus(
       this.state.includeActiveCampaigns,
       this.state.includeArchivedCampaigns
@@ -129,14 +137,21 @@ export class AdminIncomingMessageList extends Component {
 
     await this.setState({
       campaignsFilter,
+      selectedCampaigns,
       needsRender: true
     });
   };
 
-  handleTexterChanged = async texterId => {
-    const assignmentsFilter = {};
-    if (texterId >= 0) {
-      assignmentsFilter.texterId = texterId;
+  handleTexterChanged = async (texterId, sender) => {
+    const assignmentsFilter = { ...this.state.assignmentsFilter };
+    if (sender !== undefined) {
+      assignmentsFilter.sender = sender;
+    } else {
+      if (texterId >= 0 || texterId === -2) {
+        assignmentsFilter.texterId = texterId;
+      } else {
+        delete assignmentsFilter.texterId;
+      }
     }
     await this.setState({
       assignmentsFilter,
@@ -156,6 +171,17 @@ export class AdminIncomingMessageList extends Component {
       _.omit(this.state.contactsFilter, ["messageStatus"]),
       { messageStatus: messagesFilter }
     );
+    await this.setState({
+      contactsFilter,
+      needsRender: true
+    });
+  };
+
+  handleErrorCodeChange = async errorCode => {
+    const contactsFilter = {
+      ...this.state.contactsFilter,
+      errorCode: errorCode ? errorCode.split(",") : null
+    };
     await this.setState({
       contactsFilter,
       needsRender: true
@@ -219,12 +245,36 @@ export class AdminIncomingMessageList extends Component {
   };
 
   handleCampaignsReceived = async campaigns => {
-    this.setState({ campaigns, needsRender: true });
+    console.log("campaigns:", campaigns);
+    let selectedCampaigns = [];
+    if (this.state.campaignsFilter.campaignIds) {
+      this.state.campaignsFilter.campaignIds.forEach(campaignId => {
+        const campaign = campaigns.find(campaign => campaign.id == campaignId);
+        const campaignDisplay = `${campaignId}: ${campaign.title}`;
+        selectedCampaigns.push({ key: campaign.id, text: campaignDisplay });
+      });
+    }
+    this.setState({ campaigns, selectedCampaigns, needsRender: true });
   };
 
   handleCampaignTextersReceived = async campaignTexters => {
     console.log("handleCampaignTextersReceived", campaignTexters.length);
-    this.setState({ campaignTexters, needsRender: true });
+    let texterDisplayName = "";
+    if (this.state.assignmentsFilter.texterId) {
+      const texter = campaignTexters.find(texter => {
+        return (
+          parseInt(texter.id, 10) === this.state.assignmentsFilter.texterId
+        );
+      });
+      if (texter) {
+        texterDisplayName = texter.displayName;
+      }
+    }
+    this.setState({
+      campaignTexters,
+      texterSearchText: texterDisplayName,
+      needsRender: true
+    });
   };
 
   handleReassignmentTextersReceived = async reassignmentTexters => {
@@ -313,9 +363,7 @@ export class AdminIncomingMessageList extends Component {
   };
 
   handleTagsFilterChanged = tagsFilter => {
-    const newTagsFilter = AdminIncomingMessageList.tagsFilterStateFromTagsFilter(
-      tagsFilter
-    );
+    const newTagsFilter = tagsFilterStateFromTagsFilter(tagsFilter);
 
     const contactsFilter = {
       ...this.state.contactsFilter,
@@ -378,6 +426,7 @@ export class AdminIncomingMessageList extends Component {
             onTexterChanged={this.handleTexterChanged}
             onMessageFilterChanged={this.handleMessageFilterChange}
             onMessageTextFilterChanged={this.handleMessageTextFilterChange}
+            onErrorCodeChanged={this.handleErrorCodeChange}
             assignmentsFilter={this.state.assignmentsFilter}
             onActiveCampaignsToggled={this.handleActiveCampaignsToggled}
             onArchivedCampaignsToggled={this.handleArchivedCampaignsToggled}
@@ -398,6 +447,11 @@ export class AdminIncomingMessageList extends Component {
             onTagsFilterChanged={this.handleTagsFilterChanged}
             tagsFilter={this.state.tagsFilter}
             tags={this.props.organization.organization.tags}
+            messageTextFilter={this.state.messageTextFilter}
+            texterSearchText={this.state.texterSearchText}
+            selectedCampaigns={this.state.selectedCampaigns}
+            messageFilter={this.state.contactsFilter.messageStatus}
+            errorCode={this.state.contactsFilter.errorCode}
           />
           <br />
           <IncomingMessageActions
@@ -407,6 +461,7 @@ export class AdminIncomingMessageList extends Component {
               this.handleReassignAllMatchingRequested
             }
             conversationCount={this.state.conversationCount}
+            campaignsFilter={this.state.campaignsFilter}
           />
           <br />
           <IncomingMessageList

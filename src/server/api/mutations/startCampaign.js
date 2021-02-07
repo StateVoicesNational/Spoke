@@ -20,7 +20,7 @@ export const startCampaign = async (
   );
 
   if (
-    getConfig("EXPERIMENTAL_CAMPAIGN_PHONE_NUMBERS", null, {
+    getConfig("EXPERIMENTAL_CAMPAIGN_PHONE_NUMBERS", organization, {
       truthy: true
     })
   ) {
@@ -63,7 +63,7 @@ export const startCampaign = async (
     campaignId: id
   });
 
-  if (r.redis) {
+  if (r.redis && !getConfig("DISABLE_CONTACT_CACHELOAD")) {
     // some asynchronous cache-priming:
     await jobRunner.dispatchTask(Tasks.CAMPAIGN_START_CACHE, {
       campaign: campaignRefreshed,

@@ -57,7 +57,7 @@ describe("Message Hanlder: profanity-tagger", () => {
       .knex("organization")
       .update(
         "features",
-        '{"EXPERIMENTAL_TAGS": "1", "PROFANITY_CONTACT_TAG_ID": "1", "PROFANITY_TEXTER_TAG_ID": "2", "PROFANITY_TEXTER_SUSPEND_COUNT": "1"}'
+        '{"PROFANITY_CONTACT_TAG_ID": "1", "PROFANITY_TEXTER_TAG_ID": "2", "PROFANITY_TEXTER_SUSPEND_COUNT": "1"}'
       );
     await cacheableData.organization.clear(c.organizationId);
 
@@ -117,7 +117,7 @@ describe("Message Hanlder: profanity-tagger", () => {
       .knex("organization")
       .update(
         "features",
-        '{"EXPERIMENTAL_TAGS": "1", "PROFANITY_CONTACT_TAG_ID": "1", "PROFANITY_TEXTER_TAG_ID": "2", "PROFANITY_TEXTER_SUSPEND_COUNT": "2"}'
+        '{"PROFANITY_CONTACT_TAG_ID": "1", "PROFANITY_TEXTER_TAG_ID": "2", "PROFANITY_TEXTER_SUSPEND_COUNT": "2"}'
       );
     await cacheableData.organization.clear(c.organizationId);
     const org = await cacheableData.organization.load(c.organizationId);
@@ -200,7 +200,7 @@ describe("Message Hanlder: profanity-tagger", () => {
       .knex("organization")
       .update(
         "features",
-        '{"EXPERIMENTAL_TAGS": "1", "PROFANITY_CONTACT_TAG_ID": "1", "PROFANITY_TEXTER_TAG_ID": "2", "PROFANITY_TEXTER_BLOCK_SEND": "1"}'
+        '{"PROFANITY_CONTACT_TAG_ID": "1", "PROFANITY_TEXTER_TAG_ID": "2", "PROFANITY_TEXTER_BLOCK_SEND": "1"}'
       );
     await cacheableData.organization.clear(c.organizationId);
     const org = await cacheableData.organization.load(c.organizationId);

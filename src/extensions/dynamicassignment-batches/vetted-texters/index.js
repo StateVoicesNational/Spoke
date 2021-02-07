@@ -1,5 +1,9 @@
 import { cacheableData } from "../../../server/models";
 
+export const name = "vetted-texters";
+
+export const displayName = () => "Vetted Texters can request a new batch";
+
 export const requestNewBatchCount = async ({
   organization,
   campaign,
@@ -23,7 +27,17 @@ export const requestNewBatchCount = async ({
     "VETTED_TEXTER"
   );
   if (!isVetted) {
-    return 0;
+    // Are there any assignments?
+    const anyPrevious = await r
+      .knex("campaign_contact")
+      .where({
+        campaign_id: campaign.id,
+        assignment_id: assignment.id
+      })
+      .first();
+    if (anyPrevious) {
+      return 0;
+    }
   }
 
   const availableCount = await r.getCount(
@@ -31,6 +45,7 @@ export const requestNewBatchCount = async ({
       .knex("campaign_contact")
       .where({
         campaign_id: campaign.id,
+        is_opted_out: false,
         message_status: "needsMessage"
       })
       .whereNull("assignment_id")

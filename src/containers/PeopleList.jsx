@@ -1,15 +1,17 @@
 import React, { Component } from "react";
+import { Link } from "react-router";
 import type from "prop-types";
 import FlatButton from "material-ui/FlatButton";
 import loadData from "./hoc/load-data";
 import gql from "graphql-tag";
 import LoadingIndicator from "../components/LoadingIndicator";
+import ActionOpenInNew from "material-ui/svg-icons/action/open-in-new";
 import DataTables from "material-ui-datatables";
 import UserEditDialog from "../components/PeopleList/UserEditDialog";
 import ResetPasswordDialog from "../components/PeopleList/ResetPasswordDialog";
 import RolesDropdown from "../components/PeopleList/RolesDropdown";
 import { dataTest } from "../lib/attributes";
-
+import theme from "../styles/theme";
 import PeopleIcon from "material-ui/svg-icons/social/people";
 import Empty from "../components/Empty";
 
@@ -43,6 +45,7 @@ export class PeopleList extends Component {
   }
 
   prepareTableColumns = () => {
+    const { organizationId } = this.props;
     const columns = [
       {
         key: "texter",
@@ -51,14 +54,27 @@ export class PeopleList extends Component {
           textOverflow: "ellipsis",
           overflow: "hidden",
           whiteSpace: "pre-line"
-        }
+        },
+        render: (columnKey, row) => (
+          <h3>
+            {row.texter}{" "}
+            <Link
+              target="_blank"
+              to={`/app/${organizationId}/todos/other/${row.texterId}`}
+            >
+              <ActionOpenInNew
+                style={{ width: 14, height: 14, color: theme.colors.green }}
+              />
+            </Link>
+          </h3>
+        )
       },
       {
         key: "email",
         label: "Email",
         style: {
           textOverflow: "ellipsis",
-          overflow: "scroll",
+          overflow: "hidden",
           whiteSpace: "pre-line"
         }
       },
@@ -67,7 +83,7 @@ export class PeopleList extends Component {
         label: "Role",
         style: {
           textOverflow: "ellipsis",
-          overflow: "scroll",
+          overflow: "hidden",
           whiteSpace: "pre-line"
         },
         render: this.renderRolesDropdown
@@ -77,7 +93,7 @@ export class PeopleList extends Component {
         label: "",
         style: {
           textOverflow: "ellipsis",
-          overflow: "scroll",
+          overflow: "hidden",
           whiteSpace: "pre-line"
         },
         render: this.renderEditButton
@@ -89,7 +105,7 @@ export class PeopleList extends Component {
         label: "",
         style: {
           textOverflow: "ellipsis",
-          overflow: "scroll",
+          overflow: "hidden",
           whiteSpace: "pre-line"
         },
         render: this.renderChangePasswordButton

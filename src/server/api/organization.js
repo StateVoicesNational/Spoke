@@ -3,7 +3,7 @@ import { getConfig, getFeatures } from "./lib/config";
 import { r, Organization, cacheableData } from "../models";
 import { getTags } from "./tag";
 import { accessRequired } from "./errors";
-import { getCampaigns } from "./campaign";
+import { getCampaigns, getCampaignsCount } from "./campaign";
 import { buildUsersQuery } from "./user";
 import {
   getAvailableActionHandlers,
@@ -43,9 +43,9 @@ export const getSideboxChoices = organization => {
           "celebration-gif",
           "default-dynamicassignment",
           "default-releasecontacts",
-          "celebration-gif",
           "contact-reference",
-          "default-editinitial"
+          "default-editinitial",
+          "tag-contact"
         ]
       : (sideboxes && sideboxes.split(",")) || [];
   return sideboxChoices;
@@ -83,16 +83,24 @@ export const resolvers = {
       { cursor, campaignsFilter, sortBy },
       { user }
     ) => {
-      await accessRequired(user, organization.id, "SUPERVOLUNTEER");
+      await accessRequired(user, organization.id, "SUPERVOLUNTEER", true);
       return getCampaigns(organization.id, cursor, campaignsFilter, sortBy);
+    },
+    campaignsCount: async (organization, _, { user }) => {
+      await accessRequired(user, organization.id, "OWNER", true);
+      return r.getCount(
+        r
+          .knex("campaign")
+          .where({ organization_id: organization.id, is_archived: false })
+      );
+    },
+    numTextsInLastDay: async (organization, _, { user }) => {
+      await accessRequired(user, organization.id, "OWNER", true);
+      return getNumTextsInLastDay(organization.id);
     },
     uuid: async (organization, _, { user }) => {
       await accessRequired(user, organization.id, "SUPERVOLUNTEER");
-      const result = await r
-        .knex("organization")
-        .column("uuid")
-        .where("id", organization.id);
-      return result[0].uuid;
+      return organization.uuid;
     },
     optOuts: async (organization, _, { user }) => {
       await accessRequired(user, organization.id, "ADMIN");
@@ -113,6 +121,15 @@ export const resolvers = {
         groupFilter = "texter-tags";
       }
       return getTags(organization, groupFilter);
+    },
+    batchPolicies: organization => {
+      const batchPolicies = getConfig(
+        "DYNAMICASSIGNMENT_BATCHES",
+        organization
+      );
+      return batchPolicies
+        ? batchPolicies.split(",")
+        : ["finished-replies", "vetted-texters"];
     },
     profileFields: organization =>
       // @todo: standardize on escaped or not once there's an interface.
@@ -192,12 +209,17 @@ export const resolvers = {
       (organization.features &&
       organization.features.indexOf("opt_out_message") !== -1
         ? JSON.parse(organization.features).opt_out_message
-        : process.env.OPT_OUT_MESSAGE) ||
+        : getConfig("OPT_OUT_MESSAGE")) ||
       "I'm opting you out of texts immediately. Have a great day.",
     textingHoursStart: organization => organization.texting_hours_start,
     textingHoursEnd: organization => organization.texting_hours_end,
     texterUIConfig: async (organization, _, { user }) => {
-      await accessRequired(user, organization.id, "OWNER");
+      try {
+        await accessRequired(user, organization.id, "OWNER");
+      } catch (caught) {
+        return null;
+      }
+
       const options = getConfig("TEXTER_UI_SETTINGS", organization) || null;
       // note this is global, since we need the set that's globally enabled/allowed to choose from
       const sideboxChoices = getSideboxChoices();
@@ -291,8 +313,12 @@ export const resolvers = {
       }
       return failureInstructions;
     },
+    emailEnabled: async (organization, _, { user }) => {
+      await accessRequired(user, organization.id, "SUPERVOLUNTEER", true);
+      return Boolean(getConfig("EMAIL_HOST", organization));
+    },
     phoneInventoryEnabled: async (organization, _, { user }) => {
-      await accessRequired(user, organization.id, "SUPERVOLUNTEER");
+      await accessRequired(user, organization.id, "SUPERVOLUNTEER", true);
       return (
         getConfig("EXPERIMENTAL_PHONE_INVENTORY", organization, {
           truthy: true
@@ -330,13 +356,11 @@ export const resolvers = {
       return configured;
     },
     pendingPhoneNumberJobs: async (organization, _, { user }) => {
-      await accessRequired(user, organization.id, "OWNER", true);
+      await accessRequired(user, organization.id, "ADMIN", true);
       const jobs = await r
         .knex("job_request")
-        .where({
-          job_type: "buy_phone_numbers",
-          organization_id: organization.id
-        })
+        .whereIn("job_type", ["buy_phone_numbers", "delete_phone_numbers"])
+        .andWhere("organization_id", organization.id)
         .orderBy("updated_at", "desc");
       return jobs.map(j => {
         const payload = JSON.parse(j.payload);
@@ -346,7 +370,7 @@ export const resolvers = {
           status: j.status,
           resultMessage: j.result_message,
           areaCode: payload.areaCode,
-          limit: payload.limit
+          limit: payload.limit || 0
         };
       });
     },
@@ -390,3 +414,21 @@ export const resolvers = {
     }
   }
 };
+
+export async function getNumTextsInLastDay(organizationId) {
+  var yesterday = new Date();
+  yesterday.setDate(yesterday.getDate() - 1);
+
+  const textsInLastDay = r.knex
+    .from("message")
+    .join(
+      "campaign_contact",
+      "message.campaign_contact_id",
+      "campaign_contact.id"
+    )
+    .join("campaign", "campaign.id", "campaign_contact.campaign_id")
+    .where({ "campaign.organization_id": organizationId })
+    .where("message.sent_at", ">=", yesterday);
+  const numTexts = await r.getCount(textsInLastDay);
+  return numTexts;
+}

@@ -57,12 +57,15 @@ export const schema = gql`
       campaignsFilter: CampaignsFilter
       sortBy: SortCampaignsBy
     ): CampaignsReturn
+    campaignsCount: Int
+    numTextsInLastDay: Int
     people(role: String, campaignId: String, sortBy: SortPeopleBy): [User]
     profileFields: [ProfileField]
     optOuts: [OptOut]
     allowSendAll: Boolean
     availableActions: [Action]
     settings: OrgSettings
+    batchPolicies: [String]
     optOutMessage: String
     textingHoursEnforced: Boolean
     textingHoursStart: Int
@@ -75,6 +78,7 @@ export const schema = gql`
     twilioMessageServiceSid: String
     fullyConfigured: Boolean
     fullyConfiguredFailureInstructions: [String]
+    emailEnabled: Boolean
     phoneInventoryEnabled: Boolean!
     campaignPhoneNumbersEnabled: Boolean!
     pendingPhoneNumberJobs: [BuyPhoneNumbersJobRequest]
