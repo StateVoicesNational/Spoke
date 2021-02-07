@@ -24,7 +24,8 @@ import CampaignTexterUIForm from "../components/CampaignTexterUIForm";
 import CampaignPhoneNumbersForm from "../components/CampaignPhoneNumbersForm";
 import { dataTest, camelCase } from "../lib/attributes";
 import CampaignTextingHoursForm from "../components/CampaignTextingHoursForm";
-
+import { css } from "aphrodite";
+import { styles } from "./AdminCampaignStats";
 import AdminScriptImport from "../containers/AdminScriptImport";
 import { makeTree } from "../lib";
 
@@ -35,6 +36,7 @@ const campaignInfoFragment = `
   dueBy
   joinToken
   batchSize
+  batchPolicies
   responseWindow
   isStarted
   isArchived
@@ -79,6 +81,7 @@ const campaignInfoFragment = `
     id
     title
     text
+    tagIds
   }
   ingestMethodsAvailable {
     name
@@ -105,6 +108,11 @@ const campaignInfoFragment = `
   }
   inventoryPhoneNumberCounts {
     areaCode
+    count
+  }
+  contactsAreaCodeCounts {
+    areaCode
+    state
     count
   }
 `;
@@ -262,7 +270,6 @@ export class AdminCampaignEdit extends React.Component {
   }
 
   handleChange = formValues => {
-    console.log("handleChange", formValues);
     this.setState({
       campaignFormValues: {
         ...this.state.campaignFormValues,
@@ -291,7 +298,9 @@ export class AdminCampaignEdit extends React.Component {
         // the section we just saved.
         this.props.campaignData.refetch();
         // hack to update phone counts, probably should make phone reservation its own mutation
-        if (this.props.organizationData.campaignPhoneNumbersEnabled) {
+        if (
+          this.props.organizationData.organization.campaignPhoneNumbersEnabled
+        ) {
           this.props.organizationData.refetch();
         }
       }
@@ -331,7 +340,7 @@ export class AdminCampaignEdit extends React.Component {
         newCampaign.interactionSteps = makeTree(newCampaign.interactionSteps);
       }
 
-      return await this.props.mutations.editCampaign(
+      await this.props.mutations.editCampaign(
         this.props.campaignData.campaign.id,
         newCampaign
       );
@@ -406,7 +415,14 @@ export class AdminCampaignEdit extends React.Component {
               pendingJobs
                 .filter(job => /ingest/.test(job.jobType))
                 .reverse()[0] || {}
-            ).resultMessage || ""
+            ).resultMessage || "",
+          ...(this.props.organizationData.organization
+            .campaignPhoneNumbersEnabled
+            ? {
+                contactsPerPhoneNumber: window.CONTACTS_PER_PHONE_NUMBER,
+                maxNumbersPerCampaign: 400
+              }
+            : {})
         }
       },
       {
@@ -459,20 +475,27 @@ export class AdminCampaignEdit extends React.Component {
         expandAfterCampaignStarts: true,
         expandableBySuperVolunteers: true,
         extraProps: {
-          customFields: this.props.campaignData.campaign.customFields
+          customFields: this.props.campaignData.campaign.customFields,
+          organizationId: this.props.organizationData.organization.id
         }
       },
       {
         title: "Dynamic Assignment",
         content: CampaignDynamicAssignmentForm,
-        keys: ["batchSize", "useDynamicAssignment", "responseWindow"],
+        keys: [
+          "batchSize",
+          "useDynamicAssignment",
+          "responseWindow",
+          "batchPolicies"
+        ],
         checkCompleted: () => true,
         blocksStarting: false,
         expandAfterCampaignStarts: true,
         expandableBySuperVolunteers: true,
         extraProps: {
           joinToken: this.props.campaignData.campaign.joinToken,
-          campaignId: this.props.campaignData.campaign.id
+          campaignId: this.props.campaignData.campaign.id,
+          organization: this.props.organizationData.organization
         }
       },
       {
@@ -535,15 +558,18 @@ export class AdminCampaignEdit extends React.Component {
           return numbersReserved >= numbersNeeded;
         },
         blocksStarting: true,
-        expandAfterCampaignStarts: false,
+        expandAfterCampaignStarts: true,
         expandableBySuperVolunteers: false,
         extraProps: {
-          contactsPerPhoneNumber: contactsPerPhoneNumber,
+          contactsPerPhoneNumber,
           isStarted: this.props.campaignData.campaign.isStarted,
-          availablePhoneNumbers: this.props.organizationData.organization.phoneNumberCounts.filter(
-            c => c.availableCount
-          ),
-          contactsCount: this.state.campaignFormValues.contactsCount
+          phoneNumberCounts: this.props.organizationData.organization
+            .phoneNumberCounts,
+          contactsCount: this.props.campaignData.campaign.contactsCount,
+          contactsAreaCodeCounts: this.props.campaignData.campaign
+            .contactsAreaCodeCounts,
+          inventoryCounts: this.props.campaignData.campaign
+            .inventoryPhoneNumberCounts
         }
       });
     }
@@ -627,7 +653,7 @@ export class AdminCampaignEdit extends React.Component {
       <ContentComponent
         onChange={this.handleChange}
         formValues={formValues}
-        saveLabel={this.isNew() ? "Save and goto next section" : "Save"}
+        saveLabel={this.isNew() ? "Save and go to next section" : "Save"}
         saveDisabled={shouldDisable}
         ensureComplete={this.props.campaignData.campaign.isStarted}
         onSubmit={this.handleSubmit}
@@ -641,6 +667,8 @@ export class AdminCampaignEdit extends React.Component {
       job => job.jobType === "start_campaign_with_phone_numbers"
     )[0];
     const isStarting = startJob || this.state.startingCampaign;
+    const organizationId = this.props.params.organizationId;
+    const campaign = this.props.campaignData.campaign;
     const notStarting = this.props.campaignData.campaign.isStarted ? (
       <div
         {...dataTest("campaignIsStarted")}
@@ -657,37 +685,67 @@ export class AdminCampaignEdit extends React.Component {
     );
 
     return (
-      <div>
-        {this.props.campaignData.campaign.title && (
-          <h2>{this.props.campaignData.campaign.title}</h2>
-        )}
-        <div
-          style={{
-            marginBottom: 15,
-            fontSize: 16
-          }}
-        >
-          {isStarting ? (
-            <div
-              style={{
-                color: theme.colors.gray,
-                fontWeight: 800
-              }}
-            >
-              <CircularProgress
+      <div className={css(styles.container)}>
+        {campaign.title && (
+          <div className={css(styles.header)}>
+            {campaign.title}
+            {isStarting ? (
+              <div
                 style={{
-                  verticalAlign: "middle",
-                  display: "inline-block",
-                  marginRight: 10
+                  marginBottom: 15,
+                  fontSize: 16
                 }}
-                size={25}
-              />
-              Starting your campaign...
+              >
+                <div
+                  style={{
+                    color: theme.colors.gray,
+                    fontWeight: 800
+                  }}
+                >
+                  <CircularProgress
+                    style={{
+                      verticalAlign: "middle",
+                      display: "inline-block",
+                      marginRight: 10
+                    }}
+                    size={25}
+                  />
+                  Starting your campaign...
+                </div>
+              </div>
+            ) : (
+              notStarting
+            )}
+          </div>
+        )}
+        {campaign.isStarted ? (
+          <div className={css(styles.flexColumn)}>
+            <div className={css(styles.rightAlign)}>
+              <div className={css(styles.inline)}>
+                <div className={css(styles.inline)}>
+                  <RaisedButton
+                    {...dataTest("statsCampaign")}
+                    onTouchTap={() =>
+                      this.props.router.push(
+                        `/admin/${organizationId}/campaigns/${campaign.id}`
+                      )
+                    }
+                    label="Stats"
+                  />
+                  <RaisedButton
+                    {...dataTest("convoCampaign")}
+                    onTouchTap={() =>
+                      this.props.router.push(
+                        `/admin/${organizationId}/incoming?campaigns=${campaign.id}`
+                      )
+                    }
+                    label="Convos"
+                  />
+                </div>
+              </div>
             </div>
-          ) : (
-            notStarting
-          )}
-        </div>
+          </div>
+        ) : null}
       </div>
     );
   }
@@ -704,7 +762,9 @@ export class AdminCampaignEdit extends React.Component {
     );
     const { isArchived } = this.props.campaignData.campaign;
     const settingsLink = `/admin/${this.props.organizationData.organization.id}/settings`;
-    let isCompleted = this.props.campaignData.campaign.pendingJobs.length === 0;
+    let isCompleted = !this.props.campaignData.campaign.pendingJobs.filter(
+      j => j.status >= 0
+    ).length;
     this.sections().forEach(section => {
       if (
         (section.blocksStarting && !this.checkSectionCompleted(section)) ||
@@ -917,6 +977,7 @@ const queries = {
           fullyConfigured
           fullyConfiguredFailureInstructions
           campaignPhoneNumbersEnabled
+          batchPolicies
           texters: people(role: "ANY") {
             id
             roles(organizationId: $organizationId)
@@ -935,6 +996,7 @@ const queries = {
           }
           phoneNumberCounts {
             areaCode
+            state
             availableCount
             allocatedCount
           }

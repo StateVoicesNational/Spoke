@@ -17,10 +17,24 @@ function getConversationsJoinsAndWhereClause(
 
   query = addCampaignsFilterToQuery(query, campaignsFilter, organizationId);
 
-  if (assignmentsFilter && assignmentsFilter.texterId) {
-    query = query.where({ "assignment.user_id": assignmentsFilter.texterId });
+  if (
+    assignmentsFilter &&
+    assignmentsFilter.texterId &&
+    !assignmentsFilter.sender
+  ) {
+    if (assignmentsFilter.texterId === -2) {
+      // unassigned
+      query = query.whereNull("campaign_contact.assignment_id");
+    } else {
+      query = query.where({ "assignment.user_id": assignmentsFilter.texterId });
+    }
   }
-  if (forData || (assignmentsFilter && assignmentsFilter.texterId)) {
+  if (
+    forData ||
+    (assignmentsFilter &&
+      assignmentsFilter.texterId &&
+      !assignmentsFilter.sender)
+  ) {
     query = query
       .leftJoin("assignment", "campaign_contact.assignment_id", "assignment.id")
       .leftJoin("user", "assignment.user_id", "user.id")
@@ -33,15 +47,26 @@ function getConversationsJoinsAndWhereClause(
       });
   }
 
-  if (messageTextFilter && !forData) {
+  if (
+    !forData &&
+    (messageTextFilter || (assignmentsFilter && assignmentsFilter.sender))
+  ) {
     // NOT forData -- just for filter -- and then we need ALL the messages
-    query = query
-      .join(
-        "message AS msgfilter",
-        "msgfilter.campaign_contact_id",
-        "campaign_contact.id"
-      )
-      .where("msgfilter.text", "LIKE", `%${messageTextFilter}%`);
+    query.join(
+      "message AS msgfilter",
+      "msgfilter.campaign_contact_id",
+      "campaign_contact.id"
+    );
+    if (messageTextFilter) {
+      query.where("msgfilter.text", "LIKE", `%${messageTextFilter}%`);
+    }
+    if (
+      assignmentsFilter &&
+      assignmentsFilter.sender &&
+      assignmentsFilter.texterId
+    ) {
+      query.where("msgfilter.user_id", assignmentsFilter.texterId);
+    }
   }
 
   query = addWhereClauseForContactsFilterMessageStatusIrrespectiveOfPastDue(
@@ -49,33 +74,39 @@ function getConversationsJoinsAndWhereClause(
     contactsFilter && contactsFilter.messageStatus
   );
 
-  if (contactsFilter && "isOptedOut" in contactsFilter) {
-    query = query.where("is_opted_out", contactsFilter.isOptedOut);
-  }
+  if (contactsFilter) {
+    if ("isOptedOut" in contactsFilter) {
+      query.where("is_opted_out", contactsFilter.isOptedOut);
+    }
 
-  if (
-    getConfig("EXPERIMENTAL_TAGS", null, { truthy: 1 }) &&
-    contactsFilter &&
-    contactsFilter.tags
-  ) {
-    const tags = contactsFilter.tags;
+    if (contactsFilter.errorCode && contactsFilter.errorCode.length) {
+      if (contactsFilter.errorCode[0] === 0) {
+        query.whereNull("campaign_contact.error_code");
+      } else {
+        query.whereIn("campaign_contact.error_code", contactsFilter.errorCode);
+      }
+    }
 
-    let tagsSubquery = r.knex
-      .select(1)
-      .from("tag_campaign_contact")
-      .whereRaw(
-        "campaign_contact.id = tag_campaign_contact.campaign_contact_id"
-      );
+    if (contactsFilter.tags) {
+      const tags = contactsFilter.tags;
 
-    if (tags.length === 0) {
-      // no tags
-      query = query.whereNotExists(tagsSubquery);
-    } else if (tags.length === 1 && tags[0] === "*") {
-      // any tag
-      query = query.whereExists(tagsSubquery);
-    } else {
-      tagsSubquery = tagsSubquery.whereIn("tag_id", tags);
-      query = query.whereExists(tagsSubquery);
+      let tagsSubquery = r.knexReadOnly
+        .select(1)
+        .from("tag_campaign_contact")
+        .whereRaw(
+          "campaign_contact.id = tag_campaign_contact.campaign_contact_id"
+        );
+
+      if (tags.length === 0) {
+        // no tags
+        query = query.whereNotExists(tagsSubquery);
+      } else if (tags.length === 1 && tags[0] === "*") {
+        // any tag
+        query = query.whereExists(tagsSubquery);
+      } else {
+        tagsSubquery = tagsSubquery.whereIn("tag_id", tags);
+        query = query.whereExists(tagsSubquery);
+      }
     }
   }
 
@@ -106,12 +137,13 @@ export async function getConversations(
   { campaignsFilter, assignmentsFilter, contactsFilter, messageTextFilter },
   utc,
   includeTags,
-  awsContext
+  awsContext,
+  options
 ) {
   /* Query #1 == get campaign_contact.id for all the conversations matching
    * the criteria with offset and limit. */
   const starttime = new Date();
-  let offsetLimitQuery = r.knex.select("campaign_contact.id as cc_id");
+  let offsetLimitQuery = r.knexReadOnly.select("campaign_contact.id as cc_id");
 
   offsetLimitQuery = getConversationsJoinsAndWhereClause(
     offsetLimitQuery,
@@ -123,9 +155,19 @@ export async function getConversations(
       messageTextFilter
     }
   );
+  if (options && options.justIdQuery) {
+    return { query: offsetLimitQuery };
+  }
 
-  offsetLimitQuery = offsetLimitQuery.orderBy("cc_id", "desc");
-  offsetLimitQuery = offsetLimitQuery.limit(cursor.limit).offset(cursor.offset);
+  if (cursor.limit || cursor.offset) {
+    if (!getConfig("CONVERSATIONS_RECENT")) {
+      offsetLimitQuery = offsetLimitQuery.orderBy("cc_id", "desc");
+    }
+
+    offsetLimitQuery = offsetLimitQuery
+      .limit(cursor.limit)
+      .offset(cursor.offset);
+  }
   console.log(
     "getConversations sql",
     awsContext && awsContext.awsRequestId,
@@ -145,14 +187,14 @@ export async function getConversations(
   const ccIds = ccIdRows.map(ccIdRow => {
     return ccIdRow.cc_id;
   });
-
   /* Query #2 -- get all the columns we need, including messages, using the
    * cc_ids from Query #1 to scope the results to limit, offset */
-  let query = r.knex.select(
+  let query = r.knexReadOnly.select(
     "campaign_contact.id as cc_id",
     "campaign_contact.first_name as cc_first_name",
     "campaign_contact.last_name as cc_last_name",
     "campaign_contact.cell",
+    "campaign_contact.error_code",
     "campaign_contact.message_status",
     "campaign_contact.is_opted_out",
     "campaign_contact.updated_at",
@@ -219,6 +261,7 @@ export async function getConversations(
       ccId = conversationRow.cc_id;
       conversation = _.omit(conversationRow, messageFields);
       conversation.messages = [];
+      conversation.organization_id = Number(organizationId);
       conversations.push(conversation);
     }
     conversation.messages.push(
@@ -229,11 +272,12 @@ export async function getConversations(
   }
 
   // tags query
-  if (getConfig("EXPERIMENTAL_TAGS", null, { truthy: 1 }) && includeTags) {
-    const tagsQuery = r.knex
+  if (includeTags) {
+    const tagsQuery = r.knexReadOnly
       .select(
         "tag_campaign_contact.campaign_contact_id as campaign_contact_id",
         "tag.name as name",
+        "tag.id as id",
         "tag_campaign_contact.value as value"
       )
       .from("tag_campaign_contact")
@@ -251,7 +295,7 @@ export async function getConversations(
 
     conversations.forEach(convo => {
       // eslint-disable-next-line no-param-reassign
-      convo.tags = contactTags[convo.ccId];
+      convo.tags = contactTags[convo.cc_id];
     });
   }
 
@@ -262,7 +306,7 @@ export async function getConversations(
     Number(new Date()) - Number(starttime)
   );
   const conversationsCountQuery = getConversationsJoinsAndWhereClause(
-    r.knex,
+    r.knexReadOnly,
     organizationId,
     {
       campaignsFilter,
@@ -342,6 +386,10 @@ export async function reassignConversations(
   // ensure existence of assignments
   const campaignIdAssignmentIdMap = new Map();
   for (const [campaignId, _] of campaignIdContactIdsMap) {
+    if (newTexterUserId === null || newTexterUserId === "-2") {
+      campaignIdAssignmentIdMap.set(campaignId, null);
+      continue;
+    }
     let assignment = await r
       .table("assignment")
       .getAll(newTexterUserId, { index: "user_id" })
@@ -366,32 +414,39 @@ export async function reassignConversations(
     for (const [campaignId, campaignContactIds] of campaignIdContactIdsMap) {
       const assignmentId = campaignIdAssignmentIdMap.get(campaignId);
 
-      await r
-        .knex("campaign_contact")
-        .where("campaign_id", campaignId)
-        .whereIn("id", campaignContactIds)
-        .update({
-          assignment_id: assignmentId
+      /* NOTE: psql prepared statements can only handle a max of ~65k
+         so if a campaign is larger than that it has to be chunked
+         https://github.com/brianc/node-postgres/issues/1091
+         https://stackoverflow.com/questions/6581573/what-are-the-max-number-of-allowable-parameters-per-database-provider-type */
+
+      for (const ccIds of _.chunk(campaignContactIds, 65000)) {
+        await r
+          .knex("campaign_contact")
+          .where("campaign_id", campaignId)
+          .whereIn("id", ccIds)
+          .update({
+            assignment_id: assignmentId
+          });
+
+        // Clear the DataLoader cache for the campaign contacts affected by the foregoing
+        // SQL statement to keep the cache in sync.  This will force the campaignContact
+        // to be refreshed. We also update the assignment in the cache
+        await Promise.all(
+          ccIds.map(async campaignContactId =>
+            cacheableData.campaignContact.updateAssignmentCache(
+              campaignContactId,
+              assignmentId,
+              newTexterUserId,
+              campaignId
+            )
+          )
+        );
+
+        returnCampaignIdAssignmentIds.push({
+          campaignId,
+          assignmentId: assignmentId.toString()
         });
-
-      // Clear the DataLoader cache for the campaign contacts affected by the foregoing
-      // SQL statement to keep the cache in sync.  This will force the campaignContact
-      // to be refreshed. We also update the assignment in the cache
-      await Promise.all(
-        campaignContactIds.map(async campaignContactId => {
-          await cacheableData.campaignContact.updateAssignmentCache(
-            campaignContactId,
-            assignmentId,
-            newTexterUserId,
-            campaignId
-          );
-        })
-      );
-
-      returnCampaignIdAssignmentIds.push({
-        campaignId,
-        assignmentId: assignmentId.toString()
-      });
+      }
     }
   } catch (error) {
     log.error(error);

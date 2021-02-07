@@ -72,6 +72,7 @@ const rootSchema = gql`
     useDynamicAssignment: Boolean
     requestAfterReply: Boolean
     batchSize: Int
+    batchPolicies: [String]
     responseWindow: Float
     ingestMethod: String
     contactData: String
@@ -147,7 +148,7 @@ const rootSchema = gql`
 
   type CampaignIdAssignmentId {
     campaignId: String!
-    assignmentId: String!
+    assignmentId: String
   }
 
   input TagInput {
@@ -158,6 +159,12 @@ const rootSchema = gql`
     description: String
     isDeleted: Boolean
     organizationId: String
+  }
+
+  input ContactTagInput {
+    id: String
+    name: String
+    value: String
   }
 
   type FoundContact {
@@ -256,6 +263,7 @@ const rootSchema = gql`
       campaignId: String
       queryParams: String
     ): Organization
+    resetOrganizationJoinLink(organizationId: String!): Organization
     editOrganizationRoles(
       organizationId: String!
       userId: String!
@@ -288,6 +296,7 @@ const rootSchema = gql`
     sendMessage(
       message: MessageInput!
       campaignContactId: String!
+      cannedResponseId: String
     ): CampaignContact
     createOptOut(
       optOut: OptOutInput!
@@ -302,7 +311,15 @@ const rootSchema = gql`
       interactionStepIds: [String]
       campaignContactId: String!
     ): CampaignContact
-    updateContactTags(tags: [TagInput], campaignContactId: String!): String
+    updateFeedback(
+      assignmentId: String!
+      feedback: JSON
+      acknowledge: Boolean
+    ): Assignment
+    updateContactTags(
+      tags: [ContactTagInput]
+      campaignContactId: String!
+    ): CampaignContact
     updateQuestionResponses(
       questionResponses: [QuestionResponseInput]
       campaignContactId: String!
@@ -320,6 +337,7 @@ const rootSchema = gql`
     findNewCampaignContact(
       assignmentId: String!
       numberContacts: Int!
+      batchType: String
     ): FoundContact
     releaseContacts(
       assignmentId: String!
@@ -349,7 +367,9 @@ const rootSchema = gql`
       limit: Int!
       addToOrganizationMessagingService: Boolean
     ): JobRequest
+    deletePhoneNumbers(organizationId: ID!, areaCode: String!): JobRequest
     releaseCampaignNumbers(campaignId: ID!): Campaign!
+    clearCachedOrgAndExtensionCaches(organizationId: String!): String
   }
 
   schema {

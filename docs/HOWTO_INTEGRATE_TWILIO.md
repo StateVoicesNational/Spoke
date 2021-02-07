@@ -13,7 +13,7 @@ You will need to create a Twilio account in order to test outgoing and incoming 
   - For a paid ngrok account, a reasonable command line for `ngrok` is `ngrok http -subdomain=<UNIQUE_NAME> 3000` (Replace <UNIQUE_NAME> with something likely to be globally unique. Use the same <UNIQUE_NAME> each time you start ngrok. If you use a different <UNIQUE_NAME> it will be necessary to change the configuration in Twilio and in your .env file.)
   - For a free ngrok account, ngrok can be started with `ngrok http 3000` (Because a free account receives a different, randomly-assigned URL every time ngrok is started, it will be necessary to change the configuration in Twilio and in your .env file each time.)
   - When you start `ngrok`, it will display the external-facing app URL. Use that below to replace <YOUR_APP_URL>
-2. Create a Twilio acccount: https://www.twilio.com/ _If your organization is a non-profit organization, you may also apply for complementary twilio credits at [Twilio.org](www.twilio.org/application)_
+2. Create a Twilio acccount: https://www.twilio.com/ _If your organization is a non-profit organization, you may also apply for complementary twilio credits at [Twilio.org](https://www.twilio.org/application)_
 3. Click on `Programmable SMS` on the side panel
 4. Click on `Messaging Services`, and click `Create Messaging Service`
 5. Give your messaging service a Name then click `Create`
@@ -24,6 +24,7 @@ You will need to create a Twilio account in order to test outgoing and incoming 
     - Make sure `SEND A WEBHOOK` is selected
     - `REQUEST URL` is `https://<YOUR_APP_URL>/twilio` using `HTTP POST`
     - Set `FALLBACK URL` to the same as `REQUEST URL`
+    - In your .env file, set `TWILIO_MESSAGE_CALLBACK_URL` to this same URL
   - Under `Outbound Settings`
     - `STATUS CALLBACK URL` in your Twilio console is `https://<YOUR_APP_URL>/twilio-message-report`
     - In your .env file, set `TWILIO_STATUS_CALLBACK_URL` to this same URL
@@ -43,4 +44,4 @@ If you follow the instructions above, every organization and campaign in your in
 - For security, Twilio Auth Tokens are encrypted using the `SESSION_SECRET` environment variable before being stored in the database.
 - You can still set instance-wide credentials in the .env file (as described above). If you do, those credentials will be used as fallback if credentials aren't configured for an organization.
 - It is not required to configure all settings for all organizations. For example, to use a single site-wide Twilio account but with separate phone number pools for some organizations, follow the instuctions above and then set the Default Message Service SID (leaving the other fields blank) in the organizations settings for the orgs you want to override.
-- When using multiple Twilio accounts you will need to change the Inbound Request URL for your messaging service in the Twilio console [step 7 above]. It should look like `https://<YOUR_APP_URL>/twilio/<ORG_ID>`. The correct URL to use will be displayed on the settings page after you save the Twilio credentials.
+- When using multiple Twilio accounts you will need to change the Inbound Request URL for your messaging service in the Twilio console [step 7 above]. It should look like `https://<YOUR_APP_URL>/twilio/<ORG_ID>` and `https://<YOUR_APP_URL>/twilio-message-report/<ORG_ID>`. The correct URL to use will be displayed on the settings page after you save the Twilio credentials.

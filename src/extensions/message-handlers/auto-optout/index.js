@@ -3,7 +3,7 @@ import { cacheableData, Message } from "../../../server/models";
 import serviceMap from "../../../server/api/lib/services";
 
 const DEFAULT_AUTO_OPTOUT_REGEX_LIST_BASE64 =
-  "W3sicmVnZXgiOiAiXlxccypzdG9wXFxifFxcYnJlbW92ZSBtZVxccyokfHJlbW92ZSBteSBuYW1lfFxcYnRha2UgbWUgb2ZmIHRoXFx3KyBsaXN0fFxcYmxvc2UgbXkgbnVtYmVyfGRlbGV0ZSBteSBudW1iZXJ8Xlxccyp1bnN1YnNjcmliZVxccyokfF5cXHMqY2FuY2VsXFxzKiR8XlxccyplbmRcXHMqJHxeXFxzKnF1aXRcXHMqJCIsICJyZWFzb24iOiAic3RvcCJ9XQ==";
+  "W3sicmVnZXgiOiAiXlxccypzdG9wXFxifFxcYnJlbW92ZSBtZVxccyokfHJlbW92ZSBteSBuYW1lfFxcYnRha2UgbWUgb2ZmIHRoXFx3KyBsaXN0fFxcYmxvc2UgbXkgbnVtYmVyfGRvblxcVz90IGNvbnRhY3QgbWV8ZGVsZXRlIG15IG51bWJlcnxJIG9wdCBvdXR8c3RvcDJxdWl0fHN0b3BhbGx8Xlxccyp1bnN1YnNjcmliZVxccyokfF5cXHMqY2FuY2VsXFxzKiR8XlxccyplbmRcXHMqJHxeXFxzKnF1aXRcXHMqJCIsICJyZWFzb24iOiAic3RvcCJ9XQ==";
 
 export const serverAdministratorInstructions = () => {
   return {
@@ -43,10 +43,8 @@ export const available = organization => {
   }
 };
 
-// export const preMessageSave = async () => {};
-
-export const postMessageSave = async ({ message, organization }) => {
-  if (message.is_from_contact) {
+export const preMessageSave = async ({ messageToSave, organization }) => {
+  if (messageToSave.is_from_contact) {
     const config = Buffer.from(
       getConfig("AUTO_OPTOUT_REGEX_LIST_BASE64", organization) ||
         DEFAULT_AUTO_OPTOUT_REGEX_LIST_BASE64,
@@ -55,24 +53,56 @@ export const postMessageSave = async ({ message, organization }) => {
     const regexList = JSON.parse(config || "[]");
     const matches = regexList.filter(matcher => {
       const re = new RegExp(matcher.regex, "i");
-      return String(message.text).match(re);
+      return String(messageToSave.text).match(re);
     });
-
+    console.log("auto-optout", matches, messageToSave.text, regexList);
     if (matches.length) {
-      console.log("auto-optout MATCH", matches);
-      const reason = matches[0].reason || "auto_optout";
-      // OPTOUT
-      const contact = await cacheableData.campaignContact.load(
-        message.campaign_contact_id
+      console.log(
+        "auto-optout MATCH",
+        messageToSave.campaign_contact_id,
+        matches
       );
-      await cacheableData.optOut.save({
-        cell: message.contact_number,
-        campaignContactId: message.campaign_contact_id,
-        assignmentId: contact.assignment_id,
-        campaign: { organization_id: organization.id },
-        noReply: true,
-        reason
-      });
+      const reason = matches[0].reason || "auto_optout";
+      messageToSave.error_code = -133;
+      return {
+        contactUpdates: {
+          is_opted_out: true,
+          error_code: -133,
+          message_status: "closed"
+        },
+        handlerContext: { autoOptOutReason: reason },
+        messageToSave
+      };
     }
+  }
+};
+
+export const postMessageSave = async ({
+  message,
+  organization,
+  handlerContext
+}) => {
+  if (message.is_from_contact && handlerContext.autoOptOutReason) {
+    console.log(
+      "auto-optout.postMessageSave",
+      message.campaign_contact_id,
+      handlerContext.autoOptOutReason
+    );
+    const contact = await cacheableData.campaignContact.load(
+      message.campaign_contact_id,
+      { cacheOnly: true }
+    );
+    // OPTOUT
+    await cacheableData.optOut.save({
+      cell: message.contact_number,
+      campaignContactId: message.campaign_contact_id,
+      assignmentId: (contact && contact.assignment_id) || null,
+      campaign: { organization_id: organization.id },
+      noReply: true,
+      reason: handlerContext.autoOptOutReason,
+      // RISKY: we depend on the contactUpdates in preMessageSave
+      // but this can relieve a lot of database pressure
+      noContactUpdate: true
+    });
   }
 };
