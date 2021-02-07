@@ -9,7 +9,7 @@ import {
 } from "../server/models";
 import telemetry from "../server/telemetry";
 import { log, gunzip, zipToTimeZone, convertOffsetsToStrings } from "../lib";
-import { updateJob } from "./lib";
+import { sleep, updateJob } from "./lib";
 import serviceMap from "../server/api/lib/services";
 import twilio from "../server/api/lib/twilio";
 import {
@@ -148,20 +148,20 @@ export async function sendJobToAWSLambda(job) {
   return p;
 }
 
-export async function processSqsMessages() {
+export async function processSqsMessages(TWILIO_SQS_QUEUE_URL) {
   // hit endpoint on SQS
   // ask for a list of messages from SQS (with quantity tied to it)
   // if SQS has messages, process messages into pending_message_part and dequeue messages (mark them as handled)
   // if SQS doesnt have messages, exit
 
-  if (!process.env.TWILIO_SQS_QUEUE_URL) {
+  if (!TWILIO_SQS_QUEUE_URL) {
     return Promise.reject("TWILIO_SQS_QUEUE_URL not set");
   }
 
   const sqs = new AWS.SQS();
 
   const params = {
-    QueueUrl: process.env.TWILIO_SQS_QUEUE_URL,
+    QueueUrl: TWILIO_SQS_QUEUE_URL,
     AttributeNames: ["All"],
     MessageAttributeNames: ["string"],
     MaxNumberOfMessages: 10,
@@ -173,33 +173,36 @@ export async function processSqsMessages() {
   const p = new Promise((resolve, reject) => {
     sqs.receiveMessage(params, async (err, data) => {
       if (err) {
-        console.log(err, err.stack);
+        console.log("processSqsMessages Error", err, err.stack);
         reject(err);
-      } else if (data.Messages) {
-        console.log(data);
-        for (let i = 0; i < data.Messages.length; i++) {
-          const message = data.Messages[i];
-          const body = message.Body;
-          console.log("processing sqs queue:", body);
-          const twilioMessage = JSON.parse(body);
-
-          await serviceMap.twilio.handleIncomingMessage(twilioMessage);
-
-          sqs.deleteMessage(
-            {
-              QueueUrl: process.env.TWILIO_SQS_QUEUE_URL,
-              ReceiptHandle: message.ReceiptHandle
-            },
-            (delMessageErr, delMessageData) => {
-              if (delMessageErr) {
-                console.log(delMessageErr, delMessageErr.stack); // an error occurred
-              } else {
-                console.log(delMessageData); // successful response
-              }
+      } else {
+        if (!data.Messages || !data.Messages.length) {
+          // Since we are likely in a while(true) loop let's avoid racing
+          await sleep(10000);
+          resolve();
+        } else {
+          console.log("processSqsMessages", data.Messages.length);
+          for (let i = 0; i < data.Messages.length; i++) {
+            const message = data.Messages[i];
+            const body = message.Body;
+            if (process.env.DEBUG) {
+              console.log("processSqsMessages message body", body);
             }
-          );
+            const twilioMessage = JSON.parse(body);
+            await serviceMap.twilio.handleIncomingMessage(twilioMessage);
+            const delMessageData = await sqs
+              .deleteMessage({
+                QueueUrl: TWILIO_SQS_QUEUE_URL,
+                ReceiptHandle: message.ReceiptHandle
+              })
+              .promise()
+              .catch(reject);
+            if (process.env.DEBUG) {
+              console.log("processSqsMessages deleteresult", delMessageData);
+            }
+          }
+          resolve();
         }
-        resolve();
       }
     });
   });
@@ -291,28 +294,25 @@ export async function completeContactLoad(
       console.log("Error deleting opt-outs:", campaignId, err);
     });
 
-  // delete duplicate cells
+  // delete duplicate cells (last wins)
   await r
     .knex("campaign_contact")
-    .whereIn(
+    .whereNotIn(
       "id",
       r
         .knex("campaign_contact")
-        .select("campaign_contact.id")
-        .leftJoin("campaign_contact AS c2", function joinSelf() {
-          this.on("c2.campaign_id", "=", "campaign_contact.campaign_id")
-            .andOn("c2.cell", "=", "campaign_contact.cell")
-            .andOn("c2.id", ">", "campaign_contact.id");
-        })
-        .where("campaign_contact.campaign_id", campaignId)
-        .whereNotNull("c2.id")
+        .select(r.knex.raw("max(id) as id"))
+        .where("campaign_id", campaignId)
+        .groupBy("cell")
     )
+    .where("campaign_contact.campaign_id", campaignId)
     .delete()
     .then(result => {
       deleteDuplicateCells = result;
       console.log("Deduplication result", campaignId, result);
     })
     .catch(err => {
+      deleteDuplicateCells = -1;
       console.error("Failed deduplication", campaignId, err);
     });
 
@@ -800,7 +800,7 @@ export async function exportCampaign(job) {
   const messageCsv = Papa.unparse(finalCampaignMessages);
 
   if (
-    process.env.AWS_ACCESS_AVAILABLE ||
+    getConfig("AWS_ACCESS_AVAILABLE") ||
     (process.env.AWS_ACCESS_KEY_ID && process.env.AWS_SECRET_ACCESS_KEY)
   ) {
     try {
@@ -1152,10 +1152,10 @@ export async function fixOrgless() {
   } // if
 } // function
 
-export async function clearOldJobs(delay) {
+export async function clearOldJobs(event) {
   // to clear out old stuck jobs
   const twoHoursAgo = new Date(new Date() - 1000 * 60 * 60 * 2);
-  delay = delay || twoHoursAgo;
+  const delay = (event && event.oldJobPast) || twoHoursAgo;
   return await r
     .knex("job_request")
     .where({ assigned: true })

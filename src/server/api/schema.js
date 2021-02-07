@@ -764,13 +764,13 @@ const rootMutations = {
 
       return await Organization.get(organizationId);
     },
-    createInvite: async (_, { user }) => {
+    createInvite: async (_, { invite }, { user }) => {
       if (
         (user && user.is_superadmin) ||
         !getConfig("SUPPRESS_SELF_INVITE", null, { truthy: true })
       ) {
         const inviteInstance = new Invite({
-          is_valid: true,
+          is_valid: invite.is_valid,
           hash: uuidv4()
         });
         const newInvite = await inviteInstance.save();
@@ -1097,7 +1097,7 @@ const rootMutations = {
     getAssignmentContacts: async (
       _,
       { assignmentId, contactIds, findNew },
-      { user }
+      { user, loaders }
     ) => {
       if (contactIds.length === 0) {
         return [];
@@ -1147,7 +1147,29 @@ const rootMutations = {
         });
       }
       console.log("getAssignedContacts", contacts.length, updatedContacts);
-      return contacts.map(c => c && (updatedContacts[c.id] || c)).map(hasAssn);
+      const finalContacts = contacts
+        .map(c => c && (updatedContacts[c.id] || c))
+        .map(hasAssn);
+      if (finalContacts.length && r.redis) {
+        // find out used fields so we can only send back those
+        const campaign = await loaders.campaign.load(firstContact.campaign_id);
+        const cannedResponses = await cacheableData.cannedResponse.query({
+          campaignId: firstContact.campaign_id
+        });
+        if (
+          campaign.usedFields &&
+          (!cannedResponses.length || cannedResponses[0].usedFields)
+        ) {
+          const usedFields = campaign.usedFields;
+          if (cannedResponses.length && cannedResponses[0].usedFields) {
+            Object.keys(cannedResponses[0].usedFields).forEach(f => {
+              usedFields[f] = 1;
+            });
+          }
+          return finalContacts.map(c => (c && { ...c, usedFields }) || c);
+        }
+      }
+      return finalContacts;
     },
     createOptOut: async (
       _,
@@ -1176,9 +1198,9 @@ const rootMutations = {
         campaignContactId,
         contact.campaign_id
       );
-      const { assignmentId, cell, reason } = optOut;
+      const { assignmentId, reason } = optOut;
       await cacheableData.optOut.save({
-        cell,
+        cell: contact.cell,
         campaignContactId,
         reason,
         assignmentId,
@@ -1371,6 +1393,9 @@ const rootResolvers = {
         );
         assignmentId = campaignContact.assignment_id;
       }
+      if (!assignmentId) {
+        return null;
+      }
       const assignment = await loaders.assignment.load(assignmentId);
       if (!assignment) {
         return null;
@@ -1394,7 +1419,7 @@ const rootResolvers = {
       return assignment;
     },
     organization: async (_, { id }, { user, loaders }) => {
-      await accessRequired(user, id, "TEXTER");
+      await accessRequired(user, id, "TEXTER", true);
       return await loaders.organization.load(id);
     },
     inviteByHash: async (_, { hash }, { loaders, user }) => {

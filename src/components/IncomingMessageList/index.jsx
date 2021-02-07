@@ -3,7 +3,7 @@ import type from "prop-types";
 import FlatButton from "material-ui/FlatButton";
 import ActionOpenInNew from "material-ui/svg-icons/action/open-in-new";
 import loadData from "../../containers/hoc/load-data";
-import { withRouter } from "react-router";
+import { Link, withRouter } from "react-router";
 import gql from "graphql-tag";
 import { getHighestRole } from "../../lib/permissions";
 import LoadingIndicator from "../../components/LoadingIndicator";
@@ -17,11 +17,7 @@ import { MESSAGE_STATUSES } from "../../components/IncomingMessageFilter";
 export const prepareDataTableData = conversations =>
   conversations.map(conversation => ({
     campaignTitle: conversation.campaign.title,
-    texter:
-      conversation.texter.displayName +
-      (getHighestRole(conversation.texter.roles) === "SUSPENDED"
-        ? " (Suspended)"
-        : ""),
+    texter: conversation.texter,
     to:
       conversation.contact.firstName +
       " " +
@@ -126,7 +122,29 @@ export class IncomingMessageList extends Component {
         textOverflow: "ellipsis",
         overflow: "hidden",
         whiteSpace: "pre-line"
-      }
+      },
+      render: (columnKey, row) => (
+        <span>
+          {row.texter.id !== null ? (
+            <span>
+              {row.texter.displayName +
+                (getHighestRole(row.texter.roles) === "SUSPENDED"
+                  ? " (Suspended)"
+                  : "")}{" "}
+              <Link
+                target="_blank"
+                to={`/app/${this.props.organizationId}/todos/other/${row.texter.id}`}
+              >
+                <ActionOpenInNew
+                  style={{ width: 14, height: 14, color: theme.colors.green }}
+                />
+              </Link>
+            </span>
+          ) : (
+            "unassigned"
+          )}
+        </span>
+      )
     },
     {
       key: "to",
