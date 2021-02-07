@@ -1,14 +1,15 @@
-import { mapFieldsToModel } from "./lib/utils";
-import { getConfig, getFeatures } from "./lib/config";
-import { r, Organization, cacheableData } from "../models";
-import { getTags } from "./tag";
-import { accessRequired } from "./errors";
-import { getCampaigns, getCampaignsCount } from "./campaign";
-import { buildUsersQuery } from "./user";
 import {
-  getAvailableActionHandlers,
-  getActionChoiceData
+  getActionChoiceData,
+  getAvailableActionHandlers
 } from "../../extensions/action-handlers";
+import { fullyConfigured } from "../../extensions/messaging_services";
+import { cacheableData, Organization, r } from "../models";
+import { getCampaigns } from "./campaign";
+import { accessRequired } from "./errors";
+import { getConfig, getFeatures } from "./lib/config";
+import { mapFieldsToModel } from "./lib/utils";
+import { getTags } from "./tag";
+import { buildUsersQuery } from "./user";
 
 export const ownerConfigurable = {
   // ACTION_HANDLERS: 1,
@@ -50,30 +51,6 @@ export const getSideboxChoices = organization => {
       : (sideboxes && sideboxes.split(",")) || [];
   return sideboxChoices;
 };
-
-const campaignNumbersEnabled = organization => {
-  const inventoryEnabled =
-    getConfig("EXPERIMENTAL_PHONE_INVENTORY", organization, {
-      truthy: true
-    }) ||
-    getConfig("PHONE_INVENTORY", organization, {
-      truthy: true
-    });
-
-  return (
-    inventoryEnabled &&
-    getConfig("EXPERIMENTAL_CAMPAIGN_PHONE_NUMBERS", organization, {
-      truthy: true
-    })
-  );
-};
-
-const manualMessagingServicesEnabled = organization =>
-  getConfig(
-    "EXPERIMENTAL_TWILIO_PER_CAMPAIGN_MESSAGING_SERVICE",
-    organization,
-    { truthy: true }
-  );
 
 export const resolvers = {
   Organization: {
@@ -264,48 +241,7 @@ export const resolvers = {
       }
     },
     fullyConfigured: async organization => {
-      const serviceName = cacheableData.organization.getMessageService(
-        organization
-      );
-      if (serviceName === "twilio") {
-        const {
-          authToken,
-          accountSid
-        } = await cacheableData.organization.getTwilioAuth(organization);
-
-        let messagingServiceConfigured;
-        if (
-          manualMessagingServicesEnabled(organization) ||
-          campaignNumbersEnabled(organization)
-        ) {
-          messagingServiceConfigured = true;
-        } else {
-          messagingServiceConfigured = await cacheableData.organization.getMessageServiceSid(
-            organization
-          );
-        }
-
-        if (!(authToken && accountSid && messagingServiceConfigured)) {
-          return false;
-        }
-      } else if (serviceName === "signalwire") {
-        const {
-          authToken,
-          accountSid,
-          spaceUrl
-        } = await cacheableData.organization.getSignalwireAuth(organization);
-
-        const messagingServiceConfigured = await cacheableData.organization.getMessageServiceSid(
-          organization
-        );
-
-        if (
-          !(authToken && accountSid && spaceUrl && messagingServiceConfigured)
-        ) {
-          return false;
-        }
-      }
-      return true;
+      return fullyConfigured(organization);
     },
     emailEnabled: async (organization, _, { user }) => {
       await accessRequired(user, organization.id, "SUPERVOLUNTEER", true);
@@ -411,7 +347,7 @@ export const resolvers = {
 };
 
 export async function getNumTextsInLastDay(organizationId) {
-  var yesterday = new Date();
+  const yesterday = new Date();
   yesterday.setDate(yesterday.getDate() - 1);
 
   const textsInLastDay = r.knex

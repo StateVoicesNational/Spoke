@@ -25,6 +25,21 @@ const serviceMap = {
   fakeservice
 };
 
+export const getService = serviceName => serviceMap[serviceName];
+
+export const getServiceFromOrganization = organization =>
+  serviceMap[orgCache.getMessageService(organization)];
+
+export const fullyConfigured = async organization => {
+  const messagingService = getServiceFromOrganization(organization);
+  const fn = messagingService.fullyConfigured;
+  if (!fn || typeof fn !== "function") {
+    return true;
+  }
+
+  return fn();
+};
+
 export const createMessagingService = (organization, friendlyName) => {
   const serviceName = orgCache.getMessageService(organization);
   let service;

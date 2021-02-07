@@ -43,6 +43,22 @@ export async function getSignalwire(organization) {
   return null;
 }
 
+export const fullyConfigured = async organization => {
+  const {
+    authToken,
+    accountSid,
+    spaceUrl
+  } = await cacheableData.organization.getSignalwireAuth(organization);
+
+  const messagingServiceConfigured = await cacheableData.organization.getMessageServiceSid(
+    organization
+  );
+
+  if (!(authToken && accountSid && spaceUrl && messagingServiceConfigured)) {
+    return false;
+  }
+  return true;
+};
 /**
  * Validate that the message came from SignalWire before proceeding.
  *

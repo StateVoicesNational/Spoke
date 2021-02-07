@@ -43,6 +43,54 @@ export async function getTwilio(organization) {
   return null;
 }
 
+const campaignNumbersEnabled = organization => {
+  const inventoryEnabled =
+    getConfig("EXPERIMENTAL_PHONE_INVENTORY", organization, {
+      truthy: true
+    }) ||
+    getConfig("PHONE_INVENTORY", organization, {
+      truthy: true
+    });
+
+  return (
+    inventoryEnabled &&
+    getConfig("EXPERIMENTAL_CAMPAIGN_PHONE_NUMBERS", organization, {
+      truthy: true
+    })
+  );
+};
+
+const manualMessagingServicesEnabled = organization =>
+  getConfig(
+    "EXPERIMENTAL_TWILIO_PER_CAMPAIGN_MESSAGING_SERVICE",
+    organization,
+    { truthy: true }
+  );
+
+export const fullyConfigured = async organization => {
+  const {
+    authToken,
+    accountSid
+  } = await cacheableData.organization.getTwilioAuth(organization);
+
+  let messagingServiceConfigured;
+  if (
+    manualMessagingServicesEnabled(organization) ||
+    campaignNumbersEnabled(organization)
+  ) {
+    messagingServiceConfigured = true;
+  } else {
+    messagingServiceConfigured = await cacheableData.organization.getMessageServiceSid(
+      organization
+    );
+  }
+
+  if (!(authToken && accountSid && messagingServiceConfigured)) {
+    return false;
+  }
+
+  return true;
+};
 /**
  * Validate that the message came from Twilio before proceeding.
  *
