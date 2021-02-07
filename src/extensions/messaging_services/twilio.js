@@ -10,10 +10,11 @@ import {
   convertMessagePartsToMessage as _convertMessagePartsToMessage,
   handleDeliveryReport as _handleDeliveryReport,
   handleIncomingMessage as _handleIncomingMessage,
-  parseMessageText,
   postMessageSend as _postMessageSend,
   sendMessage as _sendMessage
 } from "./lib/laml_api_impl";
+
+export { parseMessageText } from "./lib/laml_api_impl";
 
 // > 1 (i.e. positive) error_codes are reserved for Twilio error codes
 // -1 - -MAX_SEND_ATTEMPTS (5): failed send messages
@@ -91,12 +92,13 @@ export const fullyConfigured = async organization => {
 
   return true;
 };
+
 /**
  * Validate that the message came from Twilio before proceeding.
  *
  * @param url The external-facing URL; this may be omitted to use the URL from the request.
  */
-const headerValidator = url => {
+export const headerValidator = url => {
   if (!!TWILIO_SKIP_VALIDATION) return (req, res, next) => next();
 
   return async (req, res, next) => {
@@ -513,22 +515,8 @@ export async function clearMessagingServicePhones(
   }
 }
 
-export default {
-  syncMessagePartProcessing: !!process.env.JOBS_SAME_PROCESS,
-  addServerEndpoints,
-  headerValidator,
-  convertMessagePartsToMessage,
-  sendMessage,
-  handleDeliveryReport,
-  handleIncomingMessage,
-  parseMessageText,
-  createMessagingService,
-  getPhoneNumbersForService,
-  buyNumbersInAreaCode,
-  deleteNumbersInAreaCode,
-  addNumbersToMessagingService,
-  deleteMessagingService,
-  clearMessagingServicePhones,
-  getTwilio,
-  getMessageReportPath
-};
+export const syncMessagePartProcessing = !!process.env.JOBS_SAME_PROCESS;
+
+// for backward compatibility with how things are
+// imported through the code
+export default exports;
