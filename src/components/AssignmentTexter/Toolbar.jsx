@@ -199,13 +199,7 @@ const ContactToolbar = function ContactToolbar(props) {
             className={css(styles.contactToolbarIconButton)}
             style={{ flex: "0 0 56px", width: "45px" }}
           >
-            <ArrowBackIcon
-              color={
-                navigationToolbarChildren.onPrevious
-                  ? "white"
-                  : "rgb(176, 176, 176)"
-              }
-            />
+            <ArrowBackIcon color="white" />
           </IconButton>
           <div className={css(styles.navigationTitle)}>
             {navigationToolbarChildren.title}
@@ -217,13 +211,7 @@ const ContactToolbar = function ContactToolbar(props) {
             className={css(styles.contactToolbarIconButton)}
             style={{ flex: "0 0 56px", width: "45px" }}
           >
-            <ArrowForwardIcon
-              color={
-                navigationToolbarChildren.onNext
-                  ? "white"
-                  : "rgb(176, 176, 176)"
-              }
-            />
+            <ArrowForwardIcon color="white" />
           </IconButton>
         </div>
       </Toolbar>

@@ -4,7 +4,6 @@ import AdminDashboard from "./components/AdminDashboard";
 import AdminCampaignList from "./containers/AdminCampaignList";
 import AdminCampaignStats from "./containers/AdminCampaignStats";
 import AdminPersonList from "./containers/AdminPersonList";
-import AdminOptOutList from "./containers/AdminOptOutList";
 import AdminIncomingMessageList from "./containers/AdminIncomingMessageList";
 import AdminCampaignEdit from "./containers/AdminCampaignEdit";
 import AdminReplySender from "./containers/AdminReplySender";
@@ -32,8 +31,10 @@ import {
   DemoTexterNeedsMessage,
   DemoTexterNeedsResponse,
   DemoTexter2ndQuestion,
-  DemoTexterDynAssign
+  DemoTexterDynAssign,
+  tests
 } from "./components/AssignmentTexter/Demo";
+import AssignmentSummary from "./components/AssignmentSummary";
 import AdminPhoneNumberInventory from "./containers/AdminPhoneNumberInventory";
 
 const checkDowntime = (nextState, replace) => {
@@ -76,7 +77,6 @@ export default function makeRoutes(requireAuth = () => {}) {
             </Route>
           </Route>
           <Route path="people" component={AdminPersonList} />
-          <Route path="optouts" component={AdminOptOutList} />
           <Route path="incoming" component={AdminIncomingMessageList} />
           <Route path="tags" component={Tags} />
           <Route path="settings" component={Settings} />
@@ -264,6 +264,20 @@ export default function makeRoutes(requireAuth = () => {}) {
           components={{
             main: props => <DemoTexterDynAssign {...props} />,
             topNav: null
+          }}
+        />
+        <Route
+          path="todos"
+          components={{
+            main: props => <AssignmentSummary {...tests("todos1")} />,
+            topNav: p => <TopNav title="Spoke Texting Demo" orgId={"fake"} />
+          }}
+        />
+        <Route
+          path="todos2"
+          components={{
+            main: props => <AssignmentSummary {...tests("todos2")} />,
+            topNav: p => <TopNav title="Spoke Texting Demo2" orgId={"fake"} />
           }}
         />
       </Route>

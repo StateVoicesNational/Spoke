@@ -79,6 +79,12 @@ export class CampaignContactsForm extends React.Component {
   };
 
   handleUpload = event => {
+    const { contactsPerPhoneNumber, maxNumbersPerCampaign } = this.props;
+    let maxContacts = null;
+    if (contactsPerPhoneNumber && maxNumbersPerCampaign) {
+      maxContacts = contactsPerPhoneNumber * maxNumbersPerCampaign;
+    }
+
     event.preventDefault();
     const file = event.target.files[0];
     this.setState({ uploading: true }, () => {
@@ -89,6 +95,12 @@ export class CampaignContactsForm extends React.Component {
             this.handleUploadError(error);
           } else if (contacts.length === 0) {
             this.handleUploadError("Upload at least one contact");
+          } else if (maxContacts && contacts.length > maxContacts) {
+            this.handleUploadError(
+              `You can only upload ${Number(
+                maxContacts
+              ).toLocaleString()} contacts max – your file contains ${contacts.length.toLocaleString()}.`
+            );
           } else if (contacts.length > 0) {
             this.handleUploadSuccess(validationStats, contacts, customFields);
           }
@@ -135,6 +147,7 @@ export class CampaignContactsForm extends React.Component {
     if (!contactsCount) {
       return "";
     }
+
     return (
       <List>
         <Subheader>Uploaded</Subheader>
@@ -296,5 +309,8 @@ CampaignContactsForm.propTypes = {
   saveLabel: type.string,
 
   clientChoiceData: type.string,
-  jobResultMessage: type.string
+  jobResultMessage: type.string,
+
+  maxNumbersPerCampaign: type.number,
+  contactsPerPhoneNumber: type.number
 };
