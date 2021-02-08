@@ -31,10 +31,16 @@ Redis is used for caching and is separate from the backend DB so can be used wit
 
 1) Run `yarn test-rediscache`
 
-## End-To-End Testing
+## Integration Testing
 
-1. Run your local development environment with DEFAULT_SERVICE=fakeservice.
-2. Run `yarn run cypress open` for the interactive test runner. For non-interactive
-   run `yarn run cypress run --browser <browser>`.
+The integration test suite automates real world user scenarios to verify that Spoke behaves as intended. The integration testing suite uses [Cypress]((https://docs.cypress.io/guides/guides/command-line.html)) to drive a web browser to test user experience scenarios. It runs a separate test instance of Spoke, configured separately from the config in your `.env`, using the `spoke_test` PostgreSQL database, and running at `http://localhost:3001`.
 
-See [the Cypress documentation](https://docs.cypress.io/guides/guides/command-line.html) for more info.
+To run the integration test suite in development:
+
+1. Set up PostgreSQL as described above
+3. Start test instance of Spoke with `yarn start:test`
+4. Run integration test suite interactively with `yarn test-cypress`
+
+The integration suite runs in CI using a Github Actions workflow defined in `.github/workflows/cypress-tests.yaml`.
+
+When developing new features for Spoke, please consider writing a Cypress tests. The test server will hot reload your code changes so that you can test drive your feature development.

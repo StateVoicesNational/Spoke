@@ -7,7 +7,7 @@ Spoke is an open source text-distribution tool for organizations to mobilize sup
 
 Spoke was created by Saikat Chakrabarti and Sheena Pakanati, and is now maintained by MoveOn.org. This fork of Spoke is maintained by stac labs.
 
-The latest version is [9.2](https://github.com/MoveOnOrg/Spoke/tree/v9.2) (see [release notes](https://github.com/MoveOnOrg/Spoke/blob/main/docs/RELEASE_NOTES.md#v92))
+The latest version is [10.0](https://github.com/MoveOnOrg/Spoke/tree/v10.0) (see [release notes](https://github.com/MoveOnOrg/Spoke/blob/main/docs/RELEASE_NOTES.md#v100))
 
 
 ## Setting up Spoke
@@ -24,7 +24,7 @@ Want to know more?
 ### Quick Start with Heroku
 This version of Spoke suitable for testing and, potentially, for small campaigns. This won't cost any money and will not support production(aka large-scale) usage. It's a great way to practice deploying Spoke or see it in action.  
 
-<a href="https://heroku.com/deploy?template=https://github.com/MoveOnOrg/Spoke/tree/v9.2">
+<a href="https://heroku.com/deploy?template=https://github.com/MoveOnOrg/Spoke/tree/v10.0">
 
   <img src="https://www.herokucdn.com/deploy/button.svg" alt="Deploy">
 </a>
@@ -45,12 +45,6 @@ Additional guidance:
 - [Choosing a set-up for production](/docs/EXPLANATION_CHOOSE_A_SETUP.md)
 - [How to hire someone to install Spoke](/docs/HOWTO_HIRE_SOMEONE_TO_INSTALL_SPOKE.md)
 - [Option for minimalist deployment](docs/HOWTO_MINIMALIST_DEPLOY.md)
-
-
-
-## Big Thanks
-
-Cross-browser Testing Platform and Open Source <3 Provided by [Sauce Labs](https://saucelabs.com).
 
 # License
 

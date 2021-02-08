@@ -31,6 +31,9 @@ describe("CampaignList", () => {
         contactsCount: 1300,
         messagedCount: 98,
         assignedCount: 199
+      },
+      organization: {
+        id: 77
       }
     };
 
@@ -77,7 +80,10 @@ describe("CampaignList", () => {
       creator: {
         displayName: "Lorem Ipsum"
       },
-      completionStats: {}
+      completionStats: {},
+      organization: {
+        id: 1
+      }
     };
 
     const data = {
@@ -121,7 +127,10 @@ describe("CampaignList", () => {
       creator: {
         displayName: "Lorem Ipsum"
       },
-      completionStats: {}
+      completionStats: {},
+      organization: {
+        id: 1
+      }
     };
 
     const data = {

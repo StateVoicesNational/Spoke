@@ -7,13 +7,52 @@ import { jobRunner } from "../../../extensions/job-runners";
 import { Tasks } from "../../../workers/tasks";
 import { updateContactTags } from "./updateContactTags";
 
+import { sendEmail } from "../../mail";
+import { log } from "../../../lib";
+
 const JOBS_SAME_PROCESS = !!(
   process.env.JOBS_SAME_PROCESS || global.JOBS_SAME_PROCESS
 );
 
-const newError = (message, code) => {
+const newError = (message, code, details = {}) => {
   const err = new GraphQLError(message);
   err.code = code;
+  if (process.env.DEBUGGING_EMAILS) {
+    sendEmail({
+      to: process.env.DEBUGGING_EMAILS.split(","),
+      subject: `Spoke Send Message Error`,
+      html: `
+        <body>
+          <div><b>ERROR CODE: ${code}</b></div>
+          <div>ERROR MESSAGE: ${message}</div>
+          <br />
+          <div>DETAILS</div>
+          <pre>${JSON.stringify(
+            {
+              ...details.message,
+              campaignContactId: details.campaignContactId,
+              user: details.user
+                ? {
+                    id: details.user.id,
+                    name: `${details.user.first_name} ${details.user.last_name}`
+                  }
+                : undefined,
+              campaign: details.campaign
+                ? {
+                    id: details.campaign.id,
+                    title: details.campaign.title,
+                    organizationId: details.campaign.organization_id
+                  }
+                : undefined
+            },
+            null,
+            2
+          )}
+          </pre>
+        </body>
+      `
+    }).catch(emailErr => log.debug(emailErr));
+  }
   return err;
 };
 
@@ -25,12 +64,18 @@ export const sendMessage = async (
   // contact is mutated, so we don't use a loader
   let contact = await cacheableData.campaignContact.load(campaignContactId);
   const campaign = await loaders.campaign.load(contact.campaign_id);
+
   if (
     contact.assignment_id !== parseInt(message.assignmentId) ||
     campaign.is_archived
   ) {
     console.error("Error: assignment changed");
-    throw newError("Your assignment has changed", "SENDERR_ASSIGNMENTCHANGED");
+    throw newError("Your assignment has changed", "SENDERR_ASSIGNMENTCHANGED", {
+      message,
+      campaignContactId,
+      user,
+      campaign
+    });
   }
   const organization = await loaders.organization.load(
     campaign.organization_id
@@ -45,7 +90,13 @@ export const sendMessage = async (
   if (optOut) {
     throw newError(
       "Skipped sending because this contact was already opted out",
-      "SENDERR_OPTEDOUT"
+      "SENDERR_OPTEDOUT",
+      {
+        message,
+        campaignContactId,
+        user,
+        campaign
+      }
     );
   }
   // const zipData = await r.table('zip_code')
@@ -68,7 +119,12 @@ export const sendMessage = async (
   const { text } = message;
 
   if (text.length > (process.env.MAX_MESSAGE_LENGTH || 99999)) {
-    throw newError("Message was longer than the limit", "SENDERR_MAXLEN");
+    throw newError("Message was longer than the limit", "SENDERR_MAXLEN", {
+      message,
+      campaignContactId,
+      user,
+      campaign
+    });
   }
 
   const replaceCurlyApostrophes = rawText =>
@@ -102,7 +158,13 @@ export const sendMessage = async (
   if (sendBeforeDate && sendBeforeDate <= Date.now()) {
     throw newError(
       "Outside permitted texting time for this recipient",
-      "SENDERR_OFFHOURS"
+      "SENDERR_OFFHOURS",
+      {
+        message,
+        campaignContactId,
+        user,
+        campaign
+      }
     );
   }
   const serviceName =
@@ -137,6 +199,7 @@ export const sendMessage = async (
     cannedResponseId
   });
   if (!saveResult.message) {
+    console.log("SENDERR_SAVEFAIL", saveResult);
     throw newError(
       `Message send error ${saveResult.texterError || ""}`,
       "SENDERR_SAVEFAIL"

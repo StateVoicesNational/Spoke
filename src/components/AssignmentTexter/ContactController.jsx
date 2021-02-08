@@ -284,6 +284,8 @@ export class ContactController extends React.Component {
       this.setState({ finishedContactId: contactId }, () => {
         if (!this.props.reviewContactId) {
           this.props.refreshData();
+          this.clearContactIdOldData(contactId);
+          this.updateCurrentContactIndex(this.state.currentContactIndex);
         }
       });
     }
@@ -445,6 +447,8 @@ export class ContactController extends React.Component {
         refreshData={this.props.refreshData}
         onExitTexter={this.handleExitTexter}
         messageStatusFilter={this.props.messageStatusFilter}
+        organizationId={this.props.organizationId}
+        location={this.props.location}
       />
     );
   }
@@ -505,6 +509,7 @@ export class ContactController extends React.Component {
         campaign.texterUIConfig.options) ||
         "{}"
     );
+    const review = this.props.location.query.review;
     const sideboxProps = {
       assignment,
       campaign,
@@ -515,7 +520,8 @@ export class ContactController extends React.Component {
       messageStatusFilter,
       finished,
       loading,
-      settingsData
+      settingsData,
+      review
     };
     const enabledSideboxes = getSideboxes(sideboxProps, "TexterTodo");
     return (
@@ -540,7 +546,8 @@ ContactController.propTypes = {
   loadContacts: PropTypes.func,
   organizationId: PropTypes.string,
   ChildComponent: PropTypes.func,
-  messageStatusFilter: PropTypes.string
+  messageStatusFilter: PropTypes.string,
+  location: PropTypes.object
 };
 
 export default withRouter(ContactController);
