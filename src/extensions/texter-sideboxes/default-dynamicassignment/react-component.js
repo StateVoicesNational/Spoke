@@ -120,8 +120,8 @@ export class TexterSideboxClass extends React.Component {
             <Badge
               badgeStyle={{ ...inlineStyles.badge }}
               badgeContent={assignment.unrepliedCount}
-              primary={true}
-              secondary={false}
+              primary={false}
+              secondary={true}
             >
               <RaisedButton label="Go To Replies" onClick={this.gotoReplies} />
             </Badge>
