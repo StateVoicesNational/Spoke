@@ -1,5 +1,54 @@
 # Release Notes
 
+## v10.0
+
+_January 2021:_ Version 10.0
+
+### Post-election and License Change
+
+This is the first release since after the Nov 2020 election. Spoke was used by more than 500 organizations sending millions of text messages over the year. It was used in everything from Movement for Black Lives, to local volunteer-run groups, to senatorial races. In the primaries it was used by at least four presidential candidates.  This is a testament to the community that has built up here around progressive organizing.
+
+Spoke is just one example of campaign and organizing software, and it's worth noting that open-source doesn't have to work on just one project -- open-source, or rather collaborative source, where organizations and volunteers believing in economic and racial justice can also collaborate around the code that helps run our organizations and communicate to our allies -- collaborative source is Organizing in code.
+
+One thing we are doing to keep our community working closely together is changing our license. The previous license was "MIT" and did not have any restrictions on distribution. After many community discussions and universal consensus, we are moving to the GPL3 with a "share-alike" license requirement, meaning that to use our software, you have an obligation to share back improvements you've made with others. Interest in this requirement especially came from a growing ecosystem of Spoke commercial hosters, which are contributing to the community, but want to compete and differentiate themselves while fearlessly sharing their code back to the larger community, so everyone can benefit from progressive innovation each cycle.
+
+We also wanted to embed our community's values in the license and in the Spoke application itself. It's not easy to distill progressive values into something short and sweet, and we do not claim to have done so. Nonetheless, we wanted to create a statement that should be a baseline for everyone in our community and I look forward to embedding more quotes from progressive leaders and in our documentation going forward.
+
+The universally agreed statement to include in a few places where texters can see it and is required to be preserved by our new license terms is:
+
+> Spoke is developed and maintained by people committed to fighting oppressive systems and structures, including economic injustice, racism, patriarchy, and militarism.
+
+### Migration Notes
+
+As usual, we try to avoid as much backwards incompatibility as possible -- people still successfully upgrade from very old releases and we will continue that community commitment so it's always as easy as possible to upgrade and stay up-to-date.
+
+* This is a major release and includes a schema change. This is a minor schema change, which you can run before/during migration (either by leaving/disabling SUPPRESS_MIGRATIONS="" or for [AWS Lambda, see the db migration instructions](./HOWTO_DEPLOYING_AWS_LAMBDA.md#migrating-the-database). It includes adding a nullable "media" column to the message table, and adds a new table, "assignment_feedback"
+* Some timezone bugs were resolved, but part of the issue was found during an upgrade that we had incorrect defaults for the timezone -- if you have settings for either environment variable DST_REFERENCE_TIMEZONE or DEFAULT_TZ if it was e.g. ~"America/New_York"~ then you should change it to `US/Eastern` -- please lookup and adjust other timezones as appropriate. If you did not have these variables set, then you should keep them blank -- note that not including a DEFAULT_TZ (or TZ) will default to texting hours that most conservatively work for the continental US (12pm ET - 9pm ET)
+
+### Major Improvements
+
+As the first release post-election, this mostly gathered together fixes and improvements that were made in the run-up to the election. While last year was a very active year, we have quite a bit planned for this year, as well.
+
+  * Media responses: Texters can now see if there is a media (image/video/audio) response from a contact and click to open and see it. While this can be useful, media responses often include offensive content from hostile responses and can affect texters. Thus we also include a [hide-media](./HOWTO-use-texter-sideboxes.md#hide-media) Texter Sidebox option you can enable organization-wide and/or set whether texters can see media per-campaign.
+  * Texter Feedback setup: If you add [texter-feedback](./HOWTO-use-texter-sideboxes.md#texter-feedback) to TEXTER_SIDEBOXES, when Admins click to 'review' a texter's campaign conversations, the admin can provide feedback on a number of axes -- this is great for training up new texters.
+  * Cypress test suite - additional tests to make sure bugs don't show up in our user-interface were added and organized. We hope to expand these in the future.
+  * Message Review: Unassigning -- it's been possible to assign conversations, but sometimes it's also useful to *unassign* conversations. This is especially useful when complemented with [vetted-takeconversations](./HOWTO-use-texter-sideboxes#take-conversations) Dynamic Assignment batch handler.
+  * Phone number inventory: Numbers are now deleteable
+  * Mobilize Event Shift texter sidebox: for integrations with [Mobilize](https://www.mobilize.us/)  (needs enabling by setting some environment variables documented in the code and adding it to TEXTER_SIDEBOXES environment variable)
+  * Canned Response search -- for larger lists of canned responses and survey responses, there's now a search bar on top for texters to narrow the list.
+  * Re-orderable interaction steps
+
+## Bugfixes and Minor featuers
+
+See links and notes from the [10.0 pull request](https://github.com/MoveOnOrg/Spoke/pull/1900) for a list of all changes that were included.
+
+### Appreciations
+
+* [agreenspan24](https://github.com/agreenspan24), [asalant](https://github.com/asalant), [codygordon](https://github.com/codygordon), [ibrand](https://github.com/ibrand), [inorvig](https://github.com/inorvig), [jeffm2001](https://github.com/jeffm2001), [JeremyParker](https://github.com/JeremyParker), [lperson](https://github.com/lperson), [matteosb](https://github.com/matteosb), [mayefsky](https://github.com/mayefsky), [navinsivakumar](https://github.com/navinsivakumar), [oburbank](https://github.com/oburbank), [schuyler1d](https://github.com/schuyler1d)
+* Mark Houghton and [Arena Reed](https://github.com/arena) for QA and design help
+* Everyone that worked to make positive change this past year!
+
+
 ## v9.2
 
 _September 2020:_ Version 9.2

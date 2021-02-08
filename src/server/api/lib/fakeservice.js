@@ -39,6 +39,14 @@ async function sendMessage(message, contact, trx, organization, campaign) {
 
   if (contact && /autorespond/.test(message.text)) {
     // We can auto-respond to the the user if they include the text 'autorespond' in their message
+    const media = /autorespondPicture/.test(message.text)
+      ? [
+          {
+            type: "image/png",
+            url: "https://static.moveon.org/giraffe/images/logo-black.png"
+          }
+        ]
+      : null;
     await cacheableData.message.save({
       contact: contact,
       messageInstance: new Message({
@@ -49,7 +57,8 @@ async function sendMessage(message, contact, trx, organization, campaign) {
         service_id: `mockedresponse${Math.random()}`,
         is_from_contact: true,
         text: `responding to ${message.text}`,
-        send_status: "DELIVERED"
+        send_status: "DELIVERED",
+        media
       })
     });
   }
@@ -123,9 +132,32 @@ async function buyNumbersInAreaCode(organization, areaCode, limit) {
   return limit;
 }
 
+async function deleteNumbersInAreaCode(organization, areaCode) {
+  const numbersToDelete = (
+    await r
+      .knex("owned_phone_number")
+      .select("service_id")
+      .where({
+        organization_id: organization.id,
+        area_code: areaCode,
+        service: "fakeservice",
+        allocated_to: null
+      })
+  ).map(row => row.service_id);
+  const count = numbersToDelete.length;
+  // add some latency
+  await new Promise(resolve => setTimeout(resolve, count * 25));
+  await r
+    .knex("owned_phone_number")
+    .del()
+    .whereIn("service_id", numbersToDelete);
+  return count;
+}
+
 export default {
   sendMessage,
   buyNumbersInAreaCode,
+  deleteNumbersInAreaCode,
   // useless unused stubs
   convertMessagePartsToMessage,
   handleIncomingMessage

@@ -16,10 +16,12 @@ import {
   clearOldJobs,
   importScript,
   buyPhoneNumbers,
+  deletePhoneNumbers,
   startCampaignWithPhoneNumbers
 } from "./jobs";
 import { setupUserNotificationObservers } from "../server/notifications";
 import { loadContactsFromDataWarehouseFragment } from "../extensions/contact-loaders/datawarehouse";
+import { loadContactS3PullProcessFile } from "../extensions/contact-loaders/s3-pull";
 
 export { seedZipCodes } from "../server/seeds/seed-zip-codes";
 
@@ -39,6 +41,7 @@ export const Jobs = Object.freeze({
   ASSIGN_TEXTERS: "assign_texters",
   IMPORT_SCRIPT: "import_script",
   BUY_PHONE_NUMBERS: "buy_phone_numbers",
+  DELETE_PHONE_NUMBERS: "delete_phone_numbers",
   START_CAMPAIGN_WITH_PHONE_NUMBERS: "start_campaign_with_phone_numbers"
 });
 
@@ -47,6 +50,7 @@ const jobMap = Object.freeze({
   [Jobs.ASSIGN_TEXTERS]: assignTexters,
   [Jobs.IMPORT_SCRIPT]: importScript,
   [Jobs.BUY_PHONE_NUMBERS]: buyPhoneNumbers,
+  [Jobs.DELETE_PHONE_NUMBERS]: deletePhoneNumbers,
   [Jobs.START_CAMPAIGN_WITH_PHONE_NUMBERS]: startCampaignWithPhoneNumbers
 });
 
@@ -62,6 +66,9 @@ export const invokeJobFunction = async job => {
 
 export async function processJobs() {
   // DEPRECATED -- switch to job dispatchers. See src/extensions/job-runners/README.md
+  if (JOBS_SAME_PROCESS || process.env.JOB_RUNNER) {
+    return;
+  }
   setupUserNotificationObservers();
   console.log("Running processJobs");
   // eslint-disable-next-line no-constant-condition
@@ -126,6 +133,24 @@ export async function loadContactsFromDataWarehouseFragmentJob(
       event, // double up argument
       event
     );
+    if (eventCallback) {
+      eventCallback(null, rv);
+    }
+  } catch (err) {
+    if (eventCallback) {
+      eventCallback(err, null);
+    }
+  }
+  return "completed";
+}
+
+export async function loadContactS3PullProcessFileJob(
+  event,
+  contextVars,
+  eventCallback
+) {
+  try {
+    const rv = await loadContactS3PullProcessFile(event, contextVars);
     if (eventCallback) {
       eventCallback(null, rv);
     }
@@ -283,7 +308,7 @@ export async function updateOptOuts(event, context, eventCallback) {
   // always updated and depends on this batch job to run
   // We avoid it in-process to avoid db-write thrashing on optouts
   // so they don't appear in queries
-  await cacheableData.optOut.updateIsOptedOuts(query =>
+  const res = await cacheableData.optOut.updateIsOptedOuts(query =>
     query
       .join("opt_out", {
         "opt_out.cell": "campaign_contact.cell",
@@ -299,6 +324,9 @@ export async function updateOptOuts(event, context, eventCallback) {
         )
       )
   );
+  if (res) {
+    console.log("updateOptOuts contacts updated", res);
+  }
 }
 
 export async function runDatabaseMigrations(event, context, eventCallback) {
@@ -348,14 +376,24 @@ const syncProcessMap = {
   updateOptOuts
 };
 
+const envProcessMap = String(process.env.JOB_PROCESS_MAP || "")
+  .replace(/ /g, "")
+  .split(",");
+
 export async function dispatchProcesses(event, context, eventCallback) {
   const toDispatch =
     event.processes || (JOBS_SAME_PROCESS ? syncProcessMap : processMap);
-  await Promise.all(
+
+  const allResults = await Promise.all(
     Object.keys(toDispatch).map(p => {
+      if (envProcessMap && !envProcessMap.includes(p)) {
+        return true;
+      }
+
       const prom = toDispatch[p](event, context).catch(err => {
-        console.error("Process Error", p, err);
+        console.error("dispatchProcesses Process Error", p, err);
       });
+      console.log("dispatchProcesses", p);
       return prom;
     })
   );
