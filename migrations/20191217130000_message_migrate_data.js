@@ -1,4 +1,4 @@
-exports.up = function(knex, Promise) {
+exports.up = function(knex) {
   // NOTE: this could be an expensive migration which locks tables for some time, if you have millions of message rows
   // In that case, we recommend performing this migration manually during planned downtime
   const isPostgres = knex.client.config.client === "pg";
@@ -46,7 +46,7 @@ exports.up = function(knex, Promise) {
   return query;
 };
 
-exports.down = function(knex, Promise) {
+exports.down = function(knex) {
   // it's unnecessary to do a reverse of this action
   // since the previous migration going up/down will drop the columns entirely
 };

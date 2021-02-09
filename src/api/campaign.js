@@ -74,6 +74,18 @@ export const schema = gql`
     count: Int!
   }
 
+  type CampaignContactsAreaCodeCount {
+    areaCode: String!
+    state: String!
+    count: Int!
+  }
+
+  type CampaignExportData {
+    error: String
+    campaignExportUrl: String
+    campaignMessagesExportUrl: String
+  }
+
   type Campaign {
     id: ID
     organization: Organization
@@ -93,6 +105,7 @@ export const schema = gql`
     interactionSteps: [InteractionStep]
     contacts: [CampaignContact]
     contactsCount: Int
+    contactsAreaCodeCounts: [CampaignContactsAreaCodeCount]
     hasUnassignedContacts: Boolean
     hasUnassignedContactsForTexter: Boolean
     hasUnsentInitialMessages: Boolean
@@ -102,6 +115,7 @@ export const schema = gql`
     stats: CampaignStats
     completionStats: CampaignCompletionStats
     pendingJobs: [JobRequest]
+    exportResults: CampaignExportData
     ingestMethodsAvailable: [IngestMethod]
     ingestMethod: IngestMethod
     useDynamicAssignment: Boolean

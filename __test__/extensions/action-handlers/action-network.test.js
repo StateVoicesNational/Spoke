@@ -1,6 +1,6 @@
 import nock from "nock";
 import moment from "moment";
-const ActionNetwork = require("../../../src/integrations/action-handlers/action-network");
+const ActionNetwork = require("../../../src/extensions/action-handlers/action-network");
 
 expect.extend({
   stringifiedObjectEqualObject(receivedString, expectedObject) {

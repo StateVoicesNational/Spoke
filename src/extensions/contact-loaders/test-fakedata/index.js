@@ -113,6 +113,17 @@ export async function processContactLoad(job, maxContacts, organization) {
     return; // bail early
   }
   const areaCodes = ["213", "323", "212", "718", "646", "661"];
+  // FUTURE -- maybe based on campaign default use 'surrounding' offsets
+  const timezones = [
+    "-12_1",
+    "-11_0",
+    "-5_1",
+    "-4_1",
+    "0_0",
+    "5_0",
+    "10_0",
+    ""
+  ];
   const contactCount = Math.min(
     contactData.requestContactCount || 0,
     maxContacts ? maxContacts : areaCodes.length * 100,
@@ -136,6 +147,8 @@ export async function processContactLoad(job, maxContacts, organization) {
       cell: `+1${ac}555${suffix}`,
       zip: "10011",
       custom_fields: genCustomFields(i, campaignId),
+      timezone_offset:
+        timezones[parseInt(Math.random() * timezones.length, 10)],
       message_status: "needsMessage",
       campaign_id: campaignId
     });

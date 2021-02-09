@@ -26,6 +26,7 @@ const styles = StyleSheet.create({
   settings: {
     display: "flex",
     flexDirection: "row",
+    flexWrap: "wrap",
     padding: "20px"
   }
 });
@@ -151,21 +152,23 @@ export class AdminCampaignList extends React.Component {
   renderSearch = () => {
     return (
       !this.state.archiveMultiple && (
-        <Search
-          onSearchRequested={this.handleSearchRequested}
-          searchString={this.state.campaignsFilter.searchString}
-          onCancelSearch={this.handleCancelSearch}
-          hintText="Search for campaign title. Hit enter to search."
-          style={{ width: "50%" }}
-        />
+        <div style={{ width: "100%" }}>
+          <Search
+            onSearchRequested={this.handleSearchRequested}
+            searchString={this.state.campaignsFilter.searchString}
+            onCancelSearch={this.handleCancelSearch}
+          />
+        </div>
       )
     );
   };
 
   renderFilters = () => (
     <Paper className={css(styles.settings)} zDepth={3}>
-      {this.props.params.adminPerms && this.renderArchiveMultiple()}
-      {this.renderArchivedAndSortBy()}
+      <div style={{ display: "flex", alignItems: "center", width: "100%" }}>
+        {this.props.params.adminPerms && this.renderArchiveMultiple()}
+        {this.renderArchivedAndSortBy()}
+      </div>
       {this.renderSearch()}
     </Paper>
   );
@@ -369,6 +372,9 @@ const campaignInfoFragment = `
   description
   timezone
   dueBy
+  organization {
+    id
+  }
   creator {
     displayName
   }
