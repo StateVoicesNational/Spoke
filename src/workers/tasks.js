@@ -9,6 +9,7 @@ export const Tasks = Object.freeze({
   SEND_MESSAGE: "send_message",
   ACTION_HANDLER_QUESTION_RESPONSE: "action_handler:question_response",
   ACTION_HANDLER_TAG_UPDATE: "action_handler:tag_update",
+  ACTION_HANDLER_CANNED_RESPONSE: "action_handler:canned_response",
   CAMPAIGN_START_CACHE: "campaign_start_cache"
 });
 
@@ -77,6 +78,25 @@ const tagUpdateActionHandler = async ({
   await handler.onTagUpdate(tags, contact, campaign, organization, texter);
 };
 
+const cannedResponseActionHandler = async ({
+  cannedResponse,
+  organization,
+  campaign,
+  contact
+}) => {
+  const handler = await ActionHandlers.rawActionHandler(
+    cannedResponse.answer_actions
+  );
+
+  return handler.processAction({
+    answerActionObject: cannedResponse,
+    campaignContactId: contact.id,
+    contact,
+    campaign,
+    organization
+  });
+};
+
 const startCampaignCache = async ({ campaign, organization }, contextVars) => {
   // Refresh all the campaign data into cache
   // This should refresh/clear any corruption
@@ -104,6 +124,7 @@ const taskMap = Object.freeze({
   [Tasks.SEND_MESSAGE]: sendMessage,
   [Tasks.ACTION_HANDLER_QUESTION_RESPONSE]: questionResponseActionHandler,
   [Tasks.ACTION_HANDLER_TAG_UPDATE]: tagUpdateActionHandler,
+  [Tasks.ACTION_HANDLER_CANNED_RESPONSE]: cannedResponseActionHandler,
   [Tasks.CAMPAIGN_START_CACHE]: startCampaignCache
 });
 
