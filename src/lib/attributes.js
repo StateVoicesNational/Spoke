@@ -1,4 +1,4 @@
-// Used to generate data-test attributes on non-production environments and used by end-to-end tests
+// Used to generate data-test attributes on non-production environments and used by integration tests
 export const dataTest = (value, disable) => {
   return !disable ? { "data-test": value } : {};
 };

@@ -1,7 +1,6 @@
 import auth0 from "auth0-js";
 
-const baseURL =
-  window.BASE_URL || `${window.location.protocol}//${window.location.host}`;
+const baseURL = `${window.location.protocol}//${window.location.host}`;
 
 const loginStrategies = {
   auth0: {

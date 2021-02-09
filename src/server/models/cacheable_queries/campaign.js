@@ -27,6 +27,8 @@ import organizationCache from "./organization";
 const cacheKey = id => `${process.env.CACHE_PREFIX || ""}campaign-${id}`;
 const infoCacheKey = id =>
   `${process.env.CACHE_PREFIX || ""}campaigninfo-${id}`;
+const exportCampaignCacheKey = id =>
+  `${process.env.CACHE_PREFIX || ""}campaignexport-${id}`;
 
 const CONTACT_CACHE_ENABLED =
   process.env.REDIS_CONTACT_CACHE || global.REDIS_CONTACT_CACHE;
@@ -98,6 +100,12 @@ const loadDeep = async id => {
       campaign.interactionSteps,
       "script"
     );
+    if (process.env.MOBILIZE_EVENT_SHIFTER_URL) {
+      campaign.usedFields.cell = 1;
+      campaign.usedFields.email = 1;
+      campaign.usedFields.zip = 1;
+      campaign.usedFields.event_id = 1;
+    }
     campaign.contactTimezones = await dbContactTimezones(id);
     campaign.contactsCount = await r.getCount(
       r.knex("campaign_contact").where("campaign_id", id)
@@ -232,6 +240,26 @@ const campaignCache = {
       return data || {};
     }
     return {};
+  },
+  saveExportData: async (id, data) => {
+    if (r.redis) {
+      const exportCacheKey = exportCampaignCacheKey(id);
+      await r.redis
+        .multi()
+        .set(exportCacheKey, JSON.stringify(data))
+        .expire(exportCacheKey, 43200)
+        .execAsync();
+    }
+  },
+  getExportData: async id => {
+    if (r.redis) {
+      const exportCacheKey = exportCampaignCacheKey(id);
+      const data = await r.redis.getAsync(exportCacheKey);
+      if (data) {
+        return JSON.parse(data);
+      }
+    }
+    return null;
   },
   updateAssignedCount: async id => {
     if (r.redis) {

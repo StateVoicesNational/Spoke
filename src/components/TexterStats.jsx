@@ -33,9 +33,15 @@ class TexterStats extends React.Component {
     const bottomLinks = [
       <Link
         key={id}
+        to={`/app/${this.props.organizationId}/todos/${id}/allreplies?review=1`}
+      >
+        Sweep conversations
+      </Link>,
+      <Link
+        key={id}
         to={`/admin/${this.props.organizationId}/incoming?campaigns=${campaign.id}&texterId=${texter.id}`}
       >
-        Review conversations
+        View conversations in Message Review
       </Link>
     ];
 

@@ -63,7 +63,7 @@ export const resolvers = {
         const fullCustom = JSON.parse(campaignContact.custom_fields);
         const filteredCustom = {};
         Object.keys(campaignContact.usedFields).forEach(f => {
-          if (!coreFields[f]) {
+          if (!coreFields[f] && fullCustom.hasOwnProperty(f)) {
             filteredCustom[f] = fullCustom[f];
           }
         });

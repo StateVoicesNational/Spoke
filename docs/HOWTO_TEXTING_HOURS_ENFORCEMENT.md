@@ -22,7 +22,7 @@ Spoke will not send texts to contacts before the start time or after the end tim
 
 If the `TZ` environment variable is set, Spoke will assume that all contacts are located in the time zone specified by the variable.  The current time in that time zone -- with Daylight Savings applied if it is summer in that area and the time zone has Daylight Savings Time -- is considered the current time for purposes of deciding whether it is OK to send texts.
 
-The timezone in New York City is specified by the string `America/New_York`. Other time zone names are listed [here.](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones)
+The timezone in New York City is specified by the string `US/Eastern`. Other time zone names are listed [here.](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones)
 
 ## Contact ZIP code
 

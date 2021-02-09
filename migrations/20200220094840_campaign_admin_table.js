@@ -1,4 +1,4 @@
-exports.up = async function up(knex, Promise) {
+exports.up = async function up(knex) {
   if (!(await knex.schema.hasTable("campaign_admin"))) {
     return knex.schema.createTable("campaign_admin", t => {
       t.increments("id");
@@ -24,6 +24,6 @@ exports.up = async function up(knex, Promise) {
   return Promise.resolve();
 };
 
-exports.down = function down(knex, Promise) {
+exports.down = function down(knex) {
   return knex.schema.dropTableIfExists("campaign_admin");
 };
