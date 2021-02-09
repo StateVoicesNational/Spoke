@@ -722,7 +722,7 @@ describe("mutations.updateQuestionResponses", () => {
           expect.arrayContaining([
             [
               {
-                answerActionObject: expect.objectWithId(
+                answerActionsObject: expect.objectWithId(
                   colorInteractionSteps[0]
                 ),
                 campaignContactId: Number(contacts[0].id),
@@ -734,7 +734,7 @@ describe("mutations.updateQuestionResponses", () => {
             ],
             [
               {
-                answerActionObject: expect.objectWithId(
+                answerActionsObject: expect.objectWithId(
                   shadesOfRedInteractionSteps[0]
                 ),
                 campaignContactId: Number(contacts[0].id),
@@ -795,7 +795,7 @@ describe("mutations.updateQuestionResponses", () => {
           expect(ComplexTestActionHandler.processAction).toHaveBeenCalled();
 
           expect(
-            ComplexTestActionHandler.processAction.mock.calls[0][0].answerActionObject.id.toString()
+            ComplexTestActionHandler.processAction.mock.calls[0][0].answerActionsObject.id.toString()
           ).toEqual(shadesOfRedInteractionSteps[0].id);
 
           expect(
@@ -891,7 +891,7 @@ describe("mutations.updateQuestionResponses", () => {
               expect.arrayContaining([
                 [
                   expect.objectContaining({
-                    answerActionObject: expect.objectWithId(
+                    answerActionsObject: expect.objectWithId(
                       colorInteractionSteps[2]
                     ),
                     campaignContactId: Number(contacts[0].id),
@@ -1021,7 +1021,7 @@ describe("mutations.updateQuestionResponses", () => {
           expect(ComplexTestActionHandler.processAction.mock.calls).toEqual([
             [
               {
-                answerActionObject: expect.objectWithId(
+                answerActionsObject: expect.objectWithId(
                   shadesOfRedInteractionSteps[0]
                 ),
                 campaignContactId: Number(contacts[0].id),
@@ -1070,7 +1070,7 @@ describe("mutations.updateQuestionResponses", () => {
             expect.arrayContaining([
               [
                 {
-                  answerActionObject: expect.objectWithId(
+                  answerActionsObject: expect.objectWithId(
                     colorInteractionSteps[0]
                   ),
                   campaignContactId: Number(contacts[0].id),
@@ -1082,7 +1082,7 @@ describe("mutations.updateQuestionResponses", () => {
               ],
               [
                 {
-                  answerActionObject: expect.objectWithId(
+                  answerActionsObject: expect.objectWithId(
                     shadesOfRedInteractionSteps[0]
                   ),
                   campaignContactId: Number(contacts[0].id),

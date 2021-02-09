@@ -138,8 +138,7 @@ export default class CannedResponseForm extends React.Component {
                   <div style={{ color: theme.colors.gray }}>{instructions}</div>
                 ) : null}
               </div>
-              {answerActions.clientChoiceData &&
-              answerActions.clientChoiceData.length ? (
+              {clientChoiceData && clientChoiceData.length ? (
                 <div>
                   <Form.Field
                     {...dataTest("actionDataAutoComplete")}
@@ -148,7 +147,7 @@ export default class CannedResponseForm extends React.Component {
                     fullWidth
                     name="answerActionsData"
                     type="autocomplete"
-                    choices={answerActions.clientChoiceData.map(item => ({
+                    choices={clientChoiceData.map(item => ({
                       value: item.details,
                       label: item.name
                     }))}

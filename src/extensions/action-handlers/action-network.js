@@ -79,7 +79,7 @@ const handlers = {
 // What happens when a texter saves the answer that triggers the action
 // This is presumably the meat of the action
 export async function processAction({
-  answerActionObject,
+  answerActionsObject,
   contact,
   organization
 }) {
@@ -90,7 +90,7 @@ export async function processAction({
     }
 
     const actionData = JSON.parse(
-      JSON.parse(answerActionObject.answer_actions_data || "{}").value || "{}"
+      JSON.parse(answerActionsObject.answer_actions_data || "{}").value || "{}"
     );
     if (!actionData) {
       throw new Error("Missing action data");
