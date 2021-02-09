@@ -139,6 +139,7 @@ export class CampaignCannedResponsesForm extends React.Component {
   }
 
   listItems(cannedResponses) {
+    const { availableActionsLookup } = this.state;
     const listItems = cannedResponses.map(response => (
       <ListItem
         {...dataTest("cannedResponse")}
@@ -180,21 +181,16 @@ export class CampaignCannedResponsesForm extends React.Component {
       >
         <div className={css(styles.title)}>{response.title}</div>
         <div className={css(styles.text)}>
-          <span>{response.text}</span>
           {response.answerActions ? (
             <span>
-              <br />
-              Action:&nbsp;
-              {
-                this.state.availableActionsLookup[response.answerActions]
-                  .displayName
-              }
+              Action: &nbsp;
+              {availableActionsLookup[response.answerActions].displayName}
               &nbsp;
               {JSON.parse(response.answerActionsData || "{}").label}
+              <br />
             </span>
-          ) : (
-            ""
-          )}
+          ) : null}
+          <span>{response.text}</span>
         </div>
         {response.tagIds && response.tagIds.length > 0 && (
           <TagChips
