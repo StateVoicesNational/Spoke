@@ -932,7 +932,9 @@ const rootMutations = {
               {
                 campaign_id: newCampaignId,
                 title: response.title,
-                text: response.text
+                text: response.text,
+                answer_actions: response.answer_actions,
+                answer_actions_data: response.answer_actions_data
               },
               ["id"]
             )
@@ -1038,7 +1040,9 @@ const rootMutations = {
         campaign_id: cannedResponse.campaignId,
         user_id: cannedResponse.userId,
         title: cannedResponse.title,
-        text: cannedResponse.text
+        text: cannedResponse.text,
+        answer_actions: cannedResponse.answerActions,
+        answer_actions_data: cannedResponse.answerActionsData
       }).save();
       // deletes duplicate created canned_responses
       let query = r
