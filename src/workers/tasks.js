@@ -42,8 +42,7 @@ const questionResponseActionHandler = async ({
   if (!wasDeleted) {
     // TODO: clean up processAction interface
     return handler.processAction({
-      questionResponse,
-      interactionStep,
+      answerActionObject: interactionStep,
       campaignContactId: contact.id,
       contact,
       campaign,
