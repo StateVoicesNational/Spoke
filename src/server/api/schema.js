@@ -325,9 +325,13 @@ async function editCampaign(id, campaign, loaders, user, origCampaignRecord) {
     for (let index = 0; index < cannedResponses.length; index++) {
       const response = cannedResponses[index];
       convertedResponses.push({
-        ...response,
         campaign_id: id,
-        id: undefined
+        id: undefined,
+        title: response.title,
+        text: response.text,
+        tagIds: response.tagIds,
+        answer_actions: response.answerActions,
+        answer_actions_data: response.answerActionsData
       });
     }
 

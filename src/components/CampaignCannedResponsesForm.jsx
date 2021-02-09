@@ -55,14 +55,13 @@ export class CampaignCannedResponsesForm extends React.Component {
       showForm: false,
       formButtonText: "",
       responseId: null,
-      availableActionsLookup: props.availableActions.reduce(
-        (lookup, action) => {
+      availableActionsLookup:
+        props.availableActions &&
+        props.availableActions.reduce((lookup, action) => {
           const toReturn = { ...lookup };
           toReturn[action.name] = action;
           return toReturn;
-        },
-        {}
-      )
+        }, {})
     };
   }
 

@@ -36,27 +36,28 @@ export default class CannedResponseForm extends React.Component {
         typeof this.props.defaultValue.answerActionsData === "string"
           ? JSON.parse(this.props.defaultValue.answerActionsData)
           : this.props.defaultValue.answerActionsData,
-      availableActionsLookup: props.availableActions.reduce(
-        (lookup, action) => {
+      availableActionsLookup:
+        props.availableActions &&
+        props.availableActions.reduce((lookup, action) => {
           const toReturn = { ...lookup };
           toReturn[action.name] = action;
           return toReturn;
-        },
-        {}
-      )
+        }, {})
     };
   }
   handleSave = () => {
-    const { onSaveCannedResponse } = this.props;
-
-    onSaveCannedResponse({
+    const toSave = {
       ...this.state,
       answerActionsData:
         this.state.answerActionsData &&
         typeof this.state.answerActionsData !== "string"
           ? JSON.stringify(this.state.answerActionsData)
           : this.state.answerActionsData
-    });
+    };
+
+    delete toSave.availableActionsLookup;
+
+    this.props.onSaveCannedResponse(toSave);
   };
 
   render() {
