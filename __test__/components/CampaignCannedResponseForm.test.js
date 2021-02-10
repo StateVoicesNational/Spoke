@@ -15,7 +15,12 @@ describe("CampaignCannedResponseForm component", () => {
       id: 1,
       title: "Response1",
       text: "Response1 desc",
-      tagIds: [1, 2]
+      tagIds: [1, 2],
+      answerActions: "fake-action",
+      answerActionsData: JSON.stringify({
+        label: "Test Property",
+        value: { property: "test" }
+      })
     },
     tags: [
       {
@@ -27,6 +32,17 @@ describe("CampaignCannedResponseForm component", () => {
         id: 2,
         name: "Tag2",
         description: "Tag2Desc"
+      }
+    ],
+    availableActions: [
+      {
+        name: "fake-action",
+        clientChoiceData: [
+          {
+            name: "Test Property",
+            details: { property: "test" }
+          }
+        ]
       }
     ]
   };
@@ -81,6 +97,18 @@ describe("CampaignCannedResponseForm component", () => {
         description: "Tag2Desc"
       }
     ]);
+    expect(
+      wrapper
+        .find({ "data-test": "actionSelect" })
+        .last()
+        .props().value
+    ).toBe(props1.defaultValue.answerActions);
+    expect(
+      wrapper
+        .find({ "data-test": "actionDataAutoComplete" })
+        .last()
+        .props().value
+    ).toEqual(JSON.parse(props1.defaultValue.answerActionsData));
   });
 
   test("Renders form with correct fields and label for adding", () => {
