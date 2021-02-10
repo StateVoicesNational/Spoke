@@ -184,8 +184,7 @@ export class CampaignCannedResponsesForm extends React.Component {
             <span>
               Action: &nbsp;
               {availableActionsLookup[response.answerActions].displayName}
-              &nbsp;
-              {JSON.parse(response.answerActionsData || "{}").label}
+              &nbsp;{JSON.parse(response.answerActionsData || "{}").label}
               <br />
             </span>
           ) : null}

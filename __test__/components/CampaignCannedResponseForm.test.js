@@ -38,10 +38,7 @@ describe("CampaignCannedResponseForm component", () => {
       {
         name: "fake-action",
         clientChoiceData: [
-          {
-            name: "Test Property",
-            details: { property: "test" }
-          }
+          { name: "Test Property", details: { property: "test" } }
         ]
       }
     ]

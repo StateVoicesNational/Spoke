@@ -9,51 +9,47 @@ import { StyleSheetTestUtils } from "aphrodite";
 
 describe("CampaignCannedResponsesForm component", () => {
   // given
-  const formValues = {
-    cannedResponses: [
+  const props = {
+    formValues: {
+      cannedResponses: [
+        {
+          id: 1,
+          title: "Response1",
+          text: "Response1 desc",
+          tagIds: [1, 2],
+          answerActions: "fake-action",
+          answerActionsData: JSON.stringify({ label: "Test Property" })
+        }
+      ]
+    },
+    data: {
+      organization: {
+        tags: [
+          {
+            id: 1,
+            name: "Tag1",
+            description: "Tag1Desc"
+          },
+          {
+            id: 2,
+            name: "Tag2",
+            description: "Tag2Desc"
+          }
+        ]
+      }
+    },
+    availableActions: [
       {
-        id: 1,
-        title: "Response1",
-        text: "Response1 desc",
-        tagIds: [1, 2],
-        answerActions: "fake-action",
-        answerActionsData: JSON.stringify({ label: "Test Property" })
+        name: "fake-action",
+        displayName: "Fake Action"
       }
     ]
   };
 
-  const data = {
-    organization: {
-      tags: [
-        {
-          id: 1,
-          name: "Tag1",
-          description: "Tag1Desc"
-        },
-        {
-          id: 2,
-          name: "Tag2",
-          description: "Tag2Desc"
-        }
-      ]
-    }
-  };
-
-  const availableActions = [
-    {
-      name: "fake-action",
-      displayName: "Fake Action"
-    }
-  ];
-
   StyleSheetTestUtils.suppressStyleInjection();
   const wrapper = mount(
     <MuiThemeProvider>
-      <CampaignCannedResponsesForm
-        formValues={formValues}
-        data={data}
-        availableActions={availableActions}
-      />
+      <CampaignCannedResponsesForm {...props} />
     </MuiThemeProvider>
   );
 
