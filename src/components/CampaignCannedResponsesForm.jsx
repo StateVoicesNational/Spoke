@@ -51,6 +51,7 @@ const styles = StyleSheet.create({
 export class CampaignCannedResponsesForm extends React.Component {
   constructor(props) {
     super(props);
+
     this.state = {
       showForm: false,
       formButtonText: "",
