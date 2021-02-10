@@ -56,7 +56,6 @@ export default class CannedResponseForm extends React.Component {
     };
 
     delete toSave.availableActionsLookup;
-
     this.props.onSaveCannedResponse(toSave);
   };
 
@@ -207,7 +206,9 @@ export default class CannedResponseForm extends React.Component {
                   ? theme.colors.gray
                   : "white"
               }}
-              style={{ display: "inline-block" }}
+              style={{
+                display: "inline-block"
+              }}
               disabled={needRequiredAnswerActionsData}
               onClick={() => {
                 this.refs.form.submit();

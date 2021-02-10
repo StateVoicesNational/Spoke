@@ -42,7 +42,7 @@ export async function available(organizationId) {
 // What happens when a texter saves the answer that triggers the action
 // This is presumably the meat of the action
 export async function processAction({
-  answerActionsObject,
+  actionObject,
   campaignContactId,
   contact
 }) {
@@ -51,12 +51,8 @@ export async function processAction({
   // might want the request library loaded above
   const customFields = JSON.parse(contact.custom_fields || "{}");
   if (customFields) {
-    customFields.processed_test_action = (
-      answerActionsObject || {}
-    ).answer_actions;
-    customFields.test_action_details = (
-      answerActionsObject || {}
-    ).answer_actions_data;
+    customFields.processed_test_action = (actionObject || {}).answer_actions;
+    customFields.test_action_details = (actionObject || {}).answer_actions_data;
   }
 
   await r

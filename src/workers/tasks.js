@@ -43,7 +43,7 @@ const questionResponseActionHandler = async ({
   if (!wasDeleted) {
     // TODO: clean up processAction interface
     return handler.processAction({
-      answerActionsObject: interactionStep,
+      actionObject: interactionStep,
       campaignContactId: contact.id,
       contact,
       campaign,
@@ -89,7 +89,7 @@ const cannedResponseActionHandler = async ({
   );
 
   return handler.processAction({
-    answerActionsObject: cannedResponse,
+    actionObject: cannedResponse,
     campaignContactId: contact.id,
     contact,
     campaign,

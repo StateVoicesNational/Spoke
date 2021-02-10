@@ -722,9 +722,7 @@ describe("mutations.updateQuestionResponses", () => {
           expect.arrayContaining([
             [
               {
-                answerActionsObject: expect.objectWithId(
-                  colorInteractionSteps[0]
-                ),
+                actionObject: expect.objectWithId(colorInteractionSteps[0]),
                 campaignContactId: Number(contacts[0].id),
                 contact: expect.objectWithId(contacts[0]),
                 campaign: expect.objectWithId(campaign),
@@ -734,7 +732,7 @@ describe("mutations.updateQuestionResponses", () => {
             ],
             [
               {
-                answerActionsObject: expect.objectWithId(
+                actionObject: expect.objectWithId(
                   shadesOfRedInteractionSteps[0]
                 ),
                 campaignContactId: Number(contacts[0].id),
@@ -795,7 +793,7 @@ describe("mutations.updateQuestionResponses", () => {
           expect(ComplexTestActionHandler.processAction).toHaveBeenCalled();
 
           expect(
-            ComplexTestActionHandler.processAction.mock.calls[0][0].answerActionsObject.id.toString()
+            ComplexTestActionHandler.processAction.mock.calls[0][0].actionObject.id.toString()
           ).toEqual(shadesOfRedInteractionSteps[0].id);
 
           expect(
@@ -891,9 +889,7 @@ describe("mutations.updateQuestionResponses", () => {
               expect.arrayContaining([
                 [
                   expect.objectContaining({
-                    answerActionsObject: expect.objectWithId(
-                      colorInteractionSteps[2]
-                    ),
+                    actionObject: expect.objectWithId(colorInteractionSteps[2]),
                     campaignContactId: Number(contacts[0].id),
                     contact: expect.objectWithId(contacts[0]),
                     campaign: expect.objectWithId(campaign),
@@ -1021,7 +1017,7 @@ describe("mutations.updateQuestionResponses", () => {
           expect(ComplexTestActionHandler.processAction.mock.calls).toEqual([
             [
               {
-                answerActionsObject: expect.objectWithId(
+                actionObject: expect.objectWithId(
                   shadesOfRedInteractionSteps[0]
                 ),
                 campaignContactId: Number(contacts[0].id),
@@ -1070,9 +1066,7 @@ describe("mutations.updateQuestionResponses", () => {
             expect.arrayContaining([
               [
                 {
-                  answerActionsObject: expect.objectWithId(
-                    colorInteractionSteps[0]
-                  ),
+                  actionObject: expect.objectWithId(colorInteractionSteps[0]),
                   campaignContactId: Number(contacts[0].id),
                   contact: expect.objectWithId(contacts[0]),
                   campaign: expect.objectWithId(campaign),
@@ -1082,7 +1076,7 @@ describe("mutations.updateQuestionResponses", () => {
               ],
               [
                 {
-                  answerActionsObject: expect.objectWithId(
+                  actionObject: expect.objectWithId(
                     shadesOfRedInteractionSteps[0]
                   ),
                   campaignContactId: Number(contacts[0].id),

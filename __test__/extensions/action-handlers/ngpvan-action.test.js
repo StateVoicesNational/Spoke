@@ -994,7 +994,7 @@ describe("ngpvn-action", () => {
       postPeopleCanvassResponsesNock = makePostPeopleCanvassResponsesNock();
 
       await NgpVanAction.processAction({
-        answerActionsObject: interactionStep,
+        actionObject: interactionStep,
         contact,
         organization,
         previousValue: null
@@ -1012,7 +1012,7 @@ describe("ngpvn-action", () => {
         let error;
         try {
           await NgpVanAction.processAction({
-            answerActionsObject: interactionStep,
+            actionObject: interactionStep,
             contact,
             organization,
             previousValue: null
@@ -1059,7 +1059,7 @@ describe("ngpvn-action", () => {
         let error;
         try {
           await NgpVanAction.processAction({
-            answerActionsObject: interactionStep,
+            actionObject: interactionStep,
             unusedCampaignContactId,
             contact,
             unusedCampaign,
