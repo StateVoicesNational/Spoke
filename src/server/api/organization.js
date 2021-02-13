@@ -229,7 +229,7 @@ export const resolvers = {
       };
     },
     cacheable: (org, _, { user }) =>
-      //quanery logic.  levels are 0, 1, 2
+      // quanery logic.  levels are 0, 1, 2
       r.redis ? (getConfig("REDIS_CONTACT_CACHE", org) ? 2 : 1) : 0,
     twilioAccountSid: async (organization, _, { user }) => {
       try {

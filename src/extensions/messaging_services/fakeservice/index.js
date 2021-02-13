@@ -1,10 +1,10 @@
-import { getLastMessage } from "./message-sending";
+import { getLastMessage } from "../message-sending";
 import {
   Message,
   PendingMessagePart,
   r,
   cacheableData
-} from "../../server/models";
+} from "../../../server/models";
 import uuid from "uuid";
 
 // This 'fakeservice' allows for fake-sending messages

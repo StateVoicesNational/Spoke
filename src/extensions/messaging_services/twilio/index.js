@@ -2,18 +2,18 @@
 import _ from "lodash";
 import Twilio, { twiml } from "twilio";
 import urlJoin from "url-join";
-import { log } from "../../lib";
-import { getFormattedPhoneNumber } from "../../lib/phone-format";
-import { getConfig } from "../../server/api/lib/config";
+import { log } from "../../../lib";
+import { getFormattedPhoneNumber } from "../../../lib/phone-format";
+import { getConfig } from "../../../server/api/lib/config";
 import {
   cacheableData,
   Log,
   Message,
   PendingMessagePart,
   r
-} from "../../server/models";
-import wrap from "../../server/wrap";
-import { saveNewIncomingMessage } from "./message-sending";
+} from "../../../server/models";
+import wrap from "../../../server/wrap";
+import { saveNewIncomingMessage } from "../message-sending";
 
 // TWILIO error_codes:
 // > 1 (i.e. positive) error_codes are reserved for Twilio error codes

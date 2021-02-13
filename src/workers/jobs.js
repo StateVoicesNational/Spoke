@@ -10,7 +10,7 @@ import {
 import telemetry from "../server/telemetry";
 import { log, gunzip, zipToTimeZone, convertOffsetsToStrings } from "../lib";
 import { sleep, updateJob } from "./lib";
-import serviceMap from "../extensions/messaging_services/services";
+import serviceMap from "../extensions/messaging_services";
 import twilio from "../extensions/messaging_services/twilio";
 import {
   getLastMessage,
