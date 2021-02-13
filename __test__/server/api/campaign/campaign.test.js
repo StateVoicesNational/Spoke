@@ -13,7 +13,7 @@ import { dataQuery as TexterTodoListQuery } from "../../../../src/containers/Tex
 import * as twilio from "../../../../src/extensions/messaging_services/twilio";
 import { makeTree } from "../../../../src/lib";
 import { getConfig } from "../../../../src/server/api/lib/config";
-import { r } from "../../../../src/server/models";
+import { cacheableData, r } from "../../../../src/server/models";
 import {
   assignTexter,
   bulkSendMessages,
@@ -27,6 +27,7 @@ import {
   createScript,
   createTexter,
   createUser,
+  ensureOrganizationMessagingService,
   getCampaignContact,
   runGql,
   saveCampaign,
@@ -35,8 +36,6 @@ import {
   sleep,
   startCampaign
 } from "../../../test_helpers";
-
-jest.mock("../../../../src/extensions/messaging_services/twilio");
 
 let testAdminUser;
 let testInvite;
@@ -92,6 +91,7 @@ afterEach(async () => {
   queryLog = null;
   r.knex.removeListener("query", spokeDbListener);
   await cleanupTest();
+  jest.restoreAllMocks();
   if (r.redis) r.redis.flushdb();
 }, global.DATABASE_SETUP_TEARDOWN_TIMEOUT);
 
@@ -1213,6 +1213,10 @@ describe("all interaction steps fields travel round trip", () => {
 });
 
 describe("useOwnMessagingService", async () => {
+  beforeEach(async () => {
+    await ensureOrganizationMessagingService(testOrganization, testCampaign);
+  });
+
   it("uses default messaging service when false", async () => {
     await startCampaign(testAdminUser, testCampaign);
 

@@ -1,5 +1,6 @@
 import _ from "lodash";
 import {
+  cacheableData,
   createLoaders,
   createTables,
   dropTables,
@@ -185,6 +186,32 @@ export async function createOrganization(user, invite) {
   }
   return result;
 }
+
+export const ensureOrganizationMessagingService = async (
+  testOrganization,
+  testCampaign
+) => {
+  const organization = testOrganization.data.createOrganization;
+  const existingFeatures = organization.features || {};
+  const features = {
+    ...existingFeatures,
+    TWILIO_MESSAGE_SERVICE_SID: global.TWILIO_MESSAGE_SERVICE_SID,
+    service: "twilio"
+  };
+
+  await r
+    .knex("organization")
+    .where({ id: organization.id })
+    .update({ features: JSON.stringify(features) });
+  organization.feature = features;
+  cacheableData.organization.clear(organization.id);
+
+  await r
+    .knex("campaign")
+    .where({ id: testCampaign.id })
+    .update({ organization_id: organization.id });
+  cacheableData.campaign.clear(testCampaign.id);
+};
 
 export async function setTwilioAuth(user, organization) {
   const rootValue = {};

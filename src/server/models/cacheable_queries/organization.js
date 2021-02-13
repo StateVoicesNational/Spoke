@@ -1,8 +1,22 @@
 import { r } from "../../models";
 import { getConfig, hasConfig } from "../../api/lib/config";
 import { symmetricDecrypt } from "../../api/lib/crypto";
+import serviceMap from "../../../extensions/messaging_services/service_map";
 
 const cacheKey = orgId => `${process.env.CACHE_PREFIX || ""}org-${orgId}`;
+
+const getMessageServiceFromCache = organization =>
+  getConfig("service", organization) || getConfig("DEFAULT_SERVICE");
+
+const tryGetFunctionFromOrganizationMessageService = (
+  organization,
+  functionName
+) => {
+  const messageServiceName = getMessageServiceFromCache(organization);
+  const messageService = serviceMap[messageServiceName];
+  const fn = messageService[functionName];
+  return fn && typeof fn === "function" ? fn : null;
+};
 
 const organizationCache = {
   clear: async id => {
@@ -10,12 +24,23 @@ const organizationCache = {
       await r.redis.delAsync(cacheKey(id));
     }
   },
+  getMessageService: getMessageServiceFromCache,
+  getMessageServiceConfig: async organization => {
+    const getConfigFromCache = tryGetFunctionFromOrganizationMessageService(
+      organization,
+      "getConfigFromCache"
+    );
+    return getConfigFromCache && (await getConfigFromCache(organization));
+  },
   getMessageServiceSid: async (organization, contact, messageText) => {
-    // Note organization won't always be available, so we'll need to conditionally look it up based on contact
-    if (messageText && /twilioapitest/.test(messageText)) {
-      return "fakeSid_MK123";
-    }
-    return getConfig("TWILIO_MESSAGE_SERVICE_SID", organization);
+    const getMessageServiceSidFromCache = tryGetFunctionFromOrganizationMessageService(
+      organization,
+      "getMessageServiceSidFromCache"
+    );
+    return (
+      getMessageServiceSidFromCache &&
+      (await getMessageServiceSidFromCache(organization, contact, messageText))
+    );
   },
   getTwilioAuth: async organization => {
     const hasOrgToken = hasConfig("TWILIO_AUTH_TOKEN_ENCRYPTED", organization);
