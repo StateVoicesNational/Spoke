@@ -14,6 +14,7 @@ import {
   createScript,
   createTexter,
   createUser,
+  ensureOrganizationMessagingService,
   getCampaignContact,
   setTwilioAuth,
   setupTest,
@@ -99,6 +100,7 @@ describe("twilio", () => {
     testOrganization2 = await createOrganization(testAdminUser, testInvite2);
     organizationId2 = testOrganization2.data.createOrganization.id;
     await setTwilioAuth(testAdminUser, testOrganization2);
+    await ensureOrganizationMessagingService(testOrganization, testCampaign);
 
     // use caching
     await cacheableData.organization.load(organizationId);

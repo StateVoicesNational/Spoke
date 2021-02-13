@@ -4,7 +4,7 @@ import Twilio, { twiml } from "twilio";
 import urlJoin from "url-join";
 import { log } from "../../../lib";
 import { getFormattedPhoneNumber } from "../../../lib/phone-format";
-import { getConfig } from "../../../server/api/lib/config";
+import { getConfig, hasConfig } from "../../../server/api/lib/config";
 import {
   cacheableData,
   Log,
@@ -14,6 +14,7 @@ import {
 } from "../../../server/models";
 import wrap from "../../../server/wrap";
 import { saveNewIncomingMessage } from "../message-sending";
+import { symmetricDecrypt } from "../../../server/api/lib/crypto";
 
 // TWILIO error_codes:
 // > 1 (i.e. positive) error_codes are reserved for Twilio error codes
@@ -816,6 +817,38 @@ async function clearMessagingServicePhones(organization, messagingServiceSid) {
   }
 }
 
+export const getConfigFromCache = async organization => {
+  const hasOrgToken = hasConfig("TWILIO_AUTH_TOKEN_ENCRYPTED", organization);
+  // Note, allows unencrypted auth tokens to be (manually) stored in the db
+  // @todo: decide if this is necessary, or if UI/envars is sufficient.
+  const authToken = hasOrgToken
+    ? symmetricDecrypt(getConfig("TWILIO_AUTH_TOKEN_ENCRYPTED", organization))
+    : getConfig("TWILIO_AUTH_TOKEN", organization);
+  const accountSid = hasConfig("TWILIO_ACCOUNT_SID", organization)
+    ? getConfig("TWILIO_ACCOUNT_SID", organization)
+    : // Check old TWILIO_API_KEY variable for backwards compatibility.
+      getConfig("TWILIO_API_KEY", organization);
+
+  const messageServiceSid = getConfig(
+    "TWILIO_MESSAGE_SERVICE_SID",
+    organization
+  );
+
+  return { authToken, accountSid, messageServiceSid };
+};
+
+export const getMessageServiceSidFromCache = async (
+  organization,
+  contact,
+  messageText
+) => {
+  // Note organization won't always be available, so we'll need to conditionally look it up based on contact
+  if (messageText && /twilioapitest/.test(messageText)) {
+    return "fakeSid_MK123";
+  }
+  return getConfig("TWILIO_MESSAGE_SERVICE_SID", organization);
+};
+
 export default {
   syncMessagePartProcessing: !!process.env.JOBS_SAME_PROCESS,
   addServerEndpoints,
@@ -832,5 +865,7 @@ export default {
   addNumbersToMessagingService,
   deleteMessagingService,
   clearMessagingServicePhones,
-  getTwilio
+  getTwilio,
+  getConfigFromCache,
+  getMessageServiceSidFromCache
 };
