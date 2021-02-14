@@ -187,9 +187,9 @@ export async function createOrganization(user, invite) {
   return result;
 }
 
-export const ensureOrganizationMessagingService = async (
+export const ensureOrganizationTwilioWithMessagingService = async (
   testOrganization,
-  testCampaign
+  testCampaign = null
 ) => {
   const organization = testOrganization.data.createOrganization;
   const existingFeatures = organization.features || {};
@@ -204,13 +204,15 @@ export const ensureOrganizationMessagingService = async (
     .where({ id: organization.id })
     .update({ features: JSON.stringify(features) });
   organization.feature = features;
-  cacheableData.organization.clear(organization.id);
+  await cacheableData.organization.clear(organization.id);
 
-  await r
-    .knex("campaign")
-    .where({ id: testCampaign.id })
-    .update({ organization_id: organization.id });
-  cacheableData.campaign.clear(testCampaign.id);
+  if (testCampaign) {
+    await r
+      .knex("campaign")
+      .where({ id: testCampaign.id })
+      .update({ organization_id: organization.id });
+    await cacheableData.campaign.clear(testCampaign.id);
+  }
 };
 
 export async function setTwilioAuth(user, organization) {

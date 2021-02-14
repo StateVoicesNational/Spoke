@@ -1,7 +1,7 @@
 import { r } from "../../models";
 import { getConfig, hasConfig } from "../../api/lib/config";
 import { symmetricDecrypt } from "../../api/lib/crypto";
-import serviceMap from "../../../extensions/messaging_services/service_map";
+import { tryGetFunctionFromService } from "../../../extensions/messaging_services/service_map";
 
 const cacheKey = orgId => `${process.env.CACHE_PREFIX || ""}org-${orgId}`;
 
@@ -13,9 +13,7 @@ const tryGetFunctionFromOrganizationMessageService = (
   functionName
 ) => {
   const messageServiceName = getMessageServiceFromCache(organization);
-  const messageService = serviceMap[messageServiceName];
-  const fn = messageService[functionName];
-  return fn && typeof fn === "function" ? fn : null;
+  return tryGetFunctionFromService(messageServiceName, functionName);
 };
 
 const organizationCache = {
