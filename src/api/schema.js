@@ -286,6 +286,11 @@ const rootSchema = gql`
       organizationId: String!
       optOutMessage: String!
     ): Organization
+    updateMessageServiceConfig(
+      organizationId: String!
+      messageServiceName: String!
+      config: JSON!
+    ): JSON
     updateTwilioAuth(
       organizationId: String!
       twilioAccountSid: String

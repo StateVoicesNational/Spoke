@@ -4,17 +4,26 @@ import Twilio, { twiml } from "twilio";
 import urlJoin from "url-join";
 import { log } from "../../../lib";
 import { getFormattedPhoneNumber } from "../../../lib/phone-format";
-import { getConfig, hasConfig } from "../../../server/api/lib/config";
+import {
+  getFeatures,
+  getConfig,
+  hasConfig
+} from "../../../server/api/lib/config";
 import {
   cacheableData,
   Log,
   Message,
   PendingMessagePart,
+  Organization,
   r
 } from "../../../server/models";
 import wrap from "../../../server/wrap";
 import { saveNewIncomingMessage } from "../message-sending";
-import { symmetricDecrypt } from "../../../server/api/lib/crypto";
+import {
+  symmetricDecrypt,
+  symmetricEncrypt
+} from "../../../server/api/lib/crypto";
+import organizationCache from "../../../server/models/cacheable_queries/organization";
 
 // TWILIO error_codes:
 // > 1 (i.e. positive) error_codes are reserved for Twilio error codes
@@ -849,6 +858,46 @@ export const getMessageServiceSidFromCache = async (
   return getConfig("TWILIO_MESSAGE_SERVICE_SID", organization);
 };
 
+export const updateConfig = async (organization, config) => {
+  const featuresJSON = getFeatures(organization);
+  const { twilioAccountSid, twilioAuthToken, twilioMessageServiceSid } = config;
+
+  if (!twilioAccountSid || !twilioMessageServiceSid) {
+    throw new Error(
+      "twilioAccountSid and twilioMessageServiceSid are required"
+    );
+  }
+
+  featuresJSON.TWILIO_ACCOUNT_SID = twilioAccountSid.substr(0, 64);
+
+  // TODO(lperson) is twilioAuthToken required?
+  featuresJSON.TWILIO_AUTH_TOKEN_ENCRYPTED = twilioAuthToken
+    ? symmetricEncrypt(twilioAuthToken).substr(0, 256)
+    : twilioAuthToken;
+  featuresJSON.TWILIO_MESSAGE_SERVICE_SID = twilioMessageServiceSid.substr(
+    0,
+    64
+  );
+
+  const dbOrganization = Organization.get(organization.id);
+  dbOrganization.features = JSON.stringify(featuresJSON);
+
+  try {
+    if (twilioAuthToken && global.TEST_ENVIRONMENT !== "1") {
+      // Make sure Twilio credentials work.
+      const twilio = Twilio(twilioAccountSid, twilioAuthToken); // eslint-disable-line new-cap
+      await twilio.api.accounts.list();
+    }
+  } catch (err) {
+    throw new Error("Invalid Twilio credentials");
+  }
+
+  await dbOrganization.save();
+  await cacheableData.organization.clear(organization.id);
+
+  return organizationCache.getMessageServiceConfig(organization);
+};
+
 export default {
   syncMessagePartProcessing: !!process.env.JOBS_SAME_PROCESS,
   addServerEndpoints,
@@ -867,5 +916,6 @@ export default {
   clearMessagingServicePhones,
   getTwilio,
   getConfigFromCache,
-  getMessageServiceSidFromCache
+  getMessageServiceSidFromCache,
+  updateConfig
 };

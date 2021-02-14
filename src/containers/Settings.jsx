@@ -247,7 +247,7 @@ class Settings extends React.Component {
               />
               <Dialog
                 actions={dialogActions}
-                modal={true}
+                modal
                 open={this.state.twilioDialogOpen}
               >
                 Changing the Account SID or Messaging Service SID will break any
@@ -345,8 +345,8 @@ class Settings extends React.Component {
             <CardHeader
               title="Texter UI Defaults"
               style={{ backgroundColor: theme.colors.green }}
-              actAsExpander={true}
-              showExpandableButton={true}
+              actAsExpander
+              showExpandableButton
             />
             <CardText expandable>
               <CampaignTexterUIForm
@@ -375,8 +375,8 @@ class Settings extends React.Component {
             <CardHeader
               title="Overriding default settings"
               style={{ backgroundColor: theme.colors.green }}
-              actAsExpander={true}
-              showExpandableButton={true}
+              actAsExpander
+              showExpandableButton
             />
             <CardText expandable>
               <OrganizationFeatureSettings
@@ -405,8 +405,8 @@ class Settings extends React.Component {
             <CardHeader
               title="External configuration"
               style={{ backgroundColor: theme.colors.green }}
-              actAsExpander={true}
-              showExpandableButton={true}
+              actAsExpander
+              showExpandableButton
             />
             <CardText expandable>
               <h2>DEBUG Zone</h2>
@@ -490,6 +490,41 @@ export const editOrganizationGql = gql`
   }
 `;
 
+export const updateMessageServiceConfigGql = gql`
+  mutation updateMessageServiceConfig(
+    $organizationId: String!
+    $messageServiceName: String!
+    $config: JSON!
+  ) {
+    updateMessageServiceConfig(
+      organizationId: $organizationId
+      messageServiceName: $messageServiceName
+      config: $config
+    )
+  }
+`;
+
+export const updateTwilioAuthGql = gql`
+  mutation updateTwilioAuth(
+    $twilioAccountSid: String
+    $twilioAuthToken: String
+    $twilioMessageServiceSid: String
+    $organizationId: String!
+  ) {
+    updateTwilioAuth(
+      twilioAccountSid: $twilioAccountSid
+      twilioAuthToken: $twilioAuthToken
+      twilioMessageServiceSid: $twilioMessageServiceSid
+      organizationId: $organizationId
+    ) {
+      id
+      twilioAccountSid
+      twilioAuthToken
+      twilioMessageServiceSid
+    }
+  }
+`;
+
 const mutations = {
   editOrganization: ownProps => organizationChanges => ({
     mutation: editOrganizationGql,
@@ -566,26 +601,7 @@ const mutations = {
     }
   }),
   updateTwilioAuth: ownProps => (accountSid, authToken, messageServiceSid) => ({
-    mutation: gql`
-      mutation updateTwilioAuth(
-        $twilioAccountSid: String
-        $twilioAuthToken: String
-        $twilioMessageServiceSid: String
-        $organizationId: String!
-      ) {
-        updateTwilioAuth(
-          twilioAccountSid: $twilioAccountSid
-          twilioAuthToken: $twilioAuthToken
-          twilioMessageServiceSid: $twilioMessageServiceSid
-          organizationId: $organizationId
-        ) {
-          id
-          twilioAccountSid
-          twilioAuthToken
-          twilioMessageServiceSid
-        }
-      }
-    `,
+    mutation: updateTwilioAuthGql,
     variables: {
       organizationId: ownProps.params.organizationId,
       twilioAccountSid: accountSid,

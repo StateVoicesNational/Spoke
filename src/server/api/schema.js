@@ -65,7 +65,8 @@ import {
   updateQuestionResponses,
   releaseCampaignNumbers,
   clearCachedOrgAndExtensionCaches,
-  updateFeedback
+  updateFeedback,
+  updateMessageServiceConfig
 } from "./mutations";
 
 import { jobRunner } from "../../extensions/job-runners";
@@ -499,6 +500,7 @@ const rootMutations = {
     startCampaign,
     releaseCampaignNumbers,
     clearCachedOrgAndExtensionCaches,
+    updateMessageServiceConfig,
     userAgreeTerms: async (_, { userId }, { user }) => {
       // We ignore userId: you can only agree to terms for yourself
       await r
