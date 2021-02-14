@@ -14,7 +14,7 @@ import {
   createScript,
   createTexter,
   createUser,
-  ensureOrganizationMessagingService,
+  ensureOrganizationTwilioWithMessagingService,
   getCampaignContact,
   setTwilioAuth,
   setupTest,
@@ -100,7 +100,8 @@ describe("twilio", () => {
     testOrganization2 = await createOrganization(testAdminUser, testInvite2);
     organizationId2 = testOrganization2.data.createOrganization.id;
     await setTwilioAuth(testAdminUser, testOrganization2);
-    await ensureOrganizationMessagingService(testOrganization, testCampaign);
+    await ensureOrganizationTwilioWithMessagingService(testOrganization);
+    await ensureOrganizationTwilioWithMessagingService(testOrganization2);
 
     // use caching
     await cacheableData.organization.load(organizationId);
@@ -448,13 +449,17 @@ describe("twilio", () => {
 
   it("orgs should have separate twilio credentials", async () => {
     const org1 = await cacheableData.organization.load(organizationId);
-    const org1Auth = await cacheableData.organization.getTwilioAuth(org1);
+    const org1Auth = await cacheableData.organization.getMessageServiceConfig(
+      org1
+    );
     expect(org1Auth.authToken).toBeUndefined();
     expect(org1Auth.accountSid).toBeUndefined();
 
     const org2 = await cacheableData.organization.load(organizationId2);
-    const org2Auth = await cacheableData.organization.getTwilioAuth(org2);
-    expect(org2Auth.authToken).toBe("test_twlio_auth_token");
+    const org2Auth = await cacheableData.organization.getMessageServiceConfig(
+      org2
+    );
+    expect(org2Auth.authToken).toBe("test_twilio_auth_token");
     expect(org2Auth.accountSid).toBe("test_twilio_account_sid");
   });
 

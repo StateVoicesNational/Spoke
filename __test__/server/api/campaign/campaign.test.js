@@ -27,7 +27,7 @@ import {
   createScript,
   createTexter,
   createUser,
-  ensureOrganizationMessagingService,
+  ensureOrganizationTwilioWithMessagingService,
   getCampaignContact,
   runGql,
   saveCampaign,
@@ -1214,7 +1214,10 @@ describe("all interaction steps fields travel round trip", () => {
 
 describe("useOwnMessagingService", async () => {
   beforeEach(async () => {
-    await ensureOrganizationMessagingService(testOrganization, testCampaign);
+    await ensureOrganizationTwilioWithMessagingService(
+      testOrganization,
+      testCampaign
+    );
   });
 
   it("uses default messaging service when false", async () => {
