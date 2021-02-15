@@ -1,6 +1,7 @@
 import nexmo from "./nexmo";
 import * as twilio from "./twilio";
 import fakeservice from "./fakeservice";
+import { getConfig } from "../../server/api/lib/config";
 
 const serviceMap = {
   nexmo,
@@ -19,6 +20,19 @@ export const tryGetFunctionFromService = (serviceName, functionName) => {
   }
   const fn = messageService[functionName];
   return fn && typeof fn === "function" ? fn : null;
+};
+
+export const getMessageServiceConfig = async (serviceName, organization) => {
+  const getServiceConfig = exports.tryGetFunctionFromService(
+    serviceName,
+    "getServiceConfig"
+  );
+  if (!getServiceConfig) {
+    return null;
+  }
+  const configKey = exports.getConfigKey(serviceName);
+  const config = getConfig(configKey, organization);
+  return getServiceConfig(config, organization);
 };
 
 export default serviceMap;

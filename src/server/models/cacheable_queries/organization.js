@@ -2,7 +2,7 @@ import { r } from "../../models";
 import { getConfig, hasConfig } from "../../api/lib/config";
 import { symmetricDecrypt } from "../../api/lib/crypto";
 import {
-  getConfigKey,
+  getMessageServiceConfig,
   tryGetFunctionFromService
 } from "../../../extensions/messaging_services/service_map";
 
@@ -10,14 +10,6 @@ const cacheKey = orgId => `${process.env.CACHE_PREFIX || ""}org-${orgId}`;
 
 const getOrganizationMessageService = organization =>
   getConfig("service", organization) || getConfig("DEFAULT_SERVICE");
-
-const tryGetFunctionFromOrganizationMessageService = (
-  organization,
-  functionName
-) => {
-  const messageServiceName = getOrganizationMessageService(organization);
-  return tryGetFunctionFromService(messageServiceName, functionName);
-};
 
 const organizationCache = {
   clear: async id => {
@@ -27,22 +19,16 @@ const organizationCache = {
   },
   getMessageService: getOrganizationMessageService,
   getMessageServiceConfig: async organization => {
-    const getServiceConfig = tryGetFunctionFromOrganizationMessageService(
-      organization,
-      "getServiceConfig"
-    );
-    if (!getServiceConfig) {
-      return null;
-    }
-    const configKey = getConfigKey(getOrganizationMessageService(organization));
-    const config = getConfig(configKey, organization);
-    return getServiceConfig(config, organization);
+    const serviceName = getOrganizationMessageService(organization);
+    return getMessageServiceConfig(serviceName, organization);
   },
   getMessageServiceSid: async (organization, contact, messageText) => {
-    const getMessageServiceSid = tryGetFunctionFromOrganizationMessageService(
-      organization,
+    const messageServiceName = getOrganizationMessageService(organization);
+    const getMessageServiceSid = tryGetFunctionFromService(
+      messageServiceName,
       "getMessageServiceSid"
     );
+
     if (!getMessageServiceSid) {
       return null;
     }
