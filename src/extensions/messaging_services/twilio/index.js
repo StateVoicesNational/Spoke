@@ -1,6 +1,6 @@
 /* eslint-disable no-use-before-define, no-console */
 import _ from "lodash";
-import Twilio, { twiml } from "twilio";
+import * as twilioLibrary from "twilio";
 import urlJoin from "url-join";
 import { log } from "../../../lib";
 import { getFormattedPhoneNumber } from "../../../lib/phone-format";
@@ -41,7 +41,7 @@ export async function getTwilio(organization) {
     accountSid
   } = await cacheableData.organization.getTwilioAuth(organization);
   if (accountSid && authToken) {
-    return Twilio(accountSid, authToken); // eslint-disable-line new-cap
+    return twilioLibrary.default.Twilio(accountSid, authToken); // eslint-disable-line new-cap
   }
   return null;
 }
@@ -67,7 +67,11 @@ const headerValidator = url => {
       url
     };
 
-    return Twilio.webhook(authToken, options)(req, res, next);
+    return twilioLibrary.default.Twilio.webhook(authToken, options)(
+      req,
+      res,
+      next
+    );
   };
 };
 
@@ -116,7 +120,7 @@ function addServerEndpoints(expressApp) {
       } catch (ex) {
         log.error(ex);
       }
-      const resp = new twiml.MessagingResponse();
+      const resp = new twilioLibrary.default.twiml.MessagingResponse();
       res.writeHead(200, { "Content-Type": "text/xml" });
       res.end(resp.toString());
     })
@@ -142,7 +146,7 @@ function addServerEndpoints(expressApp) {
       } catch (ex) {
         log.error(ex);
       }
-      const resp = new twiml.MessagingResponse();
+      const resp = new twilioLibrary.default.twiml.MessagingResponse();
       res.writeHead(200, { "Content-Type": "text/xml" });
       res.end(resp.toString());
     })
@@ -869,10 +873,14 @@ export const getMessageServiceSid = async (
 
   const configKey = getConfigKey("twilio");
   const config = getConfig(configKey, organization);
-  const { messageServiceSid } = exports.getServiceConfig(config, organization);
+  const { messageServiceSid } = await exports.getServiceConfig(
+    config,
+    organization
+  );
   return messageServiceSid;
 };
 
+// TODO(lperson) maybe we should support backward compatibility here?
 export const updateConfig = async (oldConfig, config) => {
   const { twilioAccountSid, twilioAuthToken, twilioMessageServiceSid } = config;
 
@@ -895,7 +903,11 @@ export const updateConfig = async (oldConfig, config) => {
   try {
     if (twilioAuthToken && global.TEST_ENVIRONMENT !== "1") {
       // Make sure Twilio credentials work.
-      const twilio = Twilio(twilioAccountSid, twilioAuthToken); // eslint-disable-line new-cap
+      // eslint-disable-next-line new-cap
+      const twilio = twilioLibrary.default.Twilio(
+        twilioAccountSid,
+        twilioAuthToken
+      ); // eslint-disable-line new-cap
       await twilio.api.accounts.list();
     }
   } catch (err) {

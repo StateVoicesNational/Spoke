@@ -218,7 +218,7 @@ export const ensureOrganizationTwilioWithMessagingService = async (
 export async function setTwilioAuth(user, organization) {
   const rootValue = {};
   const accountSid = "test_twilio_account_sid";
-  const authToken = "test_twlio_auth_token";
+  const authToken = "test_twilio_auth_token";
   const messageServiceSid = "test_message_service";
   const orgId = organization.data.createOrganization.id;
 
