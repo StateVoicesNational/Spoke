@@ -1,17 +1,18 @@
-import { r } from "../../../../src/server/models";
+import { updateMessageServiceConfigGql } from "../../../../src/containers/Settings";
+// import * as messagingServices from "../../../../src/extensions/messaging_services";
+import * as serviceMap from "../../../../src/extensions/messaging_services/service_map";
+import * as twilio from "../../../../src/extensions/messaging_services/twilio";
+import { r, Organization } from "../../../../src/server/models";
+import orgCache from "../../../../src/server/models/cacheable_queries/organization";
 import {
   cleanupTest,
   createInvite,
   createOrganization,
   createUser,
+  ensureOrganizationTwilioWithMessagingService,
   runGql,
-  setupTest,
-  ensureOrganizationTwilioWithMessagingService
+  setupTest
 } from "../../../test_helpers";
-import { updateMessageServiceConfigGql } from "../../../../src/containers/Settings";
-import * as twilio from "../../../../src/extensions/messaging_services/twilio";
-import * as messagingServices from "../../../../src/extensions/messaging_services";
-import * as serviceMap from "../../../../src/extensions/messaging_services/service_map";
 
 describe("updateMessageServiceConfig", () => {
   beforeEach(async () => {
@@ -26,6 +27,7 @@ describe("updateMessageServiceConfig", () => {
   let user;
   let organization;
   let vars;
+  let newConfig;
   beforeEach(async () => {
     user = await createUser();
     const invite = await createInvite();
@@ -35,25 +37,34 @@ describe("updateMessageServiceConfig", () => {
       createOrganizationResult
     );
 
+    newConfig = { fake_config: "fake_config_value" };
+    jest.spyOn(twilio, "updateConfig").mockResolvedValue(newConfig);
+
     jest
-      .spyOn(twilio, "updateConfig")
-      .mockResolvedValue({ fake_config: "fake_config_value" });
+      .spyOn(orgCache, "getMessageServiceConfig")
+      .mockResolvedValue(newConfig);
 
     vars = {
       organizationId: organization.id,
       messageServiceName: "twilio",
-      config: JSON.stringify({ fake_config: "fake_config_value" })
+      config: JSON.stringify(newConfig)
     };
   });
 
   it("delegates to message service's updateConfig", async () => {
     const gqlResult = await runGql(updateMessageServiceConfigGql, vars, user);
-    expect(gqlResult.data.updateMessageServiceConfig).toEqual({
-      fake_config: "fake_config_value"
-    });
-    expect(twilio.updateConfig.mock.calls).toEqual([
-      [expect.objectContaining({ id: 1 }), { fake_config: "fake_config_value" }]
+    expect(twilio.updateConfig.mock.calls).toEqual([[undefined, newConfig]]);
+    expect(orgCache.getMessageServiceConfig.mock.calls).toEqual([
+      [
+        expect.objectContaining({
+          id: 1,
+          feature: expect.objectContaining({
+            message_service_twilio: newConfig
+          })
+        })
+      ]
     ]);
+    expect(gqlResult.data.updateMessageServiceConfig).toEqual(newConfig);
   });
 
   describe("when it's not the configured message service name", () => {
@@ -72,7 +83,7 @@ describe("updateMessageServiceConfig", () => {
 
   describe("when it's not a valid message service", () => {
     beforeEach(async () => {
-      jest.spyOn(messagingServices, "getService").mockReturnValue(null);
+      jest.spyOn(serviceMap, "getService").mockReturnValue(null);
     });
 
     it("returns an error", async () => {
@@ -110,7 +121,7 @@ describe("updateMessageServiceConfig", () => {
     });
   });
 
-  describe("when the service config function throw an exception", () => {
+  describe("when the service config function throws an exception", () => {
     beforeEach(async () => {
       jest.spyOn(twilio, "updateConfig").mockImplementation(() => {
         throw new Error("OH NO!");
@@ -122,6 +133,41 @@ describe("updateMessageServiceConfig", () => {
       expect(gqlResult.errors[0].message).toEqual(
         "Error updating config for twilio: Error: OH NO!"
       );
+    });
+  });
+
+  describe("when there is an existing config", () => {
+    let fakeExistingConfig;
+    beforeEach(async () => {
+      const configKey = serviceMap.getConfigKey("twilio");
+      fakeExistingConfig = {
+        fake_existing_config_key: "fake_existing_config_value"
+      };
+      const dbOrganization = await Organization.get(organization.id);
+      const newFeatures = JSON.stringify({
+        ...JSON.parse(dbOrganization.features),
+        [configKey]: fakeExistingConfig
+      });
+      dbOrganization.features = newFeatures;
+      await dbOrganization.save();
+      await orgCache.clear(organization.id);
+    });
+    it("passes it to updateConfig", async () => {
+      const gqlResult = await runGql(updateMessageServiceConfigGql, vars, user);
+      expect(twilio.updateConfig.mock.calls).toEqual([
+        [fakeExistingConfig, newConfig]
+      ]);
+      expect(orgCache.getMessageServiceConfig.mock.calls).toEqual([
+        [
+          expect.objectContaining({
+            id: 1,
+            feature: expect.objectContaining({
+              message_service_twilio: newConfig
+            })
+          })
+        ]
+      ]);
+      expect(gqlResult.data.updateMessageServiceConfig).toEqual(newConfig);
     });
   });
 });

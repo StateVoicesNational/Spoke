@@ -1,7 +1,11 @@
-import serviceMap from "./service_map";
+import serviceMap, { getService } from "./service_map";
 import orgCache from "../../server/models/cacheable_queries/organization";
 
-export { tryGetFunctionFromService } from "./service_map";
+export {
+  getConfigKey,
+  getService,
+  tryGetFunctionFromService
+} from "./service_map";
 
 // Each service needs the following api points:
 // async sendMessage(message, contact, trx, organization) -> void
@@ -16,10 +20,8 @@ export { tryGetFunctionFromService } from "./service_map";
 // async buyNumbersInAreaCode(organization, areaCode, limit, opts) -> Count of successfully purchased numbers
 // where the `opts` parameter can include service specific options
 
-export const getService = serviceName => serviceMap[serviceName];
-
 export const getServiceFromOrganization = organization =>
-  serviceMap[orgCache.getMessageService(organization)];
+  getService(orgCache.getMessageService(organization));
 
 export const fullyConfigured = async organization => {
   const messagingService = getServiceFromOrganization(organization);
@@ -35,7 +37,7 @@ export const createMessagingService = (organization, friendlyName) => {
   const serviceName = orgCache.getMessageService(organization);
   let service;
   if (serviceName === "twilio") {
-    service = serviceMap.twilio;
+    service = getService("twilio");
   } else if (service === "signalwire") {
     // service = signalwire;
   }
