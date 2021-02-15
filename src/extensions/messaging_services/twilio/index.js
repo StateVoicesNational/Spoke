@@ -14,7 +14,7 @@ import {
 } from "../../../server/models";
 import wrap from "../../../server/wrap";
 import { saveNewIncomingMessage } from "../message-sending";
-import { getConfigKey } from "../service_map";
+import { getMessageServiceConfig, getConfigKey } from "../service_map";
 import {
   symmetricDecrypt,
   symmetricEncrypt
@@ -36,10 +36,10 @@ const BULK_REQUEST_CONCURRENCY = 5;
 const MAX_NUMBERS_PER_BUY_JOB = getConfig("MAX_NUMBERS_PER_BUY_JOB") || 100;
 
 export async function getTwilio(organization) {
-  const {
-    authToken,
-    accountSid
-  } = await cacheableData.organization.getTwilioAuth(organization);
+  const { authToken, accountSid } = await getMessageServiceConfig(
+    "twilio",
+    organization
+  );
   if (accountSid && authToken) {
     return twilioLibrary.default.Twilio(accountSid, authToken); // eslint-disable-line new-cap
   }
@@ -58,9 +58,7 @@ const headerValidator = url => {
     const organization = req.params.orgId
       ? await cacheableData.organization.load(req.params.orgId)
       : null;
-    const { authToken } = await cacheableData.organization.getTwilioAuth(
-      organization
-    );
+    const { authToken } = await getMessageServiceConfig("twilio", organization);
     const options = {
       validate: true,
       protocol: "https",
