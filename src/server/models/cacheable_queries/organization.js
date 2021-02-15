@@ -1,18 +1,21 @@
 import { r } from "../../models";
 import { getConfig, hasConfig } from "../../api/lib/config";
 import { symmetricDecrypt } from "../../api/lib/crypto";
-import { tryGetFunctionFromService } from "../../../extensions/messaging_services/service_map";
+import {
+  getConfigKey,
+  tryGetFunctionFromService
+} from "../../../extensions/messaging_services/service_map";
 
 const cacheKey = orgId => `${process.env.CACHE_PREFIX || ""}org-${orgId}`;
 
-const getMessageServiceFromCache = organization =>
+const getOrganizationMessageService = organization =>
   getConfig("service", organization) || getConfig("DEFAULT_SERVICE");
 
 const tryGetFunctionFromOrganizationMessageService = (
   organization,
   functionName
 ) => {
-  const messageServiceName = getMessageServiceFromCache(organization);
+  const messageServiceName = getOrganizationMessageService(organization);
   return tryGetFunctionFromService(messageServiceName, functionName);
 };
 
@@ -22,23 +25,28 @@ const organizationCache = {
       await r.redis.delAsync(cacheKey(id));
     }
   },
-  getMessageService: getMessageServiceFromCache,
+  getMessageService: getOrganizationMessageService,
   getMessageServiceConfig: async organization => {
-    const getConfigFromCache = tryGetFunctionFromOrganizationMessageService(
+    const getServiceConfig = tryGetFunctionFromOrganizationMessageService(
       organization,
-      "getConfigFromCache"
+      "getServiceConfig"
     );
-    return getConfigFromCache && (await getConfigFromCache(organization));
+    if (!getServiceConfig) {
+      return null;
+    }
+    const configKey = getConfigKey(getOrganizationMessageService(organization));
+    const config = getConfig(configKey, organization);
+    return getServiceConfig(config, organization);
   },
   getMessageServiceSid: async (organization, contact, messageText) => {
-    const getMessageServiceSidFromCache = tryGetFunctionFromOrganizationMessageService(
+    const getMessageServiceSid = tryGetFunctionFromOrganizationMessageService(
       organization,
-      "getMessageServiceSidFromCache"
+      "getMessageServiceSid"
     );
-    return (
-      getMessageServiceSidFromCache &&
-      (await getMessageServiceSidFromCache(organization, contact, messageText))
-    );
+    if (!getMessageServiceSid) {
+      return null;
+    }
+    return getMessageServiceSid(organization, contact, messageText);
   },
   getTwilioAuth: async organization => {
     const hasOrgToken = hasConfig("TWILIO_AUTH_TOKEN_ENCRYPTED", organization);

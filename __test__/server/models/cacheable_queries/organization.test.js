@@ -1,65 +1,122 @@
 import orgCache from "../../../../src/server/models/cacheable_queries/organization";
+import * as serviceMap from "../../../../src/extensions/messaging_services/service_map";
 
 describe("cacheable_queries.organization", () => {
-  let twilioOrganization;
-  let fakeServiceOrganization;
+  let serviceWith;
+  let serviceWithout;
+  let fakeServiceMap;
+  let organizationWith;
+  let organizationWithConfig;
+  let organizationWithout;
   beforeEach(async () => {
-    twilioOrganization = {
+    serviceWith = {
+      getServiceConfig: jest.fn().mockImplementation(() => "fake_config"),
+      getMessageServiceSid: jest
+        .fn()
+        .mockImplementation(() => "fake_message_service_sid")
+    };
+
+    serviceWithout = {};
+
+    fakeServiceMap = { serviceWith, serviceWithout };
+
+    organizationWith = { features: { service: "serviceWith" } };
+    organizationWithConfig = {
       features: {
-        service: "twilio",
-        TWILIO_AUTH_TOKEN: "fake_twilio_auth_token",
-        TWILIO_ACCOUNT_SID: "fake_twilio_auth_account_sid",
-        TWILIO_MESSAGE_SERVICE_SID: "fake_twilio_message_service_sid"
+        service: "serviceWith",
+        message_service_serviceWith: {
+          fake_key: "fake_value"
+        }
       }
     };
-    fakeServiceOrganization = {
-      features: {
-        service: "fakeservice"
-      }
-    };
+    organizationWithout = { features: { service: "serviceWithout" } };
+
+    jest
+      .spyOn(serviceMap, "getService")
+      .mockImplementation(serviceName => fakeServiceMap[serviceName]);
+
+    jest.spyOn(serviceMap, "getConfigKey");
+    jest.spyOn(serviceMap, "tryGetFunctionFromService");
+  });
+
+  afterEach(async () => {
+    jest.restoreAllMocks();
   });
 
   describe("getMessageServiceConfig", () => {
-    describe("when the message service has getConfigFromCache", () => {
-      it("returns a config", async () => {
+    describe("when the message service has getMessageServiceConfig", () => {
+      it("delegates to its dependencies and returns a config", async () => {
         const allegedConfig = await orgCache.getMessageServiceConfig(
-          twilioOrganization
+          organizationWith
         );
-        expect(allegedConfig).toEqual({
-          authToken: twilioOrganization.features.TWILIO_AUTH_TOKEN,
-          accountSid: twilioOrganization.features.TWILIO_ACCOUNT_SID,
-          messageServiceSid:
-            twilioOrganization.features.TWILIO_MESSAGE_SERVICE_SID
+        expect(allegedConfig).toEqual("fake_config");
+        expect(serviceMap.tryGetFunctionFromService.mock.calls).toEqual([
+          ["serviceWith", "getServiceConfig"]
+        ]);
+        expect(serviceMap.getConfigKey.mock.calls).toEqual([["serviceWith"]]);
+        expect(serviceWith.getServiceConfig.mock.calls).toEqual([
+          [undefined, organizationWith]
+        ]);
+      });
+      describe("when an organization has a config", () => {
+        it("delegates to its dependencies and returns a config", async () => {
+          const allegedConfig = await orgCache.getMessageServiceConfig(
+            organizationWithConfig
+          );
+          expect(allegedConfig).toEqual("fake_config");
+          expect(serviceMap.tryGetFunctionFromService.mock.calls).toEqual([
+            ["serviceWith", "getServiceConfig"]
+          ]);
+          expect(serviceMap.getConfigKey.mock.calls).toEqual([["serviceWith"]]);
+          expect(serviceWith.getServiceConfig.mock.calls).toEqual([
+            [
+              organizationWithConfig.features.message_service_serviceWith,
+              organizationWithConfig
+            ]
+          ]);
         });
       });
     });
-    describe("when the message service doesn't have getConfigFromCache", () => {
-      it("does not return a config", async () => {
+    describe("when the message service doesn't have getMessageServiceConfig", () => {
+      it("delegates to its dependencies and doesn't return a config", async () => {
         const allegedConfig = await orgCache.getMessageServiceConfig(
-          fakeServiceOrganization
+          organizationWithout
         );
         expect(allegedConfig).toBeNull();
+        expect(serviceMap.tryGetFunctionFromService.mock.calls).toEqual([
+          ["serviceWithout", "getServiceConfig"]
+        ]);
+        expect(serviceMap.getConfigKey).not.toHaveBeenCalled();
+        expect(serviceWith.getServiceConfig).not.toHaveBeenCalled();
       });
     });
   });
 
   describe("getMessageServiceSid", () => {
-    describe("when the message service has getConfigFromCache", () => {
-      it("returns a config", async () => {
-        const allegedMessageServiceSid = await orgCache.getMessageServiceSid(
-          twilioOrganization
+    describe("when the message service has getMessageServiceSid", () => {
+      it("delegates to its dependencies and returns a config", async () => {
+        const allegedSid = await orgCache.getMessageServiceSid(
+          organizationWith
         );
-        expect(allegedMessageServiceSid).toEqual(
-          twilioOrganization.features.TWILIO_MESSAGE_SERVICE_SID
-        );
+        expect(allegedSid).toEqual("fake_message_service_sid");
+        expect(serviceMap.tryGetFunctionFromService.mock.calls).toEqual([
+          ["serviceWith", "getMessageServiceSid"]
+        ]);
+        expect(serviceWith.getMessageServiceSid.mock.calls).toEqual([
+          [organizationWith, undefined, undefined]
+        ]);
       });
     });
-    describe("when the message service doesn't have getConfigFromCache", () => {
-      it("does not return a config", async () => {
-        const allegedConfig = await orgCache.getMessageServiceSid(
-          fakeServiceOrganization
+    describe("when the message service doesn't have getMessageServiceConfig", () => {
+      it("delegates to its dependencies and doesn't return a config", async () => {
+        const allegedSid = await orgCache.getMessageServiceSid(
+          organizationWithout
         );
-        expect(allegedConfig).toBeNull();
+        expect(allegedSid).toBeNull();
+        expect(serviceMap.tryGetFunctionFromService.mock.calls).toEqual([
+          ["serviceWithout", "getMessageServiceSid"]
+        ]);
+        expect(serviceWith.getMessageServiceSid).not.toHaveBeenCalled();
       });
     });
   });

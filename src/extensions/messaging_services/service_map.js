@@ -8,8 +8,12 @@ const serviceMap = {
   fakeservice
 };
 
+export const getConfigKey = serviceName => `message_service_${serviceName}`;
+
+export const getService = serviceName => serviceMap[serviceName];
+
 export const tryGetFunctionFromService = (serviceName, functionName) => {
-  const messageService = serviceMap[serviceName];
+  const messageService = exports.getService(serviceName);
   if (!messageService) {
     throw new Error(`${serviceName} is not a message service`);
   }

@@ -1,10 +1,13 @@
-import orgCache from "../../models/cacheable_queries/organization";
-import { accessRequired } from "../errors";
 import { GraphQLError } from "graphql/error";
 import {
+  getConfigKey,
   getService,
   tryGetFunctionFromService
 } from "../../../extensions/messaging_services";
+import { getConfig } from "../../../server/api/lib/config";
+import orgCache from "../../models/cacheable_queries/organization";
+import { accessRequired } from "../errors";
+import { Organization } from "../../../server/models";
 
 // TODO(lperson) this should allow the message service
 // to modify only its own object
@@ -46,12 +49,28 @@ export const updateMessageServiceConfig = async (
     throw new GraphQLError("Config is not valid JSON");
   }
 
+  const configKey = getConfigKey(messageServiceName);
+  const existingConfig = getConfig(configKey, organization);
+
+  let newConfig;
   try {
-    return serviceConfigFunction(organization, configObject);
+    newConfig = await serviceConfigFunction(existingConfig, configObject);
   } catch (caught) {
     const message = `Error updating config for ${messageServiceName}: ${caught}`;
     // eslint-disable-next-line no-console
     console.error(message);
     throw new GraphQLError(message);
   }
+
+  const dbOrganization = await Organization.get(organizationId);
+  dbOrganization.features = JSON.stringify({
+    ...JSON.parse(dbOrganization.features),
+    [configKey]: newConfig
+  });
+
+  await dbOrganization.save();
+  await orgCache.clear(organization.id);
+  const updatedOrganization = await orgCache.load(organization.id);
+
+  return orgCache.getMessageServiceConfig(updatedOrganization);
 };

@@ -4,26 +4,21 @@ import Twilio, { twiml } from "twilio";
 import urlJoin from "url-join";
 import { log } from "../../../lib";
 import { getFormattedPhoneNumber } from "../../../lib/phone-format";
-import {
-  getFeatures,
-  getConfig,
-  hasConfig
-} from "../../../server/api/lib/config";
+import { getConfig, hasConfig } from "../../../server/api/lib/config";
 import {
   cacheableData,
   Log,
   Message,
   PendingMessagePart,
-  Organization,
   r
 } from "../../../server/models";
 import wrap from "../../../server/wrap";
 import { saveNewIncomingMessage } from "../message-sending";
+import { getConfigKey } from "../service_map";
 import {
   symmetricDecrypt,
   symmetricEncrypt
 } from "../../../server/api/lib/crypto";
-import organizationCache from "../../../server/models/cacheable_queries/organization";
 
 // TWILIO error_codes:
 // > 1 (i.e. positive) error_codes are reserved for Twilio error codes
@@ -826,27 +821,43 @@ async function clearMessagingServicePhones(organization, messagingServiceSid) {
   }
 }
 
-export const getConfigFromCache = async organization => {
-  const hasOrgToken = hasConfig("TWILIO_AUTH_TOKEN_ENCRYPTED", organization);
-  // Note, allows unencrypted auth tokens to be (manually) stored in the db
-  // @todo: decide if this is necessary, or if UI/envars is sufficient.
-  const authToken = hasOrgToken
-    ? symmetricDecrypt(getConfig("TWILIO_AUTH_TOKEN_ENCRYPTED", organization))
-    : getConfig("TWILIO_AUTH_TOKEN", organization);
-  const accountSid = hasConfig("TWILIO_ACCOUNT_SID", organization)
-    ? getConfig("TWILIO_ACCOUNT_SID", organization)
-    : // Check old TWILIO_API_KEY variable for backwards compatibility.
-      getConfig("TWILIO_API_KEY", organization);
+export const getServiceConfig = async (serviceConfig, organization) => {
+  let authToken;
+  let accountSid;
+  let messageServiceSid;
+  if (serviceConfig) {
+    const hasOrgToken = serviceConfig.TWILIO_AUTH_TOKEN_ENCRYPTED;
+    // Note, allows unencrypted auth tokens to be (manually) stored in the db
+    // @todo: decide if this is necessary, or if UI/envars is sufficient.
+    authToken = hasOrgToken
+      ? symmetricDecrypt(serviceConfig.TWILIO_AUTH_TOKEN_ENCRYPTED)
+      : serviceConfig.TWILIO_AUTH_TOKEN;
+    accountSid = serviceConfig.TWILIO_ACCOUNT_SID
+      ? serviceConfig.TWILIO_ACCOUNT_SID
+      : // Check old TWILIO_API_KEY variable for backwards compatibility.
+        serviceConfig.TWILIO_API_KEY;
 
-  const messageServiceSid = getConfig(
-    "TWILIO_MESSAGE_SERVICE_SID",
-    organization
-  );
+    messageServiceSid = serviceConfig.TWILIO_MESSAGE_SERVICE_SID;
+  } else {
+    // for backward compatibility
 
+    const hasOrgToken = hasConfig("TWILIO_AUTH_TOKEN_ENCRYPTED", organization);
+    // Note, allows unencrypted auth tokens to be (manually) stored in the db
+    // @todo: decide if this is necessary, or if UI/envars is sufficient.
+    authToken = hasOrgToken
+      ? symmetricDecrypt(getConfig("TWILIO_AUTH_TOKEN_ENCRYPTED", organization))
+      : getConfig("TWILIO_AUTH_TOKEN", organization);
+    accountSid = hasConfig("TWILIO_ACCOUNT_SID", organization)
+      ? getConfig("TWILIO_ACCOUNT_SID", organization)
+      : // Check old TWILIO_API_KEY variable for backwards compatibility.
+        getConfig("TWILIO_API_KEY", organization);
+
+    messageServiceSid = getConfig("TWILIO_MESSAGE_SERVICE_SID", organization);
+  }
   return { authToken, accountSid, messageServiceSid };
 };
 
-export const getMessageServiceSidFromCache = async (
+export const getMessageServiceSid = async (
   organization,
   contact,
   messageText
@@ -855,11 +866,14 @@ export const getMessageServiceSidFromCache = async (
   if (messageText && /twilioapitest/.test(messageText)) {
     return "fakeSid_MK123";
   }
-  return getConfig("TWILIO_MESSAGE_SERVICE_SID", organization);
+
+  const configKey = getConfigKey("twilio");
+  const config = getConfig(configKey, organization);
+  const { messageServiceSid } = exports.getServiceConfig(config, organization);
+  return messageServiceSid;
 };
 
-export const updateConfig = async (organization, config) => {
-  const featuresJSON = getFeatures(organization);
+export const updateConfig = async (oldConfig, config) => {
   const { twilioAccountSid, twilioAuthToken, twilioMessageServiceSid } = config;
 
   if (!twilioAccountSid || !twilioMessageServiceSid) {
@@ -868,19 +882,15 @@ export const updateConfig = async (organization, config) => {
     );
   }
 
-  featuresJSON.TWILIO_ACCOUNT_SID = twilioAccountSid.substr(0, 64);
+  const newConfig = {};
+
+  newConfig.TWILIO_ACCOUNT_SID = twilioAccountSid.substr(0, 64);
 
   // TODO(lperson) is twilioAuthToken required?
-  featuresJSON.TWILIO_AUTH_TOKEN_ENCRYPTED = twilioAuthToken
+  newConfig.TWILIO_AUTH_TOKEN_ENCRYPTED = twilioAuthToken
     ? symmetricEncrypt(twilioAuthToken).substr(0, 256)
     : twilioAuthToken;
-  featuresJSON.TWILIO_MESSAGE_SERVICE_SID = twilioMessageServiceSid.substr(
-    0,
-    64
-  );
-
-  const dbOrganization = Organization.get(organization.id);
-  dbOrganization.features = JSON.stringify(featuresJSON);
+  newConfig.TWILIO_MESSAGE_SERVICE_SID = twilioMessageServiceSid.substr(0, 64);
 
   try {
     if (twilioAuthToken && global.TEST_ENVIRONMENT !== "1") {
@@ -892,10 +902,7 @@ export const updateConfig = async (organization, config) => {
     throw new Error("Invalid Twilio credentials");
   }
 
-  await dbOrganization.save();
-  await cacheableData.organization.clear(organization.id);
-
-  return organizationCache.getMessageServiceConfig(organization);
+  return newConfig;
 };
 
 export default {
@@ -915,7 +922,7 @@ export default {
   deleteMessagingService,
   clearMessagingServicePhones,
   getTwilio,
-  getConfigFromCache,
-  getMessageServiceSidFromCache,
+  getServiceConfig,
+  getMessageServiceSid,
   updateConfig
 };
