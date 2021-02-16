@@ -1,10 +1,9 @@
-import { r } from "../../models";
-import { getConfig, hasConfig } from "../../api/lib/config";
-import { symmetricDecrypt } from "../../api/lib/crypto";
 import {
   getMessageServiceConfig,
   tryGetFunctionFromService
 } from "../../../extensions/messaging_services/service_map";
+import { getConfig } from "../../api/lib/config";
+import { r } from "../../models";
 
 const cacheKey = orgId => `${process.env.CACHE_PREFIX || ""}org-${orgId}`;
 
@@ -33,19 +32,6 @@ const organizationCache = {
       return null;
     }
     return getMessageServiceSid(organization, contact, messageText);
-  },
-  getTwilioAuth: async organization => {
-    const hasOrgToken = hasConfig("TWILIO_AUTH_TOKEN_ENCRYPTED", organization);
-    // Note, allows unencrypted auth tokens to be (manually) stored in the db
-    // @todo: decide if this is necessary, or if UI/envars is sufficient.
-    const authToken = hasOrgToken
-      ? symmetricDecrypt(getConfig("TWILIO_AUTH_TOKEN_ENCRYPTED", organization))
-      : getConfig("TWILIO_AUTH_TOKEN", organization);
-    const accountSid = hasConfig("TWILIO_ACCOUNT_SID", organization)
-      ? getConfig("TWILIO_ACCOUNT_SID", organization)
-      : // Check old TWILIO_API_KEY variable for backwards compatibility.
-        getConfig("TWILIO_API_KEY", organization);
-    return { authToken, accountSid };
   },
   load: async id => {
     if (r.redis) {

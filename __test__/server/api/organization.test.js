@@ -2,6 +2,8 @@
 import { r } from "../../../src/server/models/";
 import { getCampaignsQuery } from "../../../src/containers/AdminCampaignList";
 import { GraphQLError } from "graphql/error";
+import gql from "graphql-tag";
+import * as messagingServices from "../../../src/extensions/messaging_services";
 
 import {
   cleanupTest,
@@ -288,6 +290,31 @@ describe("organization", async () => {
           instructions: "Thing 2 instructions",
           clientChoiceData: []
         }
+      ]);
+    });
+  });
+
+  describe(".fullyconfigured", () => {
+    let gqlQuery;
+    let variables;
+    beforeEach(async () => {
+      gqlQuery = gql`
+        query fullyConfigured($organizationId: String!) {
+          organization(id: $organizationId) {
+            fullyConfigured
+          }
+        }
+      `;
+
+      variables = { organizationId: 1 };
+
+      jest.spyOn(messagingServices, "fullyConfigured").mockResolvedValue(false);
+    });
+    it("delegates to its dependency and returns the result", async () => {
+      const result = await runGql(gqlQuery, variables, testAdminUser);
+      expect(result.data.organization.fullyConfigured).toEqual(false);
+      expect(messagingServices.fullyConfigured.mock.calls).toEqual([
+        [expect.objectContaining({ id: 1 })]
       ]);
     });
   });
