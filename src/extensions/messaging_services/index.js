@@ -1,4 +1,7 @@
-import serviceMap, { getService } from "./service_map";
+import serviceMap, {
+  tryGetFunctionFromService,
+  getService
+} from "./service_map";
 import orgCache from "../../server/models/cacheable_queries/organization";
 
 export {
@@ -20,13 +23,16 @@ export {
 // async buyNumbersInAreaCode(organization, areaCode, limit, opts) -> Count of successfully purchased numbers
 // where the `opts` parameter can include service specific options
 
+export const getServiceNameFromOrganization = organization =>
+  orgCache.getMessageService(organization);
+
 export const getServiceFromOrganization = organization =>
-  getService(orgCache.getMessageService(organization));
+  getService(getServiceNameFromOrganization(organization));
 
 export const fullyConfigured = async organization => {
-  const messagingService = getServiceFromOrganization(organization);
-  const fn = messagingService.fullyConfigured;
-  if (!fn || typeof fn !== "function") {
+  const serviceName = getServiceNameFromOrganization(organization);
+  const fn = tryGetFunctionFromService(serviceName, "fullyConfigured");
+  if (!fn) {
     return true;
   }
 
