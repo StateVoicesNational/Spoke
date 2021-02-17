@@ -1,5 +1,5 @@
 import thinky from "./thinky";
-import { requiredString, optionalString, timestamp } from "./custom-types";
+import { requiredString, timestamp } from "./custom-types";
 
 import Campaign from "./campaign";
 import User from "./user";
@@ -15,8 +15,7 @@ const Assignment = thinky.createModel(
       user_id: requiredString(),
       campaign_id: requiredString(),
       created_at: timestamp(),
-      max_contacts: type.integer(),
-      feedback: optionalString()
+      max_contacts: type.integer()
     })
     .allowExtra(false),
   { noAutoCreation: true }

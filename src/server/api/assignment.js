@@ -1,4 +1,5 @@
 import { mapFieldsToModel } from "./lib/utils";
+import { getConfig } from "./lib/config";
 import { Assignment, r, cacheableData } from "../models";
 import { getOffsets, defaultTimezoneIsBetweenTextingHours } from "../../lib";
 import { getDynamicAssignmentBatchPolicies } from "../../extensions/dynamicassignment-batches";
@@ -30,6 +31,11 @@ export function addWhereClauseForContactsFilterMessageStatusIrrespectiveOfPastDu
   } else {
     query.whereIn("message_status", messageStatusFilter.split(","));
   }
+  if (getConfig("CONVERSATIONS_RECENT")) {
+    query.whereRaw(
+      "campaign_contact.id > (SELECT max(id)-20000000 from campaign_contact)"
+    );
+  }
   return query;
 }
 
@@ -37,7 +43,13 @@ export function getCampaignOffsets(campaign, organization, timezoneFilter) {
   const textingHoursEnforced = organization.texting_hours_enforced;
   const textingHoursStart = organization.texting_hours_start;
   const textingHoursEnd = organization.texting_hours_end;
-  const config = { textingHoursStart, textingHoursEnd, textingHoursEnforced };
+
+  const config = {
+    textingHoursStart,
+    textingHoursEnd,
+    textingHoursEnforced,
+    defaultTimezone: getConfig("DEFAULT_TZ", organization)
+  };
 
   if (campaign.override_organization_texting_hours) {
     const textingHoursStart = campaign.texting_hours_start;
@@ -336,6 +348,9 @@ export const resolvers = {
         campaignId: assignment.campaign_id
       }),
     feedback: async assignment => {
+      if (!/texter-feedback/.test(getConfig("TEXTER_SIDEBOXES"))) {
+        return null;
+      }
       const defaultFeedback = {
         isAcknowledged: false,
         message: "",
@@ -345,23 +360,32 @@ export const resolvers = {
         sweepComplete: false
       };
 
-      let { feedback } = await r
-        .knex("assignment")
-        .select("feedback")
-        .where({ id: assignment.id })
-        .first();
+      const assignmentFeedback = assignment.hasOwnProperty("feedback")
+        ? assignment
+        : await r
+            .knex("assignment_feedback")
+            .where({ assignment_id: assignment.id })
+            .first();
+      if (!assignmentFeedback) {
+        return defaultFeedback;
+      }
 
+      let feedback = assignmentFeedback.feedback;
       try {
         feedback = JSON.parse(feedback);
       } catch (err) {
         // do nothing
       }
 
-      if (feedback && !feedback.isAcknowledged) {
+      if (
+        feedback &&
+        !assignmentFeedback.is_acknowledged &&
+        !feedback.isAcknowledged
+      ) {
         const createdBy = await r
           .knexReadOnly("user")
           .select("id", "first_name", "last_name")
-          .where("id", feedback.createdBy)
+          .where("id", assignmentFeedback.creator_id || feedback.createdBy)
           .first();
 
         feedback.createdBy = {
@@ -370,6 +394,12 @@ export const resolvers = {
         };
       } else if (feedback) {
         feedback.createdBy = defaultFeedback.createdBy;
+      }
+      if (assignmentFeedback.is_acknowledged) {
+        feedback.isAcknowledged = true;
+      }
+      if (assignmentFeedback.complete) {
+        feedback.sweepComplete = true;
       }
 
       return feedback || defaultFeedback;

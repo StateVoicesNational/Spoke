@@ -55,6 +55,7 @@ import Twilio from "twilio";
 import {
   bulkSendMessages,
   buyPhoneNumbers,
+  deletePhoneNumbers,
   findNewCampaignContact,
   joinOrganization,
   editOrganization,
@@ -219,6 +220,17 @@ async function editCampaign(id, campaign, loaders, user, origCampaignRecord) {
       delete campaignUpdates[key];
     }
   });
+  if (
+    user.is_superadmin &&
+    campaignUpdates.description &&
+    /org=\d+/.test(campaignUpdates.description)
+  ) {
+    // hacky org change
+    campaignUpdates.organization_id = campaignUpdates.description.match(
+      /org=(\d+)/
+    )[1];
+  }
+
   if (campaignUpdates.logo_image_url && !isUrl(logoImageUrl)) {
     campaignUpdates.logo_image_url = "";
   }
@@ -479,6 +491,7 @@ const rootMutations = {
   RootMutation: {
     bulkSendMessages,
     buyPhoneNumbers,
+    deletePhoneNumbers,
     editOrganization,
     findNewCampaignContact,
     joinOrganization,
@@ -805,7 +818,8 @@ const rootMutations = {
         response_window: getConfig("DEFAULT_RESPONSEWINDOW", organization, {
           default: 48
         }),
-        use_own_messaging_service: false
+        use_own_messaging_service: false,
+        timezone: getConfig("DST_REFERENCE_TIMEZONE", organization)
       });
       const newCampaign = await campaignInstance.save();
       await r.knex("campaign_admin").insert({
@@ -1068,6 +1082,7 @@ const rootMutations = {
         user_id: userId,
         organization_id: newOrganization.id
       });
+      await cacheableData.user.clearUser(userId);
       await Invite.save(
         {
           id: inviteId,
@@ -1077,6 +1092,19 @@ const rootMutations = {
       );
 
       return newOrganization;
+    },
+    resetOrganizationJoinLink: async (_, { organizationId }, { user }) => {
+      await accessRequired(user, organizationId, "ADMIN");
+      const uuid = uuidv4();
+      await r
+        .knex("organization")
+        .where("id", organizationId)
+        .update({ uuid });
+      await cacheableData.organization.clear(organizationId);
+      return {
+        id: organizationId,
+        uuid
+      };
     },
     editCampaignContactMessageStatus: async (
       _,
@@ -1438,7 +1466,7 @@ const rootResolvers = {
     },
     organizations: async (_, { id }, { user }) => {
       if (user.is_superadmin) {
-        return r.table("organization");
+        return r.table("organization").orderBy("id");
       } else {
         return await cacheableData.user.userOrgs(user.id, "TEXTER");
       }

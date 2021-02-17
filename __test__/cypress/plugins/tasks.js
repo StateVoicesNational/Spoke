@@ -1,82 +1,59 @@
-import { r, User } from "../../../src/server/models";
 import AuthHasher from "passport-local-authenticate";
+import { r, createTables, truncateTables } from "../../../src/server/models/";
+import {
+  createUser,
+  createInvite,
+  createOrganization
+} from "../../test_helpers";
 
 /**
- * Make Cypress tasks with access to the config.
+ * Cypress tasks run in the node process started by Cypress
+ * and are invoked by tests running in the browser.
  *
  * https://docs.cypress.io/api/commands/task.html#Syntax
  */
-export function makeTasks(config) {
-  return {
-    /**
-     * Create a user and add it to the test organization with the specified role.
-     */
-    createOrUpdateUser: async userData => {
-      let user = await r
-        .knex("user")
-        .where("email", userData.email)
-        .first();
-
-      if (!user) {
-        // TODO[matteosb]: support Auth0 and consider creating users through
-        // the API rather than with direct database access, which would be
-        // better when running against remote envs. Alternatively, we could
-        // simply not support user creation when running against a remove
-        // env, similar to SUPPRESS_ORG_CREATION.
-        user = await new Promise((resolve, reject) => {
-          AuthHasher.hash(userData.password, async (err, hashed) => {
-            if (err) reject(err);
-            const passwordToSave = `localauth|${hashed.salt}|${hashed.hash}`;
-            const { email, first_name, last_name, cell } = userData;
-            const u = await User.save({
-              email,
-              first_name,
-              last_name,
-              cell,
-              auth0_id: passwordToSave,
-              is_superadmin: false
-            });
-            resolve(u);
-          });
-        });
-      }
-
-      const role = await r
-        .knex("user_organization")
-        .where({
-          organization_id: config.env.TEST_ORGANIZATION_ID,
-          user_id: user.id
-        })
-        .first();
-
-      if (!role) {
-        await r.knex("user_organization").insert({
-          user_id: user.id,
-          organization_id: config.env.TEST_ORGANIZATION_ID,
-          role: userData.role
-        });
-      }
-
-      if (role !== userData.role) {
-        await r
-          .knex("user_organization")
-          .where({ organization_id: config.env.TEST_ORGANIZATION_ID })
-          .update({ role: userData.role });
-      }
-
-      return user.id;
+export function defineTasks(on, config) {
+  on("task", {
+    async resetDB() {
+      await createTables();
+      await truncateTables();
+      return null;
     },
 
-    clearTestOrgPhoneNumbers: async areaCode => {
+    async createOrganization() {
+      const admin = await createUser();
+      const invite = await createInvite();
+      const organizationResult = await createOrganization(admin, invite);
+      const org = organizationResult.data.createOrganization;
       await r
-        .knex("owned_phone_number")
-        .where({
-          organization_id: config.env.TEST_ORGANIZATION_ID,
-          service: "fakeservice",
-          area_code: areaCode
-        })
-        .delete();
-      return null;
+        .knex("organization")
+        .where({ id: org.id })
+        .update({
+          features: JSON.stringify({ EXPERIMENTAL_PHONE_INVENTORY: true })
+        });
+      return org;
+    },
+
+    async createUser({ userInfo, org, role }) {
+      const user = await new Promise((resolve, reject) => {
+        AuthHasher.hash(userInfo.password, async (err, hashed) => {
+          if (err) reject(err);
+          const hashedPassword = `localauth|${hashed.salt}|${hashed.hash}`;
+          const u = await createUser(
+            {
+              ...userInfo,
+              auth0_id: hashedPassword
+            },
+            org ? org.id : null,
+            role
+          );
+          resolve(u);
+        });
+      });
+      user.password = userInfo.password;
+      return user;
     }
-  };
+  });
+
+  return config;
 }

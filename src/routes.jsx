@@ -31,8 +31,10 @@ import {
   DemoTexterNeedsMessage,
   DemoTexterNeedsResponse,
   DemoTexter2ndQuestion,
-  DemoTexterDynAssign
+  DemoTexterDynAssign,
+  tests
 } from "./components/AssignmentTexter/Demo";
+import AssignmentSummary from "./components/AssignmentSummary";
 import AdminPhoneNumberInventory from "./containers/AdminPhoneNumberInventory";
 
 const checkDowntime = (nextState, replace) => {
@@ -262,6 +264,20 @@ export default function makeRoutes(requireAuth = () => {}) {
           components={{
             main: props => <DemoTexterDynAssign {...props} />,
             topNav: null
+          }}
+        />
+        <Route
+          path="todos"
+          components={{
+            main: props => <AssignmentSummary {...tests("todos1")} />,
+            topNav: p => <TopNav title="Spoke Texting Demo" orgId={"fake"} />
+          }}
+        />
+        <Route
+          path="todos2"
+          components={{
+            main: props => <AssignmentSummary {...tests("todos2")} />,
+            topNav: p => <TopNav title="Spoke Texting Demo2" orgId={"fake"} />
           }}
         />
       </Route>

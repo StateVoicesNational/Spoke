@@ -163,7 +163,13 @@
     "DST_REFERENCE_TIMEZONE": {
       "description": "Timezone to use to determine whether DST is in effect for a date",
       "required": true,
-      "value": "America/New_York"
+      "value": "US/Eastern"
+    },
+
+    "DEFAULT_TZ": {
+      "description": "Timezone",
+      "required": true,
+      "value": "US/Eastern"
     },
 
     "HEROKU_APP_NAME": {
