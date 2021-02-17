@@ -9,6 +9,7 @@ import { dataTest } from "../lib/attributes";
 import cloneDeep from "lodash/cloneDeep";
 import TagChips from "./TagChips";
 import theme from "../styles/theme";
+import RaisedButton from "material-ui/RaisedButton";
 
 export default class CampaignDynamicAssignmentForm extends React.Component {
   constructor(props) {
@@ -171,9 +172,9 @@ export default class CampaignDynamicAssignmentForm extends React.Component {
               </div>
             ) : null}
           </div>
-          <Form.Button
-            type="submit"
-            onTouchTap={this.props.onSubmit}
+          <Form.Submit
+            as={RaisedButton}
+            onClick={this.props.onSubmit}
             label={this.props.saveLabel}
             disabled={this.props.saveDisabled}
             {...dataTest("submitCampaignDynamicAssignmentForm")}

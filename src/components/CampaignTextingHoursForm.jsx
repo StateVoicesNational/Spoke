@@ -3,6 +3,7 @@ import Toggle from "material-ui/Toggle";
 import React from "react";
 import Form from "react-formal";
 import GSForm from "./forms/GSForm";
+import GSTextField from "./forms/GSTextField";
 import CampaignFormSectionHeading from "./CampaignFormSectionHeading";
 import yup from "yup";
 import cloneDeep from "lodash/cloneDeep";
@@ -10,6 +11,7 @@ import isEqual from "lodash/isEqual";
 import moment from "moment";
 import Autocomplete from "material-ui/AutoComplete";
 import { dataSourceItem } from "./utils";
+import RaisedButton from "material-ui/RaisedButton";
 
 export default class CampaignTextingHoursForm extends React.Component {
   state = {
@@ -39,7 +41,7 @@ export default class CampaignTextingHoursForm extends React.Component {
     return (
       <Form.Field
         name={name}
-        type={Toggle}
+        as={Toggle}
         defaultToggled={this.props.formValues[name]}
         label={label}
         onToggle={async (_, isToggled) => {
@@ -59,6 +61,7 @@ export default class CampaignTextingHoursForm extends React.Component {
   ) {
     return (
       <Form.Field
+        as={GSTextField}
         name={name}
         type={Autocomplete}
         fullWidth
@@ -201,9 +204,7 @@ export default class CampaignTextingHoursForm extends React.Component {
               ""
             )}
           </div>
-        ) : (
-          ""
-        )}
+        ) : null}
 
         {this.addAutocompleteFormField(
           "timezone",
@@ -215,8 +216,8 @@ export default class CampaignTextingHoursForm extends React.Component {
           timezones
         )}
 
-        <Form.Button
-          type="submit"
+        <Form.Submit
+          as={RaisedButton}
           disabled={this.props.saveDisabled}
           label={this.props.saveLabel}
         />

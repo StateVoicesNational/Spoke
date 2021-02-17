@@ -199,7 +199,7 @@ class AdminPhoneNumberInventory extends React.Component {
           this.props.params.ownerPerms ? (
             <FlatButton
               icon={<DeleteIcon />}
-              onTouchTap={() => this.handleDeleteNumbersOpen(row)}
+              onClick={() => this.handleDeleteNumbersOpen(row)}
             />
           ) : null
       },
@@ -370,7 +370,7 @@ class AdminPhoneNumberInventory extends React.Component {
           <FloatingActionButton
             {...dataTest("buyPhoneNumbers")}
             style={theme.components.floatingButton}
-            onTouchTap={this.handleBuyNumbersOpen}
+            onClick={this.handleBuyNumbersOpen}
           >
             <ContentAdd />
           </FloatingActionButton>

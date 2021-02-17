@@ -4,7 +4,6 @@ import MuiThemeProvider from "material-ui/styles/MuiThemeProvider";
 import muiTheme from "../styles/mui-theme";
 import theme from "../styles/theme";
 import { StyleSheet, css } from "aphrodite";
-import injectTapEventPlugin from "react-tap-event-plugin";
 import Form from "react-formal";
 import GSTextField from "./forms/GSTextField";
 import GSDateField from "./forms/GSDateField";
@@ -14,18 +13,18 @@ import GSPasswordField from "./forms/GSPasswordField";
 import GSAutoComplete from "./forms/GSAutoComplete";
 
 // Needed for MaterialUI
-injectTapEventPlugin();
+// injectTapEventPlugin(); // no longer needed
 
-Form.addInputTypes({
-  string: GSTextField,
-  number: GSTextField,
-  date: GSDateField,
-  email: GSTextField,
-  script: GSScriptField,
-  select: GSSelectField,
-  password: GSPasswordField,
-  autocomplete: GSAutoComplete
-});
+// Form.addInputTypes({
+//   string: GSTextField,
+//   number: GSTextField,
+//   date: GSDateField,
+//   email: GSTextField,
+//   script: GSScriptField,
+//   select: GSSelectField,
+//   password: GSPasswordField,
+//   autocomplete: GSAutoComplete
+// });
 
 const styles = StyleSheet.create({
   root: {

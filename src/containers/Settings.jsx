@@ -111,7 +111,7 @@ class Settings extends React.Component {
             <FlatButton
               label="Cancel"
               style={inlineStyles.dialogButton}
-              onTouchTap={this.handleCloseTextingHoursDialog}
+              onClick={this.handleCloseTextingHoursDialog}
             />
             <Form.Button
               type="submit"
@@ -329,7 +329,7 @@ class Settings extends React.Component {
               <FlatButton
                 label="Change texting hours"
                 primary
-                onTouchTap={this.handleOpenTextingHoursDialog}
+                onClick={this.handleOpenTextingHoursDialog}
               />
             ) : (
               ""
@@ -415,9 +415,7 @@ class Settings extends React.Component {
                 label="Clear Cached Organization And Extension Caches"
                 secondary
                 style={inlineStyles.dialogButton}
-                onTouchTap={
-                  this.props.mutations.clearCachedOrgAndExtensionCaches
-                }
+                onClick={this.props.mutations.clearCachedOrgAndExtensionCaches}
               />
             </CardText>
           </Card>

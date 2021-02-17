@@ -25,6 +25,7 @@ import loadData from "./hoc/load-data";
 import gql from "graphql-tag";
 import { withRouter } from "react-router";
 import GSForm from "../components/forms/GSForm";
+import GSTextField from "../components/forms/GSTextField";
 import Form from "react-formal";
 import yup from "yup";
 import Dialog from "material-ui/Dialog";
@@ -292,25 +293,34 @@ export class UserEdit extends React.Component {
           className={style}
           {...dataTest("userEditForm")}
         >
-          <Form.Field label="Email" name="email" {...dataTest("email")} />
+          <Form.Field
+            as={GSTextField}
+            label="Email"
+            name="email"
+            {...dataTest("email")}
+          />
           {(!authType || authType === "signup") && (
             <span className={css(styles.fields)}>
               <Form.Field
+                as={GSTextField}
                 label="First name"
                 name="firstName"
                 {...dataTest("firstName")}
               />
               <Form.Field
+                as={GSTextField}
                 label="Last name"
                 name="lastName"
                 {...dataTest("lastName")}
               />
               <Form.Field
+                as={GSTextField}
                 label="Texting Alias (optional)"
                 name="alias"
                 {...dataTest("alias")}
               />
               <Form.Field
+                as={GSTextField}
                 label="Cell Number"
                 name="cell"
                 {...dataTest("cell")}
@@ -342,16 +352,16 @@ export class UserEdit extends React.Component {
             !fieldsNeeded && (
               <div className={css(styles.container)}>
                 <RaisedButton
-                  onTouchTap={this.handleClick}
+                  onClick={this.handleClick}
                   label="Change password"
                   variant="outlined"
                 />
               </div>
             )}
           <div className={css(styles.buttons)}>
-            <Form.Button
+            <Form.Submit
+              as={RaisedButton}
               className={css(styles.submit)}
-              type="submit"
               label={saveLabel || "Save"}
             />
             {!authType && onCancel && !fieldsNeeded && (
@@ -390,7 +400,7 @@ export class UserEdit extends React.Component {
             onBackdropClick={this.handleClose}
             onEscapeKeyDown={this.handleClose}
           >
-            <RaisedButton onTouchTap={this.handleClose} label="OK" primary />
+            <RaisedButton onClick={this.handleClose} label="OK" primary />
           </Dialog>
         </div>
         <Card style={{ marginTop: "50px", maxWidth: "256px" }}>

@@ -4,7 +4,8 @@ import CampaignCannedResponseForm from "./CampaignCannedResponseForm";
 import FlatButton from "material-ui/FlatButton";
 import Form from "react-formal";
 import GSForm from "./forms/GSForm";
-import { List, ListItem } from "material-ui/List";
+import List from "material-ui/List/List";
+import ListItem from "material-ui/List/ListItem";
 import Divider from "material-ui/Divider";
 import CampaignFormSectionHeading from "./CampaignFormSectionHeading";
 import DeleteIcon from "material-ui/svg-icons/action/delete";
@@ -17,6 +18,7 @@ import { dataTest } from "../lib/attributes";
 import loadData from "../containers/hoc/load-data";
 import gql from "graphql-tag";
 import TagChips from "./TagChips";
+import RaisedButton from "material-ui/RaisedButton";
 
 const styles = StyleSheet.create({
   formContainer: {
@@ -202,8 +204,8 @@ export class CampaignCannedResponsesForm extends React.Component {
         />
         {list}
         {this.showAddForm()}
-        <Form.Button
-          type="submit"
+        <Form.Submit
+          as={RaisedButton}
           disabled={this.props.saveDisabled}
           label={this.props.saveLabel}
         />

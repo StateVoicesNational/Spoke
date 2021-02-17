@@ -4,7 +4,6 @@
 import React from "react";
 import { mount } from "enzyme";
 import { StyleSheetTestUtils } from "aphrodite";
-import injectTapEventPlugin from "react-tap-event-plugin";
 import each from "jest-each";
 import MuiThemeProvider from "material-ui/styles/MuiThemeProvider";
 import { ApolloProvider } from "react-apollo";
@@ -80,7 +79,6 @@ describe("AssignmentSummary text", function t() {
 });
 
 describe("AssignmentSummary actions inUSA and NOT AllowSendAll", () => {
-  injectTapEventPlugin(); // prevents warning
   function create(
     unmessaged,
     unreplied,
@@ -273,6 +271,7 @@ describe("contacts filters", () => {
   // It would be better to simulate clicking them, but I can't
   // get it to work right now because of 'react-tap-event-plugin'
   // some hints are here https://github.com/mui-org/material-ui/issues/4200#issuecomment-217738345
+  // 'react-tap-event-plugin' was depricated
 
   it("filters correctly in USA", () => {
     window.NOT_IN_USA = 0;

@@ -342,14 +342,14 @@ export class AssignmentTexterContactControls extends React.Component {
     if (messageStatus === "closed") {
       button = (
         <RaisedButton
-          onTouchTap={() => this.props.onEditStatus("needsResponse")}
+          onClick={() => this.props.onEditStatus("needsResponse")}
           label="Reopen"
         />
       );
     } else if (messageStatusFilter === "needsResponse") {
       button = (
         <RaisedButton
-          onTouchTap={() => this.props.onEditStatus("closed", true)}
+          onClick={() => this.props.onEditStatus("closed", true)}
           label="Skip Reply"
         />
       );
@@ -378,10 +378,10 @@ export class AssignmentTexterContactControls extends React.Component {
           className={css(styles.navigationToolbarTitle)}
           text={title}
         />,
-        <IconButton onTouchTap={onPrevious} disabled={!onPrevious}>
+        <IconButton onClick={onPrevious} disabled={!onPrevious}>
           <NavigateBeforeIcon />
         </IconButton>,
-        <IconButton onTouchTap={onNext} disabled={!onNext}>
+        <IconButton onClick={onNext} disabled={!onNext}>
           <NavigateNextIcon />
         </IconButton>
       ];
@@ -420,13 +420,13 @@ export class AssignmentTexterContactControls extends React.Component {
                 {...dataTest("optOut")}
                 secondary
                 label="Opt out"
-                onTouchTap={this.handleOpenDialog}
+                onClick={this.handleOpenDialog}
                 tooltip="Opt out this contact"
               />
               <RaisedButton
                 style={inlineStyles.mobileCannedReplies}
                 label="Canned replies"
-                onTouchTap={this.handleOpenPopover}
+                onClick={this.handleOpenPopover}
               />
               {this.renderNeedsResponseToggleButton(
                 contact,
@@ -455,13 +455,13 @@ export class AssignmentTexterContactControls extends React.Component {
               )}
               <RaisedButton
                 label="Other responses"
-                onTouchTap={this.handleOpenPopover}
+                onClick={this.handleOpenPopover}
               />
               <RaisedButton
                 {...dataTest("optOut")}
                 secondary
                 label="Opt out"
-                onTouchTap={this.handleOpenDialog}
+                onClick={this.handleOpenDialog}
                 tooltip="Opt out this contact"
                 tooltipPosition="top-center"
               />
@@ -484,7 +484,7 @@ export class AssignmentTexterContactControls extends React.Component {
         campaignContact={contact}
         rightToolbarIcon={
           <IconButton
-            onTouchTap={this.props.onExitTexter}
+            onClick={this.props.onExitTexter}
             style={inlineStyles.exitTexterIconButton}
             tooltip="Return Home"
             tooltipPosition="bottom-center"
@@ -542,7 +542,7 @@ export class AssignmentTexterContactControls extends React.Component {
               <FlatButton
                 style={inlineStyles.dialogButton}
                 label="Cancel"
-                onTouchTap={this.handleCloseDialog}
+                onClick={this.handleCloseDialog}
               />
               <Form.Button
                 type="submit"

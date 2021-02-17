@@ -49,7 +49,7 @@ export class AssignmentTexterContact extends React.Component {
     let disabled = false;
     let disabledSend = false;
     let disabledText = "Sending...";
-    let snackbarOnTouchTap = null;
+    let snackbarOnClick = null;
     let snackbarActionTitle = null;
     let snackbarError = null;
 
@@ -59,7 +59,7 @@ export class AssignmentTexterContact extends React.Component {
       disabledText = "";
       disabled = true;
       snackbarError = "Your assignment has changed";
-      snackbarOnTouchTap = this.goBackToTodos;
+      snackbarOnClick = this.goBackToTodos;
       snackbarActionTitle = "Back to Todos";
     } else if (
       contact.optOut &&
@@ -83,7 +83,7 @@ export class AssignmentTexterContact extends React.Component {
       // this prevents jitter by not showing the optout/skip buttons right after sending
       snackbarError,
       snackbarActionTitle,
-      snackbarOnTouchTap
+      snackbarOnClick
     };
 
     this.setDisabled = this.setDisabled.bind(this);
@@ -154,7 +154,7 @@ export class AssignmentTexterContact extends React.Component {
 
       if (e.message === "Your assignment has changed") {
         newState.snackbarActionTitle = "Back to todos";
-        newState.snackbarOnTouchTap = this.goBackToTodos;
+        newState.snackbarOnClick = this.goBackToTodos;
         this.setState(newState);
       } else {
         // opt out or send message Error
@@ -444,7 +444,7 @@ export class AssignmentTexterContact extends React.Component {
           open={!!this.state.snackbarError}
           message={this.state.snackbarError || ""}
           action={this.state.snackbarActionTitle}
-          onActionClick={this.state.snackbarOnTouchTap}
+          onActionClick={this.state.snackbarOnClick}
         />
       </div>
     );
