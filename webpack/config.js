@@ -47,7 +47,7 @@ if (!DEBUG) {
   );
 } else {
   plugins.push(new webpack.HotModuleReplacementPlugin());
-  jsxLoaders.unshift({ loader: "react-hot-loader" });
+  // jsxLoaders.unshift({ loader: "react-hot-loader" });
 }
 
 const config = {

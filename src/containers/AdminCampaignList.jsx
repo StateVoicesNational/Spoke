@@ -312,7 +312,7 @@ export class AdminCampaignList extends React.Component {
         <FloatingActionButton
           {...dataTest("archiveCampaigns")}
           style={theme.components.floatingButton}
-          onTouchTap={() => this.handleClickArchiveMultipleButton(keys)}
+          onClick={() => this.handleClickArchiveMultipleButton(keys)}
           disabled={!keys.length}
         >
           <ArchiveIcon />
@@ -323,7 +323,7 @@ export class AdminCampaignList extends React.Component {
       <FloatingActionButton
         {...dataTest("addCampaign")}
         style={theme.components.floatingButton}
-        onTouchTap={this.handleClickNewButton}
+        onClick={this.handleClickNewButton}
       >
         <ContentAdd />
       </FloatingActionButton>

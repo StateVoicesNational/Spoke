@@ -147,20 +147,20 @@ export class Tags extends React.Component {
                 label="Edit"
                 labelPosition="before"
                 icon={<CreateIcon />}
-                onTouchTap={this.handleOpenEdit(t.id)}
+                onClick={this.handleOpenEdit(t.id)}
               />
               <RaisedButton
                 label="Delete"
                 labelPosition="before"
                 icon={<DeleteIcon color={red500} />}
-                onTouchTap={this.handleDelete(t.id)}
+                onClick={this.handleDelete(t.id)}
               />
             </CardText>
           </Card>
         ))}
         <FloatingActionButton
           style={theme.components.floatingButton}
-          onTouchTap={this.handleOpen}
+          onClick={this.handleOpen}
         >
           <ContentAdd />
         </FloatingActionButton>

@@ -7,6 +7,7 @@ import IconButton from "material-ui/IconButton";
 import RaisedButton from "material-ui/RaisedButton";
 import Snackbar from "material-ui/Snackbar";
 import GSForm from "../components/forms/GSForm";
+import GSTextField from "./forms/GSTextField";
 import yup from "yup";
 import Form from "react-formal";
 import CampaignFormSectionHeading from "./CampaignFormSectionHeading";
@@ -319,7 +320,7 @@ export default class CampaignTextersForm extends React.Component {
       />
     );
 
-    return <div>{orgTexters.length > 0 ? autocomplete : ""}</div>;
+    return <div>{orgTexters.length > 0 ? autocomplete : null}</div>;
   }
 
   addAllTexters() {
@@ -372,6 +373,7 @@ export default class CampaignTextersForm extends React.Component {
           </div>
           <div className={css(styles.input)}>
             <Form.Field
+              as={GSTextField}
               {...dataTest("texterAssignment")}
               name={`texters[${index}].assignment.needsMessageCount`}
               mapToValue={m =>
@@ -399,6 +401,7 @@ export default class CampaignTextersForm extends React.Component {
           {this.props.useDynamicAssignment ? (
             <div className={css(styles.input)}>
               <Form.Field
+                as={GSTextField}
                 name={`texters[${index}].assignment.maxContacts`}
                 hintText="Max"
                 fullWidth
@@ -410,12 +413,10 @@ export default class CampaignTextersForm extends React.Component {
                 }
               />
             </div>
-          ) : (
-            ""
-          )}
+          ) : null}
           <div className={css(styles.removeButton)}>
             <IconButton
-              onTouchTap={async () => {
+              onClick={async () => {
                 const currentFormValues = this.formValues();
                 const newFormValues = {
                   ...currentFormValues
@@ -476,7 +477,7 @@ export default class CampaignTextersForm extends React.Component {
               <RaisedButton
                 {...dataTest("addAll")}
                 label="Add All"
-                onTouchTap={() => this.addAllTexters()}
+                onClick={() => this.addAllTexters()}
               />
             </div>
           </div>
@@ -544,8 +545,8 @@ export default class CampaignTextersForm extends React.Component {
             </div>
             {this.showTexters()}
           </div>
-          <Form.Button
-            type="submit"
+          <Form.Submit
+            as={RaisedButton}
             label={this.props.saveLabel}
             disabled={this.props.saveDisabled}
             {...dataTest("submitCampaignTextersForm")}

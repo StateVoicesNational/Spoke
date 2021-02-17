@@ -725,7 +725,7 @@ export class AdminCampaignEdit extends React.Component {
                 <div className={css(styles.inline)}>
                   <RaisedButton
                     {...dataTest("statsCampaign")}
-                    onTouchTap={() =>
+                    onClick={() =>
                       this.props.router.push(
                         `/admin/${organizationId}/campaigns/${campaign.id}`
                       )
@@ -734,7 +734,7 @@ export class AdminCampaignEdit extends React.Component {
                   />
                   <RaisedButton
                     {...dataTest("convoCampaign")}
-                    onTouchTap={() =>
+                    onClick={() =>
                       this.props.router.push(
                         `/admin/${organizationId}/incoming?campaigns=${campaign.id}`
                       )
@@ -799,7 +799,7 @@ export class AdminCampaignEdit extends React.Component {
           {isArchived ? (
             <RaisedButton
               label="Unarchive"
-              onTouchTap={async () =>
+              onClick={async () =>
                 await this.props.mutations.unarchiveCampaign(
                   this.props.campaignData.campaign.id
                 )
@@ -808,7 +808,7 @@ export class AdminCampaignEdit extends React.Component {
           ) : (
             <RaisedButton
               label="Archive"
-              onTouchTap={async () =>
+              onClick={async () =>
                 await this.props.mutations.archiveCampaign(
                   this.props.campaignData.campaign.id
                 )
@@ -820,7 +820,7 @@ export class AdminCampaignEdit extends React.Component {
             primary
             label="Start This Campaign!"
             disabled={isArchived || !isCompleted || !orgConfigured}
-            onTouchTap={async () => {
+            onClick={async () => {
               if (!isCompleted || !orgConfigured) {
                 return;
               }
@@ -933,7 +933,7 @@ export class AdminCampaignEdit extends React.Component {
                   <RaisedButton
                     label="Discard Job"
                     icon={<CancelIcon />}
-                    onTouchTap={() => this.handleDeleteJob(jobId)}
+                    onClick={() => this.handleDeleteJob(jobId)}
                   />
                 </CardActions>
               ) : null}

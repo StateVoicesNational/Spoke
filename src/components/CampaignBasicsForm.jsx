@@ -4,10 +4,13 @@ import Form from "react-formal";
 import moment from "moment";
 import CampaignFormSectionHeading from "./CampaignFormSectionHeading";
 import GSForm from "./forms/GSForm";
+import GSTextField from "./forms/GSTextField";
+import GSDateField from "./forms/GSDateField";
 import yup from "yup";
 import Toggle from "material-ui/Toggle";
 import ColorPicker from "material-ui-color-picker";
 import { dataTest } from "../lib/attributes";
+import RaisedButton from "material-ui/RaisedButton";
 
 const FormSchema = {
   title: yup.string(),
@@ -68,6 +71,7 @@ export default class CampaignBasicsForm extends React.Component {
           {...dataTest("campaignBasicsForm")}
         >
           <Form.Field
+            as={GSTextField}
             {...dataTest("title")}
             name="title"
             label="Title (required)"
@@ -75,6 +79,7 @@ export default class CampaignBasicsForm extends React.Component {
             fullWidth
           />
           <Form.Field
+            as={GSTextField}
             {...dataTest("description")}
             name="description"
             label="Description (required)"
@@ -82,32 +87,39 @@ export default class CampaignBasicsForm extends React.Component {
             fullWidth
           />
           <Form.Field
+            as={() => <GSDateField utcOffset={0} fullWidth />}
             {...dataTest("dueBy")}
             name="dueBy"
             label="Due date (required)"
-            type="date"
             locale="en-US"
             shouldDisableDate={date => moment(date).diff(moment()) < 0}
             autoOk
             fullWidth
-            utcOffset={0}
+            // utcOffset={0}
           />
-          <Form.Field name="introHtml" label="Intro HTML" multiLine fullWidth />
           <Form.Field
+            as={GSTextField}
+            name="introHtml"
+            label="Intro HTML"
+            multiLine
+            fullWidth
+          />
+          <Form.Field
+            as={GSTextField}
             name="logoImageUrl"
             label="Logo Image URL"
             hintText="https://www.mysite.com/images/logo.png"
             fullWidth
           />
-          <label>Primary color</label>
+          {/* <label>Primary color</label> */}
           <Form.Field
             name="primaryColor"
             label="Primary color"
             defaultValue={this.props.formValues.primaryColor || "#ffffff"}
-            type={ColorPicker}
+            as={ColorPicker}
           />
-          <Form.Button
-            type="submit"
+          <Form.Submit
+            as={RaisedButton}
             label={this.props.saveLabel}
             disabled={this.props.saveDisabled}
           />

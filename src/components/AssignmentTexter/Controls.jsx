@@ -8,6 +8,7 @@ import Survey from "./Survey";
 import ScriptList from "./ScriptList";
 import Empty from "../Empty";
 import GSForm from "../forms/GSForm";
+import GSTextField from "../forms/GSTextField";
 import RaisedButton from "material-ui/RaisedButton";
 import FlatButton from "material-ui/FlatButton";
 import IconButton from "material-ui/IconButton/IconButton";
@@ -464,6 +465,7 @@ export class AssignmentTexterContactControls extends React.Component {
 
     return (
       <Popover
+        key="renderSurveySection"
         style={inlineStyles.popover}
         className={css(flexStyles.popover)}
         open={answerPopoverOpen}
@@ -633,6 +635,7 @@ export class AssignmentTexterContactControls extends React.Component {
       !!enabledSideboxes.find(sidebox => sidebox.name === "texter-feedback");
     return (
       <div
+        key="renderMessagingRowMessage"
         className={css(flexStyles.sectionMessageField)}
         style={isFeedbackEnabled ? { width: "calc(100% - 390px)" } : undefined}
       >
@@ -650,6 +653,7 @@ export class AssignmentTexterContactControls extends React.Component {
           }
         >
           <Form.Field
+            as={GSTextField}
             className={css(flexStyles.subSectionMessageFieldTextField)}
             name="messageText"
             label="Your message"
@@ -863,6 +867,7 @@ export class AssignmentTexterContactControls extends React.Component {
     const firstMessage = this.props.messageStatusFilter === "needsMessage";
     return (
       <div
+        key="renderMessagingRowSendSkip"
         className={css(flexStyles.sectionSend)}
         style={firstMessage ? { height: "54px" } : { height: "36px" }}
       >
@@ -995,6 +1000,7 @@ export class AssignmentTexterContactControls extends React.Component {
     return (
       <div
         ref="messageBox"
+        key="renderMessageBox"
         className={css(flexStyles.superSectionMessageBox)}
         style={isFeedbackEnabled ? { width: "calc(100% - 382px)" } : undefined}
       >

@@ -221,7 +221,7 @@ export class PeopleList extends Component {
       <FlatButton
         {...dataTest("editPerson")}
         label="Edit"
-        onTouchTap={() => {
+        onClick={() => {
           this.editUser(texterId);
         }}
       />
@@ -235,7 +235,7 @@ export class PeopleList extends Component {
       <FlatButton
         label="Reset Password"
         disabled={currentUser.id === texterId}
-        onTouchTap={() => {
+        onClick={() => {
           this.resetPassword(texterId);
         }}
       />
