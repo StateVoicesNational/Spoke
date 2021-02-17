@@ -77,12 +77,13 @@ export class AssignmentSummary extends Component {
     disabled,
     contactsFilter,
     hideIfZero,
+    hideBadge,
     style
   }) {
     if (count === 0 && hideIfZero) {
       return "";
     }
-    if (count === 0) {
+    if (count === 0 || hideBadge) {
       return (
         <RaisedButton
           {...dataTest(dataTestText)}
@@ -207,23 +208,25 @@ export class AssignmentSummary extends Component {
                 })}
             {this.renderBadgedButton({
               assignment,
-              title: "Past Messages",
+              title: `Past ${pastMessagesCount} Messages`,
               count: pastMessagesCount,
               style: inlineStyles.pastMsgStyle,
               primary: false,
               disabled: false,
               contactsFilter: "stale",
-              hideIfZero: true
+              hideIfZero: true,
+              hideBadge: true
             })}
             {this.renderBadgedButton({
               assignment,
-              title: "Skipped Messages",
+              title: `Skipped ${skippedMessagesCount} Messages`,
               count: skippedMessagesCount,
               style: inlineStyles.pastMsgStyle,
               primary: false,
               disabled: false,
               contactsFilter: "skipped",
-              hideIfZero: true
+              hideIfZero: true,
+              hideBadge: true
             })}
             {window.NOT_IN_USA && window.ALLOW_SEND_ALL && !hasPopupSidebox
               ? this.renderBadgedButton({
