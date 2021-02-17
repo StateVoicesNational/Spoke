@@ -17,28 +17,25 @@ class TexterTodoList extends React.Component {
   }
 
   renderTodoList(assignments) {
-    const organizationId = this.props.params.organizationId;
     return assignments
       .sort((x, y) => {
+        // Sort with feedback at the top, and then based on Text assignment size
+        const xHasFeedback =
+          x.feedback && x.feedback.sweepComplete && !x.feedback.isAcknowledged;
+        const yHasFeedback =
+          y.feedback && y.feedback.sweepComplete && !y.feedback.isAcknowledged;
+        if (xHasFeedback && !yHasFeedback) {
+          return -1;
+        }
+        if (yHasFeedback && !xHasFeedback) {
+          return 1;
+        }
         const xToText = x.unmessagedCount + x.unrepliedCount;
         const yToText = y.unmessagedCount + y.unrepliedCount;
         if (xToText === yToText) {
           return Number(y.id) - Number(x.id);
         }
         return xToText > yToText ? -1 : 1;
-      })
-      .sort((x, y) => {
-        // sort again to bring feedback to the top
-        const xHasFeedback =
-          x.feedback && x.feedback.sweepComplete && !x.feedback.isAcknowledged;
-        const yHasFeedback =
-          y.feedback && y.feedback.sweepComplete && !y.feedback.isAcknowledged;
-        if (xHasFeedback && yHasFeedback) {
-          return 0;
-        } else if (xHasFeedback && !yHasFeedback) {
-          return -1;
-        }
-        return 1;
       })
       .map(assignment => {
         if (
@@ -47,7 +44,7 @@ class TexterTodoList extends React.Component {
         ) {
           return (
             <AssignmentSummary
-              organizationId={organizationId}
+              organizationId={assignment.campaign.organization.id}
               key={assignment.id}
               assignment={assignment}
               texter={this.props.data.user}
@@ -134,6 +131,7 @@ export const dataQuery = gql`
   query getTodos(
     $userId: Int
     $organizationId: String!
+    $todosOrg: String
     $needsMessageFilter: ContactsFilter
     $needsResponseFilter: ContactsFilter
     $badTimezoneFilter: ContactsFilter
@@ -147,7 +145,7 @@ export const dataQuery = gql`
       profileComplete(organizationId: $organizationId)
       cacheable
       roles(organizationId: $organizationId)
-      todos(organizationId: $organizationId) {
+      todos(organizationId: $todosOrg) {
         id
         hasUnassignedContactsForTexter
         campaign {
@@ -223,6 +221,11 @@ const queries = {
       variables: {
         userId: ownProps.params.userId || null,
         organizationId: ownProps.params.organizationId,
+        todosOrg:
+          ownProps.location.query["org"] == "all" ||
+          !ownProps.params.organizationId
+            ? null
+            : ownProps.params.organizationId,
         needsMessageFilter: {
           messageStatus: "needsMessage",
           isOptedOut: false,

@@ -148,7 +148,7 @@ const rootSchema = gql`
 
   type CampaignIdAssignmentId {
     campaignId: String!
-    assignmentId: String!
+    assignmentId: String
   }
 
   input TagInput {
@@ -263,6 +263,7 @@ const rootSchema = gql`
       campaignId: String
       queryParams: String
     ): Organization
+    resetOrganizationJoinLink(organizationId: String!): Organization
     editOrganizationRoles(
       organizationId: String!
       userId: String!
@@ -310,7 +311,11 @@ const rootSchema = gql`
       interactionStepIds: [String]
       campaignContactId: String!
     ): CampaignContact
-    updateFeedback(assignmentId: String!, feedback: String): Assignment
+    updateFeedback(
+      assignmentId: String!
+      feedback: JSON
+      acknowledge: Boolean
+    ): Assignment
     updateContactTags(
       tags: [ContactTagInput]
       campaignContactId: String!
@@ -362,6 +367,7 @@ const rootSchema = gql`
       limit: Int!
       addToOrganizationMessagingService: Boolean
     ): JobRequest
+    deletePhoneNumbers(organizationId: ID!, areaCode: String!): JobRequest
     releaseCampaignNumbers(campaignId: ID!): Campaign!
     clearCachedOrgAndExtensionCaches(organizationId: String!): String
   }

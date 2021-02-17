@@ -1,5 +1,14 @@
 import humps from "humps";
 
+export function mapFieldsOrNull(fields) {
+  const resolvers = {};
+
+  fields.forEach(field => {
+    resolvers[field] = o => o[field] || null;
+  });
+  return resolvers;
+}
+
 export function mapFieldsToModel(fields, model) {
   const resolvers = {};
 

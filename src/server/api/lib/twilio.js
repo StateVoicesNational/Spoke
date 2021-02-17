@@ -70,6 +70,7 @@ const headerValidator = url => {
 export const errorDescriptions = {
   12300: "Twilio is unable to process the Content-Type of the provided URL.",
   12400: "Internal (Twilio) Failure",
+  20429: "Too Many Requests: Twilio queue is full. OK to retry",
   21211: "Invalid 'To' Phone Number",
   21408: "Attempt to send to disabled region",
   21602: "Message body is required",
@@ -77,6 +78,7 @@ export const errorDescriptions = {
   21611: "Source number has exceeded max number of queued messages",
   21612: "Unreachable via SMS or MMS",
   21614: "Invalid mobile number",
+  21617: "Message body exceeds the 1600 character limit",
   21621: "From-number is not enabled for MMS (note 800 nums can't send MMS)",
   30001: "Queue overflow",
   30002: "Account suspended",
@@ -86,7 +88,7 @@ export const errorDescriptions = {
   30006: "Landline or unreachable carrier",
   30007: "Message Delivery - Carrier violation",
   30008: "Message Delivery - Unknown error",
-  "-1": "Spoke failed to send the message and will try again.",
+  "-1": "Spoke failed to send the message, usually due to a temporary issue.",
   "-2": "Spoke failed to send the message and will try again.",
   "-3": "Spoke failed to send the message and will try again.",
   "-4": "Spoke failed to send the message and will try again.",
@@ -156,11 +158,24 @@ async function convertMessagePartsToMessage(messageParts) {
     .map(serviceMessage => serviceMessage.Body)
     .join("")
     .replace(/\0/g, ""); // strip all UTF-8 null characters (0x00)
+  const media = serviceMessages
+    .map(serviceMessage => {
+      const mediaItems = [];
+      for (let m = 0; m < Number(serviceMessage.NumMedia); m++) {
+        mediaItems.push({
+          type: serviceMessage[`MediaContentType${m}`],
+          url: serviceMessage[`MediaUrl${m}`]
+        });
+      }
+      return mediaItems;
+    })
+    .reduce((acc, val) => acc.concat(val), []); // flatten array
   return new Message({
     contact_number: contactNumber,
     user_number: userNumber,
     is_from_contact: true,
     text,
+    media,
     error_code: null,
     service_id: firstPart.service_id,
     // will be set during cacheableData.message.save()
@@ -290,10 +305,9 @@ async function sendMessage(message, contact, trx, organization, campaign) {
     const messageParams = Object.assign(
       {
         to: message.contact_number,
-        body: message.text,
-        messagingServiceSid,
-        statusCallback: process.env.TWILIO_STATUS_CALLBACK_URL
+        body: message.text
       },
+      messagingServiceSid ? { messagingServiceSid } : {},
       twilioValidityPeriod ? { validityPeriod: twilioValidityPeriod } : {},
       parseMessageText(message)
     );
@@ -380,6 +394,8 @@ export function postMessageSend(
 
   if (hasError) {
     if (err) {
+      // TODO: for some errors we should *not* retry
+      // e.g. 21617 is max character limit
       if (message.error_code <= -MAX_SEND_ATTEMPTS) {
         changesToSave.send_status = "ERROR";
       }
@@ -537,7 +553,9 @@ async function handleIncomingMessage(message) {
  */
 async function createMessagingService(organization, friendlyName) {
   const twilio = await getTwilio(organization);
-  const twilioBaseUrl = getConfig("TWILIO_BASE_CALLBACK_URL", organization);
+  const twilioBaseUrl =
+    getConfig("TWILIO_BASE_CALLBACK_URL", organization) ||
+    getConfig("BASE_URL");
   return await twilio.messaging.services.create({
     friendlyName,
     statusCallback: urlJoin(
@@ -704,6 +722,55 @@ async function addNumbersToMessagingService(
   );
 }
 
+/**
+ * Release a phone number and delete it from the owned_phone_number table
+ */
+async function deleteNumber(twilioInstance, phoneSid, phoneNumber) {
+  await twilioInstance
+    .incomingPhoneNumbers(phoneSid)
+    .remove()
+    .catch(err => {
+      // Error 20404 means the number does not exist in Twilio. Should be
+      // safe to delete from Spoke inventory. Otherwise, throw error and
+      // don't delete from Spoke.
+      if (err.code === 20404) {
+        log.error(
+          `Number not found in Twilio, may have already been released: ${phoneNumber} [${phoneSid}]`
+        );
+      } else {
+        throw new Error(`Error deleting twilio number: ${err}`);
+      }
+    });
+  log.debug(`Deleted number ${phoneNumber} [${phoneSid}]`);
+  return await r
+    .knex("owned_phone_number")
+    .del()
+    .where("service_id", phoneSid);
+}
+
+/**
+ * Delete all non-allocted phone numbers in an area code
+ */
+async function deleteNumbersInAreaCode(organization, areaCode) {
+  const twilioInstance = await getTwilio(organization);
+  const numbersToDelete = await r
+    .knex("owned_phone_number")
+    .select("service_id", "phone_number")
+    .where({
+      organization_id: organization.id,
+      area_code: areaCode,
+      service: "twilio",
+      allocated_to: null
+    });
+  let successCount = 0;
+  for (const n of numbersToDelete) {
+    await deleteNumber(twilioInstance, n.service_id, n.phone_number);
+    successCount++;
+  }
+  log.debug(`Successfully deleted ${successCount} number(s)`);
+  return successCount;
+}
+
 async function deleteMessagingService(organization, messagingServiceSid) {
   const twilioInstance = await getTwilio(organization);
   console.log("Deleting messaging service", messagingServiceSid);
@@ -751,6 +818,7 @@ export default {
   createMessagingService,
   getPhoneNumbersForService,
   buyNumbersInAreaCode,
+  deleteNumbersInAreaCode,
   addNumbersToMessagingService,
   deleteMessagingService,
   clearMessagingServicePhones

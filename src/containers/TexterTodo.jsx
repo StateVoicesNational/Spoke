@@ -34,6 +34,10 @@ export const contactDataFragment = `
           id
           createdAt
           text
+          media {
+            type
+            url
+          }
           isFromContact
           userId
         }

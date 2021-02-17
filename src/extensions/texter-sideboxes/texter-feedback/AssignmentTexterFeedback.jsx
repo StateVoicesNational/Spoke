@@ -6,16 +6,14 @@ import RaisedButton from "material-ui/RaisedButton";
 import { Step, Stepper, StepLabel, StepContent } from "material-ui/Stepper";
 import WarningIcon from "material-ui/svg-icons/alert/warning";
 import SuccessIcon from "material-ui/svg-icons/action/check-circle";
+import LinkIcon from "material-ui/svg-icons/content/link";
 import { StyleSheet, css } from "aphrodite";
-import loadData from "../containers/hoc/load-data";
+import loadData from "../../../containers/hoc/load-data";
 import gql from "graphql-tag";
 
-import {
-  issues,
-  skills
-} from "../extensions/texter-sideboxes/texter-feedback/config";
+import { defaults } from "./config";
 
-import theme from "../styles/theme";
+import theme from "../../../styles/theme";
 
 const styles = StyleSheet.create({
   container: {
@@ -104,12 +102,24 @@ export class AssignmentTexterFeedback extends Component {
   getStepContent = () => {
     const { stepIndex } = this.state;
     const {
-      feedback: { createdBy, message, issueCounts, skillCounts }
+      assignment: {
+        feedback: { createdBy, message, issueCounts, skillCounts }
+      },
+      settingsData
     } = this.props;
+
+    let config = defaults;
+    if (settingsData && settingsData.texterFeedbackJSON) {
+      try {
+        config = JSON.parse(settingsData.texterFeedbackJSON);
+      } catch (err) {
+        console.log("Corrupted TexterFeedback JSON", err);
+      }
+    }
 
     const issueItems = Object.entries(issueCounts)
       .map(([key, count]) => {
-        const item = issues.find(issue => issue.key === key);
+        const item = defaults.issues.find(issue => issue.key === key);
         if (count && !isNaN(count) && item) return item;
         return null;
       })
@@ -119,14 +129,14 @@ export class AssignmentTexterFeedback extends Component {
       // issueItems with successMessage and no count
       ...Object.entries(issueCounts)
         .map(([key, count]) => {
-          const item = issues.find(issue => issue.key === key);
+          const item = defaults.issues.find(issue => issue.key === key);
           if (count === 0 && item && item.successMessage) return item;
           return null;
         })
         .filter(Boolean),
       // skillCounts items
       ...Object.entries(skillCounts).map(([key, count]) => {
-        const item = skills.find(skill => skill.key === key);
+        const item = defaults.skills.find(skill => skill.key === key);
         if (count && !isNaN(count) && item) return item;
         return null;
       })
@@ -152,18 +162,26 @@ export class AssignmentTexterFeedback extends Component {
       </div>
     );
 
-    const getIssueContent = ({ warningMessage, content }) => (
+    const getIssueContent = ({ warningMessage, content, moreInfo }) => (
       <Step>
         <StepLabel>
           <Alert type="warning" message={warningMessage} />
         </StepLabel>
         <StepContent style={inlineStyles.stepContent}>
-          {content}
+          <div dangerouslySetInnerHTML={{ __html: content }} />
+          {moreInfo ? (
+            <FlatButton
+              label="More Info"
+              target="_blank"
+              secondary
+              icon={<LinkIcon />}
+              href={moreInfo}
+            />
+          ) : null}
           <StepActions />
         </StepContent>
       </Step>
     );
-
     return (
       <Stepper
         style={inlineStyles.stepper}
@@ -173,7 +191,7 @@ export class AssignmentTexterFeedback extends Component {
       >
         <Step>
           <StepLabel style={inlineStyles.stepLabel}>
-            {createdBy.name}'s Feedback:
+            {createdBy.name}&rsquo;s Feedback:
           </StepLabel>
           <StepContent style={inlineStyles.stepContent}>
             {message.split("\n").map((line, key) => (
@@ -216,10 +234,8 @@ export class AssignmentTexterFeedback extends Component {
     }));
 
   handleDone = async () => {
-    const { feedback, mutations } = this.props;
-    feedback.isAcknowledged = true;
-    const feedbackString = JSON.stringify(feedback);
-    await mutations.updateFeedback(feedbackString);
+    const { mutations } = this.props;
+    await mutations.updateFeedback(true);
   };
 
   render() {
@@ -249,14 +265,16 @@ export class AssignmentTexterFeedback extends Component {
 
 AssignmentTexterFeedback.propTypes = {
   feedback: PropTypes.object,
-  mutations: PropTypes.func
+  mutations: PropTypes.func,
+  settingsData: PropTypes.object,
+  assignment: PropTypes.object
 };
 
 export const mutations = {
-  updateFeedback: ownProps => feedback => ({
+  updateFeedback: ownProps => acknowledge => ({
     mutation: gql`
-      mutation updateFeedback($assignmentId: String!, $feedback: String!) {
-        updateFeedback(assignmentId: $assignmentId, feedback: $feedback) {
+      mutation updateFeedback($assignmentId: String!, $acknowledge: Boolean!) {
+        updateFeedback(assignmentId: $assignmentId, acknowledge: $acknowledge) {
           id
           feedback {
             isAcknowledged
@@ -265,8 +283,8 @@ export const mutations = {
       }
     `,
     variables: {
-      assignmentId: ownProps.assignmentId,
-      feedback
+      assignmentId: ownProps.assignment.id,
+      acknowledge
     }
   })
 };
