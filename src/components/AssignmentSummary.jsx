@@ -197,7 +197,9 @@ export class AssignmentSummary extends Component {
                 })}
             {this.renderBadgedButton({
               assignment,
-              title: `Past ${pastMessagesCount} Messages`,
+              title: pastMessagesCount
+                ? `Past ${pastMessagesCount} Messages`
+                : `Past Messages`,
               count: pastMessagesCount,
               primary: false,
               disabled: false,
@@ -207,7 +209,9 @@ export class AssignmentSummary extends Component {
             })}
             {this.renderBadgedButton({
               assignment,
-              title: `Skipped ${skippedMessagesCount} Messages`,
+              title: skippedMessagesCount
+                ? `Skipped ${skippedMessagesCount} Messages`
+                : `Skipped Messages`,
               count: skippedMessagesCount,
               primary: false,
               disabled: false,
