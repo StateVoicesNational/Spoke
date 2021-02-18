@@ -25,17 +25,6 @@ export const inlineStyles = {
     textAlign: "center",
     verticalAlign: "middle",
     height: 20
-  },
-  pastMsgStyle: {
-    backgroundColor: "#FFD700",
-    fontSize: 12,
-    top: 20,
-    right: 20,
-    padding: "4px 2px 0px 2px",
-    width: 20,
-    textAlign: "center",
-    verticalAlign: "middle",
-    height: 20
   }
 };
 
@@ -210,7 +199,6 @@ export class AssignmentSummary extends Component {
               assignment,
               title: `Past ${pastMessagesCount} Messages`,
               count: pastMessagesCount,
-              style: inlineStyles.pastMsgStyle,
               primary: false,
               disabled: false,
               contactsFilter: "stale",
@@ -221,7 +209,6 @@ export class AssignmentSummary extends Component {
               assignment,
               title: `Skipped ${skippedMessagesCount} Messages`,
               count: skippedMessagesCount,
-              style: inlineStyles.pastMsgStyle,
               primary: false,
               disabled: false,
               contactsFilter: "skipped",
