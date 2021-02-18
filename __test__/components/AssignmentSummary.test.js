@@ -170,16 +170,20 @@ describe("AssignmentSummary actions inUSA and NOT AllowSendAll", () => {
     const actions = create(0, 0, 0, 9, 0, false);
     expect(
       actions
-        .find(Badge)
+        .find(RaisedButton)
         .at(0)
-        .prop("badgeContent")
-    ).toBe(9);
+        .prop("label")
+    ).toBe("Past 9 Messages");
+  });
+
+  it('renders "skipped messages (n)" with messaged', () => {
+    const actions = create(0, 0, 0, 0, 8, false);
     expect(
       actions
         .find(RaisedButton)
         .at(0)
         .prop("label")
-    ).toBe("Past Messages");
+    ).toBe("Skipped 8 Messages");
   });
 });
 
@@ -242,7 +246,8 @@ it('renders "Send later" when there is a badTimezoneCount', () => {
             unmessagedCount: 0,
             unrepliedCount: 0,
             badTimezoneCount: 4,
-            skippedMessagesCount: 0
+            skippedMessagesCount: 0,
+            pastMessagesCount: 0
           }
         })}
       />
@@ -251,21 +256,15 @@ it('renders "Send later" when there is a badTimezoneCount', () => {
   expect(
     actions
       .find(Badge)
-      .at(1)
+      .at(0)
       .prop("badgeContent")
   ).toBe(4);
   expect(
     actions
       .find(RaisedButton)
-      .at(0)
-      .prop("label")
-  ).toBe("Past Messages");
-  expect(
-    actions
-      .find(RaisedButton)
       .at(1)
       .prop("label")
-  ).toBe("Send messages");
+  ).toBe("Send later (outside timezone)");
 });
 
 describe("contacts filters", () => {
