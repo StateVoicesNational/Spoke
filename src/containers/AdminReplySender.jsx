@@ -6,7 +6,7 @@ import { StyleSheet, css } from "aphrodite";
 import theme from "../styles/theme";
 import GSForm from "../components/forms/GSForm";
 import Form from "react-formal";
-import yup from "yup";
+import * as yup from "yup";
 import { dataTest } from "../lib/attributes";
 
 const styles = StyleSheet.create({
@@ -90,9 +90,9 @@ class AdminReplySender extends React.Component {
               hintText="Reply"
               fullWidth
             />
-            <Form.Button
+            <Form.Submit
               {...dataTest("send")}
-              type="submit"
+              as={RaisedButton}
               label="Send"
               name="submit"
               secondary

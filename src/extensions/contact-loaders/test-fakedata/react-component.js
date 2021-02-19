@@ -11,7 +11,7 @@ import CheckIcon from "material-ui/svg-icons/action/check-circle";
 import WarningIcon from "material-ui/svg-icons/alert/warning";
 import ErrorIcon from "material-ui/svg-icons/alert/error";
 import { StyleSheet, css } from "aphrodite";
-import yup from "yup";
+import * as yup from "yup";
 
 export class CampaignContactsForm extends React.Component {
   state = {
@@ -63,8 +63,8 @@ export class CampaignContactsForm extends React.Component {
           ) : null}
         </List>
 
-        <Form.Button
-          type="submit"
+        <Form.Submit
+          as={RaisedButton}
           disabled={this.props.saveDisabled}
           label={this.props.saveLabel}
         />

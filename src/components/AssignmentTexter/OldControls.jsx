@@ -16,7 +16,7 @@ import { Toolbar, ToolbarGroup, ToolbarTitle } from "material-ui/Toolbar";
 import { Card, CardActions, CardTitle } from "material-ui/Card";
 import Divider from "material-ui/Divider";
 import gql from "graphql-tag";
-import yup from "yup";
+import * as yup from "yup";
 import GSForm from "../forms/GSForm";
 import Form from "react-formal";
 import GSSubmitButton from "../forms/GSSubmitButton";
@@ -544,8 +544,8 @@ export class AssignmentTexterContactControls extends React.Component {
                 label="Cancel"
                 onClick={this.handleCloseDialog}
               />
-              <Form.Button
-                type="submit"
+              <Form.Submit
+                as={RaisedButton}
                 style={inlineStyles.dialogButton}
                 component={GSSubmitButton}
                 label={

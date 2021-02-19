@@ -11,7 +11,7 @@ import CampaignFormSectionHeading from "./CampaignFormSectionHeading";
 import DeleteIcon from "material-ui/svg-icons/action/delete";
 import CreateIcon from "material-ui/svg-icons/content/create";
 import IconButton from "material-ui/IconButton";
-import yup from "yup";
+import * as yup from "yup";
 import theme from "../styles/theme";
 import { StyleSheet, css } from "aphrodite";
 import { dataTest } from "../lib/attributes";

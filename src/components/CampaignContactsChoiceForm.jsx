@@ -15,7 +15,7 @@ import ErrorIcon from "material-ui/svg-icons/alert/error";
 import InfoIcon from "material-ui/svg-icons/action/info";
 import theme from "../styles/theme";
 import components from "../extensions/contact-loaders/components";
-import yup from "yup";
+import * as yup from "yup";
 import { withRouter } from "react-router";
 
 const check = <CheckIcon color={theme.colors.green} />;

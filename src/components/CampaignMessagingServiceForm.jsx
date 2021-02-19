@@ -4,8 +4,9 @@ import React from "react";
 import Form from "react-formal";
 import GSForm from "./forms/GSForm";
 import CampaignFormSectionHeading from "./CampaignFormSectionHeading";
-import yup from "yup";
+import * as yup from "yup";
 import cloneDeep from "lodash/cloneDeep";
+import { RaisedButton } from "material-ui";
 
 export default class CampaignMessagingServiceForm extends React.Component {
   formSchema = yup.object({
@@ -69,8 +70,8 @@ export default class CampaignMessagingServiceForm extends React.Component {
           ""
         )}
 
-        <Form.Button
-          type="submit"
+        <Form.Submit
+          as={RaisedButton}
           disabled={this.props.saveDisabled}
           label={this.props.saveLabel}
         />

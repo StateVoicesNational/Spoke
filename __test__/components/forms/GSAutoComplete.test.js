@@ -5,7 +5,7 @@ import React from "react";
 import { mount } from "enzyme";
 import { StyleSheetTestUtils } from "aphrodite";
 
-import yup from "yup";
+import * as yup from "yup";
 
 import Form from "react-formal";
 import { GSAutoComplete, GSForm } from "../../../src/components/forms";

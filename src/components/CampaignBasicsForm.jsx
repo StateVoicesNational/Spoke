@@ -6,7 +6,7 @@ import CampaignFormSectionHeading from "./CampaignFormSectionHeading";
 import GSForm from "./forms/GSForm";
 import GSTextField from "./forms/GSTextField";
 import GSDateField from "./forms/GSDateField";
-import yup from "yup";
+import * as yup from "yup";
 import Toggle from "material-ui/Toggle";
 import ColorPicker from "material-ui-color-picker";
 import { dataTest } from "../lib/attributes";

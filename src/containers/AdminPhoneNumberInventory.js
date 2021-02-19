@@ -10,7 +10,7 @@ import Paper from "material-ui/Paper";
 import DropDownMenu from "material-ui/DropDownMenu";
 import { MenuItem } from "material-ui/Menu";
 import FloatingActionButton from "material-ui/FloatingActionButton";
-import yup from "yup";
+import * as yup from "yup";
 import GSForm from "../components/forms/GSForm";
 import Form from "react-formal";
 
@@ -310,7 +310,7 @@ class AdminPhoneNumberInventory extends React.Component {
             style={inlineStyles.cancelButton}
             label="Cancel"
           />
-          <Form.Button type="submit" label="Submit" />
+          <Form.Submit as={RaisedButton} label="Submit" />
         </div>
       </GSForm>
     );

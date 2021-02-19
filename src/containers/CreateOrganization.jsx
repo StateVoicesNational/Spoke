@@ -3,7 +3,7 @@ import React from "react";
 import loadData from "./hoc/load-data";
 import gql from "graphql-tag";
 import Form from "react-formal";
-import yup from "yup";
+import * as yup from "yup";
 import { StyleSheet, css } from "aphrodite";
 import theme from "../styles/theme";
 import Paper from "material-ui/Paper";
@@ -78,8 +78,8 @@ class CreateOrganization extends React.Component {
                 hintText="Bartlet Campaign"
                 fullWidth
               />
-              <Form.Button
-                type="submit"
+              <Form.Submit
+                as={RaisedButton}
                 label="Get Started"
                 name="submit"
                 value="Get Started"

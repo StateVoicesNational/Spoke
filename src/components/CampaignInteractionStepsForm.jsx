@@ -10,7 +10,7 @@ import HelpIconOutline from "material-ui/svg-icons/action/help-outline";
 import Form from "react-formal";
 import GSForm from "./forms/GSForm";
 import GSTextField from "./forms/GSTextField";
-import yup from "yup";
+import * as yup from "yup";
 import { makeTree } from "../lib";
 import { dataTest } from "../lib/attributes";
 import { StyleSheet, css } from "aphrodite";

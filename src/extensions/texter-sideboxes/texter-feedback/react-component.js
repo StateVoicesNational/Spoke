@@ -2,7 +2,7 @@ import PropTypes from "prop-types";
 import React from "react";
 import { withRouter } from "react-router";
 import ReactTooltip from "react-tooltip";
-import yup from "yup";
+import * as yup from "yup";
 import Form from "react-formal";
 import { Paper, Checkbox } from "material-ui";
 import IconButton from "material-ui/IconButton/IconButton";
@@ -273,10 +273,10 @@ export class TexterSideboxClass extends React.Component {
             rowsMax={6}
           />
 
-          <Form.Button
+          <Form.Submit
             style={inlineStyles.submitButton}
             labelStyle={{ fontSize: 17 }}
-            type="submit"
+            as={RaisedButton}
             label="Sweep Complete"
             disabled={!feedback.message}
           />

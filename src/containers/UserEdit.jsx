@@ -27,7 +27,7 @@ import { withRouter } from "react-router";
 import GSForm from "../components/forms/GSForm";
 import GSTextField from "../components/forms/GSTextField";
 import Form from "react-formal";
-import yup from "yup";
+import * as yup from "yup";
 import Dialog from "material-ui/Dialog";
 import RaisedButton from "material-ui/RaisedButton";
 import { StyleSheet, css } from "aphrodite";

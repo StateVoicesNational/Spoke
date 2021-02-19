@@ -67,7 +67,7 @@ export default class GSForm extends React.Component {
         return React.cloneElement(clonedElement, {
           events: ["onBlur"]
         });
-      } else if (child.type === Form.Button) {
+      } else if (child.type === Form.Submit) {
         return React.cloneElement(child, {
           component: GSSubmitButton,
           isSubmitting: this.state.isSubmitting
