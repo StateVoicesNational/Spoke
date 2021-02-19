@@ -8,7 +8,7 @@ import RaisedButton from "material-ui/RaisedButton";
 import Snackbar from "material-ui/Snackbar";
 import GSForm from "../components/forms/GSForm";
 import GSTextField from "./forms/GSTextField";
-import yup from "yup";
+import * as yup from "yup";
 import Form from "react-formal";
 import CampaignFormSectionHeading from "./CampaignFormSectionHeading";
 import { StyleSheet, css } from "aphrodite";

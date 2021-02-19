@@ -1,12 +1,13 @@
 import type from "prop-types";
 import React from "react";
-import yup from "yup";
+import * as yup from "yup";
 import Form from "react-formal";
 import FlatButton from "material-ui/FlatButton";
 import Dialog from "material-ui/Dialog";
 import CircularProgress from "material-ui/CircularProgress";
 import { Tabs, Tab } from "material-ui/Tabs";
 import { css, StyleSheet } from "aphrodite";
+import GSTextField from "../../../components/forms/GSTextField";
 import {
   flexStyles,
   inlineStyles
@@ -226,11 +227,13 @@ export class AdminConfig extends React.Component {
     return (
       <div>
         <Form.Field
+          as={GSTextField}
           name="mobilizeEventShifterDefaultEventId"
           label="Set a default Event ID for when none is provided in CSV under a column called event_id"
           fullWidth
         />
         <Form.Field
+          as={GSTextField}
           name="mobilizeEventShifterBaseUrl"
           label="Set the Base Mobilize Url for the campaign."
           fullWidth

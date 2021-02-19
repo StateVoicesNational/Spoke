@@ -9,7 +9,7 @@ import GSSubmitButton from "../components/forms/GSSubmitButton";
 import FlatButton from "material-ui/FlatButton";
 import RaisedButton from "material-ui/RaisedButton";
 import DisplayLink from "../components/DisplayLink";
-import yup from "yup";
+import * as yup from "yup";
 import { Card, CardText, CardActions, CardHeader } from "material-ui/Card";
 import { StyleSheet, css } from "aphrodite";
 import theme from "../styles/theme";
@@ -17,6 +17,7 @@ import Toggle from "material-ui/Toggle";
 import moment from "moment";
 import CampaignTexterUIForm from "../components/CampaignTexterUIForm";
 import OrganizationFeatureSettings from "../components/OrganizationFeatureSettings";
+import GSTextField from "../components/forms/GSTextField";
 
 const styles = StyleSheet.create({
   section: {
@@ -94,6 +95,7 @@ class Settings extends React.Component {
           defaultValue={{ textingHoursStart, textingHoursEnd }}
         >
           <Form.Field
+            as={GSTextField}
             label="Start time"
             name="textingHoursStart"
             type="select"
@@ -101,6 +103,7 @@ class Settings extends React.Component {
             choices={hourChoices}
           />
           <Form.Field
+            as={GSTextField}
             label="End time"
             name="textingHoursEnd"
             type="select"
@@ -113,8 +116,8 @@ class Settings extends React.Component {
               style={inlineStyles.dialogButton}
               onClick={this.handleCloseTextingHoursDialog}
             />
-            <Form.Button
-              type="submit"
+            <Form.Submit
+              as={RaisedButton}
               style={inlineStyles.dialogButton}
               component={GSSubmitButton}
               label="Save"
@@ -181,8 +184,8 @@ class Settings extends React.Component {
         style={inlineStyles.dialogButton}
         onClick={this.handleCloseTwilioDialog}
       />,
-      <Form.Button
-        type="submit"
+      <Form.Submit
+        as={RaisedButton}
         label="Save"
         style={inlineStyles.dialogButton}
         component={GSSubmitButton}
@@ -226,16 +229,19 @@ class Settings extends React.Component {
               }}
             >
               <Form.Field
+                as={GSTextField}
                 label="Twilio Account SID"
                 name="accountSid"
                 fullWidth
               />
               <Form.Field
+                as={GSTextField}
                 label="Twilio Auth Token"
                 name="authToken"
                 fullWidth
               />
               <Form.Field
+                as={GSTextField}
                 label="Default Message Service SID"
                 name="messageServiceSid"
                 fullWidth
@@ -282,13 +288,14 @@ class Settings extends React.Component {
                 defaultValue={{ optOutMessage }}
               >
                 <Form.Field
+                  as={GSTextField}
                   label="Default Opt-Out Message"
                   name="optOutMessage"
                   fullWidth
                 />
 
-                <Form.Button
-                  type="submit"
+                <Form.Submit
+                  as={RaisedButton}
                   label={this.props.saveLabel || "Save Opt-Out Message"}
                 />
               </GSForm>

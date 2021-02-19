@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import PropTypes from "prop-types";
 import Form from "react-formal";
-import yup from "yup";
+import * as yup from "yup";
 import gql from "graphql-tag";
 import { StyleSheet, css } from "aphrodite";
 import Dialog from "material-ui/Dialog";

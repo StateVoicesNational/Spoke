@@ -15,7 +15,7 @@ import {
 import CampaignFormSectionHeading from "../../../components/CampaignFormSectionHeading";
 import { StyleSheet, css } from "aphrodite";
 import theme from "../../../styles/theme";
-import yup from "yup";
+import * as yup from "yup";
 import humps from "humps";
 import { dataTest } from "../../../lib/attributes";
 
@@ -259,8 +259,8 @@ export class CampaignContactsForm extends React.Component {
           ) : (
             ""
           )}
-          <Form.Button
-            type="submit"
+          <Form.Submit
+            as={RaisedButton}
             disabled={this.props.saveDisabled}
             label={this.props.saveLabel}
             {...dataTest("submitContactsCsvUpload")}

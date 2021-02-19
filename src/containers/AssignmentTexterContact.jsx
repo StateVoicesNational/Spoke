@@ -6,7 +6,7 @@ import Controls from "../components/AssignmentTexter/Controls";
 import { applyScript } from "../lib/scripts";
 import gql from "graphql-tag";
 import loadData from "./hoc/load-data";
-import yup from "yup";
+import * as yup from "yup";
 import BulkSendButton from "../components/AssignmentTexter/BulkSendButton";
 import CircularProgress from "material-ui/CircularProgress";
 import Snackbar from "material-ui/Snackbar";

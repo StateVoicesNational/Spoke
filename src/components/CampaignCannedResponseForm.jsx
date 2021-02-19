@@ -1,7 +1,7 @@
 import type from "prop-types";
 import React from "react";
 import { StyleSheet, css } from "aphrodite";
-import yup from "yup";
+import * as yup from "yup";
 import GSForm from "./forms/GSForm";
 import Form from "react-formal";
 import FlatButton from "material-ui/FlatButton";

@@ -9,7 +9,7 @@ import FloatingActionButton from "material-ui/FloatingActionButton";
 import ContentAdd from "material-ui/svg-icons/content/add";
 import theme from "../styles/theme";
 import Dialog from "material-ui/Dialog";
-import yup from "yup";
+import * as yup from "yup";
 import GSForm from "../components/forms/GSForm";
 import Form from "react-formal";
 import { StyleSheet, css } from "aphrodite";
@@ -183,7 +183,7 @@ export class Tags extends React.Component {
               />
             </div>
             <div className={css(styles.submit)}>
-              <Form.Button type="submit" label={dialogButtonLabel} />
+              <Form.Submit as={RaisedButton} label={dialogButtonLabel} />
             </div>
           </GSForm>
         </Dialog>

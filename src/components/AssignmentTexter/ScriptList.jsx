@@ -122,8 +122,8 @@ class ScriptList extends React.Component {
             open={dialogOpen}
             actions={[
               <FlatButton label="Cancel" onClick={this.handleCloseDialog} />,
-              <Form.Button
-                type="submit"
+              <Form.Submit
+                as={RaisedButton}
                 component={GSSubmitButton}
                 label="Save"
               />

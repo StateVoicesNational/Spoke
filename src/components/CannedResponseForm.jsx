@@ -1,7 +1,7 @@
 import type from "prop-types";
 import React from "react";
 import Form from "react-formal";
-import yup from "yup";
+import * as yup from "yup";
 import GSForm from "./forms/GSForm";
 
 class CannedResponseForm extends React.Component {
