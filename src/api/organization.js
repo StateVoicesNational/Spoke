@@ -41,16 +41,6 @@ export const schema = gql`
     unsetFeatures: [String]
   }
 
-  enum MessagingServiceType {
-    SMS
-  }
-
-  type MessagingService {
-    name: String!
-    type: MessagingServiceType
-    config: JSON
-  }
-
   input OrgSettingsInput {
     messageHandlers: [String]
     actionHandlers: [String]
@@ -86,7 +76,7 @@ export const schema = gql`
     twilioAccountSid: String
     twilioAuthToken: String
     twilioMessageServiceSid: String
-    messagingService: MessagingService
+    messageService: MessageService
     fullyConfigured: Boolean
     emailEnabled: Boolean
     phoneInventoryEnabled: Boolean!
