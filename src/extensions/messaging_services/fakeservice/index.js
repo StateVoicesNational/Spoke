@@ -11,6 +11,13 @@ import uuid from "uuid";
 // that end up just in the db appropriately and then using sendReply() graphql
 // queries for the reception (rather than a real service)
 
+export const getMetadata = () => ({
+  supportsOrgConfig: false,
+  supportsCampaignConfig: false,
+  type: "SMS",
+  name: "fakeservice"
+});
+
 async function sendMessage(message, contact, trx, organization, campaign) {
   const errorCode = message.text.match(/error(\d+)/);
   const changes = {
@@ -165,5 +172,6 @@ export default {
   deleteNumbersInAreaCode,
   // useless unused stubs
   convertMessagePartsToMessage,
-  handleIncomingMessage
+  handleIncomingMessage,
+  getMetadata
 };
