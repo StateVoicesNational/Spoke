@@ -9,6 +9,7 @@ import IconButton from "material-ui/IconButton/IconButton";
 import AddIcon from "material-ui/svg-icons/content/add-circle";
 import RemoveIcon from "material-ui/svg-icons/content/remove-circle";
 import GSForm from "../../../components/forms/GSForm";
+import GSSubmitButton from "../../../components/forms/GSSubmitButton";
 import loadData from "../../../containers/hoc/load-data";
 import gql from "graphql-tag";
 import _ from "lodash";
@@ -276,7 +277,7 @@ export class TexterSideboxClass extends React.Component {
           <Form.Submit
             style={inlineStyles.submitButton}
             labelStyle={{ fontSize: 17 }}
-            as={RaisedButton}
+            as={GSSubmitButton}
             label="Sweep Complete"
             disabled={!feedback.message}
           />

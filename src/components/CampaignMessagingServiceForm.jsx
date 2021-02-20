@@ -3,6 +3,7 @@ import Toggle from "material-ui/Toggle";
 import React from "react";
 import Form from "react-formal";
 import GSForm from "./forms/GSForm";
+import GSSubmitButton from "./forms/GSSubmitButton";
 import CampaignFormSectionHeading from "./CampaignFormSectionHeading";
 import * as yup from "yup";
 import cloneDeep from "lodash/cloneDeep";
@@ -71,7 +72,7 @@ export default class CampaignMessagingServiceForm extends React.Component {
         )}
 
         <Form.Submit
-          as={RaisedButton}
+          as={GSSubmitButton}
           disabled={this.props.saveDisabled}
           label={this.props.saveLabel}
         />

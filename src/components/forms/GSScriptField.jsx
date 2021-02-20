@@ -31,7 +31,9 @@ export default class GSScriptField extends GSFormField {
         open: true,
         script: this.props.value
       },
-      () => this.refs.dialogScriptInput.focus()
+      () => {
+        this.refs.dialogScriptInput && this.refs.dialogScriptInput.focus();
+      }
     );
   };
 
@@ -84,6 +86,7 @@ export default class GSScriptField extends GSFormField {
   }
 
   render() {
+    const { fullWidth, label, multiline, name, onChange, value } = this.props;
     return (
       <div>
         <TextField
@@ -108,7 +111,12 @@ export default class GSScriptField extends GSFormField {
           floatingLabelStyle={{
             zIndex: 0
           }}
-          {...this.props}
+          fullWidth={fullWidth}
+          label={label}
+          multiline={multiline}
+          name={name}
+          onChange={onChange}
+          value={value}
         />
         {this.renderDialog()}
       </div>

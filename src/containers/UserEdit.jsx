@@ -26,6 +26,7 @@ import gql from "graphql-tag";
 import { withRouter } from "react-router";
 import GSForm from "../components/forms/GSForm";
 import GSTextField from "../components/forms/GSTextField";
+import GSSubmitButton from "../components/forms/GSSubmitButton";
 import Form from "react-formal";
 import * as yup from "yup";
 import Dialog from "material-ui/Dialog";
@@ -360,7 +361,7 @@ export class UserEdit extends React.Component {
             )}
           <div className={css(styles.buttons)}>
             <Form.Submit
-              as={RaisedButton}
+              as={GSSubmitButton}
               className={css(styles.submit)}
               label={saveLabel || "Save"}
             />

@@ -545,9 +545,8 @@ export class AssignmentTexterContactControls extends React.Component {
                 onClick={this.handleCloseDialog}
               />
               <Form.Submit
-                as={RaisedButton}
+                as={GSSubmitButton}
                 style={inlineStyles.dialogButton}
-                component={GSSubmitButton}
                 label={
                   this.state.optOutMessageText.length
                     ? "Send"

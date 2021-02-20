@@ -6,7 +6,7 @@ import Form from "react-formal";
 import Toggle from "material-ui/Toggle";
 import { dataTest } from "../lib/attributes";
 import GSTextField from "./forms/GSTextField";
-import RaisedButton from "material-ui/RaisedButton";
+import GSSubmitButton from "./forms/GSSubmitButton";
 
 const configurableFields = {
   ACTION_HANDLERS: {
@@ -254,7 +254,7 @@ export default class OrganizationFeatureSettings extends React.Component {
         >
           {adminItems}
           <Form.Submit
-            as={RaisedButton}
+            as={GSSubmitButton}
             onClick={this.props.onSubmit}
             label={this.props.saveLabel}
             disabled={this.props.saveDisabled}

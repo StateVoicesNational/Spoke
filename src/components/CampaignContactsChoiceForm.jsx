@@ -119,9 +119,7 @@ export class CampaignContactsChoiceForm extends React.Component {
         )}
 
         <div>
-          {!this.props.contactsCount ? (
-            ""
-          ) : (
+          {!this.props.contactsCount ? null : (
             <div>
               <CampaignFormSectionHeading
                 title={`Loaded Contacts: ${this.props.contactsCount}`}
@@ -132,9 +130,7 @@ export class CampaignContactsChoiceForm extends React.Component {
               </div>
             </div>
           )}
-          {!this.props.jobResultMessage ? (
-            ""
-          ) : (
+          {!this.props.jobResultMessage ? null : (
             <div>
               <CampaignFormSectionHeading title="Job Outcome" />
               <div>{this.props.jobResultMessage}</div>

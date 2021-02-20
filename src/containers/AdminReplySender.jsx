@@ -5,6 +5,7 @@ import gql from "graphql-tag";
 import { StyleSheet, css } from "aphrodite";
 import theme from "../styles/theme";
 import GSForm from "../components/forms/GSForm";
+import GSSubmitButton from "../components/forms/GSSubmitButton";
 import Form from "react-formal";
 import * as yup from "yup";
 import { dataTest } from "../lib/attributes";
@@ -92,7 +93,7 @@ class AdminReplySender extends React.Component {
             />
             <Form.Submit
               {...dataTest("send")}
-              as={RaisedButton}
+              as={GSSubmitButton}
               label="Send"
               name="submit"
               secondary

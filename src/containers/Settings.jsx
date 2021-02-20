@@ -117,9 +117,8 @@ class Settings extends React.Component {
               onClick={this.handleCloseTextingHoursDialog}
             />
             <Form.Submit
-              as={RaisedButton}
+              as={GSSubmitButton}
               style={inlineStyles.dialogButton}
-              component={GSSubmitButton}
               label="Save"
             />
           </div>
@@ -185,10 +184,9 @@ class Settings extends React.Component {
         onClick={this.handleCloseTwilioDialog}
       />,
       <Form.Submit
-        as={RaisedButton}
+        as={GSSubmitButton}
         label="Save"
         style={inlineStyles.dialogButton}
-        component={GSSubmitButton}
       />
     ];
 
@@ -295,7 +293,7 @@ class Settings extends React.Component {
                 />
 
                 <Form.Submit
-                  as={RaisedButton}
+                  as={GSSubmitButton}
                   label={this.props.saveLabel || "Save Opt-Out Message"}
                 />
               </GSForm>
