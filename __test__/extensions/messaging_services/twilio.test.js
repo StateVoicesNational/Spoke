@@ -807,7 +807,7 @@ describe("twilio", () => {
         });
       });
     });
-    describe.only("fullyConfigured", () => {
+    describe("fullyConfigured", () => {
       beforeEach(async () => {
         jest.spyOn(twilio, "getServiceConfig").mockResolvedValue({
           authToken: "fake_auth_token",
