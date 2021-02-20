@@ -915,7 +915,7 @@ export const updateConfig = async (oldConfig, config) => {
   return newConfig;
 };
 
-const campaignNumbersEnabled = organization => {
+export const campaignNumbersEnabled = organization => {
   const inventoryEnabled =
     getConfig("EXPERIMENTAL_PHONE_INVENTORY", organization, {
       truthy: true
@@ -932,7 +932,7 @@ const campaignNumbersEnabled = organization => {
   );
 };
 
-const manualMessagingServicesEnabled = organization =>
+export const manualMessagingServicesEnabled = organization =>
   getConfig(
     "EXPERIMENTAL_TWILIO_PER_CAMPAIGN_MESSAGING_SERVICE",
     organization,
@@ -940,28 +940,22 @@ const manualMessagingServicesEnabled = organization =>
   );
 
 export const fullyConfigured = async organization => {
-  const { authToken, accountSid } = await getMessageServiceConfig(
+  const { authToken, accountSid } = await exports.getServiceConfig(
     "twilio",
     organization
   );
 
-  let messagingServiceConfigured;
-  if (
-    manualMessagingServicesEnabled(organization) ||
-    campaignNumbersEnabled(organization)
-  ) {
-    messagingServiceConfigured = true;
-  } else {
-    messagingServiceConfigured = await cacheableData.organization.getMessageServiceSid(
-      organization
-    );
-  }
-
-  if (!(authToken && accountSid && messagingServiceConfigured)) {
+  if (!(authToken && accountSid)) {
     return false;
   }
 
-  return true;
+  if (
+    exports.manualMessagingServicesEnabled(organization) ||
+    exports.campaignNumbersEnabled(organization)
+  ) {
+    return true;
+  }
+  return !!(await exports.getMessageServiceSid(organization));
 };
 
 export default {

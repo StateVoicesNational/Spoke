@@ -729,6 +729,175 @@ describe("twilio", () => {
         });
       });
     });
+    describe("campaignNumbersEnabled", () => {
+      beforeEach(async () => {
+        organization = {
+          feature: {
+            EXPERIMENTAL_PHONE_INVENTORY: true,
+            PHONE_INVENTORY: true,
+            EXPERIMENTAL_CAMPAIGN_PHONE_NUMBERS: true
+          }
+        };
+      });
+
+      it("returns true when all the configs are true", async () => {
+        expect(twilio.campaignNumbersEnabled(organization)).toEqual(true);
+      });
+      describe("when EXPERIMENTAL_PHONE_INVENTORY is false", () => {
+        beforeEach(async () => {
+          organization.feature.EXPERIMENTAL_PHONE_INVENTORY = false;
+        });
+
+        it("returns true", async () => {
+          expect(twilio.campaignNumbersEnabled(organization)).toEqual(true);
+        });
+      });
+      describe("when PHONE_INVENTORY is false", () => {
+        beforeEach(async () => {
+          organization.feature.PHONE_INVENTORY = false;
+        });
+
+        it("returns true", async () => {
+          expect(twilio.campaignNumbersEnabled(organization)).toEqual(true);
+        });
+      });
+      describe("when EXPERIMENTAL_PHONE_INVENTORY and PHONE_INVENTORY are both false", () => {
+        beforeEach(async () => {
+          organization.feature.PHONE_INVENTORY = false;
+          organization.feature.EXPERIMENTAL_PHONE_INVENTORY = false;
+        });
+
+        it("returns false", async () => {
+          expect(twilio.campaignNumbersEnabled(organization)).toEqual(false);
+        });
+      });
+      describe("when EXPERIMENTAL_CAMPAIGN_PHONE_NUMBERS is false", () => {
+        beforeEach(async () => {
+          organization.feature.EXPERIMENTAL_CAMPAIGN_PHONE_NUMBERS = false;
+        });
+
+        it("returns false", async () => {
+          expect(twilio.campaignNumbersEnabled(organization)).toEqual(false);
+        });
+      });
+    });
+    describe("manualMessagingServicesEnabled", () => {
+      beforeEach(async () => {
+        organization = {
+          feature: {
+            EXPERIMENTAL_TWILIO_PER_CAMPAIGN_MESSAGING_SERVICE: true
+          }
+        };
+      });
+
+      it("it returns true with the config is true", async () => {
+        expect(twilio.manualMessagingServicesEnabled(organization)).toEqual(
+          true
+        );
+      });
+
+      describe("when the config is false", () => {
+        beforeEach(async () => {
+          organization.feature.EXPERIMENTAL_TWILIO_PER_CAMPAIGN_MESSAGING_SERVICE = false;
+        });
+        it("returns flse", async () => {
+          expect(twilio.manualMessagingServicesEnabled(organization)).toEqual(
+            false
+          );
+        });
+      });
+    });
+    describe.only("fullyConfigured", () => {
+      beforeEach(async () => {
+        jest.spyOn(twilio, "getServiceConfig").mockResolvedValue({
+          authToken: "fake_auth_token",
+          accountSid: "fake_account_sid"
+        });
+        jest
+          .spyOn(twilio, "manualMessagingServicesEnabled")
+          .mockReturnValue(true);
+        jest.spyOn(twilio, "campaignNumbersEnabled").mockReturnValue(true);
+        jest
+          .spyOn(twilio, "getMessageServiceSid")
+          .mockResolvedValue("fake_message_service_sid");
+      });
+      it("returns true", async () => {
+        expect(await twilio.fullyConfigured("everything_is_mocked")).toEqual(
+          true
+        );
+        expect(twilio.getMessageServiceSid).not.toHaveBeenCalled();
+      });
+      describe("when getServiceConfig doesn't return a full configuration", () => {
+        beforeEach(async () => {
+          jest.spyOn(twilio, "getServiceConfig").mockResolvedValue({
+            authToken: "fake_auth_token"
+          });
+        });
+        it("returns false", async () => {
+          expect(await twilio.fullyConfigured("everything_is_mocked")).toEqual(
+            false
+          );
+          expect(twilio.manualMessagingServicesEnabled).not.toHaveBeenCalled();
+          expect(twilio.campaignNumbersEnabled).not.toHaveBeenCalled();
+          expect(twilio.getMessageServiceSid).not.toHaveBeenCalled();
+        });
+      });
+      describe("when manualmessagingServicesEnabled returns false", () => {
+        beforeEach(async () => {
+          jest
+            .spyOn(twilio, "manualMessagingServicesEnabled")
+            .mockReturnValue(false);
+        });
+        it("returns true", async () => {
+          expect(await twilio.fullyConfigured("everything_is_mocked")).toEqual(
+            true
+          );
+          expect(twilio.getMessageServiceSid).not.toHaveBeenCalled();
+        });
+      });
+      describe("when campaignNumbersEnabled returns false", () => {
+        beforeEach(async () => {
+          jest.spyOn(twilio, "campaignNumbersEnabled").mockReturnValue(false);
+        });
+        it("returns true", async () => {
+          expect(await twilio.fullyConfigured("everything_is_mocked")).toEqual(
+            true
+          );
+          expect(twilio.getMessageServiceSid).not.toHaveBeenCalled();
+        });
+      });
+      describe("when manualMessagingServiceEnabled and campaignNumbersEnabled both return false", () => {
+        beforeEach(async () => {
+          jest
+            .spyOn(twilio, "manualMessagingServicesEnabled")
+            .mockReturnValue(false);
+          jest.spyOn(twilio, "campaignNumbersEnabled").mockReturnValue(false);
+        });
+        describe("when getMessageServiceSid returns true", () => {
+          it("returns true", async () => {
+            expect(
+              await twilio.fullyConfigured("everything_is_mocked")
+            ).toEqual(true);
+            expect(twilio.getMessageServiceSid.mock.calls).toEqual([
+              ["everything_is_mocked"]
+            ]);
+          });
+        });
+        describe("when getMessageServiceSid returns null", () => {
+          beforeEach(async () => {
+            jest.spyOn(twilio, "getMessageServiceSid").mockResolvedValue(null);
+          });
+          it("returns false", async () => {
+            expect(
+              await twilio.fullyConfigured("everything_is_mocked")
+            ).toEqual(false);
+            expect(twilio.getMessageServiceSid.mock.calls).toEqual([
+              ["everything_is_mocked"]
+            ]);
+          });
+        });
+      });
+    });
   });
 });
 
