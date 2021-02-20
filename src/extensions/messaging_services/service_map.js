@@ -13,6 +13,21 @@ export const getConfigKey = serviceName => `message_service_${serviceName}`;
 
 export const getService = serviceName => serviceMap[serviceName];
 
+export const getServiceMetadata = serviceName => {
+  const getMetadata = exports.tryGetFunctionFromService(
+    serviceName,
+    "getMetadata"
+  );
+
+  if (!getMetadata) {
+    throw new Error(
+      `Message service ${serviceName} is missing required method getMetadata!`
+    );
+  }
+
+  return getMetadata();
+};
+
 export const tryGetFunctionFromService = (serviceName, functionName) => {
   const messageService = exports.getService(serviceName);
   if (!messageService) {

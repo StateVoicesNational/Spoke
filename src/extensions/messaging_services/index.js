@@ -7,7 +7,8 @@ import orgCache from "../../server/models/cacheable_queries/organization";
 export {
   getConfigKey,
   getService,
-  tryGetFunctionFromService
+  tryGetFunctionFromService,
+  getServiceMetadata
 } from "./service_map";
 
 // Each service needs the following api points:

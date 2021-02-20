@@ -12,6 +12,13 @@ import { log } from "../../../lib";
 // rejected: 114
 // network error or other connection failure: 1
 
+export const getMetadata = () => ({
+  supportsOrgConfig: false,
+  supportsCampaignConfig: false,
+  type: "SMS",
+  name: "nexmo"
+});
+
 let nexmo = null;
 const MAX_SEND_ATTEMPTS = 5;
 if (process.env.NEXMO_API_KEY && process.env.NEXMO_API_SECRET) {
@@ -256,5 +263,6 @@ export default {
   rentNewCell,
   sendMessage,
   handleDeliveryReport,
-  handleIncomingMessage
+  handleIncomingMessage,
+  getMetadata
 };

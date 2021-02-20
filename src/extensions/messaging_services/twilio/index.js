@@ -35,6 +35,13 @@ const TWILIO_SKIP_VALIDATION = getConfig("TWILIO_SKIP_VALIDATION");
 const BULK_REQUEST_CONCURRENCY = 5;
 const MAX_NUMBERS_PER_BUY_JOB = getConfig("MAX_NUMBERS_PER_BUY_JOB") || 100;
 
+export const getMetadata = () => ({
+  supportsOrgConfig: true,
+  supportsCampaignConfig: false,
+  type: "SMS",
+  name: "twilio"
+});
+
 export async function getTwilio(organization) {
   const { authToken, accountSid } = await getMessageServiceConfig(
     "twilio",
@@ -977,5 +984,6 @@ export default {
   getTwilio,
   getServiceConfig,
   getMessageServiceSid,
-  updateConfig
+  updateConfig,
+  getMetadata
 };
