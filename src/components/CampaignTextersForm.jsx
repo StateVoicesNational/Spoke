@@ -8,6 +8,7 @@ import RaisedButton from "material-ui/RaisedButton";
 import Snackbar from "material-ui/Snackbar";
 import GSForm from "../components/forms/GSForm";
 import GSTextField from "./forms/GSTextField";
+import GSSubmitButton from "./forms/GSSubmitButton";
 import * as yup from "yup";
 import Form from "react-formal";
 import CampaignFormSectionHeading from "./CampaignFormSectionHeading";
@@ -546,7 +547,7 @@ export default class CampaignTextersForm extends React.Component {
             {this.showTexters()}
           </div>
           <Form.Submit
-            as={RaisedButton}
+            as={GSSubmitButton}
             label={this.props.saveLabel}
             disabled={this.props.saveDisabled}
             {...dataTest("submitCampaignTextersForm")}

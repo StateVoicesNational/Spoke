@@ -1,6 +1,7 @@
 import type from "prop-types";
 import React from "react";
 import GSForm from "../components/forms/GSForm";
+import GSSubmitButton from "../components/forms/GSSubmitButton";
 import * as yup from "yup";
 import Form from "react-formal";
 import OrganizationJoinLink from "./OrganizationJoinLink";
@@ -173,7 +174,7 @@ export default class CampaignDynamicAssignmentForm extends React.Component {
             ) : null}
           </div>
           <Form.Submit
-            as={RaisedButton}
+            as={GSSubmitButton}
             onClick={this.props.onSubmit}
             label={this.props.saveLabel}
             disabled={this.props.saveDisabled}

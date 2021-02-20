@@ -3,6 +3,7 @@ import Toggle from "material-ui/Toggle";
 import React from "react";
 import Form from "react-formal";
 import GSForm from "./forms/GSForm";
+import GSSubmitButton from "./forms/GSSubmitButton";
 import GSTextField from "./forms/GSTextField";
 import CampaignFormSectionHeading from "./CampaignFormSectionHeading";
 import * as yup from "yup";
@@ -11,7 +12,6 @@ import isEqual from "lodash/isEqual";
 import moment from "moment";
 import Autocomplete from "material-ui/AutoComplete";
 import { dataSourceItem } from "./utils";
-import RaisedButton from "material-ui/RaisedButton";
 
 export default class CampaignTextingHoursForm extends React.Component {
   state = {
@@ -217,7 +217,7 @@ export default class CampaignTextingHoursForm extends React.Component {
         )}
 
         <Form.Submit
-          as={RaisedButton}
+          as={GSSubmitButton}
           disabled={this.props.saveDisabled}
           label={this.props.saveLabel}
         />

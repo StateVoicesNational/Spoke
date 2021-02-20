@@ -9,6 +9,57 @@ const styles = {
   }
 };
 
+function getRaisedButtonProps(props) {
+  const {
+    backgroundColor,
+    buttonStyle,
+    children,
+    className,
+    containerElement,
+    disableTouchRipple,
+    disabled,
+    disabledBackgroundColor,
+    disabledLabelColor,
+    fullWidth,
+    href,
+    icon,
+    label,
+    labelColor,
+    labelPosition,
+    labelStyle,
+    onClick,
+    overlayStyle,
+    primary,
+    rippleStyle,
+    secondary,
+    style
+  } = props;
+  return {
+    backgroundColor,
+    buttonStyle,
+    children,
+    className,
+    containerElement,
+    disableTouchRipple,
+    disabled,
+    disabledBackgroundColor,
+    disabledLabelColor,
+    fullWidth,
+    href,
+    icon,
+    label,
+    labelColor,
+    labelPosition,
+    labelStyle,
+    onClick,
+    overlayStyle,
+    primary,
+    rippleStyle,
+    secondary,
+    style
+  };
+}
+
 const GSSubmitButton = props => {
   let icon = "";
   const extraProps = {};
@@ -26,12 +77,12 @@ const GSSubmitButton = props => {
   }
 
   return (
-    <div style={styles.button} {...props}>
+    <div style={styles.button}>
       <RaisedButton
         primary
         type="submit"
         value="submit"
-        {...props}
+        {...getRaisedButtonProps(props)}
         {...extraProps}
       />
       {icon}

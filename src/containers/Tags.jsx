@@ -11,6 +11,7 @@ import theme from "../styles/theme";
 import Dialog from "material-ui/Dialog";
 import * as yup from "yup";
 import GSForm from "../components/forms/GSForm";
+import GSSubmitButton from "../components/forms/GSSubmitButton";
 import Form from "react-formal";
 import { StyleSheet, css } from "aphrodite";
 import loadData from "./hoc/load-data";
@@ -183,7 +184,7 @@ export class Tags extends React.Component {
               />
             </div>
             <div className={css(styles.submit)}>
-              <Form.Submit as={RaisedButton} label={dialogButtonLabel} />
+              <Form.Submit as={GSSubmitButton} label={dialogButtonLabel} />
             </div>
           </GSForm>
         </Dialog>

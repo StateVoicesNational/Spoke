@@ -10,6 +10,7 @@ import HelpIconOutline from "material-ui/svg-icons/action/help-outline";
 import Form from "react-formal";
 import GSForm from "./forms/GSForm";
 import GSTextField from "./forms/GSTextField";
+import GSScriptField from "./forms/GSScriptField";
 import * as yup from "yup";
 import { makeTree } from "../lib";
 import { dataTest } from "../lib/attributes";
@@ -369,7 +370,7 @@ export default class CampaignInteractionStepsForm extends React.Component {
                 </div>
               ) : null}
               <Form.Field
-                as={GSTextField}
+                as={GSScriptField}
                 {...dataTest("editorInteraction")}
                 name="script"
                 type="script"
@@ -407,8 +408,8 @@ export default class CampaignInteractionStepsForm extends React.Component {
           {this.state.displayAllSteps &&
             interactionStep.interactionSteps
               .filter(is => !is.isDeleted)
-              .map(is => (
-                <div>
+              .map((is, index) => (
+                <div key={index}>
                   {this.renderInteractionStep(
                     is,
                     availableActions,

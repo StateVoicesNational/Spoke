@@ -4,6 +4,7 @@ import CampaignCannedResponseForm from "./CampaignCannedResponseForm";
 import FlatButton from "material-ui/FlatButton";
 import Form from "react-formal";
 import GSForm from "./forms/GSForm";
+import GSSubmitButton from "./forms/GSSubmitButton";
 import List from "material-ui/List/List";
 import ListItem from "material-ui/List/ListItem";
 import Divider from "material-ui/Divider";
@@ -205,7 +206,7 @@ export class CampaignCannedResponsesForm extends React.Component {
         {list}
         {this.showAddForm()}
         <Form.Submit
-          as={RaisedButton}
+          as={GSSubmitButton}
           disabled={this.props.saveDisabled}
           label={this.props.saveLabel}
         />

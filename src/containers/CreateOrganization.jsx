@@ -9,6 +9,7 @@ import theme from "../styles/theme";
 import Paper from "material-ui/Paper";
 import { withRouter } from "react-router";
 import GSForm from "../components/forms/GSForm";
+import GSSubmitButton from "../components/forms/GSSubmitButton";
 import { dataTest } from "../lib/attributes";
 
 const styles = StyleSheet.create({
@@ -79,7 +80,7 @@ class CreateOrganization extends React.Component {
                 fullWidth
               />
               <Form.Submit
-                as={RaisedButton}
+                as={GSSubmitButton}
                 label="Get Started"
                 name="submit"
                 value="Get Started"

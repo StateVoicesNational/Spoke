@@ -6,6 +6,7 @@ import CampaignFormSectionHeading from "./CampaignFormSectionHeading";
 import GSForm from "./forms/GSForm";
 import GSTextField from "./forms/GSTextField";
 import GSDateField from "./forms/GSDateField";
+import GSSubmitButton from "./forms/GSSubmitButton";
 import * as yup from "yup";
 import Toggle from "material-ui/Toggle";
 import ColorPicker from "material-ui-color-picker";
@@ -119,7 +120,7 @@ export default class CampaignBasicsForm extends React.Component {
             as={ColorPicker}
           />
           <Form.Submit
-            as={RaisedButton}
+            as={GSSubmitButton}
             label={this.props.saveLabel}
             disabled={this.props.saveDisabled}
           />

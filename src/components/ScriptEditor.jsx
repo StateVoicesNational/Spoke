@@ -74,7 +74,7 @@ function findWithRegex(regex, contentBlock, callback) {
 }
 
 const RecognizedField = props => (
-  <span {...props} style={styles.goodField}>
+  <span style={{ outline: "1px solid red" }} style={styles.goodField}>
     {props.children}
   </span>
 );
@@ -84,9 +84,7 @@ RecognizedField.propTypes = {
 };
 
 const UnrecognizedField = props => (
-  <span {...props} style={styles.badField}>
-    {props.children}
-  </span>
+  <span style={styles.badField}>{props.children}</span>
 );
 
 UnrecognizedField.propTypes = {
@@ -199,8 +197,9 @@ class ScriptEditor extends React.Component {
     const { scriptFields } = this.props;
     return (
       <div style={styles.scriptFieldButtonSection}>
-        {scriptFields.map(field => (
+        {scriptFields.map((field, index) => (
           <Chip
+            key={index}
             style={styles.scriptFieldButton}
             text={delimit(field)}
             onClick={() => this.addCustomField(field)}

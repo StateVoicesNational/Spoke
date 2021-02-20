@@ -10,6 +10,7 @@ import TopNav from "../components/TopNav";
 import Paper from "material-ui/Paper";
 import { withRouter } from "react-router";
 import GSForm from "../components/forms/GSForm";
+import GSSubmitButton from "../components/forms/GSSubmitButton";
 import { dataTest } from "../lib/attributes";
 
 const styles = StyleSheet.create({
@@ -73,7 +74,7 @@ class CreateAdditionalOrganization extends React.Component {
                 fullWidth
               />
               <Form.Submit
-                as={RaisedButton}
+                as={GSSubmitButton}
                 label="Create"
                 name="submit"
                 value="Create"
