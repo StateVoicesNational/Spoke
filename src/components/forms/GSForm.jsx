@@ -70,11 +70,6 @@ export default class GSForm extends React.Component {
       } else if (child.type === Form.Submit) {
         child.props;
         const { isSubmitting } = this.state;
-        console.log("isSubmitting", isSubmitting);
-        console.log("child props", child.props);
-        // return React.cloneElement(child, {
-        //   component: (props) => <GSSubmitButton isSubmitting={isSubmitting} {...props} />,
-        // });
         const As = child.props.as;
         return React.cloneElement(child, {
           as: props => <As isSubmitting={isSubmitting} {...props} />
