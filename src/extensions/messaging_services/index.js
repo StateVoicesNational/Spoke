@@ -30,7 +30,7 @@ export const getServiceFromOrganization = organization =>
   getService(getServiceNameFromOrganization(organization));
 
 export const fullyConfigured = async organization => {
-  const serviceName = getServiceNameFromOrganization(organization);
+  const serviceName = exports.getServiceNameFromOrganization(organization);
   const fn = tryGetFunctionFromService(serviceName, "fullyConfigured");
   if (!fn) {
     return true;
