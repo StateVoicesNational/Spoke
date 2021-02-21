@@ -1,5 +1,5 @@
 import { css } from "aphrodite";
-import { Card, CardHeader, CardText } from "material-ui/Card";
+import { CardText } from "material-ui/Card";
 import Dialog from "material-ui/Dialog";
 import FlatButton from "material-ui/FlatButton";
 import PropTypes from "prop-types";
@@ -9,12 +9,12 @@ import yup from "yup";
 import DisplayLink from "../../../../components/DisplayLink";
 import GSForm from "../../../../components/forms/GSForm";
 import GSSubmitButton from "../../../../components/forms/GSSubmitButton";
-import theme from "../../../../styles/theme";
 
 export class OrgConfig extends React.Component {
   constructor(props) {
     super(props);
     this.state = {};
+    this.props.onAllSetChanged(false);
   }
 
   handleOpenTwilioDialog = () => this.setState({ twilioDialogOpen: true });
@@ -82,13 +82,7 @@ export class OrgConfig extends React.Component {
     ];
 
     return (
-      <Card>
-        <CardHeader
-          title="Twilio Credentials"
-          style={{
-            backgroundColor: allSet ? theme.colors.green : theme.colors.yellow
-          }}
-        />
+      <div>
         {allSet && (
           <CardText style={inlineStyles.shadeBox}>
             <DisplayLink
@@ -110,6 +104,7 @@ export class OrgConfig extends React.Component {
             </span>
             <GSForm
               schema={formSchema}
+              onChange={this.onFormChange}
               onSubmit={this.handleSubmitTwilioAuthForm}
               defaultValue={{
                 accountSid: twilioAccountSid,
@@ -148,17 +143,19 @@ export class OrgConfig extends React.Component {
             </GSForm>
           </div>
         </CardText>
-      </Card>
+      </div>
     );
   }
 }
 
 OrgConfig.propTypes = {
-  organization: PropTypes.object,
+  organizationId: PropTypes.string,
+  config: PropTypes.object,
   inlineStyles: PropTypes.object,
   styles: PropTypes.object,
   saveLabel: PropTypes.string,
-  onSubmit: PropTypes.func
+  onSubmit: PropTypes.func,
+  onAllSetChanged: PropTypes.func
 };
 
 export default OrgConfig;
