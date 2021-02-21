@@ -3,7 +3,7 @@ import bodyParser from "body-parser";
 import express from "express";
 import appRenderer from "./middleware/app-renderer";
 import { graphqlExpress, graphiqlExpress } from "apollo-server-express";
-import { makeExecutableSchema, addMockFunctionsToSchema } from "graphql-tools";
+import { makeExecutableSchema } from "graphql-tools";
 // ORDERING: ./models import must be imported above ./api to help circular imports
 import { createLoaders, createTablesIfNecessary, r } from "./models";
 import { resolvers } from "./api/schema";
@@ -22,6 +22,7 @@ import { setupUserNotificationObservers } from "./notifications";
 import { existsSync } from "fs";
 import { rawAllMethods } from "../extensions/contact-loaders";
 import herokuSslRedirect from "heroku-ssl-redirect";
+import { GraphQLError } from "graphql/error";
 
 process.on("uncaughtException", ex => {
   log.error(ex);
@@ -193,7 +194,7 @@ app.use(
       if (process.env.SHOW_SERVER_ERROR || process.env.DEBUG) {
         return error;
       }
-      return new Error(
+      return new GraphQLError(
         error &&
         error.originalError &&
         error.originalError.code === "UNAUTHORIZED"
