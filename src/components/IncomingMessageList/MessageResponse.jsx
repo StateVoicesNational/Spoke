@@ -9,6 +9,7 @@ import FlatButton from "material-ui/FlatButton";
 
 import loadData from "../../containers/hoc/load-data";
 import GSForm from "../../components/forms/GSForm";
+import GSTextField from "../../components/forms/GSTextField";
 import SendButton from "../../components/SendButton";
 
 const styles = StyleSheet.create({
@@ -100,7 +101,6 @@ class MessageResponse extends Component {
         onClick={this.handleCloseErrorDialog}
       />
     ];
-
     return (
       <div className={css(styles.messageField)}>
         <GSForm
@@ -127,6 +127,7 @@ class MessageResponse extends Component {
             </div>
             <div style={{ marginRight: "120px" }}>
               <Form.Field
+                as={GSTextField}
                 name="messageText"
                 label="Send a response"
                 multiLine
