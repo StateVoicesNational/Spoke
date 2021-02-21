@@ -7,6 +7,8 @@ import { r } from "../../src/server/models";
 import { StyleSheetTestUtils } from "aphrodite";
 import MuiThemeProvider from "material-ui/styles/MuiThemeProvider";
 import { Card, CardHeader } from "material-ui/Card";
+import GSTextField from "../../src/components/forms/GSTextField";
+import GSScriptField from "../../src/components/forms/GSScriptField";
 import CampaignInteractionStepsForm from "../../src/components/CampaignInteractionStepsForm";
 import CampaignFormSectionHeading from "../../src/components/CampaignFormSectionHeading";
 import {
@@ -76,23 +78,14 @@ describe("CampaignInteractionStepsForm", () => {
       );
 
       const interactionSteps = getInteractionSteps();
-      const scripts = component
-        .findWhere(
-          x => x.length && x.props()["data-test"] === "editorInteraction"
-        )
-        .hostNodes();
+      const scripts = component.find(GSScriptField);
+
       expect(scripts.at(0).props().value).toEqual(interactionSteps[0].script);
     });
 
     it("rendered all the interaction steps", () => {
       const interactionSteps = getInteractionSteps().map(step => step.script);
-
-      const scripts = component
-        .findWhere(
-          x => x.length && x.props()["data-test"] === "editorInteraction"
-        )
-        .hostNodes()
-        .map(script => script.props().value);
+      const scripts = component.find(GSScriptField).map(c => c.props().value);
 
       expect(interactionSteps.sort()).toEqual(scripts.sort());
     });
