@@ -1,3 +1,4 @@
+/* eslint no-console: 0 */
 import PropTypes from "prop-types";
 import React from "react";
 import loadData from "./hoc/load-data";
@@ -8,7 +9,6 @@ import Dialog from "material-ui/Dialog";
 import GSSubmitButton from "../components/forms/GSSubmitButton";
 import FlatButton from "material-ui/FlatButton";
 import RaisedButton from "material-ui/RaisedButton";
-import DisplayLink from "../components/DisplayLink";
 import yup from "yup";
 import { Card, CardText, CardActions, CardHeader } from "material-ui/Card";
 import { StyleSheet, css } from "aphrodite";
@@ -17,6 +17,7 @@ import Toggle from "material-ui/Toggle";
 import moment from "moment";
 import CampaignTexterUIForm from "../components/CampaignTexterUIForm";
 import OrganizationFeatureSettings from "../components/OrganizationFeatureSettings";
+import getMessagingServiceConfigComponent from "../extensions/messaging_services/react-components";
 
 const styles = StyleSheet.create({
   section: {
@@ -125,138 +126,34 @@ class Settings extends React.Component {
     );
   }
 
-  handleOpenTwilioDialog = () => this.setState({ twilioDialogOpen: true });
-
-  handleCloseTwilioDialog = () => this.setState({ twilioDialogOpen: false });
-
-  handleSubmitTwilioAuthForm = async ({
-    accountSid,
-    authToken,
-    messageServiceSid
-  }) => {
-    const res = await this.props.mutations.updateTwilioAuth(
-      accountSid,
-      authToken === "<Encrypted>" ? false : authToken,
-      messageServiceSid
-    );
-    if (res.errors) {
-      this.setState({ twilioError: res.errors.message });
-    } else {
-      this.setState({ twilioError: undefined });
+  renderMessageServiceConfig() {
+    const { messageService } = this.props.data.organization;
+    if (!messageService) {
+      return null;
     }
-    this.handleCloseTwilioDialog();
-  };
 
-  renderTwilioAuthForm() {
-    const { organization } = this.props.data;
-    const {
-      twilioAccountSid,
-      twilioAuthToken,
-      twilioMessageServiceSid
-    } = organization;
-    const allSet =
-      twilioAccountSid && twilioAuthToken && twilioMessageServiceSid;
-    let baseUrl = "http://base";
-    if (typeof window !== "undefined") {
-      baseUrl = window.location.origin;
+    const { name, supportsOrgConfig, config } = messageService;
+    if (!supportsOrgConfig) {
+      return null;
     }
-    const formSchema = yup.object({
-      accountSid: yup
-        .string()
-        .nullable()
-        .max(64),
-      authToken: yup
-        .string()
-        .nullable()
-        .max(64),
-      messageServiceSid: yup
-        .string()
-        .nullable()
-        .max(64)
-    });
 
-    const dialogActions = [
-      <FlatButton
-        label="Cancel"
-        style={inlineStyles.dialogButton}
-        onClick={this.handleCloseTwilioDialog}
-      />,
-      <Form.Button
-        type="submit"
-        label="Save"
-        style={inlineStyles.dialogButton}
-        component={GSSubmitButton}
-      />
-    ];
+    console.log("BEFORE");
 
+    const ConfigMessageService = getMessagingServiceConfigComponent(name);
+    if (!ConfigMessageService) {
+      return null;
+    }
+
+    console.log("AFTER");
+    console.log("this.props.saveLabel", this.props.saveLabel);
     return (
-      <Card>
-        <CardHeader
-          title="Twilio Credentials"
-          style={{
-            backgroundColor: allSet ? theme.colors.green : theme.colors.yellow
-          }}
-        />
-        {allSet && (
-          <CardText style={inlineStyles.shadeBox}>
-            <DisplayLink
-              url={`${baseUrl}/twilio/${organization.id}`}
-              textContent="Twilio credentials are configured for this organization. You should set the inbound Request URL in your Twilio messaging service to this link."
-            />
-          </CardText>
-        )}
-        {this.state.twilioError && (
-          <CardText style={inlineStyles.shadeBox}>
-            {this.state.twilioError}
-          </CardText>
-        )}
-        <CardText>
-          <div className={css(styles.section)}>
-            <span className={css(styles.sectionLabel)}>
-              You can set Twilio API credentials specifically for this
-              Organization by entering them here.
-            </span>
-            <GSForm
-              schema={formSchema}
-              onSubmit={this.handleSubmitTwilioAuthForm}
-              defaultValue={{
-                accountSid: twilioAccountSid,
-                authToken: twilioAuthToken,
-                messageServiceSid: twilioMessageServiceSid
-              }}
-            >
-              <Form.Field
-                label="Twilio Account SID"
-                name="accountSid"
-                fullWidth
-              />
-              <Form.Field
-                label="Twilio Auth Token"
-                name="authToken"
-                fullWidth
-              />
-              <Form.Field
-                label="Default Message Service SID"
-                name="messageServiceSid"
-                fullWidth
-              />
-
-              <Form.Button
-                label={this.props.saveLabel || "Save Twilio Credentials"}
-                onClick={this.handleOpenTwilioDialog}
-              />
-              <Dialog
-                actions={dialogActions}
-                modal
-                open={this.state.twilioDialogOpen}
-              >
-                Changing the Account SID or Messaging Service SID will break any
-                campaigns that are currently running. Do you want to contunue?
-              </Dialog>
-            </GSForm>
-          </div>
-        </CardText>
-      </Card>
+      <ConfigMessageService
+        organization={this.props.data.organization}
+        inlineStyles={inlineStyles}
+        styles={styles}
+        saveLabel={this.props.saveLabel}
+        onSubmit={() => {}}
+      />
     );
   }
 
@@ -337,7 +234,7 @@ class Settings extends React.Component {
           </CardActions>
         </Card>
         <div>{this.renderTextingHoursForm()}</div>
-        {window.TWILIO_MULTI_ORG && this.renderTwilioAuthForm()}
+        {this.renderMessageServiceConfig()}
         {this.props.data.organization &&
         this.props.data.organization.texterUIConfig &&
         this.props.data.organization.texterUIConfig.sideboxChoices.length ? (
@@ -430,7 +327,8 @@ class Settings extends React.Component {
 Settings.propTypes = {
   data: PropTypes.object,
   params: PropTypes.object,
-  mutations: PropTypes.object
+  mutations: PropTypes.object,
+  saveLabel: PropTypes.string
 };
 
 const queries = {
@@ -457,6 +355,13 @@ const queries = {
           twilioAccountSid
           twilioAuthToken
           twilioMessageServiceSid
+          messageService {
+            name
+            type
+            supportsOrgConfig
+            supportsCampaignConfig
+            config
+          }
         }
       }
     `,
@@ -598,6 +503,14 @@ const mutations = {
     variables: {
       organizationId: ownProps.params.organizationId,
       optOutMessage
+    }
+  }),
+  updateMessageServiceConfig: ownProps => newConfig => ({
+    mutation: updateMessageServiceConfigGql,
+    variables: {
+      organizationId: ownProps.params.organizationId,
+      messageServiceName: ownProps.organization.messageService.name,
+      config: JSON.stringify(newConfig)
     }
   }),
   updateTwilioAuth: ownProps => (accountSid, authToken, messageServiceSid) => ({
