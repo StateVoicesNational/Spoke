@@ -187,16 +187,16 @@ export async function createOrganization(user, invite) {
   return result;
 }
 
-export const ensureOrganizationTwilioWithMessagingService = async (
+export const updateOrganizationFeatures = async (
   testOrganization,
+  newFeatures,
   testCampaign = null
 ) => {
   const organization = testOrganization.data.createOrganization;
   const existingFeatures = organization.features || {};
   const features = {
     ...existingFeatures,
-    TWILIO_MESSAGE_SERVICE_SID: global.TWILIO_MESSAGE_SERVICE_SID,
-    service: "twilio"
+    ...newFeatures
   };
 
   await r
@@ -213,6 +213,21 @@ export const ensureOrganizationTwilioWithMessagingService = async (
       .update({ organization_id: organization.id });
     await cacheableData.campaign.clear(testCampaign.id);
   }
+};
+
+export const ensureOrganizationTwilioWithMessagingService = async (
+  testOrganization,
+  testCampaign = null
+) => {
+  const newFeatures = {
+    TWILIO_MESSAGE_SERVICE_SID: global.TWILIO_MESSAGE_SERVICE_SID,
+    service: "twilio"
+  };
+  return updateOrganizationFeatures(
+    testOrganization,
+    newFeatures,
+    testCampaign
+  );
 };
 
 export async function setTwilioAuth(user, organization) {
