@@ -64,7 +64,7 @@ export const updateMessageServiceConfig = async (
 
   const dbOrganization = await Organization.get(organizationId);
   dbOrganization.features = JSON.stringify({
-    ...JSON.parse(dbOrganization.features),
+    ...JSON.parse(dbOrganization.features || "{}"),
     [configKey]: newConfig
   });
 
