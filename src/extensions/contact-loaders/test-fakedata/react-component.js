@@ -3,6 +3,8 @@ import React from "react";
 import RaisedButton from "material-ui/RaisedButton";
 import GSForm from "../../../components/forms/GSForm";
 import GSSubmitButton from "../../../components/forms/GSSubmitButton";
+import GSTextField from "../../../components/forms/GSTextField";
+
 import Form from "react-formal";
 import Subheader from "material-ui/Subheader";
 import Divider from "material-ui/Divider";
@@ -47,6 +49,7 @@ export class CampaignContactsForm extends React.Component {
         }}
       >
         <Form.Field
+          as={GSTextField}
           name="requestContactCount"
           type="number"
           label="How many fake contacts"

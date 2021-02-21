@@ -68,7 +68,6 @@ export default class GSForm extends React.Component {
           events: ["onBlur"]
         });
       } else if (child.type === Form.Submit) {
-        child.props;
         const { isSubmitting } = this.state;
         const As = child.props.as;
         return React.cloneElement(child, {

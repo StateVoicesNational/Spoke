@@ -4,7 +4,8 @@ import GSFormField from "./GSFormField";
 
 export default class GSTextField extends GSFormField {
   render() {
-    let value = this.props.value;
+    // can't be undefined or react throw uncontroled component error
+    const { value = "" } = this.props;
     return (
       <TextField
         floatingLabelText={this.floatingLabelText()}
