@@ -888,7 +888,6 @@ export const getMessageServiceSid = async (
 // TODO(lperson) maybe we should support backward compatibility here?
 export const updateConfig = async (oldConfig, config) => {
   const { twilioAccountSid, twilioAuthToken, twilioMessageServiceSid } = config;
-
   if (!twilioAccountSid || !twilioMessageServiceSid) {
     throw new Error(
       "twilioAccountSid and twilioMessageServiceSid are required"
@@ -912,7 +911,7 @@ export const updateConfig = async (oldConfig, config) => {
       const twilio = twilioLibrary.default.Twilio(
         twilioAccountSid,
         twilioAuthToken
-      ); // eslint-disable-line new-cap
+      );
       await twilio.api.accounts.list();
     }
   } catch (err) {

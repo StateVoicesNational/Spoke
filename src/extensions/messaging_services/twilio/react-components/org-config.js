@@ -13,8 +13,26 @@ import GSSubmitButton from "../../../../components/forms/GSSubmitButton";
 export class OrgConfig extends React.Component {
   constructor(props) {
     super(props);
-    this.state = {};
-    this.props.onAllSetChanged(false);
+    const { accountSid, authToken, messageServiceSid } = this.props.config;
+    const allSet = accountSid && authToken && messageServiceSid;
+    this.state = { allSet };
+    this.props.onAllSetChanged(allSet);
+  }
+
+  componentDidUpdate(prevProps) {
+    const {
+      accountSid: prevAccountSid,
+      authToken: prevAuthToken,
+      messageServiceSid: prevMessageServiceSid
+    } = prevProps.config;
+    const prevAllSet = prevAccountSid && prevAuthToken && prevMessageServiceSid;
+
+    const { accountSid, authToken, messageServiceSid } = this.props.config;
+    const allSet = accountSid && authToken && messageServiceSid;
+
+    if (!!prevAllSet !== !!allSet) {
+      this.props.onAllSetChanged(allSet);
+    }
   }
 
   handleOpenTwilioDialog = () => this.setState({ twilioDialogOpen: true });
@@ -26,28 +44,27 @@ export class OrgConfig extends React.Component {
     authToken,
     messageServiceSid
   }) => {
-    // const res = await this.props.mutations.updateTwilioAuth(
-    //   accountSid,
-    //   authToken === "<Encrypted>" ? false : authToken,
-    //   messageServiceSid
-    // );
-    // if (res.errors) {
-    //   this.setState({ twilioError: res.errors.message });
-    // } else {
-    //   this.setState({ twilioError: undefined });
-    // }
-    // this.handleCloseTwilioDialog();
+    try {
+      const res = await this.props.onSubmit({
+        twilioAccountSid: accountSid,
+        twilioAuthToken: authToken === "<Encrypted>" ? false : authToken,
+        twilioMessageServiceSid: messageServiceSid
+      });
+      if (res.errors) {
+        this.setState({ twilioError: res.errors.message });
+      } else {
+        this.setState({ twilioError: undefined });
+      }
+    } catch (caught) {
+      console.log("caught", typeof caught, JSON.stringify(caught));
+    }
+    this.handleCloseTwilioDialog();
   };
 
   render() {
-    const { inlineStyles, styles, organization } = this.props;
-    const {
-      twilioAccountSid,
-      twilioAuthToken,
-      twilioMessageServiceSid
-    } = organization;
-    const allSet =
-      twilioAccountSid && twilioAuthToken && twilioMessageServiceSid;
+    const { organizationId, inlineStyles, styles, config } = this.props;
+    const { accountSid, authToken, messageServiceSid } = config;
+    const allSet = accountSid && authToken && messageServiceSid;
     let baseUrl = "http://base";
     if (typeof window !== "undefined") {
       baseUrl = window.location.origin;
@@ -86,7 +103,7 @@ export class OrgConfig extends React.Component {
         {allSet && (
           <CardText style={inlineStyles.shadeBox}>
             <DisplayLink
-              url={`${baseUrl}/twilio/${organization.id}`}
+              url={`${baseUrl}/twilio/${organizationId}`}
               textContent="Twilio credentials are configured for this organization. You should set the inbound Request URL in your Twilio messaging service to this link."
             />
           </CardText>
@@ -107,9 +124,9 @@ export class OrgConfig extends React.Component {
               onChange={this.onFormChange}
               onSubmit={this.handleSubmitTwilioAuthForm}
               defaultValue={{
-                accountSid: twilioAccountSid,
-                authToken: twilioAuthToken,
-                messageServiceSid: twilioMessageServiceSid
+                accountSid,
+                authToken,
+                messageServiceSid
               }}
             >
               <Form.Field

@@ -158,7 +158,9 @@ class Settings extends React.Component {
           inlineStyles={inlineStyles}
           styles={styles}
           saveLabel={this.props.saveLabel}
-          onSubmit={() => {}}
+          onSubmit={newConfig => {
+            return this.props.mutations.updateMessageServiceConfig(newConfig);
+          }}
           onAllSetChanged={allSet => {
             this.setState({ messageServiceAllSet: allSet });
           }}
@@ -519,7 +521,7 @@ const mutations = {
     mutation: updateMessageServiceConfigGql,
     variables: {
       organizationId: ownProps.params.organizationId,
-      messageServiceName: ownProps.organization.messageService.name,
+      messageServiceName: ownProps.data.organization.messageService.name,
       config: JSON.stringify(newConfig)
     }
   }),
