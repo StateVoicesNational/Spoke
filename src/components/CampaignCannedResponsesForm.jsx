@@ -19,7 +19,8 @@ import { dataTest } from "../lib/attributes";
 import loadData from "../containers/hoc/load-data";
 import gql from "graphql-tag";
 import TagChips from "./TagChips";
-import RaisedButton from "material-ui/RaisedButton";
+
+const Span = ({ children }) => <span>{children}</span>;
 
 const styles = StyleSheet.create({
   formContainer: {
@@ -135,40 +136,39 @@ export class CampaignCannedResponsesForm extends React.Component {
         {...dataTest("cannedResponse")}
         value={response.text}
         key={response.id}
-        rightIconButton={
-          <span>
-            <IconButton
-              onClick={() =>
-                this.setState({
-                  showForm: true,
-                  responseId: response.id,
-                  formButtonText: "Edit Response"
-                })
-              }
-            >
-              <CreateIcon />
-            </IconButton>
-            <IconButton
-              onClick={() => {
-                const newVals = this.props.formValues.cannedResponses
-                  .map(responseToDelete => {
-                    if (responseToDelete.id === response.id) {
-                      return null;
-                    }
-                    return responseToDelete;
-                  })
-                  .filter(ele => ele !== null);
-
-                this.props.onChange({
-                  cannedResponses: newVals
-                });
-              }}
-            >
-              <DeleteIcon />
-            </IconButton>
-          </span>
-        }
       >
+        <span style={{ float: "right" }}>
+          <IconButton
+            onClick={() =>
+              this.setState({
+                showForm: true,
+                responseId: response.id,
+                formButtonText: "Edit Response"
+              })
+            }
+          >
+            <CreateIcon />
+          </IconButton>
+          <IconButton
+            onClick={() => {
+              const newVals = this.props.formValues.cannedResponses
+                .map(responseToDelete => {
+                  if (responseToDelete.id === response.id) {
+                    return null;
+                  }
+                  return responseToDelete;
+                })
+                .filter(ele => ele !== null);
+
+              this.props.onChange({
+                cannedResponses: newVals
+              });
+            }}
+          >
+            <DeleteIcon />
+          </IconButton>
+        </span>
+
         <div className={css(styles.title)}>{response.title}</div>
         <div className={css(styles.text)}>{response.text}</div>
         {response.tagIds && response.tagIds.length > 0 && (
@@ -196,7 +196,10 @@ export class CampaignCannedResponsesForm extends React.Component {
       <GSForm
         schema={this.formSchema}
         value={formValues}
-        onChange={this.props.onChange}
+        onChange={change => {
+          console.log("change", change);
+          this.props.onChange(change);
+        }}
         onSubmit={this.props.onSubmit}
       >
         <CampaignFormSectionHeading
