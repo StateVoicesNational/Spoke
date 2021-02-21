@@ -9,7 +9,10 @@ import {
   getAvailableActionHandlers,
   getActionChoiceData
 } from "../../extensions/action-handlers";
-import { fullyConfigured } from "../../extensions/messaging_services";
+import {
+  fullyConfigured,
+  getServiceMetadata
+} from "../../extensions/messaging_services";
 
 export const ownerConfigurable = {
   // ACTION_HANDLERS: 1,
@@ -237,6 +240,23 @@ export const resolvers = {
           ? JSON.parse(organization.features).TWILIO_MESSAGE_SERVICE_SID
           : null;
       } catch (err) {
+        return null;
+      }
+    },
+    messageService: async (organization, _, { user }) => {
+      try {
+        await accessRequired(user, organization.id, "OWNER");
+        const serviceName = cacheableData.organization.getMessageService(
+          organization
+        );
+        const serviceMetadata = getServiceMetadata(serviceName);
+        return {
+          ...serviceMetadata,
+          config: cacheableData.organization.getMessageServiceConfig(
+            organization
+          )
+        };
+      } catch (caught) {
         return null;
       }
     },
