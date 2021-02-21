@@ -5,6 +5,7 @@ import gql from "graphql-tag";
 import { StyleSheet, css } from "aphrodite";
 import theme from "../styles/theme";
 import GSForm from "../components/forms/GSForm";
+import GSTextField from "../components/forms/GSTextField";
 import GSSubmitButton from "../components/forms/GSSubmitButton";
 import Form from "react-formal";
 import * as yup from "yup";
@@ -55,15 +56,16 @@ class AdminReplySender extends React.Component {
     message: yup.string().required()
   });
 
-  renderMessageSendingForm(contact) {
+  renderMessageSendingForm(contact, key) {
     return (
-      <div className={css(styles.infoContainer)}>
+      <div key={key} className={css(styles.infoContainer)}>
         <div className={css(styles.header)}>
           {`${contact.firstName} ${contact.lastName}: ${contact.cell}`}
         </div>
         <div className={css(styles.subtitle)}>
-          {contact.messages.map(message => (
+          {contact.messages.map((message, index) => (
             <div
+              key={index}
               className={
                 message.isFromContact
                   ? css(styles.fromContactMessage)
@@ -85,6 +87,7 @@ class AdminReplySender extends React.Component {
             }}
           >
             <Form.Field
+              as={GSTextField}
               {...dataTest("reply")}
               name="message"
               label="Reply"
@@ -109,9 +112,9 @@ class AdminReplySender extends React.Component {
     const { data } = this.props;
     return (
       <div>
-        {data.campaign.contacts.map(contact => {
+        {data.campaign.contacts.map((contact, index) => {
           if (contact.messageStatus !== "needsMessage") {
-            return this.renderMessageSendingForm(contact);
+            return this.renderMessageSendingForm(contact, index);
           }
           return "";
         })}
