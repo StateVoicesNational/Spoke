@@ -16,9 +16,11 @@ export default class GCDateField extends GSFormField {
       oldDate = moment(fakeDate).toObject();
       value = { value: fakeDate };
     }
+    const { utcOffset } = this.props;
     const propCopy = {
       ...this.props
     };
+    delete propCopy.utcOffset;
     delete propCopy.value;
     delete propCopy.type;
 
@@ -38,7 +40,7 @@ export default class GCDateField extends GSFormField {
               newDate.seconds = oldDate.seconds;
             }
             newDate = moment(newDate).add(
-              moment().utcOffset() - this.props.utcOffset,
+              moment().utcOffset() - utcOffset,
               "minutes"
             );
             this.props.onChange(newDate.toDate());

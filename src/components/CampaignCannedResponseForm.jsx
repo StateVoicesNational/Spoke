@@ -3,6 +3,8 @@ import React from "react";
 import { StyleSheet, css } from "aphrodite";
 import * as yup from "yup";
 import GSForm from "./forms/GSForm";
+import GSTextField from "./forms/GSTextField";
+import GSScriptField from "./forms/GSScriptField";
 import Form from "react-formal";
 import FlatButton from "material-ui/FlatButton";
 import AutoComplete from "material-ui/AutoComplete";
@@ -56,6 +58,7 @@ export default class CannedResponseForm extends React.Component {
           onChange={v => this.setState(v)}
         >
           <Form.Field
+            as={GSTextField}
             {...dataTest("title")}
             name="title"
             autoFocus
@@ -63,6 +66,7 @@ export default class CannedResponseForm extends React.Component {
             label="Title"
           />
           <Form.Field
+            as={GSScriptField}
             {...dataTest("editorResponse")}
             customFields={customFields}
             name="text"

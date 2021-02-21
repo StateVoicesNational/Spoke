@@ -88,7 +88,7 @@ export default class CampaignBasicsForm extends React.Component {
             fullWidth
           />
           <Form.Field
-            as={() => <GSDateField utcOffset={0} fullWidth />}
+            as={props => <GSDateField utcOffset={0} fullWidth {...props} />}
             {...dataTest("dueBy")}
             name="dueBy"
             label="Due date (required)"
@@ -96,7 +96,6 @@ export default class CampaignBasicsForm extends React.Component {
             shouldDisableDate={date => moment(date).diff(moment()) < 0}
             autoOk
             fullWidth
-            // utcOffset={0}
           />
           <Form.Field
             as={GSTextField}
@@ -112,7 +111,7 @@ export default class CampaignBasicsForm extends React.Component {
             hintText="https://www.mysite.com/images/logo.png"
             fullWidth
           />
-          {/* <label>Primary color</label> */}
+          <label>Primary color</label>
           <Form.Field
             name="primaryColor"
             label="Primary color"
