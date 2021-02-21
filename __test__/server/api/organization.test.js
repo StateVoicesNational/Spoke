@@ -323,7 +323,7 @@ describe("organization", async () => {
     });
   });
 
-  describe.only(".messageService", () => {
+  describe(".messageService", () => {
     let gqlQuery;
     let variables;
     let fakeConfig;
