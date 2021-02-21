@@ -127,7 +127,7 @@ class Settings extends React.Component {
   }
 
   renderMessageServiceConfig() {
-    const { messageService } = this.props.data.organization;
+    const { id: organizationId, messageService } = this.props.data.organization;
     if (!messageService) {
       return null;
     }
@@ -137,23 +137,33 @@ class Settings extends React.Component {
       return null;
     }
 
-    console.log("BEFORE");
-
     const ConfigMessageService = getMessagingServiceConfigComponent(name);
     if (!ConfigMessageService) {
       return null;
     }
 
-    console.log("AFTER");
-    console.log("this.props.saveLabel", this.props.saveLabel);
     return (
-      <ConfigMessageService
-        organization={this.props.data.organization}
-        inlineStyles={inlineStyles}
-        styles={styles}
-        saveLabel={this.props.saveLabel}
-        onSubmit={() => {}}
-      />
+      <Card>
+        <CardHeader
+          title="Twilio Credentials"
+          style={{
+            backgroundColor: this.state.messageServiceAllSet
+              ? theme.colors.green
+              : theme.colors.yellow
+          }}
+        />
+        <ConfigMessageService
+          organizationId={organizationId}
+          config={config}
+          inlineStyles={inlineStyles}
+          styles={styles}
+          saveLabel={this.props.saveLabel}
+          onSubmit={() => {}}
+          onAllSetChanged={allSet => {
+            this.setState({ messageServiceAllSet: allSet });
+          }}
+        />
+      </Card>
     );
   }
 
