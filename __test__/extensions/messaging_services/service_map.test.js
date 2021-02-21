@@ -93,13 +93,34 @@ describe("service_map", () => {
       });
     });
     describe("twilio", () => {
+      const oldProcessEnv = process.env;
+      beforeEach(async () => {
+        process.env.TWILIO_MULTI_ORG = false;
+      });
+      afterEach(async () => {
+        process.env = oldProcessEnv;
+      });
       it("returns the metadata", () => {
         const metadata = serviceMap.getServiceMetadata("twilio");
         expect(metadata).toEqual({
           name: "twilio",
           supportsCampaignConfig: false,
-          supportsOrgConfig: true,
+          supportsOrgConfig: false,
           type: "SMS"
+        });
+      });
+      describe("when TWILIO_MULTI_ORG is true", () => {
+        beforeEach(async () => {
+          process.env.TWILIO_MULTI_ORG = true;
+        });
+        it("returns the metadata", () => {
+          const metadata = serviceMap.getServiceMetadata("twilio");
+          expect(metadata).toEqual({
+            name: "twilio",
+            supportsCampaignConfig: false,
+            supportsOrgConfig: true,
+            type: "SMS"
+          });
         });
       });
     });
