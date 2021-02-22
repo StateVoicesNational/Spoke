@@ -130,9 +130,7 @@ describe("updateMessageServiceConfig", () => {
 
     it("returns an error", async () => {
       const gqlResult = await runGql(updateMessageServiceConfigGql, vars, user);
-      expect(gqlResult.errors[0].message).toEqual(
-        "Error updating config for twilio: Error: OH NO!"
-      );
+      expect(gqlResult.errors[0].message).toEqual("OH NO!");
     });
   });
 
