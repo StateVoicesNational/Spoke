@@ -22,6 +22,7 @@ import { setupUserNotificationObservers } from "./notifications";
 import { existsSync } from "fs";
 import { rawAllMethods } from "../extensions/contact-loaders";
 import herokuSslRedirect from "heroku-ssl-redirect";
+import { GraphQLError } from "graphql/error";
 
 process.on("uncaughtException", ex => {
   log.error(ex);
@@ -193,13 +194,20 @@ app.use(
       if (process.env.SHOW_SERVER_ERROR || process.env.DEBUG) {
         return error;
       }
-      return new Error(
+
+      if (
         error &&
         error.originalError &&
         error.originalError.code === "UNAUTHORIZED"
-          ? "UNAUTHORIZED"
-          : "Internal server error"
-      );
+      ) {
+        return new GraphQLError("UNAUTHORIZED");
+      }
+
+      if (error instanceof GraphQLError) {
+        return error;
+      }
+
+      return new GraphQLError(error.message);
     }
   }))
 );
