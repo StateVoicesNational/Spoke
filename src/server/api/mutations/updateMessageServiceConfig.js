@@ -56,10 +56,13 @@ export const updateMessageServiceConfig = async (
   try {
     newConfig = await serviceConfigFunction(existingConfig, configObject);
   } catch (caught) {
-    const message = `Error updating config for ${messageServiceName}: ${caught}`;
     // eslint-disable-next-line no-console
-    console.error(message);
-    throw new GraphQLError(message);
+    console.error(
+      `Error updating config for ${messageServiceName}: ${JSON.stringify(
+        caught
+      )}`
+    );
+    throw new GraphQLError(caught.message);
   }
 
   const dbOrganization = await Organization.get(organizationId);

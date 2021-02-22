@@ -1,3 +1,4 @@
+/* eslint no-console: 0 */
 import { css } from "aphrodite";
 import { CardText } from "material-ui/Card";
 import Dialog from "material-ui/Dialog";
@@ -44,19 +45,23 @@ export class OrgConfig extends React.Component {
     authToken,
     messageServiceSid
   }) => {
+    let twilioError;
     try {
-      const res = await this.props.onSubmit({
+      await this.props.onSubmit({
         twilioAccountSid: accountSid,
         twilioAuthToken: authToken === "<Encrypted>" ? false : authToken,
         twilioMessageServiceSid: messageServiceSid
       });
-      if (res.errors) {
-        this.setState({ twilioError: res.errors.message });
-      } else {
-        this.setState({ twilioError: undefined });
-      }
+      this.setState({ twilioError: undefined });
     } catch (caught) {
-      console.log("caught", typeof caught, JSON.stringify(caught));
+      console.log("Error submitting Twilio auth", JSON.stringify(caught));
+      if (caught.graphQLErrors && caught.graphQLErrors.length > 0) {
+        const twilioErrors = caught.graphQLErrors.map(error => error.message);
+        twilioError = twilioErrors.join(",");
+      } else {
+        twilioError = caught.message;
+      }
+      this.setState({ twilioError });
     }
     this.handleCloseTwilioDialog();
   };
