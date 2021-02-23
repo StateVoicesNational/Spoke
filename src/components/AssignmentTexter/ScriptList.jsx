@@ -13,9 +13,10 @@ import Divider from "material-ui/Divider";
 import Dialog from "material-ui/Dialog";
 import CannedResponseForm from "../CannedResponseForm";
 import GSSubmitButton from "../forms/GSSubmitButton";
-import Form from "react-formal";
+import GSForm from "../forms/GSForm";
+import Form, { NestedForm } from "react-formal";
 import { log } from "../../lib";
-
+console.log("FORM.", Form);
 // import { insert, update, remove } from '../../api/scripts/methods'
 
 const styles = {
@@ -66,8 +67,10 @@ class ScriptList extends React.Component {
     const onSaveCannedResponse = async cannedResponse => {
       this.setState({ dialogOpen: false });
       try {
+        console.log("TRY");
         await onCreateCannedResponse({ cannedResponse });
       } catch (err) {
+        console.log("ERR?");
         log.error(err);
       }
     };
@@ -107,31 +110,41 @@ class ScriptList extends React.Component {
     return (
       <div>
         {list}
-        {showAddScriptButton ? (
+        {showAddScriptButton || true ? (
           <FlatButton
             label="Add new canned response"
             icon={<CreateIcon />}
             onClick={this.handleOpenDialog}
           />
-        ) : (
-          ""
-        )}
-        <Form.Context>
+        ) : null}
+        <Form
+          onSubmit={() => {
+            console.log("HELLO SUBMITTED");
+          }}
+        >
           <Dialog
             style={styles.dialog}
             open={dialogOpen}
-            actions={[
-              <FlatButton label="Cancel" onClick={this.handleCloseDialog} />,
-              <Form.Submit as={GSSubmitButton} label="Save" />
-            ]}
+            // actions={
+            //   <NestedForm name="buttons">
+            //     <FlatButton label="Cancel" onClick={this.handleCloseDialog} />
+            //     <Form.Submit as={GSSubmitButton} label="Save" />
+            //   </NestedForm>
+            // }
             onRequestClose={this.handleCloseDialog}
           >
             <CannedResponseForm
               onSaveCannedResponse={onSaveCannedResponse}
               customFields={customFields}
+              actions={
+                <NestedForm name="buttons">
+                  <FlatButton label="Cancel" onClick={this.handleCloseDialog} />
+                  <Form.Submit as={GSSubmitButton} label="Save" />
+                </NestedForm>
+              }
             />
           </Dialog>
-        </Form.Context>
+        </Form>
       </div>
     );
   }
