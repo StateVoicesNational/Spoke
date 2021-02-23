@@ -13190,11 +13190,6 @@ react-chartjs-2@^2.11.1:
     lodash "^4.17.19"
     prop-types "^15.7.2"
 
-react-chartjs@^0.7.3:
-  version "0.7.3"
-  resolved "https://registry.yarnpkg.com/react-chartjs/-/react-chartjs-0.7.3.tgz#9bd0364bdc245ca732e7a1028656e319ef6932c5"
-  integrity sha1-m9A2S9wkXKcy56EChlbjGe9pMsU=
-
 react-color@^2.11.4:
   version "2.19.3"
   resolved "https://registry.yarnpkg.com/react-color/-/react-color-2.19.3.tgz#ec6c6b4568312a3c6a18420ab0472e146aa5683d"
