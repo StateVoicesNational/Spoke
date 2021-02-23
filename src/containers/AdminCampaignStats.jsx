@@ -121,6 +121,7 @@ class AdminCampaignStats extends React.Component {
               </div>
               <div className={css(styles.flexColumn)}>
                 <div className={css(styles.rightAlign)}>
+                  HELLO
                   <Chart
                     data={step.question.answerOptions.map(answer => [
                       answer.value,
@@ -202,11 +203,9 @@ class AdminCampaignStats extends React.Component {
               This campaign is archived
               {campaign.isArchivedPermanently
                 ? " and its phone numbers have been released"
-                : ""}
+                : null}
             </div>
-          ) : (
-            ""
-          )}
+          ) : null}
 
           <div className={css(styles.header)}>
             {campaign.title}
