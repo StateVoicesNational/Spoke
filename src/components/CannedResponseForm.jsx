@@ -5,12 +5,17 @@ import * as yup from "yup";
 import GSForm from "./forms/GSForm";
 import GSTextField from "./forms/GSTextField";
 import GSScriptField from "./forms/GSScriptField";
+import GSSubmitButton from "./forms/GSSubmitButton";
+import FlatButton from "material-ui/FlatButton";
 
 class CannedResponseForm extends React.Component {
   handleSave = formValues => {
-    console.log("SAVE1!!!");
     this.setState({ text: formValues.text });
     this.props.onSaveCannedResponse(formValues);
+  };
+
+  handleCloseDialog = () => {
+    this.props.handleCloseDialog();
   };
 
   render() {
@@ -39,7 +44,16 @@ class CannedResponseForm extends React.Component {
             multiLine
             fullWidth
           />
-          {this.props.actions}
+          <div
+            style={{ float: "right", display: "flex", alignItems: "center" }}
+          >
+            <FlatButton
+              label="Cancel"
+              onClick={this.handleCloseDialog}
+              style={{ marginTop: 15 }}
+            />
+            <Form.Submit as={GSSubmitButton} label="Save" />
+          </div>
         </GSForm>
       </div>
     );
