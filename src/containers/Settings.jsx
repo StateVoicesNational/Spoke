@@ -86,7 +86,7 @@ class Settings extends React.Component {
 
     return (
       <Dialog
-        open={this.state.textingHoursDialogOpen}
+        open={!!this.state.textingHoursDialogOpen}
         onRequestClose={this.handleCloseTextingHoursDialog}
       >
         <GSForm

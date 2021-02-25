@@ -351,7 +351,9 @@ export class IncomingMessageList extends Component {
     let rowSizeList = [10, 20, 50, 100];
 
     try {
-      rowSizeList = JSON.parse(window.CONVERSATION_LIST_ROW_SIZES);
+      if (window.CONVERSATION_LIST_ROW_SIZES !== "") {
+        rowSizeList = JSON.parse(window.CONVERSATION_LIST_ROW_SIZES);
+      }
     } catch (err) {
       console.log(err);
     }
