@@ -10,6 +10,7 @@ import TopNav from "../components/TopNav";
 import Paper from "material-ui/Paper";
 import { withRouter } from "react-router";
 import GSForm from "../components/forms/GSForm";
+import GSTextField from "../components/forms/GSTextField";
 import GSSubmitButton from "../components/forms/GSSubmitButton";
 import { dataTest } from "../lib/attributes";
 
@@ -67,6 +68,7 @@ class CreateAdditionalOrganization extends React.Component {
               }}
             >
               <Form.Field
+                as={GSTextField}
                 {...dataTest("organization")}
                 name="name"
                 label="Your organization"

@@ -27,6 +27,7 @@ import { withRouter } from "react-router";
 import GSForm from "../components/forms/GSForm";
 import GSTextField from "../components/forms/GSTextField";
 import GSSubmitButton from "../components/forms/GSSubmitButton";
+import GSPasswordField from "../components/forms/GSPasswordField";
 import Form from "react-formal";
 import * as yup from "yup";
 import Dialog from "material-ui/Dialog";
@@ -331,10 +332,16 @@ export class UserEdit extends React.Component {
           {fieldsNeeded && <h3>Please complete your profile</h3>}
           {!authType && org && org.profileFields.map(this.renderProfileField)}
           {authType && (
-            <Form.Field label="Password" name="password" type="password" />
+            <Form.Field
+              as={GSPasswordField}
+              label="Password"
+              name="password"
+              type="password"
+            />
           )}
           {authType === "change" && (
             <Form.Field
+              as={GSPasswordField}
               label="New Password"
               name="newPassword"
               type="password"
@@ -342,6 +349,7 @@ export class UserEdit extends React.Component {
           )}
           {authType && authType !== "login" && (
             <Form.Field
+              as={GSPasswordField}
               label="Confirm Password"
               name="passwordConfirm"
               type="password"
