@@ -104,7 +104,7 @@ class ScriptList extends React.Component {
     return (
       <div>
         {list}
-        {showAddScriptButton || true ? (
+        {showAddScriptButton ? (
           <FlatButton
             label="Add new canned response"
             icon={<CreateIcon />}
