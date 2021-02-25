@@ -102,7 +102,7 @@ class AdminCampaignStats extends React.Component {
 
     return interactionSteps.map(step => {
       if (step.question === "") {
-        return <div></div>;
+        return <div key={step.id}></div>;
       }
 
       const totalResponseCount = step.question.answerOptions.reduce(
@@ -121,7 +121,6 @@ class AdminCampaignStats extends React.Component {
               </div>
               <div className={css(styles.flexColumn)}>
                 <div className={css(styles.rightAlign)}>
-                  HELLO
                   <Chart
                     data={step.question.answerOptions.map(answer => [
                       answer.value,
@@ -242,6 +241,7 @@ class AdminCampaignStats extends React.Component {
                         // Buttons for Admins (and not Supervolunteers)
                         // export
                         <RaisedButton
+                          key="exportCampaign"
                           onClick={async () => {
                             this.setState(
                               {
@@ -264,6 +264,7 @@ class AdminCampaignStats extends React.Component {
                         />, // unarchive
                         campaign.isArchived ? (
                           <RaisedButton
+                            key="unarchiveCampaign"
                             disabled={campaign.isArchivedPermanently}
                             onClick={async () =>
                               await this.props.mutations.unarchiveCampaign(
@@ -275,6 +276,7 @@ class AdminCampaignStats extends React.Component {
                         ) : null,
                         !campaign.isArchived ? (
                           <RaisedButton
+                            key="archiveCampaign"
                             onClick={async () =>
                               await this.props.mutations.archiveCampaign(
                                 campaignId
@@ -284,6 +286,7 @@ class AdminCampaignStats extends React.Component {
                           />
                         ) : null, // copy
                         <RaisedButton
+                          key="copyCampaign"
                           {...dataTest("copyCampaign")}
                           label="Copy Campaign"
                           onClick={async () => {
@@ -298,6 +301,7 @@ class AdminCampaignStats extends React.Component {
                         />,
                         campaign.useOwnMessagingService ? (
                           <RaisedButton
+                            key="messagingService"
                             {...dataTest("messagingService")}
                             disabled={campaign.isArchivedPermanently}
                             onClick={() =>
@@ -310,6 +314,7 @@ class AdminCampaignStats extends React.Component {
                         ) : null,
                         showReleaseNumbers ? (
                           <RaisedButton
+                            key="releaseCampaignNumbers"
                             disabled={campaign.isArchivedPermanently}
                             onClick={async () =>
                               this.props.mutations.releaseCampaignNumbers(
