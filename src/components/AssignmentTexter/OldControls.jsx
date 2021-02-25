@@ -18,6 +18,7 @@ import Divider from "material-ui/Divider";
 import gql from "graphql-tag";
 import * as yup from "yup";
 import GSForm from "../forms/GSForm";
+import GSTextField from "../forms/GSTextField";
 import Form from "react-formal";
 import GSSubmitButton from "../forms/GSSubmitButton";
 import SendButton from "../SendButton";
@@ -533,6 +534,7 @@ export class AssignmentTexterContactControls extends React.Component {
             onSubmit={this.props.onOptOut}
           >
             <Form.Field
+              as={GSTextField}
               name="optOutMessageText"
               fullWidth
               autoFocus
@@ -598,6 +600,7 @@ export class AssignmentTexterContactControls extends React.Component {
           }
         >
           <Form.Field
+            as={GSTextField}
             className={css(styles.textField)}
             name="messageText"
             label="Your message"

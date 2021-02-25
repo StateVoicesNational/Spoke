@@ -2,6 +2,7 @@ import type from "prop-types";
 import React from "react";
 import RaisedButton from "material-ui/RaisedButton";
 import GSForm from "../../../components/forms/GSForm";
+import GSTextField from "../../../components/forms/GSTextField";
 import GSSubmitButton from "../../../components/forms/GSSubmitButton";
 import Form from "react-formal";
 import { ListItem, List } from "material-ui/List";
@@ -170,6 +171,7 @@ export class CampaignContactsForm extends React.Component {
               </ul>
             </div>
             <Form.Field
+              as={GSTextField}
               id="contact-sql"
               name="contactSql"
               type="textarea"

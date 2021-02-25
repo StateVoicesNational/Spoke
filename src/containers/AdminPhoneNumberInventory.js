@@ -282,17 +282,23 @@ class AdminPhoneNumberInventory extends React.Component {
       >
         <div style={inlineStyles.dialogFields}>
           <Form.Field
+            as={GSTextField}
             label="Area Code"
             name="areaCode"
             {...dataTest("areaCode")}
           />
-          <Form.Field label="Limit" name="limit" {...dataTest("limit")} />
+          <Form.Field
+            as={GSTextField}
+            label="Limit"
+            name="limit"
+            {...dataTest("limit")}
+          />
           {this.props.data.organization.twilioMessageServiceSid &&
           !this.props.data.organization.campaignPhoneNumbersEnabled ? (
             <Form.Field
               label="Add to this organization's Messaging Service"
               name="addToOrganizationMessagingService"
-              type={Toggle}
+              as={Toggle}
               style={{
                 marginTop: 30
               }}

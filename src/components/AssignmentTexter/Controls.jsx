@@ -599,7 +599,12 @@ export class AssignmentTexterContactControls extends React.Component {
                 }}
               />
             </div>
-            <Form.Field name="optOutMessageText" fullWidth multiLine />
+            <Form.Field
+              as={GSTextField}
+              name="optOutMessageText"
+              fullWidth
+              multiLine
+            />
             <div className={css(flexStyles.subSectionOptOutDialogActions)}>
               <FlatButton
                 className={css(flexStyles.flatButton)}

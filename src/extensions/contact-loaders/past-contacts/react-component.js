@@ -3,6 +3,7 @@ import React from "react";
 import RaisedButton from "material-ui/RaisedButton";
 import GSForm from "../../../components/forms/GSForm";
 import GSSubmitButton from "../../../components/forms/GSSubmitButton";
+import GSTextField from "../../../components/forms/GSTextField";
 import Form from "react-formal";
 import Subheader from "material-ui/Subheader";
 import Divider from "material-ui/Divider";
@@ -63,6 +64,7 @@ export class CampaignContactsFormInner extends React.Component {
           reduced to those that all contacts have in common.
         </p>
         <Form.Field
+          as={GSTextField}
           name="pastContactsQuery"
           label="Message Review URL"
           fullWidth
@@ -72,6 +74,7 @@ export class CampaignContactsFormInner extends React.Component {
           <b>Answer</b> for a question response
         </p>
         <Form.Field
+          as={GSTextField}
           name="questionResponseAnswer"
           label="Question Response Answer"
         />
