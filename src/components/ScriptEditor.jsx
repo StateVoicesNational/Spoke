@@ -74,9 +74,7 @@ function findWithRegex(regex, contentBlock, callback) {
 }
 
 const RecognizedField = props => (
-  <span style={{ outline: "1px solid red" }} style={styles.goodField}>
-    {props.children}
-  </span>
+  <span style={styles.goodField}>{props.children}</span>
 );
 
 RecognizedField.propTypes = {
