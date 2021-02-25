@@ -1,5 +1,6 @@
 import React from "react";
 import { MenuItem } from "material-ui/Menu";
+import pick from "lodash/pick";
 
 export function dataSourceItem(name, key) {
   return {
@@ -10,52 +11,29 @@ export function dataSourceItem(name, key) {
 }
 
 export function getRaisedButtonProps(props) {
-  const {
-    backgroundColor,
-    buttonStyle,
-    children,
-    className,
-    containerElement,
-    disableTouchRipple,
-    disabled,
-    disabledBackgroundColor,
-    disabledLabelColor,
-    fullWidth,
-    href,
-    icon,
-    label,
-    labelColor,
-    labelPosition,
-    labelStyle,
-    onClick,
-    overlayStyle,
-    primary,
-    rippleStyle,
-    secondary,
-    style
-  } = props;
-  return {
-    backgroundColor,
-    buttonStyle,
-    children,
-    className,
-    containerElement,
-    disableTouchRipple,
-    disabled,
-    disabledBackgroundColor,
-    disabledLabelColor,
-    fullWidth,
-    href,
-    icon,
-    label,
-    labelColor,
-    labelPosition,
-    labelStyle,
-    onClick,
-    overlayStyle,
-    primary,
-    rippleStyle,
-    secondary,
-    style
-  };
+  const validProps = [
+    "backgroundColor",
+    "buttonStyle",
+    "children",
+    "className",
+    "containerElement",
+    "disableTouchRipple",
+    "disabled",
+    "disabledBackgroundColor",
+    "disabledLabelColor",
+    "fullWidth",
+    "href",
+    "icon",
+    "label",
+    "labelColor",
+    "labelPosition",
+    "labelStyle",
+    "onClick",
+    "overlayStyle",
+    "primary",
+    "rippleStyle",
+    "secondary",
+    "style"
+  ];
+  return pick(props, validProps);
 }
