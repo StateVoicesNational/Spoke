@@ -10,6 +10,7 @@ import Paper from "material-ui/Paper";
 import { withRouter } from "react-router";
 import GSForm from "../components/forms/GSForm";
 import GSSubmitButton from "../components/forms/GSSubmitButton";
+import GSTextField from "../components/forms/GSTextField";
 import { dataTest } from "../lib/attributes";
 
 const styles = StyleSheet.create({
@@ -73,6 +74,7 @@ class CreateOrganization extends React.Component {
               }}
             >
               <Form.Field
+                as={GSTextField}
                 {...dataTest("organization")}
                 name="name"
                 label="Your organization"

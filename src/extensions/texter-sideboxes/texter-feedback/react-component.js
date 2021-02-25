@@ -9,6 +9,7 @@ import IconButton from "material-ui/IconButton/IconButton";
 import AddIcon from "material-ui/svg-icons/content/add-circle";
 import RemoveIcon from "material-ui/svg-icons/content/remove-circle";
 import GSForm from "../../../components/forms/GSForm";
+import GSTextField from "../../../components/forms/GSTextField";
 import GSSubmitButton from "../../../components/forms/GSSubmitButton";
 import loadData from "../../../containers/hoc/load-data";
 import gql from "graphql-tag";
@@ -265,6 +266,7 @@ export class TexterSideboxClass extends React.Component {
           <h3>Your Feedback Message</h3>
 
           <Form.Field
+            as={GSTextField}
             name="feedback.message"
             style={inlineStyles.messageInputWrapper}
             textareaStyle={inlineStyles.messageInput}
@@ -357,6 +359,7 @@ export class AdminConfig extends React.Component {
           feedback is then shown to the texters.
         </p>
         <Form.Field
+          as={GSTextField}
           name="texterFeedbackJSON"
           label="Advanced JSON config override"
           defaultValue={this.props.settingsData.texterFeedbackJSON || ""}

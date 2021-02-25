@@ -261,7 +261,11 @@ export class UserEdit extends React.Component {
   renderProfileField(field) {
     return (
       <span className={css(styles.fields)} key={field.name}>
-        <Form.Field label={field.label} name={`extra.${field.name}`} />
+        <Form.Field
+          as={GSTextField}
+          label={field.label}
+          name={`extra.${field.name}`}
+        />
       </span>
     );
   }

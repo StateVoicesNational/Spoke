@@ -94,7 +94,7 @@ export class CampaignContactsForm extends React.Component {
                 </code>
               </p>
             </div>
-            <Form.Field name="s3Path" />
+            <Form.Field as={GSTextField} name="s3Path" />
           </div>
           <Form.Submit
             as={GSSubmitButton}

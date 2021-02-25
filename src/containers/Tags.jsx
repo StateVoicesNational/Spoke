@@ -11,6 +11,7 @@ import theme from "../styles/theme";
 import Dialog from "material-ui/Dialog";
 import * as yup from "yup";
 import GSForm from "../components/forms/GSForm";
+import GSTextField from "../components/forms/GSTextField";
 import GSSubmitButton from "../components/forms/GSSubmitButton";
 import Form from "react-formal";
 import { StyleSheet, css } from "aphrodite";
@@ -176,9 +177,14 @@ export class Tags extends React.Component {
             defaultValue={dialogTag}
           >
             <div className={css(styles.fields)}>
-              <Form.Field label="Name" name="name" />
-              <Form.Field label="Description" name="description" />
+              <Form.Field as={GSTextField} label="Name" name="name" />
               <Form.Field
+                as={GSTextField}
+                label="Description"
+                name="description"
+              />
+              <Form.Field
+                as={GSTextField}
                 label="Group ('texter-tags' for texters)"
                 name="group"
               />

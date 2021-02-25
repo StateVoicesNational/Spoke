@@ -3,6 +3,7 @@ import Toggle from "material-ui/Toggle";
 import React from "react";
 import Form from "react-formal";
 import GSForm from "./forms/GSForm";
+import GSTextField from "./forms/GSTextField";
 import GSSubmitButton from "./forms/GSSubmitButton";
 import CampaignFormSectionHeading from "./CampaignFormSectionHeading";
 import * as yup from "yup";
@@ -27,6 +28,7 @@ export default class CampaignMessagingServiceForm extends React.Component {
   addToggleFormField(name, label) {
     return (
       <Form.Field
+        as={GSTextField}
         name={name}
         type={Toggle}
         defaultToggled={this.props.formValues[name]}
@@ -59,6 +61,7 @@ export default class CampaignMessagingServiceForm extends React.Component {
         {this.props.formValues.useOwnMessagingService ? (
           <div>
             <Form.Field
+              as={GSTextField}
               name="messageserviceSid"
               label="Messaging Service SID"
               fullWidth
