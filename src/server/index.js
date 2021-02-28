@@ -191,23 +191,21 @@ app.use(
         // drop if this fails
         .catch(() => {})
         .then(() => {});
+
       if (process.env.SHOW_SERVER_ERROR || process.env.DEBUG) {
-        return error;
+        if (error instanceof GraphQLError) {
+          return error;
+        }
+        return new GraphQLError(error.message);
       }
 
-      if (
+      return new GraphQLError(
         error &&
         error.originalError &&
         error.originalError.code === "UNAUTHORIZED"
-      ) {
-        return new GraphQLError("UNAUTHORIZED");
-      }
-
-      if (error instanceof GraphQLError) {
-        return error;
-      }
-
-      return new GraphQLError(error.message);
+          ? "UNAUTHORIZED"
+          : "Internal server error"
+      );
     }
   }))
 );
