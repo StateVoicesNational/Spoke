@@ -92,7 +92,7 @@ async function getOwnedPhoneNumberForStickySender(organizationId, cell) {
     .where({
       organization_id: organizationId
     })
-    .orderByRaw("2 DESC, 3, 4 DESC, 5, 6, 7")
+    .orderByRaw("2 DESC, 3, 4 DESC, 5 DESC, 6, 7")
     .first();
 }
 
