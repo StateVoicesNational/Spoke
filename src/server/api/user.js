@@ -66,11 +66,10 @@ export function buildUsersQuery(
     .distinct();
 
   if (role !== "ANY") {
+    query = query.where({ role: role });
     if (role !== "SUSPENDED") {
       query = query.whereNot({ role: "SUSPENDED" });
     }
-  } else {
-    query = query.where({ role: role });
   }
 
   if (filterString) {
