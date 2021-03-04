@@ -58,17 +58,20 @@ export function buildUsersQuery(
   filterBy
 ) {
   const queryParam = buildSelect(sortBy);
-  const roleFilter = role && role !== "ANY" ? { role } : {};
-  const suspendedFilter =
-    role === "SUSPENDED" || role === "ANY" ? {} : { role: "SUSPENDED" };
 
   let query = queryParam
     .from("user_organization")
     .innerJoin("user", "user_organization.user_id", "user.id")
-    .where(roleFilter)
-    .whereNot(suspendedFilter)
-    .whereRaw('"user_organization"."organization_id" = ?', organizationId)
+    .where("organization_id", organizationId)
     .distinct();
+
+  if (role !== "ANY") {
+    if (role !== "SUSPENDED") {
+      query = query.whereNot({ role: "SUSPENDED" });
+    }
+  } else {
+    query = query.where({ role: role });
+  }
 
   if (filterString) {
     const filterStringWithPercents = (
@@ -92,7 +95,7 @@ export function buildUsersQuery(
     } else {
       query = query.andWhere(
         r.knex.raw(
-          "lower(first_name) like ? OR lower(last_name) like ? OR lower(email) like ?",
+          "(lower(first_name) like ? OR lower(last_name) like ? OR lower(email) like ?)",
           [
             filterStringWithPercents,
             filterStringWithPercents,
