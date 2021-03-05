@@ -13,6 +13,7 @@ import FloatingActionButton from "material-ui/FloatingActionButton";
 import * as yup from "yup";
 import GSForm from "../components/forms/GSForm";
 import GSSubmitButton from "../components/forms/GSSubmitButton";
+import GSTextField from "../components/forms/GSTextField";
 import Form from "react-formal";
 
 import theme from "../styles/theme";
