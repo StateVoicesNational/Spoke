@@ -1,7 +1,7 @@
 import type from "prop-types";
 import React from "react";
 import { Link } from "react-router";
-import yup from "yup";
+import * as yup from "yup";
 import Toggle from "material-ui/Toggle";
 import CopyIcon from "material-ui/svg-icons/content/content-copy";
 import IconButton from "material-ui/IconButton/IconButton";

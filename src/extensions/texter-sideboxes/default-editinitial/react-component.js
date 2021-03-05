@@ -1,7 +1,8 @@
 import type from "prop-types";
 import React from "react";
-import yup from "yup";
+import * as yup from "yup";
 import Form from "react-formal";
+import GSTextField from "../../../components/forms/GSTextField";
 
 export const displayName = () => "Allow editing of initial messages";
 
@@ -111,24 +112,28 @@ export class AdminConfig extends React.Component {
           itself.
         </p>
         <Form.Field
+          as={GSTextField}
           name="editInitialExpandText"
           label="Text to expand instructions"
           hintText={`default: ${defaultExpandText} - set to a single space to disable the expand click`}
           fullWidth
         />
         <Form.Field
+          as={GSTextField}
           name="editInitialMessagePre"
           label="Text before link"
           hintText={`default: ${defaultMessagePre}`}
           fullWidth
         />
         <Form.Field
+          as={GSTextField}
           name="editInitialLinkText"
           label="Link text to enable editing "
           hintText={`default: ${defaultLinkText}`}
           fullWidth
         />
         <Form.Field
+          as={GSTextField}
           name="editInitialMessagePost"
           label="Text after link"
           hintText={`default: ${defaultMessagePost}`}
