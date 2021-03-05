@@ -33,7 +33,8 @@ export function getRaisedButtonProps(props) {
     "primary",
     "rippleStyle",
     "secondary",
-    "style"
+    "style",
+    "data-test"
   ];
   return pick(props, validProps);
 }
