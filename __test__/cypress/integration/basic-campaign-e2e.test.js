@@ -55,7 +55,7 @@ describe("End-to-end campaign flow", () => {
     // Wait for modal to close then submit
     // TODO: use cy.waitUntil() instead of wait()
     cy.wait(400);
-    cy.get("[data-test=campaignBasicsForm] button").click();
+    cy.get("[data-test=campaignBasicsForm] button").click({ force: true });
 
     // Upload Contacts
     cy.get("#contact-upload").attachFile("two-contacts.csv"), { force: true };
