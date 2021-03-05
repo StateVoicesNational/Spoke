@@ -1,6 +1,7 @@
 const path = require("path");
 const webpack = require("webpack");
 const ManifestPlugin = require("webpack-manifest-plugin");
+const UglifyJsPlugin = require("uglifyjs-webpack-plugin");
 
 const DEBUG =
   process.env.NODE_ENV === "development" || !!process.env.WEBPACK_HOT_RELOAD;
@@ -36,7 +37,7 @@ if (!DEBUG) {
     })
   );
   plugins.push(
-    new webpack.optimize.UglifyJsPlugin({
+    new UglifyJsPlugin({
       sourceMap: true
     })
   );
