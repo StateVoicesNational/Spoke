@@ -48,8 +48,8 @@ describe("End-to-end campaign flow", () => {
       .first()
       .click();
     // Click first of the month
-    cy.get("body > div:nth-of-type(2) button:contains(1)")
-      .first()
+    cy.get("body > div:nth-of-type(2) button")
+      .eq(7)
       .click();
 
     // Wait for modal to close then submit
