@@ -190,7 +190,7 @@
     "eslint-plugin-react": "^5.2.2",
     "fakeredis": "^2.0.0",
     "foreman": "^3.0.1",
-    "husky": "^3.0.1",
+    "husky": "4",
     "json2csv": "^3.6.2",
     "lint-staged": "^9.2.0",
     "mockdate": "^2.0.2",
