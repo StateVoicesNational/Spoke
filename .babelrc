@@ -7,5 +7,10 @@
       "polyfill": false,
       "regenerator": true
     }]
-  ]
+  ],
+  "env": {
+    "dev": {
+      "plugins":["react-hot-loader/babel"]
+    }
+  }
 }
