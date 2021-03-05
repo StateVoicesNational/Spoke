@@ -48,18 +48,20 @@ describe("End-to-end campaign flow", () => {
       .first()
       .click();
     // Click first of the month
-    cy.get("body > div:nth-of-type(2) button")
-      .eq(7)
+    cy.get("body > div:nth-of-type(2) button:not([disabled])")
+      .eq(3)
       .click();
 
     // Wait for modal to close then submit
     // TODO: use cy.waitUntil() instead of wait()
     cy.wait(400);
-    cy.get("[data-test=campaignBasicsForm]").submit();
+    cy.get("[data-test=campaignBasicsForm] button").submit();
 
     // Upload Contacts
     cy.get("#contact-upload").attachFile("two-contacts.csv"), { force: true };
-    cy.get("button[data-test=submitContactsCsvUpload]").click();
+    cy.get("button[data-test=submitContactsCsvUpload]")
+      .first()
+      .click();
 
     // Assignments
     // Note: Material UI v0 AutoComplete component appears to require a click on the element
