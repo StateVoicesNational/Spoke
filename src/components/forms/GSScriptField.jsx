@@ -31,7 +31,9 @@ export default class GSScriptField extends GSFormField {
         open: true,
         script: this.props.value
       },
-      () => this.refs.dialogScriptInput.focus()
+      () => {
+        this.refs.dialogScriptInput && this.refs.dialogScriptInput.focus();
+      }
     );
   };
 
@@ -58,12 +60,12 @@ export default class GSScriptField extends GSFormField {
           <FlatButton
             {...dataTest("scriptCancel")}
             label="Cancel"
-            onTouchTap={this.handleCloseDialog}
+            onClick={this.handleCloseDialog}
           />,
           <RaisedButton
             {...dataTest("scriptDone")}
             label="Done"
-            onTouchTap={this.handleSaveScript}
+            onClick={this.handleSaveScript}
             primary
           />
         ]}
@@ -84,11 +86,12 @@ export default class GSScriptField extends GSFormField {
   }
 
   render() {
+    const { fullWidth, label, multiline, name, onChange, value } = this.props;
     return (
       <div>
         <TextField
           multiLine
-          onTouchTap={event => {
+          onClick={event => {
             this.handleOpenDialog(event);
           }}
           onFocus={event => {
@@ -108,7 +111,12 @@ export default class GSScriptField extends GSFormField {
           floatingLabelStyle={{
             zIndex: 0
           }}
-          {...this.props}
+          fullWidth={fullWidth}
+          label={label}
+          multiline={multiline}
+          name={name}
+          onChange={onChange}
+          value={value}
         />
         {this.renderDialog()}
       </div>

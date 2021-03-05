@@ -1,12 +1,13 @@
 import type from "prop-types";
 import React from "react";
-import yup from "yup";
+import * as yup from "yup";
 import { css } from "aphrodite";
 import Form from "react-formal";
 import FlatButton from "material-ui/FlatButton";
 import Toggle from "material-ui/Toggle";
 import { withRouter } from "react-router";
 import gql from "graphql-tag";
+import GSTextField from "../../../components/forms/GSTextField";
 
 import loadData from "../../../containers/hoc/load-data";
 import {
@@ -199,24 +200,28 @@ export class AdminConfig extends React.Component {
           }
         />
         <Form.Field
+          as={GSTextField}
           name="releaseContactsBatchTitle"
           label="Title for releasing contacts"
           fullWidth
           hintText="default: Can't send the rest of these texts?"
         />
         <Form.Field
+          as={GSTextField}
           name="releaseContactsBatchLabel"
           label="Button label for releasing unmessaged contacts"
           fullWidth
           hintText="default: Done for the day"
         />
         <Form.Field
+          as={GSTextField}
           name="releaseContactsConvosTitle"
           label="Title for releasing even replies"
           fullWidth
           hintText="default: Need to give up?"
         />
         <Form.Field
+          as={GSTextField}
           name="releaseContactsConvosLabel"
           label="Button label for releasing all assigned contacts"
           fullWidth

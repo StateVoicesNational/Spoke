@@ -15,9 +15,10 @@ import {
 import CampaignFormSectionHeading from "../../../components/CampaignFormSectionHeading";
 import { StyleSheet, css } from "aphrodite";
 import theme from "../../../styles/theme";
-import yup from "yup";
+import * as yup from "yup";
 import humps from "humps";
 import { dataTest } from "../../../lib/attributes";
+import GSSubmitButton from "../../../components/forms/GSSubmitButton";
 
 export const ensureCamelCaseRequiredHeaders = columnHeader => {
   /*
@@ -256,11 +257,9 @@ export class CampaignContactsForm extends React.Component {
                 leftIcon={this.props.icons.error}
               />
             </List>
-          ) : (
-            ""
-          )}
-          <Form.Button
-            type="submit"
+          ) : null}
+          <Form.Submit
+            as={GSSubmitButton}
             disabled={this.props.saveDisabled}
             label={this.props.saveLabel}
             {...dataTest("submitContactsCsvUpload")}

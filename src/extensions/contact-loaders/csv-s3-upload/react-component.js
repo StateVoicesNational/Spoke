@@ -2,6 +2,7 @@ import type from "prop-types";
 import React from "react";
 import RaisedButton from "material-ui/RaisedButton";
 import GSForm from "../../../components/forms/GSForm";
+import GSSubmitButton from "../../../components/forms/GSSubmitButton";
 import Form from "react-formal";
 import Subheader from "material-ui/Subheader";
 import Divider from "material-ui/Divider";
@@ -15,7 +16,7 @@ import {
 import CampaignFormSectionHeading from "../../../components/CampaignFormSectionHeading";
 import { StyleSheet, css } from "aphrodite";
 import theme from "../../../styles/theme";
-import yup from "yup";
+import * as yup from "yup";
 import humps from "humps";
 import { dataTest } from "../../../lib/attributes";
 import axios from "axios";
@@ -222,9 +223,7 @@ export class CampaignContactsForm extends React.Component {
     const { contactUploadError } = this.state;
     return (
       <div>
-        {!this.props.jobResultMessage ? (
-          ""
-        ) : (
+        {!this.props.jobResultMessage ? null : (
           <div>
             <CampaignFormSectionHeading title="Job Outcome" />
             <div>{this.props.jobResultMessage}</div>
@@ -247,11 +246,9 @@ export class CampaignContactsForm extends React.Component {
                 leftIcon={this.props.icons.error}
               />
             </List>
-          ) : (
-            ""
-          )}
-          <Form.Button
-            type="submit"
+          ) : null}
+          <Form.Submit
+            as={GSSubmitButton}
             disabled={this.props.saveDisabled}
             label={this.props.saveLabel}
             {...dataTest("submitContactsCsvUpload")}
