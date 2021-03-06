@@ -789,7 +789,7 @@ export default class CampaignPhoneNumbersForm extends React.Component {
                           fontSize: 14,
                           color:
                             stateAssigned && stateAssigned >= stateNeeded
-                              ? theme.colors.green
+                              ? theme.colors.coreBackgroundColor
                               : theme.colors.black
                         }}
                       >
@@ -831,7 +831,7 @@ export default class CampaignPhoneNumbersForm extends React.Component {
                                   fontSize: 14,
                                   color:
                                     assignedCount && assignedCount >= needed
-                                      ? theme.colors.green
+                                      ? theme.colors.coreBackgroundColor
                                       : assignedCount
                                       ? theme.colors.red
                                       : theme.colors.black

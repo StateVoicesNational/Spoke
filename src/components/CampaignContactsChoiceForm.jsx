@@ -21,7 +21,7 @@ import { withRouter } from "react-router";
 const check = <CheckIcon color={theme.colors.green} />;
 const warning = <WarningIcon color={theme.colors.orange} />;
 const error = <ErrorIcon color={theme.colors.red} />;
-const info = <InfoIcon color={theme.colors.green} />;
+const info = <InfoIcon color={theme.colors.coreBackgroundColor} />;
 
 export const icons = {
   check,

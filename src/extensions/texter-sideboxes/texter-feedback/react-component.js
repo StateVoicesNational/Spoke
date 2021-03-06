@@ -227,7 +227,9 @@ export class TexterSideboxClass extends React.Component {
             )}
             {!!config.skills.length && (
               <div>
-                <h3 style={{ color: theme.colors.darkGreen }}>Skills</h3>
+                <h3 style={{ color: theme.colors.coreBackgroundColorDisabled }}>
+                  Skills
+                </h3>
                 <Paper style={inlineStyles.skillsWrapper}>
                   {config.skills.map(({ key, content }) => {
                     const isChecked = (Object.entries(

@@ -10,8 +10,9 @@ import {
 } from "draft-js";
 import { delimit } from "../lib/scripts";
 import Chip from "./Chip";
-import { red400, green500, green600, grey100 } from "material-ui/styles/colors";
+import { red400, green500, grey100 } from "material-ui/styles/colors";
 import { getCharCount } from "@trt2/gsm-charset-utils";
+import theme from "../styles/theme";
 
 const styles = {
   editor: {
@@ -34,7 +35,7 @@ const styles = {
   },
   scriptFieldButton: {
     fontSize: "11px",
-    color: green600,
+    color: theme.colors.coreBackgroundColor,
     textTransform: "none",
     backgroundColor: grey100,
     // margin: '5px 10px',

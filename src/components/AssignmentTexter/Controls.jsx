@@ -1019,7 +1019,7 @@ export class AssignmentTexterContactControls extends React.Component {
           title={
             "This is your first message to " + this.props.contact.firstName
           }
-          icon={<CreateIcon color="rgb(83, 180, 119)" />}
+          icon={<CreateIcon color={theme.colors.coreBackgroundColor} />}
         />,
         enabledSideboxes
       ),

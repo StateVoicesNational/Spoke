@@ -63,7 +63,11 @@ export class PeopleList extends Component {
               to={`/app/${organizationId}/todos/other/${row.texterId}`}
             >
               <ActionOpenInNew
-                style={{ width: 14, height: 14, color: theme.colors.green }}
+                style={{
+                  width: 14,
+                  height: 14,
+                  color: theme.colors.coreBackgroundColor
+                }}
               />
             </Link>
           </h3>

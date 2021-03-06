@@ -28,6 +28,7 @@ import { css } from "aphrodite";
 import { styles } from "./AdminCampaignStats";
 import AdminScriptImport from "../containers/AdminScriptImport";
 import { makeTree } from "../lib";
+import { setContrastingColor } from "../lib/color-contrast-helper";
 
 const campaignInfoFragment = `
   id
@@ -673,7 +674,7 @@ export class AdminCampaignEdit extends React.Component {
       <div
         {...dataTest("campaignIsStarted")}
         style={{
-          color: theme.colors.green,
+          color: theme.colors.coreBackgroundColor,
           fontWeight: 800
         }}
       >
@@ -876,18 +877,23 @@ export class AdminCampaignEdit extends React.Component {
             cardHeaderStyle.background = theme.colors.lightGray;
             cardHeaderStyle.width = `${savePercent}%`;
           } else if (sectionIsExpanded && sectionCanExpandOrCollapse) {
-            cardHeaderStyle.backgroundColor = theme.colors.lightYellow;
+            cardHeaderStyle.backgroundColor =
+              theme.colors.lightSecondaryBackgroundColor;
           } else if (!sectionCanExpandOrCollapse) {
             cardHeaderStyle.backgroundColor = theme.colors.lightGray;
           } else if (sectionIsDone) {
             avatar = (
               <Avatar
-                icon={<DoneIcon style={{ fill: theme.colors.darkGreen }} />}
+                icon={
+                  <DoneIcon
+                    style={{ fill: theme.colors.coreBackgroundColorDisabled }}
+                  />
+                }
                 style={avatarStyle}
                 size={25}
               />
             );
-            cardHeaderStyle.backgroundColor = theme.colors.green;
+            cardHeaderStyle.backgroundColor = theme.colors.coreBackgroundColor;
           } else if (!sectionIsDone) {
             avatar = (
               <Avatar
@@ -896,7 +902,8 @@ export class AdminCampaignEdit extends React.Component {
                 size={25}
               />
             );
-            cardHeaderStyle.backgroundColor = theme.colors.yellow;
+            cardHeaderStyle.backgroundColor =
+              theme.colors.secondaryBackgroundColor;
           }
           return (
             <Card
@@ -914,7 +921,8 @@ export class AdminCampaignEdit extends React.Component {
               <CardHeader
                 title={section.title}
                 titleStyle={{
-                  width: "100%"
+                  width: "100%",
+                  color: setContrastingColor(cardHeaderStyle.backgroundColor)
                 }}
                 style={cardHeaderStyle}
                 actAsExpander={!sectionIsSaving && sectionCanExpandOrCollapse}
@@ -922,6 +930,9 @@ export class AdminCampaignEdit extends React.Component {
                   !sectionIsSaving && sectionCanExpandOrCollapse
                 }
                 avatar={avatar}
+                iconStyle={{
+                  color: setContrastingColor(cardHeaderStyle.backgroundColor)
+                }}
               />
               <CardText expandable>
                 {this.renderCampaignFormSection(section, sectionIsSaving)}

@@ -17,6 +17,7 @@ import Toggle from "material-ui/Toggle";
 import moment from "moment";
 import CampaignTexterUIForm from "../components/CampaignTexterUIForm";
 import OrganizationFeatureSettings from "../components/OrganizationFeatureSettings";
+import { setContrastingColor } from "../lib/color-contrast-helper";
 
 const styles = StyleSheet.create({
   section: {
@@ -189,13 +190,18 @@ class Settings extends React.Component {
       />
     ];
 
+    const backgroundColor = allSet
+      ? theme.colors.coreBackgroundColor
+      : theme.colors.secondaryBackgroundColor;
+    const contrastBackgroundColor = setContrastingColor(backgroundColor);
+
     return (
       <Card>
         <CardHeader
           title="Twilio Credentials"
-          style={{
-            backgroundColor: allSet ? theme.colors.green : theme.colors.yellow
-          }}
+          style={{ backgroundColor }}
+          titleStyle={{ color: contrastBackgroundColor }}
+          iconStyle={{ color: contrastBackgroundColor }}
         />
         {allSet && (
           <CardText style={inlineStyles.shadeBox}>
@@ -267,12 +273,18 @@ class Settings extends React.Component {
       optOutMessage: yup.string().required()
     });
 
+    const contrastBackgroundColor = setContrastingColor(
+      theme.colors.coreBackgroundColor
+    );
+
     return (
       <div>
         <Card>
           <CardHeader
             title="Settings"
-            style={{ backgroundColor: theme.colors.green }}
+            style={{ backgroundColor: theme.colors.coreBackgroundColor }}
+            titleStyle={{ color: contrastBackgroundColor }}
+            iconStyle={{ color: contrastBackgroundColor }}
           />
           <CardText>
             <div className={css(styles.section)}>
@@ -344,7 +356,9 @@ class Settings extends React.Component {
           <Card>
             <CardHeader
               title="Texter UI Defaults"
-              style={{ backgroundColor: theme.colors.green }}
+              style={{ backgroundColor: theme.colors.coreBackgroundColor }}
+              titleStyle={{ color: contrastBackgroundColor }}
+              iconStyle={{ color: contrastBackgroundColor }}
               actAsExpander={true}
               showExpandableButton={true}
             />
@@ -374,7 +388,9 @@ class Settings extends React.Component {
           <Card>
             <CardHeader
               title="Overriding default settings"
-              style={{ backgroundColor: theme.colors.green }}
+              style={{ backgroundColor: theme.colors.coreBackgroundColor }}
+              titleStyle={{ color: contrastBackgroundColor }}
+              iconStyle={{ color: contrastBackgroundColor }}
               actAsExpander={true}
               showExpandableButton={true}
             />
@@ -404,7 +420,9 @@ class Settings extends React.Component {
           <Card>
             <CardHeader
               title="External configuration"
-              style={{ backgroundColor: theme.colors.green }}
+              style={{ backgroundColor: theme.colors.coreBackgroundColor }}
+              titleStyle={{ color: contrastBackgroundColor }}
+              iconStyle={{ color: contrastBackgroundColor }}
               actAsExpander={true}
               showExpandableButton={true}
             />

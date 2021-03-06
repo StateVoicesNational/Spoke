@@ -3,6 +3,7 @@ import React, { Component } from "react";
 import IconButton from "material-ui/IconButton";
 import NavigationArrowForward from "material-ui/svg-icons/navigation/arrow-forward";
 import { StyleSheet, css } from "aphrodite";
+import theme from "../../styles/theme";
 
 // This is because the Toolbar from material-ui seems to only apply the correct margins if the
 // immediate child is a Button or other type it recognizes. Can get rid of this if we remove material-ui
@@ -12,7 +13,7 @@ const styles = StyleSheet.create({
     marginLeft: 20
   },
   icon: {
-    color: "rgb(83, 180, 119)",
+    color: theme.colors.coreBackgroundColor,
     width: 40,
     height: 40
   },

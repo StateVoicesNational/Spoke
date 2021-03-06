@@ -1,14 +1,20 @@
 import tinycolor from "tinycolor2";
 
 const coreBackgroundColor = global.CORE_BACKGROUND_COLOR || "rgb(83, 180, 119)";
+const secondaryBackgroundColor =
+  global.SECONDARY_BACKGROUND_COLOR || "rgb(250,190,40)";
 
 const colors = {
-  coreBackgroundColor: coreBackgroundColor,
+  coreBackgroundColor,
   coreBackgroundColorDisabled: tinycolor(coreBackgroundColor)
     .darken(10)
     .toHexString(),
   coreHoverColor: tinycolor(coreBackgroundColor)
     .darken(5)
+    .toHexString(),
+  secondaryBackgroundColor,
+  lightSecondaryBackgroundColor: tinycolor(secondaryBackgroundColor)
+    .lighten(10)
     .toHexString(),
   orange: "rgb(255, 102, 0)",
   lightGreen: "rgb(245, 255, 247)",
@@ -41,9 +47,9 @@ const text = {
   },
   link_light_bg: {
     fontWeight: 400,
-    color: colors.green,
+    color: colors.coreBackgroundColor,
     textDecoration: "none",
-    borderBottom: `1px solid ${colors.green}`,
+    borderBottom: `1px solid ${colors.coreBackgroundColor}`,
     cursor: "pointer",
     ":hover": {
       borderBottom: 0,

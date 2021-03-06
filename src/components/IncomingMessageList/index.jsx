@@ -150,7 +150,11 @@ export class IncomingMessageList extends Component {
                 to={`/app/${this.props.organizationId}/todos/other/${row.texter.id}`}
               >
                 <ActionOpenInNew
-                  style={{ width: 14, height: 14, color: theme.colors.green }}
+                  style={{
+                    width: 14,
+                    height: 14,
+                    color: theme.colors.coreBackgroundColor
+                  }}
                 />
               </Link>
             </span>
@@ -368,7 +372,11 @@ export class IncomingMessageList extends Component {
               Sweep {firstAssignmentTexter}'s messages in{" "}
               {firstAssignmentCampaignTitle}
               <ActionOpenInNew
-                style={{ width: 14, height: 14, color: theme.colors.green }}
+                style={{
+                  width: 14,
+                  height: 14,
+                  color: theme.colors.coreBackgroundColor
+                }}
               />
             </Link>
           </div>
