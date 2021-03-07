@@ -3,6 +3,7 @@ import { css } from "aphrodite";
 import { CardText } from "material-ui/Card";
 import Dialog from "material-ui/Dialog";
 import FlatButton from "material-ui/FlatButton";
+import { Table, TableBody, TableRow, TableRowColumn } from "material-ui/Table";
 import PropTypes from "prop-types";
 import React from "react";
 import Form from "react-formal";
@@ -16,7 +17,7 @@ export class OrgConfig extends React.Component {
     super(props);
     const { accountSid, authToken, messageServiceSid } = this.props.config;
     const allSet = accountSid && authToken && messageServiceSid;
-    this.state = { allSet };
+    this.state = { allSet, ...this.props.config };
     this.props.onAllSetChanged(allSet);
   }
 
@@ -36,15 +37,16 @@ export class OrgConfig extends React.Component {
     }
   }
 
+  onFormChange = value => {
+    this.setState(value);
+  };
+
   handleOpenTwilioDialog = () => this.setState({ twilioDialogOpen: true });
 
   handleCloseTwilioDialog = () => this.setState({ twilioDialogOpen: false });
 
-  handleSubmitTwilioAuthForm = async ({
-    accountSid,
-    authToken,
-    messageServiceSid
-  }) => {
+  handleSubmitTwilioAuthForm = async p => {
+    const { accountSid, authToken, messageServiceSid } = p;
     let twilioError;
     try {
       await this.props.onSubmit({
@@ -52,7 +54,11 @@ export class OrgConfig extends React.Component {
         twilioAuthToken: authToken === "<Encrypted>" ? false : authToken,
         twilioMessageServiceSid: messageServiceSid
       });
-      this.setState({ twilioError: undefined });
+      await this.props.requestRefetch();
+      this.setState({
+        twilioError: undefined,
+        authToken: this.props.config.authToken
+      });
     } catch (caught) {
       console.log("Error submitting Twilio auth", JSON.stringify(caught));
       if (caught.graphQLErrors && caught.graphQLErrors.length > 0) {
@@ -111,10 +117,40 @@ export class OrgConfig extends React.Component {
               url={`${baseUrl}/twilio/${organizationId}`}
               textContent="Twilio credentials are configured for this organization. You should set the inbound Request URL in your Twilio messaging service to this link."
             />
+            Settings for this organization:
+            <Table selectable={false} bodyStyle={{ "background-color": "red" }}>
+              <TableBody
+                displayRowCheckbox={false}
+                style={inlineStyles.shadeBox}
+              >
+                <TableRow>
+                  <TableRowColumn>
+                    <b>Twilio Account SID</b>
+                  </TableRowColumn>
+                  <TableRowColumn>
+                    {this.props.config.accountSid}
+                  </TableRowColumn>
+                </TableRow>
+                <TableRow>
+                  <TableRowColumn>
+                    <b>Twilio Auth Token</b>
+                  </TableRowColumn>
+                  <TableRowColumn>{this.props.config.authToken}</TableRowColumn>
+                </TableRow>
+                <TableRow>
+                  <TableRowColumn>
+                    <b>Default Message Service SID</b>
+                  </TableRowColumn>
+                  <TableRowColumn>
+                    {this.props.config.messageServiceSid}
+                  </TableRowColumn>
+                </TableRow>
+              </TableBody>
+            </Table>
           </CardText>
         )}
         {this.state.twilioError && (
-          <CardText style={inlineStyles.shadeBox}>
+          <CardText style={inlineStyles.errorBox}>
             {this.state.twilioError}
           </CardText>
         )}
@@ -128,11 +164,7 @@ export class OrgConfig extends React.Component {
               schema={formSchema}
               onChange={this.onFormChange}
               onSubmit={this.handleSubmitTwilioAuthForm}
-              defaultValue={{
-                accountSid,
-                authToken,
-                messageServiceSid
-              }}
+              defaultValue={this.state}
             >
               <Form.Field
                 label="Twilio Account SID"
@@ -177,7 +209,8 @@ OrgConfig.propTypes = {
   styles: PropTypes.object,
   saveLabel: PropTypes.string,
   onSubmit: PropTypes.func,
-  onAllSetChanged: PropTypes.func
+  onAllSetChanged: PropTypes.func,
+  requestRefetch: PropTypes.func
 };
 
 export default OrgConfig;
