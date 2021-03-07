@@ -44,6 +44,11 @@ const inlineStyles = {
   },
   shadeBox: {
     backgroundColor: theme.colors.lightGray
+  },
+  errorBox: {
+    backgroundColor: theme.colors.lightGray,
+    color: theme.colors.darkRed,
+    fontWeight: "bolder"
   }
 };
 
@@ -145,7 +150,7 @@ class Settings extends React.Component {
     return (
       <Card>
         <CardHeader
-          title="Twilio Credentials"
+          title={`${name.toUpperCase().charAt(0) + name.slice(1)} Config`}
           style={{
             backgroundColor: this.state.messageServiceAllSet
               ? theme.colors.green
@@ -163,6 +168,9 @@ class Settings extends React.Component {
           }}
           onAllSetChanged={allSet => {
             this.setState({ messageServiceAllSet: allSet });
+          }}
+          requestRefetch={async () => {
+            return this.props.data.refetch();
           }}
         />
       </Card>
@@ -517,14 +525,16 @@ const mutations = {
       optOutMessage
     }
   }),
-  updateMessageServiceConfig: ownProps => newConfig => ({
-    mutation: updateMessageServiceConfigGql,
-    variables: {
-      organizationId: ownProps.params.organizationId,
-      messageServiceName: ownProps.data.organization.messageService.name,
-      config: JSON.stringify(newConfig)
-    }
-  }),
+  updateMessageServiceConfig: ownProps => newConfig => {
+    return {
+      mutation: updateMessageServiceConfigGql,
+      variables: {
+        organizationId: ownProps.params.organizationId,
+        messageServiceName: ownProps.data.organization.messageService.name,
+        config: JSON.stringify(newConfig)
+      }
+    };
+  },
   updateTwilioAuth: ownProps => (accountSid, authToken, messageServiceSid) => ({
     mutation: updateTwilioAuthGql,
     variables: {
