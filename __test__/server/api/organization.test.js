@@ -388,7 +388,10 @@ describe("organization", async () => {
         ["fake_fake_fake"]
       ]);
       expect(orgCache.default.getMessageServiceConfig.mock.calls).toEqual([
-        [expect.objectContaining({ id: 1 })]
+        [
+          expect.objectContaining({ id: 1 }),
+          { obscureSensitiveInformation: true, restrictToOrgFeatures: true }
+        ]
       ]);
     });
   });

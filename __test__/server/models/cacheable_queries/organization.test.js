@@ -55,7 +55,14 @@ describe("cacheable_queries.organization", () => {
         ]);
         expect(serviceMap.getConfigKey.mock.calls).toEqual([["serviceWith"]]);
         expect(serviceWith.getServiceConfig.mock.calls).toEqual([
-          [undefined, organizationWith]
+          [
+            undefined,
+            organizationWith,
+            {
+              obscureSensitiveInformation: undefined,
+              restirctToOrgFeatures: undefined
+            }
+          ]
         ]);
       });
       describe("when an organization has a config", () => {
@@ -71,7 +78,11 @@ describe("cacheable_queries.organization", () => {
           expect(serviceWith.getServiceConfig.mock.calls).toEqual([
             [
               organizationWithConfig.features.message_service_serviceWith,
-              organizationWithConfig
+              organizationWithConfig,
+              {
+                restirctToOrgFeatures: undefined,
+                obscureSensitiveInformation: undefined
+              }
             ]
           ]);
         });
