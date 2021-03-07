@@ -830,17 +830,31 @@ async function clearMessagingServicePhones(organization, messagingServiceSid) {
   }
 }
 
-export const getServiceConfig = async (serviceConfig, organization) => {
+export const getServiceConfig = async (
+  serviceConfig,
+  organization,
+  options = {}
+) => {
+  const {
+    restrictToOrgFeatures = false,
+    obscureSensitiveInformation = false
+  } = options;
   let authToken;
   let accountSid;
   let messageServiceSid;
   if (serviceConfig) {
-    const hasOrgToken = serviceConfig.TWILIO_AUTH_TOKEN_ENCRYPTED;
+    const hasEncryptedToken = serviceConfig.TWILIO_AUTH_TOKEN_ENCRYPTED;
     // Note, allows unencrypted auth tokens to be (manually) stored in the db
     // @todo: decide if this is necessary, or if UI/envars is sufficient.
-    authToken = hasOrgToken
-      ? symmetricDecrypt(serviceConfig.TWILIO_AUTH_TOKEN_ENCRYPTED)
-      : serviceConfig.TWILIO_AUTH_TOKEN;
+    if (hasEncryptedToken) {
+      authToken = obscureSensitiveInformation
+        ? "<Encrypted>"
+        : symmetricDecrypt(serviceConfig.TWILIO_AUTH_TOKEN_ENCRYPTED);
+    } else {
+      authToken = obscureSensitiveInformation
+        ? "<Hidden>"
+        : serviceConfig.TWILIO_AUTH_TOKEN;
+    }
     accountSid = serviceConfig.TWILIO_ACCOUNT_SID
       ? serviceConfig.TWILIO_ACCOUNT_SID
       : // Check old TWILIO_API_KEY variable for backwards compatibility.
@@ -850,18 +864,40 @@ export const getServiceConfig = async (serviceConfig, organization) => {
   } else {
     // for backward compatibility
 
-    const hasOrgToken = hasConfig("TWILIO_AUTH_TOKEN_ENCRYPTED", organization);
+    const getConfigOptions = { onlyLocal: restrictToOrgFeatures };
+
+    const hasEncryptedToken = hasConfig(
+      "TWILIO_AUTH_TOKEN_ENCRYPTED",
+      organization,
+      getConfigOptions
+    );
     // Note, allows unencrypted auth tokens to be (manually) stored in the db
     // @todo: decide if this is necessary, or if UI/envars is sufficient.
-    authToken = hasOrgToken
-      ? symmetricDecrypt(getConfig("TWILIO_AUTH_TOKEN_ENCRYPTED", organization))
-      : getConfig("TWILIO_AUTH_TOKEN", organization);
+    if (hasEncryptedToken) {
+      authToken = obscureSensitiveInformation
+        ? "<Encrypted>"
+        : symmetricDecrypt(
+            getConfig(
+              "TWILIO_AUTH_TOKEN_ENCRYPTED",
+              organization,
+              getConfigOptions
+            )
+          );
+    } else {
+      authToken = obscureSensitiveInformation
+        ? "<Hidden>"
+        : getConfig("TWILIO_AUTH_TOKEN", organization, getConfigOptions);
+    }
     accountSid = hasConfig("TWILIO_ACCOUNT_SID", organization)
-      ? getConfig("TWILIO_ACCOUNT_SID", organization)
+      ? getConfig("TWILIO_ACCOUNT_SID", organization, getConfigOptions)
       : // Check old TWILIO_API_KEY variable for backwards compatibility.
-        getConfig("TWILIO_API_KEY", organization);
+        getConfig("TWILIO_API_KEY", organization, getConfigOptions);
 
-    messageServiceSid = getConfig("TWILIO_MESSAGE_SERVICE_SID", organization);
+    messageServiceSid = getConfig(
+      "TWILIO_MESSAGE_SERVICE_SID",
+      organization,
+      getConfigOptions
+    );
   }
   return { authToken, accountSid, messageServiceSid };
 };
@@ -885,7 +921,6 @@ export const getMessageServiceSid = async (
   return messageServiceSid;
 };
 
-// TODO(lperson) maybe we should support backward compatibility here?
 export const updateConfig = async (oldConfig, config) => {
   const { twilioAccountSid, twilioAuthToken, twilioMessageServiceSid } = config;
   if (!twilioAccountSid || !twilioMessageServiceSid) {
@@ -898,7 +933,7 @@ export const updateConfig = async (oldConfig, config) => {
 
   newConfig.TWILIO_ACCOUNT_SID = twilioAccountSid.substr(0, 64);
 
-  // TODO(lperson) is twilioAuthToken required?
+  // TODO(lperson) is twilioAuthToken required? -- not for unencrypted
   newConfig.TWILIO_AUTH_TOKEN_ENCRYPTED = twilioAuthToken
     ? symmetricEncrypt(twilioAuthToken).substr(0, 256)
     : twilioAuthToken;
