@@ -17,9 +17,13 @@ const organizationCache = {
     }
   },
   getMessageService: getOrganizationMessageService,
-  getMessageServiceConfig: async organization => {
+  getMessageServiceConfig: async (organization, options = {}) => {
+    const { restrictToOrgFeatures, obscureSensitiveInformation } = options;
     const serviceName = getOrganizationMessageService(organization);
-    return getMessageServiceConfig(serviceName, organization);
+    return getMessageServiceConfig(serviceName, organization, {
+      restrictToOrgFeatures,
+      obscureSensitiveInformation
+    });
   },
   getMessageServiceSid: async (organization, contact, messageText) => {
     const messageServiceName = getOrganizationMessageService(organization);

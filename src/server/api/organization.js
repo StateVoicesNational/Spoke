@@ -253,7 +253,8 @@ export const resolvers = {
         return {
           ...serviceMetadata,
           config: cacheableData.organization.getMessageServiceConfig(
-            organization
+            organization,
+            { restrictToOrgFeatures: true, obscureSensitiveInformation: true }
           )
         };
       } catch (caught) {

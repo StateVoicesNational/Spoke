@@ -37,7 +37,11 @@ export const tryGetFunctionFromService = (serviceName, functionName) => {
   return fn && typeof fn === "function" ? fn : null;
 };
 
-export const getMessageServiceConfig = async (serviceName, organization) => {
+export const getMessageServiceConfig = async (
+  serviceName,
+  organization,
+  options = {}
+) => {
   const getServiceConfig = exports.tryGetFunctionFromService(
     serviceName,
     "getServiceConfig"
@@ -46,8 +50,10 @@ export const getMessageServiceConfig = async (serviceName, organization) => {
     return null;
   }
   const configKey = exports.getConfigKey(serviceName);
-  const config = getConfig(configKey, organization);
-  return getServiceConfig(config, organization);
+  const config = getConfig(configKey, organization, {
+    onlyLocal: options.restrictToOrgFeatures
+  });
+  return getServiceConfig(config, organization, options);
 };
 
 export default serviceMap;

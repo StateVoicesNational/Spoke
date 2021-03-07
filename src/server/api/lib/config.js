@@ -60,8 +60,8 @@ export function getConfig(key, organization, opts) {
   return opts && opts.default;
 }
 
-export function hasConfig(key, organization) {
-  const val = getConfig(key, organization);
+export function hasConfig(key, organization, options = {}) {
+  const val = getConfig(key, organization, options);
   // we need to allow "" as no config since env vars will occasionally be set to that to undefine it
   return Boolean(typeof val !== "undefined" && val !== "");
 }
