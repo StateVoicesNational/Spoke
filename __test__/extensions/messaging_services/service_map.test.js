@@ -1,4 +1,5 @@
 import * as serviceMap from "../../../src/extensions/messaging_services/service_map";
+import * as config from "../../../src/server/api/lib/config";
 
 describe("service_map", () => {
   afterEach(() => {
@@ -23,14 +24,14 @@ describe("service_map", () => {
         .mockImplementation(serviceName => fakeServiceMap[serviceName]);
     });
 
-    describe("getConfigKey", () => {
+    describe("#getConfigKey", () => {
       it("returns the correct config key", async () => {
         const configKey = serviceMap.getConfigKey("fake_service_name");
         expect(configKey).toEqual("message_service_fake_service_name");
       });
     });
 
-    describe("tryGetFunctionFromService", () => {
+    describe("#tryGetFunctionFromService", () => {
       it("returns the function", async () => {
         const fn = serviceMap.tryGetFunctionFromService(
           "serviceWith",
@@ -70,7 +71,7 @@ describe("service_map", () => {
     });
   });
 
-  describe("getServiceMetadata", () => {
+  describe("#getServiceMetadata", () => {
     describe("service doesn't have the function", () => {
       beforeEach(() => {
         jest
@@ -144,6 +145,89 @@ describe("service_map", () => {
           supportsOrgConfig: false,
           type: "SMS"
         });
+      });
+    });
+  });
+
+  describe("#getMessageServiceConfig", () => {
+    let fakeGetServiceConfig;
+    let fakeOrganization;
+    let fakeOptions;
+    let fakeConfig;
+    let expectedGetConfigOptions;
+    beforeEach(async () => {
+      fakeOrganization = { id: 1 };
+      fakeConfig = { fake_one: "fake1", fake_two: "fake2" };
+      fakeOptions = { fake_option: "fakeOpt" };
+      expectedGetConfigOptions = { onlyLocal: undefined };
+      fakeGetServiceConfig = jest.fn();
+      jest
+        .spyOn(serviceMap, "tryGetFunctionFromService")
+        .mockReturnValue(fakeGetServiceConfig);
+      jest.spyOn(serviceMap, "getConfigKey");
+      jest.spyOn(config, "getConfig").mockReturnValue(fakeConfig);
+    });
+    it("calls the functions", async () => {
+      await serviceMap.getMessageServiceConfig(
+        "fake_fake_service",
+        fakeOrganization,
+        fakeOptions
+      );
+      expect(serviceMap.tryGetFunctionFromService.mock.calls).toEqual([
+        ["fake_fake_service", "getServiceConfig"]
+      ]);
+      expect(serviceMap.getConfigKey.mock.calls).toEqual([
+        ["fake_fake_service"]
+      ]);
+      expect(config.getConfig.mock.calls).toEqual([
+        [
+          "message_service_fake_fake_service",
+          fakeOrganization,
+          expectedGetConfigOptions
+        ]
+      ]);
+      expect(fakeGetServiceConfig.mock.calls).toEqual([
+        [fakeConfig, fakeOrganization, fakeOptions]
+      ]);
+    });
+
+    describe("when restrctToOrgFeatures is truthy", () => {
+      beforeEach(async () => {
+        fakeOptions = { restrictToOrgFeatures: true };
+        expectedGetConfigOptions = { onlyLocal: true };
+      });
+      it("passes onlyLocal to getConfig", async () => {
+        await serviceMap.getMessageServiceConfig(
+          "fake_fake_service",
+          fakeOrganization,
+          fakeOptions
+        );
+        expect(config.getConfig.mock.calls).toEqual([
+          [
+            "message_service_fake_fake_service",
+            fakeOrganization,
+            expectedGetConfigOptions
+          ]
+        ]);
+      });
+    });
+
+    describe("when the services doesn't support configuration", () => {
+      beforeEach(async () => {
+        jest
+          .spyOn(serviceMap, "tryGetFunctionFromService")
+          .mockReturnValue(undefined);
+      });
+      it("returns null", async () => {
+        const returned = await serviceMap.getMessageServiceConfig(
+          "fake_fake_service",
+          fakeOrganization,
+          fakeOptions
+        );
+        expect(returned).toEqual(null);
+        expect(serviceMap.getConfigKey).not.toHaveBeenCalled();
+        expect(config.getConfig).not.toHaveBeenCalled();
+        expect(fakeGetServiceConfig).not.toHaveBeenCalled();
       });
     });
   });
