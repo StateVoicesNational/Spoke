@@ -86,10 +86,20 @@ export default class GSScriptField extends GSFormField {
   }
 
   render() {
-    const { fullWidth, label, multiline, name, onChange, value } = this.props;
+    const {
+      fullWidth,
+      label,
+      multiline,
+      name,
+      onChange,
+      value,
+      "data-test": dataTest
+    } = this.props;
+    console.log("this.props", this.props);
     return (
       <div>
         <TextField
+          data-test={dataTest}
           multiLine
           onClick={event => {
             this.handleOpenDialog(event);
