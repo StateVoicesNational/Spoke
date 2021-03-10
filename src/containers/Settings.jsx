@@ -245,7 +245,8 @@ class Settings extends React.Component {
                 fullWidth
               />
 
-              <Form.Button
+              <Form.Submit
+                as={GSSubmitButton}
                 label={this.props.saveLabel || "Save Twilio Credentials"}
                 onClick={this.handleOpenTwilioDialog}
               />
