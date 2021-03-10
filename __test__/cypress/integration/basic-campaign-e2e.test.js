@@ -55,13 +55,12 @@ describe("End-to-end campaign flow", () => {
     // Wait for modal to close then submit
     // TODO: use cy.waitUntil() instead of wait()
     cy.wait(400);
-    cy.get("[data-test=campaignBasicsForm] button").click({ force: true });
+    cy.get("[data-test=campaignBasicsForm]").submit();
 
     // Upload Contacts
     cy.get("#contact-upload").attachFile("two-contacts.csv"), { force: true };
-    cy.get("button[data-test=submitContactsCsvUpload]")
-      .first()
-      .click();
+    cy.wait(400);
+    cy.get("button[data-test=submitContactsCsvUpload]").click();
 
     // Assignments
     // Note: Material UI v0 AutoComplete component appears to require a click on the element
@@ -72,10 +71,15 @@ describe("End-to-end campaign flow", () => {
       .contains(`${texter.first_name} ${texter.last_name}`)
       .click();
     cy.get("input[data-test=autoSplit]").click();
-    cy.get("button[data-test=submitCampaignTextersForm]").click();
+    cy.wait(400);
+    cy.get("button[data-test=submitCampaignTextersForm]").click({
+      force: true
+    });
+    cy.wait(400);
 
     // Interaction Steps
     cy.get("textarea[data-test=editorInteraction]").click();
+    cy.wait(400);
     cy.get(".DraftEditor-root").type(
       "Hi {{}firstName{}} this is {{}texterFirstName{}}, how are you?"
     );
