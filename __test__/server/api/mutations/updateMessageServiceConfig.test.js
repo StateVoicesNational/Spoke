@@ -51,7 +51,7 @@ describe("updateMessageServiceConfig", () => {
     };
   });
 
-  it("delegates to message service's updateConfig", async () => {
+  it("calls message service's updateConfig and other functions", async () => {
     const gqlResult = await runGql(updateMessageServiceConfigGql, vars, user);
     expect(twilio.updateConfig.mock.calls).toEqual([[undefined, newConfig]]);
     expect(orgCache.getMessageServiceConfig.mock.calls).toEqual([
@@ -65,7 +65,13 @@ describe("updateMessageServiceConfig", () => {
       ]
     ]);
     expect(gqlResult.data.updateMessageServiceConfig).toEqual(newConfig);
+
+    // TODO
+    // expect cache.clear to have been called
+    // expect cache.load to have been called
   });
+
+  it("updates the config in organization.features", async () => {});
 
   describe("when it's not the configured message service name", () => {
     beforeEach(async () => {
@@ -167,5 +173,15 @@ describe("updateMessageServiceConfig", () => {
       ]);
       expect(gqlResult.data.updateMessageServiceConfig).toEqual(newConfig);
     });
+  });
+
+  describe("when the organization had no features", () => {
+    it("does not throw an exception", async () => {});
+  });
+
+  describe("when updating legacy config (all config elements at the top level of organization.features)", () => {
+    // for example, for twilio, this is when all the config elements are not children of
+    // the `message_service_twilio` key in organization.features
+    it("updates the config at the top level", async () => {});
   });
 });

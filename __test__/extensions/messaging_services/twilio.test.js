@@ -200,6 +200,7 @@ describe("twilio", () => {
       // We loop MAX_SEND_ATTEMPTS + 1 times (starting at i=1!
       // The last time, the send_status should update to "ERROR" (so we don't keep trying)
       try {
+        // eslint-disable-next-line no-loop-func
         await new Promise((resolve, reject) => {
           twilio.postMessageSend(
             message,
@@ -501,6 +502,7 @@ describe("twilio", () => {
 
   describe("config functions", () => {
     let twilioConfig;
+    let encryptedTwilioConfig;
     let organization;
     let fakeAuthToken;
     let fakeAccountSid;
@@ -519,21 +521,42 @@ describe("twilio", () => {
         TWILIO_ACCOUNT_SID: fakeAccountSid,
         TWILIO_MESSAGE_SERVICE_SID: fakeMessageServiceSid
       };
-
+      encryptedTwilioConfig = {
+        TWILIO_AUTH_TOKEN_ENCRYPTED: encryptedFakeAuthToken,
+        TWILIO_ACCOUNT_SID: fakeAccountSid,
+        TWILIO_MESSAGE_SERVICE_SID: fakeMessageServiceSid
+      };
       jest
         .spyOn(crypto, "symmetricEncrypt")
         .mockReturnValue(encryptedFakeAuthToken);
     });
-    describe("getServiceConfig", () => {
+    describe.only("getServiceConfig", () => {
+      let expectedConfig;
+      beforeEach(async () => {
+        expectedConfig = {
+          authToken: fakeAuthToken,
+          accountSid: fakeAccountSid,
+          messageServiceSid: fakeMessageServiceSid
+        };
+      });
       it("returns the config elements", async () => {
         const config = await twilio.getServiceConfig(
           twilioConfig,
           organization
         );
-        expect(config).toEqual({
-          authToken: fakeAuthToken,
-          accountSid: fakeAccountSid,
-          messageServiceSid: fakeMessageServiceSid
+        expect(config).toEqual(expectedConfig);
+      });
+      describe("when obscureSensitiveInformation is true", () => {
+        beforeEach(async () => {
+          expectedConfig.authToken = "<Hidden>";
+        });
+        it("returns authToken obscured", async () => {
+          const config = await twilio.getServiceConfig(
+            twilioConfig,
+            organization,
+            { obscureSensitiveInformation: true }
+          );
+          expect(config).toEqual(expectedConfig);
         });
       });
       describe("when the auth token is encrypted", () => {
@@ -550,6 +573,19 @@ describe("twilio", () => {
             authToken: fakeAuthToken,
             accountSid: fakeAccountSid,
             messageServiceSid: fakeMessageServiceSid
+          });
+        });
+        describe("when obscureSensitiveInformation is true", () => {
+          beforeEach(async () => {
+            expectedConfig.authToken = "<Encrypted>";
+          });
+          it("returns authToken obscured", async () => {
+            const config = await twilio.getServiceConfig(
+              twilioConfig,
+              organization,
+              { obscureSensitiveInformation: true }
+            );
+            expect(config).toEqual(expectedConfig);
           });
         });
       });
@@ -582,11 +618,33 @@ describe("twilio", () => {
             messageServiceSid: fakeMessageServiceSid
           });
         });
+        it("returns global config if there is no org-specific config", async () => {});
+        describe("when restrictToOrgFeatures is true", () => {
+          it("returns global configs", async () => {});
+        });
+        describe("when obscureSensitiveInformation is true", () => {
+          it("returns authToken obscured", async () => {});
+        });
+        describe("when obscureSensitiveInformation is false", () => {
+          it("returns authToken unobscured", async () => {});
+        });
+
+        it("obscures senstive information by default", async () => {});
+        it("restricts to org features (ignoring global configs)", async () => {});
+        describe("when restrictToOrgFeatures is false", () => {
+          it("returns global configs", async () => {});
+        });
         describe("when the auth token is encrypted", () => {
           beforeEach(async () => {
             twilioConfig.TWILIO_AUTH_TOKEN_ENCRYPTED = encryptedFakeAuthToken;
             delete twilioConfig.TWILIO_AUTH_TOKEN;
             organization = { feature: { ...twilioConfig } };
+          });
+          describe("when obscureSensitiveInformation is true", () => {
+            it("returns authToken obscured", async () => {});
+          });
+          describe("when obscureSensitiveInformation is false", () => {
+            it("returns authToken unobscured", async () => {});
           });
           it("returns the config elements", async () => {
             const config = await twilio.getServiceConfig(
@@ -598,6 +656,14 @@ describe("twilio", () => {
               accountSid: fakeAccountSid,
               messageServiceSid: fakeMessageServiceSid
             });
+          });
+        });
+        describe("when the auth token is not encrypted", () => {
+          describe("when obscureSensitiveInformation is false", () => {
+            it("returns authToken unobscured", async () => {});
+          });
+          describe("when obscureSensitiveInformation is true", () => {
+            it("returns authToken obscured", async () => {});
           });
         });
         describe("when it has an API key instead of account sid", () => {
