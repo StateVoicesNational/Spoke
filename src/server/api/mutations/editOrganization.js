@@ -4,7 +4,7 @@ import { r, cacheableData } from "../../models";
 import { getAllowed } from "../organization";
 
 export const editOrganization = async (_, { id, organization }, { user }) => {
-  await accessRequired(user, id, "OWNER", true);
+  await accessRequired(user, id, "ADMIN", true);
   const orgRecord = await cacheableData.organization.load(id);
   const features = getFeatures(orgRecord);
   const changes = {};

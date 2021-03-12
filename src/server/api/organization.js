@@ -215,7 +215,7 @@ export const resolvers = {
     textingHoursEnd: organization => organization.texting_hours_end,
     texterUIConfig: async (organization, _, { user }) => {
       try {
-        await accessRequired(user, organization.id, "OWNER");
+        await accessRequired(user, organization.id, "ADMIN");
       } catch (caught) {
         return null;
       }
