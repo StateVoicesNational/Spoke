@@ -202,6 +202,40 @@ $ AWS_PROFILE=[your_profile_nickname] claudia create --handler lambda.handler \
     --memory 512 --timeout 300
 ```
 
+- You'll have to create the Role for `--role SpokeOnLamba` yourself. Use the wizard to give the baseline Lambda permissions and add AmazonS3FullAccess. Below is an example of how to do this in a cloudformation template.
+
+```
+ LambdaExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+                - apigateway.amazonaws.com
+                - events.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      Policies:
+        - PolicyName: LambdaFunctionPolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                  - ec2:CreateNetworkInterface
+                  - ec2:DeleteNetworkInterface
+                  - ec2:DescribeNetworkInterfaces
+                  - s3:*
+                Resource: "*"
+```
+
 **Notes**:
 
 - You'll want a timeout that corresponds with the scheduled jobs -- this is 5 minutes which should be the same as below
