@@ -70,6 +70,6 @@ While texters should be able to send messages they desire, administrators can ch
 ## Blocking inappropriate texter content
 Some language should not be possible to be texted out. This includes racial and misogynistic slurs, for example. Not on by default, but we recommend to consider enabling MESSAGE_HANDLERS=profanity-tagger along with PROFANITY_TEXTER_BLOCK_SEND=1:
 
-* PROFANITY_TEXTER_REGEX_BASE64 controls which phrases are blocked with a regular expression.  You can see the default (encoded) in the [Spoke profanity-tagger code base](https://github.com/MoveOnOrg/Spoke/blob/7ebf78378e7ae2b3d49ccb884a3a7dba08c5ec8c/src/extensions/message-handlers/profanity-tagger/index.js). Take care to thoroughly test your regular expression before deploying a change.
+* PROFANITY_TEXTER_REGEX_BASE64 controls which phrases are blocked with a regular expression.  You can see the default (encoded) in the [Spoke profanity-tagger code base](https://github.com/MoveOnOrg/Spoke/blob/main/src/extensions/message-handlers/profanity-tagger/index.js). Take care to thoroughly test your regular expression before deploying a change.
 
 
