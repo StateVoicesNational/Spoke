@@ -6,10 +6,9 @@ import GSForm from "./forms/GSForm";
 import GSTextField from "./forms/GSTextField";
 import GSScriptField from "./forms/GSScriptField";
 import Form from "react-formal";
-import FlatButton from "material-ui/FlatButton";
+import Button from "@material-ui/core/Button";
 import AutoComplete from "material-ui/AutoComplete";
 import { dataTest } from "../lib/attributes";
-import theme from "../styles/theme";
 import TagChips from "./TagChips";
 
 const styles = StyleSheet.create({
@@ -19,6 +18,9 @@ const styles = StyleSheet.create({
   tagChips: {
     display: "flex",
     flexWrap: "wrap"
+  },
+  button: {
+    marginRight: 10
   }
 });
 
@@ -41,6 +43,8 @@ export default class CannedResponseForm extends React.Component {
       title: yup.string().required(),
       text: yup.string().required()
     });
+    this.form = React.createRef();
+    this.autocompleteInput = React.createRef();
 
     const {
       customFields,
@@ -51,7 +55,7 @@ export default class CannedResponseForm extends React.Component {
     return (
       <div>
         <GSForm
-          ref="form"
+          ref={this.form}
           schema={modelSchema}
           onSubmit={this.handleSave}
           defaultValue={this.state}
@@ -76,7 +80,7 @@ export default class CannedResponseForm extends React.Component {
             fullWidth
           />
           <AutoComplete
-            ref="autocompleteInput"
+            ref={this.autocompleteInput}
             floatingLabelText="Tags"
             filter={AutoComplete.fuzzyFilter}
             dataSource={
@@ -84,7 +88,7 @@ export default class CannedResponseForm extends React.Component {
             }
             maxSearchResults={8}
             onNewRequest={({ id }) => {
-              this.refs.autocompleteInput.setState({ searchText: "" });
+              this.autocompleteInput.current.setState({ searchText: "" });
               this.setState({ tagIds: [...this.state.tagIds, id] });
             }}
             dataSourceConfig={{
@@ -105,26 +109,24 @@ export default class CannedResponseForm extends React.Component {
             }}
           />
           <div className={css(styles.buttonRow)}>
-            <FlatButton
+            <Button
+              variant="contained"
+              color="primary"
+              className={css(styles.button)}
               {...dataTest("addResponse")}
-              label={formButtonText}
-              backgroundColor={theme.colors.green}
-              labelStyle={{ color: "white" }}
-              style={{
-                display: "inline-block"
-              }}
               onClick={() => {
-                this.refs.form.submit();
+                this.form.current.submit();
               }}
-            />
-            <FlatButton
-              label="Cancel"
+            >
+              {formButtonText}
+            </Button>
+            <Button
+              variant="contained"
+              {...dataTest("addResponse")}
               onClick={handleCloseAddForm}
-              style={{
-                marginLeft: 5,
-                display: "inline-block"
-              }}
-            />
+            >
+              Cancel
+            </Button>
           </div>
         </GSForm>
       </div>

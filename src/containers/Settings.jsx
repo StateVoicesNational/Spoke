@@ -14,6 +14,8 @@ import { Card, CardText, CardActions, CardHeader } from "material-ui/Card";
 import { StyleSheet, css } from "aphrodite";
 import theme from "../styles/theme";
 import Toggle from "material-ui/Toggle";
+import Switch from "@material-ui/core/Switch";
+import FormControlLabel from "@material-ui/core/FormControlLabel";
 import moment from "moment";
 import CampaignTexterUIForm from "../components/CampaignTexterUIForm";
 import OrganizationFeatureSettings from "../components/OrganizationFeatureSettings";
@@ -304,14 +306,21 @@ class Settings extends React.Component {
           <CardText>
             <div className={css(styles.section)}>
               <span className={css(styles.sectionLabel)}></span>
-              <Toggle
-                toggled={organization.textingHoursEnforced}
-                label="Enforce texting hours?"
-                onToggle={async (event, isToggled) =>
-                  await this.props.mutations.updateTextingHoursEnforcement(
-                    isToggled
-                  )
+              <FormControlLabel
+                color="primary"
+                control={
+                  <Switch
+                    color="primary"
+                    checked={organization.textingHoursEnforced}
+                    onChange={async (event, isToggled) =>
+                      await this.props.mutations.updateTextingHoursEnforcement(
+                        isToggled
+                      )
+                    }
+                  />
                 }
+                labelPlacement="start"
+                label="Enforce texting hours?"
               />
             </div>
 

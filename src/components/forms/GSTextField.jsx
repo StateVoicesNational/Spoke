@@ -1,5 +1,6 @@
 import React from "react";
-import TextField from "material-ui/TextField";
+// import TextField from "material-ui/TextField";
+import TextField from "@material-ui/core/TextField";
 import GSFormField from "./GSFormField";
 
 export default class GSTextField extends GSFormField {
@@ -11,10 +12,7 @@ export default class GSTextField extends GSFormField {
     }
     return (
       <TextField
-        floatingLabelText={this.floatingLabelText()}
-        floatingLabelStyle={{
-          zIndex: 0
-        }}
+        label={this.floatingLabelText()}
         onFocus={event => event.target.select()}
         {...this.props}
         value={value}

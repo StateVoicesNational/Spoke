@@ -1,11 +1,12 @@
 import React from "react";
+import Button from "@material-ui/core/Button";
+import Dialog from "@material-ui/core/Dialog";
+import TextField from "@material-ui/core/TextField";
+import DialogActions from "@material-ui/core/DialogActions";
+import DialogContent from "@material-ui/core/DialogContent";
 import GSFormField from "./GSFormField";
 import { allScriptFields } from "../../lib/scripts";
 import ScriptEditor from "../ScriptEditor";
-import Dialog from "material-ui/Dialog";
-import FlatButton from "material-ui/FlatButton";
-import RaisedButton from "material-ui/RaisedButton";
-import TextField from "material-ui/TextField";
 import { dataTest } from "../../lib/attributes";
 
 const styles = {
@@ -21,6 +22,8 @@ export default class GSScriptField extends GSFormField {
       open: false,
       script: props.value || ""
     };
+    this.dialogScriptInput = React.createRef();
+    this.dialogScriptText = React.createRef();
   }
 
   handleOpenDialog = event => {
@@ -32,15 +35,24 @@ export default class GSScriptField extends GSFormField {
         script: this.props.value
       },
       () => {
-        this.refs.dialogScriptInput && this.refs.dialogScriptInput.focus();
+        console.log("this.dialogScriptInput", this.dialogScriptInput);
+        console.log("this.dialogScriptText", this.dialogScriptText);
+        this.dialogScriptInput.current &&
+          this.dialogScriptInput.current.focus();
+        this.dialogScriptText.current && this.dialogScriptText.current.blur();
       }
     );
   };
 
   handleCloseDialog = () => {
-    this.setState({
-      open: false
-    });
+    this.setState(
+      {
+        open: false
+      },
+      () => {
+        console.log("CLOSE", this.state.open);
+      }
+    );
   };
 
   handleSaveScript = () => {
@@ -53,34 +65,41 @@ export default class GSScriptField extends GSFormField {
     const { open } = this.state;
     const { customFields, sampleContact } = this.props;
     const scriptFields = allScriptFields(customFields);
+    console.log("renderDialog", open);
     return (
       <Dialog
         style={styles.dialog}
-        actions={[
-          <FlatButton
-            {...dataTest("scriptCancel")}
-            label="Cancel"
-            onClick={this.handleCloseDialog}
-          />,
-          <RaisedButton
-            {...dataTest("scriptDone")}
-            label="Done"
-            onClick={this.handleSaveScript}
-            primary
-          />
-        ]}
-        modal
         open={open}
-        onRequestClose={this.handleCloseDialog}
+        onClose={this.handleCloseDialog}
       >
-        <ScriptEditor
-          expandable
-          ref="dialogScriptInput"
-          scriptText={this.state.script}
-          sampleContact={sampleContact}
-          scriptFields={scriptFields}
-          onChange={val => this.setState({ script: val })}
-        />
+        <DialogContent>
+          <ScriptEditor
+            expandable
+            ref={this.dialogScriptInput}
+            scriptText={this.state.script}
+            sampleContact={sampleContact}
+            scriptFields={scriptFields}
+            onChange={val => this.setState({ script: val })}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button
+            variant="contained"
+            {...dataTest("scriptCancel")}
+            onClick={this.handleCloseDialog}
+          >
+            Cancel
+          </Button>
+
+          <Button
+            variant="contained"
+            color="primary"
+            {...dataTest("scriptDone")}
+            onClick={this.handleSaveScript}
+          >
+            Done
+          </Button>
+        </DialogActions>
       </Dialog>
     );
   }
@@ -93,34 +112,23 @@ export default class GSScriptField extends GSFormField {
       name,
       onChange,
       value,
+      ref,
       "data-test": dataTest
     } = this.props;
-    console.log("this.props", this.props);
     return (
       <div>
         <TextField
+          inputRef={ref}
           data-test={dataTest}
-          multiLine
+          ref={this.dialogScriptText}
           onClick={event => {
             this.handleOpenDialog(event);
           }}
           onFocus={event => {
-            // HACK
-            // frustratingly, without onFocus, this editor breaks when tabbing into
-            // the field -- no editor dialog comes up
-            // However, on Safari, when the field is created, Safari seems to auto-focus
-            // which triggers a disruptive (early) dialog open, e.g. in Admin Interactions
-            const isSafari = /^((?!chrome|android).)*safari/i.test(
-              navigator.userAgent
-            );
-            if (!isSafari) {
-              this.handleOpenDialog(event);
-            }
+            console.log(1111);
+            this.handleOpenDialog(event);
           }}
-          floatingLabelText={this.floatingLabelText()}
-          floatingLabelStyle={{
-            zIndex: 0
-          }}
+          label={this.floatingLabelText()}
           fullWidth={fullWidth}
           label={label}
           multiline={multiline}

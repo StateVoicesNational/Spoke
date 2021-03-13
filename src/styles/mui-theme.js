@@ -2,6 +2,22 @@ import getMuiTheme from "material-ui/styles/getMuiTheme";
 import theme from "./theme";
 import { grey400, grey500, darkBlack } from "material-ui/styles/colors";
 import { fade } from "material-ui/utils/colorManipulator";
+import { createMuiTheme } from "@material-ui/core/styles";
+
+const newtheme = createMuiTheme({
+  palette: {
+    primary: {
+      main: theme.colors.green,
+      contrastText: theme.colors.white
+    },
+    secondary: {
+      main: theme.colors.orange,
+      contrastText: theme.colors.white
+    }
+  }
+});
+
+export { newtheme };
 
 const muiTheme = getMuiTheme(
   {
