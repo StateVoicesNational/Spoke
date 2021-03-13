@@ -16,6 +16,7 @@ const styles = StyleSheet.create({
   }
 });
 export default class GSForm extends React.Component {
+  _isMounted = false;
   static propTypes = {
     value: PropTypes.object,
     defaultValue: PropTypes.object,
@@ -29,6 +30,14 @@ export default class GSForm extends React.Component {
     model: null,
     globalErrorMessage: null
   };
+
+  componentDidMount() {
+    this._isMounted = true;
+  }
+
+  componentWillUnmount() {
+    this._isMounted = false;
+  }
 
   handleFormError(err) {
     if (err instanceof GraphQLRequestError) {
@@ -61,7 +70,8 @@ export default class GSForm extends React.Component {
             ? error[0].message.replace(name, child.props.label)
             : null;
           clonedElement = React.cloneElement(child, {
-            errorText: error
+            helperText: error,
+            error: true
           });
         }
         return React.cloneElement(clonedElement, {
@@ -121,7 +131,11 @@ export default class GSForm extends React.Component {
               this.handleFormError(ex);
             }
           }
-          this.setState({ isSubmitting: false });
+          if (this._isMounted) {
+            this.setState({ isSubmitting: false });
+          }
+
+          console.log("onSubmit 4");
         }}
       >
         {this.renderGlobalErrorMessage()}

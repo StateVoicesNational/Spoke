@@ -7,10 +7,7 @@ export default class GSPasswordField extends GSFormField {
     let value = this.props.value;
     return (
       <TextField
-        floatingLabelText={this.floatingLabelText()}
-        floatingLabelStyle={{
-          zIndex: 0
-        }}
+        label={this.floatingLabelText()}
         onFocus={event => event.target.select()}
         {...this.props}
         value={value}

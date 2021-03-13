@@ -47,7 +47,8 @@ export default class GCDateField extends GSFormField {
           }
         }}
         {...value}
-        errorText={this.props.errorText}
+        helperText={this.props.errorText}
+        error={!!this.props.errorText}
       />
     );
   }
