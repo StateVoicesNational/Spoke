@@ -57,7 +57,7 @@ export class AdminIncomingMessageList extends Component {
     return true;
   };
 
-  componentDidUpdate = () => {
+  UNSAFE_componentWillReceiveProps = () => {
     if (this.state.clearSelectedMessages) {
       this.setState({
         clearSelectedMessages: false,

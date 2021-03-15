@@ -69,7 +69,7 @@ class MessageList extends Component {
     this.refs.messageWindow.scrollTo(0, this.refs.messageWindow.scrollHeight);
   }
 
-  componentDidUpdate() {
+  UNSAFE_componentWillReceiveProps() {
     if (typeof this.refs.messageWindow.scrollTo !== "function") {
       return;
     }

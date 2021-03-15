@@ -90,7 +90,7 @@ export class IncomingMessageList extends Component {
       this.props.campaignsFilter.campaignIds.length === 1 &&
       this.props.assignmentsFilter.texterId;
   };
-  componentDidUpdate = prevProps => {
+  UNSAFE_componentWillReceiveProps = prevProps => {
     if (
       this.props.clearSelectedMessages &&
       this.state.selectedRows.length > 0

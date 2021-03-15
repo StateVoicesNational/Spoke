@@ -1,18 +1,28 @@
 import PropTypes from "prop-types";
 import React from "react";
 
-import WarningIcon from "material-ui/svg-icons/alert/warning";
-import DoneIcon from "material-ui/svg-icons/action/done";
-import CancelIcon from "material-ui/svg-icons/navigation/cancel";
+import Button from "@material-ui/core/Button";
+import ButtonGroup from "@material-ui/core/ButtonGroup";
 
-import Avatar from "material-ui/Avatar";
+import WarningIcon from "@material-ui/icons/Warning";
+import DoneIcon from "@material-ui/icons/Done";
+import CancelIcon from "@material-ui/icons/Cancel";
+
+import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
+import IconButton from "@material-ui/core/IconButton";
+
+import Card from "@material-ui/core/Card";
+import CardActions from "@material-ui/core/CardActions";
+import CardHeader from "@material-ui/core/CardHeader";
+import Collapse from "@material-ui/core/Collapse";
+
+import Avatar from "@material-ui/core/Avatar";
+import CircularProgress from "@material-ui/core/CircularProgress";
+
 import theme from "../styles/theme";
-import CircularProgress from "material-ui/CircularProgress";
-import { Card, CardHeader, CardText, CardActions } from "material-ui/Card";
 import { Link } from "react-router";
 import gql from "graphql-tag";
 import loadData from "./hoc/load-data";
-import RaisedButton from "material-ui/RaisedButton";
 import CampaignBasicsForm from "../components/CampaignBasicsForm";
 import CampaignMessagingServiceForm from "../components/CampaignMessagingServiceForm";
 import CampaignContactsChoiceForm from "../components/CampaignContactsChoiceForm";
@@ -173,7 +183,7 @@ export class AdminCampaignEdit extends React.Component {
     }
   }
 
-  componentWillReceiveProps(newProps) {
+  UNSAFE_componentWillReceiveProps(newProps) {
     // This should only update the campaignFormValues sections that
     // are NOT expanded so the form data doesn't compete with the user
     // The basic flow of data:
@@ -722,24 +732,30 @@ export class AdminCampaignEdit extends React.Component {
             <div className={css(styles.rightAlign)}>
               <div className={css(styles.inline)}>
                 <div className={css(styles.inline)}>
-                  <RaisedButton
-                    {...dataTest("statsCampaign")}
-                    onClick={() =>
-                      this.props.router.push(
-                        `/admin/${organizationId}/campaigns/${campaign.id}`
-                      )
-                    }
-                    label="Stats"
-                  />
-                  <RaisedButton
-                    {...dataTest("convoCampaign")}
-                    onClick={() =>
-                      this.props.router.push(
-                        `/admin/${organizationId}/incoming?campaigns=${campaign.id}`
-                      )
-                    }
-                    label="Convos"
-                  />
+                  <ButtonGroup>
+                    <Button
+                      variant="outlined"
+                      {...dataTest("statsCampaign")}
+                      onClick={() =>
+                        this.props.router.push(
+                          `/admin/${organizationId}/campaigns/${campaign.id}`
+                        )
+                      }
+                    >
+                      Stats
+                    </Button>
+                    <Button
+                      variant="outlined"
+                      {...dataTest("convoCampaign")}
+                      onClick={() =>
+                        this.props.router.push(
+                          `/admin/${organizationId}/incoming?campaigns=${campaign.id}`
+                        )
+                      }
+                    >
+                      Convos
+                    </Button>
+                  </ButtonGroup>
                 </div>
               </div>
             </div>
@@ -795,45 +811,55 @@ export class AdminCampaignEdit extends React.Component {
           {this.renderCurrentEditors()}
         </div>
         <div>
-          {isArchived ? (
-            <RaisedButton
-              label="Unarchive"
-              onClick={async () =>
-                await this.props.mutations.unarchiveCampaign(
+          <ButtonGroup>
+            {isArchived ? (
+              <Button
+                variant="outlined"
+                color="primary"
+                onClick={async () =>
+                  await this.props.mutations.unarchiveCampaign(
+                    this.props.campaignData.campaign.id
+                  )
+                }
+              >
+                Unarchive!
+              </Button>
+            ) : (
+              <Button
+                variant="outlined"
+                color="primary"
+                onClick={async () =>
+                  await this.props.mutations.archiveCampaign(
+                    this.props.campaignData.campaign.id
+                  )
+                }
+              >
+                Archive
+              </Button>
+            )}
+            <Button
+              variant="contained"
+              color="primary"
+              {...dataTest("statsCampaign")}
+              disabled={isArchived || !isCompleted || !orgConfigured}
+              onClick={async () => {
+                if (!isCompleted || !orgConfigured) {
+                  return;
+                }
+                this.setState({
+                  startingCampaign: true
+                });
+                await this.props.mutations.startCampaign(
                   this.props.campaignData.campaign.id
-                )
-              }
-            />
-          ) : (
-            <RaisedButton
-              label="Archive"
-              onClick={async () =>
-                await this.props.mutations.archiveCampaign(
-                  this.props.campaignData.campaign.id
-                )
-              }
-            />
-          )}
-          <RaisedButton
-            {...dataTest("startCampaign")}
-            primary
-            label="Start This Campaign!"
-            disabled={isArchived || !isCompleted || !orgConfigured}
-            onClick={async () => {
-              if (!isCompleted || !orgConfigured) {
-                return;
-              }
-              this.setState({
-                startingCampaign: true
-              });
-              await this.props.mutations.startCampaign(
-                this.props.campaignData.campaign.id
-              );
-              this.setState({
-                startingCampaign: false
-              });
-            }}
-          />
+                );
+                this.setState({
+                  startingCampaign: false
+                });
+              }}
+            >
+              Start This Campaign!
+            </Button>
+          </ButtonGroup>
         </div>
       </div>
     );
@@ -855,8 +881,8 @@ export class AdminCampaignEdit extends React.Component {
             backgroundColor: theme.colors.lightGray
           };
           const avatarStyle = {
-            display: "inline-block",
-            verticalAlign: "middle"
+            height: 25,
+            width: 25
           };
 
           const {
@@ -880,20 +906,21 @@ export class AdminCampaignEdit extends React.Component {
             cardHeaderStyle.backgroundColor = theme.colors.lightGray;
           } else if (sectionIsDone) {
             avatar = (
-              <Avatar
-                icon={<DoneIcon style={{ fill: theme.colors.darkGreen }} />}
-                style={avatarStyle}
-                size={25}
-              />
+              <Avatar style={avatarStyle} color="primary">
+                <DoneIcon
+                  fontSize="small"
+                  style={{ color: theme.colors.darkGreen }}
+                />
+              </Avatar>
             );
             cardHeaderStyle.backgroundColor = theme.colors.green;
           } else if (!sectionIsDone) {
             avatar = (
-              <Avatar
-                icon={<WarningIcon style={{ fill: theme.colors.orange }} />}
-                style={avatarStyle}
-                size={25}
-              />
+              <Avatar style={avatarStyle} color="primary">
+                <WarningIcon
+                  style={{ color: theme.colors.orange, fontSize: 16 }}
+                />
+              </Avatar>
             );
             cardHeaderStyle.backgroundColor = theme.colors.yellow;
           }
@@ -901,39 +928,49 @@ export class AdminCampaignEdit extends React.Component {
             <Card
               {...dataTest(camelCase(`${section.title}`))}
               key={section.title}
-              expanded={sectionIsExpanded && sectionCanExpandOrCollapse}
-              expandable={sectionCanExpandOrCollapse}
-              onExpandChange={newExpandedState =>
-                this.onExpandChange(sectionIndex, newExpandedState)
-              }
               style={{
                 marginTop: 1
               }}
             >
               <CardHeader
                 title={section.title}
-                titleStyle={{
-                  width: "100%"
-                }}
-                style={cardHeaderStyle}
-                actAsExpander={!sectionIsSaving && sectionCanExpandOrCollapse}
-                showExpandableButton={
-                  !sectionIsSaving && sectionCanExpandOrCollapse
+                action={
+                  <IconButton>
+                    <ExpandMoreIcon />
+                  </IconButton>
                 }
+                style={cardHeaderStyle}
                 avatar={avatar}
+                onClick={newExpandedState => {
+                  if (sectionCanExpandOrCollapse) {
+                    const currentlyOpen =
+                      this.state.expandedSection === sectionIndex;
+                    this.onExpandChange(sectionIndex, !currentlyOpen);
+                  }
+                }}
               />
-              <CardText expandable>
+              <Collapse
+                in={sectionIsExpanded && sectionCanExpandOrCollapse}
+                timeout="auto"
+                unmountOnExit
+                style={{
+                  margin: "20px"
+                }}
+              >
                 {this.renderCampaignFormSection(section, sectionIsSaving)}
-              </CardText>
+              </Collapse>
               {sectionIsSaving && adminPerms ? (
                 <CardActions>
                   <div>Current Status: {savePercent}% complete</div>
                   {jobMessage ? <div>Message: {jobMessage}</div> : null}
-                  <RaisedButton
-                    label="Discard Job"
-                    icon={<CancelIcon />}
+                  <Button
+                    variant="contained"
+                    color="secondary"
+                    startIcon={<CancelIcon />}
                     onClick={() => this.handleDeleteJob(jobId)}
-                  />
+                  >
+                    Discard Job
+                  </Button>
                 </CardActions>
               ) : null}
             </Card>

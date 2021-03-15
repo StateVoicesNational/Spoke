@@ -110,7 +110,7 @@ class ScriptEditor extends React.Component {
     }, 200);
   }
 
-  componentWillReceiveProps() {
+  UNSAFE_componentWillReceiveProps() {
     const { scriptFields } = this.props;
     const { editorState } = this.state;
     const decorator = this.getCompositeDecorator(scriptFields);

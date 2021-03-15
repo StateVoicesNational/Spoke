@@ -16,7 +16,6 @@ const styles = StyleSheet.create({
   }
 });
 export default class GSForm extends React.Component {
-  _isMounted = false;
   static propTypes = {
     value: PropTypes.object,
     defaultValue: PropTypes.object,
@@ -31,12 +30,9 @@ export default class GSForm extends React.Component {
     globalErrorMessage: null
   };
 
-  componentDidMount() {
-    this._isMounted = true;
-  }
-
-  componentWillUnmount() {
-    this._isMounted = false;
+  constructor(props) {
+    super(props);
+    this.form = React.createRef();
   }
 
   handleFormError(err) {
@@ -52,10 +48,6 @@ export default class GSForm extends React.Component {
       });
     }
   }
-
-  submit = () => {
-    this.refs.form.submit();
-  };
 
   renderChildren(children) {
     return React.Children.map(children, child => {
@@ -107,7 +99,7 @@ export default class GSForm extends React.Component {
   render() {
     return (
       <Form
-        ref="form"
+        ref={this.form}
         value={this.props.value || this.state.model || this.props.defaultValue}
         onChange={model => {
           this.setState({ model });
@@ -131,11 +123,7 @@ export default class GSForm extends React.Component {
               this.handleFormError(ex);
             }
           }
-          if (this._isMounted) {
-            this.setState({ isSubmitting: false });
-          }
-
-          console.log("onSubmit 4");
+          this.setState({ isSubmitting: false });
         }}
       >
         {this.renderGlobalErrorMessage()}
