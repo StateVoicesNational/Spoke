@@ -7,9 +7,10 @@ import GSTextField from "./forms/GSTextField";
 import GSScriptField from "./forms/GSScriptField";
 import Form from "react-formal";
 import Button from "@material-ui/core/Button";
-import AutoComplete from "material-ui/AutoComplete";
+import AutoComplete from "@material-ui/lab/Autocomplete";
+import TextField from "@material-ui/core/TextField";
 import { dataTest } from "../lib/attributes";
-import TagChips from "./TagChips";
+import GSSubmitButton from "./forms/GSSubmitButton";
 
 const styles = StyleSheet.create({
   buttonRow: {
@@ -34,7 +35,7 @@ export default class CannedResponseForm extends React.Component {
     };
   }
   handleSave = () => {
-    const { onSaveCannedResponse } = this.props;
+    const { onSaveCannedResponse, handleCloseAddForm } = this.props;
     onSaveCannedResponse(this.state);
   };
 
@@ -80,46 +81,29 @@ export default class CannedResponseForm extends React.Component {
             fullWidth
           />
           <AutoComplete
+            multiple
+            fullWidth
             ref={this.autocompleteInput}
-            floatingLabelText="Tags"
-            filter={AutoComplete.fuzzyFilter}
-            dataSource={
+            options={
               tags && tags.filter(t => this.state.tagIds.indexOf(t.id) === -1)
             }
-            maxSearchResults={8}
-            onNewRequest={({ id }) => {
-              this.autocompleteInput.current.setState({ searchText: "" });
-              this.setState({ tagIds: [...this.state.tagIds, id] });
+            getOptionLabel={option => option.name}
+            value={
+              tags && tags.filter(t => this.state.tagIds.indexOf(t.id) > -1)
+            }
+            onChange={(event, selectedTags) => {
+              this.setState({ tagIds: selectedTags.map(tag => tag.id) });
             }}
-            dataSourceConfig={{
-              text: "name",
-              value: "id"
-            }}
-            fullWidth
-          />
-          <TagChips
-            tags={tags}
-            tagIds={this.state.tagIds}
-            onRequestDelete={listedTag => {
-              this.setState({
-                tagIds: this.state.tagIds.filter(
-                  tagId => tagId !== listedTag.id
-                )
-              });
+            renderInput={params => {
+              return <TextField {...params} label="Tags" />;
             }}
           />
           <div className={css(styles.buttonRow)}>
-            <Button
-              variant="contained"
-              color="primary"
+            <Form.Submit
+              as={GSSubmitButton}
+              label={formButtonText}
               className={css(styles.button)}
-              {...dataTest("addResponse")}
-              onClick={() => {
-                this.form.current.submit();
-              }}
-            >
-              {formButtonText}
-            </Button>
+            />
             <Button
               variant="contained"
               {...dataTest("addResponse")}

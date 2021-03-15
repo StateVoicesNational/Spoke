@@ -35,8 +35,6 @@ export default class GSScriptField extends GSFormField {
         script: this.props.value
       },
       () => {
-        console.log("this.dialogScriptInput", this.dialogScriptInput);
-        console.log("this.dialogScriptText", this.dialogScriptText);
         this.dialogScriptInput.current &&
           this.dialogScriptInput.current.focus();
         this.dialogScriptText.current && this.dialogScriptText.current.blur();
@@ -45,14 +43,7 @@ export default class GSScriptField extends GSFormField {
   };
 
   handleCloseDialog = () => {
-    this.setState(
-      {
-        open: false
-      },
-      () => {
-        console.log("CLOSE", this.state.open);
-      }
-    );
+    this.setState({ open: false });
   };
 
   handleSaveScript = () => {
@@ -65,7 +56,7 @@ export default class GSScriptField extends GSFormField {
     const { open } = this.state;
     const { customFields, sampleContact } = this.props;
     const scriptFields = allScriptFields(customFields);
-    console.log("renderDialog", open);
+
     return (
       <Dialog
         style={styles.dialog}
@@ -120,12 +111,11 @@ export default class GSScriptField extends GSFormField {
         <TextField
           inputRef={ref}
           data-test={dataTest}
-          ref={this.dialogScriptText}
+          inputRef={this.dialogScriptText}
           onClick={event => {
             this.handleOpenDialog(event);
           }}
           onFocus={event => {
-            console.log(1111);
             this.handleOpenDialog(event);
           }}
           label={this.floatingLabelText()}

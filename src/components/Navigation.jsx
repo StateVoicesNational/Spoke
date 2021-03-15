@@ -1,12 +1,16 @@
 import PropTypes from "prop-types";
 import React from "react";
-import Paper from "material-ui/Paper";
-import { List, ListItem } from "material-ui/List";
-import Divider from "material-ui/Divider";
+
+import Paper from "@material-ui/core/Paper";
+import Divider from "@material-ui/core/Divider";
+import List from "@material-ui/core/List";
+import ListItem from "@material-ui/core/ListItem";
+import ListItemText from "@material-ui/core/ListItemText";
+import Button from "@material-ui/core/Button";
+
 import { withRouter } from "react-router";
 import _ from "lodash";
 import { dataTest, camelCase } from "../lib/attributes";
-import { FlatButton } from "material-ui";
 import { StyleSheet, css } from "aphrodite";
 
 const styles = StyleSheet.create({
@@ -29,24 +33,25 @@ const Navigation = function Navigation(props) {
     return (
       <div className={css(styles.sideBarWithMenu)}>
         <Paper
-          rounded={false}
-          zDepth={2}
+          elevation={3}
           style={{
             height: "100%"
           }}
         >
           <div style={{ display: "flex", justifyContent: "flex-end" }}>
-            <FlatButton label={"Close Menu"} onClick={props.onToggleMenu} />
+            <Button onClick={props.onToggleMenu}>Close Menu</Button>
           </div>
 
           <List>
             {sections.map(section => (
               <ListItem
                 {...dataTest(_.camelCase(`nav ${section.path}`))}
+                button
                 key={section.name}
-                primaryText={section.name}
                 onClick={() => props.router.push(section.url)}
-              />
+              >
+                <ListItemText primary={section.name} />
+              </ListItem>
             ))}
             <Divider />
             {switchListItem}

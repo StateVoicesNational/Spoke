@@ -1,27 +1,29 @@
 import type from "prop-types";
 import React from "react";
-import RaisedButton from "material-ui/RaisedButton";
 import GSForm from "../components/forms/GSForm";
-import Form from "react-formal";
-import Subheader from "material-ui/Subheader";
-import Divider from "material-ui/Divider";
-import SelectField from "material-ui/SelectField";
-import MenuItem from "material-ui/MenuItem";
-import { ListItem, List } from "material-ui/List";
 import CampaignFormSectionHeading from "./CampaignFormSectionHeading";
-import CheckIcon from "material-ui/svg-icons/action/check-circle";
-import WarningIcon from "material-ui/svg-icons/alert/warning";
-import ErrorIcon from "material-ui/svg-icons/alert/error";
-import InfoIcon from "material-ui/svg-icons/action/info";
+
+import CheckIcon from "@material-ui/icons/Check";
+import WarningIcon from "@material-ui/icons/Warning";
+import ErrorIcon from "@material-ui/icons/Error";
+import InfoIcon from "@material-ui/icons/Info";
+
+import Select from "@material-ui/core/Select";
+import MenuItem from "@material-ui/core/MenuItem";
+
 import theme from "../styles/theme";
 import components from "../extensions/contact-loaders/components";
 import * as yup from "yup";
 import { withRouter } from "react-router";
 
-const check = <CheckIcon color={theme.colors.green} />;
-const warning = <WarningIcon color={theme.colors.orange} />;
-const error = <ErrorIcon color={theme.colors.red} />;
-const info = <InfoIcon color={theme.colors.green} />;
+const check = (
+  <CheckIcon color="primary" style={{ color: theme.colors.green }} />
+);
+const warning = (
+  <WarningIcon color="primary" style={{ color: theme.colors.orange }} />
+);
+const error = <ErrorIcon color="primary" style={{ color: theme.colors.red }} />;
+const info = <InfoIcon color="primary" style={{ color: theme.colors.green }} />;
 
 export const icons = {
   check,
@@ -66,7 +68,7 @@ export class CampaignContactsChoiceForm extends React.Component {
     return ingestMethodChoices[0];
   }
 
-  ingestMethodChanged(event, index, val) {
+  ingestMethodChanged(index) {
     this.setState({ ingestMethodIndex: index });
   }
 
@@ -142,26 +144,23 @@ export class CampaignContactsChoiceForm extends React.Component {
             })}
             onSubmit={formValues => {}}
           >
-            <SelectField
+            <Select
               name={"ingestMethod"}
               value={ingestMethodName}
-              floatingLabelText={"Contact Load Method"}
-              floatingLabelFixed
-              onChange={(e, index, val) =>
-                this.ingestMethodChanged(e, index, val)
-              }
+              label={"Contact Load Method"}
+              onChange={event => {
+                const index = ingestMethodChoices.findIndex(e => {
+                  return e.name === event.target.value;
+                });
+                this.ingestMethodChanged(index);
+              }}
             >
               {ingestMethodChoices.map(methodChoice => (
-                <MenuItem
-                  key={methodChoice.name}
-                  value={methodChoice.name}
-                  primaryText={methodChoice.displayName}
-                  checked={
-                    ingestMethod && ingestMethod.name === methodChoice.name
-                  }
-                />
+                <MenuItem key={methodChoice.name} value={methodChoice.name}>
+                  {methodChoice.displayName}
+                </MenuItem>
               ))}
-            </SelectField>
+            </Select>
           </GSForm>
           {IngestComponent && (
             <IngestComponent

@@ -104,7 +104,7 @@ export class TexterSideboxClass extends React.Component {
     };
   }
 
-  componentDidUpdate(prevProps, prevState) {
+  UNSAFE_componentWillReceiveProps(prevProps, prevState) {
     if (!_.isEqual(prevState.feedback, this.state.feedback)) {
       this.debouncedUpdate();
     }

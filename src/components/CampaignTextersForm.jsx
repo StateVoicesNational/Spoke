@@ -2,10 +2,16 @@ import type from "prop-types";
 import React from "react";
 import orderBy from "lodash/orderBy";
 import Slider from "./Slider";
+
 import AutoComplete from "material-ui/AutoComplete";
-import IconButton from "material-ui/IconButton";
-import RaisedButton from "material-ui/RaisedButton";
-import Snackbar from "material-ui/Snackbar";
+import Toggle from "material-ui/Toggle";
+
+import Button from "@material-ui/core/Button";
+import DeleteIcon from "@material-ui/icons/Delete";
+import CloseIcon from "@material-ui/icons/Close";
+import IconButton from "@material-ui/core/IconButton";
+import Snackbar from "@material-ui/core/Snackbar";
+
 import GSForm from "../components/forms/GSForm";
 import GSTextField from "./forms/GSTextField";
 import GSSubmitButton from "./forms/GSSubmitButton";
@@ -14,8 +20,6 @@ import Form from "react-formal";
 import CampaignFormSectionHeading from "./CampaignFormSectionHeading";
 import { StyleSheet, css } from "aphrodite";
 import theme from "../styles/theme";
-import Toggle from "material-ui/Toggle";
-import DeleteIcon from "material-ui/svg-icons/action/delete";
 import { dataTest } from "../lib/attributes";
 import { dataSourceItem } from "./utils";
 import { getHighestRole } from "../lib/permissions";
@@ -471,11 +475,12 @@ export default class CampaignTextersForm extends React.Component {
           <div style={{ display: "flex", justifyContent: "space-between" }}>
             {this.showSearch()}
             <div>
-              <RaisedButton
+              <Button
                 {...dataTest("addAll")}
-                label="Add All"
                 onClick={() => this.addAllTexters()}
-              />
+              >
+                Add All
+              </Button>
             </div>
           </div>
           <div className={css(styles.sliderContainer)}>
@@ -550,10 +555,26 @@ export default class CampaignTextersForm extends React.Component {
           />
         </GSForm>
         <Snackbar
+          anchorOrigin={{
+            vertical: "bottom",
+            horizontal: "center"
+          }}
           open={this.state.snackbarOpen}
-          message={this.state.snackbarMessage}
           autoHideDuration={3000}
-          onRequestClose={this.handleSnackbarClose}
+          onClose={this.handleSnackbarClose}
+          message={this.state.snackbarMessage}
+          action={
+            <React.Fragment>
+              <IconButton
+                size="small"
+                aria-label="close"
+                color="inherit"
+                onClick={this.handleSnackbarClose}
+              >
+                <CloseIcon fontSize="small" />
+              </IconButton>
+            </React.Fragment>
+          }
         />
       </div>
     );
