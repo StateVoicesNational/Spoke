@@ -61,9 +61,8 @@ export default class CampaignTextingHoursForm extends React.Component {
   ) {
     return (
       <Form.Field
-        as={GSTextField}
+        as={Autocomplete}
         name={name}
-        type={Autocomplete}
         fullWidth
         dataSource={choices}
         filter={Autocomplete.caseInsensitiveFilter}
