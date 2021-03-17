@@ -300,6 +300,7 @@ export class UserEdit extends React.Component {
           {...dataTest("userEditForm")}
         >
           <Form.Field
+            fullWidth
             as={GSTextField}
             label="Email"
             name="email"
@@ -337,6 +338,7 @@ export class UserEdit extends React.Component {
           {!authType && org && org.profileFields.map(this.renderProfileField)}
           {authType && (
             <Form.Field
+              fullWidth
               as={GSPasswordField}
               label="Password"
               name="password"
@@ -345,6 +347,7 @@ export class UserEdit extends React.Component {
           )}
           {authType === "change" && (
             <Form.Field
+              fullWidth
               as={GSPasswordField}
               label="New Password"
               name="newPassword"
@@ -353,6 +356,7 @@ export class UserEdit extends React.Component {
           )}
           {authType && authType !== "login" && (
             <Form.Field
+              fullWidth
               as={GSPasswordField}
               label="Confirm Password"
               name="passwordConfirm"
