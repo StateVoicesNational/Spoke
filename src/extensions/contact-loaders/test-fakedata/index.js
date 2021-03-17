@@ -144,8 +144,9 @@ export async function processContactLoad(job, maxContacts, organization) {
       last_name: `Bar${i}`,
       // conform to Hollywood-reserved numbers
       // https://www.businessinsider.com/555-phone-number-tv-movies-telephone-exchange-names-ghostbusters-2018-3
-      cell: `+1${ac}555${suffix}`,
+      cell: `+1${ac}55501${suffix}`,
       zip: "10011",
+      external_id: "fake" + String(Math.random()).slice(3, 8),
       custom_fields: genCustomFields(i, campaignId),
       timezone_offset:
         timezones[parseInt(Math.random() * timezones.length, 10)],
