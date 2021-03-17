@@ -54,7 +54,6 @@ export async function processAction({
         ":" +
         getConfig("UMC_PW", organization)
     ).toString("base64");
-  console.log("contact", contact, "qr", interactionStep, "o", organization);
   const customFields = JSON.parse(contact.custom_fields);
   const optInPathId = customFields.umc_opt_in_path
     ? customFields.umc_opt_in_path
