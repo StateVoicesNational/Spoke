@@ -18,7 +18,9 @@ const styles = {
     border: "1px solid #ddd",
     cursor: "text",
     fontSize: 16,
-    padding: 5
+    padding: 5,
+    marginBottom: 10,
+    overflowY: "auto"
   },
   button: {
     marginTop: 10,
@@ -43,8 +45,7 @@ const styles = {
   },
   scriptFieldButtonSection: {
     marginTop: 10,
-    padding: 5,
-    overflowY: "scroll"
+    padding: 5
   }
 };
 
