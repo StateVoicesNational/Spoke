@@ -43,7 +43,8 @@ const styles = {
   },
   scriptFieldButtonSection: {
     marginTop: 10,
-    padding: 5
+    padding: 5,
+    overflowY: "scroll"
   }
 };
 
