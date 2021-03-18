@@ -231,7 +231,6 @@ class ScriptEditor extends React.Component {
             spellCheck
           />
         </div>
-        {this.renderCustomFields()}
         <div>
           Estimated{" "}
           <Link
@@ -247,6 +246,7 @@ class ScriptEditor extends React.Component {
             segmentInfo.charCount}
           <br />
         </div>
+        {this.renderCustomFields()}
       </div>
     );
   }
