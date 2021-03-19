@@ -34,7 +34,12 @@ export const contactDataFragment = `
           id
           createdAt
           text
+          media {
+            type
+            url
+          }
           isFromContact
+          userId
         }
         tags {
           id
@@ -52,6 +57,25 @@ export const campaignQuery = gql`
   ) {
     assignment(assignmentId: $assignmentId, contactId: $contactId) {
       id
+      userCannedResponses {
+        id
+        title
+        text
+        isUserCreated
+      }
+      campaignCannedResponses {
+        id
+        title
+        text
+        isUserCreated
+        tagIds
+      }
+      texter {
+        id
+        firstName
+        lastName
+        alias
+      }
       campaign {
         id
         title
@@ -121,6 +145,14 @@ export const dataQuery = gql`
     }
     assignment(assignmentId: $assignmentId, contactId: $contactId) {
       id
+      feedback {
+        createdBy {
+          name
+        }
+        message
+        issueCounts
+        skillCounts
+      }
       hasUnassignedContactsForTexter
       contacts(contactsFilter: $contactsFilter) {
         id
@@ -141,7 +173,11 @@ export const dataQuery = gql`
 export class TexterTodo extends React.Component {
   componentWillMount() {
     const { assignment } = this.props.campaignData;
-    if (!assignment || assignment.campaign.isArchived) {
+    if (
+      !assignment ||
+      (assignment.campaign.isArchived &&
+        !(this.props.location.query.review === "1"))
+    ) {
       this.props.router.push(`/app/${this.props.params.organizationId}/todos`);
     }
   }
@@ -190,6 +226,7 @@ export class TexterTodo extends React.Component {
         organizationId={this.props.params.organizationId}
         ChildComponent={AssignmentTexterContact}
         messageStatusFilter={this.props.messageStatus}
+        location={this.props.location}
       />
     );
   }
@@ -210,18 +247,28 @@ const queries = {
     query: dataQuery,
     options: ownProps => {
       console.log("TexterTodo ownProps", ownProps);
-      // FUTURE: based on ?review=1 in location.search
-      //         exclude isOptedOut: false, validTimezone: true
+      // based on ?review=1 in location.search
+      // exclude isOptedOut: false, validTimezone: true
+      const contactsFilter =
+        ownProps.location.query.review === "1"
+          ? {
+              messageStatus: ownProps.messageStatus,
+              errorCode: ["0"],
+              ...(ownProps.params.reviewContactId && {
+                contactId: ownProps.params.reviewContactId
+              })
+            }
+          : {
+              messageStatus: ownProps.messageStatus,
+              ...(!ownProps.params.reviewContactId && { isOptedOut: false }),
+              ...(ownProps.params.reviewContactId && {
+                contactId: ownProps.params.reviewContactId
+              }),
+              validTimezone: true
+            };
       return {
         variables: {
-          contactsFilter: {
-            messageStatus: ownProps.messageStatus,
-            ...(!ownProps.params.reviewContactId && { isOptedOut: false }),
-            ...(ownProps.params.reviewContactId && {
-              contactId: ownProps.params.reviewContactId
-            }),
-            validTimezone: true
-          },
+          contactsFilter,
           needsMessageFilter: {
             messageStatus: "needsMessage",
             isOptedOut: false,

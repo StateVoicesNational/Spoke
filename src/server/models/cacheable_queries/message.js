@@ -103,7 +103,7 @@ const cacheDbResult = async dbResult => {
   }
 };
 
-const query = async ({ campaignContactId }) => {
+const query = async ({ campaignContactId, justCache }) => {
   // queryObj ~ { campaignContactId, assignmentId, cell, service, messageServiceSid }
   if (r.redis && CONTACT_CACHE_ENABLED) {
     // campaignContactId = await contactIdFromOther(queryObj);
@@ -119,6 +119,9 @@ const query = async ({ campaignContactId }) => {
         return messages.reverse().map(m => JSON.parse(m));
       }
     }
+  }
+  if (justCache) {
+    return null;
   }
   // console.log('dbQuery', campaignContactId)
   const dbResult = await dbQuery({ campaignContactId });
@@ -172,6 +175,7 @@ const incomingMessageMatching = async (messageInstance, activeCellFound) => {
 
 const deliveryReport = async ({
   contactNumber,
+  userNumber,
   messageSid,
   service,
   messageServiceSid,
@@ -182,6 +186,9 @@ const deliveryReport = async ({
     service_response_at: new Date(),
     send_status: newStatus
   };
+  if (userNumber) {
+    changes.user_number = userNumber;
+  }
   if (newStatus === "ERROR") {
     changes.error_code = errorCode;
 
@@ -235,6 +242,8 @@ const messageCache = {
     let newStatus = "needsResponse";
     let activeCellFound = null;
     let matchError = null;
+    let contactUpdates = {};
+    let handlerContext = {};
 
     if (messageInstance.is_from_contact) {
       // console.log("messageCache SAVE lookup");
@@ -252,7 +261,29 @@ const messageCache = {
         messageInstance.campaign_contact_id ||
         (activeCellFound && activeCellFound.campaign_contact_id);
       messageToSave.campaign_contact_id = contactId;
+      messageToSave.media =
+        messageInstance.media && messageInstance.media.length
+          ? JSON.stringify(messageInstance.media)
+          : null;
     } else {
+      if (
+        r.redis &&
+        CONTACT_CACHE_ENABLED &&
+        contact.message_status !== "needsMessage"
+      ) {
+        const messages = await query({
+          campaignContactId: contact.id,
+          justCache: true
+        });
+        if (messages && messages.length) {
+          const duplicate = messages.find(
+            m => m.text === messageToSave.text && m.is_from_contact === false
+          );
+          if (duplicate) {
+            matchError = "DUPLICATE MESSAGE DB";
+          }
+        }
+      }
       // is NOT from contact:
       newStatus =
         contact.message_status === "needsResponse" ||
@@ -266,20 +297,15 @@ const messageCache = {
       (contact && contact.campaign_id) ||
       (activeCellFound && activeCellFound.campaign_id);
 
-    if (Object.keys(handlers).length && (organization || campaignId)) {
+    if (handlers.length && (organization || campaignId)) {
       if (!organization) {
         organization = await campaignCache.loadCampaignOrganization({
           campaignId
         });
       }
-      const availableHandlers = Object.keys(handlers)
-        .filter(
-          h =>
-            handlers[h].available &&
-            handlers[h].preMessageSave &&
-            handlers[h].available(organization)
-        )
-        .map(h => handlers[h]);
+      const availableHandlers = handlers.filter(
+        h => h.available && h.preMessageSave && h.available(organization)
+      );
       for (let i = 0, l = availableHandlers.length; i < l; i++) {
         // NOTE: these handlers can alter messageToSave properties
         const result = await availableHandlers[i].preMessageSave({
@@ -289,17 +315,29 @@ const messageCache = {
           newStatus,
           contact,
           campaign,
+          campaignId,
           organization,
           texter
         });
-        if (result && result.cancel) {
-          return result; // return without saving
-        }
-        if (result && result.messageToSave) {
-          messageToSave = result.messageToSave;
-        }
-        if (result && "matchError" in result) {
-          matchError = result.matchError;
+        if (result) {
+          if (result.cancel) {
+            return result; // return without saving
+          }
+          if (result.messageToSave) {
+            messageToSave = result.messageToSave;
+          }
+          if ("matchError" in result) {
+            matchError = result.matchError;
+          }
+          if (result.contactUpdates) {
+            Object.assign(contactUpdates, result.contactUpdates);
+            if (result.contactUpdates.message_status) {
+              newStatus = result.contactUpdates.message_status;
+            }
+          }
+          if (result.handlerContext) {
+            Object.assign(handlerContext, result.handlerContext);
+          }
         }
       }
     }
@@ -322,7 +360,11 @@ const messageCache = {
       campaign_id: campaignId
     };
     // console.log("messageCache hi saveMsg3", messageToSave.id, newStatus, contactData);
-    await campaignContactCache.updateStatus(contactData, newStatus);
+    await campaignContactCache.updateStatus(
+      contactData,
+      newStatus,
+      contactUpdates
+    );
     // console.log("messageCache saveMsg4", newStatus);
 
     // update campaign counts
@@ -341,15 +383,10 @@ const messageCache = {
       contactStatus: newStatus
     };
 
-    if (Object.keys(handlers).length && organization) {
-      const availableHandlers = Object.keys(handlers)
-        .filter(
-          h =>
-            handlers[h].available &&
-            handlers[h].postMessageSave &&
-            handlers[h].available(organization)
-        )
-        .map(h => handlers[h]);
+    if (handlers.length && organization) {
+      const availableHandlers = handlers.filter(
+        h => h.available && h.postMessageSave && h.available(organization)
+      );
       for (let i = 0, l = availableHandlers.length; i < l; i++) {
         const result = await availableHandlers[i].postMessageSave({
           message: messageToSave,
@@ -357,8 +394,10 @@ const messageCache = {
           newStatus,
           contact,
           campaign,
+          campaignId,
           organization,
-          texter
+          texter,
+          handlerContext
         });
         if (result) {
           if ("newStatus" in result) {

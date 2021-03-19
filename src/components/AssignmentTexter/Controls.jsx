@@ -19,7 +19,9 @@ import yup from "yup";
 import theme from "../../styles/theme";
 import Form from "react-formal";
 import Popover from "material-ui/Popover";
+import SearchBar from "material-ui-search-bar";
 import { messageListStyles, inlineStyles, flexStyles } from "./StyleControls";
+import { searchFor } from "../../lib/search-helpers";
 
 import { renderSidebox } from "../../extensions/texter-sideboxes/components";
 
@@ -48,8 +50,17 @@ export class AssignmentTexterContactControls extends React.Component {
       questionResponses,
       props.campaign.interactionSteps
     );
+
+    let currentInteractionStep = null;
+    if (availableSteps.length > 0) {
+      currentInteractionStep = availableSteps[availableSteps.length - 1];
+      currentInteractionStep.question.filteredAnswerOptions =
+        currentInteractionStep.question.answerOptions;
+    }
+
     this.state = {
       questionResponses,
+      filteredCannedResponses: props.campaign.cannedResponses,
       optOutMessageText: props.campaign.organization.optOutMessage,
       responsePopoverOpen: false,
       answerPopoverOpen: false,
@@ -60,12 +71,10 @@ export class AssignmentTexterContactControls extends React.Component {
       optOutDialogOpen: false,
       currentShortcutSpace: 0,
       messageFocus: false,
-      availableSteps: availableSteps,
+      availableSteps,
       messageReadOnly: false,
-      currentInteractionStep:
-        availableSteps.length > 0
-          ? availableSteps[availableSteps.length - 1]
-          : null
+      hideMedia: false,
+      currentInteractionStep
     };
   }
 
@@ -162,7 +171,7 @@ export class AssignmentTexterContactControls extends React.Component {
     // console.log('KEYBOARD', evt.key, document.activeElement);
     if (
       // SEND: Ctrl-Enter/Ctrl-z
-      (evt.key === "Enter" || evt.key === "z") &&
+      evt.key === "Enter" &&
       // need to use ctrlKey in non-first texting context for accessibility
       evt.ctrlKey
     ) {
@@ -229,6 +238,28 @@ export class AssignmentTexterContactControls extends React.Component {
       this.refs.form.submit();
       this.setState({ doneFirstClick: false });
     }
+  };
+
+  handleSearchChange = searchValue => {
+    // filter answerOptions for this step's question
+    const answerOptions = this.state.currentInteractionStep.question
+      .answerOptions;
+    const filteredAnswerOptions = searchFor(searchValue, answerOptions, [
+      "value",
+      "nextInteractionStep.script"
+    ]);
+    this.state.currentInteractionStep.question.filteredAnswerOptions = filteredAnswerOptions;
+
+    const filteredCannedResponses = searchFor(
+      searchValue,
+      this.props.campaign.cannedResponses,
+      ["title", "text"]
+    );
+
+    this.setState({
+      currentInteractionStep: this.state.currentInteractionStep,
+      filteredCannedResponses
+    });
   };
 
   handleCannedResponseChange = cannedResponseScript => {
@@ -315,29 +346,27 @@ export class AssignmentTexterContactControls extends React.Component {
 
   handleMessageFormChange = ({ messageText }) => this.setState({ messageText });
 
-  handleOpenAnswerPopover = event => {
+  handleOpenAnswerResponsePopover = event => {
     event.preventDefault();
-    this.setState({
+    const newState = {
       answerPopoverAnchorEl: event.currentTarget,
-      answerPopoverOpen: true
-    });
+      answerPopoverOpen: true,
+      responsePopoverAnchorEl: event.currentTarget,
+      responsePopoverOpen: true,
+      filteredCannedResponses: this.props.campaign.cannedResponses
+    };
+    if (this.state.currentInteractionStep) {
+      this.state.currentInteractionStep.question.filteredAnswerOptions = this.state.currentInteractionStep.question.answerOptions;
+      newState.currentInteractionStep = this.state.currentInteractionStep;
+    }
+    this.setState(newState);
   };
 
-  handleCloseAnswerPopover = () => {
+  handleCloseAnswerResponsePopover = () => {
     this.setState({
       answerPopoverOpen: false
     });
-  };
 
-  handleOpenResponsePopover = event => {
-    event.preventDefault();
-    this.setState({
-      responsePopoverAnchorEl: event.currentTarget,
-      responsePopoverOpen: true
-    });
-  };
-
-  handleCloseResponsePopover = () => {
     // delay to avoid accidental tap pass-through with focusing on
     // the text field -- this is annoying on mobile where the keyboard
     // pops up, inadvertantly
@@ -398,7 +427,9 @@ export class AssignmentTexterContactControls extends React.Component {
     const {
       answerPopoverOpen,
       questionResponses,
-      cannedResponseScript
+      cannedResponseScript,
+      currentInteractionStep,
+      filteredCannedResponses
     } = this.state;
     const { messages } = contact;
 
@@ -408,9 +439,9 @@ export class AssignmentTexterContactControls extends React.Component {
     );
 
     const otherResponsesLink =
-      this.state.currentInteractionStep &&
-      this.state.currentInteractionStep.question.answerOptions.length > 6 &&
-      campaign.cannedResponses.length ? (
+      currentInteractionStep &&
+      currentInteractionStep.question.filteredAnswerOptions.length > 6 &&
+      filteredCannedResponses.length ? (
         <div className={css(flexStyles.popoverLink)}>
           <a
             href="#otherresponses"
@@ -421,6 +452,19 @@ export class AssignmentTexterContactControls extends React.Component {
         </div>
       ) : null;
 
+    const searchBar =
+      currentInteractionStep &&
+      currentInteractionStep.question.answerOptions.length +
+        campaign.cannedResponses.length >
+        5 ? (
+        <SearchBar
+          onRequestSearch={this.handleSearchChange}
+          onChange={this.handleSearchChange}
+          value={""}
+          hintText={"Search replies..."}
+        />
+      ) : null;
+
     return (
       <Popover
         style={inlineStyles.popover}
@@ -429,23 +473,24 @@ export class AssignmentTexterContactControls extends React.Component {
         anchorEl={this.state.answerPopoverAnchorEl}
         anchorOrigin={{ horizontal: "left", vertical: "bottom" }}
         targetOrigin={{ horizontal: "left", vertical: "bottom" }}
-        onRequestClose={this.handleCloseAnswerPopover}
+        onRequestClose={this.handleCloseAnswerResponsePopover}
       >
+        {searchBar}
         {!window.HIDE_BRANCHED_SCRIPTS ? (
           <Survey
             contact={contact}
             interactionSteps={availableInteractionSteps}
             onQuestionResponseChange={this.handleQuestionResponseChange}
-            currentInteractionStep={this.state.currentInteractionStep}
+            currentInteractionStep={currentInteractionStep}
             listHeader={otherResponsesLink}
             questionResponses={questionResponses}
-            onRequestClose={this.handleCloseAnswerPopover}
+            onRequestClose={this.handleCloseAnswerResponsePopover}
           />
         ) : (
           ""
         )}
         <ScriptList
-          scripts={campaign.cannedResponses}
+          scripts={filteredCannedResponses}
           showAddScriptButton={false}
           customFields={campaign.customFields}
           currentCannedResponseScript={cannedResponseScript}
@@ -488,7 +533,7 @@ export class AssignmentTexterContactControls extends React.Component {
           label="Skip"
           className={css(flexStyles.flatButton)}
           style={{
-            /*WTF: TODO resolve with reopen and labelStyle */
+            /* WTF: TODO resolve with reopen and labelStyle */
             flex: "1 2 auto"
           }}
           labelStyle={{ ...inlineStyles.flatButtonLabel, flex: "1 1 auto" }}
@@ -594,14 +639,23 @@ export class AssignmentTexterContactControls extends React.Component {
     );
   }
 
-  renderMessagingRowMessage() {
+  renderMessagingRowMessage(enabledSideboxes) {
+    const { cannedResponseScript } = this.state;
+    const isFeedbackEnabled =
+      !!enabledSideboxes &&
+      !!enabledSideboxes.find(sidebox => sidebox.name === "texter-feedback");
     return (
-      <div className={css(flexStyles.sectionMessageField)}>
+      <div
+        className={css(flexStyles.sectionMessageField)}
+        style={isFeedbackEnabled ? { width: "calc(100% - 390px)" } : undefined}
+      >
         <GSForm
           ref="form"
           schema={this.messageSchema}
           value={{ messageText: this.state.messageText }}
-          onSubmit={this.props.onMessageFormSubmit}
+          onSubmit={this.props.onMessageFormSubmit(
+            cannedResponseScript && cannedResponseScript.id
+          )}
           onChange={
             this.state.messageReadOnly
               ? null // message is uneditable for firstMessage
@@ -823,7 +877,9 @@ export class AssignmentTexterContactControls extends React.Component {
             </span>
           }
           role="button"
-          onClick={!disabled ? this.handleOpenAnswerPopover : noAction => {}}
+          onClick={
+            !disabled ? this.handleOpenAnswerResponsePopover : noAction => {}
+          }
           className={css(flexStyles.flatButton)}
           labelStyle={inlineStyles.flatButtonLabel}
           backgroundColor={
@@ -880,7 +936,7 @@ export class AssignmentTexterContactControls extends React.Component {
     );
   }
 
-  renderMessageControls() {
+  renderMessageControls(enabledSideboxes) {
     const { contact, messageStatusFilter, assignment, campaign } = this.props;
     const {
       availableSteps,
@@ -899,7 +955,7 @@ export class AssignmentTexterContactControls extends React.Component {
       currentQuestionAnswered = questionResponses[currentInteractionStep.id];
     }
     return [
-      this.renderMessagingRowMessage({}),
+      this.renderMessagingRowMessage(enabledSideboxes),
       <div key="sectionButtons" className={css(flexStyles.sectionButtons)}>
         <div
           className={css(flexStyles.subButtonsAnswerButtons)}
@@ -970,13 +1026,20 @@ export class AssignmentTexterContactControls extends React.Component {
         </Popover>
       );
     }
-    // TODO: max height and scroll-y
+    // TODO: max height
     return <div className={css(flexStyles.sectionSideBox)}>{sideboxList}</div>;
   }
 
   renderMessageBox(internalComponent, enabledSideboxes) {
+    const isFeedbackEnabled =
+      !!enabledSideboxes &&
+      !!enabledSideboxes.find(sidebox => sidebox.name === "texter-feedback");
     return (
-      <div ref="messageBox" className={css(flexStyles.superSectionMessageBox)}>
+      <div
+        ref="messageBox"
+        className={css(flexStyles.superSectionMessageBox)}
+        style={isFeedbackEnabled ? { width: "calc(100% - 382px)" } : undefined}
+      >
         <div
           {...dataTest("messageList")}
           key="messageScrollContainer"
@@ -1017,8 +1080,12 @@ export class AssignmentTexterContactControls extends React.Component {
           this.renderMessageBox(
             <MessageList
               contact={this.props.contact}
+              currentUser={this.props.currentUser}
               messages={this.props.contact.messages}
+              organizationId={this.props.organizationId}
+              review={this.props.review}
               styles={messageListStyles}
+              hideMedia={this.state.hideMedia}
             />,
             enabledSideboxes
           ),
@@ -1035,12 +1102,14 @@ AssignmentTexterContactControls.propTypes = {
   assignment: PropTypes.object,
   currentUser: PropTypes.object,
   texter: PropTypes.object,
+  organizationId: PropTypes.string,
 
   // parent state
   disabled: PropTypes.bool,
   navigationToolbarChildren: PropTypes.object,
   messageStatusFilter: PropTypes.string,
   enabledSideboxes: PropTypes.arrayOf(PropTypes.object),
+  review: PropTypes.string,
 
   // parent config/callbacks
   startingMessage: PropTypes.string,

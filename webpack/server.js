@@ -17,7 +17,7 @@ Object.keys(config.entry).forEach(key => {
 const compiler = webpack(config);
 const connstring = `http://127.0.0.1:${appPort}`;
 
-log.info(`Proxying requests to:${connstring}`);
+log.info(`Proxying requests to: ${connstring}`);
 
 const app = new WebpackDevServer(compiler, {
   contentBase: "/assets/",

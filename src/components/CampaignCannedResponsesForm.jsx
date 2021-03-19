@@ -14,6 +14,9 @@ import yup from "yup";
 import theme from "../styles/theme";
 import { StyleSheet, css } from "aphrodite";
 import { dataTest } from "../lib/attributes";
+import loadData from "../containers/hoc/load-data";
+import gql from "graphql-tag";
+import TagChips from "./TagChips";
 
 const styles = StyleSheet.create({
   formContainer: {
@@ -29,10 +32,23 @@ const styles = StyleSheet.create({
   form: {
     backgroundColor: theme.colors.white,
     padding: 10
+  },
+  title: {
+    marginBottom: 8
+  },
+  text: {
+    fontSize: 14,
+    color: theme.colors.gray,
+    marginBottom: 8,
+    display: "-webkit-box",
+    WebkitBoxOrient: "vertical",
+    WebkitLineClamp: 2,
+    overflow: "hidden",
+    height: 32
   }
 });
 
-export default class CampaignCannedResponsesForm extends React.Component {
+export class CampaignCannedResponsesForm extends React.Component {
   state = {
     showForm: false,
     formButtonText: "",
@@ -87,6 +103,7 @@ export default class CampaignCannedResponsesForm extends React.Component {
                 this.setState({ showForm: false });
               }}
               customFields={this.props.customFields}
+              tags={this.props.data.organization.tags}
             />
           </div>
         </div>
@@ -115,8 +132,6 @@ export default class CampaignCannedResponsesForm extends React.Component {
         {...dataTest("cannedResponse")}
         value={response.text}
         key={response.id}
-        primaryText={response.title}
-        secondaryText={response.text}
         rightIconButton={
           <span>
             <IconButton
@@ -150,8 +165,16 @@ export default class CampaignCannedResponsesForm extends React.Component {
             </IconButton>
           </span>
         }
-        secondaryTextLines={2}
-      />
+      >
+        <div className={css(styles.title)}>{response.title}</div>
+        <div className={css(styles.text)}>{response.text}</div>
+        {response.tagIds && response.tagIds.length > 0 && (
+          <TagChips
+            tags={this.props.data.organization.tags}
+            tagIds={response.tagIds}
+          />
+        )}
+      </ListItem>
     ));
     return listItems;
   }
@@ -200,5 +223,34 @@ CampaignCannedResponsesForm.propTypes = {
   onSubmit: type.func,
   onChange: type.func,
   formValues: type.object,
-  customFields: type.array
+  customFields: type.array,
+  organizationId: type.string,
+  data: type.object
 };
+
+const queries = {
+  data: {
+    query: gql`
+      query getTags($organizationId: String!) {
+        organization(id: $organizationId) {
+          id
+          tags {
+            id
+            name
+            group
+            description
+            isDeleted
+          }
+        }
+      }
+    `,
+    options: ownProps => ({
+      variables: {
+        organizationId: ownProps.organizationId
+      },
+      fetchPolicy: "network-only"
+    })
+  }
+};
+
+export default loadData({ queries })(CampaignCannedResponsesForm);

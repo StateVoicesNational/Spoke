@@ -40,8 +40,9 @@ class AssignmentTexterSurveys extends Component {
   }
 
   getNextScript({ interactionStep, answerIndex }) {
-    const answerOption = interactionStep.question.answerOptions[answerIndex];
-
+    // filteredAnswerOptions is only on the current script, but we might be choosing a previous script
+    const answerOption = (interactionStep.question.filteredAnswerOptions ||
+      interactionStep.question.answerOptions)[answerIndex];
     const { nextInteractionStep } = answerOption;
     return nextInteractionStep ? nextInteractionStep.script : null;
   }
@@ -162,7 +163,9 @@ class AssignmentTexterSurveys extends Component {
             style={styles.pastQuestionsLink}
           />
         ) : null}
-        {step.question.answerOptions.map((answerOption, index) => (
+        {(
+          step.question.filteredAnswerOptions || step.question.answerOptions
+        ).map((answerOption, index) => (
           <ListItem
             value={answerOption.value}
             onClick={() => {

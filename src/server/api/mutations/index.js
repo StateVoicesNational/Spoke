@@ -1,5 +1,5 @@
 import { bulkSendMessages } from "./bulkSendMessages";
-import { buyPhoneNumbers } from "./buyPhoneNumbers";
+import { buyPhoneNumbers, deletePhoneNumbers } from "./buyPhoneNumbers";
 import { editOrganization } from "./editOrganization";
 import { findNewCampaignContact } from "./findNewCampaignContact";
 import { joinOrganization } from "./joinOrganization";
@@ -9,10 +9,13 @@ import { startCampaign } from "./startCampaign";
 import { updateContactTags } from "./updateContactTags";
 import { updateQuestionResponses } from "./updateQuestionResponses";
 import { releaseCampaignNumbers } from "./releaseCampaignNumbers";
+import { clearCachedOrgAndExtensionCaches } from "./clearCachedOrgAndExtensionCaches";
+import { updateFeedback } from "./updateFeedback";
 
 export {
   bulkSendMessages,
   buyPhoneNumbers,
+  deletePhoneNumbers,
   editOrganization,
   findNewCampaignContact,
   joinOrganization,
@@ -21,5 +24,7 @@ export {
   startCampaign,
   updateContactTags,
   updateQuestionResponses,
-  releaseCampaignNumbers
+  releaseCampaignNumbers,
+  clearCachedOrgAndExtensionCaches,
+  updateFeedback
 };

@@ -41,24 +41,16 @@ export class TagsSelector extends React.Component {
     super(props);
 
     const tags = {};
-    this.props.tags.forEach(tag => {
+    props.tags.forEach(tag => {
       tags[tag.id] = tag;
     });
 
-    const tagFilter = this.cloneTagFilter(this) || EMPTY_TAG_FILTER;
-
     this.state = {
-      tags,
-      tagFilter
+      tags
     };
-  }
 
-  componentWillReceiveProps = props => {
-    const tagFilter = this.cloneTagFilter(props);
-    if (tagFilter) {
-      this.setState({ tagFilter });
-    }
-  };
+    this.state.tagFilter = this.cloneTagFilter() || EMPTY_TAG_FILTER;
+  }
 
   cloneTagFilter = () => {
     const selectedTags = {};

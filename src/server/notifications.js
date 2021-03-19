@@ -1,6 +1,7 @@
 import { r, Campaign, User, Organization } from "./models";
 import { log } from "../lib";
 import { sendEmail } from "./mail";
+import { getConfig } from "./api/lib/config";
 
 export const Notifications = {
   CAMPAIGN_STARTED: "campaign.started",
@@ -29,15 +30,16 @@ const sendAssignmentUserNotification = async (assignment, notification) => {
   const organization = await Organization.get(campaign.organization_id);
   const user = await User.get(assignment.user_id);
   const orgOwner = await getOrganizationOwner(organization.id);
+  const baseUrl = getConfig("BASE_URL", organization);
 
   let subject;
   let text;
   if (notification === Notifications.ASSIGNMENT_UPDATED) {
     subject = `[${organization.name}] Updated assignment: ${campaign.title}`;
-    text = `Your assignment changed: \n\n${process.env.BASE_URL}/app/${campaign.organization_id}/todos`;
+    text = `Your assignment changed: \n\n${baseUrl}/app/${campaign.organization_id}/todos`;
   } else if (notification === Notifications.ASSIGNMENT_CREATED) {
     subject = `[${organization.name}] New assignment: ${campaign.title}`;
-    text = `You just got a new texting assignment from ${organization.name}. You can start sending texts right away: \n\n${process.env.BASE_URL}/app/${campaign.organization_id}/todos`;
+    text = `You just got a new texting assignment from ${organization.name}. You can start sending texts right away: \n\n${baseUrl}/app/${campaign.organization_id}/todos`;
   }
 
   try {
