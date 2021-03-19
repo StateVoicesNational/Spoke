@@ -1,17 +1,22 @@
 import type from "prop-types";
-import Toggle from "material-ui/Toggle";
 import React from "react";
 import Form from "react-formal";
 import GSForm from "./forms/GSForm";
 import GSSubmitButton from "./forms/GSSubmitButton";
-import GSTextField from "./forms/GSTextField";
 import CampaignFormSectionHeading from "./CampaignFormSectionHeading";
 import * as yup from "yup";
 import cloneDeep from "lodash/cloneDeep";
 import isEqual from "lodash/isEqual";
 import moment from "moment";
-import Autocomplete from "material-ui/AutoComplete";
 import { dataSourceItem } from "./utils";
+
+// import Autocomplete from "material-ui/AutoComplete";
+// import Toggle from "material-ui/Toggle";
+
+import FormControlLabel from "@material-ui/core/FormControlLabel";
+import Switch from "@material-ui/core/Switch";
+import AutoComplete from "@material-ui/lab/Autocomplete";
+import TextField from "@material-ui/core/TextField";
 
 export default class CampaignTextingHoursForm extends React.Component {
   state = {
@@ -39,15 +44,26 @@ export default class CampaignTextingHoursForm extends React.Component {
 
   addToggleFormField(name, label) {
     return (
-      <Form.Field
-        name={name}
-        as={Toggle}
-        defaultToggled={this.props.formValues[name]}
-        label={label}
-        onToggle={async (_, isToggled) => {
-          this.fireOnChangeIfTheFormValuesChanged(name, isToggled);
-        }}
-      />
+      <div>
+        <Form.Field
+          name={name}
+          as={() => (
+            <FormControlLabel
+              control={
+                <Switch
+                  color="primary"
+                  checked={this.props.formValues[name] || false}
+                  onChange={async (_, isToggled) => {
+                    this.fireOnChangeIfTheFormValuesChanged(name, isToggled);
+                  }}
+                />
+              }
+              label={label}
+              labelPlacement="start"
+            />
+          )}
+        />
+      </div>
     );
   }
 
@@ -59,45 +75,76 @@ export default class CampaignTextingHoursForm extends React.Component {
     hint,
     choices
   ) {
+    console.log("choices", choices);
     return (
-      <Form.Field
-        as={Autocomplete}
-        name={name}
-        fullWidth
-        dataSource={choices}
-        filter={Autocomplete.caseInsensitiveFilter}
-        maxSearchResults={4}
-        searchText={
-          this.state[stateName] !== undefined
-            ? this.state[stateName]
-            : initialValue
-        }
-        hintText={hint}
-        floatingLabelText={label}
-        onUpdateInput={text => {
-          const state = {};
-          state[stateName] = text;
-          this.setState(state);
-        }}
-        onNewRequest={(selection, index) => {
-          let selectedChoice = undefined;
-          if (index === -1) {
-            selectedChoice = choices.find(item => item.text === selection);
-          } else {
-            selectedChoice = selection;
-          }
-          if (!selectedChoice) {
-            return;
-          }
-          const state = {};
-          state[stateName] = selectedChoice.text;
-          this.setState(state);
-          this.fireOnChangeIfTheFormValuesChanged(
-            name,
-            selectedChoice.rawValue
-          );
-        }}
-      />
+      <React.Fragment>
+        <Form.Field
+          as={() => (
+            <AutoComplete
+              fullWidth
+              options={choices}
+              renderInput={params => {
+                return (
+                  <TextField {...params} label={label} placeholder={hint} />
+                );
+              }}
+              getOptionLabel={({ text }) => text}
+              onChange={(selection, index) => {
+                console.log("selection, index", selection, index);
+                let selectedChoice = undefined;
+                if (index === -1) {
+                  selectedChoice = choices.find(
+                    item => item.text === selection
+                  );
+                } else {
+                  selectedChoice = selection;
+                }
+                if (!selectedChoice) {
+                  return;
+                }
+                const state = {};
+                state[stateName] = selectedChoice.text;
+                this.setState(state);
+                this.fireOnChangeIfTheFormValuesChanged(
+                  name,
+                  selectedChoice.rawValue
+                );
+              }}
+            />
+          )}
+          name={name}
+          // searchText={
+          //   this.state[stateName] !== undefined
+          //     ? this.state[stateName]
+          //     : initialValue
+          // }
+          // hintText={hint}
+          // floatingLabelText={label}
+          // onUpdateInput={text => {
+          //   const state = {};
+          //   state[stateName] = text;
+          //   this.setState(state);
+          // }}
+          // onNewRequest={(selection, index) => {
+          //   let selectedChoice = undefined;
+          //   if (index === -1) {
+          //     selectedChoice = choices.find(item => item.text === selection);
+          //   } else {
+          //     selectedChoice = selection;
+          //   }
+          //   if (!selectedChoice) {
+          //     return;
+          //   }
+          //   const state = {};
+          //   state[stateName] = selectedChoice.text;
+          //   this.setState(state);
+          //   this.fireOnChangeIfTheFormValuesChanged(
+          //     name,
+          //     selectedChoice.rawValue
+          //   );
+          // }}
+        />
+      </React.Fragment>
     );
   }
 
