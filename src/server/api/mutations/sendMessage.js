@@ -5,30 +5,79 @@ import { Message, cacheableData } from "../../models";
 import { getSendBeforeTimeUtc } from "../../../lib/timezones";
 import { jobRunner } from "../../../extensions/job-runners";
 import { Tasks } from "../../../workers/tasks";
+import { updateContactTags } from "./updateContactTags";
+
+import { sendEmail } from "../../mail";
+import { log } from "../../../lib";
 
 const JOBS_SAME_PROCESS = !!(
   process.env.JOBS_SAME_PROCESS || global.JOBS_SAME_PROCESS
 );
 
+const newError = (message, code, details = {}) => {
+  const err = new GraphQLError(message);
+  err.code = code;
+  if (process.env.DEBUGGING_EMAILS) {
+    sendEmail({
+      to: process.env.DEBUGGING_EMAILS.split(","),
+      subject: `Spoke Send Message Error`,
+      html: `
+        <body>
+          <div><b>ERROR CODE: ${code}</b></div>
+          <div>ERROR MESSAGE: ${message}</div>
+          <br />
+          <div>DETAILS</div>
+          <pre>${JSON.stringify(
+            {
+              ...details.message,
+              campaignContactId: details.campaignContactId,
+              user: details.user
+                ? {
+                    id: details.user.id,
+                    name: `${details.user.first_name} ${details.user.last_name}`
+                  }
+                : undefined,
+              campaign: details.campaign
+                ? {
+                    id: details.campaign.id,
+                    title: details.campaign.title,
+                    organizationId: details.campaign.organization_id
+                  }
+                : undefined
+            },
+            null,
+            2
+          )}
+          </pre>
+        </body>
+      `
+    }).catch(emailErr => log.debug(emailErr));
+  }
+  return err;
+};
+
 export const sendMessage = async (
   _,
-  { message, campaignContactId },
-  { user }
+  { message, campaignContactId, cannedResponseId },
+  { user, loaders }
 ) => {
   // contact is mutated, so we don't use a loader
   let contact = await cacheableData.campaignContact.load(campaignContactId);
-  const campaign = await cacheableData.campaign.load(contact.campaign_id);
+  const campaign = await loaders.campaign.load(contact.campaign_id);
+
   if (
     contact.assignment_id !== parseInt(message.assignmentId) ||
     campaign.is_archived
   ) {
     console.error("Error: assignment changed");
-    throw new GraphQLError({
-      status: 400,
-      message: "Your assignment has changed"
+    throw newError("Your assignment has changed", "SENDERR_ASSIGNMENTCHANGED", {
+      message,
+      campaignContactId,
+      user,
+      campaign
     });
   }
-  const organization = await cacheableData.organization.load(
+  const organization = await loaders.organization.load(
     campaign.organization_id
   );
   const orgFeatures = JSON.parse(organization.features || "{}");
@@ -39,10 +88,16 @@ export const sendMessage = async (
   });
 
   if (optOut) {
-    throw new GraphQLError({
-      status: 400,
-      message: "Skipped sending because this contact was already opted out"
-    });
+    throw newError(
+      "Skipped sending because this contact was already opted out",
+      "SENDERR_OPTEDOUT",
+      {
+        message,
+        campaignContactId,
+        user,
+        campaign
+      }
+    );
   }
   // const zipData = await r.table('zip_code')
   //   .get(contact.zip)
@@ -61,12 +116,14 @@ export const sendMessage = async (
   //   })
   // }
 
-  const { contactNumber, text } = message;
+  const { text } = message;
 
   if (text.length > (process.env.MAX_MESSAGE_LENGTH || 99999)) {
-    throw new GraphQLError({
-      status: 400,
-      message: "Message was longer than the limit"
+    throw newError("Message was longer than the limit", "SENDERR_MAXLEN", {
+      message,
+      campaignContactId,
+      user,
+      campaign
     });
   }
 
@@ -99,10 +156,16 @@ export const sendMessage = async (
 
   const sendBeforeDate = sendBefore ? sendBefore.toDate() : null;
   if (sendBeforeDate && sendBeforeDate <= Date.now()) {
-    throw new GraphQLError({
-      status: 400,
-      message: "Outside permitted texting time for this recipient"
-    });
+    throw newError(
+      "Outside permitted texting time for this recipient",
+      "SENDERR_OFFHOURS",
+      {
+        message,
+        campaignContactId,
+        user,
+        campaign
+      }
+    );
   }
   const serviceName =
     orgFeatures.service ||
@@ -113,7 +176,7 @@ export const sendMessage = async (
   const finalText = replaceCurlyApostrophes(text);
   const messageInstance = new Message({
     text: finalText,
-    contact_number: contactNumber,
+    contact_number: contact.cell,
     user_number: "",
     user_id: user.id,
     campaign_contact_id: contact.id,
@@ -132,11 +195,14 @@ export const sendMessage = async (
     contact,
     campaign,
     organization,
-    texter: user
+    texter: user,
+    cannedResponseId
   });
   if (!saveResult.message) {
-    throw new GraphQLError(
-      `Message send error ${saveResult.texterError || ""}`
+    console.log("SENDERR_SAVEFAIL", saveResult);
+    throw newError(
+      `Message send error ${saveResult.texterError || ""}`,
+      "SENDERR_SAVEFAIL"
     );
   }
   contact.message_status = saveResult.contactStatus;
@@ -150,6 +216,34 @@ export const sendMessage = async (
       organization,
       campaign
     });
+  }
+
+  if (cannedResponseId) {
+    const cannedResponses = await cacheableData.cannedResponse.query({
+      campaignId: campaign.id,
+      cannedResponseId
+    });
+    if (cannedResponses && cannedResponses.length) {
+      const cannedResponse = cannedResponses.find(
+        res => res.id === Number(cannedResponseId)
+      );
+      if (
+        cannedResponse &&
+        cannedResponse.tagIds &&
+        cannedResponse.tagIds.length
+      ) {
+        await updateContactTags(
+          null,
+          {
+            campaignContactId,
+            tags: cannedResponse.tagIds.map(t => ({
+              id: t
+            }))
+          },
+          { user, loaders }
+        );
+      }
+    }
   }
 
   if (initialMessageStatus === "needsMessage") {

@@ -22,7 +22,7 @@ This document is meant to detail the default configurations and how as a system 
 
 ## One click or keypress per-message
 
-Spoke’s default requires the texter to make a single click or key-press for each message sent. Each time a texter presses a key or clicks their mouse button from their queued list of contacts, it will send another message. Spoke cannot send a message unless an individual clicks or presses a key.
+Spoke’s default requires the texter to make a single click or key-press, one message at a time, for each message sent. Each time a texter presses a key or clicks their mouse button from their queued list of contacts, it will send another message. Spoke cannot send a message unless an individual clicks or presses a key.
 
 ### Use cases for sending fewer messages:
 
@@ -70,6 +70,6 @@ While texters should be able to send messages they desire, administrators can ch
 ## Blocking inappropriate texter content
 Some language should not be possible to be texted out. This includes racial and misogynistic slurs, for example. Not on by default, but we recommend to consider enabling MESSAGE_HANDLERS=profanity-tagger along with PROFANITY_TEXTER_BLOCK_SEND=1:
 
-* PROFANITY_TEXTER_REGEX_BASE64 controls which phrases are blocked with a regular expression.  You can see the default (encoded) in the [Spoke profanity-tagger code base](https://github.com/MoveOnOrg/Spoke/blob/main/src/integrations/message-handlers/profanity-tagger/index.js#L4). Take care to thoroughly test your regular expression before deploying a change.
+* PROFANITY_TEXTER_REGEX_BASE64 controls which phrases are blocked with a regular expression.  You can see the default (encoded) in the [Spoke profanity-tagger code base](https://github.com/MoveOnOrg/Spoke/blob/main/src/extensions/message-handlers/profanity-tagger/index.js). Take care to thoroughly test your regular expression before deploying a change.
 
 

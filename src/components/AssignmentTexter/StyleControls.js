@@ -10,7 +10,7 @@ export const messageListStyles = {
     maxWidth: "574px"
   },
   messageSent: {
-    textAlign: "right",
+    textAlign: "left",
     marginLeft: "20%",
     marginRight: "10px",
     backgroundColor: "white",
@@ -89,6 +89,7 @@ export const flexStyles = StyleSheet.create({
   },
   sectionSideBox: {
     flex: "0 1 240px",
+    overflowY: "scroll",
     textAlign: "center",
     padding: "24px",
     maxWidth: "240px",

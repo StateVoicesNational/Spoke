@@ -42,7 +42,8 @@ it("should send an initial message to test contacts", async () => {
   const organizationId = testOrganization.data.createOrganization.id;
   const texterTodoProps = {
     messageStatus: "needsMessage",
-    params: { assignmentId, organizationId }
+    params: { assignmentId, organizationId },
+    location: { query: {} }
   };
 
   const contactsResult = await runGql(
@@ -114,7 +115,8 @@ it("should be able to receive a response and reply (using fakeService)", async (
   const organizationId = testOrganization.data.createOrganization.id;
   const texterTodoProps = {
     messageStatus: "needsMessage",
-    params: { assignmentId, organizationId }
+    params: { assignmentId, organizationId },
+    location: { query: {} }
   };
 
   const contactsResult = await runGql(

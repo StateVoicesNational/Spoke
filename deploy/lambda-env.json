@@ -38,6 +38,7 @@
   "ROLLBAR_CLIENT_TOKEN": "set_this_in_production",
   "ROLLBAR_ACCESS_TOKEN": "set_this_in_production",
   "ROLLBAR_ENDPOINT": "https://api.rollbar.com/api/1/item/",
-  "DST_REFERENCE_TIMEZONE": "America/New_York",
-  "TZ": "America/New_York"
+  "PHONE_NUMBER_COUNTRY": "US",
+  "DST_REFERENCE_TIMEZONE": "US/Eastern",
+  "TZ": "US/Eastern"
 }

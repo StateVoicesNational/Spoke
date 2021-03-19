@@ -279,9 +279,7 @@ export default class CampaignTextersForm extends React.Component {
       .map(orgTexter => dataSourceItem(orgTexter.displayName, orgTexter.id));
 
     const filter = (searchText, key) =>
-      key === "allTexters"
-        ? true
-        : AutoComplete.caseInsensitiveFilter(searchText, key);
+      key === "allTexters" ? true : AutoComplete.fuzzyFilter(searchText, key);
 
     const autocomplete = (
       <AutoComplete
@@ -376,6 +374,10 @@ export default class CampaignTextersForm extends React.Component {
             <Form.Field
               {...dataTest("texterAssignment")}
               name={`texters[${index}].assignment.needsMessageCount`}
+              mapToValue={m =>
+                m.texters.find(t => t.id === texter.id).assignment
+                  .needsMessageCount
+              }
               hintText="Contacts"
               fullWidth
               onFocus={() => this.setState({ focusedTexterId: texter.id })}

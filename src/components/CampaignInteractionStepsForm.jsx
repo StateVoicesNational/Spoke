@@ -162,6 +162,52 @@ export default class CampaignInteractionStepsForm extends React.Component {
     };
   }
 
+  bumpStep(id) {
+    return () => {
+      const step = this.state.interactionSteps.find(is => is.id === id);
+      var livingSiblings = [];
+      var otherRelatives = [];
+      for (let is of this.state.interactionSteps) {
+        if (
+          is.parentInteractionId !== step.parentInteractionId ||
+          step.isDeleted
+        ) {
+          otherRelatives.push(is);
+        } else {
+          livingSiblings.push(is);
+        }
+      }
+      const i = livingSiblings.findIndex(is => is.id === id);
+      if (i > 0) {
+        livingSiblings.splice(i, 1);
+        livingSiblings.splice(i - 1, 0, step);
+        this.setState({
+          interactionSteps: otherRelatives.concat(livingSiblings)
+        });
+      }
+    };
+  }
+
+  topStep(id) {
+    return () => {
+      const target = this.state.interactionSteps.filter(x => x.id === id);
+      const others = this.state.interactionSteps.filter(x => x.id !== id);
+      this.setState({
+        interactionSteps: target.concat(others)
+      });
+    };
+  }
+
+  bottomStep(id) {
+    return () => {
+      const target = this.state.interactionSteps.filter(x => x.id === id);
+      const others = this.state.interactionSteps.filter(x => x.id !== id);
+      this.setState({
+        interactionSteps: others.concat(target)
+      });
+    };
+  }
+
   handleFormChange(event) {
     const handler =
       event.answerActions &&
@@ -213,6 +259,28 @@ export default class CampaignInteractionStepsForm extends React.Component {
 
     return (
       <div>
+        {interactionStep.parentInteractionId ? (
+          <div>
+            <DeleteIcon
+              style={styles.pullRight}
+              onTouchTap={this.deleteStep(interactionStep.id).bind(this)}
+            />
+            <RaisedButton
+              label="Bump"
+              onTouchTap={this.bumpStep(interactionStep.id).bind(this)}
+            />
+            <RaisedButton
+              label="Top"
+              onTouchTap={this.topStep(interactionStep.id).bind(this)}
+            />
+            <RaisedButton
+              label="Bottom"
+              onTouchTap={this.bottomStep(interactionStep.id).bind(this)}
+            />
+          </div>
+        ) : (
+          ""
+        )}
         <Card
           style={styles.interactionStep}
           ref={interactionStep.id}
@@ -250,14 +318,6 @@ export default class CampaignInteractionStepsForm extends React.Component {
                   label="Answer"
                   fullWidth
                   hintText="Answer to the previous question"
-                />
-              ) : (
-                ""
-              )}
-              {interactionStep.parentInteractionId ? (
-                <DeleteIcon
-                  style={styles.pullRight}
-                  onTouchTap={this.deleteStep(interactionStep.id).bind(this)}
                 />
               ) : (
                 ""

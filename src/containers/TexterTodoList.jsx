@@ -8,6 +8,8 @@ import loadData from "./hoc/load-data";
 import gql from "graphql-tag";
 import { withRouter } from "react-router";
 
+let refreshOnReturn = false;
+
 class TexterTodoList extends React.Component {
   constructor(props) {
     super(props);
@@ -15,9 +17,19 @@ class TexterTodoList extends React.Component {
   }
 
   renderTodoList(assignments) {
-    const organizationId = this.props.params.organizationId;
     return assignments
       .sort((x, y) => {
+        // Sort with feedback at the top, and then based on Text assignment size
+        const xHasFeedback =
+          x.feedback && x.feedback.sweepComplete && !x.feedback.isAcknowledged;
+        const yHasFeedback =
+          y.feedback && y.feedback.sweepComplete && !y.feedback.isAcknowledged;
+        if (xHasFeedback && !yHasFeedback) {
+          return -1;
+        }
+        if (yHasFeedback && !xHasFeedback) {
+          return 1;
+        }
         const xToText = x.unmessagedCount + x.unrepliedCount;
         const yToText = y.unmessagedCount + y.unrepliedCount;
         if (xToText === yToText) {
@@ -32,10 +44,11 @@ class TexterTodoList extends React.Component {
         ) {
           return (
             <AssignmentSummary
-              organizationId={organizationId}
+              organizationId={assignment.campaign.organization.id}
               key={assignment.id}
               assignment={assignment}
               texter={this.props.data.user}
+              refreshData={() => this.props.data.refetch()}
             />
           );
         }
@@ -44,7 +57,10 @@ class TexterTodoList extends React.Component {
       .filter(ele => ele !== null);
   }
   componentDidMount() {
-    this.props.data.refetch();
+    console.log("TexterTodoList componentDidMount");
+    if (refreshOnReturn) {
+      this.props.data.refetch();
+    }
     // stopPolling is broken (at least in currently used version), so we roll our own so we can unmount correctly
     if (
       this.props.data &&
@@ -66,6 +82,8 @@ class TexterTodoList extends React.Component {
       clearInterval(this.state.polling);
       this.setState({ polling: null });
     }
+    // not state: maintain this forever after
+    refreshOnReturn = true;
   }
 
   termsAgreed() {
@@ -113,6 +131,7 @@ export const dataQuery = gql`
   query getTodos(
     $userId: Int
     $organizationId: String!
+    $todosOrg: String
     $needsMessageFilter: ContactsFilter
     $needsResponseFilter: ContactsFilter
     $badTimezoneFilter: ContactsFilter
@@ -125,7 +144,8 @@ export const dataQuery = gql`
       terms
       profileComplete(organizationId: $organizationId)
       cacheable
-      todos(organizationId: $organizationId) {
+      roles(organizationId: $organizationId)
+      todos(organizationId: $todosOrg) {
         id
         hasUnassignedContactsForTexter
         campaign {
@@ -137,6 +157,7 @@ export const dataQuery = gql`
           introHtml
           primaryColor
           logoImageUrl
+          isArchived
           texterUIConfig {
             options
             sideboxChoices
@@ -144,6 +165,16 @@ export const dataQuery = gql`
           organization {
             id
           }
+        }
+        feedback {
+          isAcknowledged
+          createdBy {
+            name
+          }
+          message
+          issueCounts
+          skillCounts
+          sweepComplete
         }
         allContactsCount: contactsCount
         unmessagedCount: contactsCount(contactsFilter: $needsMessageFilter)
@@ -190,6 +221,11 @@ const queries = {
       variables: {
         userId: ownProps.params.userId || null,
         organizationId: ownProps.params.organizationId,
+        todosOrg:
+          ownProps.location.query["org"] == "all" ||
+          !ownProps.params.organizationId
+            ? null
+            : ownProps.params.organizationId,
         needsMessageFilter: {
           messageStatus: "needsMessage",
           isOptedOut: false,
