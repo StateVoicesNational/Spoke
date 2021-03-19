@@ -216,7 +216,7 @@ class ScriptEditor extends React.Component {
     const text = this.state.editorState.getCurrentContent().getPlainText();
     const segmentInfo = getCharCount(replaceEasyGsmWins(text));
     return (
-      <div style="overflow-y: auto">
+      <div>
         <div style={segmentInfo.charCount > 1600 ? { color: "red" } : {}}>
           Total characters: {segmentInfo.charCount}
           {segmentInfo.charCount > 1600 ? (
