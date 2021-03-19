@@ -135,7 +135,7 @@ export class CampaignContactsForm extends React.Component {
       contactsCount: contacts.length
     });
     const contactCollection = {
-      name: file.name || null,
+      name: (file && file.name) || null,
       contactsCount: contacts.length,
       customFields,
       contacts
