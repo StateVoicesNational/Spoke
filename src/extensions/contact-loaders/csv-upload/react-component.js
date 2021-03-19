@@ -87,6 +87,7 @@ export class CampaignContactsForm extends React.Component {
 
     event.preventDefault();
     const file = event.target.files[0];
+    console.log("file upload", file);
     this.setState({ uploading: true }, () => {
       parseCSV(
         file,
@@ -102,7 +103,12 @@ export class CampaignContactsForm extends React.Component {
               ).toLocaleString()} contacts max – your file contains ${contacts.length.toLocaleString()}.`
             );
           } else if (contacts.length > 0) {
-            this.handleUploadSuccess(validationStats, contacts, customFields);
+            this.handleUploadSuccess(
+              validationStats,
+              contacts,
+              customFields,
+              file
+            );
           }
         },
         { headerTransformer: ensureCamelCaseRequiredHeaders }
@@ -119,7 +125,7 @@ export class CampaignContactsForm extends React.Component {
     });
   }
 
-  handleUploadSuccess(validationStats, contacts, customFields) {
+  handleUploadSuccess(validationStats, contacts, customFields, file) {
     this.setState({
       validationStats,
       customFields,
@@ -128,6 +134,7 @@ export class CampaignContactsForm extends React.Component {
       contactsCount: contacts.length
     });
     const contactCollection = {
+      name: file.name || null,
       contactsCount: contacts.length,
       customFields,
       contacts
@@ -271,6 +278,19 @@ export class CampaignContactsForm extends React.Component {
   }
 
   render() {
+    if (this.props.campaignIsStarted) {
+      let data;
+      try {
+        data = JSON.parse(
+          (this.props.lastResult && this.props.lastResult.result) || "{}"
+        );
+      } catch (err) {
+        return null;
+      }
+      return data && data.filename ? (
+        <div>Filename: {data.filename}</div>
+      ) : null;
+    }
     let subtitle = (
       <span>
         Your upload file should be in CSV format with column headings in the
@@ -298,6 +318,8 @@ export class CampaignContactsForm extends React.Component {
   }
 }
 
+CampaignContactsForm.prototype.renderAfterStart = true;
+
 CampaignContactsForm.propTypes = {
   onChange: type.func,
   onSubmit: type.func,
@@ -310,6 +332,7 @@ CampaignContactsForm.propTypes = {
 
   clientChoiceData: type.string,
   jobResultMessage: type.string,
+  lastResult: type.object,
 
   maxNumbersPerCampaign: type.number,
   contactsPerPhoneNumber: type.number

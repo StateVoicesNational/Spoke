@@ -91,7 +91,12 @@ export class CampaignContactsForm extends React.Component {
           } else if (contacts.length === 0) {
             this.handleUploadError("Upload at least one contact");
           } else if (contacts.length > 0) {
-            this.handleUploadSuccess(validationStats, contacts, customFields);
+            this.handleUploadSuccess(
+              validationStats,
+              contacts,
+              customFields,
+              file
+            );
           }
         },
         { headerTransformer: ensureCamelCaseRequiredHeaders }
@@ -108,7 +113,7 @@ export class CampaignContactsForm extends React.Component {
     });
   }
 
-  handleUploadSuccess(validationStats, contacts, customFields) {
+  handleUploadSuccess(validationStats, contacts, customFields, file) {
     this.setState({
       validationStats,
       customFields,
@@ -117,6 +122,7 @@ export class CampaignContactsForm extends React.Component {
       contactsCount: contacts.length
     });
     const contactCollection = {
+      name: file.name || null,
       contactsCount: contacts.length,
       customFields,
       contacts
@@ -262,6 +268,20 @@ export class CampaignContactsForm extends React.Component {
   }
 
   render() {
+    if (this.props.campaignIsStarted) {
+      let data;
+      try {
+        data = JSON.parse(
+          (this.props.lastResult && this.props.lastResult.result) || "{}"
+        );
+      } catch (err) {
+        return null;
+      }
+      return data && data.filename ? (
+        <div>Filename: {data.filename}</div>
+      ) : null;
+    }
+
     let subtitle = (
       <span>
         Your upload file should be in CSV format with column headings in the
@@ -289,6 +309,8 @@ export class CampaignContactsForm extends React.Component {
   }
 }
 
+CampaignContactsForm.prototype.renderAfterStart = true;
+
 CampaignContactsForm.propTypes = {
   onChange: type.func,
   onSubmit: type.func,
@@ -300,5 +322,6 @@ CampaignContactsForm.propTypes = {
   saveLabel: type.string,
 
   clientChoiceData: type.string,
+  lastResult: type.object,
   jobResultMessage: type.string
 };
