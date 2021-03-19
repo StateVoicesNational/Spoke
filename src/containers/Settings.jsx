@@ -96,9 +96,13 @@ class Settings extends React.Component {
           onSubmit={this.handleSubmitTextingHoursForm}
           defaultValue={{ textingHoursStart, textingHoursEnd }}
         >
+          <div>
+            Enter the hour in 24-hour time, so e.g. 9am-9pm would be Start Time:
+            9 and End Time: 21.
+          </div>
           <Form.Field
             as={GSTextField}
-            label="Start time"
+            label="Start time (24h)"
             name="textingHoursStart"
             type="select"
             fullWidth
@@ -106,7 +110,7 @@ class Settings extends React.Component {
           />
           <Form.Field
             as={GSTextField}
-            label="End time"
+            label="End time (24h)"
             name="textingHoursEnd"
             type="select"
             fullWidth
@@ -332,7 +336,7 @@ class Settings extends React.Component {
                   {formatTextingHours(organization.textingHoursEnd)}
                 </span>
                 {window.TZ
-                  ? ` in your organisations local time. Timezone ${window.TZ}`
+                  ? ` in your organisation's local time. Timezone ${window.TZ}`
                   : " in contacts local time (or 12pm-6pm EST if timezone is unknown)"}
               </div>
             ) : (
