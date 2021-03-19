@@ -122,7 +122,7 @@ CampaignContactsForm.propTypes = {
   saveDisabled: type.bool,
   saveLabel: type.string,
 
-  lastResult: object,
+  lastResult: type.object,
   clientChoiceData: type.string,
   jobResultMessage: type.string
 };
