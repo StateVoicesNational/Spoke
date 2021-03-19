@@ -52,14 +52,7 @@ export default class CampaignTextingHoursForm extends React.Component {
     );
   }
 
-  addAutocompleteFormField(
-    name,
-    stateName,
-    initialValue,
-    label,
-    hint,
-    choices
-  ) {
+  addFormField(name, stateName, initialValue, label, hint, choices) {
     return (
       <Form.Field
         as={SelectField}
