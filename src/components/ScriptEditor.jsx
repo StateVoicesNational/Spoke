@@ -19,8 +19,7 @@ const styles = {
     cursor: "text",
     fontSize: 16,
     padding: 5,
-    marginBottom: 10,
-    overflowY: "auto"
+    marginBottom: 10
   },
   button: {
     marginTop: 10,
@@ -217,7 +216,7 @@ class ScriptEditor extends React.Component {
     const text = this.state.editorState.getCurrentContent().getPlainText();
     const segmentInfo = getCharCount(replaceEasyGsmWins(text));
     return (
-      <div>
+      <div style="overflow-y: auto">
         <div style={segmentInfo.charCount > 1600 ? { color: "red" } : {}}>
           Total characters: {segmentInfo.charCount}
           {segmentInfo.charCount > 1600 ? (
