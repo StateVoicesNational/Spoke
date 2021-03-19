@@ -24,7 +24,10 @@ export class CampaignContactsForm extends React.Component {
   }
 
   render() {
-    const { lastResult } = this.props;
+    const { lastResult, campaignIsStarted } = this.props;
+    if (campaignIsStarted) {
+      return <div>Path: {this.state.s3Path}</div>;
+    }
     let results = {};
     if (lastResult && lastResult.result) {
       results = JSON.parse(lastResult.result);
@@ -106,6 +109,8 @@ export class CampaignContactsForm extends React.Component {
   }
 }
 
+CampaignContactsForm.prototype.renderAfterStart = true;
+
 CampaignContactsForm.propTypes = {
   onChange: type.func,
   onSubmit: type.func,
@@ -116,6 +121,7 @@ CampaignContactsForm.propTypes = {
   saveDisabled: type.bool,
   saveLabel: type.string,
 
+  lastResult: object,
   clientChoiceData: type.string,
   jobResultMessage: type.string
 };

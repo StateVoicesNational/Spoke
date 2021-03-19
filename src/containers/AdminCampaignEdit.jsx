@@ -402,7 +402,7 @@ export class AdminCampaignEdit extends React.Component {
           this.props.campaignData.campaign.contactsCount > 0,
         checkSaved: () => !this.state.campaignFormValues.contactData,
         blocksStarting: true,
-        expandAfterCampaignStarts: false,
+        expandAfterCampaignStarts: true,
         expandableBySuperVolunteers: false,
         extraProps: {
           contactsCount: this.props.campaignData.campaign.contactsCount,
