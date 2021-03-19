@@ -45,7 +45,8 @@ const styles = {
   scriptFieldButtonSection: {
     marginTop: 10,
     padding: 5,
-    overflowY: "scroll !important"
+    maxHeight: "600px",
+    overflowY: "auto"
   }
 };
 
