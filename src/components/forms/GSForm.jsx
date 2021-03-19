@@ -50,7 +50,7 @@ export default class GSForm extends React.Component {
   }
 
   renderChildren(children) {
-    return React.Children.map(children, child => {
+    const childrenList = React.Children.map(children, child => {
       if (child === null) {
         return child;
       } else if (child.type === Form.Field) {
@@ -82,6 +82,8 @@ export default class GSForm extends React.Component {
       }
       return child;
     });
+
+    return childrenList.length === 1 ? childrenList[0] : childrenList;
   }
 
   renderGlobalErrorMessage() {

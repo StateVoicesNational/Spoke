@@ -1,19 +1,20 @@
 import type from "prop-types";
 import React from "react";
 import CampaignCannedResponseForm from "./CampaignCannedResponseForm";
-import Button from "@material-ui/core/Button";
 import Form from "react-formal";
 import * as yup from "yup";
 import GSSubmitButton from "./forms/GSSubmitButton";
+
+import Button from "@material-ui/core/Button";
 import List from "@material-ui/core/List";
 import ListItem from "@material-ui/core/ListItem";
 import ListItemSecondaryAction from "@material-ui/core/ListItemSecondaryAction";
 import ListItemText from "@material-ui/core/ListItemText";
-
 import Divider from "@material-ui/core/Divider";
 import DeleteIcon from "@material-ui/icons/Delete";
 import CreateIcon from "@material-ui/icons/Create";
 import IconButton from "@material-ui/core/IconButton";
+
 import GSForm from "./forms/GSForm";
 import CampaignFormSectionHeading from "./CampaignFormSectionHeading";
 import theme from "../styles/theme";

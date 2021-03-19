@@ -1,12 +1,18 @@
 import type from "prop-types";
 import React from "react";
-import RaisedButton from "material-ui/RaisedButton";
-import IconButton from "material-ui/IconButton";
-import DeleteIcon from "material-ui/svg-icons/action/delete";
-import { Card, CardHeader, CardText } from "material-ui/Card";
+
+import Button from "@material-ui/core/Button";
+import ButtonGroup from "@material-ui/core/ButtonGroup";
+import DeleteIcon from "@material-ui/icons/Delete";
+import IconButton from "@material-ui/core/IconButton";
+import Tooltip from "@material-ui/core/Tooltip";
+import HelpOutlineIcon from "@material-ui/icons/HelpOutline";
+import Card from "@material-ui/core/Card";
+import CardContent from "@material-ui/core/CardContent";
+import CardHeader from "@material-ui/core/CardHeader";
+
 import theme from "../styles/theme";
 import CampaignFormSectionHeading from "./CampaignFormSectionHeading";
-import HelpIconOutline from "material-ui/svg-icons/action/help-outline";
 import Form from "react-formal";
 import GSForm from "./forms/GSForm";
 import GSTextField from "./forms/GSTextField";
@@ -26,7 +32,6 @@ const styles = {
   pullRight: {
     float: "right",
     position: "relative",
-    top: "10px",
     icon: "pointer"
   },
 
@@ -36,7 +41,8 @@ const styles = {
 
   interactionStep: {
     borderLeft: `5px solid ${theme.colors.green}`,
-    marginBottom: 24
+    marginBottom: 24,
+    width: "100%"
   },
 
   answerContainer: {
@@ -259,22 +265,23 @@ export default class CampaignInteractionStepsForm extends React.Component {
       <div>
         {interactionStep.parentInteractionId ? (
           <div>
-            <DeleteIcon
+            <IconButton
               style={styles.pullRight}
               onClick={this.deleteStep(interactionStep.id).bind(this)}
-            />
-            <RaisedButton
-              label="Bump"
-              onClick={this.bumpStep(interactionStep.id).bind(this)}
-            />
-            <RaisedButton
-              label="Top"
-              onClick={this.topStep(interactionStep.id).bind(this)}
-            />
-            <RaisedButton
-              label="Bottom"
-              onClick={this.bottomStep(interactionStep.id).bind(this)}
-            />
+            >
+              <DeleteIcon />
+            </IconButton>
+            <ButtonGroup>
+              <Button onClick={this.bumpStep(interactionStep.id).bind(this)}>
+                Bump
+              </Button>
+              <Button onClick={this.topStep(interactionStep.id).bind(this)}>
+                Top
+              </Button>
+              <Button onClick={this.bottomStep(interactionStep.id).bind(this)}>
+                Bottom
+              </Button>
+            </ButtonGroup>
           </div>
         ) : null}
         <Card
@@ -291,7 +298,7 @@ export default class CampaignInteractionStepsForm extends React.Component {
                 : "Enter a script for your texter along with the question you want the texter be able to answer on behalf of the contact."
             }
           />
-          <CardText>
+          <CardContent>
             <GSForm
               {...dataTest(
                 "childInteraction",
@@ -338,10 +345,12 @@ export default class CampaignInteractionStepsForm extends React.Component {
                         }))
                       ]}
                     />
-                    <IconButton tooltip="An action is something that is triggered by this answer being chosen, often in an outside system">
-                      <HelpIconOutline />
-                      <div></div>
-                    </IconButton>
+                    <Tooltip
+                      style={{ marginTop: 20 }}
+                      title="An action is something that is triggered by this answer being chosen, often in an outside system"
+                    >
+                      <HelpOutlineIcon />
+                    </Tooltip>
                     {instructions ? <div>{instructions}</div> : null}
                   </div>
                   {clientChoiceData && clientChoiceData.length ? (
@@ -389,7 +398,7 @@ export default class CampaignInteractionStepsForm extends React.Component {
                 hintText="A question for texters to answer. E.g. Can this person attend the event?"
               />
             </GSForm>
-          </CardText>
+          </CardContent>
         </Card>
         <div style={styles.answerContainer}>
           {interactionStep.questionText &&
@@ -397,12 +406,14 @@ export default class CampaignInteractionStepsForm extends React.Component {
           (!interactionStep.parentInteractionId ||
             interactionStep.answerOption) ? (
             <div>
-              <RaisedButton
+              <Button
                 {...dataTest("addResponse")}
-                label="+ Add a response"
                 onClick={this.addStep(interactionStep.id).bind(this)}
                 style={{ marginBottom: "10px" }}
-              />
+                variant="outlined"
+              >
+                + Add a response
+              </Button>
             </div>
           ) : null}
           {this.state.displayAllSteps &&
@@ -443,15 +454,17 @@ export default class CampaignInteractionStepsForm extends React.Component {
           subtitle="You can add scripts and questions and your texters can indicate responses from your contacts. For example, you might want to collect RSVPs to an event or find out whether to follow up about a different volunteer activity."
         />
         {this.renderInteractionStep(tree, availableActions)}
-        <RaisedButton
+        <Button
           {...dataTest("interactionSubmit")}
           disabled={this.state.interactionSteps.some(
             is => is.needRequiredAnswerActionsData && !is.isDeleted
           )}
-          primary
-          label={this.props.saveLabel}
+          variant="contained"
+          color="primary"
           onClick={this.onSave.bind(this)}
-        />
+        >
+          {this.props.saveLabel}
+        </Button>
       </div>
     );
   }
