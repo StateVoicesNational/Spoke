@@ -6,7 +6,7 @@ import GSSubmitButton from "../../../components/forms/GSSubmitButton";
 import GSTextField from "../../../components/forms/GSTextField";
 import Form from "react-formal";
 import Subheader from "material-ui/Subheader";
-import Divider from "material-ui/Divider";
+import Divider from "@material-ui/core/Divider";
 import { ListItem, List } from "material-ui/List";
 import CampaignFormSectionHeading from "../../../components/CampaignFormSectionHeading";
 import CheckIcon from "material-ui/svg-icons/action/check-circle";

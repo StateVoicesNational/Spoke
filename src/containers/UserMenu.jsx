@@ -3,16 +3,15 @@ import React, { Component } from "react";
 import Popover from "material-ui/Popover";
 import Menu from "material-ui/Menu";
 import MenuItem from "material-ui/MenuItem";
-import Divider from "material-ui/Divider";
+import Divider from "@material-ui/core/Divider";
 import Subheader from "material-ui/Subheader";
-import IconButton from "material-ui/IconButton";
-import Avatar from "material-ui/Avatar";
 import { graphql } from "react-apollo";
 import { withRouter } from "react-router";
 import gql from "graphql-tag";
 import { dataTest } from "../lib/attributes";
 
-const avatarSize = 28;
+import Avatar from "@material-ui/core/Avatar";
+import IconButton from "@material-ui/core/IconButton";
 
 export class UserMenu extends Component {
   constructor(props) {
@@ -78,18 +77,14 @@ export class UserMenu extends Component {
   };
 
   renderAvatar(user, size) {
-    // Material-UI seems to not be handling this correctly when doing serverside rendering
     const inlineStyles = {
-      lineHeight: "1.25",
       textAlign: "center",
       color: "white",
-      padding: "5px"
+      padding: 5,
+      height: size,
+      width: size
     };
-    return (
-      <Avatar style={inlineStyles} size={size}>
-        {user.displayName.charAt(0)}
-      </Avatar>
-    );
+    return <Avatar style={inlineStyles}>{user.displayName.charAt(0)}</Avatar>;
   }
 
   renderAdminTools() {
@@ -118,9 +113,9 @@ export class UserMenu extends Component {
         <IconButton
           {...dataTest("userMenuButton")}
           onClick={this.handleTouchTap}
-          iconStyle={{ fontSize: "18px" }}
+          // style={{ fonSize: 10 }}
         >
-          {this.renderAvatar(currentUser, avatarSize)}
+          {this.renderAvatar(currentUser, 20)}
         </IconButton>
         <Popover
           open={this.state.open}
@@ -133,7 +128,7 @@ export class UserMenu extends Component {
             <MenuItem
               {...dataTest("userMenuDisplayName")}
               primaryText={currentUser.displayName}
-              leftIcon={this.renderAvatar(currentUser, 40)}
+              leftIcon={this.renderAvatar(currentUser, 20)}
               disabled={!this.props.orgId}
               value={"account"}
             >

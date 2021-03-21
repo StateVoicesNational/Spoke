@@ -8,15 +8,51 @@ import * as yup from "yup";
 import cloneDeep from "lodash/cloneDeep";
 import isEqual from "lodash/isEqual";
 import moment from "moment";
-import { dataSourceItem } from "./utils";
-
-// import Autocomplete from "material-ui/AutoComplete";
-// import Toggle from "material-ui/Toggle";
 
 import FormControlLabel from "@material-ui/core/FormControlLabel";
 import Switch from "@material-ui/core/Switch";
 import AutoComplete from "@material-ui/lab/Autocomplete";
 import TextField from "@material-ui/core/TextField";
+
+const formatTextingHours = hour => moment(hour, "H").format("h a");
+
+const hourChoices = Array.from(Array(24)).map((_, hour) => {
+  const formattedHour = formatTextingHours(hour);
+  return {
+    label: formattedHour,
+    value: hour
+  };
+});
+
+let timezones = [
+  "US/Alaska",
+  "US/Aleutian",
+  "US/Arizona",
+  "US/Central",
+  "US/East-Indiana",
+  "US/Eastern",
+  "US/Hawaii",
+  "US/Indiana-Starke",
+  "US/Michigan",
+  "US/Mountain",
+  "US/Pacific",
+  "US/Samoa",
+  "America/Puerto_Rico",
+  "America/Virgin"
+];
+if (typeof window !== "undefined") {
+  if (window.TZ && timezones.indexOf(window.TZ) === -1) {
+    const allTZs = momentTz.tz.names();
+    const tzIndex = allTZs.indexOf(window.TZ);
+    if (tzIndex !== -1) {
+      timezones = allTZs.slice(Math.max(0, tzIndex - 5), tzIndex + 5);
+    }
+  }
+}
+const timezoneChoices = timezones.map(timezone => ({
+  label: timezone,
+  value: timezone
+}));
 
 export default class CampaignTextingHoursForm extends React.Component {
   state = {
@@ -67,146 +103,49 @@ export default class CampaignTextingHoursForm extends React.Component {
     );
   }
 
-  addAutocompleteFormField(
-    name,
-    stateName,
-    initialValue,
-    label,
-    hint,
-    choices
-  ) {
-    console.log("choices", choices);
+  addFormField(name, stateName, initialValue, label, hint, choices) {
+    const previousChoise = choices.find(
+      choise => choise.value === this.state[stateName]
+    );
     return (
       <React.Fragment>
         <Form.Field
           as={() => (
             <AutoComplete
               fullWidth
+              value={previousChoise || initialValue}
               options={choices}
               renderInput={params => {
                 return (
                   <TextField {...params} label={label} placeholder={hint} />
                 );
               }}
-              getOptionLabel={({ text }) => text}
-              onChange={(selection, index) => {
-                console.log("selection, index", selection, index);
-                let selectedChoice = undefined;
-                if (index === -1) {
-                  selectedChoice = choices.find(
-                    item => item.text === selection
-                  );
-                } else {
-                  selectedChoice = selection;
-                }
+              getOptionLabel={({ label }) => label}
+              getOptionSelected={(option, value) =>
+                option.value === value.value
+              }
+              onChange={(event, value) => {
+                let selectedChoice = value;
                 if (!selectedChoice) {
                   return;
                 }
                 const state = {};
-                state[stateName] = selectedChoice.text;
+                state[stateName] = selectedChoice.value;
                 this.setState(state);
                 this.fireOnChangeIfTheFormValuesChanged(
                   name,
-                  selectedChoice.rawValue
+                  selectedChoice.value
                 );
               }}
             />
           )}
           name={name}
-          // searchText={
-          //   this.state[stateName] !== undefined
-          //     ? this.state[stateName]
-          //     : initialValue
-          // }
-          // hintText={hint}
-          // floatingLabelText={label}
-          // onUpdateInput={text => {
-          //   const state = {};
-          //   state[stateName] = text;
-          //   this.setState(state);
-          // }}
-          // onNewRequest={(selection, index) => {
-          //   let selectedChoice = undefined;
-          //   if (index === -1) {
-          //     selectedChoice = choices.find(item => item.text === selection);
-          //   } else {
-          //     selectedChoice = selection;
-          //   }
-          //   if (!selectedChoice) {
-          //     return;
-          //   }
-          //   const state = {};
-          //   state[stateName] = selectedChoice.text;
-          //   this.setState(state);
-          //   this.fireOnChangeIfTheFormValuesChanged(
-          //     name,
-          //     selectedChoice.rawValue
-          //   );
-          // }}
         />
       </React.Fragment>
     );
   }
 
   render() {
-    const formatTextingHours = hour => moment(hour, "H").format("h a");
-    const hours = [
-      0,
-      1,
-      2,
-      3,
-      4,
-      5,
-      6,
-      7,
-      8,
-      9,
-      10,
-      11,
-      12,
-      13,
-      14,
-      15,
-      16,
-      17,
-      18,
-      19,
-      20,
-      21,
-      22,
-      23
-    ];
-    const hourChoices = hours.map(hour => {
-      const formattedHour = formatTextingHours(hour);
-      return <MenuItem key={hour} value={hour} primaryText={formattedHour} />;
-    });
-
-    let timezones = [
-      "US/Alaska",
-      "US/Aleutian",
-      "US/Arizona",
-      "US/Central",
-      "US/East-Indiana",
-      "US/Eastern",
-      "US/Hawaii",
-      "US/Indiana-Starke",
-      "US/Michigan",
-      "US/Mountain",
-      "US/Pacific",
-      "US/Samoa",
-      "America/Puerto_Rico",
-      "America/Virgin"
-    ];
-    if (window.TZ && timezones.indexOf(window.TZ) === -1) {
-      const allTZs = momentTz.tz.names();
-      const tzIndex = allTZs.indexOf(window.TZ);
-      if (tzIndex !== -1) {
-        timezones = allTZs.slice(Math.max(0, tzIndex - 5), tzIndex + 5);
-      }
-    }
-    const timezoneChoices = timezones.map(timezone => (
-      <MenuItem key={timezone} value={timezone} primaryText={timezone} />
-    ));
     return (
       <GSForm
         schema={this.formSchema}
@@ -234,7 +173,12 @@ export default class CampaignTextingHoursForm extends React.Component {
                 {this.addFormField(
                   "textingHoursStart",
                   "textingHoursStartSearchText",
-                  formatTextingHours(this.props.formValues.textingHoursStart),
+                  {
+                    value: this.props.formValues.textingHoursStart,
+                    label: formatTextingHours(
+                      this.props.formValues.textingHoursStart
+                    )
+                  },
                   "Start time",
                   "",
                   hourChoices
@@ -243,15 +187,18 @@ export default class CampaignTextingHoursForm extends React.Component {
                 {this.addFormField(
                   "textingHoursEnd",
                   "textingHoursEndSearchText",
-                  formatTextingHours(this.props.formValues.textingHoursEnd),
+                  {
+                    value: this.props.formValues.textingHoursEnd,
+                    label: formatTextingHours(
+                      this.props.formValues.textingHoursEnd
+                    )
+                  },
                   "End time",
                   "",
                   hourChoices
                 )}
               </div>
-            ) : (
-              ""
-            )}
+            ) : null}
           </div>
         ) : null}
         <div>
@@ -261,7 +208,10 @@ export default class CampaignTextingHoursForm extends React.Component {
         {this.addFormField(
           "timezone",
           "timezoneSearchText",
-          this.props.formValues.timezone,
+          {
+            value: this.props.formValues.timezone,
+            label: this.props.formValues.timezone
+          },
           "Default Contact Timezone",
           "",
           timezoneChoices

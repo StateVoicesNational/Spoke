@@ -2,7 +2,7 @@ import React from "react";
 import type from "prop-types";
 import SelectField from "material-ui/SelectField";
 import MenuItem from "material-ui/MenuItem";
-import Divider from "material-ui/Divider";
+import Divider from "@material-ui/core/Divider";
 import Humps from "humps";
 
 const NO_TAG = { id: -1, name: "NO TAG" };

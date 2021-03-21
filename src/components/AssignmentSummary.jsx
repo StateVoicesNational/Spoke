@@ -5,7 +5,7 @@ import { StyleSheet, css } from "aphrodite";
 import { setContrastingColor } from "../lib/color-contrast-helper";
 import RaisedButton from "material-ui/RaisedButton";
 import Badge from "material-ui/Badge";
-import Divider from "material-ui/Divider";
+import Divider from "@material-ui/core/Divider";
 import { withRouter } from "react-router";
 import { dataTest } from "../lib/attributes";
 import AssignmentTexterFeedback from "../extensions/texter-sideboxes/texter-feedback/AssignmentTexterFeedback";

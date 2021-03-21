@@ -5,7 +5,7 @@ import { Card, CardHeader, CardText } from "material-ui/Card";
 import Subheader from "material-ui/Subheader";
 import { List, ListItem } from "material-ui/List";
 import MenuItem from "material-ui/MenuItem";
-import Divider from "material-ui/Divider";
+import Divider from "@material-ui/core/Divider";
 import SelectField from "material-ui/SelectField";
 import ArrowRightIcon from "material-ui/svg-icons/hardware/keyboard-arrow-right";
 import ClearIcon from "material-ui/svg-icons/content/clear";
