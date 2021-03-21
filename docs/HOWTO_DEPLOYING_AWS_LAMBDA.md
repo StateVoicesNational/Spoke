@@ -31,7 +31,7 @@ Waiting for verification for a certificate may take a while so we will start tha
 
 ## S3
 
-Create a private S3 bucket by choosing all the default values as you go throuh the setup wizard. We will call this `textforcampaign`.
+Create a private S3 bucket by choosing all the default values as you go through the setup wizard. We will call this `textforcampaign`. Make sure the bucket is publicly accessible.
 
 ## VPC
 
@@ -73,6 +73,8 @@ Then, edit `Spoke - Private`'s routes to connect to the NAT you just created:
 | 0.0.0.0/0   | nat-xxxxxxxxxxxxx |
 ```
 
+Make sure all of the subnets are assigned to their respective route tables.
+
 ### Security Groups
 
 Security groups give you fine grained access control for resources.
@@ -91,12 +93,39 @@ Create another security group called `Spoke - RDS` and description `Security gro
 ```
 | Type              | Protocol | Port Range | Source    | Description           |
 |-------------------|----------|------------|-----------|-----------------------|
-| PostgreSQL (5432) | TCP (6)  | 5432       | 0.0.0.0/0 | Allow all DB access   |
+| PostgreSQL (5432) | TCP (6)  | 5432       | sg-xxxxxx | Allow all DB access   |
+| PostgreSQL (5432) | TCP (6)  | 5432       | 0.0.0.0/0 | Temporary rule        |
 ```
+
+The latter rule is temporary so you can connect to the database remotely to setup & seed the database. Once that's done, delete the rule.
 
 ## RDS
 
 We will use the AWS RDS service for our Postgres database.
+
+If you plan to use the  Aurora Serverless, note that it can't be connected to outside 
+of the VPC without creating a SSH tunnel through a bastion server. Alternately, you can spin up an
+Aurora provisioned server (version 10.4), create/seed the tables, snapshot it, delete the server and then restore a
+Serverless version from the snapshot.
+
+## Lambda Execution Role
+
+Create a role called `SpokeOnLambda`. Grant it:
+
+- logs:CreateLogGroup
+- logs:CreateLogStream
+- logs:PutLogEvents
+- ec2:CreateNetworkInterface
+- ec2:DeleteNetworkInterface
+- ec2:DescribeNetworkInterfaces
+- s3:*
+- lambda:*
+
+on all resources. Additionally, setup trust relationships with:
+
+- lambda.amazonaws.com
+- apigateway.amazonaws.com
+- events.amazonaws.com
 
 ### Subnet Group
 
@@ -160,7 +189,7 @@ Do **NOT** set:
 
 - `PORT`: The whole application is called as a library, rather than running a process on a port
 - `DEV_APP_PORT`
-- `AWS_ACCESS_KEY_ID`: amazon forbids this variable -- access should be granted through the "role" for the Lambda function
+- `AWS_ACCESS_KEY_ID`: Amazon forbids this variable -- access should be granted through the "role" for the Lambda function
 - `AWS_SECRET_ACCESS_KEY`
 
 **DO** Set:
@@ -169,9 +198,19 @@ Do **NOT** set:
 - `"JOBS_SAME_PROCESS": "1",`: This makes jobs get called semi-synchronously (as async in code, but triggered directly from the same Lambda instance as the originating web request
 - `"JOB_RUNNER": "lambda-async",`: This dispatches asynchronous tasks that occur after a web response to another Lambda invocation which improves performance and completion.
 - `"AWS_ACCESS_AVAILABLE": "1",`: This replaces the AWS\_ key variables for S3 bucket support
-- `STATIC_BASE_URL`: You will need to upload your ASSETS_DIR to an S3 bucket (or other static file site) and then set this to something like: `"https://s3.amazonaws.com/YOUR_BUCKET_AND_PATH/"` (don't forget the trailing '/')
-- `S3_STATIC_PATH`: This will be the s3cmd upload path that corresponds to STATIC_BASE_URL. So if `STATIC_BASE_URL=https://s3.amazon.com/spoke.example.com/static/` then `S3_STATIC_PATH=s3://spoke.example.com/static/` You will also need a ~/.s3cfg file that has the s3 upload credentials. See `package.json`'s postinstall script and more specifically `prod-static-upload`.
-- `"LAMBDA_DEBUG_LOG": "1",`: (ONLY FOR DEBUGGING) This will send more details of requests to the CloudWatch log. However, it will include the full request details, e.g. so do not use this in production.
+- `"STATIC_BASE_URL": "",`: You will need to upload your ASSETS_DIR to an S3 bucket (or other static file site) and then set this to something like: `"https://s3.amazonaws.com/YOUR_BUCKET_AND_PATH/"` (don't forget the trailing '/')
+- `"S3_STATIC_PATH": "",`: This will be the s3cmd upload path that corresponds to STATIC_BASE_URL. So if `STATIC_BASE_URL=https://s3.amazon.com/spoke.example.com/static/` then `S3_STATIC_PATH=s3://spoke.example.com/static/` You will also need a ~/.s3cfg file that has the s3 upload credentials. See `package.json`'s postinstall script and more specifically `prod-static-upload`.
+
+For **DEBUG** purposes, these will send additional logs to Cloudwatch:
+- `"LAMBDA_DEBUG_LOG": "1",`
+- `"RETHINK_KNEX_DEBUG": "1",`
+- `"SHOW_SERVER_ERROR": "1",`
+
+If using Elasticache Redis:
+
+- `"REDIS_CONTACT_CACHE": "1",`: Enable contact caching
+- `"REDIS_URL": "redis://localhost:6379",`: Annoyingly, Claudia requires access to the redis url when you deploy and because you've safely ensconced Redis in a cozy security group, it won't be able to access this one. Spin up a local instance and edit the URL in AWS after it's been deployed.
+- `"X_REDIS_URL": "redis://spoke.xxxx.amazonaws.com:6379"`: Stash the real url in this variable so you can delete the REDIS_URL with localhost and rename this to replace it.
 
 For large production environments, it might also be a good idea to add `"SUPPRESS_MIGRATIONS": "1"` so that any time you update the schema with a version upgrade,
 you can manually run the migration (see below) rather than it accidentally trigger on multiple lambdas at once.
@@ -223,6 +262,7 @@ DB_TYPE=pg
 DB_USE_SSL=true
 PGSSLMODE=require
 ```
+Run `yarn dev` to run a local version of Spoke that will populate the tables and seed the database.
 
 ### Setting Up Scheduled Jobs
 
