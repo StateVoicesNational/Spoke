@@ -4,7 +4,7 @@ import RaisedButton from "material-ui/RaisedButton";
 import GSForm from "../../../components/forms/GSForm";
 import Form from "react-formal";
 import Subheader from "material-ui/Subheader";
-import Divider from "material-ui/Divider";
+import Divider from "@material-ui/core/Divider";
 import { ListItem, List } from "material-ui/List";
 import {
   parseCSV,

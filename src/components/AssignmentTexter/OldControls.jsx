@@ -14,7 +14,7 @@ import { grey100 } from "material-ui/styles/colors";
 import IconButton from "material-ui/IconButton/IconButton";
 import { Toolbar, ToolbarGroup, ToolbarTitle } from "material-ui/Toolbar";
 import { Card, CardActions, CardTitle } from "material-ui/Card";
-import Divider from "material-ui/Divider";
+import Divider from "@material-ui/core/Divider";
 import gql from "graphql-tag";
 import * as yup from "yup";
 import GSForm from "../forms/GSForm";

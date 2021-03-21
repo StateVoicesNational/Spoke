@@ -10,7 +10,7 @@ import AudioIcon from "material-ui/svg-icons/hardware/headset";
 import ImageIcon from "material-ui/svg-icons/image/image";
 import VideoIcon from "material-ui/svg-icons/hardware/tv";
 import ProhibitedIcon from "material-ui/svg-icons/av/not-interested";
-import Divider from "material-ui/Divider";
+import Divider from "@material-ui/core/Divider";
 import { red300 } from "material-ui/styles/colors";
 import theme from "../../styles/theme";
 

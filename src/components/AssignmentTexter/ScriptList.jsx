@@ -9,7 +9,7 @@ import ClearIcon from "material-ui/svg-icons/content/clear";
 // import IconMenu from 'material-ui/IconMenu'
 // import MenuItem from 'material-ui/MenuItem'
 import Subheader from "material-ui/Subheader";
-import Divider from "material-ui/Divider";
+import Divider from "@material-ui/core/Divider";
 import Dialog from "material-ui/Dialog";
 import CannedResponseForm from "../CannedResponseForm";
 import { log } from "../../lib";

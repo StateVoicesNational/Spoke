@@ -70,9 +70,7 @@ export default class CampaignMessagingServiceForm extends React.Component {
               Leave this blank to automatically create a messaging service
             </label>
           </div>
-        ) : (
-          ""
-        )}
+        ) : null}
 
         <Form.Submit
           as={GSSubmitButton}

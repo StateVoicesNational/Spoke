@@ -6,7 +6,7 @@ import Paper from "material-ui/Paper";
 import { Step, Stepper, StepLabel, StepContent } from "material-ui/Stepper";
 import FlatButton from "material-ui/FlatButton";
 import RaisedButton from "material-ui/RaisedButton";
-import Divider from "material-ui/Divider";
+import Divider from "@material-ui/core/Divider";
 import { withRouter } from "react-router";
 
 class Terms extends React.Component {

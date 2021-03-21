@@ -13,7 +13,7 @@ import RaisedButton from "material-ui/RaisedButton";
 import FlatButton from "material-ui/FlatButton";
 import IconButton from "material-ui/IconButton/IconButton";
 import { Card, CardActions, CardTitle } from "material-ui/Card";
-import Divider from "material-ui/Divider";
+import Divider from "@material-ui/core/Divider";
 import CreateIcon from "material-ui/svg-icons/content/create";
 import DownIcon from "material-ui/svg-icons/navigation/arrow-drop-down";
 import * as yup from "yup";
