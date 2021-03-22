@@ -44,21 +44,6 @@ const styles = {
 };
 
 export default class CampaignInteractionStep extends PureComponent {
-  constructor(props) {
-    super(props);
-    this.state = {
-      isRendering: !this.props.interactionStep.parentInteractionId
-    };
-  }
-
-  componentDidMount() {
-    /* little trick to make opening the panel feel more responsive. the parent
-      step will render immediately, then the rest render after a tick */
-    if (!this.props.interactionStep.parentInteractionId) {
-      setTimeout(() => this.setState({ isRendering: false }));
-    }
-  }
-
   shouldComponentUpdate(nextProps, nextState) {
     /* Putting each IStep into its own component is necessary
       to leverage this re-render check – otherwise complex interaction
@@ -289,25 +274,24 @@ export default class CampaignInteractionStep extends PureComponent {
           ) : (
             ""
           )}
-          {!this.state.isRendering &&
-            interactionStep.interactionSteps
-              .filter(childStep => !childStep.isDeleted)
-              .map(childStep => (
-                <div
-                  key={`ref-${childStep.id}`}
-                  ref={div => {
-                    this[`step${childStep.id}Ref`] = div;
-                  }}
-                >
-                  <CampaignInteractionStep
-                    key={childStep.id}
-                    interactionStep={childStep}
-                    availableActions={availableActions}
-                    title={`Question: ${interactionStep.questionText}`}
-                    handlers={handlers}
-                  />
-                </div>
-              ))}
+          {interactionStep.interactionSteps
+            .filter(childStep => !childStep.isDeleted)
+            .map(childStep => (
+              <div
+                key={`ref-${childStep.id}`}
+                ref={div => {
+                  this[`step${childStep.id}Ref`] = div;
+                }}
+              >
+                <CampaignInteractionStep
+                  key={childStep.id}
+                  interactionStep={childStep}
+                  availableActions={availableActions}
+                  title={`Question: ${interactionStep.questionText}`}
+                  handlers={handlers}
+                />
+              </div>
+            ))}
         </div>
       </div>
     );
