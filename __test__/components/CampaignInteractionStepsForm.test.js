@@ -56,7 +56,6 @@ describe("CampaignInteractionStepsForm", () => {
     });
 
     it("initializes state correctly", () => {
-      expect(component.state().displayAllSteps).toEqual(true);
       expect(component.state().interactionSteps.length).toEqual(21);
     });
 
@@ -270,6 +269,7 @@ describe("CampaignInteractionStepsForm", () => {
         );
 
         expect(step1AnswerActionNodes.last().props().choices).toEqual([
+          { label: "NONE" },
           {
             value: "red-handler",
             label: "Red Action"
@@ -297,6 +297,7 @@ describe("CampaignInteractionStepsForm", () => {
         );
 
         expect(step2AnswerActionNodes.last().props().choices).toEqual([
+          { label: "NONE" },
           {
             value: "red-handler",
             label: "Red Action"
@@ -322,6 +323,7 @@ describe("CampaignInteractionStepsForm", () => {
         expect(step3AnswerActionNodes.last().props().value).toEqual("");
 
         expect(step3AnswerActionNodes.last().props().choices).toEqual([
+          { label: "NONE" },
           {
             value: "red-handler",
             label: "Red Action"
@@ -460,6 +462,7 @@ describe("CampaignInteractionStepsForm", () => {
         );
 
         expect(step1AnswerActionNodes.last().props().choices).toEqual([
+          { label: "NONE" },
           {
             value: "color-handler",
             label: "Color Action"
@@ -505,6 +508,7 @@ describe("CampaignInteractionStepsForm", () => {
         );
 
         expect(step2AnswerActionNodes.last().props().choices).toEqual([
+          { label: "NONE" },
           {
             value: "color-handler",
             label: "Color Action"
@@ -550,6 +554,7 @@ describe("CampaignInteractionStepsForm", () => {
         );
 
         expect(step3AnswerActionNodes.last().props().choices).toEqual([
+          { label: "NONE" },
           {
             value: "color-handler",
             label: "Color Action"
@@ -575,6 +580,7 @@ describe("CampaignInteractionStepsForm", () => {
         expect(step4AnswerActionNodes.last().props().value).toEqual("");
 
         expect(step4AnswerActionNodes.last().props().choices).toEqual([
+          { label: "NONE" },
           {
             value: "color-handler",
             label: "Color Action"
