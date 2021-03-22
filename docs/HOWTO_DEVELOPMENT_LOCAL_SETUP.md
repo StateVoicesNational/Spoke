@@ -44,10 +44,11 @@ Docker is optional, but can help with a consistent development environment using
 - Docker allows you to run apps in containers and can be installed [here with Docker's instructions](https://docs.docker.com/desktop/)
 - Docker Compose is the tool used to create and run docker configurations. If you installed Docker on Mac, you already have Docker Compose, if you're using Linux or Windows you can install Docker Compose [with these instructions](https://docs.docker.com/compose/install/)
 
-2. Run `./dev-tools/create-test-database` to populate the test database
-
-3. Make sure Docker is running on your machine and then build and run Spoke with `docker-compose up -d` to run redis and postgres in the background
+2. Make sure Docker is running on your machine and then build and run Spoke with `docker-compose up -d` to run redis and postgres in the background
    - You can stop docker compose at any time with `docker-compose down`, and data will persist next time you run `docker-compose up`.
+
+3. Run `./dev-tools/create-test-database` to populate the test database
+
 4. When done testing, clean up resources with `docker-compose down`, or `docker-compose down -v` to **_completely destroy_** your Postgres database & Redis datastore volumes.
 
 ### Getting the app running
