@@ -19,8 +19,8 @@
 `TWILIO_MULTI_ORG=1`
 `EXPERIMENTAL_PHONE_INVENTORY=1`
 2. Add the following variables either to config / env variables (if you are doing per-campaign set up for all your orgs) or to the “features” json {} in the organization table in your SQL database (if you are setting up per-campaign phone number buying for only some of the orgs in your system)
-`EXPERIMENTALCAMPAIGNPHONENUMBERS=1`
-`EXPERIMENTALTWILIOPERCAMPAIGNMESSAGINGSERVI=1`
+`EXPERIMENTAL_CAMPAIGN_PHONE_NUMBERS=1`
+`EXPERIMENTAL_TWILIO_PER_CAMPAIGN_MESSAGING_SERVICE=1` 
 3. In the Phone Numbers section in Spoke, purchase phone numbers; then after you create any new campaign in Spoke, you can assign phone numbers to that campaign.
 
 ### How to Buy Numbers Directly in Twilio
