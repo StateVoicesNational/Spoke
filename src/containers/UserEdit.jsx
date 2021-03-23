@@ -30,7 +30,7 @@ import GSSubmitButton from "../components/forms/GSSubmitButton";
 import GSPasswordField from "../components/forms/GSPasswordField";
 import Form from "react-formal";
 import * as yup from "yup";
-import Dialog from "material-ui/Dialog";
+import Dialog from "@material-ui/core/Dialog";
 import RaisedButton from "material-ui/RaisedButton";
 import { StyleSheet, css } from "aphrodite";
 import apolloClient from "../network/apollo-client-singleton";
@@ -289,7 +289,7 @@ export class UserEdit extends React.Component {
     const fieldsNeeded = router && !!router.location.query.fieldsNeeded;
 
     return (
-      <div style={{}}>
+      <div style={{ padding: 20 }}>
         {userId ? <div style={{}}>User Id: {userId}</div> : null}
         <GSForm
           style={{}}
@@ -397,7 +397,7 @@ export class UserEdit extends React.Component {
             title="Change your password"
             modal={false}
             open={this.state.changePasswordDialog}
-            onRequestClose={this.handleClose}
+            onClose={this.handleClose}
           >
             <UserEdit
               authType="change"
@@ -413,7 +413,7 @@ export class UserEdit extends React.Component {
             title="Password changed successfully!"
             modal={false}
             open={this.state.successDialog}
-            onRequestClose={this.handleClose}
+            onClose={this.handleClose}
             onBackdropClick={this.handleClose}
             onEscapeKeyDown={this.handleClose}
           >
