@@ -287,6 +287,7 @@ export default class CampaignInteractionStep extends PureComponent {
                   key={childStep.id}
                   interactionStep={childStep}
                   availableActions={availableActions}
+                  customFields={customFields}
                   title={`Question: ${interactionStep.questionText}`}
                   handlers={handlers}
                 />
