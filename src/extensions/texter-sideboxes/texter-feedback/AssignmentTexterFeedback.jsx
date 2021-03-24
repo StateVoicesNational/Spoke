@@ -119,7 +119,7 @@ export class AssignmentTexterFeedback extends Component {
 
     const issueItems = Object.entries(issueCounts)
       .map(([key, count]) => {
-        const item = defaults.issues.find(issue => issue.key === key);
+        const item = config.issues.find(issue => issue.key === key);
         if (count && !isNaN(count) && item) return item;
         return null;
       })
@@ -129,14 +129,14 @@ export class AssignmentTexterFeedback extends Component {
       // issueItems with successMessage and no count
       ...Object.entries(issueCounts)
         .map(([key, count]) => {
-          const item = defaults.issues.find(issue => issue.key === key);
+          const item = config.issues.find(issue => issue.key === key);
           if (count === 0 && item && item.successMessage) return item;
           return null;
         })
         .filter(Boolean),
       // skillCounts items
       ...Object.entries(skillCounts).map(([key, count]) => {
-        const item = defaults.skills.find(skill => skill.key === key);
+        const item = config.skills.find(skill => skill.key === key);
         if (count && !isNaN(count) && item) return item;
         return null;
       })
