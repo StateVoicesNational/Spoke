@@ -2,13 +2,23 @@ import PropTypes from "prop-types";
 import React, { Component } from "react";
 import theme from "../../styles/theme";
 import { Card, CardHeader, CardText } from "material-ui/Card";
-import Subheader from "material-ui/Subheader";
-import { List, ListItem } from "material-ui/List";
+// import { List, ListItem } from "material-ui/List";
 import MenuItem from "material-ui/MenuItem";
-import Divider from "@material-ui/core/Divider";
 import SelectField from "material-ui/SelectField";
-import ArrowRightIcon from "material-ui/svg-icons/hardware/keyboard-arrow-right";
-import ClearIcon from "material-ui/svg-icons/content/clear";
+
+import Divider from "@material-ui/core/Divider";
+import ClearIcon from "@material-ui/icons/Clear";
+import List from "@material-ui/core/List";
+import ListItem from "@material-ui/core/ListItem";
+import ListItemText from "@material-ui/core/ListItemText";
+import ListItemIcon from "@material-ui/core/ListItemIcon";
+import ArrowRightIcon from "@material-ui/icons/ArrowRight";
+
+// import Card from '@material-ui/core/Card';
+// import CardHeader from '@material-ui/core/CardHeader';
+// import CardMedia from '@material-ui/core/CardMedia';
+// import CardContent from '@material-ui/core/CardContent';
+// import CardActions from '@material-ui/core/CardActions';
 
 const styles = {
   root: {},
@@ -158,10 +168,13 @@ class AssignmentTexterSurveys extends Component {
               this.handleExpandChange(true);
             }}
             key={`pastquestions`}
-            primaryText={"All Questions"}
-            rightIcon={<ArrowRightIcon />}
             style={styles.pastQuestionsLink}
-          />
+          >
+            <ListItemText primary="All Questions" />
+            <ListItemIcon>
+              <ArrowRightIcon />
+            </ListItemIcon>
+          </ListItem>
         ) : null}
         {(
           step.question.filteredAnswerOptions || step.question.answerOptions
@@ -191,17 +204,22 @@ class AssignmentTexterSurveys extends Component {
               }
             }}
             key={`cur${index}_${answerOption.value}`}
-            primaryText={answerOption.value}
-            secondaryText={
-              answerOption.nextInteractionStep &&
-              answerOption.nextInteractionStep.script
-                ? answerOption.nextInteractionStep.script
-                : null
-            }
-            rightIcon={
-              responseValue === answerOption.value ? <ClearIcon /> : null
-            }
-          />
+          >
+            <ListItemText
+              primary={answerOption.value}
+              secondary={
+                answerOption.nextInteractionStep &&
+                answerOption.nextInteractionStep.script
+                  ? answerOption.nextInteractionStep.script
+                  : null
+              }
+            />
+            {responseValue === answerOption.value && (
+              <ListItemIcon>
+                <ClearIcon />
+              </ListItemIcon>
+            )}
+          </ListItem>
         ))}
         {responseValue ? null : null}
       </List>
@@ -209,10 +227,12 @@ class AssignmentTexterSurveys extends Component {
   }
 
   render() {
+    console.log("RENDER SURVEY");
     const { interactionSteps, currentInteractionStep } = this.props;
     const oldStyle = typeof this.props.onRequestClose != "function";
 
-    const { showAllQuestions } = this.state;
+    let { showAllQuestions } = this.state;
+    showAllQuestions = true;
     return interactionSteps.length === 0 ? null : (
       <Card style={styles.card} onExpandChange={this.handleExpandChange}>
         {oldStyle || showAllQuestions ? (
@@ -224,7 +244,7 @@ class AssignmentTexterSurveys extends Component {
         ) : null}
         <CardText style={styles.cardText} key={"curcard"}>
           {showAllQuestions
-            ? ""
+            ? null
             : this.renderCurrentStep(currentInteractionStep, oldStyle)}
         </CardText>
         {showAllQuestions ? (

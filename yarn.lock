@@ -10612,11 +10612,12 @@ material-ui-datatables@^0.18.2:
     material-ui "0.18.0"
     prop-types "^15.5.10"
 
-material-ui-search-bar@^0.4.2:
-  version "0.4.2"
-  resolved "https://registry.yarnpkg.com/material-ui-search-bar/-/material-ui-search-bar-0.4.2.tgz#2f4413465a9a6f2a3b495e62ec3cbc24ac523b75"
-  integrity sha1-L0QTRlqabyo7SV5i7Dy8JKxSO3U=
+material-ui-search-bar@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/material-ui-search-bar/-/material-ui-search-bar-1.0.0.tgz#2652dd5bdc4cb043cffb7144d9c296c120702e62"
+  integrity sha512-lCNuzMLPBVukVAkcnYKLXHneozsuKZREZNOcc8z9S9scXHqxJzhC9hOS3OC3/YJ+NJEB5lZB9zg1gryBaXEu8w==
   dependencies:
+    classnames "^2.2.5"
     prop-types "^15.5.8"
 
 material-ui@0.18.0:

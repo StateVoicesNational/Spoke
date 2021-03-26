@@ -120,7 +120,8 @@ export const flexStyles = StyleSheet.create({
     "@media (hover: hover) and (pointer: fine)": {
       // for touchpads and phones, the edge of the tablet is easier
       // vs for desktops, we want to maximize how far the mouse needs to travel
-      maxWidth: "554px"
+      maxWidth: "554px",
+      overflow: "visible"
     }
   },
   subSectionOptOutDialogActions: {
@@ -240,6 +241,14 @@ export const flexStyles = StyleSheet.create({
     // backgroundColor: "white",
     borderRadius: "0",
     boxShadow: "none",
+    maxWidth: "300px",
+    "@media(max-width: 450px)": {
+      // mobile crunch
+      minWidth: "auto"
+    }
+  },
+  button: {
+    backgroundColor: "#FFF",
     maxWidth: "300px",
     "@media(max-width: 450px)": {
       // mobile crunch

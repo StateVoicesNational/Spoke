@@ -8,8 +8,8 @@ import gql from "graphql-tag";
 import loadData from "./hoc/load-data";
 import * as yup from "yup";
 import BulkSendButton from "../components/AssignmentTexter/BulkSendButton";
-import CircularProgress from "material-ui/CircularProgress";
-import Snackbar from "material-ui/Snackbar";
+import CircularProgress from "@material-ui/core/CircularProgress";
+import Snackbar from "@material-ui/core/Snackbar";
 import { isBetweenTextingHours } from "../lib";
 import { withRouter } from "react-router";
 import { getContactTimezone } from "../lib/timezones";
@@ -398,12 +398,10 @@ export class AssignmentTexterContact extends React.Component {
         {this.state.disabled &&
         this.props.messageStatusFilter !== "needsMessage" ? (
           <div className={css(styles.overlay)}>
-            <CircularProgress size={0.5} />
+            <CircularProgress color="primary" size={20} />
             {this.state.disabledText}
           </div>
-        ) : (
-          ""
-        )}
+        ) : null}
         <ControlsComponent
           contact={this.props.contact}
           campaign={this.props.campaign}
@@ -436,9 +434,7 @@ export class AssignmentTexterContact extends React.Component {
             bulkSendMessages={this.bulkSendMessages}
             setDisabled={this.setDisabled}
           />
-        ) : (
-          ""
-        )}
+        ) : null}
         <Snackbar
           style={inlineStyles.snackbar}
           open={!!this.state.snackbarError}
