@@ -4,7 +4,7 @@ import {
   assembleAnswerOptions,
   getUsedScriptFields
 } from "../../../lib/interaction-step-helpers";
-import { getFeatures } from "../../api/lib/config";
+import { getFeatures, getConfig } from "../../api/lib/config";
 import organizationCache from "./organization";
 
 // This should be cached data for a campaign that will not change
@@ -33,7 +33,8 @@ const exportCampaignCacheKey = id =>
 const CONTACT_CACHE_ENABLED =
   process.env.REDIS_CONTACT_CACHE || global.REDIS_CONTACT_CACHE;
 
-const dbCustomFields = async id => {
+const dbCustomFields = async (id, organizationId) => {
+  let customFields = [];
   // This rather Byzantine query just to get the first record
   // is due to postgres query planner (for 11.8 anyway) being particularly aggregious
   // This forces the use of the campaign_id index to get the minimum contact.id
@@ -49,10 +50,41 @@ const dbCustomFields = async id => {
         .where("campaign.id", id)
     )
     .first();
+
   if (firstContact) {
-    return Object.keys(JSON.parse(firstContact.custom_fields));
+    customFields = Object.keys(JSON.parse(firstContact.custom_fields));
   }
-  return [];
+
+  if (organizationId) {
+    const organization = await organizationCache.load(organizationId);
+    const shouldUseTexterCustomFields = getConfig(
+      "SCRIPTS_USE_TEXTER_PROFILE_FIELDS",
+      organization,
+      { truthy: true }
+    );
+
+    if (shouldUseTexterCustomFields) {
+      let fields = getConfig("TEXTER_PROFILE_FIELDS", organization) || [];
+
+      if (typeof fields === "string") {
+        try {
+          fields = JSON.parse(fields) || [];
+        } catch (err) {
+          console.log("Error parsing TEXTER_PROFILE_FIELDS", err);
+          fields = [];
+        }
+      }
+
+      if (!Array.isArray(fields)) fields = [];
+
+      customFields = [
+        ...fields.map(({ name }) => `texter_${name}`),
+        ...customFields
+      ];
+    }
+  }
+
+  return customFields;
 };
 
 const dbInteractionSteps = async id => {
@@ -94,7 +126,10 @@ const loadDeep = async id => {
       // do not cache archived campaigns
       return campaign;
     }
-    campaign.customFields = await dbCustomFields(id);
+    campaign.customFields = await dbCustomFields(
+      id,
+      campaign ? campaign.organization_id : null
+    );
     campaign.interactionSteps = await dbInteractionSteps(id);
     campaign.usedFields = getUsedScriptFields(
       campaign.interactionSteps,

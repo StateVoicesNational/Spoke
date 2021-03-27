@@ -131,11 +131,25 @@ export const resolvers = {
         ? batchPolicies.split(",")
         : ["finished-replies", "vetted-texters"];
     },
-    profileFields: organization =>
-      // @todo: standardize on escaped or not once there's an interface.
-      typeof getFeatures(organization).profile_fields === "string"
-        ? JSON.parse(getFeatures(organization).profile_fields)
-        : getFeatures(organization).profile_fields || [],
+    profileFields: organization => {
+      let fields = getConfig("TEXTER_PROFILE_FIELDS", organization) || [];
+
+      if (typeof fields === "string") {
+        try {
+          fields = JSON.parse(fields) || [];
+        } catch (err) {
+          console.log("Error parsing TEXTER_PROFILE_FIELDS", err);
+          fields = [];
+        }
+      }
+
+      if (!Array.isArray(fields)) fields = [];
+
+      return fields.map(field => ({
+        ...field,
+        isRequired: !!field.isRequired
+      }));
+    },
     availableActions: async (organization, _, { user, loaders }) => {
       await accessRequired(user, organization.id, "SUPERVOLUNTEER");
       const availableHandlers = await getAvailableActionHandlers(
@@ -229,7 +243,7 @@ export const resolvers = {
       };
     },
     cacheable: (org, _, { user }) =>
-      //quanery logic.  levels are 0, 1, 2
+      // quanery logic.  levels are 0, 1, 2
       r.redis ? (getConfig("REDIS_CONTACT_CACHE", org) ? 2 : 1) : 0,
     twilioAccountSid: async (organization, _, { user }) => {
       try {

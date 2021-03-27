@@ -335,13 +335,21 @@ export const resolvers = {
     profileComplete: async (user, { organizationId }, { loaders }) => {
       const org = await loaders.organization.load(organizationId);
       // @todo: standardize on escaped or not once there's an interface.
-      const profileFields = getFeatures(org).profile_fields;
-      const fields =
-        typeof profileFields === "string"
-          ? JSON.parse(profileFields)
-          : getFeatures(org).profile_fields || [];
+      let fields = getConfig("TEXTER_PROFILE_FIELDS", org) || [];
+
+      if (typeof fields === "string") {
+        try {
+          fields = JSON.parse(fields) || [];
+        } catch (err) {
+          console.log("Error parsing TEXTER_PROFILE_FIELDS", err);
+          fields = [];
+        }
+      }
+
+      if (!Array.isArray(fields)) fields = [];
+
       for (const field of fields) {
-        if (!user.extra || !user.extra[field.name]) {
+        if (field.isRequired && (!user.extra || !user.extra[field.name])) {
           return false;
         }
       }

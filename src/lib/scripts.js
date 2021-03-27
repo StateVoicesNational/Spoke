@@ -54,7 +54,7 @@ export const allScriptFields = (customFields, includeDeprecated) =>
 const capitalize = str => {
   const strTrimmed = str.trim();
   if (
-    strTrimmed.charAt(0).toUpperCase() == strTrimmed.charAt(0) &&
+    strTrimmed.charAt(0).toUpperCase() === strTrimmed.charAt(0) &&
     /[a-z]/.test(strTrimmed)
   ) {
     // first letter is upper-cased and some lowercase
@@ -89,8 +89,24 @@ const getScriptFieldValue = (contact, texter, fieldName) => {
   } else if (TOP_LEVEL_UPLOAD_FIELDS.indexOf(fieldName) !== -1) {
     result = contact[fieldName];
   } else {
-    const customFieldNames = JSON.parse(contact.customFields);
-    result = customFieldNames[fieldName];
+    // first try to match on texter extra fields
+    if (fieldName.startsWith("texter_")) {
+      let texterExtraFields = {};
+
+      try {
+        texterExtraFields = JSON.parse(texter.extra) || {};
+      } catch (err) {
+        console.log("Error parsing texer extra fields", err);
+      }
+
+      result = texterExtraFields[fieldName.replace("texter_", "")];
+    }
+
+    // otherwise it could be a custom contact field
+    if (!result) {
+      const customFieldNames = JSON.parse(contact.customFields);
+      result = customFieldNames[fieldName];
+    }
   }
 
   if (CAPITALIZE_FIELDS.indexOf(fieldName) >= 0) {

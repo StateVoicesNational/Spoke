@@ -83,6 +83,7 @@ const fetchOrg = async organizationId =>
           profileFields {
             name
             label
+            isRequired
           }
         }
       }
@@ -235,7 +236,9 @@ export class UserEdit extends React.Component {
     if (!authType && org && org.profileFields.length) {
       const fields = {};
       org.profileFields.forEach(field => {
-        fields[field.name] = yup.string().required();
+        fields[field.name] = field.isRequired
+          ? yup.string().required()
+          : yup.string();
       });
       profileFields = {
         extra: yup.object({
