@@ -2,7 +2,8 @@
 import * as twilioLibrary from "twilio";
 import { getLastMessage } from "../../../src/extensions/messaging_services/message-sending";
 import * as twilio from "../../../src/extensions/messaging_services/twilio";
-import { getConfig } from "../../../src/server/api/lib/config";
+import { getConfig } from "../../../src/server/api/lib/config"; // eslint-disable-line no-duplicate-imports, import/no-duplicates
+import * as configFunctions from "../../../src/server/api/lib/config"; // eslint-disable-line no-duplicate-imports, import/no-duplicates
 import crypto from "../../../src/server/api/lib/crypto";
 import { cacheableData, Message, r } from "../../../src/server/models/";
 import { erroredMessageSender } from "../../../src/workers/job-processes";
@@ -499,93 +500,394 @@ describe("twilio", () => {
       expect(inventoryCount).toEqual(12);
     });
   });
+});
 
-  describe("config functions", () => {
-    let twilioConfig;
-    let encryptedTwilioConfig;
-    let organization;
-    let fakeAuthToken;
-    let fakeAccountSid;
-    let fakeMessageServiceSid;
-    let encryptedFakeAuthToken;
-    let fakeApiKey;
+describe.only("config functions", () => {
+  let twilioConfig;
+  let encryptedTwilioConfig;
+  let organization;
+  let fakeAuthToken;
+  let fakeAccountSid;
+  let fakeMessageServiceSid;
+  let encryptedFakeAuthToken;
+  let fakeApiKey;
+  let hiddenPlaceholder;
+  let encryptedPlaceHolder;
+  beforeEach(async () => {
+    hiddenPlaceholder = "<Hidden>";
+    encryptedPlaceHolder = "<Encrypted>";
+    fakeAuthToken = "fake_twilio_auth_token";
+    fakeAccountSid = "fake_twilio_account_sid";
+    fakeMessageServiceSid = "fake_twilio_message_service_sid";
+    encryptedFakeAuthToken = crypto.symmetricEncrypt(fakeAuthToken);
+    fakeApiKey = "fake_twilio_api_key";
+    organization = { feature: { TWILIO_AUTH_TOKEN: "should_be_ignored" } };
+    twilioConfig = {
+      TWILIO_AUTH_TOKEN: fakeAuthToken,
+      TWILIO_ACCOUNT_SID: fakeAccountSid,
+      TWILIO_MESSAGE_SERVICE_SID: fakeMessageServiceSid
+    };
+    encryptedTwilioConfig = {
+      TWILIO_AUTH_TOKEN_ENCRYPTED: encryptedFakeAuthToken,
+      TWILIO_ACCOUNT_SID: fakeAccountSid,
+      TWILIO_MESSAGE_SERVICE_SID: fakeMessageServiceSid
+    };
+    jest
+      .spyOn(crypto, "symmetricEncrypt")
+      .mockReturnValue(encryptedFakeAuthToken);
+  });
+  afterEach(async () => {
+    jest.restoreAllMocks();
+  });
+  describe("getServiceConfig", () => {
+    let expectedConfig;
     beforeEach(async () => {
-      fakeAuthToken = "fake_twilio_auth_token";
-      fakeAccountSid = "fake_twilio_account_sid";
-      fakeMessageServiceSid = "fake_twilio_message_service_sid";
-      encryptedFakeAuthToken = crypto.symmetricEncrypt(fakeAuthToken);
-      fakeApiKey = "fake_twilio_api_key";
-      organization = { feature: { TWILIO_AUTH_TOKEN: "should_be_ignored" } };
-      twilioConfig = {
-        TWILIO_AUTH_TOKEN: fakeAuthToken,
-        TWILIO_ACCOUNT_SID: fakeAccountSid,
-        TWILIO_MESSAGE_SERVICE_SID: fakeMessageServiceSid
+      expectedConfig = {
+        authToken: hiddenPlaceholder,
+        accountSid: fakeAccountSid,
+        messageServiceSid: fakeMessageServiceSid
       };
-      encryptedTwilioConfig = {
-        TWILIO_AUTH_TOKEN_ENCRYPTED: encryptedFakeAuthToken,
-        TWILIO_ACCOUNT_SID: fakeAccountSid,
-        TWILIO_MESSAGE_SERVICE_SID: fakeMessageServiceSid
-      };
-      jest
-        .spyOn(crypto, "symmetricEncrypt")
-        .mockReturnValue(encryptedFakeAuthToken);
     });
-    describe.only("getServiceConfig", () => {
-      let expectedConfig;
-      beforeEach(async () => {
-        expectedConfig = {
-          authToken: fakeAuthToken,
-          accountSid: fakeAccountSid,
-          messageServiceSid: fakeMessageServiceSid
-        };
-      });
-      it("returns the config elements", async () => {
+    it("returns the config elements", async () => {
+      const config = await twilio.getServiceConfig(twilioConfig, organization);
+      expect(config).toEqual(expectedConfig);
+    });
+    describe("when obscureSensitiveInformation is true", () => {
+      it("returns authToken obscured", async () => {
         const config = await twilio.getServiceConfig(
           twilioConfig,
+          organization,
+          { obscureSensitiveInformation: true }
+        );
+        expect(config).toEqual({
+          ...expectedConfig,
+          authToken: hiddenPlaceholder
+        });
+      });
+    });
+    describe("when the auth token is encrypted", () => {
+      it("returns the config elements", async () => {
+        const config = await twilio.getServiceConfig(
+          encryptedTwilioConfig,
           organization
         );
-        expect(config).toEqual(expectedConfig);
+        expect(config).toEqual({
+          ...expectedConfig,
+          authToken: encryptedPlaceHolder
+        });
       });
       describe("when obscureSensitiveInformation is true", () => {
-        beforeEach(async () => {
-          expectedConfig.authToken = "<Hidden>";
-        });
         it("returns authToken obscured", async () => {
           const config = await twilio.getServiceConfig(
             twilioConfig,
             organization,
             { obscureSensitiveInformation: true }
           );
+          expect(config).toEqual({
+            ...expectedConfig,
+            authToken: hiddenPlaceholder
+          });
+        });
+      });
+    });
+    describe("when it has an API key instead of account sid", () => {
+      beforeEach(async () => {
+        twilioConfig.TWILIO_API_KEY = fakeApiKey;
+        delete twilioConfig.TWILIO_ACCOUNT_SID;
+      });
+      it("returns the config elements", async () => {
+        const config = await twilio.getServiceConfig(
+          twilioConfig,
+          organization
+        );
+        expect(config).toEqual({
+          ...expectedConfig,
+          authToken: hiddenPlaceholder,
+          accountSid: fakeApiKey
+        });
+      });
+    });
+    describe("when using legacy config -- all the elements are at the top level", () => {
+      let fakeConfigs;
+      let expectedConfigOpts;
+      beforeEach(async () => {
+        organization = { feature: { ...twilioConfig } };
+        expectedConfigOpts = { onlyLocal: false };
+        jest.spyOn(configFunctions, "getConfig");
+        jest.spyOn(configFunctions, "hasConfig");
+      });
+      it("returns the config ", async () => {
+        const config = await twilio.getServiceConfig(undefined, organization);
+        expect(config).toEqual({
+          ...expectedConfig,
+          authToken: hiddenPlaceholder
+        });
+        expect(configFunctions.hasConfig.mock.calls).toEqual([
+          ["TWILIO_AUTH_TOKEN_ENCRYPTED", organization, expectedConfigOpts],
+          ["TWILIO_AUTH_TOKEN", organization, expectedConfigOpts],
+          ["TWILIO_ACCOUNT_SID", organization, expectedConfigOpts]
+        ]);
+        expect(configFunctions.getConfig.mock.calls).toEqual([
+          ["TWILIO_AUTH_TOKEN_ENCRYPTED", organization, expectedConfigOpts],
+          ["TWILIO_AUTH_TOKEN", organization, expectedConfigOpts],
+          ["TWILIO_ACCOUNT_SID", organization, expectedConfigOpts],
+          ["TWILIO_ACCOUNT_SID", organization, expectedConfigOpts],
+          ["TWILIO_MESSAGE_SERVICE_SID", organization, expectedConfigOpts]
+        ]);
+      });
+      describe("where there is no config whatsoever", () => {
+        beforeEach(async () => {
+          organization = { feature: {} };
+          configFunctions.getConfig.mockReturnValue(undefined);
+        });
+        it("returns nothing", async () => {
+          const config = await twilio.getServiceConfig(undefined, organization);
+          expect(config).toEqual({});
+        });
+      });
+      describe("when there is no org-specific config", () => {
+        beforeEach(async () => {
+          organization = { feature: {} };
+          fakeConfigs = twilioConfig;
+          configFunctions.getConfig.mockImplementation(key => fakeConfigs[key]);
+        });
+        it("returns global config", async () => {
+          const config = await twilio.getServiceConfig(undefined, organization);
+          expect(config).toEqual({
+            ...expectedConfig
+          });
+          expect(configFunctions.hasConfig.mock.calls).toEqual([
+            ["TWILIO_AUTH_TOKEN_ENCRYPTED", organization, expectedConfigOpts],
+            ["TWILIO_AUTH_TOKEN", organization, expectedConfigOpts],
+            ["TWILIO_ACCOUNT_SID", organization, expectedConfigOpts]
+          ]);
+          expect(configFunctions.getConfig.mock.calls).toEqual([
+            ["TWILIO_AUTH_TOKEN_ENCRYPTED", organization, expectedConfigOpts],
+            ["TWILIO_AUTH_TOKEN", organization, expectedConfigOpts],
+            ["TWILIO_ACCOUNT_SID", organization, expectedConfigOpts],
+            ["TWILIO_ACCOUNT_SID", organization, expectedConfigOpts],
+            ["TWILIO_MESSAGE_SERVICE_SID", organization, expectedConfigOpts]
+          ]);
+        });
+      });
+      describe("when obscureSensitiveInformation is true", () => {
+        it("returns authToken obscured", async () => {
+          const config = await twilio.getServiceConfig(
+            undefined,
+            organization,
+            { obscureSensitiveInformation: true }
+          );
           expect(config).toEqual(expectedConfig);
+          expect(configFunctions.hasConfig.mock.calls).toEqual([
+            ["TWILIO_AUTH_TOKEN_ENCRYPTED", organization, expectedConfigOpts],
+            ["TWILIO_AUTH_TOKEN", organization, expectedConfigOpts],
+            ["TWILIO_ACCOUNT_SID", organization, expectedConfigOpts]
+          ]);
+          expect(configFunctions.getConfig.mock.calls).toEqual([
+            ["TWILIO_AUTH_TOKEN_ENCRYPTED", organization, expectedConfigOpts],
+            ["TWILIO_AUTH_TOKEN", organization, expectedConfigOpts],
+            ["TWILIO_ACCOUNT_SID", organization, expectedConfigOpts],
+            ["TWILIO_ACCOUNT_SID", organization, expectedConfigOpts],
+            ["TWILIO_MESSAGE_SERVICE_SID", organization, expectedConfigOpts]
+          ]);
+        });
+      });
+      describe("when obscureSensitiveInformation is false", () => {
+        it("returns authToken unobscured", async () => {
+          const config = await twilio.getServiceConfig(
+            undefined,
+            organization,
+            { obscureSensitiveInformation: false }
+          );
+          expect(config).toEqual({
+            ...expectedConfig,
+            authToken: fakeAuthToken
+          });
+          expect(configFunctions.hasConfig.mock.calls).toEqual([
+            ["TWILIO_AUTH_TOKEN_ENCRYPTED", organization, expectedConfigOpts],
+            ["TWILIO_AUTH_TOKEN", organization, expectedConfigOpts],
+            ["TWILIO_ACCOUNT_SID", organization, expectedConfigOpts]
+          ]);
+          expect(configFunctions.getConfig.mock.calls).toEqual([
+            ["TWILIO_AUTH_TOKEN_ENCRYPTED", organization, expectedConfigOpts],
+            ["TWILIO_AUTH_TOKEN", organization, expectedConfigOpts],
+            ["TWILIO_AUTH_TOKEN", organization, expectedConfigOpts],
+            ["TWILIO_ACCOUNT_SID", organization, expectedConfigOpts],
+            ["TWILIO_ACCOUNT_SID", organization, expectedConfigOpts],
+            ["TWILIO_MESSAGE_SERVICE_SID", organization, expectedConfigOpts]
+          ]);
+        });
+      });
+
+      it("obscures senstive information by default", async () => {
+        const config = await twilio.getServiceConfig(undefined, organization);
+        expect(config).toEqual(expectedConfig);
+        expect(configFunctions.hasConfig.mock.calls).toEqual([
+          ["TWILIO_AUTH_TOKEN_ENCRYPTED", organization, expectedConfigOpts],
+          ["TWILIO_AUTH_TOKEN", organization, expectedConfigOpts],
+          ["TWILIO_ACCOUNT_SID", organization, expectedConfigOpts]
+        ]);
+        expect(configFunctions.getConfig.mock.calls).toEqual([
+          ["TWILIO_AUTH_TOKEN_ENCRYPTED", organization, expectedConfigOpts],
+          ["TWILIO_AUTH_TOKEN", organization, expectedConfigOpts],
+          ["TWILIO_ACCOUNT_SID", organization, expectedConfigOpts],
+          ["TWILIO_ACCOUNT_SID", organization, expectedConfigOpts],
+          ["TWILIO_MESSAGE_SERVICE_SID", organization, expectedConfigOpts]
+        ]);
+      });
+      describe("when restrictToOrgFeatures is false", () => {
+        beforeEach(async () => {
+          expectedConfigOpts = { onlyLocal: false };
+          configFunctions.getConfig.mockRestore();
+          jest.spyOn(configFunctions, "getConfig");
+        });
+        it("passes { onlyLocal: true } to hasConfig and getConfig", async () => {
+          await twilio.getServiceConfig(undefined, organization, {
+            restrictToOrgFeatures: false
+          });
+          expect(configFunctions.hasConfig.mock.calls).toEqual([
+            ["TWILIO_AUTH_TOKEN_ENCRYPTED", organization, expectedConfigOpts],
+            ["TWILIO_AUTH_TOKEN", organization, expectedConfigOpts],
+            ["TWILIO_ACCOUNT_SID", organization, expectedConfigOpts]
+          ]);
+          expect(configFunctions.getConfig.mock.calls).toEqual([
+            ["TWILIO_AUTH_TOKEN_ENCRYPTED", organization, expectedConfigOpts],
+            ["TWILIO_AUTH_TOKEN", organization, expectedConfigOpts],
+            ["TWILIO_ACCOUNT_SID", organization, expectedConfigOpts],
+            ["TWILIO_ACCOUNT_SID", organization, expectedConfigOpts],
+            ["TWILIO_MESSAGE_SERVICE_SID", organization, expectedConfigOpts]
+          ]);
+        });
+      });
+      describe("when restrictToOrgFeatures is true", () => {
+        beforeEach(async () => {
+          expectedConfigOpts = { onlyLocal: true };
+          configFunctions.getConfig.mockRestore();
+          jest.spyOn(configFunctions, "getConfig");
+        });
+        it("passes { onlyLocal: true } to hasConfig and getConfig", async () => {
+          await twilio.getServiceConfig(undefined, organization, {
+            restrictToOrgFeatures: true
+          });
+          expect(configFunctions.hasConfig.mock.calls).toEqual([
+            ["TWILIO_AUTH_TOKEN_ENCRYPTED", organization, expectedConfigOpts],
+            ["TWILIO_AUTH_TOKEN", organization, expectedConfigOpts],
+            ["TWILIO_ACCOUNT_SID", organization, expectedConfigOpts]
+          ]);
+          expect(configFunctions.getConfig.mock.calls).toEqual([
+            ["TWILIO_AUTH_TOKEN_ENCRYPTED", organization, expectedConfigOpts],
+            ["TWILIO_AUTH_TOKEN", organization, expectedConfigOpts],
+            ["TWILIO_ACCOUNT_SID", organization, expectedConfigOpts],
+            ["TWILIO_ACCOUNT_SID", organization, expectedConfigOpts],
+            ["TWILIO_MESSAGE_SERVICE_SID", organization, expectedConfigOpts]
+          ]);
         });
       });
       describe("when the auth token is encrypted", () => {
         beforeEach(async () => {
-          twilioConfig.TWILIO_AUTH_TOKEN_ENCRYPTED = encryptedFakeAuthToken;
-          delete twilioConfig.TWILIO_AUTH_TOKEN;
-        });
-        it("returns the config elements", async () => {
-          const config = await twilio.getServiceConfig(
-            twilioConfig,
-            organization
-          );
-          expect(config).toEqual({
-            authToken: fakeAuthToken,
-            accountSid: fakeAccountSid,
-            messageServiceSid: fakeMessageServiceSid
-          });
+          organization = { feature: { ...encryptedTwilioConfig } };
         });
         describe("when obscureSensitiveInformation is true", () => {
-          beforeEach(async () => {
-            expectedConfig.authToken = "<Encrypted>";
-          });
           it("returns authToken obscured", async () => {
             const config = await twilio.getServiceConfig(
-              twilioConfig,
+              undefined,
               organization,
               { obscureSensitiveInformation: true }
             );
-            expect(config).toEqual(expectedConfig);
+            expect(config).toEqual({
+              ...expectedConfig,
+              authToken: encryptedPlaceHolder
+            });
+            expect(configFunctions.hasConfig.mock.calls).toEqual([
+              ["TWILIO_AUTH_TOKEN_ENCRYPTED", organization, expectedConfigOpts],
+              ["TWILIO_ACCOUNT_SID", organization, expectedConfigOpts]
+            ]);
+            expect(configFunctions.getConfig.mock.calls).toEqual([
+              ["TWILIO_AUTH_TOKEN_ENCRYPTED", organization, expectedConfigOpts],
+              ["TWILIO_ACCOUNT_SID", organization, expectedConfigOpts],
+              ["TWILIO_ACCOUNT_SID", organization, expectedConfigOpts],
+              ["TWILIO_MESSAGE_SERVICE_SID", organization, expectedConfigOpts]
+            ]);
+          });
+        });
+        describe("when obscureSensitiveInformation is false", () => {
+          it("returns authToken unobscured", async () => {
+            const config = await twilio.getServiceConfig(
+              undefined,
+              organization,
+              { obscureSensitiveInformation: false }
+            );
+            expect(config).toEqual({
+              ...expectedConfig,
+              authToken: fakeAuthToken
+            });
+            expect(configFunctions.hasConfig.mock.calls).toEqual([
+              ["TWILIO_AUTH_TOKEN_ENCRYPTED", organization, expectedConfigOpts],
+              ["TWILIO_ACCOUNT_SID", organization, expectedConfigOpts]
+            ]);
+            expect(configFunctions.getConfig.mock.calls).toEqual([
+              ["TWILIO_AUTH_TOKEN_ENCRYPTED", organization, expectedConfigOpts],
+              ["TWILIO_AUTH_TOKEN_ENCRYPTED", organization, expectedConfigOpts],
+              ["TWILIO_ACCOUNT_SID", organization, expectedConfigOpts],
+              ["TWILIO_ACCOUNT_SID", organization, expectedConfigOpts],
+              ["TWILIO_MESSAGE_SERVICE_SID", organization, expectedConfigOpts]
+            ]);
+          });
+        });
+      });
+      describe("when the auth token is not encrypted", () => {
+        beforeEach(async () => {
+          organization = { feature: { ...twilioConfig } };
+        });
+        describe("when obscureSensitiveInformation is false", () => {
+          it("returns authToken unobscured", async () => {
+            const config = await twilio.getServiceConfig(
+              undefined,
+              organization,
+              { obscureSensitiveInformation: false }
+            );
+            expect(config).toEqual({
+              ...expectedConfig,
+              authToken: fakeAuthToken
+            });
+            expect(configFunctions.hasConfig.mock.calls).toEqual([
+              ["TWILIO_AUTH_TOKEN_ENCRYPTED", organization, expectedConfigOpts],
+              ["TWILIO_AUTH_TOKEN", organization, expectedConfigOpts],
+              ["TWILIO_ACCOUNT_SID", organization, expectedConfigOpts]
+            ]);
+            expect(configFunctions.getConfig.mock.calls).toEqual([
+              ["TWILIO_AUTH_TOKEN_ENCRYPTED", organization, expectedConfigOpts],
+              ["TWILIO_AUTH_TOKEN", organization, expectedConfigOpts],
+              ["TWILIO_AUTH_TOKEN", organization, expectedConfigOpts],
+              ["TWILIO_ACCOUNT_SID", organization, expectedConfigOpts],
+              ["TWILIO_ACCOUNT_SID", organization, expectedConfigOpts],
+              ["TWILIO_MESSAGE_SERVICE_SID", organization, expectedConfigOpts]
+            ]);
+          });
+        });
+        describe("when obscureSensitiveInformation is true", () => {
+          it("returns authToken obscured", async () => {
+            const config = await twilio.getServiceConfig(
+              undefined,
+              organization,
+              { obscureSensitiveInformation: true }
+            );
+            expect(config).toEqual({
+              ...expectedConfig,
+              authToken: hiddenPlaceholder
+            });
+            expect(configFunctions.hasConfig.mock.calls).toEqual([
+              ["TWILIO_AUTH_TOKEN_ENCRYPTED", organization, expectedConfigOpts],
+              ["TWILIO_AUTH_TOKEN", organization, expectedConfigOpts],
+              ["TWILIO_ACCOUNT_SID", organization, expectedConfigOpts]
+            ]);
+            expect(configFunctions.getConfig.mock.calls).toEqual([
+              ["TWILIO_AUTH_TOKEN_ENCRYPTED", organization, expectedConfigOpts],
+              ["TWILIO_AUTH_TOKEN", organization, expectedConfigOpts],
+              ["TWILIO_ACCOUNT_SID", organization, expectedConfigOpts],
+              ["TWILIO_ACCOUNT_SID", organization, expectedConfigOpts],
+              ["TWILIO_MESSAGE_SERVICE_SID", organization, expectedConfigOpts]
+            ]);
           });
         });
       });
@@ -593,102 +895,43 @@ describe("twilio", () => {
         beforeEach(async () => {
           twilioConfig.TWILIO_API_KEY = fakeApiKey;
           delete twilioConfig.TWILIO_ACCOUNT_SID;
-        });
-        it("returns the config elements", async () => {
-          const config = await twilio.getServiceConfig(
-            twilioConfig,
-            organization
-          );
-          expect(config).toEqual({
-            authToken: fakeAuthToken,
-            accountSid: fakeApiKey,
-            messageServiceSid: fakeMessageServiceSid
-          });
-        });
-      });
-      describe("when using legacy config -- all the elements are at the top level", () => {
-        beforeEach(async () => {
-          organization = { feature: { ...twilioConfig } };
+          const feature = { ...twilioConfig };
+          organization = { feature };
         });
         it("returns the config elements", async () => {
           const config = await twilio.getServiceConfig(undefined, organization);
-          expect(config).toEqual({
-            authToken: fakeAuthToken,
-            accountSid: fakeAccountSid,
-            messageServiceSid: fakeMessageServiceSid
-          });
-        });
-        it("returns global config if there is no org-specific config", async () => {});
-        describe("when restrictToOrgFeatures is true", () => {
-          it("returns global configs", async () => {});
-        });
-        describe("when obscureSensitiveInformation is true", () => {
-          it("returns authToken obscured", async () => {});
-        });
-        describe("when obscureSensitiveInformation is false", () => {
-          it("returns authToken unobscured", async () => {});
-        });
-
-        it("obscures senstive information by default", async () => {});
-        it("restricts to org features (ignoring global configs)", async () => {});
-        describe("when restrictToOrgFeatures is false", () => {
-          it("returns global configs", async () => {});
-        });
-        describe("when the auth token is encrypted", () => {
-          beforeEach(async () => {
-            twilioConfig.TWILIO_AUTH_TOKEN_ENCRYPTED = encryptedFakeAuthToken;
-            delete twilioConfig.TWILIO_AUTH_TOKEN;
-            organization = { feature: { ...twilioConfig } };
-          });
-          describe("when obscureSensitiveInformation is true", () => {
-            it("returns authToken obscured", async () => {});
-          });
-          describe("when obscureSensitiveInformation is false", () => {
-            it("returns authToken unobscured", async () => {});
-          });
-          it("returns the config elements", async () => {
-            const config = await twilio.getServiceConfig(
-              undefined,
-              organization
-            );
-            expect(config).toEqual({
-              authToken: fakeAuthToken,
-              accountSid: fakeAccountSid,
-              messageServiceSid: fakeMessageServiceSid
-            });
-          });
-        });
-        describe("when the auth token is not encrypted", () => {
-          describe("when obscureSensitiveInformation is false", () => {
-            it("returns authToken unobscured", async () => {});
-          });
-          describe("when obscureSensitiveInformation is true", () => {
-            it("returns authToken obscured", async () => {});
-          });
-        });
-        describe("when it has an API key instead of account sid", () => {
-          beforeEach(async () => {
-            twilioConfig.TWILIO_API_KEY = fakeApiKey;
-            delete twilioConfig.TWILIO_ACCOUNT_SID;
-            organization = { feature: { ...twilioConfig } };
-          });
-          it("returns the config elements", async () => {
-            const config = await twilio.getServiceConfig(
-              undefined,
-              organization
-            );
-            expect(config).toEqual({
-              authToken: fakeAuthToken,
-              accountSid: fakeApiKey,
-              messageServiceSid: fakeMessageServiceSid
-            });
-          });
+          expect(config).toEqual({ ...expectedConfig, accountSid: fakeApiKey });
+          expect(configFunctions.hasConfig.mock.calls).toEqual([
+            ["TWILIO_AUTH_TOKEN_ENCRYPTED", organization, expectedConfigOpts],
+            ["TWILIO_AUTH_TOKEN", organization, expectedConfigOpts],
+            ["TWILIO_ACCOUNT_SID", organization, expectedConfigOpts]
+          ]);
+          expect(configFunctions.getConfig.mock.calls).toEqual([
+            ["TWILIO_AUTH_TOKEN_ENCRYPTED", organization, expectedConfigOpts],
+            ["TWILIO_AUTH_TOKEN", organization, expectedConfigOpts],
+            ["TWILIO_ACCOUNT_SID", organization, expectedConfigOpts],
+            ["TWILIO_API_KEY", organization, expectedConfigOpts],
+            ["TWILIO_MESSAGE_SERVICE_SID", organization, expectedConfigOpts]
+          ]);
         });
       });
     });
-    describe("getMessageServiceSid", () => {
+  });
+  describe("getMessageServiceSid", () => {
+    beforeEach(async () => {
+      organization = { feature: { message_service_twilio: twilioConfig } };
+    });
+    it("returns the sid", async () => {
+      const sid = await twilio.getMessageServiceSid(
+        organization,
+        undefined,
+        undefined
+      );
+      expect(sid).toEqual(fakeMessageServiceSid);
+    });
+    describe("when using legacy config -- all the elements are at the top level", () => {
       beforeEach(async () => {
-        organization = { feature: { message_service_twilio: twilioConfig } };
+        organization = { feature: { ...twilioConfig } };
       });
       it("returns the sid", async () => {
         const sid = await twilio.getMessageServiceSid(
@@ -698,194 +941,207 @@ describe("twilio", () => {
         );
         expect(sid).toEqual(fakeMessageServiceSid);
       });
-      describe("when using legacy config -- all the elements are at the top level", () => {
-        beforeEach(async () => {
-          organization = { feature: { ...twilioConfig } };
-        });
-        it("returns the sid", async () => {
-          const sid = await twilio.getMessageServiceSid(
-            organization,
-            undefined,
-            undefined
-          );
-          expect(sid).toEqual(fakeMessageServiceSid);
-        });
+    });
+  });
+  describe("updateConfig", () => {
+    let twilioApiAccountsListMock;
+    let oldConfig;
+    let newConfig;
+    let expectedConfig;
+    let globalTestEnvironment;
+    beforeEach(async () => {
+      globalTestEnvironment = global.TEST_ENVIRONMENT;
+      global.TEST_ENVIRONMENT = 0;
+
+      oldConfig = "__IGNORED__";
+      newConfig = {
+        twilioAccountSid: fakeAccountSid,
+        twilioMessageServiceSid: fakeMessageServiceSid,
+        twilioAuthToken: fakeAuthToken
+      };
+
+      expectedConfig = {
+        TWILIO_ACCOUNT_SID: fakeAccountSid,
+        TWILIO_AUTH_TOKEN_ENCRYPTED: encryptedFakeAuthToken,
+        TWILIO_MESSAGE_SERVICE_SID: fakeMessageServiceSid
+      };
+
+      twilioApiAccountsListMock = jest.fn().mockResolvedValue({});
+      jest.spyOn(twilioLibrary.default, "Twilio").mockReturnValue({
+        api: { accounts: { list: twilioApiAccountsListMock } }
       });
     });
-    describe("updateConfig", () => {
-      let twilioApiAccountsListMock;
-      let oldConfig;
-      let newConfig;
-      let expectedConfig;
-      let globalTestEnvironment;
+
+    afterEach(async () => {
+      global.TEST_ENVIRONMENT = globalTestEnvironment;
+    });
+
+    it("delegates to its dependencies and returns the new config", async () => {
+      const returnedConfig = await twilio.updateConfig(oldConfig, newConfig);
+      expect(returnedConfig).toEqual(expectedConfig);
+      expect(crypto.symmetricEncrypt.mock.calls).toEqual([
+        ["fake_twilio_auth_token"]
+      ]);
+      expect(twilioLibrary.default.Twilio.mock.calls).toEqual([
+        [fakeAccountSid, fakeAuthToken]
+      ]);
+      expect(twilioApiAccountsListMock.mock.calls).toEqual([[]]);
+    });
+    describe("when the new config doesn't contain required elements", () => {
       beforeEach(async () => {
-        globalTestEnvironment = global.TEST_ENVIRONMENT;
-        global.TEST_ENVIRONMENT = 0;
-
-        oldConfig = "__IGNORED__";
-        newConfig = {
-          twilioAccountSid: fakeAccountSid,
-          twilioMessageServiceSid: fakeMessageServiceSid,
-          twilioAuthToken: fakeAuthToken
-        };
-
-        expectedConfig = {
-          TWILIO_ACCOUNT_SID: fakeAccountSid,
-          TWILIO_AUTH_TOKEN_ENCRYPTED: encryptedFakeAuthToken,
-          TWILIO_MESSAGE_SERVICE_SID: fakeMessageServiceSid
-        };
-
-        twilioApiAccountsListMock = jest.fn().mockResolvedValue({});
+        delete newConfig.twilioAccountSid;
+      });
+      it("throws an exception", async () => {
+        let error;
+        try {
+          await twilio.updateConfig(oldConfig, newConfig);
+        } catch (caught) {
+          error = caught;
+        }
+        expect(error.message).toEqual(
+          "twilioAccountSid and twilioMessageServiceSid are required"
+        );
+        expect(crypto.symmetricEncrypt).not.toHaveBeenCalled();
+        expect(twilioLibrary.default.Twilio).not.toHaveBeenCalled();
+        expect(twilioApiAccountsListMock).not.toHaveBeenCalled();
+      });
+    });
+    describe("when the twilio credentials are invalid", () => {
+      beforeEach(async () => {
+        twilioApiAccountsListMock = jest.fn().mockImplementation(() => {
+          throw new Error("OH NO!");
+        });
         jest.spyOn(twilioLibrary.default, "Twilio").mockReturnValue({
           api: { accounts: { list: twilioApiAccountsListMock } }
         });
       });
-
-      afterEach(async () => {
-        global.TEST_ENVIRONMENT = globalTestEnvironment;
-      });
-
-      it("delegates to its dependencies and returns the new config", async () => {
-        const returnedConfig = await twilio.updateConfig(oldConfig, newConfig);
-        expect(returnedConfig).toEqual(expectedConfig);
-        expect(crypto.symmetricEncrypt.mock.calls).toEqual([
-          ["fake_twilio_auth_token"]
-        ]);
-        expect(twilioLibrary.default.Twilio.mock.calls).toEqual([
-          [fakeAccountSid, fakeAuthToken]
-        ]);
-        expect(twilioApiAccountsListMock.mock.calls).toEqual([[]]);
-      });
-      describe("when the new config doesn't contain required elements", () => {
-        beforeEach(async () => {
-          delete newConfig.twilioAccountSid;
-        });
-        it("throws an exception", async () => {
-          let error;
-          try {
-            await twilio.updateConfig(oldConfig, newConfig);
-          } catch (caught) {
-            error = caught;
-          }
-          expect(error.message).toEqual(
-            "twilioAccountSid and twilioMessageServiceSid are required"
-          );
-          expect(crypto.symmetricEncrypt).not.toHaveBeenCalled();
-          expect(twilioLibrary.default.Twilio).not.toHaveBeenCalled();
-          expect(twilioApiAccountsListMock).not.toHaveBeenCalled();
-        });
-      });
-      describe("when the twilio credentials are invalid", () => {
-        beforeEach(async () => {
-          twilioApiAccountsListMock = jest.fn().mockImplementation(() => {
-            throw new Error("OH NO!");
-          });
-          jest.spyOn(twilioLibrary.default, "Twilio").mockReturnValue({
-            api: { accounts: { list: twilioApiAccountsListMock } }
-          });
-        });
-        it("throws an exception", async () => {
-          let error;
-          try {
-            await twilio.updateConfig(oldConfig, newConfig);
-          } catch (caught) {
-            error = caught;
-          }
-          expect(error.message).toEqual("Invalid Twilio credentials");
-        });
+      it("throws an exception", async () => {
+        let error;
+        try {
+          await twilio.updateConfig(oldConfig, newConfig);
+        } catch (caught) {
+          error = caught;
+        }
+        expect(error.message).toEqual("Invalid Twilio credentials");
       });
     });
-    describe("campaignNumbersEnabled", () => {
+  });
+  describe("campaignNumbersEnabled", () => {
+    beforeEach(async () => {
+      organization = {
+        feature: {
+          EXPERIMENTAL_PHONE_INVENTORY: true,
+          PHONE_INVENTORY: true,
+          EXPERIMENTAL_CAMPAIGN_PHONE_NUMBERS: true
+        }
+      };
+    });
+
+    it("returns true when all the configs are true", async () => {
+      expect(twilio.campaignNumbersEnabled(organization)).toEqual(true);
+    });
+    describe("when EXPERIMENTAL_PHONE_INVENTORY is false", () => {
       beforeEach(async () => {
-        organization = {
-          feature: {
-            EXPERIMENTAL_PHONE_INVENTORY: true,
-            PHONE_INVENTORY: true,
-            EXPERIMENTAL_CAMPAIGN_PHONE_NUMBERS: true
-          }
-        };
+        organization.feature.EXPERIMENTAL_PHONE_INVENTORY = false;
       });
 
-      it("returns true when all the configs are true", async () => {
+      it("returns true", async () => {
         expect(twilio.campaignNumbersEnabled(organization)).toEqual(true);
       });
-      describe("when EXPERIMENTAL_PHONE_INVENTORY is false", () => {
-        beforeEach(async () => {
-          organization.feature.EXPERIMENTAL_PHONE_INVENTORY = false;
-        });
-
-        it("returns true", async () => {
-          expect(twilio.campaignNumbersEnabled(organization)).toEqual(true);
-        });
+    });
+    describe("when PHONE_INVENTORY is false", () => {
+      beforeEach(async () => {
+        organization.feature.PHONE_INVENTORY = false;
       });
-      describe("when PHONE_INVENTORY is false", () => {
-        beforeEach(async () => {
-          organization.feature.PHONE_INVENTORY = false;
-        });
 
-        it("returns true", async () => {
-          expect(twilio.campaignNumbersEnabled(organization)).toEqual(true);
-        });
-      });
-      describe("when EXPERIMENTAL_PHONE_INVENTORY and PHONE_INVENTORY are both false", () => {
-        beforeEach(async () => {
-          organization.feature.PHONE_INVENTORY = false;
-          organization.feature.EXPERIMENTAL_PHONE_INVENTORY = false;
-        });
-
-        it("returns false", async () => {
-          expect(twilio.campaignNumbersEnabled(organization)).toEqual(false);
-        });
-      });
-      describe("when EXPERIMENTAL_CAMPAIGN_PHONE_NUMBERS is false", () => {
-        beforeEach(async () => {
-          organization.feature.EXPERIMENTAL_CAMPAIGN_PHONE_NUMBERS = false;
-        });
-
-        it("returns false", async () => {
-          expect(twilio.campaignNumbersEnabled(organization)).toEqual(false);
-        });
+      it("returns true", async () => {
+        expect(twilio.campaignNumbersEnabled(organization)).toEqual(true);
       });
     });
-    describe("manualMessagingServicesEnabled", () => {
+    describe("when EXPERIMENTAL_PHONE_INVENTORY and PHONE_INVENTORY are both false", () => {
       beforeEach(async () => {
-        organization = {
-          feature: {
-            EXPERIMENTAL_TWILIO_PER_CAMPAIGN_MESSAGING_SERVICE: true
-          }
-        };
+        organization.feature.PHONE_INVENTORY = false;
+        organization.feature.EXPERIMENTAL_PHONE_INVENTORY = false;
       });
 
-      it("it returns true with the config is true", async () => {
+      it("returns false", async () => {
+        expect(twilio.campaignNumbersEnabled(organization)).toEqual(false);
+      });
+    });
+    describe("when EXPERIMENTAL_CAMPAIGN_PHONE_NUMBERS is false", () => {
+      beforeEach(async () => {
+        organization.feature.EXPERIMENTAL_CAMPAIGN_PHONE_NUMBERS = false;
+      });
+
+      it("returns false", async () => {
+        expect(twilio.campaignNumbersEnabled(organization)).toEqual(false);
+      });
+    });
+  });
+  describe("manualMessagingServicesEnabled", () => {
+    beforeEach(async () => {
+      organization = {
+        feature: {
+          EXPERIMENTAL_TWILIO_PER_CAMPAIGN_MESSAGING_SERVICE: true
+        }
+      };
+    });
+
+    it("it returns true with the config is true", async () => {
+      expect(twilio.manualMessagingServicesEnabled(organization)).toEqual(true);
+    });
+
+    describe("when the config is false", () => {
+      beforeEach(async () => {
+        organization.feature.EXPERIMENTAL_TWILIO_PER_CAMPAIGN_MESSAGING_SERVICE = false;
+      });
+      it("returns flse", async () => {
         expect(twilio.manualMessagingServicesEnabled(organization)).toEqual(
-          true
+          false
         );
       });
-
-      describe("when the config is false", () => {
-        beforeEach(async () => {
-          organization.feature.EXPERIMENTAL_TWILIO_PER_CAMPAIGN_MESSAGING_SERVICE = false;
-        });
-        it("returns flse", async () => {
-          expect(twilio.manualMessagingServicesEnabled(organization)).toEqual(
-            false
-          );
-        });
-      });
     });
-    describe("fullyConfigured", () => {
+  });
+  describe("fullyConfigured", () => {
+    beforeEach(async () => {
+      jest.spyOn(twilio, "getServiceConfig").mockResolvedValue({
+        authToken: "fake_auth_token",
+        accountSid: "fake_account_sid"
+      });
+      jest
+        .spyOn(twilio, "manualMessagingServicesEnabled")
+        .mockReturnValue(true);
+      jest.spyOn(twilio, "campaignNumbersEnabled").mockReturnValue(true);
+      jest
+        .spyOn(twilio, "getMessageServiceSid")
+        .mockResolvedValue("fake_message_service_sid");
+    });
+    it("returns true", async () => {
+      expect(await twilio.fullyConfigured("everything_is_mocked")).toEqual(
+        true
+      );
+      expect(twilio.getMessageServiceSid).not.toHaveBeenCalled();
+    });
+    describe("when getServiceConfig doesn't return a full configuration", () => {
       beforeEach(async () => {
         jest.spyOn(twilio, "getServiceConfig").mockResolvedValue({
-          authToken: "fake_auth_token",
-          accountSid: "fake_account_sid"
+          authToken: "fake_auth_token"
         });
+      });
+      it("returns false", async () => {
+        expect(await twilio.fullyConfigured("everything_is_mocked")).toEqual(
+          false
+        );
+        expect(twilio.manualMessagingServicesEnabled).not.toHaveBeenCalled();
+        expect(twilio.campaignNumbersEnabled).not.toHaveBeenCalled();
+        expect(twilio.getMessageServiceSid).not.toHaveBeenCalled();
+      });
+    });
+    describe("when manualmessagingServicesEnabled returns false", () => {
+      beforeEach(async () => {
         jest
           .spyOn(twilio, "manualMessagingServicesEnabled")
-          .mockReturnValue(true);
-        jest.spyOn(twilio, "campaignNumbersEnabled").mockReturnValue(true);
-        jest
-          .spyOn(twilio, "getMessageServiceSid")
-          .mockResolvedValue("fake_message_service_sid");
+          .mockReturnValue(false);
       });
       it("returns true", async () => {
         expect(await twilio.fullyConfigured("everything_is_mocked")).toEqual(
@@ -893,80 +1149,51 @@ describe("twilio", () => {
         );
         expect(twilio.getMessageServiceSid).not.toHaveBeenCalled();
       });
-      describe("when getServiceConfig doesn't return a full configuration", () => {
+    });
+    describe("when campaignNumbersEnabled returns false", () => {
+      beforeEach(async () => {
+        jest.spyOn(twilio, "campaignNumbersEnabled").mockReturnValue(false);
+      });
+      it("returns true", async () => {
+        expect(await twilio.fullyConfigured("everything_is_mocked")).toEqual(
+          true
+        );
+        expect(twilio.getMessageServiceSid).not.toHaveBeenCalled();
+      });
+    });
+    describe("when manualMessagingServiceEnabled and campaignNumbersEnabled both return false", () => {
+      beforeEach(async () => {
+        jest
+          .spyOn(twilio, "manualMessagingServicesEnabled")
+          .mockReturnValue(false);
+        jest.spyOn(twilio, "campaignNumbersEnabled").mockReturnValue(false);
+      });
+      describe("when getMessageServiceSid returns true", () => {
+        it("returns true", async () => {
+          expect(await twilio.fullyConfigured("everything_is_mocked")).toEqual(
+            true
+          );
+          expect(twilio.getMessageServiceSid.mock.calls).toEqual([
+            ["everything_is_mocked"]
+          ]);
+        });
+      });
+      describe("when getMessageServiceSid returns null", () => {
         beforeEach(async () => {
-          jest.spyOn(twilio, "getServiceConfig").mockResolvedValue({
-            authToken: "fake_auth_token"
-          });
+          jest.spyOn(twilio, "getMessageServiceSid").mockResolvedValue(null);
         });
         it("returns false", async () => {
           expect(await twilio.fullyConfigured("everything_is_mocked")).toEqual(
             false
           );
-          expect(twilio.manualMessagingServicesEnabled).not.toHaveBeenCalled();
-          expect(twilio.campaignNumbersEnabled).not.toHaveBeenCalled();
-          expect(twilio.getMessageServiceSid).not.toHaveBeenCalled();
-        });
-      });
-      describe("when manualmessagingServicesEnabled returns false", () => {
-        beforeEach(async () => {
-          jest
-            .spyOn(twilio, "manualMessagingServicesEnabled")
-            .mockReturnValue(false);
-        });
-        it("returns true", async () => {
-          expect(await twilio.fullyConfigured("everything_is_mocked")).toEqual(
-            true
-          );
-          expect(twilio.getMessageServiceSid).not.toHaveBeenCalled();
-        });
-      });
-      describe("when campaignNumbersEnabled returns false", () => {
-        beforeEach(async () => {
-          jest.spyOn(twilio, "campaignNumbersEnabled").mockReturnValue(false);
-        });
-        it("returns true", async () => {
-          expect(await twilio.fullyConfigured("everything_is_mocked")).toEqual(
-            true
-          );
-          expect(twilio.getMessageServiceSid).not.toHaveBeenCalled();
-        });
-      });
-      describe("when manualMessagingServiceEnabled and campaignNumbersEnabled both return false", () => {
-        beforeEach(async () => {
-          jest
-            .spyOn(twilio, "manualMessagingServicesEnabled")
-            .mockReturnValue(false);
-          jest.spyOn(twilio, "campaignNumbersEnabled").mockReturnValue(false);
-        });
-        describe("when getMessageServiceSid returns true", () => {
-          it("returns true", async () => {
-            expect(
-              await twilio.fullyConfigured("everything_is_mocked")
-            ).toEqual(true);
-            expect(twilio.getMessageServiceSid.mock.calls).toEqual([
-              ["everything_is_mocked"]
-            ]);
-          });
-        });
-        describe("when getMessageServiceSid returns null", () => {
-          beforeEach(async () => {
-            jest.spyOn(twilio, "getMessageServiceSid").mockResolvedValue(null);
-          });
-          it("returns false", async () => {
-            expect(
-              await twilio.fullyConfigured("everything_is_mocked")
-            ).toEqual(false);
-            expect(twilio.getMessageServiceSid.mock.calls).toEqual([
-              ["everything_is_mocked"]
-            ]);
-          });
+          expect(twilio.getMessageServiceSid.mock.calls).toEqual([
+            ["everything_is_mocked"]
+          ]);
         });
       });
     });
   });
 });
-
 // FUTURE
 // * parseMessageText
 // * convertMessagePartsToMessage
