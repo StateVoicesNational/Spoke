@@ -837,7 +837,7 @@ export const getServiceConfig = async (
 ) => {
   const {
     restrictToOrgFeatures = false,
-    obscureSensitiveInformation = false
+    obscureSensitiveInformation = true
   } = options;
   let authToken;
   let accountSid;
@@ -864,7 +864,7 @@ export const getServiceConfig = async (
   } else {
     // for backward compatibility
 
-    const getConfigOptions = { onlyLocal: restrictToOrgFeatures };
+    const getConfigOptions = { onlyLocal: Boolean(restrictToOrgFeatures) };
 
     const hasEncryptedToken = hasConfig(
       "TWILIO_AUTH_TOKEN_ENCRYPTED",
@@ -884,11 +884,18 @@ export const getServiceConfig = async (
             )
           );
     } else {
-      authToken = obscureSensitiveInformation
-        ? "<Hidden>"
-        : getConfig("TWILIO_AUTH_TOKEN", organization, getConfigOptions);
+      const hasUnencryptedToken = hasConfig(
+        "TWILIO_AUTH_TOKEN",
+        organization,
+        getConfigOptions
+      );
+      if (hasUnencryptedToken) {
+        authToken = obscureSensitiveInformation
+          ? "<Hidden>"
+          : getConfig("TWILIO_AUTH_TOKEN", organization, getConfigOptions);
+      }
     }
-    accountSid = hasConfig("TWILIO_ACCOUNT_SID", organization)
+    accountSid = hasConfig("TWILIO_ACCOUNT_SID", organization, getConfigOptions)
       ? getConfig("TWILIO_ACCOUNT_SID", organization, getConfigOptions)
       : // Check old TWILIO_API_KEY variable for backwards compatibility.
         getConfig("TWILIO_API_KEY", organization, getConfigOptions);
