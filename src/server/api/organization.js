@@ -172,6 +172,7 @@ export const resolvers = {
       } catch (err) {
         return null;
       }
+
       let messageHandlers = [];
       let actionHandlers = [];
       const features = getFeatures(organization);
@@ -201,7 +202,7 @@ export const resolvers = {
         messageHandlers,
         actionHandlers,
         unsetFeatures,
-        featuresJSON: JSON.stringify(visibleFeatures)
+        featuresJSON: JSON.stringify(features)
       };
     },
     textingHoursEnforced: organization => organization.texting_hours_enforced,
@@ -229,7 +230,7 @@ export const resolvers = {
       };
     },
     cacheable: (org, _, { user }) =>
-      //quanery logic.  levels are 0, 1, 2
+      // quanery logic.  levels are 0, 1, 2
       r.redis ? (getConfig("REDIS_CONTACT_CACHE", org) ? 2 : 1) : 0,
     twilioAccountSid: async (organization, _, { user }) => {
       try {

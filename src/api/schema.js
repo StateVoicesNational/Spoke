@@ -248,6 +248,7 @@ const rootSchema = gql`
     editOrganization(
       id: String!
       organization: OrganizationInput!
+      updateRawSettings: Boolean
     ): Organization
     deleteJob(campaignId: String!, id: String!): JobRequest
     copyCampaign(id: String!): Campaign

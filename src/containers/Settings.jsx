@@ -18,6 +18,22 @@ import moment from "moment";
 import CampaignTexterUIForm from "../components/CampaignTexterUIForm";
 import OrganizationFeatureSettings from "../components/OrganizationFeatureSettings";
 
+const Editor = props => {
+  /* Just using the <AceEditor> component as recommended in the docs
+    ends up producing an error when using webpack
+    https://github.com/securingsincity/react-ace/issues/162#issuecomment-285015711
+  */
+
+  /* eslint-disable global-require */
+  if (typeof window !== "undefined") {
+    const Ace = require("react-ace").default;
+    require("ace-builds/src-noconflict/mode-json");
+    require("ace-builds/src-noconflict/theme-github");
+    return <Ace {...props} />;
+  }
+  return null;
+};
+
 const styles = StyleSheet.create({
   section: {
     margin: "10px 0"
@@ -147,6 +163,35 @@ class Settings extends React.Component {
     this.handleCloseTwilioDialog();
   };
 
+  handleFeaturesJSONChange = json => {
+    try {
+      const featuresJSON = JSON.stringify(JSON.parse(json));
+
+      this.setState({
+        featuresJSONError: false,
+        featuresJSONSaved: false,
+        settings: {
+          featuresJSON
+        }
+      });
+    } catch (err) {
+      this.setState({ featuresJSONError: true });
+    }
+  };
+
+  handleSaveFeaturesJSON = async () => {
+    await this.props.mutations.editOrganization(
+      {
+        settings: {
+          featuresJSON: this.state.settings.featuresJSON
+        }
+      },
+      true
+    );
+
+    this.setState({ featuresJSONSaved: true });
+  };
+
   renderTwilioAuthForm() {
     const { organization } = this.props.data;
     const {
@@ -247,7 +292,7 @@ class Settings extends React.Component {
               />
               <Dialog
                 actions={dialogActions}
-                modal={true}
+                modal
                 open={this.state.twilioDialogOpen}
               >
                 Changing the Account SID or Messaging Service SID will break any
@@ -262,6 +307,7 @@ class Settings extends React.Component {
 
   render() {
     const { organization } = this.props.data;
+    const { featuresJSON } = organization.settings;
     const { optOutMessage } = organization;
     const formSchema = yup.object({
       optOutMessage: yup.string().required()
@@ -345,8 +391,8 @@ class Settings extends React.Component {
             <CardHeader
               title="Texter UI Defaults"
               style={{ backgroundColor: theme.colors.green }}
-              actAsExpander={true}
-              showExpandableButton={true}
+              actAsExpander
+              showExpandableButton
             />
             <CardText expandable>
               <CampaignTexterUIForm
@@ -375,8 +421,8 @@ class Settings extends React.Component {
             <CardHeader
               title="Overriding default settings"
               style={{ backgroundColor: theme.colors.green }}
-              actAsExpander={true}
-              showExpandableButton={true}
+              actAsExpander
+              showExpandableButton
             />
             <CardText expandable>
               <OrganizationFeatureSettings
@@ -405,12 +451,15 @@ class Settings extends React.Component {
             <CardHeader
               title="External configuration"
               style={{ backgroundColor: theme.colors.green }}
-              actAsExpander={true}
-              showExpandableButton={true}
+              actAsExpander
+              showExpandableButton
             />
             <CardText expandable>
-              <h2>DEBUG Zone</h2>
-              <p>Only take actions here if you know what you&rsquo;re doing</p>
+              <h1>DEBUG Zone</h1>
+              <h2>
+                Only take actions here if you know what you&rsquo;re doing
+              </h2>
+
               <RaisedButton
                 label="Clear Cached Organization And Extension Caches"
                 secondary
@@ -418,6 +467,48 @@ class Settings extends React.Component {
                 onTouchTap={
                   this.props.mutations.clearCachedOrgAndExtensionCaches
                 }
+              />
+
+              <h2>Edit Raw Settings JSON</h2>
+              <Editor
+                mode="json"
+                theme="github"
+                width="621px"
+                defaultValue={JSON.stringify(JSON.parse(featuresJSON), null, 2)}
+                onChange={this.handleFeaturesJSONChange}
+                name="jsonEditor"
+                editorProps={{ $blockScrolling: false }}
+                setOptions={{
+                  enableBasicAutocompletion: false,
+                  enableLiveAutocompletion: false,
+                  enableSnippets: false
+                }}
+              />
+
+              <div style={{ marginTop: 5, height: 30 }}>
+                {this.state.featuresJSONError ? (
+                  <div style={{ color: theme.colors.red, fontSize: 16 }}>
+                    JSON is invalid! Please fix before you can save.
+                  </div>
+                ) : (
+                  this.state.featuresJSONSaved && (
+                    <div style={{ color: theme.colors.green, fontSize: 16 }}>
+                      JSON saved successfully!
+                    </div>
+                  )
+                )}
+              </div>
+
+              <RaisedButton
+                label="Save Settings JSON"
+                primary
+                disabled={
+                  !this.state.settings ||
+                  !this.state.settings.featuresJSON ||
+                  this.state.featuresJSONError ||
+                  this.state.featuresJSONSaved
+                }
+                onTouchTap={this.handleSaveFeaturesJSON}
               />
             </CardText>
           </Card>
@@ -473,8 +564,13 @@ export const editOrganizationGql = gql`
   mutation editOrganization(
     $organizationId: String!
     $organizationChanges: OrganizationInput!
+    $updateRaw: Boolean
   ) {
-    editOrganization(id: $organizationId, organization: $organizationChanges) {
+    editOrganization(
+      id: $organizationId
+      organization: $organizationChanges
+      updateRawSettings: $updateRaw
+    ) {
       id
       settings {
         messageHandlers
@@ -491,11 +587,12 @@ export const editOrganizationGql = gql`
 `;
 
 const mutations = {
-  editOrganization: ownProps => organizationChanges => ({
+  editOrganization: ownProps => (organizationChanges, updateRaw) => ({
     mutation: editOrganizationGql,
     variables: {
       organizationId: ownProps.params.organizationId,
-      organizationChanges
+      organizationChanges,
+      updateRaw
     }
   }),
   updateTextingHours: ownProps => (textingHoursStart, textingHoursEnd) => ({

@@ -3,7 +3,11 @@ import { accessRequired } from "../errors";
 import { r, cacheableData } from "../../models";
 import { getAllowed } from "../organization";
 
-export const editOrganization = async (_, { id, organization }, { user }) => {
+export const editOrganization = async (
+  _,
+  { id, organization, updateRawSettings },
+  { user }
+) => {
   await accessRequired(user, id, "OWNER", true);
   const orgRecord = await cacheableData.organization.load(id);
   const features = getFeatures(orgRecord);
@@ -15,7 +19,13 @@ export const editOrganization = async (_, { id, organization }, { user }) => {
     changes["features"] = features;
   }
 
-  if (organization.settings) {
+  if (updateRawSettings && organization.settings) {
+    try {
+      changes.features = JSON.parse(organization.settings.featuresJSON);
+    } catch (err) {
+      throw new Error("Corrupted settings JSON", err);
+    }
+  } else if (organization.settings) {
     const { unsetFeatures, featuresJSON } = organization.settings;
     const newFeatureValues = JSON.parse(featuresJSON);
     getAllowed(orgRecord, user).forEach(f => {
