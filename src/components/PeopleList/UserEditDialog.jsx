@@ -4,6 +4,8 @@ import PropTypes from "prop-types";
 import Dialog from "material-ui/Dialog";
 import UserEdit from "../../containers/UserEdit";
 import { dataTest } from "../../lib/attributes";
+import { ApolloProvider } from "react-apollo";
+import ApolloClientSingleton from "../../network/apollo-client-singleton";
 
 const UserEditDialog = props => (
   <Dialog
@@ -14,12 +16,14 @@ const UserEditDialog = props => (
     onRequestClose={props.requestClose}
     autoScrollBodyContent={true}
   >
-    <UserEdit
-      organizationId={props.organizationId}
-      userId={props.userId}
-      onRequestClose={props.updateUser}
-      onCancel={props.onCancel}
-    />
+    <ApolloProvider client={ApolloClientSingleton}>
+      <UserEdit
+        organizationId={props.organizationId}
+        userId={props.userId}
+        onRequestClose={props.updateUser}
+        onCancel={props.onCancel}
+      />
+    </ApolloProvider>
   </Dialog>
 );
 
