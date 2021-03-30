@@ -108,6 +108,24 @@ function getConversationsJoinsAndWhereClause(
         query = query.whereExists(tagsSubquery);
       }
     }
+
+    if (contactsFilter.suppressedTags) {
+      const tags = contactsFilter.suppressedTags.map(id =>
+        id.replace("s_", "")
+      );
+
+      if (tags.length >= 1) {
+        query = query.whereNotExists(
+          r.knexReadOnly
+            .select(1)
+            .from("tag_campaign_contact")
+            .whereRaw(
+              "campaign_contact.id = tag_campaign_contact.campaign_contact_id"
+            )
+            .whereIn("tag_id", tags)
+        );
+      }
+    }
   }
 
   return query;
