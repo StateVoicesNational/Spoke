@@ -46,7 +46,16 @@ export class TexterSidebox extends React.Component {
 
     const { settingsData, contact } = props;
 
-    const customFields = contact.customFields || {};
+    let customFields = contact.customFields || {};
+
+    if (typeof customFields === "string") {
+      try {
+        customFields = JSON.parse(contact.customFields);
+      } catch (err) {
+        console.log("Error parsing customFields:", err.message);
+      }
+    }
+
     const eventId =
       customFields.event_id || settingsData.mobilizeEventShifterDefaultEventId;
 
@@ -105,7 +114,15 @@ export class TexterSidebox extends React.Component {
   render() {
     const { settingsData, contact, campaign } = this.props;
 
-    const customFields = contact.customFields || {};
+    let customFields = contact.customFields || {};
+
+    if (typeof customFields === "string") {
+      try {
+        customFields = JSON.parse(contact.customFields);
+      } catch (err) {
+        console.log("Error parsing customFields:", err.message);
+      }
+    }
 
     const eventId =
       customFields.event_id || settingsData.mobilizeEventShifterDefaultEventId;
@@ -114,13 +131,13 @@ export class TexterSidebox extends React.Component {
       last_name: contact.lastName || "",
       phone: this.cleanPhoneNumber(contact.cell || ""),
       email: customFields.email || "",
-      zip: customFields.zip || "",
-      source: "P2P"
+      zip: contact.zip || "",
+      source: customFields.source || "P2P"
     };
 
     const urlParamString = this.buildUrlParamString(urlParams);
     const allEventsUrlParams = this.buildUrlParamString({
-      zip: customFields.zip || ""
+      zip: contact.zip || ""
     });
 
     const mobilizeBaseUrl =
@@ -137,11 +154,7 @@ export class TexterSidebox extends React.Component {
         />
         <Dialog
           actions={[
-            <FlatButton
-              label="Cancel"
-              primary={true}
-              onClick={this.closeDialog}
-            />
+            <FlatButton label="Cancel" primary onClick={this.closeDialog} />
           ]}
           open={this.state.dialogOpen}
           onRequestClose={this.closeDialog}
