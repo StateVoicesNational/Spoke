@@ -1,10 +1,9 @@
 import PropTypes from "prop-types";
 import React, { Component } from "react";
 import theme from "../../styles/theme";
-import { Card, CardHeader, CardText } from "material-ui/Card";
 // import { List, ListItem } from "material-ui/List";
-import MenuItem from "material-ui/MenuItem";
-import SelectField from "material-ui/SelectField";
+// import MenuItem from "material-ui/MenuItem";
+// import SelectField from "material-ui/SelectField";
 
 import Divider from "@material-ui/core/Divider";
 import ClearIcon from "@material-ui/icons/Clear";
@@ -14,6 +13,24 @@ import ListItemText from "@material-ui/core/ListItemText";
 import ListItemIcon from "@material-ui/core/ListItemIcon";
 import ArrowRightIcon from "@material-ui/icons/ArrowRight";
 
+import Accordion from "@material-ui/core/Accordion";
+import AccordionSummary from "@material-ui/core/AccordionSummary";
+import AccordionDetails from "@material-ui/core/AccordionDetails";
+
+import Select from "@material-ui/core/Select";
+import MenuItem from "@material-ui/core/MenuItem";
+import InputLabel from "@material-ui/core/InputLabel";
+import FormControl from "@material-ui/core/FormControl";
+import FormHelperText from "@material-ui/core/FormHelperText";
+import TextField from "@material-ui/core/TextField";
+
+import Card from "@material-ui/core/Card";
+import CardHeader from "@material-ui/core/CardHeader";
+import CardMedia from "@material-ui/core/CardMedia";
+import CardContent from "@material-ui/core/CardContent";
+import CardActions from "@material-ui/core/CardActions";
+
+// import { Card, CardHeader, CardText } from "material-ui/Card";
 // import Card from '@material-ui/core/Card';
 // import CardHeader from '@material-ui/core/CardHeader';
 // import CardMedia from '@material-ui/core/CardMedia';
@@ -101,17 +118,16 @@ class AssignmentTexterSurveys extends Component {
             : answerOption.value
         }`}
         value={answerOption.value}
-        primaryText={answerOption.value}
-      />
+      >
+        {answerOption.value}
+      </MenuItem>
     ));
 
     menuItems.push(<Divider key={`div${currentStep}_${step.id}`} />);
     menuItems.push(
-      <MenuItem
-        key="clear${currentStep}"
-        value="clearResponse"
-        primaryText="Clear response"
-      />
+      <MenuItem key="clear${currentStep}" value="clearResponse">
+        Clear response
+      </MenuItem>
     );
 
     return menuItems;
@@ -122,29 +138,26 @@ class AssignmentTexterSurveys extends Component {
     const isCurrentStep = step.id === currentInteractionStep.id;
     const responseValue = questionResponses[step.id];
     const { question } = step;
-
+    const key = `topdiv${currentStep || 0}_${step.id}`;
     return question.text ? (
-      <div key={`topdiv${currentStep || 0}_${step.id}`}>
-        <SelectField
-          style={
-            isCurrentStep ? styles.currentStepSelect : styles.previousStepSelect
-          }
-          onChange={(event, index, value) =>
-            this.handleSelectChange(step, index, value)
-          }
-          key={`select${currentStep || 0}_${step.id}`}
-          name={question.id}
-          fullWidth
-          value={responseValue}
-          floatingLabelText={question.text}
-          hintText="Choose answer"
-        >
-          {this.renderAnswers(step, currentStep || 0)}
-        </SelectField>
-      </div>
-    ) : (
-      ""
-    );
+      <TextField
+        select
+        fullWidth
+        label={question.text}
+        style={
+          isCurrentStep ? styles.currentStepSelect : styles.previousStepSelect
+        }
+        onChange={(event, index, value) =>
+          this.handleSelectChange(step, index, value)
+        }
+        key={`select${currentStep || 0}_${step.id}`}
+        name={question.id}
+        value={responseValue}
+        helperText="Choose answer"
+      >
+        {this.renderAnswers(step, currentStep || 0)}
+      </TextField>
+    ) : null;
   }
 
   renderCurrentStep(step, oldStyle) {
@@ -154,7 +167,7 @@ class AssignmentTexterSurveys extends Component {
     }
     const responseValue = questionResponses[step.id];
     return (
-      <List key="curlist">
+      <List key="curlist" style={{ width: "100%" }}>
         <h3 style={{ padding: 0, margin: 0 }}>
           {listHeader}
           <div style={{ fontWeight: "normal", fontSize: "70%" }}>
@@ -164,9 +177,8 @@ class AssignmentTexterSurveys extends Component {
         </h3>
         {Object.keys(questionResponses).length ? (
           <ListItem
-            onClick={() => {
-              this.handleExpandChange(true);
-            }}
+            button
+            onClick={() => this.handleExpandChange(true)}
             key={`pastquestions`}
             style={styles.pastQuestionsLink}
           >
@@ -180,6 +192,7 @@ class AssignmentTexterSurveys extends Component {
           step.question.filteredAnswerOptions || step.question.answerOptions
         ).map((answerOption, index) => (
           <ListItem
+            button
             value={answerOption.value}
             onClick={() => {
               this.handleSelectChange(
@@ -226,34 +239,98 @@ class AssignmentTexterSurveys extends Component {
     );
   }
 
-  render() {
-    console.log("RENDER SURVEY");
+  renderOldStyle() {
     const { interactionSteps, currentInteractionStep } = this.props;
     const oldStyle = typeof this.props.onRequestClose != "function";
-
     let { showAllQuestions } = this.state;
-    showAllQuestions = true;
+
     return interactionSteps.length === 0 ? null : (
-      <Card style={styles.card} onExpandChange={this.handleExpandChange}>
-        {oldStyle || showAllQuestions ? (
-          <CardHeader
-            style={styles.cardHeader}
-            title={showAllQuestions ? "All questions" : "Current question"}
-            showExpandableButton={oldStyle && interactionSteps.length > 1}
-          />
-        ) : null}
-        <CardText style={styles.cardText} key={"curcard"}>
-          {showAllQuestions
-            ? null
-            : this.renderCurrentStep(currentInteractionStep, oldStyle)}
-        </CardText>
-        {showAllQuestions ? (
-          <CardText style={styles.cardText} key={"curtext"}>
-            {interactionSteps.map(step => this.renderStep(step, 0))}
-          </CardText>
-        ) : null}
+      <React.Fragment>
+        <ExpansionPanel expanded={true}>
+          <ExpansionPanelSummary>
+            {showAllQuestions ? "All questions" : "Current question"}
+          </ExpansionPanelSummary>
+          <ExpansionPanelDetails>
+            {showAllQuestions
+              ? null
+              : this.renderCurrentStep(currentInteractionStep, oldStyle)}
+
+            {showAllQuestions
+              ? interactionSteps.map(step => this.renderStep(step, 0))
+              : null}
+          </ExpansionPanelDetails>
+        </ExpansionPanel>
+      </React.Fragment>
+    );
+  }
+
+  renderMultipleQuestions() {
+    const { interactionSteps, currentInteractionStep } = this.props;
+    let { showAllQuestions } = this.state;
+
+    return (
+      <Accordion
+        expanded={showAllQuestions}
+        onChange={(evt, expanded) => this.handleExpandChange(expanded)}
+      >
+        <AccordionSummary>All questions</AccordionSummary>
+        <AccordionDetails>
+          {interactionSteps.map(step => this.renderStep(step, 0))}
+        </AccordionDetails>
+      </Accordion>
+    );
+  }
+
+  renderSingleQuestion() {
+    const { interactionSteps, currentInteractionStep } = this.props;
+    const oldStyle = typeof this.props.onRequestClose != "function";
+    let { showAllQuestions } = this.state;
+
+    return (
+      <Card>
+        <CardContent>
+          {this.renderCurrentStep(currentInteractionStep, oldStyle)}
+        </CardContent>
       </Card>
     );
+  }
+
+  render() {
+    const { interactionSteps, currentInteractionStep } = this.props;
+    const oldStyle = typeof this.props.onRequestClose != "function";
+    let { showAllQuestions } = this.state;
+
+    if (interactionSteps.length > 1) {
+      return this.renderMultipleQuestions();
+    } else if (interactionSteps.length === 1) {
+      return this.renderSingleQuestion();
+    } else {
+      return null;
+    }
+
+    // return (
+    //   <React.Fragment>
+    //     {interactionSteps.length === 0 ? null : (
+    //     <React.Fragment>
+    //       <Accordion expanded={showAllQuestions} onChange={(evt, expanded) => this.handleExpandChange(expanded)}>
+    //         <AccordionSummary>
+    //           {showAllQuestions ? "All questions" : "Current question"}
+    //         </AccordionSummary>
+    //         <AccordionDetails>
+    //           <FormControl>
+    //             {showAllQuestions
+    //               ? null
+    //               : this.renderCurrentStep(currentInteractionStep, oldStyle)}
+    //           </FormControl>
+    //         </AccordionDetails>
+    //       </Accordion>
+    //       {showAllQuestions ? (
+    //               interactionSteps.map(step => this.renderStep(step, 0))
+    //           ) : null}
+    //     </React.Fragment>
+    //     )}
+    //   </React.Fragment>
+    // );
   }
 }
 
