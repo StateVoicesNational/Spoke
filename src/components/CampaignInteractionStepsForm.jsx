@@ -11,6 +11,8 @@ import Form from "react-formal";
 import GSForm from "./forms/GSForm";
 import GSTextField from "./forms/GSTextField";
 import GSScriptField from "./forms/GSScriptField";
+import SelectField from "material-ui/SelectField";
+import MenuItem from "material-ui/MenuItem";
 import * as yup from "yup";
 import { makeTree } from "../lib";
 import { dataTest } from "../lib/attributes";
@@ -99,7 +101,6 @@ export default class CampaignInteractionStepsForm extends React.Component {
       const tweakedInteractionStep = {
         ...is
       };
-
       delete tweakedInteractionStep.needRequiredAnswerActionsData;
 
       if (is.answerActionsData && typeof is.answerActionsData !== "string") {
@@ -214,24 +215,25 @@ export default class CampaignInteractionStepsForm extends React.Component {
     const handler =
       event.answerActions &&
       this.state.availableActionsLookup[event.answerActions];
+    const interactionSteps = this.state.interactionSteps.map(is => {
+      const copiedEvent = {
+        ...event
+      };
+      delete copiedEvent.interactionSteps;
+      if (is.id === event.id) {
+        copiedEvent.needRequiredAnswerActionsData =
+          handler &&
+          !event.answerActionsData &&
+          handler.clientChoiceData &&
+          handler.clientChoiceData.length > 0;
+        return copiedEvent;
+      }
+      return is;
+    });
     this.setState({
       answerActions: handler,
       answerActionsData: event.answerActionsData,
-      interactionSteps: this.state.interactionSteps.map(is => {
-        const copiedEvent = {
-          ...event
-        };
-        delete copiedEvent.interactionSteps;
-        if (is.id === event.id) {
-          copiedEvent.needRequiredAnswerActionsData =
-            handler &&
-            !event.answerActionsData &&
-            handler.clientChoiceData &&
-            handler.clientChoiceData.length > 0;
-          return copiedEvent;
-        }
-        return is;
-      })
+      interactionSteps
     });
   }
 
@@ -324,20 +326,29 @@ export default class CampaignInteractionStepsForm extends React.Component {
               this.props.availableActions.length ? (
                 <div key={`answeractions-${interactionStep.id}`}>
                   <div>
-                    <Form.Field
-                      as={GSTextField}
+                    <SelectField
                       {...dataTest("actionSelect")}
                       floatingLabelText="Action handler"
                       name="answerActions"
-                      type="select"
-                      default=""
-                      choices={[
-                        ...this.props.availableActions.map(action => ({
-                          value: action.name,
-                          label: action.displayName
-                        }))
+                      value={interactionStep.answerActions || ""}
+                      onChange={(_, i, val) => {
+                        this.handleFormChange({
+                          ...interactionStep,
+                          answerActions: val
+                        });
+                      }}
+                    >
+                      {[
+                        <MenuItem key="NONE" value="" primaryText="" />,
+                        ...this.props.availableActions.map(action => (
+                          <MenuItem
+                            key={action.name}
+                            value={action.name}
+                            primaryText={action.displayName}
+                          />
+                        ))
                       ]}
-                    />
+                    </SelectField>
                     <IconButton tooltip="An action is something that is triggered by this answer being chosen, often in an outside system">
                       <HelpIconOutline />
                       <div></div>
