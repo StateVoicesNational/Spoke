@@ -46,17 +46,16 @@ export default class AdminScriptImport extends Component {
   handleUrlChange = (_eventId, newValue) => this.setState({ url: newValue });
 
   renderErrors = () =>
-    this.state.error ||
-    (true && (
+    this.state.error && (
       <List>
         <ListItem>
           <ListItemIcon>
             <ErrorIcon color="error" />
           </ListItemIcon>
-          <ListItemText primary={"this.state.error"} />
+          <ListItemText primary={this.state.error} />
         </ListItem>
       </List>
-    ));
+    );
 
   render() {
     const url =
