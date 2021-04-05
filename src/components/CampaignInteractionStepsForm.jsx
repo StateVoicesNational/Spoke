@@ -304,8 +304,8 @@ export default class CampaignInteractionStepsForm extends React.Component {
                 ...interactionStep,
                 ...(interactionStep.answerActionsData && {
                   answerActionsData:
-                    (typeof interactionStep.answerActionsData === "string"
-                     && interactionStep.answerActionsData)
+                    typeof interactionStep.answerActionsData === "string" &&
+                    interactionStep.answerActionsData
                       ? JSON.parse(interactionStep.answerActionsData)
                       : interactionStep.answerActionsData
                 })
@@ -345,7 +345,7 @@ export default class CampaignInteractionStepsForm extends React.Component {
                           label: action.displayName
                         }))
                       ]}
-                    </SelectField>
+                    />
                     <IconButton tooltip="An action is something that is triggered by this answer being chosen, often in an outside system">
                       <HelpIconOutline />
                       <div></div>
@@ -364,16 +364,17 @@ export default class CampaignInteractionStepsForm extends React.Component {
                           value: item.details,
                           label: item.name
                         }))}
-                        value={(typeof interactionStep.answerActionsData === "string"
-                                && interactionStep.answerActionsData)
-                               ? JSON.parse(interactionStep.answerActionsData)
-                               : interactionStep.answerActionsData
-                              }
+                        value={
+                          typeof interactionStep.answerActionsData ===
+                            "string" && interactionStep.answerActionsData
+                            ? JSON.parse(interactionStep.answerActionsData)
+                            : interactionStep.answerActionsData
+                        }
                         onChange={val => {
                           this.handleFormChange({
                             ...interactionStep,
                             answerActionsData: val
-                          })
+                          });
                         }}
                       />
                       {interactionStep.needRequiredAnswerActionsData ? (
