@@ -95,7 +95,6 @@ export default class GSScriptField extends GSFormField {
       value,
       "data-test": dataTest
     } = this.props;
-    console.log("this.props", this.props);
     return (
       <div>
         <TextField
