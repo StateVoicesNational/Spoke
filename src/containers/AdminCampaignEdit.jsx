@@ -582,7 +582,7 @@ export class AdminCampaignEdit extends React.Component {
         }
       });
     }
-    if (true || window.CAN_GOOGLE_IMPORT) {
+    if (window.CAN_GOOGLE_IMPORT) {
       // TODO: consider merging this component into Interactions
       finalSections.push({
         title: "Script Import",

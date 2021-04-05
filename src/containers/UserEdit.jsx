@@ -30,11 +30,14 @@ import GSSubmitButton from "../components/forms/GSSubmitButton";
 import GSPasswordField from "../components/forms/GSPasswordField";
 import Form from "react-formal";
 import * as yup from "yup";
+
 import Dialog from "@material-ui/core/Dialog";
-import RaisedButton from "material-ui/RaisedButton";
+import Button from "@material-ui/core/Button";
+import Card from "@material-ui/core/Card";
+import CardContent from "@material-ui/core/CardContent";
+
 import { StyleSheet, css } from "aphrodite";
 import apolloClient from "../network/apollo-client-singleton";
-import { Card, CardText } from "material-ui/Card";
 import { dataTest } from "../lib/attributes";
 
 const styles = StyleSheet.create({
@@ -368,11 +371,9 @@ export class UserEdit extends React.Component {
             userId === currentUser.currentUser.id &&
             !fieldsNeeded && (
               <div className={css(styles.container)}>
-                <RaisedButton
-                  onClick={this.handleClick}
-                  label="Change password"
-                  variant="outlined"
-                />
+                <Button onClick={this.handleClick} variant="outlined">
+                  Change password
+                </Button>
               </div>
             )}
           <div className={css(styles.buttons)}>
@@ -382,12 +383,13 @@ export class UserEdit extends React.Component {
               label={saveLabel || "Save"}
             />
             {!authType && onCancel && !fieldsNeeded && (
-              <RaisedButton
+              <Button
                 className={css(styles.cancel)}
-                label="Cancel"
                 variant="outlined"
                 onClick={onCancel}
-              />
+              >
+                Cancel
+              </Button>
             )}
           </div>
         </GSForm>
@@ -395,7 +397,6 @@ export class UserEdit extends React.Component {
           <Dialog
             {...dataTest("changePasswordDialog")}
             title="Change your password"
-            modal={false}
             open={this.state.changePasswordDialog}
             onClose={this.handleClose}
           >
@@ -411,21 +412,22 @@ export class UserEdit extends React.Component {
           <Dialog
             {...dataTest("successPasswordDialog")}
             title="Password changed successfully!"
-            modal={false}
             open={this.state.successDialog}
             onClose={this.handleClose}
             onBackdropClick={this.handleClose}
             onEscapeKeyDown={this.handleClose}
           >
-            <RaisedButton onClick={this.handleClose} label="OK" primary />
+            <Button onClick={this.handleClose} color="primary">
+              OK
+            </Button>
           </Dialog>
         </div>
         <Card style={{ marginTop: "50px", maxWidth: "256px" }}>
-          <CardText style={{ fontSize: "90%" }}>
+          <CardContent style={{ fontSize: "90%" }}>
             Spoke is developed and maintained by people committed to fighting
             oppressive systems and structures, including economic injustice,
             racism, patriarchy, and militarism.
-          </CardText>
+          </CardContent>
         </Card>
       </div>
     );
