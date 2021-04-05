@@ -345,7 +345,7 @@ export default class CampaignInteractionStepsForm extends React.Component {
                           label: action.displayName
                         }))
                       ]}
-                    />
+                    </SelectField>
                     <IconButton tooltip="An action is something that is triggered by this answer being chosen, often in an outside system">
                       <HelpIconOutline />
                       <div></div>
