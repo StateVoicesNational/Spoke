@@ -257,12 +257,15 @@ describe("CampaignInteractionStepsForm", () => {
         const step1AnswerActionNodes = step1.findWhere(
           node => node.props()["data-test"] === "actionSelect"
         );
-
-        expect(step1AnswerActionNodes.last().props().value).toEqual(
+        expect(step1AnswerActionNodes.first().props().value).toEqual(
           "red-handler"
         );
 
         expect(step1AnswerActionNodes.last().props().choices).toEqual([
+          {
+            value: "",
+            label: "",
+          },
           {
             value: "red-handler",
             label: "Red Action"
@@ -285,11 +288,15 @@ describe("CampaignInteractionStepsForm", () => {
           node => node.props()["data-test"] === "actionSelect"
         );
 
-        expect(step2AnswerActionNodes.last().props().value).toEqual(
+        expect(step2AnswerActionNodes.first().props().value).toEqual(
           "purple-handler"
         );
 
         expect(step2AnswerActionNodes.last().props().choices).toEqual([
+          {
+            value: "",
+            label: "",
+          },
           {
             value: "red-handler",
             label: "Red Action"
@@ -312,9 +319,13 @@ describe("CampaignInteractionStepsForm", () => {
           node => node.props()["data-test"] === "actionSelect"
         );
 
-        expect(step3AnswerActionNodes.last().props().value).toEqual("");
+        expect(step3AnswerActionNodes.first().props().value).toEqual("");
 
         expect(step3AnswerActionNodes.last().props().choices).toEqual([
+          {
+            value: "",
+            label: "",
+          },
           {
             value: "red-handler",
             label: "Red Action"
@@ -448,11 +459,15 @@ describe("CampaignInteractionStepsForm", () => {
           node => node.props()["data-test"] === "actionSelect"
         );
 
-        expect(step1AnswerActionNodes.last().props().value).toEqual(
+        expect(step1AnswerActionNodes.first().props().value).toEqual(
           "color-handler"
         );
 
         expect(step1AnswerActionNodes.last().props().choices).toEqual([
+          {
+            value: "",
+            label: "",
+          },
           {
             value: "color-handler",
             label: "Color Action"
@@ -467,12 +482,12 @@ describe("CampaignInteractionStepsForm", () => {
           node => node.props()["data-test"] === "actionDataAutoComplete"
         );
 
-        expect(step1ClientChoiceNodes.last().props().value).toEqual({
+        expect(step1ClientChoiceNodes.first().props().value).toEqual({
           label: "red",
           value: "#FF0000"
         });
 
-        expect(step1ClientChoiceNodes.last().props().choices).toEqual([
+        expect(step1ClientChoiceNodes.first().props().choices).toEqual([
           {
             label: "red",
             value: "#FF0000"
@@ -493,11 +508,15 @@ describe("CampaignInteractionStepsForm", () => {
           node => node.props()["data-test"] === "actionSelect"
         );
 
-        expect(step2AnswerActionNodes.last().props().value).toEqual(
+        expect(step2AnswerActionNodes.first().props().value).toEqual(
           "color-handler"
         );
 
         expect(step2AnswerActionNodes.last().props().choices).toEqual([
+          {
+            value: "",
+            label: ""
+          },
           {
             value: "color-handler",
             label: "Color Action"
@@ -512,12 +531,12 @@ describe("CampaignInteractionStepsForm", () => {
           node => node.props()["data-test"] === "actionDataAutoComplete"
         );
 
-        expect(step2ClientChoiceNodes.last().props().value).toEqual({
+        expect(step2ClientChoiceNodes.first().props().value).toEqual({
           label: "purple",
           value: "#800080"
         });
 
-        expect(step2ClientChoiceNodes.last().props().choices).toEqual([
+        expect(step2ClientChoiceNodes.first().props().choices).toEqual([
           {
             label: "red",
             value: "#FF0000"
@@ -538,11 +557,15 @@ describe("CampaignInteractionStepsForm", () => {
           node => node.props()["data-test"] === "actionSelect"
         );
 
-        expect(step3AnswerActionNodes.last().props().value).toEqual(
+        expect(step3AnswerActionNodes.first().props().value).toEqual(
           "pink-handler"
         );
 
-        expect(step3AnswerActionNodes.last().props().choices).toEqual([
+        expect(step3AnswerActionNodes.first().props().choices).toEqual([
+          {
+            value: "",
+            label: ""
+          },
           {
             value: "color-handler",
             label: "Color Action"
@@ -565,9 +588,13 @@ describe("CampaignInteractionStepsForm", () => {
           node => node.props()["data-test"] === "actionSelect"
         );
 
-        expect(step4AnswerActionNodes.last().props().value).toEqual("");
+        expect(step4AnswerActionNodes.first().props().value).toEqual("");
 
-        expect(step4AnswerActionNodes.last().props().choices).toEqual([
+        expect(step4AnswerActionNodes.first().props().choices).toEqual([
+          {
+            value: "",
+            label: ""
+          },
           {
             value: "color-handler",
             label: "Color Action"
