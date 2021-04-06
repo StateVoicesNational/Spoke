@@ -6,7 +6,7 @@ import GSForm from "../components/forms/GSForm";
 import Form from "react-formal";
 import Dialog from "material-ui/Dialog";
 import GSSubmitButton from "../components/forms/GSSubmitButton";
-import FlatButton from "material-ui/FlatButton";
+import Button from "@material-ui/core/Button";
 import RaisedButton from "material-ui/RaisedButton";
 import DisplayLink from "../components/DisplayLink";
 import * as yup from "yup";
@@ -117,11 +117,13 @@ class Settings extends React.Component {
             choices={hourChoices}
           />
           <div className={css(styles.dialogActions)}>
-            <FlatButton
-              label="Cancel"
+            <Button
+              variant="outlined"
               style={inlineStyles.dialogButton}
               onClick={this.handleCloseTextingHoursDialog}
-            />
+            >
+              Cancel
+            </Button>
             <Form.Submit
               as={GSSubmitButton}
               style={inlineStyles.dialogButton}
@@ -184,11 +186,13 @@ class Settings extends React.Component {
     });
 
     const dialogActions = [
-      <FlatButton
-        label="Cancel"
+      <Button
+        variant="outlined"
         style={inlineStyles.dialogButton}
         onClick={this.handleCloseTwilioDialog}
-      />,
+      >
+        Cancel
+      </Button>,
       <Form.Submit
         as={GSSubmitButton}
         label="Save"
@@ -344,14 +348,14 @@ class Settings extends React.Component {
             )}
           </CardText>
           <CardActions>
-            {organization.textingHoursEnforced ? (
-              <FlatButton
-                label="Change texting hours"
-                primary
+            {organization.textingHoursEnforced && (
+              <Button
+                color="primary"
+                variant="outlined"
                 onClick={this.handleOpenTextingHoursDialog}
-              />
-            ) : (
-              ""
+              >
+                Change texting hours
+              </Button>
             )}
           </CardActions>
         </Card>

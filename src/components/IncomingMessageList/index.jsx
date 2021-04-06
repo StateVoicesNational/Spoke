@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 import type from "prop-types";
-import FlatButton from "material-ui/FlatButton";
+import IconButton from "@material-ui/core/IconButton";
 import ActionOpenInNew from "material-ui/svg-icons/action/open-in-new";
 import loadData from "../../containers/hoc/load-data";
 import { Link, withRouter } from "react-router";
@@ -237,13 +237,14 @@ export class IncomingMessageList extends Component {
       render: (columnKey, row) => (
         <div>
           {row.messages && row.messages.length > 1 && (
-            <FlatButton
+            <IconButton
               onClick={event => {
                 event.stopPropagation();
                 this.handleOpenConversation(row);
               }}
-              icon={<ActionOpenInNew />}
-            />
+            >
+              <ActionOpenInNew />
+            </IconButton>
           )}
           {this.renderTags(row.tags, row)}
         </div>

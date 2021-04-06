@@ -6,7 +6,7 @@ import MessageList from "./MessageList";
 import CannedResponseMenu from "./CannedResponseMenu";
 import Survey from "./Survey";
 import RaisedButton from "material-ui/RaisedButton";
-import FlatButton from "material-ui/FlatButton";
+import Button from "@material-ui/core/Button";
 import NavigateHomeIcon from "material-ui/svg-icons/action/home";
 import NavigateBeforeIcon from "material-ui/svg-icons/image/navigate-before";
 import NavigateNextIcon from "material-ui/svg-icons/image/navigate-next";
@@ -541,11 +541,13 @@ export class AssignmentTexterContactControls extends React.Component {
               multiLine
             />
             <div className={css(styles.dialogActions)}>
-              <FlatButton
+              <Button
+                variant="outlined"
                 style={inlineStyles.dialogButton}
-                label="Cancel"
                 onClick={this.handleCloseDialog}
-              />
+              >
+                Cancel
+              </Button>
               <Form.Submit
                 as={GSSubmitButton}
                 style={inlineStyles.dialogButton}

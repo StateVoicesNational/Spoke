@@ -1,7 +1,6 @@
 import PropTypes from "prop-types";
 import React, { Component } from "react";
-import RaisedButton from "material-ui/RaisedButton";
-import FlatButton from "material-ui/FlatButton";
+import Button from "@material-ui/core/Button";
 import { StyleSheet, css } from "aphrodite";
 import Dialog from "material-ui/Dialog";
 
@@ -32,16 +31,23 @@ export default class ConfirmButton extends Component {
 
   render() {
     const actions = [
-      <FlatButton label="No" primary onClick={this.toggleConfirmationDialog} />,
-      <FlatButton label="Yes" primary onClick={this.handleConfirm} />
+      <Button variant="outlined" onClick={this.toggleConfirmationDialog}>
+        No
+      </Button>,
+      <Button variant="outlined" onClick={this.handleConfirm}>
+        Yes
+      </Button>
     ];
 
     return (
       <div className={css(styles.container)}>
-        <RaisedButton
+        <Button
+          variant="contained"
+          color="primary"
           onClick={this.toggleConfirmationDialog}
-          label={this.props.label}
-        />
+        >
+          {this.props.label}
+        </Button>
         <Dialog
           title={this.props.label}
           actions={actions}
