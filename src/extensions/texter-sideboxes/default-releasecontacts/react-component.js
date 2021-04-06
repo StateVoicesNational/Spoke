@@ -3,7 +3,8 @@ import React from "react";
 import * as yup from "yup";
 import { css } from "aphrodite";
 import Form from "react-formal";
-import FlatButton from "material-ui/FlatButton";
+import Button from "@material-ui/core/Button";
+
 import Toggle from "material-ui/Toggle";
 import { withRouter } from "react-router";
 import gql from "graphql-tag";
@@ -71,14 +72,13 @@ export class TexterSideboxClass extends React.Component {
                 <span>Can&rsquo;t send the rest of these texts?</span>
               )}
             </div>
-            <FlatButton
+            <Button
               onClick={() => this.handleReleaseContacts(false)}
-              label={
-                settingsData.releaseContactsBatchLabel || "Done for the day"
-              }
               className={css(flexStyles.flatButton)}
               labelStyle={inlineStyles.flatButtonLabel}
-            />
+            >
+              {settingsData.releaseContactsBatchLabel || "Done for the day"}
+            </Button>
           </div>
         ) : null}
         {showReleaseConvos ? (
@@ -88,7 +88,7 @@ export class TexterSideboxClass extends React.Component {
                 ? settingsData.releaseContactsConvosTitle
                 : "Need to give up?"}
             </div>
-            <FlatButton
+            <Button
               onClick={() => this.handleReleaseContacts(true)}
               label={
                 settingsData.releaseContactsConvosLabel ||
@@ -96,7 +96,10 @@ export class TexterSideboxClass extends React.Component {
               }
               className={css(flexStyles.flatButton)}
               labelStyle={inlineStyles.flatButtonLabel}
-            />
+            >
+              {settingsData.releaseContactsConvosLabel ||
+                "Release all my contacts"}
+            </Button>
           </div>
         ) : null}
       </div>

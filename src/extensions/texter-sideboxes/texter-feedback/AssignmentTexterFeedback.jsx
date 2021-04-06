@@ -1,8 +1,8 @@
 import PropTypes from "prop-types";
 import React, { Component } from "react";
 import { Card, CardTitle } from "material-ui/Card";
-import FlatButton from "material-ui/FlatButton";
-import RaisedButton from "material-ui/RaisedButton";
+import Button from "@material-ui/core/Button";
+import IconButton from "@material-ui/core/IconButton";
 import { Step, Stepper, StepLabel, StepContent } from "material-ui/Stepper";
 import WarningIcon from "material-ui/svg-icons/alert/warning";
 import SuccessIcon from "material-ui/svg-icons/action/check-circle";
@@ -147,18 +147,21 @@ export class AssignmentTexterFeedback extends Component {
     const StepActions = () => (
       <div style={inlineStyles.stepActions}>
         {stepIndex !== 0 && (
-          <FlatButton
-            label="Back"
+          <Button
             style={{ marginRight: 50 }}
             disabled={stepIndex === 0}
             onClick={this.handlePrev}
-          />
+          >
+            Back
+          </Button>
         )}
-        <RaisedButton
-          label={stepIndex >= totalSteps ? "Done" : "Next"}
-          primary
+        <Button
+          variant="contained"
+          color="primary"
           onClick={stepIndex < totalSteps ? this.handleNext : this.handleDone}
-        />
+        >
+          {stepIndex >= totalSteps ? "Done" : "Next"}
+        </Button>
       </div>
     );
 
@@ -169,15 +172,16 @@ export class AssignmentTexterFeedback extends Component {
         </StepLabel>
         <StepContent style={inlineStyles.stepContent}>
           <div dangerouslySetInnerHTML={{ __html: content }} />
-          {moreInfo ? (
-            <FlatButton
+          {moreInfo && (
+            <IconButton
               label="More Info"
               target="_blank"
-              secondary
-              icon={<LinkIcon />}
+              color="secondary"
               href={moreInfo}
-            />
-          ) : null}
+            >
+              <LinkIcon />
+            </IconButton>
+          )}
           <StepActions />
         </StepContent>
       </Step>

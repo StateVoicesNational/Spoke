@@ -5,7 +5,7 @@ import AutoComplete from "material-ui/AutoComplete";
 import { Card, CardHeader, CardText } from "material-ui/Card";
 import Dialog from "material-ui/Dialog";
 import { getHighestRole } from "../lib/permissions";
-import FlatButton from "material-ui/FlatButton";
+import Button from "@material-ui/core/Button";
 import { css, StyleSheet } from "aphrodite";
 import theme from "../styles/theme";
 import { dataSourceItem } from "./utils";
@@ -108,16 +108,20 @@ class IncomingMessageActions extends Component {
       (this.props.campaignsFilter.campaignIds || []).length;
 
     const confirmDialogActions = [
-      <FlatButton
-        label="Cancel"
-        primary
+      <Button
+        color="primary"
+        variant="outlined"
         onClick={this.handleConfirmDialogCancel}
-      />,
-      <FlatButton
-        label="Reassign"
-        primary
+      >
+        Cancel
+      </Button>,
+      <Button
+        color="primary"
+        variant="outlined"
         onClick={this.handleConfirmDialogReassign}
-      />
+      >
+        Reassign
+      </Button>
     ];
     return (
       <Card>
@@ -150,22 +154,24 @@ class IncomingMessageActions extends Component {
             </div>
             <div className={css(styles.spacer)} />
             <div className={css(styles.flexColumn)}>
-              <FlatButton
-                label={"Reassign selected"}
+              <Button
                 onClick={this.onReassignmentClicked}
                 disabled={!this.state.reassignTo}
-              />
+                variant="outlined"
+              >
+                Reassign selected
+              </Button>
             </div>
-            {this.props.conversationCount ? (
+            {this.props.conversationCount && (
               <div className={css(styles.flexColumn)}>
-                <FlatButton
-                  label={`Reassign all ${this.props.conversationCount} matching`}
+                <Button
+                  variant="outlined"
                   onClick={this.onReassignAllMatchingClicked}
                   disabled={!this.state.reassignTo}
-                />
+                >
+                  Reassign all {this.props.conversationCount} matching
+                </Button>
               </div>
-            ) : (
-              ""
             )}
             <Dialog
               actions={confirmDialogActions}

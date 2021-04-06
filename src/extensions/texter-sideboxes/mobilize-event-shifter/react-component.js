@@ -2,7 +2,8 @@ import type from "prop-types";
 import React from "react";
 import * as yup from "yup";
 import Form from "react-formal";
-import FlatButton from "material-ui/FlatButton";
+import Button from "@material-ui/core/Button";
+
 import Dialog from "material-ui/Dialog";
 import CircularProgress from "material-ui/CircularProgress";
 import { Tabs, Tab } from "material-ui/Tabs";
@@ -129,43 +130,38 @@ export class TexterSidebox extends React.Component {
 
     return (
       <div>
-        <FlatButton
-          label="Schedule for Events"
+        <Button
           onClick={() => this.setState({ dialogOpen: true })}
           className={css(flexStyles.flatButton)}
           labelStyle={inlineStyles.flatButtonLabel}
-        />
+        >
+          Schedule for Events
+        </Button>
         <Dialog
           actions={[
-            <FlatButton
-              label="Cancel"
-              primary={true}
-              onClick={this.closeDialog}
-            />
+            <Button color="primary" onClick={this.closeDialog}>
+              Cancel
+            </Button>
           ]}
           open={this.state.dialogOpen}
           onRequestClose={this.closeDialog}
           className={css(styles.dialog)}
           contentClassName={css(styles.dialogContentStyle)}
         >
-          {eventId ? (
+          {eventId && (
             <Tabs value={this.state.dialogTab} onChange={this.changeTab}>
               <Tab label="Event" value="event" />
               <Tab label="All Events" value="all" />
             </Tabs>
-          ) : (
-            ""
           )}
-          {eventId ? (
+          {eventId && (
             <div
               style={{
                 display: this.state.dialogTab == "event" ? "block" : "none"
               }}
             >
-              {this.state.eventiFrameLoading ? (
+              {this.state.eventiFrameLoading && (
                 <CircularProgress size={50} className={css(styles.loader)} />
-              ) : (
-                ""
               )}
               <iframe
                 className={css(styles.iframe)}
@@ -176,18 +172,14 @@ export class TexterSidebox extends React.Component {
                 }}
               />
             </div>
-          ) : (
-            ""
           )}
           <div
             style={{
               display: this.state.dialogTab == "all" ? "block" : "none"
             }}
           >
-            {this.state.alliFrameLoading ? (
+            {this.state.alliFrameLoading && (
               <CircularProgress size={50} className={css(styles.loader)} />
-            ) : (
-              ""
             )}
             <iframe
               className={css(styles.iframe)}

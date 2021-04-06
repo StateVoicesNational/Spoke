@@ -5,7 +5,7 @@ import * as yup from "yup";
 import gql from "graphql-tag";
 import { StyleSheet, css } from "aphrodite";
 import Dialog from "material-ui/Dialog";
-import FlatButton from "material-ui/FlatButton";
+import Button from "@material-ui/core/Button";
 
 import loadData from "../../containers/hoc/load-data";
 import GSForm from "../../components/forms/GSForm";
@@ -95,11 +95,9 @@ class MessageResponse extends Component {
     const isSendDisabled = isSending || messageText.trim() === "";
 
     const errorActions = [
-      <FlatButton
-        label="OK"
-        primary={true}
-        onClick={this.handleCloseErrorDialog}
-      />
+      <Button color="primary" onClick={this.handleCloseErrorDialog}>
+        OK
+      </Button>
     ];
     return (
       <div className={css(styles.messageField)}>

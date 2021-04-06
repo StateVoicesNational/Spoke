@@ -3,7 +3,7 @@ import PropTypes from "prop-types";
 import gql from "graphql-tag";
 import { StyleSheet, css } from "aphrodite";
 import Dialog from "material-ui/Dialog";
-import FlatButton from "material-ui/FlatButton";
+import Button from "@material-ui/core/Button";
 import FlagIcon from "material-ui/svg-icons/content/flag";
 import Avatar from "material-ui/Avatar";
 import CopyIcon from "material-ui/svg-icons/content/content-copy";
@@ -233,13 +233,17 @@ export class InnerConversationPreviewModal extends Component {
           GO TO CONVERSATION
         </a>
       </span>,
-      <FlatButton
+      <Button
         {...dataTest("conversationPreviewModalOptOutButton")}
         label="Opt-Out"
-        secondary
+        color="secondary"
         onClick={this.handleClickOptOut}
-      />,
-      <FlatButton label="Close" primary onClick={this.props.onRequestClose} />
+      >
+        Opt-Out
+      </Button>,
+      <Button color="primary" onClick={this.props.onRequestClose}>
+        Close
+      </Button>
     ];
 
     return (
