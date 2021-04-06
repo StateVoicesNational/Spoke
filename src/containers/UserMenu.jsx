@@ -77,6 +77,10 @@ export class UserMenu extends Component {
     this.props.router.push(`/organizations`);
   };
 
+  handleOrgClick = id => {
+    this.props.router.push(`/admin/${id}`);
+  };
+
   renderAvatar(user, size) {
     const inlineStyles = {
       textAlign: "center",
@@ -139,7 +143,10 @@ export class UserMenu extends Component {
             {isSuperAdmin ? this.renderAdminTools() : <div />}
             <ListSubheader>Teams</ListSubheader>
             {organizations.map(organization => (
-              <MenuItem key={organization.id} value={organization.id}>
+              <MenuItem
+                key={organization.id}
+                onClick={() => this.handleOrgClick(organization.id)}
+              >
                 {organization.name}
               </MenuItem>
             ))}
