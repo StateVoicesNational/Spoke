@@ -161,6 +161,21 @@ export function getContacts(
   return query;
 }
 
+// Used for Assignment.contactsCount to get a cross-section of timezone/status counts
+const filterCount = (assignment, statusFilter, offsetFilter) =>
+  Object.keys(assignment.tzStatusCounts) // .entries post-node10.x
+    .map(m => ({ status: m, offsets: assignment.tzStatusCounts[m] }))
+    .filter(statusFilter)
+    .map(({ offsets }) =>
+      offsets
+        .filter(offsetFilter)
+        .map(x => Number(x.count))
+        .reduce((a, b) => {
+          return a + b;
+        }, 0)
+    )
+    .reduce((a, b) => a + b, 0);
+
 export const resolvers = {
   Assignment: {
     ...mapFieldsToModel(["id", "maxContacts"], Assignment),
@@ -194,6 +209,7 @@ export const resolvers = {
       const organization = await loaders.organization.load(
         campaign.organization_id
       );
+
       const policies = getDynamicAssignmentBatchPolicies({
         organization,
         campaign
@@ -209,7 +225,8 @@ export const resolvers = {
         organization,
         campaign,
         assignment,
-        texter: user
+        texter: user,
+        hasAny: true
       });
       const suggestedCount = Math.min(
         assignment.max_contacts || campaign.batch_size,
@@ -261,22 +278,10 @@ export const resolvers = {
           organization,
           contactsFilter && contactsFilter.validTimezone
         );
-        const filterCount = (statusFilter, offsetFilter) =>
-          Object.keys(assignment.tzStatusCounts) // .entries post-node10.x
-            .map(m => ({ status: m, offsets: assignment.tzStatusCounts[m] }))
-            .filter(statusFilter)
-            .map(({ offsets }) =>
-              offsets
-                .filter(offsetFilter)
-                .map(x => Number(x.count))
-                .reduce((a, b) => {
-                  return a + b;
-                }, 0)
-            )
-            .reduce((a, b) => a + b, 0);
         if (contactsFilter && !contactsFilter.messageStatus) {
           // ASSUME: invalidTimezones
           const invalidTzCount = filterCount(
+            assignment,
             ({ status }) =>
               status === "needsMessage" || status === "needsResponse",
             offset => invalidOffsets.indexOf(offset.tz) !== -1
@@ -290,12 +295,14 @@ export const resolvers = {
           contactsFilter.validTimezone
         ) {
           const validStatusCount = filterCount(
+            assignment,
             ({ status }) => status === contactsFilter.messageStatus,
             offset => validOffsets.indexOf(offset.tz) !== -1
           );
           return validStatusCount;
         } else if (!contactsFilter) {
           return filterCount(
+            assignment,
             status => true,
             offset => true
           );
