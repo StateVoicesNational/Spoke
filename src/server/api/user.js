@@ -259,7 +259,8 @@ export const resolvers = {
         "assignment.created_at",
         "assignment_feedback.feedback",
         "assignment_feedback.is_acknowledged",
-        "assignment_feedback.creator_id"
+        "assignment_feedback.creator_id",
+        "campaign.use_dynamic_assignment"
       ];
       let query = r
         .knexReadOnly("assignment")
@@ -319,11 +320,38 @@ export const resolvers = {
             )
           );
         const result = await query;
-
+        const campaignIds = result
+          .filter(a => a.use_dynamic_assignment)
+          .map(a => a.campaign_id);
+        const campaignsWithUnassigned = {};
+        let hasUnassigned = [];
+        if (campaignIds.length) {
+          hasUnassigned = await r
+            .knex("campaign_contact")
+            .where({
+              is_opted_out: false,
+              message_status: "needsMessage"
+            })
+            .whereNull("assignment_id")
+            .whereIn("campaign_id", campaignIds)
+            .select("campaign_id")
+            .groupBy("campaign_id")
+            .havingRaw("count(1) > 0");
+          hasUnassigned.forEach(c => {
+            campaignsWithUnassigned[c.campaign_id] = 1;
+          });
+        }
         const assignments = {};
         for (const assn of result) {
           if (!assignments[assn.id]) {
-            assignments[assn.id] = { ...assn, tzStatusCounts: {} };
+            assignments[assn.id] = {
+              ...assn,
+              tzStatusCounts: {}
+            };
+            if (assn.use_dynamic_assignment && campaignIds.length) {
+              assignments[assn.id].hasUnassigned =
+                campaignsWithUnassigned[assn.campaign_id] || 0;
+            }
           }
           if (!assignments[assn.id].tzStatusCounts[assn.message_status]) {
             assignments[assn.id].tzStatusCounts[assn.message_status] = [];
