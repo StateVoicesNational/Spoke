@@ -64,7 +64,10 @@ export function getCampaignOffsets(campaign, organization, timezoneFilter) {
       timezone
     };
   }
-  const [validOffsets, invalidOffsets] = getOffsets(config);
+  const [validOffsets, invalidOffsets] = getOffsets(
+    config,
+    campaign.contactTimezones
+  );
   const defaultIsValid = defaultTimezoneIsBetweenTextingHours(config);
   if (timezoneFilter === true && defaultIsValid) {
     // missing timezone ok
