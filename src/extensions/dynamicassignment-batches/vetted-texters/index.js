@@ -11,7 +11,8 @@ export const requestNewBatchCount = async ({
   texter,
   r,
   cacheableData,
-  loaders
+  loaders,
+  hasAny
 }) => {
   // START WITH SOME BASE-LINE THINGS EVERY POLICY SHOULD HAVE
   if (!campaign.use_dynamic_assignment || campaign.is_archived) {
@@ -39,16 +40,24 @@ export const requestNewBatchCount = async ({
       return 0;
     }
   }
+  const countQuery = r
+    .knex("campaign_contact")
+    .where({
+      campaign_id: campaign.id,
+      is_opted_out: false,
+      message_status: "needsMessage"
+    })
+    .whereNull("assignment_id");
+  let availableCount = 0;
+  if (hasAny) {
+    availableCount = assignment.hasOwnProperty("hasUnassigned")
+      ? assignment.hasUnassigned
+      : (await countQuery.select("id").first())
+      ? 1
+      : 0;
+  } else {
+    availableCount = await r.getCount(countQuery);
+  }
 
-  const availableCount = await r.getCount(
-    r
-      .knex("campaign_contact")
-      .where({
-        campaign_id: campaign.id,
-        is_opted_out: false,
-        message_status: "needsMessage"
-      })
-      .whereNull("assignment_id")
-  );
   return availableCount;
 };
