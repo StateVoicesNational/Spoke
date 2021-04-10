@@ -54,6 +54,14 @@ export class ContactController extends React.Component {
     };
   }
 
+  advance() {
+    this.handleNavigateNext();
+  }
+
+  goBack() {
+    this.handleNavigatePrevious();
+  }
+
   componentWillMount() {
     let startIndex = 0;
     const Mousetrap = require("mousetrap");
@@ -73,14 +81,6 @@ export class ContactController extends React.Component {
   componentWillUnmount() {
     Mousetrap.unbind("ctrl+>");
     Mousetrap.unbind("ctrl+<");
-  }
-
-  advance() {
-    this.handleNavigateNext();
-  }
-
-  goBack() {
-    this.handleNavigatePrevious();
   }
 
   componentWillUpdate(nextProps, nextState) {
