@@ -131,6 +131,7 @@
     "minilog": "^3.0.1",
     "moment": "2.14.1",
     "moment-timezone": "^0.5.14",
+    "mousetrap": "^1.6.5",
     "nexmo": "^2.3.2",
     "node-abort-controller": "^1.0.4",
     "node-fetch": "^2.6.0",
