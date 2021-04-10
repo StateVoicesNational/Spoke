@@ -65,8 +65,8 @@ export class ContactController extends React.Component {
   componentWillMount() {
     let startIndex = 0;
     const Mousetrap = require("mousetrap");
-    Mousetrap.bind("mod+>", advance);
-    Mousetrap.bind("mod+<", goBack);
+    Mousetrap.bind("mod+>", this.advance);
+    Mousetrap.bind("mod+<", this.goBack);
     if (this.props.reviewContactId) {
       startIndex = this.props.contacts.findIndex(
         c => c.id == this.props.reviewContactId
