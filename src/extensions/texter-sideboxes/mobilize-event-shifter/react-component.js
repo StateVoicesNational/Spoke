@@ -5,7 +5,7 @@ import Form from "react-formal";
 import Button from "@material-ui/core/Button";
 
 import Dialog from "material-ui/Dialog";
-import CircularProgress from "material-ui/CircularProgress";
+import CircularProgress from "@material-ui/core/CircularProgress";
 import { Tabs, Tab } from "material-ui/Tabs";
 import { css, StyleSheet } from "aphrodite";
 import GSTextField from "../../../components/forms/GSTextField";

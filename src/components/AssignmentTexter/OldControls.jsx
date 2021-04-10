@@ -23,7 +23,7 @@ import Form from "react-formal";
 import GSSubmitButton from "../forms/GSSubmitButton";
 import SendButton from "../SendButton";
 import SendButtonArrow from "./SendButtonArrow";
-import CircularProgress from "material-ui/CircularProgress";
+import CircularProgress from "@material-ui/core/CircularProgress";
 import Snackbar from "material-ui/Snackbar";
 import {
   getChildren,

@@ -4,7 +4,6 @@ import type from "prop-types";
 import Avatar from "@material-ui/core/Avatar";
 import FlagIcon from "@material-ui/icons/Flag";
 import theme from "../styles/theme";
-import { gray900 } from "material-ui/styles/colors";
 
 const inlineStyles = {
   chip: {
@@ -20,7 +19,7 @@ const inlineStyles = {
   text: {
     fontSize: "12px",
     fontWeight: "900",
-    color: gray900
+    color: "#212121"
   },
   icon: {
     width: "16px",
