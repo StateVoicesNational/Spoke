@@ -10,7 +10,6 @@ import {
 } from "draft-js";
 import { delimit } from "../lib/scripts";
 import Chip from "./Chip";
-import { red400, green500, green600, grey100 } from "material-ui/styles/colors";
 import { getCharCount } from "@trt2/gsm-charset-utils";
 
 const styles = {
@@ -25,18 +24,18 @@ const styles = {
     textAlign: "center"
   },
   goodField: {
-    color: green500,
+    color: "#4CAF50",
     direction: "ltr",
     unicodeBidi: "bidi-override"
   },
   badField: {
-    color: red400
+    color: "#EF5350"
   },
   scriptFieldButton: {
     fontSize: "11px",
-    color: green600,
+    color: "#43A047",
     textTransform: "none",
-    backgroundColor: grey100,
+    backgroundColor: "#F5F5F5",
     // margin: '5px 10px',
     cursor: "pointer"
     // display: 'inline-block',
