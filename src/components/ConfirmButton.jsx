@@ -1,8 +1,8 @@
 import PropTypes from "prop-types";
 import React, { Component } from "react";
-import Button from "@material-ui/core/Button";
 import { StyleSheet, css } from "aphrodite";
-import Dialog from "material-ui/Dialog";
+import DialogTitle from "@material-ui/core/DialogTitle";
+import Button from "@material-ui/core/Button";
 
 // This is because the Toolbar from material-ui seems to only apply the correct margins if the
 // immediate child is a Button or other type it recognizes. Can get rid of this if we remove material-ui
@@ -48,12 +48,8 @@ export default class ConfirmButton extends Component {
         >
           {this.props.label}
         </Button>
-        <Dialog
-          title={this.props.label}
-          actions={actions}
-          open={this.state.showConfirmationDialog}
-          modal
-        >
+        <Dialog actions={actions} open={this.state.showConfirmationDialog}>
+          <DialogTitle>{this.props.label}</DialogTitle>
           Are you sure?
         </Dialog>
       </div>
