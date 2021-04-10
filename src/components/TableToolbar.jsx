@@ -1,10 +1,11 @@
 import { css, StyleSheet } from "aphrodite";
 import DropDownMenu from "material-ui/DropDownMenu";
-import FlatButton from "material-ui/FlatButton";
 import Button from "@material-ui/core/Button";
 import MenuItem from "material-ui/MenuItem";
-import HardwareKeyboardArrowLeft from "material-ui/svg-icons/hardware/keyboard-arrow-left";
-import HardwareKeyboardArrowRight from "material-ui/svg-icons/hardware/keyboard-arrow-right";
+
+import KeyboardArrowLeftIcon from "@material-ui/icons/KeyboardArrowLeft";
+import KeyboardArrowRightIcon from "@material-ui/icons/KeyboardArrowRight";
+
 import PropTypes, { arrayOf } from "prop-types";
 import React from "react";
 
@@ -107,12 +108,12 @@ const TableToolbar = props => (
       <div>{pageXOfY(props)}</div>
     </div>
     <div className={css(styles.buttons)}>
-      <FlatButton
+      <Button
         disabled={previousPageButtonDisabled(props)}
         onClick={props.onPreviousPageClick}
         style={inlineStyles.button}
       >
-        <HardwareKeyboardArrowLeft
+        <KeyboardArrowLeftIcon
           style={
             previousPageButtonDisabled(props)
               ? {
@@ -125,13 +126,13 @@ const TableToolbar = props => (
                 }
           }
         />
-      </FlatButton>
-      <FlatButton
+      </Button>
+      <Button
         disabled={nextPageButtonDisabled(props)}
         onClick={props.onNextPageClick}
         style={inlineStyles.button}
       >
-        <HardwareKeyboardArrowRight
+        <KeyboardArrowRightIcon
           style={
             nextPageButtonDisabled(props)
               ? {
@@ -144,7 +145,7 @@ const TableToolbar = props => (
                 }
           }
         />
-      </FlatButton>
+      </Button>
     </div>
   </div>
 );

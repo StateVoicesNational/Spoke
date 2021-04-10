@@ -99,7 +99,6 @@ class AdminReplySender extends React.Component {
               as={GSSubmitButton}
               label="Send"
               name="submit"
-              secondary
               fullWidth
             />
           </GSForm>
