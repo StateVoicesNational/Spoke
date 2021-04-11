@@ -28,7 +28,7 @@ export const getOrDefault = (value, defaultValue) =>
 export function getConfig(key, organization, opts) {
   if (organization) {
     // TODO: update to not parse if features is an object (vs. a string)
-    let features = getFeatures(organization);
+    const features = getFeatures(organization);
     if (features.hasOwnProperty(key)) {
       return getOrDefault(features[key], opts && opts.default);
     }
