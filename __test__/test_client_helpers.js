@@ -1,8 +1,3 @@
-import moment from "moment-timezone";
-import { mount } from "enzyme";
-import MuiThemeProvider from "material-ui/styles/MuiThemeProvider";
-import { StyleSheetTestUtils } from "aphrodite";
-
 export function genAssignment(assignmentId, isArchived, hasContacts) {
   const contacts = [];
   if (hasContacts) {

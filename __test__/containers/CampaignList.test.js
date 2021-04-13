@@ -149,6 +149,7 @@ describe("CampaignList", () => {
     };
 
     test("Timezone column is displayed when timezone is current sort", () => {
+      StyleSheetTestUtils.suppressStyleInjection();
       const wrapper = mount(
         <MuiThemeProvider>
           <AdminCampaignList
@@ -161,12 +162,11 @@ describe("CampaignList", () => {
       wrapper.childAt(0).setState({
         sortBy: TIMEZONE_SORT.value
       });
-      expect(
-        wrapper.containsMatchingElement(<span>Timezone</span>)
-      ).toBeTruthy();
+      expect(wrapper.containsMatchingElement("Timezone")).toBeTruthy();
     });
 
     test("Timezone column is hidden when it isn't the current sort", () => {
+      StyleSheetTestUtils.suppressStyleInjection();
       const wrapper = mount(
         <MuiThemeProvider>
           <AdminCampaignList
@@ -176,9 +176,7 @@ describe("CampaignList", () => {
           />
         </MuiThemeProvider>
       );
-      expect(
-        wrapper.containsMatchingElement(<span>Timezone</span>)
-      ).toBeFalsy();
+      expect(wrapper.containsMatchingElement("Timezone")).toBeFalsy();
     });
   });
 });
