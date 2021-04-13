@@ -10,8 +10,15 @@ import { ApolloProvider } from "react-apollo";
 import ApolloClientSingleton from "../../src/network/apollo-client-singleton";
 import { CardActions, CardTitle } from "material-ui/Card";
 import { AssignmentSummary } from "../../src/components/AssignmentSummary";
-import Badge from "material-ui/Badge/Badge";
+// import Badge from "material-ui/Badge/Badge";
+import Badge from "@material-ui/core/Badge";
+import Button from "@material-ui/core/Button";
+import Card from "@material-ui/core/Card";
+import CardContent from "@material-ui/core/CardContent";
+import CardHeader from "@material-ui/core/CardHeader";
 import RaisedButton from "material-ui/RaisedButton/RaisedButton";
+import { ThemeProvider } from "@material-ui/core/styles";
+import { newtheme } from "../../src/styles/mui-theme";
 
 function getAssignment({ isDynamic = false, counts = {} }) {
   return {
@@ -64,9 +71,8 @@ describe("AssignmentSummary text", function t() {
     (notInUSA, allowSendAll) => {
       window.NOT_IN_USA = notInUSA;
       window.ALLOW_SEND_ALL = allowSendAll;
-      const title = this.summary.find(CardTitle);
+      const title = this.summary.find(CardHeader);
       expect(title.prop("title")).toBe("New Campaign");
-      // expect(title.find(CardTitle).prop('subtitle')).toBe('asdf - Jan 31 2018')
 
       const htmlWrapper = this.summary.findWhere(
         d => d.length && d.type() === "div" && d.prop("dangerouslySetInnerHTML")
@@ -108,7 +114,7 @@ describe("AssignmentSummary actions inUSA and NOT AllowSendAll", () => {
           />
         </MuiThemeProvider>
       </ApolloProvider>
-    ).find(CardActions);
+    ).find(CardContent);
   }
 
   it('renders "send first texts (1)" with unmessaged (dynamic assignment)', () => {
@@ -121,9 +127,9 @@ describe("AssignmentSummary actions inUSA and NOT AllowSendAll", () => {
     ).toBe(5);
     expect(
       actions
-        .find(RaisedButton)
+        .find(Button)
         .at(0)
-        .prop("label")
+        .text()
     ).toBe("Send first texts");
   });
 
@@ -137,9 +143,9 @@ describe("AssignmentSummary actions inUSA and NOT AllowSendAll", () => {
     ).toBe(1);
     expect(
       actions
-        .find(RaisedButton)
+        .find(Button)
         .at(0)
-        .prop("label")
+        .text()
     ).toBe("Send first texts");
   });
 
@@ -148,20 +154,20 @@ describe("AssignmentSummary actions inUSA and NOT AllowSendAll", () => {
     // This button will come from the default-dynamicassignment texter-sidebox
     expect(
       actions
-        .find("div")
-        .children(RaisedButton)
-        .prop("label")
+        .find(Button)
+        .at(0)
+        .text()
     ).toBe("Start texting");
   });
 
   it('renders a "past messages" badge after messaged contacts', () => {
     const actions = create(0, 0, 0, 1, 0, false);
-    expect(actions.find(RaisedButton).length).toBe(1);
+    expect(actions.find(Button).length).toBe(1);
   });
 
   it("renders two buttons with unmessaged and unreplied", () => {
     const actions = create(3, 9, 0, 0, 0, false);
-    expect(actions.find(RaisedButton).length).toBe(2);
+    expect(actions.find(Button).length).toBe(2);
   });
 
   it('renders "past messages (n)" with messaged', () => {
@@ -174,9 +180,9 @@ describe("AssignmentSummary actions inUSA and NOT AllowSendAll", () => {
     ).toBe(9);
     expect(
       actions
-        .find(RaisedButton)
+        .find(Button)
         .at(0)
-        .prop("label")
+        .text()
     ).toBe("Past Messages");
   });
 });
@@ -207,16 +213,16 @@ describe("AssignmentSummary NOT inUSA and AllowSendAll", () => {
           })}
         />
       </MuiThemeProvider>
-    ).find(CardActions);
+    ).find(CardContent);
   }
 
   it('renders "Send message" with unmessaged', () => {
     const actions = create(1, 0, 0, 0, 0, false);
     expect(
       actions
-        .find(RaisedButton)
+        .find(Button)
         .at(0)
-        .prop("label")
+        .text()
     ).toBe("Send messages");
   });
 
@@ -224,9 +230,9 @@ describe("AssignmentSummary NOT inUSA and AllowSendAll", () => {
     const actions = create(0, 1, 0, 0, 0, false);
     expect(
       actions
-        .find(RaisedButton)
+        .find(Button)
         .at(0)
-        .prop("label")
+        .text()
     ).toBe("Send messages");
   });
 });
@@ -245,7 +251,7 @@ it('renders "Send later" when there is a badTimezoneCount', () => {
         })}
       />
     </MuiThemeProvider>
-  ).find(CardActions);
+  ).find(CardContent);
   expect(
     actions
       .find(Badge)
@@ -254,15 +260,15 @@ it('renders "Send later" when there is a badTimezoneCount', () => {
   ).toBe(4);
   expect(
     actions
-      .find(RaisedButton)
+      .find(Button)
       .at(0)
-      .prop("label")
+      .text()
   ).toBe("Past Messages");
   expect(
     actions
-      .find(RaisedButton)
+      .find(Button)
       .at(1)
-      .prop("label")
+      .text()
   ).toBe("Send messages");
 });
 

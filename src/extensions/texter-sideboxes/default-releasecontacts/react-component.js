@@ -4,8 +4,9 @@ import * as yup from "yup";
 import { css } from "aphrodite";
 import Form from "react-formal";
 import Button from "@material-ui/core/Button";
+import Switch from "@material-ui/core/Switch";
+import FormControlLabel from "@material-ui/core/FormControlLabel";
 
-import Toggle from "material-ui/Toggle";
 import { withRouter } from "react-router";
 import gql from "graphql-tag";
 import GSTextField from "../../../components/forms/GSTextField";
@@ -188,18 +189,35 @@ export class AdminConfig extends React.Component {
   render() {
     return (
       <div>
-        <Toggle
+        <FormControlLabel
           label="Also allow release of conversations"
-          toggled={this.props.settingsData.releaseContactsReleaseConvos}
-          onToggle={(toggler, val) =>
-            this.props.onToggle("releaseContactsReleaseConvos", val)
+          labelPlacement="start"
+          control={
+            <Switch
+              checked={this.props.settingsData.releaseContactsReleaseConvos}
+              onChange={event =>
+                this.props.onToggle(
+                  "releaseContactsReleaseConvos",
+                  event.target.checked
+                )
+              }
+            />
           }
         />
-        <Toggle
+
+        <FormControlLabel
           label="Enable for campaigns even without Dynamic Assignment enabled."
-          toggled={this.props.settingsData.releaseContactsNonDynamicToo}
-          onToggle={(toggler, val) =>
-            this.props.onToggle("releaseContactsNonDynamicToo", val)
+          labelPlacement="start"
+          control={
+            <Switch
+              checked={this.props.settingsData.releaseContactsNonDynamicToo}
+              onChange={event =>
+                this.props.onToggle(
+                  "releaseContactsNonDynamicToo",
+                  event.target.checked
+                )
+              }
+            />
           }
         />
         <Form.Field

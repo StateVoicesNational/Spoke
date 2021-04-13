@@ -1,12 +1,14 @@
 import type from "prop-types";
 import React from "react";
+import Form from "react-formal";
+import * as yup from "yup";
+import List from "@material-ui/core/List";
+import ListItem from "@material-ui/core/ListItem";
+import ListItemText from "@material-ui/core/ListItemText";
+import ListItemIcon from "@material-ui/core/ListItemIcon";
 import GSForm from "../../../components/forms/GSForm";
 import GSSubmitButton from "../../../components/forms/GSSubmitButton";
 import GSTextField from "../../../components/forms/GSTextField";
-
-import Form from "react-formal";
-import { ListItem, List } from "material-ui/List";
-import * as yup from "yup";
 
 export class CampaignContactsForm extends React.Component {
   state = {
@@ -48,16 +50,16 @@ export class CampaignContactsForm extends React.Component {
           label="How many fake contacts"
         />
         <List>
-          <ListItem
-            primaryText={clientChoiceData}
-            leftIcon={this.props.icons.check}
-          />
-          {resultMessage ? (
-            <ListItem
-              primaryText={resultMessage}
-              leftIcon={this.props.icons.warning}
-            />
-          ) : null}
+          <ListItem>
+            <ListItemIcon>{this.props.icons.check}</ListItemIcon>
+            <ListItemText primary={clientChoiceData} />
+          </ListItem>
+          {resultMessage && (
+            <ListItem>
+              <ListItemIcon>{this.props.icons.warning}</ListItemIcon>
+              <ListItemText primary={resultMessage} />
+            </ListItem>
+          )}
         </List>
 
         <Form.Submit

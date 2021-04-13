@@ -4,10 +4,14 @@ import { withRouter } from "react-router";
 import ReactTooltip from "react-tooltip";
 import * as yup from "yup";
 import Form from "react-formal";
-import { Paper, Checkbox } from "material-ui";
-import IconButton from "material-ui/IconButton/IconButton";
-import AddIcon from "material-ui/svg-icons/content/add-circle";
-import RemoveIcon from "material-ui/svg-icons/content/remove-circle";
+
+import AddIcon from "@material-ui/icons/Add";
+import RemoveIcon from "@material-ui/icons/Remove";
+import IconButton from "@material-ui/core/IconButton";
+import Paper from "@material-ui/core/Paper";
+import Switch from "@material-ui/core/Switch";
+import FormControlLabel from "@material-ui/core/FormControlLabel";
+
 import GSForm from "../../../components/forms/GSForm";
 import GSTextField from "../../../components/forms/GSTextField";
 import GSSubmitButton from "../../../components/forms/GSSubmitButton";
@@ -238,18 +242,23 @@ export class TexterSideboxClass extends React.Component {
 
                     return (
                       <div>
-                        <Checkbox
+                        <FormControlLabel
                           label={_.startCase(key)}
-                          style={inlineStyles.skillCheckbox}
-                          checked={isChecked}
-                          data-tip
-                          data-for={`${key}-skills`}
-                          onCheck={() =>
-                            this.handleCounterChange(
-                              "skillCounts",
-                              key,
-                              isChecked ? "decrement" : "increment"
-                            )
+                          labelPlacement="start"
+                          control={
+                            <Switch
+                              style={inlineStyles.skillCheckbox}
+                              checked={isChecked}
+                              data-tip
+                              data-for={`${key}-skills`}
+                              onChange={() =>
+                                this.handleCounterChange(
+                                  "skillCounts",
+                                  key,
+                                  isChecked ? "decrement" : "increment"
+                                )
+                              }
+                            />
                           }
                         />
                         <ReactTooltip id={`${key}-skills`} place="left">
@@ -360,9 +369,9 @@ export class AdminConfig extends React.Component {
         </p>
         <Form.Field
           as={GSTextField}
+          fullWidth
           name="texterFeedbackJSON"
           label="Advanced JSON config override"
-          defaultValue={this.props.settingsData.texterFeedbackJSON || ""}
         />
       </div>
     );

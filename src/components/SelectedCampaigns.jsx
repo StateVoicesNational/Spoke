@@ -1,7 +1,7 @@
 import PropTypes from "prop-types";
 import React from "react";
 import { StyleSheet, css } from "aphrodite";
-import Chip from "material-ui/Chip";
+import Chip from "@material-ui/core/Chip";
 
 const ssStyles = StyleSheet.create({
   container: {

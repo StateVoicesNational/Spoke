@@ -2,14 +2,13 @@ import type from "prop-types";
 import React from "react";
 import * as yup from "yup";
 import Form from "react-formal";
-import Badge from "material-ui/Badge";
-import RaisedButton from "material-ui/RaisedButton";
+import Badge from "@material-ui/core/Badge";
+import Button from "@material-ui/core/Button";
 import { withRouter } from "react-router";
 import gql from "graphql-tag";
 import GSTextField from "../../../components/forms/GSTextField";
 
 import loadData from "../../../containers/hoc/load-data";
-import { inlineStyles } from "../../../components/AssignmentSummary";
 
 export const displayName = () => "Dynamic Assignment Controls";
 
@@ -109,22 +108,21 @@ export class TexterSideboxClass extends React.Component {
         {assignment.hasUnassignedContactsForTexter ? (
           <div>
             <h3>{nextBatchMessage}</h3>
-            <RaisedButton
-              label={nextBatchMoreLabel}
-              primary
+            <Button
+              color="primary"
+              variant="contained"
               onClick={this.requestNewContacts}
-            />
+            >
+              {nextBatchMoreLabel}
+            </Button>
           </div>
         ) : null}
         {messageStatusFilter === "needsMessage" && assignment.unrepliedCount ? (
           <div style={{ marginBottom: "8px", paddingLeft: "12px" }}>
-            <Badge
-              badgeStyle={{ ...inlineStyles.badge }}
-              badgeContent={assignment.unrepliedCount}
-              primary={false}
-              secondary={true}
-            >
-              <RaisedButton label="Go To Replies" onClick={this.gotoReplies} />
+            <Badge badgeContent={assignment.unrepliedCount} color="primary">
+              <Button variant="contained" onClick={this.gotoReplies}>
+                Go To Replies
+              </Button>
             </Badge>
           </div>
         ) : null}
@@ -132,22 +130,18 @@ export class TexterSideboxClass extends React.Component {
         messageStatusFilter !== "needsMessage" &&
         assignment.unmessagedCount ? (
           <div style={{ marginBottom: "8px", paddingLeft: "12px" }}>
-            <Badge
-              badgeStyle={{ ...inlineStyles.badge }}
-              badgeContent={assignment.unmessagedCount}
-              primary={true}
-              secondary={false}
-            >
-              <RaisedButton
-                label="Send first texts"
-                onClick={this.gotoInitials}
-              />
+            <Badge badgeContent={assignment.unmessagedCount} color="primary">
+              <Button variant="contained" onClick={this.gotoInitials}>
+                Send first texts
+              </Button>
             </Badge>
           </div>
         ) : null}
         {contact /*the empty list*/ ? (
           <div style={{ marginBottom: "8px" }}>
-            <RaisedButton label="Back To Todos" onClick={this.gotoTodos} />
+            <Button variant="contained" onClick={this.gotoTodos}>
+              Back To Todos
+            </Button>
           </div>
         ) : null}
         {!assignment.hasUnassignedContactsForTexter &&

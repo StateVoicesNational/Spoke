@@ -1,7 +1,3 @@
-import React from "react";
-import { FlatButton } from "material-ui";
-import LinkIcon from "material-ui/svg-icons/content/link";
-
 export const defaults = {
   description: "defaults",
   issues: [

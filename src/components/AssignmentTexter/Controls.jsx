@@ -1052,7 +1052,7 @@ export class AssignmentTexterContactControls extends React.Component {
           ),
           this.renderMessageControls(enabledSideboxes)
         ];
-    return <div className={css(flexStyles.topContainer)}>{content}</div>;
+    return <div className={css(flexStyles.topContainer)}>hello</div>;
   }
 }
 
