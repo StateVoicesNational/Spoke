@@ -100,15 +100,12 @@ export default class CannedResponseForm extends React.Component {
           />
           <div className={css(styles.buttonRow)}>
             <Form.Submit
+              {...dataTest("addResponse")}
               as={GSSubmitButton}
               label={formButtonText}
               className={css(styles.button)}
             />
-            <Button
-              variant="contained"
-              {...dataTest("addResponse")}
-              onClick={handleCloseAddForm}
-            >
+            <Button variant="contained" onClick={handleCloseAddForm}>
               Cancel
             </Button>
           </div>
