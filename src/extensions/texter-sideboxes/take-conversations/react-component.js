@@ -2,15 +2,13 @@ import type from "prop-types";
 import React from "react";
 import * as yup from "yup";
 import Form from "react-formal";
-import Badge from "material-ui/Badge";
-import RaisedButton from "material-ui/RaisedButton";
+import Button from "@material-ui/core/Button";
 import Toggle from "material-ui/Toggle";
 import { withRouter } from "react-router";
 import gql from "graphql-tag";
 
 import GSTextField from "../../../components/forms/GSTextField";
 import loadData from "../../../containers/hoc/load-data";
-import { inlineStyles } from "../../../components/AssignmentSummary";
 
 export const displayName = () => "Take conversations";
 
@@ -88,11 +86,13 @@ export class TexterSideboxClass extends React.Component {
       <div style={headerStyle}>
         <div>
           <h3>Take Conversations</h3>
-          <RaisedButton
-            label={`Take a batch of ${batchSize} conversations`}
-            primary
+          <Button
+            variant="contained"
+            color="primary"
             onClick={this.requestNewContacts}
-          />
+          >
+            Take a batch of {batchSize} conversations
+          </Button>
         </div>
       </div>
     );
