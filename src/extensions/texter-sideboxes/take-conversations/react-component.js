@@ -1,6 +1,6 @@
 import type from "prop-types";
 import React from "react";
-import yup from "yup";
+import * as yup from "yup";
 import Form from "react-formal";
 import Badge from "material-ui/Badge";
 import RaisedButton from "material-ui/RaisedButton";
@@ -8,6 +8,7 @@ import Toggle from "material-ui/Toggle";
 import { withRouter } from "react-router";
 import gql from "graphql-tag";
 
+import GSTextField from "../../../components/forms/GSTextField";
 import loadData from "../../../containers/hoc/load-data";
 import { inlineStyles } from "../../../components/AssignmentSummary";
 
@@ -170,6 +171,7 @@ export class AdminConfig extends React.Component {
           option in the campaign Dynamic Assignment panel)
         </p>
         <Form.Field
+          as={GSTextField}
           name="takeConversationsBatchType"
           label="Batch Type"
           fullWidth
@@ -181,6 +183,7 @@ export class AdminConfig extends React.Component {
         />
         <p>If batchsize is set to 0 it will stop showing this side panel</p>
         <Form.Field
+          as={GSTextField}
           name="takeConversationsBatchSize"
           label="Batch size (number) to take conversations button"
           fullWidth

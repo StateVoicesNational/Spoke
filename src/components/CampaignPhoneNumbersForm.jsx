@@ -3,7 +3,8 @@ import type from "prop-types";
 import { StyleSheet, css } from "aphrodite";
 import _ from "lodash";
 import GSForm from "../components/forms/GSForm";
-import yup from "yup";
+import GSSubmitButton from "../components/forms/GSSubmitButton";
+import * as yup from "yup";
 import Form from "react-formal";
 import CampaignFormSectionHeading from "../components/CampaignFormSectionHeading";
 import { ListItem, List } from "material-ui/List";
@@ -903,8 +904,8 @@ export default class CampaignPhoneNumbersForm extends React.Component {
               {this.renderContactsAreaCodesTable()}
             </div>
 
-            <Form.Button
-              type="submit"
+            <Form.Submit
+              as={GSSubmitButton}
               disabled={
                 this.props.saveDisabled ||
                 assignedNumberCount !== numbersNeeded ||

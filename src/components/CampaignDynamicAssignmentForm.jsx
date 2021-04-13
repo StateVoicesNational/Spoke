@@ -1,7 +1,9 @@
 import type from "prop-types";
 import React from "react";
 import GSForm from "../components/forms/GSForm";
-import yup from "yup";
+import GSSubmitButton from "../components/forms/GSSubmitButton";
+import GSTextField from "../components/forms/GSTextField";
+import * as yup from "yup";
 import Form from "react-formal";
 import OrganizationJoinLink from "./OrganizationJoinLink";
 import Toggle from "material-ui/Toggle";
@@ -9,6 +11,7 @@ import { dataTest } from "../lib/attributes";
 import cloneDeep from "lodash/cloneDeep";
 import TagChips from "./TagChips";
 import theme from "../styles/theme";
+import RaisedButton from "material-ui/RaisedButton";
 
 export default class CampaignDynamicAssignmentForm extends React.Component {
   constructor(props) {
@@ -90,6 +93,7 @@ export default class CampaignDynamicAssignmentForm extends React.Component {
                 switch to replying.
               </p>
               <Form.Field
+                as={GSTextField}
                 name="batchSize"
                 type="number"
                 label="How large should a batch be?"
@@ -107,6 +111,7 @@ export default class CampaignDynamicAssignmentForm extends React.Component {
           ) : null}
           <div>
             <Form.Field
+              as={GSTextField}
               name="responseWindow"
               type="number"
               label="Expected Response Window (hours)"
@@ -171,9 +176,9 @@ export default class CampaignDynamicAssignmentForm extends React.Component {
               </div>
             ) : null}
           </div>
-          <Form.Button
-            type="submit"
-            onTouchTap={this.props.onSubmit}
+          <Form.Submit
+            as={GSSubmitButton}
+            onClick={this.props.onSubmit}
             label={this.props.saveLabel}
             disabled={this.props.saveDisabled}
             {...dataTest("submitCampaignDynamicAssignmentForm")}
