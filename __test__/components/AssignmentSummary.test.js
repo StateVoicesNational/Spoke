@@ -8,17 +8,11 @@ import each from "jest-each";
 import MuiThemeProvider from "material-ui/styles/MuiThemeProvider";
 import { ApolloProvider } from "react-apollo";
 import ApolloClientSingleton from "../../src/network/apollo-client-singleton";
-import { CardActions, CardTitle } from "material-ui/Card";
 import { AssignmentSummary } from "../../src/components/AssignmentSummary";
-// import Badge from "material-ui/Badge/Badge";
 import Badge from "@material-ui/core/Badge";
 import Button from "@material-ui/core/Button";
-import Card from "@material-ui/core/Card";
 import CardContent from "@material-ui/core/CardContent";
 import CardHeader from "@material-ui/core/CardHeader";
-import RaisedButton from "material-ui/RaisedButton/RaisedButton";
-import { ThemeProvider } from "@material-ui/core/styles";
-import { newtheme } from "../../src/styles/mui-theme";
 
 function getAssignment({ isDynamic = false, counts = {} }) {
   return {
@@ -45,19 +39,17 @@ function getAssignment({ isDynamic = false, counts = {} }) {
 describe("AssignmentSummary text", function t() {
   beforeEach(() => {
     this.summary = mount(
-      <MuiThemeProvider>
-        <AssignmentSummary
-          assignment={getAssignment({
-            counts: {
-              unmessagedCount: 1,
-              unrepliedCount: 0,
-              badTimezoneCount: 0,
-              pastMessagesCount: 0,
-              skippedMessagesCount: 0
-            }
-          })}
-        />
-      </MuiThemeProvider>
+      <AssignmentSummary
+        assignment={getAssignment({
+          counts: {
+            unmessagedCount: 1,
+            unrepliedCount: 0,
+            badTimezoneCount: 0,
+            pastMessagesCount: 0,
+            skippedMessagesCount: 0
+          }
+        })}
+      />
     );
   });
 
@@ -97,22 +89,20 @@ describe("AssignmentSummary actions inUSA and NOT AllowSendAll", () => {
     window.ALLOW_SEND_ALL = false;
     return mount(
       <ApolloProvider client={ApolloClientSingleton}>
-        <MuiThemeProvider>
-          <AssignmentSummary
-            assignment={getAssignment({
-              isDynamic,
-              counts: {
-                allContactsCount:
-                  unmessaged + unreplied + badTimezone + past + skipped,
-                unmessagedCount: unmessaged,
-                unrepliedCount: unreplied,
-                badTimezoneCount: badTimezone,
-                pastMessagesCount: past,
-                skippedMessagesCount: skipped
-              }
-            })}
-          />
-        </MuiThemeProvider>
+        <AssignmentSummary
+          assignment={getAssignment({
+            isDynamic,
+            counts: {
+              allContactsCount:
+                unmessaged + unreplied + badTimezone + past + skipped,
+              unmessagedCount: unmessaged,
+              unrepliedCount: unreplied,
+              badTimezoneCount: badTimezone,
+              pastMessagesCount: past,
+              skippedMessagesCount: skipped
+            }
+          })}
+        />
       </ApolloProvider>
     ).find(CardContent);
   }
