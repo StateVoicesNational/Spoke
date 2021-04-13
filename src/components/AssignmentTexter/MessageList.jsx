@@ -149,6 +149,7 @@ const MessageList = function MessageList(props) {
 
   return (
     <List style={listStyle}>
+      HELLO
       {messages.map(message => (
         <ListItem
           disabled

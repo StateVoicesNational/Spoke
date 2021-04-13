@@ -3,10 +3,12 @@ import React from "react";
 import GSForm from "../components/forms/GSForm";
 import * as yup from "yup";
 import Form from "react-formal";
-import Toggle from "material-ui/Toggle";
 import { dataTest } from "../lib/attributes";
 import GSTextField from "./forms/GSTextField";
 import GSSubmitButton from "./forms/GSSubmitButton";
+
+import FormControlLabel from "@material-ui/core/FormControlLabel";
+import Switch from "@material-ui/core/Switch";
 
 const configurableFields = {
   ACTION_HANDLERS: {
@@ -67,12 +69,21 @@ const configurableFields = {
       }
       return (
         <div>
-          <Toggle
-            toggled={props.parent.state.ALLOW_SEND_ALL_ENABLED}
-            label="Allow 'Send All' single-button"
-            onToggle={(toggler, val) =>
-              props.parent.toggleChange("ALLOW_SEND_ALL_ENABLED", val)
+          <FormControlLabel
+            control={
+              <Switch
+                checked={props.parent.state.ALLOW_SEND_ALL_ENABLED}
+                onChange={event =>
+                  props.parent.toggleChange(
+                    "ALLOW_SEND_ALL_ENABLED",
+                    event.target.checked
+                  )
+                }
+                color="primary"
+              />
             }
+            label="Allow 'Send All' single-button"
+            labelPlacement="start"
           />
           {props.parent.state.ALLOW_SEND_ALL_ENABLED ? (
             <div style={{ padding: "8px" }}>
