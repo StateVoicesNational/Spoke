@@ -7,7 +7,8 @@ import AutoComplete from "material-ui/AutoComplete";
 import IconButton from "material-ui/IconButton";
 import RaisedButton from "material-ui/RaisedButton";
 import GSForm from "../components/forms/GSForm";
-import yup from "yup";
+import GSSubmitButton from "../components/forms/GSSubmitButton";
+import * as yup from "yup";
 import Form from "react-formal";
 import OrganizationJoinLink from "./OrganizationJoinLink";
 import CampaignFormSectionHeading from "./CampaignFormSectionHeading";
@@ -109,8 +110,8 @@ export default class CampaignTexterUIForm extends React.Component {
           onChange={this.onChange}
         >
           {adminItems}
-          <Form.Button
-            type="submit"
+          <Form.Submit
+            as={GSSubmitButton}
             onClick={this.props.onSubmit}
             label={this.props.saveLabel}
             disabled={this.props.saveDisabled}

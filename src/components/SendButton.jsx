@@ -20,7 +20,7 @@ class SendButton extends Component {
       <div className={css(styles.container)}>
         <FlatButton
           {...dataTest("send")}
-          onTouchTap={this.props.onFinalTouchTap}
+          onClick={this.props.onFinalTouchTap}
           disabled={this.props.disabled}
           label="Send"
           className={`${css(flexStyles.flatButton)} ${css(

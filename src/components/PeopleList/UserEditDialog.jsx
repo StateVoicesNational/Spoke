@@ -26,7 +26,7 @@ const UserEditDialog = props => (
 UserEditDialog.propTypes = {
   open: PropTypes.bool,
   organizationId: PropTypes.string,
-  userId: PropTypes.number,
+  userId: PropTypes.string,
   updateUser: PropTypes.func,
   requestClose: PropTypes.func
 };
