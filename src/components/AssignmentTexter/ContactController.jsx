@@ -54,19 +54,8 @@ export class ContactController extends React.Component {
     };
   }
 
-  advance() {
-    this.handleNavigateNext();
-  }
-
-  goBack() {
-    this.handleNavigatePrevious();
-  }
-
   componentWillMount() {
     let startIndex = 0;
-    const Mousetrap = require("mousetrap");
-    Mousetrap.bind("mod+>", this.advance);
-    Mousetrap.bind("mod+<", this.goBack);
     if (this.props.reviewContactId) {
       startIndex = this.props.contacts.findIndex(
         c => c.id == this.props.reviewContactId
@@ -76,11 +65,6 @@ export class ContactController extends React.Component {
       }
     }
     this.updateCurrentContactIndex(startIndex);
-  }
-
-  componentWillUnmount() {
-    Mousetrap.unbind("ctrl+>");
-    Mousetrap.unbind("ctrl+<");
   }
 
   componentWillUpdate(nextProps, nextState) {
