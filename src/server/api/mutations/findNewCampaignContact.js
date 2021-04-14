@@ -92,6 +92,9 @@ export const findNewCampaignContact = async (
     numberContacts = assignment.max_contacts - contactsCount;
   }
 
+  policyArgs.numberContacts = numberContacts;
+  policyArgs.contactsCount = contactsCount;
+
   let batchQuery = r
     .knex("campaign_contact")
     .select("id")
