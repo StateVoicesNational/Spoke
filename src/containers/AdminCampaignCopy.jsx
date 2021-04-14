@@ -6,7 +6,6 @@ import { withRouter, Link } from "react-router";
 import loadData from "./hoc/load-data";
 import gql from "graphql-tag";
 import { dataTest } from "../lib/attributes";
-
 export class AdminCampaignCopy extends React.Component {
   state = {
     copyCampaignId: null, // This is the ID of the most-recently created copy of the campaign.
