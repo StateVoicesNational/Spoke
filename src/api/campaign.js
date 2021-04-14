@@ -143,6 +143,7 @@ export const schema = gql`
     campaign: Campaign!
     found: String!
     replaced: String!
+    target: String!
   }
 
   union CampaignsReturn = PaginatedCampaigns | CampaignsList

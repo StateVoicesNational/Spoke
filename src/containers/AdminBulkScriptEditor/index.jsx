@@ -43,8 +43,8 @@ class AdminBulkScriptEditor extends Component {
     confirmFlaggedCharacters: false,
     searchString: "",
     replaceString: "",
-    includeArchived: true,
-    campaignTitlePrefixes: [],
+    includeArchived: false,
+    campaignTitlePrefix: "",
     targetObject: ["interactionStep", "cannedResponse"]
   };
 
@@ -63,8 +63,8 @@ class AdminBulkScriptEditor extends Component {
     this.setState({ includeArchived });
   };
 
-  handleCampaignPrefixChange = campaignTitlePrefixes => {
-    this.setState({ campaignTitlePrefixes });
+  handleCampaignPrefixChange = (_event, campaignTitlePrefix) => {
+    this.setState({ campaignTitlePrefix });
   };
 
   handleSubmitJob = async () => {
@@ -87,12 +87,11 @@ class AdminBulkScriptEditor extends Component {
       "searchString",
       "replaceString",
       "includeArchived",
-      "campaignTitlePrefixes",
       "targetObject"
     ]);
-    findAndReplace.campaignTitlePrefixes = findAndReplace.campaignTitlePrefixes.map(
-      prefix => prefix.value
-    );
+    findAndReplace.campaignTitlePrefixes = this.state.campaignTitlePrefix
+      ? [this.state.campaignTitlePrefix]
+      : [];
     try {
       const response = await this.props.mutations.bulkUpdateScript(
         findAndReplace
@@ -122,7 +121,7 @@ class AdminBulkScriptEditor extends Component {
       confirmFlaggedCharacters,
       replaceString,
       includeArchived,
-      campaignTitlePrefixes
+      campaignTitlePrefix
     } = this.state;
     const isSubmitDisabled = isSubmitting || !searchString;
 
@@ -208,7 +207,15 @@ class AdminBulkScriptEditor extends Component {
               checked={this.state.targetObject.indexOf("cannedResponse") != -1}
             />
           </SelectField>
-          {/* <p>Restrict to campaigns beginning with text (optional):</p>
+          <p>Restrict to campaigns beginning with text (optional):</p>
+          <TextField
+            hintText="Campaign title prefix"
+            value={campaignTitlePrefix}
+            fullWidth
+            disabled={isSubmitting}
+            onChange={this.handleCampaignPrefixChange}
+          />
+          {/*
           <CampaignPrefixSelector
             value={campaignTitlePrefixes}
             isDisabled={isSubmitting}
@@ -265,15 +272,17 @@ class AdminBulkScriptEditor extends Component {
             onRequestClose={this.handleClose}
           >
             <ul>
-              {this.state.result.map(({ campaignId, found, replaced }) => (
-                <li key={`${campaignId}|${found}|${replaced}`}>
-                  Campaign ID: {campaignId}
-                  <br />
-                  Found: <span style={styles.code}>{found}</span>
-                  <br />
-                  Replaced with: <span style={styles.code}>{replaced}</span>
-                </li>
-              ))}
+              {this.state.result.map(
+                ({ campaign, found, replaced, target }) => (
+                  <li key={`${campaign.id}|${found}|${replaced}`}>
+                    Campaign ID: {campaign.id} ({target})
+                    <br />
+                    Found: <span style={styles.code}>{found}</span>
+                    <br />
+                    Replaced with: <span style={styles.code}>{replaced}</span>
+                  </li>
+                )
+              )}
             </ul>
             {this.state.result.length === 0 && (
               <p>
@@ -304,6 +313,7 @@ const mutations = {
           }
           found
           replaced
+          target
         }
       }
     `,
