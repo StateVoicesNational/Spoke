@@ -109,9 +109,12 @@ export function getContacts(
     return [];
   }
 
-  let query = r.knex("campaign_contact").where({
-    assignment_id: assignment.id
-  });
+  let query = r.knex("campaign_contact");
+  if (assignment) {
+    query = query.where({
+      assignment_id: assignment.id
+    });
+  }
 
   if (contactsFilter) {
     if (contactsFilter.contactId) {
