@@ -392,7 +392,6 @@ export class ContactController extends React.Component {
       );
       setTimeout(() => {
         if (self.state.contactCache[contact.id]) {
-          console.log("got the data", contact.id);
           // reset delay back to baseline
           self.setState({ reloadDelay: 200 });
           self.forceUpdate();

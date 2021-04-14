@@ -34,7 +34,7 @@ export class PeopleList extends Component {
 
     this.state = {
       open: false,
-      userEdit: undefined,
+      userEdit: null,
       pageSize: INITIAL_PAGE_SIZE,
       cursor: {
         offset: 0,
@@ -122,7 +122,7 @@ export class PeopleList extends Component {
 
   updateUser = () => {
     this.setState({
-      userEdit: false
+      userEdit: null
     });
     this.props.users.refetch({
       cursor: this.state.cursor
@@ -195,7 +195,7 @@ export class PeopleList extends Component {
   };
 
   requestUserEditClose = () => {
-    this.setState({ userEdit: false });
+    this.setState({ userEdit: null });
   };
 
   handlePasswordResetClose = () => {
@@ -221,7 +221,7 @@ export class PeopleList extends Component {
       <FlatButton
         {...dataTest("editPerson")}
         label="Edit"
-        onTouchTap={() => {
+        onClick={() => {
           this.editUser(texterId);
         }}
       />
@@ -235,7 +235,7 @@ export class PeopleList extends Component {
       <FlatButton
         label="Reset Password"
         disabled={currentUser.id === texterId}
-        onTouchTap={() => {
+        onClick={() => {
           this.resetPassword(texterId);
         }}
       />

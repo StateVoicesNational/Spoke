@@ -2,12 +2,14 @@ import type from "prop-types";
 import React from "react";
 import RaisedButton from "material-ui/RaisedButton";
 import GSForm from "../../../components/forms/GSForm";
+import GSTextField from "../../../components/forms/GSTextField";
+import GSSubmitButton from "../../../components/forms/GSSubmitButton";
 import Form from "react-formal";
 import { ListItem, List } from "material-ui/List";
 import CampaignFormSectionHeading from "../../../components/CampaignFormSectionHeading";
 import theme from "../../../styles/theme";
 import { StyleSheet, css } from "aphrodite";
-import yup from "yup";
+import * as yup from "yup";
 
 export class CampaignContactsForm extends React.Component {
   constructor(props) {
@@ -24,7 +26,10 @@ export class CampaignContactsForm extends React.Component {
   }
 
   render() {
-    const { lastResult } = this.props;
+    const { lastResult, campaignIsStarted } = this.props;
+    if (campaignIsStarted) {
+      return <div>Path: {this.state.s3Path}</div>;
+    }
     let results = {};
     if (lastResult && lastResult.result) {
       results = JSON.parse(lastResult.result);
@@ -93,10 +98,10 @@ export class CampaignContactsForm extends React.Component {
                 </code>
               </p>
             </div>
-            <Form.Field name="s3Path" />
+            <Form.Field as={GSTextField} name="s3Path" />
           </div>
-          <Form.Button
-            type="submit"
+          <Form.Submit
+            as={GSSubmitButton}
             disabled={this.props.saveDisabled}
             label={this.props.saveLabel}
           />
@@ -105,6 +110,8 @@ export class CampaignContactsForm extends React.Component {
     );
   }
 }
+
+CampaignContactsForm.prototype.renderAfterStart = true;
 
 CampaignContactsForm.propTypes = {
   onChange: type.func,
@@ -116,6 +123,7 @@ CampaignContactsForm.propTypes = {
   saveDisabled: type.bool,
   saveLabel: type.string,
 
+  lastResult: type.object,
   clientChoiceData: type.string,
   jobResultMessage: type.string
 };

@@ -258,7 +258,7 @@ class AdminPersonList extends React.Component {
         {...dataTest("inviteOk")}
         label="OK"
         primary
-        onTouchTap={this.handleClose}
+        onClick={this.handleClose}
       />
     ];
     if (currentUser.roles.indexOf("ADMIN") !== -1) {
@@ -267,12 +267,12 @@ class AdminPersonList extends React.Component {
           <FlatButton
             {...dataTest("inviteResetConfirm")}
             label="Confirm Reset Link -- will break current link"
-            onTouchTap={this.handleResetInviteLink}
+            onClick={this.handleResetInviteLink}
           />,
           <FlatButton
             {...dataTest("inviteResetCancel")}
             label="Cancel"
-            onTouchTap={() => this.setState({ resetLink: false })}
+            onClick={() => this.setState({ resetLink: false })}
           />
         );
       } else {
@@ -280,7 +280,7 @@ class AdminPersonList extends React.Component {
           <FlatButton
             {...dataTest("inviteReset")}
             label="Reset Link (Security)"
-            onTouchTap={() => this.setState({ resetLink: true })}
+            onClick={() => this.setState({ resetLink: true })}
           />
         );
       }
@@ -325,7 +325,7 @@ class AdminPersonList extends React.Component {
         <FloatingActionButton
           {...dataTest("addPerson")}
           style={theme.components.floatingButton}
-          onTouchTap={this.handleOpen}
+          onClick={this.handleOpen}
         >
           <ContentAdd />
         </FloatingActionButton>
