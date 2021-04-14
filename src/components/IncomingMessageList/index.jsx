@@ -75,7 +75,20 @@ export class IncomingMessageList extends Component {
     };
   }
 
+  advance() {
+    this.handleNextPageClick();
+    console.log("Advance");
+  }
+
+  goBack() {
+    this.handlePreviousPageClick();
+    console.log("go back");
+  }
   componentDidMount() {
+    console.log("Mounted");
+    const Mousetrap = require("mousetrap");
+    Mousetrap.bind("mod+>", this.advance);
+    Mousetrap.bind("mod+<", this.goBack);
     let conversationCount = 0;
     if (this.props.conversations.conversations) {
       conversationCount = this.props.conversations.conversations.pageInfo.total;
