@@ -11,7 +11,6 @@ import Toggle from "material-ui/Toggle";
 import React, { Component } from "react";
 
 import loadData from "../hoc/load-data";
-// import CampaignPrefixSelector from "./CampaignPrefixSelector";
 
 const PROTECTED_CHARACTERS = ["/"];
 
