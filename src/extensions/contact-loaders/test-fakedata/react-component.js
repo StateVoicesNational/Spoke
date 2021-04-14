@@ -2,6 +2,9 @@ import type from "prop-types";
 import React from "react";
 import RaisedButton from "material-ui/RaisedButton";
 import GSForm from "../../../components/forms/GSForm";
+import GSSubmitButton from "../../../components/forms/GSSubmitButton";
+import GSTextField from "../../../components/forms/GSTextField";
+
 import Form from "react-formal";
 import Subheader from "material-ui/Subheader";
 import Divider from "material-ui/Divider";
@@ -11,7 +14,7 @@ import CheckIcon from "material-ui/svg-icons/action/check-circle";
 import WarningIcon from "material-ui/svg-icons/alert/warning";
 import ErrorIcon from "material-ui/svg-icons/alert/error";
 import { StyleSheet, css } from "aphrodite";
-import yup from "yup";
+import * as yup from "yup";
 
 export class CampaignContactsForm extends React.Component {
   state = {
@@ -46,6 +49,7 @@ export class CampaignContactsForm extends React.Component {
         }}
       >
         <Form.Field
+          as={GSTextField}
           name="requestContactCount"
           type="number"
           label="How many fake contacts"
@@ -63,8 +67,8 @@ export class CampaignContactsForm extends React.Component {
           ) : null}
         </List>
 
-        <Form.Button
-          type="submit"
+        <Form.Submit
+          as={GSSubmitButton}
           disabled={this.props.saveDisabled}
           label={this.props.saveLabel}
         />

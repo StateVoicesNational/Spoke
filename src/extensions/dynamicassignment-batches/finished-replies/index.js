@@ -11,7 +11,8 @@ export const requestNewBatchCount = async ({
   texter,
   r,
   cacheableData,
-  loaders
+  loaders,
+  hasAny
 }) => {
   // START WITH SOME BASE-LINE THINGS EVERY POLICY SHOULD HAVE
   if (!campaign.use_dynamic_assignment || campaign.is_archived) {
@@ -20,16 +21,25 @@ export const requestNewBatchCount = async ({
   if (assignment.max_contacts === 0 || !campaign.batch_size) {
     return 0;
   }
-  const availableCount = await r.getCount(
-    r
-      .knex("campaign_contact")
-      .where({
-        campaign_id: campaign.id,
-        is_opted_out: false,
-        message_status: "needsMessage"
-      })
-      .whereNull("assignment_id")
-  );
+  const countQuery = r
+    .knex("campaign_contact")
+    .where({
+      campaign_id: campaign.id,
+      is_opted_out: false,
+      message_status: "needsMessage"
+    })
+    .whereNull("assignment_id");
+
+  let availableCount = 0;
+  if (hasAny) {
+    availableCount = assignment.hasOwnProperty("hasUnassigned")
+      ? assignment.hasUnassigned
+      : (await countQuery.select("id").first())
+      ? 1
+      : 0;
+  } else {
+    availableCount = await r.getCount(countQuery);
+  }
   // Make sure they don't have any needsResponse(s)
   if (availableCount) {
     const hasOpenReplies = await getContacts(
@@ -42,11 +52,12 @@ export const requestNewBatchCount = async ({
       organization,
       campaign,
       true // forCount=true because we don't care about ordering
-    ).first();
+    )
+      .select("campaign_contact.id")
+      .first();
     if (hasOpenReplies) {
       return 0;
     }
   }
-
   return availableCount;
 };
