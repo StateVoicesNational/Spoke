@@ -77,12 +77,10 @@ export class IncomingMessageList extends Component {
 
   advance() {
     this.handleNextPageClick();
-    console.log("Advance");
   }
 
   goBack() {
     this.handlePreviousPageClick();
-    console.log("go back");
   }
   componentDidMount() {
     console.log("Mounted");
