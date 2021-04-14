@@ -10,7 +10,7 @@ import MenuItem from "material-ui/MenuItem";
 import Toggle from "material-ui/Toggle";
 import React, { Component } from "react";
 
-import loadData from "../hoc/load-data";
+import loadData from "./hoc/load-data";
 
 const PROTECTED_CHARACTERS = ["/"];
 
