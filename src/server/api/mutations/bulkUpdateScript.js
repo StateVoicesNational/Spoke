@@ -103,8 +103,13 @@ export const bulkUpdateScript = async (
         }
       }
     }
+    // clear campaign_id caches
+    await Promise.all(
+      campaignIds.map(cid => cacheableData.campaign.clear(cid))
+    );
+
     return scriptUpdates;
   });
-  // TODO: clear campaign_id caches
+
   return scriptUpdatesResult;
 };
