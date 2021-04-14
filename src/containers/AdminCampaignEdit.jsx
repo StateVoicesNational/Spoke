@@ -13,6 +13,7 @@ import { Link } from "react-router";
 import gql from "graphql-tag";
 import loadData from "./hoc/load-data";
 import RaisedButton from "material-ui/RaisedButton";
+import AdminCampaignCopy from "./AdminCampaignCopy";
 import CampaignBasicsForm from "../components/CampaignBasicsForm";
 import CampaignMessagingServiceForm from "../components/CampaignMessagingServiceForm";
 import CampaignContactsChoiceForm from "../components/CampaignContactsChoiceForm";
@@ -834,6 +835,12 @@ export class AdminCampaignEdit extends React.Component {
               });
             }}
           />
+          {/template/i.test(this.props.campaignData.campaign.title) ? (
+            <AdminCampaignCopy
+              campaignId={this.props.campaignData.campaign.id}
+              organizationId={this.props.organizationData.organization.id}
+            />
+          ) : null}
         </div>
       </div>
     );
