@@ -405,6 +405,8 @@ export class AssignmentTexterContact extends React.Component {
           ""
         )}
         <ControlsComponent
+          handleNavigateNext={this.props.handleNavigateNext}
+          handleNavigatePrevious={this.props.handleNavigatePrevious}
           contact={this.props.contact}
           campaign={this.props.campaign}
           texter={this.props.texter}
@@ -453,6 +455,8 @@ export class AssignmentTexterContact extends React.Component {
 
 AssignmentTexterContact.propTypes = {
   reviewContactId: PropTypes.string,
+  handleNavigateNext: PropTypes.func,
+  handleNavigatePrevious: PropTypes.func,
   contact: PropTypes.object,
   campaign: PropTypes.object,
   assignment: PropTypes.object,

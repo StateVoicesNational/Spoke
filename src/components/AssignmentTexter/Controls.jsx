@@ -157,6 +157,24 @@ export class AssignmentTexterContactControls extends React.Component {
       );
     }
 
+    if (
+      // SEND: Ctrl->
+      evt.key === ">" &&
+      // need to use ctrlKey in non-first texting context for accessibility
+      evt.ctrlKey
+    ) {
+      this.props.handleNavigateNext();
+    }
+
+    if (
+      // SEND: Ctrl-<
+      evt.key === "<" &&
+      // need to use ctrlKey in non-first texting context for accessibility
+      evt.ctrlKey
+    ) {
+      this.props.handleNavigatePrevious();
+    }
+
     if (evt.key === "Escape") {
       this.setState({
         optOutDialogOpen: false,
@@ -1055,6 +1073,8 @@ export class AssignmentTexterContactControls extends React.Component {
 
 AssignmentTexterContactControls.propTypes = {
   // data
+  handleNavigateNext: PropTypes.func,
+  handleNavigatePrevious: PropTypes.func,
   contact: PropTypes.object,
   campaign: PropTypes.object,
   assignment: PropTypes.object,
