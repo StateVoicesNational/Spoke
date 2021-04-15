@@ -105,7 +105,7 @@ export const bulkUpdateScript = async (
         cannedResponseCampaigns.add(response.campaign_id);
       }
       await Promise.all(
-        cannedResponseCampaigns.values().map(campaignId =>
+        Array.from(cannedResponseCampaigns).map(campaignId =>
           cacheableData.cannedResponse.clearQuery({
             userId: "",
             campaignId
