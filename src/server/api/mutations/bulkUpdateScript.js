@@ -78,6 +78,7 @@ export const bulkUpdateScript = async (
       }
     }
     if (targetObject.indexOf("cannedResponse") >= 0) {
+      const cannedResponseCampaigns = new Set();
       const cannedResponsesToChange = await r
         .knex("canned_response")
         .transacting(trx)
@@ -101,7 +102,16 @@ export const bulkUpdateScript = async (
             .update({ text: newValue })
             .where({ id: response.id });
         }
+        cannedResponseCampaigns.add(response.campaign_id);
       }
+      await Promise.all(
+        cannedResponseCampaigns.values().map(campaignId =>
+          cacheableData.cannedResponse.clearQuery({
+            userId: "",
+            campaignId
+          })
+        )
+      );
     }
     // clear campaign_id caches
     await Promise.all(
