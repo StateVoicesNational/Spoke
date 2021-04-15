@@ -9,8 +9,7 @@ import orgCache from "../../models/cacheable_queries/organization";
 import { accessRequired } from "../errors";
 import { Organization } from "../../../server/models";
 
-// TODO(lperson) this should allow the message service
-// to modify only its own object
+// TODO(lperson) this should allow the message service to modify only its own object
 export const updateMessageServiceConfig = async (
   _,
   { organizationId, messageServiceName, config },
@@ -70,7 +69,7 @@ export const updateMessageServiceConfig = async (
   dbOrganization.features = JSON.stringify({
     ...features,
     ...(features[configKey] && { [configKey]: newConfig }),
-    ...(!features[configKey] && { [configKey]: newConfig })
+    ...(!features[configKey] && newConfig)
   });
 
   await dbOrganization.save();
@@ -78,4 +77,23 @@ export const updateMessageServiceConfig = async (
   const updatedOrganization = await orgCache.load(organization.id);
 
   return orgCache.getMessageServiceConfig(updatedOrganization);
+};
+
+export const getMessageServiceConfig = async (
+  serviceName,
+  organization,
+  options = {}
+) => {
+  const getServiceConfig = exports.tryGetFunctionFromService(
+    serviceName,
+    "getServiceConfig"
+  );
+  if (!getServiceConfig) {
+    return null;
+  }
+  const configKey = exports.getConfigKey(serviceName);
+  const config = getConfig(configKey, organization, {
+    onlyLocal: options.restrictToOrgFeatures
+  });
+  return getServiceConfig(config, organization, options);
 };
