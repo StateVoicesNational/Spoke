@@ -51,27 +51,32 @@ describe("updateMessageServiceConfig", () => {
     };
   });
 
-  it("calls message service's updateConfig and other functions", async () => {
-    const gqlResult = await runGql(updateMessageServiceConfigGql, vars, user);
-    expect(twilio.updateConfig.mock.calls).toEqual([[undefined, newConfig]]);
-    expect(orgCache.getMessageServiceConfig.mock.calls).toEqual([
-      [
-        expect.objectContaining({
-          id: 1,
-          feature: expect.objectContaining({
-            message_service_twilio: newConfig
+  describe("when there is no message service-specific section in features", () => {
+    it("calls message service's updateConfig and other functions", async () => {
+      const gqlResult = await runGql(updateMessageServiceConfigGql, vars, user);
+      expect(twilio.updateConfig.mock.calls).toEqual([[undefined, newConfig]]);
+      expect(orgCache.getMessageServiceConfig.mock.calls).toEqual([
+        [
+          expect.objectContaining({
+            id: 1,
+            feature: expect.objectContaining({
+              ...newConfig
+              // message_service_twilio: newConfig
+            })
           })
-        })
-      ]
-    ]);
-    expect(gqlResult.data.updateMessageServiceConfig).toEqual(newConfig);
+        ]
+      ]);
+      expect(gqlResult.data.updateMessageServiceConfig).toEqual(newConfig);
 
-    // TODO
-    // expect cache.clear to have been called
-    // expect cache.load to have been called
+      // TODO
+      // expect cache.clear to have been called
+      // expect cache.load to have been called
+    });
   });
 
-  it("updates the config in organization.features", async () => {});
+  it("updates the config in organization.features", async () => {
+    // TODO
+  });
 
   describe("when it's not the configured message service name", () => {
     beforeEach(async () => {
@@ -176,7 +181,9 @@ describe("updateMessageServiceConfig", () => {
   });
 
   describe("when the organization had no features", () => {
-    it("does not throw an exception", async () => {});
+    it("does not throw an exception", async () => {
+      // TODO
+    });
   });
 
   describe("when updating legacy config (all config elements at the top level of organization.features)", () => {
