@@ -4,8 +4,11 @@ import Form from "react-formal";
 import * as yup from "yup";
 import gql from "graphql-tag";
 import { StyleSheet, css } from "aphrodite";
-import Dialog from "material-ui/Dialog";
+
 import Button from "@material-ui/core/Button";
+import Dialog from "@material-ui/core/Dialog";
+import DialogTitle from "@material-ui/core/DialogTitle";
+import DialogActions from "@material-ui/core/DialogActions";
 
 import loadData from "../../containers/hoc/load-data";
 import GSForm from "../../components/forms/GSForm";
@@ -94,11 +97,6 @@ class MessageResponse extends Component {
     const { messageText, isSending, doneFirstClick } = this.state;
     const isSendDisabled = isSending || messageText.trim() === "";
 
-    const errorActions = [
-      <Button color="primary" onClick={this.handleCloseErrorDialog}>
-        OK
-      </Button>
-    ];
     return (
       <div className={css(styles.messageField)}>
         <GSForm
@@ -136,13 +134,14 @@ class MessageResponse extends Component {
             </div>
           </div>
         </GSForm>
-        <Dialog
-          title="Error Sending"
-          open={!!this.state.sendError}
-          actions={errorActions}
-          modal={false}
-        >
+        <Dialog open={!!this.state.sendError}>
+          <DialogTitle>Error Sending</DialogTitle>
           <p>{this.state.sendError}</p>
+          <DialogActions>
+            <Button color="primary" onClick={this.handleCloseErrorDialog}>
+              OK
+            </Button>
+          </DialogActions>
         </Dialog>
       </div>
     );

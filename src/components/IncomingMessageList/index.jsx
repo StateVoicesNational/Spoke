@@ -234,21 +234,23 @@ export class IncomingMessageList extends Component {
         overflow: "visible",
         whiteSpace: "pre-line"
       },
-      render: (columnKey, row) => (
-        <div>
-          {row.messages && row.messages.length > 1 && (
-            <IconButton
-              onClick={event => {
-                event.stopPropagation();
-                this.handleOpenConversation(row);
-              }}
-            >
-              <ActionOpenInNew />
-            </IconButton>
-          )}
-          {this.renderTags(row.tags, row)}
-        </div>
-      )
+      render: (columnKey, row) => {
+        return (
+          <div>
+            {row.messages && row.messages.length > 1 && (
+              <IconButton
+                onClick={event => {
+                  event.stopPropagation();
+                  this.handleOpenConversation(row);
+                }}
+              >
+                <ActionOpenInNew />
+              </IconButton>
+            )}
+            {this.renderTags(row.tags, row)}
+          </div>
+        );
+      }
     }
   ];
 

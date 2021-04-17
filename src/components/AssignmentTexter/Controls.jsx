@@ -117,11 +117,12 @@ export class AssignmentTexterContactControls extends React.Component {
 
   getStartingMessageText() {
     const { campaign, messageStatusFilter } = this.props;
-    return messageStatusFilter === "needsMessage"
-      ? this.props.getMessageTextFromScript(
-          getTopMostParent(campaign.interactionSteps).script
-        )
-      : "";
+    return (
+      messageStatusFilter === "needsMessage" &&
+      this.props.getMessageTextFromScript(
+        getTopMostParent(campaign.interactionSteps).script
+      )
+    );
   }
 
   onResize = evt => {
@@ -437,10 +438,9 @@ export class AssignmentTexterContactControls extends React.Component {
       campaign.interactionSteps
     );
 
-    const otherResponsesLink =
-      currentInteractionStep &&
+    const otherResponsesLink = currentInteractionStep &&
       currentInteractionStep.question.filteredAnswerOptions.length > 6 &&
-      filteredCannedResponses.length ? (
+      filteredCannedResponses.length && (
         <div className={css(flexStyles.popoverLink)}>
           <a
             href="#otherresponses"
@@ -449,20 +449,19 @@ export class AssignmentTexterContactControls extends React.Component {
             Other Responses
           </a>
         </div>
-      ) : null;
+      );
 
-    const searchBar =
-      currentInteractionStep &&
+    const searchBar = currentInteractionStep &&
       currentInteractionStep.question.answerOptions.length +
         campaign.cannedResponses.length >
-        5 ? (
+        5 && (
         <SearchBar
           onRequestSearch={this.handleSearchChange}
           onChange={this.handleSearchChange}
           value={""}
           placeholder={"Search replies..."}
         />
-      ) : null;
+      );
 
     return (
       <Popover
@@ -921,12 +920,11 @@ export class AssignmentTexterContactControls extends React.Component {
           className={css(flexStyles.subButtonsAnswerButtons)}
           ref="answerButtons"
         >
-          {currentQuestion
-            ? this.renderMessagingRowCurrentQuestion(
-                currentQuestion,
-                currentQuestionAnswered
-              )
-            : null}
+          {currentQuestion &&
+            this.renderMessagingRowCurrentQuestion(
+              currentQuestion,
+              currentQuestionAnswered
+            )}
           <div className={css(flexStyles.subSubAnswerButtonsColumns)}>
             {this.renderMessagingRowReplyShortcuts()}
           </div>
@@ -951,9 +949,9 @@ export class AssignmentTexterContactControls extends React.Component {
           navigationToolbarChildren={this.props.navigationToolbarChildren}
           onExit={this.props.onExitTexter}
           onSideboxButtonClick={
-            enabledSideboxes && enabledSideboxes.length > 0
-              ? this.handleClickSideboxDialog
-              : null
+            enabledSideboxes &&
+            enabledSideboxes.length > 0 &&
+            this.handleClickSideboxDialog
           }
         />
       </div>
@@ -1052,7 +1050,7 @@ export class AssignmentTexterContactControls extends React.Component {
           ),
           this.renderMessageControls(enabledSideboxes)
         ];
-    return <div className={css(flexStyles.topContainer)}>hello</div>;
+    return <div className={css(flexStyles.topContainer)}>{content}</div>;
   }
 }
 

@@ -2,14 +2,18 @@ import React, { Component } from "react";
 import PropTypes from "prop-types";
 import gql from "graphql-tag";
 import { StyleSheet, css } from "aphrodite";
-import Dialog from "material-ui/Dialog";
-import Button from "@material-ui/core/Button";
+
 import FlagIcon from "material-ui/svg-icons/content/flag";
 import Avatar from "material-ui/Avatar";
 import CopyIcon from "material-ui/svg-icons/content/content-copy";
 import CheckIcon from "material-ui/svg-icons/navigation/check";
 import IconButton from "material-ui/IconButton/IconButton";
-import TextField from "material-ui/TextField";
+
+import Button from "@material-ui/core/Button";
+import Dialog from "@material-ui/core/Dialog";
+import DialogTitle from "@material-ui/core/DialogTitle";
+import DialogActions from "@material-ui/core/DialogActions";
+// import IconButton from '@material-ui/core/IconButton';
 
 import theme from "../../styles/theme";
 
@@ -221,13 +225,12 @@ export class InnerConversationPreviewModal extends Component {
             <CopyIcon />
           )}
         </IconButton>
-        <TextField
+        <input
+          type="text"
           ref="convoLink"
           value={url}
-          underlineShow={false}
-          inputStyle={{ visibility: "visible", height: "1px", width: "1px" }}
-          style={{ width: "1px", height: "1px" }}
           onFocus={event => event.target.select()}
+          style={{ width: "1px", height: "1px", border: 0, padding: 0 }}
         />
         <a href={url} target="_blank">
           GO TO CONVERSATION
@@ -248,13 +251,13 @@ export class InnerConversationPreviewModal extends Component {
 
     return (
       <Dialog
-        title="Messages"
+        fullWidth={true}
+        maxWidth="md"
         open={isOpen}
-        actions={primaryActions}
-        modal={false}
-        onRequestClose={this.props.onRequestClose}
+        onClose={this.props.onRequestClose}
       >
-        <div>
+        <DialogTitle>Messages</DialogTitle>
+        <div style={{ padding: 10 }}>
           {isOpen && <ConversationPreviewBody {...this.props} />}
           <Dialog
             title="Error Opting Out"
@@ -264,6 +267,7 @@ export class InnerConversationPreviewModal extends Component {
             <p>{this.state.optOutError}</p>
           </Dialog>
         </div>
+        <DialogActions>{primaryActions}</DialogActions>
       </Dialog>
     );
   }
