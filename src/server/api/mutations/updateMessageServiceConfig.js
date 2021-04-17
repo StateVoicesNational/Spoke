@@ -9,7 +9,6 @@ import orgCache from "../../models/cacheable_queries/organization";
 import { accessRequired } from "../errors";
 import { Organization } from "../../../server/models";
 
-// TODO(lperson) this should allow the message service to modify only its own object
 export const updateMessageServiceConfig = async (
   _,
   { organizationId, messageServiceName, config },
@@ -49,7 +48,9 @@ export const updateMessageServiceConfig = async (
   }
 
   const configKey = getConfigKey(messageServiceName);
-  const existingConfig = getConfig(configKey, organization);
+  const existingConfig = getConfig(configKey, organization, {
+    onlyLocal: true
+  });
 
   let newConfig;
   try {
@@ -66,10 +67,17 @@ export const updateMessageServiceConfig = async (
 
   const dbOrganization = await Organization.get(organizationId);
   const features = JSON.parse(dbOrganization.features || "{}");
+  const hadMessageServiceConfig = !!features[configKey];
+  const newConfigKeys = new Set(Object.keys(newConfig));
+  const legacyTwilioConfig =
+    messageServiceName === "twilio" &&
+    !hadMessageServiceConfig &&
+    Object.keys(features).some(k => newConfigKeys.has(k));
+
   dbOrganization.features = JSON.stringify({
     ...features,
-    ...(features[configKey] && { [configKey]: newConfig }),
-    ...(!features[configKey] && newConfig)
+    ...(!legacyTwilioConfig && { [configKey]: newConfig }),
+    ...(legacyTwilioConfig && newConfig)
   });
 
   await dbOrganization.save();
