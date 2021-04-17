@@ -9,7 +9,6 @@ import Dialog from "material-ui/Dialog";
 import GSSubmitButton from "../components/forms/GSSubmitButton";
 import FlatButton from "material-ui/FlatButton";
 import RaisedButton from "material-ui/RaisedButton";
-import DisplayLink from "../components/DisplayLink";
 import * as yup from "yup";
 import { Card, CardText, CardActions, CardHeader } from "material-ui/Card";
 import { StyleSheet, css } from "aphrodite";
@@ -378,9 +377,6 @@ const queries = {
             options
             sideboxChoices
           }
-          twilioAccountSid
-          twilioAuthToken
-          twilioMessageServiceSid
           messageService {
             name
             type
@@ -432,27 +428,6 @@ export const updateMessageServiceConfigGql = gql`
       messageServiceName: $messageServiceName
       config: $config
     )
-  }
-`;
-
-export const updateTwilioAuthGql = gql`
-  mutation updateTwilioAuth(
-    $twilioAccountSid: String
-    $twilioAuthToken: String
-    $twilioMessageServiceSid: String
-    $organizationId: String!
-  ) {
-    updateTwilioAuth(
-      twilioAccountSid: $twilioAccountSid
-      twilioAuthToken: $twilioAuthToken
-      twilioMessageServiceSid: $twilioMessageServiceSid
-      organizationId: $organizationId
-    ) {
-      id
-      twilioAccountSid
-      twilioAuthToken
-      twilioMessageServiceSid
-    }
   }
 `;
 
@@ -541,15 +516,6 @@ const mutations = {
       }
     };
   },
-  updateTwilioAuth: ownProps => (accountSid, authToken, messageServiceSid) => ({
-    mutation: updateTwilioAuthGql,
-    variables: {
-      organizationId: ownProps.params.organizationId,
-      twilioAccountSid: accountSid,
-      twilioAuthToken: authToken,
-      twilioMessageServiceSid: messageServiceSid
-    }
-  }),
   clearCachedOrgAndExtensionCaches: ownProps => () => ({
     mutation: gql`
       mutation clearCachedOrgAndExtensionCaches($organizationId: String!) {
