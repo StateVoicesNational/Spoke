@@ -231,7 +231,7 @@ export class IncomingMessageList extends Component {
       label: "View Conversation",
       style: {
         textOverflow: "ellipsis",
-        overflow: "hidden",
+        overflow: "visible",
         whiteSpace: "pre-line"
       },
       render: (columnKey, row) => (
@@ -392,6 +392,7 @@ export class IncomingMessageList extends Component {
           onRowSizeChange={this.handleRowSizeChanged}
           onRowSelection={this.handleRowsSelected}
           selectedRows={clearSelectedMessages ? null : this.state.selectedRows}
+          tableBodyStyle={{ overflowX: "auto" }}
         />
         <ConversationPreviewModal
           organizationTags={this.state.tags}

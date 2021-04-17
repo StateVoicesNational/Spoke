@@ -19,7 +19,11 @@ const inlineStyles = {
   text: {
     fontSize: "12px",
     fontWeight: "900",
-    color: "#212121"
+    color: "#111",
+    maxWidth: 200,
+    whiteSpace: "nowrap",
+    overflow: "hidden",
+    textOverflow: "ellipsis"
   },
   icon: {
     width: "16px",

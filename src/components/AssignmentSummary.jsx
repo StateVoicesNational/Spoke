@@ -28,17 +28,6 @@ export const inlineStyles = {
     textAlign: "center",
     verticalAlign: "middle",
     height: 20
-  },
-  pastMsgStyle: {
-    backgroundColor: "#FFD700",
-    fontSize: 12,
-    top: 20,
-    right: 20,
-    padding: "4px 2px 0px 2px",
-    width: 20,
-    textAlign: "center",
-    verticalAlign: "middle",
-    height: 20
   }
 };
 
@@ -77,12 +66,13 @@ export class AssignmentSummary extends Component {
     contactsFilter,
     hideIfZero,
     style,
+    hideBadge,
     color
   }) {
     if (count === 0 && hideIfZero) {
       return "";
     }
-    if (count === 0) {
+    if (count === 0 || hideBadge) {
       return (
         <Button
           {...dataTest(dataTestText)}
@@ -210,25 +200,29 @@ export class AssignmentSummary extends Component {
                 })}
             {this.renderBadgedButton({
               assignment,
-              title: "Past Messages",
+              title: pastMessagesCount
+                ? `Past ${pastMessagesCount} Messages`
+                : `Past Messages`,
               count: pastMessagesCount,
-              style: inlineStyles.pastMsgStyle,
               primary: false,
               disabled: false,
               contactsFilter: "stale",
               hideIfZero: true,
-              color: "secondary"
+              color: "secondary",
+              hideBadge: true
             })}
             {this.renderBadgedButton({
               assignment,
-              title: "Skipped Messages",
+              title: skippedMessagesCount
+                ? `Skipped ${skippedMessagesCount} Messages`
+                : `Skipped Messages`,
               count: skippedMessagesCount,
-              style: inlineStyles.pastMsgStyle,
               primary: false,
               disabled: false,
               contactsFilter: "skipped",
               hideIfZero: true,
-              color: "secondary"
+              color: "secondary",
+              hideBadge: true
             })}
             {window.NOT_IN_USA && window.ALLOW_SEND_ALL && !hasPopupSidebox
               ? this.renderBadgedButton({

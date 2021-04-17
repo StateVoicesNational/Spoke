@@ -143,6 +143,16 @@ class ScriptEditor extends React.Component {
     return editorState;
   }
 
+  componentDidMount() {
+    const { editorState } = this.state;
+    this.setState({ editorState: this.moveFocusToEnd(editorState) });
+  }
+
+  moveFocusToEnd(editorState) {
+    editorState = EditorState.moveSelectionToEnd(editorState);
+    return EditorState.forceSelection(editorState, editorState.getSelection());
+  }
+
   getValue() {
     const { editorState } = this.state;
     return editorState.getCurrentContent().getPlainText();
