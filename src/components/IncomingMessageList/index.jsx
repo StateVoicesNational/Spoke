@@ -231,7 +231,7 @@ export class IncomingMessageList extends Component {
       label: "View Conversation",
       style: {
         textOverflow: "ellipsis",
-        overflow: "hidden",
+        overflow: "visible",
         whiteSpace: "pre-line"
       },
       render: (columnKey, row) => (
@@ -351,7 +351,9 @@ export class IncomingMessageList extends Component {
     let rowSizeList = [10, 20, 50, 100];
 
     try {
-      rowSizeList = JSON.parse(window.CONVERSATION_LIST_ROW_SIZES);
+      if (window.CONVERSATION_LIST_ROW_SIZES !== "") {
+        rowSizeList = JSON.parse(window.CONVERSATION_LIST_ROW_SIZES);
+      }
     } catch (err) {
       console.log(err);
     }
@@ -389,6 +391,7 @@ export class IncomingMessageList extends Component {
           onRowSizeChange={this.handleRowSizeChanged}
           onRowSelection={this.handleRowsSelected}
           selectedRows={clearSelectedMessages ? null : this.state.selectedRows}
+          tableBodyStyle={{ overflowX: "auto" }}
         />
         <ConversationPreviewModal
           organizationTags={this.state.tags}

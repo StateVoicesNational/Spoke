@@ -28,7 +28,7 @@ The timezone in New York City is specified by the string `US/Eastern`. Other tim
 
 If the `TZ` environment variable is not set, Spoke will infer a time zone for each contact from the contact's ZIP code.
 
-If a contact does not have a ZIP code, Spoke will assume the contact is in New York City and use the local time there to determine if it's OK to send texts.
+If a contact does not have a ZIP code, Spoke will default to a 'narrow' range for the continental US, 12pm EST/9am PST - 9pm EST/6pm PST, and use that time to determine if it's OK to send texts.
 
 ## Is it Daylight Savings Time?
 

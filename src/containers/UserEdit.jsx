@@ -25,8 +25,11 @@ import loadData from "./hoc/load-data";
 import gql from "graphql-tag";
 import { withRouter } from "react-router";
 import GSForm from "../components/forms/GSForm";
+import GSTextField from "../components/forms/GSTextField";
+import GSSubmitButton from "../components/forms/GSSubmitButton";
+import GSPasswordField from "../components/forms/GSPasswordField";
 import Form from "react-formal";
-import yup from "yup";
+import * as yup from "yup";
 import Dialog from "material-ui/Dialog";
 import RaisedButton from "material-ui/RaisedButton";
 import { StyleSheet, css } from "aphrodite";
@@ -258,7 +261,11 @@ export class UserEdit extends React.Component {
   renderProfileField(field) {
     return (
       <span className={css(styles.fields)} key={field.name}>
-        <Form.Field label={field.label} name={`extra.${field.name}`} />
+        <Form.Field
+          as={GSTextField}
+          label={field.label}
+          name={`extra.${field.name}`}
+        />
       </span>
     );
   }
@@ -292,25 +299,34 @@ export class UserEdit extends React.Component {
           className={style}
           {...dataTest("userEditForm")}
         >
-          <Form.Field label="Email" name="email" {...dataTest("email")} />
+          <Form.Field
+            as={GSTextField}
+            label="Email"
+            name="email"
+            {...dataTest("email")}
+          />
           {(!authType || authType === "signup") && (
             <span className={css(styles.fields)}>
               <Form.Field
+                as={GSTextField}
                 label="First name"
                 name="firstName"
                 {...dataTest("firstName")}
               />
               <Form.Field
+                as={GSTextField}
                 label="Last name"
                 name="lastName"
                 {...dataTest("lastName")}
               />
               <Form.Field
+                as={GSTextField}
                 label="Texting Alias (optional)"
                 name="alias"
                 {...dataTest("alias")}
               />
               <Form.Field
+                as={GSTextField}
                 label="Cell Number"
                 name="cell"
                 {...dataTest("cell")}
@@ -320,10 +336,16 @@ export class UserEdit extends React.Component {
           {fieldsNeeded && <h3>Please complete your profile</h3>}
           {!authType && org && org.profileFields.map(this.renderProfileField)}
           {authType && (
-            <Form.Field label="Password" name="password" type="password" />
+            <Form.Field
+              as={GSPasswordField}
+              label="Password"
+              name="password"
+              type="password"
+            />
           )}
           {authType === "change" && (
             <Form.Field
+              as={GSPasswordField}
               label="New Password"
               name="newPassword"
               type="password"
@@ -331,6 +353,7 @@ export class UserEdit extends React.Component {
           )}
           {authType && authType !== "login" && (
             <Form.Field
+              as={GSPasswordField}
               label="Confirm Password"
               name="passwordConfirm"
               type="password"
@@ -342,16 +365,16 @@ export class UserEdit extends React.Component {
             !fieldsNeeded && (
               <div className={css(styles.container)}>
                 <RaisedButton
-                  onTouchTap={this.handleClick}
+                  onClick={this.handleClick}
                   label="Change password"
                   variant="outlined"
                 />
               </div>
             )}
           <div className={css(styles.buttons)}>
-            <Form.Button
+            <Form.Submit
+              as={GSSubmitButton}
               className={css(styles.submit)}
-              type="submit"
               label={saveLabel || "Save"}
             />
             {!authType && onCancel && !fieldsNeeded && (
@@ -390,7 +413,7 @@ export class UserEdit extends React.Component {
             onBackdropClick={this.handleClose}
             onEscapeKeyDown={this.handleClose}
           >
-            <RaisedButton onTouchTap={this.handleClose} label="OK" primary />
+            <RaisedButton onClick={this.handleClose} label="OK" primary />
           </Dialog>
         </div>
         <Card style={{ marginTop: "50px", maxWidth: "256px" }}>

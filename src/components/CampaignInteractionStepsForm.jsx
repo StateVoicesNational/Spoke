@@ -9,7 +9,11 @@ import CampaignFormSectionHeading from "./CampaignFormSectionHeading";
 import HelpIconOutline from "material-ui/svg-icons/action/help-outline";
 import Form from "react-formal";
 import GSForm from "./forms/GSForm";
-import yup from "yup";
+import GSTextField from "./forms/GSTextField";
+import GSScriptField from "./forms/GSScriptField";
+import GSSelectField from "./forms/GSSelectField";
+import GSAutoComplete from "./forms/GSAutoComplete";
+import * as yup from "yup";
 import { makeTree } from "../lib";
 import { dataTest } from "../lib/attributes";
 import { StyleSheet, css } from "aphrodite";
@@ -97,7 +101,6 @@ export default class CampaignInteractionStepsForm extends React.Component {
       const tweakedInteractionStep = {
         ...is
       };
-
       delete tweakedInteractionStep.needRequiredAnswerActionsData;
 
       if (is.answerActionsData && typeof is.answerActionsData !== "string") {
@@ -212,24 +215,25 @@ export default class CampaignInteractionStepsForm extends React.Component {
     const handler =
       event.answerActions &&
       this.state.availableActionsLookup[event.answerActions];
+    const interactionSteps = this.state.interactionSteps.map(is => {
+      const copiedEvent = {
+        ...event
+      };
+      delete copiedEvent.interactionSteps;
+      if (is.id === event.id) {
+        copiedEvent.needRequiredAnswerActionsData =
+          handler &&
+          !event.answerActionsData &&
+          handler.clientChoiceData &&
+          handler.clientChoiceData.length > 0;
+        return copiedEvent;
+      }
+      return is;
+    });
     this.setState({
       answerActions: handler,
       answerActionsData: event.answerActionsData,
-      interactionSteps: this.state.interactionSteps.map(is => {
-        const copiedEvent = {
-          ...event
-        };
-        delete copiedEvent.interactionSteps;
-        if (is.id === event.id) {
-          copiedEvent.needRequiredAnswerActionsData =
-            handler &&
-            !event.answerActionsData &&
-            handler.clientChoiceData &&
-            handler.clientChoiceData.length > 0;
-          return copiedEvent;
-        }
-        return is;
-      })
+      interactionSteps
     });
   }
 
@@ -259,24 +263,22 @@ export default class CampaignInteractionStepsForm extends React.Component {
           <div>
             <DeleteIcon
               style={styles.pullRight}
-              onTouchTap={this.deleteStep(interactionStep.id).bind(this)}
+              onClick={this.deleteStep(interactionStep.id).bind(this)}
             />
             <RaisedButton
               label="Bump"
-              onTouchTap={this.bumpStep(interactionStep.id).bind(this)}
+              onClick={this.bumpStep(interactionStep.id).bind(this)}
             />
             <RaisedButton
               label="Top"
-              onTouchTap={this.topStep(interactionStep.id).bind(this)}
+              onClick={this.topStep(interactionStep.id).bind(this)}
             />
             <RaisedButton
               label="Bottom"
-              onTouchTap={this.bottomStep(interactionStep.id).bind(this)}
+              onClick={this.bottomStep(interactionStep.id).bind(this)}
             />
           </div>
-        ) : (
-          ""
-        )}
+        ) : null}
         <Card
           style={styles.interactionStep}
           ref={interactionStep.id}
@@ -287,7 +289,7 @@ export default class CampaignInteractionStepsForm extends React.Component {
             title={title}
             subtitle={
               interactionStep.parentInteractionId
-                ? ""
+                ? null
                 : "Enter a script for your texter along with the question you want the texter be able to answer on behalf of the contact."
             }
           />
@@ -302,7 +304,8 @@ export default class CampaignInteractionStepsForm extends React.Component {
                 ...interactionStep,
                 ...(interactionStep.answerActionsData && {
                   answerActionsData:
-                    typeof interactionStep.answerActionsData === "string"
+                    typeof interactionStep.answerActionsData === "string" &&
+                    interactionStep.answerActionsData
                       ? JSON.parse(interactionStep.answerActionsData)
                       : interactionStep.answerActionsData
                 })
@@ -311,27 +314,32 @@ export default class CampaignInteractionStepsForm extends React.Component {
             >
               {interactionStep.parentInteractionId ? (
                 <Form.Field
+                  as={GSTextField}
                   {...dataTest("answerOption")}
                   name="answerOption"
                   label="Answer"
                   fullWidth
                   hintText="Answer to the previous question"
                 />
-              ) : (
-                ""
-              )}
+              ) : null}
               {interactionStep.parentInteractionId &&
               this.props.availableActions &&
               this.props.availableActions.length ? (
                 <div key={`answeractions-${interactionStep.id}`}>
                   <div>
-                    <Form.Field
+                    <GSSelectField
                       {...dataTest("actionSelect")}
                       floatingLabelText="Action handler"
                       name="answerActions"
-                      type="select"
-                      default=""
+                      value={interactionStep.answerActions || ""}
+                      onChange={val =>
+                        this.handleFormChange({
+                          ...interactionStep,
+                          answerActions: val
+                        })
+                      }
                       choices={[
+                        { value: "", label: "" },
                         ...this.props.availableActions.map(action => ({
                           value: action.name,
                           label: action.displayName
@@ -346,17 +354,28 @@ export default class CampaignInteractionStepsForm extends React.Component {
                   </div>
                   {clientChoiceData && clientChoiceData.length ? (
                     <div>
-                      <Form.Field
+                      <GSAutoComplete
                         {...dataTest("actionDataAutoComplete")}
                         hintText="Start typing to search for the data to use with the answer action"
                         floatingLabelText="Answer Action Data"
                         fullWidth
                         name="answerActionsData"
-                        type="autocomplete"
                         choices={clientChoiceData.map(item => ({
                           value: item.details,
                           label: item.name
                         }))}
+                        value={
+                          typeof interactionStep.answerActionsData ===
+                            "string" && interactionStep.answerActionsData
+                            ? JSON.parse(interactionStep.answerActionsData)
+                            : interactionStep.answerActionsData
+                        }
+                        onChange={val => {
+                          this.handleFormChange({
+                            ...interactionStep,
+                            answerActionsData: val
+                          });
+                        }}
                       />
                       {interactionStep.needRequiredAnswerActionsData ? (
                         <div className={css(styleSheet.errorMessage)}>
@@ -367,10 +386,9 @@ export default class CampaignInteractionStepsForm extends React.Component {
                     </div>
                   ) : null}
                 </div>
-              ) : (
-                ""
-              )}
+              ) : null}
               <Form.Field
+                as={GSScriptField}
                 {...dataTest("editorInteraction")}
                 name="script"
                 type="script"
@@ -381,6 +399,7 @@ export default class CampaignInteractionStepsForm extends React.Component {
                 hintText="This is what your texters will send to your contacts. E.g. Hi, {firstName}. It's {texterFirstName} here."
               />
               <Form.Field
+                as={GSTextField}
                 {...dataTest("questionText")}
                 name="questionText"
                 label="Question"
@@ -399,18 +418,16 @@ export default class CampaignInteractionStepsForm extends React.Component {
               <RaisedButton
                 {...dataTest("addResponse")}
                 label="+ Add a response"
-                onTouchTap={this.addStep(interactionStep.id).bind(this)}
+                onClick={this.addStep(interactionStep.id).bind(this)}
                 style={{ marginBottom: "10px" }}
               />
             </div>
-          ) : (
-            ""
-          )}
+          ) : null}
           {this.state.displayAllSteps &&
             interactionStep.interactionSteps
               .filter(is => !is.isDeleted)
-              .map(is => (
-                <div>
+              .map((is, index) => (
+                <div key={index}>
                   {this.renderInteractionStep(
                     is,
                     availableActions,
@@ -451,7 +468,7 @@ export default class CampaignInteractionStepsForm extends React.Component {
           )}
           primary
           label={this.props.saveLabel}
-          onTouchTap={this.onSave.bind(this)}
+          onClick={this.onSave.bind(this)}
         />
       </div>
     );
