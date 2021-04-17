@@ -11,6 +11,7 @@ import IconButton from "@material-ui/core/IconButton";
 import Paper from "@material-ui/core/Paper";
 import Switch from "@material-ui/core/Switch";
 import FormControlLabel from "@material-ui/core/FormControlLabel";
+import CircularProgress from "@material-ui/core/CircularProgress";
 
 import GSForm from "../../../components/forms/GSForm";
 import GSTextField from "../../../components/forms/GSTextField";
@@ -76,6 +77,21 @@ const inlineStyles = {
   submitButton: {
     marginTop: 15,
     fontSize: "17px !important"
+  },
+  saveWrapper: {
+    position: "fixed",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: -56,
+    right: 0,
+    height: 56,
+    width: 384,
+    background: "rgb(126, 128, 139)"
+  },
+  saveText: {
+    fontSize: 16,
+    color: "#fff"
   }
 };
 
@@ -100,6 +116,7 @@ export class TexterSideboxClass extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
+      isSaving: false,
       feedback: {
         issueCounts: {},
         skillCounts: {},
@@ -108,14 +125,26 @@ export class TexterSideboxClass extends React.Component {
     };
   }
 
-  UNSAFE_componentWillReceiveProps(prevProps, prevState) {
+  componentDidUpdate(prevProps, prevState) {
+    if (
+      this.state.isSaving &&
+      _.isEqual(this.props.assignment.feedback, this.state.feedback)
+    ) {
+      this.setIsSaving(false);
+    }
+
     if (!_.isEqual(prevState.feedback, this.state.feedback)) {
       this.debouncedUpdate();
     }
   }
 
+  setIsSaving(isSaving) {
+    this.setState({ isSaving });
+  }
+
   debouncedUpdate = _.debounce(
     async () => {
+      this.setIsSaving(true);
       await this.props.mutations.updateFeedback(this.state.feedback);
       if (this.state.feedback.sweepComplete) {
         this.props.router.push(`/admin/${this.props.organizationId}/incoming`);
@@ -126,6 +155,7 @@ export class TexterSideboxClass extends React.Component {
   );
 
   handleCounterChange = (type, key, direction) => {
+    this.setIsSaving(true);
     this.setState(({ feedback }) => {
       const prevCount = feedback[type][key] || 0;
       /* eslint-disable no-nested-ternary */
@@ -147,10 +177,10 @@ export class TexterSideboxClass extends React.Component {
   };
 
   render() {
-    const { feedback } = this.state;
+    const { feedback, isSaving } = this.state;
     const { settingsData } = this.props;
-    console.log("texterfeedback render", settingsData.texterFeedbackJSON);
     let config = defaults;
+
     if (settingsData && settingsData.texterFeedbackJSON) {
       try {
         config = JSON.parse(settingsData.texterFeedbackJSON);
@@ -184,6 +214,12 @@ export class TexterSideboxClass extends React.Component {
 
     return (
       <div style={inlineStyles.wrapper}>
+        {isSaving && (
+          <div style={inlineStyles.saveWrapper}>
+            <CircularProgress size={24} style={{ marginRight: 10 }} />
+            <span style={inlineStyles.saveText}>Saving feedback...</span>
+          </div>
+        )}
         <h2>Texter Feedback</h2>
         <GSForm
           schema={schema}

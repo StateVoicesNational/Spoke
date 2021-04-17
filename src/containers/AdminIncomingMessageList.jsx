@@ -100,7 +100,10 @@ export class AdminIncomingMessageList extends Component {
           const selectedTags = Object.keys(
             nextState.tagsFilter.selectedTags || {}
           ).filter(t => t);
-          query.tags = selectedTags.join(",");
+          const suppressedTags = Object.keys(
+            nextState.tagsFilter.suppressedTags || {}
+          ).filter(t => t);
+          query.tags = [...selectedTags, ...suppressedTags].join(",");
         }
       }
       // default false
@@ -367,7 +370,8 @@ export class AdminIncomingMessageList extends Component {
 
     const contactsFilter = {
       ...this.state.contactsFilter,
-      tags: newTagsFilter || undefined
+      tags: (newTagsFilter || {}).include || undefined,
+      suppressedTags: (newTagsFilter || {}).suppress || undefined
     };
 
     this.setState({

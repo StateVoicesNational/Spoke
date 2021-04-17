@@ -244,7 +244,7 @@ class IncomingMessageFilter extends Component {
       return left.text.localeCompare(right.text, "en", { sensitivity: "base" });
     });
 
-    //this.state.texterSearchText = this.props.texterSearchText;
+    // this.state.texterSearchText = this.props.texterSearchText;
 
     return (
       <Card>
