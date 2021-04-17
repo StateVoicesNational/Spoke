@@ -464,7 +464,7 @@ describe("twilio", () => {
     const org2Auth = await cacheableData.organization.getMessageServiceConfig(
       org2
     );
-    expect(org2Auth.authToken).toBe("test_twilio_auth_token");
+    expect(org2Auth.authToken).toBe("<Encrypted>");
     expect(org2Auth.accountSid).toBe("test_twilio_account_sid");
   });
 
@@ -502,7 +502,7 @@ describe("twilio", () => {
   });
 });
 
-describe.only("config functions", () => {
+describe("config functions", () => {
   let twilioConfig;
   let encryptedTwilioConfig;
   let organization;
