@@ -7,9 +7,10 @@ import { Table, TableBody, TableRow, TableRowColumn } from "material-ui/Table";
 import PropTypes from "prop-types";
 import React from "react";
 import Form from "react-formal";
-import yup from "yup";
+import * as yup from "yup";
 import DisplayLink from "../../../../components/DisplayLink";
 import GSForm from "../../../../components/forms/GSForm";
+import GSTextField from "../../../../components/forms/GSTextField";
 import GSSubmitButton from "../../../../components/forms/GSSubmitButton";
 
 export class OrgConfig extends React.Component {
@@ -45,8 +46,8 @@ export class OrgConfig extends React.Component {
 
   handleCloseTwilioDialog = () => this.setState({ twilioDialogOpen: false });
 
-  handleSubmitTwilioAuthForm = async p => {
-    const { accountSid, authToken, messageServiceSid } = p;
+  handleSubmitTwilioAuthForm = async () => {
+    const { accountSid, authToken, messageServiceSid } = this.state;
     let twilioError;
     try {
       await this.props.onSubmit({
@@ -101,11 +102,12 @@ export class OrgConfig extends React.Component {
         style={inlineStyles.dialogButton}
         onClick={this.handleCloseTwilioDialog}
       />,
-      <Form.Button
-        type="submit"
+      <Form.Submit
+        as={GSSubmitButton}
         label="Save"
         style={inlineStyles.dialogButton}
         component={GSSubmitButton}
+        onClick={this.handleSubmitTwilioAuthForm}
       />
     ];
 
@@ -163,26 +165,29 @@ export class OrgConfig extends React.Component {
             <GSForm
               schema={formSchema}
               onChange={this.onFormChange}
-              onSubmit={this.handleSubmitTwilioAuthForm}
               defaultValue={this.state}
             >
               <Form.Field
+                as={GSTextField}
                 label="Twilio Account SID"
                 name="accountSid"
                 fullWidth
               />
               <Form.Field
+                as={GSTextField}
                 label="Twilio Auth Token"
                 name="authToken"
                 fullWidth
               />
               <Form.Field
+                as={GSTextField}
                 label="Default Message Service SID"
                 name="messageServiceSid"
                 fullWidth
               />
 
-              <Form.Button
+              <Form.Submit
+                as={GSSubmitButton}
                 label={this.props.saveLabel || "Save Twilio Credentials"}
                 onClick={this.handleOpenTwilioDialog}
               />
