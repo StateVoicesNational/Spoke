@@ -5,6 +5,14 @@ import MenuItem from "material-ui/MenuItem";
 import Divider from "material-ui/Divider";
 import Humps from "humps";
 
+const inlineStyles = {
+  sectionLabel: {
+    margin: "5px 0 0 20px",
+    fontWeight: "bold",
+    fontSize: 16
+  }
+};
+
 const NO_TAG = { id: -1, name: "NO TAG" };
 const ANY_TAG = { id: -2, name: "ANY TAG" };
 const IGNORE_TAGS = { id: -3, name: "IGNORE TAGS" };
@@ -19,7 +27,8 @@ const makeTagMetafilter = (ignoreTags, anyTag, noTag, tagItem) => {
     ignoreTags,
     anyTag,
     noTag,
-    selectedTags: {}
+    selectedTags: {},
+    suppressedTags: {}
   };
 
   if (tagItem) {
@@ -54,6 +63,7 @@ export class TagsSelector extends React.Component {
 
   cloneTagFilter = () => {
     const selectedTags = {};
+
     if (Object.keys(this.props.tagsFilter.selectedTags || {}).length > 0) {
       Object.keys(this.props.tagsFilter.selectedTags).forEach(key => {
         if (key > 0) {
@@ -62,11 +72,22 @@ export class TagsSelector extends React.Component {
       });
     }
 
+    const suppressedTags = {};
+
+    if (Object.keys(this.props.tagsFilter.suppressedTags || {}).length > 0) {
+      Object.keys(this.props.tagsFilter.suppressedTags).forEach(key => {
+        if (key > 0) {
+          suppressedTags[key] = this.state.tags[key] || TAG_META_FILTERS[key];
+        }
+      });
+    }
+
     return {
       ignoreTags: this.props.tagsFilter.ignoreTags,
       anyTag: this.props.tagsFilter.anyTag,
       noTag: this.props.tagsFilter.noTag,
-      selectedTags
+      selectedTags,
+      suppressedTags
     };
   };
 
@@ -89,8 +110,14 @@ export class TagsSelector extends React.Component {
 
         if (itemClicked.id in tagFilter.selectedTags) {
           delete tagFilter.selectedTags[itemClicked.id];
+        } else if (itemClicked.id in tagFilter.suppressedTags) {
+          delete tagFilter.suppressedTags[itemClicked.id];
+        } else if (String(itemClicked.id).startsWith("s_")) {
+          tagFilter.suppressedTags[itemClicked.id] = itemClicked;
+          delete tagFilter.selectedTags[itemClicked.id.replace("s_", "")];
         } else {
           tagFilter.selectedTags[itemClicked.id] = itemClicked;
+          delete tagFilter.suppressedTags[`s_${itemClicked.id}`];
         }
     }
 
@@ -118,10 +145,10 @@ export class TagsSelector extends React.Component {
       ];
       return this.createMenuItem(tagFilter, isChecked);
     });
-    return [...menuItems, <Divider key={-9999} inset />];
+    return menuItems;
   };
 
-  createMenuItems = tagFilters => {
+  createTagMenuItems = tagFilters => {
     return tagFilters
       .sort((left, right) => {
         if (left.name === right.name) {
@@ -131,8 +158,11 @@ export class TagsSelector extends React.Component {
         return left.name < right.name ? 0 : 1;
       })
       .map(tagFilter => {
-        const isChecked =
-          tagFilter.id in (this.state.tagFilter.selectedTags || []);
+        const isChecked = [
+          ...Object.keys(this.state.tagFilter.selectedTags || {}),
+          ...Object.keys(this.state.tagFilter.suppressedTags || {})
+        ].includes(tagFilter.id);
+
         return this.createMenuItem(tagFilter, isChecked);
       });
   };
@@ -151,7 +181,10 @@ export class TagsSelector extends React.Component {
       return [IGNORE_TAGS];
     }
 
-    return Object.values(tagFilter.selectedTags);
+    return [
+      ...Object.values(tagFilter.selectedTags),
+      ...Object.values(tagFilter.suppressedTags)
+    ];
   };
 
   render = () => (
@@ -161,9 +194,24 @@ export class TagsSelector extends React.Component {
       hintText={this.props.hintText}
       floatingLabelText={"Tags"}
       floatingLabelFixed
+      maxHeight={600}
     >
       {this.createMetaFilterMenuItems(Object.values(TAG_META_FILTERS))}
-      {this.createMenuItems(Object.values(this.state.tags))}
+
+      <Divider inset />
+      <div style={inlineStyles.sectionLabel}>FILTER BY TAGS</div>
+
+      {this.createTagMenuItems(Object.values(this.state.tags))}
+
+      <Divider inset />
+      <div style={inlineStyles.sectionLabel}>SUPPRESS TAGS</div>
+
+      {this.createTagMenuItems(
+        Object.values(this.state.tags).map(tag => ({
+          ...tag,
+          id: `s_${tag.id}`
+        }))
+      )}
     </SelectField>
   );
 }

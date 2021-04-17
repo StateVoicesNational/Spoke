@@ -54,7 +54,7 @@ export const preMessageSave = async ({ messageToSave, organization }) => {
       const re = new RegExp(matcher.regex, "i");
       return String(messageToSave.text).match(re);
     });
-    console.log("auto-optout", matches, messageToSave.text, regexList);
+    // console.log("auto-optout", matches, messageToSave.text, regexList);
     if (matches.length) {
       console.log(
         "auto-optout MATCH",

@@ -524,10 +524,34 @@ export const resolvers = {
 
       let options =
         getConfig("TEXTER_UI_SETTINGS", campaign, { onlyLocal: true }) || "";
+
       if (!options) {
         // fallback on organization defaults
         options = getConfig("TEXTER_UI_SETTINGS", organization) || "";
       }
+
+      if (options.includes("texter-feedback")) {
+        try {
+          const parsedOptions = JSON.parse(options);
+
+          if (parsedOptions["texter-feedback"]) {
+            if (!parsedOptions.texterFeedbackJSON) {
+              const orgOptions =
+                JSON.parse(getConfig("TEXTER_UI_SETTINGS", organization)) || {};
+
+              if (orgOptions.texterFeedbackJSON) {
+                parsedOptions.texterFeedbackJSON =
+                  orgOptions.texterFeedbackJSON;
+
+                options = JSON.stringify(parsedOptions);
+              }
+            }
+          }
+        } catch (err) {
+          console.log("Corrupted TexterFeedback JSON", err);
+        }
+      }
+
       const sideboxChoices = getSideboxChoices(organization);
       return {
         options,
