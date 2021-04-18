@@ -63,7 +63,6 @@ const dispatchActionHandlers = async ({
           return Promise.resolve();
         }
 
-        log.info(`uqr name: ${name}`);
         log.info(`uqr interactionStepAction: ${interactionStepAction}`);
         log.info(`uqr organization: ${organization}`);
         log.info(`uqr user: ${user}`);
@@ -71,8 +70,6 @@ const dispatchActionHandlers = async ({
         log.info(`uqr interactionStep: ${interactionStep}`);
         log.info(`uqr campaign: ${campaign}`);
         log.info(`uqr contact: ${contact}`);
-        log.info(`uqr wasDeleted: ${wasDeleted}`);
-        log.info(`uqr previousValue: ${previousValue}`);
         log.info(`uqr updatedPreviousValue: ${updatedPreviousValue}`);
 
         return jobRunner.dispatchTask(Tasks.ACTION_HANDLER_QUESTION_RESPONSE, {
