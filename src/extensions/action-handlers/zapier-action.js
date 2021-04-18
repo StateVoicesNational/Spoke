@@ -72,14 +72,13 @@ export async function onTagUpdate(
 // What happens when a texter saves the answer that triggers the action
 // This is presumably the meat of the action
 export async function processAction(
-  tags,
+  questionResponse,
+  interactionStep,
+  campaignContactId,
   contact,
   campaign,
   organization,
-  texter,
-  campaignContactId,
-  //questionResponse,
-  interactionStep
+  previousValue
 ) {
   try {
 
@@ -92,7 +91,7 @@ export async function processAction(
       organization: organization,
       tags: tags,
       campaignContactId: campaignContactId,
-      //questionResponse: questionResponse,
+      questionResponse: questionResponse,
       interactionStep: interactionStep
     };
 
