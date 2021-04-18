@@ -85,14 +85,14 @@ export async function processAction(
     const baseUrl = getConfig("BASE_URL", organization);
     const conversationLink = `${baseUrl}/app/${organization.id}/todos/review/${contact.id}`;
     const payload = {
-      texter: texter,
+      questionResponse: questionResponse,
+      interactionStep: interactionStep,
+      campaignContactId: campaignContactId,
       contact: contact,
       campaign: campaign,
       organization: organization,
-      tags: tags,
-      campaignContactId: campaignContactId,
-      questionResponse: questionResponse,
-      interactionStep: interactionStep
+      previousValue: previousValue,
+      conversationLink: conversationLink
     };
 
     const stringifiedPayload = JSON.stringify(payload);
