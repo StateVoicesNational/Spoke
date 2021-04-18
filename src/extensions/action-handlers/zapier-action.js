@@ -78,7 +78,7 @@ export async function processAction(
   organization,
   texter,
   campaignContactId,
-  questionResponse,
+  //questionResponse,
   interactionStep
 ) {
   try {
@@ -92,7 +92,7 @@ export async function processAction(
       organization: organization,
       tags: tags,
       campaignContactId: campaignContactId,
-      questionResponse: questionResponse,
+      //questionResponse: questionResponse,
       interactionStep: interactionStep
     };
 
