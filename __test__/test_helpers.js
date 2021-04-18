@@ -9,6 +9,7 @@ import {
   r
 } from "../src/server/models/";
 import { graphql } from "graphql";
+import gql from "graphql-tag";
 
 // Cypress integration tests do not use jest but do use these helpers
 // They would benefit from mocking mail services, though, so something to look in to.
@@ -232,49 +233,42 @@ export const ensureOrganizationTwilioWithMessagingService = async (
 
 export async function setTwilioAuth(user, organization) {
   const rootValue = {};
-  const accountSid = "test_twilio_account_sid";
-  const authToken = "test_twilio_auth_token";
-  const messageServiceSid = "test_message_service";
+  const twilioAccountSid = "test_twilio_account_sid";
+  const twilioAuthToken = "test_twilio_auth_token";
+  const twilioMessageServiceSid = "test_message_service";
   const orgId = organization.data.createOrganization.id;
 
   const context = getContext({ user });
 
-  const twilioQuery = `
-      mutation updateTwilioAuth(
-        $twilioAccountSid: String
-        $twilioAuthToken: String
-        $twilioMessageServiceSid: String
-        $organizationId: String!
-      ) {
-        updateTwilioAuth(
-          twilioAccountSid: $twilioAccountSid
-          twilioAuthToken: $twilioAuthToken
-          twilioMessageServiceSid: $twilioMessageServiceSid
-          organizationId: $organizationId
-        ) {
-          id
-          twilioAccountSid
-          twilioAuthToken
-          twilioMessageServiceSid
-        }
-      }`;
+  const query = `
+    mutation updateMessageServiceConfig(
+      $organizationId: String!
+      $messageServiceName: String!
+      $config: JSON!
+    ) {
+      updateMessageServiceConfig(
+        organizationId: $organizationId
+        messageServiceName: $messageServiceName
+        config: $config
+      ) 
+    }
+  `;
+
+  const twilioConfig = {
+    twilioAccountSid,
+    twilioAuthToken,
+    twilioMessageServiceSid
+  };
 
   const variables = {
     organizationId: orgId,
-    twilioAccountSid: accountSid,
-    twilioAuthToken: authToken,
-    twilioMessageServiceSid: messageServiceSid
+    messageServiceName: "twilio",
+    config: JSON.stringify(twilioConfig)
   };
 
-  const result = await graphql(
-    mySchema,
-    twilioQuery,
-    rootValue,
-    context,
-    variables
-  );
+  const result = await graphql(mySchema, query, rootValue, context, variables);
   if (result && result.errors) {
-    console.log("updateTwilioAuth failed " + JSON.stringify(result));
+    console.log("updateMessageServiceConfig failed " + JSON.stringify(result));
   }
   return result;
 }

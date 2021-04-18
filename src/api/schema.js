@@ -292,12 +292,6 @@ const rootSchema = gql`
       messageServiceName: String!
       config: JSON!
     ): JSON
-    updateTwilioAuth(
-      organizationId: String!
-      twilioAccountSid: String
-      twilioAuthToken: String
-      twilioMessageServiceSid: String
-    ): Organization
     bulkSendMessages(assignmentId: Int!): [CampaignContact]
     sendMessage(
       message: MessageInput!
