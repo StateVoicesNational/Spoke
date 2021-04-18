@@ -71,9 +71,50 @@ export async function onTagUpdate(
 
 // What happens when a texter saves the answer that triggers the action
 // This is presumably the meat of the action
-export async function processAction() {
+export async function processAction(
+  tags,
+  contact,
+  campaign,
+  organization,
+  texter,
+  campaignContactId,
+  questionResponse,
+  interactionStep
+) {
   try {
-    throw new Error("zapier-action.processAction is not implemented");
+
+    const baseUrl = getConfig("BASE_URL", organization);
+    const conversationLink = `${baseUrl}/app/${organization.id}/todos/review/${contact.id}`;
+    const payload = {
+      texter: texter,
+      contact: contact,
+      campaign: campaign,
+      organization: organization,
+      tags: tags,
+      campaignContactId: campaignContactId,
+      questionResponse: questionResponse,
+      interactionStep: interactionStep
+    };
+
+    const stringifiedPayload = JSON.stringify(payload);
+
+    const url = getConfig("ZAPIER_WEBHOOK_URL", organization);
+
+    console.info(`Zapier onTagUpdate sending ${stringifiedPayload} to ${url}`);
+
+    return httpRequest(url, {
+      method: "POST",
+      retries: 0,
+      timeout: 5000,
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: stringifiedPayload,
+      validStatuses: [200],
+      compress: false
+    });
+
+
   } catch (caughtError) {
     log.error("Encountered exception in zapier.processAction", caughtError);
     throw caughtError;
