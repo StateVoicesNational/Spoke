@@ -30,6 +30,7 @@ const sendMessage = async ({
 const questionResponseActionHandler = async ({
   name,
   organization,
+  user,
   questionResponse,
   interactionStep,
   campaign,
