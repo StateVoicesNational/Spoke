@@ -3,6 +3,7 @@ import { getFormattedPhoneNumber } from "../../../lib/phone-format";
 import { Message, PendingMessagePart } from "../../../server/models";
 import { getLastMessage } from "../message-sending";
 import { log } from "../../../lib";
+import wrap from "../../../server/wrap";
 
 // NEXMO error_codes:
 // If status is a number, then it will be the number
@@ -26,6 +27,36 @@ if (process.env.NEXMO_API_KEY && process.env.NEXMO_API_SECRET) {
     apiKey: process.env.NEXMO_API_KEY,
     apiSecret: process.env.NEXMO_API_SECRET
   });
+}
+
+export function addServerEndpoints(expressApp) {
+  if (process.env.NEXMO_API_KEY) {
+    expressApp.post(
+      "/nexmo",
+      wrap(async (req, res) => {
+        try {
+          const messageId = await nexmo.handleIncomingMessage(req.body);
+          res.send(messageId);
+        } catch (ex) {
+          log.error(ex);
+          res.send("done");
+        }
+      })
+    );
+
+    expressApp.post(
+      "/nexmo-message-report",
+      wrap(async (req, res) => {
+        try {
+          const body = req.body;
+          await nexmo.handleDeliveryReport(body);
+        } catch (ex) {
+          log.error(ex);
+        }
+        res.send("done");
+      })
+    );
+  }
 }
 
 async function convertMessagePartsToMessage(messageParts) {
@@ -171,7 +202,7 @@ export async function sendMessage(
             messageToSave.error_code =
               Number(hasError) || hasError.charCodeAt(0);
           }
-          let options = { conflict: "update" };
+          const options = { conflict: "update" };
           if (trx) {
             options.transaction = trx;
           }
@@ -187,7 +218,7 @@ export async function sendMessage(
             });
           // FUTURE: insert log record with service response
         } else {
-          let options = { conflict: "update" };
+          const options = { conflict: "update" };
           if (trx) {
             options.transaction = trx;
           }
@@ -264,6 +295,7 @@ export async function handleIncomingMessage(message) {
 }
 
 export default {
+  addServerEndpoints,
   convertMessagePartsToMessage,
   findNewCell,
   rentNewCell,

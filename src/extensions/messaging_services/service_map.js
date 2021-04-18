@@ -10,6 +10,18 @@ const serviceMap = {
   fakeservice
 };
 
+export const addServerEndpoints = app => {
+  Object.keys(serviceMap).forEach(serviceName => {
+    const serviceAddServerEndpoints = exports.tryGetFunctionFromService(
+      serviceName,
+      "addServerEndpoints"
+    );
+    if (serviceAddServerEndpoints) {
+      serviceAddServerEndpoints(app);
+    }
+  });
+};
+
 export const getConfigKey = serviceName => `message_service_${serviceName}`;
 
 export const getService = serviceName => serviceMap[serviceName];
