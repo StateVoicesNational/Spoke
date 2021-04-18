@@ -72,11 +72,7 @@ const headerValidator = url => {
       url
     };
 
-    return twilioLibrary.default.Twilio.webhook(authToken, options)(
-      req,
-      res,
-      next
-    );
+    return twilioLibrary.webhook(authToken, options)(req, res, next);
   };
 };
 
