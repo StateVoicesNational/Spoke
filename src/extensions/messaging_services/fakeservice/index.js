@@ -18,7 +18,13 @@ export const getMetadata = () => ({
   name: "fakeservice"
 });
 
-async function sendMessage(message, contact, trx, organization, campaign) {
+export async function sendMessage(
+  message,
+  contact,
+  trx,
+  organization,
+  campaign
+) {
   const errorCode = message.text.match(/error(\d+)/);
   const changes = {
     service: "fakeservice",
@@ -110,7 +116,7 @@ async function convertMessagePartsToMessage(messageParts) {
   });
 }
 
-async function handleIncomingMessage(message) {
+export async function handleIncomingMessage(message) {
   const { contact_number, user_number, service_id, text } = message;
   const pendingMessagePart = new PendingMessagePart({
     service: "fakeservice",
@@ -125,7 +131,7 @@ async function handleIncomingMessage(message) {
   return part.id;
 }
 
-async function buyNumbersInAreaCode(organization, areaCode, limit) {
+export async function buyNumbersInAreaCode(organization, areaCode, limit) {
   const rows = [];
   for (let i = 0; i < limit; i++) {
     const last4 = limit.toString().padStart(4, "0");
@@ -144,7 +150,7 @@ async function buyNumbersInAreaCode(organization, areaCode, limit) {
   return limit;
 }
 
-async function deleteNumbersInAreaCode(organization, areaCode) {
+export async function deleteNumbersInAreaCode(organization, areaCode) {
   const numbersToDelete = (
     await r
       .knex("owned_phone_number")

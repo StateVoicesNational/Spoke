@@ -117,7 +117,13 @@ async function rentNewCell() {
   throw new Error("Did not find any cell");
 }
 
-async function sendMessage(message, contact, trx, organization, campaign) {
+export async function sendMessage(
+  message,
+  contact,
+  trx,
+  organization,
+  campaign
+) {
   if (!nexmo) {
     const options = trx ? { transaction: trx } : {};
     await Message.get(message.id).update({ send_status: "SENT" }, options);
@@ -200,7 +206,7 @@ async function sendMessage(message, contact, trx, organization, campaign) {
   });
 }
 
-async function handleDeliveryReport(report) {
+export async function handleDeliveryReport(report) {
   if (report.hasOwnProperty("client-ref")) {
     const message = await Message.get(report["client-ref"]);
     // FUTURE: insert log record with JSON.stringify(report)
@@ -219,7 +225,7 @@ async function handleDeliveryReport(report) {
   }
 }
 
-async function handleIncomingMessage(message) {
+export async function handleIncomingMessage(message) {
   if (
     !message.hasOwnProperty("to") ||
     !message.hasOwnProperty("msisdn") ||

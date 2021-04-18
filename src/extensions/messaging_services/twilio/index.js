@@ -112,7 +112,7 @@ export const errorDescriptions = {
   "-167": "Internal: Initial message altered (initialtext-guard)"
 };
 
-function addServerEndpoints(expressApp) {
+export function addServerEndpoints(expressApp) {
   expressApp.post(
     "/twilio/:orgId?",
     headerValidator(
