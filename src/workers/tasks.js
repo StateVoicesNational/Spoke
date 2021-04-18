@@ -40,6 +40,16 @@ const questionResponseActionHandler = async ({
 }) => {
   const handler = await ActionHandlers.rawActionHandler(name);
 
+  log.info(`qrah name: ${name}`);
+  log.info(`qrah organization: ${organization}`);
+  log.info(`qrah user: ${user}`);
+  log.info(`qrah questionResponse: ${questionResponse}`);
+  log.info(`qrah interactionStep: ${interactionStep}`);
+  log.info(`qrah campaign: ${campaign}`);
+  log.info(`qrah contact: ${contact}`);
+  log.info(`qrah wasDeleted: ${wasDeleted}`);
+  log.info(`qrah previousValue: ${previousValue}`);
+
   if (!wasDeleted) {
     // TODO: clean up processAction interface
     return handler.processAction({
