@@ -63,14 +63,14 @@ const dispatchActionHandlers = async ({
           return Promise.resolve();
         }
 
-        log.info(`uqr interactionStepAction: ${interactionStepAction}`);
-        log.info(`uqr organization: ${organization}`);
-        log.info(`uqr user: ${user}`);
-        log.info(`uqr questionResponse: ${questionResponse}`);
-        log.info(`uqr interactionStep: ${interactionStep}`);
-        log.info(`uqr campaign: ${campaign}`);
-        log.info(`uqr contact: ${contact}`);
-        log.info(`uqr updatedPreviousValue: ${updatedPreviousValue}`);
+        //log.info(`uqr interactionStepAction: ${interactionStepAction}`);
+        //log.info(`uqr organization: ${organization}`);
+        //log.info(`uqr user: ${user}`);
+        //log.info(`uqr questionResponse: ${questionResponse}`);
+        //log.info(`uqr interactionStep: ${interactionStep}`);
+        //log.info(`uqr campaign: ${campaign}`);
+        //log.info(`uqr contact: ${contact}`);
+        //log.info(`uqr updatedPreviousValue: ${updatedPreviousValue}`);
 
         return jobRunner.dispatchTask(Tasks.ACTION_HANDLER_QUESTION_RESPONSE, {
           name: interactionStepAction,
