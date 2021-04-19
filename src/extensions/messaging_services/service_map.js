@@ -10,14 +10,21 @@ const serviceMap = {
   fakeservice
 };
 
-export const addServerEndpoints = app => {
+export const addServerEndpoints = (app, adders) => {
   Object.keys(serviceMap).forEach(serviceName => {
     const serviceAddServerEndpoints = exports.tryGetFunctionFromService(
       serviceName,
       "addServerEndpoints"
     );
     if (serviceAddServerEndpoints) {
-      serviceAddServerEndpoints(app);
+      serviceAddServerEndpoints(
+        (route, handler) => {
+          adders.post(app, route, handler);
+        },
+        (route, handler) => {
+          adders.get(app, route, handler);
+        }
+      );
     }
   });
 };

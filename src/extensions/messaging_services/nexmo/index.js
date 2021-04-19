@@ -29,9 +29,9 @@ if (process.env.NEXMO_API_KEY && process.env.NEXMO_API_SECRET) {
   });
 }
 
-export function addServerEndpoints(expressApp) {
+export function addServerEndpoints(addPostRoute) {
   if (process.env.NEXMO_API_KEY) {
-    expressApp.post(
+    addPostRoute(
       "/nexmo",
       wrap(async (req, res) => {
         try {
@@ -44,7 +44,7 @@ export function addServerEndpoints(expressApp) {
       })
     );
 
-    expressApp.post(
+    addPostRoute(
       "/nexmo-message-report",
       wrap(async (req, res) => {
         try {

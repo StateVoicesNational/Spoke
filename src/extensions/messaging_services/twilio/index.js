@@ -108,8 +108,8 @@ export const errorDescriptions = {
   "-167": "Internal: Initial message altered (initialtext-guard)"
 };
 
-export function addServerEndpoints(expressApp) {
-  expressApp.post(
+export function addServerEndpoints(addPostRoute) {
+  addPostRoute(
     "/twilio/:orgId?",
     headerValidator(
       process.env.TWILIO_MESSAGE_CALLBACK_URL ||
@@ -153,7 +153,7 @@ export function addServerEndpoints(expressApp) {
     })
   );
 
-  expressApp.post("/twilio-message-report/:orgId?", ...messageReportHooks);
+  addPostRoute("/twilio-message-report/:orgId?", ...messageReportHooks);
 }
 
 async function convertMessagePartsToMessage(messageParts) {
