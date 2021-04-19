@@ -111,7 +111,12 @@ Object.keys(configuredIngestMethods).forEach(ingestMethodName => {
   }
 });
 
-messagingServicesAddServerEndpoints(app);
+const routeAdders = {
+  get: (_app, route, handler) => _app.get(route, handler),
+  post: (_app, route, handler) => _app.post(route, handler)
+};
+
+messagingServicesAddServerEndpoints(app, routeAdders);
 
 app.get("/logout-callback", (req, res) => {
   req.logOut();
