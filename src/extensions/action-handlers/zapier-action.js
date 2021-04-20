@@ -106,9 +106,38 @@ export async function processAction({
     const stringifiedPayload = JSON.stringify(payload);
 
     const url = getConfig("ZAPIER_WEBHOOK_URL", organization);
+    const zap_timeout = getConfig("ZAPIER_TIMEOUT_MS", organization) || 5000;
+    log.info(`Zapier timeout: ${timeout}`);
 
-    var dynamic_url = "";
-    var answer_option = interactionStep.answer_option;
+    //var dynamic_url = "";
+    var final_url = "";
+    const answer_option = interactionStep.answer_option;
+
+    const config = JSON.parse(getConfig("ZAPIER_CONFIG_OBJECT", organization)) || {};
+
+    if(Object.keys(config).length != 0) {
+      if(Array.isArray(test.processAction)) {
+        for(let item of test.processAction) {
+          if( typeof item.answer_name === 'string' && typeof item.webhook_url === 'string') {
+            if(answer_option === item.answer_name) {
+              final_url = item.webhook_url;
+            }
+	  }
+	}
+        if(final_url === "") {
+          log.info(`Did not find "${answer_option}" in ZAPIER_CONFIG_OBJECT. Using default URL from ZAPIER_WEBHOOK_URL.`);
+          final_url = url;
+	}
+      } else {
+        final_url = url;
+      }
+      
+    }
+    else {
+      final_url = url;
+    }
+
+    /*
     switch(answer_option) {
       case "Yes 1 - Strong support of slate": dynamic_url = "https://hooks.zapier.com/hooks/catch/9728183/ovdvp40/"; break;
       case "Yes 2 - Lean support of slate": dynamic_url = "https://hooks.zapier.com/hooks/catch/9728183/ovmyh4f/"; break;
@@ -127,13 +156,17 @@ export async function processAction({
       case "Vote Triple - No": dynamic_url = "https://hooks.zapier.com/hooks/catch/9728183/ovmyn3c/"; break;
       default: dynamic_url = url;
     }
+    */
 
-    console.info(`Zapier onTagUpdate sending ${answer_option} to ${dynamic_url}`);
+    //console.info(`Zapier processAction sending ${answer_option} to ${dynamic_url}`);
+    console.info(`Zapier processAction sending ${answer_option} to ${final_url}`);
 
-    return httpRequest(dynamic_url, {
+
+    //return httpRequest(dynamic_url, {
+    return httpRequest(final_url, {
       method: "POST",
       retries: 0,
-      timeout: 15000,
+      timeout: zap_timeout,
       headers: {
         "Content-Type": "application/json"
       },
