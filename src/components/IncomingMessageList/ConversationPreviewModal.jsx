@@ -3,17 +3,16 @@ import PropTypes from "prop-types";
 import gql from "graphql-tag";
 import { StyleSheet, css } from "aphrodite";
 
-import FlagIcon from "material-ui/svg-icons/content/flag";
-import Avatar from "material-ui/Avatar";
-import CopyIcon from "material-ui/svg-icons/content/content-copy";
-import CheckIcon from "material-ui/svg-icons/navigation/check";
-import IconButton from "material-ui/IconButton/IconButton";
-
 import Button from "@material-ui/core/Button";
 import Dialog from "@material-ui/core/Dialog";
 import DialogTitle from "@material-ui/core/DialogTitle";
 import DialogActions from "@material-ui/core/DialogActions";
-// import IconButton from '@material-ui/core/IconButton';
+import IconButton from "@material-ui/core/IconButton";
+import Tooltip from "@material-ui/core/Tooltip";
+import Avatar from "@material-ui/core/Avatar";
+import FlagIcon from "@material-ui/icons/Flag";
+import FileCopyIcon from "@material-ui/icons/FileCopy";
+import CheckIcon from "@material-ui/icons/Check";
 
 import theme from "../../styles/theme";
 
@@ -50,8 +49,8 @@ const TagList = props => (
 
       return (
         <p key={index} className={css(styles.conversationRow)} style={tagStyle}>
-          <Avatar backgroundColor={theme.colors.red}>
-            <FlagIcon color="white" />
+          <Avatar style={{ backgroundColor: theme.colors.red }}>
+            <FlagIcon color="default" />
           </Avatar>
           <p style={textStyle}>{props.organizationTags[tag.id]}</p>
         </p>
@@ -208,23 +207,30 @@ export class InnerConversationPreviewModal extends Component {
 
     const primaryActions = [
       <span>
-        <IconButton
-          style={{ padding: 0, height: "20px", width: "35px" }}
-          iconStyle={{ height: "20px", width: "25px" }}
-          onClick={this.handleCopyToClipboard}
-          tooltip={
+        <Tooltip
+          title={
             this.state.justCopied
               ? "Copied!"
               : "Copy conversation link to clipboard"
           }
-          tooltipPosition="top-right"
+          placement="left"
         >
-          {this.state.justCopied ? (
-            <CheckIcon color={theme.colors.green} />
-          ) : (
-            <CopyIcon />
-          )}
-        </IconButton>
+          <IconButton
+            onClick={this.handleCopyToClipboard}
+            tooltip={
+              this.state.justCopied
+                ? "Copied!"
+                : "Copy conversation link to clipboard"
+            }
+            tooltipPosition="left"
+          >
+            {this.state.justCopied ? (
+              <CheckIcon style={{ color: theme.colors.green }} />
+            ) : (
+              <FileCopyIcon />
+            )}
+          </IconButton>
+        </Tooltip>
         <input
           type="text"
           ref="convoLink"
