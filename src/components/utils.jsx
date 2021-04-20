@@ -1,12 +1,9 @@
-import React from "react";
-import MenuItem from "material-ui/MenuItem";
 import pick from "lodash/pick";
 
 export function dataSourceItem(name, key) {
   return {
     text: name,
     rawValue: key
-    // value: <MenuItem key={key} primaryText={name} />
   };
 }
 

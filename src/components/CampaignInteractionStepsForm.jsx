@@ -365,11 +365,16 @@ export default class CampaignInteractionStepsForm extends React.Component {
                     <div>
                       <GSAutoComplete
                         {...dataTest("actionDataAutoComplete")}
-                        hintText="Start typing to search for the data to use with the answer action"
-                        floatingLabelText="Answer Action Data"
+                        getOptionLabel={option => {
+                          return typeof option === "string"
+                            ? option
+                            : option.text;
+                        }}
+                        placeholder="Start typing to search for the data to use with the answer action"
+                        label="Answer Action Data"
                         fullWidth
                         name="answerActionsData"
-                        choices={clientChoiceData.map(item => ({
+                        options={clientChoiceData.map(item => ({
                           value: item.details,
                           label: item.name
                         }))}
