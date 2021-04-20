@@ -116,8 +116,8 @@ export async function processAction({
     const config = JSON.parse(getConfig("ZAPIER_CONFIG_OBJECT", organization)) || {};
 
     if(Object.keys(config).length != 0) {
-      if(Array.isArray(test.processAction)) {
-        for(let item of test.processAction) {
+      if(Array.isArray(config.processAction)) {
+        for(let item of config.processAction) {
           if( typeof item.answer_name === 'string' && typeof item.webhook_url === 'string') {
             if(answer_option === item.answer_name) {
               final_url = item.webhook_url;
