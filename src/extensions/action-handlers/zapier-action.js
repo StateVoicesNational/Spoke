@@ -107,7 +107,7 @@ export async function processAction({
 
     const url = getConfig("ZAPIER_WEBHOOK_URL", organization);
     const zap_timeout = getConfig("ZAPIER_TIMEOUT_MS", organization) || 5000;
-    log.info(`Zapier timeout: ${timeout}`);
+    log.info(`Zapier timeout: ${zap_timeout}`);
 
     //var dynamic_url = "";
     var final_url = "";
