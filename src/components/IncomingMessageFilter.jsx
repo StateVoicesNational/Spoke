@@ -1,14 +1,25 @@
 import React, { Component } from "react";
 import type from "prop-types";
-import Toggle from "material-ui/Toggle";
-
 import _ from "lodash";
-import { Card, CardHeader, CardText } from "material-ui/Card";
+
 import AutoComplete from "material-ui/AutoComplete";
-import Checkbox from "material-ui/Checkbox";
-import SelectField from "material-ui/SelectField";
-import TextField from "material-ui/TextField";
-import MenuItem from "material-ui/MenuItem";
+
+import TextField from "@material-ui/core/TextField";
+import Checkbox from "@material-ui/core/Checkbox";
+import FormControl from "@material-ui/core/FormControl";
+import FormControlLabel from "@material-ui/core/FormControlLabel";
+import Card from "@material-ui/core/Card";
+import CardHeader from "@material-ui/core/CardHeader";
+import CardContent from "@material-ui/core/CardContent";
+import Collapse from "@material-ui/core/Collapse";
+import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
+import IconButton from "@material-ui/core/IconButton";
+import Switch from "@material-ui/core/Switch";
+import InputLabel from "@material-ui/core/InputLabel";
+import MenuItem from "@material-ui/core/MenuItem";
+import Select from "@material-ui/core/Select";
+import Input from "@material-ui/core/Input";
+
 import theme from "../styles/theme";
 import { dataSourceItem } from "./utils";
 import SelectedCampaigns from "./SelectedCampaigns";
@@ -32,6 +43,9 @@ const styles = StyleSheet.create({
   },
   spacer: {
     marginRight: "30px"
+  },
+  cardHeader: {
+    cursor: "pointer"
   }
 });
 
@@ -101,7 +115,7 @@ class IncomingMessageFilter extends Component {
     }
   };
 
-  onMessageFilterSelectChanged = (event, index, values) => {
+  onMessageFilterSelectChanged = values => {
     this.setState({ messageFilter: values });
     const messageStatuses = new Set();
     values.forEach(value => {
@@ -245,165 +259,194 @@ class IncomingMessageFilter extends Component {
     });
 
     // this.state.texterSearchText = this.props.texterSearchText;
-
+    const { expanded } = this.state;
+    console.log("this.state.messageFilter", this.state.messageFilter);
     return (
       <Card>
-        <CardHeader title="Message Filter" actAsExpander showExpandableButton />
-        <CardText expandable>
-          <div className={css(styles.container)}>
-            <div className={css(styles.toggleFlexColumn)}>
-              <Toggle
-                label={"Active Campaigns"}
-                onToggle={this.props.onActiveCampaignsToggled}
-                toggled={
-                  this.props.includeActiveCampaigns ||
-                  !this.props.includeArchivedCampaigns
-                }
-              />
-              <br />
-              <Toggle
-                label={"Archived Campaigns"}
-                onToggle={this.props.onArchivedCampaignsToggled}
-                toggled={this.props.includeArchivedCampaigns}
-              />
-            </div>
-            <div className={css(styles.spacer)} />
-            <div className={css(styles.toggleFlexColumn)}>
-              <Toggle
-                label={"Not Opted Out"}
-                onToggle={this.props.onNotOptedOutConversationsToggled}
-                toggled={
-                  this.props.includeNotOptedOutConversations ||
-                  !this.props.includeOptedOutConversations
-                }
-              />
-              <br />
-              <Toggle
-                label={"Opted Out"}
-                onToggle={this.props.onOptedOutConversationsToggled}
-                toggled={this.props.includeOptedOutConversations}
-              />
-            </div>
-            <div className={css(styles.spacer)} />
-            <div className={css(styles.toggleFlexColumn)}>
-              <SelectedCampaigns
-                campaigns={this.state.selectedCampaigns}
-                onDeleteRequested={this.handleCampaignRemoved}
-                onClear={this.handleClearCampaigns}
-              />
-            </div>
-          </div>
-
-          <div className={css(styles.container)}>
-            <div className={css(styles.flexColumn)}>
-              <SelectField
-                multiple
-                value={this.state.messageFilter}
-                hintText={"Which messages?"}
-                floatingLabelText={"Contact message status"}
-                floatingLabelFixed
-                onChange={this.onMessageFilterSelectChanged}
-              >
-                {Object.keys(MESSAGE_STATUSES).map(messageStatus => {
-                  const displayText = MESSAGE_STATUSES[messageStatus].name;
-                  const isChecked =
-                    this.state.messageFilter &&
-                    this.state.messageFilter.indexOf(messageStatus) > -1;
-                  return (
-                    <MenuItem
-                      key={messageStatus}
-                      value={messageStatus}
-                      primaryText={displayText}
-                      insetChildren
-                      checked={isChecked}
-                    />
-                  );
-                })}
-              </SelectField>
-            </div>
-            <div className={css(styles.spacer)} />
-            <div className={css(styles.flexColumn)}>
-              <AutoComplete
-                filter={AutoComplete.caseInsensitiveFilter}
-                maxSearchResults={8}
-                onFocus={() => this.setState({ campaignSearchText: "" })}
-                onUpdateInput={campaignSearchText =>
-                  this.setState({ campaignSearchText })
-                }
-                searchText={this.state.campaignSearchText}
-                dataSource={campaignNodes}
-                hintText={"Search for a campaign"}
-                floatingLabelText={"Select a campaign"}
-                onNewRequest={this.onCampaignSelected}
-              />
-            </div>
-            <div className={css(styles.spacer)} />
-            <div className={css(styles.flexColumn)}>
-              <AutoComplete
-                filter={AutoComplete.caseInsensitiveFilter}
-                maxSearchResults={8}
-                onFocus={() => this.setState({ texterSearchText: "" })}
-                onUpdateInput={texterSearchText =>
-                  this.setState({ texterSearchText })
-                }
-                searchText={this.state.texterSearchText}
-                dataSource={texterNodes}
-                hintText={"Search for a texter"}
-                floatingLabelText={"Texter"}
-                onNewRequest={this.onTexterSelected}
-              />
-              <div>
-                <Checkbox
-                  checked={this.props.assignmentsFilter.sender}
-                  onCheck={this.props.onTexterChanged}
+        <CardHeader
+          title="Message Filter"
+          action={
+            <IconButton>
+              <ExpandMoreIcon />
+            </IconButton>
+          }
+          onClick={() => {
+            this.setState({ expanded: !expanded });
+          }}
+          className={css(styles.cardHeader)}
+        />
+        <Collapse
+          in={expanded}
+          timeout="auto"
+          unmountOnExit
+          style={{
+            margin: "20px"
+          }}
+        >
+          <CardContent>
+            <div className={css(styles.container)}>
+              <div className={css(styles.toggleFlexColumn)}>
+                <FormControlLabel
+                  control={<Switch color="primary" />}
+                  label="Active Campaigns"
+                  labelPlacement="start"
+                  onChange={this.props.onActiveCampaignsToggled}
+                  checked={
+                    this.props.includeActiveCampaigns ||
+                    !this.props.includeArchivedCampaigns
+                  }
                 />
-                search senders (instead of assignments)
+                <br />
+                <FormControlLabel
+                  control={<Switch color="primary" />}
+                  label="Archived Campaigns"
+                  labelPlacement="start"
+                  onChange={this.props.onArchivedCampaignsToggled}
+                  checked={this.props.includeArchivedCampaigns}
+                />
+              </div>
+              <div className={css(styles.spacer)} />
+              <div className={css(styles.toggleFlexColumn)}>
+                <FormControlLabel
+                  control={<Switch color="primary" />}
+                  label="Not Opted Out"
+                  labelPlacement="start"
+                  onChange={this.props.onNotOptedOutConversationsToggled}
+                  checked={
+                    this.props.includeNotOptedOutConversations ||
+                    !this.props.includeOptedOutConversations
+                  }
+                />
+                <br />
+                <FormControlLabel
+                  control={<Switch color="primary" />}
+                  label="Opted Out"
+                  labelPlacement="start"
+                  onChange={this.props.onOptedOutConversationsToggled}
+                  checked={this.props.includeOptedOutConversations}
+                />
+              </div>
+              <div className={css(styles.spacer)} />
+              <div className={css(styles.toggleFlexColumn)}>
+                <SelectedCampaigns
+                  campaigns={this.state.selectedCampaigns}
+                  onDeleteRequested={this.handleCampaignRemoved}
+                  onClear={this.handleClearCampaigns}
+                />
               </div>
             </div>
-            <div className={css(styles.spacer)} />
-            <div className={css(styles.flexColumn)}>
-              <TextField
-                hintText="Search message text"
-                floatingLabelText="Search message text"
-                value={this.state.messageTextFilter}
-                onChange={(_, messageTextFilter) => {
-                  this.setState({ messageTextFilter });
-                }}
-                onKeyPress={evt => {
-                  if (evt.key === "Enter") {
-                    this.props.onMessageTextFilterChanged(
-                      this.state.messageTextFilter
-                    );
+
+            <div className={css(styles.container)}>
+              <div className={css(styles.flexColumn)}>
+                <FormControl style={{ width: "100%" }}>
+                  <InputLabel id="contact-message-status">
+                    Contact message status
+                  </InputLabel>
+                  <Select
+                    multiple
+                    labelId="contact-message-status"
+                    value={this.state.messageFilter || []}
+                    placeholder={"Which messages?"}
+                    input={<Input />}
+                    onChange={event => {
+                      const { value } = event.target;
+                      this.onMessageFilterSelectChanged(value);
+                    }}
+                  >
+                    {Object.keys(MESSAGE_STATUSES).map(messageStatus => (
+                      <MenuItem key={messageStatus} value={messageStatus}>
+                        {MESSAGE_STATUSES[messageStatus].name}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </div>
+              <div className={css(styles.spacer)} />
+              <div className={css(styles.flexColumn)}>
+                <AutoComplete
+                  filter={AutoComplete.caseInsensitiveFilter}
+                  maxSearchResults={8}
+                  onFocus={() => this.setState({ campaignSearchText: "" })}
+                  onUpdateInput={campaignSearchText =>
+                    this.setState({ campaignSearchText })
                   }
-                }}
-              />
-            </div>
-            <div className={css(styles.spacer)} />
-            <div className={css(styles.flexColumn)}>
-              <TagsSelector
-                onChange={this.onTagsFilterChanged}
-                tagsFilter={this.state.tagsFilter}
-                tags={this.props.tags}
-              />
-            </div>
-            <div className={css(styles.spacer)} />
-            <div className={css(styles.flexColumn)}>
-              <TextField
-                hintText="Error code number"
-                floatingLabelText="Error codes"
-                value={this.state.errorCode}
-                onChange={(_, errorCode) => {
-                  this.setState({ errorCode });
-                }}
-                onKeyPress={evt => {
-                  if (evt.key === "Enter") {
-                    this.props.onErrorCodeChanged(this.state.errorCode);
+                  searchText={this.state.campaignSearchText}
+                  dataSource={campaignNodes}
+                  hintText={"Search for a campaign"}
+                  floatingLabelText={"Select a campaign"}
+                  onNewRequest={this.onCampaignSelected}
+                />
+              </div>
+              <div className={css(styles.spacer)} />
+              <div className={css(styles.flexColumn)}>
+                <AutoComplete
+                  filter={AutoComplete.caseInsensitiveFilter}
+                  maxSearchResults={8}
+                  onFocus={() => this.setState({ texterSearchText: "" })}
+                  onUpdateInput={texterSearchText =>
+                    this.setState({ texterSearchText })
                   }
-                }}
-              />
+                  searchText={this.state.texterSearchText}
+                  dataSource={texterNodes}
+                  hintText={"Search for a texter"}
+                  floatingLabelText={"Texter"}
+                  onNewRequest={this.onTexterSelected}
+                />
+                <div>
+                  <FormControlLabel
+                    label="search senders (instead of assignments)"
+                    labelPlacement="end"
+                    checked={this.props.assignmentsFilter.sender || false}
+                    onChange={this.props.onTexterChanged}
+                    control={<Checkbox color="primary" />}
+                  />
+                </div>
+              </div>
+              <div className={css(styles.spacer)} />
+              <div className={css(styles.flexColumn)}>
+                <TextField
+                  placeholder="Search message text"
+                  label="Search message text"
+                  value={this.state.messageTextFilter}
+                  onChange={(_, messageTextFilter) => {
+                    this.setState({ messageTextFilter });
+                  }}
+                  onKeyPress={evt => {
+                    if (evt.key === "Enter") {
+                      this.props.onMessageTextFilterChanged(
+                        this.state.messageTextFilter
+                      );
+                    }
+                  }}
+                />
+              </div>
+              <div className={css(styles.spacer)} />
+              <div className={css(styles.flexColumn)}>
+                <TagsSelector
+                  onChange={this.onTagsFilterChanged}
+                  tagsFilter={this.state.tagsFilter}
+                  tags={this.props.tags}
+                />
+              </div>
+              <div className={css(styles.spacer)} />
+              <div className={css(styles.flexColumn)}>
+                <TextField
+                  placeholder="Error code number"
+                  label="Error codes"
+                  value={this.state.errorCode}
+                  onChange={(_, errorCode) => {
+                    this.setState({ errorCode });
+                  }}
+                  onKeyPress={evt => {
+                    if (evt.key === "Enter") {
+                      this.props.onErrorCodeChanged(this.state.errorCode);
+                    }
+                  }}
+                />
+              </div>
             </div>
-          </div>
-        </CardText>
+          </CardContent>
+        </Collapse>
       </Card>
     );
   }

@@ -146,6 +146,7 @@ export class AdminIncomingMessageList extends Component {
   };
 
   handleTexterChanged = async (texterId, sender) => {
+    console.log("handleTexterChanged", texterId, sender);
     const assignmentsFilter = { ...this.state.assignmentsFilter };
     if (sender !== undefined) {
       assignmentsFilter.sender = sender;
