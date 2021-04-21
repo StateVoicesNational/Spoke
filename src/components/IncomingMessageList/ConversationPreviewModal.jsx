@@ -206,7 +206,7 @@ export class InnerConversationPreviewModal extends Component {
     const url = `${protocol}//${host}/app/${organizationId}/todos/review/${campaignContactId}`;
 
     const primaryActions = [
-      <span>
+      <span key="1">
         <Tooltip
           title={
             this.state.justCopied
@@ -243,6 +243,7 @@ export class InnerConversationPreviewModal extends Component {
         </a>
       </span>,
       <Button
+        key="2"
         {...dataTest("conversationPreviewModalOptOutButton")}
         label="Opt-Out"
         color="secondary"
@@ -250,7 +251,7 @@ export class InnerConversationPreviewModal extends Component {
       >
         Opt-Out
       </Button>,
-      <Button color="primary" onClick={this.props.onRequestClose}>
+      <Button key="3" color="primary" onClick={this.props.onRequestClose}>
         Close
       </Button>
     ];
