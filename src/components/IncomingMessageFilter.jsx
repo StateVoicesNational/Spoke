@@ -2,8 +2,6 @@ import React, { Component } from "react";
 import type from "prop-types";
 import _ from "lodash";
 
-import AutoComplete from "material-ui/AutoComplete";
-
 import TextField from "@material-ui/core/TextField";
 import Checkbox from "@material-ui/core/Checkbox";
 import FormControl from "@material-ui/core/FormControl";
@@ -19,6 +17,7 @@ import InputLabel from "@material-ui/core/InputLabel";
 import MenuItem from "@material-ui/core/MenuItem";
 import Select from "@material-ui/core/Select";
 import Input from "@material-ui/core/Input";
+import Autocomplete from "@material-ui/lab/Autocomplete";
 
 import theme from "../styles/theme";
 import { dataSourceItem } from "./utils";
@@ -132,40 +131,22 @@ class IncomingMessageFilter extends Component {
   };
 
   onCampaignSelected = (selection, index) => {
-    let campaignId = undefined;
-    if (index === -1) {
-      const campaign = this.props.campaigns.find(
-        cmpgn => cmpgn.title === selection
-      );
-      if (campaign) {
-        campaignId = campaign.id;
-      }
-    } else {
-      campaignId = selection.value.key;
-    }
-    if (campaignId) {
-      const selectedCampaigns = this.makeSelectedCampaignsArray(
+    let selectedCampaigns = [];
+    if (selection.rawValue) {
+      selectedCampaigns = this.makeSelectedCampaignsArray(
         selection.rawValue,
         selection.text
       );
-      this.applySelectedCampaigns(selectedCampaigns);
     }
+    this.applySelectedCampaigns(selectedCampaigns);
   };
 
-  onTexterSelected = (selection, index) => {
+  onTexterSelected = (event, selection) => {
     let texterUserId = undefined;
-    if (index === -1) {
-      const texter = this.props.texters.find(texter => {
-        return texter.displayName === selection;
-      });
-      if (texter) {
-        texterUserId = texter.id;
-      }
-    } else {
-      texterUserId = selection.value.key;
-    }
-    if (texterUserId) {
+    if (selection.rawValue) {
       this.props.onTexterChanged(parseInt(texterUserId, 10));
+    } else {
+      this.props.onTexterChanged();
     }
   };
 
@@ -363,34 +344,32 @@ class IncomingMessageFilter extends Component {
               </div>
               <div className={css(styles.spacer)} />
               <div className={css(styles.flexColumn)}>
-                <AutoComplete
-                  filter={AutoComplete.caseInsensitiveFilter}
-                  maxSearchResults={8}
-                  onFocus={() => this.setState({ campaignSearchText: "" })}
-                  onUpdateInput={campaignSearchText =>
-                    this.setState({ campaignSearchText })
-                  }
-                  searchText={this.state.campaignSearchText}
-                  dataSource={campaignNodes}
-                  hintText={"Search for a campaign"}
-                  floatingLabelText={"Select a campaign"}
-                  onNewRequest={this.onCampaignSelected}
+                <Autocomplete
+                  options={campaignNodes}
+                  onChange={this.onCampaignSelected}
+                  getOptionLabel={option => option.text}
+                  renderInput={params => (
+                    <TextField
+                      {...params}
+                      label="Select a campaign"
+                      placeholder="Search for a campaign"
+                    />
+                  )}
                 />
               </div>
               <div className={css(styles.spacer)} />
               <div className={css(styles.flexColumn)}>
-                <AutoComplete
-                  filter={AutoComplete.caseInsensitiveFilter}
-                  maxSearchResults={8}
-                  onFocus={() => this.setState({ texterSearchText: "" })}
-                  onUpdateInput={texterSearchText =>
-                    this.setState({ texterSearchText })
-                  }
-                  searchText={this.state.texterSearchText}
-                  dataSource={texterNodes}
-                  hintText={"Search for a texter"}
-                  floatingLabelText={"Texter"}
-                  onNewRequest={this.onTexterSelected}
+                <Autocomplete
+                  options={texterNodes}
+                  onChange={this.onTexterSelected}
+                  getOptionLabel={option => option.text}
+                  renderInput={params => (
+                    <TextField
+                      {...params}
+                      label="Texter"
+                      placeholder="Search for a texter"
+                    />
+                  )}
                 />
                 <div>
                   <FormControlLabel
