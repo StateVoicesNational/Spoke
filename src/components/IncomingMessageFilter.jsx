@@ -130,21 +130,13 @@ class IncomingMessageFilter extends Component {
     this.props.onMessageFilterChanged(messageStatusesString);
   };
 
-  onCampaignSelected = (selection, index) => {
-    let selectedCampaigns = [];
-    if (selection.rawValue) {
-      selectedCampaigns = this.makeSelectedCampaignsArray(
-        selection.rawValue,
-        selection.text
-      );
-    }
-    this.applySelectedCampaigns(selectedCampaigns);
+  onCampaignSelected = (event, selection) => {
+    this.applySelectedCampaigns(selection);
   };
 
   onTexterSelected = (event, selection) => {
-    let texterUserId = undefined;
-    if (selection.rawValue) {
-      this.props.onTexterChanged(parseInt(texterUserId, 10));
+    if (selection && selection.rawValue) {
+      this.props.onTexterChanged(parseInt(selection.rawValue, 10));
     } else {
       this.props.onTexterChanged();
     }
@@ -184,19 +176,6 @@ class IncomingMessageFilter extends Component {
 
   removeAllCampaignsFromCampaignsArray = campaign =>
     campaign.key !== ALL_CAMPAIGNS;
-
-  makeSelectedCampaignsArray = (campaignId, campaignText) => {
-    const selectedCampaign = { key: campaignId, text: campaignText };
-    if (campaignId === ALL_CAMPAIGNS) {
-      return [];
-    }
-    return _.concat(
-      this.state.selectedCampaigns.filter(
-        this.removeAllCampaignsFromCampaignsArray
-      ),
-      selectedCampaign
-    );
-  };
 
   selectedCampaignIds = selectedCampaigns =>
     selectedCampaigns.map(campaign => parseInt(campaign.key, 10));
@@ -239,9 +218,8 @@ class IncomingMessageFilter extends Component {
       return left.text.localeCompare(right.text, "en", { sensitivity: "base" });
     });
 
-    // this.state.texterSearchText = this.props.texterSearchText;
     const { expanded } = this.state;
-    console.log("this.state.messageFilter", this.state.messageFilter);
+
     return (
       <Card>
         <CardHeader
@@ -345,9 +323,11 @@ class IncomingMessageFilter extends Component {
               <div className={css(styles.spacer)} />
               <div className={css(styles.flexColumn)}>
                 <Autocomplete
+                  multiple
                   options={campaignNodes}
                   onChange={this.onCampaignSelected}
-                  getOptionLabel={option => option.text}
+                  getOptionLabel={option => option.text || ""}
+                  value={this.props.selectedCampaigns || []}
                   renderInput={params => (
                     <TextField
                       {...params}
@@ -362,7 +342,13 @@ class IncomingMessageFilter extends Component {
                 <Autocomplete
                   options={texterNodes}
                   onChange={this.onTexterSelected}
-                  getOptionLabel={option => option.text}
+                  getOptionLabel={option => option.text || ""}
+                  value={texterNodes.find(
+                    v => v.text === this.props.texterSearchText
+                  )}
+                  onInputChange={(event, newInputValue) => {
+                    this.setState({ texterSearchText: newInputValue });
+                  }}
                   renderInput={params => (
                     <TextField
                       {...params}
