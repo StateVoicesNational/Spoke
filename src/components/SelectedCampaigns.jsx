@@ -2,6 +2,7 @@ import PropTypes from "prop-types";
 import React from "react";
 import { StyleSheet, css } from "aphrodite";
 import Chip from "@material-ui/core/Chip";
+import CloseIcon from "@material-ui/icons/Close";
 
 const ssStyles = StyleSheet.create({
   container: {
@@ -18,24 +19,22 @@ const styles = {
 
 const SelectedCampaigns = props => (
   <div className={css(ssStyles.container)}>
-    {props.campaigns.length ? (
+    {props.campaigns.length > 0 && (
       <Chip
-        style={styles.chip}
+        style={{ backgroundColor: "#FFC0CB", ...styles.chip }}
         key={0}
         onClick={props.onClear}
-        backgroundColor="#FFC0CB"
-      >
-        Clear campaigns
-      </Chip>
-    ) : null}
+        label="Clear campaigns"
+      />
+    )}
     {props.campaigns.map(campaign => (
       <Chip
         style={styles.chip}
         key={campaign.key}
-        onRequestDelete={() => props.onDeleteRequested(campaign.key)}
-      >
-        {campaign.text}
-      </Chip>
+        onDelete={() => props.onDeleteRequested(campaign.key)}
+        deleteIcon={<CloseIcon />}
+        label={campaign.text}
+      />
     ))}
   </div>
 );
