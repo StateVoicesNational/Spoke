@@ -3,7 +3,6 @@ import React from "react";
 import * as yup from "yup";
 import Form from "react-formal";
 import Button from "@material-ui/core/Button";
-import Toggle from "material-ui/Toggle";
 import { withRouter } from "react-router";
 import gql from "graphql-tag";
 
@@ -200,12 +199,23 @@ export class AdminConfig extends React.Component {
           can take replies. This splits up initial text senders from texters
           that reply.
         </p>
-        <Toggle
-          label="Enable initial outbound unassign"
-          toggled={this.props.settingsData.takeConversationsOutboundUnassign}
-          onToggle={(toggler, val) =>
-            this.props.onToggle("takeConversationsOutboundUnassign", val)
+        <FormControlLabel
+          control={
+            <Switch
+              color="primary"
+              checked={
+                this.props.settingsData.takeConversationsOutboundUnassign
+              }
+              onChange={event => {
+                this.props.onToggle(
+                  "takeConversationsOutboundUnassign",
+                  event.target.checked
+                );
+              }}
+            />
           }
+          label="Enable initial outbound unassign"
+          labelPlacement="start"
         />
       </div>
     );
