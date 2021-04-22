@@ -1,7 +1,9 @@
 import PropTypes from "prop-types";
 import React, { Component } from "react";
-import IconButton from "material-ui/IconButton";
-import NavigationArrowForward from "material-ui/svg-icons/navigation/arrow-forward";
+
+import IconButton from "@material-ui/core/IconButton";
+import ArrowForwardIcon from "@material-ui/icons/ArrowForward";
+
 import { StyleSheet, css } from "aphrodite";
 
 // This is because the Toolbar from material-ui seems to only apply the correct margins if the
@@ -42,9 +44,9 @@ class SendButtonArrow extends Component {
           className={css(styles.arrowButton)}
           onClick={this.handleTouchTap}
           disabled={this.props.disabled}
-          primary
+          color="primary"
         >
-          <NavigationArrowForward className={css(styles.icon)} />
+          <ArrowForwardIcon className={css(styles.icon)} />
         </IconButton>
       </div>
     );

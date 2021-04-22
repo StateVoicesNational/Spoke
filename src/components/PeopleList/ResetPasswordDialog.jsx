@@ -1,15 +1,22 @@
 import React from "react";
 import PropTypes from "prop-types";
 
-import Dialog from "material-ui/Dialog";
+import DialogTitle from "@material-ui/core/DialogTitle";
+import Dialog from "@material-ui/core/Dialog";
+import DialogActions from "@material-ui/core/DialogActions";
+import DialogContent from "@material-ui/core/DialogContent";
+
 import PasswordResetLink from "../../components/PasswordResetLink";
 import Button from "@material-ui/core/Button";
 import { dataTest } from "../../lib/attributes";
 
 const ResetPasswordDialog = props => (
-  <Dialog
-    title="Reset user password"
-    actions={[
+  <Dialog open={props.open} onClose={props.requestClose}>
+    <DialogTitle>Reset user password</DialogTitle>
+    <DialogContent>
+      <PasswordResetLink passwordResetHash={props.passwordResetHash} />
+    </DialogContent>
+    <DialogActions>
       <Button
         {...dataTest("passResetOK")}
         color="primary"
@@ -17,12 +24,7 @@ const ResetPasswordDialog = props => (
       >
         OK
       </Button>
-    ]}
-    modal={false}
-    open={props.open}
-    onRequestClose={props.requestClose}
-  >
-    <PasswordResetLink passwordResetHash={props.passwordResetHash} />
+    </DialogActions>
   </Dialog>
 );
 
