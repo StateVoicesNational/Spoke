@@ -128,15 +128,20 @@ export async function processContactLoad(job, maxContacts, organization) {
   const contactsData = (await s3.getObject(params).promise()).Body.toString(
     "utf-8"
   );
-  const contacts = JSON.parse(await gunzip(Buffer.from(contactsData, "base64")))
-    .contacts;
-
+  const parsedData = JSON.parse(
+    await gunzip(Buffer.from(contactsData, "base64"))
+  );
+  const contacts = parsedData.contacts;
   const contactsCount = contacts.length;
+
   await finalizeContactLoad(
     job,
     contacts,
     maxContacts,
     job.payload,
-    JSON.stringify({ finalCount: contactsCount })
+    JSON.stringify({
+      finalCount: contactsCount,
+      filename: parsedData.name || null
+    })
   );
 }

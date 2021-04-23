@@ -1,9 +1,10 @@
 import type from "prop-types";
 import React from "react";
-import yup from "yup";
+import * as yup from "yup";
 import { css } from "aphrodite";
 import Form from "react-formal";
 import FlatButton from "material-ui/FlatButton";
+import GSTextField from "../../../components/forms/GSTextField";
 import {
   flexStyles,
   inlineStyles
@@ -80,12 +81,14 @@ export class AdminConfig extends React.Component {
     return (
       <div>
         <Form.Field
+          as={GSTextField}
           name="helpButtonLabel"
           label="Help Button Label"
           hintText="default: Help"
           fullWidth
         />
         <Form.Field
+          as={GSTextField}
           name="helpWidgetID"
           label="Freshworks Widget ID"
           fullWidth

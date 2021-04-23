@@ -2,6 +2,7 @@ import PropTypes from "prop-types";
 import React from "react";
 import RaisedButton from "material-ui/RaisedButton";
 import CircularProgress from "material-ui/CircularProgress";
+import { getRaisedButtonProps } from "../utils";
 
 const styles = {
   button: {
@@ -26,12 +27,12 @@ const GSSubmitButton = props => {
   }
 
   return (
-    <div style={styles.button} {...props}>
+    <div style={styles.button}>
       <RaisedButton
         primary
         type="submit"
         value="submit"
-        {...props}
+        {...getRaisedButtonProps(props)}
         {...extraProps}
       />
       {icon}

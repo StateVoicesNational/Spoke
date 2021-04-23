@@ -67,9 +67,29 @@ export class DstHelper {
     );
   }
 
-  static isDateDst(date: Date, timezone: string): boolean {
+  static calculateIsDateDst(date: Date, timezone: string): boolean {
     let d = new DateTime(date, DateFunctions.Get, zone(timezone));
     return DstHelper.isOffsetDst(d.offset(), timezone);
+  }
+
+  static cachedIsDateDst(date: Date, timezone: string): boolean {
+    // cached for an hour -- this is frustratingly slow ~ 20ms and is called a lot
+    DstHelper.ensureTimezoneDstCalculated(timezone);
+    const tz = _timezoneOffsetAndDst[timezone];
+    if (
+      !tz.dstNowCheckedAt ||
+      Number(date) > Number(tz.dstNowCheckedAt) + 3600000 ||
+      global.TEST_ENVIRONMENT
+    ) {
+      tz.dstNow = DstHelper.calculateIsDateDst(date, timezone);
+      tz.dstNowCheckedAt = new Date();
+    }
+    return tz.dstNow;
+  }
+
+  static isDateDst(date: Date, timezone: string): boolean {
+    DstHelper.ensureTimezoneDstCalculated(timezone);
+    return DstHelper.cachedIsDateDst(date, timezone);
   }
 
   static isDateTimeDst(date: DateTime, timezone: string): boolean {
