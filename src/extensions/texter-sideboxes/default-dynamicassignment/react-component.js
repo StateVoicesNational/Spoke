@@ -1,11 +1,12 @@
 import type from "prop-types";
 import React from "react";
-import yup from "yup";
+import * as yup from "yup";
 import Form from "react-formal";
 import Badge from "material-ui/Badge";
 import RaisedButton from "material-ui/RaisedButton";
 import { withRouter } from "react-router";
 import gql from "graphql-tag";
+import GSTextField from "../../../components/forms/GSTextField";
 
 import loadData from "../../../containers/hoc/load-data";
 import { inlineStyles } from "../../../components/AssignmentSummary";
@@ -226,18 +227,21 @@ export class AdminConfig extends React.Component {
     return (
       <div>
         <Form.Field
+          as={GSTextField}
           name="dynamicAssignmentRequestMoreLabel"
           label="Request More Label"
           fullWidth
           hintText="default: Send more texts"
         />
         <Form.Field
+          as={GSTextField}
           name="dynamicAssignmentRequestMoreMessage"
           label="Request More Top Message"
           fullWidth
           hintText="default: Finished sending all your messages, and want to send more?"
         />
         <Form.Field
+          as={GSTextField}
           name="dynamicAssignmentNothingToDoMessage"
           label="Summary message when there is nothing to do"
           fullWidth

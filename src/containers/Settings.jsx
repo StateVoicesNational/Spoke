@@ -9,7 +9,7 @@ import GSSubmitButton from "../components/forms/GSSubmitButton";
 import FlatButton from "material-ui/FlatButton";
 import RaisedButton from "material-ui/RaisedButton";
 import DisplayLink from "../components/DisplayLink";
-import yup from "yup";
+import * as yup from "yup";
 import { Card, CardText, CardActions, CardHeader } from "material-ui/Card";
 import { StyleSheet, css } from "aphrodite";
 import theme from "../styles/theme";
@@ -17,6 +17,7 @@ import Toggle from "material-ui/Toggle";
 import moment from "moment";
 import CampaignTexterUIForm from "../components/CampaignTexterUIForm";
 import OrganizationFeatureSettings from "../components/OrganizationFeatureSettings";
+import GSTextField from "../components/forms/GSTextField";
 
 const styles = StyleSheet.create({
   section: {
@@ -85,7 +86,7 @@ class Settings extends React.Component {
 
     return (
       <Dialog
-        open={this.state.textingHoursDialogOpen}
+        open={!!this.state.textingHoursDialogOpen}
         onRequestClose={this.handleCloseTextingHoursDialog}
       >
         <GSForm
@@ -93,15 +94,21 @@ class Settings extends React.Component {
           onSubmit={this.handleSubmitTextingHoursForm}
           defaultValue={{ textingHoursStart, textingHoursEnd }}
         >
+          <div>
+            Enter the hour in 24-hour time, so e.g. 9am-9pm would be Start Time:
+            9 and End Time: 21.
+          </div>
           <Form.Field
-            label="Start time"
+            as={GSTextField}
+            label="Start time (24h)"
             name="textingHoursStart"
             type="select"
             fullWidth
             choices={hourChoices}
           />
           <Form.Field
-            label="End time"
+            as={GSTextField}
+            label="End time (24h)"
             name="textingHoursEnd"
             type="select"
             fullWidth
@@ -111,12 +118,11 @@ class Settings extends React.Component {
             <FlatButton
               label="Cancel"
               style={inlineStyles.dialogButton}
-              onTouchTap={this.handleCloseTextingHoursDialog}
+              onClick={this.handleCloseTextingHoursDialog}
             />
-            <Form.Button
-              type="submit"
+            <Form.Submit
+              as={GSSubmitButton}
               style={inlineStyles.dialogButton}
-              component={GSSubmitButton}
               label="Save"
             />
           </div>
@@ -181,11 +187,10 @@ class Settings extends React.Component {
         style={inlineStyles.dialogButton}
         onClick={this.handleCloseTwilioDialog}
       />,
-      <Form.Button
-        type="submit"
+      <Form.Submit
+        as={GSSubmitButton}
         label="Save"
         style={inlineStyles.dialogButton}
-        component={GSSubmitButton}
       />
     ];
 
@@ -226,22 +231,26 @@ class Settings extends React.Component {
               }}
             >
               <Form.Field
+                as={GSTextField}
                 label="Twilio Account SID"
                 name="accountSid"
                 fullWidth
               />
               <Form.Field
+                as={GSTextField}
                 label="Twilio Auth Token"
                 name="authToken"
                 fullWidth
               />
               <Form.Field
+                as={GSTextField}
                 label="Default Message Service SID"
                 name="messageServiceSid"
                 fullWidth
               />
 
-              <Form.Button
+              <Form.Submit
+                as={GSSubmitButton}
                 label={this.props.saveLabel || "Save Twilio Credentials"}
                 onClick={this.handleOpenTwilioDialog}
               />
@@ -282,13 +291,14 @@ class Settings extends React.Component {
                 defaultValue={{ optOutMessage }}
               >
                 <Form.Field
+                  as={GSTextField}
                   label="Default Opt-Out Message"
                   name="optOutMessage"
                   fullWidth
                 />
 
-                <Form.Button
-                  type="submit"
+                <Form.Submit
+                  as={GSSubmitButton}
                   label={this.props.saveLabel || "Save Opt-Out Message"}
                 />
               </GSForm>
@@ -317,7 +327,7 @@ class Settings extends React.Component {
                   {formatTextingHours(organization.textingHoursEnd)}
                 </span>
                 {window.TZ
-                  ? ` in your organisations local time. Timezone ${window.TZ}`
+                  ? ` in your organisation's local time. Timezone ${window.TZ}`
                   : " in contacts local time (or 12pm-6pm EST if timezone is unknown)"}
               </div>
             ) : (
@@ -329,7 +339,7 @@ class Settings extends React.Component {
               <FlatButton
                 label="Change texting hours"
                 primary
-                onTouchTap={this.handleOpenTextingHoursDialog}
+                onClick={this.handleOpenTextingHoursDialog}
               />
             ) : (
               ""
@@ -415,9 +425,7 @@ class Settings extends React.Component {
                 label="Clear Cached Organization And Extension Caches"
                 secondary
                 style={inlineStyles.dialogButton}
-                onTouchTap={
-                  this.props.mutations.clearCachedOrgAndExtensionCaches
-                }
+                onClick={this.props.mutations.clearCachedOrgAndExtensionCaches}
               />
             </CardText>
           </Card>

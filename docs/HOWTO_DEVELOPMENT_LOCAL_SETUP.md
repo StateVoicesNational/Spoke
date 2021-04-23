@@ -30,7 +30,7 @@ We use environment variables to allow instance admins to customize their Spoke e
 
 ### Your Database
 
-We have 2 recommended ways to set up your databse for your development environment and you can choose either based on your preference or comfort level. You can use sqlite (which is the default DB so you can proceed to the next section if you choose this) or postgres. At this time, all production Spoke instances use postgres.
+We have 2 recommended ways to set up your database for your development environment and you can choose either based on your preference or comfort level. You can use sqlite (which is the default DB so you can proceed to the next section if you choose this) or postgres. At this time, all production Spoke instances use postgres.
 
 If you're using postgres (see below), you should set `DB_TYPE=pg` and if you're using sqlite, you don't need to change anything about your .env file.
 
@@ -44,10 +44,11 @@ Docker is optional, but can help with a consistent development environment using
 - Docker allows you to run apps in containers and can be installed [here with Docker's instructions](https://docs.docker.com/desktop/)
 - Docker Compose is the tool used to create and run docker configurations. If you installed Docker on Mac, you already have Docker Compose, if you're using Linux or Windows you can install Docker Compose [with these instructions](https://docs.docker.com/compose/install/)
 
-2. Run `./dev-tools/create-test-database` to populate the test database
-
-3. Make sure Docker is running on your machine and then build and run Spoke with `docker-compose up -d` to run redis and postgres in the background
+2. Make sure Docker is running on your machine and then build and run Spoke with `docker-compose up -d` to run redis and postgres in the background
    - You can stop docker compose at any time with `docker-compose down`, and data will persist next time you run `docker-compose up`.
+
+3. Run `./dev-tools/create-test-database` to populate the test database
+
 4. When done testing, clean up resources with `docker-compose down`, or `docker-compose down -v` to **_completely destroy_** your Postgres database & Redis datastore volumes.
 
 ### Getting the app running

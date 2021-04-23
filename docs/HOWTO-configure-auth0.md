@@ -51,7 +51,7 @@ callback(null, user, context);
       <script src="https://cdn.auth0.com/js/base64.js"></script>
       <script src="https://cdn.auth0.com/js/es5-shim.min.js"></script>
       <![endif]-->
-      <script src="https://cdn.auth0.com/js/lock/11.11/lock.min.js"></script>
+      <script src="https://cdn.auth0.com/js/lock/11.28/lock.min.js"></script>
       <script>
         // Decode utf8 characters properly
         var config = JSON.parse(decodeURIComponent(escape(window.atob('@@config@@'))));

@@ -74,9 +74,7 @@ function findWithRegex(regex, contentBlock, callback) {
 }
 
 const RecognizedField = props => (
-  <span {...props} style={styles.goodField}>
-    {props.children}
-  </span>
+  <span style={styles.goodField}>{props.children}</span>
 );
 
 RecognizedField.propTypes = {
@@ -84,9 +82,7 @@ RecognizedField.propTypes = {
 };
 
 const UnrecognizedField = props => (
-  <span {...props} style={styles.badField}>
-    {props.children}
-  </span>
+  <span style={styles.badField}>{props.children}</span>
 );
 
 UnrecognizedField.propTypes = {
@@ -148,6 +144,16 @@ class ScriptEditor extends React.Component {
     return editorState;
   }
 
+  componentDidMount() {
+    const { editorState } = this.state;
+    this.setState({ editorState: this.moveFocusToEnd(editorState) });
+  }
+
+  moveFocusToEnd(editorState) {
+    editorState = EditorState.moveSelectionToEnd(editorState);
+    return EditorState.forceSelection(editorState, editorState.getSelection());
+  }
+
   getValue() {
     const { editorState } = this.state;
     return editorState.getCurrentContent().getPlainText();
@@ -199,11 +205,12 @@ class ScriptEditor extends React.Component {
     const { scriptFields } = this.props;
     return (
       <div style={styles.scriptFieldButtonSection}>
-        {scriptFields.map(field => (
+        {scriptFields.map((field, index) => (
           <Chip
+            key={index}
             style={styles.scriptFieldButton}
             text={delimit(field)}
-            onTouchTap={() => this.addCustomField(field)}
+            onClick={() => this.addCustomField(field)}
           />
         ))}
       </div>

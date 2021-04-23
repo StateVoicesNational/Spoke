@@ -9,8 +9,10 @@ import FloatingActionButton from "material-ui/FloatingActionButton";
 import ContentAdd from "material-ui/svg-icons/content/add";
 import theme from "../styles/theme";
 import Dialog from "material-ui/Dialog";
-import yup from "yup";
+import * as yup from "yup";
 import GSForm from "../components/forms/GSForm";
+import GSTextField from "../components/forms/GSTextField";
+import GSSubmitButton from "../components/forms/GSSubmitButton";
 import Form from "react-formal";
 import { StyleSheet, css } from "aphrodite";
 import loadData from "./hoc/load-data";
@@ -147,20 +149,20 @@ export class Tags extends React.Component {
                 label="Edit"
                 labelPosition="before"
                 icon={<CreateIcon />}
-                onTouchTap={this.handleOpenEdit(t.id)}
+                onClick={this.handleOpenEdit(t.id)}
               />
               <RaisedButton
                 label="Delete"
                 labelPosition="before"
                 icon={<DeleteIcon color={red500} />}
-                onTouchTap={this.handleDelete(t.id)}
+                onClick={this.handleDelete(t.id)}
               />
             </CardText>
           </Card>
         ))}
         <FloatingActionButton
           style={theme.components.floatingButton}
-          onTouchTap={this.handleOpen}
+          onClick={this.handleOpen}
         >
           <ContentAdd />
         </FloatingActionButton>
@@ -175,15 +177,20 @@ export class Tags extends React.Component {
             defaultValue={dialogTag}
           >
             <div className={css(styles.fields)}>
-              <Form.Field label="Name" name="name" />
-              <Form.Field label="Description" name="description" />
+              <Form.Field as={GSTextField} label="Name" name="name" />
               <Form.Field
+                as={GSTextField}
+                label="Description"
+                name="description"
+              />
+              <Form.Field
+                as={GSTextField}
                 label="Group ('texter-tags' for texters)"
                 name="group"
               />
             </div>
             <div className={css(styles.submit)}>
-              <Form.Button type="submit" label={dialogButtonLabel} />
+              <Form.Submit as={GSSubmitButton} label={dialogButtonLabel} />
             </div>
           </GSForm>
         </Dialog>
