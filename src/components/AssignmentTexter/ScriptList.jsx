@@ -52,7 +52,7 @@ class ScriptList extends React.Component {
   render() {
     const {
       subheader,
-      scripts,
+      scripts = [],
       onSelectCannedResponse,
       onCreateCannedResponse,
       showAddScriptButton,
