@@ -10,12 +10,12 @@ import {
 import telemetry from "../server/telemetry";
 import { log, gunzip, zipToTimeZone, convertOffsetsToStrings } from "../lib";
 import { sleep, updateJob } from "./lib";
-import serviceMap from "../server/api/lib/services";
-import twilio from "../server/api/lib/twilio";
+import serviceMap from "../extensions/messaging_services";
+import twilio from "../extensions/messaging_services/twilio";
 import {
   getLastMessage,
   saveNewIncomingMessage
-} from "../server/api/lib/message-sending";
+} from "../extensions/messaging_services/message-sending";
 import importScriptFromDocument from "../server/api/lib/import-script";
 import { rawIngestMethod } from "../extensions/contact-loaders";
 

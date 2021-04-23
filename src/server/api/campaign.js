@@ -1,6 +1,8 @@
 import { accessRequired } from "./errors";
 import { mapFieldsToModel, mapFieldsOrNull } from "./lib/utils";
-import { errorDescriptions } from "./lib/twilio";
+import twilio, {
+  errorDescriptions
+} from "../../extensions/messaging_services/twilio";
 import { Campaign, JobRequest, r, cacheableData } from "../models";
 import { getUsers } from "./user";
 import { getSideboxChoices } from "./organization";
@@ -8,7 +10,6 @@ import {
   getAvailableIngestMethods,
   getMethodChoiceData
 } from "../../extensions/contact-loaders";
-import twilio from "./lib/twilio";
 import { getConfig, getFeatures } from "./lib/config";
 import ownedPhoneNumber from "./lib/owned-phone-number";
 const title = 'lower("campaign"."title")';
