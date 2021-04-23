@@ -264,7 +264,7 @@ describe("CampaignInteractionStepsForm", () => {
         expect(step1AnswerActionNodes.last().props().choices).toEqual([
           {
             value: "",
-            label: "",
+            label: ""
           },
           {
             value: "red-handler",
@@ -295,7 +295,7 @@ describe("CampaignInteractionStepsForm", () => {
         expect(step2AnswerActionNodes.last().props().choices).toEqual([
           {
             value: "",
-            label: "",
+            label: ""
           },
           {
             value: "red-handler",
@@ -324,7 +324,7 @@ describe("CampaignInteractionStepsForm", () => {
         expect(step3AnswerActionNodes.last().props().choices).toEqual([
           {
             value: "",
-            label: "",
+            label: ""
           },
           {
             value: "red-handler",
@@ -466,7 +466,7 @@ describe("CampaignInteractionStepsForm", () => {
         expect(step1AnswerActionNodes.last().props().choices).toEqual([
           {
             value: "",
-            label: "",
+            label: ""
           },
           {
             value: "color-handler",

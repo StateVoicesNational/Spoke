@@ -1,8 +1,14 @@
+import {
+  getMessageServiceConfig,
+  tryGetFunctionFromService
+} from "../../../extensions/messaging_services/service_map";
+import { getConfig } from "../../api/lib/config";
 import { r } from "../../models";
-import { getConfig, hasConfig } from "../../api/lib/config";
-import { symmetricDecrypt } from "../../api/lib/crypto";
 
 const cacheKey = orgId => `${process.env.CACHE_PREFIX || ""}org-${orgId}`;
+
+const getOrganizationMessageService = organization =>
+  getConfig("service", organization) || getConfig("DEFAULT_SERVICE");
 
 const organizationCache = {
   clear: async id => {
@@ -10,25 +16,26 @@ const organizationCache = {
       await r.redis.delAsync(cacheKey(id));
     }
   },
-  getMessageServiceSid: async (organization, contact, messageText) => {
-    // Note organization won't always be available, so we'll need to conditionally look it up based on contact
-    if (messageText && /twilioapitest/.test(messageText)) {
-      return "fakeSid_MK123";
-    }
-    return getConfig("TWILIO_MESSAGE_SERVICE_SID", organization);
+  getMessageService: getOrganizationMessageService,
+  getMessageServiceConfig: async (organization, options = {}) => {
+    const { restrictToOrgFeatures, obscureSensitiveInformation } = options;
+    const serviceName = getOrganizationMessageService(organization);
+    return getMessageServiceConfig(serviceName, organization, {
+      restrictToOrgFeatures,
+      obscureSensitiveInformation
+    });
   },
-  getTwilioAuth: async organization => {
-    const hasOrgToken = hasConfig("TWILIO_AUTH_TOKEN_ENCRYPTED", organization);
-    // Note, allows unencrypted auth tokens to be (manually) stored in the db
-    // @todo: decide if this is necessary, or if UI/envars is sufficient.
-    const authToken = hasOrgToken
-      ? symmetricDecrypt(getConfig("TWILIO_AUTH_TOKEN_ENCRYPTED", organization))
-      : getConfig("TWILIO_AUTH_TOKEN", organization);
-    const accountSid = hasConfig("TWILIO_ACCOUNT_SID", organization)
-      ? getConfig("TWILIO_ACCOUNT_SID", organization)
-      : // Check old TWILIO_API_KEY variable for backwards compatibility.
-        getConfig("TWILIO_API_KEY", organization);
-    return { authToken, accountSid };
+  getMessageServiceSid: async (organization, contact, messageText) => {
+    const messageServiceName = getOrganizationMessageService(organization);
+    const getMessageServiceSid = tryGetFunctionFromService(
+      messageServiceName,
+      "getMessageServiceSid"
+    );
+
+    if (!getMessageServiceSid) {
+      return null;
+    }
+    return getMessageServiceSid(organization, contact, messageText);
   },
   load: async id => {
     if (r.redis) {

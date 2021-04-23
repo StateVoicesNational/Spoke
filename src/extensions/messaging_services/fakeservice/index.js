@@ -1,12 +1,30 @@
-import { getLastMessage } from "./message-sending";
-import { Message, PendingMessagePart, r, cacheableData } from "../../models";
+import { getLastMessage } from "../message-sending";
+import {
+  Message,
+  PendingMessagePart,
+  r,
+  cacheableData
+} from "../../../server/models";
 import uuid from "uuid";
 
 // This 'fakeservice' allows for fake-sending messages
 // that end up just in the db appropriately and then using sendReply() graphql
 // queries for the reception (rather than a real service)
 
-async function sendMessage(message, contact, trx, organization, campaign) {
+export const getMetadata = () => ({
+  supportsOrgConfig: false,
+  supportsCampaignConfig: false,
+  type: "SMS",
+  name: "fakeservice"
+});
+
+export async function sendMessage(
+  message,
+  contact,
+  trx,
+  organization,
+  campaign
+) {
   const errorCode = message.text.match(/error(\d+)/);
   const changes = {
     service: "fakeservice",
@@ -48,7 +66,7 @@ async function sendMessage(message, contact, trx, organization, campaign) {
         ]
       : null;
     await cacheableData.message.save({
-      contact: contact,
+      contact,
       messageInstance: new Message({
         ...message,
         ...changes,
@@ -98,7 +116,7 @@ async function convertMessagePartsToMessage(messageParts) {
   });
 }
 
-async function handleIncomingMessage(message) {
+export async function handleIncomingMessage(message) {
   const { contact_number, user_number, service_id, text } = message;
   const pendingMessagePart = new PendingMessagePart({
     service: "fakeservice",
@@ -113,7 +131,7 @@ async function handleIncomingMessage(message) {
   return part.id;
 }
 
-async function buyNumbersInAreaCode(organization, areaCode, limit) {
+export async function buyNumbersInAreaCode(organization, areaCode, limit) {
   const rows = [];
   for (let i = 0; i < limit; i++) {
     const last4 = limit.toString().padStart(4, "0");
@@ -132,7 +150,7 @@ async function buyNumbersInAreaCode(organization, areaCode, limit) {
   return limit;
 }
 
-async function deleteNumbersInAreaCode(organization, areaCode) {
+export async function deleteNumbersInAreaCode(organization, areaCode) {
   const numbersToDelete = (
     await r
       .knex("owned_phone_number")
@@ -160,5 +178,6 @@ export default {
   deleteNumbersInAreaCode,
   // useless unused stubs
   convertMessagePartsToMessage,
-  handleIncomingMessage
+  handleIncomingMessage,
+  getMetadata
 };

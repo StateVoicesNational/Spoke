@@ -1,4 +1,4 @@
-import { r, cacheableData } from "../../models";
+import { cacheableData } from "../../server/models";
 
 export async function getLastMessage({
   contactNumber,
