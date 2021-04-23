@@ -256,8 +256,14 @@ async function getOrganizationContactUserNumber(organization, contactNumber) {
   return null;
 }
 
-async function sendMessage(message, contact, trx, organization, campaign) {
-  const twilio = await getTwilio(organization);
+export async function sendMessage(
+  message,
+  contact,
+  trx,
+  organization,
+  campaign
+) {
+  const twilio = await exports.getTwilio(organization);
   const APITEST = /twilioapitest/.test(message.text);
   if (!twilio && !APITEST) {
     log.warn(

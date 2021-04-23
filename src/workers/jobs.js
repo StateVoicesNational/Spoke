@@ -966,7 +966,7 @@ export async function sendMessages(queryFunc, defaultStatus) {
               message.id
           );
         }
-        message.service = message.service || process.env.DEFAULT_SERVICE;
+        message.service = message.service || getConfig("DEFAULT_SERVICE");
         const service = serviceMap[message.service];
         log.info(
           `Sending (${message.service}): ${message.user_number} -> ${message.contact_number}\nMessage: ${message.text}`
