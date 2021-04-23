@@ -94,7 +94,8 @@ async function convertMessagePartsToMessage(messageParts) {
   const lastMessage = await getLastMessage({
     contactNumber,
     service: "fakeservice",
-    messageServiceSid: "fakeservice"
+    messageServiceSid: "fakeservice",
+    userNumber
   });
 
   const service_id =

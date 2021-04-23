@@ -74,7 +74,8 @@ async function convertMessagePartsToMessage(messageParts) {
     contactNumber,
     service: "nexmo",
     // Nexmo has nothing better that is both from sent and received message repsonses:
-    messageServiceSid: "nexmo"
+    messageServiceSid: "nexmo",
+    userNumber
   });
 
   return new Message({

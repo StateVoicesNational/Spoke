@@ -243,14 +243,21 @@ async function getMessagingServiceSid(
   );
 }
 
-export async function sendMessage(
-  message,
-  contact,
-  trx,
-  organization,
-  campaign
-) {
-  const twilio = await exports.getTwilio(organization);
+async function getOrganizationContactUserNumber(organization, contactNumber) {
+  const organizationContact = await cacheableData.organizationContact.query({
+    organizationId: organization.id,
+    contactNumber
+  });
+
+  if (organizationContact && organizationContact.user_number) {
+    return organizationContact.user_number;
+  }
+
+  return null;
+}
+
+async function sendMessage(message, contact, trx, organization, campaign) {
+  const twilio = await getTwilio(organization);
   const APITEST = /twilioapitest/.test(message.text);
   if (!twilio && !APITEST) {
     log.warn(
@@ -277,6 +284,14 @@ export async function sendMessage(
     message,
     campaign
   );
+
+  let userNumber;
+  if (process.env.EXPERIMENTAL_STICKY_SENDER) {
+    userNumber = await getOrganizationContactUserNumber(
+      organization,
+      contact.cell
+    );
+  }
 
   return new Promise((resolve, reject) => {
     if (message.service !== "twilio") {
@@ -315,14 +330,23 @@ export async function sendMessage(
     }
     const changes = {};
 
-    changes.messageservice_sid = messagingServiceSid;
+    if (userNumber) {
+      changes.user_number = userNumber;
+    } else {
+      changes.messageservice_sid = messagingServiceSid;
+    }
 
     const messageParams = Object.assign(
       {
         to: message.contact_number,
-        body: message.text
+        body: message.text,
+        statusCallback: process.env.TWILIO_STATUS_CALLBACK_URL
       },
-      messagingServiceSid ? { messagingServiceSid } : {},
+      userNumber
+        ? { from: userNumber }
+        : messagingServiceSid
+        ? { messagingServiceSid }
+        : {},
       twilioValidityPeriod ? { validityPeriod: twilioValidityPeriod } : {},
       parseMessageText(message)
     );
@@ -449,10 +473,11 @@ export function postMessageSend(
     };
     Promise.all([
       updateQuery.update(changesToSave),
-      cacheableData.campaignContact.updateStatus({
-        ...contact,
-        messageservice_sid: changesToSave.messageservice_sid
-      })
+      cacheableData.campaignContact.updateStatus(
+        contact,
+        undefined,
+        changesToSave.messageservice_sid || changesToSave.user_number
+      )
     ])
       .then(() => {
         resolve({
@@ -643,10 +668,13 @@ async function buyNumber(organization, twilioInstance, phoneNumber, opts = {}) {
     friendlyName: `Managed by Spoke [${process.env.BASE_URL}]: ${phoneNumber}`,
     voiceUrl: getConfig("TWILIO_VOICE_URL", organization) // will use default twilio recording if undefined
   });
+
   if (response.error) {
     throw new Error(`Error buying twilio number: ${response.error}`);
   }
+
   log.debug(`Bought number ${phoneNumber} [${response.sid}]`);
+
   let allocationFields = {};
   const messagingServiceSid = opts && opts.messagingServiceSid;
   if (messagingServiceSid) {
