@@ -102,7 +102,7 @@ class AdminCampaignStats extends React.Component {
 
     return interactionSteps.map(step => {
       if (step.question === "") {
-        return <div></div>;
+        return <div key={step.id}></div>;
       }
 
       const totalResponseCount = step.question.answerOptions.reduce(
@@ -202,11 +202,9 @@ class AdminCampaignStats extends React.Component {
               This campaign is archived
               {campaign.isArchivedPermanently
                 ? " and its phone numbers have been released"
-                : ""}
+                : null}
             </div>
-          ) : (
-            ""
-          )}
+          ) : null}
 
           <div className={css(styles.header)}>
             {campaign.title}
@@ -221,7 +219,7 @@ class AdminCampaignStats extends React.Component {
                     // edit
                     <RaisedButton
                       {...dataTest("editCampaign")}
-                      onTouchTap={() =>
+                      onClick={() =>
                         this.props.router.push(
                           `/admin/${organizationId}/campaigns/${campaignId}/edit`
                         )
@@ -231,7 +229,7 @@ class AdminCampaignStats extends React.Component {
                   ) : null}
                   <RaisedButton
                     {...dataTest("convoCampaign")}
-                    onTouchTap={() =>
+                    onClick={() =>
                       this.props.router.push(
                         `/admin/${organizationId}/incoming?campaigns=${campaignId}`
                       )
@@ -243,7 +241,8 @@ class AdminCampaignStats extends React.Component {
                         // Buttons for Admins (and not Supervolunteers)
                         // export
                         <RaisedButton
-                          onTouchTap={async () => {
+                          key="exportCampaign"
+                          onClick={async () => {
                             this.setState(
                               {
                                 exportMessageOpen: true,
@@ -265,8 +264,9 @@ class AdminCampaignStats extends React.Component {
                         />, // unarchive
                         campaign.isArchived ? (
                           <RaisedButton
+                            key="unarchiveCampaign"
                             disabled={campaign.isArchivedPermanently}
-                            onTouchTap={async () =>
+                            onClick={async () =>
                               await this.props.mutations.unarchiveCampaign(
                                 campaignId
                               )
@@ -276,7 +276,8 @@ class AdminCampaignStats extends React.Component {
                         ) : null,
                         !campaign.isArchived ? (
                           <RaisedButton
-                            onTouchTap={async () =>
+                            key="archiveCampaign"
+                            onClick={async () =>
                               await this.props.mutations.archiveCampaign(
                                 campaignId
                               )
@@ -285,9 +286,10 @@ class AdminCampaignStats extends React.Component {
                           />
                         ) : null, // copy
                         <RaisedButton
+                          key="copyCampaign"
                           {...dataTest("copyCampaign")}
                           label="Copy Campaign"
-                          onTouchTap={async () => {
+                          onClick={async () => {
                             let result = await this.props.mutations.copyCampaign(
                               this.props.params.campaignId
                             );
@@ -299,9 +301,10 @@ class AdminCampaignStats extends React.Component {
                         />,
                         campaign.useOwnMessagingService ? (
                           <RaisedButton
+                            key="messagingService"
                             {...dataTest("messagingService")}
                             disabled={campaign.isArchivedPermanently}
-                            onTouchTap={() =>
+                            onClick={() =>
                               this.props.router.push(
                                 `/admin/${organizationId}/campaigns/${campaignId}/messaging-service`
                               )
@@ -311,8 +314,9 @@ class AdminCampaignStats extends React.Component {
                         ) : null,
                         showReleaseNumbers ? (
                           <RaisedButton
+                            key="releaseCampaignNumbers"
                             disabled={campaign.isArchivedPermanently}
-                            onTouchTap={async () =>
+                            onClick={async () =>
                               this.props.mutations.releaseCampaignNumbers(
                                 campaignId
                               )

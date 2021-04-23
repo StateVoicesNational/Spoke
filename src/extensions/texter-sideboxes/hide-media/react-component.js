@@ -1,6 +1,6 @@
 import type from "prop-types";
 import React from "react";
-import yup from "yup";
+import * as yup from "yup";
 import Form from "react-formal";
 
 export const displayName = () =>

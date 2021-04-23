@@ -95,7 +95,7 @@ export class CampaignContactsForm extends React.Component {
       primary
       disabled={this.props.saveDisabled}
       label={this.props.saveLabel}
-      onTouchTap={() => this.props.onSubmit()}
+      onClick={() => this.props.onSubmit()}
     />
   );
 

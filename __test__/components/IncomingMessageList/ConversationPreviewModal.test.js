@@ -25,7 +25,7 @@ import {
   createStartedCampaign
 } from "../../test_helpers";
 
-describe("ConversationPreviewModal", async () => {
+describe.skip("ConversationPreviewModal", async () => {
   let startedCampaign;
   let optOutContact;
   let optOut;

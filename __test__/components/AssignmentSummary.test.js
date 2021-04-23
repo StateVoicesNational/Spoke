@@ -4,7 +4,6 @@
 import React from "react";
 import { mount } from "enzyme";
 import { StyleSheetTestUtils } from "aphrodite";
-import injectTapEventPlugin from "react-tap-event-plugin";
 import each from "jest-each";
 import MuiThemeProvider from "material-ui/styles/MuiThemeProvider";
 import { ApolloProvider } from "react-apollo";
@@ -80,7 +79,6 @@ describe("AssignmentSummary text", function t() {
 });
 
 describe("AssignmentSummary actions inUSA and NOT AllowSendAll", () => {
-  injectTapEventPlugin(); // prevents warning
   function create(
     unmessaged,
     unreplied,
@@ -170,16 +168,20 @@ describe("AssignmentSummary actions inUSA and NOT AllowSendAll", () => {
     const actions = create(0, 0, 0, 9, 0, false);
     expect(
       actions
-        .find(Badge)
+        .find(RaisedButton)
         .at(0)
-        .prop("badgeContent")
-    ).toBe(9);
+        .prop("label")
+    ).toBe("Past 9 Messages");
+  });
+
+  it('renders "skipped messages (n)" with messaged', () => {
+    const actions = create(0, 0, 0, 0, 8, false);
     expect(
       actions
         .find(RaisedButton)
         .at(0)
         .prop("label")
-    ).toBe("Past Messages");
+    ).toBe("Skipped 8 Messages");
   });
 });
 
@@ -242,7 +244,8 @@ it('renders "Send later" when there is a badTimezoneCount', () => {
             unmessagedCount: 0,
             unrepliedCount: 0,
             badTimezoneCount: 4,
-            skippedMessagesCount: 0
+            skippedMessagesCount: 0,
+            pastMessagesCount: 0
           }
         })}
       />
@@ -251,21 +254,15 @@ it('renders "Send later" when there is a badTimezoneCount', () => {
   expect(
     actions
       .find(Badge)
-      .at(1)
+      .at(0)
       .prop("badgeContent")
   ).toBe(4);
   expect(
     actions
       .find(RaisedButton)
-      .at(0)
-      .prop("label")
-  ).toBe("Past Messages");
-  expect(
-    actions
-      .find(RaisedButton)
       .at(1)
       .prop("label")
-  ).toBe("Send messages");
+  ).toBe("Send later (outside timezone)");
 });
 
 describe("contacts filters", () => {
@@ -273,6 +270,7 @@ describe("contacts filters", () => {
   // It would be better to simulate clicking them, but I can't
   // get it to work right now because of 'react-tap-event-plugin'
   // some hints are here https://github.com/mui-org/material-ui/issues/4200#issuecomment-217738345
+  // 'react-tap-event-plugin' was depricated
 
   it("filters correctly in USA", () => {
     window.NOT_IN_USA = 0;
