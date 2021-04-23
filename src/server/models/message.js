@@ -69,4 +69,9 @@ Message.ensureIndex("cell_messageservice_sid_idx", doc => [
   doc("messageservice_sid")
 ]);
 
+Message.ensureIndex("cell_user_number_idx", doc => [
+  doc("contact_number"),
+  doc("user_number")
+]);
+
 export default Message;
