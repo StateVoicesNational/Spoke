@@ -81,7 +81,7 @@ export default class AdminScriptImport extends Component {
             label="Import"
             disabled={this.props.hasPendingJob}
             primary
-            onTouchTap={this.startImport}
+            onClick={this.startImport}
           />
         </div>
       </div>

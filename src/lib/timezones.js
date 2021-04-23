@@ -120,13 +120,10 @@ export const getSendBeforeTimeUtc = (
 };
 
 export const getLocalTime = (offset, hasDST, dstReferenceTimezone) => {
+  const isDateDST = DstHelper.isDateDst(new Date(), dstReferenceTimezone);
   return moment()
     .utc()
-    .utcOffset(
-      DstHelper.isDateDst(new Date(), dstReferenceTimezone) && hasDST
-        ? offset + 1
-        : offset
-    );
+    .utcOffset(hasDST && isDateDST ? offset + 1 : offset);
 };
 
 const isOffsetBetweenTextingHours = (
@@ -195,7 +192,6 @@ export const isBetweenTextingHours = (offsetData, config) => {
       .add(config.textingHoursEnd, "hours");
     return moment.tz(localTimezone).isBetween(start, stop, null, "[]");
   }
-
   return isOffsetBetweenTextingHours(
     offsetData,
     config.textingHoursStart,
@@ -205,33 +201,34 @@ export const isBetweenTextingHours = (offsetData, config) => {
   );
 };
 
-// Currently USA (-4 through -11) and Australia (10)
+// Currently USA (-4 through -11), but campaign timezones will supplant this list
 const ALL_OFFSETS = [-4, -5, -6, -7, -8, -9, -10, -11, 10];
 
 export const defaultTimezoneIsBetweenTextingHours = config =>
   isBetweenTextingHours(null, config);
 
 export function convertOffsetsToStrings(offsetArray) {
-  const result = [];
-  offsetArray.forEach(offset => {
-    result.push(offset[0].toString() + "_" + (offset[1] === true ? "1" : "0"));
-  });
-  return result;
+  return offsetArray.map(
+    offset => offset[0].toString() + "_" + (offset[1] === true ? "1" : "0")
+  );
 }
 
-export const getOffsets = config => {
-  const offsets = ALL_OFFSETS.slice(0);
-
+export const getOffsets = (config, campaignOffsets) => {
+  // TODO: campaignOffsetes will sometimes have an array of e.g. ['-5_1', ...]
+  // future we should split that out and then only process the dst/offset cases passed in
+  const offsets = /*campaignOffsets || */ ALL_OFFSETS;
   const valid = [];
   const invalid = [];
 
   const dst = [true, false];
   dst.forEach(hasDST =>
     offsets.forEach(offset => {
-      if (isBetweenTextingHours({ offset, hasDST }, config)) {
-        valid.push([offset, hasDST]);
-      } else {
-        invalid.push([offset, hasDST]);
+      if (offset) {
+        if (isBetweenTextingHours({ offset, hasDST }, config)) {
+          valid.push([offset, hasDST]);
+        } else {
+          invalid.push([offset, hasDST]);
+        }
       }
     })
   );
