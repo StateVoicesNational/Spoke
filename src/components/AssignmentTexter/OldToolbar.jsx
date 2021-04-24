@@ -1,14 +1,15 @@
 import PropTypes from "prop-types";
 import React from "react";
-import { Toolbar, ToolbarGroup, ToolbarTitle } from "material-ui/Toolbar";
+
+import Toolbar from "@material-ui/core/Toolbar";
+
 import { getDisplayPhoneNumber } from "../../lib/phone-format";
 import { getLocalTime, getContactTimezone } from "../../lib/timezones";
 import { getProcessEnvDstReferenceTimezone } from "../../lib/tz-helpers";
-import { grey100 } from "material-ui/styles/colors";
 
 const inlineStyles = {
   toolbar: {
-    backgroundColor: grey100
+    backgroundColor: "#CCC"
   },
   cellToolbarTitle: {
     fontSize: "1em"
@@ -65,30 +66,22 @@ const ContactToolbar = function ContactToolbar(props) {
   return (
     <div>
       <Toolbar style={inlineStyles.toolbar}>
-        <ToolbarGroup>
-          <ToolbarTitle
-            text={campaignContact.firstName}
-            title={`id:${campaignContact.id} m:${campaignContact.messages.length} s:${campaignContact.messageStatus}`}
-          />
-          <ToolbarTitle style={inlineStyles.cellToolbarTitle} />
-          {location ? (
-            <ToolbarTitle
-              style={inlineStyles.timeToolbarTitle}
-              text={formattedLocalTime}
-            />
-          ) : (
-            ""
-          )}
-          {location ? (
-            <ToolbarTitle
-              style={inlineStyles.locationToolbarTitle}
-              text={formattedLocation}
-            />
-          ) : (
-            ""
-          )}
-          {rightToolbarIcon}
-        </ToolbarGroup>
+        <div>
+          {campaignContact.firstName}{" "}
+          {`id:${campaignContact.id} m:${campaignContact.messages.length} s:${campaignContact.messageStatus}`}
+        </div>
+        {location && (
+          <div
+            style={inlineStyles.timeToolbarTitle}
+            text={formattedLocalTime}
+          ></div>
+        )}
+        {location && (
+          <div style={inlineStyles.locationToolbarTitle}>
+            {formattedLocation}
+          </div>
+        )}
+        {rightToolbarIcon}
       </Toolbar>
     </div>
   );

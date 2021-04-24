@@ -720,16 +720,14 @@ describe("CampaignInteractionStepsForm", () => {
 
         StyleSheetTestUtils.suppressStyleInjection();
         wrappedComponent = mount(
-          <MuiThemeProvider>
-            <AdminCampaignEdit
-              {...queryResults}
-              mutations={wrappedMutations}
-              params={params}
-              location={{
-                query: {}
-              }}
-            />
-          </MuiThemeProvider>
+          <AdminCampaignEdit
+            {...queryResults}
+            mutations={wrappedMutations}
+            params={params}
+            location={{
+              query: {}
+            }}
+          />
         );
       });
 

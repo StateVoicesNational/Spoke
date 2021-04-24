@@ -132,7 +132,7 @@ class ScriptList extends React.Component {
 ScriptList.propTypes = {
   script: PropTypes.object,
   scripts: PropTypes.arrayOf(PropTypes.object),
-  subheader: PropTypes.element,
+  subheader: PropTypes.node,
   currentCannedResponseScript: PropTypes.object,
   onSelectCannedResponse: PropTypes.func,
   onCreateCannedResponse: PropTypes.func,
