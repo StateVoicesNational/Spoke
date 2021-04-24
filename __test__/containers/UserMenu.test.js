@@ -5,6 +5,8 @@ import React from "react";
 import { mount } from "enzyme";
 import { StyleSheetTestUtils } from "aphrodite";
 
+import Avatar from "@material-ui/core/Avatar";
+
 import { UserMenu } from "../../src/containers/UserMenu";
 import MuiThemeProvider from "material-ui/styles/MuiThemeProvider";
 
@@ -46,7 +48,7 @@ describe("UserMenu", () => {
     const data = getData();
     const wrapper = getWrapper(data);
 
-    const avatar = wrapper.find("Avatar");
+    const avatar = wrapper.find(Avatar);
     expect(avatar.props().children).toBe(
       data.currentUser.displayName.charAt(0)
     );

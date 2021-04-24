@@ -3,9 +3,9 @@
  */
 import React from "react";
 import { mount } from "enzyme";
-import MuiThemeProvider from "material-ui/styles/MuiThemeProvider";
 import { Tags } from "../../src/containers/Tags";
 import { StyleSheetTestUtils } from "aphrodite";
+import Card from "@material-ui/core/Card";
 
 describe("Tags list with several tags", () => {
   // given
@@ -36,15 +36,11 @@ describe("Tags list with several tags", () => {
   // when
   test("Renders cards with tag name and description", () => {
     StyleSheetTestUtils.suppressStyleInjection();
-    const wrapper = mount(
-      <MuiThemeProvider>
-        <Tags data={data} />
-      </MuiThemeProvider>
-    );
-    const card1 = wrapper.find({ id: "1" }).find("Card");
+    const wrapper = mount(<Tags data={data} />);
+    const card1 = wrapper.find({ id: "1" }).find(Card);
     expect(card1.text().includes("Tag1")).toBeTruthy();
     expect(card1.text().includes("Tag1desc")).toBeTruthy();
-    const card2 = wrapper.find({ id: "2" }).find("Card");
+    const card2 = wrapper.find({ id: "2" }).find(Card);
     expect(card2.text().includes("Tag2")).toBeTruthy();
     expect(card2.text().includes("Tag2desc")).toBeTruthy();
   });
