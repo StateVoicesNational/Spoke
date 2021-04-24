@@ -33,8 +33,8 @@ const styles = StyleSheet.create({
 });
 class SendButtonArrow extends Component {
   handleTouchTap = () => {
-    const { onFinalTouchTap } = this.props;
-    return onFinalTouchTap();
+    const { onClick } = this.props;
+    return onClick();
   };
 
   render() {
@@ -54,8 +54,8 @@ class SendButtonArrow extends Component {
 }
 
 SendButtonArrow.propTypes = {
-  onClick: PropTypes.function,
-  disabled: PropTypes.boolean
+  onClick: PropTypes.func,
+  disabled: PropTypes.bool
 };
 
 export default SendButtonArrow;

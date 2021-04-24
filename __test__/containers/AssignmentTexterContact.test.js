@@ -108,7 +108,7 @@ describe("when contact is not within texting hours...", () => {
     propsWithEnforcedTextingHoursCampaign.refreshData.mockReset();
   });
 
-  it("it refreshes data in componentDidMount", () => {
+  it.only("it refreshes data in componentDidMount", () => {
     timezones.isBetweenTextingHours.mockReturnValue(false);
     timezones.getLocalTime.mockReturnValue(
       moment()
@@ -117,19 +117,17 @@ describe("when contact is not within texting hours...", () => {
     );
     StyleSheetTestUtils.suppressStyleInjection();
     let component = mount(
-      <MuiThemeProvider>
-        <AssignmentTexterContact
-          texter={propsWithEnforcedTextingHoursCampaign.texter}
-          campaign={campaign}
-          assignment={propsWithEnforcedTextingHoursCampaign.assignment}
-          refreshData={propsWithEnforcedTextingHoursCampaign.refreshData}
-          contact={propsWithEnforcedTextingHoursCampaign.contact}
-          navigationToolbarChildren={
-            propsWithEnforcedTextingHoursCampaign.navigationToolbarChildren
-          }
-          location={propsWithEnforcedTextingHoursCampaign.location}
-        />
-      </MuiThemeProvider>
+      <AssignmentTexterContact
+        texter={propsWithEnforcedTextingHoursCampaign.texter}
+        campaign={campaign}
+        assignment={propsWithEnforcedTextingHoursCampaign.assignment}
+        refreshData={propsWithEnforcedTextingHoursCampaign.refreshData}
+        contact={propsWithEnforcedTextingHoursCampaign.contact}
+        navigationToolbarChildren={
+          propsWithEnforcedTextingHoursCampaign.navigationToolbarChildren
+        }
+        location={propsWithEnforcedTextingHoursCampaign.location}
+      />
     );
     jest.runOnlyPendingTimers();
     expect(

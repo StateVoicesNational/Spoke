@@ -1,18 +1,23 @@
 import PropTypes from "prop-types";
 import React from "react";
 import { Link } from "react-router";
-import { List, ListItem } from "material-ui/List";
-import { Card, CardHeader, CardMedia } from "material-ui/Card";
-import Avatar from "material-ui/Avatar";
 import moment from "moment";
-import AttachmentIcon from "material-ui/svg-icons/file/attachment";
-import AudioIcon from "material-ui/svg-icons/hardware/headset";
-import ImageIcon from "material-ui/svg-icons/image/image";
-import VideoIcon from "material-ui/svg-icons/hardware/tv";
-import ProhibitedIcon from "material-ui/svg-icons/av/not-interested";
+
+import HeadsetIcon from "@material-ui/icons/Headset";
+import ImageIcon from "@material-ui/icons/Image";
+import TvIcon from "@material-ui/icons/Tv";
+import AttachmentIcon from "@material-ui/icons/Attachment";
+import NotInterestedIcon from "@material-ui/icons/NotInterested";
 import Divider from "@material-ui/core/Divider";
-import { red300 } from "material-ui/styles/colors";
-import theme from "../../styles/theme";
+import Avatar from "@material-ui/core/Avatar";
+import Card from "@material-ui/core/Card";
+import CardHeader from "@material-ui/core/CardHeader";
+import CardMedia from "@material-ui/core/CardMedia";
+import Collapse from "@material-ui/core/Collapse";
+import List from "@material-ui/core/List";
+import ListItem from "@material-ui/core/ListItem";
+import ListItemText from "@material-ui/core/ListItemText";
+import ListItemIcon from "@material-ui/core/ListItemIcon";
 
 const defaultStyles = {
   optOut: {
@@ -79,20 +84,19 @@ const MessageList = function MessageList(props) {
   const sent = (styles && styles.messageSent) || defaultStyles.sent;
   const listStyle = (styles && styles.messageList) || {};
 
-  const optOutItem = optOut ? (
+  const optOutItem = optOut && (
     <div>
       <Divider />
-      <ListItem
-        disabled
-        style={defaultStyles.optOut}
-        key={"optout-item"}
-        leftIcon={<ProhibitedIcon style={{ fill: red300 }} />}
-        primaryText={`${contact.firstName} opted out of texts`}
-        secondaryText={moment(optOut.createdAt).fromNow()}
-      />
+      <ListItem disabled style={defaultStyles.optOut} key={"optout-item"}>
+        <ListItemIcon>
+          <NotInterestedIcon color="error" />
+        </ListItemIcon>
+        <ListItemText
+          primary={`${contact.firstName} opted out of texts`}
+          secondary={moment(optOut.createdAt).fromNow()}
+        />
+      </ListItem>
     </div>
-  ) : (
-    ""
   );
 
   const renderMsg = message => (
@@ -108,7 +112,7 @@ const MessageList = function MessageList(props) {
             embed = <img src={media.url} alt="Media" />;
           } else if (media.type.startsWith("video")) {
             type = "Video";
-            icon = <VideoIcon />;
+            icon = <TvIcon />;
             embed = (
               <video controls>
                 <source src={media.url} type={media.type} />
@@ -117,7 +121,7 @@ const MessageList = function MessageList(props) {
             );
           } else if (media.type.startsWith("audio")) {
             type = "Audio";
-            icon = <AudioIcon />;
+            icon = <HeadsetIcon />;
             embed = (
               <audio controls>
                 <source src={media.url} type={media.type} />
@@ -133,14 +137,16 @@ const MessageList = function MessageList(props) {
             <Card style={defaultStyles.mediaItem}>
               <CardHeader
                 actAsExpander
-                showExpandableButton={!!embed}
                 title={`${type} attached`}
                 subtitle={subtitle || "View media at your own risk"}
-                avatar={
-                  <Avatar icon={icon} backgroundColor={theme.colors.darkGray} />
-                }
+                avatar={<Avatar>{icon}</Avatar>}
+                onClick={() => {
+                  this.setState({ expanded: !this.state.expanded });
+                }}
               />
-              {embed && <CardMedia expandable>{embed}</CardMedia>}
+              <Collapse in={this.state.expanded} timeout="auto" unmountOnExit>
+                {embed && <CardMedia>{embed}</CardMedia>}
+              </Collapse>
             </Card>
           );
         })}
@@ -149,7 +155,6 @@ const MessageList = function MessageList(props) {
 
   return (
     <List style={listStyle}>
-      HELLO
       {messages.map(message => (
         <ListItem
           disabled
