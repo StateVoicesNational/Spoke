@@ -132,7 +132,6 @@
     "lodash": "^4.13.1",
     "mailgun-js": "^0.20.0",
     "material-ui": "^0.20.1",
-    "material-ui-datatables": "^0.18.2",
     "material-ui-search-bar": "^1.0.0",
     "minilog": "^3.0.1",
     "moment": "2.14.1",
