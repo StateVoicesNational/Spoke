@@ -367,13 +367,14 @@ class IncomingMessageFilter extends Component {
                   />
                 </div>
               </div>
-              <div className={css(styles.spacer)} />
               <div className={css(styles.flexColumn)}>
                 <TextField
+                  fullWidth
                   placeholder="Search message text"
                   label="Search message text"
-                  value={this.state.messageTextFilter}
-                  onChange={(_, messageTextFilter) => {
+                  value={this.state.messageTextFilter || ""}
+                  onChange={event => {
+                    const messageTextFilter = event.target.value;
                     this.setState({ messageTextFilter });
                   }}
                   onKeyPress={evt => {
