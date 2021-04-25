@@ -2,9 +2,12 @@ import type from "prop-types";
 import React from "react";
 import * as yup from "yup";
 import Form from "react-formal";
-import Button from "@material-ui/core/Button";
 import { withRouter } from "react-router";
 import gql from "graphql-tag";
+
+import Button from "@material-ui/core/Button";
+import FormControlLabel from "@material-ui/core/FormControlLabel";
+import Switch from "@material-ui/core/Switch";
 
 import GSTextField from "../../../components/forms/GSTextField";
 import loadData from "../../../containers/hoc/load-data";
@@ -175,7 +178,7 @@ export class AdminConfig extends React.Component {
           label="Batch Type"
           fullWidth
           hintText=""
-          defaultValue={
+          value={
             this.props.settingsData.takeConversationsBatchType ||
             "vetted-takeconversations"
           }
@@ -187,9 +190,7 @@ export class AdminConfig extends React.Component {
           label="Batch size (number) to take conversations button"
           fullWidth
           hintText=""
-          defaultValue={
-            this.props.settingsData.takeConversationsBatchSize || 20
-          }
+          value={this.props.settingsData.takeConversationsBatchSize || 20}
         />
         <p>
           Outbound Unassignment (only works if message handler
@@ -204,7 +205,8 @@ export class AdminConfig extends React.Component {
             <Switch
               color="primary"
               checked={
-                this.props.settingsData.takeConversationsOutboundUnassign
+                this.props.settingsData.takeConversationsOutboundUnassign ||
+                false
               }
               onChange={event => {
                 this.props.onToggle(

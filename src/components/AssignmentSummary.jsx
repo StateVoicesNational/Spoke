@@ -11,7 +11,6 @@ import CardHeader from "@material-ui/core/CardHeader";
 
 import { withRouter } from "react-router";
 import { dataTest } from "../lib/attributes";
-import AssignmentTexterFeedback from "../extensions/texter-sideboxes/texter-feedback/AssignmentTexterFeedback";
 
 import {
   getSideboxes,

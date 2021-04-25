@@ -194,7 +194,10 @@ export class AdminConfig extends React.Component {
           labelPlacement="start"
           control={
             <Switch
-              checked={this.props.settingsData.releaseContactsReleaseConvos}
+              color="primary"
+              checked={
+                this.props.settingsData.releaseContactsReleaseConvos || false
+              }
               onChange={event =>
                 this.props.onToggle(
                   "releaseContactsReleaseConvos",
@@ -210,7 +213,10 @@ export class AdminConfig extends React.Component {
           labelPlacement="start"
           control={
             <Switch
-              checked={this.props.settingsData.releaseContactsNonDynamicToo}
+              color="primary"
+              checked={
+                this.props.settingsData.releaseContactsNonDynamicToo || false
+              }
               onChange={event =>
                 this.props.onToggle(
                   "releaseContactsNonDynamicToo",

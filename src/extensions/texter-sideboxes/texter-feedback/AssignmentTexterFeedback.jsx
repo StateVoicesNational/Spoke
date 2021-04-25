@@ -1,18 +1,19 @@
 import PropTypes from "prop-types";
 import React, { Component } from "react";
+import { StyleSheet, css } from "aphrodite";
+import gql from "graphql-tag";
+
 import { Card, CardTitle } from "material-ui/Card";
-import Button from "@material-ui/core/Button";
-import IconButton from "@material-ui/core/IconButton";
 import { Step, Stepper, StepLabel, StepContent } from "material-ui/Stepper";
 import WarningIcon from "material-ui/svg-icons/alert/warning";
 import SuccessIcon from "material-ui/svg-icons/action/check-circle";
 import LinkIcon from "material-ui/svg-icons/content/link";
-import { StyleSheet, css } from "aphrodite";
+
+import Button from "@material-ui/core/Button";
+import IconButton from "@material-ui/core/IconButton";
+
 import loadData from "../../../containers/hoc/load-data";
-import gql from "graphql-tag";
-
 import { defaults } from "./config";
-
 import theme from "../../../styles/theme";
 
 const styles = StyleSheet.create({
