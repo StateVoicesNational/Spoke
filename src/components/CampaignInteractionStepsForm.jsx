@@ -335,8 +335,9 @@ export default class CampaignInteractionStepsForm extends React.Component {
                 <div key={`answeractions-${interactionStep.id}`}>
                   <div>
                     <GSSelectField
+                      style={{ width: "90%" }}
                       {...dataTest("actionSelect")}
-                      floatingLabelText="Action handler"
+                      label="Action handler"
                       name="answerActions"
                       value={interactionStep.answerActions || ""}
                       onChange={val =>
@@ -346,7 +347,7 @@ export default class CampaignInteractionStepsForm extends React.Component {
                         })
                       }
                       choices={[
-                        { value: "", label: "" },
+                        { value: "", label: "None" },
                         ...this.props.availableActions.map(action => ({
                           value: action.name,
                           label: action.displayName

@@ -550,7 +550,6 @@ export class AssignmentTexterContactControls extends React.Component {
   renderCorrectSendButton() {
     const { campaign } = this.props;
     const { contact } = this.props;
-    console.log(11111, this.handleClickSendMessageButton);
     if (
       contact.messageStatus === "messaged" ||
       contact.messageStatus === "convo" ||
