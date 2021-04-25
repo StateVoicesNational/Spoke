@@ -87,7 +87,7 @@ const MessageList = function MessageList(props) {
   const optOutItem = optOut && (
     <div>
       <Divider />
-      <ListItem disabled style={defaultStyles.optOut} key={"optout-item"}>
+      <ListItem style={defaultStyles.optOut} key={"optout-item"}>
         <ListItemIcon>
           <NotInterestedIcon color="error" />
         </ListItemIcon>
@@ -157,11 +157,10 @@ const MessageList = function MessageList(props) {
     <List style={listStyle}>
       {messages.map(message => (
         <ListItem
-          disabled
           style={message.isFromContact ? received : sent}
           key={message.id}
-          primaryText={renderMsg(message)}
-          secondaryText={
+          primary={renderMsg(message)}
+          secondary={
             <SecondaryText
               message={message}
               review={review}
@@ -169,7 +168,19 @@ const MessageList = function MessageList(props) {
               organizationId={organizationId}
             />
           }
-        />
+        >
+          <ListItemText
+            primary={renderMsg(message)}
+            secondary={
+              <SecondaryText
+                message={message}
+                review={review}
+                currentUser={currentUser}
+                organizationId={organizationId}
+              />
+            }
+          />
+        </ListItem>
       ))}
       {optOutItem}
     </List>
