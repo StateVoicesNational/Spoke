@@ -288,7 +288,7 @@ export class CampaignTable extends React.Component {
                 tooltip="Has unassigned contacts"
                 href={`/admin/${campaign.organization.id}/campaigns/${campaign.id}/edit`}
               >
-                <WarningIcon color="default" />
+                <WarningIcon color="primary" />
               </IconButton>
             ) : null;
           }
@@ -355,7 +355,7 @@ export class CampaignTable extends React.Component {
 
     const options = {
       filterType: "checkbox",
-      selectableRows: this.props.selectMultiple ? "multiple" : "none",
+      selectableRows: "multiple", // this.props.selectMultiple ? "multiple" : "none",
       elevation: 0,
       download: false,
       print: false,
@@ -366,6 +366,8 @@ export class CampaignTable extends React.Component {
       viewColumns: false,
       page: displayPage - 1,
       serverSide: true,
+      rowsSelected: this.getSelectedRowIndexes(),
+      customToolbarSelect: () => null,
       onTableChange: (action, tableState) => {
         switch (action) {
           case "changePage":
