@@ -40,7 +40,7 @@ const configurableFields = {
     component: props => {
       // maybe show the list and then validate
       return (
-        <div>
+        <div key={props.key}>
           <Form.Field
             as={GSTextField}
             label="Action Handlers (comma-separated)"
@@ -68,7 +68,7 @@ const configurableFields = {
         return null;
       }
       return (
-        <div>
+        <div key={props.key}>
           <FormControlLabel
             control={
               <Switch
@@ -118,7 +118,7 @@ const configurableFields = {
     ready: true,
     component: props => {
       return (
-        <div>
+        <div key={props.key}>
           <Form.Field
             as={GSTextField}
             label="Default Batch Size"
@@ -138,7 +138,7 @@ const configurableFields = {
     ready: true,
     component: props => {
       return (
-        <div>
+        <div key={props.key}>
           <Form.Field
             as={GSTextField}
             label="Default Response Window"
@@ -164,7 +164,7 @@ const configurableFields = {
     ready: true,
     component: props => {
       return (
-        <div>
+        <div key={props.key}>
           <Form.Field
             as={GSTextField}
             label="Maximum Number of Contacts per-texter"
@@ -194,7 +194,7 @@ const configurableFields = {
     ready: true,
     component: props => {
       return (
-        <div>
+        <div key={props.key}>
           <Form.Field
             as={GSTextField}
             label="Max Message Length"
@@ -254,7 +254,11 @@ export default class OrganizationFeatureSettings extends React.Component {
           ...this.props,
           ...this.state
         });
-        return configurableFields[f].component({ ...this.props, parent: this });
+        return configurableFields[f].component({
+          key: f,
+          ...this.props,
+          parent: this
+        });
       });
     return (
       <div>
