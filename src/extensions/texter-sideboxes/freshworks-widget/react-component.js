@@ -56,7 +56,7 @@ export class TexterSidebox extends React.Component {
     const { settingsData } = this.props;
 
     return (
-      <div>
+      <div style={{ textAlign: "center" }}>
         <Button
           onClick={() => FreshworksWidget && FreshworksWidget("open")}
           className={css(flexStyles.flatButton)}

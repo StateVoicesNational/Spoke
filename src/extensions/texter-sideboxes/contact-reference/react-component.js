@@ -2,10 +2,13 @@ import type from "prop-types";
 import React from "react";
 import { Link } from "react-router";
 import * as yup from "yup";
-import Toggle from "material-ui/Toggle";
+
 import CopyIcon from "material-ui/svg-icons/content/content-copy";
 import IconButton from "material-ui/IconButton/IconButton";
 import TextField from "material-ui/TextField";
+
+import FormControlLabel from "@material-ui/core/FormControlLabel";
+import Switch from "@material-ui/core/Switch";
 
 export const displayName = () => "Contact Conversation URL";
 
@@ -100,11 +103,19 @@ export const adminSchema = () => ({
 export class AdminConfig extends React.Component {
   render() {
     return (
-      <Toggle
+      <FormControlLabel
         label="Clickable reference link (vs. just copyable)"
-        toggled={this.props.settingsData.contactReferenceClickable}
-        onToggle={(toggler, val) =>
-          this.props.onToggle("contactReferenceClickable", val)
+        labelPlacement="end"
+        control={
+          <Switch
+            checked={this.props.settingsData.contactReferenceClickable}
+            onChange={event =>
+              this.props.onToggle(
+                "contactReferenceClickable",
+                event.target.checked
+              )
+            }
+          />
         }
       />
     );

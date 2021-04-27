@@ -204,27 +204,41 @@ const ContactToolbar = function ContactToolbar(props) {
         <div className={css(styles.grow)}></div>
         <div className={css(styles.navigation)} style={{ flexBasis: "130px" }}>
           <Tooltip title="Previous Contact">
-            <IconButton
-              onClick={navigationToolbarChildren.onPrevious}
-              disabled={!navigationToolbarChildren.onPrevious}
-              className={css(styles.contactToolbarIconButton)}
-              style={{ flex: "0 0 56px", width: "45px" }}
-            >
-              <ArrowBackIcon htmlColor="white" />
-            </IconButton>
+            {/*
+             *  Tooltips can not wrap buttons that are disabled.
+             *  A disabled element does not fire events.
+             *  Tooltip needs to listen to the child element's events to display the title.
+             */}
+            <span>
+              <IconButton
+                onClick={navigationToolbarChildren.onPrevious}
+                disabled={!navigationToolbarChildren.onPrevious}
+                className={css(styles.contactToolbarIconButton)}
+                style={{ flex: "0 0 56px", width: "45px" }}
+              >
+                <ArrowBackIcon htmlColor="white" />
+              </IconButton>
+            </span>
           </Tooltip>
           <div className={css(styles.navigationTitle)}>
             {navigationToolbarChildren.title}
           </div>
           <Tooltip title="Next Contact">
-            <IconButton
-              onClick={navigationToolbarChildren.onNext}
-              disabled={!navigationToolbarChildren.onNext}
-              className={css(styles.contactToolbarIconButton)}
-              style={{ flex: "0 0 56px", width: "45px" }}
-            >
-              <ArrowForwardIcon htmlColor="white" />
-            </IconButton>
+            {/*
+             *  Tooltips can not wrap buttons that are disabled.
+             *  A disabled element does not fire events.
+             *  Tooltip needs to listen to the child element's events to display the title.
+             */}
+            <span>
+              <IconButton
+                onClick={navigationToolbarChildren.onNext}
+                disabled={!navigationToolbarChildren.onNext}
+                className={css(styles.contactToolbarIconButton)}
+                style={{ flex: "0 0 56px", width: "45px" }}
+              >
+                <ArrowForwardIcon htmlColor="white" />
+              </IconButton>
+            </span>
           </Tooltip>
         </div>
       </Toolbar>
