@@ -155,7 +155,7 @@ Here is the (proposed) structure of data in Redis to support the above data need
   4. HSET `replies-<texter_id>` (using lookup)
 
 * Code points:
-  * [twilio backend codepoint](https://github.com/MoveOnOrg/Spoke/blob/main/src/server/extensions/messaging_services/twilio.js#L203)
+  * [twilio backend codepoint](https://github.com/MoveOnOrg/Spoke/blob/main/src/server/extensions/service-vendors/twilio.js#L203)
   * note that is called both from server/index.js and workers/jobs.js
   * In theory we can/should do this generically over services, but pending_message_part complicates this a bit much.  A 'middle road' approach would also implement this in server/api/lib/fakeservice.js
 

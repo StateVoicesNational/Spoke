@@ -3,7 +3,7 @@ import {
   getConfigKey,
   getService,
   tryGetFunctionFromService
-} from "../../../extensions/messaging_services";
+} from "../../../extensions/service-vendors";
 import { getConfig } from "../../../server/api/lib/config";
 import orgCache from "../../models/cacheable_queries/organization";
 import { accessRequired } from "../errors";

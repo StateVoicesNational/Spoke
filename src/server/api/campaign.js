@@ -2,7 +2,7 @@ import { accessRequired } from "./errors";
 import { mapFieldsToModel, mapFieldsOrNull } from "./lib/utils";
 import twilio, {
   errorDescriptions
-} from "../../extensions/messaging_services/twilio";
+} from "../../extensions/service-vendors/twilio";
 import { Campaign, JobRequest, r, cacheableData } from "../models";
 import { getUsers } from "./user";
 import { getSideboxChoices } from "./organization";

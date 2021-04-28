@@ -1,7 +1,7 @@
 import {
   getMessageServiceConfig,
   tryGetFunctionFromService
-} from "../../../extensions/messaging_services/service_map";
+} from "../../../extensions/service-vendors/service_map";
 import { getConfig } from "../../api/lib/config";
 import { r } from "../../models";
 

@@ -12,7 +12,7 @@ import {
 import {
   fullyConfigured,
   getServiceMetadata
-} from "../../extensions/messaging_services";
+} from "../../extensions/service-vendors";
 
 export const ownerConfigurable = {
   // ACTION_HANDLERS: 1,

@@ -1,4 +1,4 @@
-import * as serviceMap from "../../../src/extensions/messaging_services/service_map";
+import * as serviceMap from "../../../src/extensions/service-vendors/service_map";
 import * as config from "../../../src/server/api/lib/config";
 
 describe("service_map", () => {

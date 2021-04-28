@@ -10,7 +10,7 @@ import {
   dataQuery as TexterTodoQuery
 } from "../../../../src/containers/TexterTodo";
 import { dataQuery as TexterTodoListQuery } from "../../../../src/containers/TexterTodoList";
-import * as twilio from "../../../../src/extensions/messaging_services/twilio";
+import * as twilio from "../../../../src/extensions/service-vendors/twilio";
 import { makeTree } from "../../../../src/lib";
 import { getConfig } from "../../../../src/server/api/lib/config";
 import { cacheableData, r } from "../../../../src/server/models";

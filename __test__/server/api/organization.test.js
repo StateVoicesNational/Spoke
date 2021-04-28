@@ -3,7 +3,7 @@ import { r } from "../../../src/server/models/";
 import { getCampaignsQuery } from "../../../src/containers/AdminCampaignList";
 import { GraphQLError } from "graphql/error";
 import gql from "graphql-tag";
-import * as messagingServices from "../../../src/extensions/messaging_services";
+import * as messagingServices from "../../../src/extensions/service-vendors";
 
 import {
   cleanupTest,
@@ -18,7 +18,7 @@ import {
 } from "../../test_helpers";
 import * as srcServerApiErrors from "../../../src/server/api/errors";
 import * as orgCache from "../../../src/server/models/cacheable_queries/organization";
-import * as serviceMap from "../../../src/extensions/messaging_services/service_map";
+import * as serviceMap from "../../../src/extensions/service-vendors/service_map";
 
 const ActionHandlerFramework = require("../../../src/extensions/action-handlers");
 
