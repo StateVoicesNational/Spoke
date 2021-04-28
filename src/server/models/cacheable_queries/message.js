@@ -24,45 +24,6 @@ const dbQuery = ({ campaignContactId }) => {
     .orderBy("created_at");
 };
 
-const contactIdFromOther = async ({
-  campaignContactId,
-  assignmentId,
-  cell,
-  service,
-  messageServiceSid
-}) => {
-  if (campaignContactId) {
-    return campaignContactId;
-  }
-  console.log(
-    "messageCache contactIdfromother hard",
-    campaignContactId,
-    assignmentId,
-    cell,
-    service
-  );
-
-  if (!assignmentId || !cell || !messageServiceSid) {
-    throw new Error(`campaignContactId required or assignmentId-cell-service-messageServiceSid triple required.
-                    cell: ${cell}, messageServivceSid: ${messageServiceSid}, assignmentId: ${assignmentId}
-                    `);
-  }
-  if (r.redis) {
-    const cellLookup = await campaignContactCache.lookupByCell(
-      cell,
-      service || "",
-      messageServiceSid,
-      null, // is this even used?
-      /* bailWithoutCache*/ true
-    );
-    if (cellLookup) {
-      return cellLookup.campaign_contact_id;
-    }
-  }
-  // TODO: more ways and by db -- is this necessary if the active-campaign-postmigration edgecase goes away?
-  return null;
-};
-
 const saveMessageCache = async (contactId, contactMessages, overwriteFull) => {
   if (r.redis && CONTACT_CACHE_ENABLED) {
     const key = cacheKey(contactId);
@@ -108,7 +69,6 @@ const cacheDbResult = async dbResult => {
 const query = async ({ campaignContactId, justCache }) => {
   // queryObj ~ { campaignContactId, assignmentId, cell, service, messageServiceSid }
   if (r.redis && CONTACT_CACHE_ENABLED) {
-    // campaignContactId = await contactIdFromOther(queryObj);
     if (campaignContactId) {
       const [exists, messages] = await r.redis
         .multi()
@@ -191,10 +151,11 @@ const deliveryReport = async ({
   if (userNumber) {
     changes.user_number = userNumber;
   }
+  let lookup;
   if (newStatus === "ERROR") {
     changes.error_code = errorCode;
 
-    const lookup = await campaignContactCache.lookupByCell(
+    lookup = await campaignContactCache.lookupByCell(
       contactNumber,
       service || "",
       messageServiceSid,
@@ -218,40 +179,46 @@ const deliveryReport = async ({
     .limit(1)
     .update(changes);
 
-  if (process.env.EXPERIMENTAL_STICKY_SENDER && newStatus === "DELIVERED") {
-    const [message] = await r
-      .knex("message")
-      .where("service_id", messageSid)
-      .limit(1);
+  // TODO: move the below into a test for service-strategies if there are onDeliveryReport impls
+  // which uses campaignContactCache.lookupByCell above
+  if (
+    userNumber &&
+    process.env.EXPERIMENTAL_STICKY_SENDER &&
+    newStatus === "DELIVERED"
+  ) {
+    lookup =
+      lookup ||
+      (await campaignContactCache.lookupByCell(
+        contactNumber,
+        service || "",
+        messageServiceSid,
+        userNumber
+      ));
+    // FUTURE: maybe don't do anything if userNumber existed before above save in message?
+    if (lookup) {
+      // Assign user number to contact/organization
+      const campaignContact = await campaignContactCache.load(
+        lookup.campaign_contact_id
+      );
 
-    // Assign user number to contact/organization
-    const campaignContact = await campaignContactCache.load(
-      message.campaign_contact_id
-    );
-
-    const organizationId = await campaignContactCache.orgId(campaignContact);
-    const organizationContact = await organizationContactCache.query({
-      organizationId,
-      contactNumber
-    });
-
-    if (!organizationContact) {
-      await organizationContactCache.save({
-        organizationId: organizationId,
-        contactNumber: contactNumber,
-        userNumber: userNumber
+      const organizationId = await campaignContactCache.orgId(campaignContact);
+      const organizationContact = await organizationContactCache.query({
+        organizationId,
+        contactNumber
       });
+
+      if (!organizationContact) {
+        await organizationContactCache.save({
+          organizationId,
+          contactNumber,
+          userNumber
+        });
+      }
     }
   }
 };
 
 const messageCache = {
-  clearQuery: async queryObj => {
-    if (r.redis) {
-      const contactId = await contactIdFromOther(queryObj);
-      await r.redis.delAsync(cacheKey(contactId));
-    }
-  },
   deliveryReport,
   query,
   save: async ({

@@ -40,6 +40,7 @@ const Message = thinky.createModel(
         "SENDING",
         "SENT",
         "DELIVERED",
+        "DELIVERED CONFIRMED",
         "ERROR",
         "PAUSED",
         "NOT_ATTEMPTED"
@@ -64,13 +65,10 @@ Message.ensureIndex("campaign_contact_id");
 Message.ensureIndex("send_status");
 //Message.ensureIndex("contact_number");
 Message.ensureIndex("service_id");
-Message.ensureIndex("cell_messageservice_sid_idx", doc => [
+Message.ensureIndex("cell_msgsvc_user_number_idx", doc => [
   doc("contact_number"),
-  doc("messageservice_sid")
-]);
-
-Message.ensureIndex("cell_user_number_idx", doc => [
-  doc("contact_number"),
+  doc("messageservice_sid"),
+  // for when/if there is no service messageservice, we then index by number
   doc("user_number")
 ]);
 

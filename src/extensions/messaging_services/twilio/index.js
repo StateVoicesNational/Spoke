@@ -338,7 +338,8 @@ export async function sendMessage(
 
     if (userNumber) {
       changes.user_number = userNumber;
-    } else {
+    }
+    if (messagingServiceSid) {
       changes.messageservice_sid = messagingServiceSid;
     }
 
@@ -348,11 +349,8 @@ export async function sendMessage(
         body: message.text,
         statusCallback: process.env.TWILIO_STATUS_CALLBACK_URL
       },
-      userNumber
-        ? { from: userNumber }
-        : messagingServiceSid
-        ? { messagingServiceSid }
-        : {},
+      userNumber ? { from: userNumber } : {},
+      messagingServiceSid ? { messagingServiceSid } : {},
       twilioValidityPeriod ? { validityPeriod: twilioValidityPeriod } : {},
       parseMessageText(message)
     );
