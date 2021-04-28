@@ -1,5 +1,5 @@
 import orgCache from "../../../../src/server/models/cacheable_queries/organization";
-import * as serviceMap from "../../../../src/extensions/messaging_services/service_map";
+import * as serviceMap from "../../../../src/extensions/service-vendors/service_map";
 
 describe("cacheable_queries.organization", () => {
   let serviceWith;

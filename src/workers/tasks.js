@@ -1,7 +1,7 @@
 // Tasks are lightweight, fire-and-forget functions run in the background.
 // Unlike Jobs, tasks are not tracked in the database.
 // See src/extensions/job-runners/README.md for more details
-import serviceMap from "../extensions/messaging_services";
+import serviceMap from "../extensions/service-vendors";
 import * as ActionHandlers from "../extensions/action-handlers";
 import { cacheableData } from "../server/models";
 

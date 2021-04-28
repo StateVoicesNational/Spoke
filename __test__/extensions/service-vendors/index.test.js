@@ -1,7 +1,7 @@
-import * as serviceMap from "../../../src/extensions/messaging_services/service_map";
-import * as messagingServices from "../../../src/extensions/messaging_services/index";
+import * as serviceMap from "../../../src/extensions/service-vendors/service_map";
+import * as messagingServices from "../../../src/extensions/service-vendors/index";
 
-describe("extensions/messaging_services index", () => {
+describe("extensions/service-vendors index", () => {
   describe("fullyConfigured", () => {
     let fullyConfiguredFunction;
     let organization;

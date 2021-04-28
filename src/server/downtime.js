@@ -5,7 +5,7 @@ import { log } from "../lib";
 import renderIndex from "./middleware/render-index";
 import fs, { existsSync } from "fs";
 import path from "path";
-import { addServerEndpoints as messagingServicesAddServerEndpoints } from "../extensions/messaging_services/service_map";
+import { addServerEndpoints as messagingServicesAddServerEndpoints } from "../extensions/service-vendors/service_map";
 
 // This server is for when it is in downtime mode and we just statically
 // serve the client app

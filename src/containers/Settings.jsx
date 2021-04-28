@@ -17,7 +17,7 @@ import Toggle from "material-ui/Toggle";
 import moment from "moment";
 import CampaignTexterUIForm from "../components/CampaignTexterUIForm";
 import OrganizationFeatureSettings from "../components/OrganizationFeatureSettings";
-import getMessagingServiceConfigComponent from "../extensions/messaging_services/react-components";
+import getMessagingServiceConfigComponent from "../extensions/service-vendors/react-components";
 import GSTextField from "../components/forms/GSTextField";
 
 const styles = StyleSheet.create({

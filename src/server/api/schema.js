@@ -37,7 +37,7 @@ import {
 } from "./errors";
 import { resolvers as interactionStepResolvers } from "./interaction-step";
 import { resolvers as inviteResolvers } from "./invite";
-import { saveNewIncomingMessage } from "../../extensions/messaging_services/message-sending";
+import { saveNewIncomingMessage } from "../../extensions/service-vendors/message-sending";
 import { getConfig, getFeatures } from "./lib/config";
 import { resolvers as messageResolvers } from "./message";
 import { resolvers as optOutResolvers } from "./opt-out";

@@ -1,7 +1,7 @@
 import { updateMessageServiceConfigGql } from "../../../../src/containers/Settings";
-// import * as messagingServices from "../../../../src/extensions/messaging_services";
-import * as serviceMap from "../../../../src/extensions/messaging_services/service_map";
-import * as twilio from "../../../../src/extensions/messaging_services/twilio";
+// import * as messagingServices from "../../../../src/extensions/service-vendors";
+import * as serviceMap from "../../../../src/extensions/service-vendors/service_map";
+import * as twilio from "../../../../src/extensions/service-vendors/twilio";
 import { r, Organization } from "../../../../src/server/models";
 import orgCache from "../../../../src/server/models/cacheable_queries/organization";
 import {

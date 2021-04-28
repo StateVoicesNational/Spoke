@@ -1,4 +1,4 @@
-import serviceMap from "../../../extensions/messaging_services";
+import serviceMap from "../../../extensions/service-vendors";
 import { accessRequired } from "../errors";
 import { getConfig } from "../lib/config";
 import { cacheableData } from "../../models";

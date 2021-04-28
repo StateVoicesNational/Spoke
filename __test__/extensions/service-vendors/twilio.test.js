@@ -1,7 +1,7 @@
 /* eslint-disable no-unused-expressions, consistent-return */
 import * as twilioLibrary from "twilio";
-import { getLastMessage } from "../../../src/extensions/messaging_services/message-sending";
-import * as twilio from "../../../src/extensions/messaging_services/twilio";
+import { getLastMessage } from "../../../src/extensions/service-vendors/message-sending";
+import * as twilio from "../../../src/extensions/service-vendors/twilio";
 import { getConfig } from "../../../src/server/api/lib/config"; // eslint-disable-line no-duplicate-imports, import/no-duplicates
 import * as configFunctions from "../../../src/server/api/lib/config"; // eslint-disable-line no-duplicate-imports, import/no-duplicates
 import crypto from "../../../src/server/api/lib/crypto";
