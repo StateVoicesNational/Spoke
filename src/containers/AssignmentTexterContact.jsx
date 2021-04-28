@@ -174,7 +174,7 @@ export class AssignmentTexterContact extends React.Component {
   };
 
   handleMessageFormSubmit = cannedResponseId => async ({ messageText }) => {
-    const { contact, messageStatusFilter } = this.props;
+    const { campaign, contact, messageStatusFilter } = this.props;
     try {
       const message = this.createMessageToContact(messageText);
       if (this.state.disabled) {
@@ -184,7 +184,8 @@ export class AssignmentTexterContact extends React.Component {
       console.log("sendMessage", contact.id);
       if (
         messageStatusFilter === "needsMessage" &&
-        /fast=1/.test(document.location.search)
+        (/fast=1/.test(document.location.search) ||
+          (campaign.title && /f=1/.test(campaign.title)))
       ) {
         // FUTURE: this can cause some confusion especially when a texter
         // thinks they completed sending, but there are still waiting requests
