@@ -85,6 +85,11 @@ class AdminDashboard extends React.Component {
         role: "SUPERVOLUNTEER"
       },
       {
+        name: "Bulk Script Editor",
+        path: "bulk-script-editor",
+        role: "ADMIN"
+      },
+      {
         name: "Tags",
         path: "tags",
         role: "SUPERVOLUNTEER"
