@@ -17,13 +17,12 @@ const organizationContactCache = {
     }
 
     const organizationContact = await r
-      .table("organization_contact")
-      .filter({
+      .knex("organization_contact")
+      .where({
         organization_id: organizationId,
         contact_number: contactNumber
       })
-      .limit(1)(0)
-      .default(null);
+      .first();
 
     if (r.redis) {
       await r.redis

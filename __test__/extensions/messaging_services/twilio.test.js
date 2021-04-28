@@ -465,7 +465,7 @@ describe("twilio", () => {
       org2
     );
     expect(org2Auth.authToken).toBe("<Encrypted>");
-    expect(org2Auth.accountSid).toBe("test_twilio_account_sid");
+    expect(org2Auth.accountSid).toBe("ACtest_twilio_account_sid");
   });
 
   describe("Number buying", () => {
