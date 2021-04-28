@@ -7,30 +7,22 @@ export function dataSourceItem(name, key) {
   };
 }
 
-export function getRaisedButtonProps(props) {
+export function getButtonProps(props) {
   const validProps = [
-    "backgroundColor",
-    "buttonStyle",
     "children",
-    "className",
-    "containerElement",
-    "disableTouchRipple",
+    "classes",
+    "color",
+    "component",
     "disabled",
-    "disabledBackgroundColor",
-    "disabledLabelColor",
+    "disableElevation",
+    "disableFocusRipple",
+    "disableRipple",
+    "endIcon",
     "fullWidth",
     "href",
-    "icon",
-    "label",
-    "labelColor",
-    "labelPosition",
-    "labelStyle",
-    "onClick",
-    "overlayStyle",
-    "primary",
-    "rippleStyle",
-    "secondary",
-    "style",
+    "size",
+    "startIcon",
+    "variant",
     "data-test"
   ];
   return pick(props, validProps);

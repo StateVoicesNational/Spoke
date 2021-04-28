@@ -76,7 +76,6 @@ export class TexterSideboxClass extends React.Component {
             <Button
               onClick={() => this.handleReleaseContacts(false)}
               className={css(flexStyles.flatButton)}
-              labelStyle={inlineStyles.flatButtonLabel}
             >
               {settingsData.releaseContactsBatchLabel || "Done for the day"}
             </Button>
@@ -96,7 +95,6 @@ export class TexterSideboxClass extends React.Component {
                 "Release all my contacts"
               }
               className={css(flexStyles.flatButton)}
-              labelStyle={inlineStyles.flatButtonLabel}
             >
               {settingsData.releaseContactsConvosLabel ||
                 "Release all my contacts"}

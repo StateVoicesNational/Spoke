@@ -265,7 +265,7 @@ export default class CampaignInteractionStepsForm extends React.Component {
 
     return (
       <div>
-        {interactionStep.parentInteractionId ? (
+        {interactionStep.parentInteractionId && (
           <div>
             <IconButton
               style={styles.pullRight}
@@ -285,7 +285,7 @@ export default class CampaignInteractionStepsForm extends React.Component {
               </Button>
             </ButtonGroup>
           </div>
-        ) : null}
+        )}
         <Card
           style={styles.interactionStep}
           ref={interactionStep.id}
@@ -319,7 +319,7 @@ export default class CampaignInteractionStepsForm extends React.Component {
               }}
               onChange={this.handleFormChange.bind(this)}
             >
-              {interactionStep.parentInteractionId ? (
+              {interactionStep.parentInteractionId && (
                 <Form.Field
                   as={GSTextField}
                   {...dataTest("answerOption")}
@@ -328,80 +328,80 @@ export default class CampaignInteractionStepsForm extends React.Component {
                   fullWidth
                   hintText="Answer to the previous question"
                 />
-              ) : null}
+              )}
               {interactionStep.parentInteractionId &&
-              this.props.availableActions &&
-              this.props.availableActions.length ? (
-                <div key={`answeractions-${interactionStep.id}`}>
-                  <div>
-                    <GSSelectField
-                      style={{ width: "90%" }}
-                      {...dataTest("actionSelect")}
-                      label="Action handler"
-                      name="answerActions"
-                      value={interactionStep.answerActions || ""}
-                      onChange={val =>
-                        this.handleFormChange({
-                          ...interactionStep,
-                          answerActions: val
-                        })
-                      }
-                      choices={[
-                        { value: "", label: "None" },
-                        ...this.props.availableActions.map(action => ({
-                          value: action.name,
-                          label: action.displayName
-                        }))
-                      ]}
-                    />
-                    <Tooltip
-                      style={{ marginTop: 20 }}
-                      title="An action is something that is triggered by this answer being chosen, often in an outside system"
-                    >
-                      <HelpOutlineIcon />
-                    </Tooltip>
-                    {instructions ? <div>{instructions}</div> : null}
-                  </div>
-                  {clientChoiceData && clientChoiceData.length ? (
+                this.props.availableActions &&
+                this.props.availableActions.length && (
+                  <div key={`answeractions-${interactionStep.id}`}>
                     <div>
-                      <GSAutoComplete
-                        {...dataTest("actionDataAutoComplete")}
-                        getOptionLabel={option => {
-                          return typeof option === "string"
-                            ? option
-                            : option.text;
-                        }}
-                        placeholder="Start typing to search for the data to use with the answer action"
-                        label="Answer Action Data"
-                        fullWidth
-                        name="answerActionsData"
-                        options={clientChoiceData.map(item => ({
-                          value: item.details,
-                          label: item.name
-                        }))}
-                        value={
-                          typeof interactionStep.answerActionsData ===
-                            "string" && interactionStep.answerActionsData
-                            ? JSON.parse(interactionStep.answerActionsData)
-                            : interactionStep.answerActionsData
-                        }
-                        onChange={val => {
+                      <GSSelectField
+                        style={{ width: "90%" }}
+                        {...dataTest("actionSelect")}
+                        label="Action handler"
+                        name="answerActions"
+                        value={interactionStep.answerActions || ""}
+                        onChange={val =>
                           this.handleFormChange({
                             ...interactionStep,
-                            answerActionsData: val
-                          });
-                        }}
+                            answerActions: val
+                          })
+                        }
+                        choices={[
+                          { value: "", label: "None" },
+                          ...this.props.availableActions.map(action => ({
+                            value: action.name,
+                            label: action.displayName
+                          }))
+                        ]}
                       />
-                      {interactionStep.needRequiredAnswerActionsData ? (
-                        <div className={css(styleSheet.errorMessage)}>
-                          Action requires additional data. Please select
-                          something.
-                        </div>
-                      ) : null}
+                      <Tooltip
+                        style={{ marginTop: 20 }}
+                        title="An action is something that is triggered by this answer being chosen, often in an outside system"
+                      >
+                        <HelpOutlineIcon />
+                      </Tooltip>
+                      {instructions && <div>{instructions}</div>}
                     </div>
-                  ) : null}
-                </div>
-              ) : null}
+                    {clientChoiceData && clientChoiceData.length && (
+                      <div>
+                        <GSAutoComplete
+                          {...dataTest("actionDataAutoComplete")}
+                          getOptionLabel={option => {
+                            return typeof option === "string"
+                              ? option
+                              : option.text;
+                          }}
+                          placeholder="Start typing to search for the data to use with the answer action"
+                          label="Answer Action Data"
+                          fullWidth
+                          name="answerActionsData"
+                          options={clientChoiceData.map(item => ({
+                            value: item.details,
+                            label: item.name
+                          }))}
+                          value={
+                            typeof interactionStep.answerActionsData ===
+                              "string" && interactionStep.answerActionsData
+                              ? JSON.parse(interactionStep.answerActionsData)
+                              : interactionStep.answerActionsData
+                          }
+                          onChange={val => {
+                            this.handleFormChange({
+                              ...interactionStep,
+                              answerActionsData: val
+                            });
+                          }}
+                        />
+                        {interactionStep.needRequiredAnswerActionsData && (
+                          <div className={css(styleSheet.errorMessage)}>
+                            Action requires additional data. Please select
+                            something.
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )}
               <Form.Field
                 as={GSScriptField}
                 {...dataTest("editorInteraction")}
@@ -426,20 +426,20 @@ export default class CampaignInteractionStepsForm extends React.Component {
         </Card>
         <div style={styles.answerContainer}>
           {interactionStep.questionText &&
-          interactionStep.script &&
-          (!interactionStep.parentInteractionId ||
-            interactionStep.answerOption) ? (
-            <div>
-              <Button
-                {...dataTest("addResponse")}
-                onClick={this.addStep(interactionStep.id).bind(this)}
-                style={{ marginBottom: "10px" }}
-                variant="outlined"
-              >
-                + Add a response
-              </Button>
-            </div>
-          ) : null}
+            interactionStep.script &&
+            (!interactionStep.parentInteractionId ||
+              interactionStep.answerOption) && (
+              <div>
+                <Button
+                  {...dataTest("addResponse")}
+                  onClick={this.addStep(interactionStep.id).bind(this)}
+                  style={{ marginBottom: "10px" }}
+                  variant="outlined"
+                >
+                  + Add a response
+                </Button>
+              </div>
+            )}
           {this.state.displayAllSteps &&
             interactionStep.interactionSteps
               .filter(is => !is.isDeleted)

@@ -150,7 +150,6 @@ export class TexterSidebox extends React.Component {
         <Button
           onClick={() => this.setState({ dialogOpen: true })}
           className={css(flexStyles.flatButton)}
-          labelStyle={inlineStyles.flatButtonLabel}
         >
           Schedule for Events
         </Button>

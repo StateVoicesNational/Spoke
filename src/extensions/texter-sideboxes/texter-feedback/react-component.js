@@ -4,6 +4,8 @@ import { withRouter } from "react-router";
 import ReactTooltip from "react-tooltip";
 import * as yup from "yup";
 import Form from "react-formal";
+import gql from "graphql-tag";
+import _ from "lodash";
 
 import AddIcon from "@material-ui/icons/Add";
 import RemoveIcon from "@material-ui/icons/Remove";
@@ -17,10 +19,7 @@ import GSForm from "../../../components/forms/GSForm";
 import GSTextField from "../../../components/forms/GSTextField";
 import GSSubmitButton from "../../../components/forms/GSSubmitButton";
 import loadData from "../../../containers/hoc/load-data";
-import gql from "graphql-tag";
-import _ from "lodash";
 import theme from "../../../styles/theme";
-
 import { defaults } from "./config";
 import AssignmentTexterFeedback from "./AssignmentTexterFeedback";
 
@@ -272,18 +271,18 @@ export class TexterSideboxClass extends React.Component {
                 <h3 style={{ color: theme.colors.darkGreen }}>Skills</h3>
                 <Paper style={inlineStyles.skillsWrapper}>
                   {config.skills.map(({ key, content }) => {
-                    const isChecked = (Object.entries(
+                    const isChecked = !!(Object.entries(
                       feedback.skillCounts || []
                     ).find(skillCounts => skillCounts[0] === key) || [])[1];
 
                     return (
-                      <div>
+                      <div key={key}>
                         <FormControlLabel
                           label={_.startCase(key)}
                           labelPlacement="start"
                           control={
                             <Switch
-                              style={inlineStyles.skillCheckbox}
+                              color="primary"
                               checked={isChecked}
                               data-tip
                               data-for={`${key}-skills`}
@@ -323,7 +322,6 @@ export class TexterSideboxClass extends React.Component {
 
           <Form.Submit
             style={inlineStyles.submitButton}
-            labelStyle={{ fontSize: 17 }}
             as={GSSubmitButton}
             label="Sweep Complete"
             disabled={!feedback.message}
