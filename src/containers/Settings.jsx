@@ -17,7 +17,7 @@ import Toggle from "material-ui/Toggle";
 import moment from "moment";
 import CampaignTexterUIForm from "../components/CampaignTexterUIForm";
 import OrganizationFeatureSettings from "../components/OrganizationFeatureSettings";
-import getMessagingServiceConfigComponent from "../extensions/service-vendors/react-components";
+import { getServiceVendorComponent } from "../extensions/service-vendors/components";
 import GSTextField from "../components/forms/GSTextField";
 
 const styles = StyleSheet.create({
@@ -137,7 +137,7 @@ class Settings extends React.Component {
     );
   }
 
-  renderMessageServiceConfig() {
+  renderServiceVendorConfig() {
     const { id: organizationId, messageService } = this.props.data.organization;
     if (!messageService) {
       return null;
@@ -147,9 +147,9 @@ class Settings extends React.Component {
     if (!supportsOrgConfig) {
       return null;
     }
-
-    const ConfigMessageService = getMessagingServiceConfigComponent(name);
-    if (!ConfigMessageService) {
+    const component = getServiceVendorComponent(name);
+    const ConfigServiceVendor = component.OrgConfig;
+    if (!ConfigServiceVendor) {
       return null;
     }
 
@@ -158,22 +158,22 @@ class Settings extends React.Component {
         <CardHeader
           title={`${name.toUpperCase().charAt(0) + name.slice(1)} Config`}
           style={{
-            backgroundColor: this.state.messageServiceAllSet
+            backgroundColor: this.state.serviceVendorAllSet
               ? theme.colors.green
               : theme.colors.yellow
           }}
         />
-        <ConfigMessageService
+        <ConfigServiceVendor
           organizationId={organizationId}
           config={config}
           inlineStyles={inlineStyles}
           styles={styles}
           saveLabel={this.props.saveLabel}
           onSubmit={newConfig => {
-            return this.props.mutations.updateMessageServiceConfig(newConfig);
+            return this.props.mutations.updateServiceVendorConfig(newConfig);
           }}
           onAllSetChanged={allSet => {
-            this.setState({ messageServiceAllSet: allSet });
+            this.setState({ serviceVendorAllSet: allSet });
           }}
           requestRefetch={async () => {
             return this.props.data.refetch();
@@ -261,7 +261,7 @@ class Settings extends React.Component {
           </CardActions>
         </Card>
         <div>{this.renderTextingHoursForm()}</div>
-        {this.renderMessageServiceConfig()}
+        {this.renderServiceVendorConfig()}
         {this.props.data.organization &&
         this.props.data.organization.texterUIConfig &&
         this.props.data.organization.texterUIConfig.sideboxChoices.length ? (
@@ -379,7 +379,6 @@ const queries = {
           }
           messageService {
             name
-            type
             supportsOrgConfig
             supportsCampaignConfig
             config
@@ -417,13 +416,13 @@ export const editOrganizationGql = gql`
   }
 `;
 
-export const updateMessageServiceConfigGql = gql`
-  mutation updateMessageServiceConfig(
+export const updateServiceVendorConfigGql = gql`
+  mutation updateServiceVendorConfig(
     $organizationId: String!
     $messageServiceName: String!
     $config: JSON!
   ) {
-    updateMessageServiceConfig(
+    updateServiceVendorConfig(
       organizationId: $organizationId
       messageServiceName: $messageServiceName
       config: $config
@@ -506,9 +505,9 @@ const mutations = {
       optOutMessage
     }
   }),
-  updateMessageServiceConfig: ownProps => newConfig => {
+  updateServiceVendorConfig: ownProps => newConfig => {
     return {
-      mutation: updateMessageServiceConfigGql,
+      mutation: updateServiceVendorConfigGql,
       variables: {
         organizationId: ownProps.params.organizationId,
         messageServiceName: ownProps.data.organization.messageService.name,

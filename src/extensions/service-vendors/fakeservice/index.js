@@ -14,7 +14,6 @@ import uuid from "uuid";
 export const getMetadata = () => ({
   supportsOrgConfig: false,
   supportsCampaignConfig: false,
-  type: "SMS",
   name: "fakeservice"
 });
 

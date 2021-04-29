@@ -1,4 +1,4 @@
-import { updateMessageServiceConfigGql } from "../../../../src/containers/Settings";
+import { updateServiceVendorConfigGql } from "../../../../src/containers/Settings";
 // import * as messagingServices from "../../../../src/extensions/service-vendors";
 import * as serviceMap from "../../../../src/extensions/service-vendors/service_map";
 import * as twilio from "../../../../src/extensions/service-vendors/twilio";
@@ -14,7 +14,7 @@ import {
   setupTest
 } from "../../../test_helpers";
 
-describe("updateMessageServiceConfig", () => {
+describe("updateServiceVendorConfig", () => {
   beforeEach(async () => {
     await setupTest();
   }, global.DATABASE_SETUP_TEARDOWN_TIMEOUT);
@@ -72,7 +72,7 @@ describe("updateMessageServiceConfig", () => {
     });
 
     it("returns an error", async () => {
-      const gqlResult = await runGql(updateMessageServiceConfigGql, vars, user);
+      const gqlResult = await runGql(updateServiceVendorConfigGql, vars, user);
       expect(gqlResult.errors[0].message).toEqual(
         "Can't configure this will never be a message service name. It's not the configured message service"
       );
@@ -88,7 +88,7 @@ describe("updateMessageServiceConfig", () => {
       if (r.redis) r.redis.flushdb();
     });
     it("returns an error", async () => {
-      const gqlResult = await runGql(updateMessageServiceConfigGql, vars, user);
+      const gqlResult = await runGql(updateServiceVendorConfigGql, vars, user);
       expect(gqlResult.errors[0].message).toEqual(
         "Can't configure twilio. It's not the configured message service"
       );
@@ -102,7 +102,7 @@ describe("updateMessageServiceConfig", () => {
     });
 
     it("returns an error", async () => {
-      const gqlResult = await runGql(updateMessageServiceConfigGql, vars, user);
+      const gqlResult = await runGql(updateServiceVendorConfigGql, vars, user);
       expect(gqlResult.errors[0].message).toEqual(
         "twilio is not a valid message service"
       );
@@ -116,7 +116,7 @@ describe("updateMessageServiceConfig", () => {
     });
 
     it("returns an error", async () => {
-      const gqlResult = await runGql(updateMessageServiceConfigGql, vars, user);
+      const gqlResult = await runGql(updateServiceVendorConfigGql, vars, user);
       expect(gqlResult.errors[0].message).toEqual(
         "twilio does not support configuration"
       );
@@ -130,7 +130,7 @@ describe("updateMessageServiceConfig", () => {
     });
 
     it("returns an error", async () => {
-      const gqlResult = await runGql(updateMessageServiceConfigGql, vars, user);
+      const gqlResult = await runGql(updateServiceVendorConfigGql, vars, user);
       expect(gqlResult.errors[0].message).toEqual("Config is not valid JSON");
       expect(twilio.updateConfig).not.toHaveBeenCalled();
     });
@@ -144,7 +144,7 @@ describe("updateMessageServiceConfig", () => {
     });
 
     it("returns an error", async () => {
-      const gqlResult = await runGql(updateMessageServiceConfigGql, vars, user);
+      const gqlResult = await runGql(updateServiceVendorConfigGql, vars, user);
       expect(gqlResult.errors[0].message).toEqual("OH NO!");
     });
   });
@@ -176,7 +176,7 @@ describe("updateMessageServiceConfig", () => {
             })
           ]
         ]);
-        expect(gqlResult.data.updateMessageServiceConfig).toEqual(
+        expect(gqlResult.data.updateServiceVendorConfig).toEqual(
           expect.objectContaining(expectedCacheConfig)
         );
 
@@ -193,7 +193,7 @@ describe("updateMessageServiceConfig", () => {
     describe("when features DOES NOT HAVE an existing config for the message service", () => {
       it("writes message service config in features.configKey", async () => {
         const gqlResult = await runGql(
-          updateMessageServiceConfigGql,
+          updateServiceVendorConfigGql,
           vars,
           user
         );
@@ -216,7 +216,7 @@ describe("updateMessageServiceConfig", () => {
       });
       it("writes message service config in features.configKey", async () => {
         const gqlResult = await runGql(
-          updateMessageServiceConfigGql,
+          updateServiceVendorConfigGql,
           vars,
           user
         );
@@ -242,7 +242,7 @@ describe("updateMessageServiceConfig", () => {
       });
       it("writes individual config components to the top level of features", async () => {
         const gqlResult = await runGql(
-          updateMessageServiceConfigGql,
+          updateServiceVendorConfigGql,
           vars,
           user
         );
@@ -278,7 +278,7 @@ describe("updateMessageServiceConfig", () => {
           .mockReturnValue(extremelyFakeService);
       });
       it("writes the message service config to features.config_key", async () => {
-        await runGql(updateMessageServiceConfigGql, vars, user);
+        await runGql(updateServiceVendorConfigGql, vars, user);
         dbOrganization = await Organization.get(organization.id);
         expect(JSON.parse(dbOrganization.features)).toEqual(
           expect.objectContaining({ [configKey]: expectedConfig })

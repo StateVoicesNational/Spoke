@@ -38,7 +38,6 @@ const MAX_NUMBERS_PER_BUY_JOB = getConfig("MAX_NUMBERS_PER_BUY_JOB") || 100;
 export const getMetadata = () => ({
   supportsOrgConfig: getConfig("TWILIO_MULTI_ORG", null, { truthy: true }),
   supportsCampaignConfig: false,
-  type: "SMS",
   name: "twilio"
 });
 
