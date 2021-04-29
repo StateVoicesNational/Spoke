@@ -37,6 +37,14 @@ const rootSchema = gql`
     value: String!
   }
 
+  input BulkUpdateScriptInput {
+    searchString: String!
+    replaceString: String!
+    includeArchived: Boolean!
+    campaignTitlePrefixes: [String]!
+    targetObject: [String]!
+  }
+
   input AnswerOptionInput {
     action: String
     value: String!
@@ -303,6 +311,10 @@ const rootSchema = gql`
       campaignContactId: String!
       noReply: Boolean
     ): CampaignContact
+    bulkUpdateScript(
+      organizationId: String!
+      findAndReplace: BulkUpdateScriptInput!
+    ): [ScriptUpdateResult]
     editCampaignContactMessageStatus(
       messageStatus: String!
       campaignContactId: String!

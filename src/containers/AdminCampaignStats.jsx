@@ -11,6 +11,7 @@ import CardContent from "@material-ui/core/CardContent";
 
 import TexterStats from "../components/TexterStats";
 import OrganizationJoinLink from "../components/OrganizationJoinLink";
+import AdminCampaignCopy from "./AdminCampaignCopy";
 import { withRouter, Link } from "react-router";
 import { StyleSheet, css } from "aphrodite";
 import loadData from "./hoc/load-data";
@@ -292,21 +293,10 @@ class AdminCampaignStats extends React.Component {
                           Archive
                         </Button>
                       ), // copy
-                      <Button
-                        key="copyCampaign"
-                        {...dataTest("copyCampaign")}
-                        onClick={async () => {
-                          let result = await this.props.mutations.copyCampaign(
-                            this.props.params.campaignId
-                          );
-                          this.setState({
-                            copyCampaignId: result.data.copyCampaign.id,
-                            copyMessageOpen: true
-                          });
-                        }}
-                      >
-                        Copy Campaign
-                      </Button>,
+                      <AdminCampaignCopy
+                        organizationId={organizationId}
+                        campaignId={campaignId}
+                      />,
                       campaign.useOwnMessagingService && (
                         <Button
                           key="messagingService"
@@ -436,29 +426,6 @@ class AdminCampaignStats extends React.Component {
           autoHideDuration={campaign.cacheable ? null : 5000}
           onClose={() => {
             this.setState({ exportMessageOpen: false });
-          }}
-        />
-        <Snackbar
-          open={this.state.copyMessageOpen}
-          message="A new copy has been made."
-          action={
-            <Button
-              onClick={() => {
-                this.props.router.push(
-                  "/admin/" +
-                    encodeURIComponent(organizationId) +
-                    "/campaigns/" +
-                    encodeURIComponent(this.state.copyCampaignId) +
-                    "/edit"
-                );
-              }}
-            >
-              Edit
-            </Button>
-          }
-          autoHideDuration={5000}
-          onClose={() => {
-            this.setState({ copyMessageOpen: false });
           }}
         />
       </div>

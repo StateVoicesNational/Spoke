@@ -86,14 +86,16 @@ export class AssignmentTexterContactControls extends React.Component {
     setTimeout(() => {
       node.scrollTop = Math.floor(node.scrollHeight);
     }, 0);
-    document.body.addEventListener("keyup", this.onKeyUp);
+    const keyAction = window.HOLD_ENTER_KEY ? "keydown" : "keyup";
+    document.body.addEventListener(keyAction, this.onKeyUp);
     document.body.addEventListener("keypress", this.blockWithCtrl);
     window.addEventListener("resize", this.onResize);
     window.addEventListener("orientationchange", this.onResize);
   }
 
   componentWillUnmount() {
-    document.body.removeEventListener("keyup", this.onKeyUp);
+    const keyAction = window.HOLD_ENTER_KEY ? "keydown" : "keyup";
+    document.body.removeEventListener(keyAction, this.onKeyUp);
     document.body.removeEventListener("keypress", this.blockWithCtrl);
     window.removeEventListener("resize", this.onResize);
     window.removeEventListener("orientationchange", this.onResize);

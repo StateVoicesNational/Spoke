@@ -7,6 +7,9 @@ import List from "@material-ui/core/List";
 import ListItem from "@material-ui/core/ListItem";
 import ListItemText from "@material-ui/core/ListItemText";
 import Button from "@material-ui/core/Button";
+import MenuIcon from "@material-ui/icons/Menu";
+import CloseIcon from "@material-ui/icons/Close";
+import IconButton from "@material-ui/core/IconButton";
 
 import { withRouter } from "react-router";
 import _ from "lodash";
@@ -16,11 +19,9 @@ import { StyleSheet, css } from "aphrodite";
 const styles = StyleSheet.create({
   sideBarWithMenu: {
     width: 256,
-    height: "100%",
-    writingMode: "hoizontal-lr"
+    height: "100%"
   },
   sideBarWithoutMenu: {
-    writingMode: "vertical-rl",
     padding: "5px",
     paddingTop: "20px"
   }
@@ -39,7 +40,9 @@ const Navigation = function Navigation(props) {
           }}
         >
           <div style={{ display: "flex", justifyContent: "flex-end" }}>
-            <Button onClick={props.onToggleMenu}>Close Menu</Button>
+            <IconButton onClick={props.onToggleMenu}>
+              <CloseIcon />
+            </IconButton>
           </div>
 
           <List>
@@ -61,12 +64,9 @@ const Navigation = function Navigation(props) {
     );
   } else {
     return (
-      <div
-        className={css(styles.sideBarWithoutMenu)}
-        onClick={props.onToggleMenu}
-      >
-        <span style={{ cursor: "pointer" }}>SHOW MENU</span>
-      </div>
+      <IconButton onClick={props.onToggleMenu}>
+        <MenuIcon />
+      </IconButton>
     );
   }
 };
