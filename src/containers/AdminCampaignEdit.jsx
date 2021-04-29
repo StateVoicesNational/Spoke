@@ -1,5 +1,7 @@
 import PropTypes from "prop-types";
 import React from "react";
+import gql from "graphql-tag";
+import { Link } from "react-router";
 
 import Button from "@material-ui/core/Button";
 import ButtonGroup from "@material-ui/core/ButtonGroup";
@@ -7,6 +9,7 @@ import ButtonGroup from "@material-ui/core/ButtonGroup";
 import WarningIcon from "@material-ui/icons/Warning";
 import DoneIcon from "@material-ui/icons/Done";
 import CancelIcon from "@material-ui/icons/Cancel";
+import { css } from "aphrodite";
 
 import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
 import IconButton from "@material-ui/core/IconButton";
@@ -20,9 +23,8 @@ import Avatar from "@material-ui/core/Avatar";
 import CircularProgress from "@material-ui/core/CircularProgress";
 
 import theme from "../styles/theme";
-import { Link } from "react-router";
-import gql from "graphql-tag";
 import loadData from "./hoc/load-data";
+import AdminCampaignCopy from "./AdminCampaignCopy";
 import CampaignBasicsForm from "../components/CampaignBasicsForm";
 import CampaignMessagingServiceForm from "../components/CampaignMessagingServiceForm";
 import CampaignContactsChoiceForm from "../components/CampaignContactsChoiceForm";
@@ -34,7 +36,6 @@ import CampaignTexterUIForm from "../components/CampaignTexterUIForm";
 import CampaignPhoneNumbersForm from "../components/CampaignPhoneNumbersForm";
 import { dataTest, camelCase } from "../lib/attributes";
 import CampaignTextingHoursForm from "../components/CampaignTextingHoursForm";
-import { css } from "aphrodite";
 import { styles } from "./AdminCampaignStats";
 import AdminScriptImport from "../containers/AdminScriptImport";
 import { makeTree } from "../lib";
@@ -859,6 +860,12 @@ export class AdminCampaignEdit extends React.Component {
             >
               Start This Campaign!
             </Button>
+            {/template/i.test(this.props.campaignData.campaign.title) && (
+              <AdminCampaignCopy
+                campaignId={this.props.campaignData.campaign.id}
+                organizationId={this.props.organizationData.organization.id}
+              />
+            )}
           </ButtonGroup>
         </div>
       </div>

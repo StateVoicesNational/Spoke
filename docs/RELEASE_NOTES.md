@@ -1,6 +1,26 @@
 # Release Notes
 
 
+## v10.2
+
+_April 2021:_ Version 10.2
+
+This is another minor release bringing some small features while in the background we are doing some major plumbing work to support other message service vendors better.  Some small improvements/bugfixes:
+
+### Improvements
+
+* Documentation improvements around some experimental service settings
+* Bulk Script Editor - Interaction Step / Canned Response (thanks to @bchrobot  from Politics Rewired branch)
+* Un-started Campaigns with the word 'template' in their title will have the "[Copy Campaign]" button on the edit page
+* Bugfix: Admin show/close menu improved
+* Bugfix: Fix graphql error responses within DEBUG/SHOW_SERVER_ERRORS
+* Experimental: You can now enable an environment variable HOLD_ENTER_KEY which means texters can hold the enter key down to text sequential contacts.
+* Experimental: A new dynamicassignment-batches strategy called `finished-replies-tz` - this will only assign contacts to texters with currently in-texting-hours timezones. Especially for campaign contact lists that have varied timezones and when texters will return to jumping in the campaign in later hours when new timezones are allowed, then this might be better than 'finished-replies' (please report experiences, good/bad)
+
+### Appreciations
+* [frydafly](https://github.com/Frydafly), [lperson](https://github.com/lperson), [oburbank](https://github.com/oburbank), [schuyler1d](https://github.com/schuyler1d)
+
+
 ## v10.1
 
 _April 2021:_ Version 10.1
