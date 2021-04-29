@@ -12,4 +12,4 @@ export { updateQuestionResponses } from "./updateQuestionResponses";
 export { releaseCampaignNumbers } from "./releaseCampaignNumbers";
 export { clearCachedOrgAndExtensionCaches } from "./clearCachedOrgAndExtensionCaches";
 export { updateFeedback } from "./updateFeedback";
-export { updateMessageServiceConfig } from "./updateMessageServiceConfig";
+export { updateServiceVendorConfig } from "./updateServiceVendorConfig";

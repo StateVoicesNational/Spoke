@@ -217,5 +217,3 @@ OrgConfig.propTypes = {
   onAllSetChanged: PropTypes.func,
   requestRefetch: PropTypes.func
 };
-
-export default OrgConfig;

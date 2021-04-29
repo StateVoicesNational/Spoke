@@ -241,12 +241,12 @@ export async function setTwilioAuth(user, organization) {
   const context = getContext({ user });
 
   const query = `
-    mutation updateMessageServiceConfig(
+    mutation updateServiceVendorConfig(
       $organizationId: String!
       $messageServiceName: String!
       $config: JSON!
     ) {
-      updateMessageServiceConfig(
+      updateServiceVendorConfig(
         organizationId: $organizationId
         messageServiceName: $messageServiceName
         config: $config
@@ -268,7 +268,7 @@ export async function setTwilioAuth(user, organization) {
 
   const result = await graphql(mySchema, query, rootValue, context, variables);
   if (result && result.errors) {
-    console.log("updateMessageServiceConfig failed " + JSON.stringify(result));
+    console.log("updateServiceVendorConfig failed " + JSON.stringify(result));
   }
   return result;
 }

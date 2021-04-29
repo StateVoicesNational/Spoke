@@ -295,7 +295,7 @@ const rootSchema = gql`
       organizationId: String!
       optOutMessage: String!
     ): Organization
-    updateMessageServiceConfig(
+    updateServiceVendorConfig(
       organizationId: String!
       messageServiceName: String!
       config: JSON!

@@ -9,7 +9,7 @@ import orgCache from "../../models/cacheable_queries/organization";
 import { accessRequired } from "../errors";
 import { Organization } from "../../../server/models";
 
-export const updateMessageServiceConfig = async (
+export const updateServiceVendorConfig = async (
   _,
   { organizationId, messageServiceName, config },
   { user }
@@ -87,7 +87,7 @@ export const updateMessageServiceConfig = async (
   return orgCache.getMessageServiceConfig(updatedOrganization);
 };
 
-export const getMessageServiceConfig = async (
+export const getServiceVendorConfig = async (
   serviceName,
   organization,
   options = {}
