@@ -22,13 +22,6 @@ import GSTextField from "../forms/GSTextField";
 const styles = {
   dialog: {
     zIndex: 10001
-  },
-  overflowHidden: {
-    overflow: "hidden"
-  },
-  search: {
-    paddingLeft: 16,
-    paddingRight: 16
   }
 };
 
@@ -36,8 +29,7 @@ class ScriptList extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      dialogOpen: false,
-      search: null
+      dialogOpen: false
     };
   }
 
@@ -83,16 +75,7 @@ class ScriptList extends React.Component {
 
     const rightIconButton = null;
 
-    const search = this.state.search && this.state.search.toLowerCase();
-    const filteredScripts = search
-      ? scripts.filter(
-          script =>
-            script.text.toLowerCase().includes(search) ||
-            script.title.toLowerCase().includes(search)
-        )
-      : scripts;
-
-    const listItems = filteredScripts.map(script => (
+    const listItems = scripts.map(script => (
       <ListItem
         value={script.text}
         onClick={() => onSelectCannedResponse(script)}
@@ -116,16 +99,8 @@ class ScriptList extends React.Component {
 
     const list =
       scripts.length === 0 ? null : (
-        <List style={styles.overflowHidden}>
+        <List>
           {subheader ? <Subheader>{subheader}</Subheader> : ""}
-          <GSTextField
-            name="search"
-            floatingLabelText="Search for canned responses"
-            value={this.state.search}
-            onChange={text => this.setState({ search: text })}
-            style={styles.search}
-            fullWidth
-          />
           {listItems}
           <Divider />
         </List>
