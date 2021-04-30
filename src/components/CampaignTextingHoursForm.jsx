@@ -3,13 +3,16 @@ import Toggle from "material-ui/Toggle";
 import React from "react";
 import Form from "react-formal";
 import GSForm from "./forms/GSForm";
+import GSSubmitButton from "./forms/GSSubmitButton";
+import GSTextField from "./forms/GSTextField";
 import CampaignFormSectionHeading from "./CampaignFormSectionHeading";
-import yup from "yup";
+import * as yup from "yup";
 import cloneDeep from "lodash/cloneDeep";
 import isEqual from "lodash/isEqual";
 import moment from "moment";
-import Autocomplete from "material-ui/AutoComplete";
-import { dataSourceItem } from "./utils";
+import momentTz from "moment-timezone";
+import SelectField from "material-ui/SelectField";
+import MenuItem from "material-ui/MenuItem";
 
 export default class CampaignTextingHoursForm extends React.Component {
   state = {
@@ -39,7 +42,7 @@ export default class CampaignTextingHoursForm extends React.Component {
     return (
       <Form.Field
         name={name}
-        type={Toggle}
+        as={Toggle}
         defaultToggled={this.props.formValues[name]}
         label={label}
         onToggle={async (_, isToggled) => {
@@ -49,53 +52,18 @@ export default class CampaignTextingHoursForm extends React.Component {
     );
   }
 
-  addAutocompleteFormField(
-    name,
-    stateName,
-    initialValue,
-    label,
-    hint,
-    choices
-  ) {
+  addFormField(name, stateName, initialValue, label, hint, choices) {
     return (
       <Form.Field
+        as={SelectField}
         name={name}
-        type={Autocomplete}
-        fullWidth
-        dataSource={choices}
-        filter={Autocomplete.caseInsensitiveFilter}
-        maxSearchResults={4}
-        searchText={
-          this.state[stateName] !== undefined
-            ? this.state[stateName]
-            : initialValue
-        }
-        hintText={hint}
         floatingLabelText={label}
-        onUpdateInput={text => {
-          const state = {};
-          state[stateName] = text;
-          this.setState(state);
+        onChange={(_, i, val) => {
+          this.props.onChange({ [name]: val });
         }}
-        onNewRequest={(selection, index) => {
-          let selectedChoice = undefined;
-          if (index === -1) {
-            selectedChoice = choices.find(item => item.text === selection);
-          } else {
-            selectedChoice = selection;
-          }
-          if (!selectedChoice) {
-            return;
-          }
-          const state = {};
-          state[stateName] = selectedChoice.text;
-          this.setState(state);
-          this.fireOnChangeIfTheFormValuesChanged(
-            name,
-            selectedChoice.rawValue
-          );
-        }}
-      />
+      >
+        {choices}
+      </Form.Field>
     );
   }
 
@@ -129,10 +97,10 @@ export default class CampaignTextingHoursForm extends React.Component {
     ];
     const hourChoices = hours.map(hour => {
       const formattedHour = formatTextingHours(hour);
-      return dataSourceItem(formattedHour, hour);
+      return <MenuItem key={hour} value={hour} primaryText={formattedHour} />;
     });
 
-    const timezones = [
+    let timezones = [
       "US/Alaska",
       "US/Aleutian",
       "US/Arizona",
@@ -148,15 +116,20 @@ export default class CampaignTextingHoursForm extends React.Component {
       "America/Puerto_Rico",
       "America/Virgin"
     ];
-    const timezoneChoices = timezones.map(timezone =>
-      dataSourceItem(timezone, timezone)
-    );
-
+    if (window.TZ && timezones.indexOf(window.TZ) === -1) {
+      const allTZs = momentTz.tz.names();
+      const tzIndex = allTZs.indexOf(window.TZ);
+      if (tzIndex !== -1) {
+        timezones = allTZs.slice(Math.max(0, tzIndex - 5), tzIndex + 5);
+      }
+    }
+    const timezoneChoices = timezones.map(timezone => (
+      <MenuItem key={timezone} value={timezone} primaryText={timezone} />
+    ));
     return (
       <GSForm
         schema={this.formSchema}
         value={this.props.formValues}
-        onChange={this.props.onChange}
         onSubmit={this.props.onSubmit}
       >
         <CampaignFormSectionHeading
@@ -177,46 +150,44 @@ export default class CampaignTextingHoursForm extends React.Component {
           <div>
             {this.props.formValues.textingHoursEnforced ? (
               <div>
-                {this.addAutocompleteFormField(
+                {this.addFormField(
                   "textingHoursStart",
                   "textingHoursStartSearchText",
                   formatTextingHours(this.props.formValues.textingHoursStart),
                   "Start time",
-                  "Start typing a start time",
-                  hourChoices,
-                  hours
+                  "",
+                  hourChoices
                 )}
 
-                {this.addAutocompleteFormField(
+                {this.addFormField(
                   "textingHoursEnd",
                   "textingHoursEndSearchText",
                   formatTextingHours(this.props.formValues.textingHoursEnd),
                   "End time",
-                  "Start typing an end time",
-                  hourChoices,
-                  hours
+                  "",
+                  hourChoices
                 )}
               </div>
             ) : (
               ""
             )}
           </div>
-        ) : (
-          ""
-        )}
-
-        {this.addAutocompleteFormField(
+        ) : null}
+        <div>
+          Timezone to use for contacts without ZIP code and to determine
+          daylight savings
+        </div>
+        {this.addFormField(
           "timezone",
           "timezoneSearchText",
           this.props.formValues.timezone,
-          "Timezone to use for contacts without ZIP code and to determine daylight savings",
-          "Start typing a timezone",
-          timezoneChoices,
-          timezones
+          "Default Contact Timezone",
+          "",
+          timezoneChoices
         )}
 
-        <Form.Button
-          type="submit"
+        <Form.Submit
+          as={GSSubmitButton}
           disabled={this.props.saveDisabled}
           label={this.props.saveLabel}
         />

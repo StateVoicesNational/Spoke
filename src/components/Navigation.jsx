@@ -6,17 +6,18 @@ import Divider from "material-ui/Divider";
 import { withRouter } from "react-router";
 import _ from "lodash";
 import { dataTest, camelCase } from "../lib/attributes";
-import { FlatButton } from "material-ui";
+import MenuIcon from "material-ui/svg-icons/navigation/menu";
+import CloseIcon from "material-ui/svg-icons/navigation/close";
+import IconButton from "material-ui/IconButton/IconButton";
+
 import { StyleSheet, css } from "aphrodite";
 
 const styles = StyleSheet.create({
   sideBarWithMenu: {
     width: 256,
-    height: "100%",
-    writingMode: "hoizontal-lr"
+    height: "100%"
   },
   sideBarWithoutMenu: {
-    writingMode: "vertical-rl",
     padding: "5px",
     paddingTop: "20px"
   }
@@ -36,7 +37,9 @@ const Navigation = function Navigation(props) {
           }}
         >
           <div style={{ display: "flex", justifyContent: "flex-end" }}>
-            <FlatButton label={"Close Menu"} onClick={props.onToggleMenu} />
+            <IconButton onClick={props.onToggleMenu}>
+              <CloseIcon />
+            </IconButton>
           </div>
 
           <List>
@@ -45,7 +48,7 @@ const Navigation = function Navigation(props) {
                 {...dataTest(_.camelCase(`nav ${section.path}`))}
                 key={section.name}
                 primaryText={section.name}
-                onTouchTap={() => props.router.push(section.url)}
+                onClick={() => props.router.push(section.url)}
               />
             ))}
             <Divider />
@@ -56,12 +59,9 @@ const Navigation = function Navigation(props) {
     );
   } else {
     return (
-      <div
-        className={css(styles.sideBarWithoutMenu)}
-        onClick={props.onToggleMenu}
-      >
-        <span style={{ cursor: "pointer" }}>SHOW MENU</span>
-      </div>
+      <IconButton onClick={props.onToggleMenu}>
+        <MenuIcon />
+      </IconButton>
     );
   }
 };

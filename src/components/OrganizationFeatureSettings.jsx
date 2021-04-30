@@ -1,10 +1,12 @@
 import type from "prop-types";
 import React from "react";
 import GSForm from "../components/forms/GSForm";
-import yup from "yup";
+import * as yup from "yup";
 import Form from "react-formal";
 import Toggle from "material-ui/Toggle";
 import { dataTest } from "../lib/attributes";
+import GSTextField from "./forms/GSTextField";
+import GSSubmitButton from "./forms/GSSubmitButton";
 
 const configurableFields = {
   ACTION_HANDLERS: {
@@ -38,6 +40,7 @@ const configurableFields = {
       return (
         <div>
           <Form.Field
+            as={GSTextField}
             label="Action Handlers (comma-separated)"
             name="ACTION_HANDLERS"
             fullWidth
@@ -106,6 +109,7 @@ const configurableFields = {
       return (
         <div>
           <Form.Field
+            as={GSTextField}
             label="Default Batch Size"
             name="DEFAULT_BATCHSIZE"
             fullWidth
@@ -125,6 +129,7 @@ const configurableFields = {
       return (
         <div>
           <Form.Field
+            as={GSTextField}
             label="Default Response Window"
             name="DEFAULT_RESPONSEWINDOW"
             fullWidth
@@ -150,6 +155,7 @@ const configurableFields = {
       return (
         <div>
           <Form.Field
+            as={GSTextField}
             label="Maximum Number of Contacts per-texter"
             name="MAX_CONTACTS_PER_TEXTER"
             fullWidth
@@ -179,6 +185,7 @@ const configurableFields = {
       return (
         <div>
           <Form.Field
+            as={GSTextField}
             label="Max Message Length"
             name="MAX_MESSAGE_LENGTH"
             fullWidth
@@ -246,8 +253,8 @@ export default class OrganizationFeatureSettings extends React.Component {
           onChange={this.onChange}
         >
           {adminItems}
-          <Form.Button
-            type="submit"
+          <Form.Submit
+            as={GSSubmitButton}
             onClick={this.props.onSubmit}
             label={this.props.saveLabel}
             disabled={this.props.saveDisabled}

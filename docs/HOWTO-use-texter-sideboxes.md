@@ -73,6 +73,8 @@ Enabled this hides contact images and video sent back to texters in replies whic
 
 Mobilize (America) event scheduling. User clicks the button and the MOBILIZE_EVENT_SHIFTER_URL opens up in a Dialog as an iframe, which is meant to be an organization's main event list. If contact has a zip, it is included to filter the mobilize events. If the campaign contacts include an event_id column in the CSV, or provides a default event id for the campaign/organization, it adds a tab for the mobilize event in an iframe and prefills the first name, last name, cell, email, and zip into the fields via the query string. Texter can then switch between tabs of the specific event or the general event list. [Pull request with screenshots](https://github.com/MoveOnOrg/Spoke/pull/1812)
 
+Note: as of 3/1/21 you will need to reach out to Mobilize support to have them enable embedding for your dashboard(s), otherwise you'll probably get the error `Refused to display '{MOBILIZE_EVENT_SHIFTER_URL}' in a frame because it set 'X-Frame-Options' to 'sameorigin'.`
+
 ### tag-contact
 
 If you create tags related to 'escalation' or something you want texters to be able to mark

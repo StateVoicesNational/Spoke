@@ -15,7 +15,7 @@ import ErrorIcon from "material-ui/svg-icons/alert/error";
 import InfoIcon from "material-ui/svg-icons/action/info";
 import theme from "../styles/theme";
 import components from "../extensions/contact-loaders/components";
-import yup from "yup";
+import * as yup from "yup";
 import { withRouter } from "react-router";
 
 const check = <CheckIcon color={theme.colors.green} />;
@@ -82,7 +82,8 @@ export class CampaignContactsChoiceForm extends React.Component {
       maxNumbersPerCampaign,
       contactsPerPhoneNumber,
       ingestMethodChoices,
-      pastIngestMethod
+      pastIngestMethod,
+      ensureComplete
     } = this.props;
     const ingestMethod = this.getCurrentMethod();
     const ingestMethodName = ingestMethod && ingestMethod.name;
@@ -91,6 +92,49 @@ export class CampaignContactsChoiceForm extends React.Component {
         ? pastIngestMethod
         : null;
     const IngestComponent = components[ingestMethodName];
+    if (ensureComplete) {
+      // isStarted
+      return (
+        <div>
+          {this.props.contactsCount && (
+            <div>
+              <div>Ingest Method: {ingestMethod.displayName}</div>
+              <div>Loaded Contacts: {this.props.contactsCount}</div>
+              {lastResult ? (
+                <div>
+                  <div>Deleted Duplicates: {lastResult.deletedDupes}</div>
+                  <div>Deleted OptOuts: {lastResult.deletedOptouts}</div>
+                </div>
+              ) : null}
+            </div>
+          )}
+          {this.props.jobResultMessage && (
+            <div>
+              <CampaignFormSectionHeading title="Job Outcome" />
+              <div>{this.props.jobResultMessage}</div>
+            </div>
+          )}
+
+          {IngestComponent && IngestComponent.prototype.renderAfterStart ? (
+            <IngestComponent
+              onChange={chg => {
+                this.handleChange(chg);
+              }}
+              onSubmit={this.props.onSubmit}
+              campaignIsStarted={ensureComplete}
+              icons={icons}
+              saveDisabled={this.props.saveDisabled}
+              saveLabel={this.props.saveLabel}
+              clientChoiceData={ingestMethod && ingestMethod.clientChoiceData}
+              lastResult={lastResult}
+              jobResultMessage={null}
+              contactsPerPhoneNumber={contactsPerPhoneNumber}
+              maxNumbersPerCampaign={maxNumbersPerCampaign}
+            />
+          ) : null}
+        </div>
+      );
+    }
 
     return (
       <div>
@@ -119,9 +163,7 @@ export class CampaignContactsChoiceForm extends React.Component {
         )}
 
         <div>
-          {!this.props.contactsCount ? (
-            ""
-          ) : (
+          {!this.props.contactsCount ? null : (
             <div>
               <CampaignFormSectionHeading
                 title={`Loaded Contacts: ${this.props.contactsCount}`}
@@ -132,9 +174,7 @@ export class CampaignContactsChoiceForm extends React.Component {
               </div>
             </div>
           )}
-          {!this.props.jobResultMessage ? (
-            ""
-          ) : (
+          {!this.props.jobResultMessage ? null : (
             <div>
               <CampaignFormSectionHeading title="Job Outcome" />
               <div>{this.props.jobResultMessage}</div>
@@ -173,7 +213,7 @@ export class CampaignContactsChoiceForm extends React.Component {
                 this.handleChange(chg);
               }}
               onSubmit={this.props.onSubmit}
-              campaignIsStarted={this.props.ensureComplete}
+              campaignIsStarted={ensureComplete}
               icons={icons}
               saveDisabled={this.props.saveDisabled}
               saveLabel={this.props.saveLabel}

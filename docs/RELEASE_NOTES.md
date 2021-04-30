@@ -1,5 +1,56 @@
 # Release Notes
 
+
+## v10.2
+
+_April 2021:_ Version 10.2
+
+This is another minor release bringing some small features while in the background we are doing some major plumbing work to support other message service vendors better.  Some small improvements/bugfixes:
+
+### Improvements
+
+* Documentation improvements around some experimental service settings
+* Bulk Script Editor - Interaction Step / Canned Response (thanks to @bchrobot  from Politics Rewired branch)
+* Un-started Campaigns with the word 'template' in their title will have the "[Copy Campaign]" button on the edit page
+* Bugfix: Admin show/close menu improved
+* Bugfix: Fix graphql error responses within DEBUG/SHOW_SERVER_ERRORS
+* Experimental: You can now enable an environment variable HOLD_ENTER_KEY which means texters can hold the enter key down to text sequential contacts.
+* Experimental: A new dynamicassignment-batches strategy called `finished-replies-tz` - this will only assign contacts to texters with currently in-texting-hours timezones. Especially for campaign contact lists that have varied timezones and when texters will return to jumping in the campaign in later hours when new timezones are allowed, then this might be better than 'finished-replies' (please report experiences, good/bad)
+
+### Appreciations
+* [frydafly](https://github.com/Frydafly), [lperson](https://github.com/lperson), [oburbank](https://github.com/oburbank), [schuyler1d](https://github.com/schuyler1d)
+
+
+## v10.1
+
+_April 2021:_ Version 10.1
+
+The most significant change in this release is an upgrade to React and React-formal libraries -- this has little effect on the interface, but allows us to stay more current with the open-source libraries that this project depends on. This makes it easier to find current documentation and follow patterns that current developers expect to see. Much thanks to [Stefan Hayden](https://github.com/stefanhayden) for this difficult work.
+
+Looking to version 11, our next planned release, we will be focusing on abstracting our message service code so that we are not dependent as much on Twilio -- an important step as we navigate looming changes by phone carriers and message service providers.
+
+### Migration Notes
+
+This is a minor point release, and so has no database migrations or other required configuration changes.  If you deploy to AWS, we should note that we have tweaked the deploy code to use `aws` cli instead of `s3cmd` -- This is very likely to be installed already so nothing should need changing.  If not, then do install the aws command line CLI and configure your credentials that you used for s3cmd into ~/.aws/config
+
+### Other Improvements
+
+* Performance improvements to the Texter Todos page
+* Feature: Add ability to suppress tags in Message Review
+* Bugfix: export contacts including those without assignment
+* Bugfix: Mobilize event shifter texter sidebox autofill
+* UI tweak: Remove yellow badges for 'skipped/past messages' to avoid texter confusion
+* UI fix: cursor position should go to end when editing existing scripts.
+* Allow passing of custom fields to mobilecommons-signup action handler (config w/ UMC_FIELDS)
+* UI: show contact loader load-info in campaign edit page after campaign starts (e.g. to see name of csv uploaded)
+
+See links and notes from the [10.1 pull request](https://github.com/MoveOnOrg/Spoke/pull/1942) for a list of all changes that were included.
+
+### Appreciations
+* [codygordon](https://github.com/codygordon), [Frydafly](https://github.com/Frydafly), [lperson](https://github.com/lperson), [marzvrover](https://github.com/marzvrover), [schuyler1d](https://github.com/schuyler1d), [stefanhayden](https://github.com/stefanhayden)
+* Mark Houghton for QA and design help
+
+
 ## v10.0
 
 _January 2021:_ Version 10.0

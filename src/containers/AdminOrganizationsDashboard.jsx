@@ -87,7 +87,7 @@ class AdminOrganizationsDashboard extends React.Component {
     return (
       <FloatingActionButton
         style={theme.components.floatingButton}
-        onTouchTap={this.handleCreateOrgClick}
+        onClick={this.handleCreateOrgClick}
       >
         <ContentAdd />
       </FloatingActionButton>
