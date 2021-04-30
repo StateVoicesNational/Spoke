@@ -131,8 +131,13 @@ export class AssignmentTexterContactControls extends React.Component {
     }
   };
 
-  getTextOverflowEllipsis = (text, limit) =>
-    text.slice(0, limit) + (text.length > limit ? "..." : "");
+  getShortButtonText = (text, limit) => {
+    var sanitizedText = text.replace(/^(\+|\-)/, "");
+    return (
+      sanitizedText.slice(0, limit) +
+      (sanitizedText.length > limit ? "..." : "")
+    );
+  };
 
   blockWithCtrl = evt => {
     // HACK: This blocks Ctrl-Enter from triggering 'click'
@@ -781,18 +786,14 @@ export class AssignmentTexterContactControls extends React.Component {
       }
 
       shortCannedResponses = shortCannedResponses.filter(script => {
-        if (joinedLength + 1 + script.title.length < 80) {
-          if (window.HIDE_BRANCHED_SCRIPTS) {
-            joinedLength +=
-              1 +
-              this.getTextOverflowEllipsis(
-                script.title.replace(/^(\+|\-)/, ""),
-                cannedResponseScript ? 40 : 13
-              ).length;
-          } else {
-            joinedLength += 1 + script.title.length;
-          }
-
+        var textLength = window.HIDE_BRANCHED_SCRIPTS
+          ? this.getShortButtonText(
+              script.title,
+              cannedResponseScript ? 40 : 13
+            ).length
+          : script.title.length;
+        if (joinedLength + 1 + textLength < 80) {
+          joinedLength += 1 + textLength;
           return true;
         }
       });
@@ -838,8 +839,8 @@ export class AssignmentTexterContactControls extends React.Component {
         {shortCannedResponses.map(script => (
           <FlatButton
             key={`shortcutScript_${script.id}`}
-            label={this.getTextOverflowEllipsis(
-              script.title.replace(/^(\+|\-)/, ""),
+            label={this.getShortButtonText(
+              script.title,
               cannedResponseScript ? 40 : 13
             )}
             onClick={evt => {

@@ -15,7 +15,6 @@ import CannedResponseForm from "../CannedResponseForm";
 import GSSubmitButton from "../forms/GSSubmitButton";
 import Form from "react-formal";
 import { log } from "../../lib";
-import GSTextField from "../forms/GSTextField";
 
 // import { insert, update, remove } from '../../api/scripts/methods'
 
@@ -74,7 +73,6 @@ class ScriptList extends React.Component {
     };
 
     const rightIconButton = null;
-
     const listItems = scripts.map(script => (
       <ListItem
         value={script.text}
