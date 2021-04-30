@@ -58,11 +58,11 @@ class TopNav extends React.Component {
       );
     }
 
-    if (window.LOGO_IMAGE_URL) {
+    if (global.LOGO_IMAGE_URL) {
       return (
         <div>
           <img
-            src={window.LOGO_IMAGE_URL}
+            src={global.LOGO_IMAGE_URL}
             height="50"
             style={{ marginRight: 16 }}
           />

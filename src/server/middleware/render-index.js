@@ -124,7 +124,7 @@ export default function renderIndex(html, css, assetMap) {
       window.MOBILIZE_EVENT_SHIFTER_URL='${getConfig(
         "MOBILIZE_EVENT_SHIFTER_URL"
       )}';
-      window.LOGO_IMAGE_URL='${process.env.LOGO_IMAGE_URL}'
+      window.LOGO_IMAGE_URL='${process.env.LOGO_IMAGE_URL || ""}'
     </script>
     <script src="${assetMap["bundle.js"]}"></script>
   </body>
