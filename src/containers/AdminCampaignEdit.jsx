@@ -13,6 +13,7 @@ import { Link } from "react-router";
 import gql from "graphql-tag";
 import loadData from "./hoc/load-data";
 import RaisedButton from "material-ui/RaisedButton";
+import AdminCampaignCopy from "./AdminCampaignCopy";
 import CampaignBasicsForm from "../components/CampaignBasicsForm";
 import CampaignMessagingServiceForm from "../components/CampaignMessagingServiceForm";
 import CampaignContactsChoiceForm from "../components/CampaignContactsChoiceForm";
@@ -128,7 +129,6 @@ export class AdminCampaignEdit extends React.Component {
     super(props);
     const isNew = props.location.query.new;
     const section = props.location.query.section;
-    console.log("SECTION", section);
     const expandedSection = section
       ? this.sections().findIndex(s => s.title === section)
       : isNew
@@ -402,7 +402,7 @@ export class AdminCampaignEdit extends React.Component {
           this.props.campaignData.campaign.contactsCount > 0,
         checkSaved: () => !this.state.campaignFormValues.contactData,
         blocksStarting: true,
-        expandAfterCampaignStarts: false,
+        expandAfterCampaignStarts: true,
         expandableBySuperVolunteers: false,
         extraProps: {
           contactsCount: this.props.campaignData.campaign.contactsCount,
@@ -727,7 +727,7 @@ export class AdminCampaignEdit extends React.Component {
                 <div className={css(styles.inline)}>
                   <RaisedButton
                     {...dataTest("statsCampaign")}
-                    onTouchTap={() =>
+                    onClick={() =>
                       this.props.router.push(
                         `/admin/${organizationId}/campaigns/${campaign.id}`
                       )
@@ -736,7 +736,7 @@ export class AdminCampaignEdit extends React.Component {
                   />
                   <RaisedButton
                     {...dataTest("convoCampaign")}
-                    onTouchTap={() =>
+                    onClick={() =>
                       this.props.router.push(
                         `/admin/${organizationId}/incoming?campaigns=${campaign.id}`
                       )
@@ -801,7 +801,7 @@ export class AdminCampaignEdit extends React.Component {
           {isArchived ? (
             <RaisedButton
               label="Unarchive"
-              onTouchTap={async () =>
+              onClick={async () =>
                 await this.props.mutations.unarchiveCampaign(
                   this.props.campaignData.campaign.id
                 )
@@ -810,7 +810,7 @@ export class AdminCampaignEdit extends React.Component {
           ) : (
             <RaisedButton
               label="Archive"
-              onTouchTap={async () =>
+              onClick={async () =>
                 await this.props.mutations.archiveCampaign(
                   this.props.campaignData.campaign.id
                 )
@@ -822,7 +822,7 @@ export class AdminCampaignEdit extends React.Component {
             primary
             label="Start This Campaign!"
             disabled={isArchived || !isCompleted || !orgConfigured}
-            onTouchTap={async () => {
+            onClick={async () => {
               if (!isCompleted || !orgConfigured) {
                 return;
               }
@@ -837,6 +837,12 @@ export class AdminCampaignEdit extends React.Component {
               });
             }}
           />
+          {/template/i.test(this.props.campaignData.campaign.title) ? (
+            <AdminCampaignCopy
+              campaignId={this.props.campaignData.campaign.id}
+              organizationId={this.props.organizationData.organization.id}
+            />
+          ) : null}
         </div>
       </div>
     );
@@ -935,7 +941,7 @@ export class AdminCampaignEdit extends React.Component {
                   <RaisedButton
                     label="Discard Job"
                     icon={<CancelIcon />}
-                    onTouchTap={() => this.handleDeleteJob(jobId)}
+                    onClick={() => this.handleDeleteJob(jobId)}
                   />
                 </CardActions>
               ) : null}

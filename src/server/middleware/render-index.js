@@ -108,6 +108,9 @@ export default function renderIndex(html, css, assetMap) {
           ? 'window.TEXTER_SIDEBOXES="' + process.env.TEXTER_SIDEBOXES + '"'
           : ""
       }
+      window.HOLD_ENTER_KEY=${getConfig("HOLD_ENTER_KEY", null, {
+        truthy: 1
+      }) || false}
       window.TEXTER_TWOCLICK=${getConfig("TEXTER_TWOCLICK", null, {
         truthy: 1
       }) || false}

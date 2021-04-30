@@ -4,19 +4,23 @@ import CampaignCannedResponseForm from "./CampaignCannedResponseForm";
 import FlatButton from "material-ui/FlatButton";
 import Form from "react-formal";
 import GSForm from "./forms/GSForm";
-import { List, ListItem } from "material-ui/List";
+import GSSubmitButton from "./forms/GSSubmitButton";
+import List from "material-ui/List/List";
+import ListItem from "material-ui/List/ListItem";
 import Divider from "material-ui/Divider";
 import CampaignFormSectionHeading from "./CampaignFormSectionHeading";
 import DeleteIcon from "material-ui/svg-icons/action/delete";
 import CreateIcon from "material-ui/svg-icons/content/create";
 import IconButton from "material-ui/IconButton";
-import yup from "yup";
+import * as yup from "yup";
 import theme from "../styles/theme";
 import { StyleSheet, css } from "aphrodite";
 import { dataTest } from "../lib/attributes";
 import loadData from "../containers/hoc/load-data";
 import gql from "graphql-tag";
 import TagChips from "./TagChips";
+
+const Span = ({ children }) => <span>{children}</span>;
 
 const styles = StyleSheet.create({
   formContainer: {
@@ -132,40 +136,39 @@ export class CampaignCannedResponsesForm extends React.Component {
         {...dataTest("cannedResponse")}
         value={response.text}
         key={response.id}
-        rightIconButton={
-          <span>
-            <IconButton
-              onClick={() =>
-                this.setState({
-                  showForm: true,
-                  responseId: response.id,
-                  formButtonText: "Edit Response"
-                })
-              }
-            >
-              <CreateIcon />
-            </IconButton>
-            <IconButton
-              onClick={() => {
-                const newVals = this.props.formValues.cannedResponses
-                  .map(responseToDelete => {
-                    if (responseToDelete.id === response.id) {
-                      return null;
-                    }
-                    return responseToDelete;
-                  })
-                  .filter(ele => ele !== null);
-
-                this.props.onChange({
-                  cannedResponses: newVals
-                });
-              }}
-            >
-              <DeleteIcon />
-            </IconButton>
-          </span>
-        }
       >
+        <span style={{ float: "right" }}>
+          <IconButton
+            onClick={() =>
+              this.setState({
+                showForm: true,
+                responseId: response.id,
+                formButtonText: "Edit Response"
+              })
+            }
+          >
+            <CreateIcon />
+          </IconButton>
+          <IconButton
+            onClick={() => {
+              const newVals = this.props.formValues.cannedResponses
+                .map(responseToDelete => {
+                  if (responseToDelete.id === response.id) {
+                    return null;
+                  }
+                  return responseToDelete;
+                })
+                .filter(ele => ele !== null);
+
+              this.props.onChange({
+                cannedResponses: newVals
+              });
+            }}
+          >
+            <DeleteIcon />
+          </IconButton>
+        </span>
+
         <div className={css(styles.title)}>{response.title}</div>
         <div className={css(styles.text)}>{response.text}</div>
         {response.tagIds && response.tagIds.length > 0 && (
@@ -198,7 +201,10 @@ export class CampaignCannedResponsesForm extends React.Component {
       <GSForm
         schema={this.formSchema}
         value={formValues}
-        onChange={this.props.onChange}
+        onChange={change => {
+          console.log("change", change);
+          this.props.onChange(change);
+        }}
         onSubmit={this.props.onSubmit}
       >
         <CampaignFormSectionHeading
@@ -207,8 +213,8 @@ export class CampaignCannedResponsesForm extends React.Component {
         />
         {list}
         {this.showAddForm()}
-        <Form.Button
-          type="submit"
+        <Form.Submit
+          as={GSSubmitButton}
           disabled={this.props.saveDisabled}
           label={this.props.saveLabel}
         />

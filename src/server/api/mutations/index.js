@@ -1,4 +1,5 @@
 import { bulkSendMessages } from "./bulkSendMessages";
+import { bulkUpdateScript } from "./bulkUpdateScript";
 import { buyPhoneNumbers, deletePhoneNumbers } from "./buyPhoneNumbers";
 import { editOrganization } from "./editOrganization";
 import { findNewCampaignContact } from "./findNewCampaignContact";
@@ -14,6 +15,7 @@ import { updateFeedback } from "./updateFeedback";
 
 export {
   bulkSendMessages,
+  bulkUpdateScript,
   buyPhoneNumbers,
   deletePhoneNumbers,
   editOrganization,

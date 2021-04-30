@@ -1,8 +1,9 @@
 import { getContacts } from "../../../server/api/assignment";
 
-export const name = "finished-replies";
+export const name = "finished-replies-tz";
 
-export const displayName = () => "After finishing current replies";
+export const displayName = () =>
+  "After finishing current replies, within Texting Hours";
 
 export const requestNewBatchCount = async ({
   organization,
@@ -61,3 +62,26 @@ export const requestNewBatchCount = async ({
   }
   return availableCount;
 };
+
+export const selectContacts = async (
+  batchQuery,
+  hasCurrentQuery,
+  { campaign, organization, numberContacts }
+) => ({
+  batchQuery: getContacts(
+    null, // no assignment to avoid filtering on one
+    {
+      messageStatus: "needsMessage",
+      validTimezone: true,
+      isOptedOut: false
+    },
+    organization,
+    campaign,
+    true // forCount=true means: do not order
+  )
+    .where("campaign_id", campaign.id)
+    .whereNull("assignment_id")
+    .select("id")
+    .limit(numberContacts)
+    .forUpdate()
+});

@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import PropTypes from "prop-types";
 import Form from "react-formal";
-import yup from "yup";
+import * as yup from "yup";
 import gql from "graphql-tag";
 import { StyleSheet, css } from "aphrodite";
 import Dialog from "material-ui/Dialog";
@@ -9,6 +9,7 @@ import FlatButton from "material-ui/FlatButton";
 
 import loadData from "../../containers/hoc/load-data";
 import GSForm from "../../components/forms/GSForm";
+import GSTextField from "../../components/forms/GSTextField";
 import SendButton from "../../components/SendButton";
 
 const styles = StyleSheet.create({
@@ -100,7 +101,6 @@ class MessageResponse extends Component {
         onClick={this.handleCloseErrorDialog}
       />
     ];
-
     return (
       <div className={css(styles.messageField)}>
         <GSForm
@@ -127,6 +127,7 @@ class MessageResponse extends Component {
             </div>
             <div style={{ marginRight: "120px" }}>
               <Form.Field
+                as={GSTextField}
                 name="messageText"
                 label="Send a response"
                 multiLine

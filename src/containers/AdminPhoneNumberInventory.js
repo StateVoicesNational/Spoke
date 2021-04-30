@@ -10,8 +10,10 @@ import Paper from "material-ui/Paper";
 import DropDownMenu from "material-ui/DropDownMenu";
 import { MenuItem } from "material-ui/Menu";
 import FloatingActionButton from "material-ui/FloatingActionButton";
-import yup from "yup";
+import * as yup from "yup";
 import GSForm from "../components/forms/GSForm";
+import GSSubmitButton from "../components/forms/GSSubmitButton";
+import GSTextField from "../components/forms/GSTextField";
 import Form from "react-formal";
 
 import theme from "../styles/theme";
@@ -199,7 +201,7 @@ class AdminPhoneNumberInventory extends React.Component {
           this.props.params.ownerPerms ? (
             <FlatButton
               icon={<DeleteIcon />}
-              onTouchTap={() => this.handleDeleteNumbersOpen(row)}
+              onClick={() => this.handleDeleteNumbersOpen(row)}
             />
           ) : null
       },
@@ -281,17 +283,23 @@ class AdminPhoneNumberInventory extends React.Component {
       >
         <div style={inlineStyles.dialogFields}>
           <Form.Field
+            as={GSTextField}
             label="Area Code"
             name="areaCode"
             {...dataTest("areaCode")}
           />
-          <Form.Field label="Limit" name="limit" {...dataTest("limit")} />
+          <Form.Field
+            as={GSTextField}
+            label="Limit"
+            name="limit"
+            {...dataTest("limit")}
+          />
           {this.props.data.organization.twilioMessageServiceSid &&
           !this.props.data.organization.campaignPhoneNumbersEnabled ? (
             <Form.Field
               label="Add to this organization's Messaging Service"
               name="addToOrganizationMessagingService"
-              type={Toggle}
+              as={Toggle}
               style={{
                 marginTop: 30
               }}
@@ -310,7 +318,7 @@ class AdminPhoneNumberInventory extends React.Component {
             style={inlineStyles.cancelButton}
             label="Cancel"
           />
-          <Form.Button type="submit" label="Submit" />
+          <Form.Submit as={GSSubmitButton} label="Submit" />
         </div>
       </GSForm>
     );
@@ -370,7 +378,7 @@ class AdminPhoneNumberInventory extends React.Component {
           <FloatingActionButton
             {...dataTest("buyPhoneNumbers")}
             style={theme.components.floatingButton}
-            onTouchTap={this.handleBuyNumbersOpen}
+            onClick={this.handleBuyNumbersOpen}
           >
             <ContentAdd />
           </FloatingActionButton>
