@@ -5,6 +5,7 @@ export const schema = `
     validTimezone: Boolean
     includePastDue: Boolean
     tags: [String]
+    suppressedTags: [String]
     contactId: String
     errorCode: [Int]
   }

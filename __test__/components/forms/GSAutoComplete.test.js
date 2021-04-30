@@ -4,8 +4,9 @@
 import React from "react";
 import { mount } from "enzyme";
 import { StyleSheetTestUtils } from "aphrodite";
+import AutoComplete from "material-ui/AutoComplete";
 
-import yup from "yup";
+import * as yup from "yup";
 
 import Form from "react-formal";
 import { GSAutoComplete, GSForm } from "../../../src/components/forms";
@@ -146,7 +147,7 @@ describe("GSAutoComplete", () => {
           >
             <Form.Field
               name="colors"
-              type="autocomplete"
+              as={GSAutoComplete}
               choices={colors}
               hintText="What's your favorite color?"
             />
@@ -154,8 +155,8 @@ describe("GSAutoComplete", () => {
         </App>
       );
 
-      gsAutoCompleteWrapper = formWrapper.find("GSAutoComplete");
-      autoCompleteWrapper = gsAutoCompleteWrapper.find("AutoComplete");
+      gsAutoCompleteWrapper = formWrapper.find(GSAutoComplete);
+      autoCompleteWrapper = gsAutoCompleteWrapper.find(AutoComplete);
     });
 
     it("the GSForm creates it and sets its properties", async () => {

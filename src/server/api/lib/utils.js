@@ -1,3 +1,4 @@
+import escapeRegExp from "lodash/escapeRegExp";
 import humps from "humps";
 
 export function mapFieldsOrNull(fields) {
@@ -56,3 +57,6 @@ export const groupCannedResponses = cannedResponses => {
   });
   return grouped;
 };
+
+export const replaceAll = (str, find, replace) =>
+  str.replace(new RegExp(escapeRegExp(find), "g"), replace);

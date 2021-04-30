@@ -12,10 +12,7 @@ import Subheader from "material-ui/Subheader";
 import Divider from "material-ui/Divider";
 import Dialog from "material-ui/Dialog";
 import CannedResponseForm from "../CannedResponseForm";
-import GSSubmitButton from "../forms/GSSubmitButton";
-import Form from "react-formal";
 import { log } from "../../lib";
-
 // import { insert, update, remove } from '../../api/scripts/methods'
 
 const styles = {
@@ -111,31 +108,21 @@ class ScriptList extends React.Component {
           <FlatButton
             label="Add new canned response"
             icon={<CreateIcon />}
-            onTouchTap={this.handleOpenDialog}
+            onClick={this.handleOpenDialog}
           />
-        ) : (
-          ""
-        )}
-        <Form.Context>
-          <Dialog
-            style={styles.dialog}
-            open={dialogOpen}
-            actions={[
-              <FlatButton label="Cancel" onTouchTap={this.handleCloseDialog} />,
-              <Form.Button
-                type="submit"
-                component={GSSubmitButton}
-                label="Save"
-              />
-            ]}
-            onRequestClose={this.handleCloseDialog}
-          >
-            <CannedResponseForm
-              onSaveCannedResponse={onSaveCannedResponse}
-              customFields={customFields}
-            />
-          </Dialog>
-        </Form.Context>
+        ) : null}
+
+        <Dialog
+          style={styles.dialog}
+          open={dialogOpen}
+          onRequestClose={this.handleCloseDialog}
+        >
+          <CannedResponseForm
+            onSaveCannedResponse={onSaveCannedResponse}
+            handleCloseDialog={this.handleCloseDialog}
+            customFields={customFields}
+          />
+        </Dialog>
       </div>
     );
   }

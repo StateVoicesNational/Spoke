@@ -1,7 +1,7 @@
 import type from "prop-types";
 import React from "react";
 import { Link } from "react-router";
-import yup from "yup";
+import * as yup from "yup";
 import Form from "react-formal";
 import FlatButton from "material-ui/FlatButton";
 import TagChip from "../../../components/TagChip";
@@ -10,6 +10,7 @@ import CheckIcon from "material-ui/svg-icons/action/check-circle";
 import CircularProgress from "material-ui/CircularProgress";
 import DoneIcon from "material-ui/svg-icons/action/done";
 import { css } from "aphrodite";
+import GSTextField from "../../../components/forms/GSTextField";
 import {
   flexStyles,
   inlineStyles
@@ -166,11 +167,17 @@ export class AdminConfig extends React.Component {
           with group <code>texter-tags</code>.
         </p>
         <Form.Field
+          as={GSTextField}
           name="tagHeaderText"
           label="Header Text (prompt above tag list)"
           fullWidth
         />
-        <Form.Field name="tagButtonText" label="Save Button Text" fullWidth />
+        <Form.Field
+          as={GSTextField}
+          name="tagButtonText"
+          label="Save Button Text"
+          fullWidth
+        />
       </div>
     );
   }

@@ -1,7 +1,8 @@
 import type from "prop-types";
 import React from "react";
-import yup from "yup";
+import * as yup from "yup";
 import Form from "react-formal";
+import GSTextField from "../../../components/forms/GSTextField";
 
 export const displayName = () => "Celebration Gif";
 
@@ -69,12 +70,19 @@ export class AdminConfig extends React.Component {
     return (
       <div>
         <Form.Field
+          as={GSTextField}
           name="celebrationGifTopMessage"
           label="Top Message"
           fullWidth
         />
-        <Form.Field name="celebrationGifUrl" label="GIF public url" fullWidth />
         <Form.Field
+          as={GSTextField}
+          name="celebrationGifUrl"
+          label="GIF public url"
+          fullWidth
+        />
+        <Form.Field
+          as={GSTextField}
           name="celebrationGifAltText"
           label="GIF alt text"
           fullWidth

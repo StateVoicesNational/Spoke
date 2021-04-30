@@ -48,8 +48,8 @@ describe("End-to-end campaign flow", () => {
       .first()
       .click();
     // Click first of the month
-    cy.get("body > div:nth-of-type(2) button:contains(1)")
-      .first()
+    cy.get("body > div:nth-of-type(2) button:not([disabled])")
+      .eq(3)
       .click();
 
     // Wait for modal to close then submit
@@ -59,6 +59,7 @@ describe("End-to-end campaign flow", () => {
 
     // Upload Contacts
     cy.get("#contact-upload").attachFile("two-contacts.csv"), { force: true };
+    cy.wait(400);
     cy.get("button[data-test=submitContactsCsvUpload]").click();
 
     // Assignments
@@ -70,10 +71,15 @@ describe("End-to-end campaign flow", () => {
       .contains(`${texter.first_name} ${texter.last_name}`)
       .click();
     cy.get("input[data-test=autoSplit]").click();
-    cy.get("button[data-test=submitCampaignTextersForm]").click();
+    cy.wait(400);
+    cy.get("button[data-test=submitCampaignTextersForm]").click({
+      force: true
+    });
+    cy.wait(400);
 
     // Interaction Steps
     cy.get("textarea[data-test=editorInteraction]").click();
+    cy.wait(400);
     cy.get(".DraftEditor-root").type(
       "Hi {{}firstName{}} this is {{}texterFirstName{}}, how are you?"
     );

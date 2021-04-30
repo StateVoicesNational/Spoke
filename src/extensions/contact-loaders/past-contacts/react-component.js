@@ -2,6 +2,8 @@ import type from "prop-types";
 import React from "react";
 import RaisedButton from "material-ui/RaisedButton";
 import GSForm from "../../../components/forms/GSForm";
+import GSSubmitButton from "../../../components/forms/GSSubmitButton";
+import GSTextField from "../../../components/forms/GSTextField";
 import Form from "react-formal";
 import Subheader from "material-ui/Subheader";
 import Divider from "material-ui/Divider";
@@ -11,8 +13,8 @@ import CheckIcon from "material-ui/svg-icons/action/check-circle";
 import WarningIcon from "material-ui/svg-icons/alert/warning";
 import ErrorIcon from "material-ui/svg-icons/alert/error";
 import { StyleSheet, css } from "aphrodite";
-import yup from "yup";
-import { withRouter } from "react-router";
+import * as yup from "yup";
+import { withRouter, Link } from "react-router";
 
 export class CampaignContactsFormInner extends React.Component {
   constructor(props) {
@@ -20,7 +22,11 @@ export class CampaignContactsFormInner extends React.Component {
     const { lastResult } = props;
     let cur = {};
     if (lastResult && lastResult.reference) {
-      cur = JSON.parse(lastResult.reference);
+      try {
+        cur = JSON.parse(lastResult.reference);
+      } catch (err) {
+        // parse error should just stay empty
+      }
     }
     console.log("pastcontacts", lastResult, props);
     this.state = {
@@ -34,7 +40,31 @@ export class CampaignContactsFormInner extends React.Component {
   }
 
   render() {
-    const { clientChoiceData, lastResult } = this.props;
+    const {
+      campaignIsStarted,
+      clientChoiceData,
+      lastResult,
+      location
+    } = this.props;
+    if (campaignIsStarted) {
+      const messageReviewLink = location.pathname.replace(
+        /campaigns.*/,
+        "incoming"
+      );
+      return (
+        <div>
+          Loaded query:{" "}
+          <Link to={`${messageReviewLink}?${this.state.pastContactsQuery}`}>
+            {this.state.pastContactsQuery}
+          </Link>
+          {this.state.questionResponseAnswer ? (
+            <div>
+              Question Response Answer: {this.state.questionResponseAnswer}
+            </div>
+          ) : null}
+        </div>
+      );
+    }
     let resultMessage = "";
     return (
       <GSForm
@@ -62,6 +92,7 @@ export class CampaignContactsFormInner extends React.Component {
           reduced to those that all contacts have in common.
         </p>
         <Form.Field
+          as={GSTextField}
           name="pastContactsQuery"
           label="Message Review URL"
           fullWidth
@@ -71,6 +102,7 @@ export class CampaignContactsFormInner extends React.Component {
           <b>Answer</b> for a question response
         </p>
         <Form.Field
+          as={GSTextField}
           name="questionResponseAnswer"
           label="Question Response Answer"
         />
@@ -88,8 +120,8 @@ export class CampaignContactsFormInner extends React.Component {
           ) : null}
         </List>
 
-        <Form.Button
-          type="submit"
+        <Form.Submit
+          as={GSSubmitButton}
           disabled={this.props.saveDisabled}
           label={this.props.saveLabel}
         />
@@ -115,3 +147,5 @@ CampaignContactsFormInner.propTypes = {
 };
 
 export const CampaignContactsForm = withRouter(CampaignContactsFormInner);
+
+CampaignContactsForm.prototype.renderAfterStart = true;
