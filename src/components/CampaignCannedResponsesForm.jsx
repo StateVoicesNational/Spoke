@@ -191,7 +191,7 @@ export class CampaignCannedResponsesForm extends React.Component {
       );
 
     const sectionSubtitle = window.HIDE_BRANCHED_SCRIPTS
-      ? "Save some scripts for your texters to use to answer survey questions and additional FAQs that may come up."
+      ? "Save some scripts for your texters to use to continue the conversation with your contact."
       : "Save some scripts for your texters to use to answer additional FAQs that may come up outside of the survey questions and scripts you already set up.";
 
     return (
