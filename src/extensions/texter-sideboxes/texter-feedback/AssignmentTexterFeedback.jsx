@@ -3,15 +3,17 @@ import React, { Component } from "react";
 import { StyleSheet, css } from "aphrodite";
 import gql from "graphql-tag";
 
-import { Card, CardTitle } from "material-ui/Card";
-import { Step, Stepper, StepLabel, StepContent } from "material-ui/Stepper";
-import WarningIcon from "material-ui/svg-icons/alert/warning";
-import SuccessIcon from "material-ui/svg-icons/action/check-circle";
-import LinkIcon from "material-ui/svg-icons/content/link";
-
+import Stepper from "@material-ui/core/Stepper";
+import Step from "@material-ui/core/Step";
+import StepLabel from "@material-ui/core/StepLabel";
+import StepContent from "@material-ui/core/StepContent";
 import Button from "@material-ui/core/Button";
 import IconButton from "@material-ui/core/IconButton";
-// import WarningIcon from '@material-ui/icons/Warning';
+import WarningIcon from "@material-ui/icons/Warning";
+import CheckCircleIcon from "@material-ui/icons/CheckCircle";
+import LinkIcon from "@material-ui/icons/Link";
+import Card from "@material-ui/core/Card";
+import CardHeader from "@material-ui/core/CardHeader";
 
 import loadData from "../../../containers/hoc/load-data";
 import { defaults } from "./config";
@@ -26,6 +28,9 @@ const styles = StyleSheet.create({
     height: "70%",
     top: "20px",
     right: "20px"
+  },
+  whiteText: {
+    color: theme.colors.white
   }
 });
 
@@ -89,7 +94,7 @@ const Alert = ({ type, message }) => (
     {type === "warning" ? (
       <WarningIcon style={inlineStyles.alertIcon(type)} />
     ) : (
-      <SuccessIcon style={inlineStyles.alertIcon(type)} />
+      <CheckCircleIcon style={inlineStyles.alertIcon(type)} />
     )}
     {message}
   </div>
@@ -251,14 +256,15 @@ export class AssignmentTexterFeedback extends Component {
 
     return (
       <div className={css(styles.container)}>
-        1123455
         <Card style={inlineStyles.feedbackCard}>
-          <CardTitle
+          <CardHeader
             style={{ paddingTop: 0, paddingLeft: 0 }}
             title={title}
-            titleStyle={inlineStyles.title}
-            subtitle={subtitle}
-            subtitleStyle={inlineStyles.subtitle}
+            subheader={subtitle}
+            classes={{
+              title: css(styles.whiteText),
+              subheader: css(styles.whiteText)
+            }}
           />
 
           <Card>
