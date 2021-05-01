@@ -1,11 +1,14 @@
 import PropTypes from "prop-types";
 import React from "react";
 import Button from "@material-ui/core/Button";
-import Snackbar from "material-ui/Snackbar";
+import Snackbar from "@material-ui/core/Snackbar";
+
 import { withRouter, Link } from "react-router";
 import loadData from "./hoc/load-data";
 import gql from "graphql-tag";
 import { dataTest } from "../lib/attributes";
+import { getButtonProps } from "../components/utils";
+
 export class AdminCampaignCopy extends React.Component {
   state = {
     copyCampaignId: null, // This is the ID of the most-recently created copy of the campaign.
@@ -13,8 +16,10 @@ export class AdminCampaignCopy extends React.Component {
   };
   render() {
     return (
-      <div style={{ display: "inline-block" }}>
+      <React.Fragment>
         <Button
+          {...getButtonProps(this.props)}
+          variant="outlined"
           key="copyCampaign"
           {...dataTest("copyCampaign")}
           onClick={async () => {
@@ -26,12 +31,22 @@ export class AdminCampaignCopy extends React.Component {
               copyMessageOpen: true
             });
           }}
+          /**
+           * this class is passed from the buttonGroup
+           * and we need for button group styling.
+           */
+          className={this.props.className}
         >
           Copy Campaign
         </Button>
         <Snackbar
           open={this.state.copyMessageOpen}
+          anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
           message="A new copy has been made."
+          autoHideDuration={5000}
+          onClose={() => {
+            this.setState({ copyMessageOpen: false });
+          }}
           action={
             <Button
               onClick={() => {
@@ -47,12 +62,8 @@ export class AdminCampaignCopy extends React.Component {
               Edit
             </Button>
           }
-          autoHideDuration={5000}
-          onClose={() => {
-            this.setState({ copyMessageOpen: false });
-          }}
         />
-      </div>
+      </React.Fragment>
     );
   }
 }
