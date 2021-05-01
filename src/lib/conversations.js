@@ -110,13 +110,11 @@ export const getConversationFiltersFromQuery = (query, organizationTags) => {
           const tag = organizationTags.find(ot => `s_${ot.id}` === t);
           tag.id = t;
           suppressedTags[t] = tag;
-          console.log("suppressedTags 2", suppressedTags);
         } else {
           selectedTags[t] = organizationTags.find(ot => ot.id === t);
         }
       });
       filters.tagsFilter = { selectedTags, suppressedTags };
-      console.log("filters.tagsFilter", filters.tagsFilter);
     }
   }
   const newTagsFilter = tagsFilterStateFromTagsFilter(filters.tagsFilter);
