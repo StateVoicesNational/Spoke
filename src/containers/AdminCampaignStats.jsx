@@ -294,6 +294,7 @@ class AdminCampaignStats extends React.Component {
                         </Button>
                       ), // copy
                       <AdminCampaignCopy
+                        key="AdminCampaignCopy"
                         organizationId={organizationId}
                         campaignId={campaignId}
                       />,
