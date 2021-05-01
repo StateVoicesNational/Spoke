@@ -23,7 +23,6 @@ import CampaignFormSectionHeading from "./CampaignFormSectionHeading";
 import { StyleSheet, css } from "aphrodite";
 import theme from "../styles/theme";
 import { dataTest } from "../lib/attributes";
-import { dataSourceItem } from "./utils";
 import { getHighestRole } from "../lib/permissions";
 
 const styles = StyleSheet.create({
