@@ -24,7 +24,7 @@ const sendMessage = async ({
     throw new Error(`Failed to find service for message ${message}`);
   }
 
-  await service.sendMessage(message, contact, trx, organization, campaign);
+  await service.sendMessage({ message, contact, trx, organization, campaign });
 };
 
 const questionResponseActionHandler = async ({

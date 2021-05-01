@@ -106,8 +106,7 @@ describe("service_map", () => {
         expect(metadata).toEqual({
           name: "twilio",
           supportsCampaignConfig: false,
-          supportsOrgConfig: false,
-          type: "SMS"
+          supportsOrgConfig: false
         });
       });
       describe("when TWILIO_MULTI_ORG is true", () => {
@@ -119,8 +118,7 @@ describe("service_map", () => {
           expect(metadata).toEqual({
             name: "twilio",
             supportsCampaignConfig: false,
-            supportsOrgConfig: true,
-            type: "SMS"
+            supportsOrgConfig: true
           });
         });
       });
@@ -131,8 +129,7 @@ describe("service_map", () => {
         expect(metadata).toEqual({
           name: "nexmo",
           supportsCampaignConfig: false,
-          supportsOrgConfig: false,
-          type: "SMS"
+          supportsOrgConfig: false
         });
       });
     });
@@ -142,8 +139,7 @@ describe("service_map", () => {
         expect(metadata).toEqual({
           name: "fakeservice",
           supportsCampaignConfig: false,
-          supportsOrgConfig: false,
-          type: "SMS"
+          supportsOrgConfig: false
         });
       });
     });

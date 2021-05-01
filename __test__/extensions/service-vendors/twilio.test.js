@@ -141,7 +141,11 @@ describe("twilio", () => {
       cb(null, { sid: "SM12345", error_code: null });
     });
 
-    await twilio.sendMessage(message, dbCampaignContact, null, org);
+    await twilio.sendMessage({
+      message,
+      contact: dbCampaignContact,
+      organization: org
+    });
     expect(mockMessageCreate).toHaveBeenCalledTimes(1);
     const arg = mockMessageCreate.mock.calls[0][0];
     expect(arg).toMatchObject({

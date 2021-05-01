@@ -17,13 +17,13 @@ export const getMetadata = () => ({
   name: "fakeservice"
 });
 
-export async function sendMessage(
+export async function sendMessage({
   message,
   contact,
   trx,
   organization,
   campaign
-) {
+}) {
   const errorCode = message.text.match(/error(\d+)/);
   const changes = {
     service: "fakeservice",

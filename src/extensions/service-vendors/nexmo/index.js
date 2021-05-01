@@ -16,7 +16,6 @@ import wrap from "../../../server/wrap";
 export const getMetadata = () => ({
   supportsOrgConfig: false,
   supportsCampaignConfig: false,
-  type: "SMS",
   name: "nexmo"
 });
 
@@ -149,13 +148,13 @@ async function rentNewCell() {
   throw new Error("Did not find any cell");
 }
 
-export async function sendMessage(
+export async function sendMessage({
   message,
   contact,
   trx,
   organization,
   campaign
-) {
+}) {
   if (!nexmo) {
     const options = trx ? { transaction: trx } : {};
     await Message.get(message.id).update({ send_status: "SENT" }, options);
