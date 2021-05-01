@@ -13,7 +13,7 @@ import {
   r
 } from "../../../server/models";
 import wrap from "../../../server/wrap";
-import { saveNewIncomingMessage } from "../message-sending";
+import { saveNewIncomingMessage, parseMessageText } from "../message-sending";
 import { getMessageServiceConfig, getConfigKey } from "../service_map";
 import {
   symmetricDecrypt,
@@ -30,7 +30,7 @@ import {
 const MAX_SEND_ATTEMPTS = 5;
 const MESSAGE_VALIDITY_PADDING_SECONDS = 30;
 const MAX_TWILIO_MESSAGE_VALIDITY = 14400;
-const DISABLE_DB_LOG = getConfig("DISABLE_DB_LOG");
+const ENABLE_DB_LOG = getConfig("ENABLE_DB_LOG");
 const TWILIO_SKIP_VALIDATION = getConfig("TWILIO_SKIP_VALIDATION");
 const BULK_REQUEST_CONCURRENCY = 5;
 const MAX_NUMBERS_PER_BUY_JOB = getConfig("MAX_NUMBERS_PER_BUY_JOB") || 100;
@@ -95,17 +95,16 @@ export const errorDescriptions = {
   30005: "Unknown destination handset",
   30006: "Landline or unreachable carrier",
   30007: "Message Delivery - Carrier violation",
-  30008: "Message Delivery - Unknown error",
-  "-1": "Spoke failed to send the message, usually due to a temporary issue.",
-  "-2": "Spoke failed to send the message and will try again.",
-  "-3": "Spoke failed to send the message and will try again.",
-  "-4": "Spoke failed to send the message and will try again.",
-  "-5": "Spoke failed to send the message and will NOT try again.",
-  "-133": "Auto-optout (no error)",
-  "-166":
-    "Internal: Message blocked due to text match trigger (profanity-tagger)",
-  "-167": "Internal: Initial message altered (initialtext-guard)"
+  30008: "Message Delivery - Unknown error"
 };
+
+export function errorDescription(errorCode) {
+  return {
+    code: errorCode,
+    description: errorDescriptions[errorCode] || "Twilio error",
+    link: `https://www.twilio.com/docs/api/errors/${errorCode}`
+  };
+}
 
 export function addServerEndpoints(addPostRoute) {
   addPostRoute(
@@ -195,21 +194,6 @@ async function convertMessagePartsToMessage(messageParts) {
   });
 }
 
-const mediaExtractor = new RegExp(/\[\s*(http[^\]\s]*)\s*\]/);
-
-function parseMessageText(message) {
-  const text = message.text || "";
-  const params = {
-    body: text.replace(mediaExtractor, "")
-  };
-  // Image extraction
-  const results = text.match(mediaExtractor);
-  if (results) {
-    params.mediaUrl = results[1];
-  }
-  return params;
-}
-
 async function getMessagingServiceSid(
   organization,
   contact,
@@ -255,13 +239,13 @@ async function getOrganizationContactUserNumber(organization, contactNumber) {
   return null;
 }
 
-export async function sendMessage(
+export async function sendMessage({
   message,
   contact,
   trx,
   organization,
   campaign
-) {
+}) {
   const twilio = await exports.getTwilio(organization);
   const APITEST = /twilioapitest/.test(message.text);
   if (!twilio && !APITEST) {
@@ -512,7 +496,7 @@ export async function handleDeliveryReport(report) {
       return;
     }
 
-    if (!DISABLE_DB_LOG) {
+    if (ENABLE_DB_LOG) {
       await Log.save({
         message_sid: report.MessageSid,
         body: JSON.stringify(report),
@@ -580,7 +564,7 @@ export async function handleIncomingMessage(message) {
   }
 
   // store mediaurl data in Log, so it can be extracted manually
-  if (message.MediaUrl0 && (!DISABLE_DB_LOG || getConfig("LOG_MEDIA_URL"))) {
+  if (ENABLE_DB_LOG) {
     await Log.save({
       message_sid: MessageSid,
       body: JSON.stringify(message),

@@ -332,7 +332,6 @@ describe("organization", async () => {
       fakeConfig = { fake: "faker_and_faker" };
       fakeMetadata = {
         name: "super_fake",
-        type: "SMS",
         supportsOrgConfig: true,
         supportsCampaignConfig: false
       };
@@ -355,7 +354,6 @@ describe("organization", async () => {
           organization(id: $organizationId) {
             messageService {
               name
-              type
               supportsOrgConfig
               supportsCampaignConfig
               config
@@ -370,6 +368,7 @@ describe("organization", async () => {
     });
     it("calls functions and returns the result", async () => {
       const result = await runGql(gqlQuery, variables, testAdminUser);
+      console.log("result", result);
       expect(result.data.organization.messageService).toEqual({
         ...fakeMetadata,
         config: fakeConfig

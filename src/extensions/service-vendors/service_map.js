@@ -4,7 +4,7 @@ import * as fakeservice from "./fakeservice";
 import { getConfig } from "../../server/api/lib/config";
 
 // TODO this should be built dynamically
-const serviceMap = {
+export const serviceMap = {
   nexmo,
   twilio,
   fakeservice
@@ -74,6 +74,36 @@ export const getMessageServiceConfig = async (
     onlyLocal: options.restrictToOrgFeatures
   });
   return getServiceConfig(config, organization, options);
+};
+
+export const internalErrors = {
+  "-1": "Spoke failed to send the message (1st attempt).",
+  "-2": "Spoke failed to send the message (2nd attempt).",
+  "-3": "Spoke failed to send the message (3rd attempt).",
+  "-4": "Spoke failed to send the message (4th attempt).",
+  "-5": "Spoke failed to send the message and will NOT try again.",
+  "-133": "Auto-optout (no error)",
+  "-166":
+    "Internal: Message blocked due to text match trigger (profanity-tagger)",
+  "-167": "Internal: Initial message altered (initialtext-guard)"
+};
+
+export const errorDescription = (errorCode, service) => {
+  if (internalErrors[errorCode]) {
+    return {
+      code: errorCode,
+      description: internalErrors[errorCode],
+      link: null
+    };
+  } else if (serviceMap[service].errorDescription) {
+    return serviceMap[service].errorDescription(errorCode);
+  } else {
+    return {
+      code: errorCode,
+      description: "Message Error",
+      link: null
+    };
+  }
 };
 
 export default serviceMap;
