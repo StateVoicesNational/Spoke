@@ -4,11 +4,11 @@
 import React from "react";
 import { mount } from "enzyme";
 import { StyleSheetTestUtils } from "aphrodite";
-import AutoComplete from "material-ui/AutoComplete";
-
 import * as yup from "yup";
-
 import Form from "react-formal";
+
+import Autocomplete from "@material-ui/lab/Autocomplete";
+
 import { GSAutoComplete, GSForm } from "../../../src/components/forms";
 import App from "../../../src/components/App";
 
@@ -67,7 +67,7 @@ describe("GSAutoComplete", () => {
           />
         </App>
       );
-      autoCompleteWrapper = appWrapper.find("AutoComplete");
+      autoCompleteWrapper = appWrapper.find(Autocomplete);
       gsAutoCompleteWrapper = appWrapper.find("GSAutoComplete");
       autoCompleteInstance = autoCompleteWrapper.instance();
       expect(autoCompleteInstance).toBeTruthy();
