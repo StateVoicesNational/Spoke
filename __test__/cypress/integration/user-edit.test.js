@@ -18,26 +18,29 @@ describe("The user edit screen", () => {
 
     cy.get("[data-test=userMenuButton]").click();
     cy.get("[data-test=userMenuDisplayName]").click();
-    cy.get("input[data-test=email]").should("have.value", admin.email);
-    cy.get("input[data-test=firstName]").should("have.value", admin.first_name);
-    cy.get("input[data-test=lastName]").should("have.value", admin.last_name);
-    cy.get("input[data-test=alias]").should("have.value", "");
-    cy.get("input[data-test=cell]").should("have.value", admin.cell);
+    cy.get("[data-test=email] input").should("have.value", admin.email);
+    cy.get("[data-test=firstName] input").should(
+      "have.value",
+      admin.first_name
+    );
+    cy.get("[data-test=lastName] input").should("have.value", admin.last_name);
+    cy.get("[data-test=alias] input").should("have.value", "");
+    cy.get("[data-test=cell] input").should("have.value", admin.cell);
 
-    cy.get("input[data-test=firstName]").type("NewAdminFirstName");
-    cy.get("input[data-test=lastName]").type("NewAdminLastName");
-    cy.get("input[data-test=alias]").type("NewAlias");
+    cy.get("[data-test=firstName] input").type("NewAdminFirstName");
+    cy.get("[data-test=lastName] input").type("NewAdminLastName");
+    cy.get("[data-test=alias] input").type("NewAlias");
     cy.get("[data-test=userEditForm]").submit();
 
     cy.reload();
-    cy.get("input[data-test=firstName]").should(
+    cy.get("[data-test=firstName] input").should(
       "have.value",
       "NewAdminFirstName"
     );
-    cy.get("input[data-test=lastName]").should(
+    cy.get("[data-test=lastName] input").should(
       "have.value",
       "NewAdminLastName"
     );
-    cy.get("input[data-test=alias]").should("have.value", "NewAlias");
+    cy.get("[data-test=alias] input").should("have.value", "NewAlias");
   });
 });
