@@ -54,7 +54,11 @@ export const updateServiceVendorConfig = async (
 
   let newConfig;
   try {
-    newConfig = await serviceConfigFunction(existingConfig, configObject);
+    newConfig = await serviceConfigFunction(
+      existingConfig,
+      configObject,
+      organization
+    );
   } catch (caught) {
     // eslint-disable-next-line no-console
     console.error(
@@ -64,7 +68,7 @@ export const updateServiceVendorConfig = async (
     );
     throw new GraphQLError(caught.message);
   }
-
+  // TODO: put this into a transaction (so read of features record doesn't get clobbered)
   const dbOrganization = await Organization.get(organizationId);
   const features = JSON.parse(dbOrganization.features || "{}");
   const hadMessageServiceConfig = !!features[configKey];
