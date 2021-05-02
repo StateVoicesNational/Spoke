@@ -4,7 +4,12 @@ import * as twilioLibrary from "twilio";
 import urlJoin from "url-join";
 import { log } from "../../../lib";
 import { getFormattedPhoneNumber } from "../../../lib/phone-format";
-import { getConfig, hasConfig } from "../../../server/api/lib/config";
+import {
+  getConfig,
+  hasConfig,
+  getSecret,
+  convertSecret
+} from "../../../server/api/lib/config";
 import {
   cacheableData,
   Log,
@@ -15,10 +20,6 @@ import {
 import wrap from "../../../server/wrap";
 import { saveNewIncomingMessage, parseMessageText } from "../message-sending";
 import { getMessageServiceConfig, getConfigKey } from "../service_map";
-import {
-  symmetricDecrypt,
-  symmetricEncrypt
-} from "../../../server/api/lib/crypto";
 
 // TWILIO error_codes:
 // > 1 (i.e. positive) error_codes are reserved for Twilio error codes
@@ -244,7 +245,8 @@ export async function sendMessage({
   contact,
   trx,
   organization,
-  campaign
+  campaign,
+  serviceManagerData
 }) {
   const twilio = await exports.getTwilio(organization);
   const APITEST = /twilioapitest/.test(message.text);
@@ -267,15 +269,14 @@ export async function sendMessage({
   }
 
   // Note organization won't always be available, so then contact can trace to it
-  const messagingServiceSid = await getMessagingServiceSid(
-    organization,
-    contact,
-    message,
-    campaign
-  );
+  const messagingServiceSid =
+    (serviceManagerData && serviceManagerData.messageservice_sid) ||
+    (await getMessagingServiceSid(organization, contact, message, campaign));
 
-  let userNumber;
-  if (process.env.EXPERIMENTAL_STICKY_SENDER) {
+  let userNumber =
+    (serviceManagerData && serviceManagerData.user_number) ||
+    message.user_number;
+  if (process.env.EXPERIMENTAL_STICKY_SENDER && !userNumber) {
     userNumber = await getOrganizationContactUserNumber(
       organization,
       contact.cell
@@ -319,10 +320,13 @@ export async function sendMessage({
     }
     const changes = {};
 
-    if (userNumber) {
+    if (userNumber && message.user_number != userNumber) {
       changes.user_number = userNumber;
     }
-    if (messagingServiceSid) {
+    if (
+      messagingServiceSid &&
+      message.messageservice_sid != messagingServiceSid
+    ) {
       changes.messageservice_sid = messagingServiceSid;
     }
 
@@ -860,7 +864,11 @@ export const getServiceConfig = async (
     if (hasEncryptedToken) {
       authToken = obscureSensitiveInformation
         ? "<Encrypted>"
-        : symmetricDecrypt(serviceConfig.TWILIO_AUTH_TOKEN_ENCRYPTED);
+        : await getSecret(
+            "TWILIO_AUTH_TOKEN_ENCRYPTED",
+            serviceConfig.TWILIO_AUTH_TOKEN_ENCRYPTED,
+            organization
+          );
     } else {
       authToken = obscureSensitiveInformation
         ? "<Hidden>"
@@ -887,12 +895,14 @@ export const getServiceConfig = async (
     if (hasEncryptedToken) {
       authToken = obscureSensitiveInformation
         ? "<Encrypted>"
-        : symmetricDecrypt(
+        : await getSecret(
+            "TWILIO_AUTH_TOKEN_ENCRYPTED",
             getConfig(
               "TWILIO_AUTH_TOKEN_ENCRYPTED",
               organization,
               getConfigOptions
-            )
+            ),
+            organization
           );
     } else {
       const hasUnencryptedToken = hasConfig(
@@ -939,7 +949,7 @@ export const getMessageServiceSid = async (
   return messageServiceSid;
 };
 
-export const updateConfig = async (oldConfig, config) => {
+export const updateConfig = async (oldConfig, config, organization) => {
   const { twilioAccountSid, twilioAuthToken, twilioMessageServiceSid } = config;
   if (!twilioAccountSid || !twilioMessageServiceSid) {
     throw new Error(
@@ -953,9 +963,14 @@ export const updateConfig = async (oldConfig, config) => {
 
   // TODO(lperson) is twilioAuthToken required? -- not for unencrypted
   newConfig.TWILIO_AUTH_TOKEN_ENCRYPTED = twilioAuthToken
-    ? symmetricEncrypt(twilioAuthToken).substr(0, 256)
+    ? await convertSecret(
+        "TWILIO_AUTH_TOKEN_ENCRYPTED",
+        organization,
+        twilioAuthToken
+      )
     : twilioAuthToken;
-  newConfig.TWILIO_MESSAGE_SERVICE_SID = twilioMessageServiceSid.substr(0, 64);
+  newConfig.TWILIO_MESSAGE_SERVICE_SID =
+    twilioMessageServiceSid && twilioMessageServiceSid.substr(0, 64);
 
   try {
     if (twilioAuthToken && global.TEST_ENVIRONMENT !== "1") {

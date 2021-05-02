@@ -1,4 +1,5 @@
 import fs from "fs";
+export { getSecret, convertSecret } from "../../../extensions/secret-manager";
 
 // This is for centrally loading config from different environment sources
 // Especially for large config values (or many) some environments (like AWS Lambda) limit

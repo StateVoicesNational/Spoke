@@ -191,15 +191,19 @@ describe("updateServiceVendorConfig", () => {
       };
     });
     describe("when features DOES NOT HAVE an existing config for the message service", () => {
-      it("writes message service config in features.configKey", async () => {
+      it("writes message service config in features.configKey no existing config", async () => {
         const gqlResult = await runGql(
           updateServiceVendorConfigGql,
           vars,
           user
         );
-        expect(twilio.updateConfig.mock.calls).toEqual([
-          [undefined, newConfig]
+        expect(twilio.updateConfig.mock.calls[0].slice(0, 2)).toEqual([
+          undefined,
+          newConfig
         ]);
+        expect(twilio.updateConfig.mock.calls[0][2].id).toEqual(
+          Number(organization.id)
+        );
 
         sharedExpectations(gqlResult, expectedFeatures);
       });
@@ -220,9 +224,13 @@ describe("updateServiceVendorConfig", () => {
           vars,
           user
         );
-        expect(twilio.updateConfig.mock.calls).toEqual([
-          ["it doesn't matter", newConfig]
+        expect(twilio.updateConfig.mock.calls[0].slice(0, 2)).toEqual([
+          "it doesn't matter",
+          newConfig
         ]);
+        expect(twilio.updateConfig.mock.calls[0][2].id).toEqual(
+          Number(organization.id)
+        );
 
         sharedExpectations(gqlResult, expectedFeatures);
       });
@@ -246,9 +254,13 @@ describe("updateServiceVendorConfig", () => {
           vars,
           user
         );
-        expect(twilio.updateConfig.mock.calls).toEqual([
-          [undefined, newConfig]
+        expect(twilio.updateConfig.mock.calls[0].slice(0, 2)).toEqual([
+          undefined,
+          newConfig
         ]);
+        expect(twilio.updateConfig.mock.calls[0][2].id).toEqual(
+          Number(organization.id)
+        );
 
         sharedExpectations(gqlResult, { service, ...expectedConfig });
       });
