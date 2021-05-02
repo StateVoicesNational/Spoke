@@ -133,7 +133,9 @@ export class UserMenu extends Component {
             <MenuItem
               {...dataTest("userMenuDisplayName")}
               disabled={!this.props.orgId}
-              value={"account"}
+              onClick={event => {
+                this.handleMenuChange(event, "account");
+              }}
             >
               <ListItemIcon>{this.renderAvatar(currentUser, 20)}</ListItemIcon>
               {currentUser.email} <br />
@@ -158,7 +160,12 @@ export class UserMenu extends Component {
               FAQs
             </MenuItem>
             <Divider />
-            <MenuItem {...dataTest("userMenuLogOut")} value="logout">
+            <MenuItem
+              {...dataTest("userMenuLogOut")}
+              onClick={event => {
+                this.handleMenuChange(event, "logout");
+              }}
+            >
               Log out
             </MenuItem>
           </MenuList>
