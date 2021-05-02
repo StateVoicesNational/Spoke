@@ -42,34 +42,31 @@ export class CampaignContactsForm extends React.Component {
   renderSavedLists = () => {
     const selectData = this.buildSelectData();
     return (
-      <React.Fragment>
-        <Autocomplete
-          options={this.buildSelectData()}
-          getOptionLabel={option => option.name}
-          onChange={(event, value) => {
-            if (value) {
-              this.setState({ savedListId: value.savedListId });
-              this.props.onChange(
-                JSON.stringify({
-                  savedListId: value.savedListId,
-                  savedListName: value.name
-                })
-              );
-            } else {
-              console.log("CLEAR", value);
-              this.props.onChange(undefined);
-              this.setState({ savedListId: undefined });
-            }
-          }}
-          renderInput={params => (
-            <TextField
-              {...params}
-              style={{ width: 200 }}
-              label="Select a list to import"
-            />
-          )}
-        />
-      </React.Fragment>
+      <Autocomplete
+        options={this.buildSelectData()}
+        getOptionLabel={option => option.name}
+        onChange={(event, value) => {
+          if (value) {
+            this.setState({ savedListId: value.savedListId });
+            this.props.onChange(
+              JSON.stringify({
+                savedListId: value.savedListId,
+                savedListName: value.name
+              })
+            );
+          } else {
+            this.props.onChange(undefined);
+            this.setState({ savedListId: undefined });
+          }
+        }}
+        renderInput={params => (
+          <TextField
+            {...params}
+            style={{ width: 200 }}
+            label="Select a list to import"
+          />
+        )}
+      />
     );
   };
 
