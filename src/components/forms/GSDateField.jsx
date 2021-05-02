@@ -29,10 +29,12 @@ export default class GCDateField extends GSFormField {
     delete propCopy.utcOffset;
     delete propCopy.value;
     delete propCopy.type;
+    const dataTest = { "data-test": this.props["data-test"] };
 
     return (
       <MuiPickersUtilsProvider utils={DateFnsUtils}>
         <DatePicker
+          {...dataTest}
           fullWidth
           format="MM/dd/yyyy"
           label={this.floatingLabelText()}

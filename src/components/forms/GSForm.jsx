@@ -32,7 +32,13 @@ export default class GSForm extends React.Component {
 
   constructor(props) {
     super(props);
-    this.form = React.createRef();
+    // if you need to reference this (ex: for submit())
+    // outside of this compoent you can pass a ref in
+    if (props.setRef) {
+      this.form = props.setRef;
+    } else {
+      this.form = React.createRef();
+    }
   }
 
   handleFormError(err) {

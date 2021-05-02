@@ -42,6 +42,8 @@ export class AssignmentTexterContactControls extends React.Component {
   constructor(props) {
     super(props);
 
+    this.formRef = React.createRef();
+
     const questionResponses = {};
     // initial values
     props.contact.questionResponseValues.forEach(questionResponse => {
@@ -237,7 +239,7 @@ export class AssignmentTexterContactControls extends React.Component {
     ) {
       this.setState({ doneFirstClick: true });
     } else {
-      this.refs.form.submit();
+      this.formRef.current.submit();
       this.setState({ doneFirstClick: false });
     }
   };
@@ -648,7 +650,7 @@ export class AssignmentTexterContactControls extends React.Component {
         style={isFeedbackEnabled ? { width: "calc(100% - 390px)" } : undefined}
       >
         <GSForm
-          ref="form"
+          setRef={this.formRef}
           schema={this.messageSchema}
           value={{ messageText: this.state.messageText }}
           onSubmit={this.props.onMessageFormSubmit(
