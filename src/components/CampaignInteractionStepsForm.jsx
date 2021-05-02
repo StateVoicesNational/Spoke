@@ -1,5 +1,8 @@
 import type from "prop-types";
 import React from "react";
+import { StyleSheet, css } from "aphrodite";
+import Form from "react-formal";
+import * as yup from "yup";
 
 import Button from "@material-ui/core/Button";
 import ButtonGroup from "@material-ui/core/ButtonGroup";
@@ -13,16 +16,13 @@ import CardHeader from "@material-ui/core/CardHeader";
 
 import theme from "../styles/theme";
 import CampaignFormSectionHeading from "./CampaignFormSectionHeading";
-import Form from "react-formal";
 import GSForm from "./forms/GSForm";
 import GSTextField from "./forms/GSTextField";
 import GSScriptField from "./forms/GSScriptField";
 import GSSelectField from "./forms/GSSelectField";
 import GSAutoComplete from "./forms/GSAutoComplete";
-import * as yup from "yup";
 import { makeTree } from "../lib";
 import { dataTest } from "../lib/attributes";
-import { StyleSheet, css } from "aphrodite";
 
 const styleSheet = StyleSheet.create({
   errorMessage: {
@@ -263,6 +263,11 @@ export default class CampaignInteractionStepsForm extends React.Component {
       instructions = answerActions.instructions;
     }
 
+    let answerActionsData = interactionStep.answerActionsData;
+    try {
+      answerActionsData = JSON.parse(interactionStep.answerActionsData);
+    } catch (e) {}
+
     return (
       <div>
         {interactionStep.parentInteractionId && (
@@ -309,12 +314,8 @@ export default class CampaignInteractionStepsForm extends React.Component {
               schema={this.formSchema}
               value={{
                 ...interactionStep,
-                ...(interactionStep.answerActionsData && {
-                  answerActionsData:
-                    typeof interactionStep.answerActionsData === "string" &&
-                    interactionStep.answerActionsData
-                      ? JSON.parse(interactionStep.answerActionsData)
-                      : interactionStep.answerActionsData
+                ...(answerActionsData && {
+                  answerActionsData
                 })
               }}
               onChange={this.handleFormChange.bind(this)}
@@ -366,25 +367,14 @@ export default class CampaignInteractionStepsForm extends React.Component {
                       <div>
                         <GSAutoComplete
                           {...dataTest("actionDataAutoComplete")}
-                          getOptionLabel={option => {
-                            return typeof option === "string"
-                              ? option
-                              : option.text;
-                          }}
+                          fullWidth
                           placeholder="Start typing to search for the data to use with the answer action"
                           label="Answer Action Data"
-                          fullWidth
-                          name="answerActionsData"
+                          value={answerActionsData}
                           options={clientChoiceData.map(item => ({
                             value: item.details,
                             label: item.name
                           }))}
-                          value={
-                            typeof interactionStep.answerActionsData ===
-                              "string" && interactionStep.answerActionsData
-                              ? JSON.parse(interactionStep.answerActionsData)
-                              : interactionStep.answerActionsData
-                          }
                           onChange={val => {
                             this.handleFormChange({
                               ...interactionStep,
@@ -485,7 +475,7 @@ export default class CampaignInteractionStepsForm extends React.Component {
           )}
           variant="contained"
           color="primary"
-          onClick={this.onSave.bind(this)}
+          onClick={this.onSave}
         >
           {this.props.saveLabel}
         </Button>
