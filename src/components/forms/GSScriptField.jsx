@@ -103,14 +103,14 @@ export default class GSScriptField extends GSFormField {
       name,
       onChange,
       value,
-      ref,
-      "data-test": dataTest
+      ref
     } = this.props;
+    const dataTest = { "data-test": this.props["data-test"] };
     return (
       <div>
         <TextField
+          {...dataTest}
           inputRef={ref}
-          data-test={dataTest}
           inputRef={this.dialogScriptText}
           onClick={event => {
             this.handleOpenDialog(event);

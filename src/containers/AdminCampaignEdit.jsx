@@ -841,7 +841,7 @@ export class AdminCampaignEdit extends React.Component {
             <Button
               variant="contained"
               color="primary"
-              {...dataTest("statsCampaign")}
+              {...dataTest("startCampaign")}
               disabled={isArchived || !isCompleted || !orgConfigured}
               onClick={async () => {
                 if (!isCompleted || !orgConfigured) {

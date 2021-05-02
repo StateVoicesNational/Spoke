@@ -19,6 +19,7 @@ export default class GSTextField extends GSFormField {
       inputProps,
       InputProps,
       inputRef,
+      label,
       margin,
       multiline,
       name,
@@ -30,6 +31,7 @@ export default class GSTextField extends GSFormField {
       select,
       SelectProps,
       size,
+      type,
       value,
       variant,
       style
@@ -49,6 +51,7 @@ export default class GSTextField extends GSFormField {
       inputProps,
       InputProps,
       inputRef,
+      label,
       margin,
       multiline,
       name,
@@ -59,6 +62,7 @@ export default class GSTextField extends GSFormField {
       select,
       SelectProps,
       size,
+      type,
       value,
       variant,
       style
@@ -67,8 +71,10 @@ export default class GSTextField extends GSFormField {
     if (!textFieldProps.value) {
       textFieldProps.value = "";
     }
+    const dataTest = { "data-test": this.props["data-test"] };
     return (
       <TextField
+        {...dataTest}
         label={this.floatingLabelText()}
         onFocus={event => event.target.select()}
         {...textFieldProps}
