@@ -1,9 +1,10 @@
 import React from "react";
 import { shallow } from "enzyme";
 import { StyleSheetTestUtils } from "aphrodite";
+import IconButton from "@material-ui/core/IconButton";
 import TopNav from "../src/components/TopNav";
 
-describe("TopNav", () => {
+describe.only("TopNav", () => {
   it("can render only title", () => {
     const nav = shallow(<TopNav title="Welcome to my website" />);
     expect(nav.text()).toEqual(
@@ -18,7 +19,7 @@ describe("TopNav", () => {
     ).find("Link");
     expect(link.length).toBe(1);
     expect(link.prop("to")).toBe("/admin/1/campaigns");
-    expect(link.find("IconButton").length).toBe(1);
+    expect(link.find(IconButton).length).toBe(1);
   });
 
   it("renders UserMenu", () => {

@@ -163,9 +163,9 @@ describe("AssignmentSummary actions inUSA and NOT AllowSendAll", () => {
     const actions = create(0, 0, 0, 9, 0, false);
     expect(
       actions
-        .find(RaisedButton)
+        .find(Button)
         .at(0)
-        .prop("label")
+        .prop("children")
     ).toBe("Past 9 Messages");
   });
 
@@ -251,13 +251,13 @@ it('renders "Send later" when there is a badTimezoneCount', () => {
   expect(
     actions
       .find(Button)
-      .at(0)
+      .at(1)
       .text()
   ).toBe("Send later (outside timezone)");
   expect(
     actions
       .find(Button)
-      .at(1)
+      .at(0)
       .text()
   ).toBe("Send messages");
 });

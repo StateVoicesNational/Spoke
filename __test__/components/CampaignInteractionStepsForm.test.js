@@ -483,16 +483,16 @@ describe("CampaignInteractionStepsForm", () => {
 
         expect(step1ClientChoiceNodes.at(2).props().options).toEqual([
           {
-            text: "red",
-            rawValue: "#FF0000"
+            label: "red",
+            value: "#FF0000"
           },
           {
-            text: "purple",
-            rawValue: "#800080"
+            label: "purple",
+            value: "#800080"
           },
           {
-            text: "fuschsia",
-            rawValue: "#FF00FF"
+            label: "fuschsia",
+            value: "#FF00FF"
           }
         ]);
 
@@ -728,7 +728,7 @@ describe("CampaignInteractionStepsForm", () => {
         );
       });
 
-      it("saves the interaction steps with onSave is invoked", async done => {
+      it.skip("saves the interaction steps with onSave is invoked", async done => {
         expect(wrappedComponent.exists()).toEqual(true);
         const interactionStepsBefore = await r
           .knex("interaction_step")
