@@ -4,7 +4,7 @@ import { StyleSheetTestUtils } from "aphrodite";
 import IconButton from "@material-ui/core/IconButton";
 import TopNav from "../src/components/TopNav";
 
-describe.only("TopNav", () => {
+describe("TopNav", () => {
   it("can render only title", () => {
     const nav = shallow(<TopNav title="Welcome to my website" />);
     expect(nav.text()).toEqual(
