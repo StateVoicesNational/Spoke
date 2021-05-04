@@ -1,7 +1,4 @@
-import {
-  symmetricDecrypt,
-  symmetricEncrypt
-} from "../../../server/api/lib/crypto";
+import { symmetricDecrypt, symmetricEncrypt } from "../crypto";
 
 export async function getSecret(name, token, organization) {
   return symmetricDecrypt(token);
@@ -9,5 +6,5 @@ export async function getSecret(name, token, organization) {
 
 export async function convertSecret(name, organization, secretValue) {
   // returns token, which the caller is still responsible for saving somewhere
-  symmetricEncrypt(secretValue);
+  return symmetricEncrypt(secretValue);
 }

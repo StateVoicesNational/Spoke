@@ -4,12 +4,7 @@ import * as twilioLibrary from "twilio";
 import urlJoin from "url-join";
 import { log } from "../../../lib";
 import { getFormattedPhoneNumber } from "../../../lib/phone-format";
-import {
-  getConfig,
-  hasConfig,
-  getSecret,
-  convertSecret
-} from "../../../server/api/lib/config";
+import { getConfig, hasConfig } from "../../../server/api/lib/config";
 import {
   cacheableData,
   Log,
@@ -18,6 +13,8 @@ import {
   r
 } from "../../../server/models";
 import wrap from "../../../server/wrap";
+import { getSecret, convertSecret } from "../../secret-manager";
+
 import { saveNewIncomingMessage, parseMessageText } from "../message-sending";
 import { getMessageServiceConfig, getConfigKey } from "../service_map";
 
@@ -1014,7 +1011,7 @@ export const manualMessagingServicesEnabled = organization =>
   );
 
 export const fullyConfigured = async organization => {
-  const { authToken, accountSid } = await exports.getServiceConfig(
+  const { authToken, accountSid } = await getMessageServiceConfig(
     "twilio",
     organization
   );

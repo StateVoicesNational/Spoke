@@ -1,4 +1,4 @@
-import { symmetricDecrypt } from "../../server/api/lib/crypto";
+import { symmetricDecrypt } from "./crypto";
 
 const SECRET_MANAGER_NAME =
   process.env.SECRET_MANAGER || global.SECRET_MANAGER || "default-encrypt";
