@@ -1,10 +1,12 @@
 import * as nexmo from "./nexmo";
 import * as twilio from "./twilio";
 import * as fakeservice from "./fakeservice";
+import * as bandwidth from "./bandwidth";
 import { getConfig } from "../../server/api/lib/config";
 
 // TODO this should be built dynamically
 export const serviceMap = {
+  bandwidth,
   nexmo,
   twilio,
   fakeservice
