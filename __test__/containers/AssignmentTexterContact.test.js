@@ -107,7 +107,7 @@ describe("when contact is not within texting hours...", () => {
     propsWithEnforcedTextingHoursCampaign.refreshData.mockReset();
   });
 
-  it.only("it refreshes data in componentDidMount", () => {
+  it("it refreshes data in componentDidMount", () => {
     timezones.isBetweenTextingHours.mockReturnValue(false);
     timezones.getLocalTime.mockReturnValue(
       moment()
