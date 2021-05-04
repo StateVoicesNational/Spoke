@@ -8,7 +8,8 @@ import { r } from "../../models";
 const cacheKey = orgId => `${process.env.CACHE_PREFIX || ""}org-${orgId}`;
 
 const getOrganizationMessageService = organization =>
-  getConfig("service", organization) || getConfig("DEFAULT_SERVICE");
+  getConfig("service", organization) ||
+  getConfig("DEFAULT_SERVICE", organization);
 
 const organizationCache = {
   clear: async id => {

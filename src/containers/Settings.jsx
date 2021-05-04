@@ -380,7 +380,6 @@ const queries = {
           messageService {
             name
             supportsOrgConfig
-            supportsCampaignConfig
             config
           }
         }

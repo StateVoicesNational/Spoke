@@ -4,7 +4,7 @@ import { getLastMessage } from "../../../src/extensions/service-vendors/message-
 import * as twilio from "../../../src/extensions/service-vendors/twilio";
 import { getConfig } from "../../../src/server/api/lib/config"; // eslint-disable-line no-duplicate-imports, import/no-duplicates
 import * as configFunctions from "../../../src/server/api/lib/config"; // eslint-disable-line no-duplicate-imports, import/no-duplicates
-import crypto from "../../../src/server/api/lib/crypto";
+import crypto from "../../../src/extensions/secret-manager/crypto";
 import { cacheableData, Message, r } from "../../../src/server/models/";
 import { erroredMessageSender } from "../../../src/workers/job-processes";
 import {
@@ -966,7 +966,7 @@ describe("config functions", () => {
 
       expectedConfig = {
         TWILIO_ACCOUNT_SID: fakeAccountSid,
-        TWILIO_AUTH_TOKEN_ENCRYPTED: encryptedFakeAuthToken,
+        TWILIO_AUTH_TOKEN_ENCRYPTED: `default-encrypt|${encryptedFakeAuthToken}`,
         TWILIO_MESSAGE_SERVICE_SID: fakeMessageServiceSid
       };
 

@@ -332,8 +332,7 @@ describe("organization", async () => {
       fakeConfig = { fake: "faker_and_faker" };
       fakeMetadata = {
         name: "super_fake",
-        supportsOrgConfig: true,
-        supportsCampaignConfig: false
+        supportsOrgConfig: true
       };
 
       jest
@@ -355,7 +354,6 @@ describe("organization", async () => {
             messageService {
               name
               supportsOrgConfig
-              supportsCampaignConfig
               config
             }
           }

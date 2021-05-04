@@ -51,7 +51,6 @@ export class CampaignContactsForm extends React.Component {
         <Form.Field
           as={GSTextField}
           name="requestContactCount"
-          type="number"
           label="How many fake contacts"
         />
         <List>

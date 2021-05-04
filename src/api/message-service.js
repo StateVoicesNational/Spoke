@@ -5,6 +5,5 @@ export const schema = gql`
     name: String!
     config: JSON
     supportsOrgConfig: Boolean!
-    supportsCampaignConfig: Boolean!
   }
 `;
