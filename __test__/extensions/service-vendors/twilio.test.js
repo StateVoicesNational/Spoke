@@ -1,5 +1,5 @@
 /* eslint-disable no-unused-expressions, consistent-return */
-import * as twilioLibrary from "twilio";
+import { twilioLibrary } from "../../../src/extensions/service-vendors/twilio";
 import { getLastMessage } from "../../../src/extensions/service-vendors/message-sending";
 import * as twilio from "../../../src/extensions/service-vendors/twilio";
 import { getConfig } from "../../../src/server/api/lib/config"; // eslint-disable-line no-duplicate-imports, import/no-duplicates
@@ -971,7 +971,7 @@ describe("config functions", () => {
       };
 
       twilioApiAccountsListMock = jest.fn().mockResolvedValue({});
-      jest.spyOn(twilioLibrary.default, "Twilio").mockReturnValue({
+      jest.spyOn(twilioLibrary, "Twilio").mockReturnValue({
         api: { accounts: { list: twilioApiAccountsListMock } }
       });
     });
@@ -986,7 +986,7 @@ describe("config functions", () => {
       expect(crypto.symmetricEncrypt.mock.calls).toEqual([
         ["fake_twilio_auth_token"]
       ]);
-      expect(twilioLibrary.default.Twilio.mock.calls).toEqual([
+      expect(twilioLibrary.Twilio.mock.calls).toEqual([
         [fakeAccountSid, fakeAuthToken]
       ]);
       expect(twilioApiAccountsListMock.mock.calls).toEqual([[]]);
@@ -1006,7 +1006,7 @@ describe("config functions", () => {
           "twilioAccountSid and twilioMessageServiceSid are required"
         );
         expect(crypto.symmetricEncrypt).not.toHaveBeenCalled();
-        expect(twilioLibrary.default.Twilio).not.toHaveBeenCalled();
+        expect(twilioLibrary.Twilio).not.toHaveBeenCalled();
         expect(twilioApiAccountsListMock).not.toHaveBeenCalled();
       });
     });
@@ -1015,7 +1015,7 @@ describe("config functions", () => {
         twilioApiAccountsListMock = jest.fn().mockImplementation(() => {
           throw new Error("OH NO!");
         });
-        jest.spyOn(twilioLibrary.default, "Twilio").mockReturnValue({
+        jest.spyOn(twilioLibrary, "Twilio").mockReturnValue({
           api: { accounts: { list: twilioApiAccountsListMock } }
         });
       });
