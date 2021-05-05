@@ -20,11 +20,11 @@ export const addServerEndpoints = (app, adders) => {
     );
     if (serviceAddServerEndpoints) {
       serviceAddServerEndpoints(
-        (route, handler) => {
-          adders.post(app, route, handler);
+        (route, ...handlers) => {
+          adders.post(app, route, ...handlers);
         },
-        (route, handler) => {
-          adders.get(app, route, handler);
+        (route, ...handlers) => {
+          adders.get(app, route, ...handlers);
         }
       );
     }
