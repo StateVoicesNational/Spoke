@@ -158,8 +158,8 @@ export class AssignmentTexterContactControls extends React.Component {
     }
 
     if (
-      // SEND: Ctrl->
-      evt.key === ">" &&
+      // SEND: Ctrl-> OR Ctrl-.
+      (evt.key === ">" || evt.key === ".") &&
       // need to use ctrlKey in non-first texting context for accessibility
       evt.ctrlKey
     ) {
@@ -167,8 +167,8 @@ export class AssignmentTexterContactControls extends React.Component {
     }
 
     if (
-      // SEND: Ctrl-<
-      evt.key === "<" &&
+      // SEND: Ctrl-< or Ctrl-,
+      (evt.key === "<" || evt.key === ",") &&
       // need to use ctrlKey in non-first texting context for accessibility
       evt.ctrlKey
     ) {
