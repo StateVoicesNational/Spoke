@@ -167,7 +167,7 @@ export class AssignmentTexterContactControls extends React.Component {
     }
 
     if (
-      // SEND: Ctrl-< or Ctrl-,
+      // SEND: Ctrl-< OR Ctrl-,
       (evt.key === "<" || evt.key === ",") &&
       // need to use ctrlKey in non-first texting context for accessibility
       evt.ctrlKey
