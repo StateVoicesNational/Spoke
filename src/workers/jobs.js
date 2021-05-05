@@ -10,12 +10,12 @@ import {
 import telemetry from "../server/telemetry";
 import { log, gunzip, zipToTimeZone, convertOffsetsToStrings } from "../lib";
 import { sleep, updateJob } from "./lib";
-import serviceMap from "../server/api/lib/services";
-import twilio from "../server/api/lib/twilio";
+import serviceMap from "../extensions/service-vendors";
+import twilio from "../extensions/service-vendors/twilio";
 import {
   getLastMessage,
   saveNewIncomingMessage
-} from "../server/api/lib/message-sending";
+} from "../extensions/service-vendors/message-sending";
 import importScriptFromDocument from "../server/api/lib/import-script";
 import { rawIngestMethod } from "../extensions/contact-loaders";
 
@@ -966,33 +966,32 @@ export async function sendMessages(queryFunc, defaultStatus) {
               message.id
           );
         }
-        message.service = message.service || process.env.DEFAULT_SERVICE;
+        message.service = message.service || getConfig("DEFAULT_SERVICE");
         const service = serviceMap[message.service];
         log.info(
           `Sending (${message.service}): ${message.user_number} -> ${message.contact_number}\nMessage: ${message.text}`
         );
         try {
-          await service.sendMessage(
+          await service.sendMessage({
             message,
-            {
-              // reconstruct contact
+            contact: {
               id: message.campaign_contact_id,
               message_status: message.message_status,
               campaign_id: message.campaign_id
             },
             trx,
-            {
-              // organization
+            organization: {
+              // TODO: probably not enough -- need a organization.load()
               id: message.organization_id,
               features: message.features
             },
-            {
-              // campaign
+            campaign: {
+              // TODO: probably not enough -- need a organization.load()
               id: message.campaign_id,
               organization_id: message.organization_id,
               messageservice_sid: message.messageservice_sid
             }
-          );
+          });
           pastMessages.push(message.id);
           pastMessages = pastMessages.slice(-100); // keep the last 100
         } catch (err) {
@@ -1049,7 +1048,8 @@ export async function handleIncomingMessageParts() {
         .count();
       const lastMessage = await getLastMessage({
         contactNumber: part.contact_number,
-        service: serviceKey
+        service: serviceKey,
+        userNumber: part.user_number
       });
       const duplicateMessageToSaveExists = !!messagesToSave.find(
         message => message.service_id === serviceMessageId

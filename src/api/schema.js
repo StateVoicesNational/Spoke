@@ -14,6 +14,7 @@ import { schema as campaignContactSchema } from "./campaign-contact";
 import { schema as cannedResponseSchema } from "./canned-response";
 import { schema as inviteSchema } from "./invite";
 import { schema as tagSchema } from "./tag";
+import { schema as messageServiceSchema } from "./message-service";
 
 const rootSchema = gql`
   input CampaignContactInput {
@@ -294,12 +295,11 @@ const rootSchema = gql`
       organizationId: String!
       optOutMessage: String!
     ): Organization
-    updateTwilioAuth(
+    updateServiceVendorConfig(
       organizationId: String!
-      twilioAccountSid: String
-      twilioAuthToken: String
-      twilioMessageServiceSid: String
-    ): Organization
+      messageServiceName: String!
+      config: JSON!
+    ): JSON
     bulkSendMessages(assignmentId: Int!): [CampaignContact]
     sendMessage(
       message: MessageInput!
@@ -408,5 +408,6 @@ export const schema = [
   questionSchema,
   inviteSchema,
   conversationSchema,
-  tagSchema
+  tagSchema,
+  messageServiceSchema
 ];

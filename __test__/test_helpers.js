@@ -1,5 +1,6 @@
 import _ from "lodash";
 import {
+  cacheableData,
   createLoaders,
   createTables,
   dropTables,
@@ -8,6 +9,7 @@ import {
   r
 } from "../src/server/models/";
 import { graphql } from "graphql";
+import gql from "graphql-tag";
 
 // Cypress integration tests do not use jest but do use these helpers
 // They would benefit from mocking mail services, though, so something to look in to.
@@ -186,51 +188,87 @@ export async function createOrganization(user, invite) {
   return result;
 }
 
+export const updateOrganizationFeatures = async (
+  testOrganization,
+  newFeatures,
+  testCampaign = null
+) => {
+  const organization = testOrganization.data.createOrganization;
+  const existingFeatures = organization.features || {};
+  const features = {
+    ...existingFeatures,
+    ...newFeatures
+  };
+
+  await r
+    .knex("organization")
+    .where({ id: organization.id })
+    .update({ features: JSON.stringify(features) });
+  organization.feature = features;
+  await cacheableData.organization.clear(organization.id);
+
+  if (testCampaign) {
+    await r
+      .knex("campaign")
+      .where({ id: testCampaign.id })
+      .update({ organization_id: organization.id });
+    await cacheableData.campaign.clear(testCampaign.id);
+  }
+};
+
+export const ensureOrganizationTwilioWithMessagingService = async (
+  testOrganization,
+  testCampaign = null
+) => {
+  const newFeatures = {
+    TWILIO_MESSAGE_SERVICE_SID: global.TWILIO_MESSAGE_SERVICE_SID,
+    service: "twilio"
+  };
+  return updateOrganizationFeatures(
+    testOrganization,
+    newFeatures,
+    testCampaign
+  );
+};
+
 export async function setTwilioAuth(user, organization) {
   const rootValue = {};
-  const accountSid = "test_twilio_account_sid";
-  const authToken = "test_twlio_auth_token";
-  const messageServiceSid = "test_message_service";
+  const twilioAccountSid = "ACtest_twilio_account_sid";
+  const twilioAuthToken = "test_twilio_auth_token";
+  const twilioMessageServiceSid = "test_message_service";
   const orgId = organization.data.createOrganization.id;
 
   const context = getContext({ user });
 
-  const twilioQuery = `
-      mutation updateTwilioAuth(
-        $twilioAccountSid: String
-        $twilioAuthToken: String
-        $twilioMessageServiceSid: String
-        $organizationId: String!
-      ) {
-        updateTwilioAuth(
-          twilioAccountSid: $twilioAccountSid
-          twilioAuthToken: $twilioAuthToken
-          twilioMessageServiceSid: $twilioMessageServiceSid
-          organizationId: $organizationId
-        ) {
-          id
-          twilioAccountSid
-          twilioAuthToken
-          twilioMessageServiceSid
-        }
-      }`;
+  const query = `
+    mutation updateServiceVendorConfig(
+      $organizationId: String!
+      $messageServiceName: String!
+      $config: JSON!
+    ) {
+      updateServiceVendorConfig(
+        organizationId: $organizationId
+        messageServiceName: $messageServiceName
+        config: $config
+      ) 
+    }
+  `;
+
+  const twilioConfig = {
+    twilioAccountSid,
+    twilioAuthToken,
+    twilioMessageServiceSid
+  };
 
   const variables = {
     organizationId: orgId,
-    twilioAccountSid: accountSid,
-    twilioAuthToken: authToken,
-    twilioMessageServiceSid: messageServiceSid
+    messageServiceName: "twilio",
+    config: JSON.stringify(twilioConfig)
   };
 
-  const result = await graphql(
-    mySchema,
-    twilioQuery,
-    rootValue,
-    context,
-    variables
-  );
+  const result = await graphql(mySchema, query, rootValue, context, variables);
   if (result && result.errors) {
-    console.log("updateTwilioAuth failed " + JSON.stringify(result));
+    console.log("updateServiceVendorConfig failed " + JSON.stringify(result));
   }
   return result;
 }

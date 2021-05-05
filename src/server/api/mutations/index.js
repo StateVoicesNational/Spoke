@@ -1,32 +1,15 @@
-import { bulkSendMessages } from "./bulkSendMessages";
-import { bulkUpdateScript } from "./bulkUpdateScript";
-import { buyPhoneNumbers, deletePhoneNumbers } from "./buyPhoneNumbers";
-import { editOrganization } from "./editOrganization";
-import { findNewCampaignContact } from "./findNewCampaignContact";
-import { joinOrganization } from "./joinOrganization";
-import { releaseContacts } from "./releaseContacts";
-import { sendMessage } from "./sendMessage";
-import { startCampaign } from "./startCampaign";
-import { updateContactTags } from "./updateContactTags";
-import { updateQuestionResponses } from "./updateQuestionResponses";
-import { releaseCampaignNumbers } from "./releaseCampaignNumbers";
-import { clearCachedOrgAndExtensionCaches } from "./clearCachedOrgAndExtensionCaches";
-import { updateFeedback } from "./updateFeedback";
-
-export {
-  bulkSendMessages,
-  bulkUpdateScript,
-  buyPhoneNumbers,
-  deletePhoneNumbers,
-  editOrganization,
-  findNewCampaignContact,
-  joinOrganization,
-  releaseContacts,
-  sendMessage,
-  startCampaign,
-  updateContactTags,
-  updateQuestionResponses,
-  releaseCampaignNumbers,
-  clearCachedOrgAndExtensionCaches,
-  updateFeedback
-};
+export { bulkSendMessages } from "./bulkSendMessages";
+export { bulkUpdateScript } from "./bulkUpdateScript";
+export { buyPhoneNumbers, deletePhoneNumbers } from "./buyPhoneNumbers";
+export { editOrganization } from "./editOrganization";
+export { findNewCampaignContact } from "./findNewCampaignContact";
+export { joinOrganization } from "./joinOrganization";
+export { releaseContacts } from "./releaseContacts";
+export { sendMessage } from "./sendMessage";
+export { startCampaign } from "./startCampaign";
+export { updateContactTags } from "./updateContactTags";
+export { updateQuestionResponses } from "./updateQuestionResponses";
+export { releaseCampaignNumbers } from "./releaseCampaignNumbers";
+export { clearCachedOrgAndExtensionCaches } from "./clearCachedOrgAndExtensionCaches";
+export { updateFeedback } from "./updateFeedback";
+export { updateServiceVendorConfig } from "./updateServiceVendorConfig";

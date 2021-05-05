@@ -1,19 +1,22 @@
 /* eslint-disable no-use-before-define, no-console */
 import _ from "lodash";
-import Twilio, { twiml } from "twilio";
+import * as twilioLibrary from "twilio";
 import urlJoin from "url-join";
 import { log } from "../../../lib";
 import { getFormattedPhoneNumber } from "../../../lib/phone-format";
+import { getConfig, hasConfig } from "../../../server/api/lib/config";
 import {
   cacheableData,
   Log,
   Message,
   PendingMessagePart,
   r
-} from "../../models";
-import wrap from "../../wrap";
-import { getConfig } from "./config";
-import { saveNewIncomingMessage } from "./message-sending";
+} from "../../../server/models";
+import wrap from "../../../server/wrap";
+import { getSecret, convertSecret } from "../../secret-manager";
+
+import { saveNewIncomingMessage, parseMessageText } from "../message-sending";
+import { getMessageServiceConfig, getConfigKey } from "../service_map";
 
 // TWILIO error_codes:
 // > 1 (i.e. positive) error_codes are reserved for Twilio error codes
@@ -25,18 +28,24 @@ import { saveNewIncomingMessage } from "./message-sending";
 const MAX_SEND_ATTEMPTS = 5;
 const MESSAGE_VALIDITY_PADDING_SECONDS = 30;
 const MAX_TWILIO_MESSAGE_VALIDITY = 14400;
-const DISABLE_DB_LOG = getConfig("DISABLE_DB_LOG");
+const ENABLE_DB_LOG = getConfig("ENABLE_DB_LOG");
 const TWILIO_SKIP_VALIDATION = getConfig("TWILIO_SKIP_VALIDATION");
 const BULK_REQUEST_CONCURRENCY = 5;
 const MAX_NUMBERS_PER_BUY_JOB = getConfig("MAX_NUMBERS_PER_BUY_JOB") || 100;
 
-async function getTwilio(organization) {
-  const {
-    authToken,
-    accountSid
-  } = await cacheableData.organization.getTwilioAuth(organization);
+export const getMetadata = () => ({
+  supportsOrgConfig: getConfig("TWILIO_MULTI_ORG", null, { truthy: true }),
+  supportsCampaignConfig: false,
+  name: "twilio"
+});
+
+export async function getTwilio(organization) {
+  const { authToken, accountSid } = await getMessageServiceConfig(
+    "twilio",
+    organization
+  );
   if (accountSid && authToken) {
-    return Twilio(accountSid, authToken); // eslint-disable-line new-cap
+    return twilioLibrary.default.Twilio(accountSid, authToken); // eslint-disable-line new-cap
   }
   return null;
 }
@@ -53,16 +62,14 @@ const headerValidator = url => {
     const organization = req.params.orgId
       ? await cacheableData.organization.load(req.params.orgId)
       : null;
-    const { authToken } = await cacheableData.organization.getTwilioAuth(
-      organization
-    );
+    const { authToken } = await getMessageServiceConfig("twilio", organization);
     const options = {
       validate: true,
       protocol: "https",
       url
     };
 
-    return Twilio.webhook(authToken, options)(req, res, next);
+    return twilioLibrary.webhook(authToken, options)(req, res, next);
   };
 };
 
@@ -86,20 +93,19 @@ export const errorDescriptions = {
   30005: "Unknown destination handset",
   30006: "Landline or unreachable carrier",
   30007: "Message Delivery - Carrier violation",
-  30008: "Message Delivery - Unknown error",
-  "-1": "Spoke failed to send the message, usually due to a temporary issue.",
-  "-2": "Spoke failed to send the message and will try again.",
-  "-3": "Spoke failed to send the message and will try again.",
-  "-4": "Spoke failed to send the message and will try again.",
-  "-5": "Spoke failed to send the message and will NOT try again.",
-  "-133": "Auto-optout (no error)",
-  "-166":
-    "Internal: Message blocked due to text match trigger (profanity-tagger)",
-  "-167": "Internal: Initial message altered (initialtext-guard)"
+  30008: "Message Delivery - Unknown error"
 };
 
-function addServerEndpoints(expressApp) {
-  expressApp.post(
+export function errorDescription(errorCode) {
+  return {
+    code: errorCode,
+    description: errorDescriptions[errorCode] || "Twilio error",
+    link: `https://www.twilio.com/docs/api/errors/${errorCode}`
+  };
+}
+
+export function addServerEndpoints(addPostRoute) {
+  addPostRoute(
     "/twilio/:orgId?",
     headerValidator(
       process.env.TWILIO_MESSAGE_CALLBACK_URL ||
@@ -111,7 +117,7 @@ function addServerEndpoints(expressApp) {
       } catch (ex) {
         log.error(ex);
       }
-      const resp = new twiml.MessagingResponse();
+      const resp = new twilioLibrary.default.twiml.MessagingResponse();
       res.writeHead(200, { "Content-Type": "text/xml" });
       res.end(resp.toString());
     })
@@ -137,13 +143,13 @@ function addServerEndpoints(expressApp) {
       } catch (ex) {
         log.error(ex);
       }
-      const resp = new twiml.MessagingResponse();
+      const resp = new twilioLibrary.default.twiml.MessagingResponse();
       res.writeHead(200, { "Content-Type": "text/xml" });
       res.end(resp.toString());
     })
   );
 
-  expressApp.post("/twilio-message-report/:orgId?", ...messageReportHooks);
+  addPostRoute("/twilio-message-report/:orgId?", ...messageReportHooks);
 }
 
 async function convertMessagePartsToMessage(messageParts) {
@@ -186,21 +192,6 @@ async function convertMessagePartsToMessage(messageParts) {
   });
 }
 
-const mediaExtractor = new RegExp(/\[\s*(http[^\]\s]*)\s*\]/);
-
-function parseMessageText(message) {
-  const text = message.text || "";
-  const params = {
-    body: text.replace(mediaExtractor, "")
-  };
-  // Image extraction
-  const results = text.match(mediaExtractor);
-  if (results) {
-    params.mediaUrl = results[1];
-  }
-  return params;
-}
-
 async function getMessagingServiceSid(
   organization,
   contact,
@@ -233,8 +224,28 @@ async function getMessagingServiceSid(
   );
 }
 
-async function sendMessage(message, contact, trx, organization, campaign) {
-  const twilio = await getTwilio(organization);
+async function getOrganizationContactUserNumber(organization, contactNumber) {
+  const organizationContact = await cacheableData.organizationContact.query({
+    organizationId: organization.id,
+    contactNumber
+  });
+
+  if (organizationContact && organizationContact.user_number) {
+    return organizationContact.user_number;
+  }
+
+  return null;
+}
+
+export async function sendMessage({
+  message,
+  contact,
+  trx,
+  organization,
+  campaign,
+  serviceManagerData
+}) {
+  const twilio = await exports.getTwilio(organization);
   const APITEST = /twilioapitest/.test(message.text);
   if (!twilio && !APITEST) {
     log.warn(
@@ -255,12 +266,19 @@ async function sendMessage(message, contact, trx, organization, campaign) {
   }
 
   // Note organization won't always be available, so then contact can trace to it
-  const messagingServiceSid = await getMessagingServiceSid(
-    organization,
-    contact,
-    message,
-    campaign
-  );
+  const messagingServiceSid =
+    (serviceManagerData && serviceManagerData.messageservice_sid) ||
+    (await getMessagingServiceSid(organization, contact, message, campaign));
+
+  let userNumber =
+    (serviceManagerData && serviceManagerData.user_number) ||
+    message.user_number;
+  if (process.env.EXPERIMENTAL_STICKY_SENDER && !userNumber) {
+    userNumber = await getOrganizationContactUserNumber(
+      organization,
+      contact.cell
+    );
+  }
 
   return new Promise((resolve, reject) => {
     if (message.service !== "twilio") {
@@ -299,13 +317,23 @@ async function sendMessage(message, contact, trx, organization, campaign) {
     }
     const changes = {};
 
-    changes.messageservice_sid = messagingServiceSid;
+    if (userNumber && message.user_number != userNumber) {
+      changes.user_number = userNumber;
+    }
+    if (
+      messagingServiceSid &&
+      message.messageservice_sid != messagingServiceSid
+    ) {
+      changes.messageservice_sid = messagingServiceSid;
+    }
 
     const messageParams = Object.assign(
       {
         to: message.contact_number,
-        body: message.text
+        body: message.text,
+        statusCallback: process.env.TWILIO_STATUS_CALLBACK_URL
       },
+      userNumber ? { from: userNumber } : {},
       messagingServiceSid ? { messagingServiceSid } : {},
       twilioValidityPeriod ? { validityPeriod: twilioValidityPeriod } : {},
       parseMessageText(message)
@@ -433,10 +461,11 @@ export function postMessageSend(
     };
     Promise.all([
       updateQuery.update(changesToSave),
-      cacheableData.campaignContact.updateStatus({
-        ...contact,
-        messageservice_sid: changesToSave.messageservice_sid
-      })
+      cacheableData.campaignContact.updateStatus(
+        contact,
+        undefined,
+        changesToSave.messageservice_sid || changesToSave.user_number
+      )
     ])
       .then(() => {
         resolve({
@@ -468,7 +497,7 @@ export async function handleDeliveryReport(report) {
       return;
     }
 
-    if (!DISABLE_DB_LOG) {
+    if (ENABLE_DB_LOG) {
       await Log.save({
         message_sid: report.MessageSid,
         body: JSON.stringify(report),
@@ -496,7 +525,7 @@ export async function handleDeliveryReport(report) {
   }
 }
 
-async function handleIncomingMessage(message) {
+export async function handleIncomingMessage(message) {
   if (
     !message.hasOwnProperty("From") ||
     !message.hasOwnProperty("To") ||
@@ -536,7 +565,7 @@ async function handleIncomingMessage(message) {
   }
 
   // store mediaurl data in Log, so it can be extracted manually
-  if (message.MediaUrl0 && (!DISABLE_DB_LOG || getConfig("LOG_MEDIA_URL"))) {
+  if (ENABLE_DB_LOG) {
     await Log.save({
       message_sid: MessageSid,
       body: JSON.stringify(message),
@@ -550,8 +579,8 @@ async function handleIncomingMessage(message) {
 /**
  * Create a new Twilio messaging service
  */
-async function createMessagingService(organization, friendlyName) {
-  const twilio = await getTwilio(organization);
+export async function createMessagingService(organization, friendlyName) {
+  const twilio = await exports.getTwilio(organization);
   const twilioBaseUrl =
     getConfig("TWILIO_BASE_CALLBACK_URL", organization) ||
     getConfig("BASE_URL");
@@ -599,7 +628,7 @@ async function searchForAvailableNumbers(
  * Fetch Phone Numbers assigned to Messaging Service
  */
 async function getPhoneNumbersForService(organization, messagingServiceSid) {
-  const twilio = await getTwilio(organization);
+  const twilio = await exports.getTwilio(organization);
   return await twilio.messaging
     .services(messagingServiceSid)
     .phoneNumbers.list({ limit: 400 });
@@ -627,10 +656,13 @@ async function buyNumber(organization, twilioInstance, phoneNumber, opts = {}) {
     friendlyName: `Managed by Spoke [${process.env.BASE_URL}]: ${phoneNumber}`,
     voiceUrl: getConfig("TWILIO_VOICE_URL", organization) // will use default twilio recording if undefined
   });
+
   if (response.error) {
     throw new Error(`Error buying twilio number: ${response.error}`);
   }
+
   log.debug(`Bought number ${phoneNumber} [${response.sid}]`);
+
   let allocationFields = {};
   const messagingServiceSid = opts && opts.messagingServiceSid;
   if (messagingServiceSid) {
@@ -671,8 +703,13 @@ async function bulkRequest(array, fn) {
 /**
  * Buy up to <limit> numbers in <areaCode>
  */
-async function buyNumbersInAreaCode(organization, areaCode, limit, opts = {}) {
-  const twilioInstance = await getTwilio(organization);
+export async function buyNumbersInAreaCode(
+  organization,
+  areaCode,
+  limit,
+  opts = {}
+) {
+  const twilioInstance = await exports.getTwilio(organization);
   const countryCode = getConfig("PHONE_NUMBER_COUNTRY ", organization) || "US";
   async function buyBatch(size) {
     let successCount = 0;
@@ -713,7 +750,7 @@ async function addNumbersToMessagingService(
   phoneSids,
   messagingServiceSid
 ) {
-  const twilioInstance = await getTwilio(organization);
+  const twilioInstance = await exports.getTwilio(organization);
   return await bulkRequest(phoneSids, async phoneNumberSid =>
     twilioInstance.messaging
       .services(messagingServiceSid)
@@ -751,7 +788,7 @@ async function deleteNumber(twilioInstance, phoneSid, phoneNumber) {
  * Delete all non-allocted phone numbers in an area code
  */
 async function deleteNumbersInAreaCode(organization, areaCode) {
-  const twilioInstance = await getTwilio(organization);
+  const twilioInstance = await exports.getTwilio(organization);
   const numbersToDelete = await r
     .knex("owned_phone_number")
     .select("service_id", "phone_number")
@@ -771,13 +808,13 @@ async function deleteNumbersInAreaCode(organization, areaCode) {
 }
 
 async function deleteMessagingService(organization, messagingServiceSid) {
-  const twilioInstance = await getTwilio(organization);
+  const twilioInstance = await exports.getTwilio(organization);
   console.log("Deleting messaging service", messagingServiceSid);
   return twilioInstance.messaging.services(messagingServiceSid).remove();
 }
 
 async function clearMessagingServicePhones(organization, messagingServiceSid) {
-  const twilioInstance = await getTwilio(organization);
+  const twilioInstance = await exports.getTwilio(organization);
   console.log("Deleting phones from messaging service", messagingServiceSid);
 
   const phones = await twilioInstance.messaging
@@ -805,6 +842,193 @@ async function clearMessagingServicePhones(organization, messagingServiceSid) {
   }
 }
 
+export const getServiceConfig = async (
+  serviceConfig,
+  organization,
+  options = {}
+) => {
+  const {
+    restrictToOrgFeatures = false,
+    obscureSensitiveInformation = true
+  } = options;
+  let authToken;
+  let accountSid;
+  let messageServiceSid;
+  if (serviceConfig) {
+    const hasEncryptedToken = serviceConfig.TWILIO_AUTH_TOKEN_ENCRYPTED;
+    // Note, allows unencrypted auth tokens to be (manually) stored in the db
+    // @todo: decide if this is necessary, or if UI/envars is sufficient.
+    if (hasEncryptedToken) {
+      authToken = obscureSensitiveInformation
+        ? "<Encrypted>"
+        : await getSecret(
+            "TWILIO_AUTH_TOKEN_ENCRYPTED",
+            serviceConfig.TWILIO_AUTH_TOKEN_ENCRYPTED,
+            organization
+          );
+    } else {
+      authToken = obscureSensitiveInformation
+        ? "<Hidden>"
+        : serviceConfig.TWILIO_AUTH_TOKEN;
+    }
+    accountSid = serviceConfig.TWILIO_ACCOUNT_SID
+      ? serviceConfig.TWILIO_ACCOUNT_SID
+      : // Check old TWILIO_API_KEY variable for backwards compatibility.
+        serviceConfig.TWILIO_API_KEY;
+
+    messageServiceSid = serviceConfig.TWILIO_MESSAGE_SERVICE_SID;
+  } else {
+    // for backward compatibility
+
+    const getConfigOptions = { onlyLocal: Boolean(restrictToOrgFeatures) };
+
+    const hasEncryptedToken = hasConfig(
+      "TWILIO_AUTH_TOKEN_ENCRYPTED",
+      organization,
+      getConfigOptions
+    );
+    // Note, allows unencrypted auth tokens to be (manually) stored in the db
+    // @todo: decide if this is necessary, or if UI/envars is sufficient.
+    if (hasEncryptedToken) {
+      authToken = obscureSensitiveInformation
+        ? "<Encrypted>"
+        : await getSecret(
+            "TWILIO_AUTH_TOKEN_ENCRYPTED",
+            getConfig(
+              "TWILIO_AUTH_TOKEN_ENCRYPTED",
+              organization,
+              getConfigOptions
+            ),
+            organization
+          );
+    } else {
+      const hasUnencryptedToken = hasConfig(
+        "TWILIO_AUTH_TOKEN",
+        organization,
+        getConfigOptions
+      );
+      if (hasUnencryptedToken) {
+        authToken = obscureSensitiveInformation
+          ? "<Hidden>"
+          : getConfig("TWILIO_AUTH_TOKEN", organization, getConfigOptions);
+      }
+    }
+    accountSid = hasConfig("TWILIO_ACCOUNT_SID", organization, getConfigOptions)
+      ? getConfig("TWILIO_ACCOUNT_SID", organization, getConfigOptions)
+      : // Check old TWILIO_API_KEY variable for backwards compatibility.
+        getConfig("TWILIO_API_KEY", organization, getConfigOptions);
+
+    messageServiceSid = getConfig(
+      "TWILIO_MESSAGE_SERVICE_SID",
+      organization,
+      getConfigOptions
+    );
+  }
+  return { authToken, accountSid, messageServiceSid };
+};
+
+export const getMessageServiceSid = async (
+  organization,
+  contact,
+  messageText
+) => {
+  // Note organization won't always be available, so we'll need to conditionally look it up based on contact
+  if (messageText && /twilioapitest/.test(messageText)) {
+    return "fakeSid_MK123";
+  }
+
+  const configKey = getConfigKey("twilio");
+  const config = getConfig(configKey, organization);
+  const { messageServiceSid } = await exports.getServiceConfig(
+    config,
+    organization
+  );
+  return messageServiceSid;
+};
+
+export const updateConfig = async (oldConfig, config, organization) => {
+  const { twilioAccountSid, twilioAuthToken, twilioMessageServiceSid } = config;
+  if (!twilioAccountSid || !twilioMessageServiceSid) {
+    throw new Error(
+      "twilioAccountSid and twilioMessageServiceSid are required"
+    );
+  }
+
+  const newConfig = {};
+
+  newConfig.TWILIO_ACCOUNT_SID = twilioAccountSid.substr(0, 64);
+
+  // TODO(lperson) is twilioAuthToken required? -- not for unencrypted
+  newConfig.TWILIO_AUTH_TOKEN_ENCRYPTED = twilioAuthToken
+    ? await convertSecret(
+        "TWILIO_AUTH_TOKEN_ENCRYPTED",
+        organization,
+        twilioAuthToken
+      )
+    : twilioAuthToken;
+  newConfig.TWILIO_MESSAGE_SERVICE_SID =
+    twilioMessageServiceSid && twilioMessageServiceSid.substr(0, 64);
+
+  try {
+    if (twilioAuthToken && global.TEST_ENVIRONMENT !== "1") {
+      // Make sure Twilio credentials work.
+      // eslint-disable-next-line new-cap
+      const twilio = twilioLibrary.default.Twilio(
+        twilioAccountSid,
+        twilioAuthToken
+      );
+      await twilio.api.accounts.list();
+    }
+  } catch (err) {
+    throw new Error("Invalid Twilio credentials");
+  }
+
+  return newConfig;
+};
+
+export const campaignNumbersEnabled = organization => {
+  const inventoryEnabled =
+    getConfig("EXPERIMENTAL_PHONE_INVENTORY", organization, {
+      truthy: true
+    }) ||
+    getConfig("PHONE_INVENTORY", organization, {
+      truthy: true
+    });
+
+  return (
+    inventoryEnabled &&
+    getConfig("EXPERIMENTAL_CAMPAIGN_PHONE_NUMBERS", organization, {
+      truthy: true
+    })
+  );
+};
+
+export const manualMessagingServicesEnabled = organization =>
+  getConfig(
+    "EXPERIMENTAL_TWILIO_PER_CAMPAIGN_MESSAGING_SERVICE",
+    organization,
+    { truthy: true }
+  );
+
+export const fullyConfigured = async organization => {
+  const { authToken, accountSid } = await getMessageServiceConfig(
+    "twilio",
+    organization
+  );
+
+  if (!(authToken && accountSid)) {
+    return false;
+  }
+
+  if (
+    exports.manualMessagingServicesEnabled(organization) ||
+    exports.campaignNumbersEnabled(organization)
+  ) {
+    return true;
+  }
+  return !!(await exports.getMessageServiceSid(organization));
+};
+
 export default {
   syncMessagePartProcessing: !!process.env.JOBS_SAME_PROCESS,
   addServerEndpoints,
@@ -820,5 +1044,10 @@ export default {
   deleteNumbersInAreaCode,
   addNumbersToMessagingService,
   deleteMessagingService,
-  clearMessagingServicePhones
+  clearMessagingServicePhones,
+  getTwilio,
+  getServiceConfig,
+  getMessageServiceSid,
+  updateConfig,
+  getMetadata
 };

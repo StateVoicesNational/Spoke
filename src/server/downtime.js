@@ -3,14 +3,12 @@ import bodyParser from "body-parser";
 import express from "express";
 import { log } from "../lib";
 import renderIndex from "./middleware/render-index";
-import fs from "fs";
-import { existsSync } from "fs";
+import fs, { existsSync } from "fs";
 import path from "path";
+import { addServerEndpoints as messagingServicesAddServerEndpoints } from "../extensions/service-vendors/service_map";
 
 // This server is for when it is in downtime mode and we just statically
 // serve the client app
-
-const DEBUG = process.env.NODE_ENV === "development";
 
 const app = express();
 const port = process.env.DEV_APP_PORT || process.env.PORT;
@@ -30,7 +28,7 @@ if (existsSync(process.env.ASSETS_DIR)) {
   );
 }
 
-let assetMap = {
+const assetMap = {
   "bundle.js": "/assets/bundle.js"
 };
 if (process.env.NODE_ENV === "production") {
@@ -56,13 +54,23 @@ if (process.env.NODE_ENV === "production") {
   }
 }
 
+const serverIsDown = handler => (req, res, next) => {
+  if (process.env.DOWNTIME_NO_DB) {
+    return res.status(500).send("Server is down");
+  }
+  return handler(req, res, next);
+};
+
+const routeAdders = {
+  get: (_app, route, handler) => _app.get(route, serverIsDown(handler)),
+  post: (_app, route, handler) => _app.post(route, serverIsDown(handler))
+};
+
+messagingServicesAddServerEndpoints(app, routeAdders);
+
 app.use((req, res, next) => {
   if (req.path !== "/downtime") {
-    if (/twilio|nexmo/.test(req.path) && process.env.DOWNTIME_NO_DB) {
-      res.status(500).send("Server is down");
-    } else {
-      res.redirect(302, "/downtime");
-    }
+    res.redirect(302, "/downtime");
   } else {
     res.send(renderIndex("", "", assetMap));
   }

@@ -1,8 +1,9 @@
 import Nexmo from "nexmo";
 import { getFormattedPhoneNumber } from "../../../lib/phone-format";
-import { Message, PendingMessagePart } from "../../models";
-import { getLastMessage } from "./message-sending";
+import { Message, PendingMessagePart } from "../../../server/models";
+import { getLastMessage } from "../message-sending";
 import { log } from "../../../lib";
+import wrap from "../../../server/wrap";
 
 // NEXMO error_codes:
 // If status is a number, then it will be the number
@@ -12,6 +13,12 @@ import { log } from "../../../lib";
 // rejected: 114
 // network error or other connection failure: 1
 
+export const getMetadata = () => ({
+  supportsOrgConfig: false,
+  supportsCampaignConfig: false,
+  name: "nexmo"
+});
+
 let nexmo = null;
 const MAX_SEND_ATTEMPTS = 5;
 if (process.env.NEXMO_API_KEY && process.env.NEXMO_API_SECRET) {
@@ -19,6 +26,36 @@ if (process.env.NEXMO_API_KEY && process.env.NEXMO_API_SECRET) {
     apiKey: process.env.NEXMO_API_KEY,
     apiSecret: process.env.NEXMO_API_SECRET
   });
+}
+
+export function addServerEndpoints(addPostRoute) {
+  if (process.env.NEXMO_API_KEY) {
+    addPostRoute(
+      "/nexmo",
+      wrap(async (req, res) => {
+        try {
+          const messageId = await nexmo.handleIncomingMessage(req.body);
+          res.send(messageId);
+        } catch (ex) {
+          log.error(ex);
+          res.send("done");
+        }
+      })
+    );
+
+    addPostRoute(
+      "/nexmo-message-report",
+      wrap(async (req, res) => {
+        try {
+          const body = req.body;
+          await nexmo.handleDeliveryReport(body);
+        } catch (ex) {
+          log.error(ex);
+        }
+        res.send("done");
+      })
+    );
+  }
 }
 
 async function convertMessagePartsToMessage(messageParts) {
@@ -36,7 +73,8 @@ async function convertMessagePartsToMessage(messageParts) {
     contactNumber,
     service: "nexmo",
     // Nexmo has nothing better that is both from sent and received message repsonses:
-    messageServiceSid: "nexmo"
+    messageServiceSid: "nexmo",
+    userNumber
   });
 
   return new Message({
@@ -110,7 +148,13 @@ async function rentNewCell() {
   throw new Error("Did not find any cell");
 }
 
-async function sendMessage(message, contact, trx, organization, campaign) {
+export async function sendMessage({
+  message,
+  contact,
+  trx,
+  organization,
+  campaign
+}) {
   if (!nexmo) {
     const options = trx ? { transaction: trx } : {};
     await Message.get(message.id).update({ send_status: "SENT" }, options);
@@ -148,7 +192,7 @@ async function sendMessage(message, contact, trx, organization, campaign) {
         }
 
         messageToSave.service = "nexmo";
-        //userNum is required so can be tracked as messageservice_sid
+        // userNum is required so can be tracked as messageservice_sid
         messageToSave.messageservice_sid = getFormattedPhoneNumber(userNumber);
         messageToSave.campaign_contact_id = contact.id;
 
@@ -158,7 +202,7 @@ async function sendMessage(message, contact, trx, organization, campaign) {
             messageToSave.error_code =
               Number(hasError) || hasError.charCodeAt(0);
           }
-          let options = { conflict: "update" };
+          const options = { conflict: "update" };
           if (trx) {
             options.transaction = trx;
           }
@@ -174,7 +218,7 @@ async function sendMessage(message, contact, trx, organization, campaign) {
             });
           // FUTURE: insert log record with service response
         } else {
-          let options = { conflict: "update" };
+          const options = { conflict: "update" };
           if (trx) {
             options.transaction = trx;
           }
@@ -193,7 +237,7 @@ async function sendMessage(message, contact, trx, organization, campaign) {
   });
 }
 
-async function handleDeliveryReport(report) {
+export async function handleDeliveryReport(report) {
   if (report.hasOwnProperty("client-ref")) {
     const message = await Message.get(report["client-ref"]);
     // FUTURE: insert log record with JSON.stringify(report)
@@ -212,7 +256,7 @@ async function handleDeliveryReport(report) {
   }
 }
 
-async function handleIncomingMessage(message) {
+export async function handleIncomingMessage(message) {
   if (
     !message.hasOwnProperty("to") ||
     !message.hasOwnProperty("msisdn") ||
@@ -251,10 +295,12 @@ async function handleIncomingMessage(message) {
 }
 
 export default {
+  addServerEndpoints,
   convertMessagePartsToMessage,
   findNewCell,
   rentNewCell,
   sendMessage,
   handleDeliveryReport,
-  handleIncomingMessage
+  handleIncomingMessage,
+  getMetadata
 };

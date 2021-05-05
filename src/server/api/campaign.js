@@ -1,6 +1,10 @@
 import { accessRequired } from "./errors";
 import { mapFieldsToModel, mapFieldsOrNull } from "./lib/utils";
-import { errorDescriptions } from "./lib/twilio";
+import {
+  serviceMap,
+  getServiceNameFromOrganization,
+  errorDescription
+} from "../../extensions/service-vendors";
 import { Campaign, JobRequest, r, cacheableData } from "../models";
 import { getUsers } from "./user";
 import { getSideboxChoices } from "./organization";
@@ -8,7 +12,6 @@ import {
   getAvailableIngestMethods,
   getMethodChoiceData
 } from "../../extensions/contact-loaders";
-import twilio from "./lib/twilio";
 import { getConfig, getFeatures } from "./lib/config";
 import ownedPhoneNumber from "./lib/owned-phone-number";
 const title = 'lower("campaign"."title")';
@@ -252,15 +255,13 @@ export const resolvers = {
         .groupBy("error_code")
         .orderByRaw("count(*) DESC");
       const organization = loaders.organization.load(campaign.organization_id);
-      const isTwilio = getConfig("DEFAULT_SERVICE", organization) === "twilio";
       return errorCounts.map(e => ({
+        ...errorDescription(
+          e.error_code,
+          getServiceNameFromOrganization(organization)
+        ),
         code: String(e.error_code),
-        count: e.error_count,
-        description: errorDescriptions[e.error_code] || null,
-        link:
-          e.error_code > 0 && isTwilio
-            ? `https://www.twilio.com/docs/api/errors/${e.error_code}`
-            : null
+        count: e.error_count
       }));
     }
   },
@@ -683,7 +684,6 @@ export const resolvers = {
       }
       return "";
     },
-    // TODO: rename to messagingServicePhoneNumbers
     phoneNumbers: async (campaign, _, { user }) => {
       await accessRequired(
         user,
@@ -691,7 +691,7 @@ export const resolvers = {
         "SUPERVOLUNTEER",
         true
       );
-      const phoneNumbers = await twilio.getPhoneNumbersForService(
+      const phoneNumbers = await serviceMap.twilio.getPhoneNumbersForService(
         campaign.organization,
         campaign.messageservice_sid
       );
