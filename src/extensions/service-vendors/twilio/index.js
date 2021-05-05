@@ -32,6 +32,7 @@ const ENABLE_DB_LOG = getConfig("ENABLE_DB_LOG");
 const TWILIO_SKIP_VALIDATION = getConfig("TWILIO_SKIP_VALIDATION");
 const BULK_REQUEST_CONCURRENCY = 5;
 const MAX_NUMBERS_PER_BUY_JOB = getConfig("MAX_NUMBERS_PER_BUY_JOB") || 100;
+export const twilioLibrary = { Twilio, twiml };
 
 export const getMetadata = () => ({
   supportsOrgConfig: getConfig("TWILIO_MULTI_ORG", null, { truthy: true }),
@@ -46,7 +47,7 @@ export const getTwilio = async organization => {
     { obscureSensitiveInformation: false }
   );
   if (accountSid && authToken) {
-    return Twilio(accountSid, authToken); // eslint-disable-line new-cap
+    return twilioLibrary.Twilio(accountSid, authToken); // eslint-disable-line new-cap
   }
   return null;
 };
@@ -122,7 +123,7 @@ export function addServerEndpoints(addPostRoute) {
       } catch (ex) {
         log.error(ex);
       }
-      const resp = new twiml.MessagingResponse();
+      const resp = new twilioLibrary.twiml.MessagingResponse();
       res.writeHead(200, { "Content-Type": "text/xml" });
       res.end(resp.toString());
     })
@@ -148,7 +149,7 @@ export function addServerEndpoints(addPostRoute) {
       } catch (ex) {
         log.error(ex);
       }
-      const resp = new twiml.MessagingResponse();
+      const resp = new twilioLibrary.twiml.MessagingResponse();
       res.writeHead(200, { "Content-Type": "text/xml" });
       res.end(resp.toString());
     })
@@ -977,10 +978,11 @@ export const updateConfig = async (oldConfig, config, organization) => {
     if (twilioAuthToken && global.TEST_ENVIRONMENT !== "1") {
       // Make sure Twilio credentials work.
       // eslint-disable-next-line new-cap
-      const twilio = Twilio(twilioAccountSid, twilioAuthToken);
+      const twilio = twilioLibrary.Twilio(twilioAccountSid, twilioAuthToken);
       await twilio.api.accounts.list();
     }
   } catch (err) {
+    console.log("twilio.updateConfig client error", err);
     throw new Error("Invalid Twilio credentials");
   }
 
@@ -1050,5 +1052,6 @@ export default {
   getServiceConfig,
   getMessageServiceSid,
   updateConfig,
-  getMetadata
+  getMetadata,
+  fullyConfigured
 };
