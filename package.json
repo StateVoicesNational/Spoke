@@ -83,6 +83,8 @@
     "@material-ui/icons": "^4.11.2",
     "@material-ui/lab": "^4.0.0-alpha.57",
     "@material-ui/pickers": "^3.3.10",
+    "@bandwidth/messaging": "^3.0.0",
+    "@bandwidth/numbers": "^1.7.0",
     "@trt2/gsm-charset-utils": "^1.0.13",
     "aphrodite": "^2.3.1",
     "apollo-cache-inmemory": "^1.6.6",

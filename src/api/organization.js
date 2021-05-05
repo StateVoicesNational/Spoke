@@ -73,9 +73,7 @@ export const schema = gql`
     texterUIConfig: TexterUIConfig
     cacheable: Int
     tags(group: String): [Tag]
-    twilioAccountSid: String
-    twilioAuthToken: String
-    twilioMessageServiceSid: String
+    messageService: MessageService
     fullyConfigured: Boolean
     emailEnabled: Boolean
     phoneInventoryEnabled: Boolean!

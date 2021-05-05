@@ -11,11 +11,9 @@ import { schema } from "../api/schema";
 import passport from "passport";
 import cookieSession from "cookie-session";
 import passportSetup from "./auth-passport";
-import wrap from "./wrap";
 import { log } from "../lib";
 import telemetry from "./telemetry";
-import nexmo from "./api/lib/nexmo";
-import twilio from "./api/lib/twilio";
+import { addServerEndpoints as messagingServicesAddServerEndpoints } from "../extensions/service-vendors/service_map";
 import { getConfig } from "./api/lib/config";
 import { seedZipCodes } from "./seeds/seed-zip-codes";
 import { setupUserNotificationObservers } from "./notifications";
@@ -113,35 +111,12 @@ Object.keys(configuredIngestMethods).forEach(ingestMethodName => {
   }
 });
 
-twilio.addServerEndpoints(app);
+const routeAdders = {
+  get: (_app, route, handler) => _app.get(route, handler),
+  post: (_app, route, handler) => _app.post(route, handler)
+};
 
-if (process.env.NEXMO_API_KEY) {
-  app.post(
-    "/nexmo",
-    wrap(async (req, res) => {
-      try {
-        const messageId = await nexmo.handleIncomingMessage(req.body);
-        res.send(messageId);
-      } catch (ex) {
-        log.error(ex);
-        res.send("done");
-      }
-    })
-  );
-
-  app.post(
-    "/nexmo-message-report",
-    wrap(async (req, res) => {
-      try {
-        const body = req.body;
-        await nexmo.handleDeliveryReport(body);
-      } catch (ex) {
-        log.error(ex);
-      }
-      res.send("done");
-    })
-  );
-}
+messagingServicesAddServerEndpoints(app, routeAdders);
 
 app.get("/logout-callback", (req, res) => {
   req.logOut();
