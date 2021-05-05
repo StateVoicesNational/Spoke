@@ -12,7 +12,9 @@ import { getMessageServiceConfig, getConfigKey } from "../service_map";
 export async function getNumbersClient(organization, options) {
   const config =
     (options && options.serviceConfig) ||
-    (await getMessageServiceConfig("bandwidth", organization));
+    (await getMessageServiceConfig("bandwidth", organization, {
+      obscureSensitiveInformation: false
+    }));
   const password = await convertSecret(
     "bandwidthPassword",
     organization,

@@ -1,6 +1,6 @@
 /* eslint-disable no-use-before-define, no-console */
 import _ from "lodash";
-import * as twilioLibrary from "twilio";
+import Twilio, { twiml } from "twilio";
 import urlJoin from "url-join";
 import { log } from "../../../lib";
 import { getFormattedPhoneNumber } from "../../../lib/phone-format";
@@ -39,16 +39,17 @@ export const getMetadata = () => ({
   name: "twilio"
 });
 
-export async function getTwilio(organization) {
+export const getTwilio = async organization => {
   const { authToken, accountSid } = await getMessageServiceConfig(
     "twilio",
-    organization
+    organization,
+    { obscureSensitiveInformation: false }
   );
   if (accountSid && authToken) {
-    return twilioLibrary.default.Twilio(accountSid, authToken); // eslint-disable-line new-cap
+    return Twilio(accountSid, authToken); // eslint-disable-line new-cap
   }
   return null;
-}
+};
 
 /**
  * Validate that the message came from Twilio before proceeding.
@@ -62,14 +63,18 @@ const headerValidator = url => {
     const organization = req.params.orgId
       ? await cacheableData.organization.load(req.params.orgId)
       : null;
-    const { authToken } = await getMessageServiceConfig("twilio", organization);
+    const { authToken } = await getMessageServiceConfig(
+      "twilio",
+      organization,
+      { obscureSensitiveInformation: false }
+    );
     const options = {
       validate: true,
       protocol: "https",
       url
     };
 
-    return twilioLibrary.webhook(authToken, options)(req, res, next);
+    return Twilio.webhook(authToken, options)(req, res, next);
   };
 };
 
@@ -117,7 +122,7 @@ export function addServerEndpoints(addPostRoute) {
       } catch (ex) {
         log.error(ex);
       }
-      const resp = new twilioLibrary.default.twiml.MessagingResponse();
+      const resp = new twiml.MessagingResponse();
       res.writeHead(200, { "Content-Type": "text/xml" });
       res.end(resp.toString());
     })
@@ -143,7 +148,7 @@ export function addServerEndpoints(addPostRoute) {
       } catch (ex) {
         log.error(ex);
       }
-      const resp = new twilioLibrary.default.twiml.MessagingResponse();
+      const resp = new twiml.MessagingResponse();
       res.writeHead(200, { "Content-Type": "text/xml" });
       res.end(resp.toString());
     })
@@ -879,7 +884,6 @@ export const getServiceConfig = async (
     messageServiceSid = serviceConfig.TWILIO_MESSAGE_SERVICE_SID;
   } else {
     // for backward compatibility
-
     const getConfigOptions = { onlyLocal: Boolean(restrictToOrgFeatures) };
 
     const hasEncryptedToken = hasConfig(
@@ -973,10 +977,7 @@ export const updateConfig = async (oldConfig, config, organization) => {
     if (twilioAuthToken && global.TEST_ENVIRONMENT !== "1") {
       // Make sure Twilio credentials work.
       // eslint-disable-next-line new-cap
-      const twilio = twilioLibrary.default.Twilio(
-        twilioAccountSid,
-        twilioAuthToken
-      );
+      const twilio = Twilio(twilioAccountSid, twilioAuthToken);
       await twilio.api.accounts.list();
     }
   } catch (err) {

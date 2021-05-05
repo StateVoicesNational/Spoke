@@ -56,11 +56,10 @@ export async function sendMessage({
   campaign,
   serviceManagerData
 }) {
-  const config = await getMessageServiceConfig(
-    "bandwidth",
-    organization,
-    serviceManagerData
-  );
+  const config = await getMessageServiceConfig("bandwidth", organization, {
+    obscureSensitiveInformation: false,
+    ...serviceManagerData
+  });
   // applicationId will probably come from config, unless serviceManager is doing something fancy
   const applicationId =
     (serviceManagerData && serviceManagerData.messageservice_sid) ||

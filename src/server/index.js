@@ -112,8 +112,8 @@ Object.keys(configuredIngestMethods).forEach(ingestMethodName => {
 });
 
 const routeAdders = {
-  get: (_app, route, handler) => _app.get(route, handler),
-  post: (_app, route, handler) => _app.post(route, handler)
+  get: (_app, route, ...handlers) => _app.get(route, ...handlers),
+  post: (_app, route, ...handlers) => _app.post(route, ...handlers)
 };
 
 messagingServicesAddServerEndpoints(app, routeAdders);
