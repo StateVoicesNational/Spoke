@@ -366,7 +366,6 @@ describe("organization", async () => {
     });
     it("calls functions and returns the result", async () => {
       const result = await runGql(gqlQuery, variables, testAdminUser);
-      console.log("result", result);
       expect(result.data.organization.serviceVendor).toEqual({
         ...fakeMetadata,
         config: fakeConfig

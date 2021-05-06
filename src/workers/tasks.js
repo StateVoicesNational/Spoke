@@ -19,18 +19,10 @@ const serviceManagerTrigger = async ({
   organizationId,
   data
 }) => {
-  console.log(
-    "serviceManagerTrigger",
-    functionName,
-    organizationId,
-    Object.keys(data)
-  );
-  let organization, campaign;
+  let organization;
   if (organizationId) {
     organization = await cacheableData.organization.load(organizationId);
-    console.log("serviceManagerTrigger org", organization.name);
   }
-
   await processServiceManagers(functionName, organization, data);
 };
 

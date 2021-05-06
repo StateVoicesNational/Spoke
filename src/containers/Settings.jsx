@@ -187,13 +187,12 @@ class Settings extends React.Component {
                     inlineStyles={inlineStyles}
                     styles={styles}
                     saveLabel={this.props.saveLabel}
-                    onSubmit={updateData => {
-                      console.log("onSubmit updateData: ", updateData);
-                      return this.props.mutations.updateServiceManager(
+                    onSubmit={updateData =>
+                      this.props.mutations.updateServiceManager(
                         serviceManagerName,
                         updateData
-                      );
-                    }}
+                      )
+                    }
                   />
                 </CardText>
               </Card>
