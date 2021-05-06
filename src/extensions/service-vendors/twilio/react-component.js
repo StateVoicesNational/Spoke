@@ -1,13 +1,22 @@
 /* eslint no-console: 0 */
 import { css } from "aphrodite";
-import { CardText } from "material-ui/Card";
-import Dialog from "material-ui/Dialog";
-import FlatButton from "material-ui/FlatButton";
-import { Table, TableBody, TableRow, TableRowColumn } from "material-ui/Table";
 import PropTypes from "prop-types";
 import React from "react";
 import Form from "react-formal";
 import * as yup from "yup";
+
+import Table from "@material-ui/core/Table";
+import TableBody from "@material-ui/core/TableBody";
+import TableCell from "@material-ui/core/TableCell";
+import TableContainer from "@material-ui/core/TableContainer";
+import TableRow from "@material-ui/core/TableRow";
+import Button from "@material-ui/core/Button";
+import CardContent from "@material-ui/core/CardContent";
+import Dialog from "@material-ui/core/Dialog";
+import DialogActions from "@material-ui/core/DialogActions";
+import DialogContent from "@material-ui/core/DialogContent";
+import DialogContentText from "@material-ui/core/DialogContentText";
+
 import DisplayLink from "../../../components/DisplayLink";
 import GSForm from "../../../components/forms/GSForm";
 import GSTextField from "../../../components/forms/GSTextField";
@@ -96,67 +105,50 @@ export class OrgConfig extends React.Component {
         .max(64)
     });
 
-    const dialogActions = [
-      <FlatButton
-        label="Cancel"
-        style={inlineStyles.dialogButton}
-        onClick={this.handleCloseTwilioDialog}
-      />,
-      <Form.Submit
-        as={GSSubmitButton}
-        label="Save"
-        style={inlineStyles.dialogButton}
-        component={GSSubmitButton}
-        onClick={this.handleSubmitTwilioAuthForm}
-      />
-    ];
-
     return (
       <div>
         {allSet && (
-          <CardText style={inlineStyles.shadeBox}>
+          <CardContent style={inlineStyles.shadeBox}>
             <DisplayLink
               url={`${baseUrl}/twilio/${organizationId}`}
               textContent="Twilio credentials are configured for this organization. You should set the inbound Request URL in your Twilio messaging service to this link."
             />
             Settings for this organization:
-            <Table selectable={false} bodyStyle={{ "background-color": "red" }}>
-              <TableBody
-                displayRowCheckbox={false}
-                style={inlineStyles.shadeBox}
-              >
-                <TableRow>
-                  <TableRowColumn>
-                    <b>Twilio Account SID</b>
-                  </TableRowColumn>
-                  <TableRowColumn>
-                    {this.props.config.accountSid}
-                  </TableRowColumn>
-                </TableRow>
-                <TableRow>
-                  <TableRowColumn>
-                    <b>Twilio Auth Token</b>
-                  </TableRowColumn>
-                  <TableRowColumn>{this.props.config.authToken}</TableRowColumn>
-                </TableRow>
-                <TableRow>
-                  <TableRowColumn>
-                    <b>Default Message Service SID</b>
-                  </TableRowColumn>
-                  <TableRowColumn>
-                    {this.props.config.messageServiceSid}
-                  </TableRowColumn>
-                </TableRow>
-              </TableBody>
-            </Table>
-          </CardText>
+            <TableContainer>
+              <Table style={{ "background-color": "red" }}>
+                <TableBody
+                  displayRowCheckbox={false}
+                  style={inlineStyles.shadeBox}
+                >
+                  <TableRow>
+                    <TableCell>
+                      <b>Twilio Account SID</b>
+                    </TableCell>
+                    <TableCell>{this.props.config.accountSid}</TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell>
+                      <b>Twilio Auth Token</b>
+                    </TableCell>
+                    <TableCell>{this.props.config.authToken}</TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell>
+                      <b>Default Message Service SID</b>
+                    </TableCell>
+                    <TableCell>{this.props.config.messageServiceSid}</TableCell>
+                  </TableRow>
+                </TableBody>
+              </Table>
+            </TableContainer>
+          </CardContent>
         )}
         {this.state.twilioError && (
-          <CardText style={inlineStyles.errorBox}>
+          <CardContent style={inlineStyles.errorBox}>
             {this.state.twilioError}
-          </CardText>
+          </CardContent>
         )}
-        <CardText>
+        <CardContent>
           <div className={css(styles.section)}>
             <span className={css(styles.sectionLabel)}>
               You can set Twilio API credentials specifically for this
@@ -193,15 +185,34 @@ export class OrgConfig extends React.Component {
               />
               <Dialog
                 actions={dialogActions}
-                modal
                 open={this.state.twilioDialogOpen}
               >
-                Changing the Account SID or Messaging Service SID will break any
-                campaigns that are currently running. Do you want to contunue?
+                <DialogContent>
+                  <DialogContentText>
+                    Changing the Account SID or Messaging Service SID will break
+                    any campaigns that are currently running. Do you want to
+                    contunue?
+                  </DialogContentText>
+                </DialogContent>
+                <DialogActions>
+                  <Button
+                    style={inlineStyles.dialogButton}
+                    onClick={this.handleCloseTwilioDialog}
+                  >
+                    Cancel
+                  </Button>
+                  <Form.Submit
+                    as={GSSubmitButton}
+                    label="Save"
+                    style={inlineStyles.dialogButton}
+                    component={GSSubmitButton}
+                    onClick={this.handleSubmitTwilioAuthForm}
+                  />
+                </DialogActions>
               </Dialog>
             </GSForm>
           </div>
-        </CardText>
+        </CardContent>
       </div>
     );
   }

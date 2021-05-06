@@ -58,7 +58,7 @@ export class PaginatedCampaignsRetriever extends Component {
     this.handlePropsReceived();
   }
 
-  componentDidUpdate(prevProps) {
+  UNSAFE_componentWillReceiveProps(prevProps) {
     this.handlePropsReceived(prevProps);
   }
 

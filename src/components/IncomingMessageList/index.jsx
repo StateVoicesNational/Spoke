@@ -1,18 +1,20 @@
 import React, { Component } from "react";
 import type from "prop-types";
-import FlatButton from "material-ui/FlatButton";
-import ActionOpenInNew from "material-ui/svg-icons/action/open-in-new";
-import loadData from "../../containers/hoc/load-data";
+import moment from "moment";
 import { Link, withRouter } from "react-router";
 import gql from "graphql-tag";
+import { StyleSheet, css } from "aphrodite";
+
+import MUIDataTable from "mui-datatables";
+import OpenInNewIcon from "@material-ui/icons/OpenInNew";
+import IconButton from "@material-ui/core/IconButton";
+
+import loadData from "../../containers/hoc/load-data";
 import { getHighestRole } from "../../lib/permissions";
 import LoadingIndicator from "../../components/LoadingIndicator";
-import DataTables from "material-ui-datatables";
 import ConversationPreviewModal from "./ConversationPreviewModal";
 import TagChip from "../TagChip";
-import moment from "moment";
 import theme from "../../styles/theme";
-import { StyleSheet, css } from "aphrodite";
 import { MESSAGE_STATUSES } from "../../components/IncomingMessageFilter";
 
 const styles = StyleSheet.create({
@@ -90,7 +92,7 @@ export class IncomingMessageList extends Component {
       this.props.campaignsFilter.campaignIds.length === 1 &&
       this.props.assignmentsFilter.texterId;
   };
-  componentDidUpdate = prevProps => {
+  UNSAFE_componentWillReceiveProps = prevProps => {
     if (
       this.props.clearSelectedMessages &&
       this.state.selectedRows.length > 0
@@ -119,135 +121,128 @@ export class IncomingMessageList extends Component {
     }
   };
 
-  prepareTableColumns = () => [
+  prepareTableColumns = tableData => [
     {
-      key: "campaignTitle",
-      label: "Campaign",
-      style: {
-        textOverflow: "ellipsis",
-        overflow: "hidden",
-        whiteSpace: "pre-line"
-      }
+      name: "campaignTitle",
+      label: "Campaign"
     },
     {
-      key: "texter",
+      name: "texter",
       label: "Texter",
-      style: {
-        textOverflow: "ellipsis",
-        overflow: "hidden",
-        whiteSpace: "pre-line"
-      },
-      render: (columnKey, row) => (
-        <span>
-          {row.texter.id !== null ? (
+      options: {
+        customBodyRender: (value, tableMeta) => {
+          return (
             <span>
-              {row.texter.displayName +
-                (getHighestRole(row.texter.roles) === "SUSPENDED"
-                  ? " (Suspended)"
-                  : "")}{" "}
-              <Link
-                target="_blank"
-                to={`/app/${this.props.organizationId}/todos/other/${row.texter.id}`}
-              >
-                <ActionOpenInNew
-                  style={{ width: 14, height: 14, color: theme.colors.green }}
-                />
-              </Link>
+              {value.id !== null ? (
+                <span>
+                  {value.displayName +
+                    (getHighestRole(value.roles) === "SUSPENDED" &&
+                      " (Suspended)")}{" "}
+                  <Link
+                    target="_blank"
+                    to={`/app/${this.props.organizationId}/todos/other/${value.id}`}
+                  >
+                    <OpenInNewIcon
+                      style={{
+                        width: 14,
+                        height: 14,
+                        color: theme.colors.green
+                      }}
+                    />
+                  </Link>
+                </span>
+              ) : (
+                "unassigned"
+              )}
             </span>
-          ) : (
-            "unassigned"
-          )}
-        </span>
-      )
-    },
-    {
-      key: "to",
-      label: "To",
-      style: {
-        textOverflow: "ellipsis",
-        overflow: "hidden",
-        whiteSpace: "pre-line"
-      }
-    },
-    {
-      key: "status",
-      label: "Conversation Status",
-      style: {
-        textOverflow: "ellipsis",
-        overflow: "hidden",
-        whiteSpace: "pre-line"
-      },
-      render: (columnKey, row) => (
-        <div>
-          {MESSAGE_STATUSES[row.status].name}
-          {row.errorCode ? (
-            <div style={{ color: theme.colors.darkRed }}>
-              error: {row.errorCode}
-            </div>
-          ) : null}
-        </div>
-      )
-    },
-    {
-      key: "latestMessage",
-      label: "Latest Message",
-      style: {
-        textOverflow: "ellipsis",
-        overflow: "hidden",
-        whiteSpace: "pre-line"
-      },
-      render: (columnKey, row) => {
-        let lastMessage = null;
-        let lastMessageEl = <p>No Messages</p>;
-        if (row.messages && row.messages.length > 0) {
-          lastMessage = row.messages[row.messages.length - 1];
-          lastMessageEl = (
-            <p
-              style={{
-                textOverflow: "ellipsis",
-                overflow: "hidden",
-                whiteSpace: "nowrap"
-              }}
-              title={lastMessage.text}
-            >
-              <span
-                style={{ color: lastMessage.isFromContact ? "blue" : "black" }}
-              >
-                <b>{lastMessage.isFromContact ? "Contact:" : "Texter:"} </b>
-              </span>
-              {lastMessage.text}
-              <br />
-              <span style={{ color: "gray", fontSize: "85%" }}>
-                {moment.utc(lastMessage.createdAt).fromNow()}
-              </span>
-            </p>
           );
         }
-        return lastMessageEl;
       }
     },
     {
-      key: "viewConversation",
+      name: "to",
+      label: "To"
+    },
+    {
+      name: "status",
+      label: "Conversation Status",
+      options: {
+        customBodyRender: (value, tableMeta) => {
+          const row = tableData[tableMeta.rowIndex];
+          return (
+            <div>
+              {MESSAGE_STATUSES[row.status].name}
+              {row.errorCode ? (
+                <div style={{ color: theme.colors.darkRed }}>
+                  error: {row.errorCode}
+                </div>
+              ) : null}
+            </div>
+          );
+        }
+      }
+    },
+    {
+      name: "latestMessage",
+      label: "Latest Message",
+      options: {
+        customBodyRender: (value, tableMeta) => {
+          const row = tableData[tableMeta.rowIndex];
+          let lastMessage = null;
+          let lastMessageEl = <p>No Messages</p>;
+          if (row.messages && row.messages.length > 0) {
+            lastMessage = row.messages[row.messages.length - 1];
+            lastMessageEl = (
+              <p
+                style={{
+                  textOverflow: "ellipsis",
+                  overflow: "hidden",
+                  whiteSpace: "nowrap"
+                }}
+                title={lastMessage.text}
+              >
+                <span
+                  style={{
+                    color: lastMessage.isFromContact ? "blue" : "black"
+                  }}
+                >
+                  <b>{lastMessage.isFromContact ? "Contact:" : "Texter:"} </b>
+                </span>
+                {lastMessage.text}
+                <br />
+                <span style={{ color: "gray", fontSize: "85%" }}>
+                  {moment.utc(lastMessage.createdAt).fromNow()}
+                </span>
+              </p>
+            );
+          }
+          return lastMessageEl;
+        }
+      }
+    },
+    {
+      name: "viewConversation",
       label: "View Conversation",
-      style: {
-        textOverflow: "ellipsis",
-        overflow: "visible",
-        whiteSpace: "pre-line"
-      },
-      render: (columnKey, row) => (
-        <div>
-          {row.messages && row.messages.length > 1 && (
-            <FlatButton
-              onClick={event => {
-                event.stopPropagation();
-                this.handleOpenConversation(row);
-              }}
-              icon={<ActionOpenInNew />}
-            />
-          )}
-          {this.renderTags(row.tags, row)}
-        </div>
-      )
+      options: {
+        customBodyRender: (value, tableMeta) => {
+          const row = tableData[tableMeta.rowIndex];
+          return (
+            <div>
+              {row.messages && row.messages.length > 1 && (
+                <IconButton
+                  onClick={event => {
+                    event.stopPropagation();
+                    this.handleOpenConversation(row);
+                  }}
+                >
+                  <OpenInNewIcon />
+                </IconButton>
+              )}
+              {this.renderTags(row.tags, row)}
+            </div>
+          );
+        }
+      }
     }
   ];
 
@@ -275,6 +270,7 @@ export class IncomingMessageList extends Component {
   };
 
   handleRowsSelected = rowsSelected => {
+    console.log("rowsSelected", rowsSelected);
     this.setState({ selectedRows: rowsSelected });
     const conversations = this.props.conversations.conversations.conversations;
     const selectedConversations = prepareSelectedRowsData(
@@ -339,6 +335,7 @@ export class IncomingMessageList extends Component {
     const { clearSelectedMessages } = this.props;
     const displayPage = Math.floor(offset / limit) + 1;
     const tableData = prepareDataTableData(conversations);
+
     let firstAssignmentid = null;
     let firstAssignmentTexter = null;
     let firstAssignmentCampaignTitle = null;
@@ -358,6 +355,48 @@ export class IncomingMessageList extends Component {
       console.log(err);
     }
 
+    const options = {
+      filterType: "checkbox",
+      selectableRows: "multiple",
+      elevation: 0,
+      download: false,
+      print: false,
+      searchable: false,
+      filter: false,
+      sort: true,
+      search: false,
+      viewColumns: false,
+      page: displayPage - 1,
+      serverSide: true,
+      count: total,
+      rowsSelected: clearSelectedMessages ? null : this.state.selectedRows,
+      customToolbarSelect: () => null,
+      onTableChange: (action, tableState) => {
+        switch (action) {
+          case "sort":
+            break;
+          case "changePage":
+            if (tableState.page > displayPage - 1) {
+              this.handleNextPageClick();
+            } else {
+              this.handlePreviousPageClick();
+            }
+            break;
+          case "changeRowsPerPage":
+            const _ = undefined;
+            this.handleRowSizeChanged(_, tableState.rowsPerPage);
+            break;
+          case "rowSelectionChange":
+            const ids = tableState.selectedRows.data.map(({ index }) => index);
+            this.handleRowsSelected(ids);
+            break;
+          default:
+            console.log(`action not handled: ${action}`);
+            break;
+        }
+      }
+    };
+
     return (
       <div>
         {this.state.showAllRepliesLink && (
@@ -369,29 +408,17 @@ export class IncomingMessageList extends Component {
             >
               Sweep {firstAssignmentTexter}'s messages in{" "}
               {firstAssignmentCampaignTitle}
-              <ActionOpenInNew
+              <OpenInNewIcon
                 style={{ width: 14, height: 14, color: theme.colors.green }}
               />
             </Link>
           </div>
         )}
-        <DataTables
+
+        <MUIDataTable
           data={tableData}
-          columns={this.prepareTableColumns()}
-          multiSelectable
-          selectable
-          enableSelectAll
-          showCheckboxes
-          page={displayPage}
-          rowSize={limit}
-          rowSizeList={rowSizeList.sort((a, b) => Number(a) - Number(b))}
-          count={total}
-          onNextPageClick={this.handleNextPageClick}
-          onPreviousPageClick={this.handlePreviousPageClick}
-          onRowSizeChange={this.handleRowSizeChanged}
-          onRowSelection={this.handleRowsSelected}
-          selectedRows={clearSelectedMessages ? null : this.state.selectedRows}
-          tableBodyStyle={{ overflowX: "auto" }}
+          columns={this.prepareTableColumns(tableData)}
+          options={options}
         />
         <ConversationPreviewModal
           organizationTags={this.state.tags}

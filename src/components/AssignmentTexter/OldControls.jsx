@@ -5,17 +5,20 @@ import OldToolbar from "./OldToolbar";
 import MessageList from "./MessageList";
 import CannedResponseMenu from "./CannedResponseMenu";
 import Survey from "./Survey";
-import RaisedButton from "material-ui/RaisedButton";
-import FlatButton from "material-ui/FlatButton";
-import NavigateHomeIcon from "material-ui/svg-icons/action/home";
-import NavigateBeforeIcon from "material-ui/svg-icons/image/navigate-before";
-import NavigateNextIcon from "material-ui/svg-icons/image/navigate-next";
-import { grey100 } from "material-ui/styles/colors";
-import IconButton from "material-ui/IconButton/IconButton";
-import { Toolbar, ToolbarGroup, ToolbarTitle } from "material-ui/Toolbar";
-import { Card, CardActions, CardTitle } from "material-ui/Card";
-import Divider from "material-ui/Divider";
-import gql from "graphql-tag";
+
+import Button from "@material-ui/core/Button";
+import Tooltip from "@material-ui/core/Tooltip";
+import Divider from "@material-ui/core/Divider";
+import HomeIcon from "@material-ui/icons/Home";
+import NavigateBeforeIcon from "@material-ui/icons/NavigateBefore";
+import NavigateNextIcon from "@material-ui/icons/NavigateNext";
+import IconButton from "@material-ui/core/IconButton";
+import CreateIcon from "@material-ui/icons/Create";
+import Card from "@material-ui/core/Card";
+import CardHeader from "@material-ui/core/CardHeader";
+import CardActions from "@material-ui/core/CardActions";
+import Toolbar from "@material-ui/core/Toolbar";
+
 import * as yup from "yup";
 import GSForm from "../forms/GSForm";
 import GSTextField from "../forms/GSTextField";
@@ -23,8 +26,6 @@ import Form from "react-formal";
 import GSSubmitButton from "../forms/GSSubmitButton";
 import SendButton from "../SendButton";
 import SendButtonArrow from "./SendButtonArrow";
-import CircularProgress from "material-ui/CircularProgress";
-import Snackbar from "material-ui/Snackbar";
 import {
   getChildren,
   getAvailableInteractionSteps,
@@ -34,7 +35,6 @@ import {
   isBetweenTextingHours
 } from "../../lib";
 import Empty from "../Empty";
-import CreateIcon from "material-ui/svg-icons/content/create";
 import { dataTest } from "../../lib/attributes";
 import { getContactTimezone } from "../../lib/timezones";
 
@@ -85,7 +85,7 @@ const styles = StyleSheet.create({
     overflow: "-moz-scrollbars-vertical"
   },
   bottomFixedSection: {
-    borderTop: `1px solid ${grey100}`,
+    borderTop: `1px solid #CCC`,
     flex: "0 0 auto",
     marginBottom: "none"
   },
@@ -321,7 +321,7 @@ export class AssignmentTexterContactControls extends React.Component {
     return messages.length === 0 ? (
       <Empty
         title={"This is your first message to " + contact.firstName}
-        icon={<CreateIcon color="rgb(83, 180, 119)" />}
+        icon={<CreateIcon />}
         hideMobile
       />
     ) : (
@@ -342,17 +342,21 @@ export class AssignmentTexterContactControls extends React.Component {
     let button = null;
     if (messageStatus === "closed") {
       button = (
-        <RaisedButton
+        <Button
+          variant="contained"
           onClick={() => this.props.onEditStatus("needsResponse")}
-          label="Reopen"
-        />
+        >
+          Reopen
+        </Button>
       );
     } else if (messageStatusFilter === "needsResponse") {
       button = (
-        <RaisedButton
+        <Button
+          variant="contained"
           onClick={() => this.props.onEditStatus("closed", true)}
-          label="Skip Reply"
-        />
+        >
+          Skip Reply
+        </Button>
       );
     }
 
@@ -375,14 +379,11 @@ export class AssignmentTexterContactControls extends React.Component {
       const { onNext, onPrevious, title } = navigationToolbarChildren;
 
       navigationToolbar = [
-        <ToolbarTitle
-          className={css(styles.navigationToolbarTitle)}
-          text={title}
-        />,
-        <IconButton onClick={onPrevious} disabled={!onPrevious}>
+        title,
+        <IconButton key="2" onClick={onPrevious} disabled={!onPrevious}>
           <NavigateBeforeIcon />
         </IconButton>,
-        <IconButton onClick={onNext} disabled={!onNext}>
+        <IconButton key="3" onClick={onNext} disabled={!onNext}>
           <NavigateNextIcon />
         </IconButton>
       ];
@@ -392,15 +393,13 @@ export class AssignmentTexterContactControls extends React.Component {
       return (
         <div>
           <Toolbar style={inlineStyles.actionToolbarFirst}>
-            <ToolbarGroup firstChild>
-              <SendButton
-                onFinalTouchTap={this.handleClickSendMessageButton}
-                disabled={this.props.disabled}
-              />
-              <div style={{ float: "right", marginLeft: 20 }}>
-                {navigationToolbar}
-              </div>
-            </ToolbarGroup>
+            <SendButton
+              onFinalTouchTap={this.handleClickSendMessageButton}
+              disabled={this.props.disabled}
+            />
+            <div style={{ float: "right", marginLeft: 20 }}>
+              {navigationToolbar}
+            </div>
           </Toolbar>
         </div>
       );
@@ -412,31 +411,26 @@ export class AssignmentTexterContactControls extends React.Component {
             className={css(styles.mobile)}
             style={inlineStyles.actionToolbar}
           >
-            <ToolbarGroup
-              style={inlineStyles.mobileToolBar}
-              className={css(styles.lgMobileToolBar)}
-              firstChild
-            >
-              <RaisedButton
+            <Tooltip title="Opt out this contact">
+              <Button
                 {...dataTest("optOut")}
-                secondary
-                label="Opt out"
+                variant="contained"
+                color="secondary"
                 onClick={this.handleOpenDialog}
-                tooltip="Opt out this contact"
-              />
-              <RaisedButton
-                style={inlineStyles.mobileCannedReplies}
-                label="Canned replies"
-                onClick={this.handleOpenPopover}
-              />
-              {this.renderNeedsResponseToggleButton(
-                contact,
-                messageStatusFilter
-              )}
-              <div style={{ float: "right", marginLeft: "-30px" }}>
-                {navigationToolbar}
-              </div>
-            </ToolbarGroup>
+              >
+                Opt out
+              </Button>
+            </Tooltip>
+            <Button
+              style={inlineStyles.mobileCannedReplies}
+              onClick={this.handleOpenPopover}
+            >
+              Canned replies
+            </Button>
+            {this.renderNeedsResponseToggleButton(contact, messageStatusFilter)}
+            <div style={{ float: "right", marginLeft: "-30px" }}>
+              {navigationToolbar}
+            </div>
           </Toolbar>
         </div>
       );
@@ -445,31 +439,26 @@ export class AssignmentTexterContactControls extends React.Component {
       return (
         <div>
           <Toolbar style={inlineStyles.actionToolbarFirst}>
-            <ToolbarGroup firstChild>
-              <SendButton
-                onFinalTouchTap={this.handleClickSendMessageButton}
-                disabled={this.props.disabled}
-              />
-              {this.renderNeedsResponseToggleButton(
-                contact,
-                messageStatusFilter
-              )}
-              <RaisedButton
-                label="Other responses"
-                onClick={this.handleOpenPopover}
-              />
-              <RaisedButton
+            <SendButton
+              onFinalTouchTap={this.handleClickSendMessageButton}
+              disabled={this.props.disabled}
+            />
+            {this.renderNeedsResponseToggleButton(contact, messageStatusFilter)}
+            <Button variant="contained" onClick={this.handleOpenPopover}>
+              Other responses
+            </Button>
+            <Tooltip title="Opt out this contact">
+              <Button
                 {...dataTest("optOut")}
-                secondary
-                label="Opt out"
+                color="secondary"
                 onClick={this.handleOpenDialog}
-                tooltip="Opt out this contact"
-                tooltipPosition="top-center"
-              />
-              <div style={{ float: "right", marginLeft: 20 }}>
-                {navigationToolbar}
-              </div>
-            </ToolbarGroup>
+              >
+                Opt out
+              </Button>
+            </Tooltip>
+            <div style={{ float: "right", marginLeft: 20 }}>
+              {navigationToolbar}
+            </div>
           </Toolbar>
         </div>
       );
@@ -484,14 +473,14 @@ export class AssignmentTexterContactControls extends React.Component {
         campaign={this.props.campaign}
         campaignContact={contact}
         rightToolbarIcon={
-          <IconButton
-            onClick={this.props.onExitTexter}
-            style={inlineStyles.exitTexterIconButton}
-            tooltip="Return Home"
-            tooltipPosition="bottom-center"
-          >
-            <NavigateHomeIcon />
-          </IconButton>
+          <Tooltip title="Return Home">
+            <IconButton
+              onClick={this.props.onExitTexter}
+              style={inlineStyles.exitTexterIconButton}
+            >
+              <HomeIcon />
+            </IconButton>
+          </Tooltip>
         }
       />
     );
@@ -521,7 +510,7 @@ export class AssignmentTexterContactControls extends React.Component {
     }
     return (
       <Card>
-        <CardTitle className={css(styles.optOutCard)} title="Opt out user" />
+        <CardHeader className={css(styles.optOutCard)} title="Opt out user" />
         <Divider />
         <CardActions className={css(styles.optOutCard)}>
           <GSForm
@@ -540,22 +529,18 @@ export class AssignmentTexterContactControls extends React.Component {
               autoFocus
               multiLine
             />
-            <div className={css(styles.dialogActions)}>
-              <FlatButton
-                style={inlineStyles.dialogButton}
-                label="Cancel"
-                onClick={this.handleCloseDialog}
-              />
-              <Form.Submit
-                as={GSSubmitButton}
-                style={inlineStyles.dialogButton}
-                label={
-                  this.state.optOutMessageText.length
-                    ? "Send"
-                    : "Opt Out without Text"
-                }
-              />
-            </div>
+            <Button variant="outlined" onClick={this.handleCloseDialog}>
+              Cancel
+            </Button>
+            <Form.Submit
+              as={GSSubmitButton}
+              style={inlineStyles.dialogButton}
+              label={
+                this.state.optOutMessageText.length
+                  ? "Send"
+                  : "Opt Out without Text"
+              }
+            />
           </GSForm>
         </CardActions>
       </Card>
@@ -572,7 +557,7 @@ export class AssignmentTexterContactControls extends React.Component {
     ) {
       return (
         <SendButtonArrow
-          onFinalTouchTap={this.handleClickSendMessageButton}
+          onClick={this.handleClickSendMessageButton}
           disabled={this.props.disabled}
         />
       );

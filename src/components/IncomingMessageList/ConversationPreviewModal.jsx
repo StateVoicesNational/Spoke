@@ -2,14 +2,17 @@ import React, { Component } from "react";
 import PropTypes from "prop-types";
 import gql from "graphql-tag";
 import { StyleSheet, css } from "aphrodite";
-import Dialog from "material-ui/Dialog";
-import FlatButton from "material-ui/FlatButton";
-import FlagIcon from "material-ui/svg-icons/content/flag";
-import Avatar from "material-ui/Avatar";
-import CopyIcon from "material-ui/svg-icons/content/content-copy";
-import CheckIcon from "material-ui/svg-icons/navigation/check";
-import IconButton from "material-ui/IconButton/IconButton";
-import TextField from "material-ui/TextField";
+
+import Button from "@material-ui/core/Button";
+import Dialog from "@material-ui/core/Dialog";
+import DialogTitle from "@material-ui/core/DialogTitle";
+import DialogActions from "@material-ui/core/DialogActions";
+import IconButton from "@material-ui/core/IconButton";
+import Tooltip from "@material-ui/core/Tooltip";
+import Avatar from "@material-ui/core/Avatar";
+import FlagIcon from "@material-ui/icons/Flag";
+import FileCopyIcon from "@material-ui/icons/FileCopy";
+import CheckIcon from "@material-ui/icons/Check";
 
 import theme from "../../styles/theme";
 
@@ -46,8 +49,8 @@ const TagList = props => (
 
       return (
         <p key={index} className={css(styles.conversationRow)} style={tagStyle}>
-          <Avatar backgroundColor={theme.colors.red}>
-            <FlagIcon color="white" />
+          <Avatar style={{ backgroundColor: theme.colors.red }}>
+            <FlagIcon color="default" />
           </Avatar>
           <p style={textStyle}>{props.organizationTags[tag.id]}</p>
         </p>
@@ -69,7 +72,7 @@ class MessageList extends Component {
     this.refs.messageWindow.scrollTo(0, this.refs.messageWindow.scrollHeight);
   }
 
-  componentDidUpdate() {
+  UNSAFE_componentWillReceiveProps() {
     if (typeof this.refs.messageWindow.scrollTo !== "function") {
       return;
     }
@@ -203,54 +206,65 @@ export class InnerConversationPreviewModal extends Component {
     const url = `${protocol}//${host}/app/${organizationId}/todos/review/${campaignContactId}`;
 
     const primaryActions = [
-      <span>
-        <IconButton
-          style={{ padding: 0, height: "20px", width: "35px" }}
-          iconStyle={{ height: "20px", width: "25px" }}
-          onClick={this.handleCopyToClipboard}
-          tooltip={
+      <span key="1">
+        <Tooltip
+          title={
             this.state.justCopied
               ? "Copied!"
               : "Copy conversation link to clipboard"
           }
-          tooltipPosition="top-right"
+          placement="left"
         >
-          {this.state.justCopied ? (
-            <CheckIcon color={theme.colors.green} />
-          ) : (
-            <CopyIcon />
-          )}
-        </IconButton>
-        <TextField
+          <IconButton
+            onClick={this.handleCopyToClipboard}
+            tooltip={
+              this.state.justCopied
+                ? "Copied!"
+                : "Copy conversation link to clipboard"
+            }
+            tooltipPosition="left"
+          >
+            {this.state.justCopied ? (
+              <CheckIcon style={{ color: theme.colors.green }} />
+            ) : (
+              <FileCopyIcon />
+            )}
+          </IconButton>
+        </Tooltip>
+        <input
+          type="text"
           ref="convoLink"
           value={url}
-          underlineShow={false}
-          inputStyle={{ visibility: "visible", height: "1px", width: "1px" }}
-          style={{ width: "1px", height: "1px" }}
           onFocus={event => event.target.select()}
+          style={{ width: "1px", height: "1px", border: 0, padding: 0 }}
         />
         <a href={url} target="_blank">
           GO TO CONVERSATION
         </a>
       </span>,
-      <FlatButton
+      <Button
+        key="2"
         {...dataTest("conversationPreviewModalOptOutButton")}
         label="Opt-Out"
-        secondary
+        color="secondary"
         onClick={this.handleClickOptOut}
-      />,
-      <FlatButton label="Close" primary onClick={this.props.onRequestClose} />
+      >
+        Opt-Out
+      </Button>,
+      <Button key="3" color="primary" onClick={this.props.onRequestClose}>
+        Close
+      </Button>
     ];
 
     return (
       <Dialog
-        title="Messages"
+        fullWidth={true}
+        maxWidth="md"
         open={isOpen}
-        actions={primaryActions}
-        modal={false}
-        onRequestClose={this.props.onRequestClose}
+        onClose={this.props.onRequestClose}
       >
-        <div>
+        <DialogTitle>Messages</DialogTitle>
+        <div style={{ padding: 10 }}>
           {isOpen && <ConversationPreviewBody {...this.props} />}
           <Dialog
             title="Error Opting Out"
@@ -260,6 +274,7 @@ export class InnerConversationPreviewModal extends Component {
             <p>{this.state.optOutError}</p>
           </Dialog>
         </div>
+        <DialogActions>{primaryActions}</DialogActions>
       </Dialog>
     );
   }

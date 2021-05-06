@@ -2,10 +2,13 @@ import type from "prop-types";
 import React from "react";
 import { Link } from "react-router";
 import * as yup from "yup";
-import Toggle from "material-ui/Toggle";
-import CopyIcon from "material-ui/svg-icons/content/content-copy";
-import IconButton from "material-ui/IconButton/IconButton";
-import TextField from "material-ui/TextField";
+
+import FormControlLabel from "@material-ui/core/FormControlLabel";
+import Switch from "@material-ui/core/Switch";
+import FileCopyIcon from "@material-ui/icons/FileCopy";
+import IconButton from "@material-ui/core/IconButton";
+import Tooltip from "@material-ui/core/Tooltip";
+import TextField from "@material-ui/core/TextField";
 
 export const displayName = () => "Contact Conversation URL";
 
@@ -44,15 +47,15 @@ export class TexterSidebox extends React.Component {
     const url = `${protocol}//${host}/app/${campaign.organization.id}/todos/review/${this.props.contact.id}`;
 
     const textContent = [
-      <IconButton
-        onClick={this.copyToClipboard}
-        tooltip="Copy conversation link to clipboard"
-        tooltipPosition="bottom-right"
-        style={{ padding: 0, height: 20, width: 20, paddingRight: 6 }}
-        iconStyle={{ height: 14, width: 14 }}
-      >
-        <CopyIcon />
-      </IconButton>,
+      <Tooltip title="Copy conversation link to clipboard">
+        <IconButton
+          onClick={this.copyToClipboard}
+          style={{ padding: 0, height: 20, width: 20, paddingRight: 6 }}
+          iconStyle={{ height: 14, width: 14 }}
+        >
+          <FileCopyIcon />
+        </IconButton>
+      </Tooltip>,
       <span onClick={this.copyToClipboard}>Get</span>,
       " a ",
       settingsData.contactReferenceClickable ? (
@@ -71,7 +74,6 @@ export class TexterSidebox extends React.Component {
           ref="displayLink"
           name={url}
           value={url}
-          onFocus={event => event.target.select()}
           fullWidth
           inputStyle={{ fontSize: "12px" }}
         />
@@ -100,11 +102,19 @@ export const adminSchema = () => ({
 export class AdminConfig extends React.Component {
   render() {
     return (
-      <Toggle
+      <FormControlLabel
         label="Clickable reference link (vs. just copyable)"
-        toggled={this.props.settingsData.contactReferenceClickable}
-        onToggle={(toggler, val) =>
-          this.props.onToggle("contactReferenceClickable", val)
+        labelPlacement="end"
+        control={
+          <Switch
+            checked={this.props.settingsData.contactReferenceClickable}
+            onChange={event =>
+              this.props.onToggle(
+                "contactReferenceClickable",
+                event.target.checked
+              )
+            }
+          />
         }
       />
     );

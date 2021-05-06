@@ -1,30 +1,34 @@
 import PropTypes from "prop-types";
 import React from "react";
 import gql from "graphql-tag";
-
-import ContentAdd from "material-ui/svg-icons/content/add";
-import DeleteIcon from "material-ui/svg-icons/action/delete-forever";
-import DataTables from "material-ui-datatables";
-import Dialog from "material-ui/Dialog";
-import Paper from "material-ui/Paper";
-import DropDownMenu from "material-ui/DropDownMenu";
-import { MenuItem } from "material-ui/Menu";
-import FloatingActionButton from "material-ui/FloatingActionButton";
 import * as yup from "yup";
+import Form from "react-formal";
+
+import MUIDataTable from "mui-datatables";
+import CircularProgress from "@material-ui/core/CircularProgress";
+import AddIcon from "@material-ui/icons/Add";
+import DeleteIcon from "@material-ui/icons/Delete";
+import Fab from "@material-ui/core/Fab";
+import Button from "@material-ui/core/Button";
+import IconButton from "@material-ui/core/IconButton";
+import Dialog from "@material-ui/core/Dialog";
+import DialogTitle from "@material-ui/core/DialogTitle";
+import DialogActions from "@material-ui/core/DialogActions";
+import DialogContent from "@material-ui/core/DialogContent";
+import Paper from "@material-ui/core/Paper";
+import FormControlLabel from "@material-ui/core/FormControlLabel";
+import Switch from "@material-ui/core/Switch";
+import MenuItem from "@material-ui/core/MenuItem";
+import Select from "@material-ui/core/Select";
+import FormControl from "@material-ui/core/FormControl";
+import InputLabel from "@material-ui/core/InputLabel";
+
 import GSForm from "../components/forms/GSForm";
 import GSSubmitButton from "../components/forms/GSSubmitButton";
 import GSTextField from "../components/forms/GSTextField";
-import Form from "react-formal";
-
 import theme from "../styles/theme";
 import { dataTest } from "../lib/attributes";
 import loadData from "./hoc/load-data";
-import {
-  CircularProgress,
-  FlatButton,
-  RaisedButton,
-  Toggle
-} from "material-ui";
 
 const inlineStyles = {
   column: {
@@ -85,9 +89,9 @@ class AdminPhoneNumberInventory extends React.Component {
     });
   }
 
-  handleStateFilterChange = (e, i, state) => {
+  handleStateFilterChange = e => {
     this.setState(({ filters }) => ({
-      filters: { ...filters, state }
+      filters: { ...filters, state: e.target.value }
     }));
   };
 
@@ -164,56 +168,50 @@ class AdminPhoneNumberInventory extends React.Component {
     const { pendingPhoneNumberJobs } = this.props.data.organization;
     return [
       {
-        key: "areaCode",
-        label: "Area Code",
-        style: inlineStyles.column,
-        sortable: true
+        name: "areaCode",
+        label: "Area Code"
       },
       {
-        key: "state",
-        label: "State",
-        style: inlineStyles.column,
-        sortable: true
+        name: "state",
+        label: "State"
       },
       {
-        key: "allocatedCount",
+        name: "allocatedCount",
         label: "Allocated",
-        style: {
-          ...inlineStyles.column,
-          fontSize: 16,
-          textAlign: "center"
+        options: {
+          sort: false
         }
       },
       {
-        key: "availableCount",
+        name: "availableCount",
         label: "Available",
-        style: {
-          ...inlineStyles.column,
-          fontSize: 16,
-          textAlign: "center"
+        options: {
+          sort: false
         }
       },
       {
-        key: "deleteButton",
-        label: "",
-        style: inlineStyles.column,
-        render: (columnKey, row) =>
-          this.props.params.ownerPerms ? (
-            <FlatButton
-              icon={<DeleteIcon />}
-              onClick={() => this.handleDeleteNumbersOpen(row)}
-            />
-          ) : null
+        name: "deleteButton",
+        label: " ",
+        options: {
+          sort: false,
+          customBodyRender: (value, tableMeta) =>
+            this.props.params.ownerPerms && (
+              <IconButton onClick={() => this.handleDeleteNumbersOpen(row)}>
+                <DeleteIcon />
+              </IconButton>
+            )
+        }
       },
       // TODO: display additional information here about pending and past jobs
       {
-        key: "pendingJobs",
-        label: "",
-        style: inlineStyles.column,
-        render: (columnKey, row) => {
-          if (pendingPhoneNumberJobs.some(j => j.areaCode === row.areaCode)) {
-            return <CircularProgress size={25} />;
-          }
+        name: "pendingJobs",
+        label: " ",
+        options: {
+          sort: false,
+          customBodyRender: (value, tableMeta) =>
+            pendingPhoneNumberJobs.some(
+              j => j.areaCode === tableMeta.rowData[0]
+            ) && <CircularProgress size={25} />
         }
       }
     ];
@@ -232,7 +230,6 @@ class AdminPhoneNumberInventory extends React.Component {
 
   renderFilters() {
     const { phoneNumberCounts } = this.props.data.organization;
-
     const { filters } = this.state;
 
     const states = phoneNumberCounts
@@ -251,23 +248,23 @@ class AdminPhoneNumberInventory extends React.Component {
           padding: "10px 20px 30px",
           width: "100%"
         }}
-        zDepth={3}
+        elevation={3}
       >
-        <DropDownMenu
-          value={filters.state}
-          onChange={this.handleStateFilterChange}
-          style={{ width: 300 }}
-        >
-          {!filters.state ? (
-            <MenuItem value={filters.state} primaryText="Filter by state" />
-          ) : (
-            <MenuItem value={null} primaryText="None" />
-          )}
-          {states.map(state => (
-            <MenuItem value={state} primaryText={state} />
-          ))}
-          {}
-        </DropDownMenu>
+        <FormControl>
+          <InputLabel>Filter by state</InputLabel>
+          <Select
+            value={filters.state || ""}
+            onChange={this.handleStateFilterChange}
+            style={{ width: 300 }}
+          >
+            <MenuItem value="">None</MenuItem>
+            {states.map(state => (
+              <MenuItem key={state} value={state}>
+                {state}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
       </Paper>
     );
   }
@@ -298,31 +295,39 @@ class AdminPhoneNumberInventory extends React.Component {
             {...dataTest("limit")}
           />
           {messageServiceName === "twilio" &&
-          messageServiceConfig.TWILIO_MESSAGE_SERVICE_SID &&
-          messageServiceConfig.TWILIO_MESSAGE_SERVICE_SID.length > 0 &&
-          !this.props.data.organization.campaignPhoneNumbersEnabled ? (
-            <Form.Field
-              label="Add to this organization's Messaging Service"
-              name="addToOrganizationMessagingService"
-              as={Toggle}
-              style={{
-                marginTop: 30
-              }}
-              onToggle={(_, toggled) => {
-                this.handleFormChange({
-                  addToOrganizationMessagingService: toggled
-                });
-              }}
-            />
-          ) : null}
+            messageServiceConfig.TWILIO_MESSAGE_SERVICE_SID &&
+            messageServiceConfig.TWILIO_MESSAGE_SERVICE_SID.length > 0 &&
+            !this.props.data.organization.campaignPhoneNumbersEnabled && (
+              <Form.Field
+                name="addToOrganizationMessagingService"
+                as={props => (
+                  <FormControlLabel
+                    {...props}
+                    checked={props.value}
+                    label="Add to this organization's Messaging Service"
+                    control={<Switch color="primary" />}
+                  />
+                )}
+                style={{
+                  marginTop: 30
+                }}
+                onToggle={(_, toggled) => {
+                  this.handleFormChange({
+                    addToOrganizationMessagingService: toggled
+                  });
+                }}
+              />
+            )}
         </div>
         <div style={inlineStyles.dialogActions}>
-          <FlatButton
+          <Button
+            variant="outlined"
             type="button"
             onClick={this.handleBuyNumbersCancel}
             style={inlineStyles.cancelButton}
-            label="Cancel"
-          />
+          >
+            Cancel
+          </Button>
           <Form.Submit as={GSSubmitButton} label="Submit" />
         </div>
       </GSForm>
@@ -365,60 +370,93 @@ class AdminPhoneNumberInventory extends React.Component {
       });
       this.sortTable(tableData, key, order);
     };
+
+    const options = {
+      filterType: "checkbox",
+      selectableRows: this.props.selectMultiple ? "multiple" : "none",
+      elevation: 0,
+      download: false,
+      print: false,
+      searchable: false,
+      filter: false,
+      sort: true,
+      search: false,
+      viewColumns: false,
+      page: 1,
+      serverSide: true,
+      onTableChange: (action, tableState) => {
+        switch (action) {
+          case "sort":
+            handleSortOrderChange(
+              tableState.sortOrder.name,
+              tableState.sortOrder.direction
+            );
+            break;
+          default:
+            break;
+        }
+      }
+    };
+
     return (
       <div>
         {this.renderFilters()}
 
-        <DataTables
+        <MUIDataTable
           data={tableData}
           columns={this.tableColumns()}
-          selectable={false}
-          count={tableData.length}
-          showFooterToolbar={false}
-          showRowHover
-          initialSort={{ column: "state", order: "asc" }}
-          onSortOrderChange={handleSortOrderChange}
+          options={options}
         />
+
         {this.props.params.ownerPerms ? (
-          <FloatingActionButton
+          <Fab
             {...dataTest("buyPhoneNumbers")}
+            color="primary"
             style={theme.components.floatingButton}
             onClick={this.handleBuyNumbersOpen}
           >
-            <ContentAdd />
-          </FloatingActionButton>
+            <AddIcon />
+          </Fab>
         ) : null}
 
         <Dialog
-          title="Buy Numbers"
-          modal={false}
           open={this.state.buyNumbersDialogOpen}
-          onRequestClose={this.handleBuyNumbersCancel}
+          onClose={this.handleBuyNumbersCancel}
+          fullWidth
+          maxWidth="sm"
         >
-          {this.renderBuyNumbersForm()}
+          <DialogTitle>Buy Numbers</DialogTitle>
+          <DialogContent>{this.renderBuyNumbersForm()}</DialogContent>
         </Dialog>
         <Dialog
-          title="Delete Numbers"
-          modal={false}
+          fullWidth
+          maxWidth="sm"
           open={this.state.deleteNumbersDialogOpen}
-          onRequestClose={this.handleDeleteNumbersCancel}
-          actions={[
-            <FlatButton
-              label="Cancel"
+          onClose={this.handleDeleteNumbersCancel}
+        >
+          <DialogTitle>Delete Numbers</DialogTitle>
+          <DialogContent>
+            Do you want to delete availale numbers for the&nbsp;
+            <b>{this.state.deleteNumbersAreaCode}</b> area code? This will
+            permanently remove numbers not allocated to a campaign/messaging
+            service from both Spoke and your Twilio account.
+          </DialogContent>
+          <DialogActions>
+            <Button
+              variant="outlined"
               style={inlineStyles.cancelButton}
               onClick={this.handleDeleteNumbersCancel}
-            />,
-            <RaisedButton
-              label={`Delete ${this.state.deleteNumbersCount} Numbers`}
-              secondary
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="contained"
+              color="secondary"
               onClick={this.handleDeletePhoneNumbersSubmit}
-            />
-          ]}
-        >
-          Do you want to delete availale numbers for the&nbsp;
-          <b>{this.state.deleteNumbersAreaCode}</b> area code? This will
-          permanently remove numbers not allocated to a campaign/messaging
-          service from both Spoke and your Twilio account.
+            >
+              Delete {this.state.deleteNumbersCount} Numbers
+            </Button>
+          </DialogActions>
         </Dialog>
       </div>
     );

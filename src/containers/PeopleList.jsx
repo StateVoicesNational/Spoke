@@ -1,19 +1,36 @@
 import React, { Component } from "react";
 import { Link } from "react-router";
 import type from "prop-types";
-import FlatButton from "material-ui/FlatButton";
 import loadData from "./hoc/load-data";
 import gql from "graphql-tag";
 import LoadingIndicator from "../components/LoadingIndicator";
-import ActionOpenInNew from "material-ui/svg-icons/action/open-in-new";
-import DataTables from "material-ui-datatables";
+
+import { createMuiTheme, MuiThemeProvider } from "@material-ui/core/styles";
+import OpenInNewIcon from "@material-ui/icons/OpenInNew";
+import PeopleIcon from "@material-ui/icons/People";
+import Button from "@material-ui/core/Button";
+
+import MUIDataTable from "mui-datatables";
+
 import UserEditDialog from "../components/PeopleList/UserEditDialog";
 import ResetPasswordDialog from "../components/PeopleList/ResetPasswordDialog";
 import RolesDropdown from "../components/PeopleList/RolesDropdown";
 import { dataTest } from "../lib/attributes";
 import theme from "../styles/theme";
-import PeopleIcon from "material-ui/svg-icons/social/people";
 import Empty from "../components/Empty";
+
+const getMuiTheme = () =>
+  createMuiTheme({
+    overrides: {
+      MUIDataTableBodyCell: {
+        root: {
+          textOverflow: "ellipsis",
+          overflow: "hidden",
+          whiteSpace: "pre-line"
+        }
+      }
+    }
+  });
 
 const prepareDataTableData = users =>
   users.map(user => ({
@@ -47,31 +64,52 @@ export class PeopleList extends Component {
   prepareTableColumns = () => {
     const { organizationId } = this.props;
     const columns = [
+      /**
+       * we don't show ID but need it here for the data tabel
+       * to provide the ID to the row data object. Index matters
+       * so this column must be first.
+       */
+      {
+        key: "texterId",
+        name: "texterId",
+        label: "ID",
+        options: {
+          display: false
+        }
+      },
       {
         key: "texter",
+        name: "texter",
         label: "Texter",
+        options: {
+          customBodyRender: (value, tableMeta, updateValue) => {
+            const texterId = tableMeta.rowData[0];
+            return (
+              <React.Fragment>
+                {value}{" "}
+                <Link
+                  target="_blank"
+                  to={`/app/${organizationId}/todos/other/${texterId}`}
+                >
+                  <OpenInNewIcon
+                    style={{ width: 14, height: 14, color: theme.colors.green }}
+                  />
+                </Link>
+              </React.Fragment>
+            );
+          }
+        },
         style: {
           textOverflow: "ellipsis",
           overflow: "hidden",
           whiteSpace: "pre-line"
-        },
-        render: (columnKey, row) => (
-          <h3>
-            {row.texter}{" "}
-            <Link
-              target="_blank"
-              to={`/app/${organizationId}/todos/other/${row.texterId}`}
-            >
-              <ActionOpenInNew
-                style={{ width: 14, height: 14, color: theme.colors.green }}
-              />
-            </Link>
-          </h3>
-        )
+        }
       },
       {
         key: "email",
+        name: "email",
         label: "Email",
+        options: {},
         style: {
           textOverflow: "ellipsis",
           overflow: "hidden",
@@ -80,35 +118,44 @@ export class PeopleList extends Component {
       },
       {
         key: "roles",
+        name: "roles",
         label: "Role",
+        options: {
+          customBodyRender: this.renderRolesDropdown
+        },
         style: {
           textOverflow: "ellipsis",
           overflow: "hidden",
           whiteSpace: "pre-line"
-        },
-        render: this.renderRolesDropdown
+        }
       },
       {
         key: "edit",
+        name: "",
         label: "",
+        options: {
+          customBodyRender: this.renderEditButton
+        },
         style: {
           textOverflow: "ellipsis",
           overflow: "hidden",
           whiteSpace: "pre-line"
-        },
-        render: this.renderEditButton
+        }
       }
     ];
     if (window.PASSPORT_STRATEGY !== "slack") {
       columns.push({
         key: "password",
+        name: "",
+        options: {
+          customBodyRender: this.renderChangePasswordButton
+        },
         label: "",
         style: {
           textOverflow: "ellipsis",
           overflow: "hidden",
           whiteSpace: "pre-line"
-        },
-        render: this.renderChangePasswordButton
+        }
       });
     }
     return columns;
@@ -178,7 +225,7 @@ export class PeopleList extends Component {
     this.changePage(-1, this.state.pageSize);
   };
 
-  handleRowSizeChanged = (index, value) => {
+  handleRowSizeChanged = value => {
     this.changePage(0, value);
     this.setState({ pageSize: value });
   };
@@ -202,12 +249,12 @@ export class PeopleList extends Component {
     this.setState({ passwordResetHash: "" });
   };
 
-  renderRolesDropdown = (columnKey, row) => {
-    const { roles, texterId } = row;
+  renderRolesDropdown = (value, tableMeta, updateValue) => {
+    const texterId = tableMeta.rowData[0];
     const { currentUser } = this.props;
     return (
       <RolesDropdown
-        roles={roles}
+        roles={value}
         texterId={texterId}
         currentUser={currentUser}
         onChange={this.handleChange}
@@ -215,30 +262,32 @@ export class PeopleList extends Component {
     );
   };
 
-  renderEditButton = (columnKey, row) => {
-    const { texterId } = row;
+  renderEditButton = (value, tableMeta) => {
+    const texterId = tableMeta.rowData[0];
     return (
-      <FlatButton
+      <Button
         {...dataTest("editPerson")}
-        label="Edit"
         onClick={() => {
           this.editUser(texterId);
         }}
-      />
+      >
+        Edit
+      </Button>
     );
   };
 
-  renderChangePasswordButton = (columnKey, row) => {
-    const { texterId } = row;
+  renderChangePasswordButton = (value, tableMeta) => {
+    const texterId = tableMeta.rowData[0];
     const { currentUser } = this.props;
     return (
-      <FlatButton
-        label="Reset Password"
+      <Button
         disabled={currentUser.id === texterId}
         onClick={() => {
           this.resetPassword(texterId);
         }}
-      />
+      >
+        Reset Password
+      </Button>
     );
   };
 
@@ -256,21 +305,47 @@ export class PeopleList extends Component {
     const { limit, offset, total } = pageInfo;
     const displayPage = Math.floor(offset / limit) + 1;
     const tableData = prepareDataTableData(users);
+    const columns = this.prepareTableColumns();
+
+    const options = {
+      filterType: "checkbox",
+      selectableRows: "none",
+      elevation: 0,
+      download: false,
+      print: false,
+      searchable: false,
+      filter: false,
+      sort: false,
+      search: false,
+      viewColumns: false,
+      page: displayPage - 1,
+      rowsPerPage: this.state.pageSize,
+      count: total,
+      rowsPerPageOptions: PEOPLE_PAGE_ROW_SIZES.sort((a, b) => a - b),
+      serverSide: true,
+      onTableChange: (action, tableState) => {
+        switch (action) {
+          case "changePage":
+            if (tableState.page > displayPage - 1) {
+              this.handleNextPageClick();
+            } else {
+              this.handlePreviousPageClick();
+            }
+            break;
+          case "changeRowsPerPage":
+            this.handleRowSizeChanged(tableState.rowsPerPage);
+            break;
+          case "propsUpdate":
+            break;
+          default:
+            console.log(`action not handled: ${action}`);
+        }
+      }
+    };
+
     return (
-      <div>
-        <DataTables
-          data={tableData}
-          columns={this.prepareTableColumns()}
-          page={displayPage}
-          rowSize={this.state.pageSize}
-          count={total}
-          onNextPageClick={this.handleNextPageClick}
-          onPreviousPageClick={this.handlePreviousPageClick}
-          onRowSizeChange={this.handleRowSizeChanged}
-          rowSizeList={PEOPLE_PAGE_ROW_SIZES.sort((a, b) => a - b)}
-          footerToolbarStyle={{ paddingRight: "100px" }}
-          tableWrapperStyle={{ marginTop: "20px" }}
-        />
+      <MuiThemeProvider theme={getMuiTheme()}>
+        <MUIDataTable data={tableData} columns={columns} options={options} />
         {this.props.organizationId && (
           <div>
             <UserEditDialog
@@ -288,7 +363,7 @@ export class PeopleList extends Component {
             />
           </div>
         )}
-      </div>
+      </MuiThemeProvider>
     );
   }
 }

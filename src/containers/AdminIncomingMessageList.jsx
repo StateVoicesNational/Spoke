@@ -44,7 +44,6 @@ export class AdminIncomingMessageList extends Component {
   }
 
   shouldComponentUpdate = (dummy, nextState) => {
-    console.log("shouldComponentUpdate", nextState.needsRender);
     if (
       !nextState.needsRender &&
       _.isEqual(this.state.contactsFilter, nextState.contactsFilter) &&
@@ -53,11 +52,10 @@ export class AdminIncomingMessageList extends Component {
     ) {
       return false;
     }
-    console.log("shouldComponentUpdate updating");
     return true;
   };
 
-  componentDidUpdate = () => {
+  UNSAFE_componentWillReceiveProps = () => {
     if (this.state.clearSelectedMessages) {
       this.setState({
         clearSelectedMessages: false,
@@ -248,7 +246,6 @@ export class AdminIncomingMessageList extends Component {
   };
 
   handleCampaignsReceived = async campaigns => {
-    console.log("campaigns:", campaigns);
     let selectedCampaigns = [];
     if (this.state.campaignsFilter.campaignIds) {
       this.state.campaignsFilter.campaignIds.forEach(campaignId => {
@@ -261,7 +258,6 @@ export class AdminIncomingMessageList extends Component {
   };
 
   handleCampaignTextersReceived = async campaignTexters => {
-    console.log("handleCampaignTextersReceived", campaignTexters.length);
     let texterDisplayName = "";
     if (this.state.assignmentsFilter.texterId) {
       const texter = campaignTexters.find(texter => {

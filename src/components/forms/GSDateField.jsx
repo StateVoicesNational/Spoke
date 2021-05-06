@@ -1,8 +1,14 @@
+import "date-fns";
 import React from "react";
-import DatePicker from "material-ui/DatePicker";
 import moment from "moment";
 import GSFormField from "./GSFormField";
 import { dataTest } from "../../lib/attributes";
+import DateFnsUtils from "@date-io/date-fns";
+import {
+  MuiPickersUtilsProvider,
+  KeyboardDatePicker,
+  DatePicker
+} from "@material-ui/pickers";
 
 export default class GCDateField extends GSFormField {
   render() {
@@ -23,32 +29,36 @@ export default class GCDateField extends GSFormField {
     delete propCopy.utcOffset;
     delete propCopy.value;
     delete propCopy.type;
+    const dataTest = { "data-test": this.props["data-test"] };
 
     return (
-      <DatePicker
-        {...propCopy}
-        floatingLabelText={this.floatingLabelText()}
-        onChange={(_, date) => {
-          let newDate = moment(date);
-          if (!newDate.isValid()) {
-            this.props.onChange(null);
-          } else {
-            newDate = newDate.toObject();
-            if (oldDate) {
-              newDate.hours = oldDate.hours;
-              newDate.minutes = oldDate.minutes;
-              newDate.seconds = oldDate.seconds;
+      <MuiPickersUtilsProvider utils={DateFnsUtils}>
+        <DatePicker
+          {...dataTest}
+          fullWidth
+          format="MM/dd/yyyy"
+          label={this.floatingLabelText()}
+          value={value.value}
+          onChange={date => {
+            let newDate = moment(date);
+            if (!newDate.isValid()) {
+              this.props.onChange(null);
+            } else {
+              newDate = newDate.toObject();
+              if (oldDate) {
+                newDate.hours = oldDate.hours;
+                newDate.minutes = oldDate.minutes;
+                newDate.seconds = oldDate.seconds;
+              }
+              newDate = moment(newDate).add(
+                moment().utcOffset() - utcOffset,
+                "minutes"
+              );
+              this.props.onChange(newDate.toDate());
             }
-            newDate = moment(newDate).add(
-              moment().utcOffset() - utcOffset,
-              "minutes"
-            );
-            this.props.onChange(newDate.toDate());
-          }
-        }}
-        {...value}
-        errorText={this.props.errorText}
-      />
+          }}
+        />
+      </MuiPickersUtilsProvider>
     );
   }
 }
