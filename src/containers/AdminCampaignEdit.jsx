@@ -47,8 +47,6 @@ const campaignInfoFragment = `
   logoImageUrl
   introHtml
   primaryColor
-  useOwnMessagingService
-  messageserviceSid
   overrideOrganizationTextingHours
   textingHoursEnforced
   textingHoursStart
@@ -107,6 +105,14 @@ const campaignInfoFragment = `
     status
     resultMessage
   }
+  serviceManagers {
+    id
+    name
+    supportsOrgConfig
+    data
+  }
+  useOwnMessagingService
+  messageserviceSid
   inventoryPhoneNumberCounts {
     areaCode
     count

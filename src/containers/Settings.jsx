@@ -18,6 +18,7 @@ import moment from "moment";
 import CampaignTexterUIForm from "../components/CampaignTexterUIForm";
 import OrganizationFeatureSettings from "../components/OrganizationFeatureSettings";
 import { getServiceVendorComponent } from "../extensions/service-vendors/components";
+import { getServiceManagerComponent } from "../extensions/service-managers/components";
 import GSTextField from "../components/forms/GSTextField";
 
 const styles = StyleSheet.create({
@@ -137,13 +138,79 @@ class Settings extends React.Component {
     );
   }
 
+  renderServiceManagers() {
+    const {
+      id: organizationId,
+      serviceManagers
+    } = this.props.data.organization;
+    if (!serviceManagers.length) {
+      return null;
+    }
+    const allFullyConfigured = serviceManagers
+      .map(sm => sm.fullyConfigured !== false)
+      .reduce((a, b) => a && b, true);
+    return (
+      <Card>
+        <CardHeader
+          title={"Service Management"}
+          style={{
+            backgroundColor: allFullyConfigured
+              ? theme.colors.green
+              : theme.colors.yellow
+          }}
+        />
+        <CardText>
+          {serviceManagers.map(sm => {
+            const ServiceManagerComp = getServiceManagerComponent(
+              sm.name,
+              "OrgConfig"
+            );
+            const serviceManagerName = sm.name;
+            return (
+              <Card>
+                <CardHeader
+                  title={sm.displayName}
+                  style={{
+                    backgroundColor:
+                      sm.fullyConfigured === true
+                        ? theme.colors.green
+                        : sm.fullyConfigured === false
+                        ? theme.colors.yellow
+                        : theme.colors.lightGray
+                  }}
+                />
+                <CardText>
+                  <div>FOO BAR {sm.name}</div>
+                  <ServiceManagerComp
+                    serviceManagerInfo={sm}
+                    organizationId={organizationId}
+                    inlineStyles={inlineStyles}
+                    styles={styles}
+                    saveLabel={this.props.saveLabel}
+                    onSubmit={updateData => {
+                      console.log("onSubmit updateData: ", updateData);
+                      return this.props.mutations.updateServiceManager(
+                        serviceManagerName,
+                        updateData
+                      );
+                    }}
+                  />
+                </CardText>
+              </Card>
+            );
+          })}
+        </CardText>
+      </Card>
+    );
+  }
+
   renderServiceVendorConfig() {
-    const { id: organizationId, messageService } = this.props.data.organization;
-    if (!messageService) {
+    const { id: organizationId, serviceVendor } = this.props.data.organization;
+    if (!serviceVendor) {
       return null;
     }
 
-    const { name, supportsOrgConfig, config } = messageService;
+    const { name, supportsOrgConfig, config } = serviceVendor;
     if (!supportsOrgConfig) {
       return null;
     }
@@ -261,6 +328,7 @@ class Settings extends React.Component {
           </CardActions>
         </Card>
         <div>{this.renderTextingHoursForm()}</div>
+        {this.renderServiceManagers()}
         {this.renderServiceVendorConfig()}
         {this.props.data.organization &&
         this.props.data.organization.texterUIConfig &&
@@ -377,10 +445,19 @@ const queries = {
             options
             sideboxChoices
           }
-          messageService {
+          serviceVendor {
+            id
             name
             supportsOrgConfig
             config
+          }
+          serviceManagers {
+            id
+            name
+            displayName
+            supportsOrgConfig
+            data
+            fullyConfigured
           }
         }
       }
@@ -418,14 +495,35 @@ export const editOrganizationGql = gql`
 export const updateServiceVendorConfigGql = gql`
   mutation updateServiceVendorConfig(
     $organizationId: String!
-    $messageServiceName: String!
+    $serviceName: String!
     $config: JSON!
   ) {
     updateServiceVendorConfig(
       organizationId: $organizationId
-      messageServiceName: $messageServiceName
+      serviceName: $serviceName
       config: $config
-    )
+    ) {
+      id
+      config
+    }
+  }
+`;
+
+export const updateServiceManagerGql = gql`
+  mutation updateServiceManager(
+    $organizationId: String!
+    $serviceManagerName: String!
+    $updateData: JSON!
+  ) {
+    updateServiceManager(
+      organizationId: $organizationId
+      serviceManagerName: $serviceManagerName
+      updateData: $updateData
+    ) {
+      id
+      data
+      fullyConfigured
+    }
   }
 `;
 
@@ -509,8 +607,18 @@ const mutations = {
       mutation: updateServiceVendorConfigGql,
       variables: {
         organizationId: ownProps.params.organizationId,
-        messageServiceName: ownProps.data.organization.messageService.name,
+        serviceName: ownProps.data.organization.serviceVendor.name,
         config: JSON.stringify(newConfig)
+      }
+    };
+  },
+  updateServiceManager: ownProps => (serviceManagerName, updateData) => {
+    return {
+      mutation: updateServiceManagerGql,
+      variables: {
+        serviceManagerName,
+        updateData,
+        organizationId: ownProps.params.organizationId
       }
     };
   },

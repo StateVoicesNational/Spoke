@@ -11,33 +11,29 @@ import { Organization } from "../../../server/models";
 
 export const updateServiceVendorConfig = async (
   _,
-  { organizationId, messageServiceName, config },
+  { organizationId, serviceName, config },
   { user }
 ) => {
   await accessRequired(user, organizationId, "OWNER");
   const organization = await orgCache.load(organizationId);
-  const configuredMessageServiceName = orgCache.getMessageService(organization);
-  if (configuredMessageServiceName !== messageServiceName) {
+  const configuredServiceName = orgCache.getMessageService(organization);
+  if (configuredServiceName !== serviceName) {
     throw new GraphQLError(
-      `Can't configure ${messageServiceName}. It's not the configured message service`
+      `Can't configure ${serviceName}. It's not the configured message service`
     );
   }
 
-  const service = getService(messageServiceName);
+  const service = getService(serviceName);
   if (!service) {
-    throw new GraphQLError(
-      `${messageServiceName} is not a valid message service`
-    );
+    throw new GraphQLError(`${serviceName} is not a valid message service`);
   }
 
   const serviceConfigFunction = tryGetFunctionFromService(
-    messageServiceName,
+    serviceName,
     "updateConfig"
   );
   if (!serviceConfigFunction) {
-    throw new GraphQLError(
-      `${messageServiceName} does not support configuration`
-    );
+    throw new GraphQLError(`${serviceName} does not support configuration`);
   }
 
   let configObject;
@@ -47,7 +43,7 @@ export const updateServiceVendorConfig = async (
     throw new GraphQLError("Config is not valid JSON");
   }
 
-  const configKey = getConfigKey(messageServiceName);
+  const configKey = getConfigKey(serviceName);
   const existingConfig = getConfig(configKey, organization, {
     onlyLocal: true
   });
@@ -62,9 +58,7 @@ export const updateServiceVendorConfig = async (
   } catch (caught) {
     // eslint-disable-next-line no-console
     console.error(
-      `Error updating config for ${messageServiceName}: ${JSON.stringify(
-        caught
-      )}`
+      `Error updating config for ${serviceName}: ${JSON.stringify(caught)}`
     );
     throw new GraphQLError(caught.message);
   }
@@ -74,7 +68,7 @@ export const updateServiceVendorConfig = async (
   const hadMessageServiceConfig = !!features[configKey];
   const newConfigKeys = new Set(Object.keys(newConfig));
   const legacyTwilioConfig =
-    messageServiceName === "twilio" &&
+    serviceName === "twilio" &&
     !hadMessageServiceConfig &&
     Object.keys(features).some(k => newConfigKeys.has(k));
 
@@ -88,7 +82,13 @@ export const updateServiceVendorConfig = async (
   await orgCache.clear(organization.id);
   const updatedOrganization = await orgCache.load(organization.id);
 
-  return orgCache.getMessageServiceConfig(updatedOrganization);
+  return {
+    id: `org${organization.id}-${serviceName}`,
+    config: await orgCache.getMessageServiceConfig(updatedOrganization, {
+      restrictToOrgFeatures: true,
+      obscureSensitiveInformation: true
+    })
+  };
 };
 
 export const getServiceVendorConfig = async (
@@ -107,5 +107,5 @@ export const getServiceVendorConfig = async (
   const config = getConfig(configKey, organization, {
     onlyLocal: options.restrictToOrgFeatures
   });
-  return getServiceConfig(config, organization, options);
+  getServiceConfig(config, organization, options);
 };
