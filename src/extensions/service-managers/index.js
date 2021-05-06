@@ -40,7 +40,6 @@ export async function processServiceManagers(
       typeof m[funcName] === "function" &&
       (!specificServiceManagerName || m.name === specificServiceManagerName)
   );
-  console.log("service-managers.processServiceManagers", funkyManagers);
   const resultArray = [];
   // explicitly process these in order in case the order matters
   for (let i = 0, l = funkyManagers.length; i < l; i++) {

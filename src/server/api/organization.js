@@ -219,11 +219,6 @@ export const resolvers = {
           organization
         );
         const serviceMetadata = getServiceMetadata(serviceName);
-        console.log(
-          "organization.messageService",
-          serviceName,
-          serviceMetadata
-        );
         return {
           id: `org${organization.id}-${serviceName}`,
           ...serviceMetadata,
