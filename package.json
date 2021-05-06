@@ -1,6 +1,6 @@
 {
   "name": "spoke",
-  "version": "10.1.0",
+  "version": "10.2.0",
   "description": "Spoke",
   "main": "src/server",
   "engines": {
@@ -77,6 +77,12 @@
   "homepage": "https://github.com/MoveOnOrg/Spoke/#readme",
   "dependencies": {
     "@aoberoi/passport-slack": "^1.0.5",
+    "@date-io/core": "^1.3.13",
+    "@date-io/date-fns": "^1.3.13",
+    "@material-ui/core": "^4.11.3",
+    "@material-ui/icons": "^4.11.2",
+    "@material-ui/lab": "^4.0.0-alpha.57",
+    "@material-ui/pickers": "^3.3.10",
     "@bandwidth/messaging": "^3.0.0",
     "@bandwidth/numbers": "^1.7.0",
     "@trt2/gsm-charset-utils": "^1.0.13",
@@ -106,6 +112,7 @@
     "chart.js": "^2.9.4",
     "cookie-session": "^2.0.0-alpha.1",
     "dataloader": "^1.2.0",
+    "date-fns": "^2.19.0",
     "dotenv": "^2.0.0",
     "draft-js": "^0.7.0",
     "express": "^4.14.0",
@@ -126,13 +133,11 @@
     "knex": "^0.20.7",
     "lodash": "^4.13.1",
     "mailgun-js": "^0.20.0",
-    "material-ui": "^0.20.1",
-    "material-ui-color-picker": "^1.0.1",
-    "material-ui-datatables": "^0.18.2",
-    "material-ui-search-bar": "^0.4.2",
+    "material-ui-search-bar": "^1.0.0",
     "minilog": "^3.0.1",
     "moment": "2.14.1",
     "moment-timezone": "^0.5.14",
+    "mui-datatables": "^3.7.7",
     "nexmo": "^2.3.2",
     "node-abort-controller": "^1.0.4",
     "node-fetch": "^2.6.0",
@@ -153,6 +158,7 @@
     "react-apollo": "2.5.7",
     "react-async-script": "^0.6.0",
     "react-chartjs-2": "^2.11.1",
+    "react-color": "^2.19.3",
     "react-dom": "16.14.0",
     "react-formal": "2.2.2",
     "react-router": "^3.2.0",
@@ -208,9 +214,6 @@
     "uglifyjs-webpack-plugin": "1.3.0",
     "wait-on": "^2.1.0",
     "webpack-dev-server": "^2.9.4"
-  },
-  "resolutions": {
-    "material-ui": "0.20.1"
   },
   "husky": {
     "hooks": {

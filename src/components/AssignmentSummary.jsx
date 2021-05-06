@@ -1,14 +1,16 @@
 import PropTypes from "prop-types";
 import React, { Component } from "react";
-import { Card, CardActions, CardTitle } from "material-ui/Card";
 import { StyleSheet, css } from "aphrodite";
 import { setContrastingColor } from "../lib/color-contrast-helper";
-import RaisedButton from "material-ui/RaisedButton";
-import Badge from "material-ui/Badge";
-import Divider from "material-ui/Divider";
+
+import Button from "@material-ui/core/Button";
+import Badge from "@material-ui/core/Badge";
+import Card from "@material-ui/core/Card";
+import CardContent from "@material-ui/core/CardContent";
+import CardHeader from "@material-ui/core/CardHeader";
+
 import { withRouter } from "react-router";
 import { dataTest } from "../lib/attributes";
-import AssignmentTexterFeedback from "../extensions/texter-sideboxes/texter-feedback/AssignmentTexterFeedback";
 
 import {
   getSideboxes,
@@ -33,10 +35,7 @@ const styles = StyleSheet.create({
     margin: "20px 0"
   },
   image: {
-    position: "absolute",
-    height: "70%",
-    top: "20px",
-    right: "20px"
+    height: 100
   }
 });
 
@@ -62,41 +61,43 @@ export class AssignmentSummary extends Component {
     assignment,
     title,
     count,
-    primary,
     disabled,
     contactsFilter,
     hideIfZero,
+    style,
     hideBadge,
-    style
+    color
   }) {
     if (count === 0 && hideIfZero) {
       return "";
     }
     if (count === 0 || hideBadge) {
       return (
-        <RaisedButton
+        <Button
           {...dataTest(dataTestText)}
           disabled={disabled}
-          label={title}
-          primary={primary && !disabled}
+          variant="contained"
+          color="primary"
           onClick={() => this.goToTodos(contactsFilter, assignment.id)}
-        />
+        >
+          {title}
+        </Button>
       );
     } else {
       return (
         <Badge
           key={title}
-          badgeStyle={style || inlineStyles.badge}
           badgeContent={count || ""}
-          primary={primary && !disabled}
-          secondary={!primary && !disabled}
+          color={disabled ? "default" : color}
         >
-          <RaisedButton
+          <Button
             {...dataTest(dataTestText)}
             disabled={disabled}
-            label={title}
             onClick={() => this.goToTodos(contactsFilter, assignment.id)}
-          />
+            variant="outlined"
+          >
+            {title}
+          </Button>
         </Badge>
       );
     }
@@ -146,33 +147,32 @@ export class AssignmentSummary extends Component {
         {...dataTest(`assignmentSummary-${campaignId}`)}
       >
         <Card>
-          <CardTitle
+          <CardHeader
             title={title}
-            titleStyle={{ color: cardTitleTextColor }}
-            subtitle={description}
-            subtitleStyle={{ color: cardTitleTextColor }}
+            subheader={description}
             style={{
-              backgroundColor: primaryColor
+              backgroundColor: primaryColor,
+              color: "#FFF"
             }}
-            children={
+            subheaderTypographyProps={{
+              color: "inherit"
+            }}
+            avatar={
               logoImageUrl ? (
                 <img src={logoImageUrl} className={css(styles.image)} />
-              ) : (
-                ""
-              )
+              ) : null
             }
           />
-          <Divider />
-          {introHtml ? (
-            <div style={{ margin: "20px" }}>
-              <div dangerouslySetInnerHTML={{ __html: introHtml }} />
-            </div>
-          ) : null}
-          <CardActions>
-            {hasPopupSidebox && sideboxList}
+          <CardContent>
+            {introHtml ? (
+              <div style={{ margin: "20px" }}>
+                <div dangerouslySetInnerHTML={{ __html: introHtml }} />
+              </div>
+            ) : null}
+            {(hasPopupSidebox && sideboxList) || null}
 
             {(window.NOT_IN_USA && window.ALLOW_SEND_ALL) || hasPopupSidebox
-              ? ""
+              ? null
               : this.renderBadgedButton({
                   dataTestText: "sendFirstTexts",
                   assignment,
@@ -181,10 +181,11 @@ export class AssignmentSummary extends Component {
                   primary: true,
                   disabled: false,
                   contactsFilter: "text",
-                  hideIfZero: true
+                  hideIfZero: true,
+                  color: "primary"
                 })}
             {(window.NOT_IN_USA && window.ALLOW_SEND_ALL) || hasPopupSidebox
-              ? ""
+              ? null
               : this.renderBadgedButton({
                   dataTestText: "Respond",
                   assignment,
@@ -193,7 +194,8 @@ export class AssignmentSummary extends Component {
                   primary: false,
                   disabled: false,
                   contactsFilter: "reply",
-                  hideIfZero: true
+                  hideIfZero: true,
+                  color: "error"
                 })}
             {this.renderBadgedButton({
               assignment,
@@ -205,6 +207,7 @@ export class AssignmentSummary extends Component {
               disabled: false,
               contactsFilter: "stale",
               hideIfZero: true,
+              color: "secondary",
               hideBadge: true
             })}
             {this.renderBadgedButton({
@@ -217,6 +220,7 @@ export class AssignmentSummary extends Component {
               disabled: false,
               contactsFilter: "skipped",
               hideIfZero: true,
+              color: "secondary",
               hideBadge: true
             })}
             {window.NOT_IN_USA && window.ALLOW_SEND_ALL && !hasPopupSidebox
@@ -227,7 +231,8 @@ export class AssignmentSummary extends Component {
                   disabled: false,
                   contactsFilter: "all",
                   count: 0,
-                  hideIfZero: false
+                  hideIfZero: false,
+                  color: "primary"
                 })
               : ""}
             {this.renderBadgedButton({
@@ -237,23 +242,24 @@ export class AssignmentSummary extends Component {
               primary: false,
               disabled: true,
               contactsFilter: null,
-              hideIfZero: true
+              hideIfZero: true,
+              color: "secondary"
             })}
             {sideboxList.length && !hasPopupSidebox ? (
               <div style={{ paddingLeft: "14px", paddingBottom: "10px" }}>
                 {sideboxList}
               </div>
             ) : null}
-          </CardActions>
-          {!sideboxList.length &&
-          !unmessagedCount &&
-          !unrepliedCount &&
-          !pastMessagesCount &&
-          !skippedMessagesCount &&
-          !badTimezoneCount ? (
-            <div style={{ padding: "0 20px 20px 20px" }}>Nothing to do</div>
-          ) : null}
-          }
+
+            {!sideboxList.length &&
+            !unmessagedCount &&
+            !unrepliedCount &&
+            !pastMessagesCount &&
+            !skippedMessagesCount &&
+            !badTimezoneCount ? (
+              <div style={{ padding: "0 20px 20px 20px" }}>Nothing to do</div>
+            ) : null}
+          </CardContent>
         </Card>
       </div>
     );

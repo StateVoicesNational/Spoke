@@ -4,7 +4,6 @@
 import React from "react";
 import moment from "moment-timezone";
 import { mount } from "enzyme";
-import MuiThemeProvider from "material-ui/styles/MuiThemeProvider";
 import { StyleSheetTestUtils } from "aphrodite";
 import { AssignmentTexterContact } from "../../src/containers/AssignmentTexterContact";
 
@@ -117,19 +116,17 @@ describe("when contact is not within texting hours...", () => {
     );
     StyleSheetTestUtils.suppressStyleInjection();
     let component = mount(
-      <MuiThemeProvider>
-        <AssignmentTexterContact
-          texter={propsWithEnforcedTextingHoursCampaign.texter}
-          campaign={campaign}
-          assignment={propsWithEnforcedTextingHoursCampaign.assignment}
-          refreshData={propsWithEnforcedTextingHoursCampaign.refreshData}
-          contact={propsWithEnforcedTextingHoursCampaign.contact}
-          navigationToolbarChildren={
-            propsWithEnforcedTextingHoursCampaign.navigationToolbarChildren
-          }
-          location={propsWithEnforcedTextingHoursCampaign.location}
-        />
-      </MuiThemeProvider>
+      <AssignmentTexterContact
+        texter={propsWithEnforcedTextingHoursCampaign.texter}
+        campaign={campaign}
+        assignment={propsWithEnforcedTextingHoursCampaign.assignment}
+        refreshData={propsWithEnforcedTextingHoursCampaign.refreshData}
+        contact={propsWithEnforcedTextingHoursCampaign.contact}
+        navigationToolbarChildren={
+          propsWithEnforcedTextingHoursCampaign.navigationToolbarChildren
+        }
+        location={propsWithEnforcedTextingHoursCampaign.location}
+      />
     );
     jest.runOnlyPendingTimers();
     expect(
@@ -149,19 +146,17 @@ describe("when contact is within texting hours...", () => {
     );
     StyleSheetTestUtils.suppressStyleInjection();
     component = mount(
-      <MuiThemeProvider>
-        <AssignmentTexterContact
-          texter={propsWithEnforcedTextingHoursCampaign.texter}
-          campaign={campaign}
-          assignment={propsWithEnforcedTextingHoursCampaign.assignment}
-          refreshData={propsWithEnforcedTextingHoursCampaign.refreshData}
-          contact={propsWithEnforcedTextingHoursCampaign.contact}
-          navigationToolbarChildren={
-            propsWithEnforcedTextingHoursCampaign.navigationToolbarChildren
-          }
-          location={propsWithEnforcedTextingHoursCampaign.location}
-        />
-      </MuiThemeProvider>
+      <AssignmentTexterContact
+        texter={propsWithEnforcedTextingHoursCampaign.texter}
+        campaign={campaign}
+        assignment={propsWithEnforcedTextingHoursCampaign.assignment}
+        refreshData={propsWithEnforcedTextingHoursCampaign.refreshData}
+        contact={propsWithEnforcedTextingHoursCampaign.contact}
+        navigationToolbarChildren={
+          propsWithEnforcedTextingHoursCampaign.navigationToolbarChildren
+        }
+        location={propsWithEnforcedTextingHoursCampaign.location}
+      />
     );
   });
   afterEach(() => {

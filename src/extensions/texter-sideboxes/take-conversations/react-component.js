@@ -2,15 +2,15 @@ import type from "prop-types";
 import React from "react";
 import * as yup from "yup";
 import Form from "react-formal";
-import Badge from "material-ui/Badge";
-import RaisedButton from "material-ui/RaisedButton";
-import Toggle from "material-ui/Toggle";
 import { withRouter } from "react-router";
 import gql from "graphql-tag";
 
+import Button from "@material-ui/core/Button";
+import FormControlLabel from "@material-ui/core/FormControlLabel";
+import Switch from "@material-ui/core/Switch";
+
 import GSTextField from "../../../components/forms/GSTextField";
 import loadData from "../../../containers/hoc/load-data";
-import { inlineStyles } from "../../../components/AssignmentSummary";
 
 export const displayName = () => "Take conversations";
 
@@ -88,11 +88,13 @@ export class TexterSideboxClass extends React.Component {
       <div style={headerStyle}>
         <div>
           <h3>Take Conversations</h3>
-          <RaisedButton
-            label={`Take a batch of ${batchSize} conversations`}
-            primary
+          <Button
+            variant="contained"
+            color="primary"
             onClick={this.requestNewContacts}
-          />
+          >
+            Take a batch of {batchSize} conversations
+          </Button>
         </div>
       </div>
     );
@@ -176,7 +178,7 @@ export class AdminConfig extends React.Component {
           label="Batch Type"
           fullWidth
           hintText=""
-          defaultValue={
+          value={
             this.props.settingsData.takeConversationsBatchType ||
             "vetted-takeconversations"
           }
@@ -188,9 +190,7 @@ export class AdminConfig extends React.Component {
           label="Batch size (number) to take conversations button"
           fullWidth
           hintText=""
-          defaultValue={
-            this.props.settingsData.takeConversationsBatchSize || 20
-          }
+          value={this.props.settingsData.takeConversationsBatchSize || 20}
         />
         <p>
           Outbound Unassignment (only works if message handler
@@ -200,12 +200,24 @@ export class AdminConfig extends React.Component {
           can take replies. This splits up initial text senders from texters
           that reply.
         </p>
-        <Toggle
-          label="Enable initial outbound unassign"
-          toggled={this.props.settingsData.takeConversationsOutboundUnassign}
-          onToggle={(toggler, val) =>
-            this.props.onToggle("takeConversationsOutboundUnassign", val)
+        <FormControlLabel
+          control={
+            <Switch
+              color="primary"
+              checked={
+                this.props.settingsData.takeConversationsOutboundUnassign ||
+                false
+              }
+              onChange={event => {
+                this.props.onToggle(
+                  "takeConversationsOutboundUnassign",
+                  event.target.checked
+                );
+              }}
+            />
           }
+          label="Enable initial outbound unassign"
+          labelPlacement="start"
         />
       </div>
     );

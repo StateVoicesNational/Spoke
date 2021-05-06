@@ -3,8 +3,10 @@ import React from "react";
 import * as yup from "yup";
 import { css } from "aphrodite";
 import Form from "react-formal";
-import FlatButton from "material-ui/FlatButton";
-import Toggle from "material-ui/Toggle";
+import Button from "@material-ui/core/Button";
+import Switch from "@material-ui/core/Switch";
+import FormControlLabel from "@material-ui/core/FormControlLabel";
+
 import { withRouter } from "react-router";
 import gql from "graphql-tag";
 import GSTextField from "../../../components/forms/GSTextField";
@@ -71,14 +73,12 @@ export class TexterSideboxClass extends React.Component {
                 <span>Can&rsquo;t send the rest of these texts?</span>
               )}
             </div>
-            <FlatButton
+            <Button
               onClick={() => this.handleReleaseContacts(false)}
-              label={
-                settingsData.releaseContactsBatchLabel || "Done for the day"
-              }
               className={css(flexStyles.flatButton)}
-              labelStyle={inlineStyles.flatButtonLabel}
-            />
+            >
+              {settingsData.releaseContactsBatchLabel || "Done for the day"}
+            </Button>
           </div>
         ) : null}
         {showReleaseConvos ? (
@@ -88,15 +88,17 @@ export class TexterSideboxClass extends React.Component {
                 ? settingsData.releaseContactsConvosTitle
                 : "Need to give up?"}
             </div>
-            <FlatButton
+            <Button
               onClick={() => this.handleReleaseContacts(true)}
               label={
                 settingsData.releaseContactsConvosLabel ||
                 "Release all my contacts"
               }
               className={css(flexStyles.flatButton)}
-              labelStyle={inlineStyles.flatButtonLabel}
-            />
+            >
+              {settingsData.releaseContactsConvosLabel ||
+                "Release all my contacts"}
+            </Button>
           </div>
         ) : null}
       </div>
@@ -185,18 +187,41 @@ export class AdminConfig extends React.Component {
   render() {
     return (
       <div>
-        <Toggle
+        <FormControlLabel
           label="Also allow release of conversations"
-          toggled={this.props.settingsData.releaseContactsReleaseConvos}
-          onToggle={(toggler, val) =>
-            this.props.onToggle("releaseContactsReleaseConvos", val)
+          labelPlacement="start"
+          control={
+            <Switch
+              color="primary"
+              checked={
+                this.props.settingsData.releaseContactsReleaseConvos || false
+              }
+              onChange={event =>
+                this.props.onToggle(
+                  "releaseContactsReleaseConvos",
+                  event.target.checked
+                )
+              }
+            />
           }
         />
-        <Toggle
+
+        <FormControlLabel
           label="Enable for campaigns even without Dynamic Assignment enabled."
-          toggled={this.props.settingsData.releaseContactsNonDynamicToo}
-          onToggle={(toggler, val) =>
-            this.props.onToggle("releaseContactsNonDynamicToo", val)
+          labelPlacement="start"
+          control={
+            <Switch
+              color="primary"
+              checked={
+                this.props.settingsData.releaseContactsNonDynamicToo || false
+              }
+              onChange={event =>
+                this.props.onToggle(
+                  "releaseContactsNonDynamicToo",
+                  event.target.checked
+                )
+              }
+            />
           }
         />
         <Form.Field

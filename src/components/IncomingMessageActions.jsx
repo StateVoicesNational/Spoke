@@ -1,11 +1,20 @@
 import React, { Component } from "react";
 import type from "prop-types";
 
-import AutoComplete from "material-ui/AutoComplete";
-import { Card, CardHeader, CardText } from "material-ui/Card";
-import Dialog from "material-ui/Dialog";
+import Button from "@material-ui/core/Button";
+import Dialog from "@material-ui/core/Dialog";
+import DialogActions from "@material-ui/core/DialogActions";
+import DialogContent from "@material-ui/core/DialogContent";
+import Card from "@material-ui/core/Card";
+import CardHeader from "@material-ui/core/CardHeader";
+import CardContent from "@material-ui/core/CardContent";
+import Collapse from "@material-ui/core/Collapse";
+import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
+import IconButton from "@material-ui/core/IconButton";
+import Autocomplete from "@material-ui/lab/Autocomplete";
+import TextField from "@material-ui/core/TextField";
+
 import { getHighestRole } from "../lib/permissions";
-import FlatButton from "material-ui/FlatButton";
 import { css, StyleSheet } from "aphrodite";
 import theme from "../styles/theme";
 import { dataSourceItem } from "./utils";
@@ -41,7 +50,6 @@ class IncomingMessageActions extends Component {
     this.onReassignAllMatchingClicked = this.onReassignAllMatchingClicked.bind(
       this
     );
-    this.onReassignChanged = this.onReassignChanged.bind(this);
 
     this.handleConfirmDialogCancel = this.handleConfirmDialogCancel.bind(this);
     this.handleConfirmDialogReassign = this.handleConfirmDialogReassign.bind(
@@ -61,25 +69,13 @@ class IncomingMessageActions extends Component {
     this.setState({ confirmDialogOpen: true });
   }
 
-  onReassignChanged(selection, index) {
-    let texterUserId = undefined;
-    if (index === -1) {
-      const texter = this.props.texters.find(texter => {
-        this.setState({ reassignTo: undefined });
-        return texter.displayName === selection;
-      });
-      if (texter) {
-        texterUserId = texter.id;
-      }
-    } else {
-      texterUserId = selection.value.key;
-    }
-    if (texterUserId) {
-      this.setState({ reassignTo: parseInt(texterUserId, 10) });
+  onReassignChanged = (event, selection) => {
+    if (selection && selection.rawValue) {
+      this.setState({ reassignTo: parseInt(selection.rawValue, 10) });
     } else {
       this.setState({ reassignTo: undefined });
     }
-  }
+  };
 
   handleConfirmDialogCancel() {
     this.setState({ confirmDialogOpen: false });
@@ -107,96 +103,116 @@ class IncomingMessageActions extends Component {
       this.props.campaignsFilter &&
       (this.props.campaignsFilter.campaignIds || []).length;
 
-    const confirmDialogActions = [
-      <FlatButton
-        label="Cancel"
-        primary
-        onClick={this.handleConfirmDialogCancel}
-      />,
-      <FlatButton
-        label="Reassign"
-        primary
-        onClick={this.handleConfirmDialogReassign}
-      />
-    ];
+    const { expanded } = this.state;
+
     return (
       <Card>
         <CardHeader
           title={" Message Actions "}
-          actAsExpander
-          showExpandableButton
+          action={
+            <IconButton>
+              <ExpandMoreIcon />
+            </IconButton>
+          }
+          onClick={() => {
+            this.setState({ expanded: !expanded });
+          }}
         />
-        <CardText expandable>
-          <div className={css(styles.container)}>
-            <div className={css(styles.flexColumn)}>
-              <AutoComplete
-                filter={AutoComplete.caseInsensitiveFilter}
-                maxSearchResults={8}
-                onFocus={() =>
-                  this.setState({
-                    reassignTo: undefined,
-                    texterSearchText: ""
-                  })
-                }
-                onUpdateInput={texterSearchText =>
-                  this.setState({ texterSearchText })
-                }
-                searchText={this.state.texterSearchText}
-                dataSource={texterNodes}
-                hintText={"Search for a texter"}
-                floatingLabelText={"Reassign to ..."}
-                onNewRequest={this.onReassignChanged}
-              />
-            </div>
-            <div className={css(styles.spacer)} />
-            <div className={css(styles.flexColumn)}>
-              <FlatButton
-                label={"Reassign selected"}
-                onClick={this.onReassignmentClicked}
-                disabled={!this.state.reassignTo}
-              />
-            </div>
-            {this.props.conversationCount ? (
+        <Collapse
+          in={expanded}
+          timeout="auto"
+          unmountOnExit
+          style={{
+            margin: "20px"
+          }}
+        >
+          <CardContent>
+            <div className={css(styles.container)}>
               <div className={css(styles.flexColumn)}>
-                <FlatButton
-                  label={`Reassign all ${this.props.conversationCount} matching`}
-                  onClick={this.onReassignAllMatchingClicked}
-                  disabled={!this.state.reassignTo}
+                <Autocomplete
+                  style={{ width: "100%" }}
+                  options={texterNodes}
+                  onChange={this.onReassignChanged}
+                  inputValue={this.state.texterSearchText}
+                  onInputChange={(event, newInputValue) => {
+                    this.setState({ newInputValue });
+                  }}
+                  getOptionLabel={option => option.text}
+                  renderInput={params => (
+                    <TextField
+                      {...params}
+                      placeholder="Search for a texter"
+                      label="Reassign to ..."
+                    />
+                  )}
                 />
               </div>
-            ) : (
-              ""
-            )}
-            <Dialog
-              actions={confirmDialogActions}
-              open={this.state.confirmDialogOpen}
-              modal
-              onRequestClose={this.handleConfirmDialogCancel}
-            >
-              <div>
-                {!hasCampaignsFilter && (
-                  <div>
-                    <span className={css(styles.warning)}>
-                      WARNING: you have no campaign filter selected!
-                    </span>
-                    <br />
-                  </div>
-                )}
-                <div>
-                  <b>
-                    {"Are you absolutely sure you want to reassign all"}
-                    <span className={css(styles.warning)}>
-                      {` ${Number(
-                        this.props.conversationCount || 0
-                      ).toLocaleString()} `}
-                    </span>
-                    {"matching conversations?"}
-                  </b>
-                </div>
+              <div className={css(styles.spacer)} />
+              <div className={css(styles.flexColumn)}>
+                <Button
+                  onClick={this.onReassignmentClicked}
+                  disabled={!this.state.reassignTo}
+                  variant="outlined"
+                >
+                  Reassign selected
+                </Button>
               </div>
-            </Dialog>
-          </div>
-        </CardText>
+              {this.props.conversationCount && (
+                <div className={css(styles.flexColumn)}>
+                  <Button
+                    variant="outlined"
+                    onClick={this.onReassignAllMatchingClicked}
+                    disabled={!this.state.reassignTo}
+                  >
+                    Reassign all {this.props.conversationCount} matching
+                  </Button>
+                </div>
+              )}
+              <Dialog
+                open={this.state.confirmDialogOpen}
+                onClose={this.handleConfirmDialogCancel}
+              >
+                <DialogContent>
+                  {!hasCampaignsFilter && (
+                    <div>
+                      <span className={css(styles.warning)}>
+                        WARNING: you have no campaign filter selected!
+                      </span>
+                      <br />
+                    </div>
+                  )}
+                  <div>
+                    <b>
+                      {"Are you absolutely sure you want to reassign all"}
+                      <span className={css(styles.warning)}>
+                        {` ${Number(
+                          this.props.conversationCount || 0
+                        ).toLocaleString()} `}
+                      </span>
+                      {"matching conversations?"}
+                    </b>
+                  </div>
+                </DialogContent>
+                <DialogActions>
+                  <Button
+                    color="primary"
+                    variant="outlined"
+                    onClick={this.handleConfirmDialogCancel}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    color="primary"
+                    variant="outlined"
+                    onClick={this.handleConfirmDialogReassign}
+                  >
+                    Reassign
+                  </Button>
+                </DialogActions>
+              </Dialog>
+            </div>
+          </CardContent>
+        </Collapse>
       </Card>
     );
   }

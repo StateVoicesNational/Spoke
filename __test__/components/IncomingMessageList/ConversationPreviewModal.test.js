@@ -3,7 +3,6 @@
  */
 import React from "react";
 import { mount } from "enzyme";
-import MuiThemeProvider from "material-ui/styles/MuiThemeProvider";
 import ConversationPreviewModal, {
   InnerConversationPreviewModal
 } from "../../../src/components/IncomingMessageList/ConversationPreviewModal";
@@ -13,7 +12,7 @@ import ReactTestUtils from "react-dom/test-utils";
 import { createMemoryHistory } from "react-router";
 import ApolloClientSingleton from "../../../src/network/apollo-client-singleton";
 import { ApolloProvider } from "react-apollo";
-import Dialog from "material-ui/Dialog";
+import Dialog from "@material-ui/core/Dialog";
 
 import { r } from "../../../src/server/models";
 
@@ -94,14 +93,12 @@ describe.skip("ConversationPreviewModal", async () => {
 
       component = mount(
         <ApolloProvider client={ApolloClientSingleton}>
-          <MuiThemeProvider>
-            <ConversationPreviewModal
-              organizationId={startedCampaign.organizationId}
-              conversation={conversation}
-              onForceRefresh={() => {}}
-              onRequestClose={onRequestCloseMock}
-            />
-          </MuiThemeProvider>
+          <ConversationPreviewModal
+            organizationId={startedCampaign.organizationId}
+            conversation={conversation}
+            onForceRefresh={() => {}}
+            onRequestClose={onRequestCloseMock}
+          />
         </ApolloProvider>,
         {
           attachTo: root

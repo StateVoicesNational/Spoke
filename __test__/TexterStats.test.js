@@ -1,5 +1,6 @@
 import React from "react";
 import { shallow } from "enzyme";
+import LinearProgress from "@material-ui/core/LinearProgress";
 import TexterStats from "../src/components/TexterStats";
 
 const campaign = {
@@ -64,19 +65,17 @@ describe("TexterStats (Non-dynamic campaign)", () => {
       <TexterStats campaign={campaign} organizationId="1" />
     );
     expect(stats.text()).toEqual(
-      "Test Tester <Link />19%<LinearProgress /><Link />  |  <Link />  |  <Link />Someone Else (Suspended) <Link />99%<LinearProgress /><Link />  |  <Link />  |  <Link />"
+      "Test Tester <Link />19%<Link />  |  <Link />  |  <Link />Someone Else (Suspended) <Link />99%<Link />  |  <Link />  |  <Link />"
     );
   });
 
   it("creates linear progress correctly", () => {
     const linearProgress = shallow(<TexterStats campaign={campaign} />).find(
-      "LinearProgress"
+      LinearProgress
     );
     expect(linearProgress.length).toBe(2);
     expect(linearProgress.first().props()).toEqual({
-      max: 100,
-      min: 0,
-      mode: "determinate",
+      variant: "determinate",
       value: 19
     });
   });

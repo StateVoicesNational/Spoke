@@ -1,7 +1,7 @@
 import PropTypes from "prop-types";
 import React from "react";
-import MuiThemeProvider from "material-ui/styles/MuiThemeProvider";
 import muiTheme from "../styles/mui-theme";
+import { ThemeProvider } from "@material-ui/core/styles";
 import theme from "../styles/theme";
 import { StyleSheet, css } from "aphrodite";
 
@@ -13,9 +13,9 @@ const styles = StyleSheet.create({
 });
 
 const App = ({ children }) => (
-  <MuiThemeProvider muiTheme={muiTheme}>
+  <ThemeProvider theme={muiTheme}>
     <div className={css(styles.root)}>{children}</div>
-  </MuiThemeProvider>
+  </ThemeProvider>
 );
 
 App.propTypes = {

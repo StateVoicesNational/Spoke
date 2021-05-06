@@ -4,14 +4,12 @@ import Form from "react-formal";
 import moment from "moment";
 import CampaignFormSectionHeading from "./CampaignFormSectionHeading";
 import GSForm from "./forms/GSForm";
+import GSColorPicker from "./forms/GSColorPicker";
 import GSTextField from "./forms/GSTextField";
 import GSDateField from "./forms/GSDateField";
 import GSSubmitButton from "./forms/GSSubmitButton";
 import * as yup from "yup";
-import Toggle from "material-ui/Toggle";
-import ColorPicker from "material-ui-color-picker";
 import { dataTest } from "../lib/attributes";
-import RaisedButton from "material-ui/RaisedButton";
 
 const FormSchema = {
   title: yup.string(),
@@ -76,7 +74,7 @@ export default class CampaignBasicsForm extends React.Component {
             {...dataTest("title")}
             name="title"
             label="Title (required)"
-            hintText="e.g. Election Day 2016"
+            helpertext="e.g. Election Day 2016"
             fullWidth
           />
           <Form.Field
@@ -84,7 +82,7 @@ export default class CampaignBasicsForm extends React.Component {
             {...dataTest("description")}
             name="description"
             label="Description (required)"
-            hintText="Get out the vote"
+            helpertext="Get out the vote"
             fullWidth
           />
           <Form.Field
@@ -108,15 +106,13 @@ export default class CampaignBasicsForm extends React.Component {
             as={GSTextField}
             name="logoImageUrl"
             label="Logo Image URL"
-            hintText="https://www.mysite.com/images/logo.png"
+            helpertext="https://www.mysite.com/images/logo.png"
             fullWidth
           />
-          <label>Primary color</label>
           <Form.Field
+            as={GSColorPicker}
             name="primaryColor"
             label="Primary color"
-            defaultValue={this.props.formValues.primaryColor || "#ffffff"}
-            as={ColorPicker}
           />
           <Form.Submit
             as={GSSubmitButton}

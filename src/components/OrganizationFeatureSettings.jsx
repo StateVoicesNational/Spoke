@@ -3,10 +3,12 @@ import React from "react";
 import GSForm from "../components/forms/GSForm";
 import * as yup from "yup";
 import Form from "react-formal";
-import Toggle from "material-ui/Toggle";
 import { dataTest } from "../lib/attributes";
 import GSTextField from "./forms/GSTextField";
 import GSSubmitButton from "./forms/GSSubmitButton";
+
+import FormControlLabel from "@material-ui/core/FormControlLabel";
+import Switch from "@material-ui/core/Switch";
 
 const configurableFields = {
   ACTION_HANDLERS: {
@@ -38,7 +40,7 @@ const configurableFields = {
     component: props => {
       // maybe show the list and then validate
       return (
-        <div>
+        <div key={props.key}>
           <Form.Field
             as={GSTextField}
             label="Action Handlers (comma-separated)"
@@ -66,13 +68,22 @@ const configurableFields = {
         return null;
       }
       return (
-        <div>
-          <Toggle
-            toggled={props.parent.state.ALLOW_SEND_ALL_ENABLED}
-            label="Allow 'Send All' single-button"
-            onToggle={(toggler, val) =>
-              props.parent.toggleChange("ALLOW_SEND_ALL_ENABLED", val)
+        <div key={props.key}>
+          <FormControlLabel
+            control={
+              <Switch
+                checked={props.parent.state.ALLOW_SEND_ALL_ENABLED}
+                onChange={event =>
+                  props.parent.toggleChange(
+                    "ALLOW_SEND_ALL_ENABLED",
+                    event.target.checked
+                  )
+                }
+                color="primary"
+              />
             }
+            label="Allow 'Send All' single-button"
+            labelPlacement="start"
           />
           {props.parent.state.ALLOW_SEND_ALL_ENABLED ? (
             <div style={{ padding: "8px" }}>
@@ -107,7 +118,7 @@ const configurableFields = {
     ready: true,
     component: props => {
       return (
-        <div>
+        <div key={props.key}>
           <Form.Field
             as={GSTextField}
             label="Default Batch Size"
@@ -127,7 +138,7 @@ const configurableFields = {
     ready: true,
     component: props => {
       return (
-        <div>
+        <div key={props.key}>
           <Form.Field
             as={GSTextField}
             label="Default Response Window"
@@ -153,7 +164,7 @@ const configurableFields = {
     ready: true,
     component: props => {
       return (
-        <div>
+        <div key={props.key}>
           <Form.Field
             as={GSTextField}
             label="Maximum Number of Contacts per-texter"
@@ -183,7 +194,7 @@ const configurableFields = {
     ready: true,
     component: props => {
       return (
-        <div>
+        <div key={props.key}>
           <Form.Field
             as={GSTextField}
             label="Max Message Length"
@@ -243,7 +254,11 @@ export default class OrganizationFeatureSettings extends React.Component {
           ...this.props,
           ...this.state
         });
-        return configurableFields[f].component({ ...this.props, parent: this });
+        return configurableFields[f].component({
+          key: f,
+          ...this.props,
+          parent: this
+        });
       });
     return (
       <div>

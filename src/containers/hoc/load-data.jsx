@@ -1,13 +1,18 @@
 import React from "react";
 import { graphql, compose } from "react-apollo";
 import { withProps, branch, renderComponent } from "recompose";
+
+import Card from "@material-ui/core/Card";
+import CardHeader from "@material-ui/core/CardHeader";
+import CardActions from "@material-ui/core/CardActions";
+import CardContent from "@material-ui/core/CardContent";
+import Button from "@material-ui/core/Button";
+
 import ApolloClientSingleton from "../../network/apollo-client-singleton";
-import { Card, CardHeader, CardText } from "material-ui/Card";
 
 // https://www.apollographql.com/docs/react/v2.5/recipes/recompose/
 
 import LoadingIndicator from "../../components/LoadingIndicator";
-import { CardActions, RaisedButton } from "material-ui";
 
 /**
  * This HOC takes a list of GraphQL query names and adds a loading prop that is true if any of the
@@ -70,15 +75,15 @@ const withOperations = options => {
 const PrettyErrors = ({ errors }) => (
   <Card style={{ margin: "10px" }}>
     <CardHeader title="Encountered errors" />
-    <CardText>
+    <CardContent>
       <ul>
         {errors.map((err, index) => (
           <li key={index}>{err.message}</li>
         ))}
       </ul>
-    </CardText>
+    </CardContent>
     <CardActions>
-      <RaisedButton label="Reload" onClick={() => window.location.reload()} />
+      <Button onClick={() => window.location.reload()}>Reload</Button>
     </CardActions>
   </Card>
 );
