@@ -34,10 +34,6 @@ describe("updateServiceVendorConfig", () => {
     user = await createUser();
     const invite = await createInvite();
     const createOrganizationResult = await createOrganization(user, invite);
-    console.log(
-      "updateServiceVendorconfig test beforeEach createOrgRsul",
-      createOrganizationResult
-    );
     organization = createOrganizationResult.data.createOrganization;
     await ensureOrganizationTwilioWithMessagingService(
       createOrganizationResult
@@ -177,10 +173,13 @@ describe("updateServiceVendorConfig", () => {
           [
             expect.objectContaining({
               id: 1
+            }),
+            expect.objectContaining({
+              obscureSensitiveInformation: true
             })
           ]
         ]);
-        expect(gqlResult.data.updateServiceVendorConfig).toEqual(
+        expect(gqlResult.data.updateServiceVendorConfig.config).toEqual(
           expect.objectContaining(expectedCacheConfig)
         );
 
