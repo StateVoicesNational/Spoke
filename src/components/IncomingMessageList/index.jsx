@@ -270,7 +270,6 @@ export class IncomingMessageList extends Component {
   };
 
   handleRowsSelected = rowsSelected => {
-    console.log("rowsSelected", rowsSelected);
     this.setState({ selectedRows: rowsSelected });
     const conversations = this.props.conversations.conversations.conversations;
     const selectedConversations = prepareSelectedRowsData(
@@ -369,6 +368,8 @@ export class IncomingMessageList extends Component {
       page: displayPage - 1,
       serverSide: true,
       count: total,
+      rowsPerPage: limit,
+      rowsPerPageOptions: rowSizeList,
       rowsSelected: clearSelectedMessages ? null : this.state.selectedRows,
       customToolbarSelect: () => null,
       onTableChange: (action, tableState) => {
