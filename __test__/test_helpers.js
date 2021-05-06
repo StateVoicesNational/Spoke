@@ -250,7 +250,10 @@ export async function setTwilioAuth(user, organization) {
         organizationId: $organizationId
         serviceName: $serviceName
         config: $config
-      ) 
+      ) {
+        id
+        config
+      }
     }
   `;
 
