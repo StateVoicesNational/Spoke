@@ -13,6 +13,7 @@ import {
   fullyConfigured,
   getServiceMetadata
 } from "../../extensions/service-vendors";
+import { getServiceManagerData } from "../../extensions/service-managers";
 
 export const ownerConfigurable = {
   // ACTION_HANDLERS: 1,
@@ -211,14 +212,20 @@ export const resolvers = {
     cacheable: (org, _, { user }) =>
       // quanery logic.  levels are 0, 1, 2
       r.redis ? (getConfig("REDIS_CONTACT_CACHE", org) ? 2 : 1) : 0,
-    messageService: async (organization, _, { user }) => {
+    serviceVendor: async (organization, _, { user }) => {
       try {
         await accessRequired(user, organization.id, "OWNER");
         const serviceName = cacheableData.organization.getMessageService(
           organization
         );
         const serviceMetadata = getServiceMetadata(serviceName);
+        console.log(
+          "organization.messageService",
+          serviceName,
+          serviceMetadata
+        );
         return {
+          id: `org${organization.id}-${serviceName}`,
           ...serviceMetadata,
           config: cacheableData.organization.getMessageServiceConfig(
             organization,
@@ -226,7 +233,29 @@ export const resolvers = {
           )
         };
       } catch (caught) {
+        console.log("organization.messageService error", caught);
         return null;
+      }
+    },
+    serviceManagers: async (organization, _, { user, loaders }) => {
+      try {
+        await accessRequired(user, organization.id, "OWNER", true);
+        const result = await getServiceManagerData(
+          "getOrganizationData",
+          organization,
+          { organization, user, loaders }
+        );
+        return result.map(r => ({
+          id: `${r.name}-org${organization.id}-`,
+          organization,
+          // defaults
+          fullyConfigured: null,
+          data: null,
+          ...r
+        }));
+      } catch (err) {
+        console.log("orgaization.serviceManagers error", err);
+        return [];
       }
     },
     fullyConfigured: async organization => {

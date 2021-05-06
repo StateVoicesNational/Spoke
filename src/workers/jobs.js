@@ -16,6 +16,7 @@ import {
   getLastMessage,
   saveNewIncomingMessage
 } from "../extensions/service-vendors/message-sending";
+import { serviceManagersHaveImplementation } from "../extensions/service-managers";
 import importScriptFromDocument from "../server/api/lib/import-script";
 import { rawIngestMethod } from "../extensions/contact-loaders";
 
@@ -26,6 +27,7 @@ import { sendEmail } from "../server/mail";
 import { Notifications, sendUserNotification } from "../server/notifications";
 import { getConfig } from "../server/api/lib/config";
 import { invokeTaskFunction, Tasks } from "./tasks";
+
 import fs from "fs";
 import path from "path";
 
@@ -278,7 +280,7 @@ export async function completeContactLoad(
   ingestResult
 ) {
   const campaignId = job.campaign_id;
-  const campaign = await Campaign.get(campaignId);
+  const campaign = await cacheableData.campaign.load(campaignId);
   const organization = await Organization.get(campaign.organization_id);
 
   let deleteOptOutCells = null;
@@ -349,6 +351,22 @@ export async function completeContactLoad(
     deleteDuplicateCells,
     ingestResult
   });
+
+  if (
+    serviceManagersHaveImplementation("onCampaignContactLoad", organization)
+  ) {
+    await invokeTaskFunction(Tasks.SERVICE_MANAGER_TRIGGER, {
+      functionName: "onCampaignContactLoad",
+      organizationId: organization.id,
+      data: {
+        campaign,
+        ingestResult,
+        ingestDataReference,
+        finalContactCount,
+        deleteOptOutCells
+      }
+    });
+  }
 }
 
 export async function unzipPayload(job) {

@@ -65,6 +65,7 @@ import {
   releaseCampaignNumbers,
   clearCachedOrgAndExtensionCaches,
   updateFeedback,
+  updateServiceManager,
   updateServiceVendorConfig
 } from "./mutations";
 
@@ -500,6 +501,7 @@ const rootMutations = {
     startCampaign,
     releaseCampaignNumbers,
     clearCachedOrgAndExtensionCaches,
+    updateServiceManager,
     updateServiceVendorConfig,
     userAgreeTerms: async (_, { userId }, { user }) => {
       // We ignore userId: you can only agree to terms for yourself

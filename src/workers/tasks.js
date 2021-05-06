@@ -4,13 +4,35 @@
 import serviceMap from "../extensions/service-vendors";
 import * as ActionHandlers from "../extensions/action-handlers";
 import { cacheableData } from "../server/models";
+import { processServiceManagers } from "../extensions/service-managers";
 
 export const Tasks = Object.freeze({
   SEND_MESSAGE: "send_message",
   ACTION_HANDLER_QUESTION_RESPONSE: "action_handler:question_response",
   ACTION_HANDLER_TAG_UPDATE: "action_handler:tag_update",
-  CAMPAIGN_START_CACHE: "campaign_start_cache"
+  CAMPAIGN_START_CACHE: "campaign_start_cache",
+  SERVICE_MANAGER_TRIGGER: "service_manager_trigger"
 });
+
+const serviceManagerTrigger = async ({
+  functionName,
+  organizationId,
+  data
+}) => {
+  console.log(
+    "serviceManagerTrigger",
+    functionName,
+    organizationId,
+    Object.keys(data)
+  );
+  let organization, campaign;
+  if (organizationId) {
+    organization = await cacheableData.organization.load(organizationId);
+    console.log("serviceManagerTrigger org", organization.name);
+  }
+
+  await processServiceManagers(functionName, organization, data);
+};
 
 const sendMessage = async ({
   message,
@@ -105,7 +127,8 @@ const taskMap = Object.freeze({
   [Tasks.SEND_MESSAGE]: sendMessage,
   [Tasks.ACTION_HANDLER_QUESTION_RESPONSE]: questionResponseActionHandler,
   [Tasks.ACTION_HANDLER_TAG_UPDATE]: tagUpdateActionHandler,
-  [Tasks.CAMPAIGN_START_CACHE]: startCampaignCache
+  [Tasks.CAMPAIGN_START_CACHE]: startCampaignCache,
+  [Tasks.SERVICE_MANAGER_TRIGGER]: serviceManagerTrigger
 });
 
 export const invokeTaskFunction = async (taskName, payload) => {

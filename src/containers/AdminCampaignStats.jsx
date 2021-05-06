@@ -440,6 +440,7 @@ const queries = {
         $contactsFilter: ContactsFilter!
         $needsResponseFilter: ContactsFilter!
         $assignmentsFilter: AssignmentsFilter
+        $fromCampaignStatsPage: Boolean
       ) {
         campaign(id: $campaignId) {
           id
@@ -496,6 +497,12 @@ const queries = {
             }
           }
           cacheable
+          serviceManagers(fromCampaignStatsPage: $fromCampaignStatsPage) {
+            id
+            name
+            supportsCampaignConfig
+            data
+          }
         }
       }
     `,
@@ -512,7 +519,8 @@ const queries = {
         needsResponseFilter: {
           messageStatus: "needsResponse",
           isOptedOut: false
-        }
+        },
+        fromCampaignStatsPage: true
       },
       pollInterval: 5000
     })

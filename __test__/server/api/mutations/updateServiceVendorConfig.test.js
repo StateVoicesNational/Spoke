@@ -34,6 +34,10 @@ describe("updateServiceVendorConfig", () => {
     user = await createUser();
     const invite = await createInvite();
     const createOrganizationResult = await createOrganization(user, invite);
+    console.log(
+      "updateServiceVendorconfig test beforeEach createOrgRsul",
+      createOrganizationResult
+    );
     organization = createOrganizationResult.data.createOrganization;
     await ensureOrganizationTwilioWithMessagingService(
       createOrganizationResult
@@ -61,14 +65,14 @@ describe("updateServiceVendorConfig", () => {
 
     vars = {
       organizationId: organization.id,
-      messageServiceName: "twilio",
+      serviceName: "twilio",
       config: JSON.stringify(newConfig)
     };
   });
 
   describe("when it's not the configured message service name", () => {
     beforeEach(async () => {
-      vars.messageServiceName = "this will never be a message service name";
+      vars.serviceName = "this will never be a message service name";
     });
 
     it("returns an error", async () => {
@@ -271,7 +275,7 @@ describe("updateServiceVendorConfig", () => {
       beforeEach(async () => {
         service = "extremely_fake_service";
         configKey = serviceMap.getConfigKey(service);
-        vars.messageServiceName = service;
+        vars.serviceName = service;
         dbOrganization.features = JSON.stringify({
           service,
           TWILIO_ACCOUNT_SID: "the former_fake_account_sid",

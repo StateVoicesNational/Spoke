@@ -14,7 +14,7 @@ import { schema as campaignContactSchema } from "./campaign-contact";
 import { schema as cannedResponseSchema } from "./canned-response";
 import { schema as inviteSchema } from "./invite";
 import { schema as tagSchema } from "./tag";
-import { schema as messageServiceSchema } from "./message-service";
+import { schema as serviceSchema } from "./service";
 
 const rootSchema = gql`
   input CampaignContactInput {
@@ -297,9 +297,16 @@ const rootSchema = gql`
     ): Organization
     updateServiceVendorConfig(
       organizationId: String!
-      messageServiceName: String!
+      serviceName: String!
       config: JSON!
-    ): JSON
+    ): ServiceVendor
+    updateServiceManager(
+      organizationId: String!
+      campaignId: String
+      serviceManagerName: String!
+      updateData: JSON!
+      fromCampaignStatsPage: Boolean
+    ): ServiceManager
     bulkSendMessages(assignmentId: Int!): [CampaignContact]
     sendMessage(
       message: MessageInput!
@@ -409,5 +416,5 @@ export const schema = [
   inviteSchema,
   conversationSchema,
   tagSchema,
-  messageServiceSchema
+  serviceSchema
 ];
