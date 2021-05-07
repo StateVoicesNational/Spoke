@@ -500,7 +500,7 @@ const queries = {
           serviceManagers(fromCampaignStatsPage: $fromCampaignStatsPage) {
             id
             name
-            supportsCampaignConfig
+            displayName
             data
           }
         }

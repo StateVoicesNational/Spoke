@@ -64,3 +64,59 @@ OrgConfig.propTypes = {
   saveLabel: PropTypes.string,
   onSubmit: PropTypes.func
 };
+
+export class CampaignConfig extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {};
+  }
+
+  render() {
+    console.log("testfakedata CampaignConfig", this.props);
+    const formSchema = yup.object({
+      savedText: yup
+        .string()
+        .nullable()
+        .max(64)
+    });
+    return (
+      <div>
+        THIS IS TEST_FAKE_DATA
+        {!this.props.campaign.isStarted ? (
+          <GSForm
+            schema={formSchema}
+            defaultValue={this.props.serviceManagerInfo.data}
+            onSubmit={x => {
+              console.log("onSubmit", x);
+              this.props.onSubmit(x);
+            }}
+          >
+            <Form.Field
+              as={GSTextField}
+              label="Some saveable text"
+              name="savedText"
+              fullWidth
+            />
+            <Form.Submit
+              as={GSSubmitButton}
+              label="Save"
+              component={GSSubmitButton}
+            />
+          </GSForm>
+        ) : (
+          <div>
+            Campaign is now started! {this.props.serviceManagerInfo.data.foo}
+          </div>
+        )}
+      </div>
+    );
+  }
+}
+
+CampaignConfig.propTypes = {
+  user: PropTypes.object,
+  campaign: PropTypes.object,
+  serviceManagerInfo: PropTypes.object,
+  saveLabel: PropTypes.string,
+  onSubmit: PropTypes.func
+};
