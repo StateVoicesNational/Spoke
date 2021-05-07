@@ -180,7 +180,6 @@ class Settings extends React.Component {
                   }}
                 />
                 <CardText>
-                  <div>FOO BAR {sm.name}</div>
                   <ServiceManagerComp
                     serviceManagerInfo={sm}
                     organizationId={organizationId}

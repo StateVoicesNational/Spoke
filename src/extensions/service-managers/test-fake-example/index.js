@@ -20,7 +20,8 @@ export async function onMessageSend({
   campaign
 }) {}
 
-// maybe also with organization (only looked up if an enabled hook supports onDeliveryReport
+// NOTE: this is somewhat expensive relatively what it usually is,
+// so only implement this if it's important
 export async function onDeliveryReport({
   contactNumber,
   userNumber,
@@ -28,17 +29,11 @@ export async function onDeliveryReport({
   service,
   messageServiceSid,
   newStatus,
-  errorCode
-}) {}
-
-export async function isCampaignReady({
+  errorCode,
   organization,
-  campaign,
-  user,
-  loaders
-}) {
-  // if NOT ready, must return object in form of { ready: false, code: "<string>", message: "<message for campaign creator>"}
-}
+  campaignContact,
+  lookup
+}) {}
 
 export async function getCampaignData({
   organization,
@@ -49,12 +44,20 @@ export async function getCampaignData({
 }) {
   // MUST NOT RETURN SECRETS!
   // called both from edit and stats contexts: editMode==true for edit page
-  return {
-    data: {
-      foo: "bar"
-    },
-    fullyConfigured: true
-  };
+  if (fromCampaignStatsPage) {
+    return {
+      data: {
+        foo: "statsPage Info!!!"
+      }
+    };
+  } else {
+    return {
+      data: {
+        foo: "bar"
+      },
+      fullyConfigured: campaign.is_started
+    };
+  }
 }
 
 export async function onCampaignUpdateSignal({
@@ -63,7 +66,14 @@ export async function onCampaignUpdateSignal({
   user,
   updateData,
   fromCampaignStatsPage
-}) {}
+}) {
+  return {
+    data: {
+      foo: "xyz"
+    },
+    fullyConfigured: true
+  };
+}
 
 export async function onCampaignContactLoad({
   organization,
