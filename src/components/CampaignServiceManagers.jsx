@@ -27,13 +27,15 @@ export class CampaignServiceVendors extends React.Component {
     customFields: type.array,
     saveLabel: type.string,
     campaign: type.object,
+    organization: type.object,
     onSubmit: type.func,
     saveDisabled: type.bool,
-    isStarted: type.bool
+    isStarted: type.bool,
+    serviceManagerComponentName: type.string
   };
 
   render() {
-    const { campaign } = this.props;
+    const { campaign, organization, serviceManagerComponentName } = this.props;
     if (!campaign.serviceManagers.length) {
       return null;
     }
@@ -45,26 +47,32 @@ export class CampaignServiceVendors extends React.Component {
         {campaign.serviceManagers.map(sm => {
           const ServiceManagerComp = getServiceManagerComponent(
             sm.name,
-            "CampaignConfig"
+            serviceManagerComponentName
           );
           const serviceManagerName = sm.name;
+          if (!ServiceManagerComp) {
+            return null;
+          }
           return (
             <Card>
-              <CardHeader
-                title={sm.displayName}
-                style={{
-                  backgroundColor:
-                    sm.fullyConfigured === true
-                      ? theme.colors.green
-                      : sm.fullyConfigured === false
-                      ? theme.colors.yellow
-                      : theme.colors.lightGray
-                }}
-              />
+              {serviceManagerComponentName === "CampaignConfig" ? (
+                <CardHeader
+                  title={sm.displayName}
+                  style={{
+                    backgroundColor:
+                      sm.fullyConfigured === true
+                        ? theme.colors.green
+                        : sm.fullyConfigured === false
+                        ? theme.colors.yellow
+                        : theme.colors.lightGray
+                  }}
+                />
+              ) : null}
               <CardText>
                 <ServiceManagerComp
                   serviceManagerInfo={sm}
                   campaign={campaign}
+                  organization={organization}
                   saveLabel={this.props.saveLabel}
                   onSubmit={updateData =>
                     this.props.onSubmit(serviceManagerName, updateData)

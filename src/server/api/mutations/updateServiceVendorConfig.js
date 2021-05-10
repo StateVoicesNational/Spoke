@@ -4,6 +4,7 @@ import {
   getService,
   tryGetFunctionFromService
 } from "../../../extensions/service-vendors";
+import { processServiceManagers } from "../../../extensions/service-managers";
 import { getConfig } from "../../../server/api/lib/config";
 import orgCache from "../../models/cacheable_queries/organization";
 import { accessRequired } from "../errors";
@@ -81,6 +82,17 @@ export const updateServiceVendorConfig = async (
   await dbOrganization.save();
   await orgCache.clear(organization.id);
   const updatedOrganization = await orgCache.load(organization.id);
+
+  await processServiceManagers(
+    "onOrganizationServiceVendorSetup",
+    updatedOrganization,
+    {
+      user,
+      serviceName,
+      oldConfig: existingConfig,
+      newConfig
+    }
+  );
 
   return {
     id: `org${organization.id}-${serviceName}`,

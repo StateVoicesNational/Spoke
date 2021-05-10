@@ -60,22 +60,3 @@ export const updateServiceManager = async (
     ...result
   };
 };
-
-export const getServiceVendorConfig = async (
-  serviceName,
-  organization,
-  options = {}
-) => {
-  const getServiceConfig = exports.tryGetFunctionFromService(
-    serviceName,
-    "getServiceConfig"
-  );
-  if (!getServiceConfig) {
-    return null;
-  }
-  const configKey = exports.getConfigKey(serviceName);
-  const config = getConfig(configKey, organization, {
-    onlyLocal: options.restrictToOrgFeatures
-  });
-  return getServiceConfig(config, organization, options);
-};

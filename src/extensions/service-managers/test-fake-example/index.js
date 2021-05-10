@@ -48,7 +48,8 @@ export async function getCampaignData({
     return {
       data: {
         foo: "statsPage Info!!!"
-      }
+      },
+      unArchiveable: true
     };
   } else {
     return {
@@ -71,7 +72,8 @@ export async function onCampaignUpdateSignal({
     data: {
       foo: "xyz"
     },
-    fullyConfigured: true
+    fullyConfigured: true,
+    unArchiveable: false
   };
 }
 
@@ -106,10 +108,12 @@ export async function getOrganizationData({ organization, user, loaders }) {
   };
 }
 
-export async function onOrganizationServiceSetup({
+export async function onOrganizationServiceVendorSetup({
   organization,
   user,
-  service
+  serviceName,
+  oldConfig,
+  newConfig
 }) {}
 
 export async function onOrganizationUpdateSignal({
@@ -123,6 +127,16 @@ export async function onOrganizationUpdateSignal({
   };
 }
 
-export async function onCampaignStart({}) {}
+export async function onCampaignStart({ organization, campaign, user }) {
+  console.log(
+    "service-managers.test-fake-example onCampaignStart",
+    campaign.id,
+    user.id
+  );
+}
 
 export async function onCampaignArchive({}) {}
+
+export async function onCampaignUnarchive({}) {
+  // you can throw an error to block un-archiving
+}

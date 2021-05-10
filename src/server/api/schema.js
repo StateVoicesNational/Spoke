@@ -38,6 +38,10 @@ import {
 import { resolvers as interactionStepResolvers } from "./interaction-step";
 import { resolvers as inviteResolvers } from "./invite";
 import { saveNewIncomingMessage } from "../../extensions/service-vendors/message-sending";
+import {
+  processServiceManagers,
+  serviceManagersHaveImplementation
+} from "../../extensions/service-managers";
 import { getConfig, getFeatures } from "./lib/config";
 import { resolvers as messageResolvers } from "./message";
 import { resolvers as optOutResolvers } from "./opt-out";
@@ -924,6 +928,17 @@ const rootMutations = {
         throw new Error("Cannot archive permanently archived campaign");
       }
       campaign.is_archived = false;
+      const organization = await cacheableData.organization.load(
+        campaign.organization_id
+      );
+      const serviceManagerResults = await processServiceManagers(
+        "onCampaignUnarchive",
+        organization,
+        {
+          campaign,
+          user
+        }
+      );
       await campaign.save();
       await cacheableData.campaign.clear(id);
       return campaign;
@@ -934,6 +949,16 @@ const rootMutations = {
       campaign.is_archived = true;
       await campaign.save();
       await cacheableData.campaign.clear(id);
+      if (serviceManagersHaveImplementation("onCampaignArchive")) {
+        await jobRunner.dispatchTask(Tasks.SERVICE_MANAGER_TRIGGER, {
+          functionName: "onCampaignArchive",
+          organizationId: campaign.organization_id,
+          data: {
+            campaign,
+            user
+          }
+        });
+      }
       return campaign;
     },
     archiveCampaigns: async (_, { ids }, { user, loaders }) => {

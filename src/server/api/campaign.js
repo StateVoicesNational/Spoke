@@ -712,6 +712,7 @@ export const resolvers = {
         organization,
         // defaults
         fullyConfigured: null,
+        unArchiveable: null,
         data: null,
         ...r
       }));

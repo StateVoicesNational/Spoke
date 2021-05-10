@@ -16,6 +16,7 @@ export const schema = gql`
     supportsOrgConfig: Boolean!
     supportsCampaignConfig: Boolean!
     fullyConfigured: Boolean
+    unArchiveable: Boolean
     organization: Organization
     campaign: Campaign
   }

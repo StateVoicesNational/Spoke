@@ -2,6 +2,7 @@ import cacheableData from "../../models/cacheable_queries";
 import { r } from "../../models";
 import { accessRequired } from "../errors";
 import { Notifications, sendUserNotification } from "../../notifications";
+import { serviceManagersHaveImplementation } from "../../../extensions/service-managers";
 import * as twilio from "../../../extensions/service-vendors/twilio";
 import { getConfig } from "../lib/config";
 import { jobRunner } from "../../../extensions/job-runners";
@@ -68,6 +69,17 @@ export const startCampaign = async (
     await jobRunner.dispatchTask(Tasks.CAMPAIGN_START_CACHE, {
       campaign: campaignRefreshed,
       organization
+    });
+  }
+
+  if (serviceManagersHaveImplementation("onCampaignStart", organization)) {
+    await jobRunner.dispatchTask(Tasks.SERVICE_MANAGER_TRIGGER, {
+      functionName: "onCampaignStart",
+      organizationId: organization.id,
+      data: {
+        campaign: campaignRefreshed,
+        user
+      }
     });
   }
   return campaignRefreshed;
