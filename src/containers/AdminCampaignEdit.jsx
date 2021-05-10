@@ -554,7 +554,8 @@ export class AdminCampaignEdit extends React.Component {
         extraProps: {
           campaign: this.props.campaignData.campaign,
           organization: this.props.organizationData.organization,
-          onSubmit: this.props.mutations.updateServiceManager
+          onSubmit: this.props.mutations.updateServiceManager,
+          serviceManagerComponentName: "CampaignConfig"
         }
       });
     }

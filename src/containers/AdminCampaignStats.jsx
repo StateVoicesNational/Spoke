@@ -6,6 +6,7 @@ import { Card, CardTitle, CardText } from "material-ui/Card";
 import LinearProgress from "material-ui/LinearProgress";
 import TexterStats from "../components/TexterStats";
 import OrganizationJoinLink from "../components/OrganizationJoinLink";
+import CampaignServiceManagers from "../components/CampaignServiceManagers";
 import AdminCampaignCopy from "./AdminCampaignCopy";
 import Snackbar from "material-ui/Snackbar";
 import { withRouter, Link } from "react-router";
@@ -266,7 +267,12 @@ class AdminCampaignStats extends React.Component {
                         campaign.isArchived ? (
                           <RaisedButton
                             key="unarchiveCampaign"
-                            disabled={campaign.isArchivedPermanently}
+                            disabled={
+                              campaign.isArchivedPermanently ||
+                              campaign.serviceManagers
+                                .map(sm => sm.unArchiveable)
+                                .reduce((a, b) => a && b)
+                            }
                             onClick={async () =>
                               await this.props.mutations.unarchiveCampaign(
                                 campaignId
@@ -358,7 +364,12 @@ class AdminCampaignStats extends React.Component {
             campaignId={campaignId}
           />
         ) : null}
-
+        <CampaignServiceManagers
+          campaign={campaign}
+          organization={this.props.organizationData.organization}
+          serviceManagerComponentName={"CampaignStats"}
+          onSubmit={this.props.mutations.updateServiceManager}
+        />
         <div className={css(styles.container)}>
           <div className={css(styles.flexColumn, styles.spacer)}>
             <Stat title="Contacts" count={campaign.contactsCount} />
@@ -502,6 +513,7 @@ const queries = {
             name
             displayName
             data
+            unArchiveable
           }
         }
       }
@@ -597,6 +609,36 @@ const mutations = {
     `,
     variables: { campaignId },
     refetchQueries: () => ["getOrganizationData"]
+  }),
+  updateServiceManager: ownProps => (serviceManagerName, updateData) => ({
+    mutation: gql`
+      mutation updateServiceManager(
+        $organizationId: String!
+        $campaignId: String!
+        $serviceManagerName: String!
+        $updateData: JSON!
+        $fromCampaignStatsPage: Boolean
+      ) {
+        updateServiceManager(
+          organizationId: $organizationId
+          campaignId: $campaignId
+          serviceManagerName: $serviceManagerName
+          updateData: $updateData
+          fromCampaignStatsPage: $fromCampaignStatsPage
+        ) {
+          id
+          data
+          unArchiveable
+        }
+      }
+    `,
+    variables: {
+      organizationId: ownProps.organizationData.organization.id,
+      campaignId: ownProps.data.campaign.id,
+      serviceManagerName,
+      updateData,
+      fromCampaignStatsPage: true
+    }
   })
 };
 
