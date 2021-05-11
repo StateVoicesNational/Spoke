@@ -8,7 +8,7 @@
   - [Texter Shortcuts and when they are displayed](REFERENCE-shortcut-rules.md)
   - [Sample SQL queries for tracking texter activity](REFERENCE_TEXTER_ACTIVITY_QUERIES.md)
   - [Configuring texting hours enforcement](HOWTO_TEXTING_HOURS_ENFORCEMENT.md)
-  - [OUTDATED: How to buy numbers in Twilio](HOWTO_BUY_NUMBERS_IN_TWILIO.md)
+  - [How to buy numbers in Spoke](HOWTO_BUY_NUMBERS_IN_SPOKE.md)
   - [How to configure bulk sending outside the USA](HOWTO-use_bulk_sending_outside_the_USA.md)
 
 - Extensions Docs
@@ -28,7 +28,8 @@
   - [How to configure Auth0 for authentication](HOWTO-configure-auth0.md)
   - [Instructions for using Redis in Development and Production](HOWTO_CONNECT_WITH_REDIS.md)
   - [How to configure Slack Authentication](HOWTO_INTEGRATE_SLACK_AUTH.md)
-  - [How to integrate integrate Twilio](HOWTO_INTEGRATE_TWILIO.md)
+  - [How to integrate Twilio](HOWTO_INTEGRATE_TWILIO.md)
+  - [How to handle high volume using Twilio Functions & Amazon SQS](HOWTO_setup_twilio_amazon_SQS.md)
   - [How to Integrate with Action Kit](HOWTO_INTEGRATE_WITH_ACTIONKIT.md)
   - [How to Integrate with Upland Mobile Commons for Broadcast SMS Signup](HOWTO_INTEGRATE_WITH_MOBILE_COMMONS.md)
   - [How to Integrate with Revere for Broadcast SMS Signup](HOWTO_INTEGRATE_WITH_REVERE.md)
@@ -49,3 +50,7 @@
   - [How access roles work in Spoke](REFERENCE_ROLES_DESCRIPTION.md)
   - [How to scale Spoke](HOWTO-scale-spoke-plan.md)
   - [How to set up Spoke with Postgresql](HOWTO_USE_POSTGRESQL.md)
+  
+- Outlines of docs we wish we had - contributors welcome!
+
+  - [MESSAGE REVIEW documentation](EXPLANATION_MESSAGE_REVIEW.md)

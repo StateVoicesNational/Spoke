@@ -725,8 +725,8 @@ export async function exportCampaign(job) {
       };
   const contacts = await r
     .knexReadOnly("campaign_contact")
-    .join("assignment", "campaign_contact.assignment_id", "assignment.id")
-    .join("user", "assignment.user_id", "user.id")
+    .leftJoin("assignment", "campaign_contact.assignment_id", "assignment.id")
+    .leftJoin("user", "assignment.user_id", "user.id")
     .leftJoin("zip_code", "zip_code.zip", "campaign_contact.zip")
     .leftJoin("opt_out", optOutJoins)
     .column([
