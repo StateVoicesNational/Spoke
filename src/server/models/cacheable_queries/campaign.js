@@ -57,31 +57,24 @@ const dbCustomFields = async (id, organizationId) => {
 
   if (organizationId) {
     const organization = await organizationCache.load(organizationId);
-    const shouldUseTexterCustomFields = getConfig(
-      "SCRIPTS_USE_TEXTER_PROFILE_FIELDS",
-      organization,
-      { truthy: true }
-    );
 
-    if (shouldUseTexterCustomFields) {
-      let fields = getConfig("TEXTER_PROFILE_FIELDS", organization) || [];
+    let fields = getConfig("TEXTER_PROFILE_FIELDS", organization) || [];
 
-      if (typeof fields === "string") {
-        try {
-          fields = JSON.parse(fields) || [];
-        } catch (err) {
-          console.log("Error parsing TEXTER_PROFILE_FIELDS", err);
-          fields = [];
-        }
+    if (typeof fields === "string") {
+      try {
+        fields = JSON.parse(fields) || [];
+      } catch (err) {
+        console.log("Error parsing TEXTER_PROFILE_FIELDS", err);
+        fields = [];
       }
-
-      if (!Array.isArray(fields)) fields = [];
-
-      customFields = [
-        ...fields.map(({ name }) => `texter_${name}`),
-        ...customFields
-      ];
     }
+
+    if (!Array.isArray(fields)) fields = [];
+
+    customFields = [
+      ...fields.map(({ name }) => `texter_${name}`),
+      ...customFields
+    ];
   }
 
   return customFields;
