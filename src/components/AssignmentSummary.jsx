@@ -19,7 +19,7 @@ import theme from "../styles/mui-theme";
 
 const styles = StyleSheet.create({
   container: {
-    margin: "20px 0"
+    margin: `${theme.spacing(2)}px 0`
   },
   image: {
     height: 100
