@@ -26,6 +26,7 @@ const styles = StyleSheet.create({
   },
   buttonRow: {
     display: "flex",
+    flexWrap: "wrap",
     gap: theme.spacing(2),
     marginBottom: theme.spacing(2)
   }
