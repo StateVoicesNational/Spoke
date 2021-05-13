@@ -69,8 +69,7 @@ export class AssignmentSummary extends Component {
         <Button
           {...dataTest(dataTestText)}
           disabled={disabled}
-          variant="contained"
-          color="primary"
+          variant="outlined"
           onClick={() => this.goToTodos(contactsFilter, assignment.id)}
         >
           {title}
