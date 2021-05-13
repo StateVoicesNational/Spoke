@@ -197,7 +197,8 @@ export class IncomingMessageList extends Component {
                 style={{
                   textOverflow: "ellipsis",
                   overflow: "hidden",
-                  whiteSpace: "nowrap"
+                  whiteSpace: "nowrap",
+                  maxWidth: 150
                 }}
                 title={lastMessage.text}
               >
