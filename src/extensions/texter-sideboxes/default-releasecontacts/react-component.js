@@ -1,21 +1,23 @@
 import type from "prop-types";
 import React from "react";
 import * as yup from "yup";
-import { css } from "aphrodite";
+import { StyleSheet, css } from "aphrodite";
+import { withRouter } from "react-router";
 import Form from "react-formal";
 import Button from "@material-ui/core/Button";
 import Switch from "@material-ui/core/Switch";
 import FormControlLabel from "@material-ui/core/FormControlLabel";
 
-import { withRouter } from "react-router";
 import gql from "graphql-tag";
 import GSTextField from "../../../components/forms/GSTextField";
-
 import loadData from "../../../containers/hoc/load-data";
-import {
-  flexStyles,
-  inlineStyles
-} from "../../../components/AssignmentTexter/StyleControls";
+import theme from "../../../styles/mui-theme";
+
+const styles = StyleSheet.create({
+  marginBottom: {
+    marginBottom: theme.spacing(2)
+  }
+});
 
 export const displayName = () => "Release Contacts";
 
@@ -62,10 +64,10 @@ export class TexterSideboxClass extends React.Component {
         assignment.unrepliedCount ||
         assignment.hasUnreplied);
     return (
-      <div style={{}}>
+      <div>
         {assignment.unmessagedCount ||
         (messageStatusFilter === "needsMessage" && assignment.hasUnmessaged) ? (
-          <div>
+          <div className={css(styles.marginBottom)}>
             <div>
               {settingsData.releaseContactsBatchTitle ? (
                 settingsData.releaseContactsBatchTitle
@@ -74,33 +76,33 @@ export class TexterSideboxClass extends React.Component {
               )}
             </div>
             <Button
+              variant="outlined"
               onClick={() => this.handleReleaseContacts(false)}
-              className={css(flexStyles.flatButton)}
             >
               {settingsData.releaseContactsBatchLabel || "Done for the day"}
             </Button>
           </div>
         ) : null}
-        {showReleaseConvos ? (
-          <div style={{ marginTop: "12px" }}>
+        {showReleaseConvos && (
+          <div className={css(styles.marginBottom)}>
             <div>
               {settingsData.releaseContactsConvosTitle
                 ? settingsData.releaseContactsConvosTitle
                 : "Need to give up?"}
             </div>
             <Button
+              variant="outlined"
               onClick={() => this.handleReleaseContacts(true)}
               label={
                 settingsData.releaseContactsConvosLabel ||
                 "Release all my contacts"
               }
-              className={css(flexStyles.flatButton)}
             >
               {settingsData.releaseContactsConvosLabel ||
                 "Release all my contacts"}
             </Button>
           </div>
-        ) : null}
+        )}
       </div>
     );
   }

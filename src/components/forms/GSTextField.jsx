@@ -1,6 +1,8 @@
 import React from "react";
 import TextField from "@material-ui/core/TextField";
 import GSFormField from "./GSFormField";
+import { addConsoleHandler } from "selenium-webdriver/lib/logging";
+import theme from "../../styles/mui-theme";
 
 export default class GSTextField extends GSFormField {
   render() {
@@ -34,7 +36,7 @@ export default class GSTextField extends GSFormField {
       type,
       value,
       variant,
-      style
+      style = {}
     } = this.props;
     const textFieldProps = {
       autoComplete,
@@ -71,6 +73,12 @@ export default class GSTextField extends GSFormField {
     if (!textFieldProps.value) {
       textFieldProps.value = "";
     }
+    textFieldProps.style = Object.assign(
+      {},
+      { marginBottom: theme.spacing(2) },
+      textFieldProps.style
+    );
+
     const dataTest = { "data-test": this.props["data-test"] };
     return (
       <TextField
