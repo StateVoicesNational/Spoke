@@ -165,6 +165,7 @@ Do **NOT** set:
 - `STATIC_BASE_URL`: You will need to upload your ASSETS_DIR to an S3 bucket (or other static file site) and then set this to something like: `"https://s3.amazonaws.com/YOUR_BUCKET_AND_PATH/"` (don't forget the trailing '/')
 - `S3_STATIC_PATH`: This will be the aws s3 upload path that corresponds to STATIC_BASE_URL. So if `STATIC_BASE_URL=https://s3.amazon.com/spoke.example.com/static/` then `S3_STATIC_PATH=s3://spoke.example.com/static/` You will also need a ~/.s3cfg file that has the s3 upload credentials. See `package.json`'s postinstall script and more specifically `prod-static-upload`.
 - `"LAMBDA_DEBUG_LOG": "1",`: (ONLY FOR DEBUGGING) This will send more details of requests to the CloudWatch log. However, it will include the full request details, e.g. so do not use this in production.
+- `"ASSETS_DIR_PREBUILT"`: should be the absolute path (run `pwd` from command line) of your spoke deploy directory suffixed by `/build/client`
 
 For large production environments, it might also be a good idea to add `"SUPPRESS_MIGRATIONS": "1"` so that any time you update the schema with a version upgrade,
 you can manually run the migration (see below) rather than it accidentally trigger on multiple lambdas at once.
@@ -184,6 +185,7 @@ this file will be copied into the lambda function zip file and get deployed with
 To create the AWS Lambda function and the API Gateway to access it, run the following being sure to substitute in the correct values:
 
 ```sh
+$ ASSETS_DIR=./build/client/assets ASSETS_MAP_FILE=assets.json NODE_ENV=production yarn prod-build-client
 $ AWS_PROFILE=[your_profile_nickname] claudia create --handler lambda.handler \
     --deploy-proxy-api \
     --set-env-from-json ./production-env.json \
@@ -255,6 +257,7 @@ Once Claudia has created an API Gateway we can add a subdomain to access Spoke. 
 (if you are using nvm, make sure to run `nvm use` first to use the correct node version)
 
 ```sh
+$ ASSETS_DIR=./build/client/assets ASSETS_MAP_FILE=assets.json NODE_ENV=production yarn prod-build-client
 $ AWS_PROFILE=[your_profile_nickname] claudia update \
     --use-s3-bucket [YOUR_S3_BUCKET] \
     --set-env-from-json ./production-env.json
