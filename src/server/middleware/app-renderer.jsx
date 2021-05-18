@@ -1,7 +1,3 @@
-import { createMemoryHistory, match } from "react-router";
-import makeRoutes from "../../routes";
-
-import React from "react";
 import renderIndex from "./render-index";
 import wrap from "../wrap";
 import fs from "fs";
@@ -38,36 +34,10 @@ if (!DEBUG) {
 }
 
 export default wrap(async (req, res) => {
-  const memoryHistory = createMemoryHistory(req.url);
-  const authCheck = (nextState, replace) => {
-    const query = nextState.location.search
-      ? encodeURIComponent(nextState.location.search)
-      : "";
-    if (!req.isAuthenticated()) {
-      replace({
-        pathname: `/login?nextUrl=${nextState.location.pathname}${query}`
-      });
-    }
-  };
-  const routes = makeRoutes(authCheck);
-  match(
-    {
-      memoryHistory,
-      routes,
-      location: req.url
-    },
-    (error, redirectLocation, renderProps) => {
-      if (error) {
-        res.status(500).send(error.message);
-      } else if (redirectLocation) {
-        res.redirect(302, redirectLocation.pathname + redirectLocation.search);
-      } else if (renderProps) {
-        const html = "";
-        const css = "";
-        res.send(renderIndex(html, css, assetMap));
-      } else {
-        res.status(404).send("Not found");
-      }
-    }
-  );
+  const query = req.query ? encodeURIComponent(req.query) : "";
+  if (!req.isAuthenticated() && !req.path.startsWith("/login")) {
+    res.redirect(302, `/login?nextUrl=${req.path}${query}`);
+    return;
+  }
+  res.send(renderIndex("", "", assetMap));
 });
