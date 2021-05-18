@@ -1,14 +1,26 @@
 import type from "prop-types";
 import React from "react";
-import GSForm from "../components/forms/GSForm";
-import GSSubmitButton from "../components/forms/GSSubmitButton";
+import { StyleSheet, css } from "aphrodite";
 import * as yup from "yup";
 import Form from "react-formal";
+
+import Switch from "@material-ui/core/Switch";
+import Card from "@material-ui/core/Card";
+import CardHeader from "@material-ui/core/CardHeader";
+import CardContent from "@material-ui/core/CardContent";
+import Collapse from "@material-ui/core/Collapse";
+
+import GSForm from "../components/forms/GSForm";
+import GSSubmitButton from "../components/forms/GSSubmitButton";
 import { dataTest } from "../lib/attributes";
 import sideboxes from "../extensions/texter-sideboxes/components";
+import theme from "../styles/mui-theme";
 
-import FormControlLabel from "@material-ui/core/FormControlLabel";
-import Switch from "@material-ui/core/Switch";
+const styles = StyleSheet.create({
+  card: {
+    marginBottom: theme.spacing(2)
+  }
+});
 
 export default class CampaignTexterUIForm extends React.Component {
   constructor(props) {
@@ -62,30 +74,30 @@ export default class CampaignTexterUIForm extends React.Component {
       }
       schemaObject[sb] = yup.boolean();
       adminItems.push(
-        <div key={sb}>
-          <FormControlLabel
-            control={
+        <Card className={css(styles.card)} key={sb}>
+          <CardHeader
+            title={displayName}
+            action={
               <Switch
                 {...dataTest(`toggle_${sb}`)}
                 color="primary"
                 checked={this.state[sb] || false}
-                onChange={(toggler, val) => this.toggleChange(sb, val)}
+                onChange={event => this.toggleChange(sb, event.target.checked)}
               />
             }
-            label={displayName}
-            labelPlacement="start"
           />
-          {AdminConfig ? (
-            <div style={{ paddingLeft: "15px" }}>
-              <AdminConfig
-                settingsData={this.state}
-                onToggle={this.toggleChange}
-                organization={this.props.organization}
-              />
-            </div>
-          ) : null}
-          <div style={{ height: "20px" }}></div>
-        </div>
+          <Collapse in={!!AdminConfig} timeout="auto" unmountOnExit>
+            <CardContent>
+              {AdminConfig && (
+                <AdminConfig
+                  settingsData={this.state}
+                  onToggle={this.toggleChange}
+                  organization={this.props.organization}
+                />
+              )}
+            </CardContent>
+          </Collapse>
+        </Card>
       );
     });
     return (

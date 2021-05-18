@@ -8,6 +8,7 @@ import GSFormField from "./GSFormField";
 import { allScriptFields } from "../../lib/scripts";
 import ScriptEditor from "../ScriptEditor";
 import { dataTest } from "../../lib/attributes";
+import theme from "../../styles/mui-theme";
 
 const styles = {
   dialog: {
@@ -125,6 +126,9 @@ export default class GSScriptField extends GSFormField {
           name={name}
           onChange={onChange}
           value={value}
+          style={{
+            marginBottom: theme.spacing(2)
+          }}
         />
         {this.renderDialog()}
       </div>

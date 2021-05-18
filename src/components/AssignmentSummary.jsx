@@ -11,31 +11,24 @@ import CardHeader from "@material-ui/core/CardHeader";
 
 import { withRouter } from "react-router";
 import { dataTest } from "../lib/attributes";
-
 import {
   getSideboxes,
   renderSummary
 } from "../extensions/texter-sideboxes/components";
-
-export const inlineStyles = {
-  badge: {
-    fontSize: 12,
-    top: 20,
-    right: 20,
-    padding: "4px 2px 0px 2px",
-    width: 20,
-    textAlign: "center",
-    verticalAlign: "middle",
-    height: 20
-  }
-};
+import theme from "../styles/mui-theme";
 
 const styles = StyleSheet.create({
   container: {
-    margin: "20px 0"
+    margin: `${theme.spacing(2)}px 0`
   },
   image: {
     height: 100
+  },
+  buttonRow: {
+    display: "flex",
+    flexWrap: "wrap",
+    gap: theme.spacing(2),
+    marginBottom: theme.spacing(2)
   }
 });
 
@@ -76,8 +69,7 @@ export class AssignmentSummary extends Component {
         <Button
           {...dataTest(dataTestText)}
           disabled={disabled}
-          variant="contained"
-          color="primary"
+          variant="outlined"
           onClick={() => this.goToTodos(contactsFilter, assignment.id)}
         >
           {title}
@@ -88,7 +80,7 @@ export class AssignmentSummary extends Component {
         <Badge
           key={title}
           badgeContent={count || ""}
-          color={disabled ? "default" : color}
+          color={disabled ? "primary" : color}
         >
           <Button
             {...dataTest(dataTestText)}
@@ -152,7 +144,7 @@ export class AssignmentSummary extends Component {
             subheader={description}
             style={{
               backgroundColor: primaryColor,
-              color: "#FFF"
+              color: cardTitleTextColor
             }}
             subheaderTypographyProps={{
               color: "inherit"
@@ -164,101 +156,100 @@ export class AssignmentSummary extends Component {
             }
           />
           <CardContent>
-            {introHtml ? (
+            {introHtml && (
               <div style={{ margin: "20px" }}>
                 <div dangerouslySetInnerHTML={{ __html: introHtml }} />
               </div>
-            ) : null}
+            )}
             {(hasPopupSidebox && sideboxList) || null}
 
-            {(window.NOT_IN_USA && window.ALLOW_SEND_ALL) || hasPopupSidebox
-              ? null
-              : this.renderBadgedButton({
-                  dataTestText: "sendFirstTexts",
-                  assignment,
-                  title: "Send first texts",
-                  count: unmessagedCount,
-                  primary: true,
-                  disabled: false,
-                  contactsFilter: "text",
-                  hideIfZero: true,
-                  color: "primary"
-                })}
-            {(window.NOT_IN_USA && window.ALLOW_SEND_ALL) || hasPopupSidebox
-              ? null
-              : this.renderBadgedButton({
-                  dataTestText: "Respond",
-                  assignment,
-                  title: "Respond",
-                  count: unrepliedCount,
-                  primary: false,
-                  disabled: false,
-                  contactsFilter: "reply",
-                  hideIfZero: true,
-                  color: "error"
-                })}
-            {this.renderBadgedButton({
-              assignment,
-              title: pastMessagesCount
-                ? `Past ${pastMessagesCount} Messages`
-                : `Past Messages`,
-              count: pastMessagesCount,
-              primary: false,
-              disabled: false,
-              contactsFilter: "stale",
-              hideIfZero: true,
-              color: "secondary",
-              hideBadge: true
-            })}
-            {this.renderBadgedButton({
-              assignment,
-              title: skippedMessagesCount
-                ? `Skipped ${skippedMessagesCount} Messages`
-                : `Skipped Messages`,
-              count: skippedMessagesCount,
-              primary: false,
-              disabled: false,
-              contactsFilter: "skipped",
-              hideIfZero: true,
-              color: "secondary",
-              hideBadge: true
-            })}
-            {window.NOT_IN_USA && window.ALLOW_SEND_ALL && !hasPopupSidebox
-              ? this.renderBadgedButton({
-                  assignment,
-                  title: "Send messages",
-                  primary: true,
-                  disabled: false,
-                  contactsFilter: "all",
-                  count: 0,
-                  hideIfZero: false,
-                  color: "primary"
-                })
-              : ""}
-            {this.renderBadgedButton({
-              assignment,
-              title: "Send later (outside timezone)",
-              count: badTimezoneCount,
-              primary: false,
-              disabled: true,
-              contactsFilter: null,
-              hideIfZero: true,
-              color: "secondary"
-            })}
+            <div className={css(styles.buttonRow)}>
+              {(window.NOT_IN_USA && window.ALLOW_SEND_ALL) || hasPopupSidebox
+                ? null
+                : this.renderBadgedButton({
+                    dataTestText: "sendFirstTexts",
+                    assignment,
+                    title: "Send first texts",
+                    count: unmessagedCount,
+                    primary: true,
+                    disabled: false,
+                    contactsFilter: "text",
+                    hideIfZero: true,
+                    color: "primary"
+                  })}
+              {(window.NOT_IN_USA && window.ALLOW_SEND_ALL) || hasPopupSidebox
+                ? null
+                : this.renderBadgedButton({
+                    dataTestText: "Respond",
+                    assignment,
+                    title: "Respond",
+                    count: unrepliedCount,
+                    primary: false,
+                    disabled: false,
+                    contactsFilter: "reply",
+                    hideIfZero: true,
+                    color: "error"
+                  })}
+              {this.renderBadgedButton({
+                assignment,
+                title: pastMessagesCount
+                  ? `Past ${pastMessagesCount} Messages`
+                  : `Past Messages`,
+                count: pastMessagesCount,
+                primary: false,
+                disabled: false,
+                contactsFilter: "stale",
+                hideIfZero: true,
+                color: "secondary",
+                hideBadge: true
+              })}
+              {this.renderBadgedButton({
+                assignment,
+                title: skippedMessagesCount
+                  ? `Skipped ${skippedMessagesCount} Messages`
+                  : `Skipped Messages`,
+                count: skippedMessagesCount,
+                primary: false,
+                disabled: false,
+                contactsFilter: "skipped",
+                hideIfZero: true,
+                color: "secondary",
+                hideBadge: true
+              })}
+              {window.NOT_IN_USA && window.ALLOW_SEND_ALL && !hasPopupSidebox
+                ? this.renderBadgedButton({
+                    assignment,
+                    title: "Send messages",
+                    primary: true,
+                    disabled: false,
+                    contactsFilter: "all",
+                    count: 0,
+                    hideIfZero: false,
+                    color: "primary"
+                  })
+                : ""}
+              {this.renderBadgedButton({
+                assignment,
+                title: "Send later (outside timezone)",
+                count: badTimezoneCount,
+                primary: false,
+                disabled: true,
+                contactsFilter: null,
+                hideIfZero: true,
+                color: "secondary"
+              })}
+            </div>
+
             {sideboxList.length && !hasPopupSidebox ? (
-              <div style={{ paddingLeft: "14px", paddingBottom: "10px" }}>
-                {sideboxList}
-              </div>
+              <div>{sideboxList}</div>
             ) : null}
 
             {!sideboxList.length &&
-            !unmessagedCount &&
-            !unrepliedCount &&
-            !pastMessagesCount &&
-            !skippedMessagesCount &&
-            !badTimezoneCount ? (
-              <div style={{ padding: "0 20px 20px 20px" }}>Nothing to do</div>
-            ) : null}
+              !unmessagedCount &&
+              !unrepliedCount &&
+              !pastMessagesCount &&
+              !skippedMessagesCount &&
+              !badTimezoneCount && <div>Nothing to do</div>}
           </CardContent>
         </Card>
       </div>
