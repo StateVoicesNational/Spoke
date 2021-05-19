@@ -215,15 +215,7 @@ export class InnerConversationPreviewModal extends Component {
           }
           placement="left"
         >
-          <IconButton
-            onClick={this.handleCopyToClipboard}
-            tooltip={
-              this.state.justCopied
-                ? "Copied!"
-                : "Copy conversation link to clipboard"
-            }
-            tooltipPosition="left"
-          >
+          <IconButton onClick={this.handleCopyToClipboard}>
             {this.state.justCopied ? (
               <CheckIcon style={{ color: theme.colors.green }} />
             ) : (
@@ -234,7 +226,7 @@ export class InnerConversationPreviewModal extends Component {
         <input
           type="text"
           ref="convoLink"
-          value={url}
+          defaultValue={url}
           onFocus={event => event.target.select()}
           style={{ width: "1px", height: "1px", border: 0, padding: 0 }}
         />
