@@ -38,7 +38,6 @@ const styles = StyleSheet.create({
     textAlign: "left"
   },
   form: {
-    backgroundColor: theme.colors.white,
     padding: 10
   },
   title: {
@@ -46,7 +45,6 @@ const styles = StyleSheet.create({
   },
   text: {
     fontSize: 14,
-    color: theme.colors.gray,
     marginBottom: 8,
     display: "-webkit-box",
     WebkitBoxOrient: "vertical",

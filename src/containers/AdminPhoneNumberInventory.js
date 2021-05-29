@@ -464,6 +464,7 @@ const queries = {
       query getOrganizationData($organizationId: String!) {
         organization(id: $organizationId) {
           id
+          theme
           twilioMessageServiceSid
           campaignPhoneNumbersEnabled
           phoneNumberCounts {

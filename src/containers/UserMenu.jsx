@@ -1,9 +1,8 @@
 import PropTypes from "prop-types";
 import React, { Component } from "react";
-import { graphql } from "react-apollo";
+import { compose } from "react-apollo";
 import { withRouter } from "react-router";
 import gql from "graphql-tag";
-import { dataTest } from "../lib/attributes";
 
 import MenuItem from "@material-ui/core/MenuItem";
 import MenuList from "@material-ui/core/MenuList";
@@ -13,6 +12,10 @@ import ListItemIcon from "@material-ui/core/ListItemIcon";
 import Avatar from "@material-ui/core/Avatar";
 import IconButton from "@material-ui/core/IconButton";
 import Divider from "@material-ui/core/Divider";
+
+import { dataTest } from "../lib/attributes";
+import loadData from "./hoc/load-data";
+import withMuiTheme from "./hoc/withSetTheme";
 
 export class UserMenu extends Component {
   constructor(props) {
@@ -43,7 +46,7 @@ export class UserMenu extends Component {
 
   handleMenuChange = (event, value) => {
     this.handleRequestClose();
-    const { currentUser } = this.props.data;
+    const { currentUser } = this.props.currentUser;
     if (value === "logout") {
       window.AuthService.logout();
     } else if (value === "account") {
@@ -81,15 +84,16 @@ export class UserMenu extends Component {
     this.props.router.push(`/admin/${id}`);
   };
 
-  renderAvatar(user, size) {
-    const inlineStyles = {
-      textAlign: "center",
-      color: "white",
-      padding: 5,
-      height: size,
-      width: size
-    };
-    return <Avatar style={inlineStyles}>{user.displayName.charAt(0)}</Avatar>;
+  renderAvatar(user) {
+    return (
+      <Avatar
+        style={{
+          color: this.props.muiTheme.palette.text.primary
+        }}
+      >
+        {user.displayName.charAt(0)}
+      </Avatar>
+    );
   }
 
   renderAdminTools() {
@@ -108,7 +112,7 @@ export class UserMenu extends Component {
   }
 
   render() {
-    const { currentUser } = this.props.data;
+    const { currentUser } = this.props.currentUser;
     if (!currentUser) {
       return <div />;
     }
@@ -120,7 +124,7 @@ export class UserMenu extends Component {
           {...dataTest("userMenuButton")}
           onClick={this.handleTouchTap}
         >
-          {this.renderAvatar(currentUser, 20)}
+          {this.renderAvatar(currentUser)}
         </IconButton>
         <Popover
           open={this.state.open}
@@ -137,7 +141,7 @@ export class UserMenu extends Component {
                 this.handleMenuChange(event, "account");
               }}
             >
-              <ListItemIcon>{this.renderAvatar(currentUser, 20)}</ListItemIcon>
+              <ListItemIcon>{this.renderAvatar(currentUser)}</ListItemIcon>
               {currentUser.email} <br />
               {currentUser.displayName}
             </MenuItem>
@@ -181,28 +185,34 @@ UserMenu.propTypes = {
   router: PropTypes.object
 };
 
-export default graphql(
-  gql`
-    query getCurrentUserForMenu {
-      currentUser {
-        id
-        displayName
-        email
-        is_superadmin
-        superVolOrganizations: organizations(role: "SUPERVOLUNTEER") {
+const queries = {
+  currentUser: {
+    query: gql`
+      query getCurrentUserForMenu {
+        currentUser {
           id
-          name
-        }
-        texterOrganizations: organizations(role: "TEXTER") {
-          id
-          name
+          displayName
+          email
+          is_superadmin
+          superVolOrganizations: organizations(role: "SUPERVOLUNTEER") {
+            id
+            name
+          }
+          texterOrganizations: organizations(role: "TEXTER") {
+            id
+            name
+          }
         }
       }
-    }
-  `,
-  {
+    `,
     options: {
       fetchPolicy: "network-only"
     }
   }
-)(withRouter(UserMenu));
+};
+
+export default compose(
+  loadData({ queries }),
+  withRouter,
+  withMuiTheme
+)(UserMenu);

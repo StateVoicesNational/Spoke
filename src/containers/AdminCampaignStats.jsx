@@ -8,11 +8,13 @@ import ButtonGroup from "@material-ui/core/ButtonGroup";
 import Snackbar from "@material-ui/core/Snackbar";
 import Card from "@material-ui/core/Card";
 import CardContent from "@material-ui/core/CardContent";
+import Typography from "@material-ui/core/Typography";
+import Link from "@material-ui/core/Link";
 
 import TexterStats from "../components/TexterStats";
 import OrganizationJoinLink from "../components/OrganizationJoinLink";
 import AdminCampaignCopy from "./AdminCampaignCopy";
-import { withRouter, Link } from "react-router";
+import { withRouter, Link as RouterLink } from "react-router";
 import { StyleSheet, css } from "aphrodite";
 import loadData from "./hoc/load-data";
 import gql from "graphql-tag";
@@ -52,9 +54,6 @@ export const styles = StyleSheet.create({
     padding: "15px",
     textAlign: "center",
     marginBottom: "20px"
-  },
-  header: {
-    ...theme.text.header
   },
   flexColumn: {
     flex: 1,
@@ -117,9 +116,7 @@ class AdminCampaignStats extends React.Component {
       );
       return (
         <div key={step.id}>
-          <div className={css(styles.secondaryHeader)}>
-            {step.question.text}
-          </div>
+          <Typography variant="h5">{step.question.text}</Typography>
           {totalResponseCount > 0 ? (
             <div className={css(styles.container)}>
               <div className={css(styles.flexColumn)}>
@@ -165,11 +162,11 @@ class AdminCampaignStats extends React.Component {
             )}{" "}
             {error.description || null}
             <div>
-              <Link
+              <RouterLink
                 to={`/admin/${organizationId}/incoming?campaigns=${campaignId}&errorCode=${error.code}`}
               >
                 {error.count} errors
-              </Link>
+              </RouterLink>
             </div>
             <LinearProgress
               variant="determinate"
@@ -202,19 +199,20 @@ class AdminCampaignStats extends React.Component {
     return (
       <div>
         <div className={css(styles.container)}>
-          {campaign.isArchived ? (
+          {campaign.isArchived && (
             <div className={css(styles.archivedBanner)}>
               This campaign is archived
-              {campaign.isArchivedPermanently
-                ? " and its phone numbers have been released"
-                : null}
+              {campaign.isArchivedPermanently &&
+                " and its phone numbers have been released"}
             </div>
-          ) : null}
+          )}
 
-          <div className={css(styles.header)}>
-            {campaign.title}
-            <br />
-            Campaign ID: {campaign.id}
+          <div>
+            <Typography variant="h5">
+              {campaign.title}
+              <br />
+              Campaign ID: {campaign.id}
+            </Typography>
           </div>
           <div className={css(styles.flexColumn)}>
             <div className={css(styles.rightAlign)}>
@@ -332,11 +330,11 @@ class AdminCampaignStats extends React.Component {
             </div>
           </div>
         </div>
-        {campaign.exportResults ? (
+        {campaign.exportResults && (
           <div>
-            {campaign.exportResults.error ? (
+            {campaign.exportResults.error && (
               <div>Export failed: {campaign.exportResults.error}</div>
-            ) : null}
+            )}
             {campaign.exportResults.campaignExportUrl &&
             campaign.exportResults.campaignExportUrl.startsWith("http") ? (
               <div>
@@ -361,13 +359,13 @@ class AdminCampaignStats extends React.Component {
               </div>
             )}
           </div>
-        ) : null}
-        {campaign.joinToken && campaign.useDynamicAssignment ? (
+        )}
+        {campaign.joinToken && campaign.useDynamicAssignment && (
           <OrganizationJoinLink
             organizationUuid={campaign.joinToken}
             campaignId={campaignId}
           />
-        ) : null}
+        )}
 
         <div className={css(styles.container)}>
           <div className={css(styles.flexColumn, styles.spacer)}>
@@ -389,16 +387,16 @@ class AdminCampaignStats extends React.Component {
             <Stat title="Opt-outs" count={campaign.stats.optOutsCount} />
           </div>
         </div>
-        <div className={css(styles.header)}>Survey Questions</div>
+        <Typography variant="h5">Survey Questions</Typography>
         {this.renderSurveyStats()}
-        {campaign.stats.errorCounts.length > 0 ? (
+        {campaign.stats.errorCounts.length > 0 && (
           <div>
-            <div className={css(styles.header)}>Sending Errors</div>
+            <Typography variant="h5">Sending Errors</Typography>
             {this.renderErrorCounts()}{" "}
           </div>
-        ) : null}
-        <div className={css(styles.header)}>Texter stats</div>
-        <div className={css(styles.secondaryHeader)}>% of first texts sent</div>
+        )}
+        <Typography variant="h5">Texter stats</Typography>
+        <Typography variant="h6">% of first texts sent</Typography>
         <TexterStats campaign={campaign} organizationId={organizationId} />
         <Snackbar
           open={this.state.exportMessageOpen}
@@ -406,22 +404,20 @@ class AdminCampaignStats extends React.Component {
             <span>
               Export started -
               {this.props.organizationData &&
-              this.props.organizationData.emailEnabled
-                ? " we'll e-mail you when it's done."
-                : null}
-              {campaign.cacheable ? (
+                this.props.organizationData.emailEnabled &&
+                " we'll e-mail you when it's done. "}
+              {campaign.cacheable && (
                 <span>
-                  <a
+                  <Link
                     onClick={() => {
                       this.props.data.refetch();
                     }}
-                    style={{ textDecoration: "underline" }}
                   >
                     Reload the page
-                  </a>{" "}
+                  </Link>{" "}
                   to see a download link when its ready.
                 </span>
-              ) : null}
+              )}
             </span>
           }
           autoHideDuration={campaign.cacheable ? null : 5000}
@@ -532,6 +528,7 @@ const queries = {
       query getOrganizationData($organizationId: String!) {
         organization(id: $organizationId) {
           id
+          theme
           campaignPhoneNumbersEnabled
           emailEnabled
         }

@@ -1,6 +1,7 @@
 import PropTypes from "prop-types";
 import React from "react";
-import { StyleSheet, css } from "aphrodite";
+import { css } from "aphrodite";
+import { compose } from "recompose";
 import Toolbar from "./Toolbar";
 import MessageList from "./MessageList";
 import CannedResponseMenu from "./CannedResponseMenu";
@@ -9,6 +10,7 @@ import ScriptList from "./ScriptList";
 import Empty from "../Empty";
 import GSForm from "../forms/GSForm";
 import GSTextField from "../forms/GSTextField";
+import withMuiTheme from "../../containers/hoc/withMuiTheme";
 
 import Card from "@material-ui/core/Card";
 import CardHeader from "@material-ui/core/CardHeader";
@@ -525,10 +527,14 @@ export class AssignmentTexterContactControls extends React.Component {
       button = (
         <Button
           onClick={() => this.props.onEditStatus("closed", true)}
-          className={css(flexStyles.button)}
+          // className={css(flexStyles.button)}
+          style={{
+            color: this.props.muiTheme.palette.text.primary,
+            backgroundColor: this.props.muiTheme.palette.background.default
+          }}
           disabled={!!this.props.contact.optOut}
           color="default"
-          variant="outlined"
+          variant="contained"
         >
           Skip
         </Button>
@@ -847,9 +853,8 @@ export class AssignmentTexterContactControls extends React.Component {
             !disabled ? this.handleOpenAnswerResponsePopover : noAction => {}
           }
           style={{
-            backgroundColor: availableSteps.length
-              ? "white"
-              : "rgb(176, 176, 176)"
+            backgroundColor: this.props.muiTheme.palette.background.default,
+            color: this.props.muiTheme.palette.text.primary
           }}
           disabled={disabled}
           variant="outlined"
@@ -862,11 +867,11 @@ export class AssignmentTexterContactControls extends React.Component {
           {...dataTest("optOut")}
           onClick={this.handleOpenDialog}
           style={{
-            color: "#DE1A1A",
-            backgroundColor: "#FFF"
+            color: this.props.muiTheme.palette.error.main,
+            backgroundColor: this.props.muiTheme.palette.background.default
           }}
           disabled={!!this.props.contact.optOut}
-          variant="outlined"
+          variant="contained"
         >
           Opt-out
         </Button>
@@ -880,7 +885,7 @@ export class AssignmentTexterContactControls extends React.Component {
       <div
         key="renderMessagingRowSendSkip"
         className={css(flexStyles.sectionSend)}
-        style={firstMessage ? { height: "54px" } : { height: "36px" }}
+        style={{ height: "54px" }}
       >
         <Button
           {...dataTest("send")}
@@ -1008,6 +1013,12 @@ export class AssignmentTexterContactControls extends React.Component {
           key="messageScrollContainer"
           ref="messageScrollContainer"
           className={css(flexStyles.sectionMessageThread)}
+          style={{
+            backgroundColor:
+              this.props.muiTheme.palette.type === "light"
+                ? "#f0f0f0"
+                : this.props.muiTheme.palette.grey[700]
+          }}
         >
           {internalComponent}
         </div>
@@ -1054,7 +1065,19 @@ export class AssignmentTexterContactControls extends React.Component {
           ),
           this.renderMessageControls(enabledSideboxes)
         ];
-    return <div className={css(flexStyles.topContainer)}>{content}</div>;
+    return (
+      <div
+        className={css(flexStyles.topContainer)}
+        style={{
+          backgroundColor:
+            this.props.muiTheme.palette.type === "light"
+              ? "#d6d7df"
+              : this.props.muiTheme.palette.grey[800]
+        }}
+      >
+        {content}
+      </div>
+    );
   }
 }
 
@@ -1087,4 +1110,4 @@ AssignmentTexterContactControls.propTypes = {
   getMessageTextFromScript: PropTypes.func
 };
 
-export default AssignmentTexterContactControls;
+export default compose(withMuiTheme)(AssignmentTexterContactControls);

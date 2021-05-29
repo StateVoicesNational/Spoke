@@ -2,6 +2,7 @@ import PropTypes from "prop-types";
 import React from "react";
 import gql from "graphql-tag";
 import { Link } from "react-router";
+import { compose } from "react-apollo";
 
 import Button from "@material-ui/core/Button";
 import ButtonGroup from "@material-ui/core/ButtonGroup";
@@ -24,6 +25,7 @@ import CircularProgress from "@material-ui/core/CircularProgress";
 
 import theme from "../styles/theme";
 import loadData from "./hoc/load-data";
+import withMuiTheme from "./hoc/withMuiTheme";
 import AdminCampaignCopy from "./AdminCampaignCopy";
 import CampaignBasicsForm from "../components/CampaignBasicsForm";
 import CampaignMessagingServiceForm from "../components/CampaignMessagingServiceForm";
@@ -683,7 +685,7 @@ export class AdminCampaignEdit extends React.Component {
       <div
         {...dataTest("campaignIsStarted")}
         style={{
-          color: theme.colors.green,
+          color: this.props.muiTheme.palette.primary.main,
           fontWeight: 800
         }}
       >
@@ -697,8 +699,8 @@ export class AdminCampaignEdit extends React.Component {
     return (
       <div className={css(styles.container)}>
         {campaign.title && (
-          <div className={css(styles.header)}>
-            {campaign.title}
+          <div>
+            <h1>{campaign.title}</h1>
             {isStarting ? (
               <div
                 style={{
@@ -875,6 +877,7 @@ export class AdminCampaignEdit extends React.Component {
     const sections = this.sections();
     const { expandedSection } = this.state;
     const { adminPerms } = this.props.params;
+    const { muiTheme } = this.props;
     return (
       <div>
         {this.renderHeader()}
@@ -884,10 +887,9 @@ export class AdminCampaignEdit extends React.Component {
             this.checkSectionSaved(section);
           const sectionIsExpanded = sectionIndex === expandedSection;
           let avatar = null;
-          const cardHeaderStyle = {
-            backgroundColor: theme.colors.lightGray
-          };
+          const cardHeaderStyle = {};
           const avatarStyle = {
+            backgroundColor: this.props.muiTheme.palette.background.default,
             height: 25,
             width: 25
           };
@@ -905,46 +907,44 @@ export class AdminCampaignEdit extends React.Component {
 
           if (sectionIsSaving) {
             avatar = <CircularProgress style={avatarStyle} size={25} />;
-            cardHeaderStyle.background = theme.colors.lightGray;
             cardHeaderStyle.width = `${savePercent}%`;
           } else if (sectionIsExpanded && sectionCanExpandOrCollapse) {
-            cardHeaderStyle.backgroundColor = theme.colors.lightYellow;
-          } else if (!sectionCanExpandOrCollapse) {
-            cardHeaderStyle.backgroundColor = theme.colors.lightGray;
+            cardHeaderStyle.backgroundColor = muiTheme.palette.warning.light;
           } else if (sectionIsDone) {
             avatar = (
-              <Avatar style={avatarStyle} color="primary">
-                <DoneIcon
-                  fontSize="small"
-                  style={{ color: theme.colors.darkGreen }}
-                />
+              <Avatar style={avatarStyle}>
+                <DoneIcon fontSize="small" color="primary" />
               </Avatar>
             );
-            cardHeaderStyle.backgroundColor = theme.colors.green;
+            cardHeaderStyle.backgroundColor = muiTheme.palette.primary.main;
           } else if (!sectionIsDone) {
             avatar = (
               <Avatar style={avatarStyle} color="primary">
                 <WarningIcon
-                  style={{ color: theme.colors.orange, fontSize: 16 }}
+                  style={{
+                    color: muiTheme.palette.warning.main,
+                    height: 16,
+                    width: 16
+                  }}
                 />
               </Avatar>
             );
-            cardHeaderStyle.backgroundColor = theme.colors.yellow;
+            cardHeaderStyle.backgroundColor = muiTheme.palette.warning.main;
           }
           return (
             <Card
               {...dataTest(camelCase(`${section.title}`))}
               key={section.title}
-              style={{
-                marginTop: 1
-              }}
+              style={{ marginTop: 1 }}
             >
               <CardHeader
                 title={section.title}
                 action={
-                  <IconButton>
-                    <ExpandMoreIcon />
-                  </IconButton>
+                  sectionCanExpandOrCollapse && (
+                    <IconButton>
+                      <ExpandMoreIcon />
+                    </IconButton>
+                  )
                 }
                 style={cardHeaderStyle}
                 avatar={avatar}
@@ -1119,4 +1119,5 @@ const mutations = {
 };
 
 export const operations = { queries, mutations };
-export default loadData(operations)(AdminCampaignEdit);
+// export default loadData(operations)(AdminCampaignEdit);
+export default compose(loadData(operations), withMuiTheme)(AdminCampaignEdit);

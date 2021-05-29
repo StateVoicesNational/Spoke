@@ -166,6 +166,28 @@ export const resolvers = {
           getConfig("ALLOW_SEND_ALL", organization, { truthy: 1 }) &&
           getFeatures(organization).ALLOW_SEND_ALL_ENABLED
       ),
+    theme: async () => {
+      const themeOptions = {
+        palette: {
+          type: "dark",
+          // type: 'light',
+          primary: {
+            main: "#b179c7"
+            // main: '#009d52',
+          },
+          secondary: {
+            main: "#ffffff"
+          },
+          warning: {
+            main: "#fabe28"
+          },
+          info: {
+            main: "#3f80b2"
+          }
+        }
+      };
+      return JSON.stringify(themeOptions);
+    },
     settings: async (organization, _, { user, loaders }) => {
       try {
         await accessRequired(user, organization.id, "OWNER", true);

@@ -35,52 +35,43 @@ const defaultFont = "Poppins";
 
 const text = {
   body: {
-    color: colors.darkGray,
     fontSize: 14,
     fontFamily: defaultFont
   },
   link_light_bg: {
     fontWeight: 400,
-    color: colors.green,
     textDecoration: "none",
-    borderBottom: `1px solid ${colors.green}`,
+    borderBottom: "1px solid",
     cursor: "pointer",
     ":hover": {
-      borderBottom: 0,
-      color: colors.orange
+      borderBottom: 0
     },
     "a:visited": {
       fontWeight: 400,
-      color: colors.darkGray,
       textDecoration: "none"
     },
     fontFamily: defaultFont
   },
   link_dark_bg: {
     fontWeight: 400,
-    color: colors.white,
     textDecoration: "none",
-    borderBottom: `1px solid ${colors.white}`,
+    borderBottom: `1px solid`,
     cursor: "pointer",
     ":hover": {
-      borderBottom: 0,
-      color: colors.orange
+      borderBottom: 0
     },
     "a:visited": {
       fontWeight: 400,
-      color: colors.veryLightGray,
       textDecoration: "none"
     },
     fontFamily: defaultFont
   },
   header: {
-    color: colors.darkGray,
     fontSize: "1.5em",
     fontWeight: 600,
     fontFamily: defaultFont
   },
   secondaryHeader: {
-    color: colors.darkGray,
     fontSize: "1.25em",
     fontFamily: defaultFont
   }
@@ -106,9 +97,7 @@ const layouts = {
     paddingTop: "7vh",
     marginLeft: "auto",
     marginRight: "auto",
-    textAlign: "center",
-    backgroundColor: colors.coreBackgroundColor,
-    color: colors.white
+    textAlign: "center"
   }
 };
 
@@ -126,10 +115,7 @@ const components = {
     overflow: "hidden"
   },
   logoImg: {},
-  popup: {
-    backgroundColor: colors.gray50,
-    outline: colors.darkGray
-  }
+  popup: {}
 };
 
 const theme = {

@@ -94,6 +94,7 @@ export class TexterSidebox extends React.Component {
         ))}
         <br />
         <Button
+          variant="contained"
           style={{ marginTop: "20px" }}
           onClick={() => {
             const self = this;

@@ -216,6 +216,7 @@ const queries = {
           id
           name
           campaignsCount
+          theme
         }
       }
     `,
