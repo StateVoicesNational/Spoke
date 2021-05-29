@@ -1,7 +1,7 @@
 import PropTypes from "prop-types";
 import React, { Component } from "react";
 import { StyleSheet, css } from "aphrodite";
-import { setContrastingColor } from "../lib/color-contrast-helper";
+import { compose } from "recompose";
 
 import Button from "@material-ui/core/Button";
 import Badge from "@material-ui/core/Badge";
@@ -9,7 +9,9 @@ import Card from "@material-ui/core/Card";
 import CardContent from "@material-ui/core/CardContent";
 import CardHeader from "@material-ui/core/CardHeader";
 
+import { setContrastingColor } from "../lib/color-contrast-helper";
 import { withRouter } from "react-router";
+import withMuiTheme from "../containers/hoc/withMuiTheme";
 import { dataTest } from "../lib/attributes";
 import {
   getSideboxes,
@@ -127,12 +129,14 @@ export class AssignmentSummary extends Component {
         hasPopupSidebox ? sb.name === enabledSideboxes.popups[0] : true
       )
       .map(sb => renderSummary(sb, settingsData, this, sideboxProps));
-    const cardTitleTextColor = setContrastingColor(primaryColor);
+    const cardTitleTextColor = setContrastingColor(
+      primaryColor || this.props.muiTheme.palette.background.default
+    );
 
     // NOTE: we bring back archived campaigns if they have feedback
     // but want to get rid of them once feedback is acknowledged
     if (campaign.isArchived && !hasPopupSidebox) return null;
-
+    console.log("primaryColor", primaryColor);
     return (
       <div
         className={css(styles.container)}
@@ -266,4 +270,4 @@ AssignmentSummary.propTypes = {
   todoLink: PropTypes.func
 };
 
-export default withRouter(AssignmentSummary);
+export default compose(withMuiTheme, withRouter)(AssignmentSummary);

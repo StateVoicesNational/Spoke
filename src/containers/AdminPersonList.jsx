@@ -412,6 +412,7 @@ const queries = {
         organization(id: $organizationId) {
           id
           uuid
+          theme
           campaigns(campaignsFilter: { isArchived: false }, sortBy: $sortBy) {
             ... on CampaignsList {
               campaigns {

@@ -86,6 +86,7 @@ const fetchOrg = async organizationId =>
         organization(id: $organizationId) {
           id
           name
+          theme
           profileFields {
             name
             label

@@ -1,7 +1,8 @@
 import PropTypes from "prop-types";
 import React from "react";
-import { Link } from "react-router";
+import { Link as RouterLink } from "react-router";
 import moment from "moment";
+import { compose } from "recompose";
 
 import HeadsetIcon from "@material-ui/icons/Headset";
 import ImageIcon from "@material-ui/icons/Image";
@@ -18,6 +19,8 @@ import List from "@material-ui/core/List";
 import ListItem from "@material-ui/core/ListItem";
 import ListItemText from "@material-ui/core/ListItemText";
 import ListItemIcon from "@material-ui/core/ListItemIcon";
+
+import withMuiTheme from "../../containers/hoc/withMuiTheme";
 
 const defaultStyles = {
   optOut: {
@@ -52,12 +55,12 @@ function SecondaryText(props) {
     return (
       <span style={{ fontSize: "90%", display: "block", paddingTop: "5px" }}>
         Sent {moment.utc(message.createdAt).fromNow()} by{" "}
-        <Link
+        <RouterLink
           target="_blank"
           to={`/app/${organizationId}/account/${message.userId}`}
         >
           User {message.userId}
-        </Link>
+        </RouterLink>
       </span>
     );
   }
@@ -76,12 +79,24 @@ const MessageList = function MessageList(props) {
     review,
     currentUser,
     organizationId,
-    hideMedia
+    hideMedia,
+    muiTheme
   } = props;
   const { optOut, messages } = contact;
 
-  const received = (styles && styles.messageReceived) || defaultStyles.received;
-  const sent = (styles && styles.messageSent) || defaultStyles.sent;
+  let received = defaultStyles.received;
+  let sent = defaultStyles.sent;
+  if (styles) {
+    received = Object.assign({}, styles.messageReceived, {
+      color: muiTheme.palette.common.white,
+      backgroundColor: muiTheme.palette.info.main
+    });
+    sent = Object.assign({}, styles.messageSent, {
+      color: muiTheme.palette.text.primary,
+      backgroundColor: muiTheme.palette.background.default
+    });
+  }
+
   const listStyle = (styles && styles.messageList) || {};
 
   const optOutItem = optOut && (
@@ -196,4 +211,4 @@ MessageList.propTypes = {
   hideMedia: PropTypes.bool
 };
 
-export default MessageList;
+export default compose(withMuiTheme)(MessageList);
