@@ -1,9 +1,8 @@
 import PropTypes from "prop-types";
 import React from "react";
-import { Link } from "react-router";
+import { Link as RouterLink } from "react-router";
 import moment from "moment";
 
-import theme from "../../styles/theme";
 import Empty from "../Empty";
 import { SORTS, TIMEZONE_SORT } from "./SortBy";
 
@@ -14,41 +13,11 @@ import UnarchiveIcon from "@material-ui/icons/Unarchive";
 import SpeakerNotesIcon from "@material-ui/icons/SpeakerNotes";
 import IconButton from "@material-ui/core/IconButton";
 import CircularProgress from "@material-ui/core/CircularProgress";
+import Link from "@material-ui/core/Link";
 
 const inlineStyles = {
-  past: {
-    opacity: 0.6
-  },
-  warn: {
-    color: theme.colors.orange
-  },
-  good: {
-    color: theme.colors.green
-  },
-  warnUnsent: {
-    color: theme.colors.darkBlue
-  },
-  changing: {
-    color: theme.colors.gray
-  },
   campaignInfo: {
     whiteSpace: "nowrap"
-  },
-  campaignLink: {
-    fontSize: 16,
-    lineHeight: "16px",
-    textDecoration: "none"
-  },
-  tableMovePaginationOnTop: {
-    position: "absolute",
-    top: "20px",
-    right: 0
-  },
-  tableSpaceForPaginationOnTop: {
-    paddingTop: "70px"
-  },
-  spaceForCreateButton: {
-    height: "60px"
   }
 };
 
@@ -205,24 +174,11 @@ export class CampaignTable extends React.Component {
         options: {
           customBodyRender: (value, tableMeta) => {
             const campaign = campaigns.find(c => c.id === tableMeta.rowData[0]);
-            let linkStyle = inlineStyles.good;
-            if (this.statusIsChanging(campaign)) {
-              linkStyle = inlineStyles.changing;
-            } else if (campaign.isArchived) {
-              linkStyle = inlineStyles.past;
-            } else if (!campaign.isStarted || campaign.hasUnassignedContacts) {
-              linkStyle = inlineStyles.warn;
-            } else if (campaign.hasUnsentInitialMessages) {
-              linkStyle = inlineStyles.warnUnsent;
-            }
             const editLink = campaign.isStarted ? "" : "/edit";
             return (
               <div style={{ margin: "6px 0" }}>
                 <Link
-                  style={{
-                    ...inlineStyles.campaignLink,
-                    ...linkStyle
-                  }}
+                  component={RouterLink}
                   to={`/admin/${campaign.organization.id}/campaigns/${campaign.id}${editLink}`}
                 >
                   {campaign.title}
@@ -277,12 +233,12 @@ export class CampaignTable extends React.Component {
             const campaign = campaigns.find(c => c.id === tableMeta.rowData[0]);
             return organization.cacheable > 1 &&
               campaign.completionStats.assignedCount !== null ? (
-              <Link
+              <RouterLink
                 to={`/admin/${campaign.organization.id}/campaigns/${campaign.id}/edit`}
               >
                 {campaign.completionStats.contactsCount -
                   campaign.completionStats.assignedCount}
-              </Link>
+              </RouterLink>
             ) : campaign.hasUnassignedContacts ? (
               <IconButton
                 tooltip="Has unassigned contacts"
@@ -423,7 +379,10 @@ export class CampaignTable extends React.Component {
           )}
           options={options}
         />
-        <div style={inlineStyles.spaceForCreateButton}>&nbsp;</div>
+        {/* make space for Floating Action Button */}
+        <br />
+        <br />
+        <br />
       </div>
     );
   }

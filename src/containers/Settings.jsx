@@ -5,6 +5,7 @@ import Form from "react-formal";
 import moment from "moment";
 import * as yup from "yup";
 import { StyleSheet, css } from "aphrodite";
+import { compose } from "recompose";
 
 import Dialog from "@material-ui/core/Dialog";
 import DialogContent from "@material-ui/core/DialogContent";
@@ -20,6 +21,7 @@ import IconButton from "@material-ui/core/IconButton";
 
 import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
 import loadData from "./hoc/load-data";
+import withMuiTheme from "./hoc/withMuiTheme";
 import GSSubmitButton from "../components/forms/GSSubmitButton";
 import theme from "../styles/theme";
 import DisplayLink from "../components/DisplayLink";
@@ -43,18 +45,19 @@ const styles = StyleSheet.create({
     textAlign: "right"
   },
   cardHeader: {
-    cursor: "pointer",
-    backgroundColor: theme.colors.green,
-    color: theme.colors.white
+    cursor: "pointer"
   }
 });
 
-const inlineStyles = {
+let inlineStyles = {
   dialogButton: {
     display: "inline-block"
   },
   shadeBox: {
     backgroundColor: theme.colors.lightGray
+  },
+  cardHeader: {
+    cursor: "pointer"
   }
 };
 
@@ -63,6 +66,13 @@ class Settings extends React.Component {
   state = {
     formIsSubmitting: false
   };
+
+  getCardHeaderStyle() {
+    return Object.assign({}, inlineStyles.cardHeader, {
+      backgroundColor: this.props.muiTheme.palette.primary.main,
+      color: this.props.muiTheme.palette.primary.contrastText
+    });
+  }
 
   handleSubmitTextingHoursForm = async ({
     textingHoursStart,
@@ -217,8 +227,9 @@ class Settings extends React.Component {
           title="Twilio Credentials"
           className={css(styles.cardHeader)}
           style={{
-            backgroundColor: allSet ? theme.colors.green : theme.colors.yellow,
-            color: theme.colors.white
+            backgroundColor: allSet
+              ? this.props.muiTheme.palette.primary.main
+              : this.props.muiTheme.palette.warning.light
           }}
         />
         {allSet && (
@@ -298,13 +309,7 @@ class Settings extends React.Component {
     return (
       <div>
         <Card>
-          <CardHeader
-            title="Settings"
-            style={{
-              backgroundColor: theme.colors.green,
-              color: theme.colors.white
-            }}
-          />
+          <CardHeader title="Settings" style={this.getCardHeaderStyle()} />
           <CardContent>
             <div className={css(styles.section)}>
               <GSForm
@@ -381,7 +386,7 @@ class Settings extends React.Component {
             <Card>
               <CardHeader
                 title="Texter UI Defaults"
-                className={css(styles.cardHeader)}
+                style={this.getCardHeaderStyle()}
                 action={
                   <IconButton>
                     <ExpandMoreIcon />
@@ -424,7 +429,7 @@ class Settings extends React.Component {
           <Card>
             <CardHeader
               title="Overriding default settings"
-              className={css(styles.cardHeader)}
+              style={this.getCardHeaderStyle()}
               action={
                 <IconButton>
                   <ExpandMoreIcon />
@@ -469,7 +474,7 @@ class Settings extends React.Component {
           <Card>
             <CardHeader
               title="External configuration"
-              className={css(styles.cardHeader)}
+              style={this.getCardHeaderStyle()}
               action={
                 <IconButton>
                   <ExpandMoreIcon />
@@ -493,6 +498,7 @@ class Settings extends React.Component {
                 </p>
                 <Button
                   color="secondary"
+                  variant="contained"
                   style={inlineStyles.dialogButton}
                   onClick={
                     this.props.mutations.clearCachedOrgAndExtensionCaches
@@ -687,4 +693,7 @@ const mutations = {
   })
 };
 
-export default loadData({ queries, mutations })(Settings);
+export default compose(
+  withMuiTheme,
+  loadData({ queries, mutations })
+)(Settings);

@@ -1,5 +1,7 @@
 import type from "prop-types";
 import React from "react";
+import { compose } from "recompose";
+import withMuiTheme from "./../containers/hoc/withMuiTheme";
 import GSForm from "../components/forms/GSForm";
 import CampaignFormSectionHeading from "./CampaignFormSectionHeading";
 
@@ -7,30 +9,14 @@ import CheckIcon from "@material-ui/icons/Check";
 import WarningIcon from "@material-ui/icons/Warning";
 import ErrorIcon from "@material-ui/icons/Error";
 import InfoIcon from "@material-ui/icons/Info";
+import Alert from "@material-ui/lab/Alert";
 
 import Select from "@material-ui/core/Select";
 import MenuItem from "@material-ui/core/MenuItem";
 
-import theme from "../styles/theme";
 import components from "../extensions/contact-loaders/components";
 import * as yup from "yup";
 import { withRouter } from "react-router";
-
-const check = (
-  <CheckIcon color="primary" style={{ color: theme.colors.green }} />
-);
-const warning = (
-  <WarningIcon color="primary" style={{ color: theme.colors.orange }} />
-);
-const error = <ErrorIcon color="primary" style={{ color: theme.colors.red }} />;
-const info = <InfoIcon color="primary" style={{ color: theme.colors.green }} />;
-
-export const icons = {
-  check,
-  warning,
-  error,
-  info
-};
 
 const innerStyles = {
   button: {
@@ -94,6 +80,24 @@ export class CampaignContactsChoiceForm extends React.Component {
         ? pastIngestMethod
         : null;
     const IngestComponent = components[ingestMethodName];
+    const { muiTheme } = this.props;
+
+    const check = (
+      <CheckIcon style={{ color: muiTheme.palette.success.main }} />
+    );
+    const warning = (
+      <WarningIcon style={{ color: muiTheme.palette.warning.main }} />
+    );
+    const error = <ErrorIcon style={{ color: muiTheme.palette.error.main }} />;
+    const info = <InfoIcon style={{ color: muiTheme.palette.info.main }} />;
+
+    const icons = {
+      check,
+      warning,
+      error,
+      info
+    };
+
     if (ensureComplete) {
       // isStarted
       return (
@@ -143,13 +147,7 @@ export class CampaignContactsChoiceForm extends React.Component {
         <CampaignFormSectionHeading title="Who are you contacting?" />
 
         {contactsPerPhoneNumber && maxNumbersPerCampaign && (
-          <div
-            style={{
-              marginBottom: 10,
-              fontSize: 17,
-              color: theme.colors.darkBlue
-            }}
-          >
+          <Alert severity="info" style={{ marginBottom: 10 }}>
             <div>
               You can only upload a max of{" "}
               {Number(
@@ -161,7 +159,7 @@ export class CampaignContactsChoiceForm extends React.Component {
               Each campaign can be assigned {maxNumbersPerCampaign} numbers max
               with {contactsPerPhoneNumber} contacts per phone.
             </div>
-          </div>
+          </Alert>
         )}
 
         <div>
@@ -248,4 +246,4 @@ CampaignContactsChoiceForm.propTypes = {
   contactsPerPhoneNumber: type.number
 };
 
-export default withRouter(CampaignContactsChoiceForm);
+export default compose(withMuiTheme, withRouter)(CampaignContactsChoiceForm);

@@ -2,7 +2,7 @@ import PropTypes from "prop-types";
 import React from "react";
 import gql from "graphql-tag";
 import { Link } from "react-router";
-import { compose } from "react-apollo";
+import { compose } from "recompose";
 
 import Button from "@material-ui/core/Button";
 import ButtonGroup from "@material-ui/core/ButtonGroup";
@@ -887,7 +887,9 @@ export class AdminCampaignEdit extends React.Component {
             this.checkSectionSaved(section);
           const sectionIsExpanded = sectionIndex === expandedSection;
           let avatar = null;
-          const cardHeaderStyle = {};
+          const cardHeaderStyle = {
+            fontSize: 20
+          };
           const avatarStyle = {
             backgroundColor: this.props.muiTheme.palette.background.default,
             height: 25,
@@ -910,6 +912,7 @@ export class AdminCampaignEdit extends React.Component {
             cardHeaderStyle.width = `${savePercent}%`;
           } else if (sectionIsExpanded && sectionCanExpandOrCollapse) {
             cardHeaderStyle.backgroundColor = muiTheme.palette.warning.light;
+            cardHeaderStyle.color = muiTheme.palette.warning.contrastText;
           } else if (sectionIsDone) {
             avatar = (
               <Avatar style={avatarStyle}>
@@ -917,6 +920,7 @@ export class AdminCampaignEdit extends React.Component {
               </Avatar>
             );
             cardHeaderStyle.backgroundColor = muiTheme.palette.primary.main;
+            cardHeaderStyle.color = muiTheme.palette.primary.contrastText;
           } else if (!sectionIsDone) {
             avatar = (
               <Avatar style={avatarStyle} color="primary">
@@ -930,6 +934,7 @@ export class AdminCampaignEdit extends React.Component {
               </Avatar>
             );
             cardHeaderStyle.backgroundColor = muiTheme.palette.warning.main;
+            cardHeaderStyle.color = muiTheme.palette.warning.contrastText;
           }
           return (
             <Card
@@ -946,6 +951,7 @@ export class AdminCampaignEdit extends React.Component {
                     </IconButton>
                   )
                 }
+                disableTypography={true}
                 style={cardHeaderStyle}
                 avatar={avatar}
                 onClick={newExpandedState => {

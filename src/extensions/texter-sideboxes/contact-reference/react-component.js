@@ -107,6 +107,7 @@ export class AdminConfig extends React.Component {
         labelPlacement="end"
         control={
           <Switch
+            color="primary"
             checked={this.props.settingsData.contactReferenceClickable}
             onChange={event =>
               this.props.onToggle(
