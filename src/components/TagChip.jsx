@@ -42,6 +42,8 @@ export const TagChip = props => (
       backgroundColor: props.backgroundColor || theme.colors.lightYellow,
       ...(props.style ? props.style : {})
     }}
+    onClick={props.onClick}
+    onDelete={props.onDelete}
     label={props.text}
     onClick={props.onClick}
     avatar={
