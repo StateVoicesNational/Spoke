@@ -26,6 +26,7 @@ const App = ({ children }) => {
   console.log("APP THEME", theme);
   const handleSetTheme = newPaletteString => {
     if (newPaletteString === undefined) {
+      // happpens when OrganizationWrapper unmounts
       setTheme(defaultTheme);
     } else {
       try {

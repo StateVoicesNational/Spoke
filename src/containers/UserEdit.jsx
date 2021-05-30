@@ -24,6 +24,7 @@ import React from "react";
 import loadData from "./hoc/load-data";
 import gql from "graphql-tag";
 import { withRouter } from "react-router";
+import { compose } from "recompose";
 import GSForm from "../components/forms/GSForm";
 import GSTextField from "../components/forms/GSTextField";
 import GSSubmitButton from "../components/forms/GSSubmitButton";
@@ -39,6 +40,7 @@ import CardContent from "@material-ui/core/CardContent";
 import { StyleSheet, css } from "aphrodite";
 import apolloClient from "../network/apollo-client-singleton";
 import { dataTest } from "../lib/attributes";
+import withMuiTheme from "./../containers/hoc/withMuiTheme";
 
 const styles = StyleSheet.create({
   container: {
@@ -502,9 +504,8 @@ const mutations = {
   })
 };
 
-export default withRouter(
-  loadData({
-    queries,
-    mutations
-  })(UserEdit)
-);
+export default compose(
+  withMuiTheme,
+  withRouter,
+  loadData({ queries, mutations })
+)(UserEdit);

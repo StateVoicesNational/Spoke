@@ -5,7 +5,6 @@ import loadData from "./hoc/load-data";
 import gql from "graphql-tag";
 import LoadingIndicator from "../components/LoadingIndicator";
 
-import { createMuiTheme, MuiThemeProvider } from "@material-ui/core/styles";
 import OpenInNewIcon from "@material-ui/icons/OpenInNew";
 import PeopleIcon from "@material-ui/icons/People";
 import Button from "@material-ui/core/Button";
@@ -16,21 +15,7 @@ import UserEditDialog from "../components/PeopleList/UserEditDialog";
 import ResetPasswordDialog from "../components/PeopleList/ResetPasswordDialog";
 import RolesDropdown from "../components/PeopleList/RolesDropdown";
 import { dataTest } from "../lib/attributes";
-import theme from "../styles/theme";
 import Empty from "../components/Empty";
-
-const getMuiTheme = () =>
-  createMuiTheme({
-    overrides: {
-      MUIDataTableBodyCell: {
-        root: {
-          textOverflow: "ellipsis",
-          overflow: "hidden",
-          whiteSpace: "pre-line"
-        }
-      }
-    }
-  });
 
 const prepareDataTableData = users =>
   users.map(user => ({
@@ -92,7 +77,8 @@ export class PeopleList extends Component {
                   to={`/app/${organizationId}/todos/other/${texterId}`}
                 >
                   <OpenInNewIcon
-                    style={{ width: 14, height: 14, color: theme.colors.green }}
+                    style={{ width: 14, height: 14 }}
+                    color="primary"
                   />
                 </Link>
               </React.Fragment>
@@ -344,7 +330,7 @@ export class PeopleList extends Component {
     };
 
     return (
-      <MuiThemeProvider theme={getMuiTheme()}>
+      <React.Fragment>
         <MUIDataTable data={tableData} columns={columns} options={options} />
         {this.props.organizationId && (
           <div>
@@ -363,7 +349,7 @@ export class PeopleList extends Component {
             />
           </div>
         )}
-      </MuiThemeProvider>
+      </React.Fragment>
     );
   }
 }
