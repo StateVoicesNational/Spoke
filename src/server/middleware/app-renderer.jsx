@@ -34,8 +34,20 @@ if (!DEBUG) {
 }
 
 export default wrap(async (req, res) => {
-  const query = req.query ? encodeURIComponent(req.query) : "";
-  if (!req.isAuthenticated() && !req.path.startsWith("/login")) {
+  const query = req._parsedUrl.search
+    ? encodeURIComponent(req._parsedUrl.search || "")
+    : "";
+  const loginPaths = {
+    addOrganization: 1,
+    admin: 1,
+    app: 1,
+    invite: 1,
+    join: 1,
+    organizations: 1,
+    reset: 1
+  };
+  const firstToken = req.path.split("/")[1];
+  if (!req.isAuthenticated() && firstToken in loginPaths) {
     res.redirect(302, `/login?nextUrl=${req.path}${query}`);
     return;
   }
