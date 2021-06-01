@@ -18,12 +18,12 @@ class SendButton extends Component {
       <div className={css(styles.container)}>
         <Button
           {...dataTest("send")}
-          onClick={this.props.onFinalTouchTap}
+          onClick={this.props.onClick}
           disabled={this.props.disabled}
-          color={this.props.doneFirstClick ? "secondary" : "primary"}
+          color="primary"
           variant="contained"
         >
-          Send
+          {this.props.doneFirstClick ? "Confirm Send" : "Send"}
         </Button>
       </div>
     );
@@ -31,7 +31,7 @@ class SendButton extends Component {
 }
 
 SendButton.propTypes = {
-  onFinalTouchTap: PropTypes.func,
+  onClick: PropTypes.func,
   disabled: PropTypes.bool,
   doneFirstClick: PropTypes.bool
 };

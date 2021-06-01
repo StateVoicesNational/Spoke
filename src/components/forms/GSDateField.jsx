@@ -4,11 +4,8 @@ import moment from "moment";
 import GSFormField from "./GSFormField";
 import { dataTest } from "../../lib/attributes";
 import DateFnsUtils from "@date-io/date-fns";
-import {
-  MuiPickersUtilsProvider,
-  KeyboardDatePicker,
-  DatePicker
-} from "@material-ui/pickers";
+import { MuiPickersUtilsProvider, DatePicker } from "@material-ui/pickers";
+import theme from "../../styles/mui-theme";
 
 export default class GCDateField extends GSFormField {
   render() {
@@ -56,6 +53,9 @@ export default class GCDateField extends GSFormField {
               );
               this.props.onChange(newDate.toDate());
             }
+          }}
+          style={{
+            marginBottom: theme.spacing(2)
           }}
         />
       </MuiPickersUtilsProvider>

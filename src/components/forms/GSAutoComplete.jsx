@@ -3,6 +3,7 @@ import Autocomplete from "@material-ui/lab/Autocomplete";
 import TextField from "@material-ui/core/TextField";
 
 import GSFormField from "./GSFormField";
+import theme from "../../styles/mui-theme";
 
 export default class GSAutoComplete extends GSFormField {
   constructor(props) {
@@ -38,6 +39,9 @@ export default class GSAutoComplete extends GSFormField {
               placeholder={placeholder}
               fullWidth={fullWidth}
               label={label}
+              style={{
+                marginBottom: theme.spacing(2)
+              }}
             />
           );
         }}
