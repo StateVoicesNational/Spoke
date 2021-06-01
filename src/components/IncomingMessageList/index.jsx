@@ -197,7 +197,8 @@ export class IncomingMessageList extends Component {
                 style={{
                   textOverflow: "ellipsis",
                   overflow: "hidden",
-                  whiteSpace: "nowrap"
+                  whiteSpace: "nowrap",
+                  maxWidth: 150
                 }}
                 title={lastMessage.text}
               >
@@ -306,17 +307,16 @@ export class IncomingMessageList extends Component {
                 ? null
                 : theme.colors.lightGray
             }
-            onRequestDelete={
-              tagNames[name].value !== "RESOLVED"
-                ? async () => {
-                    console.log("resolving tag", name, tagNames[name]);
-                    const res = await this.props.mutations.updateTag(
-                      row.campaignContactId,
-                      tagNames[name].id,
-                      "RESOLVED"
-                    );
-                  }
-                : null
+            onDelete={
+              tagNames[name].value !== "RESOLVED" &&
+              (async () => {
+                console.log("resolving tag", name, tagNames[name]);
+                const res = await this.props.mutations.updateTag(
+                  row.campaignContactId,
+                  tagNames[name].id,
+                  "RESOLVED"
+                );
+              })
             }
           />
         ))}

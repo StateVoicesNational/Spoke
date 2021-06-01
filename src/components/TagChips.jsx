@@ -19,9 +19,7 @@ const TagChips = ({ tags, tagIds, onRequestDelete, extraProps }) => (
           <TagChip
             key={id}
             text={listedTag.name}
-            onRequestDelete={
-              onRequestDelete ? () => onRequestDelete(listedTag) : null
-            }
+            onDelete={onRequestDelete && (() => onRequestDelete(listedTag))}
             deleteIconStyle={{
               marginBottom: "4px"
             }}

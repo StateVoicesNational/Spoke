@@ -105,28 +105,29 @@ export default class GSForm extends React.Component {
   }
 
   render() {
+    const { setRef, ...props } = this.props;
     return (
       <Form
         ref={this.form}
-        value={this.props.value || this.state.model || this.props.defaultValue}
+        value={props.value || this.state.model || props.defaultValue}
         onChange={model => {
           this.setState({ model });
-          if (this.props.onChange) {
-            this.props.onChange(model);
+          if (props.onChange) {
+            props.onChange(model);
           }
         }}
         onError={errors => {
           this.setState({ formErrors: errors });
         }}
-        {...this.props}
+        {...props}
         onSubmit={async formValues => {
           this.setState({
             isSubmitting: true,
             globalErrorMessage: null
           });
-          if (this.props.onSubmit) {
+          if (props.onSubmit) {
             try {
-              await this.props.onSubmit(formValues);
+              await props.onSubmit(formValues);
             } catch (ex) {
               this.handleFormError(ex);
             }
@@ -135,7 +136,7 @@ export default class GSForm extends React.Component {
         }}
       >
         {this.renderGlobalErrorMessage()}
-        {this.renderChildren(this.props.children)}
+        {this.renderChildren(props.children)}
       </Form>
     );
   }

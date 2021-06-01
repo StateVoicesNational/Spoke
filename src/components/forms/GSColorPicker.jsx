@@ -2,6 +2,7 @@ import React from "react";
 import TextField from "@material-ui/core/TextField";
 import GSFormField from "./GSFormField";
 import { ChromePicker } from "react-color";
+import theme from "../../styles/mui-theme";
 
 export default class GSTextField extends GSFormField {
   state = {};
@@ -74,7 +75,7 @@ export default class GSTextField extends GSFormField {
       size,
       value,
       variant,
-      style
+      style = {}
     } = this.props;
     const textFieldProps = {
       autoComplete,
@@ -111,6 +112,11 @@ export default class GSTextField extends GSFormField {
     if (!textFieldProps.value) {
       textFieldProps.value = "";
     }
+    textFieldProps.style = Object.assign(
+      {},
+      { marginBottom: theme.spacing(2) },
+      textFieldProps.style
+    );
     return (
       <div>
         <TextField
