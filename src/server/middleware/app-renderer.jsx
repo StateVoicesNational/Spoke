@@ -46,8 +46,11 @@ export default wrap(async (req, res) => {
     organizations: 1,
     reset: 1
   };
-  const firstToken = req.path.split("/")[1];
-  if (!req.isAuthenticated() && firstToken in loginPaths) {
+  const [_, firstToken, secToken] = req.path.split("/");
+  if (
+    !req.isAuthenticated() &&
+    (firstToken in loginPaths || secToken === "join")
+  ) {
     res.redirect(302, `/login?nextUrl=${req.path}${query}`);
     return;
   }
