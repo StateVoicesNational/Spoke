@@ -50,6 +50,17 @@ export const updateServiceVendorConfig = async (
   });
 
   let newConfig;
+  await processServiceManagers(
+    "onOrganizationServiceVendorSetup",
+    organization,
+    {
+      user,
+      serviceName,
+      oldConfig: existingConfig,
+      newConfig: configObject
+    }
+  );
+
   try {
     newConfig = await serviceConfigFunction(
       existingConfig,
@@ -82,17 +93,6 @@ export const updateServiceVendorConfig = async (
   await dbOrganization.save();
   await orgCache.clear(organization.id);
   const updatedOrganization = await orgCache.load(organization.id);
-
-  await processServiceManagers(
-    "onOrganizationServiceVendorSetup",
-    updatedOrganization,
-    {
-      user,
-      serviceName,
-      oldConfig: existingConfig,
-      newConfig
-    }
-  );
 
   return {
     id: `org${organization.id}-${serviceName}`,

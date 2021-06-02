@@ -7,6 +7,8 @@ export const metadata = () => ({
   // set canSpendMoney=true, if this extension can lead to (additional) money being spent
   // if it can, which operations below can trigger money being spent?
   displayName: "Test Fake Service Manager Example",
+  description:
+    "Used for testing and demonstrating service-manager capabilities",
   canSpendMoney: false,
   moneySpendingOperations: ["onCampaignStart"],
   supportsOrgConfig: true,

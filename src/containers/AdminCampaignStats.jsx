@@ -457,9 +457,9 @@ const queries = {
           id
           title
           isArchived
-          isArchivedPermanently
           joinToken
           useDynamicAssignment
+          isArchivedPermanently
           useOwnMessagingService
           messageserviceSid
           assignments(assignmentsFilter: $assignmentsFilter) {
