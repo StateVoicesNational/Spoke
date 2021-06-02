@@ -1,6 +1,7 @@
 import { mapFieldsToModel } from "./lib/utils";
 import { getConfig, getFeatures } from "./lib/config";
 import { r, Organization, cacheableData } from "../models";
+import ownedPhoneNumber from "./lib/owned-phone-number";
 import { getTags } from "./tag";
 import { accessRequired } from "./errors";
 import { getCampaigns } from "./campaign";
@@ -13,6 +14,7 @@ import {
   fullyConfigured,
   getServiceMetadata
 } from "../../extensions/service-vendors";
+import { getServiceManagerData } from "../../extensions/service-managers";
 
 export const ownerConfigurable = {
   // ACTION_HANDLERS: 1,
@@ -211,7 +213,7 @@ export const resolvers = {
     cacheable: (org, _, { user }) =>
       // quanery logic.  levels are 0, 1, 2
       r.redis ? (getConfig("REDIS_CONTACT_CACHE", org) ? 2 : 1) : 0,
-    messageService: async (organization, _, { user }) => {
+    serviceVendor: async (organization, _, { user }) => {
       try {
         await accessRequired(user, organization.id, "OWNER");
         const serviceName = cacheableData.organization.getMessageService(
@@ -219,6 +221,7 @@ export const resolvers = {
         );
         const serviceMetadata = getServiceMetadata(serviceName);
         return {
+          id: `org${organization.id}-${serviceName}`,
           ...serviceMetadata,
           config: cacheableData.organization.getMessageServiceConfig(
             organization,
@@ -226,7 +229,29 @@ export const resolvers = {
           )
         };
       } catch (caught) {
+        console.log("organization.messageService error", caught);
         return null;
+      }
+    },
+    serviceManagers: async (organization, _, { user, loaders }) => {
+      try {
+        await accessRequired(user, organization.id, "OWNER", true);
+        const result = await getServiceManagerData(
+          "getOrganizationData",
+          organization,
+          { organization, user, loaders }
+        );
+        return result.map(r => ({
+          id: `${r.name}-org${organization.id}-`,
+          organization,
+          // defaults
+          fullyConfigured: null,
+          data: null,
+          ...r
+        }));
+      } catch (err) {
+        console.log("orgaization.serviceManagers error", err);
+        return [];
       }
     },
     fullyConfigured: async organization => {
@@ -310,29 +335,7 @@ export const resolvers = {
       ) {
         return [];
       }
-      const usAreaCodes = require("us-area-codes");
-      const service =
-        getConfig("service", organization) || getConfig("DEFAULT_SERVICE");
-      const counts = await r
-        .knex("owned_phone_number")
-        .select(
-          "area_code",
-          r.knex.raw("COUNT(allocated_to) as allocated_count"),
-          r.knex.raw(
-            "SUM(CASE WHEN allocated_to IS NULL THEN 1 END) as available_count"
-          )
-        )
-        .where({
-          service,
-          organization_id: organization.id
-        })
-        .groupBy("area_code");
-      return counts.map(row => ({
-        areaCode: row.area_code,
-        state: usAreaCodes.get(Number(row.area_code)),
-        allocatedCount: Number(row.allocated_count),
-        availableCount: Number(row.available_count)
-      }));
+      return await ownedPhoneNumber.listOrganizationCounts(organization);
     }
   }
 };

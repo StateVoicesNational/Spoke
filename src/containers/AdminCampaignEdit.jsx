@@ -34,6 +34,7 @@ import CampaignCannedResponsesForm from "../components/CampaignCannedResponsesFo
 import CampaignDynamicAssignmentForm from "../components/CampaignDynamicAssignmentForm";
 import CampaignTexterUIForm from "../components/CampaignTexterUIForm";
 import CampaignPhoneNumbersForm from "../components/CampaignPhoneNumbersForm";
+import CampaignServiceManagers from "../components/CampaignServiceManagers";
 import { dataTest, camelCase } from "../lib/attributes";
 import CampaignTextingHoursForm from "../components/CampaignTextingHoursForm";
 import { styles } from "./AdminCampaignStats";
@@ -57,8 +58,6 @@ const campaignInfoFragment = `
   logoImageUrl
   introHtml
   primaryColor
-  useOwnMessagingService
-  messageserviceSid
   overrideOrganizationTextingHours
   textingHoursEnforced
   textingHoursStart
@@ -117,6 +116,16 @@ const campaignInfoFragment = `
     status
     resultMessage
   }
+  serviceManagers {
+    id
+    name
+    displayName
+    supportsOrgConfig
+    data
+    fullyConfigured
+  }
+  useOwnMessagingService
+  messageserviceSid
   inventoryPhoneNumberCounts {
     areaCode
     count
@@ -536,6 +545,30 @@ export class AdminCampaignEdit extends React.Component {
         expandableBySuperVolunteers: false
       }
     ];
+    if (
+      this.props.campaignData.campaign.serviceManagers &&
+      this.props.campaignData.campaign.serviceManagers.length
+    ) {
+      finalSections.push({
+        title: "Service Management",
+        content: CampaignServiceManagers,
+        keys: [],
+        checkCompleted: () =>
+          // fullyConfigured can be true or null, but if false, then it blocks
+          this.props.campaignData.campaign.serviceManagers
+            .map(sm => sm.fullyConfigured !== false)
+            .reduce((a, b) => a && b),
+        blocksStarting: true,
+        expandAfterCampaignStarts: true,
+        expandableBySuperVolunteers: false,
+        extraProps: {
+          campaign: this.props.campaignData.campaign,
+          organization: this.props.organizationData.organization,
+          onSubmit: this.props.mutations.updateServiceManager,
+          serviceManagerComponentName: "CampaignConfig"
+        }
+      });
+    }
     if (window.EXPERIMENTAL_TWILIO_PER_CAMPAIGN_MESSAGING_SERVICE) {
       finalSections.push({
         title: "Messaging Service",
@@ -554,6 +587,7 @@ export class AdminCampaignEdit extends React.Component {
         content: CampaignPhoneNumbersForm,
         keys: ["inventoryPhoneNumberCounts"],
         checkCompleted: () => {
+          // logic to move to the component itself or backend
           const {
             contactsCount,
             inventoryPhoneNumberCounts
@@ -1114,6 +1148,33 @@ const mutations = {
     variables: {
       campaignId,
       url
+    }
+  }),
+  updateServiceManager: ownProps => (serviceManagerName, updateData) => ({
+    mutation: gql`
+      mutation updateServiceManager(
+        $organizationId: String!
+        $campaignId: String!
+        $serviceManagerName: String!
+        $updateData: JSON!
+      ) {
+        updateServiceManager(
+          organizationId: $organizationId
+          campaignId: $campaignId
+          serviceManagerName: $serviceManagerName
+          updateData: $updateData
+        ) {
+          id
+          data
+          fullyConfigured
+        }
+      }
+    `,
+    variables: {
+      organizationId: ownProps.organizationData.organization.id,
+      campaignId: ownProps.campaignData.campaign.id,
+      serviceManagerName,
+      updateData
     }
   })
 };

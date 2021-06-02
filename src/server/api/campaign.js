@@ -5,6 +5,7 @@ import {
   getServiceNameFromOrganization,
   errorDescription
 } from "../../extensions/service-vendors";
+import { getServiceManagerData } from "../../extensions/service-managers";
 import { Campaign, JobRequest, r, cacheableData } from "../models";
 import { getUsers } from "./user";
 import { getSideboxChoices } from "./organization";
@@ -684,6 +685,38 @@ export const resolvers = {
       }
       return "";
     },
+    serviceManagers: async (
+      campaign,
+      { fromCampaignStatsPage },
+      { user, loaders }
+    ) => {
+      await accessRequired(
+        user,
+        campaign.organization_id,
+        "SUPERVOLUNTEER",
+        true
+      );
+      const organization = await loaders.organization.load(
+        campaign.organization_id
+      );
+      const result = await getServiceManagerData(
+        "getCampaignData",
+        organization,
+        { organization, campaign, user, loaders, fromCampaignStatsPage }
+      );
+      return result.map(r => ({
+        id: `${r.name}-org${campaign.organization_id}-${campaign.id}${
+          fromCampaignStatsPage ? "stats" : ""
+        }`,
+        campaign,
+        organization,
+        // defaults
+        fullyConfigured: null,
+        unArchiveable: null,
+        data: null,
+        ...r
+      }));
+    },
     phoneNumbers: async (campaign, _, { user }) => {
       await accessRequired(
         user,
@@ -710,6 +743,7 @@ export const resolvers = {
     creator: async (campaign, _, { loaders }) =>
       campaign.creator_id ? loaders.user.load(campaign.creator_id) : null,
     isArchivedPermanently: campaign => {
+      // TODO: consider removal
       // started campaigns that have had their message service sid deleted can't be restarted
       // NOTE: this will need to change if campaign phone numbers are extended beyond twilio and fakeservice
       return (

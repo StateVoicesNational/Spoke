@@ -1,8 +1,14 @@
 import { r, Message } from "../../models";
 import campaignCache from "./campaign";
 import campaignContactCache from "./campaign-contact";
+import orgCache from "./organization";
 import organizationContactCache from "./organization-contact";
 import { getMessageHandlers } from "../../../extensions/message-handlers";
+import {
+  serviceManagersHaveImplementation,
+  processServiceManagers
+} from "../../../extensions/service-managers";
+
 // QUEUE
 // messages-<contactId>
 // Expiration: 24 hours after last message added
@@ -179,6 +185,32 @@ const deliveryReport = async ({
     .limit(1)
     .update(changes);
 
+  if (serviceManagersHaveImplementation("onDeliveryReport")) {
+    lookup =
+      lookup ||
+      (await campaignContactCache.lookupByCell(
+        contactNumber,
+        service || "",
+        messageServiceSid,
+        userNumber
+      ));
+    const campaignContact = await campaignContactCache.load(
+      lookup.campaign_contact_id
+    );
+    const organizationId = await campaignContactCache.orgId(campaignContact);
+    const organization = await orgCache.load(organizationId);
+    await processServiceManagers("onDeliveryReport", organization, {
+      campaignContact,
+      lookup,
+      contactNumber,
+      userNumber,
+      messageSid,
+      service,
+      messageServiceSid,
+      newStatus,
+      errorCode
+    });
+  }
   // TODO: move the below into a test for service-strategies if there are onDeliveryReport impls
   // which uses campaignContactCache.lookupByCell above
   if (
