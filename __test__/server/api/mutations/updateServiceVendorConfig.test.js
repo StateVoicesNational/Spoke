@@ -61,14 +61,14 @@ describe("updateServiceVendorConfig", () => {
 
     vars = {
       organizationId: organization.id,
-      messageServiceName: "twilio",
+      serviceName: "twilio",
       config: JSON.stringify(newConfig)
     };
   });
 
   describe("when it's not the configured message service name", () => {
     beforeEach(async () => {
-      vars.messageServiceName = "this will never be a message service name";
+      vars.serviceName = "this will never be a message service name";
     });
 
     it("returns an error", async () => {
@@ -173,10 +173,13 @@ describe("updateServiceVendorConfig", () => {
           [
             expect.objectContaining({
               id: 1
+            }),
+            expect.objectContaining({
+              obscureSensitiveInformation: true
             })
           ]
         ]);
-        expect(gqlResult.data.updateServiceVendorConfig).toEqual(
+        expect(gqlResult.data.updateServiceVendorConfig.config).toEqual(
           expect.objectContaining(expectedCacheConfig)
         );
 
@@ -271,7 +274,7 @@ describe("updateServiceVendorConfig", () => {
       beforeEach(async () => {
         service = "extremely_fake_service";
         configKey = serviceMap.getConfigKey(service);
-        vars.messageServiceName = service;
+        vars.serviceName = service;
         dbOrganization.features = JSON.stringify({
           service,
           TWILIO_ACCOUNT_SID: "the former_fake_account_sid",

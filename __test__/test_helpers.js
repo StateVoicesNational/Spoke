@@ -243,14 +243,17 @@ export async function setTwilioAuth(user, organization) {
   const query = `
     mutation updateServiceVendorConfig(
       $organizationId: String!
-      $messageServiceName: String!
+      $serviceName: String!
       $config: JSON!
     ) {
       updateServiceVendorConfig(
         organizationId: $organizationId
-        messageServiceName: $messageServiceName
+        serviceName: $serviceName
         config: $config
-      ) 
+      ) {
+        id
+        config
+      }
     }
   `;
 
@@ -262,7 +265,7 @@ export async function setTwilioAuth(user, organization) {
 
   const variables = {
     organizationId: orgId,
-    messageServiceName: "twilio",
+    serviceName: "twilio",
     config: JSON.stringify(twilioConfig)
   };
 

@@ -323,7 +323,7 @@ describe("organization", async () => {
     });
   });
 
-  describe(".messageService", () => {
+  describe(".serviceVendor", () => {
     let gqlQuery;
     let variables;
     let fakeConfig;
@@ -349,9 +349,9 @@ describe("organization", async () => {
         .mockReturnValue(fakeMetadata);
 
       gqlQuery = gql`
-        query messageService($organizationId: String!) {
+        query serviceVendor($organizationId: String!) {
           organization(id: $organizationId) {
-            messageService {
+            serviceVendor {
               name
               supportsOrgConfig
               config
@@ -366,8 +366,7 @@ describe("organization", async () => {
     });
     it("calls functions and returns the result", async () => {
       const result = await runGql(gqlQuery, variables, testAdminUser);
-      console.log("result", result);
-      expect(result.data.organization.messageService).toEqual({
+      expect(result.data.organization.serviceVendor).toEqual({
         ...fakeMetadata,
         config: fakeConfig
       });

@@ -270,9 +270,9 @@ class AdminPhoneNumberInventory extends React.Component {
   }
 
   renderBuyNumbersForm() {
-    const messageService = this.props.data.organization.messageService;
-    const messageServiceName = messageService.name;
-    const messageServiceConfig = messageService.config || "{}";
+    const service = this.props.data.organization.serviceVendor;
+    const serviceName = service.name;
+    const serviceConfig = service.config || "{}";
     return (
       <GSForm
         schema={this.buyNumbersFormSchema()}
@@ -469,7 +469,7 @@ const queries = {
       query getOrganizationData($organizationId: String!) {
         organization(id: $organizationId) {
           id
-          messageService {
+          serviceVendor {
             name
             config
           }

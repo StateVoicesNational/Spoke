@@ -43,8 +43,8 @@ export class OrgConfig extends React.Component {
     this.state = { allSet, ...this.props.config, country: "United States" };
     this.props.onAllSetChanged(allSet);
   }
+
   /*
-  componentDidUpdate(prevProps) {
     const {
       accountSid: prevAccountSid,
       authToken: prevAuthToken,
@@ -76,7 +76,6 @@ export class OrgConfig extends React.Component {
     let newError;
     try {
       await this.props.onSubmit(config);
-      await this.props.requestRefetch();
       this.setState({
         error: undefined
       });
