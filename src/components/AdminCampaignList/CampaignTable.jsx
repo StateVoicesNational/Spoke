@@ -352,6 +352,7 @@ export class CampaignTable extends React.Component {
     const { campaigns, pageInfo } = this.props.data.organization.campaigns;
     const { limit, offset, total } = pageInfo;
     const displayPage = Math.floor(offset / limit) + 1;
+    let rowSizeList = [10, 20, 50, 100];
 
     const options = {
       filterType: "checkbox",
@@ -365,6 +366,9 @@ export class CampaignTable extends React.Component {
       search: false,
       viewColumns: false,
       page: displayPage - 1,
+      count: total,
+      rowsPerPage: limit,
+      rowsPerPageOptions: rowSizeList,
       serverSide: true,
       rowsSelected: this.getSelectedRowIndexes(),
       customToolbarSelect: () => null,
@@ -372,11 +376,9 @@ export class CampaignTable extends React.Component {
         switch (action) {
           case "changePage":
             if (tableState.page > displayPage - 1) {
-              // next page
               this.clearCampaignSelection();
               this.props.onNextPageClick();
             } else {
-              // prev page
               this.clearCampaignSelection();
               this.props.onPreviousPageClick();
             }
