@@ -394,7 +394,7 @@ export class AssignmentTexterContactControls extends React.Component {
         <div>
           <Toolbar style={inlineStyles.actionToolbarFirst}>
             <SendButton
-              onFinalTouchTap={this.handleClickSendMessageButton}
+              onClick={this.handleClickSendMessageButton}
               disabled={this.props.disabled}
             />
             <div style={{ float: "right", marginLeft: 20 }}>
@@ -440,7 +440,7 @@ export class AssignmentTexterContactControls extends React.Component {
         <div>
           <Toolbar style={inlineStyles.actionToolbarFirst}>
             <SendButton
-              onFinalTouchTap={this.handleClickSendMessageButton}
+              onClick={this.handleClickSendMessageButton}
               disabled={this.props.disabled}
             />
             {this.renderNeedsResponseToggleButton(contact, messageStatusFilter)}

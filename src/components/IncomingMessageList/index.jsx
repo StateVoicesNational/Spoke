@@ -197,7 +197,8 @@ export class IncomingMessageList extends Component {
                 style={{
                   textOverflow: "ellipsis",
                   overflow: "hidden",
-                  whiteSpace: "nowrap"
+                  whiteSpace: "nowrap",
+                  maxWidth: 150
                 }}
                 title={lastMessage.text}
               >
@@ -270,7 +271,6 @@ export class IncomingMessageList extends Component {
   };
 
   handleRowsSelected = rowsSelected => {
-    console.log("rowsSelected", rowsSelected);
     this.setState({ selectedRows: rowsSelected });
     const conversations = this.props.conversations.conversations.conversations;
     const selectedConversations = prepareSelectedRowsData(
@@ -307,17 +307,16 @@ export class IncomingMessageList extends Component {
                 ? null
                 : theme.colors.lightGray
             }
-            onRequestDelete={
-              tagNames[name].value !== "RESOLVED"
-                ? async () => {
-                    console.log("resolving tag", name, tagNames[name]);
-                    const res = await this.props.mutations.updateTag(
-                      row.campaignContactId,
-                      tagNames[name].id,
-                      "RESOLVED"
-                    );
-                  }
-                : null
+            onDelete={
+              tagNames[name].value !== "RESOLVED" &&
+              (async () => {
+                console.log("resolving tag", name, tagNames[name]);
+                const res = await this.props.mutations.updateTag(
+                  row.campaignContactId,
+                  tagNames[name].id,
+                  "RESOLVED"
+                );
+              })
             }
           />
         ))}
@@ -369,6 +368,8 @@ export class IncomingMessageList extends Component {
       page: displayPage - 1,
       serverSide: true,
       count: total,
+      rowsPerPage: limit,
+      rowsPerPageOptions: rowSizeList,
       rowsSelected: clearSelectedMessages ? null : this.state.selectedRows,
       customToolbarSelect: () => null,
       onTableChange: (action, tableState) => {
