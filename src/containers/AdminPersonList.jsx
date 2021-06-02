@@ -3,13 +3,17 @@ import React from "react";
 import { withRouter } from "react-router";
 import _ from "lodash";
 import OrganizationJoinLink from "../components/OrganizationJoinLink";
-import FlatButton from "material-ui/FlatButton";
-import FloatingActionButton from "material-ui/FloatingActionButton";
-import DropDownMenu from "material-ui/DropDownMenu";
-import MenuItem from "material-ui/MenuItem";
-import ContentAdd from "material-ui/svg-icons/content/add";
-import Dialog from "material-ui/Dialog";
-import Paper from "material-ui/Paper";
+
+import Button from "@material-ui/core/Button";
+import Fab from "@material-ui/core/Fab";
+import AddIcon from "@material-ui/icons/Add";
+import Paper from "@material-ui/core/Paper";
+import Dialog from "@material-ui/core/Dialog";
+import DialogTitle from "@material-ui/core/DialogTitle";
+import DialogContent from "@material-ui/core/DialogContent";
+import Select from "@material-ui/core/Select";
+import MenuItem from "@material-ui/core/MenuItem";
+
 import theme from "../styles/theme";
 import loadData from "./hoc/load-data";
 import gql from "graphql-tag";
@@ -31,7 +35,15 @@ const styles = StyleSheet.create({
   settings: {
     display: "flex",
     flexDirection: "column",
-    padding: "20px"
+    padding: 20,
+    marginBottom: 20
+  },
+  selects: {
+    display: "flex",
+    flexWrap: "wrap"
+  },
+  select: {
+    margin: "0 20px 20px 0"
   }
 });
 
@@ -191,54 +203,46 @@ class AdminPersonList extends React.Component {
     } = this.props;
     const campaigns = organization ? organization.campaigns : { campaigns: [] };
     return (
-      <DropDownMenu
+      <Select
         value={this.props.location.query.campaignId || ALL_CAMPAIGNS}
         onChange={this.handleCampaignChange}
       >
-        <MenuItem
-          primaryText="All Campaigns"
-          value={ALL_CAMPAIGNS}
-          key={ALL_CAMPAIGNS}
-        />
+        <MenuItem value={ALL_CAMPAIGNS} key={ALL_CAMPAIGNS}>
+          All Campaigns
+        </MenuItem>
         {campaigns.campaigns.map(campaign => (
-          <MenuItem
-            value={campaign.id}
-            primaryText={campaign.title}
-            key={campaign.id}
-          />
+          <MenuItem value={campaign.id} key={campaign.id}>
+            {campaign.title}
+          </MenuItem>
         ))}
-      </DropDownMenu>
+      </Select>
     );
   };
 
   renderSortBy = () => (
-    <DropDownMenu
+    <Select
       value={this.props.location.query.sortBy || this.DEFAULT_SORT_BY_VALUE}
       onChange={this.handleSortByChanged}
     >
       {this.SORTS.map(sort => (
-        <MenuItem
-          value={sort.value}
-          key={sort.value}
-          primaryText={"Sort by " + sort.display}
-        />
+        <MenuItem value={sort.value} key={sort.value}>
+          Sort by {sort.display}
+        </MenuItem>
       ))}
-    </DropDownMenu>
+    </Select>
   );
 
   renderFilterBy = () => (
-    <DropDownMenu
+    <Select
       value={this.props.location.query.filterBy || this.DEFAULT_FILTER_BY_VALUE}
       onChange={this.handleFilterByChanged}
     >
       {this.FILTERS.map(filter => (
-        <MenuItem
-          value={filter.value}
-          key={filter.value}
-          primaryText={"Filter by " + filter.display}
-        />
+        <MenuItem value={filter.value} key={filter.value}>
+          Filter by {filter.display}
+        </MenuItem>
       ))}
-    </DropDownMenu>
+    </Select>
   );
 
   renderRoles = () => (
@@ -254,45 +258,51 @@ class AdminPersonList extends React.Component {
       userData: { currentUser }
     } = this.props;
     const joinActions = [
-      <FlatButton
+      <Button
         {...dataTest("inviteOk")}
-        label="OK"
-        primary
-        onTouchTap={this.handleClose}
-      />
+        color="primary"
+        onClick={this.handleClose}
+      >
+        OK
+      </Button>
     ];
     if (currentUser.roles.indexOf("ADMIN") !== -1) {
       if (this.state.resetLink) {
         joinActions.unshift(
-          <FlatButton
+          <Button
             {...dataTest("inviteResetConfirm")}
-            label="Confirm Reset Link -- will break current link"
-            onTouchTap={this.handleResetInviteLink}
-          />,
-          <FlatButton
+            onClick={this.handleResetInviteLink}
+          >
+            Confirm Reset Link -- will break current link
+          </Button>,
+          <Button
             {...dataTest("inviteResetCancel")}
-            label="Cancel"
-            onTouchTap={() => this.setState({ resetLink: false })}
-          />
+            onClick={() => this.setState({ resetLink: false })}
+          >
+            Cancel
+          </Button>
         );
       } else {
         joinActions.unshift(
-          <FlatButton
+          <Button
             {...dataTest("inviteReset")}
-            label="Reset Link (Security)"
-            onTouchTap={() => this.setState({ resetLink: true })}
-          />
+            onClick={() => this.setState({ resetLink: true })}
+          >
+            Reset Link (Security)
+          </Button>
         );
       }
     }
     return (
       <div>
-        <Paper className={css(styles.settings)} zDepth={3}>
-          <div>
-            {this.renderCampaignList()}
-            {this.renderRoles()}
-            {this.renderSortBy()}
-            {this.renderFilterBy()}
+        <Paper className={css(styles.settings)} elevation={3}>
+          <div className={css(styles.selects)}>
+            <div className={css(styles.select)}>
+              {this.renderCampaignList()}
+            </div>
+            <div className={css(styles.select)}>{this.renderRoles()}</div>
+            <div className={css(styles.select)}>{this.renderSortBy()}</div>
+            <div className={css(styles.select)}>{this.renderFilterBy()}</div>
           </div>
           <Search
             onSearchRequested={this.handleSearchRequested}
@@ -322,25 +332,27 @@ class AdminPersonList extends React.Component {
           role={this.props.location.query.role}
           location={this.props.location}
         />
-        <FloatingActionButton
+        <Fab
           {...dataTest("addPerson")}
+          color="primary"
           style={theme.components.floatingButton}
-          onTouchTap={this.handleOpen}
+          onClick={this.handleOpen}
         >
-          <ContentAdd />
-        </FloatingActionButton>
+          <AddIcon />
+        </Fab>
         {organizationData.organization && (
           <div>
             <Dialog
-              title="Invite new texters"
               actions={joinActions}
-              modal={false}
               open={this.state.open}
-              onRequestClose={this.handleClose}
+              onClose={this.handleClose}
             >
-              <OrganizationJoinLink
-                organizationUuid={organizationData.organization.uuid}
-              />
+              <DialogTitle>Invite new texters</DialogTitle>
+              <DialogContent>
+                <OrganizationJoinLink
+                  organizationUuid={organizationData.organization.uuid}
+                />
+              </DialogContent>
             </Dialog>
           </div>
         )}

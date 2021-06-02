@@ -1,15 +1,19 @@
 import type from "prop-types";
 import React from "react";
 import { Link } from "react-router";
-import yup from "yup";
+import * as yup from "yup";
 import Form from "react-formal";
-import FlatButton from "material-ui/FlatButton";
+import Button from "@material-ui/core/Button";
+
 import TagChip from "../../../components/TagChip";
 import theme from "../../../styles/theme";
-import CheckIcon from "material-ui/svg-icons/action/check-circle";
-import CircularProgress from "material-ui/CircularProgress";
-import DoneIcon from "material-ui/svg-icons/action/done";
+
+import CheckIcon from "@material-ui/icons/Check";
+import DoneIcon from "@material-ui/icons/Done";
+import CircularProgress from "@material-ui/core/CircularProgress";
+
 import { css } from "aphrodite";
+import GSTextField from "../../../components/forms/GSTextField";
 import {
   flexStyles,
   inlineStyles
@@ -57,16 +61,18 @@ export class TexterSidebox extends React.Component {
       <div>
         <h3>{settingsData.tagHeaderText || "Tag a contact here:"}</h3>
         <div>
-          {escalatedTags.map(tag => (
+          {escalatedTags.map((tag, index) => (
             <TagChip
+              key={index}
               text={tag.name}
               icon={<CheckIcon />}
               backgroundColor={theme.colors.white}
             />
           ))}
         </div>
-        {otherTags.map(tag => (
+        {otherTags.map((tag, index) => (
           <TagChip
+            key={index}
             text={tag.name}
             icon={(newTags[tag.id] && <DoneIcon />) || null}
             backgroundColor={
@@ -87,7 +93,7 @@ export class TexterSidebox extends React.Component {
           />
         ))}
         <br />
-        <FlatButton
+        <Button
           style={{ marginTop: "20px" }}
           onClick={() => {
             const self = this;
@@ -110,8 +116,7 @@ export class TexterSidebox extends React.Component {
                 });
             });
           }}
-          label={settingsData.tagButtonText || "Save tags"}
-          icon={
+          startIcon={
             (submitted === 1 && (
               <CircularProgress style={{ lineHeight: 1 }} size={16} />
             )) ||
@@ -119,12 +124,13 @@ export class TexterSidebox extends React.Component {
             null
           }
           className={css(flexStyles.flatButton)}
-          labelStyle={inlineStyles.flatButtonLabel}
           disabled={
             !Object.keys(newTags).filter(tid => newTags[tid]).length ||
             submitted >= 1
           }
-        />
+        >
+          {settingsData.tagButtonText || "Save tags"}
+        </Button>
       </div>
     );
   }
@@ -166,11 +172,17 @@ export class AdminConfig extends React.Component {
           with group <code>texter-tags</code>.
         </p>
         <Form.Field
+          as={GSTextField}
           name="tagHeaderText"
           label="Header Text (prompt above tag list)"
           fullWidth
         />
-        <Form.Field name="tagButtonText" label="Save Button Text" fullWidth />
+        <Form.Field
+          as={GSTextField}
+          name="tagButtonText"
+          label="Save Button Text"
+          fullWidth
+        />
       </div>
     );
   }

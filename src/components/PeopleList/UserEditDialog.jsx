@@ -1,19 +1,20 @@
 import React from "react";
 import PropTypes from "prop-types";
 
-import Dialog from "material-ui/Dialog";
+import Dialog from "@material-ui/core/Dialog";
+import DialogTitle from "@material-ui/core/DialogTitle";
+
 import UserEdit from "../../containers/UserEdit";
 import { dataTest } from "../../lib/attributes";
 
 const UserEditDialog = props => (
   <Dialog
     {...dataTest("editPersonDialog")}
-    title={`Edit user (${props.userId})`}
-    modal={false}
     open={props.open}
-    onRequestClose={props.requestClose}
-    autoScrollBodyContent={true}
+    onClose={props.requestClose}
+    scroll="paper"
   >
+    <DialogTitle>Edit user ({props.userId})</DialogTitle>
     <UserEdit
       organizationId={props.organizationId}
       userId={props.userId}
@@ -26,7 +27,7 @@ const UserEditDialog = props => (
 UserEditDialog.propTypes = {
   open: PropTypes.bool,
   organizationId: PropTypes.string,
-  userId: PropTypes.number,
+  userId: PropTypes.string,
   updateUser: PropTypes.func,
   requestClose: PropTypes.func
 };

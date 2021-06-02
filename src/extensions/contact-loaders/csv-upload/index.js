@@ -84,12 +84,17 @@ export async function processContactLoad(job, maxContacts, organization) {
   /// * Error handling
   /// * "Request of Doom" scenarios -- queries or jobs too big to complete
 
-  let contacts;
+  let payload;
   if (job.payload[0] === "{") {
-    contacts = JSON.parse(job.payload).contacts;
+    payload = JSON.parse(job.payload);
   } else {
-    contacts = (await unzipPayload(job)).contacts;
+    payload = await unzipPayload(job);
   }
-
-  await finalizeContactLoad(job, contacts, maxContacts);
+  await finalizeContactLoad(
+    job,
+    payload.contacts,
+    maxContacts,
+    null,
+    JSON.stringify({ filename: payload.name || null })
+  );
 }

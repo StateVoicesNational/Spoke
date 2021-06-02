@@ -1,24 +1,26 @@
 import type from "prop-types";
 import React from "react";
-import orderBy from "lodash/orderBy";
-import Slider from "./Slider";
-import Divider from "material-ui/Divider";
-import AutoComplete from "material-ui/AutoComplete";
-import IconButton from "material-ui/IconButton";
-import RaisedButton from "material-ui/RaisedButton";
-import GSForm from "../components/forms/GSForm";
-import yup from "yup";
-import Form from "react-formal";
-import OrganizationJoinLink from "./OrganizationJoinLink";
-import CampaignFormSectionHeading from "./CampaignFormSectionHeading";
 import { StyleSheet, css } from "aphrodite";
-import theme from "../styles/theme";
-import Toggle from "material-ui/Toggle";
-import DeleteIcon from "material-ui/svg-icons/action/delete";
-import { dataTest } from "../lib/attributes";
-import { dataSourceItem } from "./utils";
+import * as yup from "yup";
+import Form from "react-formal";
 
+import Switch from "@material-ui/core/Switch";
+import Card from "@material-ui/core/Card";
+import CardHeader from "@material-ui/core/CardHeader";
+import CardContent from "@material-ui/core/CardContent";
+import Collapse from "@material-ui/core/Collapse";
+
+import GSForm from "../components/forms/GSForm";
+import GSSubmitButton from "../components/forms/GSSubmitButton";
+import { dataTest } from "../lib/attributes";
 import sideboxes from "../extensions/texter-sideboxes/components";
+import theme from "../styles/mui-theme";
+
+const styles = StyleSheet.create({
+  card: {
+    marginBottom: theme.spacing(2)
+  }
+});
 
 export default class CampaignTexterUIForm extends React.Component {
   constructor(props) {
@@ -38,7 +40,6 @@ export default class CampaignTexterUIForm extends React.Component {
   }
 
   onChange = formValues => {
-    console.log("onChange", formValues);
     this.setState(formValues, () => {
       this.props.onChange({
         texterUIConfig: {
@@ -50,7 +51,6 @@ export default class CampaignTexterUIForm extends React.Component {
   };
 
   toggleChange = (key, value) => {
-    console.log("toggleChange", key, value);
     this.setState({ [key]: value }, newData => {
       this.props.onChange({
         texterUIConfig: {
@@ -63,7 +63,6 @@ export default class CampaignTexterUIForm extends React.Component {
 
   render() {
     const keys = Object.keys(sideboxes);
-    console.log("CampaignTexterUIForm", this.state, this.props.formValues);
     const adminItems = [];
     const schemaObject = {};
     keys.forEach(sb => {
@@ -75,30 +74,30 @@ export default class CampaignTexterUIForm extends React.Component {
       }
       schemaObject[sb] = yup.boolean();
       adminItems.push(
-        <div key={sb}>
-          <Toggle
-            {...dataTest(`toggle_${sb}`)}
-            label={
-              <div
-                style={{ ...theme.text.secondaryHeader, marginBottom: "10px" }}
-              >
-                {displayName}
-              </div>
-            }
-            toggled={this.state[sb]}
-            onToggle={(toggler, val) => this.toggleChange(sb, val)}
-          />
-          {AdminConfig ? (
-            <div style={{ paddingLeft: "15px" }}>
-              <AdminConfig
-                settingsData={this.state}
-                onToggle={this.toggleChange}
-                organization={this.props.organization}
+        <Card className={css(styles.card)} key={sb}>
+          <CardHeader
+            title={displayName}
+            action={
+              <Switch
+                {...dataTest(`toggle_${sb}`)}
+                color="primary"
+                checked={this.state[sb] || false}
+                onChange={event => this.toggleChange(sb, event.target.checked)}
               />
-            </div>
-          ) : null}
-          <div style={{ height: "20px" }}></div>
-        </div>
+            }
+          />
+          <Collapse in={!!AdminConfig} timeout="auto" unmountOnExit>
+            <CardContent>
+              {AdminConfig && (
+                <AdminConfig
+                  settingsData={this.state}
+                  onToggle={this.toggleChange}
+                  organization={this.props.organization}
+                />
+              )}
+            </CardContent>
+          </Collapse>
+        </Card>
       );
     });
     return (
@@ -109,8 +108,8 @@ export default class CampaignTexterUIForm extends React.Component {
           onChange={this.onChange}
         >
           {adminItems}
-          <Form.Button
-            type="submit"
+          <Form.Submit
+            as={GSSubmitButton}
             onClick={this.props.onSubmit}
             label={this.props.saveLabel}
             disabled={this.props.saveDisabled}

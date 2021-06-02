@@ -1,31 +1,39 @@
 import PropTypes from "prop-types";
 import React from "react";
 import { StyleSheet, css } from "aphrodite";
-import { Toolbar } from "material-ui/Toolbar";
+import momenttz from "moment-timezone";
+
+import Toolbar from "@material-ui/core/Toolbar";
+import IconButton from "@material-ui/core/IconButton";
+import Tooltip from "@material-ui/core/Tooltip";
+import FaceIcon from "@material-ui/icons/Face";
+import ArrowBackIcon from "@material-ui/icons/ArrowBack";
+import ArrowForwardIcon from "@material-ui/icons/ArrowForward";
+import HomeIcon from "@material-ui/icons/Home";
+import BuildIcon from "@material-ui/icons/Build";
+
 import { getLocalTime, getContactTimezone } from "../../lib/timezones";
 import { getProcessEnvDstReferenceTimezone } from "../../lib/tz-helpers";
-import ActionFace from "material-ui/svg-icons/action/face";
-import IconButton from "material-ui/IconButton/IconButton";
-import ArrowBackIcon from "material-ui/svg-icons/navigation/arrow-back";
-import ArrowForwardIcon from "material-ui/svg-icons/navigation/arrow-forward";
-import NavigateHomeIcon from "material-ui/svg-icons/action/home";
-import SideboxOpenIcon from "material-ui/svg-icons/action/build";
-import momenttz from "moment-timezone";
 
 const inlineStyles = {
   toolbar: {
     backgroundColor: "rgb(81, 82, 89)",
-    color: "white"
+    color: "white",
+    padding: 0,
+    minHeight: "inherit"
   }
 };
 
 const styles = StyleSheet.create({
+  grow: {
+    flexGrow: 1
+  },
   topFlex: {
     display: "flex",
     flexWrap: "wrap",
     flexDirection: "column",
-    alignContent: "flex-start",
-    marginLeft: "-24px"
+    alignContent: "flex-start"
+    // marginLeft: "-24px"
   },
   campaignData: {
     flex: "1 2 auto",
@@ -59,8 +67,8 @@ const styles = StyleSheet.create({
     color: "white",
     overflow: "hidden",
     textOverflow: "ellipsis",
-    whiteSpace: "nowrap",
-    maxWidth: "90%"
+    whiteSpace: "nowrap"
+    // maxWidth: "90%"
   },
   contactToolbarIconButton: {
     padding: "3px",
@@ -79,16 +87,17 @@ const styles = StyleSheet.create({
   navigation: {
     flexGrow: 0,
     flexShrink: 0,
-    display: "flex",
-    flexDirection: "column",
-    flexWrap: "wrap"
+    display: "flex"
+    // flexDirection: "column",
+    // flexWrap: "wrap"
   },
   navigationTitle: {
-    flex: "1 1 auto",
     width: "4em",
-    height: "100%",
+    // height: "100%",
     padding: "6px",
-    textAlign: "center"
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center"
   }
 });
 
@@ -140,15 +149,15 @@ const ContactToolbar = function ContactToolbar(props) {
   return (
     <div>
       <Toolbar style={inlineStyles.toolbar}>
-        <div className={`${css(styles.topFlex)} ${css(styles.campaignData)}`}>
+        <Tooltip title="Return Home">
           <IconButton
             onClick={props.onExit}
             className={css(styles.contactToolbarIconButton)}
-            tooltip="Return Home"
-            tooltipPosition="bottom-right"
           >
-            <NavigateHomeIcon color={"white"} />
+            <HomeIcon style={{ width: 42 }} htmlColor="white" />
           </IconButton>
+        </Tooltip>
+        <div>
           <div className={css(styles.titleSmall)} style={{ color: "#B0B0B0" }}>
             Campaign ID: {props.campaign.id}
           </div>
@@ -156,33 +165,34 @@ const ContactToolbar = function ContactToolbar(props) {
             {props.campaign.title}
           </div>
         </div>
-        {props.onSideboxButtonClick ? (
-          <div
-            className={`${css(styles.navigation)} ${css(
-              styles.navigationSideBox
-            )}`}
-          >
-            <IconButton
-              tooltip="Open Details"
-              onClick={props.onSideboxButtonClick}
-              className={css(styles.contactToolbarIconButton)}
-              style={{ flex: "0 0 56px", width: "45px" }}
+        {props.onSideboxButtonClick && (
+          <React.Fragment>
+            <div className={css(styles.grow)}></div>
+            <div
+              className={`${css(styles.navigation)} ${css(
+                styles.navigationSideBox
+              )}`}
             >
-              <SideboxOpenIcon color="white" />
-            </IconButton>
-          </div>
-        ) : null}
+              <Tooltip title="Open Details">
+                <IconButton
+                  onClick={props.onSideboxButtonClick}
+                  className={css(styles.contactToolbarIconButton)}
+                  style={{ flex: "0 0 56px", width: "45px" }}
+                >
+                  <BuildIcon htmlColor="white" />
+                </IconButton>
+              </Tooltip>
+            </div>
+          </React.Fragment>
+        )}
       </Toolbar>
       <Toolbar style={{ ...inlineStyles.toolbar, backgroundColor: "#7E808B" }}>
-        <div className={`${css(styles.topFlex)} ${css(styles.contactData)}`}>
-          <IconButton
-            className={css(styles.contactToolbarIconButton)}
-            tooltip={`?contact=${campaignContact.id}`}
-            tooltipPosition="bottom-right"
-          >
-            <ActionFace color="white" />
+        <Tooltip title={`?contact=${campaignContact.id}`}>
+          <IconButton className={css(styles.contactToolbarIconButton)}>
+            <FaceIcon style={{ width: 42 }} htmlColor="white" />
           </IconButton>
-
+        </Tooltip>
+        <div>
           <div className={css(styles.titleSmall)} style={{ color: "white" }}>
             {formattedLocalTime} - {formattedLocation}
           </div>
@@ -190,28 +200,46 @@ const ContactToolbar = function ContactToolbar(props) {
             {campaignContact.firstName}
           </div>
         </div>
+
+        <div className={css(styles.grow)}></div>
         <div className={css(styles.navigation)} style={{ flexBasis: "130px" }}>
-          <IconButton
-            onClick={navigationToolbarChildren.onPrevious}
-            disabled={!navigationToolbarChildren.onPrevious}
-            tooltip="Previous Contact"
-            className={css(styles.contactToolbarIconButton)}
-            style={{ flex: "0 0 56px", width: "45px" }}
-          >
-            <ArrowBackIcon color="white" />
-          </IconButton>
+          <Tooltip title="Previous Contact">
+            {/*
+             *  Tooltips can not wrap buttons that are disabled.
+             *  A disabled element does not fire events.
+             *  Tooltip needs to listen to the child element's events to display the title.
+             */}
+            <span>
+              <IconButton
+                onClick={navigationToolbarChildren.onPrevious}
+                disabled={!navigationToolbarChildren.onPrevious}
+                className={css(styles.contactToolbarIconButton)}
+                style={{ flex: "0 0 56px", width: "45px" }}
+              >
+                <ArrowBackIcon htmlColor="white" />
+              </IconButton>
+            </span>
+          </Tooltip>
           <div className={css(styles.navigationTitle)}>
             {navigationToolbarChildren.title}
           </div>
-          <IconButton
-            onClick={navigationToolbarChildren.onNext}
-            disabled={!navigationToolbarChildren.onNext}
-            tooltip="Next Contact"
-            className={css(styles.contactToolbarIconButton)}
-            style={{ flex: "0 0 56px", width: "45px" }}
-          >
-            <ArrowForwardIcon color="white" />
-          </IconButton>
+          <Tooltip title="Next Contact">
+            {/*
+             *  Tooltips can not wrap buttons that are disabled.
+             *  A disabled element does not fire events.
+             *  Tooltip needs to listen to the child element's events to display the title.
+             */}
+            <span>
+              <IconButton
+                onClick={navigationToolbarChildren.onNext}
+                disabled={!navigationToolbarChildren.onNext}
+                className={css(styles.contactToolbarIconButton)}
+                style={{ flex: "0 0 56px", width: "45px" }}
+              >
+                <ArrowForwardIcon htmlColor="white" />
+              </IconButton>
+            </span>
+          </Tooltip>
         </div>
       </Toolbar>
     </div>
