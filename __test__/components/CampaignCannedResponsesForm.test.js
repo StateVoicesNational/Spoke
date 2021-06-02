@@ -59,10 +59,10 @@ describe("CampaignCannedResponsesForm component", () => {
   // when
 
   test("Renders canned responses with correct text", () => {
-    expect(wrapper.find("ListItem").text()).toContain("Response1");
-    expect(wrapper.find("ListItem").text()).toContain("Response1 desc");
-    expect(wrapper.find("ListItem").text()).toContain("Fake Action");
-    expect(wrapper.find("ListItem").text()).toContain("Test Property");
+    expect(wrapper.find(ListItemText).text()).toContain("Response1");
+    expect(wrapper.find(ListItemText).text()).toContain("Response1 desc");
+    expect(wrapper.find(ListItemText).text()).toContain("Fake Action");
+    expect(wrapper.find(ListItemText).text()).toContain("Test Property");
     expect(wrapper.find("TagChips").prop("tagIds")).toEqual([1, 2]);
     expect(wrapper.find("TagChips").prop("tags")).toEqual([
       {

@@ -3,7 +3,6 @@
  */
 import React from "react";
 import { mount } from "enzyme";
-import AutoComplete from "@material-ui/lab/Autocomplete";
 import CampaignCannedResponseForm from "../../src/components/CampaignCannedResponseForm";
 import { StyleSheetTestUtils } from "aphrodite";
 
@@ -77,7 +76,7 @@ describe("CampaignCannedResponseForm component", () => {
         .find("button")
         .text()
     ).toBe("Edit Response");
-    expect(wrapper.find(AutoComplete).prop("value")).toEqual([
+    expect(wrapper.find({ "data-test": "autocompleteTags" }).prop("value")).toEqual([
       {
         id: 1,
         name: "Tag1",
