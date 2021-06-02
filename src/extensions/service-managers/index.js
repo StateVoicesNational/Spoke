@@ -50,7 +50,7 @@ export async function processServiceManagers(
   // NOTE: some methods pass a shared modifiable object, e.g. 'saveData'
   // that might be modified in-place, rather than the resultArray
   // being important.
-  return resultArray;
+  return resultArray.reduce((a, b) => Object.assign(a, b), {});
 }
 
 export async function getServiceManagerData(

@@ -577,6 +577,7 @@ export class AdminCampaignEdit extends React.Component {
         content: CampaignPhoneNumbersForm,
         keys: ["inventoryPhoneNumberCounts"],
         checkCompleted: () => {
+          // logic to move to the component itself or backend
           const {
             contactsCount,
             inventoryPhoneNumberCounts

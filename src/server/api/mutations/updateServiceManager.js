@@ -17,36 +17,28 @@ export const updateServiceManager = async (
 ) => {
   const organization = await cacheableData.organization.load(organizationId);
   let campaign;
-  let result = {};
+  let result;
   if (campaignId) {
     // FUTURE: maybe with specific metadata, this could be made lower
     // which could be useful in complement to texter-sideboxes
     await accessRequired(user, organizationId, "SUPERVOLUNTEER", true);
     campaign = await cacheableData.campaign.load(campaignId);
-    const response = await processServiceManagers(
+    result = await processServiceManagers(
       "onCampaignUpdateSignal",
       organization,
       { organization, campaign, user, updateData, fromCampaignStatsPage },
       serviceManagerName
     );
-    if (response && response.length && response[0]) {
-      result = response[0];
-    }
   } else {
     // organization
     await accessRequired(user, organizationId, "OWNER", true);
-    const response = await processServiceManagers(
+    result = await processServiceManagers(
       "onOrganizationUpdateSignal",
       organization,
       { organization, user, updateData },
       serviceManagerName
     );
-    console.log("updateServiceManager organization", response);
-    if (response && response.length && response[0]) {
-      result = response[0];
-    }
   }
-  console.log("updateServiceManager", result);
   return {
     id: `${serviceManagerName}-org${organizationId}-${campaignId || ""}${
       fromCampaignStatsPage ? "stats" : ""

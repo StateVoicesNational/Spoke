@@ -743,6 +743,7 @@ export const resolvers = {
     creator: async (campaign, _, { loaders }) =>
       campaign.creator_id ? loaders.user.load(campaign.creator_id) : null,
     isArchivedPermanently: campaign => {
+      // TODO: consider removal
       // started campaigns that have had their message service sid deleted can't be restarted
       // NOTE: this will need to change if campaign phone numbers are extended beyond twilio and fakeservice
       return (

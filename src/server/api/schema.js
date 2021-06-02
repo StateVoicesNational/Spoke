@@ -381,31 +381,6 @@ async function editCampaign(id, campaign, loaders, user, origCampaignRecord) {
     });
   }
 
-  if (campaign.hasOwnProperty("inventoryPhoneNumberCounts")) {
-    if (origCampaignRecord.isStarted) {
-      throw new Error(
-        "Cannot update phone numbers once a campaign has started"
-      );
-    }
-    const phoneCounts = campaign.inventoryPhoneNumberCounts;
-    await r.knex.transaction(async trx => {
-      await ownedPhoneNumber.releaseCampaignNumbers(id, trx);
-      for (const pc of phoneCounts) {
-        if (pc.count) {
-          await ownedPhoneNumber.allocateCampaignNumbers(
-            {
-              organizationId,
-              campaignId: id,
-              areaCode: pc.areaCode,
-              amount: pc.count
-            },
-            trx
-          );
-        }
-      }
-    });
-  }
-
   const campaignRefreshed = await cacheableData.campaign.load(id, {
     forceLoad: changed
   });
@@ -931,14 +906,10 @@ const rootMutations = {
       const organization = await cacheableData.organization.load(
         campaign.organization_id
       );
-      const serviceManagerResults = await processServiceManagers(
-        "onCampaignUnarchive",
-        organization,
-        {
-          campaign,
-          user
-        }
-      );
+      await processServiceManagers("onCampaignUnarchive", organization, {
+        campaign,
+        user
+      });
       await campaign.save();
       await cacheableData.campaign.clear(id);
       return campaign;
