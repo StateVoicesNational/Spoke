@@ -181,6 +181,7 @@ export default class CannedResponseForm extends React.Component {
             ""
           )}
           <AutoComplete
+            {...dataTest("autocompleteTags")}
             multiple
             fullWidth
             ref={this.autocompleteInput}
