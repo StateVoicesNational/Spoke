@@ -55,7 +55,6 @@ export default class CannedResponseForm extends React.Component {
   };
 
   handleSave = () => {
-    console.log('saving')
     const toSave = {
       ...this.state,
       answerActionsData:
@@ -66,8 +65,6 @@ export default class CannedResponseForm extends React.Component {
     };
 
     delete toSave.availableActionsLookup;
-
-    console.log(this.state.answerActionsData, toSave.answerActionsData)
     
     const { onSaveCannedResponse } = this.props;
     onSaveCannedResponse(toSave);
@@ -80,7 +77,6 @@ export default class CannedResponseForm extends React.Component {
       answerActions: yup.string(),
       answerActionsData: yup.mixed()
     });
-
     this.form = React.createRef();
     this.autocompleteInput = React.createRef();
 
@@ -106,8 +102,6 @@ export default class CannedResponseForm extends React.Component {
         clientChoiceData.length &&
         !this.state.answerActionsData;
     }
-
-    console.log(this.state.answerActionsData, clientChoiceData)
 
     return (
       <div>

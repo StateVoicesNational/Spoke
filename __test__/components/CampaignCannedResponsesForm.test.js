@@ -49,13 +49,11 @@ describe("CampaignCannedResponsesForm component", () => {
 
   StyleSheetTestUtils.suppressStyleInjection();
   const wrapper = mount(
-    <MuiThemeProvider>
-      <CampaignCannedResponsesForm
-        formValues={formValues}
-        data={data}
-        availableActions={availableActions}
-      />
-    </MuiThemeProvider>
+    <CampaignCannedResponsesForm
+      formValues={formValues}
+      data={data}
+      availableActions={availableActions}
+    />
   );
 
   // when
