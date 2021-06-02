@@ -1,23 +1,24 @@
 import type from "prop-types";
 import React from "react";
-import RaisedButton from "material-ui/RaisedButton";
-import GSForm from "../../../components/forms/GSForm";
-import Form from "react-formal";
-import Subheader from "material-ui/Subheader";
-import Divider from "material-ui/Divider";
-import { ListItem, List } from "material-ui/List";
-import {
-  parseCSV,
-  gzip,
-  organizationCustomFields,
-  requiredUploadFields
-} from "../../../lib";
-import CampaignFormSectionHeading from "../../../components/CampaignFormSectionHeading";
-import { StyleSheet, css } from "aphrodite";
-import theme from "../../../styles/theme";
-import yup from "yup";
+import * as yup from "yup";
 import humps from "humps";
+import { StyleSheet, css } from "aphrodite";
+import Form from "react-formal";
+
+import Divider from "@material-ui/core/Divider";
+import Button from "@material-ui/core/Button";
+import List from "@material-ui/core/List";
+import ListItem from "@material-ui/core/ListItem";
+import ListItemIcon from "@material-ui/core/ListItemIcon";
+import ListItemText from "@material-ui/core/ListItemText";
+import ListSubheader from "@material-ui/core/ListSubheader";
+
+import { parseCSV, gzip, requiredUploadFields } from "../../../lib";
+import GSForm from "../../../components/forms/GSForm";
+import CampaignFormSectionHeading from "../../../components/CampaignFormSectionHeading";
+import theme from "../../../styles/theme";
 import { dataTest } from "../../../lib/attributes";
+import GSSubmitButton from "../../../components/forms/GSSubmitButton";
 
 export const ensureCamelCaseRequiredHeaders = columnHeader => {
   /*
@@ -87,6 +88,7 @@ export class CampaignContactsForm extends React.Component {
 
     event.preventDefault();
     const file = event.target.files[0];
+    console.log("file upload", file);
     this.setState({ uploading: true }, () => {
       parseCSV(
         file,
@@ -102,7 +104,12 @@ export class CampaignContactsForm extends React.Component {
               ).toLocaleString()} contacts max – your file contains ${contacts.length.toLocaleString()}.`
             );
           } else if (contacts.length > 0) {
-            this.handleUploadSuccess(validationStats, contacts, customFields);
+            this.handleUploadSuccess(
+              validationStats,
+              contacts,
+              customFields,
+              file
+            );
           }
         },
         { headerTransformer: ensureCamelCaseRequiredHeaders }
@@ -119,7 +126,7 @@ export class CampaignContactsForm extends React.Component {
     });
   }
 
-  handleUploadSuccess(validationStats, contacts, customFields) {
+  handleUploadSuccess(validationStats, contacts, customFields, file) {
     this.setState({
       validationStats,
       customFields,
@@ -128,6 +135,7 @@ export class CampaignContactsForm extends React.Component {
       contactsCount: contacts.length
     });
     const contactCollection = {
+      name: (file && file.name) || null,
       contactsCount: contacts.length,
       customFields,
       contacts
@@ -150,22 +158,22 @@ export class CampaignContactsForm extends React.Component {
 
     return (
       <List>
-        <Subheader>Uploaded</Subheader>
-        <ListItem
-          primaryText={`${contactsCount} contacts`}
-          leftIcon={this.props.icons.check}
-        />
-        <ListItem
-          primaryText={`${customFields.length} custom fields`}
-          leftIcon={this.props.icons.check}
-          nestedItems={customFields.map((field, index) => (
-            <ListItem
-              key={index}
-              innerDivStyle={innerStyles.nestedItem}
-              primaryText={field}
-            />
+        <ListSubheader>Uploaded</ListSubheader>
+        <ListItem>
+          <ListItemIcon>{this.props.icons.check}</ListItemIcon>
+          <ListItemText primary={`${contactsCount} contacts`} />
+        </ListItem>
+        <ListItem>
+          <ListItemIcon>{this.props.icons.check}</ListItemIcon>
+          <ListItemText primary={`${customFields.length} custom fields`} />
+        </ListItem>
+        <List disablePadding>
+          {customFields.map((field, index) => (
+            <ListItem key={index}>
+              <ListItemText primary={field} />
+            </ListItem>
           ))}
-        />
+        </List>
       </List>
     );
   }
@@ -208,13 +216,13 @@ export class CampaignContactsForm extends React.Component {
     const { uploading } = this.state;
     return (
       <div>
-        <RaisedButton
-          style={innerStyles.button}
-          label={uploading ? "Uploading..." : "Upload contacts"}
-          labelPosition="before"
+        <Button
+          variant="contained"
           disabled={uploading}
           onClick={() => this.uploadButton.click()}
-        />
+        >
+          {uploading ? "Uploading..." : "Upload contacts"}
+        </Button>
         <input
           id="contact-upload"
           ref={input => input && (this.uploadButton = input)}
@@ -231,9 +239,7 @@ export class CampaignContactsForm extends React.Component {
     const { contactUploadError } = this.state;
     return (
       <div>
-        {!this.props.jobResultMessage ? (
-          ""
-        ) : (
+        {!!this.props.jobResultMessage && (
           <div>
             <CampaignFormSectionHeading title="Job Outcome" />
             <div>{this.props.jobResultMessage}</div>
@@ -248,7 +254,7 @@ export class CampaignContactsForm extends React.Component {
           {this.renderUploadButton()}
           {this.renderContactStats()}
           {this.renderValidationStats()}
-          {contactUploadError ? (
+          {contactUploadError && (
             <List>
               <ListItem
                 id="uploadError"
@@ -256,11 +262,9 @@ export class CampaignContactsForm extends React.Component {
                 leftIcon={this.props.icons.error}
               />
             </List>
-          ) : (
-            ""
           )}
-          <Form.Button
-            type="submit"
+          <Form.Submit
+            as={GSSubmitButton}
             disabled={this.props.saveDisabled}
             label={this.props.saveLabel}
             {...dataTest("submitContactsCsvUpload")}
@@ -271,6 +275,19 @@ export class CampaignContactsForm extends React.Component {
   }
 
   render() {
+    if (this.props.campaignIsStarted) {
+      let data;
+      try {
+        data = JSON.parse(
+          (this.props.lastResult && this.props.lastResult.result) || "{}"
+        );
+      } catch (err) {
+        return null;
+      }
+      return data && data.filename ? (
+        <div>Filename: {data.filename}</div>
+      ) : null;
+    }
     let subtitle = (
       <span>
         Your upload file should be in CSV format with column headings in the
@@ -298,6 +315,8 @@ export class CampaignContactsForm extends React.Component {
   }
 }
 
+CampaignContactsForm.prototype.renderAfterStart = true;
+
 CampaignContactsForm.propTypes = {
   onChange: type.func,
   onSubmit: type.func,
@@ -310,6 +329,7 @@ CampaignContactsForm.propTypes = {
 
   clientChoiceData: type.string,
   jobResultMessage: type.string,
+  lastResult: type.object,
 
   maxNumbersPerCampaign: type.number,
   contactsPerPhoneNumber: type.number

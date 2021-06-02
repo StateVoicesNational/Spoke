@@ -3,9 +3,10 @@
  */
 import React from "react";
 import { mount } from "enzyme";
-import MuiThemeProvider from "material-ui/styles/MuiThemeProvider";
 import { CampaignCannedResponsesForm } from "../../src/components/CampaignCannedResponsesForm";
 import { StyleSheetTestUtils } from "aphrodite";
+import IconButton from "@material-ui/core/IconButton";
+import ListItemText from "@material-ui/core/ListItemText";
 
 describe("CampaignCannedResponsesForm component", () => {
   // given
@@ -81,7 +82,7 @@ describe("CampaignCannedResponsesForm component", () => {
 
   test("Renders CampaignCannedResponseForm component for editing when edit icon clicked", () => {
     wrapper
-      .find("IconButton")
+      .find(IconButton)
       .first()
       .simulate("click");
 

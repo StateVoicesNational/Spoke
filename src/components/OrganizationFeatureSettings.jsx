@@ -1,10 +1,14 @@
 import type from "prop-types";
 import React from "react";
 import GSForm from "../components/forms/GSForm";
-import yup from "yup";
+import * as yup from "yup";
 import Form from "react-formal";
-import Toggle from "material-ui/Toggle";
 import { dataTest } from "../lib/attributes";
+import GSTextField from "./forms/GSTextField";
+import GSSubmitButton from "./forms/GSSubmitButton";
+
+import FormControlLabel from "@material-ui/core/FormControlLabel";
+import Switch from "@material-ui/core/Switch";
 
 const configurableFields = {
   ACTION_HANDLERS: {
@@ -36,8 +40,9 @@ const configurableFields = {
     component: props => {
       // maybe show the list and then validate
       return (
-        <div>
+        <div key={props.key}>
           <Form.Field
+            as={GSTextField}
             label="Action Handlers (comma-separated)"
             name="ACTION_HANDLERS"
             fullWidth
@@ -63,13 +68,22 @@ const configurableFields = {
         return null;
       }
       return (
-        <div>
-          <Toggle
-            toggled={props.parent.state.ALLOW_SEND_ALL_ENABLED}
-            label="Allow 'Send All' single-button"
-            onToggle={(toggler, val) =>
-              props.parent.toggleChange("ALLOW_SEND_ALL_ENABLED", val)
+        <div key={props.key}>
+          <FormControlLabel
+            control={
+              <Switch
+                checked={props.parent.state.ALLOW_SEND_ALL_ENABLED}
+                onChange={event =>
+                  props.parent.toggleChange(
+                    "ALLOW_SEND_ALL_ENABLED",
+                    event.target.checked
+                  )
+                }
+                color="primary"
+              />
             }
+            label="Allow 'Send All' single-button"
+            labelPlacement="start"
           />
           {props.parent.state.ALLOW_SEND_ALL_ENABLED ? (
             <div style={{ padding: "8px" }}>
@@ -104,8 +118,9 @@ const configurableFields = {
     ready: true,
     component: props => {
       return (
-        <div>
+        <div key={props.key}>
           <Form.Field
+            as={GSTextField}
             label="Default Batch Size"
             name="DEFAULT_BATCHSIZE"
             fullWidth
@@ -123,8 +138,9 @@ const configurableFields = {
     ready: true,
     component: props => {
       return (
-        <div>
+        <div key={props.key}>
           <Form.Field
+            as={GSTextField}
             label="Default Response Window"
             name="DEFAULT_RESPONSEWINDOW"
             fullWidth
@@ -148,8 +164,9 @@ const configurableFields = {
     ready: true,
     component: props => {
       return (
-        <div>
+        <div key={props.key}>
           <Form.Field
+            as={GSTextField}
             label="Maximum Number of Contacts per-texter"
             name="MAX_CONTACTS_PER_TEXTER"
             fullWidth
@@ -177,8 +194,9 @@ const configurableFields = {
     ready: true,
     component: props => {
       return (
-        <div>
+        <div key={props.key}>
           <Form.Field
+            as={GSTextField}
             label="Max Message Length"
             name="MAX_MESSAGE_LENGTH"
             fullWidth
@@ -236,7 +254,11 @@ export default class OrganizationFeatureSettings extends React.Component {
           ...this.props,
           ...this.state
         });
-        return configurableFields[f].component({ ...this.props, parent: this });
+        return configurableFields[f].component({
+          key: f,
+          ...this.props,
+          parent: this
+        });
       });
     return (
       <div>
@@ -246,8 +268,8 @@ export default class OrganizationFeatureSettings extends React.Component {
           onChange={this.onChange}
         >
           {adminItems}
-          <Form.Button
-            type="submit"
+          <Form.Submit
+            as={GSSubmitButton}
             onClick={this.props.onSubmit}
             label={this.props.saveLabel}
             disabled={this.props.saveDisabled}

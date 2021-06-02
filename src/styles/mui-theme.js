@@ -1,27 +1,15 @@
-import getMuiTheme from "material-ui/styles/getMuiTheme";
 import theme from "./theme";
-import { grey400, grey500, darkBlack } from "material-ui/styles/colors";
-import { fade } from "material-ui/utils/colorManipulator";
+import { createMuiTheme } from "@material-ui/core/styles";
 
-const muiTheme = getMuiTheme(
-  {
-    fontFamily: "Poppins",
-    palette: {
-      primary1Color: theme.colors.green,
-      textColor: theme.text.body.color,
-      primary2Color: theme.colors.orange,
-      primary3Color: grey400,
-      accent1Color: theme.colors.orange,
-      accent2Color: theme.colors.lightGray,
-      accent3Color: grey500,
-      alternateTextColor: theme.colors.white,
-      canvasColor: theme.colors.white,
-      borderColor: theme.colors.lightGray,
-      // Used both for placeholder text (against white) and sometimes disabled buttons (often against grey)
-      disabledColor: fade(darkBlack, 0.3)
+export default createMuiTheme({
+  palette: {
+    primary: {
+      main: theme.colors.green,
+      contrastText: theme.colors.white
+    },
+    secondary: {
+      main: theme.colors.orange,
+      contrastText: theme.colors.white
     }
-  },
-  { userAgent: "all" }
-);
-
-export default muiTheme;
+  }
+});

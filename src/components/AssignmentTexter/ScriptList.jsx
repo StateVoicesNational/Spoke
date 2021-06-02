@@ -1,22 +1,20 @@
 import PropTypes from "prop-types";
 import React from "react";
-import FlatButton from "material-ui/FlatButton";
-import { List, ListItem } from "material-ui/List";
-// import MoreVertIcon from 'material-ui/svg-icons/navigation/more-vert'
-import CreateIcon from "material-ui/svg-icons/content/create";
-import ClearIcon from "material-ui/svg-icons/content/clear";
-// import IconButton from 'material-ui/IconButton'
-// import IconMenu from 'material-ui/IconMenu'
-// import MenuItem from 'material-ui/MenuItem'
-import Subheader from "material-ui/Subheader";
-import Divider from "material-ui/Divider";
-import Dialog from "material-ui/Dialog";
-import CannedResponseForm from "../CannedResponseForm";
-import GSSubmitButton from "../forms/GSSubmitButton";
-import Form from "react-formal";
-import { log } from "../../lib";
 
-// import { insert, update, remove } from '../../api/scripts/methods'
+import Button from "@material-ui/core/Button";
+import CreateIcon from "@material-ui/icons/Create";
+import ClearIcon from "@material-ui/icons/Clear";
+import ListSubheader from "@material-ui/core/ListSubheader";
+import Divider from "@material-ui/core/Divider";
+import Dialog from "@material-ui/core/Dialog";
+import DialogContent from "@material-ui/core/DialogContent";
+import List from "@material-ui/core/List";
+import ListItem from "@material-ui/core/ListItem";
+import ListItemText from "@material-ui/core/ListItemText";
+import ListItemIcon from "@material-ui/core/ListItemIcon";
+
+import CannedResponseForm from "../CannedResponseForm";
+import { log } from "../../lib";
 
 const styles = {
   dialog: {
@@ -54,7 +52,7 @@ class ScriptList extends React.Component {
   render() {
     const {
       subheader,
-      scripts,
+      scripts = [],
       onSelectCannedResponse,
       onCreateCannedResponse,
       showAddScriptButton,
@@ -75,6 +73,7 @@ class ScriptList extends React.Component {
     const rightIconButton = null;
     const listItems = scripts.map(script => (
       <ListItem
+        button
         value={script.text}
         onClick={() => onSelectCannedResponse(script)}
         onKeyPress={evt => {
@@ -83,22 +82,21 @@ class ScriptList extends React.Component {
           }
         }}
         key={script.id}
-        primaryText={script.title}
-        secondaryText={script.text}
-        rightIconButton={
-          currentCannedResponseScript &&
-          currentCannedResponseScript.id === script.id ? (
-            <ClearIcon />
-          ) : null
-        }
-        secondaryTextLines={2}
-      />
+      >
+        <ListItemText primary={script.title} secondary={script.text} />
+        {currentCannedResponseScript &&
+          currentCannedResponseScript.id === script.id && (
+            <ListItemIcon>
+              <ClearIcon />
+            </ListItemIcon>
+          )}
+      </ListItem>
     ));
 
     const list =
       scripts.length === 0 ? null : (
         <List>
-          <Subheader>{subheader}</Subheader>
+          <ListSubheader>{subheader}</ListSubheader>
           {listItems}
           <Divider />
         </List>
@@ -108,34 +106,24 @@ class ScriptList extends React.Component {
       <div>
         {list}
         {showAddScriptButton ? (
-          <FlatButton
-            label="Add new canned response"
-            icon={<CreateIcon />}
-            onTouchTap={this.handleOpenDialog}
-          />
-        ) : (
-          ""
-        )}
-        <Form.Context>
-          <Dialog
-            style={styles.dialog}
-            open={dialogOpen}
-            actions={[
-              <FlatButton label="Cancel" onTouchTap={this.handleCloseDialog} />,
-              <Form.Button
-                type="submit"
-                component={GSSubmitButton}
-                label="Save"
-              />
-            ]}
-            onRequestClose={this.handleCloseDialog}
-          >
+          <Button startIcon={<CreateIcon />} onClick={this.handleOpenDialog}>
+            Add new canned response
+          </Button>
+        ) : null}
+
+        <Dialog
+          style={styles.dialog}
+          open={dialogOpen}
+          onClose={this.handleCloseDialog}
+        >
+          <DialogContent>
             <CannedResponseForm
               onSaveCannedResponse={onSaveCannedResponse}
+              handleCloseDialog={this.handleCloseDialog}
               customFields={customFields}
             />
-          </Dialog>
-        </Form.Context>
+          </DialogContent>
+        </Dialog>
       </div>
     );
   }
@@ -144,7 +132,7 @@ class ScriptList extends React.Component {
 ScriptList.propTypes = {
   script: PropTypes.object,
   scripts: PropTypes.arrayOf(PropTypes.object),
-  subheader: PropTypes.element,
+  subheader: PropTypes.node,
   currentCannedResponseScript: PropTypes.object,
   onSelectCannedResponse: PropTypes.func,
   onCreateCannedResponse: PropTypes.func,

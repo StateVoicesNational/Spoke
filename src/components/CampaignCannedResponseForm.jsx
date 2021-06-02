@@ -1,16 +1,21 @@
 import type from "prop-types";
 import React from "react";
 import { StyleSheet, css } from "aphrodite";
-import yup from "yup";
+import * as yup from "yup";
 import GSForm from "./forms/GSForm";
+import GSTextField from "./forms/GSTextField";
+import GSScriptField from "./forms/GSScriptField";
+import GSSelectField from "./forms/GSSelectField";
+import GSAutoComplete from "./forms/GSAutoComplete";
 import Form from "react-formal";
-import FlatButton from "material-ui/FlatButton";
-import AutoComplete from "material-ui/AutoComplete";
-import IconButton from "material-ui/IconButton";
-import HelpIconOutline from "material-ui/svg-icons/action/help-outline";
+import IconButton from "@material-ui/core/IconButton";
+import HelpIconOutline from "@material-ui/icons/HelpOutline";
+import Button from "@material-ui/core/Button";
+import AutoComplete from "@material-ui/lab/Autocomplete";
+import TextField from "@material-ui/core/TextField";
 import { dataTest } from "../lib/attributes";
+import GSSubmitButton from "./forms/GSSubmitButton";
 import theme from "../styles/theme";
-import TagChips from "./TagChips";
 
 const styles = StyleSheet.create({
   buttonRow: {
@@ -22,6 +27,9 @@ const styles = StyleSheet.create({
   },
   errorMessage: {
     color: theme.colors.red
+  },
+  button: {
+    marginRight: 10
   }
 });
 
@@ -44,8 +52,10 @@ export default class CannedResponseForm extends React.Component {
           return toReturn;
         }, {})
     };
-  }
+  };
+
   handleSave = () => {
+    console.log('saving')
     const toSave = {
       ...this.state,
       answerActionsData:
@@ -56,7 +66,11 @@ export default class CannedResponseForm extends React.Component {
     };
 
     delete toSave.availableActionsLookup;
-    this.props.onSaveCannedResponse(toSave);
+
+    console.log(this.state.answerActionsData, toSave.answerActionsData)
+    
+    const { onSaveCannedResponse } = this.props;
+    onSaveCannedResponse(toSave);
   };
 
   render() {
@@ -64,14 +78,18 @@ export default class CannedResponseForm extends React.Component {
       title: yup.string().required(),
       text: yup.string().required(),
       answerActions: yup.string(),
-      answerActionsData: yup.string()
+      answerActionsData: yup.mixed()
     });
+
+    this.form = React.createRef();
+    this.autocompleteInput = React.createRef();
 
     const {
       customFields,
       handleCloseAddForm,
       formButtonText,
-      tags
+      tags,
+      availableActions
     } = this.props;
 
     const answerActions =
@@ -89,16 +107,19 @@ export default class CannedResponseForm extends React.Component {
         !this.state.answerActionsData;
     }
 
+    console.log(this.state.answerActionsData, clientChoiceData)
+
     return (
       <div>
         <GSForm
-          ref="form"
+          ref={this.form}
           schema={modelSchema}
           onSubmit={this.handleSave}
           defaultValue={this.state}
           onChange={v => this.setState(v)}
         >
           <Form.Field
+            as={GSTextField}
             {...dataTest("title")}
             name="title"
             autoFocus
@@ -106,6 +127,7 @@ export default class CannedResponseForm extends React.Component {
             label="Title"
           />
           <Form.Field
+            as={GSScriptField}
             {...dataTest("editorResponse")}
             customFields={customFields}
             name="text"
@@ -114,19 +136,20 @@ export default class CannedResponseForm extends React.Component {
             multiLine
             fullWidth
           />
-          {this.props.availableActions && this.props.availableActions.length ? (
+          {availableActions && availableActions.length ? (
             <div>
-              <div>
+              <div style={{display: 'flex'}}>
                 <Form.Field
                   {...dataTest("actionSelect")}
-                  floatingLabelText="Action handler"
+                  label="Action Handler"
                   name="answerActions"
-                  type="select"
-                  default=""
+                  as={GSSelectField}
                   choices={this.props.availableActions.map(action => ({
                     value: action.name,
                     label: action.displayName
                   }))}
+                  fullWidth
+                  style={{flexGrow: 1}}
                 />
                 <IconButton
                   tooltip="An action is something that is triggered by this answer being chosen, often in an outside system"
@@ -134,23 +157,23 @@ export default class CannedResponseForm extends React.Component {
                 >
                   <HelpIconOutline />
                 </IconButton>
-                {instructions ? (
-                  <div style={{ color: theme.colors.gray }}>{instructions}</div>
-                ) : null}
               </div>
+              {instructions ? (
+                <div style={{ color: theme.colors.gray }}>{instructions}</div>
+              ) : null}
               {clientChoiceData && clientChoiceData.length ? (
                 <div>
                   <Form.Field
                     {...dataTest("actionDataAutoComplete")}
-                    hintText="Start typing to search for the data to use with the answer action"
-                    floatingLabelText="Answer Action Data"
+                    placeholder="Start typing to search for the data to use with the answer action"
+                    label="Answer Action Data"
                     fullWidth
                     name="answerActionsData"
-                    type="autocomplete"
-                    choices={clientChoiceData.map(item => ({
+                    options={clientChoiceData.map(item => ({
                       value: item.details,
                       label: item.name
                     }))}
+                    as={GSAutoComplete}
                   />
                   {needRequiredAnswerActionsData ? (
                     <div className={css(styles.errorMessage)}>
@@ -164,64 +187,34 @@ export default class CannedResponseForm extends React.Component {
             ""
           )}
           <AutoComplete
-            ref="autocompleteInput"
-            floatingLabelText="Tags"
-            filter={AutoComplete.fuzzyFilter}
-            dataSource={
+            multiple
+            fullWidth
+            ref={this.autocompleteInput}
+            options={
               tags && tags.filter(t => this.state.tagIds.indexOf(t.id) === -1)
             }
-            maxSearchResults={8}
-            onNewRequest={({ id }) => {
-              this.refs.autocompleteInput.setState({ searchText: "" });
-              this.setState({ tagIds: [...this.state.tagIds, id] });
+            getOptionLabel={option => option.name}
+            value={
+              tags && tags.filter(t => this.state.tagIds.indexOf(t.id) > -1)
+            }
+            onChange={(event, selectedTags) => {
+              this.setState({ tagIds: selectedTags.map(tag => tag.id) });
             }}
-            dataSourceConfig={{
-              text: "name",
-              value: "id"
-            }}
-            fullWidth
-          />
-          <TagChips
-            tags={tags}
-            tagIds={this.state.tagIds}
-            onRequestDelete={listedTag => {
-              this.setState({
-                tagIds: this.state.tagIds.filter(
-                  tagId => tagId !== listedTag.id
-                )
-              });
+            renderInput={params => {
+              return <TextField {...params} label="Tags" />;
             }}
           />
           <div className={css(styles.buttonRow)}>
-            <FlatButton
+            <Form.Submit
+              as={GSSubmitButton}
               {...dataTest("addResponse")}
               label={formButtonText}
-              backgroundColor={
-                needRequiredAnswerActionsData
-                  ? theme.colors.disabled
-                  : theme.colors.green
-              }
-              labelStyle={{
-                color: needRequiredAnswerActionsData
-                  ? theme.colors.gray
-                  : "white"
-              }}
-              style={{
-                display: "inline-block"
-              }}
-              disabled={needRequiredAnswerActionsData}
-              onClick={() => {
-                this.refs.form.submit();
-              }}
+              className={css(styles.button)}
+              disabled={!!needRequiredAnswerActionsData}
             />
-            <FlatButton
-              label="Cancel"
-              onTouchTap={handleCloseAddForm}
-              style={{
-                marginLeft: 5,
-                display: "inline-block"
-              }}
-            />
+            <Button variant="contained" onClick={handleCloseAddForm}>
+              Cancel
+            </Button>
           </div>
         </GSForm>
       </div>

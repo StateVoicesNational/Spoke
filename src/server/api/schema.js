@@ -54,6 +54,7 @@ import Twilio from "twilio";
 
 import {
   bulkSendMessages,
+  bulkUpdateScript,
   buyPhoneNumbers,
   deletePhoneNumbers,
   findNewCampaignContact,
@@ -494,6 +495,7 @@ async function updateInteractionSteps(
 const rootMutations = {
   RootMutation: {
     bulkSendMessages,
+    bulkUpdateScript,
     buyPhoneNumbers,
     deletePhoneNumbers,
     editOrganization,
@@ -842,7 +844,7 @@ const rootMutations = {
       const campaignInstance = new Campaign({
         organization_id: campaign.organization_id,
         creator_id: user.id,
-        title: "COPY - " + campaign.title,
+        title: "COPY - " + campaign.title.replace(/\s*template\W*/i, ""),
         description: campaign.description,
         due_by: campaign.due_by,
         features: campaign.features,

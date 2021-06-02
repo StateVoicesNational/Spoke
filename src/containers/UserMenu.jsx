@@ -1,18 +1,18 @@
 import PropTypes from "prop-types";
 import React, { Component } from "react";
-import Popover from "material-ui/Popover";
-import Menu from "material-ui/Menu";
-import MenuItem from "material-ui/MenuItem";
-import Divider from "material-ui/Divider";
-import Subheader from "material-ui/Subheader";
-import IconButton from "material-ui/IconButton";
-import Avatar from "material-ui/Avatar";
 import { graphql } from "react-apollo";
 import { withRouter } from "react-router";
 import gql from "graphql-tag";
 import { dataTest } from "../lib/attributes";
 
-const avatarSize = 28;
+import MenuItem from "@material-ui/core/MenuItem";
+import MenuList from "@material-ui/core/MenuList";
+import Popover from "@material-ui/core/Popover";
+import ListSubheader from "@material-ui/core/ListSubheader";
+import ListItemIcon from "@material-ui/core/ListItemIcon";
+import Avatar from "@material-ui/core/Avatar";
+import IconButton from "@material-ui/core/IconButton";
+import Divider from "@material-ui/core/Divider";
 
 export class UserMenu extends Component {
   constructor(props) {
@@ -77,30 +77,31 @@ export class UserMenu extends Component {
     this.props.router.push(`/organizations`);
   };
 
+  handleOrgClick = id => {
+    this.props.router.push(`/admin/${id}`);
+  };
+
   renderAvatar(user, size) {
-    // Material-UI seems to not be handling this correctly when doing serverside rendering
     const inlineStyles = {
-      lineHeight: "1.25",
       textAlign: "center",
       color: "white",
-      padding: "5px"
+      padding: 5,
+      height: size,
+      width: size
     };
-    return (
-      <Avatar style={inlineStyles} size={size}>
-        {user.displayName.charAt(0)}
-      </Avatar>
-    );
+    return <Avatar style={inlineStyles}>{user.displayName.charAt(0)}</Avatar>;
   }
 
   renderAdminTools() {
     return (
       <div>
-        <Subheader>Superadmin Tools</Subheader>
+        <ListSubheader>Superadmin Tools</ListSubheader>
         <MenuItem
-          primaryText="Manage Organizations"
           value={"adminOrganizations"}
           onClick={this.handleAdminOrganizations}
-        />
+        >
+          Manage Organizations
+        </MenuItem>
         <Divider />
       </div>
     );
@@ -117,56 +118,57 @@ export class UserMenu extends Component {
       <div>
         <IconButton
           {...dataTest("userMenuButton")}
-          onTouchTap={this.handleTouchTap}
-          iconStyle={{ fontSize: "18px" }}
+          onClick={this.handleTouchTap}
         >
-          {this.renderAvatar(currentUser, avatarSize)}
+          {this.renderAvatar(currentUser, 20)}
         </IconButton>
         <Popover
           open={this.state.open}
           anchorEl={this.state.anchorEl}
           anchorOrigin={{ horizontal: "left", vertical: "bottom" }}
-          targetOrigin={{ horizontal: "left", vertical: "top" }}
-          onRequestClose={this.handleRequestClose}
+          transformOrigin={{ horizontal: "left", vertical: "top" }}
+          onClose={this.handleRequestClose}
         >
-          <Menu onChange={this.handleMenuChange}>
+          <MenuList onChange={this.handleMenuChange}>
             <MenuItem
               {...dataTest("userMenuDisplayName")}
-              primaryText={currentUser.displayName}
-              leftIcon={this.renderAvatar(currentUser, 40)}
               disabled={!this.props.orgId}
-              value={"account"}
+              onClick={event => {
+                this.handleMenuChange(event, "account");
+              }}
             >
-              {currentUser.email}
+              <ListItemIcon>{this.renderAvatar(currentUser, 20)}</ListItemIcon>
+              {currentUser.email} <br />
+              {currentUser.displayName}
             </MenuItem>
             <Divider />
             {isSuperAdmin ? this.renderAdminTools() : <div />}
-            <Subheader>Teams</Subheader>
+            <ListSubheader>Teams</ListSubheader>
             {organizations.map(organization => (
               <MenuItem
                 key={organization.id}
-                primaryText={organization.name}
-                value={organization.id}
-              />
+                onClick={() => this.handleOrgClick(organization.id)}
+              >
+                {organization.name}
+              </MenuItem>
             ))}
             <Divider />
-            <MenuItem
-              {...dataTest("home")}
-              primaryText="Home"
-              onClick={this.handleReturn}
-            />
-            <MenuItem
-              {...dataTest("FAQs")}
-              primaryText="FAQs"
-              onClick={this.handleRequestFaqs}
-            />
+            <MenuItem {...dataTest("home")} onClick={this.handleReturn}>
+              Home
+            </MenuItem>
+            <MenuItem {...dataTest("FAQs")} onClick={this.handleRequestFaqs}>
+              FAQs
+            </MenuItem>
             <Divider />
             <MenuItem
               {...dataTest("userMenuLogOut")}
-              primaryText="Log out"
-              value="logout"
-            />
-          </Menu>
+              onClick={event => {
+                this.handleMenuChange(event, "logout");
+              }}
+            >
+              Log out
+            </MenuItem>
+          </MenuList>
         </Popover>
       </div>
     );
