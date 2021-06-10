@@ -173,8 +173,8 @@ export const resolvers = {
           // type: 'light',
           primary: {
             // main: "#FFF"
-            main: "#53b477"
-            // main: '#009d52',
+            // main: "#53b477"
+            main: "#209556"
           },
           secondary: {
             main: "#ffffff"

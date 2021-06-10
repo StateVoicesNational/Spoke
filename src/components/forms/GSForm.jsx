@@ -1,21 +1,13 @@
 import PropTypes from "prop-types";
 import React from "react";
 import Form from "react-formal";
-import GSSubmitButton from "./GSSubmitButton";
-import theme from "../../styles/theme";
+import { compose } from "recompose";
 import { StyleSheet, css } from "aphrodite";
 import { GraphQLRequestError } from "../../network/errors";
 import { log } from "../../lib";
+import withMuiTheme from "../../containers/hoc/withMuiTheme";
 
-const styles = StyleSheet.create({
-  errorMessage: {
-    color: theme.colors.red,
-    marginRight: "auto",
-    marginLeft: "auto",
-    textAlign: "center"
-  }
-});
-export default class GSForm extends React.Component {
+class GSForm extends React.Component {
   static propTypes = {
     value: PropTypes.object,
     defaultValue: PropTypes.object,
@@ -32,6 +24,14 @@ export default class GSForm extends React.Component {
 
   constructor(props) {
     super(props);
+    this.styles = StyleSheet.create({
+      errorMessage: {
+        color: this.props.muiTheme.palette.error.main,
+        marginRight: "auto",
+        marginLeft: "auto",
+        textAlign: "center"
+      }
+    });
     // if you need to reference this (ex: for submit())
     // outside of this compoent you can pass a ref in
     if (props.setRef) {
@@ -98,7 +98,7 @@ export default class GSForm extends React.Component {
     }
 
     return (
-      <div className={css(styles.errorMessage)}>
+      <div className={css(this.styles.errorMessage)}>
         {this.state.globalErrorMessage}
       </div>
     );
@@ -145,3 +145,5 @@ export default class GSForm extends React.Component {
 GSForm.propTypes = {
   onSubmit: PropTypes.func
 };
+
+export default compose(withMuiTheme)(GSForm);
