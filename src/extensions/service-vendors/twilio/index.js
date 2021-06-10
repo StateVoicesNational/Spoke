@@ -1032,9 +1032,12 @@ export const fullyConfigured = async (organization, serviceManagerData) => {
     return false;
   }
 
-  if (serviceManagerData && serviceManagerData.skipOrgMessageService) {
-    // exports.manualMessagingServicesEnabled(organization) ||
-    // exports.campaignNumbersEnabled(organization)
+  if (
+    (serviceManagerData && serviceManagerData.skipOrgMessageService) ||
+    // legacy options
+    exports.manualMessagingServicesEnabled(organization) ||
+    exports.campaignNumbersEnabled(organization)
+  ) {
     return true;
   }
   return !!(await exports.getMessageServiceSid(organization));

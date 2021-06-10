@@ -4,15 +4,13 @@ import React from "react";
 import gql from "graphql-tag";
 import GSForm from "../components/forms/GSForm";
 import Form from "react-formal";
-import Dialog from "material-ui/Dialog";
 import GSSubmitButton from "../components/forms/GSSubmitButton";
-import FlatButton from "material-ui/FlatButton";
-import RaisedButton from "material-ui/RaisedButton";
 import * as yup from "yup";
-import { Card, CardText, CardActions, CardHeader } from "material-ui/Card";
+import Card from "@material-ui/core/Card";
+import CardHeader from "@material-ui/core/CardHeader";
+import CardContent from "@material-ui/core/CardContent";
 import { StyleSheet, css } from "aphrodite";
 import theme from "../styles/theme";
-import Toggle from "material-ui/Toggle";
 import moment from "moment";
 import CampaignTexterUIForm from "../components/CampaignTexterUIForm";
 import OrganizationFeatureSettings from "../components/OrganizationFeatureSettings";
@@ -68,7 +66,7 @@ export class CampaignServiceVendors extends React.Component {
                   }}
                 />
               ) : null}
-              <CardText>
+              <CardContent>
                 <ServiceManagerComp
                   serviceManagerInfo={sm}
                   campaign={campaign}
@@ -78,7 +76,7 @@ export class CampaignServiceVendors extends React.Component {
                     this.props.onSubmit(serviceManagerName, updateData)
                   }
                 />
-              </CardText>
+              </CardContent>
             </Card>
           );
         })}
