@@ -92,6 +92,7 @@ export default class CampaignTexterUIForm extends React.Component {
                 <AdminConfig
                   settingsData={this.state}
                   onToggle={this.toggleChange}
+                  setDefaults={defaults => this.setState(defaults)}
                   organization={this.props.organization}
                 />
               )}
