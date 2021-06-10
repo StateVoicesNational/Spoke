@@ -1,6 +1,7 @@
 import React, { Component } from "react";
 import PropTypes from "prop-types";
 import gql from "graphql-tag";
+import { compose } from "recompose";
 import { StyleSheet, css } from "aphrodite";
 
 import Button from "@material-ui/core/Button";
@@ -9,8 +10,8 @@ import DialogTitle from "@material-ui/core/DialogTitle";
 import DialogActions from "@material-ui/core/DialogActions";
 import IconButton from "@material-ui/core/IconButton";
 import Tooltip from "@material-ui/core/Tooltip";
-import Avatar from "@material-ui/core/Avatar";
-import FlagIcon from "@material-ui/icons/Flag";
+// import Avatar from "@material-ui/core/Avatar";
+// import FlagIcon from "@material-ui/icons/Flag";
 import FileCopyIcon from "@material-ui/icons/FileCopy";
 import CheckIcon from "@material-ui/icons/Check";
 
@@ -20,6 +21,7 @@ import loadData from "../../containers/hoc/load-data";
 import MessageResponse from "./MessageResponse";
 
 import { dataTest } from "../../lib/attributes";
+import withMuiTheme from "../../containers/hoc/withMuiTheme";
 
 const styles = StyleSheet.create({
   conversationRow: {
@@ -30,39 +32,39 @@ const styles = StyleSheet.create({
   }
 });
 
-const TagList = props => (
-  <div style={{ maxHeight: "300px", overflowY: "scroll" }}>
-    {props.tags.map((tag, index) => {
-      const tagStyle = {
-        marginRight: "60px",
-        backgroundColor: theme.colors.red,
-        display: "flex",
-        maxHeight: "25px",
-        alignItems: "center"
-      };
+// const TagList = props => (
+//   <div style={{ maxHeight: "300px", overflowY: "scroll" }}>
+//     {props.tags.map((tag, index) => {
+//       const tagStyle = {
+//         marginRight: "60px",
+//         backgroundColor: theme.colors.red,
+//         display: "flex",
+//         maxHeight: "25px",
+//         alignItems: "center"
+//       };
 
-      const textStyle = {
-        marginLeft: "10px",
-        display: "flex",
-        flexDirection: "column"
-      };
+//       const textStyle = {
+//         marginLeft: "10px",
+//         display: "flex",
+//         flexDirection: "column"
+//       };
 
-      return (
-        <p key={index} className={css(styles.conversationRow)} style={tagStyle}>
-          <Avatar style={{ backgroundColor: theme.colors.red }}>
-            <FlagIcon color="default" />
-          </Avatar>
-          <p style={textStyle}>{props.organizationTags[tag.id]}</p>
-        </p>
-      );
-    })}
-  </div>
-);
+//       return (
+//         <p key={index} className={css(styles.conversationRow)} style={tagStyle}>
+//           <Avatar style={{ backgroundColor: theme.colors.red }}>
+//             <FlagIcon color="default" />
+//           </Avatar>
+//           <p style={textStyle}>{props.organizationTags[tag.id]}</p>
+//         </p>
+//       );
+//     })}
+//   </div>
+// );
 
-TagList.propTypes = {
-  tags: PropTypes.arrayOf(PropTypes.object),
-  organizationTags: PropTypes.object
-};
+// TagList.propTypes = {
+//   tags: PropTypes.arrayOf(PropTypes.object),
+//   organizationTags: PropTypes.object
+// };
 
 class MessageList extends Component {
   componentDidMount() {
@@ -299,4 +301,7 @@ const mutations = {
   })
 };
 
-export default loadData({ mutations })(InnerConversationPreviewModal);
+export default compose(
+  withMuiTheme,
+  loadData({ mutations })
+)(InnerConversationPreviewModal);

@@ -25,7 +25,7 @@ const colors = {
   gray: "rgb(153, 155, 158)",
   gray50: "rgb(250, 250, 250)",
   veryLightGray: "rgb(240, 242, 240)",
-  lightGray: "rgb(225, 228, 224)",
+  lightGray: "rgb(225, 228, 224)", // this.props.muiTheme.palette.grey[300]
   white: "rgb(255,255,255)",
   yellow: "rgb(250,190,40)",
   lightYellow: "rgb(252, 214, 120)"

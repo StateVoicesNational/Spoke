@@ -1,8 +1,9 @@
 import type from "prop-types";
 import React from "react";
-import { StyleSheet, css } from "aphrodite";
 import Form from "react-formal";
 import * as yup from "yup";
+import { compose } from "recompose";
+import tinycolor from "tinycolor2";
 
 import Button from "@material-ui/core/Button";
 import ButtonGroup from "@material-ui/core/ButtonGroup";
@@ -13,8 +14,8 @@ import HelpOutlineIcon from "@material-ui/icons/HelpOutline";
 import Card from "@material-ui/core/Card";
 import CardContent from "@material-ui/core/CardContent";
 import CardHeader from "@material-ui/core/CardHeader";
+import { Typography } from "@material-ui/core";
 
-import theme from "../styles/theme";
 import CampaignFormSectionHeading from "./CampaignFormSectionHeading";
 import GSForm from "./forms/GSForm";
 import GSTextField from "./forms/GSTextField";
@@ -23,40 +24,37 @@ import GSSelectField from "./forms/GSSelectField";
 import GSAutoComplete from "./forms/GSAutoComplete";
 import { makeTree } from "../lib";
 import { dataTest } from "../lib/attributes";
+import withMuiTheme from "../containers/hoc/withMuiTheme";
 
-const styleSheet = StyleSheet.create({
-  errorMessage: {
-    color: theme.colors.red
-  }
-});
-
-const styles = {
-  pullRight: {
-    float: "right",
-    position: "relative",
-    icon: "pointer"
-  },
-
-  cardHeader: {
-    backgroundColor: theme.colors.veryLightGray
-  },
-
-  interactionStep: {
-    borderLeft: `5px solid ${theme.colors.green}`,
-    marginBottom: 24,
-    width: "100%"
-  },
-
-  answerContainer: {
-    marginLeft: "35px",
-    marginTop: "10px",
-    borderLeft: `3px dashed ${theme.colors.veryLightGray}`
-  }
-};
-
-export default class CampaignInteractionStepsForm extends React.Component {
+class CampaignInteractionStepsForm extends React.Component {
   constructor(props) {
     super(props);
+    const slightlyDarkerBackground = tinycolor(
+      this.props.muiTheme.palette.background.default
+    ).darken(1);
+    this.styles = {
+      pullRight: {
+        float: "right",
+        position: "relative",
+        icon: "pointer"
+      },
+
+      cardHeader: {
+        backgroundColor: slightlyDarkerBackground
+      },
+
+      interactionStep: {
+        borderLeft: `5px solid ${this.props.muiTheme.palette.success.main}`,
+        marginBottom: 24,
+        width: "100%"
+      },
+
+      answerContainer: {
+        marginLeft: "35px",
+        marginTop: "10px",
+        borderLeft: `3px dashed ${slightlyDarkerBackground}`
+      }
+    };
     this.state = {
       focusedField: null,
       availableActionsLookup: props.availableActions.reduce(
@@ -273,7 +271,7 @@ export default class CampaignInteractionStepsForm extends React.Component {
         {interactionStep.parentInteractionId && (
           <div>
             <IconButton
-              style={styles.pullRight}
+              style={this.styles.pullRight}
               onClick={this.deleteStep(interactionStep.id).bind(this)}
             >
               <DeleteIcon />
@@ -292,12 +290,12 @@ export default class CampaignInteractionStepsForm extends React.Component {
           </div>
         )}
         <Card
-          style={styles.interactionStep}
+          style={this.styles.interactionStep}
           ref={interactionStep.id}
           key={interactionStep.id}
         >
           <CardHeader
-            style={styles.cardHeader}
+            style={this.styles.cardHeader}
             title={title}
             subtitle={
               interactionStep.parentInteractionId
@@ -383,10 +381,10 @@ export default class CampaignInteractionStepsForm extends React.Component {
                           }}
                         />
                         {interactionStep.needRequiredAnswerActionsData && (
-                          <div className={css(styleSheet.errorMessage)}>
+                          <Typography color="error">
                             Action requires additional data. Please select
                             something.
-                          </div>
+                          </Typography>
                         )}
                       </div>
                     )}
@@ -414,7 +412,7 @@ export default class CampaignInteractionStepsForm extends React.Component {
             </GSForm>
           </CardContent>
         </Card>
-        <div style={styles.answerContainer}>
+        <div style={this.styles.answerContainer}>
           {interactionStep.questionText &&
             interactionStep.script &&
             (!interactionStep.parentInteractionId ||
@@ -494,3 +492,5 @@ CampaignInteractionStepsForm.propTypes = {
   errors: type.array,
   availableActions: type.array
 };
+
+export default compose(withMuiTheme)(CampaignInteractionStepsForm);
