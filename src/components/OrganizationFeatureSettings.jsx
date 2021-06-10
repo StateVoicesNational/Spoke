@@ -64,7 +64,7 @@ const configurableFields = {
     schema: () => yup.boolean(),
     ready: true,
     component: props => {
-      if (!window.ALLOW_SEND_ALL) {
+      if (typeof window === "undefined" || !window.ALLOW_SEND_ALL) {
         return null;
       }
       return (
@@ -221,7 +221,7 @@ const configurableFields = {
  * remove the key if we don't need it so yup will validate
  * corectly and submit the form.
  */
-if (!window.ALLOW_SEND_ALL) {
+if (typeof window === "undefined" || !window.ALLOW_SEND_ALL) {
   delete configurableFields.ALLOW_SEND_ALL_ENABLED;
 }
 
