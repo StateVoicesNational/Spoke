@@ -106,11 +106,11 @@ export default class CampaignTexterUIForm extends React.Component {
           schema={yup.object(schemaObject)}
           value={this.state}
           onChange={this.onChange}
+          onSubmit={this.props.onSubmit}
         >
           {adminItems}
           <Form.Submit
             as={GSSubmitButton}
-            onClick={this.props.onSubmit}
             label={this.props.saveLabel}
             disabled={this.props.saveDisabled}
             {...dataTest("submitCampaignTexterUIForm")}
