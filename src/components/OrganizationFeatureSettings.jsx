@@ -113,6 +113,7 @@ const configurableFields = {
     schema: () =>
       yup
         .number()
+        .transform(cv => (isNaN(cv) ? undefined : cv))
         .integer()
         .notRequired(),
     ready: true,
@@ -134,7 +135,11 @@ const configurableFields = {
     }
   },
   DEFAULT_RESPONSEWINDOW: {
-    schema: () => yup.number().notRequired(),
+    schema: () =>
+      yup
+        .number()
+        .transform(cv => (isNaN(cv) ? undefined : cv))
+        .notRequired(),
     ready: true,
     component: props => {
       return (
@@ -159,6 +164,7 @@ const configurableFields = {
     schema: () =>
       yup
         .number()
+        .transform(cv => (isNaN(cv) ? undefined : cv))
         .integer()
         .notRequired(),
     ready: true,
@@ -189,6 +195,7 @@ const configurableFields = {
     schema: () =>
       yup
         .number()
+        .transform(cv => (isNaN(cv) ? undefined : cv))
         .integer()
         .notRequired(),
     ready: true,
