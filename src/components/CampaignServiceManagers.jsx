@@ -4,7 +4,6 @@ import React from "react";
 import gql from "graphql-tag";
 import GSForm from "../components/forms/GSForm";
 import Form from "react-formal";
-import GSSubmitButton from "../components/forms/GSSubmitButton";
 import * as yup from "yup";
 import Card from "@material-ui/core/Card";
 import CardHeader from "@material-ui/core/CardHeader";
@@ -16,9 +15,8 @@ import CampaignTexterUIForm from "../components/CampaignTexterUIForm";
 import OrganizationFeatureSettings from "../components/OrganizationFeatureSettings";
 import { getServiceVendorComponent } from "../extensions/service-vendors/components";
 import { getServiceManagerComponent } from "../extensions/service-managers/components";
-import GSTextField from "../components/forms/GSTextField";
 
-export class CampaignServiceVendors extends React.Component {
+export class CampaignServiceManagers extends React.Component {
   static propTypes = {
     formValues: type.object,
     onChange: type.func,
@@ -52,7 +50,7 @@ export class CampaignServiceVendors extends React.Component {
             return null;
           }
           return (
-            <Card>
+            <Card key={sm.name}>
               {serviceManagerComponentName === "CampaignConfig" ? (
                 <CardHeader
                   title={sm.displayName}
@@ -85,4 +83,4 @@ export class CampaignServiceVendors extends React.Component {
   }
 }
 
-export default CampaignServiceVendors;
+export default CampaignServiceManagers;

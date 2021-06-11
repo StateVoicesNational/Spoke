@@ -569,7 +569,10 @@ export class AdminCampaignEdit extends React.Component {
         }
       });
     }
-    if (window.EXPERIMENTAL_TWILIO_PER_CAMPAIGN_MESSAGING_SERVICE) {
+    if (
+      window.EXPERIMENTAL_TWILIO_PER_CAMPAIGN_MESSAGING_SERVICE &&
+      window.EXPERIMENTAL_PER_CAMPAIGN_MESSAGING_LEGACY
+    ) {
       finalSections.push({
         title: "Messaging Service",
         content: CampaignMessagingServiceForm,
@@ -580,7 +583,10 @@ export class AdminCampaignEdit extends React.Component {
         expandableBySuperVolunteers: false
       });
     }
-    if (this.props.organizationData.organization.campaignPhoneNumbersEnabled) {
+    if (
+      this.props.organizationData.organization.campaignPhoneNumbersEnabled &&
+      window.EXPERIMENTAL_PER_CAMPAIGN_MESSAGING_LEGACY
+    ) {
       const contactsPerPhoneNumber = window.CONTACTS_PER_PHONE_NUMBER;
       finalSections.push({
         title: "Phone Numbers",

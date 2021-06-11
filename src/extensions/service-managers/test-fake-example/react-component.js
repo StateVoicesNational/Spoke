@@ -1,9 +1,5 @@
 /* eslint no-console: 0 */
 import { css } from "aphrodite";
-import { CardText } from "material-ui/Card";
-import Dialog from "material-ui/Dialog";
-import FlatButton from "material-ui/FlatButton";
-import { Table, TableBody, TableRow, TableRowColumn } from "material-ui/Table";
 import PropTypes from "prop-types";
 import React from "react";
 import Form from "react-formal";
@@ -48,7 +44,6 @@ export class OrgConfig extends React.Component {
             as={GSSubmitButton}
             label="Save"
             style={this.props.inlineStyles.dialogButton}
-            component={GSSubmitButton}
           />
         </GSForm>
       </div>
@@ -97,11 +92,7 @@ export class CampaignConfig extends React.Component {
               name="savedText"
               fullWidth
             />
-            <Form.Submit
-              as={GSSubmitButton}
-              label="Save"
-              component={GSSubmitButton}
-            />
+            <Form.Submit as={GSSubmitButton} label="Save" />
           </GSForm>
         ) : (
           <div>

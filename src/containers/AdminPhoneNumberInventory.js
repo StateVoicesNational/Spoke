@@ -294,9 +294,9 @@ class AdminPhoneNumberInventory extends React.Component {
             name="limit"
             {...dataTest("limit")}
           />
-          {messageServiceName === "twilio" &&
-            messageServiceConfig.TWILIO_MESSAGE_SERVICE_SID &&
-            messageServiceConfig.TWILIO_MESSAGE_SERVICE_SID.length > 0 &&
+          {serviceName === "twilio" &&
+            serviceConfig.TWILIO_MESSAGE_SERVICE_SID &&
+            serviceConfig.TWILIO_MESSAGE_SERVICE_SID.length > 0 &&
             !this.props.data.organization.campaignPhoneNumbersEnabled && (
               <Form.Field
                 name="addToOrganizationMessagingService"
