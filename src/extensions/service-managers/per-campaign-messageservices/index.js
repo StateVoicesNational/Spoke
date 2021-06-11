@@ -99,9 +99,14 @@ const _editCampaignData = async (organization, campaign) => {
       ...contactsPerNum
     },
     fullyConfigured:
+      // Two mutually exclusive modes: EXPERIMENTAL_CAMPAIGN_PHONE_NUMBERS vs. EXPERIMENTAL_TWILIO_PER_CAMPAIGN_MESSAGING_SERVICE
       Boolean(campaign.messageservice_sid) ||
-      (numbersReserved >= numbersNeeded && false), // ?? TODO: only when campaignPhoneNumbersEnabled=EXPERIMENTAL_CAMPAIGN_PHONE_NUMBERS
-    // and NOT EXPERIMENTAL_TWILIO_PER_CAMPAIGN_MESSAGING_SERVICE
+      (numbersReserved >= numbersNeeded &&
+        !getConfig(
+          "EXPERIMENTAL_TWILIO_PER_CAMPAIGN_MESSAGING_SERVICE",
+          organization,
+          { truthy: 1 }
+        )),
     unArchiveable:
       !campaign.use_own_messaging_service || campaign.messageservice_sid
   };
