@@ -164,6 +164,20 @@ export const adminSchema = () => ({
 });
 
 export class AdminConfig extends React.Component {
+  componentDidMount() {
+    // set defaults
+    const defaults = {};
+    if (!this.props.settingsData.takeConversationsBatchType) {
+      defaults.takeConversationsBatchType = "vetted-takeconversations";
+    }
+    if (!this.props.settingsData.takeConversationsBatchSize) {
+      defaults.takeConversationsBatchSize = 20;
+    }
+    if (Object.values(defaults).length) {
+      this.props.setDefaults(defaults);
+    }
+  }
+
   render() {
     return (
       <div>
@@ -178,10 +192,6 @@ export class AdminConfig extends React.Component {
           label="Batch Type"
           fullWidth
           hintText=""
-          value={
-            this.props.settingsData.takeConversationsBatchType ||
-            "vetted-takeconversations"
-          }
         />
         <p>If batchsize is set to 0 it will stop showing this side panel</p>
         <Form.Field
@@ -190,7 +200,6 @@ export class AdminConfig extends React.Component {
           label="Batch size (number) to take conversations button"
           fullWidth
           hintText=""
-          value={this.props.settingsData.takeConversationsBatchSize || 20}
         />
         <p>
           Outbound Unassignment (only works if message handler
@@ -226,5 +235,6 @@ export class AdminConfig extends React.Component {
 
 AdminConfig.propTypes = {
   settingsData: type.object,
-  onToggle: type.func
+  onToggle: type.func,
+  setDefaults: type.func
 };

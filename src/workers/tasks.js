@@ -3,14 +3,58 @@
 // See src/extensions/job-runners/README.md for more details
 import serviceMap from "../extensions/service-vendors";
 import * as ActionHandlers from "../extensions/action-handlers";
-import { cacheableData } from "../server/models";
+import { r, cacheableData } from "../server/models";
+import { Notifications, sendUserNotification } from "../server/notifications";
+import { processServiceManagers } from "../extensions/service-managers";
 
 export const Tasks = Object.freeze({
   SEND_MESSAGE: "send_message",
   ACTION_HANDLER_QUESTION_RESPONSE: "action_handler:question_response",
   ACTION_HANDLER_TAG_UPDATE: "action_handler:tag_update",
-  CAMPAIGN_START_CACHE: "campaign_start_cache"
+  CAMPAIGN_START_CACHE: "campaign_start_cache",
+  SERVICE_MANAGER_TRIGGER: "service_manager_trigger"
 });
+
+const serviceManagerTrigger = async ({
+  functionName,
+  organizationId,
+  data
+}) => {
+  let organization;
+  if (organizationId) {
+    organization = await cacheableData.organization.load(organizationId);
+  }
+  const serviceManagerData = await processServiceManagers(
+    functionName,
+    organization,
+    data
+  );
+
+  // This is a little hacky rather than making another task, but while it's a single
+  // exception, it feels fine -- if this becomes a bunch of if...else ifs, then reconsider
+  if (
+    functionName === "onCampaignStart" &&
+    data.campaign &&
+    !(serviceManagerData && serviceManagerData.blockCampaignStart)
+  ) {
+    await r
+      .knex("campaign")
+      .where("id", data.campaign.id)
+      .update({ is_started: true });
+    await cacheableData.campaign.load(data.campaign.id, { forceLoad: true });
+    await sendUserNotification({
+      type: Notifications.CAMPAIGN_STARTED,
+      campaignId: data.campaign.id
+    });
+    // TODO: Decide if we want/need this anymore, relying on FUTURE campaign-contact cache load changes
+    // We are already in an background job process, so invoke the task directly rather than
+    // kicking it off through the dispatcher
+    // await invokeTaskFunction(Tasks.CAMPAIGN_START_CACHE, {
+    //   organization,
+    //   campaign: reloadedCampaign
+    // });
+  }
+};
 
 const sendMessage = async ({
   message,
@@ -23,8 +67,20 @@ const sendMessage = async ({
   if (!service) {
     throw new Error(`Failed to find service for message ${message}`);
   }
+  const serviceManagerData = await processServiceManagers(
+    "onMessageSend",
+    organization,
+    { message, contact, campaign }
+  );
 
-  await service.sendMessage({ message, contact, trx, organization, campaign });
+  await service.sendMessage({
+    message,
+    contact,
+    trx,
+    organization,
+    campaign,
+    serviceManagerData
+  });
 };
 
 const questionResponseActionHandler = async ({
@@ -105,7 +161,8 @@ const taskMap = Object.freeze({
   [Tasks.SEND_MESSAGE]: sendMessage,
   [Tasks.ACTION_HANDLER_QUESTION_RESPONSE]: questionResponseActionHandler,
   [Tasks.ACTION_HANDLER_TAG_UPDATE]: tagUpdateActionHandler,
-  [Tasks.CAMPAIGN_START_CACHE]: startCampaignCache
+  [Tasks.CAMPAIGN_START_CACHE]: startCampaignCache,
+  [Tasks.SERVICE_MANAGER_TRIGGER]: serviceManagerTrigger
 });
 
 export const invokeTaskFunction = async (taskName, payload) => {

@@ -24,6 +24,7 @@ const styles = StyleSheet.create({
 class MessageResponse extends Component {
   constructor(props) {
     super(props);
+    this.formRef = React.createRef();
 
     this.state = {
       messageText: "",
@@ -83,7 +84,7 @@ class MessageResponse extends Component {
   }
 
   handleClickSendMessageButton = () => {
-    this.refs.messageForm.submit();
+    this.formRef.current.submit();
   };
 
   render() {
@@ -100,7 +101,7 @@ class MessageResponse extends Component {
     return (
       <div className={css(styles.messageField)}>
         <GSForm
-          ref="messageForm"
+          setRef={this.formRef}
           schema={messageSchema}
           value={{ messageText: this.state.messageText }}
           onSubmit={this.handleMessageFormSubmit}
@@ -112,16 +113,16 @@ class MessageResponse extends Component {
                 position: "absolute",
                 right: 0,
                 bottom: 0,
-                width: "120px"
+                width: "170px"
               }}
             >
               <SendButton
-                onFinalTouchTap={this.handleClickSendMessageButton}
+                onClick={this.handleClickSendMessageButton}
                 disabled={isSendDisabled}
                 doneFirstClick={doneFirstClick}
               />
             </div>
-            <div style={{ marginRight: "120px" }}>
+            <div style={{ marginRight: "170px" }}>
               <Form.Field
                 as={GSTextField}
                 name="messageText"

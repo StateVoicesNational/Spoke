@@ -1002,9 +1002,7 @@ describe("config functions", () => {
         } catch (caught) {
           error = caught;
         }
-        expect(error.message).toEqual(
-          "twilioAccountSid and twilioMessageServiceSid are required"
-        );
+        expect(error.message).toEqual("twilioAccountSid is required");
         expect(crypto.symmetricEncrypt).not.toHaveBeenCalled();
         expect(twilioLibrary.Twilio).not.toHaveBeenCalled();
         expect(twilioApiAccountsListMock).not.toHaveBeenCalled();
@@ -1120,7 +1118,7 @@ describe("config functions", () => {
         .spyOn(twilio, "getMessageServiceSid")
         .mockResolvedValue("fake_message_service_sid");
     });
-    it("returns true", async () => {
+    it("fullyConfigured returns true", async () => {
       expect(await twilio.fullyConfigured("everything_is_mocked")).toEqual(
         true
       );
