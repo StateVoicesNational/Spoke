@@ -8,10 +8,9 @@
 // - onOrganizationServiceVendorSetup: to disable requiring org-level messageservice setup
 // - onVendorServiceFullyConfigured: to disable requiring org-level messageservice setup
 
-// FUTURE: ?org configure to enable it?
 // TODO: how should AdminPhoneNumberBuying be affected -- can/should it 'steal' the message
-// TODO: maybe it should remove/block the org-level messageservice_sid from being set?
-// TODO: should it capture the response from twilio and then mark fully configured even if messageservice_sid isn't set?
+// TODO: maybe it should remove/block the org-level messageservice_sid from being set? (or warn in org config)
+// TODO/FUTURE: org config for: manualMessageServiceMode and CAMPAIGN_PHONES_RETAIN_MESSAGING_SERVICES
 
 import { r, cacheableData } from "../../../server/models";
 import ownedPhoneNumber from "../../../server/api/lib/owned-phone-number";
@@ -89,8 +88,16 @@ const _editCampaignData = async (organization, campaign) => {
   const numbersNeeded = Math.ceil(
     (campaign.contactsCount || 0) / contactsPerNum.contactsPerPhoneNumber
   );
+  // 4. which mode:
+  // previously: EXPERIMENTAL_CAMPAIGN_PHONE_NUMBERS vs. EXPERIMENTAL_TWILIO_PER_CAMPAIGN_MESSAGING_SERVICE
+  const manualMessageServiceMode = getConfig(
+    "EXPERIMENTAL_TWILIO_PER_CAMPAIGN_MESSAGING_SERVICE",
+    organization,
+    { truthy: 1 }
+  );
   return {
     data: {
+      manualMessageServiceMode,
       inventoryPhoneNumberCounts,
       contactsAreaCodeCounts,
       phoneNumberCounts,
@@ -101,12 +108,7 @@ const _editCampaignData = async (organization, campaign) => {
     fullyConfigured:
       // Two mutually exclusive modes: EXPERIMENTAL_CAMPAIGN_PHONE_NUMBERS vs. EXPERIMENTAL_TWILIO_PER_CAMPAIGN_MESSAGING_SERVICE
       Boolean(campaign.messageservice_sid) ||
-      (numbersReserved >= numbersNeeded &&
-        !getConfig(
-          "EXPERIMENTAL_TWILIO_PER_CAMPAIGN_MESSAGING_SERVICE",
-          organization,
-          { truthy: 1 }
-        )),
+      (numbersReserved >= numbersNeeded && !manualMessageServiceMode),
     unArchiveable:
       !campaign.use_own_messaging_service || campaign.messageservice_sid
   };
@@ -215,9 +217,6 @@ export async function onCampaignUpdateSignal({
   return await _editCampaignData(organization, campaign);
 }
 
-// TODO: react-component.js
-// components/CampaignPhoneNumbersForm.jsx
-// move containers/AdminCampaignStats:: showReleaseNumbers
 async function onVendorServiceFullyConfigured({ organization, serviceName }) {
   return {
     skipOrgMessageService: true

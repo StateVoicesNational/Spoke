@@ -3,10 +3,10 @@ import Switch from "@material-ui/core/Switch";
 import FormControlLabel from "@material-ui/core/FormControlLabel";
 import React from "react";
 import Form from "react-formal";
-import GSForm from "./forms/GSForm";
-import GSTextField from "./forms/GSTextField";
-import GSSubmitButton from "./forms/GSSubmitButton";
-import CampaignFormSectionHeading from "./CampaignFormSectionHeading";
+import GSForm from "../../../components/forms/GSForm";
+import GSTextField from "../../../components/forms/GSTextField";
+import GSSubmitButton from "../../../components/forms/GSSubmitButton";
+import CampaignFormSectionHeading from "../../../components/CampaignFormSectionHeading";
 import * as yup from "yup";
 import cloneDeep from "lodash/cloneDeep";
 

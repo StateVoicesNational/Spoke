@@ -119,8 +119,15 @@ export async function updateConfig(oldConfig, config, organization) {
     }
     delete finalConfig.autoConfigError;
   } catch (err) {
-    console.log("bandwidth.updateConfig autoconfigure Error", err);
-    finalConfig.autoConfigError = "Auto-configuration failed";
+    console.log(
+      "bandwidth.updateConfig autoconfigure Error",
+      err.message,
+      err.text,
+      "xxxx",
+      err
+    );
+    finalConfig.autoConfigError = `Auto-configuration failed. ${err.message ||
+      ""}`;
   }
 
   return finalConfig;
