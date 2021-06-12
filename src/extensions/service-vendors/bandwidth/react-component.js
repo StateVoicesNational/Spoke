@@ -43,8 +43,8 @@ export class OrgConfig extends React.Component {
     this.state = { allSet, ...this.props.config, country: "United States" };
     this.props.onAllSetChanged(allSet);
   }
+
   /*
-  componentDidUpdate(prevProps) {
     const {
       accountSid: prevAccountSid,
       authToken: prevAuthToken,
@@ -64,7 +64,10 @@ export class OrgConfig extends React.Component {
     this.setState(value);
   };
 
-  handleOpenDialog = () => this.setState({ dialogOpen: true });
+  handleOpenDialog = () => {
+    console.log("bandwidth.handleopendialog", this.state);
+    this.setState({ dialogOpen: true });
+  };
 
   handleCloseDialog = () => this.setState({ dialogOpen: false });
 
@@ -76,7 +79,6 @@ export class OrgConfig extends React.Component {
     let newError;
     try {
       await this.props.onSubmit(config);
-      await this.props.requestRefetch();
       this.setState({
         error: undefined
       });
@@ -203,13 +205,14 @@ export class OrgConfig extends React.Component {
         <CardContent>
           <div className={css(styles.section)}>
             <span className={css(styles.sectionLabel)}>
-              You can set Twilio API credentials specifically for this
+              You can set Bandwidth API credentials specifically for this
               Organization by entering them here.
             </span>
             <GSForm
               schema={formSchema}
               onChange={this.onFormChange}
-              defaultValue={this.state}
+              onSubmit={this.handleOpenDialog}
+              value={this.state}
             >
               <Form.Field
                 as={GSTextField}
@@ -344,13 +347,17 @@ export class OrgConfig extends React.Component {
                 maxWidth="md"
                 as={GSSubmitButton}
                 label={this.props.saveLabel || "Save Credentials"}
-                onClick={this.handleOpenDialog}
               />
-              <Dialog open={this.state.dialogOpen}>
+              {config.autoConfigError && (
+                <CardContent style={inlineStyles.errorBox}>
+                  {config.autoConfigError}
+                </CardContent>
+              )}
+              <Dialog open={this.state.dialogOpen || false}>
                 <DialogContent>
                   <DialogContentText>
                     Changing information here will break any campaigns that are
-                    currently running. Do you want to contunue?
+                    currently running. Do you want to continue?
                   </DialogContentText>
                 </DialogContent>
                 <DialogActions>
@@ -360,13 +367,12 @@ export class OrgConfig extends React.Component {
                   >
                     Cancel
                   </Button>
-                  <Form.Submit
-                    as={GSSubmitButton}
-                    label="Save"
+                  <Button
                     style={inlineStyles.dialogButton}
-                    component={GSSubmitButton}
                     onClick={this.handleSubmitAuthForm}
-                  />
+                  >
+                    Save
+                  </Button>
                 </DialogActions>
               </Dialog>
             </GSForm>

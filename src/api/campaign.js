@@ -129,6 +129,8 @@ export const schema = gql`
     textingHoursStart: Int
     textingHoursEnd: Int
     timezone: String
+    serviceManagers(fromCampaignStatsPage: Boolean): [ServiceManager]
+
     messageserviceSid: String
     useOwnMessagingService: Boolean
     phoneNumbers: [String]

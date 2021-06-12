@@ -951,14 +951,22 @@ export const getMessageServiceSid = async (
   return messageServiceSid;
 };
 
-export const updateConfig = async (oldConfig, config, organization) => {
+export const updateConfig = async (
+  oldConfig,
+  config,
+  organization,
+  serviceManagerData
+) => {
   const { twilioAccountSid, twilioAuthToken, twilioMessageServiceSid } = config;
-  if (!twilioAccountSid || !twilioMessageServiceSid) {
-    throw new Error(
-      "twilioAccountSid and twilioMessageServiceSid are required"
-    );
+  if (!twilioAccountSid) {
+    throw new Error("twilioAccountSid is required");
   }
-
+  if (
+    !twilioMessageServiceSid &&
+    (!serviceManagerData || !serviceManagerData.skipOrgMessageService)
+  ) {
+    throw new Error("twilioMessageServiceSid is required");
+  }
   const newConfig = {};
 
   newConfig.TWILIO_ACCOUNT_SID = twilioAccountSid.substr(0, 64);
@@ -971,9 +979,10 @@ export const updateConfig = async (oldConfig, config, organization) => {
         twilioAuthToken
       )
     : twilioAuthToken;
-  newConfig.TWILIO_MESSAGE_SERVICE_SID =
-    twilioMessageServiceSid && twilioMessageServiceSid.substr(0, 64);
-
+  if (twilioMessageServiceSid) {
+    newConfig.TWILIO_MESSAGE_SERVICE_SID =
+      twilioMessageServiceSid && twilioMessageServiceSid.substr(0, 64);
+  }
   try {
     if (twilioAuthToken && global.TEST_ENVIRONMENT !== "1") {
       // Make sure Twilio credentials work.
@@ -1013,7 +1022,7 @@ export const manualMessagingServicesEnabled = organization =>
     { truthy: true }
   );
 
-export const fullyConfigured = async organization => {
+export const fullyConfigured = async (organization, serviceManagerData) => {
   const { authToken, accountSid } = await getMessageServiceConfig(
     "twilio",
     organization
@@ -1024,6 +1033,8 @@ export const fullyConfigured = async organization => {
   }
 
   if (
+    (serviceManagerData && serviceManagerData.skipOrgMessageService) ||
+    // legacy options
     exports.manualMessagingServicesEnabled(organization) ||
     exports.campaignNumbersEnabled(organization)
   ) {

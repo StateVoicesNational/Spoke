@@ -3,7 +3,7 @@ import serviceMap, {
   getService
 } from "./service_map";
 import orgCache from "../../server/models/cacheable_queries/organization";
-
+import { processServiceManagers } from "../service-managers";
 export {
   getConfigKey,
   getService,
@@ -32,12 +32,18 @@ export const getServiceFromOrganization = organization =>
 
 export const fullyConfigured = async organization => {
   const serviceName = exports.getServiceNameFromOrganization(organization);
+  const serviceManagerData = await processServiceManagers(
+    "onVendorServiceFullyConfigured",
+    organization,
+    {
+      serviceName
+    }
+  );
   const fn = tryGetFunctionFromService(serviceName, "fullyConfigured");
   if (!fn) {
     return true;
   }
-
-  return fn();
+  return fn(organization, serviceManagerData);
 };
 
 export const createMessagingService = (organization, friendlyName) => {
