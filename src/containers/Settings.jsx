@@ -175,7 +175,7 @@ class Settings extends React.Component {
               : theme.colors.yellow
           }}
         />
-        <CardText>
+        <CardContent>
           {serviceManagers.map(sm => {
             const ServiceManagerComp = getServiceManagerComponent(
               sm.name,
@@ -183,7 +183,7 @@ class Settings extends React.Component {
             );
             const serviceManagerName = sm.name;
             return (
-              <Card>
+              <Card key={sm.name}>
                 <CardHeader
                   title={sm.displayName}
                   style={{
@@ -195,7 +195,7 @@ class Settings extends React.Component {
                         : theme.colors.lightGray
                   }}
                 />
-                <CardText>
+                <CardContent>
                   <ServiceManagerComp
                     serviceManagerInfo={sm}
                     organizationId={organizationId}
@@ -209,11 +209,11 @@ class Settings extends React.Component {
                       )
                     }
                   />
-                </CardText>
+                </CardContent>
               </Card>
             );
           })}
-        </CardText>
+        </CardContent>
       </Card>
     );
   }

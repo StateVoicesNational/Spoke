@@ -29,6 +29,8 @@ import CampaignFormSectionHeading from "../../../components/CampaignFormSectionH
 import LoadingIndicator from "../../../components/LoadingIndicator";
 import theme from "../../../styles/theme";
 
+import CampaignMessagingServiceForm from "./react-component-campaignmessageservice";
+
 // import { dataTest } from "../lib/attributes";
 
 /* eslint-disable no-nested-ternary */
