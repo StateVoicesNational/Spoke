@@ -197,7 +197,8 @@ export async function createAccountBaseline(organization, options) {
   // 1. create sub-account/Site
   if (!config.siteId || (options && options.newEverything)) {
     const site = await BandwidthNumbers.Site.createAsync(client, {
-      name: `Spoke org${organization.id} ${organization.name} (Subaccount)`,
+      // subaccount names max=50 characters
+      name: `Spoke org${organization.id} ${organization.name.substr(0, 38)}`,
       address: {
         houseNumber: config.houseNumber,
         streetName: config.streetName,
