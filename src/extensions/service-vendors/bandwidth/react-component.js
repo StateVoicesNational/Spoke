@@ -222,7 +222,7 @@ export class OrgConfig extends React.Component {
               />
               <Form.Field
                 as={GSTextField}
-                label="Username (for API)"
+                label="Username (for API, probably an email address)"
                 name="userName"
                 fullWidth
               />
@@ -338,6 +338,27 @@ export class OrgConfig extends React.Component {
                         label="Application Id"
                         name="applicationId"
                       />
+                      <div>
+                        {document.location.hostname === "localhost" ? (
+                          <span>
+                            You will need to deploy somewhere with a publicly
+                            accessible url
+                          </span>
+                        ) : (
+                          <span>
+                            <div>
+                              If you create the application manually, set the
+                              Callback URL to:{" "}
+                            </div>
+                            <code>
+                              {document.location.protocol}
+                              {"//"}
+                              {document.location.hostname}/bandwidth/
+                              {organizationId}
+                            </code>
+                          </span>
+                        )}
+                      </div>
                     </CardContent>
                   </Collapse>
                 </Card>
