@@ -13,6 +13,8 @@ export {
   fullyConfigured
 } from "./setup-and-numbers";
 
+import { webhookBasicAuthPw } from "./setup-and-numbers";
+
 import {
   sendMessage,
   handleIncomingMessage,
@@ -66,9 +68,10 @@ export function addServerEndpoints(addPostRoute) {
         .toString()
         .split(":");
 
-      // TODO: better login/password auto-creation/context
-      // await verifyBandwidthServer(password)
-      if (login !== "bandwidth.com" || password !== "testtest") {
+      if (
+        login !== "bandwidth.com" ||
+        password !== webhookBasicAuthPw(req.params.orgId || "")
+      ) {
         res.set("WWW-Authenticate", 'Basic realm="401"');
         res.status(401).send("Authentication required.");
         return;

@@ -1,3 +1,4 @@
+import { createHmac } from "crypto";
 import BandwidthNumbers from "@bandwidth/numbers";
 import BandwidthMessaging from "@bandwidth/messaging";
 
@@ -28,6 +29,14 @@ export async function getNumbersClient(organization, options) {
   return { client, config };
 }
 
+export const webhookBasicAuthPw = organizationId => {
+  // password has a max of 63 chars
+  const hmac = createHmac("sha256", getConfig("SESSION_SECRET") || "");
+  hmac.update(getConfig("BASE_URL") || "");
+  hmac.update(String(organizationId));
+  return hmac.digest("base64");
+};
+
 export const getServiceConfig = async (
   serviceConfig,
   organization,
@@ -40,8 +49,6 @@ export const getServiceConfig = async (
   } = options;
   let password;
   if (serviceConfig) {
-    // Note, allows unencrypted auth tokens to be (manually) stored in the db
-    // @todo: decide if this is necessary, or if UI/envars is sufficient.
     if (serviceConfig.password) {
       password = obscureSensitiveInformation
         ? "<Encrypted>"
@@ -111,7 +118,7 @@ export async function updateConfig(oldConfig, config, organization) {
     if (!config.applicationId) {
       finalConfig.applicationId = await createMessagingService(
         organization,
-        `Spoke app, org Id=${organization.id}`,
+        `Spoke app, org${organization.id}`,
         finalConfig
       );
     }
@@ -219,7 +226,7 @@ export async function createAccountBaseline(organization, options) {
       siteId,
       // Peer Names can only contain alphanumerics
       peerName: `Spoke org${organization.id} ${organization.name.replace(
-        /\W/,
+        /\W/g,
         ""
       )}`,
       isDefaultPeer: true
@@ -272,25 +279,27 @@ export async function createMessagingService(
     serviceConfig
   });
   // 1. create application
+  const callbackUrl = `${baseUrl}/bandwidth/${(organization &&
+    organization.id) ||
+    ""}`;
   const application = await BandwidthNumbers.Application.createMessagingApplicationAsync(
     client,
     {
       appName: friendlyName || "Spoke app",
-      msgCallbackUrl: `${baseUrl}/bandwidth/${(organization &&
-        organization.id) ||
-        ""}`,
+      callbackUrl,
+      msgCallbackUrl: callbackUrl,
+      inboundCallbackUrl: callbackUrl,
+      outboundCallbackUrl: callbackUrl,
       callbackCreds: {
         userId: "bandwidth.com",
-        password: "testtest" // TODO: see index.js
+        password: webhookBasicAuthPw(organization.id)
       },
-      requestedCallbackTypes: [
-        "message-delivered",
-        "message-failed",
-        "message-sending"
-      ].map(c => ({ callbackType: c }))
+      requestedCallbackTypes: {
+        callbackType: ["message-sending", "message-delivered", "message-failed"]
+      }
     }
   );
-  console.log("bandwidth createMessagingService", JSON.stringify(result));
+  console.log("bandwidth createMessagingService", JSON.stringify(application));
   // 2. assign application to subaccount|site and location|sippeer
   const location = await BandwidthNumbers.SipPeer.getAsync(
     client,
