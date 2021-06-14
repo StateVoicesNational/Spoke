@@ -15,10 +15,10 @@ export async function getNumbersClient(organization, options) {
     (await getMessageServiceConfig("bandwidth", organization, {
       obscureSensitiveInformation: false
     }));
-  const password = await convertSecret(
+  const password = await getSecret(
     "bandwidthPassword",
-    organization,
-    config.password
+    config.password,
+    organization
   );
   const client = new BandwidthNumbers.Client({
     userName: config.userName,
@@ -93,8 +93,6 @@ export async function updateConfig(oldConfig, config, organization) {
   };
   // console.log('bandwdith finalConfig', finalConfig);
 
-  // TODO: test credentials with login
-
   try {
     if (
       !config.siteId ||
@@ -122,12 +120,12 @@ export async function updateConfig(oldConfig, config, organization) {
     console.log(
       "bandwidth.updateConfig autoconfigure Error",
       err.message,
-      err.text,
+      err.response && err.response.text,
       "xxxx",
       err
     );
     finalConfig.autoConfigError = `Auto-configuration failed. ${err.message ||
-      ""}`;
+      ""} ${(err.response && err.response.text) || ""}`;
   }
 
   return finalConfig;
@@ -199,7 +197,7 @@ export async function createAccountBaseline(organization, options) {
   // 1. create sub-account/Site
   if (!config.siteId || (options && options.newEverything)) {
     const site = await BandwidthNumbers.Site.createAsync(client, {
-      name: `Spoke ${organization.name} (Subaccount)`,
+      name: `Spoke org${organization.id} ${organization.name} (Subaccount)`,
       address: {
         houseNumber: config.houseNumber,
         streetName: config.streetName,
@@ -218,7 +216,11 @@ export async function createAccountBaseline(organization, options) {
   if (!config.sipPeerId || (options && options.newEverything)) {
     location = await BandwidthNumbers.SipPeer.createAsync(client, {
       siteId,
-      peerName: `Spoke ${organization.name} (Location)`,
+      // Peer Names can only contain alphanumerics
+      peerName: `Spoke org${organization.id} ${organization.name.replace(
+        /\W/,
+        ""
+      )}`,
       isDefaultPeer: true
     });
     configChanges.sipPeerId = location.id;
@@ -232,16 +234,26 @@ export async function createAccountBaseline(organization, options) {
   // 3. Enable SMS and MMS on location
   // Note: create your own if you want different parameters (enforced)
   await location.createSmsSettingsAsync({
-    tollFree: true,
-    protocol: "http",
-    zone1: true,
-    zone2: false,
-    zone3: false,
-    zone4: false,
-    zone5: false
+    sipPeerSmsFeatureSettings: {
+      tollFree: true,
+      protocol: "http",
+      zone1: true,
+      zone2: false,
+      zone3: false,
+      zone4: false,
+      zone5: false
+    },
+    httpSettings: {}
   });
   await location.createMmsSettingsAsync({
-    protocol: "http"
+    mmsSettings: {
+      protocol: "HTTP"
+    },
+    protocols: {
+      HTTP: {
+        httpSettings: {}
+      }
+    }
   });
   return configChanges;
 }
@@ -252,7 +264,7 @@ export async function createMessagingService(
   serviceConfig
 ) {
   const baseUrl = getConfig("BASE_URL", organization);
-  if (!baseUrl) {
+  if (!baseUrl || /\/\/localhost(:|\/)/.test(baseUrl)) {
     return;
   }
   const { client, config } = await getNumbersClient(organization, {
