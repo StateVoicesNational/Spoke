@@ -35,21 +35,27 @@ describe("End-to-end campaign flow", () => {
     cy.get("button[data-test=addCampaign]").click();
 
     // Fill out basics
-    cy.get("input[data-test=title]").type(campaignTitle);
-    cy.get("input[data-test=description]").type(campaignDescription);
+    cy.get("[data-test=title] input").type(campaignTitle);
+    cy.get("[data-test=description] input").type(campaignDescription);
 
     // DatePicker is difficult to interact with as its components have no ids or classes
     // Selectors are fairly brittle, consider upgrading material-ui for easier test interaction
 
     // Open picker by focusing input
-    cy.get("input[data-test=dueBy]").click();
+    cy.get("[data-test=dueBy] input").click();
     // Click next month (>)
-    cy.get("body > div:nth-of-type(2) button:nth-of-type(2)")
+    cy.get("div.MuiPickersCalendarHeader-switchHeader > button:nth-child(3)")
       .first()
       .click();
+
     // Click first of the month
-    cy.get("body > div:nth-of-type(2) button:not([disabled])")
+    cy.get(".MuiPickersCalendar-week button:not(.MuiPickersDay-hidden)")
       .eq(3)
+      .click();
+
+    // Click okay on calendar
+    cy.get(".MuiDialogActions-root button")
+      .eq(1)
       .click();
 
     // Wait for modal to close then submit
@@ -65,12 +71,12 @@ describe("End-to-end campaign flow", () => {
     // Assignments
     // Note: Material UI v0 AutoComplete component appears to require a click on the element
     // later versions should just allow you to hit enter
-    cy.get("input[data-test=texterSearch]").type("Texter");
+    cy.get("[data-test=texterSearch] input").type("Texter");
     // see if there is a better way to select the search result
     cy.get("body")
       .contains(`${texter.first_name} ${texter.last_name}`)
       .click();
-    cy.get("input[data-test=autoSplit]").click();
+    cy.get("[data-test=autoSplit] input").click();
     cy.wait(400);
     cy.get("button[data-test=submitCampaignTextersForm]").click({
       force: true
@@ -78,22 +84,24 @@ describe("End-to-end campaign flow", () => {
     cy.wait(400);
 
     // Interaction Steps
-    cy.get("textarea[data-test=editorInteraction]").click();
+    cy.get("[data-test=editorInteraction] input").click();
     cy.wait(400);
     cy.get(".DraftEditor-root").type(
       "Hi {{}firstName{}} this is {{}texterFirstName{}}, how are you?"
     );
     cy.get("button[data-test=scriptDone]").click();
-    cy.get("input[data-test=questionText]").type("How are you?");
+    cy.get("[data-test=questionText] input").type("How are you?");
     cy.get("button[data-test=addResponse]").click();
-    cy.get("input[data-test=answerOption]").type("Good");
-    cy.get("textarea[data-test=editorInteraction]")
+    cy.get("[data-test=answerOption] input").type("Good");
+    cy.get("[data-test=editorInteraction] input")
       .eq(1)
       .click();
     cy.get(".DraftEditor-root").type("Great!");
     cy.get("button[data-test=scriptDone]").click();
     cy.get("button[data-test=interactionSubmit]").click();
+
     cy.get("button[data-test=startCampaign]").click();
+
     cy.get("div")
       .contains("This campaign is running")
       .should("exist");
@@ -113,21 +121,26 @@ describe("End-to-end campaign flow", () => {
       cy.get(cardSelector)
         .find("button[data-test=sendFirstTexts]")
         .click();
-      cy.get("textArea[name=messageText]").then(el => {
-        expect(el.text()).to.match(
+      cy.get("[name=messageText]").then(els => {
+        console.log(els[0]);
+        expect(els[0].value).to.match(
           /Hi ContactFirst(\d) this is TexterFirst, how are you\?/
         );
       });
 
-      cy.get("button[data-test=send]").click();
+      cy.get("button[data-test=send]")
+        .eq(0)
+        .click();
       // Message next contact
       cy.wait(200);
-      cy.get("textArea[name=messageText]").then(el => {
-        expect(el.text()).to.match(
+      cy.get("[name=messageText]").then(els => {
+        expect(els[0].value).to.match(
           /Hi ContactFirst(\d) this is TexterFirst, how are you\?/
         );
       });
-      cy.get("button[data-test=send]").click();
+      cy.get("button[data-test=send]")
+        .eq(0)
+        .click();
 
       // Shows we're done and click back to /todos
       cy.get("body").contains("You've messaged all your assigned contacts.");

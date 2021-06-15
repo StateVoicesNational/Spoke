@@ -4,9 +4,10 @@ import TopNav from "../components/TopNav";
 import gql from "graphql-tag";
 import loadData from "./hoc/load-data";
 import { withRouter, Link } from "react-router";
-import ContentAdd from "material-ui/svg-icons/content/add";
-import DataTables from "material-ui-datatables";
-import FloatingActionButton from "material-ui/FloatingActionButton";
+
+import MUIDataTable from "mui-datatables";
+import Fab from "@material-ui/core/Fab";
+import AddIcon from "@material-ui/icons/Add";
 
 import { StyleSheet, css } from "aphrodite";
 import theme from "../styles/theme";
@@ -22,8 +23,12 @@ const styles = StyleSheet.create({
     "justify-content": "center",
     "align-items": "flex-start",
     height: "100vh",
+    width: "100%",
     "padding-top": "10vh",
     background: theme.colors.veryLightGray
+  },
+  fullWidth: {
+    width: "100%"
   },
   button: {
     border: "none",
@@ -85,12 +90,13 @@ class AdminOrganizationsDashboard extends React.Component {
 
   renderActionButton() {
     return (
-      <FloatingActionButton
+      <Fab
+        color="primary"
         style={theme.components.floatingButton}
         onClick={this.handleCreateOrgClick}
       >
-        <ContentAdd />
-      </FloatingActionButton>
+        <AddIcon />
+      </Fab>
     );
   }
 
@@ -99,18 +105,26 @@ class AdminOrganizationsDashboard extends React.Component {
     var columns = [
       {
         key: "id",
+        name: "id",
         label: "id",
-        sortable: true,
-        style: {
-          width: "5em"
-        }
+        sortable: true
       },
       {
         key: "name",
+        name: "name",
         label: "Name",
         sortable: true,
-        style: {
-          width: "5em"
+        options: {
+          customBodyRender: (value, tableMeta, updateValue) => {
+            const orgId = tableMeta.rowData[0];
+            return (
+              <div style={{ margin: "6px 0" }}>
+                <Link target="_blank" to={`/admin/${orgId}/campaigns`}>
+                  {value}
+                </Link>
+              </div>
+            );
+          }
         },
         render: (columnKey, organizations) => {
           return (
@@ -127,6 +141,7 @@ class AdminOrganizationsDashboard extends React.Component {
       // is this what we want?
       {
         key: "campaignsCount",
+        name: "campaignsCount",
         label: "Number of Active Campaigns",
         sortable: true,
         style: {
@@ -134,6 +149,20 @@ class AdminOrganizationsDashboard extends React.Component {
         }
       }
     ];
+
+    const options = {
+      filterType: "checkbox",
+      selectableRows: "none",
+      elevation: 0,
+      download: false,
+      print: false,
+      searchable: false,
+      filter: false,
+      sort: true,
+      search: false,
+      viewColumns: false,
+      responsive: "standard"
+    };
 
     if (!this.props.userData.currentUser.is_superadmin) {
       return (
@@ -145,17 +174,11 @@ class AdminOrganizationsDashboard extends React.Component {
       <div>
         <TopNav title={"Manage Organizations"} />
         <div className={css(styles.loginPage)}>
-          <DataTables
-            key={"adminOrganizations"}
+          <MUIDataTable
+            className={css(styles.fullWidth)}
             data={this.props.data.organizations}
             columns={columns}
-            onSortOrderChange={(key, direction) => {
-              this.props.data.organizations.sort(this.sortFunc(key));
-              if (direction === "desc") {
-                this.props.data.organizations.reverse();
-              }
-            }}
-            initialSort={{ column: "id", order: "desc" }}
+            options={options}
           />
         </div>
         {this.renderActionButton()}

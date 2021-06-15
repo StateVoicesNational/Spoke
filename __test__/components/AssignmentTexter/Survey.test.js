@@ -1,5 +1,7 @@
 import React from "react";
 import { shallow } from "enzyme";
+import Accordion from "@material-ui/core/Accordion";
+import AccordionSummary from "@material-ui/core/AccordionSummary";
 import Survey from "../../../src/components/AssignmentTexter/Survey";
 
 describe("Survey component", () => {
@@ -45,12 +47,14 @@ describe("Survey component", () => {
     />
   );
 
-  test("Renders Card Header and CardText", () => {
+  test("Accordion started open with correct text", () => {
+    const accordion = wrapper.find(Accordion);
+    const accordionSummary = wrapper.find(AccordionSummary);
     const cardHeader = wrapper.find("CardHeader");
     const cardText = wrapper.find("CardText").at(0);
 
-    expect(cardHeader.prop("showExpandableButton")).toBe(false);
-    expect(cardText.childAt(0).text()).toBe("<SelectField />");
+    expect(accordion.prop("expanded")).toBe(true);
+    expect(accordionSummary.prop("children")).toContain("Current question");
   });
 
   test("handleExpandChange Function", () => {

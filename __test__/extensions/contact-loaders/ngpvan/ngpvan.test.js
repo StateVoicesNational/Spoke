@@ -9,6 +9,10 @@ import {
   getClientChoiceData,
   available
 } from "../../../../src/extensions/contact-loaders/ngpvan";
+import Autocomplete from "@material-ui/lab/Autocomplete";
+import List from "@material-ui/core/List";
+import ListItem from "@material-ui/core/ListItem";
+import ListItemText from "@material-ui/core/ListItemText";
 
 import { CampaignContactsForm } from "../../../../src/extensions/contact-loaders/ngpvan/react-component";
 
@@ -1327,11 +1331,11 @@ describe("ngpvan", () => {
 
       dataSourceExpectation = [
         {
-          rawValue: 682913,
-          text: "200-220 W 103",
-          value: expect.objectContaining({
-            props: expect.objectContaining({ primaryText: "200-220 W 103" })
-          })
+          description: null,
+          doorCount: 127,
+          listCount: 171,
+          name: "200-220 W 103",
+          savedListId: 682913
         }
       ];
 
@@ -1366,10 +1370,10 @@ describe("ngpvan", () => {
     it("populates its data correctly", async () => {
       wrapper = shallow(<CampaignContactsForm {...commonProps} />);
       component = wrapper.instance();
-      const autocomplete = wrapper.find("AutoComplete");
-      expect(autocomplete.props().dataSource).toEqual(dataSourceExpectation);
-      expect(autocomplete.props().searchText).toBe(undefined);
-      expect(autocomplete.props().hintText).toEqual("Select a list to import");
+      const autocomplete = wrapper.find(Autocomplete);
+      expect(autocomplete.props().options).toEqual(dataSourceExpectation);
+      expect(autocomplete.props().value).toBe(undefined);
+      expect(autocomplete.html()).toContain("Select a list to import");
     });
 
     describe("when lastResult indicates a success", () => {
@@ -1396,8 +1400,8 @@ describe("ngpvan", () => {
       });
 
       it("populates the selected list name in the autocomplete and displays the results", async () => {
-        const autocomplete = wrapper.find("AutoComplete");
-        expect(autocomplete.props().dataSource).toEqual(dataSourceExpectation);
+        const autocomplete = wrapper.find(Autocomplete);
+        expect(autocomplete.props().options).toEqual(dataSourceExpectation);
         expect(component.props.lastResult).toEqual({
           contactsCount: 9,
           deletedDupes: 0,
@@ -1409,21 +1413,22 @@ describe("ngpvan", () => {
           success: true,
           updatedAt: "2020-03-25T02:53:37.514Z"
         });
-        expect(autocomplete.props().searchText).toEqual("200-220 W 103");
-        expect(autocomplete.props().hintText).toEqual(
-          "Select a list to import"
-        );
-        const subheader = wrapper.find("Subheader");
-        expect(subheader.props().children).toEqual("Last Import");
+        expect(autocomplete.html()).toContain("Select a list to import");
+        const list = wrapper.find(List);
+        expect(list.props().subheader.props.children).toEqual("Last Import");
 
-        const listItems = wrapper.find("ListItem");
-        expect(listItems.at(0).props().primaryText).toEqual(
+        const listItems = wrapper.find(ListItem);
+        const listItemText0 = listItems.at(0).find(ListItemText);
+        const listItemText1 = listItems.at(1).find(ListItemText);
+        const listItemText2 = listItems.at(2).find(ListItemText);
+
+        expect(listItemText0.props().primary).toEqual(
           "List name: 200-220 W 103"
         );
-        expect(listItems.at(1).props().primaryText).toEqual(
+        expect(listItemText1.props().primary).toEqual(
           "260 contacts with no cell phone removed"
         );
-        expect(listItems.at(2).props().primaryText).toEqual(
+        expect(listItemText2.props().primary).toEqual(
           "0 contacts with no ZIP code imported"
         );
         expect(listItems.at(3).exists()).toEqual(false);
@@ -1454,8 +1459,8 @@ describe("ngpvan", () => {
       });
 
       it("populates the selected list name in the autocomplete and displays the results", async () => {
-        const autocomplete = wrapper.find("AutoComplete");
-        expect(autocomplete.props().dataSource).toEqual(dataSourceExpectation);
+        const autocomplete = wrapper.find(Autocomplete);
+        expect(autocomplete.props().options).toEqual(dataSourceExpectation);
         expect(component.props.lastResult).toEqual({
           contactsCount: 9,
           deletedDupes: null,
@@ -1467,18 +1472,19 @@ describe("ngpvan", () => {
           success: false,
           updatedAt: "2020-03-25T02:53:37.514Z"
         });
-        expect(autocomplete.props().searchText).toEqual("200-220 W 103");
-        expect(autocomplete.props().hintText).toEqual(
-          "Select a list to import"
-        );
-        const subheader = wrapper.find("Subheader");
-        expect(subheader.props().children).toEqual("Last Import");
+        expect(autocomplete.html()).toContain("Select a list to import");
+        const list = wrapper.find(List);
 
-        const listItems = wrapper.find("ListItem");
-        expect(listItems.at(0).props().primaryText).toEqual(
+        expect(list.props().subheader.props.children).toEqual("Last Import");
+
+        const listItems = wrapper.find(ListItem);
+        const listItemText0 = listItems.at(0).find(ListItemText);
+        const listItemText1 = listItems.at(1).find(ListItemText);
+
+        expect(listItemText0.props().primary).toEqual(
           "List name: 200-220 W 103"
         );
-        expect(listItems.at(1).props().primaryText).toEqual(
+        expect(listItemText1.props().primary).toEqual(
           "Error requesting VAN export job. Error: Request failed with status code 404"
         );
         expect(listItems.at(2).exists()).toEqual(false);
@@ -1495,21 +1501,19 @@ describe("ngpvan", () => {
       });
 
       it("does not display any results or previously selected list", async () => {
-        const autocomplete = wrapper.find("AutoComplete");
-        expect(autocomplete.props().dataSource).toEqual([
+        const autocomplete = wrapper.find(Autocomplete);
+        expect(autocomplete.props().options).toEqual([
           {
-            rawValue: 682913,
-            text: "200-220 W 103",
-            value: expect.objectContaining({
-              props: expect.objectContaining({ primaryText: "200-220 W 103" })
-            })
+            savedListId: 682913,
+            name: "200-220 W 103",
+            description: null,
+            listCount: 171,
+            doorCount: 127
           }
         ]);
         expect(component.props.lastResult).toEqual(null);
         expect(autocomplete.props().searchText).toEqual(undefined);
-        expect(autocomplete.props().hintText).toEqual(
-          "Select a list to import"
-        );
+        expect(autocomplete.html()).toContain("Select a list to import");
         const subheader = wrapper.find("Subheader");
         expect(subheader.exists()).toEqual(false);
 

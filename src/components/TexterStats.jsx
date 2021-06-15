@@ -1,8 +1,8 @@
 import PropTypes from "prop-types";
 import React from "react";
 import { Link } from "react-router";
-import ActionOpenInNew from "material-ui/svg-icons/action/open-in-new";
-import LinearProgress from "material-ui/LinearProgress";
+import LinearProgress from "@material-ui/core/LinearProgress";
+import OpenInNewIcon from "@material-ui/icons/OpenInNew";
 import { getHighestRole } from "../lib/permissions";
 import theme from "../styles/theme";
 
@@ -74,7 +74,7 @@ class TexterStats extends React.Component {
             target="_blank"
             to={`/app/${this.props.organizationId}/todos/other/${texter.id}`}
           >
-            <ActionOpenInNew
+            <OpenInNewIcon
               style={{ width: 14, height: 14, color: theme.colors.green }}
             />
           </Link>
@@ -82,7 +82,7 @@ class TexterStats extends React.Component {
         {percentComplete ? (
           <div>
             <div>{percentComplete}%</div>
-            <LinearProgress mode="determinate" value={percentComplete} />
+            <LinearProgress variant="determinate" value={percentComplete} />
           </div>
         ) : (
           <div>{contactsCount - unmessagedCount} initial messages sent. </div>

@@ -1,20 +1,29 @@
 import PropTypes from "prop-types";
 import React from "react";
-import loadData from "./hoc/load-data";
 import gql from "graphql-tag";
-import GSForm from "../components/forms/GSForm";
 import Form from "react-formal";
-import Dialog from "material-ui/Dialog";
-import GSSubmitButton from "../components/forms/GSSubmitButton";
-import FlatButton from "material-ui/FlatButton";
-import RaisedButton from "material-ui/RaisedButton";
-import DisplayLink from "../components/DisplayLink";
-import * as yup from "yup";
-import { Card, CardText, CardActions, CardHeader } from "material-ui/Card";
-import { StyleSheet, css } from "aphrodite";
-import theme from "../styles/theme";
-import Toggle from "material-ui/Toggle";
 import moment from "moment";
+import * as yup from "yup";
+import { StyleSheet, css } from "aphrodite";
+
+import Dialog from "@material-ui/core/Dialog";
+import DialogContent from "@material-ui/core/DialogContent";
+import Switch from "@material-ui/core/Switch";
+import FormControlLabel from "@material-ui/core/FormControlLabel";
+import Button from "@material-ui/core/Button";
+import Card from "@material-ui/core/Card";
+import CardHeader from "@material-ui/core/CardHeader";
+import CardContent from "@material-ui/core/CardContent";
+import CardActions from "@material-ui/core/CardActions";
+import Collapse from "@material-ui/core/Collapse";
+import IconButton from "@material-ui/core/IconButton";
+
+import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
+import loadData from "./hoc/load-data";
+import GSSubmitButton from "../components/forms/GSSubmitButton";
+import theme from "../styles/theme";
+import DisplayLink from "../components/DisplayLink";
+import GSForm from "../components/forms/GSForm";
 import CampaignTexterUIForm from "../components/CampaignTexterUIForm";
 import OrganizationFeatureSettings from "../components/OrganizationFeatureSettings";
 import GSTextField from "../components/forms/GSTextField";
@@ -31,10 +40,12 @@ const styles = StyleSheet.create({
     fontWeight: "bold"
   },
   dialogActions: {
-    marginTop: 20,
-    display: "flex",
-    flexDirection: "row",
-    justifyContent: "flex-end"
+    textAlign: "right"
+  },
+  cardHeader: {
+    cursor: "pointer",
+    backgroundColor: theme.colors.green,
+    color: theme.colors.white
   }
 });
 
@@ -86,47 +97,51 @@ class Settings extends React.Component {
 
     return (
       <Dialog
+        maxWidth="md"
         open={!!this.state.textingHoursDialogOpen}
-        onRequestClose={this.handleCloseTextingHoursDialog}
+        onClose={this.handleCloseTextingHoursDialog}
       >
-        <GSForm
-          schema={formSchema}
-          onSubmit={this.handleSubmitTextingHoursForm}
-          defaultValue={{ textingHoursStart, textingHoursEnd }}
-        >
-          <div>
-            Enter the hour in 24-hour time, so e.g. 9am-9pm would be Start Time:
-            9 and End Time: 21.
-          </div>
-          <Form.Field
-            as={GSTextField}
-            label="Start time (24h)"
-            name="textingHoursStart"
-            type="select"
-            fullWidth
-            choices={hourChoices}
-          />
-          <Form.Field
-            as={GSTextField}
-            label="End time (24h)"
-            name="textingHoursEnd"
-            type="select"
-            fullWidth
-            choices={hourChoices}
-          />
-          <div className={css(styles.dialogActions)}>
-            <FlatButton
-              label="Cancel"
-              style={inlineStyles.dialogButton}
-              onClick={this.handleCloseTextingHoursDialog}
+        <DialogContent>
+          <GSForm
+            schema={formSchema}
+            onSubmit={this.handleSubmitTextingHoursForm}
+            defaultValue={{ textingHoursStart, textingHoursEnd }}
+          >
+            <div>
+              Enter the hour in 24-hour time, so e.g. 9am-9pm would be Start
+              Time: 9 and End Time: 21.
+            </div>
+            <Form.Field
+              as={GSTextField}
+              label="Start time (24h)"
+              name="textingHoursStart"
+              type="select"
+              fullWidth
+              choices={hourChoices}
             />
-            <Form.Submit
-              as={GSSubmitButton}
-              style={inlineStyles.dialogButton}
-              label="Save"
+            <Form.Field
+              as={GSTextField}
+              label="End time (24h)"
+              name="textingHoursEnd"
+              type="select"
+              fullWidth
+              choices={hourChoices}
             />
-          </div>
-        </GSForm>
+            <div className={css(styles.dialogActions)}>
+              <Button
+                variant="outlined"
+                onClick={this.handleCloseTextingHoursDialog}
+              >
+                Cancel
+              </Button>
+              <Form.Submit
+                as={GSSubmitButton}
+                style={inlineStyles.dialogButton}
+                label="Save"
+              />
+            </div>
+          </GSForm>
+        </DialogContent>
       </Dialog>
     );
   }
@@ -182,11 +197,13 @@ class Settings extends React.Component {
     });
 
     const dialogActions = [
-      <FlatButton
-        label="Cancel"
+      <Button
+        variant="outlined"
         style={inlineStyles.dialogButton}
         onClick={this.handleCloseTwilioDialog}
-      />,
+      >
+        Cancel
+      </Button>,
       <Form.Submit
         as={GSSubmitButton}
         label="Save"
@@ -198,24 +215,26 @@ class Settings extends React.Component {
       <Card>
         <CardHeader
           title="Twilio Credentials"
+          className={css(styles.cardHeader)}
           style={{
-            backgroundColor: allSet ? theme.colors.green : theme.colors.yellow
+            backgroundColor: allSet ? theme.colors.green : theme.colors.yellow,
+            color: theme.colors.white
           }}
         />
         {allSet && (
-          <CardText style={inlineStyles.shadeBox}>
+          <CardContent style={inlineStyles.shadeBox}>
             <DisplayLink
               url={`${baseUrl}/twilio/${organization.id}`}
               textContent="Twilio credentials are configured for this organization. You should set the inbound Request URL in your Twilio messaging service to this link."
             />
-          </CardText>
+          </CardContent>
         )}
         {this.state.twilioError && (
-          <CardText style={inlineStyles.shadeBox}>
+          <CardContent style={inlineStyles.shadeBox}>
             {this.state.twilioError}
-          </CardText>
+          </CardContent>
         )}
-        <CardText>
+        <CardContent>
           <div className={css(styles.section)}>
             <span className={css(styles.sectionLabel)}>
               You can set Twilio API credentials specifically for this
@@ -264,7 +283,7 @@ class Settings extends React.Component {
               </Dialog>
             </GSForm>
           </div>
-        </CardText>
+        </CardContent>
       </Card>
     );
   }
@@ -281,9 +300,12 @@ class Settings extends React.Component {
         <Card>
           <CardHeader
             title="Settings"
-            style={{ backgroundColor: theme.colors.green }}
+            style={{
+              backgroundColor: theme.colors.green,
+              color: theme.colors.white
+            }}
           />
-          <CardText>
+          <CardContent>
             <div className={css(styles.section)}>
               <GSForm
                 schema={formSchema}
@@ -303,23 +325,30 @@ class Settings extends React.Component {
                 />
               </GSForm>
             </div>
-          </CardText>
+          </CardContent>
 
-          <CardText>
+          <CardContent>
             <div className={css(styles.section)}>
               <span className={css(styles.sectionLabel)}></span>
-              <Toggle
-                toggled={organization.textingHoursEnforced}
-                label="Enforce texting hours?"
-                onToggle={async (event, isToggled) =>
-                  await this.props.mutations.updateTextingHoursEnforcement(
-                    isToggled
-                  )
+              <FormControlLabel
+                color="primary"
+                control={
+                  <Switch
+                    color="primary"
+                    checked={organization.textingHoursEnforced}
+                    onChange={async (event, isToggled) =>
+                      await this.props.mutations.updateTextingHoursEnforcement(
+                        isToggled
+                      )
+                    }
+                  />
                 }
+                labelPlacement="start"
+                label="Enforce texting hours?"
               />
             </div>
 
-            {organization.textingHoursEnforced ? (
+            {organization.textingHoursEnforced && (
               <div className={css(styles.section)}>
                 <span className={css(styles.sectionLabel)}>Texting hours:</span>
                 <span className={css(styles.textingHoursSpan)}>
@@ -330,106 +359,151 @@ class Settings extends React.Component {
                   ? ` in your organisation's local time. Timezone ${window.TZ}`
                   : " in contacts local time (or 12pm-6pm EST if timezone is unknown)"}
               </div>
-            ) : (
-              ""
             )}
-          </CardText>
+          </CardContent>
           <CardActions>
-            {organization.textingHoursEnforced ? (
-              <FlatButton
-                label="Change texting hours"
-                primary
+            {organization.textingHoursEnforced && (
+              <Button
+                color="primary"
+                variant="outlined"
                 onClick={this.handleOpenTextingHoursDialog}
-              />
-            ) : (
-              ""
+              >
+                Change texting hours
+              </Button>
             )}
           </CardActions>
         </Card>
         <div>{this.renderTextingHoursForm()}</div>
         {window.TWILIO_MULTI_ORG && this.renderTwilioAuthForm()}
         {this.props.data.organization &&
-        this.props.data.organization.texterUIConfig &&
-        this.props.data.organization.texterUIConfig.sideboxChoices.length ? (
-          <Card>
-            <CardHeader
-              title="Texter UI Defaults"
-              style={{ backgroundColor: theme.colors.green }}
-              actAsExpander={true}
-              showExpandableButton={true}
-            />
-            <CardText expandable>
-              <CampaignTexterUIForm
-                formValues={this.props.data.organization}
-                organization={this.props.data.organization}
-                onSubmit={async () => {
-                  const { texterUIConfig } = this.state;
-                  await this.props.mutations.editOrganization({
-                    texterUIConfig
-                  });
-                  this.setState({ texterUIConfig: null });
-                }}
-                onChange={formValues => {
-                  console.log("change", formValues);
-                  this.setState(formValues);
-                }}
-                saveLabel="Save Texter UI Campaign Defaults"
-                saveDisabled={!this.state.texterUIConfig}
+          this.props.data.organization.texterUIConfig &&
+          this.props.data.organization.texterUIConfig.sideboxChoices.length && (
+            <Card>
+              <CardHeader
+                title="Texter UI Defaults"
+                className={css(styles.cardHeader)}
+                action={
+                  <IconButton>
+                    <ExpandMoreIcon />
+                  </IconButton>
+                }
+                onClick={() =>
+                  this.setState({
+                    TexterUIDefaults: !this.state.TexterUIDefaults
+                  })
+                }
               />
-            </CardText>
-          </Card>
-        ) : null}
-        {this.props.data.organization &&
-        this.props.data.organization.settings ? (
+              <Collapse
+                in={this.state.TexterUIDefaults}
+                timeout="auto"
+                unmountOnExit
+              >
+                <CardContent>
+                  <CampaignTexterUIForm
+                    formValues={this.props.data.organization}
+                    organization={this.props.data.organization}
+                    onSubmit={async () => {
+                      const { texterUIConfig } = this.state;
+                      await this.props.mutations.editOrganization({
+                        texterUIConfig
+                      });
+                      this.setState({ texterUIConfig: null });
+                    }}
+                    onChange={formValues => {
+                      console.log("change", formValues);
+                      this.setState(formValues);
+                    }}
+                    saveLabel="Save Texter UI Campaign Defaults"
+                    saveDisabled={!this.state.texterUIConfig}
+                  />
+                </CardContent>
+              </Collapse>
+            </Card>
+          )}
+        {this.props.data.organization && this.props.data.organization.settings && (
           <Card>
             <CardHeader
               title="Overriding default settings"
-              style={{ backgroundColor: theme.colors.green }}
-              actAsExpander={true}
-              showExpandableButton={true}
+              className={css(styles.cardHeader)}
+              action={
+                <IconButton>
+                  <ExpandMoreIcon />
+                </IconButton>
+              }
+              onClick={() =>
+                this.setState({
+                  OverridingDefaultSettings: !this.state
+                    .OverridingDefaultSettings
+                })
+              }
             />
-            <CardText expandable>
-              <OrganizationFeatureSettings
-                formValues={this.props.data.organization}
-                organization={this.props.data.organization}
-                onSubmit={async () => {
-                  const { settings } = this.state;
-                  await this.props.mutations.editOrganization({
-                    settings
-                  });
-                  this.setState({ settings: null });
-                }}
-                onChange={formValues => {
-                  console.log("change", formValues);
-                  this.setState(formValues);
-                }}
-                saveLabel="Save settings"
-                saveDisabled={!this.state.settings}
-              />
-            </CardText>
+            <Collapse
+              in={this.state.OverridingDefaultSettings}
+              timeout="auto"
+              unmountOnExit
+            >
+              <CardContent>
+                <OrganizationFeatureSettings
+                  formValues={this.props.data.organization}
+                  organization={this.props.data.organization}
+                  onSubmit={async () => {
+                    const { settings } = this.state;
+                    await this.props.mutations.editOrganization({
+                      settings
+                    });
+                    this.setState({ settings: null });
+                  }}
+                  onChange={formValues => {
+                    console.log("change", formValues);
+                    this.setState(formValues);
+                  }}
+                  saveLabel="Save settings"
+                  saveDisabled={!this.state.settings}
+                />
+              </CardContent>
+            </Collapse>
           </Card>
-        ) : null}
+        )}
 
-        {this.props.data.organization && this.props.params.adminPerms ? (
+        {this.props.data.organization && this.props.params.adminPerms && (
           <Card>
             <CardHeader
               title="External configuration"
-              style={{ backgroundColor: theme.colors.green }}
-              actAsExpander={true}
-              showExpandableButton={true}
+              className={css(styles.cardHeader)}
+              action={
+                <IconButton>
+                  <ExpandMoreIcon />
+                </IconButton>
+              }
+              onClick={() =>
+                this.setState({
+                  ExternalConfiguration: !this.state.ExternalConfiguration
+                })
+              }
             />
-            <CardText expandable>
-              <h2>DEBUG Zone</h2>
-              <p>Only take actions here if you know what you&rsquo;re doing</p>
-              <RaisedButton
-                label="Clear Cached Organization And Extension Caches"
-                secondary
-                style={inlineStyles.dialogButton}
-                onClick={this.props.mutations.clearCachedOrgAndExtensionCaches}
-              />
-            </CardText>
+            <Collapse
+              in={this.state.ExternalConfiguration}
+              timeout="auto"
+              unmountOnExit
+            >
+              <CardContent>
+                <h2>DEBUG Zone</h2>
+                <p>
+                  Only take actions here if you know what you&rsquo;re doing
+                </p>
+                <Button
+                  color="secondary"
+                  style={inlineStyles.dialogButton}
+                  onClick={
+                    this.props.mutations.clearCachedOrgAndExtensionCaches
+                  }
+                >
+                  Clear Cached Organization And Extension Caches
+                </Button>
+              </CardContent>
+            </Collapse>
           </Card>
-        ) : null}
+        )}
       </div>
     );
   }

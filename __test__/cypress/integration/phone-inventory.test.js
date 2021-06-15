@@ -26,8 +26,8 @@ describe("Phone number management screen in the Admin interface", () => {
 
     // Fill out the form to buy a new number
     cy.get("button[data-test=buyPhoneNumbers]").click();
-    cy.get("input[data-test=areaCode]").type(testAreaCode);
-    cy.get("input[data-test=limit]").type("1");
+    cy.get("[data-test=areaCode] input").type(testAreaCode);
+    cy.get("[data-test=limit] input").type("1");
     cy.get("[data-test=buyNumbersForm]").submit();
 
     // "Available" column of the row containing the test areaCode
