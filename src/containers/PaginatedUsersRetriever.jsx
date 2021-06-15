@@ -72,7 +72,7 @@ export class PaginatedUsersRetriever extends Component {
     this.handlePropsReceived();
   }
 
-  componentDidUpdate(prevProps) {
+  UNSAFE_componentWillReceiveProps(prevProps) {
     this.handlePropsReceived(prevProps);
   }
 

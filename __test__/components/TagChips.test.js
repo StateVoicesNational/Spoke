@@ -3,7 +3,6 @@
  */
 import React from "react";
 import { mount } from "enzyme";
-import MuiThemeProvider from "material-ui/styles/MuiThemeProvider";
 import TagChips from "../../src/components/TagChips";
 import { StyleSheetTestUtils } from "aphrodite";
 
@@ -24,11 +23,7 @@ describe("TagChips component", () => {
   const tagIds = [1, 2, 3];
 
   StyleSheetTestUtils.suppressStyleInjection();
-  const wrapper = mount(
-    <MuiThemeProvider>
-      <TagChips tags={tags} tagIds={tagIds} />
-    </MuiThemeProvider>
-  );
+  const wrapper = mount(<TagChips tags={tags} tagIds={tagIds} />);
 
   // when
 

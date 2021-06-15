@@ -22,7 +22,6 @@ const errors = require("../../../../src/server/api/errors");
 
 import React from "react";
 import { mount } from "enzyme";
-import MuiThemeProvider from "material-ui/styles/MuiThemeProvider";
 import { StyleSheetTestUtils } from "aphrodite";
 import {
   operations as assignmentTexterOps,
@@ -387,19 +386,17 @@ describe("mutations.updateQuestionResponses", () => {
         );
 
         const component = await mount(
-          <MuiThemeProvider>
-            <AssignmentTexterContact
-              mutations={wrappedMutations}
-              find-me="here"
-              texter={{ ...texterUser }}
-              campaign={{ ...updatedCampaign }}
-              assignment={{ ...updatedAssignment }}
-              refreshData={jest.fn()}
-              contact={{ ...updatedContacts[0] }}
-              navigationToolbarChildren={navigationToolbarChildren}
-              location={{ query: {} }}
-            />
-          </MuiThemeProvider>
+          <AssignmentTexterContact
+            mutations={wrappedMutations}
+            find-me="here"
+            texter={{ ...texterUser }}
+            campaign={{ ...updatedCampaign }}
+            assignment={{ ...updatedAssignment }}
+            refreshData={jest.fn()}
+            contact={{ ...updatedContacts[0] }}
+            navigationToolbarChildren={navigationToolbarChildren}
+            location={{ query: {} }}
+          />
         );
 
         const assignmentTexterContactWrapper = component.find(

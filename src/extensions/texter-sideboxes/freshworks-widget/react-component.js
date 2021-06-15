@@ -3,7 +3,8 @@ import React from "react";
 import * as yup from "yup";
 import { css } from "aphrodite";
 import Form from "react-formal";
-import FlatButton from "material-ui/FlatButton";
+import Button from "@material-ui/core/Button";
+
 import GSTextField from "../../../components/forms/GSTextField";
 import {
   flexStyles,
@@ -55,13 +56,14 @@ export class TexterSidebox extends React.Component {
     const { settingsData } = this.props;
 
     return (
-      <div>
-        <FlatButton
+      <div style={{ textAlign: "center" }}>
+        <Button
           onClick={() => FreshworksWidget && FreshworksWidget("open")}
-          label={settingsData.helpButtonLabel || "Help"}
           className={css(flexStyles.flatButton)}
-          labelStyle={inlineStyles.flatButtonLabel}
-        />
+          style={inlineStyles.flatButtonLabel}
+        >
+          {settingsData.helpButtonLabel || "Help"}
+        </Button>
       </div>
     );
   }

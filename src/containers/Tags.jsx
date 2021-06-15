@@ -1,24 +1,28 @@
 import React from "react";
-import { Card, CardText } from "material-ui/Card";
-import Chip from "../components/Chip";
-import CreateIcon from "material-ui/svg-icons/content/create";
-import DeleteIcon from "material-ui/svg-icons/action/delete-forever";
-import RaisedButton from "material-ui/RaisedButton";
-import { red500 } from "material-ui/styles/colors";
-import FloatingActionButton from "material-ui/FloatingActionButton";
-import ContentAdd from "material-ui/svg-icons/content/add";
-import theme from "../styles/theme";
-import Dialog from "material-ui/Dialog";
 import * as yup from "yup";
-import GSForm from "../components/forms/GSForm";
-import GSTextField from "../components/forms/GSTextField";
-import GSSubmitButton from "../components/forms/GSSubmitButton";
 import Form from "react-formal";
 import { StyleSheet, css } from "aphrodite";
-import loadData from "./hoc/load-data";
 import gql from "graphql-tag";
 import { withRouter } from "react-router";
 import PropTypes from "prop-types";
+
+import DialogTitle from "@material-ui/core/DialogTitle";
+import Dialog from "@material-ui/core/Dialog";
+import DialogContent from "@material-ui/core/DialogContent";
+import Fab from "@material-ui/core/Fab";
+import AddIcon from "@material-ui/icons/Add";
+import DeleteIcon from "@material-ui/icons/Delete";
+import CreateIcon from "@material-ui/icons/Create";
+import Button from "@material-ui/core/Button";
+import Card from "@material-ui/core/Card";
+import CardContent from "@material-ui/core/CardContent";
+
+import Chip from "../components/Chip";
+import theme from "../styles/theme";
+import GSForm from "../components/forms/GSForm";
+import GSTextField from "../components/forms/GSTextField";
+import GSSubmitButton from "../components/forms/GSSubmitButton";
+import loadData from "./hoc/load-data";
 
 const styles = StyleSheet.create({
   cards: {
@@ -138,61 +142,68 @@ export class Tags extends React.Component {
       <div className={css(styles.cards)}>
         {tags.map(t => (
           <Card className={css(styles.card)} id={t.id} key={t.id}>
-            <CardText>
+            <CardContent>
               <Chip style={{ margin: 0 }} text={t.name} />
-            </CardText>
-            <CardText>{t.description}</CardText>
-            <CardText className={css(styles.buttons)}>
-              <RaisedButton
+            </CardContent>
+            <CardContent>{t.description}</CardContent>
+            <CardContent className={css(styles.buttons)}>
+              <Button
+                variant="contained"
                 className={css(styles.editButton)}
-                primary
-                label="Edit"
-                labelPosition="before"
-                icon={<CreateIcon />}
+                color="primary"
+                endIcon={<CreateIcon />}
                 onClick={this.handleOpenEdit(t.id)}
-              />
-              <RaisedButton
-                label="Delete"
-                labelPosition="before"
-                icon={<DeleteIcon color={red500} />}
+              >
+                Edit
+              </Button>
+              <Button
+                variant="contained"
+                endIcon={<DeleteIcon color="error" />}
                 onClick={this.handleDelete(t.id)}
-              />
-            </CardText>
+              >
+                Delete
+              </Button>
+            </CardContent>
           </Card>
         ))}
-        <FloatingActionButton
+        <Fab
+          color="primary"
           style={theme.components.floatingButton}
           onClick={this.handleOpen}
         >
-          <ContentAdd />
-        </FloatingActionButton>
+          <AddIcon />
+        </Fab>
         <Dialog
-          title={dialogTitle}
           open={openTagDialog}
-          onRequestClose={this.handleClose}
+          onClose={this.handleClose}
+          fullWidth={true}
+          maxWidth="md"
         >
-          <GSForm
-            schema={formSchema}
-            onSubmit={dialogSubmitHandler}
-            defaultValue={dialogTag}
-          >
-            <div className={css(styles.fields)}>
-              <Form.Field as={GSTextField} label="Name" name="name" />
-              <Form.Field
-                as={GSTextField}
-                label="Description"
-                name="description"
-              />
-              <Form.Field
-                as={GSTextField}
-                label="Group ('texter-tags' for texters)"
-                name="group"
-              />
-            </div>
-            <div className={css(styles.submit)}>
-              <Form.Submit as={GSSubmitButton} label={dialogButtonLabel} />
-            </div>
-          </GSForm>
+          <DialogTitle>{dialogTitle}</DialogTitle>
+          <DialogContent>
+            <GSForm
+              schema={formSchema}
+              onSubmit={dialogSubmitHandler}
+              defaultValue={dialogTag}
+            >
+              <div className={css(styles.fields)}>
+                <Form.Field as={GSTextField} label="Name" name="name" />
+                <Form.Field
+                  as={GSTextField}
+                  label="Description"
+                  name="description"
+                />
+                <Form.Field
+                  as={GSTextField}
+                  label="Group ('texter-tags' for texters)"
+                  name="group"
+                />
+              </div>
+              <div className={css(styles.submit)}>
+                <Form.Submit as={GSSubmitButton} label={dialogButtonLabel} />
+              </div>
+            </GSForm>
+          </DialogContent>
         </Dialog>
       </div>
     );

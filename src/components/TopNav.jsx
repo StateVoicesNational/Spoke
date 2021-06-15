@@ -1,7 +1,8 @@
 import PropTypes from "prop-types";
 import React from "react";
-import IconButton from "material-ui/IconButton";
-import ArrowBackIcon from "material-ui/svg-icons/navigation/arrow-back";
+import IconButton from "@material-ui/core/IconButton";
+import ArrowBackIcon from "@material-ui/icons/ArrowBack";
+
 import { Link } from "react-router";
 import UserMenu from "../containers/UserMenu";
 import theme from "../styles/theme";
@@ -49,10 +50,7 @@ class TopNav extends React.Component {
       return (
         <Link to={backToURL}>
           <IconButton>
-            <ArrowBackIcon
-              style={{ fill: "white" }}
-              color={theme.colors.white}
-            />
+            <ArrowBackIcon style={{ fill: "white" }} />
           </IconButton>
         </Link>
       );

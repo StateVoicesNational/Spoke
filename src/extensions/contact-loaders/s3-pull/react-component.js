@@ -1,14 +1,16 @@
 import type from "prop-types";
 import React from "react";
-import RaisedButton from "material-ui/RaisedButton";
 import GSForm from "../../../components/forms/GSForm";
 import GSTextField from "../../../components/forms/GSTextField";
 import GSSubmitButton from "../../../components/forms/GSSubmitButton";
 import Form from "react-formal";
-import { ListItem, List } from "material-ui/List";
-import CampaignFormSectionHeading from "../../../components/CampaignFormSectionHeading";
+
+import List from "@material-ui/core/List";
+import ListItem from "@material-ui/core/ListItem";
+import ListItemText from "@material-ui/core/ListItemText";
+import ListItemIcon from "@material-ui/core/ListItemIcon";
+
 import theme from "../../../styles/theme";
-import { StyleSheet, css } from "aphrodite";
 import * as yup from "yup";
 
 export class CampaignContactsForm extends React.Component {
@@ -37,26 +39,25 @@ export class CampaignContactsForm extends React.Component {
     }
     return (
       <div>
-        {results.errors && results.errors.length ? (
+        {results.errors && results.errors.length && (
           <div>
             <h4 style={{ color: theme.colors.red }}>Previous Errors</h4>
             <List>
               {results.errors.map(e => (
-                <ListItem
-                  key={e.code || e}
-                  primaryText={e.message || e}
-                  secondaryText={
-                    e.code === "AccessDenied"
-                      ? "Make sure the file exists and you are uploading to the correct S3 bucket"
-                      : null
-                  }
-                  leftIcon={this.props.icons.error}
-                />
+                <ListItem key={e.code || e}>
+                  <ListItemIcon>{this.props.icons.error}</ListItemIcon>
+                  <ListItemText
+                    primary={e.message || e}
+                    secondary={
+                      e.code === "AccessDenied"
+                        ? "Make sure the file exists and you are uploading to the correct S3 bucket"
+                        : null
+                    }
+                  />
+                </ListItem>
               ))}
             </List>
           </div>
-        ) : (
-          ""
         )}
         <GSForm
           schema={yup.object({

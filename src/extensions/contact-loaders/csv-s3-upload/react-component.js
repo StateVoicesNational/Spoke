@@ -1,25 +1,25 @@
 import type from "prop-types";
 import React from "react";
-import RaisedButton from "material-ui/RaisedButton";
-import GSForm from "../../../components/forms/GSForm";
-import GSSubmitButton from "../../../components/forms/GSSubmitButton";
 import Form from "react-formal";
-import Subheader from "material-ui/Subheader";
-import Divider from "material-ui/Divider";
-import { ListItem, List } from "material-ui/List";
-import {
-  parseCSV,
-  gzip,
-  organizationCustomFields,
-  requiredUploadFields
-} from "../../../lib";
-import CampaignFormSectionHeading from "../../../components/CampaignFormSectionHeading";
-import { StyleSheet, css } from "aphrodite";
-import theme from "../../../styles/theme";
+import axios from "axios";
 import * as yup from "yup";
 import humps from "humps";
+import { StyleSheet, css } from "aphrodite";
+
+import Button from "@material-ui/core/Button";
+import Divider from "@material-ui/core/Divider";
+import ListSubheader from "@material-ui/core/ListSubheader";
+import List from "@material-ui/core/List";
+import ListItem from "@material-ui/core/ListItem";
+import ListItemIcon from "@material-ui/core/ListItemIcon";
+import ListItemText from "@material-ui/core/ListItemText";
+
+import GSForm from "../../../components/forms/GSForm";
+import GSSubmitButton from "../../../components/forms/GSSubmitButton";
+import { parseCSV, gzip, requiredUploadFields } from "../../../lib";
+import CampaignFormSectionHeading from "../../../components/CampaignFormSectionHeading";
+import theme from "../../../styles/theme";
 import { dataTest } from "../../../lib/attributes";
-import axios from "axios";
 
 export const ensureCamelCaseRequiredHeaders = columnHeader => {
   /*
@@ -148,22 +148,23 @@ export class CampaignContactsForm extends React.Component {
     }
     return (
       <List>
-        <Subheader>Uploaded</Subheader>
-        <ListItem
-          primaryText={`${contactsCount} contacts`}
-          leftIcon={this.props.icons.check}
-        />
-        <ListItem
-          primaryText={`${customFields.length} custom fields`}
-          leftIcon={this.props.icons.check}
-          nestedItems={customFields.map((field, index) => (
-            <ListItem
-              key={index}
-              innerDivStyle={innerStyles.nestedItem}
-              primaryText={field}
-            />
+        <ListSubheader>Uploaded</ListSubheader>
+        <ListItem>
+          <ListItemIcon>{this.props.icons.check}</ListItemIcon>
+          <ListItemText primary={`${contactsCount} contacts`} />
+        </ListItem>
+        <ListItem>
+          <ListItemIcon>{this.props.icons.check}</ListItemIcon>
+          <ListItemText primary={`${customFields.length} custom fields`} />
+        </ListItem>
+        <List disablePadding>
+          {customFields.map((field, index) => (
+            <ListItem key={index} primaryText={field}>
+              <ListItemIcon>{this.props.icons.check}</ListItemIcon>
+              <ListItemText primary={field} />
+            </ListItem>
           ))}
-        />
+        </List>
       </List>
     );
   }
@@ -206,13 +207,9 @@ export class CampaignContactsForm extends React.Component {
     const { uploading } = this.state;
     return (
       <div>
-        <RaisedButton
-          style={innerStyles.button}
-          label={uploading ? "Uploading..." : "Upload contacts"}
-          labelPosition="before"
-          disabled={uploading}
-          onClick={() => this.uploadButton.click()}
-        />
+        <Button disabled={uploading} onClick={() => this.uploadButton.click()}>
+          {uploading ? "Uploading..." : "Upload contacts"}
+        </Button>
         <input
           id="contact-s3-upload"
           ref={input => input && (this.uploadButton = input)}
