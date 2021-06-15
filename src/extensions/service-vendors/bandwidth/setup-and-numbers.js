@@ -1,26 +1,41 @@
 import { createHmac } from "crypto";
+import remove from "lodash/remove";
+
 import BandwidthNumbers from "@bandwidth/numbers";
 import BandwidthMessaging from "@bandwidth/messaging";
 
 import { log } from "../../../lib";
 import { getFormattedPhoneNumber } from "../../../lib/phone-format";
 import { sleep } from "../../../workers/lib";
+import { r } from "../../../server/models";
 
 import { getConfig } from "../../../server/api/lib/config";
 import { getSecret, convertSecret } from "../../secret-manager";
 import { getMessageServiceConfig, getConfigKey } from "../service_map";
 
 export async function getNumbersClient(organization, options) {
-  const config =
-    (options && options.serviceConfig) ||
-    (await getMessageServiceConfig("bandwidth", organization, {
+  let config;
+  let password;
+  if (options && options.serviceConfig) {
+    config = options.serviceConfig;
+    console.log("bandwidth.getNumbersClient.serviceConfig", config);
+    password = await getSecret(
+      "bandwidthPassword",
+      config.password,
+      organization
+    );
+  } else {
+    config = await getMessageServiceConfig("bandwidth", organization, {
       obscureSensitiveInformation: false
-    }));
-  const password = await getSecret(
-    "bandwidthPassword",
-    config.password,
-    organization
-  );
+    });
+    console.log(
+      "bandwidth.getNumbersClient.getMessageServiceConfig",
+      config.userName,
+      config.accountId
+    );
+    password = config.password;
+  }
+
   const client = new BandwidthNumbers.Client({
     userName: config.userName,
     password: password,
@@ -52,10 +67,12 @@ export const getServiceConfig = async (
     if (serviceConfig.password) {
       password = obscureSensitiveInformation
         ? "<Encrypted>"
-        : await getSecret(
+        : /// TODO: checkout args order here for getSecret?  also will this be redundant to call in getNumbersClient?
+          /// then conflicts with saving-initial vs. load
+          await getSecret(
             "bandwidthPassword",
-            organization,
-            serviceConfig.password
+            serviceConfig.password,
+            organization
           );
     } else {
       password = obscureSensitiveInformation
@@ -123,6 +140,11 @@ export async function updateConfig(oldConfig, config, organization) {
       );
     }
     delete finalConfig.autoConfigError;
+    if (true || config.sipPeerId !== finalConfig.sipPeerId) {
+      await syncAccountNumbers(organization, {
+        serviceConfig: finalConfig
+      });
+    }
   } catch (err) {
     console.log(
       "bandwidth.updateConfig autoconfigure Error",
@@ -171,8 +193,8 @@ export async function buyNumbersInAreaCode(
           area_code: cn.telephoneNumber.fullNumber.slice(0, 3),
           phone_number: getFormattedPhoneNumber(cn.telephoneNumber.fullNumber),
           service: "bandwidth",
-          allocated_to_id: config.sipPeerId,
-          service_id: cn.telephoneNumber.fullNumber,
+          allocated_to_id: null,
+          service_id: `${config.sipPeerId}.${cn.telephoneNumber.fullNumber}`,
           allocated_at: new Date()
         }));
         await r.knex("owned_phone_number").insert(newNumbers);
@@ -185,6 +207,45 @@ export async function buyNumbersInAreaCode(
     }
   }
   return totalPurchased;
+}
+
+export async function syncAccountNumbers(organization, options) {
+  const { client, config } = await getNumbersClient(organization, options);
+  if (!config.siteId || !config.sipPeerId) {
+    return;
+  }
+  const sipPeer = await BandwidthNumbers.SipPeer.getAsync(
+    client,
+    config.siteId,
+    config.sipPeerId
+  );
+  const telephoneNumbers = await sipPeer.getTnsAsync();
+  // [ { fullNumber: '2135551234' }, .... ]
+  console.log("syncAccountNumbers", telephoneNumbers.length);
+  if (telephoneNumbers.length) {
+    const nums = telephoneNumbers.map(tn => `+1${tn.fullNumber}`);
+    const existingNums = await r
+      .knex("owned_phone_number")
+      .where("service", "bandwidth")
+      .whereIn("phone_number", nums)
+      .pluck("phone_number");
+    const newNums = existingNums.length
+      ? remove(nums, e => existingNums.indexOf(e) + 1)
+      : nums;
+    if (newNums.length) {
+      console.log("Bandwidth, new numbers to load", newNums.length, newNums[0]);
+      const newNumbers = newNums.map(tn => ({
+        organization_id: organization.id,
+        area_code: tn.slice(2, 5),
+        phone_number: tn,
+        service: "bandwidth",
+        allocated_to_id: null,
+        service_id: `${config.sipPeerId}.${tn.slice(2)}`,
+        allocated_at: new Date()
+      }));
+      await r.knex("owned_phone_number").insert(newNumbers);
+    }
+  }
 }
 
 export async function deleteNumbersInAreaCode(organization, areaCode) {
@@ -244,7 +305,7 @@ export async function createAccountBaseline(organization, options) {
   await location.createSmsSettingsAsync({
     sipPeerSmsFeatureSettings: {
       tollFree: true,
-      protocol: "http",
+      protocol: "HTTP",
       zone1: true,
       zone2: false,
       zone3: false,

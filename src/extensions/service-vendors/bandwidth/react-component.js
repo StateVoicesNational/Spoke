@@ -38,28 +38,40 @@ export class OrgConfig extends React.Component {
       sipPeerId,
       applicationId
     } = this.props.config;
-    const allSet =
-      userName && password && accountId && siteId && sipPeerId && applicationId;
-    this.state = { allSet, ...this.props.config, country: "United States" };
+    const allSet = Boolean(
+      userName && password && accountId && siteId && sipPeerId && applicationId
+    );
+    this.state = { ...this.props.config, country: "United States" };
     this.props.onAllSetChanged(allSet);
+    console.log("constructor");
   }
 
-  /*
-    const {
-      accountSid: prevAccountSid,
-      authToken: prevAuthToken,
-      messageServiceSid: prevMessageServiceSid
-    } = prevProps.config;
-    const prevAllSet = prevAccountSid && prevAuthToken && prevMessageServiceSid;
-
-    const { accountSid, authToken, messageServiceSid } = this.props.config;
-    const allSet = accountSid && authToken && messageServiceSid;
-
-    if (!!prevAllSet !== !!allSet) {
-      this.props.onAllSetChanged(allSet);
+  UNSAFE_componentWillReceiveProps(nextProps) {
+    // new results after saving first setup
+    const newData = {};
+    if (
+      nextProps.config.siteId &&
+      this.props.config.siteId !== this.state.siteId
+    ) {
+      newData.siteId = nextProps.config.sipPeerId;
+    }
+    if (
+      nextProps.config.sipPeerId &&
+      this.props.config.sipPeerId !== this.state.sipPeerId
+    ) {
+      newData.sipPeerId = nextProps.config.sipPeerId;
+    }
+    if (
+      nextProps.config.applicationId &&
+      this.props.config.applicationId !== this.state.applicationId
+    ) {
+      newData.applicationId = nextProps.config.applicationId;
+    }
+    if (Object.values(newData).length) {
+      this.setState(newData);
     }
   }
-  */
+
   onFormChange = value => {
     this.setState(value);
   };
@@ -77,6 +89,7 @@ export class OrgConfig extends React.Component {
       config.password = password;
     }
     let newError;
+    this.handleCloseDialog();
     try {
       await this.props.onSubmit(config);
       this.setState({
@@ -92,13 +105,21 @@ export class OrgConfig extends React.Component {
       }
       this.setState({ error: newError });
     }
-    this.handleCloseDialog();
   };
 
   render() {
     const { organizationId, inlineStyles, styles, config } = this.props;
-    const { accountSid, authToken, messageServiceSid } = config;
-    const allSet = accountSid && authToken && messageServiceSid;
+    const {
+      userName,
+      password,
+      accountId,
+      siteId,
+      sipPeerId,
+      applicationId
+    } = config;
+    const allSet = Boolean(
+      userName && password && accountId && siteId && sipPeerId && applicationId
+    );
     let baseUrl = "http://base";
     if (typeof window !== "undefined") {
       baseUrl = window.location.origin;

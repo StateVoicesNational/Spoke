@@ -1254,6 +1254,7 @@ export async function buyPhoneNumbers(job) {
     });
   } catch (err) {
     log.error(`JOB ${job.id} FAILED: ${err.message}`, err);
+    console.log("full job error", err);
   } finally {
     await defensivelyDeleteJob(job);
   }
