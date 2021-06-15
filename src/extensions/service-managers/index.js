@@ -40,17 +40,24 @@ export async function processServiceManagers(
       typeof m[funcName] === "function" &&
       (!specificServiceManagerName || m.name === specificServiceManagerName)
   );
-  const resultArray = [];
-  // explicitly process these in order in case the order matters
+  const serviceManagerData = {};
+  // Explicitly process these in order in case the order matters
+  // Current serviceManagerData state is passed along, so a later serviceManager
+  //   can decide to do something if a previous one hasn't yet.
   for (let i = 0, l = funkyManagers.length; i < l; i++) {
-    resultArray.push(
-      await funkyManagers[i][funcName]({ organization, ...funcArgs })
-    );
+    const result = await funkyManagers[i][funcName]({
+      organization,
+      serviceManagerData,
+      ...funcArgs
+    });
+    if (result) {
+      Object.assign(serviceManagerData, result);
+    }
   }
   // NOTE: some methods pass a shared modifiable object, e.g. 'saveData'
   // that might be modified in-place, rather than the resultArray
   // being important.
-  return resultArray.reduce((a, b) => Object.assign(a, b), {});
+  return serviceManagerData;
 }
 
 export async function getServiceManagerData(
