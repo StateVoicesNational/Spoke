@@ -99,7 +99,9 @@ describe("CampaignCannedResponseForm component", () => {
         .find({ "data-test": "actionDataAutoComplete" })
         .find("input")
         .prop("value")
-    ).toEqual(JSON.parse(props1.defaultValue.answerActionsData).label);
+    ).toEqual(
+      JSON.parse(props1.defaultValue.answerActionsData).label
+    );
   });
 
   test("Renders form with correct fields and label for adding", () => {
