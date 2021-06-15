@@ -9,7 +9,8 @@ import GSSelectField from "./forms/GSSelectField";
 import GSAutoComplete from "./forms/GSAutoComplete";
 import Form from "react-formal";
 import IconButton from "@material-ui/core/IconButton";
-import HelpIconOutline from "@material-ui/icons/HelpOutline";
+import HelpOutlineIcon from "@material-ui/icons/HelpOutline";
+import Tooltip from "@material-ui/core/Tooltip";
 import Button from "@material-ui/core/Button";
 import AutoComplete from "@material-ui/lab/Autocomplete";
 import TextField from "@material-ui/core/TextField";
@@ -145,12 +146,13 @@ export default class CannedResponseForm extends React.Component {
                   fullWidth
                   style={{flexGrow: 1}}
                 />
-                <IconButton
-                  tooltip="An action is something that is triggered by this answer being chosen, often in an outside system"
-                  style={{ verticalAlign: "text-bottom" }}
+                <Tooltip
+                  title="An action is something that is triggered by this answer being chosen, often in an outside system"
                 >
-                  <HelpIconOutline />
-                </IconButton>
+                  <IconButton>
+                    <HelpOutlineIcon />
+                  </IconButton>
+                </Tooltip>
               </div>
               {instructions ? (
                 <div style={{ color: theme.colors.gray }}>{instructions}</div>
