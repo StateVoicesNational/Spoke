@@ -76,7 +76,7 @@ describe("CampaignCannedResponseForm component", () => {
         .find("button")
         .text()
     ).toBe("Edit Response");
-    expect(wrapper.find({ "data-test": "autocompleteTags" }).prop("value")).toEqual([
+    expect(wrapper.find({ "data-test": "autocompleteTags" }).first().prop("value")).toEqual([
       {
         id: 1,
         name: "Tag1",
@@ -91,15 +91,15 @@ describe("CampaignCannedResponseForm component", () => {
     expect(
       wrapper
         .find({ "data-test": "actionSelect" })
-        .last()
-        .props().value
+        .find("input")
+        .prop("value")
     ).toBe(props1.defaultValue.answerActions);
     expect(
       wrapper
         .find({ "data-test": "actionDataAutoComplete" })
-        .last()
-        .props().value
-    ).toEqual(JSON.parse(props1.defaultValue.answerActionsData));
+        .find("input")
+        .prop("value")
+    ).toEqual(JSON.parse(props1.defaultValue.answerActionsData).label);
   });
 
   test("Renders form with correct fields and label for adding", () => {
