@@ -825,6 +825,7 @@ export class AssignmentTexterContactControls extends React.Component {
               cannedResponseScript ? 40 : 13
             ).length
           : script.title.length;
+
         if (joinedLength + 1 + textLength < 80) {
           joinedLength += 1 + textLength;
           return true;
