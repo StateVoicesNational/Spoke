@@ -1,4 +1,4 @@
-import BandwidthMessaging from "@bandwidth/messaging";
+import { ApiController, Client } from "@bandwidth/messaging";
 
 import { log } from "../../../lib";
 import { getFormattedPhoneNumber } from "../../../lib/phone-format";
@@ -35,17 +35,12 @@ export function errorDescription(errorCode) {
 }
 
 export async function getBandwidthController(organization, config) {
-  const password = await convertSecret(
-    "bandwidthPassword",
-    organization,
-    config.password
-  );
-  const client = new BandwidthMessaging.Client({
+  const client = new Client({
     timeout: 0,
     basicAuthUserName: config.userName,
-    basicAuthPassword: password
+    basicAuthPassword: config.password
   });
-  return new BandwidthMessaging.ApiController(client);
+  return new ApiController(client);
 }
 
 export async function sendMessage({
@@ -71,6 +66,13 @@ export async function sendMessage({
     message.user_number ||
     config.userNumber;
 
+  console.log(
+    "bandwidth.sendMessage",
+    applicationId,
+    userNumber,
+    message.contact_number
+  );
+
   const changes = {};
   if (applicationId && applicationId != message.messageservice_sid) {
     changes.messageservice_sid = applicationId;
@@ -89,6 +91,8 @@ export async function sendMessage({
     from: userNumber,
     text: parsedMessage.body,
     tag
+    //, TODO: expires: .... = message.send_before
+    //  example date: "2021-10-02T15:00:00Z"
   };
   if (parsedMessage.mediaUrl) {
     bandwidthMessage.media = [parsedMessage.mediaUrl];
@@ -123,7 +127,13 @@ export async function sendMessage({
       config.accountId,
       bandwidthMessage
     );
+    console.log(
+      "bandwidth.sendMessage createMessage response",
+      response && response.statusCode,
+      response.result
+    );
   } catch (err) {
+    console.log("bandwidth.sendMessage ERROR", err);
     await postMessageSend({
       err,
       message,
@@ -158,6 +168,21 @@ export async function postMessageSend({
         ...changes
       }
     : {};
+  if (response.statusCode === 202 && response.result) {
+    changesToSave.service_id = response.result.id;
+  } else {
+    // ERROR
+    changesToSave.send_status = "ERROR";
+    // TODO: maybe there is sometimes an error response in the JSON?
+    changesToSave.error_code = response.statusCode;
+  }
+  let updateQuery = r.knex("message").where("id", message.id);
+  if (trx) {
+    updateQuery = updateQuery.transacting(trx);
+  }
+  await updateQuery.update(changesToSave);
+  // TODO: error_code or
+  // TODO: campaign_contact update if errorcode
 }
 
 export async function handleIncomingMessage(message, { orgId }) {
@@ -170,6 +195,7 @@ export async function handleIncomingMessage(message, { orgId }) {
     log.error(`This is not an incoming message: ${JSON.stringify(message)}`);
     return;
   }
+  console.log("bandwidth.handleIncomingMessage", JSON.stringify(message));
   const { id, from, text, applicationId, media } = message.message;
   const contactNumber = getFormattedPhoneNumber(from);
   const userNumber = message.to ? getFormattedPhoneNumber(message.to) : "";
@@ -204,7 +230,7 @@ export async function handleIncomingMessage(message, { orgId }) {
 export async function handleDeliveryReport(report, { orgId }) {
   // https://dev.bandwidth.com/messaging/callbacks/msgDelivered.html
   // https://dev.bandwidth.com/messaging/callbacks/messageFailed.html
-
+  console.log("bandwidth.handleDeliveryReport", report);
   const { id, from, applicationId, tag } = report.message;
   const contactNumber = getFormattedPhoneNumber(report.to);
   const userNumber = from ? getFormattedPhoneNumber(from) : "";
