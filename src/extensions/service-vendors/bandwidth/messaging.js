@@ -73,7 +73,11 @@ export async function sendMessage({
     message.contact_number
   );
 
-  const changes = {};
+  const changes = {
+    send_status: "SENT",
+    service: "bandwidth",
+    sent_at: new Date()
+  };
   if (applicationId && applicationId != message.messageservice_sid) {
     changes.messageservice_sid = applicationId;
   }
@@ -123,14 +127,14 @@ export async function sendMessage({
       organization,
       config
     );
-    const response = await messagingController.createMessage(
+    response = await messagingController.createMessage(
       config.accountId,
       bandwidthMessage
     );
     console.log(
       "bandwidth.sendMessage createMessage response",
       response && response.statusCode,
-      response.result
+      response && response.result
     );
   } catch (err) {
     console.log("bandwidth.sendMessage ERROR", err);
@@ -168,7 +172,7 @@ export async function postMessageSend({
         ...changes
       }
     : {};
-  if (response.statusCode === 202 && response.result) {
+  if (response && response.statusCode === 202 && response.result) {
     changesToSave.service_id = response.result.id;
   } else {
     // ERROR
