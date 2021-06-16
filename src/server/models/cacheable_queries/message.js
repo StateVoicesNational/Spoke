@@ -148,7 +148,11 @@ const deliveryReport = async ({
   service,
   messageServiceSid,
   newStatus,
-  errorCode
+  errorCode,
+  // not reliable:
+  contactId,
+  campaignId,
+  orgId
 }) => {
   const changes = {
     service_response_at: new Date(),
@@ -158,15 +162,22 @@ const deliveryReport = async ({
     changes.user_number = userNumber;
   }
   let lookup;
+  if (contactId) {
+    lookup = {
+      campaign_contact_id: contactId,
+      campaign_id: campaignId
+    };
+  }
   if (newStatus === "ERROR") {
     changes.error_code = errorCode;
-
-    lookup = await campaignContactCache.lookupByCell(
-      contactNumber,
-      service || "",
-      messageServiceSid,
-      userNumber
-    );
+    if (!lookup) {
+      lookup = await campaignContactCache.lookupByCell(
+        contactNumber,
+        service || "",
+        messageServiceSid,
+        userNumber
+      );
+    }
     if (lookup && lookup.campaign_contact_id) {
       await r
         .knex("campaign_contact")
@@ -197,7 +208,8 @@ const deliveryReport = async ({
     const campaignContact = await campaignContactCache.load(
       lookup.campaign_contact_id
     );
-    const organizationId = await campaignContactCache.orgId(campaignContact);
+    const organizationId =
+      orgId || (await campaignContactCache.orgId(campaignContact));
     const organization = await orgCache.load(organizationId);
     await processServiceManagers("onDeliveryReport", organization, {
       campaignContact,

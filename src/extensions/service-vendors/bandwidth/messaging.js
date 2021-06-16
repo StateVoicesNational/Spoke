@@ -3,7 +3,7 @@ import { ApiController, Client } from "@bandwidth/messaging";
 import { log } from "../../../lib";
 import { getFormattedPhoneNumber } from "../../../lib/phone-format";
 import { getConfig, hasConfig } from "../../../server/api/lib/config";
-import { cacheableData, Log, Message } from "../../../server/models";
+import { r, cacheableData, Log, Message } from "../../../server/models";
 import { saveNewIncomingMessage, parseMessageText } from "../message-sending";
 import { getMessageServiceConfig, getConfigKey } from "../service_map";
 
@@ -239,7 +239,7 @@ export async function handleDeliveryReport(report, { orgId }) {
   const contactNumber = getFormattedPhoneNumber(report.to);
   const userNumber = from ? getFormattedPhoneNumber(from) : "";
   // FUTURE: tag should have: "<orgId>|<campaignId>|<contactId>"
-  await cacheableData.message.deliveryReport({
+  const deliveryReport = {
     contactNumber,
     userNumber,
     messageSid: id,
@@ -247,5 +247,14 @@ export async function handleDeliveryReport(report, { orgId }) {
     messageServiceSid: applicationId,
     newStatus: report.type === "message-failed" ? "ERROR" : "DELIVERED",
     errorCode: Number(report.errorCode || 0) || 0
-  });
+  };
+  if (tag && tag.match(/\|/g).length === 2) {
+    const [orgId, campaignId, contactId] = tag.split("|");
+    Object.assign(deliveryReport, {
+      orgId,
+      campaignId,
+      contactId
+    });
+  }
+  await cacheableData.message.deliveryReport(deliveryReport);
 }
