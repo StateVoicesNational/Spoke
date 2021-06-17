@@ -23,6 +23,7 @@ exports.up = async function up(knex) {
       .inTable("organization");
     t.text("contact_number").notNullable();
     t.text("user_number");
+    t.text("service");
     t.integer("subscribe_status").defaultTo(0);
     t.text("carrier");
     t.timestamp("created_at").defaultTo(knex.fn.now());

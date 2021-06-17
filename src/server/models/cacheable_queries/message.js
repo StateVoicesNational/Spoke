@@ -205,11 +205,14 @@ const deliveryReport = async ({
         messageServiceSid,
         userNumber
       ));
-    const campaignContact = await campaignContactCache.load(
-      lookup.campaign_contact_id
-    );
-    const organizationId =
-      orgId || (await campaignContactCache.orgId(campaignContact));
+    let organizationId = orgid;
+    let campaignContact;
+    if (!organizationId) {
+      campaignContact = await campaignContactCache.load(
+        lookup.campaign_contact_id
+      );
+      organizationId = await campaignContactCache.orgId(campaignContact);
+    }
     const organization = await orgCache.load(organizationId);
     await processServiceManagers("onDeliveryReport", organization, {
       campaignContact,
@@ -222,43 +225,6 @@ const deliveryReport = async ({
       newStatus,
       errorCode
     });
-  }
-  // TODO: move the below into a test for service-strategies if there are onDeliveryReport impls
-  // which uses campaignContactCache.lookupByCell above
-  if (
-    userNumber &&
-    process.env.EXPERIMENTAL_STICKY_SENDER &&
-    newStatus === "DELIVERED"
-  ) {
-    lookup =
-      lookup ||
-      (await campaignContactCache.lookupByCell(
-        contactNumber,
-        service || "",
-        messageServiceSid,
-        userNumber
-      ));
-    // FUTURE: maybe don't do anything if userNumber existed before above save in message?
-    if (lookup) {
-      // Assign user number to contact/organization
-      const campaignContact = await campaignContactCache.load(
-        lookup.campaign_contact_id
-      );
-
-      const organizationId = await campaignContactCache.orgId(campaignContact);
-      const organizationContact = await organizationContactCache.query({
-        organizationId,
-        contactNumber
-      });
-
-      if (!organizationContact) {
-        await organizationContactCache.save({
-          organizationId,
-          contactNumber,
-          userNumber
-        });
-      }
-    }
   }
 };
 

@@ -230,19 +230,6 @@ async function getMessagingServiceSid(
   );
 }
 
-async function getOrganizationContactUserNumber(organization, contactNumber) {
-  const organizationContact = await cacheableData.organizationContact.query({
-    organizationId: organization.id,
-    contactNumber
-  });
-
-  if (organizationContact && organizationContact.user_number) {
-    return organizationContact.user_number;
-  }
-
-  return null;
-}
-
 export async function sendMessage({
   message,
   contact,
@@ -279,12 +266,6 @@ export async function sendMessage({
   let userNumber =
     (serviceManagerData && serviceManagerData.user_number) ||
     message.user_number;
-  if (process.env.EXPERIMENTAL_STICKY_SENDER && !userNumber) {
-    userNumber = await getOrganizationContactUserNumber(
-      organization,
-      contact.cell
-    );
-  }
 
   return new Promise((resolve, reject) => {
     if (message.service !== "twilio") {

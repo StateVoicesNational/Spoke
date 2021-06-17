@@ -97,7 +97,7 @@ export async function fullyConfigured(organization) {
   ) {
     return false;
   }
-  // TODO: also needs some number to send with numpicker in servicemanagers
+  // TODO: also needs some number to send with numpicker AND sticky-sender in servicemanagers
   return true;
 }
 

@@ -359,9 +359,6 @@ const initialize = async knex => {
           "PAUSED",
           "NOT_ATTEMPTED"
         ];
-        if (isSqlite) {
-          statuses.push("DELIVERED CONFIRMED");
-        }
         t.enu("send_status", statuses).notNullable();
         t.timestamp("created_at")
           .defaultTo(knex.fn.now())

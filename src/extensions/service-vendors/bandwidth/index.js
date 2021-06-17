@@ -19,14 +19,16 @@ import {
   sendMessage,
   handleIncomingMessage,
   handleDeliveryReport,
-  errorDescription
+  errorDescription,
+  getFreeContactInfo
 } from "./messaging";
 
 export {
   sendMessage,
   handleIncomingMessage,
   handleDeliveryReport,
-  errorDescription
+  errorDescription,
+  getFreeContactInfo
 };
 
 export const getMetadata = () => ({

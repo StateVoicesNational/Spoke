@@ -13,7 +13,7 @@ export const metadata = () => ({
     "Picks a number available in owned_phone_number table for the service to send messages with. Defaults to basic rotation.",
   canSpendMoney: false,
   moneySpendingOperations: [],
-  supportsOrgConfig: true,
+  supportsOrgConfig: false,
   supportsCampaignConfig: false
 });
 
@@ -24,6 +24,12 @@ export async function onMessageSend({
   campaign,
   serviceManagerData
 }) {
+  console.log(
+    "numpicker-basic.onMessageSend",
+    message.id,
+    message.user_number,
+    serviceManagerData
+  );
   if (
     message.user_number ||
     (serviceManagerData && serviceManagerData.user_number)
@@ -42,6 +48,7 @@ export async function onMessageSend({
     .orderByRaw("random()")
     .select("phone_number")
     .first();
+  console.log("numpicker-basic.onMessageSend selectedPhone", selectedPhone);
   // TODO: caching
   // TODO: something better than pure rotation -- maybe with caching we use metrics
   //   based on sad deliveryreports
@@ -49,5 +56,10 @@ export async function onMessageSend({
     return { user_number: selectedPhone.phone_number };
   } else {
     // TODO: what should we do if there's no result?
+    console.log(
+      "numpicker-basic.onMessageSend none found",
+      serviceName,
+      organization.id
+    );
   }
 }
