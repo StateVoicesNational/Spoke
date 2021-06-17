@@ -18,6 +18,7 @@ const OrganizationContact = thinky.createModel(
       organization_id: requiredString(),
       contact_number: requiredString(),
       user_number: optionalString(),
+      service: optionalString(),
       subscribe_status: type.integer().default(0),
       carrier: optionalString(),
       created_at: timestamp(),

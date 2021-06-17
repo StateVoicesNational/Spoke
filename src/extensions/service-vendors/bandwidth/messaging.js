@@ -258,3 +258,45 @@ export async function handleDeliveryReport(report, { orgId }) {
   }
   await cacheableData.message.deliveryReport(deliveryReport);
 }
+
+export async function getFreeContactInfo({
+  organization,
+  contactNumber,
+  messageSid,
+  messageServiceSid
+}) {
+  const config = await getMessageServiceConfig("bandwidth", organization, {
+    obscureSensitiveInformation: false,
+    ...serviceManagerData
+  });
+  const messagingController = await getBandwidthController(
+    organization,
+    config
+  );
+
+  let messageData;
+  if (messageSid) {
+    messageData = await messagingController.getMessages(
+      config.accountId,
+      messageSid
+    );
+  } else if (contactNumber) {
+    messageData = await messagingController.getMessages(
+      config.accountId,
+      null,
+      null,
+      contactNumber, // destinationTn
+      null,
+      null,
+      null,
+      null,
+      null,
+      1 // limit
+    );
+  }
+  console.log("carrier-lookup", messageData);
+  if (messageData && messageData.messages && messageData.messages.length) {
+    const carrier = messageData.messages[0].carrierName;
+    return { carrier };
+  }
+}

@@ -40,7 +40,6 @@ const Message = thinky.createModel(
         "SENDING",
         "SENT",
         "DELIVERED",
-        "DELIVERED CONFIRMED",
         "ERROR",
         "PAUSED",
         "NOT_ATTEMPTED"

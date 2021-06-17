@@ -34,21 +34,36 @@ const organizationContactCache = {
 
     return organizationContact;
   },
-  save: async ({ organizationId, contactNumber, userNumber }) => {
-    const organizationContact = {
-      organization_id: organizationId,
-      contact_number: contactNumber,
-      user_number: userNumber
-    };
+  save: async (organizationContact, options) => {
+    const organizationId = organizationContact.organization_id;
+    const contactNumber = organizationContact.contact_number;
 
-    await r.knex("organization_contact").insert(organizationContact);
+    if (options && options.update) {
+      await r
+        .knex("organization_contact")
+        .where({
+          organization_id: organizationId,
+          contact_number: contactNumber
+        })
+        .update(organizationContact);
+    } else {
+      await r.knex("organization_contact").insert(organizationContact);
+    }
 
     if (r.redis) {
       const cacheKey = getCacheKey(organizationId, contactNumber);
-
+      const cachedContact = JSON.parse(
+        (await r.redis.getAsync(cacheKey)) || "{}"
+      );
       await r.redis
         .multi()
-        .set(cacheKey, JSON.stringify(organizationContact))
+        .set(
+          cacheKey,
+          JSON.stringify({
+            ...cachedContact,
+            ...organizationContact
+          })
+        )
         .expire(cacheKey, 43200) // 12 hours
         .execAsync();
     }
