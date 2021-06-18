@@ -42,6 +42,10 @@ export const showSummary = ({ campaign, assignment, settingsData }) =>
   !assignment.unmessagedCount &&
   assignment.maxContacts !== 0;
 
+const defaultDynamicAssignmentRequestMoreMessage =
+  "Finished sending all your messages, and want to send more?";
+const defaultDynamicAssignmentRequestMoreLabel = "Send more texts";
+
 export class TexterSideboxClass extends React.Component {
   requestNewContacts = async () => {
     const { assignment, messageStatusFilter } = this.props;
@@ -97,15 +101,16 @@ export class TexterSideboxClass extends React.Component {
       assignment.allContactsCount === 0
         ? "Start texting with your first batch"
         : settingsData.dynamicAssignmentRequestMoreMessage ||
-          "Finished sending all your messages, and want to send more?";
+          defaultDynamicAssignmentRequestMoreMessage;
     const nextBatchMoreLabel =
       assignment.allContactsCount === 0
         ? "Start texting"
-        : settingsData.dynamicAssignmentRequestMoreLabel || "Send more texts";
+        : settingsData.dynamicAssignmentRequestMoreLabel ||
+          defaultDynamicAssignmentRequestMoreLabel;
     const headerStyle = messageStatusFilter ? { textAlign: "center" } : {};
     return (
       <div style={headerStyle}>
-        {assignment.hasUnassignedContactsForTexter ? (
+        {assignment.hasUnassignedContactsForTexter && (
           <div>
             <h3>{nextBatchMessage}</h3>
             <Button
@@ -116,8 +121,8 @@ export class TexterSideboxClass extends React.Component {
               {nextBatchMoreLabel}
             </Button>
           </div>
-        ) : null}
-        {messageStatusFilter === "needsMessage" && assignment.unrepliedCount ? (
+        )}
+        {messageStatusFilter === "needsMessage" && assignment.unrepliedCount && (
           <div style={{ marginBottom: "8px", paddingLeft: "12px" }}>
             <Badge badgeContent={assignment.unrepliedCount} color="primary">
               <Button variant="contained" onClick={this.gotoReplies}>
@@ -125,35 +130,35 @@ export class TexterSideboxClass extends React.Component {
               </Button>
             </Badge>
           </div>
-        ) : null}
+        )}
         {messageStatusFilter &&
-        messageStatusFilter !== "needsMessage" &&
-        assignment.unmessagedCount ? (
-          <div style={{ marginBottom: "8px", paddingLeft: "12px" }}>
-            <Badge badgeContent={assignment.unmessagedCount} color="primary">
-              <Button variant="contained" onClick={this.gotoInitials}>
-                Send first texts
-              </Button>
-            </Badge>
-          </div>
-        ) : null}
-        {contact /*the empty list*/ ? (
+          messageStatusFilter !== "needsMessage" &&
+          assignment.unmessagedCount && (
+            <div style={{ marginBottom: "8px", paddingLeft: "12px" }}>
+              <Badge badgeContent={assignment.unmessagedCount} color="primary">
+                <Button variant="contained" onClick={this.gotoInitials}>
+                  Send first texts
+                </Button>
+              </Badge>
+            </div>
+          )}
+        {contact /*the empty list*/ && (
           <div style={{ marginBottom: "8px" }}>
             <Button variant="contained" onClick={this.gotoTodos}>
               Back To Todos
             </Button>
           </div>
-        ) : null}
+        )}
         {!assignment.hasUnassignedContactsForTexter &&
-        !contact &&
-        !assignment.unmessagedCount &&
-        !assignment.unrepliedCount &&
-        settingsData.dynamicAssignmentNothingToDoMessage ? (
-          // assignment summary when there is nothing to do
-          <div style={{ marginBottom: "8px", marginLeft: "12px" }}>
-            {settingsData.dynamicAssignmentNothingToDoMessage}
-          </div>
-        ) : null}
+          !contact &&
+          !assignment.unmessagedCount &&
+          !assignment.unrepliedCount &&
+          settingsData.dynamicAssignmentNothingToDoMessage && (
+            // assignment summary when there is nothing to do
+            <div style={{ marginBottom: "8px", marginLeft: "12px" }}>
+              {settingsData.dynamicAssignmentNothingToDoMessage}
+            </div>
+          )}
       </div>
     );
   }
@@ -217,6 +222,22 @@ export const adminSchema = () => ({
 });
 
 export class AdminConfig extends React.Component {
+  componentDidMount() {
+    const { settingsData } = this.props;
+    // set defaults
+    const defaults = {};
+    if (!settingsData.dynamicAssignmentRequestMoreLabel) {
+      defaults.dynamicAssignmentRequestMoreLabel = defaultDynamicAssignmentRequestMoreLabel;
+    }
+    if (!settingsData.dynamicAssignmentRequestMoreMessage) {
+      defaults.dynamicAssignmentRequestMoreMessage = defaultDynamicAssignmentRequestMoreMessage;
+    }
+
+    if (Object.values(defaults).length) {
+      this.props.setDefaultsOnMount(defaults);
+    }
+  }
+
   render() {
     return (
       <div>
@@ -225,14 +246,12 @@ export class AdminConfig extends React.Component {
           name="dynamicAssignmentRequestMoreLabel"
           label="Request More Label"
           fullWidth
-          hintText="default: Send more texts"
         />
         <Form.Field
           as={GSTextField}
           name="dynamicAssignmentRequestMoreMessage"
           label="Request More Top Message"
           fullWidth
-          hintText="default: Finished sending all your messages, and want to send more?"
         />
         <Form.Field
           as={GSTextField}

@@ -165,16 +165,17 @@ export const adminSchema = () => ({
 
 export class AdminConfig extends React.Component {
   componentDidMount() {
+    const { settingsData } = this.props;
     // set defaults
     const defaults = {};
-    if (!this.props.settingsData.takeConversationsBatchType) {
+    if (!settingsData.takeConversationsBatchType) {
       defaults.takeConversationsBatchType = "vetted-takeconversations";
     }
-    if (!this.props.settingsData.takeConversationsBatchSize) {
+    if (!settingsData.takeConversationsBatchSize) {
       defaults.takeConversationsBatchSize = 20;
     }
     if (Object.values(defaults).length) {
-      this.props.setDefaults(defaults);
+      this.props.setDefaultsOnMount(defaults);
     }
   }
 
@@ -236,5 +237,5 @@ export class AdminConfig extends React.Component {
 AdminConfig.propTypes = {
   settingsData: type.object,
   onToggle: type.func,
-  setDefaults: type.func
+  setDefaultsOnMount: type.func
 };
