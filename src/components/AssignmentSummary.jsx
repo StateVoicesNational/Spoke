@@ -9,7 +9,6 @@ import Card from "@material-ui/core/Card";
 import CardContent from "@material-ui/core/CardContent";
 import CardHeader from "@material-ui/core/CardHeader";
 
-import { setContrastingColor } from "../lib/color-contrast-helper";
 import { withRouter } from "react-router";
 import withMuiTheme from "../containers/hoc/withMuiTheme";
 import { dataTest } from "../lib/attributes";
@@ -129,7 +128,8 @@ export class AssignmentSummary extends Component {
         hasPopupSidebox ? sb.name === enabledSideboxes.popups[0] : true
       )
       .map(sb => renderSummary(sb, settingsData, this, sideboxProps));
-    const cardTitleTextColor = setContrastingColor(
+
+    const cardTitleTextColor = this.props.muiTheme.palette.getContrastText(
       primaryColor || this.props.muiTheme.palette.background.default
     );
 

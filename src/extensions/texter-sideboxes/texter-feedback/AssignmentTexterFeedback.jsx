@@ -18,94 +18,88 @@ import CardHeader from "@material-ui/core/CardHeader";
 
 import loadData from "../../../containers/hoc/load-data";
 import { defaults } from "./config";
-import theme from "../../../styles/theme";
 import withMuiTheme from "../../../containers/hoc/withMuiTheme";
 
-const styles = StyleSheet.create({
-  container: {
-    margin: "20px 0"
-  },
-  image: {
-    position: "absolute",
-    height: "70%",
-    top: "20px",
-    right: "20px"
-  },
-  whiteText: {
-    color: theme.colors.white
-  }
-});
-
-const inlineStyles = {
-  feedbackCard: {
-    backgroundColor: theme.colors.darkBlue,
-    maxWidth: 670,
-    marginLeft: 12,
-    padding: 16
-  },
-  title: {
-    paddingLeft: 0,
-    paddingTop: 0,
-    fontSize: 22,
-    color: theme.colors.white
-  },
-  subtitle: {
-    fontSize: 14,
-    color: theme.colors.lightGray
-  },
-  alertIcon: type => ({
-    minWidth: 24,
-    marginRight: 6,
-    transform: "scale(.9)",
-    color: type === "warning" ? "#ff9800" : "#4caf50"
-  }),
-  alert: type => ({
-    margin: "8px 0",
-    paddingRight: 20,
-    display: "flex",
-    alignItems: "center",
-    padding: "6px 16px",
-    borderRadius: 4,
-    backgroundColor:
-      type === "warning" ? "rgb(255, 244, 229)" : "rgb(237, 247, 237)",
-    color: type === "warning" ? "rgb(102, 60, 0)" : "rgb(30, 70, 32)"
-  }),
-  stepper: {
-    paddingLeft: 30,
-    paddingBottom: 50
-  },
-  stepLabel: {
-    fontWeight: "bolder",
-    fontSize: 16
-  },
-  stepContent: {
-    fontSize: 15,
-    paddingTop: 10,
-    overflowWrap: "break-word",
-    overflow: "inherit",
-    hyphens: "manual"
-  },
-  stepActions: {
-    margin: "20px 0 10px 0",
-    display: "flex"
-  }
+const Alert = ({ type, message, alertIcon, alert }) => {
+  console.log("Alert", type);
+  return (
+    <div style={alert(type)}>
+      {type === "warning" ? (
+        <WarningIcon style={alertIcon(type)} />
+      ) : (
+        <CheckCircleIcon style={alertIcon(type)} />
+      )}
+      {message}
+    </div>
+  );
 };
-
-const Alert = ({ type, message }) => (
-  <div style={inlineStyles.alert(type)}>
-    {type === "warning" ? (
-      <WarningIcon style={inlineStyles.alertIcon(type)} />
-    ) : (
-      <CheckCircleIcon style={inlineStyles.alertIcon(type)} />
-    )}
-    {message}
-  </div>
-);
 
 class AssignmentTexterFeedback extends Component {
   state = {
     finished: false,
     stepIndex: 0
+  };
+
+  styles = StyleSheet.create({
+    container: {
+      margin: "20px 0"
+    },
+    title: {
+      color: this.props.muiTheme.palette.common.white
+    },
+    subtitle: {
+      color: this.props.muiTheme.palette.common.white
+    }
+  });
+
+  inlineStyles = {
+    feedbackCard: {
+      backgroundColor: this.props.muiTheme.palette.info.main,
+      maxWidth: 670,
+      marginLeft: 12,
+      padding: 16
+    },
+    stepper: {
+      paddingLeft: 30,
+      paddingBottom: 50
+    },
+    stepLabel: {
+      fontWeight: "bolder",
+      fontSize: 16
+    },
+    stepContent: {
+      fontSize: 15,
+      paddingTop: 10,
+      overflowWrap: "break-word",
+      overflow: "inherit",
+      hyphens: "manual"
+    },
+    stepActions: {
+      margin: "20px 0 10px 0",
+      display: "flex"
+    },
+    alertIcon: type => ({
+      minWidth: 24,
+      marginRight: 6,
+      transform: "scale(.9)",
+      color:
+        type === "warning"
+          ? this.props.muiTheme.palette.warning.main
+          : this.props.muiTheme.palette.success.main
+    }),
+    alert: type => ({
+      margin: "8px 0",
+      paddingRight: 20,
+      display: "flex",
+      alignItems: "center",
+      padding: "6px 16px",
+      borderRadius: 4,
+      outline: "1px solid",
+      color:
+        type === "warning"
+          ? this.props.muiTheme.palette.warning.main
+          : this.props.muiTheme.palette.success.main
+    })
   };
 
   getStepContent = () => {
@@ -154,7 +148,7 @@ class AssignmentTexterFeedback extends Component {
     const totalSteps = 1 + issueItems.length;
 
     const StepActions = () => (
-      <div style={inlineStyles.stepActions}>
+      <div style={this.inlineStyles.stepActions}>
         {stepIndex !== 0 && (
           <Button
             style={{ marginRight: 50 }}
@@ -177,9 +171,14 @@ class AssignmentTexterFeedback extends Component {
     const getIssueContent = ({ warningMessage, content, moreInfo }) => (
       <Step>
         <StepLabel>
-          <Alert type="warning" message={warningMessage} />
+          <Alert
+            type="warning"
+            message={warningMessage}
+            alertIcon={this.inlineStyles.alertIcon}
+            alert={this.inlineStyles.alert}
+          />
         </StepLabel>
-        <StepContent style={inlineStyles.stepContent}>
+        <StepContent style={this.inlineStyles.stepContent}>
           <div dangerouslySetInnerHTML={{ __html: content }} />
           {moreInfo && (
             <IconButton
@@ -197,16 +196,16 @@ class AssignmentTexterFeedback extends Component {
     );
     return (
       <Stepper
-        style={inlineStyles.stepper}
+        style={this.inlineStyles.stepper}
         activeStep={stepIndex}
         linear={false}
         orientation="vertical"
       >
         <Step>
-          <StepLabel style={inlineStyles.stepLabel}>
+          <StepLabel style={this.inlineStyles.stepLabel}>
             {createdBy.name}&rsquo;s Feedback:
           </StepLabel>
-          <StepContent style={inlineStyles.stepContent}>
+          <StepContent style={this.inlineStyles.stepContent}>
             {message.split("\n").map((line, key) => (
               <span key={key}>
                 {line}
@@ -218,15 +217,25 @@ class AssignmentTexterFeedback extends Component {
         </Step>
         {issueItems.map(item => getIssueContent(item))}
         <Step>
-          <StepLabel style={inlineStyles.stepLabel}>
+          <StepLabel style={this.inlineStyles.stepLabel}>
             {!!successItems.length ? "Skills Mastery" : "Thank You!"}
           </StepLabel>
           <StepContent>
             {successItems.map(({ successMessage }) => (
-              <Alert type="success" message={successMessage} />
+              <Alert
+                type="success"
+                message={successMessage}
+                alertIcon={this.inlineStyles.alertIcon}
+                alert={this.inlineStyles.alert}
+              />
             ))}
             {!successItems.length && (
-              <Alert type="success" message="Keep up the great work! 🎉" />
+              <Alert
+                type="success"
+                message="Keep up the great work! 🎉"
+                alertIcon={this.inlineStyles.alertIcon}
+                alert={this.inlineStyles.alert}
+              />
             )}
             <StepActions />
           </StepContent>
@@ -257,15 +266,15 @@ class AssignmentTexterFeedback extends Component {
       "You can send more texts once you read and acknowledge this.";
 
     return (
-      <div className={css(styles.container)}>
-        <Card style={inlineStyles.feedbackCard}>
+      <div className={css(this.styles.container)}>
+        <Card style={this.inlineStyles.feedbackCard}>
           <CardHeader
             style={{ paddingTop: 0, paddingLeft: 0 }}
             title={title}
             subheader={subtitle}
             classes={{
-              title: css(styles.whiteText),
-              subheader: css(styles.whiteText)
+              title: css(this.styles.title),
+              subheader: css(this.styles.subtitle)
             }}
           />
 

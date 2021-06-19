@@ -6,6 +6,7 @@ import * as yup from "yup";
 import Form from "react-formal";
 import gql from "graphql-tag";
 import _ from "lodash";
+import { compose } from "recompose";
 
 import AddIcon from "@material-ui/icons/Add";
 import RemoveIcon from "@material-ui/icons/Remove";
@@ -19,80 +20,9 @@ import GSForm from "../../../components/forms/GSForm";
 import GSTextField from "../../../components/forms/GSTextField";
 import GSSubmitButton from "../../../components/forms/GSSubmitButton";
 import loadData from "../../../containers/hoc/load-data";
-import theme from "../../../styles/theme";
 import { defaults } from "./config";
 import AssignmentTexterFeedback from "./AssignmentTexterFeedback";
-
-const inlineStyles = {
-  wrapper: {
-    position: "absolute",
-    top: 112,
-    right: 0,
-    width: 340,
-    padding: "0 20px 20px",
-    zIndex: 999,
-    borderLeft: `3px solid ${theme.colors.gray}`,
-    height: "calc(100% - 130px)",
-    overflowY: "auto"
-  },
-  counterColumns: {
-    marginTop: -20,
-    display: "flex",
-    justifyContent: "space-around"
-  },
-  counterWrapper: {
-    borderRadius: 3,
-    marginBottom: 8,
-    padding: 6,
-    height: 74,
-    minWidth: 130,
-    fontSize: 10
-  },
-  counterKey: {
-    color: theme.colors.red,
-    fontSize: 13
-  },
-  counter: {
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    fontSize: 18
-  },
-  skillsWrapper: {
-    padding: "10px 0 4px",
-    minWidth: 170
-  },
-  skillCheckbox: {
-    marginBottom: 10,
-    padding: "6px 0"
-  },
-  messageInputWrapper: {
-    marginTop: -20
-  },
-  messageInput: {
-    background: "#fff",
-    padding: 4
-  },
-  submitButton: {
-    marginTop: 15,
-    fontSize: "17px !important"
-  },
-  saveWrapper: {
-    position: "fixed",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    marginTop: -56,
-    right: 0,
-    height: 56,
-    width: 384,
-    background: "rgb(126, 128, 139)"
-  },
-  saveText: {
-    fontSize: 16,
-    color: "#fff"
-  }
-};
+import withMuiTheme from "../../../containers/hoc/withMuiTheme";
 
 export const displayName = () => "Texter feedback";
 
@@ -111,7 +41,7 @@ const schema = yup.object({
   })
 });
 
-export class TexterSideboxClass extends React.Component {
+export class TexterSideboxClassBase extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -123,6 +53,77 @@ export class TexterSideboxClass extends React.Component {
       }
     };
   }
+
+  inlineStyles = {
+    wrapper: {
+      position: "absolute",
+      top: 112,
+      right: 0,
+      width: 340,
+      padding: "0 20px 20px",
+      zIndex: 999,
+      borderLeft: `3px solid`,
+      height: "calc(100% - 130px)",
+      overflowY: "auto"
+    },
+    counterColumns: {
+      marginTop: -20,
+      display: "flex",
+      justifyContent: "space-around"
+    },
+    counterWrapper: {
+      borderRadius: 3,
+      marginBottom: 8,
+      padding: 6,
+      height: 74,
+      minWidth: 130,
+      fontSize: 10
+    },
+    counterKey: {
+      color: this.props.muiTheme.palette.error.main,
+      fontSize: 13
+    },
+    counter: {
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      fontSize: 18
+    },
+    skillsWrapper: {
+      padding: "10px 0 4px",
+      minWidth: 170
+    },
+    skillCheckbox: {
+      marginBottom: 10,
+      padding: "6px 0"
+    },
+    messageInputWrapper: {
+      marginTop: -20
+    },
+    messageInput: {
+      background: "#fff",
+      padding: 4
+    },
+    submitButton: {
+      marginTop: 15,
+      fontSize: "17px !important"
+    },
+    saveWrapper: {
+      position: "fixed",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      marginTop: -56,
+      right: 0,
+      height: 56,
+      width: 384,
+      background: "rgb(126, 128, 139)"
+    },
+    saveText: {
+      fontSize: 16,
+      color: "#fff"
+    }
+  };
 
   componentDidUpdate(prevProps, prevState) {
     if (
@@ -190,7 +191,7 @@ export class TexterSideboxClass extends React.Component {
 
     const Counter = ({ value, type, countKey }) => {
       return (
-        <div key={countKey} style={inlineStyles.counter}>
+        <div key={countKey} style={this.inlineStyles.counter}>
           <IconButton
             disabled={!value}
             onClick={() =>
@@ -212,11 +213,11 @@ export class TexterSideboxClass extends React.Component {
     };
 
     return (
-      <div style={inlineStyles.wrapper}>
+      <div style={this.inlineStyles.wrapper}>
         {isSaving && (
-          <div style={inlineStyles.saveWrapper}>
+          <div style={this.inlineStyles.saveWrapper}>
             <CircularProgress size={24} style={{ marginRight: 10 }} />
-            <span style={inlineStyles.saveText}>Saving feedback...</span>
+            <span style={this.inlineStyles.saveText}>Saving feedback...</span>
           </div>
         )}
         <h2>Texter Feedback</h2>
@@ -235,19 +236,21 @@ export class TexterSideboxClass extends React.Component {
             });
           }}
         >
-          <div style={inlineStyles.counterColumns}>
+          <div style={this.inlineStyles.counterColumns}>
             {!!config.issues.length && (
               <div>
-                <h3 style={{ color: theme.colors.darkRed }}>Issues</h3>
+                <h3 style={{ color: this.props.muiTheme.palette.error.main }}>
+                  Issues
+                </h3>
                 {config.issues.map(({ key, tooltip }) => {
                   const count = (Object.entries(
                     feedback.issueCounts || []
                   ).find(issueCount => issueCount[0] === key) || [])[1];
 
                   return (
-                    <Paper key={key} style={inlineStyles.counterWrapper}>
+                    <Paper key={key} style={this.inlineStyles.counterWrapper}>
                       <span
-                        style={inlineStyles.counterKey}
+                        style={this.inlineStyles.counterKey}
                         data-tip
                         data-for={`${key}-issues`}
                       >
@@ -268,8 +271,10 @@ export class TexterSideboxClass extends React.Component {
             )}
             {!!config.skills.length && (
               <div>
-                <h3 style={{ color: theme.colors.darkGreen }}>Skills</h3>
-                <Paper style={inlineStyles.skillsWrapper}>
+                <h3 style={{ color: this.props.muiTheme.palette.success.main }}>
+                  Skills
+                </h3>
+                <Paper style={this.inlineStyles.skillsWrapper}>
                   {config.skills.map(({ key, content }) => {
                     const isChecked = !!(Object.entries(
                       feedback.skillCounts || []
@@ -312,8 +317,8 @@ export class TexterSideboxClass extends React.Component {
           <Form.Field
             as={GSTextField}
             name="feedback.message"
-            style={inlineStyles.messageInputWrapper}
-            textareaStyle={inlineStyles.messageInput}
+            style={this.inlineStyles.messageInputWrapper}
+            textareaStyle={this.inlineStyles.messageInput}
             fullWidth
             multiLine
             rows={4}
@@ -321,7 +326,7 @@ export class TexterSideboxClass extends React.Component {
           />
 
           <Form.Submit
-            style={inlineStyles.submitButton}
+            style={this.inlineStyles.submitButton}
             as={GSSubmitButton}
             label="Sweep Complete"
             disabled={!feedback.message}
@@ -332,7 +337,7 @@ export class TexterSideboxClass extends React.Component {
   }
 }
 
-TexterSideboxClass.propTypes = {
+TexterSideboxClassBase.propTypes = {
   // data
   contact: PropTypes.object,
   campaign: PropTypes.object,
@@ -350,6 +355,10 @@ TexterSideboxClass.propTypes = {
 
   mutations: PropTypes.object
 };
+
+const TexterSideboxClass = compose(withMuiTheme)(TexterSideboxClassBase);
+
+export { TexterSideboxClass };
 
 export const mutations = {
   updateFeedback: ownProps => feedback => ({
@@ -372,9 +381,10 @@ export const mutations = {
   })
 };
 
-export const TexterSidebox = loadData({ mutations })(
-  withRouter(TexterSideboxClass)
-);
+export const TexterSidebox = compose(
+  loadData({ mutations }),
+  withRouter
+)(TexterSideboxClass);
 
 export const showSummary = ({ assignment }) =>
   // has feedback to acknowledge
