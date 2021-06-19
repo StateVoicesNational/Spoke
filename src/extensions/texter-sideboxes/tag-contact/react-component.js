@@ -67,7 +67,7 @@ export class TexterSideboxBase extends React.Component {
               key={index}
               text={tag.name}
               icon={<CheckIcon />}
-              backgroundColor={theme.colors.white}
+              backgroundColor={this.props.muiTheme.palette.common.white}
             />
           ))}
         </div>

@@ -3,7 +3,6 @@ import React from "react";
 import Form from "react-formal";
 import * as yup from "yup";
 import { compose } from "recompose";
-import tinycolor from "tinycolor2";
 
 import Button from "@material-ui/core/Button";
 import ButtonGroup from "@material-ui/core/ButtonGroup";
@@ -29,9 +28,6 @@ import withMuiTheme from "../containers/hoc/withMuiTheme";
 class CampaignInteractionStepsForm extends React.Component {
   constructor(props) {
     super(props);
-    const slightlyDarkerBackground = tinycolor(
-      this.props.muiTheme.palette.background.default
-    ).darken(1);
     this.styles = {
       pullRight: {
         float: "right",
@@ -40,7 +36,7 @@ class CampaignInteractionStepsForm extends React.Component {
       },
 
       cardHeader: {
-        backgroundColor: slightlyDarkerBackground
+        backgroundColor: this.props.muiTheme.palette.action.hover
       },
 
       interactionStep: {
@@ -52,7 +48,7 @@ class CampaignInteractionStepsForm extends React.Component {
       answerContainer: {
         marginLeft: "35px",
         marginTop: "10px",
-        borderLeft: `3px dashed ${slightlyDarkerBackground}`
+        borderLeft: `3px dashed ${this.props.muiTheme.palette.action.hover}`
       }
     };
     this.state = {
