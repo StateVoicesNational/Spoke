@@ -3,6 +3,7 @@ import type from "prop-types";
 import moment from "moment";
 import { Link as RouterLink, withRouter } from "react-router";
 import gql from "graphql-tag";
+import { compose } from "recompose";
 
 import MUIDataTable from "mui-datatables";
 import OpenInNewIcon from "@material-ui/icons/OpenInNew";
@@ -15,8 +16,8 @@ import { getHighestRole } from "../../lib/permissions";
 import LoadingIndicator from "../../components/LoadingIndicator";
 import ConversationPreviewModal from "./ConversationPreviewModal";
 import TagChip from "../TagChip";
-import theme from "../../styles/theme";
 import { MESSAGE_STATUSES } from "../../components/IncomingMessageFilter";
+import withMuiTheme from "../../containers/hoc/withMuiTheme";
 
 export const prepareDataTableData = conversations =>
   conversations.map(conversation => ({
@@ -298,7 +299,7 @@ export class IncomingMessageList extends Component {
             backgroundColor={
               tagNames[name].value !== "RESOLVED"
                 ? null
-                : theme.colors.lightGray
+                : this.props.muiTheme.palette.grey[300]
             }
             onDelete={
               tagNames[name].value !== "RESOLVED" &&
@@ -548,6 +549,8 @@ const mutations = {
   })
 };
 
-export default loadData({ queries, mutations })(
-  withRouter(IncomingMessageList)
-);
+export default compose(
+  withMuiTheme,
+  loadData({ queries, mutations }),
+  withRouter
+)(IncomingMessageList);

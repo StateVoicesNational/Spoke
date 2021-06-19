@@ -2,6 +2,7 @@ import PropTypes from "prop-types";
 import React, { Component } from "react";
 import { StyleSheet, css } from "aphrodite";
 import gql from "graphql-tag";
+import { compose } from "recompose";
 
 import Stepper from "@material-ui/core/Stepper";
 import Step from "@material-ui/core/Step";
@@ -18,6 +19,7 @@ import CardHeader from "@material-ui/core/CardHeader";
 import loadData from "../../../containers/hoc/load-data";
 import { defaults } from "./config";
 import theme from "../../../styles/theme";
+import withMuiTheme from "../../../containers/hoc/withMuiTheme";
 
 const styles = StyleSheet.create({
   container: {
@@ -34,7 +36,7 @@ const styles = StyleSheet.create({
   }
 });
 
-export const inlineStyles = {
+const inlineStyles = {
   feedbackCard: {
     backgroundColor: theme.colors.darkBlue,
     maxWidth: 670,
@@ -100,7 +102,7 @@ const Alert = ({ type, message }) => (
   </div>
 );
 
-export class AssignmentTexterFeedback extends Component {
+class AssignmentTexterFeedback extends Component {
   state = {
     finished: false,
     stepIndex: 0
@@ -302,4 +304,7 @@ export const mutations = {
   })
 };
 
-export default loadData({ mutations })(AssignmentTexterFeedback);
+export default compose(
+  withMuiTheme,
+  loadData({ mutations })
+)(AssignmentTexterFeedback);

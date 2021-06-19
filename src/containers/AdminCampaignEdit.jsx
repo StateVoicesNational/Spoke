@@ -710,7 +710,7 @@ export class AdminCampaignEdit extends React.Component {
               >
                 <div
                   style={{
-                    color: theme.colors.gray,
+                    color: this.props.muiTheme.palette.grey[500],
                     fontWeight: 800
                   }}
                 >
@@ -1125,5 +1125,5 @@ const mutations = {
 };
 
 export const operations = { queries, mutations };
-// export default loadData(operations)(AdminCampaignEdit);
+
 export default compose(loadData(operations), withMuiTheme)(AdminCampaignEdit);

@@ -23,7 +23,6 @@ import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
 import loadData from "./hoc/load-data";
 import withMuiTheme from "./hoc/withMuiTheme";
 import GSSubmitButton from "../components/forms/GSSubmitButton";
-import theme from "../styles/theme";
 import DisplayLink from "../components/DisplayLink";
 import GSForm from "../components/forms/GSForm";
 import CampaignTexterUIForm from "../components/CampaignTexterUIForm";
@@ -49,26 +48,26 @@ const styles = StyleSheet.create({
   }
 });
 
-let inlineStyles = {
-  dialogButton: {
-    display: "inline-block"
-  },
-  shadeBox: {
-    backgroundColor: theme.colors.lightGray
-  },
-  cardHeader: {
-    cursor: "pointer"
-  }
-};
-
 const formatTextingHours = hour => moment(hour, "H").format("h a");
 class Settings extends React.Component {
   state = {
     formIsSubmitting: false
   };
 
+  inlineStyles = {
+    dialogButton: {
+      display: "inline-block"
+    },
+    shadeBox: {
+      backgroundColor: this.props.muiTheme.palette.action.hover
+    },
+    cardHeader: {
+      cursor: "pointer"
+    }
+  };
+
   getCardHeaderStyle() {
-    return Object.assign({}, inlineStyles.cardHeader, {
+    return Object.assign({}, this.inlineStyles.cardHeader, {
       backgroundColor: this.props.muiTheme.palette.primary.main,
       color: this.props.muiTheme.palette.primary.contrastText
     });
@@ -146,7 +145,7 @@ class Settings extends React.Component {
               </Button>
               <Form.Submit
                 as={GSSubmitButton}
-                style={inlineStyles.dialogButton}
+                style={this.inlineStyles.dialogButton}
                 label="Save"
               />
             </div>
@@ -209,7 +208,7 @@ class Settings extends React.Component {
     const dialogActions = [
       <Button
         variant="outlined"
-        style={inlineStyles.dialogButton}
+        style={this.inlineStyles.dialogButton}
         onClick={this.handleCloseTwilioDialog}
       >
         Cancel
@@ -217,7 +216,7 @@ class Settings extends React.Component {
       <Form.Submit
         as={GSSubmitButton}
         label="Save"
-        style={inlineStyles.dialogButton}
+        style={this.inlineStyles.dialogButton}
       />
     ];
 
@@ -233,7 +232,7 @@ class Settings extends React.Component {
           }}
         />
         {allSet && (
-          <CardContent style={inlineStyles.shadeBox}>
+          <CardContent style={this.inlineStyles.shadeBox}>
             <DisplayLink
               url={`${baseUrl}/twilio/${organization.id}`}
               textContent="Twilio credentials are configured for this organization. You should set the inbound Request URL in your Twilio messaging service to this link."
@@ -241,7 +240,7 @@ class Settings extends React.Component {
           </CardContent>
         )}
         {this.state.twilioError && (
-          <CardContent style={inlineStyles.shadeBox}>
+          <CardContent style={this.inlineStyles.shadeBox}>
             {this.state.twilioError}
           </CardContent>
         )}
@@ -499,7 +498,7 @@ class Settings extends React.Component {
                 <Button
                   color="secondary"
                   variant="contained"
-                  style={inlineStyles.dialogButton}
+                  style={this.inlineStyles.dialogButton}
                   onClick={
                     this.props.mutations.clearCachedOrgAndExtensionCaches
                   }

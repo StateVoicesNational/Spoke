@@ -21,32 +21,9 @@ const styles = StyleSheet.create({
     height: "100vh",
     width: "100%",
     "padding-top": "10vh"
-    // background: theme.colors.veryLightGray
   },
   fullWidth: {
     width: "100%"
-  },
-  button: {
-    border: "none",
-    background: theme.colors.lightGray,
-    color: theme.colors.darkGreen,
-    padding: "16px 16px",
-    "font-size": "14px",
-    "text-transform": "uppercase",
-    cursor: "pointer",
-    width: "50%",
-    transition: "all 0.3s",
-    ":disabled": {
-      background: theme.colors.white,
-      cursor: "default",
-      color: theme.colors.green
-    }
-  },
-  header: {
-    ...theme.text.header,
-    color: theme.colors.coreBackgroundColor,
-    "text-align": "center",
-    "margin-bottom": 0
   }
 });
 
