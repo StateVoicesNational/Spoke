@@ -11,8 +11,7 @@ import { compose } from "recompose";
 export const styles = StyleSheet.create({
   container: {
     marginTop: "5vh",
-    textAlign: "center",
-    color: theme.colors.lightGray
+    textAlign: "center"
   },
   content: {
     ...theme.layouts.greenBox

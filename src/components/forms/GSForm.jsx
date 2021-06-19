@@ -56,38 +56,41 @@ class GSForm extends React.Component {
   }
 
   renderChildren(children) {
-    const childrenList = React.Children.map(children, child => {
-      if (child === null) {
-        return child;
-      } else if (child.type === Form.Field) {
-        const name = child.props.name;
-        let error = this.state.formErrors ? this.state.formErrors[name] : null;
-        let clonedElement = child;
-        if (error) {
-          error = error[0]
-            ? error[0].message.replace(name, child.props.label)
+    const childrenList =
+      React.Children.map(children, child => {
+        if (child === null) {
+          return child;
+        } else if (child.type === Form.Field) {
+          const name = child.props.name;
+          let error = this.state.formErrors
+            ? this.state.formErrors[name]
             : null;
-          clonedElement = React.cloneElement(child, {
-            helperText: error,
-            error: true
+          let clonedElement = child;
+          if (error) {
+            error = error[0]
+              ? error[0].message.replace(name, child.props.label)
+              : null;
+            clonedElement = React.cloneElement(child, {
+              helperText: error,
+              error: true
+            });
+          }
+          return React.cloneElement(clonedElement, {
+            events: ["onBlur"]
+          });
+        } else if (child.type === Form.Submit) {
+          const { isSubmitting } = this.state;
+          const As = child.props.as;
+          return React.cloneElement(child, {
+            as: props => <As isSubmitting={isSubmitting} {...props} />
+          });
+        } else if (child.props && child.props.children) {
+          return React.cloneElement(child, {
+            children: this.renderChildren(child.props.children)
           });
         }
-        return React.cloneElement(clonedElement, {
-          events: ["onBlur"]
-        });
-      } else if (child.type === Form.Submit) {
-        const { isSubmitting } = this.state;
-        const As = child.props.as;
-        return React.cloneElement(child, {
-          as: props => <As isSubmitting={isSubmitting} {...props} />
-        });
-      } else if (child.props && child.props.children) {
-        return React.cloneElement(child, {
-          children: this.renderChildren(child.props.children)
-        });
-      }
-      return child;
-    });
+        return child;
+      }) || [];
 
     return childrenList.length === 1 ? childrenList[0] : childrenList;
   }
@@ -105,7 +108,7 @@ class GSForm extends React.Component {
   }
 
   render() {
-    const { setRef, ...props } = this.props;
+    const { setRef, muiTheme, ...props } = this.props;
     return (
       <Form
         ref={this.form}

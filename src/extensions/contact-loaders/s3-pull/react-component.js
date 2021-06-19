@@ -1,9 +1,8 @@
 import type from "prop-types";
 import React from "react";
-import GSForm from "../../../components/forms/GSForm";
-import GSTextField from "../../../components/forms/GSTextField";
-import GSSubmitButton from "../../../components/forms/GSSubmitButton";
 import Form from "react-formal";
+import { compose } from "recompose";
+import * as yup from "yup";
 
 import List from "@material-ui/core/List";
 import ListItem from "@material-ui/core/ListItem";
@@ -11,9 +10,11 @@ import ListItemText from "@material-ui/core/ListItemText";
 import ListItemIcon from "@material-ui/core/ListItemIcon";
 
 import theme from "../../../styles/theme";
-import * as yup from "yup";
+import GSForm from "../../../components/forms/GSForm";
+import GSTextField from "../../../components/forms/GSTextField";
+import GSSubmitButton from "../../../components/forms/GSSubmitButton";
 
-export class CampaignContactsForm extends React.Component {
+export class CampaignContactsFormBase extends React.Component {
   constructor(props) {
     super(props);
     const { lastResult } = props;
@@ -41,7 +42,9 @@ export class CampaignContactsForm extends React.Component {
       <div>
         {results.errors && results.errors.length && (
           <div>
-            <h4 style={{ color: theme.colors.red }}>Previous Errors</h4>
+            <h4 style={{ color: this.props.muiTheme.palette.error.main }}>
+              Previous Errors
+            </h4>
             <List>
               {results.errors.map(e => (
                 <ListItem key={e.code || e}>
@@ -112,9 +115,9 @@ export class CampaignContactsForm extends React.Component {
   }
 }
 
-CampaignContactsForm.prototype.renderAfterStart = true;
+CampaignContactsFormBase.prototype.renderAfterStart = true;
 
-CampaignContactsForm.propTypes = {
+CampaignContactsFormBase.propTypes = {
   onChange: type.func,
   onSubmit: type.func,
   campaignIsStarted: type.bool,
@@ -128,3 +131,7 @@ CampaignContactsForm.propTypes = {
   clientChoiceData: type.string,
   jobResultMessage: type.string
 };
+
+const CampaignContactsForm = compose(withMuiTheme)(CampaignContactsFormBase);
+
+export { CampaignContactsForm };
