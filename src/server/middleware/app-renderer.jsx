@@ -1,7 +1,3 @@
-import { createMemoryHistory, match } from "react-router";
-import makeRoutes from "../../routes";
-
-import React from "react";
 import renderIndex from "./render-index";
 import wrap from "../wrap";
 import fs from "fs";
@@ -38,36 +34,25 @@ if (!DEBUG) {
 }
 
 export default wrap(async (req, res) => {
-  const memoryHistory = createMemoryHistory(req.url);
-  const authCheck = (nextState, replace) => {
-    const query = nextState.location.search
-      ? encodeURIComponent(nextState.location.search)
-      : "";
-    if (!req.isAuthenticated()) {
-      replace({
-        pathname: `/login?nextUrl=${nextState.location.pathname}${query}`
-      });
-    }
+  const query = req._parsedUrl.search
+    ? encodeURIComponent(req._parsedUrl.search || "")
+    : "";
+  const loginPaths = {
+    addOrganization: 1,
+    admin: 1,
+    app: 1,
+    invite: 1,
+    join: 1,
+    organizations: 1,
+    reset: 1
   };
-  const routes = makeRoutes(authCheck);
-  match(
-    {
-      memoryHistory,
-      routes,
-      location: req.url
-    },
-    (error, redirectLocation, renderProps) => {
-      if (error) {
-        res.status(500).send(error.message);
-      } else if (redirectLocation) {
-        res.redirect(302, redirectLocation.pathname + redirectLocation.search);
-      } else if (renderProps) {
-        const html = "";
-        const css = "";
-        res.send(renderIndex(html, css, assetMap));
-      } else {
-        res.status(404).send("Not found");
-      }
-    }
-  );
+  const [_, firstToken, secToken] = req.path.split("/");
+  if (
+    !req.isAuthenticated() &&
+    (firstToken in loginPaths || secToken === "join")
+  ) {
+    res.redirect(302, `/login?nextUrl=${req.path}${query}`);
+    return;
+  }
+  res.send(renderIndex("", "", assetMap));
 });

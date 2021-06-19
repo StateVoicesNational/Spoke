@@ -77,6 +77,7 @@ class CampaignDynamicAssignmentForm extends React.Component {
           schema={this.formSchema}
           value={this.state}
           onChange={this.onChange}
+          onSubmit={this.props.onSubmit}
         >
           {!useDynamicAssignment ? null : (
             <div>
@@ -188,7 +189,6 @@ class CampaignDynamicAssignmentForm extends React.Component {
           </div>
           <Form.Submit
             as={GSSubmitButton}
-            onClick={this.props.onSubmit}
             label={this.props.saveLabel}
             disabled={this.props.saveDisabled}
             {...dataTest("submitCampaignDynamicAssignmentForm")}
