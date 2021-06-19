@@ -16,7 +16,6 @@ export const TagChip = props => {
       alignItems: "center",
       verticalAlign: "middle",
       marginBottom: "8px",
-      color: "#111",
       marginRight: "2px"
     },
     text: {
@@ -32,7 +31,6 @@ export const TagChip = props => {
       width: "16px",
       height: "16px",
       verticalAlign: "middle",
-      color: "#111",
       marginLeft: "10px"
     }
   };

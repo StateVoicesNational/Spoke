@@ -433,6 +433,8 @@ export class ContactController extends React.Component {
       <ChildComponent
         key={contact.id}
         assignment={assignment}
+        handleNavigateNext={this.handleNavigateNext}
+        handleNavigatePrevious={this.handleNavigatePrevious}
         currentUser={this.props.currentUser}
         campaignContactId={contact.id}
         reviewContactId={this.props.reviewContactId}

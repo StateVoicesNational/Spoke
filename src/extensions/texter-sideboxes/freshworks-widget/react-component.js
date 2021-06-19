@@ -79,6 +79,19 @@ export const adminSchema = () => ({
 });
 
 export class AdminConfig extends React.Component {
+  componentDidMount() {
+    const { settingsData } = this.props;
+    // set defaults
+    const defaults = {};
+    if (!settingsData.helpButtonLabel) {
+      defaults.helpButtonLabel = "Help";
+    }
+
+    if (Object.values(defaults).length) {
+      this.props.setDefaultsOnMount(defaults);
+    }
+  }
+
   render() {
     return (
       <div>
@@ -86,7 +99,6 @@ export class AdminConfig extends React.Component {
           as={GSTextField}
           name="helpButtonLabel"
           label="Help Button Label"
-          hintText="default: Help"
           fullWidth
         />
         <Form.Field
@@ -102,5 +114,6 @@ export class AdminConfig extends React.Component {
 
 AdminConfig.propTypes = {
   settingsData: type.object,
-  onToggle: type.func
+  onToggle: type.func,
+  setDefaultsOnMount: type.func
 };
