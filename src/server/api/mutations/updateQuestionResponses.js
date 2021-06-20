@@ -62,7 +62,6 @@ const dispatchActionHandlers = async ({
         if (!interactionStepAction) {
           return Promise.resolve();
         }
-
         return jobRunner.dispatchTask(Tasks.ACTION_HANDLER_QUESTION_RESPONSE, {
           name: interactionStepAction,
           organization,
