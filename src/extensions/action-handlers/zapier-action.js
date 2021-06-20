@@ -82,14 +82,6 @@ export async function processAction({
 }) {
   try {
 
-    //log.info(`questionResponse: ${questionResponse}`);
-    //log.info(`interactionStep: ${interactionStep}`);
-    //log.info(`campaignContactId: ${campaignContactId}`);
-    //log.info(`contact: ${contact}`);
-    //log.info(`campaign: ${campaign}`);
-    //log.info(`organization: ${organization}`);
-    //log.info(`previousValue: ${previousValue}`);
-
     const baseUrl = getConfig("BASE_URL", organization);
     const conversationLink = `${baseUrl}/app/${organization.id}/todos/review/${contact.id}`;
     const payload = {
@@ -109,7 +101,6 @@ export async function processAction({
     const zap_timeout = getConfig("ZAPIER_TIMEOUT_MS", organization) || 5000;
     log.info(`Zapier timeout: ${zap_timeout}`);
 
-    //var dynamic_url = "";
     var final_url = "";
     const answer_option = interactionStep.answer_option;
 
@@ -137,28 +128,6 @@ export async function processAction({
       final_url = url;
     }
 
-    /*
-    switch(answer_option) {
-      case "Yes 1 - Strong support of slate": dynamic_url = "https://hooks.zapier.com/hooks/catch/9728183/ovdvp40/"; break;
-      case "Yes 2 - Lean support of slate": dynamic_url = "https://hooks.zapier.com/hooks/catch/9728183/ovmyh4f/"; break;
-      case "Neutral 3 - undecided": dynamic_url = "https://hooks.zapier.com/hooks/catch/9728183/ovmy9dp/"; break;
-      case "No 4 - Lean against the slate": dynamic_url = "https://hooks.zapier.com/hooks/catch/9728183/ovmy5sy/"; break;
-      case "No 5 - Strong against the slate": dynamic_url = "https://hooks.zapier.com/hooks/catch/9728183/ovmyrd7/"; break;
-      case "Other (wrong number, moved, etc)": dynamic_url = "https://hooks.zapier.com/hooks/catch/9728183/ovmysaf/"; break;
-      case "Persuade - Successful": dynamic_url = "https://hooks.zapier.com/hooks/catch/9728183/ovmy89n/"; break;
-      case "Persuade - Failed": dynamic_url = "https://hooks.zapier.com/hooks/catch/9728183/ovmykdc/"; break;
-      case "Voting - Early": dynamic_url = "https://hooks.zapier.com/hooks/catch/9728183/ovmywmu/"; break;
-      case "Voting - Election Day": dynamic_url = "https://hooks.zapier.com/hooks/catch/9728183/ovmygxg/"; break;
-      case "Voting - Other (mail, absentee, etc)": dynamic_url = "https://hooks.zapier.com/hooks/catch/9728183/ovmylz1/"; break;
-      case "Volunteer - Yes": dynamic_url = "https://hooks.zapier.com/hooks/catch/9728183/ovmye0c/"; break;
-      case "Volunteer - No": dynamic_url = "https://hooks.zapier.com/hooks/catch/9728183/ovmy0d4/"; break;
-      case "Vote Triple - Yes": dynamic_url = "https://hooks.zapier.com/hooks/catch/9728183/ovmyxqq/"; break;
-      case "Vote Triple - No": dynamic_url = "https://hooks.zapier.com/hooks/catch/9728183/ovmyn3c/"; break;
-      default: dynamic_url = url;
-    }
-    */
-
-    //console.info(`Zapier processAction sending ${answer_option} to ${dynamic_url}`);
     console.info(`Zapier processAction sending ${answer_option} to ${final_url}`);
 
 
