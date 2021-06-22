@@ -147,3 +147,85 @@ export const parseCSV = (file, onCompleteCallback, options) => {
     }
   });
 };
+
+export const parseCannedResponseCsv = (file, tags, onCompleteCallback) => {
+  Papa.parse(file, {
+    header: true,
+    skipEmptyLines: true,
+    // eslint-disable-next-line no-shadow, no-unused-vars
+    complete: ({ data: parserData, meta, errors }, file) => {
+      let cannedResponseRows = parserData;
+
+      const titleLabel = meta.fields.find(f => f.toLowerCase().trim() == "title");
+      const textLabel = meta.fields.find(f => f.toLowerCase().trim() == "text");
+      const tagsLabel = meta.fields.find(f => f.toLowerCase().trim() == "tags");
+
+      const requiredFields = [titleLabel, textLabel];
+
+      const missingFields = requiredFields.filter(
+        f => meta.fields.indexOf(f) == -1
+      );
+
+      if (missingFields.length) {
+        onCompleteCallback({
+          error: `Missing columns: ${missingFields.join(", ")}`
+        });
+        return;
+      }
+
+      const cannedResponses = [];
+
+      // Loop through canned responses in CSV
+      for (var i in cannedResponseRows) {
+        const response = cannedResponseRows[i];
+
+        // Get basic details of canned response
+        const newCannedResponse = {
+          title: response[titleLabel].trim(),
+          text: response[textLabel].trim(),
+        };
+
+        // Skip line if no title/text
+        if (!newCannedResponse.title && !newCannedResponse.text) {
+          continue;
+        }
+
+        if (!newCannedResponse.title || !newCannedResponse.text) {
+          onCompleteCallback({
+            error: 
+              `Incomplete Line. Title ${newCannedResponse.title}; Text: ${newCannedResponse.text}`
+          });
+          return;
+        }
+
+        const tagIds = [];
+
+        for (var t of response[tagsLabel].split(',')) {
+          const tag_name = t.trim();
+
+          if (!tag_name) continue;
+
+          const tag = tags.find(tag => tag.name.toLowerCase() == tag_name.toLowerCase());
+
+          if (!tag) {
+            onCompleteCallback({
+              error: `"${tag_name}" cannot be found in your organization's tags`
+            });
+            return;
+          }
+          
+          tagIds.push(tag.id);
+        }
+
+        newCannedResponse.tagIds = tagIds;
+
+        cannedResponses.push(newCannedResponse);
+      }
+
+      onCompleteCallback({
+        error: null,
+        cannedResponses
+      });
+    }
+  });
+};
