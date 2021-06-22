@@ -1,6 +1,6 @@
-import { getConfig } from "../../../server/api/lib/config";
-import { cacheableData, Message } from "../../../server/models";
-import serviceMap from "../../../server/api/lib/services";
+import { getConfig, getFeatures } from "../../../server/api/lib/config";
+import { cacheableData, createLoaders } from "../../../server/models";
+import { sendMessage } from "../../../server/api/mutations";
 
 const DEFAULT_AUTO_OPTOUT_REGEX_LIST_BASE64 =
   "W3sicmVnZXgiOiAiXlxccypzdG9wXFxifFxcYnJlbW92ZSBtZVxccyokfHJlbW92ZSBteSBuYW1lfFxcYnRha2UgbWUgb2ZmIHRoXFx3KyBsaXN0fFxcYmxvc2UgbXkgbnVtYmVyfGRvblxcVz90IGNvbnRhY3QgbWV8ZGVsZXRlIG15IG51bWJlcnxJIG9wdCBvdXR8c3RvcDJxdWl0fHN0b3BhbGx8Xlxccyp1bnN1YnNjcmliZVxccyokfF5cXHMqY2FuY2VsXFxzKiR8XlxccyplbmRcXHMqJHxeXFxzKnF1aXRcXHMqJCIsICJyZWFzb24iOiAic3RvcCJ9XQ==";
@@ -88,7 +88,7 @@ export const postMessageSave = async ({
       message.campaign_contact_id,
       handlerContext.autoOptOutReason
     );
-    const contact = await cacheableData.campaignContact.load(
+    let contact = await cacheableData.campaignContact.load(
       message.campaign_contact_id,
       { cacheOnly: true }
     );
@@ -104,5 +104,33 @@ export const postMessageSave = async ({
       // but this can relieve a lot of database pressure
       noContactUpdate: true
     });
+
+    if (getConfig("SEND_AUTO_OPT_OUT_RESPONSE", organization)) {
+      contact = contact || await cacheableData.campaignContact.load(
+        message.campaign_contact_id
+      )
+
+      const assignment = cacheableData.assignment.load(contact.assignment_id);
+
+      const optOutMessage = getFeatures(organization).opt_out_message ||
+        "I'm opting you out of texts immediately. Have a great day.";
+
+      await sendMessage(
+        _,
+        {
+          message: {
+            text: optOutMessage,
+            contactNumber: message.contact_number,
+            assignmentId: contact.assignment_id,
+            userId: assignment.user_id
+          },
+          campaignContactId: message.campaign_contact_id
+        },
+        {
+          user: { id: assignment.user_id },
+          loaders: createLoaders()
+        }
+      );
+    }
   }
 };
