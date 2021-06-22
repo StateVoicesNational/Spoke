@@ -148,6 +148,28 @@ export const parseCSV = (file, onCompleteCallback, options) => {
   });
 };
 
+const clean = str => str.toLowerCase().trim();
+
+const parseTags = (org_tags, tag_text) => {
+  console.log(tag_text);
+  const tagIds = [];
+  for (var t of tag_text.split(',')) {
+    const tag_name = clean(t);
+
+    if (!tag_name) continue;
+
+    const tag = org_tags.find(tag => clean(tag.name) == tag_name);
+
+    if (!tag) {
+      throw `"${tag_name}" cannot be found in your organization's tags`;
+    }
+    
+    tagIds.push(tag.id);
+  }
+
+  return tagIds;
+}
+
 export const parseCannedResponseCsv = (file, tags, onCompleteCallback) => {
   Papa.parse(file, {
     header: true,
@@ -156,15 +178,14 @@ export const parseCannedResponseCsv = (file, tags, onCompleteCallback) => {
     complete: ({ data: parserData, meta, errors }, file) => {
       let cannedResponseRows = parserData;
 
-      const titleLabel = meta.fields.find(f => f.toLowerCase().trim() == "title");
-      const textLabel = meta.fields.find(f => f.toLowerCase().trim() == "text");
-      const tagsLabel = meta.fields.find(f => f.toLowerCase().trim() == "tags");
+      const titleLabel = meta.fields.find(f => clean(f) == "title");
+      const textLabel = meta.fields.find(f => clean(f) == "text");
+      const tagsLabel = meta.fields.find(f => clean(f) == "tags");
 
-      const requiredFields = [titleLabel, textLabel];
+      const missingFields = [];
 
-      const missingFields = requiredFields.filter(
-        f => meta.fields.indexOf(f) == -1
-      );
+      if (!titleLabel) missingFields.push("Title");
+      if (!textLabel) missingFields.push("Text");
 
       if (missingFields.length) {
         onCompleteCallback({
@@ -176,16 +197,14 @@ export const parseCannedResponseCsv = (file, tags, onCompleteCallback) => {
       const cannedResponses = [];
 
       // Loop through canned responses in CSV
-      for (var i in cannedResponseRows) {
-        const response = cannedResponseRows[i];
-
+      for (var response of cannedResponseRows) {
         // Get basic details of canned response
         const newCannedResponse = {
           title: response[titleLabel].trim(),
           text: response[textLabel].trim(),
         };
 
-        // Skip line if no title/text
+        // Skip line if no title/text, error if only one empty
         if (!newCannedResponse.title && !newCannedResponse.text) {
           continue;
         }
@@ -193,31 +212,17 @@ export const parseCannedResponseCsv = (file, tags, onCompleteCallback) => {
         if (!newCannedResponse.title || !newCannedResponse.text) {
           onCompleteCallback({
             error: 
-              `Incomplete Line. Title ${newCannedResponse.title}; Text: ${newCannedResponse.text}`
+              `Incomplete Line. Title: ${newCannedResponse.title}; Text: ${newCannedResponse.text}`
           });
           return;
         }
 
-        const tagIds = [];
-
-        for (var t of response[tagsLabel].split(',')) {
-          const tag_name = t.trim();
-
-          if (!tag_name) continue;
-
-          const tag = tags.find(tag => tag.name.toLowerCase() == tag_name.toLowerCase());
-
-          if (!tag) {
-            onCompleteCallback({
-              error: `"${tag_name}" cannot be found in your organization's tags`
-            });
-            return;
-          }
-          
-          tagIds.push(tag.id);
+        try {
+          newCannedResponse.tagIds = parseTags(tags, response[tagsLabel])
+        } catch (error) {
+          onCompleteCallback({ error });
+          return;
         }
-
-        newCannedResponse.tagIds = tagIds;
 
         cannedResponses.push(newCannedResponse);
       }
