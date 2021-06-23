@@ -106,6 +106,15 @@ export const postMessageSave = async ({
     });
 
     if (getConfig("SEND_AUTO_OPT_OUT_RESPONSE", organization)) {
+      const twilioOptOutWords = ["STOP", "STOPALL", "UNSUBSCRIBE", "CANCEL", "END", "QUIT"];
+
+      if (
+        getConfig("DEFAULT_SERVICE") == "twilio" && 
+        twilioOptOutWords.indexOf(message.text.toUpperCase().trim()) > -1
+      ) {
+        return;
+      }
+
       contact = contact || await cacheableData.campaignContact.load(
         message.campaign_contact_id
       )
@@ -113,10 +122,11 @@ export const postMessageSave = async ({
       const assignment = cacheableData.assignment.load(contact.assignment_id);
 
       const optOutMessage = getFeatures(organization).opt_out_message ||
+        getConfig("OPT_OUT_MESSAGE", organization) ||
         "I'm opting you out of texts immediately. Have a great day.";
 
       await sendMessage(
-        _,
+        undefined,
         {
           message: {
             text: optOutMessage,
