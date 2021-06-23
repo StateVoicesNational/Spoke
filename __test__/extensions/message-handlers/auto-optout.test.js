@@ -11,12 +11,12 @@ describe("Auto Opt-Out Tests", () => {
     global.SEND_AUTO_OPT_OUT_RESPONSE = false;
     global.DEFAULT_SERVICE = "fakeservice";
 
-    jest.spyOn(cacheableData.optOut, "save");
+    jest.spyOn(cacheableData.optOut, "save").mockResolvedValue(null);
     jest.spyOn(cacheableData.campaignContact, "load").mockResolvedValue({
       id: 1,
       assignment_id: 2
     });
-    jest.spyOn(mutations, "sendMessage");
+    jest.spyOn(mutations, "sendMessage").mockResolvedValue(null);
 
     message = {
       is_from_contact: true,
