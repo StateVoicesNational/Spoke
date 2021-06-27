@@ -12,11 +12,10 @@ import ThemeContext from "../containers/context/ThemeContext";
  * parts of the theme object. Here we will take the string,
  * parse it, and merge it with other app theme defaults
  */
-const formatThemeString = newPaletteString => {
-  const newPalette = JSON.parse(newPaletteString);
+const formatThemeString = newTheme => {
   return {
     ...defaultTheme,
-    palette: newPalette.palette
+    palette: newTheme.palette
   };
 };
 
