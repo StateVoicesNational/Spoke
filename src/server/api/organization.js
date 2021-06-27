@@ -169,11 +169,8 @@ export const resolvers = {
     theme: async () => {
       const themeOptions = {
         palette: {
-          type: "dark",
-          // type: 'light',
+          type: "light",
           primary: {
-            // main: "#FFF"
-            // main: "#53b477"
             main: "#209556"
           },
           secondary: {
@@ -187,7 +184,7 @@ export const resolvers = {
           }
         }
       };
-      return JSON.stringify(themeOptions);
+      return themeOptions;
     },
     settings: async (organization, _, { user, loaders }) => {
       try {

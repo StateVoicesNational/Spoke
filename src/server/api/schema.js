@@ -743,6 +743,23 @@ const rootMutations = {
 
       return await Organization.get(organizationId);
     },
+    updateTheme: async (
+      _,
+      { organizationId, primary, secondary, info, success, warning, error },
+      { user }
+    ) => {
+      await accessRequired(user, organizationId, "OWNER");
+
+      const organization = await Organization.get(organizationId);
+      const featuresJSON = getFeatures(organization);
+      // featuresJSON.opt_out_message = optOutMessage;
+      // organization.features = JSON.stringify(featuresJSON);
+
+      // await organization.save();
+      // await cacheableData.organization.clear(organizationId);
+
+      return await Organization.get(organizationId);
+    },
     updateTwilioAuth: async (
       _,
       {

@@ -6,13 +6,18 @@ import { createMuiTheme } from "@material-ui/core/styles";
  */
 const defaultTheme = {
   palette: {
-    type: "dark",
+    type: "light",
     primary: {
-      main: "#53b477",
-      contrastText: "#FFFFFF"
+      main: "#209556"
     },
     secondary: {
       main: "#ffffff"
+    },
+    warning: {
+      main: "#fabe28"
+    },
+    info: {
+      main: "#3f80b2"
     }
   }
 };
