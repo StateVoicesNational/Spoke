@@ -60,7 +60,7 @@ const replaceCurlyApostrophes = rawText =>
   rawText.replace(/[\u2018\u2019]/g, "'");
 
 export const sendRawMessage = async ({
-  text,
+  finalText,
   contact,
   campaign,
   organization,
@@ -76,7 +76,6 @@ export const sendRawMessage = async ({
     process.env.DEFAULT_SERVICE ||
     "";
 
-  const finalText = replaceCurlyApostrophes(text);
   const messageInstance = new Message({
     text: finalText,
     contact_number: contact.cell,
@@ -231,9 +230,10 @@ export const sendMessage = async (
   }
 
   const initialMessageStatus = contact.message_status;
+  const finalText = replaceCurlyApostrophes(text);
 
   contact.message_status = await sendRawMessage({
-    text,
+    finalText,
     contact,
     campaign,
     organization,

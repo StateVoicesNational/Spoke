@@ -134,7 +134,7 @@ export const postMessageSave = async ({
         "I'm opting you out of texts immediately. Have a great day.";
 
       await sendRawMessage({
-        text: optOutMessage,
+        finalText: optOutMessage,
         contact,
         campaign,
         organization,
