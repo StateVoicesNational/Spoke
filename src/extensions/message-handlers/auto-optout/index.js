@@ -1,5 +1,5 @@
 import { getConfig, getFeatures } from "../../../server/api/lib/config";
-import { cacheableData, createLoaders } from "../../../server/models";
+import { cacheableData } from "../../../server/models";
 import { sendRawMessage } from "../../../server/api/mutations/sendMessage";
 
 const DEFAULT_AUTO_OPTOUT_REGEX_LIST_BASE64 =

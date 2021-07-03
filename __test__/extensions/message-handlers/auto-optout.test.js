@@ -1,6 +1,6 @@
 import { postMessageSave } from "../../../src/extensions/message-handlers/auto-optout";
 import { cacheableData } from "../../../src/server/models";
-const mutations = require("../../../src/server/api/mutations");
+const sendMessage = require("../../../src/server/api/mutations/sendMessage");
 
 describe("Auto Opt-Out Tests", () => {
   let message;
@@ -16,7 +16,7 @@ describe("Auto Opt-Out Tests", () => {
       id: 1,
       assignment_id: 2
     });
-    jest.spyOn(mutations, "sendRawMessage").mockResolvedValue(null);
+    jest.spyOn(sendMessage, "sendRawMessage").mockResolvedValue(null);
 
     message = {
       is_from_contact: true,
@@ -41,7 +41,7 @@ describe("Auto Opt-Out Tests", () => {
     expect(cacheableData.optOut.save).toHaveBeenCalled();
     expect(cacheableData.campaignContact.load).toHaveBeenCalled();
 
-    expect(mutations.sendRawMessage).not.toHaveBeenCalled();
+    expect(sendMessage.sendRawMessage).not.toHaveBeenCalled();
   });
 
   it("Sends message with env variable", async () => {
@@ -56,7 +56,7 @@ describe("Auto Opt-Out Tests", () => {
     expect(cacheableData.optOut.save).toHaveBeenCalled();
     expect(cacheableData.campaignContact.load).toHaveBeenCalled();
 
-    expect(mutations.sendRawMessage).toHaveBeenCalled();
+    expect(sendMessage.sendRawMessage).toHaveBeenCalled();
   });
 
   it("Does not send with twilio opt-out words", async () => {
@@ -74,6 +74,6 @@ describe("Auto Opt-Out Tests", () => {
     expect(cacheableData.optOut.save).toHaveBeenCalled();
     expect(cacheableData.campaignContact.load).toHaveBeenCalled();
 
-    expect(mutations.sendRawMessage).not.toHaveBeenCalled();
+    expect(sendMessage.sendRawMessage).not.toHaveBeenCalled();
   });
 })
