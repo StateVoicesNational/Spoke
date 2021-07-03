@@ -108,8 +108,6 @@ export const sendRawMessage = async ({
     );
   }
 
-  contact.message_status = saveResult.contactStatus;
-
   if (!saveResult.blockSend) {
     await jobRunner.dispatchTask(Tasks.SEND_MESSAGE, {
       message: saveResult.message,
@@ -120,6 +118,8 @@ export const sendRawMessage = async ({
       campaign
     });
   }
+
+  return saveResult.contactStatus;
 };
 
 export const sendMessage = async (
@@ -232,7 +232,7 @@ export const sendMessage = async (
 
   const initialMessageStatus = contact.message_status;
 
-  await sendRawMessage({
+  contact.message_status = await sendRawMessage({
     text,
     contact,
     campaign,
