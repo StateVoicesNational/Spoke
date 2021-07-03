@@ -1,6 +1,6 @@
 import { getConfig, getFeatures } from "../../../server/api/lib/config";
 import { cacheableData, createLoaders } from "../../../server/models";
-import { sendMessage } from "../../../server/api/mutations";
+import { sendRawMessage } from "../../../server/api/mutations/sendMessage";
 
 const DEFAULT_AUTO_OPTOUT_REGEX_LIST_BASE64 =
   "W3sicmVnZXgiOiAiXlxccypzdG9wXFxifFxcYnJlbW92ZSBtZVxccyokfHJlbW92ZSBteSBuYW1lfFxcYnRha2UgbWUgb2ZmIHRoXFx3KyBsaXN0fFxcYmxvc2UgbXkgbnVtYmVyfGRvblxcVz90IGNvbnRhY3QgbWV8ZGVsZXRlIG15IG51bWJlcnxJIG9wdCBvdXR8c3RvcDJxdWl0fHN0b3BhbGx8Xlxccyp1bnN1YnNjcmliZVxccyokfF5cXHMqY2FuY2VsXFxzKiR8XlxccyplbmRcXHMqJHxeXFxzKnF1aXRcXHMqJCIsICJyZWFzb24iOiAic3RvcCJ9XQ==";
@@ -70,7 +70,10 @@ export const preMessageSave = async ({ messageToSave, organization }) => {
           error_code: -133,
           message_status: "closed"
         },
-        handlerContext: { autoOptOutReason: reason },
+        handlerContext: {
+          autoOptOutReason: reason,
+          autoOptOutShouldAutoRespond: matches[0].shouldAutoRespond
+        },
         messageToSave
       };
     }
@@ -80,7 +83,8 @@ export const preMessageSave = async ({ messageToSave, organization }) => {
 export const postMessageSave = async ({
   message,
   organization,
-  handlerContext
+  handlerContext,
+  campaign
 }) => {
   if (message.is_from_contact && handlerContext.autoOptOutReason) {
     console.log(
@@ -92,12 +96,14 @@ export const postMessageSave = async ({
       message.campaign_contact_id,
       { cacheOnly: true }
     );
+    campaign = campaign || { organization_id: organization.id };
+    
     // OPTOUT
     await cacheableData.optOut.save({
       cell: message.contact_number,
       campaignContactId: message.campaign_contact_id,
       assignmentId: (contact && contact.assignment_id) || null,
-      campaign: { organization_id: organization.id },
+      campaign: campaign,
       noReply: true,
       reason: handlerContext.autoOptOutReason,
       // RISKY: we depend on the contactUpdates in preMessageSave
@@ -105,12 +111,16 @@ export const postMessageSave = async ({
       noContactUpdate: true
     });
 
-    if (getConfig("SEND_AUTO_OPT_OUT_RESPONSE", organization)) {
-      const twilioOptOutWords = ["STOP", "STOPALL", "UNSUBSCRIBE", "CANCEL", "END", "QUIT"];
+    if (
+      handlerContext.autoOptOutShouldAutoRespond ||
+      getConfig("SEND_AUTO_OPT_OUT_RESPONSE", organization)
+    ) {
+      // https://support.twilio.com/hc/en-us/articles/223134027-Twilio-support-for-opt-out-keywords-SMS-STOP-filtering-
+      const twilioAutoOptOutWords = ["STOP", "STOPALL", "UNSUBSCRIBE", "CANCEL", "END", "QUIT"];
 
       if (
-        getConfig("DEFAULT_SERVICE") == "twilio" && 
-        twilioOptOutWords.indexOf(message.text.toUpperCase().trim()) > -1
+        getConfig("DEFAULT_SERVICE", organization) == "twilio" &&
+        twilioAutoOptOutWords.indexOf(message.text.toUpperCase().trim()) > -1
       ) {
         return;
       }
@@ -119,28 +129,17 @@ export const postMessageSave = async ({
         message.campaign_contact_id
       )
 
-      const assignment = cacheableData.assignment.load(contact.assignment_id);
-
       const optOutMessage = getFeatures(organization).opt_out_message ||
         getConfig("OPT_OUT_MESSAGE", organization) ||
         "I'm opting you out of texts immediately. Have a great day.";
 
-      await sendMessage(
-        undefined,
-        {
-          message: {
-            text: optOutMessage,
-            contactNumber: message.contact_number,
-            assignmentId: contact.assignment_id,
-            userId: assignment.user_id
-          },
-          campaignContactId: message.campaign_contact_id
-        },
-        {
-          user: { id: assignment.user_id },
-          loaders: createLoaders()
-        }
-      );
+      await sendRawMessage({
+        text: optOutMessage,
+        contact,
+        campaign,
+        organization,
+        user: {}
+      });
     }
   }
 };
