@@ -16,7 +16,7 @@ describe("Auto Opt-Out Tests", () => {
       id: 1,
       assignment_id: 2
     });
-    jest.spyOn(mutations, "sendMessage").mockResolvedValue(null);
+    jest.spyOn(mutations, "sendRawMessage").mockResolvedValue(null);
 
     message = {
       is_from_contact: true,
@@ -41,7 +41,7 @@ describe("Auto Opt-Out Tests", () => {
     expect(cacheableData.optOut.save).toHaveBeenCalled();
     expect(cacheableData.campaignContact.load).toHaveBeenCalled();
 
-    expect(mutations.sendMessage).not.toHaveBeenCalled();
+    expect(mutations.sendRawMessage).not.toHaveBeenCalled();
   });
 
   it("Sends message with env variable", async () => {
@@ -56,7 +56,7 @@ describe("Auto Opt-Out Tests", () => {
     expect(cacheableData.optOut.save).toHaveBeenCalled();
     expect(cacheableData.campaignContact.load).toHaveBeenCalled();
 
-    expect(mutations.sendMessage).toHaveBeenCalled();
+    expect(mutations.sendRawMessage).toHaveBeenCalled();
   });
 
   it("Does not send with twilio opt-out words", async () => {
@@ -74,6 +74,6 @@ describe("Auto Opt-Out Tests", () => {
     expect(cacheableData.optOut.save).toHaveBeenCalled();
     expect(cacheableData.campaignContact.load).toHaveBeenCalled();
 
-    expect(mutations.sendMessage).not.toHaveBeenCalled();
+    expect(mutations.sendRawMessage).not.toHaveBeenCalled();
   });
 })
