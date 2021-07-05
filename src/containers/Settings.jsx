@@ -390,7 +390,7 @@ class Settings extends React.Component {
             <h2>Theme</h2>
             <GSForm
               schema={themeFormSchema}
-              // onSubmit={this.props.mutations.updateOptOutMessage}
+              onSubmit={this.props.mutations.updateTheme}
               defaultValue={{
                 primary: this.props.muiTheme.palette.primary.main,
                 secondary: this.props.muiTheme.palette.secondary.main,
@@ -743,12 +743,7 @@ const mutations = {
           error: $error
           organizationId: $organizationId
         ) {
-          primary
-          secondary
-          info
-          success
-          warning
-          error
+          theme
         }
       }
     `,
