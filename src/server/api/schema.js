@@ -753,17 +753,19 @@ const rootMutations = {
 
       console.log("---- YOU ARE HERE", 2);
       const organization = await Organization.get(organizationId);
-      const themeJSON = getTheme(organization);
+      const featuresJSON = getFeatures(organization);
       console.log("---- YOU ARE HERE", 3);
-      themeJSON.palette = {
-        primary,
-        secondary,
-        info,
-        success,
-        warning,
-        error
+      featuresJSON.theme = {
+        palette: {
+          primary,
+          secondary,
+          info,
+          success,
+          warning,
+          error
+        }
       };
-      organization.theme = JSON.stringify(themeJSON);
+      organization.features = JSON.stringify(featuresJSON);
       console.log("---- YOU ARE HERE", 4);
 
       await organization.save();
