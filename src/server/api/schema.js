@@ -39,7 +39,7 @@ import {
 import { resolvers as interactionStepResolvers } from "./interaction-step";
 import { resolvers as inviteResolvers } from "./invite";
 import { saveNewIncomingMessage } from "./lib/message-sending";
-import { getConfig, getFeatures } from "./lib/config";
+import { getConfig, getFeatures, getTheme } from "./lib/config";
 import { resolvers as messageResolvers } from "./message";
 import { resolvers as optOutResolvers } from "./opt-out";
 import { resolvers as organizationResolvers } from "./organization";
@@ -748,15 +748,27 @@ const rootMutations = {
       { organizationId, primary, secondary, info, success, warning, error },
       { user }
     ) => {
+      console.log("---- YOU ARE HERE", 1);
       await accessRequired(user, organizationId, "OWNER");
 
+      console.log("---- YOU ARE HERE", 2);
       const organization = await Organization.get(organizationId);
-      const featuresJSON = getFeatures(organization);
-      // featuresJSON.opt_out_message = optOutMessage;
-      // organization.features = JSON.stringify(featuresJSON);
+      const themeJSON = getTheme(organization);
+      console.log("---- YOU ARE HERE", 3);
+      themeJSON.palette = {
+        primary,
+        secondary,
+        info,
+        success,
+        warning,
+        error
+      };
+      organization.theme = JSON.stringify(themeJSON);
+      console.log("---- YOU ARE HERE", 4);
 
-      // await organization.save();
-      // await cacheableData.organization.clear(organizationId);
+      await organization.save();
+      console.log("---- YOU ARE HERE", 5);
+      await cacheableData.organization.clear(organizationId);
 
       return await Organization.get(organizationId);
     },
