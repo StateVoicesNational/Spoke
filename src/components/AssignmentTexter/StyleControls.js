@@ -6,8 +6,7 @@ export const messageListStyles = {
   // passesd directly to <MessageList>
   messageList: {
     overflow: "hidden",
-    overflow: "-moz-scrollbars-vertical",
-    maxWidth: "574px"
+    overflow: "-moz-scrollbars-vertical"
   },
   messageSent: {
     textAlign: "left",
@@ -16,7 +15,9 @@ export const messageListStyles = {
     backgroundColor: "white",
     borderRadius: "16px",
     marginBottom: "10px",
-    fontSize: "95%"
+    fontSize: "95%",
+    width: "auto",
+    maxWidth: "500px"
   },
   messageReceived: {
     marginRight: "20%",
@@ -26,7 +27,9 @@ export const messageListStyles = {
     borderRadius: "16px",
     fontSize: "110%",
     lineHeight: "120%",
-    marginBottom: "10px"
+    marginBottom: "10px",
+    width: "auto",
+    maxWidth: "500px"
   }
 };
 
@@ -114,11 +117,11 @@ export const flexStyles = StyleSheet.create({
     padding: "4px 10px 9px 10px",
     zIndex: 2000,
     backgroundColor: "white",
+    overflow: "visible",
     "@media (hover: hover) and (pointer: fine)": {
       // for touchpads and phones, the edge of the tablet is easier
       // vs for desktops, we want to maximize how far the mouse needs to travel
-      maxWidth: "554px",
-      overflow: "visible"
+      maxWidth: "554px"
     }
   },
   subSectionOptOutDialogActions: {
