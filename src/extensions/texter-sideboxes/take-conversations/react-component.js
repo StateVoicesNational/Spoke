@@ -173,7 +173,7 @@ export class AdminConfig extends React.Component {
     if (!this.props.settingsData.takeConversationsBatchSize) {
       defaults.takeConversationsBatchSize = 20;
     }
-    if (Object.values(defaults).length) {
+    if (Object.values(defaults).length && this.props.setDefaults) {
       this.props.setDefaults(defaults);
     }
   }
