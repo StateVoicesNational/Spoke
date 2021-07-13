@@ -44,7 +44,7 @@ jobs:
         PHONE_INVENTORY: 1
       with:
         browser: chrome
-        build: npm run prod-build
+        build: npm install --only=dev && npm run prod-build 
         start: npm start
         wait-on: 'http://localhost:3001'
     - uses: actions/upload-artifact@v2
