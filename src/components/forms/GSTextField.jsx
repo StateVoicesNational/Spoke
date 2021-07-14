@@ -1,7 +1,6 @@
 import React from "react";
 import TextField from "@material-ui/core/TextField";
 import GSFormField from "./GSFormField";
-import { addConsoleHandler } from "selenium-webdriver/lib/logging";
 import theme from "../../styles/mui-theme";
 
 export default class GSTextField extends GSFormField {

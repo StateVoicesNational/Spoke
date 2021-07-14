@@ -61,6 +61,16 @@ export default class CampaignTexterUIForm extends React.Component {
     });
   };
 
+  /**
+   * if a sidebox has default values they should emit them on mount
+   * and they will be properly set on mount of this component
+   */
+  collectedDefaults = {};
+
+  componentDidMount() {
+    this.setState(this.collectedDefaults);
+  }
+
   render() {
     const keys = Object.keys(sideboxes);
     const adminItems = [];
@@ -92,7 +102,10 @@ export default class CampaignTexterUIForm extends React.Component {
                 <AdminConfig
                   settingsData={this.state}
                   onToggle={this.toggleChange}
-                  setDefaults={defaults => this.setState(defaults)}
+                  setDefaultsOnMount={defaults => {
+                    // collect default to setState on mount
+                    Object.assign(this.collectedDefaults, defaults);
+                  }}
                   organization={this.props.organization}
                 />
               )}
