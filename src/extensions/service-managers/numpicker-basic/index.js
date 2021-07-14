@@ -55,7 +55,6 @@ export async function onMessageSend({
   if (selectedPhone && selectedPhone.phone_number) {
     return { user_number: selectedPhone.phone_number };
   } else {
-    // TODO: what should we do if there's no result?
     console.log(
       "numpicker-basic.onMessageSend none found",
       serviceName,

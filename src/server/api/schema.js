@@ -188,7 +188,8 @@ async function editCampaign(id, campaign, loaders, user, origCampaignRecord) {
     textingHoursEnforced,
     textingHoursStart,
     textingHoursEnd,
-    timezone
+    timezone,
+    serviceManagers
   } = campaign;
   // some changes require ADMIN and we recheck below
   const organizationId =

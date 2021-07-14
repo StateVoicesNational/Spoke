@@ -81,23 +81,30 @@ export const getServiceConfig = async (
     }
   }
   // FUTURE: should it be possible for a universal setting?  maybe
+  const serviceManagers = getConfig("SERVICE_MANAGERS", organization) || "";
   return {
     ...serviceConfig,
-    password
+    password,
+    serviceManagerNumPicker: /numpicker/.test(serviceManagers),
+    serviceManagerSticky: /sticky-sender/.test(serviceManagers)
   };
 };
 
 export async function fullyConfigured(organization) {
   const config = await getMessageServiceConfig("bandwidth", organization);
+  const serviceManagers = getConfig("SERVICE_MANAGERS", organization) || "";
   if (
     !config.password ||
     !config.userName ||
     !config.accountId ||
-    !config.applicationId
+    !config.applicationId ||
+    // serviceManagers tests purposefully avoid looking for delimeters,
+    // so different numpicker/sticky modules can be used
+    !/numpicker/.test(serviceManagers) ||
+    !/sticky-sender/.test(serviceManagers)
   ) {
     return false;
   }
-  // TODO: also needs some number to send with numpicker AND sticky-sender in servicemanagers
   return true;
 }
 

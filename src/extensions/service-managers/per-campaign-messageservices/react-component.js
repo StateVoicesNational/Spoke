@@ -30,6 +30,7 @@ import LoadingIndicator from "../../../components/LoadingIndicator";
 import theme from "../../../styles/theme";
 
 import CampaignMessagingServiceForm from "./react-component-campaignmessageservice";
+// TODO: replace with CampaignMessagingServiceForm when enabled on backend
 
 // import { dataTest } from "../lib/attributes";
 
@@ -79,18 +80,10 @@ const inlineStyles = {
 
 export class CampaignConfig extends React.Component {
   static propTypes = {
-    user: type.object,
     campaign: type.object,
     serviceManagerInfo: type.object,
     saveLabel: type.string,
-    onSubmit: type.func,
-
-    formValues: type.object,
-    onChange: type.func,
-    phoneNumberCounts: type.array,
-    inventoryCounts: type.array,
-    isStarted: type.bool,
-    contactsAreaCodeCounts: type.array
+    onSubmit: type.func
   };
 
   constructor(props) {
