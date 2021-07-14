@@ -73,6 +73,12 @@ export async function sendMessage({
     message.contact_number
   );
 
+  if (!userNumber) {
+    throw new Error(
+      "Bandwidth service-vendor requires a user_number. Make sure to install a numpicker service-manager"
+    );
+  }
+
   const changes = {
     send_status: "SENT",
     service: "bandwidth",

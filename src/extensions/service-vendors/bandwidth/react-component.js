@@ -30,6 +30,13 @@ import GSSubmitButton from "../../../components/forms/GSSubmitButton";
 export class OrgConfig extends React.Component {
   constructor(props) {
     super(props);
+    this.state = { ...this.props.config, country: "United States" };
+    const allSet = this.isAllSet();
+    this.props.onAllSetChanged(allSet);
+    console.log("constructor");
+  }
+
+  isAllSet() {
     const {
       userName,
       password,
@@ -38,12 +45,9 @@ export class OrgConfig extends React.Component {
       sipPeerId,
       applicationId
     } = this.props.config;
-    const allSet = Boolean(
+    return Boolean(
       userName && password && accountId && siteId && sipPeerId && applicationId
     );
-    this.state = { ...this.props.config, country: "United States" };
-    this.props.onAllSetChanged(allSet);
-    console.log("constructor");
   }
 
   UNSAFE_componentWillReceiveProps(nextProps) {
@@ -109,17 +113,7 @@ export class OrgConfig extends React.Component {
 
   render() {
     const { organizationId, inlineStyles, styles, config } = this.props;
-    const {
-      userName,
-      password,
-      accountId,
-      siteId,
-      sipPeerId,
-      applicationId
-    } = config;
-    const allSet = Boolean(
-      userName && password && accountId && siteId && sipPeerId && applicationId
-    );
+    const allSet = this.isAllSet();
     let baseUrl = "http://base";
     if (typeof window !== "undefined") {
       baseUrl = window.location.origin;

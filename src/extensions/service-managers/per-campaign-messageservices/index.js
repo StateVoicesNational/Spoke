@@ -155,6 +155,18 @@ export async function onCampaignUpdateSignal({
   await accessRequired(user, campaign.organization_id, "ADMIN");
   const serviceName = getServiceNameFromOrganization(organization);
 
+  if (updateData.useOwnMessagingService) {
+    campaign.use_own_messaging_service = Boolean(
+      updateData.useOwnMessagingService &&
+        updateData.useOwnMessagingService !== "false"
+    );
+    await r
+      .knex("campaign")
+      .where("id", campaign.id)
+      .update("use_own_messaging_service", campaign.use_own_messaging_service);
+    await cacheableData.campaign.clear(campaign.id);
+  }
+
   if (updateData.releaseCampaignNumbers) {
     if (!campaign.use_own_messaging_service) {
       throw new Error(
@@ -213,7 +225,7 @@ export async function onCampaignUpdateSignal({
       }
     });
   }
-
+  console.log("per-campaign-messageservices.udpateCampaignSignal", campaign);
   return await _editCampaignData(organization, campaign);
 }
 
@@ -275,6 +287,7 @@ async function prepareTwilioCampaign(campaign, organization, trx) {
 }
 
 async function onCampaignStart({ organization, campaign, user }) {
+  console.log("per-campaign-messageservices.onCampaignStart", campaign.id);
   try {
     await r.knex.transaction(async trx => {
       const campaignTrx = await trx("campaign")

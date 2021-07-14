@@ -323,6 +323,7 @@ export async function saveCampaign(
   const rootValue = {};
   const description = "test description";
   const organizationId = campaign.organizationId;
+  const campaignId = campaign.id;
   const context = getContext({ user });
 
   const campaignQuery = `mutation editCampaign($campaignId: String!, $campaign: CampaignInput!) {
@@ -337,11 +338,9 @@ export async function saveCampaign(
     campaign: {
       title,
       description,
-      organizationId,
-      useOwnMessagingService,
-      inventoryPhoneNumberCounts
+      organizationId
     },
-    campaignId: campaign.id
+    campaignId
   };
   const result = await graphql(
     mySchema,
@@ -353,6 +352,43 @@ export async function saveCampaign(
   if (result.errors) {
     throw new Error("Create campaign failed " + JSON.stringify(result));
   }
+  if (useOwnMessagingService !== "false" || inventoryPhoneNumberCounts) {
+    const serviceManagerQuery = `mutation updateServiceManager(
+        $organizationId: String!
+        $campaignId: String!
+        $serviceManagerName: String!
+        $updateData: JSON!
+      ) {
+        updateServiceManager(
+          organizationId: $organizationId
+          campaignId: $campaignId
+          serviceManagerName: $serviceManagerName
+          updateData: $updateData
+        ) {
+        id
+        name
+        data
+        fullyConfigured
+      }
+    }`;
+    const managerResult = await graphql(
+      mySchema,
+      serviceManagerQuery,
+      rootValue,
+      context,
+      {
+        organizationId,
+        serviceManagerName: "per-campaign-messageservices",
+        updateData: {
+          useOwnMessagingService,
+          inventoryPhoneNumberCounts
+        },
+        campaignId
+      }
+    );
+    console.log("managerResult", JSON.stringify(managerResult));
+  }
+
   return result.data.editCampaign;
 }
 
