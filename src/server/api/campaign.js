@@ -17,6 +17,7 @@ import { getConfig, getFeatures } from "./lib/config";
 import ownedPhoneNumber from "./lib/owned-phone-number";
 const title = 'lower("campaign"."title")';
 import { camelizeKeys } from "humps";
+import usAreaCodes from "us-area-codes/data/codes.json";
 
 export function addCampaignsFilterToQuery(
   queryParam,
@@ -594,8 +595,6 @@ export const resolvers = {
         "SUPERVOLUNTEER",
         true
       );
-
-      const usAreaCodes = require("us-area-codes");
       const areaCodes = await r
         .knex("campaign_contact")
         .select(
@@ -609,7 +608,7 @@ export const resolvers = {
 
       return areaCodes.map(data => ({
         areaCode: data.area_code,
-        state: usAreaCodes.get(Number(data.area_code)),
+        state: usAreaCodes[data.area_code] || "N/A",
         count: parseInt(data.count, 10)
       }));
     },

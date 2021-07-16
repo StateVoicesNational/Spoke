@@ -19,7 +19,7 @@ import { getConfig } from "../../../server/api/lib/config";
 import { getServiceNameFromOrganization } from "../../service-vendors";
 import * as twilio from "../../service-vendors/twilio";
 import { camelizeKeys } from "humps";
-// import usAreaCodes from "us-area-codes";
+import usAreaCodes from "us-area-codes/data/codes.json";
 
 export const name = "per-campaign-messageservices";
 
@@ -72,7 +72,7 @@ const _editCampaignData = async (organization, campaign) => {
 
   const contactsAreaCodeCounts = areaCodes.map(data => ({
     areaCode: data.area_code,
-    //    state: usAreaCodes.get(Number(data.area_code)),
+    state: usAreaCodes[data.area_code] || "N/A",
     count: parseInt(data.count, 10)
   }));
   // 2. phoneNumberCounts (for organization)

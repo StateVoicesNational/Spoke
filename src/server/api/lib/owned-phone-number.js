@@ -1,5 +1,6 @@
 import { r } from "../../models";
 import { getConfig } from "./config";
+import usAreaCodes from "us-area-codes/data/codes.json";
 
 async function allocateCampaignNumbers(
   { organizationId, campaignId, areaCode, amount },
@@ -57,7 +58,6 @@ async function listCampaignNumbers(campaignId) {
 }
 
 async function listOrganizationCounts(organization) {
-  const usAreaCodes = require("us-area-codes");
   const service =
     getConfig("service", organization) ||
     getConfig("DEFAULT_SERVICE", organization);
@@ -77,7 +77,7 @@ async function listOrganizationCounts(organization) {
     .groupBy("area_code");
   return counts.map(row => ({
     areaCode: row.area_code,
-    state: usAreaCodes.get(Number(row.area_code)),
+    state: usAreaCodes[row.area_code] || "N/A",
     allocatedCount: Number(row.allocated_count),
     availableCount: Number(row.available_count)
   }));
