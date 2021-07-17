@@ -166,7 +166,7 @@ export const resolvers = {
           getConfig("ALLOW_SEND_ALL", organization, { truthy: 1 }) &&
           getFeatures(organization).ALLOW_SEND_ALL_ENABLED
       ),
-    theme: async () => {
+    theme: async organization => {
       const themeOptions = {
         palette: {
           type: "light",
@@ -184,7 +184,8 @@ export const resolvers = {
           }
         }
       };
-      return themeOptions;
+      // return themeOptions;
+      return getFeatures(organization).theme || themeOptions;
     },
     settings: async (organization, _, { user, loaders }) => {
       try {

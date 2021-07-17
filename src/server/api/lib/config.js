@@ -22,19 +22,6 @@ export function getFeatures(organization) {
   );
 }
 
-export function getTheme(organization) {
-  if (!organization) {
-    return {};
-  }
-  return (
-    (organization.theme &&
-      typeof organization.theme == "string" &&
-      JSON.parse(organization.theme)) ||
-    organization.theme ||
-    {}
-  );
-}
-
 export const getOrDefault = (value, defaultValue) =>
   value === "" ? defaultValue : value;
 

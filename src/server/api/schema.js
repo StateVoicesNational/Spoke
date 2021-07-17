@@ -748,28 +748,23 @@ const rootMutations = {
       { organizationId, primary, secondary, info, success, warning, error },
       { user }
     ) => {
-      console.log("---- YOU ARE HERE", 1);
       await accessRequired(user, organizationId, "OWNER");
 
-      console.log("---- YOU ARE HERE", 2);
       const organization = await Organization.get(organizationId);
       const featuresJSON = getFeatures(organization);
-      console.log("---- YOU ARE HERE", 3);
       featuresJSON.theme = {
         palette: {
-          primary,
-          secondary,
-          info,
-          success,
-          warning,
-          error
+          primary: { main: primary },
+          secondary: { main: secondary },
+          info: { main: info },
+          success: { main: success },
+          warning: { main: warning },
+          error: { main: error }
         }
       };
       organization.features = JSON.stringify(featuresJSON);
-      console.log("---- YOU ARE HERE", 4);
 
       await organization.save();
-      console.log("---- YOU ARE HERE", 5);
       await cacheableData.organization.clear(organizationId);
 
       return await Organization.get(organizationId);
