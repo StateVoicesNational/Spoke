@@ -21,7 +21,7 @@ import IconButton from "@material-ui/core/IconButton";
 
 import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
 import loadData from "./hoc/load-data";
-import withMuiTheme from "./hoc/withMuiTheme";
+import withSetTheme from "./hoc/withSetTheme";
 import GSSubmitButton from "../components/forms/GSSubmitButton";
 import DisplayLink from "../components/DisplayLink";
 import GSForm from "../components/forms/GSForm";
@@ -390,7 +390,20 @@ class Settings extends React.Component {
             <h2>Theme</h2>
             <GSForm
               schema={themeFormSchema}
-              onSubmit={this.props.mutations.updateTheme}
+              onSubmit={data => {
+                this.props.mutations.updateTheme(data).then(() => {
+                  this.props.setTheme({
+                    palette: {
+                      primary: { main: data.primary },
+                      secondary: { main: data.secondary },
+                      info: { main: data.info },
+                      success: { main: data.success },
+                      warning: { main: data.warning },
+                      error: { main: data.error }
+                    }
+                  });
+                });
+              }}
               defaultValue={{
                 primary: this.props.muiTheme.palette.primary.main,
                 secondary: this.props.muiTheme.palette.secondary.main,
@@ -798,6 +811,6 @@ const mutations = {
 };
 
 export default compose(
-  withMuiTheme,
+  withSetTheme,
   loadData({ queries, mutations })
 )(Settings);

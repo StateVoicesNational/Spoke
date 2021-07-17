@@ -32,11 +32,7 @@ const Organization = thinky.createModel(
         .required()
         .min(0)
         .max(24)
-        .default(21),
-      theme: type
-        .string()
-        .required()
-        .default("") // should be JSON
+        .default(21)
     })
     .allowExtra(false),
   { noAutoCreation: true }

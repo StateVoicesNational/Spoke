@@ -12,7 +12,7 @@ import ThemeContext from "../containers/context/ThemeContext";
  * parts of the theme object. Here we will take the string,
  * parse it, and merge it with other app theme defaults
  */
-const formatThemeString = newTheme => {
+const formatTheme = newTheme => {
   return {
     ...defaultTheme,
     palette: newTheme.palette
@@ -22,17 +22,16 @@ const formatThemeString = newTheme => {
 const App = ({ children }) => {
   const [theme, setTheme] = useState(defaultTheme);
   const muiTheme = createMuiTheme(theme);
-  console.log("APP THEME", theme);
-  const handleSetTheme = newPaletteString => {
-    if (newPaletteString === undefined) {
+  const handleSetTheme = newPalette => {
+    if (newPalette === undefined) {
       // happpens when OrganizationWrapper unmounts
       setTheme(defaultTheme);
     } else {
       try {
-        const newTheme = formatThemeString(newPaletteString);
+        const newTheme = formatTheme(newPalette);
         setTheme(newTheme);
       } catch (e) {
-        console.error("Failed to parse theme: ", newPaletteString);
+        console.error("Failed to parse theme: ", newPalette);
       }
     }
   };
