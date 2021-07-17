@@ -77,6 +77,7 @@ export const schema = gql`
     twilioAuthToken: String
     twilioMessageServiceSid: String
     fullyConfigured: Boolean
+    fullyConfiguredFailureInstructions: [String]
     emailEnabled: Boolean
     phoneInventoryEnabled: Boolean!
     campaignPhoneNumbersEnabled: Boolean!

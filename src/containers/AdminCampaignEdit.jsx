@@ -757,6 +757,9 @@ export class AdminCampaignEdit extends React.Component {
     }
     const orgConfigured = this.props.organizationData.organization
       .fullyConfigured;
+    const orgConfigurationFailureInfoList = this.props.organizationData.organization.fullyConfiguredFailureInstructions.map(
+      errorFixText => <li>{errorFixText}</li>
+    );
     const { isArchived } = this.props.campaignData.campaign;
     const settingsLink = `/admin/${this.props.organizationData.organization.id}/settings`;
     let isCompleted = !this.props.campaignData.campaign.pendingJobs.filter(
@@ -784,9 +787,11 @@ export class AdminCampaignEdit extends React.Component {
         >
           {!orgConfigured ? (
             <span>
-              Your organization is missing required configuration. Please{" "}
-              <Link to={settingsLink}>update your settings</Link> or contact an
-              adminstrator
+              Your organization is missing the following required configuration
+              step(s):
+              <ul>{orgConfigurationFailureInfoList}</ul>
+              Please <Link to={settingsLink}>update your settings</Link> or
+              contact an administrator
             </span>
           ) : !isCompleted ? (
             "You need to complete all the sections below before you can start this campaign"
@@ -976,6 +981,7 @@ const queries = {
           id
           uuid
           fullyConfigured
+          fullyConfiguredFailureInstructions
           campaignPhoneNumbersEnabled
           batchPolicies
           texters: people(role: "ANY") {
