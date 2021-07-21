@@ -178,7 +178,9 @@ class IncomingMessageFilter extends Component {
     campaign.key !== ALL_CAMPAIGNS;
 
   selectedCampaignIds = selectedCampaigns =>
-    selectedCampaigns.map(campaign => parseInt(campaign.key, 10));
+    selectedCampaigns.map(campaign =>
+      parseInt(campaign.key || campaign.rawValue, 10)
+    );
 
   campaignsNotAlreadySelected = campaign => {
     return !this.selectedCampaignIds(this.state.selectedCampaigns).includes(
