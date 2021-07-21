@@ -225,17 +225,19 @@ export async function onCampaignUpdateSignal({
       }
     });
   }
-  console.log("per-campaign-messageservices.udpateCampaignSignal", campaign);
   return await _editCampaignData(organization, campaign);
 }
 
-async function onVendorServiceFullyConfigured({ organization, serviceName }) {
+export async function onVendorServiceFullyConfigured({
+  organization,
+  serviceName
+}) {
   return {
     skipOrgMessageService: true
   };
 }
 
-async function onOrganizationServiceVendorSetup({
+export async function onOrganizationServiceVendorSetup({
   organization,
   newConfig,
   serviceName
@@ -280,14 +282,16 @@ async function prepareTwilioCampaign(campaign, organization, trx) {
     );
   } catch (e) {
     console.error("Failed to add numbers to messaging service", e);
-    await twilio.deleteMessagingService(organization, msgSrvSid);
+    if (msgSrvSid) {
+      // only delete campaign message service
+      await twilio.deleteMessagingService(organization, msgSrvSid);
+    }
     throw new Error("Failed to add numbers to messaging service");
   }
   return msgSrvSid;
 }
 
-async function onCampaignStart({ organization, campaign, user }) {
-  console.log("per-campaign-messageservices.onCampaignStart", campaign.id);
+export async function onCampaignStart({ organization, campaign, user }) {
   try {
     await r.knex.transaction(async trx => {
       const campaignTrx = await trx("campaign")
@@ -317,7 +321,6 @@ async function onCampaignStart({ organization, campaign, user }) {
           `Campaign phone numbers are not supported for service ${serviceName}`
         );
       }
-
       await trx("campaign")
         .where("id", campaign.id)
         .update({
@@ -325,6 +328,7 @@ async function onCampaignStart({ organization, campaign, user }) {
           use_own_messaging_service: true,
           messageservice_sid: messagingServiceSid
         });
+      await cacheableData.campaign.clear(campaign.id);
     });
   } catch (e) {
     console.error(

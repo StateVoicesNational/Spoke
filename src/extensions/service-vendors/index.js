@@ -54,8 +54,12 @@ export const createMessagingService = (organization, friendlyName) => {
   } else if (service === "signalwire") {
     // service = signalwire;
   }
-
-  if (service) {
+  console.log(
+    "service-vendors::createMessagingService",
+    serviceName,
+    organization.id
+  );
+  if (service && service.createMessagingService) {
     return service.createMessagingService(organization, friendlyName);
   }
   return null;

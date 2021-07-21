@@ -567,6 +567,7 @@ export async function handleIncomingMessage(message) {
  * Create a new Twilio messaging service
  */
 export async function createMessagingService(organization, friendlyName) {
+  console.log("twilio.createMessagingService", organization.id, friendlyName);
   const twilio = await exports.getTwilio(organization);
   const twilioBaseUrl =
     getConfig("TWILIO_BASE_CALLBACK_URL", organization) ||
@@ -732,7 +733,7 @@ export async function buyNumbersInAreaCode(
   return totalPurchased;
 }
 
-async function addNumbersToMessagingService(
+export async function addNumbersToMessagingService(
   organization,
   phoneSids,
   messagingServiceSid
@@ -774,7 +775,7 @@ async function deleteNumber(twilioInstance, phoneSid, phoneNumber) {
 /**
  * Delete all non-allocted phone numbers in an area code
  */
-async function deleteNumbersInAreaCode(organization, areaCode) {
+export async function deleteNumbersInAreaCode(organization, areaCode) {
   const twilioInstance = await exports.getTwilio(organization);
   const numbersToDelete = await r
     .knex("owned_phone_number")
@@ -794,13 +795,19 @@ async function deleteNumbersInAreaCode(organization, areaCode) {
   return successCount;
 }
 
-async function deleteMessagingService(organization, messagingServiceSid) {
+export async function deleteMessagingService(
+  organization,
+  messagingServiceSid
+) {
   const twilioInstance = await exports.getTwilio(organization);
   console.log("Deleting messaging service", messagingServiceSid);
   return twilioInstance.messaging.services(messagingServiceSid).remove();
 }
 
-async function clearMessagingServicePhones(organization, messagingServiceSid) {
+export async function clearMessagingServicePhones(
+  organization,
+  messagingServiceSid
+) {
   const twilioInstance = await exports.getTwilio(organization);
   console.log("Deleting phones from messaging service", messagingServiceSid);
 

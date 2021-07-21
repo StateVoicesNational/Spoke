@@ -11,6 +11,7 @@ import {
 } from "../../../../src/containers/TexterTodo";
 import { dataQuery as TexterTodoListQuery } from "../../../../src/containers/TexterTodoList";
 import * as twilio from "../../../../src/extensions/service-vendors/twilio";
+import { getMessageServiceConfig } from "../../../../src/extensions/service-vendors/service_map";
 import { makeTree } from "../../../../src/lib";
 import { getConfig } from "../../../../src/server/api/lib/config";
 import { cacheableData, r } from "../../../../src/server/models";
@@ -846,7 +847,6 @@ describe("Bulk Send", async () => {
   const OLD_ENV = process.env;
 
   beforeEach(async () => {
-    jest.resetModules(); // this is important - it clears the cache
     process.env = {
       ...OLD_ENV
     };
@@ -1213,11 +1213,20 @@ describe("all interaction steps fields travel round trip", () => {
 });
 
 describe("useOwnMessagingService", async () => {
+  const oldEnv = process.env;
   beforeEach(async () => {
     await ensureOrganizationTwilioWithMessagingService(
       testOrganization,
       testCampaign
     );
+    process.env = {
+      ...process.env,
+      SERVICE_MANAGERS: "per-campaign-messageservices"
+    };
+  });
+
+  afterAll(() => {
+    process.env = oldEnv;
   });
 
   it("uses default messaging service when false", async () => {
@@ -1232,25 +1241,25 @@ describe("useOwnMessagingService", async () => {
     expect(campaignDataResults.data.campaign.useOwnMessagingService).toEqual(
       false
     );
-    expect(campaignDataResults.data.campaign.messageserviceSid).toEqual(
-      global.TWILIO_MESSAGE_SERVICE_SID
+    const organization = await cacheableData.organization.load(organizationId);
+    const { messageServiceSid } = await getMessageServiceConfig(
+      "twilio",
+      organization
     );
+    expect(messageServiceSid).toEqual(global.TWILIO_MESSAGE_SERVICE_SID);
   });
-  describe("when true", () => {
-    beforeEach(() => {
-      jest.spyOn(twilio, "createMessagingService").mockReturnValue({
-        sid: "testTWILIOsid"
-      });
+  it("creates new messaging service when true", async () => {
+    jest.spyOn(twilio, "createMessagingService").mockReturnValue({
+      sid: "testTWILIOsid"
     });
-    it("creates new messaging service when true", async () => {
-      await saveCampaign(
-        testAdminUser,
-        { id: testCampaign.id, organizationId },
-        "test campaign new title",
-        true
-      );
+    await saveCampaign(
+      testAdminUser,
+      { id: testCampaign.id, organizationId },
+      "test campaign new title",
+      true
+    );
 
-      const getCampaignsQuery = `
+    const getCampaignsQuery = `
       query getCampaign($campaignId: String!) {
         campaign(id: $campaignId) {
           id
@@ -1260,25 +1269,24 @@ describe("useOwnMessagingService", async () => {
       }
     `;
 
-      const variables = {
-        campaignId: testCampaign.id
-      };
+    const variables = {
+      campaignId: testCampaign.id
+    };
 
-      await startCampaign(testAdminUser, testCampaign);
+    await startCampaign(testAdminUser, testCampaign);
 
-      const campaignDataResults = await runGql(
-        getCampaignsQuery,
-        variables,
-        testAdminUser
-      );
+    const campaignDataResults = await runGql(
+      getCampaignsQuery,
+      variables,
+      testAdminUser
+    );
 
-      expect(campaignDataResults.data.campaign.useOwnMessagingService).toEqual(
-        true
-      );
-      expect(campaignDataResults.data.campaign.messageserviceSid).toEqual(
-        "testTWILIOsid"
-      );
-    });
+    expect(campaignDataResults.data.campaign.useOwnMessagingService).toEqual(
+      true
+    );
+    expect(campaignDataResults.data.campaign.messageserviceSid).toEqual(
+      "testTWILIOsid"
+    );
   });
 });
 
