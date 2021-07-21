@@ -23,7 +23,6 @@
     "prod-build-client": "webpack --config ./webpack/config.js",
     "prod-maybe-build-client": "if [ \"$ASSETS_DIR_PREBUILT\" != \"\" ] ; then npm run install-prebuilt-assets; else npm run prod-build-client; fi",
     "prod-build-server": "babel ./src  -d ./build/server/ --source-maps --copy-files --ignore \"src/components,src/containers,src/client,src/styles,./src/routes.jsx\"; babel ./migrations -d ./build/server/migrations/ --source-maps --copy-files",
-    "prod-build-forcypress": "NODE_ENV=test yarn install && npm run prod-build",
     "prod-build": "npm run clean && npm run prod-build-client && npm run prod-build-server",
     "prod-static-upload": "if [ \"$S3_STATIC_PATH\" != \"\" ] ; then aws s3 sync --acl public-read ./build/client/assets/ $S3_STATIC_PATH ; fi",
     "postinstall": "if [ \"$NODE_ENV\" = production ] ; then npm run prod-build-server && npm run prod-maybe-build-client && npm run prod-static-upload && npm run install-config-file; npm run notify-slack; fi",
@@ -81,10 +80,10 @@
   "homepage": "https://github.com/MoveOnOrg/Spoke/#readme",
   "dependencies": {
     "@aoberoi/passport-slack": "^1.0.5",
-    "@date-io/core": "^1.3.13",
-    "@date-io/date-fns": "^1.3.13",
     "@bandwidth/messaging": "^3.0.0",
     "@bandwidth/numbers": "^1.7.0",
+    "@date-io/core": "^1.3.13",
+    "@date-io/date-fns": "^1.3.13",
     "@trt2/gsm-charset-utils": "^1.0.13",
     "aphrodite": "^2.3.1",
     "apollo-cache-inmemory": "^1.6.6",
@@ -152,16 +151,16 @@
     "request": "^2.81.0",
     "rethink-knex-adapter": "0.4.20",
     "rollbar": "^2.4.4",
+    "terser-webpack-plugin": "4",
     "thinky": "^2.3.3",
     "timezonecomplete": "^5.5.0",
     "twilio": "^3.40.0",
-    "uglifyjs-webpack-plugin": "1.3.0",
     "url-join": "^4.0.1",
     "us-area-codes": "^1.0.0",
     "uuid": "^3.1.0",
     "wait-for-expect": "^1.1.1",
-    "webpack": "^3.8.1",
-    "webpack-manifest-plugin": "^1.3.2",
+    "webpack": "4",
+    "webpack-manifest-plugin": "^2.0.4",
     "yup": "0.32.3"
   },
   "devDependencies": {
@@ -195,9 +194,9 @@
     "regenerator-runtime": "^0.10.5",
     "selenium-webdriver": "^3.6.0",
     "sqlite3": "^4.1.1",
-    "uglifyjs-webpack-plugin": "1.3.0",
     "wait-on": "^2.1.0",
-    "webpack-dev-server": "^2.9.4"
+    "webpack-cli": "^4.7.2",
+    "webpack-dev-server": "3"
   },
   "husky": {
     "hooks": {
