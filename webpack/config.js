@@ -70,19 +70,23 @@ const config = {
   plugins,
   output: {
     filename: outputFile,
-    path: path.resolve(DEBUG ? __dirname : assetsDir),
-    publicPath: "/assets/"
+    path: path.resolve(DEBUG ? __dirname : assetsDir)
+  },
+  optimization: {
+    minimize: true,
+    minimizer: [
+      new TerserPlugin({
+        terserOptions: {
+          mangle: false
+        }
+      })
+    ]
   }
 };
 
 if (DEBUG) {
   config.devtool = "inline-source-map";
   config.output.sourceMapFilename = `${outputFile}.map`;
-} else {
-  config.optimization = {
-    minimize: true,
-    minimizer: [new TerserPlugin()]
-  };
 }
 
 module.exports = config;
