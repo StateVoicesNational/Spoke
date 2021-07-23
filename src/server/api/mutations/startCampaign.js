@@ -21,6 +21,9 @@ export const startCampaign = async (_, { id }, { user }) => {
       user
     }
   });
-  return campaign;
-  // TODO: maybe return a isStarting for component update
+  const updatedCampaign = await cacheableData.campaign.load(id);
+  if (!updatedCampaign.is_started) {
+    updatedCampaign.isStarting = true;
+  }
+  return updatedCampaign;
 };
