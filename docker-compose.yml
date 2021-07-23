@@ -1,0 +1,25 @@
+version: "3"
+services:
+  postgres:
+    image: postgres:alpine
+    restart: always
+    environment:
+      POSTGRES_DB: spokedev
+      POSTGRES_PASSWORD: spoke
+      POSTGRES_USER: spoke
+    volumes:
+      - postgres:/var/lib/postgresql/data
+    ports:
+      - 5432:5432
+  redis:
+    image: redis:alpine
+    restart: always
+    volumes:
+      - redis:/data
+    ports:
+      - 6379:6379
+volumes:
+  postgres:
+    external: false
+  redis:
+    external: false

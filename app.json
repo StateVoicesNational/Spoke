@@ -1,0 +1,201 @@
+{
+  "name": "spoke",
+  "description": "Mass peer to peer texting tool",
+  "repository": "https://github.com/moveonorg/spoke",
+  "success_url": "/",
+  "stack": "container",
+  "env": {
+    "SUPPRESS_SELF_INVITE": {
+      "description": "Should anonymous visitors be able to create new organizations from the home page? You will probably want to start the app with this off, and then after creating your own organization, come back here and set it to 1",
+      "required": false,
+      "value": ""
+    },
+
+    "PASSPORT_STRATEGY": {
+      "description": "Either 'auth0' or 'local' -- We recommend auth0 for production systems",
+      "required": true,
+      "value": "local"
+    },
+
+    "AUTH0_DOMAIN": {
+      "description": "auth0 domain attached to auth0 account (if not using auth0, enter anything)",
+      "required": true
+    },
+
+    "AUTH0_CLIENT_ID": {
+      "description": "auth0 client id attached to auth0 account (if not using auth0, enter anything)",
+      "required": true
+    },
+
+    "AUTH0_CLIENT_SECRET": {
+      "description": "auth0 client secret attached to auth0 account (if not using auth0, enter anything)",
+      "required": true
+    },
+
+    "BASE_URL": {
+      "description": "Set this if you are using a custom domain",
+      "required": false
+    },
+
+    "SESSION_SECRET": {
+      "description": "session secret",
+      "required": true,
+      "generator": "secret"
+    },
+
+    "DEFAULT_SERVICE": {
+      "description": "specifies using twilio api ",
+      "required": true,
+      "value": "twilio"
+    },
+
+    "TWILIO_ACCOUNT_SID": {
+      "description": "for twilio integration and connected to twilio account",
+      "required": true
+    },
+
+    "TWILIO_AUTH_TOKEN": {
+      "description": "for twilio integration and connected to twilio account",
+      "required": true
+    },
+
+    "TWILIO_MESSAGE_SERVICE_SID": {
+      "description": "for twilio integration and connected to twilio account",
+      "required": true
+    },
+
+    "TWILIO_STATUS_CALLBACK_URL": {
+      "description": "for twilio integration and connected to twilio account",
+      "required": true,
+      "value": "https://<changeme>.herokuapp.com/twilio-message-report"
+    },
+
+    "TWILIO_MULTI_ORG": {
+      "description": "Allows each organization in the Spoke instance to set Twilio variables within the app",
+      "required": false,
+      "value": "1"
+    },
+
+    "PHONE_INVENTORY": {
+      "description": "Enables organization owners to be able to buy Twilio phone numbers within the app",
+      "required": false,
+      "value": "1"
+    },
+
+    "EMAIL_HOST": {
+      "description": "for email notification integration",
+      "required": false,
+      "value": ""
+    },
+
+    "EMAIL_HOST_PASSWORD": {
+      "description": "for email notification integration",
+      "required": false,
+      "value": ""
+    },
+
+    "EMAIL_HOST_USER": {
+      "description": "for email notification integration",
+      "required": false,
+      "value": ""
+    },
+
+    "EMAIL_HOST_PORT": {
+      "description": "for email notification integration",
+      "required": false,
+      "value": ""
+    },
+
+    "EMAIL_FROM": {
+      "description": "for email notification integration, the from email address",
+      "required": false,
+      "value": ""
+    },
+
+    "PHONE_NUMBER_COUNTRY": {
+      "description": "for international integration (when not us)",
+      "required": true,
+      "value": "US"
+    },
+
+    "AWS_ACCESS_KEY_ID": {
+      "description": "in order to export data to an s3 bucket",
+      "required": false,
+      "value": ""
+    },
+
+    "AWS_SECRET_ACCESS_KEY": {
+      "description": "in order to export data to an s3 bucket",
+      "required": false,
+      "value": ""
+    },
+
+    "AWS_S3_BUCKET_NAME": {
+      "description": "in order to export data to an s3 bucket",
+      "required": false,
+      "value": ""
+    },
+
+    "OWNER_CONFIGURABLE": {
+      "description": "Allows organization owners to edit variables",
+      "required": false,
+      "value": "ALL"
+    },
+
+    "NODE_ENV": {
+      "description": "node environment determines the application start process",
+      "required": true,
+      "value": "production"
+    },
+
+    "JOBS_SAME_PROCESS": {
+      "description": "recommended setting which means that the same node process that runs the web app processes applications.",
+      "required": true,
+      "value": "1"
+    },
+
+    "SUPPRESS_MIGRATIONS": {
+      "description": "When updating code, do you want to disable auto-database migrations?",
+      "required": false,
+      "value": ""
+    },
+
+    "DST_REFERENCE_TIMEZONE": {
+      "description": "Timezone to use to determine whether DST is in effect for a date",
+      "required": true,
+      "value": "America/New_York"
+    },
+
+    "HEROKU_APP_NAME": {
+      "description": "Name of your Heroku app (not used if BASE_URL is set)",
+      "required": false
+    },
+
+    "KNEX_MIGRATION_DIR": {
+      "description": "sets path for migration directory - do not change",
+      "required": true,
+      "value": "/spoke/build/server/migrations/"
+    },
+
+    "DB_USE_SSL": {
+      "description": "ensures that the DB is connecting over SSL which is a requirement for Heroku DBs",
+      "required": true,
+      "value": "true"
+    },
+
+    "TWILIO_VALIDATION": {
+      "description": "Validate twilio message report links as well",
+      "value": "1"
+    }
+  },
+  "addons": [
+    "heroku-postgresql:hobby-dev",
+    {
+      "plan": "heroku-redis:hobby-dev",
+      "options": {
+        "maxmemory-policy": "volatile-lru"
+      }
+    },
+    "mailgun:starter"
+  ]
+}

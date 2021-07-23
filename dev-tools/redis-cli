@@ -1,0 +1,11 @@
+#!/bin/bash
+set -euo pipefail
+
+# Connect to the docker redis instance with the redis-cli command line tool
+# without installing it locally.
+#
+# Sample usage:
+#   * To open a shell:    ./dev-tools/redis-cli
+#   * To clear the cache: ./dev-tools/redis-cli FLUSHDB
+
+docker-compose exec redis redis-cli "$@"

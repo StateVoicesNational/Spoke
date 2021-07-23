@@ -1,0 +1,12 @@
+{
+  "baseUrl": "http://localhost:3000",
+  "integrationFolder": "__test__/cypress/integration",
+  "fixturesFolder": "__test__/cypress/fixtures",
+  "pluginsFile": "__test__/cypress/plugins/index.js",
+  "supportFile": "__test__/cypress/support/index.js",
+  "testFiles": "*.test.js",
+  "env": {
+    "SUPPRESS_ORG_CREATION": false,
+    "TEST_ORGANIZATION_ID": null
+  }
+}

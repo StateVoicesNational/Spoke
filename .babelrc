@@ -1,0 +1,10 @@
+{
+  "presets": ["react", "env", "stage-0"],
+  "only": ["*.js", "*.jsx"],
+  "plugins": [
+    ["transform-runtime", {
+      "polyfill": false,
+      "regenerator": true
+    }]
+  ]
+}
