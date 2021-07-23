@@ -40,6 +40,8 @@ jobs:
         SESSION_SECRET: secret
         DEFAULT_SERVICE: fakeservice
         JOBS_SAME_PROCESS: 1
+        JOBS_SYNC: 1
+        TASKS_SYNC: 1
         PASSPORT_STRATEGY: local
         PHONE_INVENTORY: 1
       with:

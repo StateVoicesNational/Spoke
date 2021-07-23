@@ -41,7 +41,10 @@ const serviceManagerTrigger = async ({
       .knex("campaign")
       .where("id", data.campaign.id)
       .update({ is_started: true });
-    await cacheableData.campaign.load(data.campaign.id, { forceLoad: true });
+    const reloadedCampaign = await cacheableData.campaign.load(
+      data.campaign.id,
+      { forceLoad: true }
+    );
     await sendUserNotification({
       type: Notifications.CAMPAIGN_STARTED,
       campaignId: data.campaign.id
@@ -49,10 +52,10 @@ const serviceManagerTrigger = async ({
     // TODO: Decide if we want/need this anymore, relying on FUTURE campaign-contact cache load changes
     // We are already in an background job process, so invoke the task directly rather than
     // kicking it off through the dispatcher
-    // await invokeTaskFunction(Tasks.CAMPAIGN_START_CACHE, {
-    //   organization,
-    //   campaign: reloadedCampaign
-    // });
+    await invokeTaskFunction(Tasks.CAMPAIGN_START_CACHE, {
+      organization,
+      campaign: reloadedCampaign
+    });
   }
 };
 
