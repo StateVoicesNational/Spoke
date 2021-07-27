@@ -45,7 +45,21 @@ thinkyConn.r.getCountDistinct = async (query, distinctConstraint) =>
   );
 
 if (process.env.REDIS_URL) {
-  thinkyConn.r.redis = redis.createClient({ url: process.env.REDIS_URL });
+  const redisSettings = { url: process.env.REDIS_URL };
+  if (/rediss/.test(redisSettings.url)) {
+    // secure redis protocol for Redis 6.0+
+    // https://devcenter.heroku.com/articles/securing-heroku-redis#using-node-js
+    redisSettings.tls = {
+      rejectUnauthorized: false,
+      requestCert: true,
+      agent: false
+    };
+  }
+  if (process.env.REDIS_JSON) {
+    Object.assign(redisSettings, JSON.parse(process.env.REDIS_JSON));
+  }
+
+  thinkyConn.r.redis = redis.createClient(redisSettings);
 } else if (process.env.REDIS_FAKE) {
   const fakeredis = require("fakeredis");
   bluebird.promisifyAll(fakeredis.RedisClient.prototype);
