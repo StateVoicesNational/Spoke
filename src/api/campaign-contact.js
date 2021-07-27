@@ -39,5 +39,6 @@ export const schema = `
     messageStatus: String
     assignmentId: String
     errorCode: Int
+    updated_at: Date
   }
 `;

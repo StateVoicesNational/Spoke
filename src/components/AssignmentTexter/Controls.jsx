@@ -24,7 +24,7 @@ import theme from "../../styles/theme";
 import Form from "react-formal";
 import { messageListStyles, inlineStyles, flexStyles } from "./StyleControls";
 import { searchFor } from "../../lib/search-helpers";
-
+import AssignmentContactsList from "./AssignmentContactsList";
 import { renderSidebox } from "../../extensions/texter-sideboxes/components";
 
 import {
@@ -1029,7 +1029,21 @@ export class AssignmentTexterContactControls extends React.Component {
         >
           {internalComponent}
         </div>
-        {this.renderSidebox(enabledSideboxes)}
+      </div>
+    );
+  }
+
+  renderAssignmentContactsList() {
+    const { assignment, contact, updateCurrentContactById } = this.props;
+    const { contacts } = assignment;
+
+    return (
+      <div className={css(flexStyles.sectionLeftSideBox)}>
+        <AssignmentContactsList
+          contacts={contacts}
+          currentContact={contact}
+          updateCurrentContactById={updateCurrentContactById}
+        />
       </div>
     );
   }
@@ -1058,19 +1072,25 @@ export class AssignmentTexterContactControls extends React.Component {
       ? this.renderFirstMessage(enabledSideboxes)
       : [
           this.renderToolbar(enabledSideboxes),
-          this.renderMessageBox(
-            <MessageList
-              contact={this.props.contact}
-              currentUser={this.props.currentUser}
-              messages={this.props.contact.messages}
-              organizationId={this.props.organizationId}
-              review={this.props.review}
-              styles={messageListStyles}
-              hideMedia={this.state.hideMedia}
-            />,
-            enabledSideboxes
-          ),
-          this.renderMessageControls(enabledSideboxes)
+          <div className={css(flexStyles.superSectionMessagePage)}>
+            {global.ASSIGNMENT_CONTACTS_SIDEBAR &&
+              this.renderAssignmentContactsList()}
+            <div className={css(flexStyles.superSectionMessageListAndControls)}>
+              {this.renderMessageBox(
+                <MessageList
+                  contact={this.props.contact}
+                  currentUser={this.props.currentUser}
+                  messages={this.props.contact.messages}
+                  organizationId={this.props.organizationId}
+                  review={this.props.review}
+                  styles={messageListStyles}
+                  hideMedia={this.state.hideMedia}
+                />
+              )}
+              {this.renderMessageControls(enabledSideboxes)}
+            </div>
+            {this.renderSidebox(enabledSideboxes)}
+          </div>
         ];
     return <div className={css(flexStyles.topContainer)}>{content}</div>;
   }
@@ -1104,7 +1124,8 @@ AssignmentTexterContactControls.propTypes = {
   onExitTexter: PropTypes.func,
   onEditStatus: PropTypes.func,
   refreshData: PropTypes.func,
-  getMessageTextFromScript: PropTypes.func
+  getMessageTextFromScript: PropTypes.func,
+  updateCurrentContactById: PropTypes.func
 };
 
 export default AssignmentTexterContactControls;

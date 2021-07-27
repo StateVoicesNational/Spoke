@@ -6,7 +6,8 @@ export const messageListStyles = {
   // passesd directly to <MessageList>
   messageList: {
     overflow: "hidden",
-    overflow: "-moz-scrollbars-vertical"
+    overflow: "-moz-scrollbars-vertical",
+    padding: 8
   },
   messageSent: {
     textAlign: "left",
@@ -95,6 +96,8 @@ export const flexStyles = StyleSheet.create({
     overflowY: "scroll",
     textAlign: "center",
     padding: "24px",
+    overflow: "hidden scroll",
+    borderLeft: "1px solid rgb(126, 128, 139)",
     maxWidth: "240px",
     "@media(max-width: 575px)": {
       display: "none"
@@ -114,6 +117,27 @@ export const flexStyles = StyleSheet.create({
     backgroundColor: "#f0f0f0",
     flex: "1 1 auto",
     overflowY: "scroll"
+  },
+  sectionLeftSideBox: {
+    flex: "0 1 240px",
+    padding: 12,
+    maxWidth: 240,
+    borderRight: "1px solid rgb(126, 128, 139)",
+    overflow: "hidden scroll",
+    "@media(max-width: 575px)": {
+      display: "none"
+    }
+  },
+  superSectionMessagePage: {
+    display: "flex",
+    flexGrow: 1,
+    overflow: "hidden scroll"
+  },
+  superSectionMessageListAndControls: {
+    display: "flex",
+    flexDirection: "column",
+    flexGrow: 1,
+    maxHeight: "100%"
   },
   /// * Section OptOut Dialog
   sectionOptOutDialog: {
@@ -136,8 +160,8 @@ export const flexStyles = StyleSheet.create({
   /// * Section Texting Input Field
   sectionMessageField: {
     // messageField
-    flex: "1 0 20px",
-    padding: "0px 4px",
+    flex: "0 0 20px",
+    padding: "0px 16px",
     marginBottom: "8px",
     backgroundColor: "white"
   },
@@ -163,14 +187,15 @@ export const flexStyles = StyleSheet.create({
     // flexWrap: "wrap",
     overflow: "hidden",
     position: "relative",
-    backgroundColor: bgGrey
+    backgroundColor: bgGrey,
+    paddingLeft: 12
   },
   subButtonsAnswerButtons: {
     flex: "1 1 auto", // keeps bottom buttons in place
     // height:105: webkit needs constraint on height sometimes
     //   during the inflection point of showing the shortcut-buttons
     //   without the height, the exit buttons get pushed down oddly
-    height: "15px", //TODO
+    // height: "15px", //TODO
     // internal:
     margin: "9px 0px 0px 9px",
     width: "100%"
