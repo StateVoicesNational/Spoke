@@ -37,6 +37,17 @@ export async function onDeliveryReport({
   lookup
 }) {}
 
+// When a contact is opted out
+export async function onOptOut({
+  organization,
+  contact,
+  campaign,
+  user,
+  noReply,
+  reason,
+  assignmentId
+}) {}
+
 export async function getCampaignData({
   organization,
   campaign,

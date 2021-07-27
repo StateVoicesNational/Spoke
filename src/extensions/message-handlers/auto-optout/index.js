@@ -101,7 +101,9 @@ export const postMessageSave = async ({
       reason: handlerContext.autoOptOutReason,
       // RISKY: we depend on the contactUpdates in preMessageSave
       // but this can relieve a lot of database pressure
-      noContactUpdate: true
+      noContactUpdate: true,
+      contact,
+      organization
     });
   }
 };

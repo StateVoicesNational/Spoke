@@ -1197,7 +1197,8 @@ const rootMutations = {
         reason,
         assignmentId,
         campaign,
-        noReply
+        noReply,
+        contact
       });
       console.log(
         "createOptOut post save",
@@ -1205,7 +1206,10 @@ const rootMutations = {
         contact.campaign_id
       );
 
-      return cacheableData.campaignContact.updateCacheForOptOut(contact);
+      const newContact = cacheableData.campaignContact.updateCacheForOptOut(
+        contact
+      );
+      return newContact;
     },
     deleteQuestionResponses: async (
       _,
