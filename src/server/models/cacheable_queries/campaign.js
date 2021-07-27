@@ -4,7 +4,7 @@ import {
   assembleAnswerOptions,
   getUsedScriptFields
 } from "../../../lib/interaction-step-helpers";
-import { getFeatures } from "../../api/lib/config";
+import { getFeatures, getConfig } from "../../api/lib/config";
 import organizationCache from "./organization";
 
 // This should be cached data for a campaign that will not change
@@ -100,11 +100,17 @@ const loadDeep = async id => {
       campaign.interactionSteps,
       "script"
     );
-    if (process.env.MOBILIZE_EVENT_SHIFTER_URL) {
+    if (getConfig("MOBILIZE_EVENT_SHIFTER_URL")) {
       campaign.usedFields.cell = 1;
       campaign.usedFields.email = 1;
       campaign.usedFields.zip = 1;
       campaign.usedFields.event_id = 1;
+    }
+    if (getConfig("TEXTER_SIDEBOX_FIELDS")) {
+      const fields = getConfig("TEXTER_SIDEBOX_FIELDS").split(",");
+      fields.forEach(f => {
+        campaign.usedFields[f] = 1;
+      });
     }
     campaign.contactTimezones = await dbContactTimezones(id);
     campaign.contactsCount = await r.getCount(
