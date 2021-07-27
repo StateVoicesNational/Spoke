@@ -1384,8 +1384,8 @@ describe("ngpvan", () => {
 
       wrapper = shallow(<CampaignContactsForm {...props} />);
       component = wrapper.instance();
-      const autocomplete = wrapper.find("AutoComplete");
-      expect(autocomplete.props().dataSource).toEqual([]);
+      const autocomplete = wrapper.find(Autocomplete);
+      expect(autocomplete.props().options).toEqual([]);
     });
 
     describe("when lastResult indicates a success", () => {
