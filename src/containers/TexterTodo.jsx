@@ -156,6 +156,10 @@ export const dataQuery = gql`
       hasUnassignedContactsForTexter
       contacts(contactsFilter: $contactsFilter) {
         id
+        firstName
+        lastName
+        messageStatus
+        updated_at
       }
       allContactsCount: contactsCount
       unmessagedCount: contactsCount(contactsFilter: $needsMessageFilter)
@@ -247,19 +251,26 @@ const queries = {
     query: dataQuery,
     options: ownProps => {
       console.log("TexterTodo ownProps", ownProps);
+      const messageStatus = (
+        !global.ASSIGNMENT_CONTACTS_SIDEBAR || 
+        ownProps.messageStatus === "needsMessage"
+      )
+        ? ownProps.messageStatus
+        : "allReplies";
+
       // based on ?review=1 in location.search
       // exclude isOptedOut: false, validTimezone: true
       const contactsFilter =
         ownProps.location.query.review === "1"
           ? {
-              messageStatus: ownProps.messageStatus,
+              messageStatus,
               errorCode: ["0"],
               ...(ownProps.params.reviewContactId && {
                 contactId: ownProps.params.reviewContactId
               })
             }
           : {
-              messageStatus: ownProps.messageStatus,
+              messageStatus,
               ...(!ownProps.params.reviewContactId && { isOptedOut: false }),
               ...(ownProps.params.reviewContactId && {
                 contactId: ownProps.params.reviewContactId

@@ -26,7 +26,7 @@ export const resolvers = {
   },
   CampaignContact: {
     ...mapFieldsToModel(
-      ["id", "firstName", "lastName", "assignmentId", "external_id"],
+      ["id", "firstName", "lastName", "assignmentId", "external_id", "updated_at"],
       CampaignContact
     ),
     messageStatus: async (campaignContact, _, { loaders }) => {
