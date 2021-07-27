@@ -1372,6 +1372,18 @@ describe("ngpvan", () => {
       expect(autocomplete.props().hintText).toEqual("Select a list to import");
     });
 
+    it("populates as empty when client choice data errors", async () => {
+      const props = {
+        ...commonProps,
+        clientChoiceData: JSON.stringify({ error: 'error occurred' })
+      };
+
+      wrapper = shallow(<CampaignContactsForm {...props} />);
+      component = wrapper.instance();
+      const autocomplete = wrapper.find("AutoComplete");
+      expect(autocomplete.props().dataSource).toEqual([]);
+    });
+
     describe("when lastResult indicates a success", () => {
       beforeEach(async () => {
         StyleSheetTestUtils.suppressStyleInjection();
