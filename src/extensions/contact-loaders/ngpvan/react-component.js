@@ -35,7 +35,11 @@ export class CampaignContactsForm extends React.Component {
 
   buildSelectData = () => {
     const { clientChoiceData } = this.props;
+
     const clientChoiceDataObject = JSON.parse(clientChoiceData);
+    if (!clientChoiceDataObject || !clientChoiceDataObject.items) {
+      return [];
+    }
     return clientChoiceDataObject.items;
   };
 
