@@ -150,7 +150,7 @@ describe("ngpvan", () => {
         }
       })
         .get(
-          `/v4/savedLists?$top=&maxPeopleCount=${process.env.NGP_VAN_MAXIMUM_LIST_SIZE}`
+          `/v4/savedLists?$top=100&maxPeopleCount=${process.env.NGP_VAN_MAXIMUM_LIST_SIZE}`
         )
         .reply(200, {
           items: listItems,
@@ -173,7 +173,7 @@ describe("ngpvan", () => {
           }
         })
           .get(
-            `/v4/savedLists?$top=&maxPeopleCount=${process.env.NGP_VAN_MAXIMUM_LIST_SIZE}`
+            `/v4/savedLists?$top=100&maxPeopleCount=${process.env.NGP_VAN_MAXIMUM_LIST_SIZE}`
           )
           .reply(404);
 
