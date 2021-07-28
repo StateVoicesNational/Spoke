@@ -1,11 +1,13 @@
 import PropTypes from "prop-types";
 import React from "react";
 import List from "@material-ui/core/List";
+import ListSubheader from '@material-ui/core/ListSubheader';
 import ListItem from "@material-ui/core/ListItem";
+import ListItemIcon from "@material-ui/core/ListItemIcon";
 import ListItemText from "@material-ui/core/ListItemText";
 import ListItemSecondaryAction from "@material-ui/core/ListItemSecondaryAction";
-import Tabs from "@material-ui/core/Tabs";
-import Tab from "@material-ui/core/Tab";
+import FiberManualRecordIcon from '@material-ui/icons/FiberManualRecord';
+import Divider from '@material-ui/core/Divider';
 import SearchBar from "material-ui-search-bar";
 import moment from "moment";
 
@@ -53,11 +55,9 @@ class AssignmentContactsList extends React.Component {
   constructor(props) {
     super(props);
 
-    const { currentContact } = this.props;
-
     this.state = {
       search: "",
-      messageStatus: currentContact.messageStatus
+      messageStatus: null
     };
   }
 
@@ -93,30 +93,27 @@ class AssignmentContactsList extends React.Component {
     }
   }
 
-  renderContacts = () => {
-    const { contacts, updateCurrentContactById, currentContact } = this.props;
+  renderContact = contact => {
+    const { updateCurrentContactById, currentContact } = this.props;
 
-    console.log('AssignmentContactsList', this.props);
+    const props = contact.messageStatus === "closed"
+      ? { secondary: `${contact.firstName} ${contact.lastName}` }
+      : { primary: `${contact.firstName} ${contact.lastName}` };
 
-    // Filter contacts by message status and search
-    const filteredContacts = contacts.filter(
-      c =>
-        `${c.firstName} ${c.lastName}`
-          .toLowerCase()
-          .includes(this.state.search.toLowerCase()) &&
-        c.messageStatus === this.state.messageStatus
-    );
-
-    return filteredContacts.map(contact => (
-      <ListItem
+    return (
+      <ListItem 
         key={contact.id}
         id={this.getContactListItemId(contact.id)}
         selected={contact.id === currentContact.id}
         onClick={() => updateCurrentContactById(contact.id)}
         button
       >
+        {contact.messageStatus === "needsResponse" ? (
+          <ListItemIcon><FiberManualRecordIcon color="primary" /></ListItemIcon>
+        ): ""}
         <ListItemText
-          primary={`${contact.firstName} ${contact.lastName}`}
+          inset={contact.messageStatus !== "needsResponse"}
+          {...props}
         />
         <ListItemSecondaryAction>
           <span style={inlineStyles.updatedAt}>
@@ -124,7 +121,31 @@ class AssignmentContactsList extends React.Component {
           </span>
         </ListItemSecondaryAction>
       </ListItem>
-    ));
+    );
+  };
+
+  renderContacts = () => {
+    // Filter contacts by message status and search
+    const filteredContacts = this.props.contacts.filter(
+      c =>
+        `${c.firstName} ${c.lastName}`
+          .toLowerCase()
+          .includes(this.state.search.toLowerCase()) &&
+        (!this.state.messageStatus || c.messageStatus === this.state.messageStatus)
+    );
+
+    const backgroundColor = "rgb(214, 215, 223)";
+
+    return [
+      <ListSubheader key="needsResponse-subheader" style={{ backgroundColor }}>Respond</ListSubheader>,
+      filteredContacts.filter(c => c.messageStatus === "needsResponse").map(this.renderContact),
+      <Divider key="needsResponse-divider" />,
+      <ListSubheader key="convo-subheader" style={{ backgroundColor }}>Past</ListSubheader>,
+      filteredContacts.filter(c => c.messageStatus === "convo").map(this.renderContact),
+      <Divider key="convo-divider" />,
+      <ListSubheader key="closed-subheader" style={{ backgroundColor }}>Skipped</ListSubheader>,
+      filteredContacts.filter(c => c.messageStatus === "closed").map(this.renderContact)
+    ];
   };
 
   render() {
@@ -141,17 +162,6 @@ class AssignmentContactsList extends React.Component {
 
     return (
       <div style={inlineStyles.contactsListParent}>
-        <Tabs
-          value={this.state.messageStatus}
-          onChange={(ev, messageStatus) => this.setState({ messageStatus })}
-          indicatorColor="primary"
-          variant="scrollable"
-          scrollButtons="on"
-        >
-          <Tab label="Respond" value="needsResponse" />
-          <Tab label="Past" value="convo" />
-          <Tab label="Skipped" value="closed" />
-        </Tabs>
         <SearchBar
           onChange={search => this.setState({ search: search || "" })}
           onCancelSearch={() => this.setState({ search: "" })}
@@ -161,6 +171,7 @@ class AssignmentContactsList extends React.Component {
         />
         <List
           id="assignment-contacts-list"
+          subheader={<ListSubheader />}
           style={inlineStyles.contactListScrollContainer}
         >
           {contactList}
