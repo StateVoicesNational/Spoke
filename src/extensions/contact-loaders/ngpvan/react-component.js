@@ -47,7 +47,7 @@ export class CampaignContactsForm extends React.Component {
     const selectData = this.buildSelectData();
     return (
       <Autocomplete
-        options={this.buildSelectData()}
+        options={selectData}
         getOptionLabel={option => option.name}
         onChange={(event, value) => {
           if (value) {
