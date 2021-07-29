@@ -73,7 +73,7 @@ const config = {
     path: path.resolve(DEBUG ? __dirname : assetsDir)
   },
   optimization: {
-    minimize: true,
+    minimize: !DEBUG,
     minimizer: [
       new TerserPlugin({
         terserOptions: {
