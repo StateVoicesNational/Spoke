@@ -44,8 +44,10 @@ thinkyConn.r.getCountDistinct = async (query, distinctConstraint) =>
     (await query.countDistinct(distinctConstraint + " as count").first()).count
   );
 
-if (process.env.REDIS_URL) {
-  const redisSettings = { url: process.env.REDIS_URL };
+const redisUrl = process.env.REDIS_TLS_URL || process.env.REDIS_URL;
+
+if (redisUrl) {
+  const redisSettings = { url: redisUrl };
   if (/rediss/.test(redisSettings.url)) {
     // secure redis protocol for Redis 6.0+
     // https://devcenter.heroku.com/articles/securing-heroku-redis#using-node-js
