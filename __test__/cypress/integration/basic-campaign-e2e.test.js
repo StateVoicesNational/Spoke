@@ -42,7 +42,7 @@ describe("End-to-end campaign flow", () => {
     // Selectors are fairly brittle, consider upgrading material-ui for easier test interaction
 
     // Open picker by focusing input
-    cy.get("[data-test=dueBy] input").click();
+    cy.get("[data-test=dueBy] input").type("1");
     // Click next month (>)
     cy.get("div.MuiPickersCalendarHeader-switchHeader > button:nth-child(3)")
       .first()
