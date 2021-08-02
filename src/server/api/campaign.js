@@ -320,6 +320,7 @@ export const resolvers = {
       ],
       Campaign
     ),
+    isStarting: campaign => campaign.isStarting || null,
     dueBy: campaign =>
       campaign.due_by instanceof Date || !campaign.due_by
         ? campaign.due_by || null

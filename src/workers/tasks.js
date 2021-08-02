@@ -4,7 +4,6 @@
 import serviceMap from "../extensions/service-vendors";
 import * as ActionHandlers from "../extensions/action-handlers";
 import { r, cacheableData } from "../server/models";
-import { Notifications, sendUserNotification } from "../server/notifications";
 import { processServiceManagers } from "../extensions/service-managers";
 
 export const Tasks = Object.freeze({
@@ -29,34 +28,6 @@ const serviceManagerTrigger = async ({
     organization,
     data
   );
-
-  // This is a little hacky rather than making another task, but while it's a single
-  // exception, it feels fine -- if this becomes a bunch of if...else ifs, then reconsider
-  if (
-    functionName === "onCampaignStart" &&
-    data.campaign &&
-    !(serviceManagerData && serviceManagerData.blockCampaignStart)
-  ) {
-    await r
-      .knex("campaign")
-      .where("id", data.campaign.id)
-      .update({ is_started: true });
-    const reloadedCampaign = await cacheableData.campaign.load(
-      data.campaign.id,
-      { forceLoad: true }
-    );
-    await sendUserNotification({
-      type: Notifications.CAMPAIGN_STARTED,
-      campaignId: data.campaign.id
-    });
-    // TODO: Decide if we want/need this anymore, relying on FUTURE campaign-contact cache load changes
-    // We are already in an background job process, so invoke the task directly rather than
-    // kicking it off through the dispatcher
-    await invokeTaskFunction(Tasks.CAMPAIGN_START_CACHE, {
-      organization,
-      campaign: reloadedCampaign
-    });
-  }
 };
 
 const sendMessage = async ({

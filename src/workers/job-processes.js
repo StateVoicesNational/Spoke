@@ -17,7 +17,7 @@ import {
   importScript,
   buyPhoneNumbers,
   deletePhoneNumbers,
-  startCampaignWithPhoneNumbers
+  startCampaign
 } from "./jobs";
 import { setupUserNotificationObservers } from "../server/notifications";
 import { loadContactsFromDataWarehouseFragment } from "../extensions/contact-loaders/datawarehouse";
@@ -42,7 +42,7 @@ export const Jobs = Object.freeze({
   IMPORT_SCRIPT: "import_script",
   BUY_PHONE_NUMBERS: "buy_phone_numbers",
   DELETE_PHONE_NUMBERS: "delete_phone_numbers",
-  START_CAMPAIGN_WITH_PHONE_NUMBERS: "start_campaign_with_phone_numbers"
+  START_CAMPAIGN: "start_campaign"
 });
 
 const jobMap = Object.freeze({
@@ -51,7 +51,7 @@ const jobMap = Object.freeze({
   [Jobs.IMPORT_SCRIPT]: importScript,
   [Jobs.BUY_PHONE_NUMBERS]: buyPhoneNumbers,
   [Jobs.DELETE_PHONE_NUMBERS]: deletePhoneNumbers,
-  [Jobs.START_CAMPAIGN_WITH_PHONE_NUMBERS]: startCampaignWithPhoneNumbers
+  [Jobs.START_CAMPAIGN]: startCampaign
 });
 
 export const invokeJobFunction = async job => {

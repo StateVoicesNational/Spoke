@@ -714,7 +714,7 @@ export class AdminCampaignEdit extends React.Component {
 
   renderHeader() {
     let startJob = this.props.campaignData.campaign.pendingJobs.filter(
-      job => job.jobType === "start_campaign_with_phone_numbers"
+      job => job.jobType === "start_campaign"
     )[0];
     const isStarting = startJob || this.state.startingCampaign;
     const organizationId = this.props.params.organizationId;
@@ -890,12 +890,18 @@ export class AdminCampaignEdit extends React.Component {
                 this.setState({
                   startingCampaign: true
                 });
-                await this.props.mutations.startCampaign(
+                const result = await this.props.mutations.startCampaign(
                   this.props.campaignData.campaign.id
                 );
-                this.setState({
-                  startingCampaign: false
-                });
+                if (result.isStarted || !result.isStarting) {
+                  this.setState({
+                    startingCampaign: false
+                  });
+                } else {
+                  // if starting didn't happen synchronously, then we should
+                  // check to see if the startCampaign job completed
+                  this.startPollingIfNecessary();
+                }
               }}
             >
               Start This Campaign!
@@ -1111,6 +1117,7 @@ const mutations = {
     mutation: gql`mutation startCampaign($campaignId: String!) {
         startCampaign(id: $campaignId) {
           ${campaignInfoFragment}
+          isStarting
         }
       }`,
     variables: { campaignId }
