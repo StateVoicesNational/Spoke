@@ -97,6 +97,7 @@ export const schema = gql`
     responseWindow: Float
     dueBy: Date
     isStarted: Boolean
+    isStarting: Boolean
     isArchived: Boolean
     isArchivedPermanently: Boolean
     creator: User

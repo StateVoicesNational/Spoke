@@ -16,7 +16,10 @@ import {
   getLastMessage,
   saveNewIncomingMessage
 } from "../extensions/service-vendors/message-sending";
-import { serviceManagersHaveImplementation } from "../extensions/service-managers";
+import {
+  serviceManagersHaveImplementation,
+  processServiceManagers
+} from "../extensions/service-managers";
 import importScriptFromDocument from "../server/api/lib/import-script";
 import { rawIngestMethod } from "../extensions/contact-loaders";
 
@@ -913,6 +916,56 @@ export async function exportCampaign(job) {
     await cacheableData.campaign.saveExportData(campaign.id, exportResults);
   }
   await defensivelyDeleteJob(job);
+}
+
+export async function startCampaign(job) {
+  const payload = JSON.parse(job.payload);
+  const campaign = await cacheableData.campaign.load(job.campaign_id);
+  const organization = await cacheableData.organization.load(
+    payload.organizationId
+  );
+  const user = await cacheableData.user.userLoggedIn(
+    payload.userLookupField,
+    payload.userLookupValue
+  );
+  if (!campaign || !organization || !user) {
+    return;
+  }
+  const serviceManagerData = await processServiceManagers(
+    "onCampaignStart",
+    organization,
+    {
+      user,
+      campaign
+    }
+  );
+
+  if (!(serviceManagerData && serviceManagerData.blockCampaignStart)) {
+    await r
+      .knex("campaign")
+      .where("id", campaign.id)
+      .update({ is_started: true });
+    const reloadedCampaign = await cacheableData.campaign.load(campaign.id, {
+      forceLoad: true
+    });
+    await sendUserNotification({
+      type: Notifications.CAMPAIGN_STARTED,
+      campaignId: campaign.id
+    });
+    // TODO: Decide if we want/need this anymore, relying on FUTURE campaign-contact cache load changes
+    // We are already in an background job process, so invoke the task directly rather than
+    // kicking it off through the dispatcher
+    await invokeTaskFunction(Tasks.CAMPAIGN_START_CACHE, {
+      organization,
+      campaign: reloadedCampaign
+    });
+  }
+  if (job.id) {
+    await r
+      .knex("job_request")
+      .where("id", job.id)
+      .delete();
+  }
 }
 
 export async function importScript(job) {
