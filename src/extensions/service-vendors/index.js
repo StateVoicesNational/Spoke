@@ -5,10 +5,11 @@ import serviceMap, {
 import orgCache from "../../server/models/cacheable_queries/organization";
 import { processServiceManagers } from "../service-managers";
 export {
+  errorDescription,
   getConfigKey,
   getService,
-  tryGetFunctionFromService,
-  getServiceMetadata
+  getServiceMetadata,
+  tryGetFunctionFromService
 } from "./service_map";
 
 // Each service needs the following api points:
