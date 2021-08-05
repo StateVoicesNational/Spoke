@@ -670,7 +670,7 @@ export class AssignmentTexterContactControls extends React.Component {
         <GSForm
           setRef={this.formRef}
           schema={this.messageSchema}
-          value={{ messageText: this.state.messageText }}
+          value={{ messageText: this.state.messageText || "" }}
           onSubmit={this.props.onMessageFormSubmit(
             cannedResponseScript && cannedResponseScript.id
           )}

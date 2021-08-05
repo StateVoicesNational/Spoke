@@ -564,6 +564,45 @@ export async function handleIncomingMessage(message) {
 }
 
 /**
+ * getContactInfo: does a lookup for carrier and optionally the contact name
+ */
+export async function getContactInfo({
+  organization,
+  contactNumber,
+  // Boolean: maybe twilio-specific?
+  lookupName
+}) {
+  if (!contactNumber) {
+    return {};
+  }
+  const twilio = await exports.getTwilio(organization);
+  const types = ["carrier"];
+  if (lookupName) {
+    // caller-name is more expensive
+    types.push("caller-name");
+  }
+  const phoneNumber = await twilio.lookups.v1
+    .phoneNumbers(contactNumber)
+    .fetch({ type: types });
+  const contactInfo = {
+    contact_number: contactNumber,
+    organization_id: organization.id,
+    service: "twilio"
+  };
+  if (phoneNumber.carrier) {
+    contactInfo.carrier = phoneNumber.carrier.name;
+  }
+  if (phoneNumber.carrier.type) {
+    // landline, mobile, voip, <null>
+    contactInfo.status_code = phoneNumber.carrier.type === "landline" ? -1 : 1;
+  }
+  if (phoneNumber.callerName) {
+    contactInfo.lookup_name = phoneNumber.callerName;
+  }
+  return contactInfo;
+}
+
+/**
  * Create a new Twilio messaging service
  */
 export async function createMessagingService(organization, friendlyName) {

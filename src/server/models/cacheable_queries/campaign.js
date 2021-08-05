@@ -267,6 +267,45 @@ const campaignCache = {
     }
     return null;
   },
+  setFeatures: async (id, newFeatures) => {
+    if (!id || !newFeatures) {
+      return;
+    }
+    const features = await r.knex.transaction(async trx => {
+      const campaignDb = await trx("campaign")
+        .where("id", id)
+        .select("features");
+      const features = getFeatures(campaignDb);
+      let changes = false;
+      for (const [featureName, featureValue] of Object.entries(newFeatures)) {
+        if (features[featureName] !== featureValue) {
+          features[featureName] = featureValue;
+          changes = true;
+        }
+      }
+      if (changes) {
+        const featuresString = JSON.stringify(features);
+        await trx("campaign")
+          .where("id", id)
+          .update("features", featuresString);
+        if (r.redis) {
+          const campaignCache = await r.redis.getAsync(cacheKey(id));
+          if (campaignCache) {
+            const campaignObj = JSON.parse(campaignCache);
+            campaignObj.feature = features;
+            campaignObj.features = featuresString;
+            await r.redis
+              .multi()
+              .set(cacheKey(id), JSON.stringify(campaignObj))
+              .expire(cacheKey(id), 10000)
+              .execAsync();
+          }
+        }
+      }
+      return features;
+    });
+    return features;
+  },
   updateAssignedCount: async id => {
     if (r.redis) {
       try {

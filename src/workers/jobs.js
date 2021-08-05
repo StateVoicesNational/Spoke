@@ -918,6 +918,16 @@ export async function exportCampaign(job) {
   await defensivelyDeleteJob(job);
 }
 
+export async function extensionJob(job) {
+  const payload = JSON.parse(job.payload);
+  if (payload.path && payload.method) {
+    const extension = require("../" + payload.path);
+    if (extension && typeof extension[payload.method] === "function") {
+      await extension[payload.method](job, payload);
+    }
+  }
+}
+
 export async function startCampaign(job) {
   const payload = JSON.parse(job.payload);
   const campaign = await cacheableData.campaign.load(job.campaign_id);
