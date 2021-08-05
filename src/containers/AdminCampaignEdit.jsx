@@ -564,7 +564,15 @@ export class AdminCampaignEdit extends React.Component {
         extraProps: {
           campaign: this.props.campaignData.campaign,
           organization: this.props.organizationData.organization,
-          onSubmit: this.props.mutations.updateServiceManager,
+          onSubmit: async (serviceManagerName, updateData) => {
+            const result = await this.props.mutations.updateServiceManager(
+              serviceManagerName,
+              updateData
+            );
+            if (result.data.updateServiceManager.startPolling) {
+              this.startPollingIfNecessary();
+            }
+          },
           serviceManagerComponentName: "CampaignConfig"
         }
       });
@@ -669,6 +677,10 @@ export class AdminCampaignEdit extends React.Component {
       } else if (section.title === "Script Import") {
         relatedJob = pendingJobs.filter(
           job => job.jobType === "import_script"
+        )[0];
+      } else if (section.title === "Service Management") {
+        relatedJob = pendingJobs.filter(
+          job => job.jobType === "extension_job"
         )[0];
       }
     }
@@ -1180,6 +1192,7 @@ const mutations = {
           id
           data
           fullyConfigured
+          startPolling
         }
       }
     `,

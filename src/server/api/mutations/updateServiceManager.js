@@ -49,6 +49,7 @@ export const updateServiceManager = async (
     // defaults for result to override
     data: null,
     fullyConfigured: null,
+    startPolling: null,
     ...result
   };
 };

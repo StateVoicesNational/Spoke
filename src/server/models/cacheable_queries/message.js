@@ -288,7 +288,7 @@ const messageCache = {
             m => m.text === messageToSave.text && m.is_from_contact === false
           );
           if (duplicate) {
-            matchError = "DUPLICATE MESSAGE DB";
+            matchError = "DUPLICATE MESSAGE";
           }
         }
       }

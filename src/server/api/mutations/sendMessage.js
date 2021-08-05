@@ -201,7 +201,9 @@ export const sendMessage = async (
   if (!saveResult.message) {
     console.log("SENDERR_SAVEFAIL", saveResult);
     throw newError(
-      `Message send error ${saveResult.texterError || ""}`,
+      `Message send error ${saveResult.texterError ||
+        saveResult.matchError ||
+        ""}`,
       "SENDERR_SAVEFAIL"
     );
   }

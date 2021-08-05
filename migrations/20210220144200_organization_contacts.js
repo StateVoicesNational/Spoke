@@ -25,6 +25,8 @@ exports.up = async function up(knex) {
     t.text("user_number");
     t.text("service");
     t.integer("subscribe_status").defaultTo(0);
+    t.integer("status_code");
+    t.integer("last_error_code");
     t.text("carrier");
     t.timestamp("created_at").defaultTo(knex.fn.now());
     t.timestamp("last_lookup").defaultTo();
@@ -39,6 +41,11 @@ exports.up = async function up(knex) {
     t.index(
       ["organization_id", "user_number"],
       "organization_contact_organization_user_number"
+    );
+
+    t.index(
+      ["status_code", "organization_id"],
+      "organization_contact_status_code_organization_id"
     );
     t.unique(["contact_number", "organization_id"]);
   });
