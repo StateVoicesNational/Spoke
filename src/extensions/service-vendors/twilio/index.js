@@ -499,6 +499,7 @@ export async function handleDeliveryReport(report) {
       messageStatus === "failed" ||
       messageStatus === "undelivered"
     ) {
+      const errorCode = Number(report.ErrorCode || 0) || 0;
       await cacheableData.message.deliveryReport({
         contactNumber: report.To,
         userNumber: report.From,
@@ -506,7 +507,8 @@ export async function handleDeliveryReport(report) {
         service: "twilio",
         messageServiceSid: report.MessagingServiceSid,
         newStatus: messageStatus === "delivered" ? "DELIVERED" : "ERROR",
-        errorCode: Number(report.ErrorCode || 0) || 0
+        errorCode,
+        statusCode: errorCode === 30006 ? -1 : null
       });
     }
   }

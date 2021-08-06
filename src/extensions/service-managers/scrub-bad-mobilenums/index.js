@@ -51,6 +51,27 @@ const lookupQuery = (campaignId, organizationId) =>
       );
     });
 
+const deleteLandlineContacts = campaignId =>
+  r
+    .knex("campaign_contact")
+    .whereIn(
+      "id",
+      r
+        .knex("campaign_contact")
+        .select("campaign_contact.id")
+        .join(
+          "organization_contact",
+          "organization_contact.contact_number",
+          "campaign_contact.cell"
+        )
+        .where({
+          campaign_id: campaignId,
+          status_code: -1 // landlines
+        })
+    )
+    .where("campaign_contact.campaign_id", campaignId)
+    .delete();
+
 export async function getCampaignData({
   organization,
   campaign,
@@ -66,7 +87,9 @@ export async function getCampaignData({
     const {
       scrubBadMobileNumsFreshStart = false,
       scrubBadMobileNumsFinished = false,
-      scrubBadMobileNumsFinishedCount = null
+      scrubBadMobileNumsFinishedCount = null,
+      scrubBadMobileNumsFinishedDeleteCount = null,
+      scrubBadMobileNumsDeletedOnUpload = null
     } = features;
 
     const serviceClient = getServiceFromOrganization(organization);
@@ -88,7 +111,9 @@ export async function getCampaignData({
         scrubBadMobileNumsFinished,
         scrubBadMobileNumsFinishedCount,
         scrubBadMobileNumsGettable,
-        scrubBadMobileNumsCount
+        scrubBadMobileNumsCount,
+        scrubBadMobileNumsFinishedDeleteCount,
+        scrubBadMobileNumsDeletedOnUpload
       },
       fullyConfigured:
         scrubBadMobileNumsFinished || scrubBadMobileNumsCount === 0
@@ -171,9 +196,14 @@ export async function processJobNumberLookups(job, payload) {
       .where("id", job.id)
       .update({ status: Math.ceil((100 * (i + 1)) / l) });
   }
+
+  // actually delete/clear the campaign's landline contacts
+  const deletedCount = await deleteLandlineContacts(job.campaign_id);
+
   await cacheableData.campaign.setFeatures(job.campaign_id, {
     scrubBadMobileNumsFinished: true,
-    scrubBadMobileNumsFinishedCount: contacts.length
+    scrubBadMobileNumsFinishedCount: contacts.length,
+    scrubBadMobileNumsFinishedDeleteCount: deletedCount
   });
   await r
     .knex("job_request")
@@ -232,5 +262,13 @@ export async function onCampaignContactLoad({
     scrubBadMobileNumsFinished: false,
     scrubBadMobileNumsFreshStart: true,
     scrubBadMobileNumsFinishedCount: null
+  });
+
+  // 2. Delete known landlines
+  const deletedCount = await deleteLandlineContacts(campaign.id);
+
+  console.log("Landline removal result", campaign.id, deletedCount);
+  await cacheableData.campaign.setFeatures(campaign.id, {
+    scrubBadMobileNumsDeletedOnUpload: deletedCount
   });
 }

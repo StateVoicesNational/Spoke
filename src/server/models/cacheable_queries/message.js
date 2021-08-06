@@ -149,6 +149,7 @@ const deliveryReport = async ({
   messageServiceSid,
   newStatus,
   errorCode,
+  statusCode,
   // not reliable:
   contactId,
   campaignId,
@@ -223,7 +224,8 @@ const deliveryReport = async ({
       service,
       messageServiceSid,
       newStatus,
-      errorCode
+      errorCode,
+      statusCode
     });
   }
 };
