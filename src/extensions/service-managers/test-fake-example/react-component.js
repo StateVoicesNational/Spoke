@@ -68,6 +68,10 @@ export class CampaignConfig extends React.Component {
 
   render() {
     console.log("testfakedata CampaignConfig", this.props);
+    const foo =
+      this.props.serviceManagerInfo &&
+      this.props.serviceManagerInfo.data &&
+      this.props.serviceManagerInfo.data.foo;
     const formSchema = yup.object({
       savedText: yup
         .string()
@@ -80,7 +84,11 @@ export class CampaignConfig extends React.Component {
         {!this.props.campaign.isStarted ? (
           <GSForm
             schema={formSchema}
-            defaultValue={this.props.serviceManagerInfo.data}
+            defaultValue={
+              (this.props.serviceManagerInfo &&
+                this.props.serviceManagerInfo.data) ||
+              {}
+            }
             onSubmit={x => {
               console.log("onSubmit", x);
               this.props.onSubmit(x);
@@ -95,9 +103,7 @@ export class CampaignConfig extends React.Component {
             <Form.Submit as={GSSubmitButton} label="Save" />
           </GSForm>
         ) : (
-          <div>
-            Campaign is now started! {this.props.serviceManagerInfo.data.foo}
-          </div>
+          <div>Campaign is now started! {foo}</div>
         )}
       </div>
     );
@@ -120,10 +126,14 @@ export class CampaignStats extends React.Component {
 
   render() {
     console.log("testfakedata CampaignStats", this.props);
+    const foo =
+      this.props.serviceManagerInfo &&
+      this.props.serviceManagerInfo.data &&
+      this.props.serviceManagerInfo.data.foo;
     const formSchema = yup.object({});
     return (
       <div>
-        THIS IS TEST_FAKE_DATA {this.props.serviceManagerInfo.data.foo}
+        THIS IS TEST_FAKE_DATA {foo}
         {!this.props.campaign.isStarted ? (
           <GSForm
             schema={formSchema}
@@ -139,9 +149,7 @@ export class CampaignStats extends React.Component {
             />
           </GSForm>
         ) : (
-          <div>
-            Campaign is now started! {this.props.serviceManagerInfo.data.foo}
-          </div>
+          <div>Campaign is now started! {foo}</div>
         )}
       </div>
     );
