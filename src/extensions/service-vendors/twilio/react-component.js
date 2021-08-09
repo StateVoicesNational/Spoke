@@ -183,10 +183,7 @@ export class OrgConfig extends React.Component {
                 label={this.props.saveLabel || "Save Twilio Credentials"}
                 onClick={this.handleOpenTwilioDialog}
               />
-              <Dialog
-                actions={dialogActions}
-                open={this.state.twilioDialogOpen}
-              >
+              <Dialog open={this.state.twilioDialogOpen}>
                 <DialogContent>
                   <DialogContentText>
                     Changing the Account SID or Messaging Service SID will break

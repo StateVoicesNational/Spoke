@@ -39,13 +39,13 @@ Please let us know if you deployed by filling out this form [here](https://act.m
 
 ### Other Options for Production Use 
 
-You can also [deploy on AWS Lambda.](/docs/HOWTO_DEPLOYING_AWS_LAMBDA.md) which is a lot cheaper than Heroku at scale, but requires considerably more technical knowledge to deploy and maintain. We recommend this option for large scale campaigns with tech resources.
+You can also [deploy on AWS Lambda.](docs/HOWTO_DEPLOYING_AWS_LAMBDA.md) which is a lot cheaper than Heroku at scale, but requires considerably more technical knowledge to deploy and maintain. We recommend this option for large scale campaigns with tech resources.
 
 Additional guidance:
-- [Choosing a set-up for production](/docs/EXPLANATION_CHOOSE_A_SETUP.md)
-- [How to hire someone to install Spoke](/docs/HOWTO_HIRE_SOMEONE_TO_INSTALL_SPOKE.md)
+- [Choosing a set-up for production](docs/EXPLANATION_CHOOSE_A_SETUP.md)
+- [How to hire someone to install Spoke](docs/HOWTO_HIRE_SOMEONE_TO_INSTALL_SPOKE.md)
 - [Option for minimalist deployment](docs/HOWTO_MINIMALIST_DEPLOY.md)
 
 # License
 
-Spoke is licensed under the MIT license.
+Spoke is licensed under the [GPL3 license with a special author attribution requirement](LICENSE).
