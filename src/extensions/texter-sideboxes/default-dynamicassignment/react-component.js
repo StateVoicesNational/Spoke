@@ -122,7 +122,7 @@ export class TexterSideboxClass extends React.Component {
             </Button>
           </div>
         ) : null}
-        {messageStatusFilter === "needsMessage" && assignment.unrepliedCount && (
+        {messageStatusFilter === "needsMessage" && assignment.unrepliedCount ? (
           <div style={{ marginBottom: "8px", paddingLeft: "12px" }}>
             <Badge badgeContent={assignment.unrepliedCount} color="primary">
               <Button variant="contained" onClick={this.gotoReplies}>
@@ -130,35 +130,35 @@ export class TexterSideboxClass extends React.Component {
               </Button>
             </Badge>
           </div>
-        )}
+        ) : null}
         {messageStatusFilter &&
-          messageStatusFilter !== "needsMessage" &&
-          assignment.unmessagedCount && (
-            <div style={{ marginBottom: "8px", paddingLeft: "12px" }}>
-              <Badge badgeContent={assignment.unmessagedCount} color="primary">
-                <Button variant="contained" onClick={this.gotoInitials}>
-                  Send first texts
-                </Button>
-              </Badge>
-            </div>
-          )}
-        {contact /*the empty list*/ && (
+        messageStatusFilter !== "needsMessage" &&
+        assignment.unmessagedCount ? (
+          <div style={{ marginBottom: "8px", paddingLeft: "12px" }}>
+            <Badge badgeContent={assignment.unmessagedCount} color="primary">
+              <Button variant="contained" onClick={this.gotoInitials}>
+                Send first texts
+              </Button>
+            </Badge>
+          </div>
+        ) : null}
+        {contact /*the empty list*/ ? (
           <div style={{ marginBottom: "8px" }}>
             <Button variant="contained" onClick={this.gotoTodos}>
               Back To Todos
             </Button>
           </div>
-        )}
+        ) : null}
         {!assignment.hasUnassignedContactsForTexter &&
-          !contact &&
-          !assignment.unmessagedCount &&
-          !assignment.unrepliedCount &&
-          settingsData.dynamicAssignmentNothingToDoMessage && (
-            // assignment summary when there is nothing to do
-            <div style={{ marginBottom: "8px", marginLeft: "12px" }}>
-              {settingsData.dynamicAssignmentNothingToDoMessage}
-            </div>
-          )}
+        !contact &&
+        !assignment.unmessagedCount &&
+        !assignment.unrepliedCount &&
+        settingsData.dynamicAssignmentNothingToDoMessage ? (
+          // assignment summary when there is nothing to do
+          <div style={{ marginBottom: "8px", marginLeft: "12px" }}>
+            {settingsData.dynamicAssignmentNothingToDoMessage}
+          </div>
+        ) : null}
       </div>
     );
   }
