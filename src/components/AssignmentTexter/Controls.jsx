@@ -691,7 +691,7 @@ export class AssignmentTexterContactControls extends React.Component {
             onBlur={() => {
               this.setState({ messageFocus: false });
             }}
-            multiLine
+            multiline
             fullWidth
             rowsMax={6}
           />

@@ -57,7 +57,7 @@ export const tests = testName => {
             {
               id: "13",
               script:
-                "Hi {firstName}, it's {texterAliasOrFirstName} a volunteer with MoveOn. There is an election in Arizona coming Tuesday. Will you vote progressive?",
+                "Hi {firstName}, it's {texterAliasOrFirstName} a volunteer with MoveOn. There is an election in Arizona coming Tuesday. Will you vote progressive? STOP2quit",
               question: { text: "", answerOptions: [] }
             }
           ],

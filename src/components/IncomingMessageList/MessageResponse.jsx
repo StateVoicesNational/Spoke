@@ -127,7 +127,7 @@ class MessageResponse extends Component {
                 as={GSTextField}
                 name="messageText"
                 label="Send a response"
-                multiLine
+                multiline
                 fullWidth
                 disabled={isSending}
                 rowsMax={6}

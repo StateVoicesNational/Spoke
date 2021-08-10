@@ -99,7 +99,7 @@ export default class CampaignBasicsForm extends React.Component {
             as={GSTextField}
             name="introHtml"
             label="Intro HTML"
-            multiLine
+            multiline
             fullWidth
           />
           <Form.Field
