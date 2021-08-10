@@ -108,7 +108,7 @@ export async function getClientChoiceData(organization, campaign, user) {
       DEFAULT_NGP_VAN_MAXIMUM_LIST_SIZE;
 
     const url = Van.makeUrl(
-      `v4/savedLists?$top=&maxPeopleCount=${maxPeopleCount}`,
+      `v4/savedLists?$top=100&maxPeopleCount=${maxPeopleCount}`,
       organization
     );
 
