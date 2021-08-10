@@ -110,7 +110,7 @@ export class TexterSideboxClass extends React.Component {
     const headerStyle = messageStatusFilter ? { textAlign: "center" } : {};
     return (
       <div style={headerStyle}>
-        {assignment.hasUnassignedContactsForTexter && (
+        {assignment.hasUnassignedContactsForTexter ? (
           <div>
             <h3>{nextBatchMessage}</h3>
             <Button
@@ -121,7 +121,7 @@ export class TexterSideboxClass extends React.Component {
               {nextBatchMoreLabel}
             </Button>
           </div>
-        )}
+        ) : null}
         {messageStatusFilter === "needsMessage" && assignment.unrepliedCount && (
           <div style={{ marginBottom: "8px", paddingLeft: "12px" }}>
             <Badge badgeContent={assignment.unrepliedCount} color="primary">

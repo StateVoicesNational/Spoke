@@ -57,7 +57,7 @@ export class CampaignConfig extends React.Component {
     let scrubState = null;
     if (isStarted) {
       scrubState = states.F_CAMPAIGN_STARTED;
-    } else if (scrubBadMobileNumsFinished) {
+    } else if (scrubBadMobileNumsFinished || scrubBadMobileNumsCount === 0) {
       scrubState = states.E_PROCESS_COMPLETE;
     } else if (scrubJobs.length) {
       scrubState = states.D_PROCESSING;
@@ -100,12 +100,12 @@ export class CampaignConfig extends React.Component {
               before starting the campaign. If you upload a new set of numbers,
               we&rsquo;ll have to look them up again?!
             </p>
-            {scrubBadMobileNumsCount && (
+            {scrubBadMobileNumsCount ? (
               <p>
                 You will need to lookup {scrubBadMobileNumsCount} numbers
                 (having leveraged past lookups).
               </p>
-            )}
+            ) : null}
           </div>
         )}
         {scrubState === states.D_PROCESSING && (
@@ -117,31 +117,31 @@ export class CampaignConfig extends React.Component {
           </p>
         )}
         {scrubState === states.E_PROCESS_COMPLETE && <p>Lookups complete!</p>}
-        {scrubBadMobileNumsFinishedCount && (
+        {scrubBadMobileNumsFinishedCount ? (
           <p>
             <b>{scrubBadMobileNumsFinishedCount}</b> numbers were looked up for
             this campaign.
           </p>
-        )}
-        {scrubBadMobileNumsFinishedDeleteCount && (
+        ) : null}
+        {scrubBadMobileNumsFinishedDeleteCount ? (
           <p>
             <b>{scrubBadMobileNumsFinishedDeleteCount}</b> landlines were
             deleted from the campaign.
           </p>
-        )}
-        {scrubBadMobileNumsDeletedOnUpload && (
+        ) : null}
+        {scrubBadMobileNumsDeletedOnUpload ? (
           <p>
             <b>{scrubBadMobileNumsDeletedOnUpload}</b> landlines were removed
             during campaign upload based on saved lookup data.
           </p>
-        )}
+        ) : null}
 
-        {scrubState === states.C_NEEDS_RUN && (
+        {scrubState === states.C_NEEDS_RUN ? (
           <Form.Submit
             as={GSSubmitButton}
             label="Lookup numbers and scrub landlines"
           />
-        )}
+        ) : null}
       </GSForm>
     );
   }
