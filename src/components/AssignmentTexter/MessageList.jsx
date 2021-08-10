@@ -69,108 +69,98 @@ function SecondaryText(props) {
   );
 }
 
-const MessageList = function MessageList(props) {
-  const {
-    contact,
-    styles,
-    review,
-    currentUser,
-    organizationId,
-    hideMedia
-  } = props;
-  const { optOut, messages } = contact;
+export class MessageList extends React.Component {
+  state = {
+    expanded: false
+  };
 
-  const received = (styles && styles.messageReceived) || defaultStyles.received;
-  const sent = (styles && styles.messageSent) || defaultStyles.sent;
-  const listStyle = (styles && styles.messageList) || {};
-
-  const optOutItem = optOut && (
-    <div>
-      <Divider />
-      <ListItem style={defaultStyles.optOut} key={"optout-item"}>
-        <ListItemIcon>
-          <NotInterestedIcon color="error" />
-        </ListItemIcon>
-        <ListItemText
-          primary={`${contact.firstName} opted out of texts`}
-          secondary={moment(optOut.createdAt).fromNow()}
-        />
-      </ListItem>
-    </div>
-  );
-
-  const renderMsg = message => (
-    <div>
-      <div>{message.text}</div>
-      {!hideMedia &&
-        message.media &&
-        message.media.map(media => {
-          let type, icon, embed, subtitle;
-          if (media.type.startsWith("image")) {
-            type = "Image";
-            icon = <ImageIcon />;
-            embed = <img src={media.url} alt="Media" />;
-          } else if (media.type.startsWith("video")) {
-            type = "Video";
-            icon = <TvIcon />;
-            embed = (
-              <video controls>
-                <source src={media.url} type={media.type} />
-                Your browser can't play this file
-              </video>
-            );
-          } else if (media.type.startsWith("audio")) {
-            type = "Audio";
-            icon = <HeadsetIcon />;
-            embed = (
-              <audio controls>
-                <source src={media.url} type={media.type} />
-                Your browser can't play this file
-              </audio>
-            );
-          } else {
-            type = "Unsupprted media";
-            icon = <AttachmentIcon />;
-            subtitle = `Type: ${media.type}`;
-          }
-          return (
-            <Card style={defaultStyles.mediaItem}>
-              <CardHeader
-                actAsExpander
-                title={`${type} attached`}
-                subtitle={subtitle || "View media at your own risk"}
-                avatar={<Avatar>{icon}</Avatar>}
-                onClick={() => {
-                  this.setState({ expanded: !this.state.expanded });
-                }}
-              />
-              <Collapse in={this.state.expanded} timeout="auto" unmountOnExit>
-                {embed && <CardMedia>{embed}</CardMedia>}
-              </Collapse>
-            </Card>
-          );
-        })}
-    </div>
-  );
-
-  return (
-    <List style={listStyle}>
-      {messages.map(message => (
-        <ListItem
-          style={message.isFromContact ? received : sent}
-          key={message.id}
-          primary={renderMsg(message)}
-          secondary={
-            <SecondaryText
-              message={message}
-              review={review}
-              currentUser={currentUser}
-              organizationId={organizationId}
-            />
-          }
-        >
+  optOutItem = optOut =>
+    !optOut ? null : (
+      <div>
+        <Divider />
+        <ListItem style={defaultStyles.optOut} key={"optout-item"}>
+          <ListItemIcon>
+            <NotInterestedIcon color="error" />
+          </ListItemIcon>
           <ListItemText
-            primary={renderMsg(message)}
+            primary={`${contact.firstName} opted out of texts`}
+            secondary={moment(optOut.createdAt).fromNow()}
+          />
+        </ListItem>
+      </div>
+    );
+
+  renderMsg(message) {
+    const { hideMedia } = this.props;
+    return (
+      <div key={message.id || message.text}>
+        <div>{message.text}</div>
+        {!hideMedia &&
+          message.media &&
+          message.media.map(media => {
+            let type, icon, embed, subtitle;
+            if (media.type.startsWith("image")) {
+              type = "Image";
+              icon = <ImageIcon />;
+              embed = <img src={media.url} alt="Media" />;
+            } else if (media.type.startsWith("video")) {
+              type = "Video";
+              icon = <TvIcon />;
+              embed = (
+                <video controls>
+                  <source src={media.url} type={media.type} />
+                  Your browser can&rsquo;t play this file
+                </video>
+              );
+            } else if (media.type.startsWith("audio")) {
+              type = "Audio";
+              icon = <HeadsetIcon />;
+              embed = (
+                <audio controls>
+                  <source src={media.url} type={media.type} />
+                  Your browser can&rsquo;t play this file
+                </audio>
+              );
+            } else {
+              type = "Unsupprted media";
+              icon = <AttachmentIcon />;
+              subtitle = `Type: ${media.type}`;
+            }
+            return (
+              <Card style={defaultStyles.mediaItem} key={`media${media.url}`}>
+                <CardHeader
+                  title={`${type} attached`}
+                  subtitle={subtitle || "View media at your own risk"}
+                  avatar={<Avatar>{icon}</Avatar>}
+                  onClick={() => {
+                    this.setState({ expanded: !this.state.expanded });
+                  }}
+                />
+                <Collapse in={this.state.expanded} timeout="auto" unmountOnExit>
+                  {embed && <CardMedia>{embed}</CardMedia>}
+                </Collapse>
+              </Card>
+            );
+          })}
+      </div>
+    );
+  }
+
+  render() {
+    const { contact, styles, review, currentUser, organizationId } = this.props;
+    const received =
+      (styles && styles.messageReceived) || defaultStyles.received;
+    const sent = (styles && styles.messageSent) || defaultStyles.sent;
+    const listStyle = (styles && styles.messageList) || {};
+    const { optOut, messages } = contact;
+
+    return (
+      <List style={listStyle}>
+        {messages.map(message => (
+          <ListItem
+            style={message.isFromContact ? received : sent}
+            key={message.id}
+            primary={this.renderMsg(message)}
             secondary={
               <SecondaryText
                 message={message}
@@ -179,13 +169,25 @@ const MessageList = function MessageList(props) {
                 organizationId={organizationId}
               />
             }
-          />
-        </ListItem>
-      ))}
-      {optOutItem}
-    </List>
-  );
-};
+          >
+            <ListItemText
+              primary={this.renderMsg(message)}
+              secondary={
+                <SecondaryText
+                  message={message}
+                  review={review}
+                  currentUser={currentUser}
+                  organizationId={organizationId}
+                />
+              }
+            />
+          </ListItem>
+        ))}
+        {this.optOutItem(optOut)}
+      </List>
+    );
+  }
+}
 
 MessageList.propTypes = {
   contact: PropTypes.object,
