@@ -95,13 +95,20 @@ export const flexStyles = StyleSheet.create({
     flex: "0 1 240px",
     overflowY: "scroll",
     textAlign: "center",
-    padding: "24px",
     overflow: "hidden scroll",
-    borderLeft: "1px solid rgb(126, 128, 139)",
     maxWidth: "240px",
     "@media(max-width: 575px)": {
       display: "none"
     }
+  },
+  sectionSideBoxHeader: {
+    height: 56,
+    backgroundColor: "rgba(126, 128, 139, .7)",
+  },
+  sectionSideBoxContent: {
+    padding: 24,
+    borderLeft: "1px solid #C1C3CC",
+    height: "100%"
   },
   superSectionMessageBox: {
     flex: "1 2 auto",
@@ -119,14 +126,9 @@ export const flexStyles = StyleSheet.create({
     overflowY: "scroll"
   },
   sectionLeftSideBox: {
-    flex: "0 1 240px",
-    padding: 12,
+    flex: "1 0 240px",
     maxWidth: 240,
-    borderRight: "1px solid rgb(126, 128, 139)",
     overflow: "hidden scroll",
-    "@media(max-width: 575px)": {
-      display: "none"
-    }
   },
   superSectionMessagePage: {
     display: "flex",
@@ -248,7 +250,7 @@ export const flexStyles = StyleSheet.create({
     flexDirection: "column",
     flexWrap: "wrap",
     alignContent: "space-between",
-    padding: "9px",
+    padding: "9px 9px 9px 21px",
     "@media (hover: hover) and (pointer: fine)": {
       // for touchpads and phones, the edge of the tablet is easier
       // vs for desktops, we want to maximize how far the mouse needs to travel

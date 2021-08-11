@@ -18,17 +18,21 @@ const inlineStyles = {
     maxHeight: "100%"
   },
   contactListScrollContainer: {
-    overflow: "hidden scroll"
+    overflow: "hidden scroll",
+    borderRight: "1px solid #C1C3CC",
   },
   contactsListSearch: {
-    marginTop: 10,
-    minHeight: 48
+    height: 32
   },
   updatedAt: {
     fontSize: 12,
     width: "auto",
     top: "auto",
     margin: "0 4px"
+  },
+  searchBar: {
+    backgroundColor: "rgba(126, 128, 139, .7)",
+    padding: 12
   }
 };
 
@@ -124,9 +128,9 @@ class AssignmentContactsList extends React.Component {
     );
   };
 
-  renderContacts = () => {
+  renderContacts = (contacts) => {
     // Filter contacts by message status and search
-    const filteredContacts = this.props.contacts.filter(
+    const filteredContacts = contacts.filter(
       c =>
         `${c.firstName} ${c.lastName}`
           .toLowerCase()
@@ -149,6 +153,7 @@ class AssignmentContactsList extends React.Component {
   };
 
   render() {
+    console.log('rendering ACL')
     const momentConfigOrig = moment()
       .locale("en")
       .localeData()._relativeTime;
@@ -156,19 +161,22 @@ class AssignmentContactsList extends React.Component {
     // Hack around fromNow formatting. We want to keep formatting short only here, so we have to revert back after rendering.
     moment.updateLocale("en", { relativeTime: momentConfigShort });
 
-    const contactList = this.renderContacts();
+    const contactList = this.renderContacts(this.props.contacts);
 
     moment.updateLocale("en", { relativeTime: momentConfigOrig });
 
     return (
       <div style={inlineStyles.contactsListParent}>
-        <SearchBar
-          onChange={search => this.setState({ search: search || "" })}
-          onCancelSearch={() => this.setState({ search: "" })}
-          onRequestSearch={() => undefined}
-          value={this.state.search}
-          style={inlineStyles.contactsListSearch}
-        />
+        <div style={inlineStyles.searchBar}>
+          <SearchBar
+            onChange={search => this.setState({ search: search || "" })}
+            onCancelSearch={() => this.setState({ search: "" })}
+            onRequestSearch={() => undefined}
+            value={this.state.search}
+            style={inlineStyles.contactsListSearch}
+            placeholder="Search Contacts"
+          />
+        </div>
         <List
           id="assignment-contacts-list"
           subheader={<ListSubheader />}

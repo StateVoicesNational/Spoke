@@ -46,27 +46,29 @@ export class TexterSidebox extends React.Component {
     const { host, protocol } = document.location;
     const url = `${protocol}//${host}/app/${campaign.organization.id}/todos/review/${this.props.contact.id}`;
 
-    const textContent = [
-      <Tooltip title="Copy conversation link to clipboard">
-        <IconButton
-          onClick={this.copyToClipboard}
-          style={{ padding: 0, height: 20, width: 20, paddingRight: 6 }}
-          iconStyle={{ height: 14, width: 14 }}
-        >
-          <FileCopyIcon />
-        </IconButton>
-      </Tooltip>,
-      <span onClick={this.copyToClipboard}>Get</span>,
-      " a ",
-      settingsData.contactReferenceClickable ? (
-        <Link target="_blank" to={url}>
-          conversation link
-        </Link>
-      ) : (
-        "conversation link"
-      ),
-      this.state.copiedStatus
-    ];
+    const textContent = (
+      <div>
+        <Tooltip title="Copy conversation link to clipboard">
+          <IconButton
+            onClick={this.copyToClipboard}
+            style={{ padding: 0, height: 20, width: 20, paddingRight: 6 }}
+            // iconStyle={{ height: 14, width: 14 }}
+          >
+            <FileCopyIcon />
+          </IconButton>
+        </Tooltip>
+        <span onClick={this.copyToClipboard}>Get</span>
+        {" a "},
+        {settingsData.contactReferenceClickable ? (
+          <Link target="_blank" to={url}>
+            conversation link
+          </Link>
+        ) : (
+          "conversation link"
+        )}
+        {this.state.copiedStatus}
+      </div>
+    );
     return (
       <div>
         <div>{textContent}</div>
@@ -75,7 +77,7 @@ export class TexterSidebox extends React.Component {
           name={url}
           value={url}
           fullWidth
-          inputStyle={{ fontSize: "12px" }}
+          // inputStyle={{ fontSize: "12px" }}
         />
       </div>
     );
