@@ -4,7 +4,7 @@
   "description": "Spoke",
   "main": "src/server",
   "engines": {
-    "node": ">=10.3",
+    "node": ">=10.17",
     "npm": "3.10.10"
   },
   "scripts": {
@@ -229,6 +229,7 @@
     "react-formal": "2.2.2",
     "react-router": "^3.2.0",
     "react-tooltip": "^4.2.13",
-    "recompose": "^0.30.0"
+    "recompose": "^0.30.0",
+    "webpack-cli": "^4.7.2"
   }
 }
