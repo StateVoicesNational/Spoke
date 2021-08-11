@@ -6,6 +6,17 @@ export function getServiceManagers(organization) {
   const enabledHandlers =
     (configuredHandlers && configuredHandlers.split(",")) || [];
 
+  if (
+    typeof configuredHandlers === "undefined" &&
+    getConfig(
+      "EXPERIMENTAL_TWILIO_PER_CAMPAIGN_MESSAGING_SERVICE",
+      organization,
+      { truthy: 1 }
+    )
+  ) {
+    enabledHandlers.push("per-campaign-messageservices");
+  }
+
   const handlers = [];
   enabledHandlers.forEach(name => {
     try {
