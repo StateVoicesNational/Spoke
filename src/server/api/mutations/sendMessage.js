@@ -203,8 +203,9 @@ export const sendMessage = async (
     throw newError(
       `Message send error ${saveResult.texterError ||
         saveResult.matchError ||
+        saveResult.error ||
         ""}`,
-      "SENDERR_SAVEFAIL"
+      saveResult.error || "SENDERR_SAVEFAIL"
     );
   }
   contact.message_status = saveResult.contactStatus;
