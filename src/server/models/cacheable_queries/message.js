@@ -290,7 +290,10 @@ const messageCache = {
             m => m.text === messageToSave.text && m.is_from_contact === false
           );
           if (duplicate) {
-            matchError = "DUPLICATE MESSAGE";
+            matchError =
+              messages.length > 2
+                ? "DUPLICATE_REPLY_MESSAGE"
+                : "DUPLICATE_MESSAGE";
           }
         }
       }
@@ -352,7 +355,11 @@ const messageCache = {
       }
     }
     if (matchError) {
-      return { error: matchError };
+      return {
+        error: matchError,
+        campaignId,
+        contactId: messageToSave.campaign_contact_id
+      };
     }
     const savedMessage = await Message.save(
       messageToSave,
