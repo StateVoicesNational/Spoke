@@ -47,7 +47,11 @@ thinkyConn.r.getCountDistinct = async (query, distinctConstraint) =>
 const redisUrl = process.env.REDIS_TLS_URL || process.env.REDIS_URL;
 
 if (redisUrl) {
-  const redisSettings = { url: redisUrl };
+  // new redis client doesn't respect username placeholders so replace it
+  // this is especially true for legacy Heroku instances which had redis://h:<password>...
+  const redisSettings = {
+    url: redisUrl.replace(/redis:\/\/\w+:/, "redis://:")
+  };
   if (/rediss/.test(redisSettings.url)) {
     // secure redis protocol for Redis 6.0+
     // https://devcenter.heroku.com/articles/securing-heroku-redis#using-node-js
