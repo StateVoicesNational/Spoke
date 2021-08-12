@@ -81,18 +81,20 @@ export async function processAction({
   previousValue
 }) {
   try {
-
     const baseUrl = getConfig("BASE_URL", organization);
     const conversationLink = `${baseUrl}/app/${organization.id}/todos/review/${contact.id}`;
+    const campaignCopy = { ...campaign };
+    delete campaignCopy.feature;
+    delete campaignCopy.features;
     const payload = {
-      questionResponse: questionResponse,
-      interactionStep: interactionStep,
-      campaignContactId: campaignContactId,
-      contact: contact,
-      campaign: campaign,
-      organization: organization,
-      previousValue: previousValue,
-      conversationLink: conversationLink
+      questionResponse,
+      interactionStep,
+      campaignContactId,
+      contact,
+      campaign: campaignCopy,
+      organization,
+      previousValue,
+      conversationLink
     };
 
     const stringifiedPayload = JSON.stringify(payload);
@@ -101,35 +103,41 @@ export async function processAction({
     const zap_timeout = getConfig("ZAPIER_TIMEOUT_MS", organization) || 5000;
     log.info(`Zapier timeout: ${zap_timeout}`);
 
-    var final_url = "";
+    let final_url = "";
     const answer_option = interactionStep.answer_option;
 
-    const config = JSON.parse(getConfig("ZAPIER_CONFIG_OBJECT", organization)) || {};
+    const config = JSON.parse(
+      getConfig("ZAPIER_CONFIG_OBJECT", organization) || "{}"
+    );
 
-    if(Object.keys(config).length != 0) {
-      if(Array.isArray(config.processAction)) {
-        for(let item of config.processAction) {
-          if( typeof item.answer_name === 'string' && typeof item.webhook_url === 'string') {
-            if(answer_option === item.answer_name) {
+    if (Object.keys(config).length != 0) {
+      if (Array.isArray(config.processAction)) {
+        for (let item of config.processAction) {
+          if (
+            typeof item.answer_name === "string" &&
+            typeof item.webhook_url === "string"
+          ) {
+            if (answer_option === item.answer_name) {
               final_url = item.webhook_url;
             }
-	  }
-	}
-        if(final_url === "") {
-          log.info(`Did not find "${answer_option}" in ZAPIER_CONFIG_OBJECT. Using default URL from ZAPIER_WEBHOOK_URL.`);
+          }
+        }
+        if (final_url === "") {
+          log.info(
+            `Did not find "${answer_option}" in ZAPIER_CONFIG_OBJECT. Using default URL from ZAPIER_WEBHOOK_URL.`
+          );
           final_url = url;
-	}
+        }
       } else {
         final_url = url;
       }
-      
-    }
-    else {
+    } else {
       final_url = url;
     }
 
-    console.info(`Zapier processAction sending ${answer_option} to ${final_url}`);
-
+    console.info(
+      `Zapier processAction sending ${answer_option} to ${final_url}`
+    );
 
     //return httpRequest(dynamic_url, {
     return httpRequest(final_url, {
@@ -143,8 +151,6 @@ export async function processAction({
       validStatuses: [200],
       compress: false
     });
-
-
   } catch (caughtError) {
     log.error("Encountered exception in zapier.processAction", caughtError);
     throw caughtError;
