@@ -6,7 +6,8 @@ export const CUSTOM_DATA = [
   "middle_name",
   "individual_prefix",
   "gender",
-  "city"
+  "city",
+  "contact_type"
 ];
 
 async function paginate(get, config, entity, options, callback) {
@@ -14,7 +15,6 @@ async function paginate(get, config, entity, options, callback) {
 
   while (true) {
     const once = await get(config, entity, options);
-
     if (!once.length) {
       return count;
     }
@@ -27,26 +27,34 @@ async function paginate(get, config, entity, options, callback) {
   }
 }
 
-async function get(config, entity, params){
-
-  const url = config.server + config.path + '?key=' + config.key + '&api_key='
-    + config.api_key + '&entity=' + entity + '&action=get' + '&json=' +  JSON.stringify(params);
+async function get(config, entity, params) {
+  const url =
+    config.server +
+    config.path +
+    "?key=" +
+    config.key +
+    "&api_key=" +
+    config.api_key +
+    "&entity=" +
+    entity +
+    "&action=get" +
+    "&json=" +
+    JSON.stringify(params);
 
   try {
     const result = await fetch(url);
     const json = await result.json();
     if (json.is_error) {
       return false;
-    }else {
+    } else {
       return json.values;
     }
-  }catch (error) {
+  } catch (error) {
     return error;
   }
 }
 
-function getCivi(){
-    
+function getCivi() {
   const domain = parse(getConfig("CIVICRM_DOMAIN"));
 
   const config = {
@@ -65,9 +73,8 @@ function getCivi(){
  * @returns {Promise<{ title: string; count: number; id: number }[]>}
  */
 export async function searchGroups(query) {
-  
   const config = getCivi();
-    
+
   const key = "api.GroupContact.getcount";
 
   const res = await get(config, "group", {
@@ -89,7 +96,7 @@ export async function getGroupMembers(groupId, callback) {
 
   return await paginate(
     get,
-    config,  
+    config,
     "Contact",
     {
       debug: 1,
