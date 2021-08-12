@@ -34,6 +34,12 @@ export async function onTagUpdate(
   organization,
   texter
 ) {
+  const url = getConfig("ZAPIER_WEBHOOK_URL", organization);
+  if (!!url) {
+    log.info("ZAPIER_WEBHOOK_URL is undefined. Exiting.");
+    return;
+  }
+
   const baseUrl = getConfig("BASE_URL", organization);
   const conversationLink = `${baseUrl}/app/${organization.id}/todos/review/${contact.id}`;
 
@@ -51,8 +57,6 @@ export async function onTagUpdate(
   };
 
   const stringifiedPayload = JSON.stringify(payload);
-
-  const url = getConfig("ZAPIER_WEBHOOK_URL", organization);
 
   console.info(`Zapier onTagUpdate sending ${stringifiedPayload} to ${url}`);
 
@@ -81,6 +85,20 @@ export async function processAction({
   previousValue
 }) {
   try {
+    const url = getConfig("ZAPIER_ACTION_URL", organization);
+    if (!!url) {
+      log.info("ZAPIER_ACTION_URL is undefined. Exiting.");
+      return;
+    }
+    const config = JSON.parse(
+      getConfig("ZAPIER_CONFIG_OBJECT", organization) || "{}"
+    );
+    if (!!config) {
+      log.info(
+        `ZAPIER_CONFIG_OBJECT is undefined. All payloads will go to ${url}`
+      );
+    }
+
     const baseUrl = getConfig("BASE_URL", organization);
     const conversationLink = `${baseUrl}/app/${organization.id}/todos/review/${contact.id}`;
     const campaignCopy = { ...campaign };
@@ -99,16 +117,11 @@ export async function processAction({
 
     const stringifiedPayload = JSON.stringify(payload);
 
-    const url = getConfig("ZAPIER_WEBHOOK_URL", organization);
     const zap_timeout = getConfig("ZAPIER_TIMEOUT_MS", organization) || 5000;
     log.info(`Zapier timeout: ${zap_timeout}`);
 
     let final_url = "";
     const answer_option = interactionStep.answer_option;
-
-    const config = JSON.parse(
-      getConfig("ZAPIER_CONFIG_OBJECT", organization) || "{}"
-    );
 
     if (Object.keys(config).length != 0) {
       if (Array.isArray(config.processAction)) {
@@ -124,7 +137,7 @@ export async function processAction({
         }
         if (final_url === "") {
           log.info(
-            `Did not find "${answer_option}" in ZAPIER_CONFIG_OBJECT. Using default URL from ZAPIER_WEBHOOK_URL.`
+            `Did not find "${answer_option}" in ZAPIER_CONFIG_OBJECT. Using default URL from ZAPIER_WEBHOOK_URL (${url}).`
           );
           final_url = url;
         }
@@ -135,11 +148,8 @@ export async function processAction({
       final_url = url;
     }
 
-    console.info(
-      `Zapier processAction sending ${answer_option} to ${final_url}`
-    );
+    log.info(`Zapier processAction sending ${answer_option} to ${final_url}`);
 
-    //return httpRequest(dynamic_url, {
     return httpRequest(final_url, {
       method: "POST",
       retries: 0,
@@ -164,7 +174,8 @@ export async function processAction({
 // process.env.ACTION_HANDLERS
 export async function available(organization) {
   const result =
-    !!getConfig("ZAPIER_WEBHOOK_URL", organization) &&
+    (!!getConfig("ZAPIER_ACTION_URL", organization) ||
+      !!getConfig("ZAPIER_WEBHOOK_URL", organization)) &&
     !!getConfig("BASE_URL", organization);
 
   if (!result) {
