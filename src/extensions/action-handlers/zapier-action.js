@@ -35,7 +35,7 @@ export async function onTagUpdate(
   texter
 ) {
   const url = getConfig("ZAPIER_WEBHOOK_URL", organization);
-  if (!!url) {
+  if (!url) {
     log.info("ZAPIER_WEBHOOK_URL is undefined. Exiting.");
     return;
   }
@@ -86,7 +86,7 @@ export async function processAction({
 }) {
   try {
     const url = getConfig("ZAPIER_ACTION_URL", organization);
-    if (!!url) {
+    if (!url) {
       log.info("ZAPIER_ACTION_URL is undefined. Exiting.");
       return;
     }
