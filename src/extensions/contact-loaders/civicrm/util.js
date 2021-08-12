@@ -6,14 +6,15 @@ export const CUSTOM_DATA = [
   "middle_name",
   "individual_prefix",
   "gender",
-  "city"
+  "city",
+  "contact_type"
 ];
 
-async function paginate(get, entity, options, callback) {
+async function paginate(get, config, entity, options, callback) {
   let count = 0;
 
   while (true) {
-    const once = await get(entity, options);
+    const once = await get(config, entity, options);
     if (!once.length) {
       return count;
     }
@@ -29,19 +30,17 @@ async function paginate(get, entity, options, callback) {
 async function get(config, entity, params){
 
   const url = config.server + config.path + '?key=' + config.key + '&api_key='
-        + config.api_key + '&entity=' + entity + '&action=get'
-        + '&json={"sequential":1,"return":"' + params.return + '","title":' + JSON.stringify(params.title) + 
-        ',"api.GroupContact.getcount":1}';
+    + config.api_key + '&entity=' + entity + '&action=get' + '&json=' +  JSON.stringify(params);
 
-  try{
+  try {
     const result = await fetch(url);
     const json = await result.json();
-    if(json.is_error){
+    if (json.is_error) {
       console.log(json.error_message);
-    }else{
+    } else{
       return json.values;
     }
-  }catch(error){
+  } catch(error){
      console.log("Fetch error");
   }
 
@@ -73,6 +72,7 @@ export async function searchGroups(query) {
   const key = "api.GroupContact.getcount";
 
   const res = await get(config, "group", {
+    sequential: 1,
     return: ["id", "title"],
     title: { LIKE: "%" + query + "%" },
     [key]: 1
@@ -87,10 +87,11 @@ export async function searchGroups(query) {
 }
 
 export async function getGroupMembers(groupId, callback) {
-  const { get } = getCivi();
+  const config = getCivi();
 
   return await paginate(
     get,
+    config,
     "Contact",
     {
       debug: 1,
@@ -121,3 +122,4 @@ export async function getGroupMembers(groupId, callback) {
     callback
   );
 }
+
