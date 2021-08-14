@@ -11,15 +11,22 @@ export const displayName = () => "ZAPIER";
 // The Help text for the user after selecting the action
 export const instructions = () =>
   `
-  This action is for reporting the results of interactions with contacts via ZAPIER
+  This action is for reporting the results of interactions with contacts via ZAPIER (or any other HTTP endpoint)
   `;
 
 export function serverAdministratorInstructions() {
   return {
     description:
-      "This action is for reporting the results of interactions with contacts via ZAPIER",
-    setupInstructions: "Set ZAPIER_WEBHOOK_URL to your zapier webhook URL.",
-    environmentVariables: ["ZAPIER_WEBHOOK_URL", "BASE_URL"]
+      "This action is for reporting the results of interactions with contacts via ZAPIER (or any other HTTP endpoint)",
+    setupInstructions:
+      "Set ZAPIER_WEBHOOK_URL to your zapier webhook URL (or other HTTP endpoint) for processing tag actions. Set ZAPIER_ACTION_URL to your zapier webhook URL (or other HTTP endpoint) for processing question-response actions. Also see documentation on ZAPIER_CONFIG_OBJECT for setting per-response URLs.",
+    environmentVariables: [
+      "ZAPIER_WEBHOOK_URL",
+      "BASE_URL",
+      "ZAPIER_ACTION_URL",
+      "ZAPIER_TIMEOUT_MS",
+      "ZAPIER_CONFIG_OBJECT"
+    ]
   };
 }
 
