@@ -47,12 +47,6 @@ export async function onTagUpdate(
     return;
   }
 
-  log.info(`tags: ${JSON.stringify(tags)}`);
-  log.info(`contact: ${JSON.stringify(contact)}`);
-  log.info(`campaign: ${JSON.stringify(campaign)}`);
-  log.info(`organization: ${JSON.stringify(organization)}`);
-  log.info(`texter: ${JSON.stringify(texter)}`);
-
   const baseUrl = getConfig("BASE_URL", organization);
   const conversationLink = `${baseUrl}/app/${organization.id}/todos/review/${contact.id}`;
 
@@ -111,14 +105,6 @@ export async function processAction({
         `ZAPIER_CONFIG_OBJECT is undefined. All payloads will go to ${url}`
       );
     }
-
-    log.info(`questionResponse: ${JSON.stringify(questionResponse)}`);
-    log.info(`interactionStep: ${JSON.stringify(interactionStep)}`);
-    log.info(`campaignContactId: ${JSON.stringify(campaignContactId)}`);
-    log.info(`contact: ${JSON.stringify(contact)}`);
-    log.info(`campaign: ${JSON.stringify(campaign)}`);
-    log.info(`organization: ${JSON.stringify(organization)}`);
-    log.info(`previousValue: ${JSON.stringify(previousValue)}`);
 
     const baseUrl = getConfig("BASE_URL", organization);
     const conversationLink = `${baseUrl}/app/${organization.id}/todos/review/${contact.id}`;
