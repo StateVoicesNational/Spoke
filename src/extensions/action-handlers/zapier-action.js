@@ -47,11 +47,11 @@ export async function onTagUpdate(
     return;
   }
 
-  log.info(`tags: ${tags}`);
-  log.info(`contact: ${contact}`);
-  log.info(`campaign: ${campaign}`);
-  log.info(`organization: ${organization}`);
-  log.info(`texter: ${texter}`);
+  log.info(`tags: ${JSON.stringify(tags)}`);
+  log.info(`contact: ${JSON.stringify(contact)}`);
+  log.info(`campaign: ${JSON.stringify(campaign)}`);
+  log.info(`organization: ${JSON.stringify(organization)}`);
+  log.info(`texter: ${JSON.stringify(texter)}`);
 
   const baseUrl = getConfig("BASE_URL", organization);
   const conversationLink = `${baseUrl}/app/${organization.id}/todos/review/${contact.id}`;
@@ -112,13 +112,13 @@ export async function processAction({
       );
     }
 
-    log.info(`questionResponse: ${questionResponse}`);
-    log.info(`interactionStep: ${interactionStep}`);
-    log.info(`campaignContactId: ${campaignContactId}`);
-    log.info(`contact: ${contact}`);
-    log.info(`campaign: ${campaign}`);
-    log.info(`organization: ${organization}`);
-    log.info(`previousValue: ${previousValue}`);
+    log.info(`questionResponse: ${JSON.stringify(questionResponse)}`);
+    log.info(`interactionStep: ${JSON.stringify(interactionStep)}`);
+    log.info(`campaignContactId: ${JSON.stringify(campaignContactId)}`);
+    log.info(`contact: ${JSON.stringify(contact)}`);
+    log.info(`campaign: ${JSON.stringify(campaign)}`);
+    log.info(`organization: ${JSON.stringify(organization)}`);
+    log.info(`previousValue: ${JSON.stringify(previousValue)}`);
 
     const baseUrl = getConfig("BASE_URL", organization);
     const conversationLink = `${baseUrl}/app/${organization.id}/todos/review/${contact.id}`;
