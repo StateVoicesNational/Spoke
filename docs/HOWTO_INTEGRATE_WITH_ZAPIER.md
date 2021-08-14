@@ -41,9 +41,9 @@ and push the results to a conucorpia of outputs. As an example, the Austin DSA
 used this integration, in concert with Zapier, to record every positive ID for
 GOTV efforts and:
 
-1.) Alert the team in Slack
-2.) Update internal Google Sheets with the data
-3.) Push data into an internal PostgreSQL data warehouse
+1. Alert the team in Slack
+2. Update internal Google Sheets with the data
+3. Push data into an internal PostgreSQL data warehouse
 
 A full example is outside the scope of this documentation, but most
 importantly, this integration pushes data into Zapier by means of a Webhook
