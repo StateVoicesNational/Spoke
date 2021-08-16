@@ -50,9 +50,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     display: "-webkit-box",
     WebkitBoxOrient: "vertical",
-    WebkitLineClamp: 2,
-    overflow: "hidden",
-    height: 32
+    width: "90%"
   }
 });
 
@@ -60,7 +58,8 @@ export class CampaignCannedResponsesForm extends React.Component {
   state = {
     showForm: false,
     formButtonText: "",
-    responseId: null
+    responseId: null,
+    showFullTextId: null
   };
 
   formSchema = yup.object({
@@ -152,9 +151,28 @@ export class CampaignCannedResponsesForm extends React.Component {
         value={response.text}
         key={response.id}
       >
-        <ListItemText>
+        <ListItemText
+          onClick={() =>
+            this.setState({
+              showFullTextId:
+                this.state.showFullTextId === response.id ? null : response.id
+            })
+          }
+        >
           <div className={css(styles.title)}>{response.title}</div>
-          <div className={css(styles.text)}>{response.text}</div>
+          <div
+            className={css(styles.text)}
+            style={
+              this.state.showFullTextId === response.id
+                ? {}
+                : {
+                    WebkitLineClamp: 2,
+                    overflow: "hidden"
+                  }
+            }
+          >
+            {response.text}
+          </div>
           {response.tagIds && response.tagIds.length > 0 && (
             <TagChips
               tags={this.props.data.organization.tags}

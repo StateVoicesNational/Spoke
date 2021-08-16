@@ -328,7 +328,11 @@ export class AssignmentTexterContactControls extends React.Component {
     const { questionResponses } = this.state;
     const { interactionSteps } = this.props.campaign;
     questionResponses[interactionStep.id] = questionResponseValue;
-
+    console.log(
+      "handleQuestionResponseChange",
+      questionResponseValue,
+      nextScript
+    );
     const children = getChildren(interactionStep, interactionSteps);
     for (const childStep of children) {
       if (childStep.id in questionResponses) {
