@@ -143,6 +143,7 @@ class AssignmentTexterSurveys extends Component {
   }
 
   renderCurrentStepOldStyle(step) {
+    console.log("renderCurrentStepOldStyle", step);
     return this.renderStep(step, 1);
   }
 
