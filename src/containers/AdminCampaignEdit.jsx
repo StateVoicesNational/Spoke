@@ -666,7 +666,11 @@ export class AdminCampaignEdit extends React.Component {
     let jobMessage = null;
     let jobId = null;
     if (pendingJobs.length > 0) {
-      if (section.title === "Contacts") {
+      if (section.title === "Basics") {
+        relatedJob = pendingJobs.filter(
+          job => job.jobType === "start_campaign"
+        )[0];
+      } else if (section.title === "Contacts") {
         relatedJob = pendingJobs.filter(job =>
           job.jobType.startsWith("ingest")
         )[0];
