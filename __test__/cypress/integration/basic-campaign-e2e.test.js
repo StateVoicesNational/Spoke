@@ -84,7 +84,9 @@ describe("End-to-end campaign flow", () => {
     cy.wait(400);
 
     // Interaction Steps
-    cy.get("[data-test=editorInteraction] input").click();
+    // the editorInteraction selector might seem overly precise
+    // -- the problem is that multiline fields have two textareas, one hidden
+    cy.get("[data-test=editorInteraction] textarea[name=script]").click();
     cy.wait(400);
     cy.get(".DraftEditor-root").type(
       "Hi {{}firstName{}} this is {{}texterFirstName{}}, how are you?"
@@ -93,7 +95,7 @@ describe("End-to-end campaign flow", () => {
     cy.get("[data-test=questionText] input").type("How are you?");
     cy.get("button[data-test=addResponse]").click();
     cy.get("[data-test=answerOption] input").type("Good");
-    cy.get("[data-test=editorInteraction] input")
+    cy.get("[data-test=editorInteraction] textarea[name=script]")
       .eq(1)
       .click();
     cy.get(".DraftEditor-root").type("Great!");
