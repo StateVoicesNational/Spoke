@@ -75,11 +75,26 @@ class AssignmentTexterSurveys extends Component {
     });
   };
 
-  handleSelectChange = async (interactionStep, answerIndex, value) => {
+  handleSelectChange = async (interactionStep, answerIndexInput, value) => {
     const { onQuestionResponseChange } = this.props;
     let questionResponseValue = null;
     let nextScript = null;
-
+    let answerIndex = answerIndexInput;
+    if (answerIndexInput === null) {
+      // need to find the answerIndex in the answerOptions
+      const answerOptions =
+        interactionStep.question && interactionStep.question.answerOptions;
+      if (answerOptions && answerOptions.length) {
+        answerOptions.find((ans, i) => {
+          if (ans.value === value) {
+            answerIndex = i;
+            return true;
+          }
+        });
+      } else {
+        answerIndex = 0; // shouldn't be empty
+      }
+    }
     if (value !== "clearResponse") {
       questionResponseValue = value;
       nextScript = this.getNextScript({ interactionStep, answerIndex });
@@ -92,10 +107,10 @@ class AssignmentTexterSurveys extends Component {
     });
   };
 
-  renderAnswers(step, currentStep) {
+  renderAnswers(step, currentStepKey) {
     const menuItems = step.question.answerOptions.map(answerOption => (
       <MenuItem
-        key={`${currentStep}_${step.id}_${
+        key={`${currentStepKey}_${step.id}_${
           answerOption.nextInteractionStep
             ? answerOption.nextInteractionStep.id
             : answerOption.value
@@ -106,9 +121,9 @@ class AssignmentTexterSurveys extends Component {
       </MenuItem>
     ));
 
-    menuItems.push(<Divider key={`div${currentStep}_${step.id}`} />);
+    menuItems.push(<Divider key={`div${currentStepKey}_${step.id}`} />);
     menuItems.push(
-      <MenuItem key="clear${currentStep}" value="clearResponse">
+      <MenuItem key="clear${currentStepKey}" value="clearResponse">
         Clear response
       </MenuItem>
     );
@@ -116,12 +131,12 @@ class AssignmentTexterSurveys extends Component {
     return menuItems;
   }
 
-  renderStep(step, currentStep) {
+  renderStep(step, currentStepKey) {
     const { questionResponses, currentInteractionStep } = this.props;
     const isCurrentStep = step.id === currentInteractionStep.id;
     const responseValue = questionResponses[step.id] || "";
     const { question } = step;
-    const key = `topdiv${currentStep || 0}_${step.id}_${question.text}`;
+    const key = `topdiv${currentStepKey || 0}_${step.id}_${question.text}`;
     return (
       question.text && (
         <TextField
@@ -129,21 +144,20 @@ class AssignmentTexterSurveys extends Component {
           fullWidth
           label={question.text}
           onChange={event =>
-            this.handleSelectChange(step, currentStep, event.target.value)
+            this.handleSelectChange(step, null, event.target.value)
           }
           key={key}
           name={question.id}
           value={responseValue}
           helperText="Choose answer"
         >
-          {this.renderAnswers(step, currentStep || 0)}
+          {this.renderAnswers(step, currentStepKey || "0")}
         </TextField>
       )
     );
   }
 
   renderCurrentStepOldStyle(step) {
-    console.log("renderCurrentStepOldStyle", step);
     return this.renderStep(step, 1);
   }
 
@@ -234,7 +248,7 @@ class AssignmentTexterSurveys extends Component {
           </AccordionSummary>
           <AccordionDetails>
             {showAllQuestions
-              ? interactionSteps.map(step => this.renderStep(step, 0))
+              ? interactionSteps.map((step, i) => this.renderStep(step, i))
               : this.renderCurrentStepOldStyle(currentInteractionStep)}
           </AccordionDetails>
         </Accordion>
@@ -251,9 +265,9 @@ class AssignmentTexterSurveys extends Component {
         onChange={(evt, expanded) => this.handleExpandChange(expanded)}
       >
         <AccordionSummary>All questions</AccordionSummary>
-        {interactionSteps.map(step => (
+        {interactionSteps.map((step, i) => (
           <AccordionDetails key={step.id}>
-            {this.renderStep(step, 0)}
+            {this.renderStep(step, i)}
           </AccordionDetails>
         ))}
       </Accordion>
