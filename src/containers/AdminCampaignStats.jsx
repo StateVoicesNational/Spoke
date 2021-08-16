@@ -277,7 +277,7 @@ class AdminCampaignStats extends React.Component {
                             campaign.isArchivedPermanently ||
                             campaign.serviceManagers
                               .map(sm => sm.unArchiveable)
-                              .reduce((a, b) => a && b)
+                              .reduce((a, b) => a || b, false)
                           }
                           onClick={async () =>
                             await this.props.mutations.unarchiveCampaign(
