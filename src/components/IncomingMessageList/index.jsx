@@ -136,8 +136,9 @@ export class IncomingMessageList extends Component {
               {value.id !== null ? (
                 <span>
                   {value.displayName +
-                    (getHighestRole(value.roles) === "SUSPENDED" &&
-                      " (Suspended)")}{" "}
+                    (getHighestRole(value.roles) === "SUSPENDED"
+                      ? " (Suspended)"
+                      : "")}{" "}
                   <Link
                     target="_blank"
                     to={`/app/${this.props.organizationId}/todos/other/${value.id}`}
