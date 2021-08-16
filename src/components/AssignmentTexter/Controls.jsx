@@ -331,7 +331,9 @@ export class AssignmentTexterContactControls extends React.Component {
     console.log(
       "handleQuestionResponseChange",
       questionResponseValue,
-      nextScript
+      nextScript,
+      "interactionStep",
+      interactionStep
     );
     const children = getChildren(interactionStep, interactionSteps);
     for (const childStep of children) {
@@ -464,10 +466,11 @@ export class AssignmentTexterContactControls extends React.Component {
       campaign.interactionSteps
     );
 
-    const otherResponsesLink = currentInteractionStep &&
+    const otherResponsesLink =
+      currentInteractionStep &&
       currentInteractionStep.question.filteredAnswerOptions.length > 6 &&
-      filteredCannedResponses.length && (
-        <div className={css(flexStyles.popoverLink)}>
+      filteredCannedResponses.length ? (
+        <div className={css(flexStyles.popoverLink)} key={"otherresponses"}>
           <a
             href="#otherresponses"
             className={css(flexStyles.popoverLinkColor)}
@@ -475,7 +478,7 @@ export class AssignmentTexterContactControls extends React.Component {
             Other Responses
           </a>
         </div>
-      );
+      ) : null;
 
     const searchBar = currentInteractionStep &&
       currentInteractionStep.question.answerOptions.length +
