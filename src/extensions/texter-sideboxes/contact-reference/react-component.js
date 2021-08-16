@@ -27,13 +27,18 @@ export const showSidebox = ({
 };
 
 export class TexterSidebox extends React.Component {
-  state = {
-    copiedStatus: ""
-  };
+  constructor(props) {
+    super(props);
+    this.state = {
+      copiedStatus: ""
+    };
+    this.displayLink = React.createRef();
+  }
 
   copyToClipboard = () => {
-    if (this.refs.displayLink) {
-      this.refs.displayLink.focus();
+    if (this.displayLink && this.displayLink.current) {
+      this.displayLink.current.focus();
+      this.displayLink.current.select();
       document.execCommand("copy");
       console.log("Copied");
       this.setState({ copiedStatus: " (copied)" });
@@ -69,11 +74,12 @@ export class TexterSidebox extends React.Component {
           {this.state.copiedStatus}
         </div>
         <TextField
-          ref="displayLink"
+          inputRef={this.displayLink}
           name={url}
           value={url}
           fullWidth
           inputProps={{ style: { fontSize: "12px" } }}
+          onFocus={this.copyToClipboard}
         />
       </div>
     );
