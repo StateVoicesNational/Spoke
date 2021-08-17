@@ -187,7 +187,7 @@ export const flexStyles = StyleSheet.create({
   subSubAnswerButtonsColumns: {
     height: "0px",
     "@media(min-height: 600px)": {
-      height: "40px" // TODO
+      height: "37px" // TODO
     },
     display: "inline-block",
     //flex: "1 1 50%",
