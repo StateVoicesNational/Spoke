@@ -1042,19 +1042,22 @@ export class AssignmentTexterContactControls extends React.Component {
   }
 
   renderFirstMessage(enabledSideboxes) {
+    const { contact } = this.props;
     return [
       this.renderToolbar(enabledSideboxes),
       this.renderMessageBox(
         <Empty
           title={
-            "This is your first message to " + this.props.contact.firstName
+            contact.optOut
+              ? `${contact.firstName} is opted out -- skip this contact`
+              : `This is your first message to ${contact.firstName}`
           }
           icon={<CreateIcon color="primary" />}
         />,
         enabledSideboxes
       ),
       this.renderMessagingRowMessage(),
-      this.renderMessagingRowSendSkip(this.props.contact)
+      this.renderMessagingRowSendSkip(contact)
     ];
   }
 
