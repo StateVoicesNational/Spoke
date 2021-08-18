@@ -979,6 +979,20 @@ export async function startCampaign(job) {
       .delete();
   }
 
+  // One last update of is_opted_out during start in case contacts opted-out from running campaigns
+  const updateOptOuts = await cacheableData.optOut.updateIsOptedOuts(query =>
+    query
+      .join("opt_out", {
+        "opt_out.cell": "campaign_contact.cell",
+        ...(!process.env.OPTOUTS_SHARE_ALL_ORGS
+          ? { "opt_out.organization_id": "campaign.organization_id" }
+          : {})
+      })
+      .where("campaign_contact.campaign_id", campaign.id)
+  );
+  if (updateOptOuts) {
+    console.log("campaign start updated is_opted_out", updateOptOuts);
+  }
   // We delete the job before invoking this task in case this process times out.
   // TODO: Decide if we want/need this anymore, relying on FUTURE campaign-contact cache load changes
   await jobRunner.dispatchTask(Tasks.CAMPAIGN_START_CACHE, {
