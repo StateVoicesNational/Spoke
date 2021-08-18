@@ -168,6 +168,42 @@ describe("ngpvan", () => {
       getSavedListsNock.done();
     });
 
+    it("gets extra when more than 100 count", async () => {
+      const savedListsNock = nock(`${fakeNgpVanBaseApiUrl}:443`, {
+        encodedQueryParams: true,
+        reqheaders: {
+          authorization: "Basic c3Bva2U6dG9wc2VjcmV0fDA="
+        }
+      });
+
+      const getSavedListsNock = savedListsNock
+        .get(
+          `/v4/savedLists?$top=100&maxPeopleCount=${process.env.NGP_VAN_MAXIMUM_LIST_SIZE}`
+        )
+        .reply(200, {
+          items: listItems.slice(0, 4),
+          nextPageLink: null,
+          count: 101
+        });
+
+      const getExtraSavedListsNock = savedListsNock
+        .get(
+          `/v4/savedLists?$top=100&maxPeopleCount=${process.env.NGP_VAN_MAXIMUM_LIST_SIZE}&$skip=1`
+        )
+        .reply(200, {
+          items: listItems.slice(4),
+          nextPageLink: null,
+          count: 1
+        });
+
+      const savedListsResponse = await getClientChoiceData();
+
+      expect(JSON.parse(savedListsResponse.data).items).toEqual(listItems);
+      expect(savedListsResponse.expiresSeconds).toEqual(30);
+      getSavedListsNock.done();
+      getExtraSavedListsNock.done();
+    });
+
     describe("when there is an error retrieving the list", () => {
       it("returns what we expect", async () => {
         const getSavedListsNock = nock(`${fakeNgpVanBaseApiUrl}:443`, {
