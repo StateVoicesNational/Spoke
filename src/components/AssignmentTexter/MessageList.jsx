@@ -83,7 +83,7 @@ export class MessageList extends React.Component {
             <NotInterestedIcon color="error" />
           </ListItemIcon>
           <ListItemText
-            primary={`${contact.firstName} opted out of texts`}
+            primary={`${this.props.contact.firstName} opted out of texts`}
             secondary={moment(optOut.createdAt).fromNow()}
           />
         </ListItem>
