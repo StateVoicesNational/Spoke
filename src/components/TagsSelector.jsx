@@ -87,7 +87,6 @@ export class TagsSelector extends React.Component {
   };
 
   handleClick = itemClicked => {
-    console.log("handleClick", itemClicked);
     let tagFilter = this.state.tagFilter;
     switch (itemClicked.id) {
       case IGNORE_TAGS.id:
@@ -116,13 +115,11 @@ export class TagsSelector extends React.Component {
           delete tagFilter.suppressedTags[`s_${itemClicked.id}`];
         }
     }
-    console.log("SET STATE", tagFilter);
     this.setState({ tagFilter });
     this.props.onChange(tagFilter);
   };
 
   createMenuItem = tagFilter => {
-    console.log("createMenuItem", tagFilter.id);
     return (
       <MenuItem
         key={tagFilter.id}
