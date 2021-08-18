@@ -86,9 +86,9 @@ describe("zapier-action", () => {
         campaign_id: 62,
         assignment_id: 95,
         external_id: "1",
-        first_name: "Preston",
-        last_name: "Maness",
-        cell: "+15129551048",
+        first_name: "Claudia",
+        last_name: "Alexander",
+        cell: "+12135550122",
         zip: "",
         custom_fields: '{"day":"Tuesday"}',
         created_at: "2021-08-14T02:01:39.528Z",
@@ -141,7 +141,7 @@ describe("zapier-action", () => {
             campaign_id: 62,
             question: "What number between one and five.",
             script:
-              "Hey {firstName}. It's Preston testing some stuff. Do me a favor and give me a number between one and five.",
+              "Hey {firstName}. It's Claudia testing some stuff. Do me a favor and give me a number between one and five.",
             created_at: "2021-08-14T02:00:08.087Z",
             parent_interaction_id: null,
             answer_option: "",
@@ -339,8 +339,8 @@ describe("zapier-action", () => {
       };
 
       let texter = {
-        first_name: "Preston",
-        last_name: "Maness",
+        first_name: "Claudia",
+        last_name: "Alexander",
         email: "aspensmonster@riseup.net"
       };
 
@@ -348,7 +348,7 @@ describe("zapier-action", () => {
 
       let expected_payload = {
         texter: {
-          name: "Preston Maness",
+          name: "Claudia Alexander",
           email: "aspensmonster@riseup.net"
         },
         campaign: {
@@ -413,9 +413,9 @@ describe("zapier-action", () => {
         campaign_id: 60,
         assignment_id: 93,
         external_id: "2",
-        first_name: "Patrick",
-        last_name: "Maness",
-        cell: "+15129031315",
+        first_name: "Heather",
+        last_name: "Couper",
+        cell: "+12135550129",
         zip: "",
         custom_fields: '{"day":"Wednesday"}',
         created_at: "2021-08-14T00:37:40.681Z",
@@ -462,7 +462,7 @@ describe("zapier-action", () => {
             campaign_id: 60,
             question: "What number between one and five.",
             script:
-              "Hey {firstName}. It's Preston testing some stuff. Do me a favor and give me a number between one and five.",
+              "Hey {firstName}. It's Claudia testing some stuff. Do me a favor and give me a number between one and five.",
             created_at: "2021-08-14T00:34:57.614Z",
             parent_interaction_id: null,
             answer_option: "",
