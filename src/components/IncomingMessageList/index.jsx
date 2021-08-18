@@ -393,7 +393,6 @@ export class IncomingMessageList extends Component {
             this.handleRowsSelected(ids);
             break;
           default:
-            console.log(`action not handled: ${action}`);
             break;
         }
       }
