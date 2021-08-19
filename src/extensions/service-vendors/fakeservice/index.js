@@ -172,6 +172,29 @@ export async function deleteNumbersInAreaCode(organization, areaCode) {
   return count;
 }
 
+// Does a lookup for carrier and optionally the contact name
+export async function getContactInfo({
+  organization,
+  contactNumber,
+  // Boolean: maybe twilio-specific?
+  lookupName
+}) {
+  if (!contactNumber) {
+    return {};
+  }
+  const contactInfo = {
+    carrier: "FakeCarrier",
+    // -1 is a landline, 1 is a mobile number
+    // we test against one of the lower digits to randomly
+    // but deterministically vary on the landline
+    status_code: contactNumber[11] === "2" ? -1 : 1
+  };
+  if (lookupName) {
+    contactInfo.lookup_name = `Foo ${parseInt(Math.random() * 1000)}`;
+  }
+  return contactInfo;
+}
+
 export default {
   sendMessage,
   buyNumbersInAreaCode,
