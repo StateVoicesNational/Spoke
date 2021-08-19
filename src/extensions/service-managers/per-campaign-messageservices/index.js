@@ -224,6 +224,7 @@ export async function onCampaignUpdateSignal({
         }
       }
     });
+    await cacheableData.campaign.clear(campaign.id);
   }
   return await _editCampaignData(organization, campaign);
 }
