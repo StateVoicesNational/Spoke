@@ -7,7 +7,7 @@ export const CUSTOM_DATA = [
   "individual_prefix",
   "gender",
   "city",
-  "contact_type"
+  "phone_id"
 ];
 
 async function paginate(get, config, entity, options, callback) {
@@ -15,6 +15,7 @@ async function paginate(get, config, entity, options, callback) {
 
   while (true) {
     const once = await get(config, entity, options);
+   
     if (!once.length) {
       return count;
     }
@@ -36,14 +37,13 @@ async function get(config, entity, params){
     const result = await fetch(url);
     const json = await result.json();
     if (json.is_error) {
-      console.log(json.error_message);
-    } else{
+      return false;
+    }else {
       return json.values;
     }
-  } catch(error){
-     console.log("Fetch error");
+  }catch (error) {
+    return error;
   }
-
 }
 
 function getCivi(){
@@ -83,7 +83,6 @@ export async function searchGroups(query) {
     count: group[key],
     id: group.id
   }));
-
 }
 
 export async function getGroupMembers(groupId, callback) {
@@ -91,7 +90,7 @@ export async function getGroupMembers(groupId, callback) {
 
   return await paginate(
     get,
-    config,
+    config,  
     "Contact",
     {
       debug: 1,
@@ -113,7 +112,20 @@ export async function getGroupMembers(groupId, callback) {
         "postal_code",
 
         // additional data
-        ...CUSTOM_DATA
+        ...CUSTOM_DATA,
+
+        "contact_type":"Individual",	
+
+	"api.Phone.get": {
+	  "contact_id":"$value.id",
+	  "phone_type_id":"Mobile",
+	   
+	    return: [
+	      "id",
+              "phone_numeric"
+	    ],
+	  "options":{"limit":1}
+	}      
       ],
 
       // Closest thing to docs for this: https://lab.civicrm.org/dev/core/blob/d434a5cfb2dc3c248ac3c0d8570bd8e9d828f6ad/api/v3/Contact.php#L403

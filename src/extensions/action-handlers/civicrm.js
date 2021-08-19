@@ -1,7 +1,7 @@
 import { parse } from "url";
 import { getConfig } from "../../server/api/lib/config";
-import request from "request";
 import { r } from "../../server/models";
+import request from "request";
 
 export const name = "civicrm";
 
@@ -17,7 +17,7 @@ export const instructions = () =>
 export function serverAdministratorInstructions() {
   return {
     description: `
-      This action is for reporting the results of interactions with contacts via ZAPIER
+      This action is for reporting the results of interactions with contacts via CiviCRM
       `,
     setupInstructions:
       "Add CIVICRM_API_KEY, CIVICRM_SITE_KEY, CIVICRM_DOMAIN to the environment variable",
@@ -88,25 +88,41 @@ export async function processAction({
 
   const action_data = JSON.parse(interactionStep.answer_actions_data);
   const coustom_field  = JSON.parse(contact.custom_fields); 
-  const config = getCivi(); 
+  const config = getCivi();
 
   switch(action_data['value']){
     
     case 'do_not_sms':
      
-      let json = {
+      var json = {
 	sequential: 1,
-	contact_type: coustom_field['contact_type'],
+	contact_type: "Individual",
 	do_not_sms: 1, 
         id: contact['external_id']
       };
-
-     return await post(
+ 
+      return await post(
      	config,
 	"Contact",
 	"create",
 	json
-     );
+      );
+    break;
+
+    case 'wrong_number':
+
+      var json = {
+        sequential: 1,	
+        id: coustom_field['phone_id'],
+        "phone_type_id": "Wrong Number"
+      }
+
+      return await post(
+        config,
+        "Phone",
+        "create",
+        json
+      );
     break;
   }
 }
@@ -116,6 +132,10 @@ export async function getClientChoiceData(organization, user) {
     {
       name: "Do Not SMS",
       details: "do_not_sms"
+    },
+    {
+      name: "Wrong Number",
+      details: "wrong_number"
     }
   ];
 
