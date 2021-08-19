@@ -138,11 +138,11 @@ class AdminPhoneNumberInventory extends React.Component {
     });
   };
 
-  handleDeleteNumbersOpen = row => {
+  handleDeleteNumbersOpen = ([areaCode, , , availableCount]) => {
     this.setState({
       deleteNumbersDialogOpen: true,
-      deleteNumbersAreaCode: row.areaCode,
-      deleteNumbersCount: row.availableCount
+      deleteNumbersAreaCode: areaCode,
+      deleteNumbersCount: availableCount
     });
   };
 
@@ -194,12 +194,17 @@ class AdminPhoneNumberInventory extends React.Component {
         label: " ",
         options: {
           sort: false,
-          customBodyRender: (value, tableMeta) =>
-            this.props.params.ownerPerms && (
-              <IconButton onClick={() => this.handleDeleteNumbersOpen(row)}>
-                <DeleteIcon />
-              </IconButton>
-            )
+          customBodyRender: (value, { rowData }) => {
+            return (
+              this.props.params.ownerPerms && (
+                <IconButton
+                  onClick={() => this.handleDeleteNumbersOpen(rowData)}
+                >
+                  <DeleteIcon />
+                </IconButton>
+              )
+            );
+          }
         }
       },
       // TODO: display additional information here about pending and past jobs
