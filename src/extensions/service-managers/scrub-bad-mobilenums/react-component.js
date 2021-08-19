@@ -17,6 +17,15 @@ export class CampaignConfig extends React.Component {
 
   render() {
     console.log("scrub-bad-mobilenums CampaignConfig", this.props);
+    if (!this.props.serviceManagerInfo) {
+      return (
+        <p>
+          Your service vendor does not support loading contact info. Please
+          contact your administrator on either disabling this extension or
+          reconfiguring the vendor.
+        </p>
+      );
+    }
     const {
       scrubBadMobileNumsFreshStart,
       scrubBadMobileNumsFinished,
