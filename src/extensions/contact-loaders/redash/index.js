@@ -58,7 +58,7 @@ export async function getClientChoiceData(organization, campaign, user) {
   /// return a json object which will be cached for expiresSeconds long
   /// `data` should be a single string -- it can be JSON which you can parse in the client component
   return {
-    data: getConfig("REDASH_BASE_URL", organization),
+    data: "nodata",
     expiresSeconds: 0
   };
 }
