@@ -200,7 +200,6 @@ export async function onCampaignUpdateSignal({
     }
 
     await ownedPhoneNumber.releaseCampaignNumbers(campaign.id, r.knex);
-    await cacheableData.campaign.clear(campaign.id);
   } else if (updateData.inventoryPhoneNumberCounts) {
     if (campaign.is_started) {
       throw new Error(
@@ -224,8 +223,8 @@ export async function onCampaignUpdateSignal({
         }
       }
     });
-    await cacheableData.campaign.clear(campaign.id);
   }
+  await cacheableData.campaign.clear(campaign.id);
   return await _editCampaignData(organization, campaign);
 }
 
