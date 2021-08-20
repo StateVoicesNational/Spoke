@@ -34,7 +34,6 @@ const styles = {
     padding: 0
   },
   pastQuestionsLink: {
-    marginTop: "5px",
     borderTop: `1px solid ${theme.components.popup.outline}`,
     borderBottom: `1px solid ${theme.components.popup.outline}`
   }
@@ -157,35 +156,18 @@ class AssignmentTexterSurveys extends Component {
     );
   }
 
-  renderCurrentStepOldStyle(step) {
-    return this.renderStep(step, 1);
-  }
-
   renderCurrentStep(step) {
     const { onRequestClose, questionResponses, listHeader } = this.props;
     const responseValue = questionResponses[step.id];
     return (
       <List key="curlist" style={{ width: "100%" }}>
-        <h3 style={{ padding: 0, margin: 0 }}>
+        <h3 style={{ padding: "0 0 0 6px", margin: 0 }}>
           {listHeader}
           <div style={{ fontWeight: "normal", fontSize: "70%" }}>
             What was their response to:
           </div>
           {step.question.text}
         </h3>
-        {Object.keys(questionResponses).length ? (
-          <ListItem
-            button
-            onClick={() => this.handleExpandChange(true)}
-            key={`pastquestions`}
-            style={styles.pastQuestionsLink}
-          >
-            <ListItemText primary="All Questions" />
-            <ListItemIcon>
-              <ArrowRightIcon />
-            </ListItemIcon>
-          </ListItem>
-        ) : null}
         {(
           step.question.filteredAnswerOptions || step.question.answerOptions
         ).map((answerOption, index) => (
@@ -236,41 +218,29 @@ class AssignmentTexterSurveys extends Component {
     );
   }
 
-  renderOldStyle() {
+  renderMultipleQuestions() {
     const { interactionSteps, currentInteractionStep } = this.props;
     let { showAllQuestions } = this.state;
-
-    return interactionSteps.length === 0 ? null : (
-      <React.Fragment>
-        <Accordion expanded={true}>
-          <AccordionSummary>
-            {showAllQuestions ? "All questions" : "Current question"}
-          </AccordionSummary>
-          <AccordionDetails>
-            {showAllQuestions
-              ? interactionSteps.map((step, i) => this.renderStep(step, i))
-              : this.renderCurrentStepOldStyle(currentInteractionStep)}
-          </AccordionDetails>
-        </Accordion>
-      </React.Fragment>
-    );
-  }
-
-  renderMultipleQuestions() {
-    const { interactionSteps } = this.props;
-    let { showAllQuestions } = this.state;
     return (
-      <Accordion
-        expanded={showAllQuestions}
-        onChange={(evt, expanded) => this.handleExpandChange(expanded)}
-      >
-        <AccordionSummary>All questions</AccordionSummary>
-        {interactionSteps.map((step, i) => (
-          <AccordionDetails key={step.id}>
-            {this.renderStep(step, i)}
-          </AccordionDetails>
-        ))}
-      </Accordion>
+      <div>
+        <Accordion
+          expanded={showAllQuestions}
+          onChange={(evt, expanded) => this.handleExpandChange(expanded)}
+        >
+          <AccordionSummary style={styles.pastQuestionsLink}>
+            All questions
+            <ArrowRightIcon />
+          </AccordionSummary>
+          {interactionSteps.map((step, i) => (
+            <AccordionDetails key={step.id}>
+              {this.renderStep(step, i)}
+            </AccordionDetails>
+          ))}
+        </Accordion>
+        {currentInteractionStep
+          ? this.renderCurrentStep(currentInteractionStep)
+          : null}
+      </div>
     );
   }
 
@@ -287,12 +257,8 @@ class AssignmentTexterSurveys extends Component {
   }
 
   render() {
-    const { interactionSteps } = this.props;
-    const oldStyle = typeof this.props.onRequestClose != "function";
-
-    if (oldStyle) {
-      return this.renderOldStyle();
-    } else if (interactionSteps.length > 1) {
+    const { interactionSteps, currentInteractionStep } = this.props;
+    if (interactionSteps.length > 1) {
       return this.renderMultipleQuestions();
     } else if (interactionSteps.length === 1) {
       return this.renderSingleQuestion();
