@@ -49,10 +49,6 @@ export const inlineStyles = {
   flatButtonLabel: {
     textTransform: "none",
     fontWeight: "bold"
-  },
-  popoverSidebox: {
-    backgroundColor: "rgb(240, 240, 240)",
-    padding: "20px"
   }
 };
 
@@ -68,6 +64,15 @@ export const flexStyles = StyleSheet.create({
     flexDirection: "column",
     height: "100%",
     backgroundColor: bgGrey
+  },
+  popoverSideboxesInner: {
+    // expand to fill the whole popover
+    width: "100%",
+    height: "100%",
+    // show campaign header in-view
+    top: "50px",
+    left: "18px",
+    padding: "20px"
   },
   popover: {
     width: "85%",

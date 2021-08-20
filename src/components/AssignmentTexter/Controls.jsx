@@ -1001,12 +1001,14 @@ export class AssignmentTexterContactControls extends React.Component {
     if (sideboxOpen) {
       return (
         <Popover
-          style={inlineStyles.popoverSidebox}
           className={css(flexStyles.popover)}
+          classes={{
+            paper: css(flexStyles.popoverSideboxesInner)
+          }}
           open={sideboxOpen}
           anchorEl={this.refs.messageBox}
-          anchorOrigin={{ horizontal: "middle", vertical: "top" }}
-          transformOrigin={{ horizontal: "middle", vertical: "top" }}
+          anchorOrigin={{ horizontal: "middle", vertical: "middle" }}
+          transformOrigin={{ horizontal: "middle", vertical: "middle" }}
           onClose={this.handleClickSideboxDialog}
         >
           {sideboxList}
