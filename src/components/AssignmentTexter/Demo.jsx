@@ -355,6 +355,31 @@ export const tests = testName => {
                   }
                 ]
               }
+            },
+            {
+              id: "20",
+              script: "Super, we'll add your +1",
+              question: {
+                text: "Is your friend part of your household?",
+                answerOptions: [
+                  {
+                    value: "Yes, household",
+                    interactionStepId: "45",
+                    nextInteractionStep: {
+                      id: "45",
+                      script: "Thanks for telling us"
+                    }
+                  },
+                  {
+                    value: "No, not household",
+                    interactionStepId: "46",
+                    nextInteractionStep: {
+                      id: "46",
+                      script: "Ok, thanks for telling us"
+                    }
+                  }
+                ]
+              }
             }
           ],
           customFields: ["donationLink", "vendor_id"],
