@@ -71,9 +71,9 @@ export class CampaignContactsForm extends React.Component {
       >
         <p>
           Provide a redash url that should look something like{" "}
-          <code>http:{"//"}&lt;redash server>/queries/&lt;digits></code> or{" "}
+          <code>https:{"//"}&lt;RedashServer>/queries/&lt;digits></code> or{" "}
           <code>
-            https:{"//"}&lt;redash server>/queries/&lt;digits>?p_someparam=123
+            https:{"//"}&lt;RedashServer>/queries/&lt;digits>?p_someparam=123
           </code>{" "}
           -- make sure the parameters are not just the defaults but the ones you
           want set for your query.
