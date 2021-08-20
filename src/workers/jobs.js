@@ -289,6 +289,7 @@ export async function completeContactLoad(
 
   let deleteOptOutCells = null;
   let deleteDuplicateCells = null;
+  console.log("completeContactLoad", campaignId, job.id);
   const knexOptOutDeleteResult = await r
     .knex("campaign_contact")
     .whereIn("cell", getOptOutSubQuery(campaign.organization_id))
@@ -371,6 +372,14 @@ export async function completeContactLoad(
       }
     });
   }
+  console.log(
+    "completeContactLoad completed",
+    campaignId,
+    job.id,
+    finalContactCount,
+    deleteOptOutCells,
+    deleteDuplicateCells
+  );
 }
 
 export async function unzipPayload(job) {
