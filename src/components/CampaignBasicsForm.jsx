@@ -20,7 +20,7 @@ const FormSchemaBeforeStarted = {
     .test(
       "in-future",
       "Due date should be in the future: when you expect the campaign to end",
-      val => val > new Date()
+      val => new Date(val) > new Date()
     ),
   logoImageUrl: yup
     .string()
