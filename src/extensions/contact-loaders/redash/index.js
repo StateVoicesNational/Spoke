@@ -6,6 +6,7 @@ import { jobRunner } from "../../job-runners";
 import { r, cacheableData } from "../../../server/models";
 import { getConfig, hasConfig } from "../../../server/api/lib/config";
 import httpRequest from "../../../server/lib/http-request";
+import https from "https";
 
 export const name = "redash";
 
@@ -63,26 +64,12 @@ export async function getClientChoiceData(organization, campaign, user) {
   };
 }
 
-let baseTlsEnabled = process.env.NODE_TLS_REJECT_UNAUTHORIZED;
-const tlsVerification = {
-  avoid: yesAvoid => {
-    if (yesAvoid) {
-      process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
-    }
-  },
-  restore: () => {
-    process.env.NODE_TLS_REJECT_UNAUTHORIZED = baseTlsEnabled;
-  }
-};
-
 export async function downloadAndSaveResults(
   { queryId, resultId, job, redashUrl, organizationId },
   contextVars
 ) {
   const organization = cacheableData.organization.load(organizationId);
-  const userApiKey = getConfig("REDASH_USER_API_KEY", organization);
   const baseUrl = getConfig("REDASH_BASE_URL", organization);
-  const tlsVerifyOff = getConfig("REDASH_TLS_VERIFY_OFF", organization);
 
   console.log(
     "redash.downloadAndSaveResults",
@@ -93,13 +80,11 @@ export async function downloadAndSaveResults(
   );
   // 3. Download result csv
   const resultsUrl = `${baseUrl}/api/queries/${queryId}/results/${resultId}.csv`;
-  tlsVerification.avoid(tlsVerifyOff);
   const resultsDataResult = await httpRequest(resultsUrl, {
     method: "get",
-    headers: { Authorization: `Key ${userApiKey}` },
-    timeout: 900000 // 15 min
+    timeout: 900000, // 15 min
+    ...httpsArgs(organization)
   });
-  tlsVerification.restore();
 
   // 4. Parse CSV
   const { contacts, customFields, validationStats, error } = await new Promise(
@@ -137,6 +122,22 @@ export async function downloadAndSaveResults(
   );
 }
 
+const httpsAgentNoVerify = new https.Agent({
+  rejectUnauthorized: false
+});
+
+const httpsArgs = organization => {
+  const userApiKey = getConfig("REDASH_USER_API_KEY", organization);
+  const tlsVerifyOff = getConfig("REDASH_TLS_VERIFY_OFF", organization);
+  const extraArgs = {
+    headers: { Authorization: `Key ${userApiKey}` }
+  };
+  if (tlsVerifyOff) {
+    extraArgs.agent = httpsAgentNoVerify;
+  }
+  return extraArgs;
+};
+
 export async function processContactLoad(job, maxContacts, organization) {
   /// Trigger processing -- this will likely be the most important part
   /// you should load contacts into the contact table with the job.campaign_id
@@ -169,7 +170,6 @@ export async function processContactLoad(job, maxContacts, organization) {
   const campaignId = job.campaign_id;
   const userApiKey = getConfig("REDASH_USER_API_KEY", organization);
   const baseUrl = getConfig("REDASH_BASE_URL", organization);
-  const tlsVerifyOff = getConfig("REDASH_TLS_VERIFY_OFF", organization);
   const { redashUrl } = JSON.parse(job.payload);
 
   if (!userApiKey || !baseUrl) {
@@ -216,12 +216,11 @@ export async function processContactLoad(job, maxContacts, organization) {
   // 1. start query
   const startQueryUrl = `${baseUrl}/api/queries/${queryId}/refresh${params}`;
   console.log("REDASH 1");
-  tlsVerification.avoid(tlsVerifyOff);
   let refreshRedashResult;
   try {
     refreshRedashResult = await httpRequest(startQueryUrl, {
       method: "post",
-      headers: { Authorization: `Key ${userApiKey}` }
+      ...httpsArgs(organization)
     });
   } catch (err) {
     await failedContactLoad(
@@ -232,7 +231,6 @@ export async function processContactLoad(job, maxContacts, organization) {
     );
     return;
   }
-  tlsVerification.restore();
   console.log(
     "refreshRedashResult",
     refreshRedashResult,
@@ -252,10 +250,8 @@ export async function processContactLoad(job, maxContacts, organization) {
   const jobQueryId = redashJobData.job.id;
   const redashPollStatusUrl = `${baseUrl}/api/jobs/${jobQueryId}`;
   console.log("REDASH 2", redashJobData);
-  tlsVerification.avoid(tlsVerifyOff);
   const redashQueryCompleted = await httpRequest(redashPollStatusUrl, {
     method: "get",
-    headers: { Authorization: `Key ${userApiKey}` },
     bodyRetryFunction: async res => {
       const json = await res.json();
       console.log("statusValidation", json);
@@ -264,9 +260,9 @@ export async function processContactLoad(job, maxContacts, organization) {
     },
     retries: 1000,
     timeout: 900000, // 15 min
-    retryDelayMs: 3000 // 3 seconds
+    retryDelayMs: 3000, // 3 seconds
+    ...httpsArgs(organization)
   });
-  tlsVerification.restore();
   console.log("refreshDataResult", redashQueryCompleted);
   if (redashQueryCompleted.job.status === 4) {
     await failedContactLoad(
