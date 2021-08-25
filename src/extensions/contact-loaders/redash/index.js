@@ -67,7 +67,7 @@ let baseTlsEnabled = process.env.NODE_TLS_REJECT_UNAUTHORIZED;
 const tlsVerification = {
   avoid: yesAvoid => {
     if (yesAvoid) {
-      process.env.NODE_TLS_REJECT_UNAUTHORIZED = 0;
+      process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
     }
   },
   restore: () => {
