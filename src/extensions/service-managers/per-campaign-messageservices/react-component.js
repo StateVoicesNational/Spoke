@@ -955,3 +955,48 @@ export class CampaignConfig extends React.Component {
     );
   }
 }
+
+export class CampaignStats extends React.Component {
+  static propTypes = {
+    campaign: type.object,
+    serviceManagerInfo: type.object,
+    saveLabel: type.string,
+    onSubmit: type.func
+  };
+  state = {
+    releasingNumbers: false
+  };
+
+  render() {
+    const { campaign, serviceManagerInfo, onSubmit } = this.props;
+    if (!campaign.isArchived) {
+      return null;
+    }
+    return (
+      <div>
+        {!serviceManagerInfo.unArchiveable ? (
+          <div>Phone numbers have been released</div>
+        ) : null}
+        {campaign.isArchived && campaign.messageserviceSid ? (
+          <Button
+            variant="contained"
+            key="releaseCampaignNumbers"
+            disabled={
+              this.state.releasingNumbers || !serviceManagerInfo.unArchiveable
+            }
+            onClick={async () => {
+              this.setState({ releasingNumbers: true });
+              await onSubmit({
+                releaseCampaignNumbers: true
+              });
+              this.setState({ releasingNumbers: false });
+            }}
+          >
+            Release Numbers
+          </Button>
+        ) : null}
+        {this.state.releasingNumbers ? <LoadingIndicator /> : null}
+      </div>
+    );
+  }
+}

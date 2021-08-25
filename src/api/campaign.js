@@ -134,6 +134,7 @@ export const schema = gql`
 
     messageserviceSid: String
     useOwnMessagingService: Boolean
+    messageServiceLink: String
     phoneNumbers: [String]
     inventoryPhoneNumberCounts: [CampaignPhoneNumberCount]
   }

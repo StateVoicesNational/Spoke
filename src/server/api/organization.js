@@ -273,6 +273,7 @@ export const resolvers = {
       );
     },
     campaignPhoneNumbersEnabled: async (organization, _, { user }) => {
+      // TODO: consider removal (moved to extensions/service-managers/per-campaign-messageservices
       await accessRequired(user, organization.id, "SUPERVOLUNTEER");
       const inventoryEnabled =
         getConfig("EXPERIMENTAL_PHONE_INVENTORY", organization, {

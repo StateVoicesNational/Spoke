@@ -80,13 +80,18 @@ const _editCampaignData = async (organization, campaign) => {
     organization
   );
   // 3. fullyConfigured
+  const contactsCount =
+    campaign.contactsCount ||
+    (await r.getCount(
+      r.knex("campaign_contact").where("campaign_id", campaign.id)
+    ));
   const contactsPerNum = _contactsPerPhoneNumber(organization);
   const numbersReserved = (inventoryPhoneNumberCounts || []).reduce(
     (acc, entry) => acc + entry.count,
     0
   );
   const numbersNeeded = Math.ceil(
-    (campaign.contactsCount || 0) / contactsPerNum.contactsPerPhoneNumber
+    (contactsCount || 0) / contactsPerNum.contactsPerPhoneNumber
   );
   // 4. which mode:
   // previously: EXPERIMENTAL_CAMPAIGN_PHONE_NUMBERS vs. EXPERIMENTAL_TWILIO_PER_CAMPAIGN_MESSAGING_SERVICE
@@ -109,8 +114,10 @@ const _editCampaignData = async (organization, campaign) => {
       // Two mutually exclusive modes: EXPERIMENTAL_CAMPAIGN_PHONE_NUMBERS vs. EXPERIMENTAL_TWILIO_PER_CAMPAIGN_MESSAGING_SERVICE
       Boolean(campaign.messageservice_sid) ||
       (numbersReserved >= numbersNeeded && !manualMessageServiceMode),
-    unArchiveable:
-      !campaign.use_own_messaging_service || campaign.messageservice_sid
+    unArchiveable: Boolean(
+      !campaign.use_own_messaging_service ||
+        (campaign.messageservice_sid && counts.length)
+    )
   };
 };
 
@@ -125,14 +132,17 @@ export async function getCampaignData({
   // called both from edit and stats contexts: editMode==true for edit page
   if (fromCampaignStatsPage) {
     // STATS: campaign.messageservice_sid (enabled)
+    const counts = await ownedPhoneNumber.listCampaignNumbers(campaign.id);
     return {
       data: {
         useOwnMessagingService: campaign.use_own_messaging_service,
         messageserviceSid: campaign.messageservice_sid || null,
         ..._contactsPerPhoneNumber(organization)
       },
-      unArchiveable:
-        !campaign.use_own_messaging_service || campaign.messageservice_sid
+      unArchiveable: Boolean(
+        !campaign.use_own_messaging_service ||
+          (campaign.messageservice_sid && counts.length)
+      )
     };
   } else {
     // EDIT
@@ -148,8 +158,7 @@ export async function onCampaignUpdateSignal({
   fromCampaignStatsPage
 }) {
   // TODO:
-  // 1. receive/process releaseCampaignNumbers button (also widget) -- from stats page
-  // 2. receive CampaignPhoneNumbers form (replace action on campaign save)
+  // 1. receive CampaignPhoneNumbers form (replace action on campaign save)
   //      inventoryPhoneNumberCounts in schema.js
   // fullyConfigured ~= campaign.messageservice_sid && owned_phone_numbers
   await accessRequired(user, campaign.organization_id, "ADMIN");
