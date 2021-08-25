@@ -129,6 +129,8 @@ describe("End-to-end campaign flow", () => {
           /Hi ContactFirst(\d) this is TexterFirst, how are you\?/
         );
       });
+      const x = cy.get("button[data-test=send]");
+      cy.log("cypress before data-test=send", x, x && x.length);
 
       cy.get("button[data-test=send]")
         .eq(0)
@@ -140,10 +142,6 @@ describe("End-to-end campaign flow", () => {
           /Hi ContactFirst(\d) this is TexterFirst, how are you\?/
         );
       });
-      console.log(
-        "cypress before data-test=send",
-        cy.get("button[data-test=send]")
-      );
       cy.get("button[data-test=send]")
         .eq(0)
         .click();
