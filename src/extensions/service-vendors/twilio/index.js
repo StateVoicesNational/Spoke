@@ -654,6 +654,13 @@ async function searchForAvailableNumbers(
 }
 
 /**
+ * Provide a Twilio console link to the messagingService object (for configuration)
+ */
+export function messageServiceLink(organization, messagingServiceSid) {
+  return `https://www.twilio.com/console/sms/services/${messagingserviceSid}/`;
+}
+
+/**
  * Fetch Phone Numbers assigned to Messaging Service
  */
 async function getPhoneNumbersForService(organization, messagingServiceSid) {
@@ -1091,6 +1098,7 @@ export default {
   getTwilio,
   getServiceConfig,
   getMessageServiceSid,
+  messageServiceLink,
   updateConfig,
   getMetadata,
   fullyConfigured
