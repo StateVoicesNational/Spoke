@@ -23,7 +23,7 @@ const plugins = [
 const jsxLoaders = [{ loader: "babel-loader" }];
 const assetsDir = process.env.ASSETS_DIR;
 const assetMapFile = process.env.ASSETS_MAP_FILE;
-const outputFile = DEBUG ? "[name].js" : "[name].[chunkhash].js";
+const outputFile = DEBUG ? "[name].js" : "[name].[hash].js";
 console.log("Configuring Webpack with", {
   assetsDir,
   assetMapFile,
