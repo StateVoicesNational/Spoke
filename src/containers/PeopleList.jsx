@@ -5,7 +5,7 @@ import loadData from "./hoc/load-data";
 import gql from "graphql-tag";
 import LoadingIndicator from "../components/LoadingIndicator";
 
-import { createTheme, MuiThemeProvider } from "@material-ui/core/styles";
+import { createMuiTheme, MuiThemeProvider } from "@material-ui/core/styles";
 import OpenInNewIcon from "@material-ui/icons/OpenInNew";
 import PeopleIcon from "@material-ui/icons/People";
 import Button from "@material-ui/core/Button";
@@ -20,7 +20,7 @@ import theme from "../styles/theme";
 import Empty from "../components/Empty";
 
 const getMuiTheme = () =>
-  createTheme({
+  createMuiTheme({
     overrides: {
       MUIDataTableBodyCell: {
         root: {
