@@ -28,6 +28,7 @@ jobs:
     - name: Cypress run
       uses: cypress-io/github-action@v2
       env: 
+        DEBUG: '@cypress/github-action'
         NODE_ENV: test
         PORT: 3001
         OUTPUT_DIR: ./build
