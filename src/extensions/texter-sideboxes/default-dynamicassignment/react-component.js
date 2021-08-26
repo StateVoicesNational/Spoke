@@ -7,6 +7,7 @@ import Button from "@material-ui/core/Button";
 import { withRouter } from "react-router";
 import gql from "graphql-tag";
 import GSTextField from "../../../components/forms/GSTextField";
+import { dataTest } from "../../../lib/attributes";
 
 import loadData from "../../../containers/hoc/load-data";
 
@@ -144,7 +145,11 @@ export class TexterSideboxClass extends React.Component {
         ) : null}
         {contact /*the empty list*/ ? (
           <div style={{ marginBottom: "8px" }}>
-            <Button variant="contained" onClick={this.gotoTodos}>
+            <Button
+              variant="contained"
+              onClick={this.gotoTodos}
+              {...dataTest("gotoTodos")}
+            >
               Back To Todos
             </Button>
           </div>

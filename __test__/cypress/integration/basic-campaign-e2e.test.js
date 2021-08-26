@@ -152,7 +152,8 @@ describe("End-to-end campaign flow", () => {
 
       // Shows we're done and click back to /todos
       cy.get("body").contains("You've messaged all your assigned contacts.");
-      cy.get("button:contains(Back To Todos)").click();
+      cy.log("cyLOG step: click back to /todos");
+      cy.get("button[name=gotoTodos]").click();
       cy.waitUntil(() => cy.url().then(url => url.match(/\/todos$/)));
     });
   });
