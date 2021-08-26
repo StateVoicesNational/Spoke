@@ -47,29 +47,29 @@ describe("End-to-end campaign flow", () => {
     cy.get("div.MuiPickersCalendarHeader-switchHeader > button:nth-child(3)")
       .first()
       .click();
-    console.log("LOG basic-campaign-e2e-test 1");
-    cy.log("cyLOG basic-campaign-e2e-test 1");
+    cy.task("log", "cyLOG basic-campaign-e2e-test 1");
     // Click first of the month
     cy.get(".MuiPickersCalendar-week button:not(.MuiPickersDay-hidden)")
       .eq(3)
       .click();
-    console.log("LOG basic-campaign-e2e-test 2");
+    cy.task("log", "cyLOG basic-campaign-e2e-test 2");
     // Click okay on calendar
+    /*
     cy.get(".MuiDialogActions-root button")
       .eq(1)
       .click();
-    console.log("LOG basic-campaign-e2e-test 3");
+    */
+    cy.task("log", "cyLOG basic-campaign-e2e-test 3");
     // Wait for modal to close then submit
     // TODO: use cy.waitUntil() instead of wait()
     cy.wait(400);
     cy.get("[data-test=campaignBasicsForm]").submit();
-    console.log("LOG basic-campaign-e2e-test 4");
+    cy.task("log", "cyLOG basic-campaign-e2e-test 4");
     // Upload Contacts
     cy.get("#contact-upload").attachFile("two-contacts.csv"), { force: true };
     cy.wait(400);
     cy.get("button[data-test=submitContactsCsvUpload]").click();
-    console.log("LOG basic-campaign-e2e-test 5");
-    cy.log("cyLOG basic-campaign-e2e-test 5");
+    cy.task("log", "cyLOG basic-campaign-e2e-test 5");
     // Assignments
     // Note: Material UI v0 AutoComplete component appears to require a click on the element
     // later versions should just allow you to hit enter
@@ -131,11 +131,7 @@ describe("End-to-end campaign flow", () => {
           /Hi ContactFirst(\d) this is TexterFirst, how are you\?/
         );
       });
-      const x = cy.get("button[data-test=send]").then(els => {
-        console.log("button[data-test=send]", els[0]);
-      });
-      cy.log("cypress before data-test=send", x, x && x.length);
-
+      cy.task("log", "cyLOG basic-campaign-e2e-test 6");
       cy.get("button[data-test=send]")
         .eq(0)
         .click();
@@ -152,8 +148,9 @@ describe("End-to-end campaign flow", () => {
 
       // Shows we're done and click back to /todos
       cy.get("body").contains("You've messaged all your assigned contacts.");
-      cy.log("cyLOG step: click back to /todos");
-      cy.get("button[name=gotoTodos]").click();
+      cy.task("log", "cyLOG basic-campaign-e2e-test 7");
+      cy.get("button:contains(Back To Todos)").click();
+      cy.task("log", "cyLOG basic-campaign-e2e-test 8");
       cy.waitUntil(() => cy.url().then(url => url.match(/\/todos$/)));
     });
   });
