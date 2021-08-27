@@ -1,45 +1,42 @@
 import gql from "graphql-tag";
-import { r } from "../../../../src/server/models";
-import { getConfig } from "../../../../src/server/api/lib/config";
-import { dataQuery as TexterTodoListQuery } from "../../../../src/containers/TexterTodoList";
-import {
-  dataQuery as TexterTodoQuery,
-  campaignQuery
-} from "../../../../src/containers/TexterTodo";
 import { campaignDataQuery as AdminCampaignEditQuery } from "../../../../src/containers/AdminCampaignEdit";
-import { campaignsQuery } from "../../../../src/containers/PaginatedCampaignsRetriever";
-
 import {
   bulkReassignCampaignContactsMutation,
   reassignCampaignContactsMutation
 } from "../../../../src/containers/AdminIncomingMessageList";
-
-import { makeTree } from "../../../../src/lib";
-import twilio from "../../../../src/server/api/lib/twilio";
-
+import { campaignsQuery } from "../../../../src/containers/PaginatedCampaignsRetriever";
 import {
-  setupTest,
+  campaignQuery,
+  dataQuery as TexterTodoQuery
+} from "../../../../src/containers/TexterTodo";
+import { dataQuery as TexterTodoListQuery } from "../../../../src/containers/TexterTodoList";
+import * as twilio from "../../../../src/extensions/service-vendors/twilio";
+import { getMessageServiceConfig } from "../../../../src/extensions/service-vendors/service_map";
+import { makeTree } from "../../../../src/lib";
+import { getConfig } from "../../../../src/server/api/lib/config";
+import { cacheableData, r } from "../../../../src/server/models";
+import {
+  assignTexter,
+  bulkSendMessages,
   cleanupTest,
-  createUser,
+  copyCampaign,
+  createCampaign,
+  createCannedResponses,
+  createContacts,
   createInvite,
   createOrganization,
-  createCampaign,
-  saveCampaign,
-  copyCampaign,
-  createContacts,
-  createTexter,
-  assignTexter,
   createScript,
-  createCannedResponses,
-  startCampaign,
+  createTexter,
+  createUser,
+  ensureOrganizationTwilioWithMessagingService,
   getCampaignContact,
-  sendMessage,
-  bulkSendMessages,
   runGql,
-  sleep
+  saveCampaign,
+  sendMessage,
+  setupTest,
+  sleep,
+  startCampaign
 } from "../../../test_helpers";
-
-jest.mock("../../../../src/server/api/lib/twilio");
 
 let testAdminUser;
 let testInvite;
@@ -95,6 +92,7 @@ afterEach(async () => {
   queryLog = null;
   r.knex.removeListener("query", spokeDbListener);
   await cleanupTest();
+  jest.restoreAllMocks();
   if (r.redis) r.redis.flushdb();
 }, global.DATABASE_SETUP_TEARDOWN_TIMEOUT);
 
@@ -849,7 +847,6 @@ describe("Bulk Send", async () => {
   const OLD_ENV = process.env;
 
   beforeEach(async () => {
-    jest.resetModules(); // this is important - it clears the cache
     process.env = {
       ...OLD_ENV
     };
@@ -1216,6 +1213,22 @@ describe("all interaction steps fields travel round trip", () => {
 });
 
 describe("useOwnMessagingService", async () => {
+  const oldEnv = process.env;
+  beforeEach(async () => {
+    await ensureOrganizationTwilioWithMessagingService(
+      testOrganization,
+      testCampaign
+    );
+    process.env = {
+      ...process.env,
+      SERVICE_MANAGERS: "per-campaign-messageservices"
+    };
+  });
+
+  afterAll(() => {
+    process.env = oldEnv;
+  });
+
   it("uses default messaging service when false", async () => {
     await startCampaign(testAdminUser, testCampaign);
 
@@ -1228,11 +1241,17 @@ describe("useOwnMessagingService", async () => {
     expect(campaignDataResults.data.campaign.useOwnMessagingService).toEqual(
       false
     );
-    expect(campaignDataResults.data.campaign.messageserviceSid).toEqual(
-      global.TWILIO_MESSAGE_SERVICE_SID
+    const organization = await cacheableData.organization.load(organizationId);
+    const { messageServiceSid } = await getMessageServiceConfig(
+      "twilio",
+      organization
     );
+    expect(messageServiceSid).toEqual(global.TWILIO_MESSAGE_SERVICE_SID);
   });
   it("creates new messaging service when true", async () => {
+    jest.spyOn(twilio, "createMessagingService").mockReturnValue({
+      sid: "testTWILIOsid"
+    });
     await saveCampaign(
       testAdminUser,
       { id: testCampaign.id, organizationId },
@@ -1276,8 +1295,9 @@ describe("per-campaign phone numbers", async () => {
   beforeAll(() => {
     process.env = {
       ...process.env,
-      EXPERIMENTAL_PHONE_INVENTORY: "1",
-      EXPERIMENTAL_CAMPAIGN_PHONE_NUMBERS: "1"
+      PHONE_INVENTORY: "1",
+      EXPERIMENTAL_CAMPAIGN_PHONE_NUMBERS: "1",
+      SERVICE_MANAGERS: "per-campaign-messageservices"
     };
   });
 

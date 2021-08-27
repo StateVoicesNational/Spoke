@@ -6,7 +6,7 @@ import GSForm from "./forms/GSForm";
 import GSTextField from "./forms/GSTextField";
 import GSScriptField from "./forms/GSScriptField";
 import GSSubmitButton from "./forms/GSSubmitButton";
-import FlatButton from "material-ui/FlatButton";
+import Button from "@material-ui/core/Button";
 
 class CannedResponseForm extends React.Component {
   handleSave = formValues => {
@@ -41,17 +41,15 @@ class CannedResponseForm extends React.Component {
             name="text"
             type="script"
             label="Script"
-            multiLine
+            multiline
             fullWidth
           />
           <div
             style={{ float: "right", display: "flex", alignItems: "center" }}
           >
-            <FlatButton
-              label="Cancel"
-              onClick={this.handleCloseDialog}
-              style={{ marginTop: 15 }}
-            />
+            <Button onClick={this.handleCloseDialog} style={{ marginTop: 15 }}>
+              Cancel
+            </Button>
             <Form.Submit as={GSSubmitButton} label="Save" />
           </div>
         </GSForm>

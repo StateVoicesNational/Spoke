@@ -4,18 +4,22 @@ import { withRouter } from "react-router";
 import ReactTooltip from "react-tooltip";
 import * as yup from "yup";
 import Form from "react-formal";
-import { Paper, Checkbox, CircularProgress } from "material-ui";
-import IconButton from "material-ui/IconButton/IconButton";
-import AddIcon from "material-ui/svg-icons/content/add-circle";
-import RemoveIcon from "material-ui/svg-icons/content/remove-circle";
+import gql from "graphql-tag";
+import _ from "lodash";
+
+import AddIcon from "@material-ui/icons/Add";
+import RemoveIcon from "@material-ui/icons/Remove";
+import IconButton from "@material-ui/core/IconButton";
+import Paper from "@material-ui/core/Paper";
+import Switch from "@material-ui/core/Switch";
+import FormControlLabel from "@material-ui/core/FormControlLabel";
+import CircularProgress from "@material-ui/core/CircularProgress";
+
 import GSForm from "../../../components/forms/GSForm";
 import GSTextField from "../../../components/forms/GSTextField";
 import GSSubmitButton from "../../../components/forms/GSSubmitButton";
 import loadData from "../../../containers/hoc/load-data";
-import gql from "graphql-tag";
-import _ from "lodash";
 import theme from "../../../styles/theme";
-
 import { defaults } from "./config";
 import AssignmentTexterFeedback from "./AssignmentTexterFeedback";
 
@@ -267,24 +271,29 @@ export class TexterSideboxClass extends React.Component {
                 <h3 style={{ color: theme.colors.darkGreen }}>Skills</h3>
                 <Paper style={inlineStyles.skillsWrapper}>
                   {config.skills.map(({ key, content }) => {
-                    const isChecked = (Object.entries(
+                    const isChecked = !!(Object.entries(
                       feedback.skillCounts || []
                     ).find(skillCounts => skillCounts[0] === key) || [])[1];
 
                     return (
-                      <div>
-                        <Checkbox
+                      <div key={key}>
+                        <FormControlLabel
                           label={_.startCase(key)}
-                          style={inlineStyles.skillCheckbox}
-                          checked={isChecked}
-                          data-tip
-                          data-for={`${key}-skills`}
-                          onCheck={() =>
-                            this.handleCounterChange(
-                              "skillCounts",
-                              key,
-                              isChecked ? "decrement" : "increment"
-                            )
+                          labelPlacement="start"
+                          control={
+                            <Switch
+                              color="primary"
+                              checked={isChecked}
+                              data-tip
+                              data-for={`${key}-skills`}
+                              onChange={() =>
+                                this.handleCounterChange(
+                                  "skillCounts",
+                                  key,
+                                  isChecked ? "decrement" : "increment"
+                                )
+                              }
+                            />
                           }
                         />
                         <ReactTooltip id={`${key}-skills`} place="left">
@@ -306,14 +315,13 @@ export class TexterSideboxClass extends React.Component {
             style={inlineStyles.messageInputWrapper}
             textareaStyle={inlineStyles.messageInput}
             fullWidth
-            multiLine
+            multiline
             rows={4}
             rowsMax={6}
           />
 
           <Form.Submit
             style={inlineStyles.submitButton}
-            labelStyle={{ fontSize: 17 }}
             as={GSSubmitButton}
             label="Sweep Complete"
             disabled={!feedback.message}
@@ -395,9 +403,9 @@ export class AdminConfig extends React.Component {
         </p>
         <Form.Field
           as={GSTextField}
+          fullWidth
           name="texterFeedbackJSON"
           label="Advanced JSON config override"
-          defaultValue={this.props.settingsData.texterFeedbackJSON || ""}
         />
       </div>
     );

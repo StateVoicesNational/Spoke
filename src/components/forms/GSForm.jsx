@@ -30,6 +30,17 @@ export default class GSForm extends React.Component {
     globalErrorMessage: null
   };
 
+  constructor(props) {
+    super(props);
+    // if you need to reference this (ex: for submit())
+    // outside of this compoent you can pass a ref in
+    if (props.setRef) {
+      this.form = props.setRef;
+    } else {
+      this.form = React.createRef();
+    }
+  }
+
   handleFormError(err) {
     if (err instanceof GraphQLRequestError) {
       this.setState({ globalErrorMessage: err.message });
@@ -44,12 +55,8 @@ export default class GSForm extends React.Component {
     }
   }
 
-  submit = () => {
-    this.refs.form.submit();
-  };
-
   renderChildren(children) {
-    return React.Children.map(children, child => {
+    const childrenList = React.Children.map(children, child => {
       if (child === null) {
         return child;
       } else if (child.type === Form.Field) {
@@ -61,7 +68,8 @@ export default class GSForm extends React.Component {
             ? error[0].message.replace(name, child.props.label)
             : null;
           clonedElement = React.cloneElement(child, {
-            errorText: error
+            helperText: error,
+            error: true
           });
         }
         return React.cloneElement(clonedElement, {
@@ -80,6 +88,8 @@ export default class GSForm extends React.Component {
       }
       return child;
     });
+
+    return childrenList.length === 1 ? childrenList[0] : childrenList;
   }
 
   renderGlobalErrorMessage() {
@@ -95,28 +105,29 @@ export default class GSForm extends React.Component {
   }
 
   render() {
+    const { setRef, ...props } = this.props;
     return (
       <Form
-        ref="form"
-        value={this.props.value || this.state.model || this.props.defaultValue}
+        ref={this.form}
+        value={props.value || this.state.model || props.defaultValue}
         onChange={model => {
           this.setState({ model });
-          if (this.props.onChange) {
-            this.props.onChange(model);
+          if (props.onChange) {
+            props.onChange(model);
           }
         }}
         onError={errors => {
           this.setState({ formErrors: errors });
         }}
-        {...this.props}
+        {...props}
         onSubmit={async formValues => {
           this.setState({
             isSubmitting: true,
             globalErrorMessage: null
           });
-          if (this.props.onSubmit) {
+          if (props.onSubmit) {
             try {
-              await this.props.onSubmit(formValues);
+              await props.onSubmit(formValues);
             } catch (ex) {
               this.handleFormError(ex);
             }
@@ -125,7 +136,7 @@ export default class GSForm extends React.Component {
         }}
       >
         {this.renderGlobalErrorMessage()}
-        {this.renderChildren(this.props.children)}
+        {this.renderChildren(props.children)}
       </Form>
     );
   }

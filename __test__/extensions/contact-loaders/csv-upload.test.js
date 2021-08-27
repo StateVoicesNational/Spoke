@@ -30,7 +30,6 @@ import {
 // client-testing libs
 import React from "react";
 import { shallow, mount } from "enzyme";
-import MuiThemeProvider from "material-ui/styles/MuiThemeProvider";
 import { StyleSheetTestUtils } from "aphrodite";
 import { CampaignContactsChoiceForm } from "../../../src/components/CampaignContactsChoiceForm";
 import { icons } from "../../../src/components/CampaignContactsChoiceForm";
