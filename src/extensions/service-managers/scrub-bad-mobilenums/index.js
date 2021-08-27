@@ -64,10 +64,8 @@ const deleteLandlineContacts = campaignId =>
           "organization_contact.contact_number",
           "campaign_contact.cell"
         )
-        .where({
-          campaign_id: campaignId,
-          status_code: -1 // landlines
-        })
+        .where("campaign_id", campaignId)
+        .where("status_code", "<", 0) // landlines and other non-textables
     )
     .where("campaign_contact.campaign_id", campaignId)
     .delete();
