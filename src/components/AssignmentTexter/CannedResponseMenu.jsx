@@ -1,8 +1,8 @@
 import type from "prop-types";
 import React from "react";
-import Popover from "material-ui/Popover";
-import { List } from "material-ui/List";
 import ScriptList from "./ScriptList";
+import Popover from "@material-ui/core/Popover";
+import List from "@material-ui/core/List";
 
 const styles = {
   popover: {
@@ -57,8 +57,8 @@ class CannedResponseMenu extends React.Component {
           open={open}
           anchorEl={anchorEl}
           anchorOrigin={{ horizontal: "left", vertical: "bottom" }}
-          targetOrigin={{ horizontal: "left", vertical: "bottom" }}
-          onRequestClose={onRequestClose}
+          transformOrigin={{ horizontal: "left", vertical: "bottom" }}
+          onClose={onRequestClose}
           style={{
             overflowY: "scroll",
             width: "75%"

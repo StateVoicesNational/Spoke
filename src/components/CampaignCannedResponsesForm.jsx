@@ -1,18 +1,22 @@
 import type from "prop-types";
 import React from "react";
 import CampaignCannedResponseForm from "./CampaignCannedResponseForm";
-import FlatButton from "material-ui/FlatButton";
 import Form from "react-formal";
-import GSForm from "./forms/GSForm";
-import GSSubmitButton from "./forms/GSSubmitButton";
-import List from "material-ui/List/List";
-import ListItem from "material-ui/List/ListItem";
-import Divider from "material-ui/Divider";
-import CampaignFormSectionHeading from "./CampaignFormSectionHeading";
-import DeleteIcon from "material-ui/svg-icons/action/delete";
-import CreateIcon from "material-ui/svg-icons/content/create";
-import IconButton from "material-ui/IconButton";
 import * as yup from "yup";
+import GSSubmitButton from "./forms/GSSubmitButton";
+
+import Button from "@material-ui/core/Button";
+import List from "@material-ui/core/List";
+import ListItem from "@material-ui/core/ListItem";
+import ListItemSecondaryAction from "@material-ui/core/ListItemSecondaryAction";
+import ListItemText from "@material-ui/core/ListItemText";
+import Divider from "@material-ui/core/Divider";
+import DeleteIcon from "@material-ui/icons/Delete";
+import CreateIcon from "@material-ui/icons/Create";
+import IconButton from "@material-ui/core/IconButton";
+
+import GSForm from "./forms/GSForm";
+import CampaignFormSectionHeading from "./CampaignFormSectionHeading";
 import theme from "../styles/theme";
 import { StyleSheet, css } from "aphrodite";
 import { dataTest } from "../lib/attributes";
@@ -46,9 +50,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     display: "-webkit-box",
     WebkitBoxOrient: "vertical",
-    WebkitLineClamp: 2,
-    overflow: "hidden",
-    height: 32
+    width: "90%"
   }
 });
 
@@ -56,7 +58,8 @@ export class CampaignCannedResponsesForm extends React.Component {
   state = {
     showForm: false,
     formButtonText: "",
-    responseId: null
+    responseId: null,
+    showFullTextId: null
   };
 
   formSchema = yup.object({
@@ -67,6 +70,28 @@ export class CampaignCannedResponsesForm extends React.Component {
       })
     )
   });
+
+  showAddButton() {
+    if (!this.state.showForm) {
+      return (
+        <div>
+          <Button
+            color="secondary"
+            startIcon={<CreateIcon color="secondary" />}
+            onClick={() =>
+              this.setState({
+                showForm: true,
+                responseId: null,
+                formButtonText: "Add Response"
+              })
+            }
+          >
+            Add new canned response
+          </Button>
+        </div>
+      );
+    }
+  }
 
   showAddForm() {
     const handleCloseAddForm = () => {
@@ -81,7 +106,7 @@ export class CampaignCannedResponsesForm extends React.Component {
               defaultValue={
                 this.props.formValues.cannedResponses.find(
                   res => res.id === this.state.responseId
-                ) || {}
+                ) || { text: "", title: "" }
               }
               formButtonText={this.state.formButtonText}
               handleCloseAddForm={handleCloseAddForm}
@@ -104,7 +129,11 @@ export class CampaignCannedResponsesForm extends React.Component {
                 this.props.onChange({
                   cannedResponses: newVals
                 });
-                this.setState({ showForm: false });
+
+                // FIXME: this timeout shouldn't be needed
+                setTimeout(() => {
+                  this.setState({ showForm: false });
+                }, 10);
               }}
               customFields={this.props.customFields}
               tags={this.props.data.organization.tags}
@@ -113,21 +142,6 @@ export class CampaignCannedResponsesForm extends React.Component {
         </div>
       );
     }
-    return (
-      <FlatButton
-        {...dataTest("newCannedResponse")}
-        secondary
-        label="Add new canned response"
-        icon={<CreateIcon />}
-        onClick={() =>
-          this.setState({
-            showForm: true,
-            responseId: null,
-            formButtonText: "Add Response"
-          })
-        }
-      />
-    );
   }
 
   listItems(cannedResponses) {
@@ -137,7 +151,36 @@ export class CampaignCannedResponsesForm extends React.Component {
         value={response.text}
         key={response.id}
       >
-        <span style={{ float: "right" }}>
+        <ListItemText
+          onClick={() =>
+            this.setState({
+              showFullTextId:
+                this.state.showFullTextId === response.id ? null : response.id
+            })
+          }
+        >
+          <div className={css(styles.title)}>{response.title}</div>
+          <div
+            className={css(styles.text)}
+            style={
+              this.state.showFullTextId === response.id
+                ? {}
+                : {
+                    WebkitLineClamp: 2,
+                    overflow: "hidden"
+                  }
+            }
+          >
+            {response.text}
+          </div>
+          {response.tagIds && response.tagIds.length > 0 && (
+            <TagChips
+              tags={this.props.data.organization.tags}
+              tagIds={response.tagIds}
+            />
+          )}
+        </ListItemText>
+        <ListItemSecondaryAction>
           <IconButton
             onClick={() =>
               this.setState({
@@ -167,16 +210,7 @@ export class CampaignCannedResponsesForm extends React.Component {
           >
             <DeleteIcon />
           </IconButton>
-        </span>
-
-        <div className={css(styles.title)}>{response.title}</div>
-        <div className={css(styles.text)}>{response.text}</div>
-        {response.tagIds && response.tagIds.length > 0 && (
-          <TagChips
-            tags={this.props.data.organization.tags}
-            tagIds={response.tagIds}
-          />
-        )}
+        </ListItemSecondaryAction>
       </ListItem>
     ));
     return listItems;
@@ -193,27 +227,29 @@ export class CampaignCannedResponsesForm extends React.Component {
         </List>
       );
     return (
-      <GSForm
-        schema={this.formSchema}
-        value={formValues}
-        onChange={change => {
-          console.log("change", change);
-          this.props.onChange(change);
-        }}
-        onSubmit={this.props.onSubmit}
-      >
-        <CampaignFormSectionHeading
-          title="Canned responses for texters"
-          subtitle="Save some scripts for your texters to use to answer additional FAQs that may come up outside of the survey questions and scripts you already set up."
-        />
-        {list}
+      <React.Fragment>
+        <GSForm
+          schema={this.formSchema}
+          value={formValues}
+          onChange={change => {
+            this.props.onChange(change);
+          }}
+          onSubmit={this.props.onSubmit}
+        >
+          <CampaignFormSectionHeading
+            title="Canned responses for texters"
+            subtitle="Save some scripts for your texters to use to answer additional FAQs that may come up outside of the survey questions and scripts you already set up."
+          />
+          {list}
+          {this.showAddButton()}
+          <Form.Submit
+            as={GSSubmitButton}
+            disabled={this.props.saveDisabled}
+            label={this.props.saveLabel}
+          />
+        </GSForm>
         {this.showAddForm()}
-        <Form.Submit
-          as={GSSubmitButton}
-          disabled={this.props.saveDisabled}
-          label={this.props.saveLabel}
-        />
-      </GSForm>
+      </React.Fragment>
     );
   }
 }

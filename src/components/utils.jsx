@@ -1,39 +1,28 @@
-import React from "react";
-import MenuItem from "material-ui/MenuItem";
 import pick from "lodash/pick";
 
 export function dataSourceItem(name, key) {
   return {
     text: name,
-    rawValue: key,
-    value: <MenuItem key={key} primaryText={name} />
+    rawValue: key
   };
 }
 
-export function getRaisedButtonProps(props) {
+export function getButtonProps(props) {
   const validProps = [
-    "backgroundColor",
-    "buttonStyle",
     "children",
-    "className",
-    "containerElement",
-    "disableTouchRipple",
+    "classes",
+    "color",
+    "component",
     "disabled",
-    "disabledBackgroundColor",
-    "disabledLabelColor",
+    "disableElevation",
+    "disableFocusRipple",
+    "disableRipple",
+    "endIcon",
     "fullWidth",
     "href",
-    "icon",
-    "label",
-    "labelColor",
-    "labelPosition",
-    "labelStyle",
-    "onClick",
-    "overlayStyle",
-    "primary",
-    "rippleStyle",
-    "secondary",
-    "style",
+    "size",
+    "startIcon",
+    "variant",
     "data-test"
   ];
   return pick(props, validProps);

@@ -57,7 +57,7 @@ export const tests = testName => {
             {
               id: "13",
               script:
-                "Hi {firstName}, it's {texterAliasOrFirstName} a volunteer with MoveOn. There is an election in Arizona coming Tuesday. Will you vote progressive?",
+                "Hi {firstName}, it's {texterAliasOrFirstName} a volunteer with MoveOn. There is an election in Arizona coming Tuesday. Will you vote progressive? STOP2quit",
               question: { text: "", answerOptions: [] }
             }
           ],
@@ -355,6 +355,31 @@ export const tests = testName => {
                   }
                 ]
               }
+            },
+            {
+              id: "20",
+              script: "Super, we'll add your +1",
+              question: {
+                text: "Is your friend part of your household?",
+                answerOptions: [
+                  {
+                    value: "Yes, household",
+                    interactionStepId: "45",
+                    nextInteractionStep: {
+                      id: "45",
+                      script: "Thanks for telling us"
+                    }
+                  },
+                  {
+                    value: "No, not household",
+                    interactionStepId: "46",
+                    nextInteractionStep: {
+                      id: "46",
+                      script: "Ok, thanks for telling us"
+                    }
+                  }
+                ]
+              }
             }
           ],
           customFields: ["donationLink", "vendor_id"],
@@ -453,7 +478,14 @@ export const tests = testName => {
             id: "fake2",
             text: "Yes! We need to help save the world.",
             isFromContact: true,
-            createdAt: new Date(Number(new Date()) - 142 * 60 * 1000)
+            createdAt: new Date(Number(new Date()) - 142 * 60 * 1000),
+            media: [
+              {
+                type: "image/png",
+                url:
+                  "https://s3-us-west-1.amazonaws.com/spoke-public/spoke_logo.svg?demo"
+              }
+            ]
           },
           {
             id: "fake3",

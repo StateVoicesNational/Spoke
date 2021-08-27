@@ -3,7 +3,8 @@ import React from "react";
 import * as yup from "yup";
 import { css } from "aphrodite";
 import Form from "react-formal";
-import FlatButton from "material-ui/FlatButton";
+import Button from "@material-ui/core/Button";
+
 import GSTextField from "../../../components/forms/GSTextField";
 import {
   flexStyles,
@@ -55,13 +56,14 @@ export class TexterSidebox extends React.Component {
     const { settingsData } = this.props;
 
     return (
-      <div>
-        <FlatButton
+      <div style={{ textAlign: "center" }}>
+        <Button
           onClick={() => FreshworksWidget && FreshworksWidget("open")}
-          label={settingsData.helpButtonLabel || "Help"}
           className={css(flexStyles.flatButton)}
-          labelStyle={inlineStyles.flatButtonLabel}
-        />
+          style={inlineStyles.flatButtonLabel}
+        >
+          {settingsData.helpButtonLabel || "Help"}
+        </Button>
       </div>
     );
   }
@@ -77,6 +79,19 @@ export const adminSchema = () => ({
 });
 
 export class AdminConfig extends React.Component {
+  componentDidMount() {
+    const { settingsData } = this.props;
+    // set defaults
+    const defaults = {};
+    if (!settingsData.helpButtonLabel) {
+      defaults.helpButtonLabel = "Help";
+    }
+
+    if (Object.values(defaults).length) {
+      this.props.setDefaultsOnMount(defaults);
+    }
+  }
+
   render() {
     return (
       <div>
@@ -84,7 +99,6 @@ export class AdminConfig extends React.Component {
           as={GSTextField}
           name="helpButtonLabel"
           label="Help Button Label"
-          hintText="default: Help"
           fullWidth
         />
         <Form.Field
@@ -100,5 +114,6 @@ export class AdminConfig extends React.Component {
 
 AdminConfig.propTypes = {
   settingsData: type.object,
-  onToggle: type.func
+  onToggle: type.func,
+  setDefaultsOnMount: type.func
 };

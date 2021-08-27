@@ -1,18 +1,15 @@
 import type from "prop-types";
 import React from "react";
-import RaisedButton from "material-ui/RaisedButton";
 import GSForm from "../../../components/forms/GSForm";
 import GSSubmitButton from "../../../components/forms/GSSubmitButton";
 import GSTextField from "../../../components/forms/GSTextField";
 import Form from "react-formal";
-import Subheader from "material-ui/Subheader";
-import Divider from "material-ui/Divider";
-import { ListItem, List } from "material-ui/List";
-import CampaignFormSectionHeading from "../../../components/CampaignFormSectionHeading";
-import CheckIcon from "material-ui/svg-icons/action/check-circle";
-import WarningIcon from "material-ui/svg-icons/alert/warning";
-import ErrorIcon from "material-ui/svg-icons/alert/error";
-import { StyleSheet, css } from "aphrodite";
+
+import List from "@material-ui/core/List";
+import ListItem from "@material-ui/core/ListItem";
+import ListItemIcon from "@material-ui/core/ListItemIcon";
+import ListItemText from "@material-ui/core/ListItemText";
+
 import * as yup from "yup";
 import { withRouter, Link } from "react-router";
 
@@ -108,16 +105,16 @@ export class CampaignContactsFormInner extends React.Component {
         />
 
         <List>
-          <ListItem
-            primaryText={clientChoiceData}
-            leftIcon={this.props.icons.check}
-          />
-          {resultMessage ? (
-            <ListItem
-              primaryText={resultMessage}
-              leftIcon={this.props.icons.warning}
-            />
-          ) : null}
+          <ListItem>
+            <ListItemIcon>{this.props.icons.check}</ListItemIcon>
+            <ListItemText primary={clientChoiceData} />
+          </ListItem>
+          {resultMessage && (
+            <ListItem>
+              <ListItemIcon>{this.props.icons.warning}</ListItemIcon>
+              <ListItemText primary={resultMessage} />
+            </ListItem>
+          )}
         </List>
 
         <Form.Submit

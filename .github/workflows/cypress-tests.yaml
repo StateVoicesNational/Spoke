@@ -28,6 +28,7 @@ jobs:
     - name: Cypress run
       uses: cypress-io/github-action@v2
       env: 
+        DEBUG: '@cypress/github-action'
         NODE_ENV: test
         PORT: 3001
         OUTPUT_DIR: ./build
@@ -40,6 +41,8 @@ jobs:
         SESSION_SECRET: secret
         DEFAULT_SERVICE: fakeservice
         JOBS_SAME_PROCESS: 1
+        JOBS_SYNC: 1
+        TASKS_SYNC: 1
         PASSPORT_STRATEGY: local
         PHONE_INVENTORY: 1
       with:
@@ -47,12 +50,12 @@ jobs:
         build: npm run prod-build
         start: npm start
         wait-on: 'http://localhost:3001'
-    - uses: actions/upload-artifact@v1
+    - uses: actions/upload-artifact@v2
       if: failure()
       with:
         name: cypress-screenshots
         path: cypress/screenshots
-    - uses: actions/upload-artifact@v1
+    - uses: actions/upload-artifact@v2
       if: failure()
       with:
         name: cypress-videos

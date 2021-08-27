@@ -6,11 +6,11 @@ import GSForm from "./forms/GSForm";
 import GSTextField from "./forms/GSTextField";
 import GSScriptField from "./forms/GSScriptField";
 import Form from "react-formal";
-import FlatButton from "material-ui/FlatButton";
-import AutoComplete from "material-ui/AutoComplete";
+import Button from "@material-ui/core/Button";
+import AutoComplete from "@material-ui/lab/Autocomplete";
+import TextField from "@material-ui/core/TextField";
 import { dataTest } from "../lib/attributes";
-import theme from "../styles/theme";
-import TagChips from "./TagChips";
+import GSSubmitButton from "./forms/GSSubmitButton";
 
 const styles = StyleSheet.create({
   buttonRow: {
@@ -19,6 +19,9 @@ const styles = StyleSheet.create({
   tagChips: {
     display: "flex",
     flexWrap: "wrap"
+  },
+  button: {
+    marginRight: 10
   }
 });
 
@@ -32,7 +35,7 @@ export default class CannedResponseForm extends React.Component {
     };
   }
   handleSave = () => {
-    const { onSaveCannedResponse } = this.props;
+    const { onSaveCannedResponse, handleCloseAddForm } = this.props;
     onSaveCannedResponse(this.state);
   };
 
@@ -41,6 +44,8 @@ export default class CannedResponseForm extends React.Component {
       title: yup.string().required(),
       text: yup.string().required()
     });
+    this.form = React.createRef();
+    this.autocompleteInput = React.createRef();
 
     const {
       customFields,
@@ -51,7 +56,7 @@ export default class CannedResponseForm extends React.Component {
     return (
       <div>
         <GSForm
-          ref="form"
+          ref={this.form}
           schema={modelSchema}
           onSubmit={this.handleSave}
           defaultValue={this.state}
@@ -72,59 +77,37 @@ export default class CannedResponseForm extends React.Component {
             name="text"
             type="script"
             label="Script"
-            multiLine
+            multiline
             fullWidth
           />
           <AutoComplete
-            ref="autocompleteInput"
-            floatingLabelText="Tags"
-            filter={AutoComplete.fuzzyFilter}
-            dataSource={
+            multiple
+            fullWidth
+            ref={this.autocompleteInput}
+            options={
               tags && tags.filter(t => this.state.tagIds.indexOf(t.id) === -1)
             }
-            maxSearchResults={8}
-            onNewRequest={({ id }) => {
-              this.refs.autocompleteInput.setState({ searchText: "" });
-              this.setState({ tagIds: [...this.state.tagIds, id] });
+            getOptionLabel={option => option.name}
+            value={
+              tags && tags.filter(t => this.state.tagIds.indexOf(t.id) > -1)
+            }
+            onChange={(event, selectedTags) => {
+              this.setState({ tagIds: selectedTags.map(tag => tag.id) });
             }}
-            dataSourceConfig={{
-              text: "name",
-              value: "id"
-            }}
-            fullWidth
-          />
-          <TagChips
-            tags={tags}
-            tagIds={this.state.tagIds}
-            onRequestDelete={listedTag => {
-              this.setState({
-                tagIds: this.state.tagIds.filter(
-                  tagId => tagId !== listedTag.id
-                )
-              });
+            renderInput={params => {
+              return <TextField {...params} label="Tags" />;
             }}
           />
           <div className={css(styles.buttonRow)}>
-            <FlatButton
+            <Form.Submit
               {...dataTest("addResponse")}
+              as={GSSubmitButton}
               label={formButtonText}
-              backgroundColor={theme.colors.green}
-              labelStyle={{ color: "white" }}
-              style={{
-                display: "inline-block"
-              }}
-              onClick={() => {
-                this.refs.form.submit();
-              }}
+              className={css(styles.button)}
             />
-            <FlatButton
-              label="Cancel"
-              onClick={handleCloseAddForm}
-              style={{
-                marginLeft: 5,
-                display: "inline-block"
-              }}
-            />
+            <Button variant="contained" onClick={handleCloseAddForm}>
+              Cancel
+            </Button>
           </div>
         </GSForm>
       </div>
