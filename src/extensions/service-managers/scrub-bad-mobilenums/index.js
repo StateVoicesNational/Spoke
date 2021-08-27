@@ -123,7 +123,9 @@ export async function getCampaignData({
 
 export async function processJobNumberLookups(job, payload) {
   // called async from onCampaignUpdateSignal
-  const organization = cacheableData.organization.load(job.organization_id);
+  const organization = await cacheableData.organization.load(
+    job.organization_id
+  );
   console.log(
     "processJobNumberLookups",
     job,
@@ -146,11 +148,12 @@ export async function processJobNumberLookups(job, payload) {
     const chunk = chunks[i];
     const lookupChunk = await Promise.all(
       chunk.map(async contact => {
-        console.log("scrub.lookupChunk", contact);
+        // console.log("scrub.lookupChunk", contact);
         const info = await serviceClient.getContactInfo({
           organization,
           contactNumber: contact.cell
         });
+        // console.log('scrub-bad-mobilenums lookup result', info);
         return {
           ...contact,
           ...info
@@ -158,11 +161,12 @@ export async function processJobNumberLookups(job, payload) {
       })
     );
     const orgContacts = lookupChunk.map(
-      ({ id, cell, status_code, carrier, lookup_name }) => ({
+      ({ id, cell, status_code, carrier, lookup_name, last_error_code }) => ({
         id,
         organization_id: job.organization_id,
         contact_number: cell,
         status_code,
+        last_error_code,
         lookup_name,
         carrier,
         last_lookup: new Date()
