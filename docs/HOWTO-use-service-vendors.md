@@ -107,7 +107,13 @@ If your vendor has a concept of a 'messaging service' then implement these:
   value based on organization and contact
 
 
-#### other optional methods
+#### Contact lookup methods
+
+For both of these they should return values that must include `contact_number`, `organization_id`, and `service` (name, e.g. "twilio"). Other values should only be included in the result if they should override any existing data in organization_contact table.
+
+The key `status_code` should be 0 or positive if the number is textable. It should be negative if it is not
+textable. Specifically, -1 for landlines, -2 for a non-existent/unserviced number, -3 for a bad country code match from PHONE_NUMBER_COUNTRY if that is set.  Add other negative (or positive) values if useful to distinguish them.
+
 - `getContactInfo({ organization, contactNumber, lookupName })` - if the vendor service has
   a way to reverse lookup phone number data like carrier and name, then this is how to do it.
 - `getFreeContactInfo()` - same args as above -- this indicates that info can be looked up for
