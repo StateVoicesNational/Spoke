@@ -978,9 +978,9 @@ export class AssignmentTexterContactControls extends React.Component {
           navigationToolbarChildren={this.props.navigationToolbarChildren}
           onExit={this.props.onExitTexter}
           onSideboxButtonClick={
-            enabledSideboxes &&
-            enabledSideboxes.length > 0 &&
-            this.handleClickSideboxDialog
+            enabledSideboxes && enabledSideboxes.length > 0
+              ? this.handleClickSideboxDialog
+              : null
           }
         />
       </div>

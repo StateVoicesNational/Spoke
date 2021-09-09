@@ -1069,22 +1069,39 @@ const rootMutations = {
     },
     editCampaignContactMessageStatus: async (
       _,
-      { messageStatus, campaignContactId },
+      { messageStatus, campaignContactId, campaignIdsContactIds },
       { user }
     ) => {
-      const contact = await cacheableData.campaignContact.load(
-        campaignContactId
+      const contacts = campaignContactId
+        ? [{ campaignContactId }]
+        : campaignIdsContactIds;
+      // this is lazy but is not likely to be done in great bulk
+      console.log("editCampaignContactMessageStatus", contacts);
+      await Promise.all(
+        contacts.map(async ({ campaignContactId }) => {
+          const contact = await cacheableData.campaignContact.load(
+            campaignContactId
+          );
+          const organizationId = await cacheableData.campaignContact.orgId(
+            contact
+          );
+          await assignmentRequiredOrAdminRole(
+            user,
+            organizationId,
+            contact.assignment_id,
+            contact
+          );
+          contact.message_status = messageStatus;
+          await cacheableData.campaignContact.updateStatus(
+            contact,
+            messageStatus
+          );
+        })
       );
-      const organizationId = await cacheableData.campaignContact.orgId(contact);
-      await assignmentRequiredOrAdminRole(
-        user,
-        organizationId,
-        contact.assignment_id,
-        contact
-      );
-      contact.message_status = messageStatus;
-      await cacheableData.campaignContact.updateStatus(contact, messageStatus);
-      return contact;
+      return contacts.map(contact => ({
+        id: contact.campaignContactId,
+        message_status: messageStatus
+      }));
     },
     getAssignmentContacts: async (
       _,
