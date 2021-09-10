@@ -1,5 +1,9 @@
 import Papa from "papaparse";
-import { parseCSV, organizationCustomFields } from "../../src/lib";
+import {
+  parseCSV,
+  organizationCustomFields,
+  parseCannedResponseCsv
+} from "../../src/lib";
 
 describe("parseCSV", () => {
   describe("with PHONE_NUMBER_COUNTRY set", () => {
@@ -342,6 +346,80 @@ describe("parseCSV", () => {
         );
         expect(contactsWithoutCustomFields).toEqual(expected);
       });
+    });
+  });
+});
+
+describe("parseCannedResponseCsv", () => {
+  const tags = [
+    {
+      id: 1,
+      name: "Tag1",
+      description: "Tag1Desc"
+    },
+    {
+      id: 2,
+      name: "Tag2",
+      description: "Tag2Desc"
+    }
+  ];
+
+  it("fails when title header doesn't exist", () => {
+    const csv = "text,text,tags\nhello,world,tag1";
+    parseCannedResponseCsv(csv, tags, ({ error, cannedResponses }) => {
+      expect(error).toBe("Missing columns: Title");
+      expect(cannedResponses).toBeFalsy();
+    });
+  });
+
+  it("fails when text header doesn't exist", () => {
+    const csv = "title,title,tags\nhello,world,tag1";
+    parseCannedResponseCsv(csv, tags, ({ error, cannedResponses }) => {
+      expect(error).toBe("Missing columns: Text");
+      expect(cannedResponses).toBeFalsy();
+    });
+  });
+
+  it("fails when title and text header doesn't exist", () => {
+    const csv = "tags,tags,tags\nhello,world,tag1";
+    parseCannedResponseCsv(csv, tags, ({ error, cannedResponses }) => {
+      expect(error).toBe("Missing columns: Title, Text");
+      expect(cannedResponses).toBeFalsy();
+    });
+  });
+
+  it("fails when row is missing title", () => {
+    const csv = "title,text,tags\n,world,tag1";
+    parseCannedResponseCsv(csv, tags, ({ error, cannedResponses }) => {
+      expect(error).toBe("Incomplete Line. Title: ; Text: world");
+      expect(cannedResponses).toBeFalsy();
+    });
+  });
+
+  it("fails when row is missing text", () => {
+    const csv = "title,text,tags\nhello,,tag1";
+    parseCannedResponseCsv(csv, tags, ({ error, cannedResponses }) => {
+      expect(error).toBe("Incomplete Line. Title: hello; Text: ");
+      expect(cannedResponses).toBeFalsy();
+    });
+  });
+
+  it("fails when tag cannot be matched", () => {
+    const csv = "title,text,tags\nhello,world,tag3";
+    parseCannedResponseCsv(csv, tags, ({ error, cannedResponses }) => {
+      expect(error).toBe(`"tag3" cannot be found in your organization's tags`);
+      expect(cannedResponses).toBeFalsy();
+    });
+  });
+
+  it("succeeds with complete data", () => {
+    const csv = "title,text,tags\nhello,world,\nhi,there,tag1";
+    parseCannedResponseCsv(csv, tags, ({ error, cannedResponses }) => {
+      expect(error).toBeFalsy();
+      expect(cannedResponses).toEqual([
+        { title: "hello", text: "world", tagIds: [] },
+        { title: "hi", text: "there", tagIds: [1] }
+      ]);
     });
   });
 });

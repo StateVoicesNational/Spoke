@@ -92,6 +92,7 @@ export default class CampaignTexterUIForm extends React.Component {
                 <AdminConfig
                   settingsData={this.state}
                   onToggle={this.toggleChange}
+                  setDefaults={defaults => this.setState(defaults)}
                   organization={this.props.organization}
                 />
               )}
@@ -106,11 +107,11 @@ export default class CampaignTexterUIForm extends React.Component {
           schema={yup.object(schemaObject)}
           value={this.state}
           onChange={this.onChange}
+          onSubmit={this.props.onSubmit}
         >
           {adminItems}
           <Form.Submit
             as={GSSubmitButton}
-            onClick={this.props.onSubmit}
             label={this.props.saveLabel}
             disabled={this.props.saveDisabled}
             {...dataTest("submitCampaignTexterUIForm")}

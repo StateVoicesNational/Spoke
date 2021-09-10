@@ -64,7 +64,7 @@ const configurableFields = {
     schema: () => yup.boolean(),
     ready: true,
     component: props => {
-      if (!window.ALLOW_SEND_ALL) {
+      if (typeof window === "undefined" || !window.ALLOW_SEND_ALL) {
         return null;
       }
       return (
@@ -113,6 +113,7 @@ const configurableFields = {
     schema: () =>
       yup
         .number()
+        .transform(cv => (isNaN(cv) ? undefined : cv))
         .integer()
         .notRequired(),
     ready: true,
@@ -134,7 +135,11 @@ const configurableFields = {
     }
   },
   DEFAULT_RESPONSEWINDOW: {
-    schema: () => yup.number().notRequired(),
+    schema: () =>
+      yup
+        .number()
+        .transform(cv => (isNaN(cv) ? undefined : cv))
+        .notRequired(),
     ready: true,
     component: props => {
       return (
@@ -159,6 +164,7 @@ const configurableFields = {
     schema: () =>
       yup
         .number()
+        .transform(cv => (isNaN(cv) ? undefined : cv))
         .integer()
         .notRequired(),
     ready: true,
@@ -189,6 +195,7 @@ const configurableFields = {
     schema: () =>
       yup
         .number()
+        .transform(cv => (isNaN(cv) ? undefined : cv))
         .integer()
         .notRequired(),
     ready: true,
@@ -210,6 +217,14 @@ const configurableFields = {
   }
 };
 
+/**
+ * remove the key if we don't need it so yup will validate
+ * corectly and submit the form.
+ */
+if (typeof window === "undefined" || !window.ALLOW_SEND_ALL) {
+  delete configurableFields.ALLOW_SEND_ALL_ENABLED;
+}
+
 export default class OrganizationFeatureSettings extends React.Component {
   constructor(props) {
     super(props);
@@ -219,6 +234,8 @@ export default class OrganizationFeatureSettings extends React.Component {
         JSON.parse(formValues.settings.featuresJSON)) ||
       {};
     this.state = { ...settingsData, unsetFeatures: [] };
+    // expects a boolean
+    this.state.ALLOW_SEND_ALL_ENABLED = !!this.state.ALLOW_SEND_ALL_ENABLED;
   }
 
   onChange = formValues => {
@@ -266,11 +283,11 @@ export default class OrganizationFeatureSettings extends React.Component {
           schema={yup.object(schemaObject)}
           value={this.state}
           onChange={this.onChange}
+          onSubmit={this.props.onSubmit}
         >
           {adminItems}
           <Form.Submit
             as={GSSubmitButton}
-            onClick={this.props.onSubmit}
             label={this.props.saveLabel}
             disabled={this.props.saveDisabled}
             {...dataTest("submitOrganizationFeatureSettings")}
