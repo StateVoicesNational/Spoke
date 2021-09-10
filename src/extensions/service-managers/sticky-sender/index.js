@@ -56,15 +56,15 @@ export async function onMessageSend({
     return { user_number: organizationContact.user_number };
   }
 
+  const phoneInventoryEnabled =
+    getConfig("EXPERIMENTAL_PHONE_INVENTORY", organization, { truthy: true }) ||
+    getConfig("PHONE_INVENTORY", organization, { truthy: true });
   if (
+    phoneInventoryEnabled &&
     serviceName === "twiliio" &&
     getConfig("SKIP_TWILIO_MESSAGING_SERVICE", organization, {
       truthy: true
-    }) &&
-    (getConfig("EXPERIMENTAL_PHONE_INVENTORY", organization, {
-      truthy: true
-    }) ||
-      getConfig("PHONE_INVENTORY", organization, { truthy: true }))
+    })
   ) {
     const phoneNumber = await ownedPhoneNumber.getOwnedPhoneNumberForStickySender(
       organization.id,
