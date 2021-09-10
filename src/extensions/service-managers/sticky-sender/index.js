@@ -61,7 +61,7 @@ export async function onMessageSend({
     getConfig("PHONE_INVENTORY", organization, { truthy: true });
   if (
     phoneInventoryEnabled &&
-    serviceName === "twiliio" &&
+    serviceName === "twilio" &&
     getConfig("SKIP_TWILIO_MESSAGING_SERVICE", organization, {
       truthy: true
     })

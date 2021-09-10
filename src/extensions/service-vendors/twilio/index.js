@@ -829,13 +829,6 @@ async function deleteNumber(twilioInstance, phoneSid, phoneNumber) {
     });
   log.debug(`Deleted number ${phoneNumber} [${phoneSid}]`);
 
-  if (process.env.EXPERIMENTAL_STICKY_SENDER) {
-    await cacheableData.organizationContact.remove({
-      organizationId,
-      contactNumber: cell
-    });
-  }
-
   return await r
     .knex("owned_phone_number")
     .del()
