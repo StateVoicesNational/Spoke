@@ -1,8 +1,14 @@
 import { r, Message } from "../../models";
 import campaignCache from "./campaign";
 import campaignContactCache from "./campaign-contact";
+import orgCache from "./organization";
 import organizationContactCache from "./organization-contact";
 import { getMessageHandlers } from "../../../extensions/message-handlers";
+import {
+  serviceManagersHaveImplementation,
+  processServiceManagers
+} from "../../../extensions/service-managers";
+
 // QUEUE
 // messages-<contactId>
 // Expiration: 24 hours after last message added
@@ -22,45 +28,6 @@ const dbQuery = ({ campaignContactId }) => {
     .knex("message")
     .where("campaign_contact_id", campaignContactId)
     .orderBy("created_at");
-};
-
-const contactIdFromOther = async ({
-  campaignContactId,
-  assignmentId,
-  cell,
-  service,
-  messageServiceSid
-}) => {
-  if (campaignContactId) {
-    return campaignContactId;
-  }
-  console.log(
-    "messageCache contactIdfromother hard",
-    campaignContactId,
-    assignmentId,
-    cell,
-    service
-  );
-
-  if (!assignmentId || !cell || !messageServiceSid) {
-    throw new Error(`campaignContactId required or assignmentId-cell-service-messageServiceSid triple required.
-                    cell: ${cell}, messageServivceSid: ${messageServiceSid}, assignmentId: ${assignmentId}
-                    `);
-  }
-  if (r.redis) {
-    const cellLookup = await campaignContactCache.lookupByCell(
-      cell,
-      service || "",
-      messageServiceSid,
-      null, // is this even used?
-      /* bailWithoutCache*/ true
-    );
-    if (cellLookup) {
-      return cellLookup.campaign_contact_id;
-    }
-  }
-  // TODO: more ways and by db -- is this necessary if the active-campaign-postmigration edgecase goes away?
-  return null;
 };
 
 const saveMessageCache = async (contactId, contactMessages, overwriteFull) => {
@@ -108,7 +75,6 @@ const cacheDbResult = async dbResult => {
 const query = async ({ campaignContactId, justCache }) => {
   // queryObj ~ { campaignContactId, assignmentId, cell, service, messageServiceSid }
   if (r.redis && CONTACT_CACHE_ENABLED) {
-    // campaignContactId = await contactIdFromOther(queryObj);
     if (campaignContactId) {
       const [exists, messages] = await r.redis
         .multi()
@@ -182,7 +148,12 @@ const deliveryReport = async ({
   service,
   messageServiceSid,
   newStatus,
-  errorCode
+  errorCode,
+  statusCode,
+  // not reliable:
+  contactId,
+  campaignId,
+  orgId
 }) => {
   const changes = {
     service_response_at: new Date(),
@@ -192,15 +163,23 @@ const deliveryReport = async ({
   if (userNumber) {
     changes.user_number = userNumber;
   }
+  let lookup;
+  if (contactId) {
+    lookup = {
+      campaign_contact_id: contactId,
+      campaign_id: campaignId
+    };
+  }
   if (newStatus === "ERROR") {
     changes.error_code = errorCode;
-
-    const lookup = await campaignContactCache.lookupByCell(
-      contactNumber,
-      service || "",
-      messageServiceSid,
-      userNumber
-    );
+    if (!lookup) {
+      lookup = await campaignContactCache.lookupByCell(
+        contactNumber,
+        service || "",
+        messageServiceSid,
+        userNumber
+      );
+    }
     if (lookup && lookup.campaign_contact_id) {
       await r
         .knex("campaign_contact")
@@ -219,40 +198,40 @@ const deliveryReport = async ({
     .limit(1)
     .update(changes);
 
-  if (process.env.EXPERIMENTAL_STICKY_SENDER && newStatus === "DELIVERED") {
-    const [message] = await r
-      .knex("message")
-      .where("service_id", messageSid)
-      .limit(1);
-
-    // Assign user number to contact/organization
-    const campaignContact = await campaignContactCache.load(
-      message.campaign_contact_id
-    );
-
-    const organizationId = await campaignContactCache.orgId(campaignContact);
-    const organizationContact = await organizationContactCache.query({
-      organizationId,
-      contactNumber
-    });
-
-    if (!organizationContact) {
-      await organizationContactCache.save({
-        organizationId: organizationId,
-        contactNumber: contactNumber,
-        userNumber: userNumber
-      });
+  if (serviceManagersHaveImplementation("onDeliveryReport")) {
+    lookup =
+      lookup ||
+      (await campaignContactCache.lookupByCell(
+        contactNumber,
+        service || "",
+        messageServiceSid,
+        userNumber
+      ));
+    let organizationId = orgid;
+    let campaignContact;
+    if (!organizationId) {
+      campaignContact = await campaignContactCache.load(
+        lookup.campaign_contact_id
+      );
+      organizationId = await campaignContactCache.orgId(campaignContact);
     }
+    const organization = await orgCache.load(organizationId);
+    await processServiceManagers("onDeliveryReport", organization, {
+      campaignContact,
+      lookup,
+      contactNumber,
+      userNumber,
+      messageSid,
+      service,
+      messageServiceSid,
+      newStatus,
+      errorCode,
+      statusCode
+    });
   }
 };
 
 const messageCache = {
-  clearQuery: async queryObj => {
-    if (r.redis) {
-      const contactId = await contactIdFromOther(queryObj);
-      await r.redis.delAsync(cacheKey(contactId));
-    }
-  },
   deliveryReport,
   query,
   save: async ({
@@ -312,7 +291,10 @@ const messageCache = {
             m => m.text === messageToSave.text && m.is_from_contact === false
           );
           if (duplicate) {
-            matchError = "DUPLICATE MESSAGE DB";
+            matchError =
+              messages.length > 2
+                ? "DUPLICATE_REPLY_MESSAGE"
+                : "DUPLICATE_MESSAGE";
           }
         }
       }
@@ -374,7 +356,11 @@ const messageCache = {
       }
     }
     if (matchError) {
-      return { error: matchError };
+      return {
+        error: matchError,
+        campaignId,
+        contactId: messageToSave.campaign_contact_id
+      };
     }
     const savedMessage = await Message.save(
       messageToSave,

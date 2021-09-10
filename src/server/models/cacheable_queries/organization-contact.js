@@ -17,13 +17,12 @@ const organizationContactCache = {
     }
 
     const organizationContact = await r
-      .table("organization_contact")
-      .filter({
+      .knex("organization_contact")
+      .where({
         organization_id: organizationId,
         contact_number: contactNumber
       })
-      .limit(1)(0)
-      .default(null);
+      .first();
 
     if (r.redis) {
       await r.redis
@@ -35,14 +34,21 @@ const organizationContactCache = {
 
     return organizationContact;
   },
-  save: async ({ organizationId, contactNumber, userNumber }) => {
-    const organizationContact = {
-      organization_id: organizationId,
-      contact_number: contactNumber,
-      user_number: userNumber
-    };
+  save: async (organizationContact, options) => {
+    const organizationId = organizationContact.organization_id;
+    const contactNumber = organizationContact.contact_number;
 
-    await r.knex("organization_contact").insert(organizationContact);
+    if (options && options.update) {
+      await r
+        .knex("organization_contact")
+        .where({
+          organization_id: organizationId,
+          contact_number: contactNumber
+        })
+        .update(organizationContact);
+    } else {
+      await r.knex("organization_contact").insert(organizationContact);
+    }
 
     await r
       .knex("owned_phone_number")
@@ -51,10 +57,18 @@ const organizationContactCache = {
 
     if (r.redis) {
       const cacheKey = getCacheKey(organizationId, contactNumber);
-
+      const cachedContact = JSON.parse(
+        (await r.redis.getAsync(cacheKey)) || "{}"
+      );
       await r.redis
         .multi()
-        .set(cacheKey, JSON.stringify(organizationContact))
+        .set(
+          cacheKey,
+          JSON.stringify({
+            ...cachedContact,
+            ...organizationContact
+          })
+        )
         .expire(cacheKey, 43200) // 12 hours
         .execAsync();
     }

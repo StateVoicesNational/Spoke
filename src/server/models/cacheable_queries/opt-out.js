@@ -1,6 +1,11 @@
 import { r, OptOut } from "../../models";
 import campaignCache from "./campaign";
 import organizationContactCache from "./organization-contact";
+import organizationCache from "./organization";
+import {
+  processServiceManagers,
+  serviceManagersHaveImplementation
+} from "../../../extensions/service-managers";
 
 // STRUCTURE
 // SET by organization, so optout-<organization_id> has a <cell> key
@@ -130,11 +135,13 @@ const optOutCache = {
   save: async ({
     cell,
     campaignContactId,
-    campaign,
+    campaign, // not necessarily a full campaign object
     assignmentId,
     reason,
     noContactUpdate,
-    noReply
+    noReply,
+    contact,
+    organization // not always present
   }) => {
     const organizationId = campaign.organization_id;
     if (r.redis) {
@@ -152,26 +159,39 @@ const optOutCache = {
       cell
     });
 
-    if (noContactUpdate && r.redis) {
-      // this is a risky feature which will not update campaign_contacts
-      // Only use this when you are confident that at least the campaign's
-      // campaign_contact record will update.
-      // The first use-case was for auto-optout, where we update the contact
-      // during message save
-      // We only allow it when the cache is set, so other campaigns are still
-      // (mostly) assured to get the opt-out
-      return;
-    }
-
-    await updateIsOptedOuts(query => {
-      if (!sharingOptOuts) {
-        query.where("campaign.organization_id", organizationId);
-      }
-      return query.where("campaign_contact.cell", cell);
-    });
-
     if (noReply) {
       await campaignCache.incrCount(campaign.id, "needsResponseCount", -1);
+    }
+
+    const skipContactUpdate = Boolean(noContactUpdate && r.redis);
+    // noContactUpdate is a risky feature which will not update campaign_contacts
+    // Only use this when you are confident that at least the campaign's
+    // campaign_contact record will update.
+    // The first use-case was for auto-optout, where we update the contact
+    // during message save
+    // We only allow it when the cache is set, so other campaigns are still
+    // (mostly) assured to get the opt-out
+
+    if (!skipContactUpdate) {
+      await updateIsOptedOuts(query => {
+        if (!sharingOptOuts) {
+          query.where("campaign.organization_id", organizationId);
+        }
+        return query.where("campaign_contact.cell", cell);
+      });
+    }
+
+    if (serviceManagersHaveImplementation("onOptOut")) {
+      const org =
+        organization || organizationCache.load(campaign.organization_id);
+      await processServiceManagers("onOptOut", org, {
+        contact: newContact,
+        campaign,
+        user,
+        noReply,
+        reason,
+        assignmentId
+      });
     }
 
     if (process.env.EXPERIMENTAL_STICKY_SENDER) {

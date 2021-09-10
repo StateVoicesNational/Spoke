@@ -21,7 +21,10 @@
 
 import React from "react";
 import PropTypes from "prop-types";
-import { Card, CardTitle, CardText } from "material-ui/Card";
+
+import Card from "@material-ui/core/Card";
+import CardHeader from "@material-ui/core/CardHeader";
+import CardContent from "@material-ui/core/CardContent";
 
 const TexterFaqs = ({ faqs }) => {
   return (
@@ -29,21 +32,21 @@ const TexterFaqs = ({ faqs }) => {
       <h1>Frequently Asked Questions</h1>
       {faqs.map((faq, idx) => (
         <Card key={idx}>
-          <CardTitle title={`${idx + 1}. ${faq.question}`} />
-          <CardText>
+          <CardHeader title={`${idx + 1}. ${faq.question}`} />
+          <CardContent>
             <p>{faq.answer}</p>
-          </CardText>
+          </CardContent>
         </Card>
       ))}
       <Card>
-        <CardTitle title={`${faqs.length}. Who built Spoke?`} />
-        <CardText>
+        <CardHeader title={`${faqs.length}. Who built Spoke?`} />
+        <CardContent>
           <p>
             Spoke is developed and maintained by people committed to fighting
             oppressive systems and structures, including economic injustice,
             racism, patriarchy, and militarism.
           </p>
-        </CardText>
+        </CardContent>
       </Card>
     </div>
   );

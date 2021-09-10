@@ -22,12 +22,18 @@ class Search extends React.Component {
     this.props.onSearchRequested(this.state.searchString);
   };
 
+  onCancelSearch = () => {
+    this.handleSearchStringChanged("");
+    this.props.onSearchRequested("");
+  };
+
   render = () => (
     <SearchBar
       onRequestSearch={this.handleSearchRequested}
       onChange={this.handleSearchStringChanged}
+      onCancelSearch={this.onCancelSearch}
       value={this.props.searchString}
-      hintText={this.props.hintText}
+      placeholder={this.props.hintText || this.props.placeholder}
     />
   );
 }
@@ -35,7 +41,8 @@ class Search extends React.Component {
 Search.propTypes = {
   searchString: PropTypes.string,
   onSearchRequested: PropTypes.func.isRequired,
-  hintText: PropTypes.string
+  hintText: PropTypes.string,
+  placeholder: PropTypes.string
 };
 
 export default Search;

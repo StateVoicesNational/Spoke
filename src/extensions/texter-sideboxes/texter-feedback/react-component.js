@@ -2,18 +2,24 @@ import PropTypes from "prop-types";
 import React from "react";
 import { withRouter } from "react-router";
 import ReactTooltip from "react-tooltip";
-import yup from "yup";
+import * as yup from "yup";
 import Form from "react-formal";
-import { Paper, Checkbox } from "material-ui";
-import IconButton from "material-ui/IconButton/IconButton";
-import AddIcon from "material-ui/svg-icons/content/add-circle";
-import RemoveIcon from "material-ui/svg-icons/content/remove-circle";
-import GSForm from "../../../components/forms/GSForm";
-import loadData from "../../../containers/hoc/load-data";
 import gql from "graphql-tag";
 import _ from "lodash";
-import theme from "../../../styles/theme";
 
+import AddIcon from "@material-ui/icons/Add";
+import RemoveIcon from "@material-ui/icons/Remove";
+import IconButton from "@material-ui/core/IconButton";
+import Paper from "@material-ui/core/Paper";
+import Switch from "@material-ui/core/Switch";
+import FormControlLabel from "@material-ui/core/FormControlLabel";
+import CircularProgress from "@material-ui/core/CircularProgress";
+
+import GSForm from "../../../components/forms/GSForm";
+import GSTextField from "../../../components/forms/GSTextField";
+import GSSubmitButton from "../../../components/forms/GSSubmitButton";
+import loadData from "../../../containers/hoc/load-data";
+import theme from "../../../styles/theme";
 import { defaults } from "./config";
 import AssignmentTexterFeedback from "./AssignmentTexterFeedback";
 
@@ -70,6 +76,21 @@ const inlineStyles = {
   submitButton: {
     marginTop: 15,
     fontSize: "17px !important"
+  },
+  saveWrapper: {
+    position: "fixed",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: -56,
+    right: 0,
+    height: 56,
+    width: 384,
+    background: "rgb(126, 128, 139)"
+  },
+  saveText: {
+    fontSize: 16,
+    color: "#fff"
   }
 };
 
@@ -94,6 +115,7 @@ export class TexterSideboxClass extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
+      isSaving: false,
       feedback: {
         issueCounts: {},
         skillCounts: {},
@@ -103,13 +125,25 @@ export class TexterSideboxClass extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
+    if (
+      this.state.isSaving &&
+      _.isEqual(this.props.assignment.feedback, this.state.feedback)
+    ) {
+      this.setIsSaving(false);
+    }
+
     if (!_.isEqual(prevState.feedback, this.state.feedback)) {
       this.debouncedUpdate();
     }
   }
 
+  setIsSaving(isSaving) {
+    this.setState({ isSaving });
+  }
+
   debouncedUpdate = _.debounce(
     async () => {
+      this.setIsSaving(true);
       await this.props.mutations.updateFeedback(this.state.feedback);
       if (this.state.feedback.sweepComplete) {
         this.props.router.push(`/admin/${this.props.organizationId}/incoming`);
@@ -120,6 +154,7 @@ export class TexterSideboxClass extends React.Component {
   );
 
   handleCounterChange = (type, key, direction) => {
+    this.setIsSaving(true);
     this.setState(({ feedback }) => {
       const prevCount = feedback[type][key] || 0;
       /* eslint-disable no-nested-ternary */
@@ -141,10 +176,10 @@ export class TexterSideboxClass extends React.Component {
   };
 
   render() {
-    const { feedback } = this.state;
+    const { feedback, isSaving } = this.state;
     const { settingsData } = this.props;
-    console.log("texterfeedback render", settingsData.texterFeedbackJSON);
     let config = defaults;
+
     if (settingsData && settingsData.texterFeedbackJSON) {
       try {
         config = JSON.parse(settingsData.texterFeedbackJSON);
@@ -178,6 +213,12 @@ export class TexterSideboxClass extends React.Component {
 
     return (
       <div style={inlineStyles.wrapper}>
+        {isSaving && (
+          <div style={inlineStyles.saveWrapper}>
+            <CircularProgress size={24} style={{ marginRight: 10 }} />
+            <span style={inlineStyles.saveText}>Saving feedback...</span>
+          </div>
+        )}
         <h2>Texter Feedback</h2>
         <GSForm
           schema={schema}
@@ -230,24 +271,29 @@ export class TexterSideboxClass extends React.Component {
                 <h3 style={{ color: theme.colors.darkGreen }}>Skills</h3>
                 <Paper style={inlineStyles.skillsWrapper}>
                   {config.skills.map(({ key, content }) => {
-                    const isChecked = (Object.entries(
+                    const isChecked = !!(Object.entries(
                       feedback.skillCounts || []
                     ).find(skillCounts => skillCounts[0] === key) || [])[1];
 
                     return (
-                      <div>
-                        <Checkbox
+                      <div key={key}>
+                        <FormControlLabel
                           label={_.startCase(key)}
-                          style={inlineStyles.skillCheckbox}
-                          checked={isChecked}
-                          data-tip
-                          data-for={`${key}-skills`}
-                          onCheck={() =>
-                            this.handleCounterChange(
-                              "skillCounts",
-                              key,
-                              isChecked ? "decrement" : "increment"
-                            )
+                          labelPlacement="start"
+                          control={
+                            <Switch
+                              color="primary"
+                              checked={isChecked}
+                              data-tip
+                              data-for={`${key}-skills`}
+                              onChange={() =>
+                                this.handleCounterChange(
+                                  "skillCounts",
+                                  key,
+                                  isChecked ? "decrement" : "increment"
+                                )
+                              }
+                            />
                           }
                         />
                         <ReactTooltip id={`${key}-skills`} place="left">
@@ -264,19 +310,19 @@ export class TexterSideboxClass extends React.Component {
           <h3>Your Feedback Message</h3>
 
           <Form.Field
+            as={GSTextField}
             name="feedback.message"
             style={inlineStyles.messageInputWrapper}
             textareaStyle={inlineStyles.messageInput}
             fullWidth
-            multiLine
+            multiline
             rows={4}
             rowsMax={6}
           />
 
-          <Form.Button
+          <Form.Submit
             style={inlineStyles.submitButton}
-            labelStyle={{ fontSize: 17 }}
-            type="submit"
+            as={GSSubmitButton}
             label="Sweep Complete"
             disabled={!feedback.message}
           />
@@ -356,9 +402,10 @@ export class AdminConfig extends React.Component {
           feedback is then shown to the texters.
         </p>
         <Form.Field
+          as={GSTextField}
+          fullWidth
           name="texterFeedbackJSON"
           label="Advanced JSON config override"
-          defaultValue={this.props.settingsData.texterFeedbackJSON || ""}
         />
       </div>
     );

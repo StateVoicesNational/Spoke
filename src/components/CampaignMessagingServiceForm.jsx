@@ -1,10 +1,13 @@
 import type from "prop-types";
-import Toggle from "material-ui/Toggle";
+import Switch from "@material-ui/core/Switch";
+import FormControlLabel from "@material-ui/core/FormControlLabel";
 import React from "react";
 import Form from "react-formal";
 import GSForm from "./forms/GSForm";
+import GSTextField from "./forms/GSTextField";
+import GSSubmitButton from "./forms/GSSubmitButton";
 import CampaignFormSectionHeading from "./CampaignFormSectionHeading";
-import yup from "yup";
+import * as yup from "yup";
 import cloneDeep from "lodash/cloneDeep";
 
 export default class CampaignMessagingServiceForm extends React.Component {
@@ -24,15 +27,26 @@ export default class CampaignMessagingServiceForm extends React.Component {
 
   addToggleFormField(name, label) {
     return (
-      <Form.Field
-        name={name}
-        type={Toggle}
-        defaultToggled={this.props.formValues[name]}
-        label={label}
-        onToggle={async (_, isToggled) => {
-          this.toggled(name, isToggled);
-        }}
-      />
+      <div>
+        <Form.Field
+          as={props => (
+            <FormControlLabel
+              color="primary"
+              control={
+                <Switch
+                  checked={this.props.formValues[name]}
+                  onChange={async (_, isToggled) => {
+                    this.toggled(name, isToggled);
+                  }}
+                />
+              }
+              labelPlacement="start"
+              label={label}
+            />
+          )}
+          name={name}
+        />
+      </div>
     );
   }
 
@@ -54,9 +68,10 @@ export default class CampaignMessagingServiceForm extends React.Component {
           "Create a new Messaging Service for this Campaign?"
         )}
 
-        {this.props.formValues.useOwnMessagingService ? (
+        {this.props.formValues.useOwnMessagingService && (
           <div>
             <Form.Field
+              as={GSTextField}
               name="messageserviceSid"
               label="Messaging Service SID"
               fullWidth
@@ -65,12 +80,10 @@ export default class CampaignMessagingServiceForm extends React.Component {
               Leave this blank to automatically create a messaging service
             </label>
           </div>
-        ) : (
-          ""
         )}
 
-        <Form.Button
-          type="submit"
+        <Form.Submit
+          as={GSSubmitButton}
           disabled={this.props.saveDisabled}
           label={this.props.saveLabel}
         />

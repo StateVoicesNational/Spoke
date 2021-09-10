@@ -1,18 +1,22 @@
 import PropTypes from "prop-types";
 import React, { Component } from "react";
-import { Card, CardTitle } from "material-ui/Card";
-import FlatButton from "material-ui/FlatButton";
-import RaisedButton from "material-ui/RaisedButton";
-import { Step, Stepper, StepLabel, StepContent } from "material-ui/Stepper";
-import WarningIcon from "material-ui/svg-icons/alert/warning";
-import SuccessIcon from "material-ui/svg-icons/action/check-circle";
-import LinkIcon from "material-ui/svg-icons/content/link";
 import { StyleSheet, css } from "aphrodite";
-import loadData from "../../../containers/hoc/load-data";
 import gql from "graphql-tag";
 
-import { defaults } from "./config";
+import Stepper from "@material-ui/core/Stepper";
+import Step from "@material-ui/core/Step";
+import StepLabel from "@material-ui/core/StepLabel";
+import StepContent from "@material-ui/core/StepContent";
+import Button from "@material-ui/core/Button";
+import IconButton from "@material-ui/core/IconButton";
+import WarningIcon from "@material-ui/icons/Warning";
+import CheckCircleIcon from "@material-ui/icons/CheckCircle";
+import LinkIcon from "@material-ui/icons/Link";
+import Card from "@material-ui/core/Card";
+import CardHeader from "@material-ui/core/CardHeader";
 
+import loadData from "../../../containers/hoc/load-data";
+import { defaults } from "./config";
 import theme from "../../../styles/theme";
 
 const styles = StyleSheet.create({
@@ -24,6 +28,9 @@ const styles = StyleSheet.create({
     height: "70%",
     top: "20px",
     right: "20px"
+  },
+  whiteText: {
+    color: theme.colors.white
   }
 });
 
@@ -87,7 +94,7 @@ const Alert = ({ type, message }) => (
     {type === "warning" ? (
       <WarningIcon style={inlineStyles.alertIcon(type)} />
     ) : (
-      <SuccessIcon style={inlineStyles.alertIcon(type)} />
+      <CheckCircleIcon style={inlineStyles.alertIcon(type)} />
     )}
     {message}
   </div>
@@ -119,7 +126,7 @@ export class AssignmentTexterFeedback extends Component {
 
     const issueItems = Object.entries(issueCounts)
       .map(([key, count]) => {
-        const item = defaults.issues.find(issue => issue.key === key);
+        const item = config.issues.find(issue => issue.key === key);
         if (count && !isNaN(count) && item) return item;
         return null;
       })
@@ -129,14 +136,14 @@ export class AssignmentTexterFeedback extends Component {
       // issueItems with successMessage and no count
       ...Object.entries(issueCounts)
         .map(([key, count]) => {
-          const item = defaults.issues.find(issue => issue.key === key);
+          const item = config.issues.find(issue => issue.key === key);
           if (count === 0 && item && item.successMessage) return item;
           return null;
         })
         .filter(Boolean),
       // skillCounts items
       ...Object.entries(skillCounts).map(([key, count]) => {
-        const item = defaults.skills.find(skill => skill.key === key);
+        const item = config.skills.find(skill => skill.key === key);
         if (count && !isNaN(count) && item) return item;
         return null;
       })
@@ -147,18 +154,21 @@ export class AssignmentTexterFeedback extends Component {
     const StepActions = () => (
       <div style={inlineStyles.stepActions}>
         {stepIndex !== 0 && (
-          <FlatButton
-            label="Back"
+          <Button
             style={{ marginRight: 50 }}
             disabled={stepIndex === 0}
             onClick={this.handlePrev}
-          />
+          >
+            Back
+          </Button>
         )}
-        <RaisedButton
-          label={stepIndex >= totalSteps ? "Done" : "Next"}
-          primary
+        <Button
+          variant="contained"
+          color="primary"
           onClick={stepIndex < totalSteps ? this.handleNext : this.handleDone}
-        />
+        >
+          {stepIndex >= totalSteps ? "Done" : "Next"}
+        </Button>
       </div>
     );
 
@@ -169,15 +179,16 @@ export class AssignmentTexterFeedback extends Component {
         </StepLabel>
         <StepContent style={inlineStyles.stepContent}>
           <div dangerouslySetInnerHTML={{ __html: content }} />
-          {moreInfo ? (
-            <FlatButton
+          {moreInfo && (
+            <IconButton
               label="More Info"
               target="_blank"
-              secondary
-              icon={<LinkIcon />}
+              color="secondary"
               href={moreInfo}
-            />
-          ) : null}
+            >
+              <LinkIcon />
+            </IconButton>
+          )}
           <StepActions />
         </StepContent>
       </Step>
@@ -246,12 +257,14 @@ export class AssignmentTexterFeedback extends Component {
     return (
       <div className={css(styles.container)}>
         <Card style={inlineStyles.feedbackCard}>
-          <CardTitle
+          <CardHeader
             style={{ paddingTop: 0, paddingLeft: 0 }}
             title={title}
-            titleStyle={inlineStyles.title}
-            subtitle={subtitle}
-            subtitleStyle={inlineStyles.subtitle}
+            subheader={subtitle}
+            classes={{
+              title: css(styles.whiteText),
+              subheader: css(styles.whiteText)
+            }}
           />
 
           <Card>

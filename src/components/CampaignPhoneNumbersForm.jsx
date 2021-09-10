@@ -2,21 +2,31 @@ import React from "react";
 import type from "prop-types";
 import { StyleSheet, css } from "aphrodite";
 import _ from "lodash";
-import GSForm from "../components/forms/GSForm";
-import yup from "yup";
+import * as yup from "yup";
 import Form from "react-formal";
+
+import Button from "@material-ui/core/Button";
+import IconButton from "@material-ui/core/IconButton";
+import AddIcon from "@material-ui/icons/Add";
+import RemoveIcon from "@material-ui/icons/Remove";
+import Checkbox from "@material-ui/core/Checkbox";
+import FormControlLabel from "@material-ui/core/FormControlLabel";
+
+import List from "@material-ui/core/List";
+import ListItem from "@material-ui/core/ListItem";
+import ListItemText from "@material-ui/core/ListItemText";
+import ListItemSecondaryAction from "@material-ui/core/ListItemSecondaryAction";
+import Collapse from "@material-ui/core/Collapse";
+import ExpandLess from "@material-ui/icons/ExpandLess";
+import ExpandMore from "@material-ui/icons/ExpandMore";
+import Autocomplete from "@material-ui/lab/Autocomplete";
+import TextField from "@material-ui/core/TextField";
+
+import GSForm from "../components/forms/GSForm";
+import GSSubmitButton from "../components/forms/GSSubmitButton";
 import CampaignFormSectionHeading from "../components/CampaignFormSectionHeading";
-import { ListItem, List } from "material-ui/List";
-import AutoComplete from "material-ui/AutoComplete";
-import RaisedButton from "material-ui/RaisedButton";
-import FlatButton from "material-ui/FlatButton";
-import Checkbox from "material-ui/Checkbox";
-import IconButton from "material-ui/IconButton/IconButton";
-import AddIcon from "material-ui/svg-icons/content/add-circle";
-import RemoveIcon from "material-ui/svg-icons/content/remove-circle";
 import LoadingIndicator from "./LoadingIndicator";
 import theme from "../styles/theme";
-// import { dataTest } from "../lib/attributes";
 
 /* eslint-disable no-nested-ternary */
 
@@ -258,44 +268,49 @@ export default class CampaignPhoneNumbersForm extends React.Component {
         style={{
           maxHeight: 360,
           minHeight: 360,
-          overflowY: "auto",
-          padding: "0 15px 0 0"
+          overflowY: "auto"
         }}
       >
         {isRendering ? (
           <LoadingIndicator />
         ) : (
-          states.map(state => (
+          states.map(state => [
             <ListItem
               key={state}
-              primaryText={state}
-              primaryTogglesNestedList
-              initiallyOpen
-              nestedItems={areaCodes
-                .filter(areaCode => areaCode.state === state)
-                .map(({ areaCode, availableCount }) => {
-                  const assignedCount = getAssignedCount(areaCode);
-                  const isSuppressed = suppressedAreaCodes.includes(areaCode);
-                  return (
-                    <ListItem
-                      key={areaCode}
-                      style={{
-                        marginBottom: 15,
-                        height: 16,
-                        border: "1px solid rgb(225, 228, 224)",
-                        borderRadius: 8
-                      }}
-                      disabled
-                      primaryText={
-                        <span>
-                          <span
-                            style={{
-                              marginRight: 90,
-                              width: 50
-                            }}
-                          >
-                            {areaCode}
-                          </span>
+              button
+              onClick={() =>
+                this.setState({
+                  [`${state}-open`]: !this.state[`${state}-open`]
+                })
+              }
+            >
+              <ListItemText primary={state} />
+              {this.state[`${state}-open`] ? <ExpandLess /> : <ExpandMore />}
+            </ListItem>,
+            <Collapse
+              in={this.state[`${state}-open`]}
+              timeout="auto"
+              unmountOnExit
+              style={{ margin: "0 10px" }}
+            >
+              <List>
+                {areaCodes
+                  .filter(areaCode => areaCode.state === state)
+                  .map(({ areaCode, availableCount }) => {
+                    const assignedCount = getAssignedCount(areaCode);
+                    const isSuppressed = suppressedAreaCodes.includes(areaCode);
+                    return (
+                      <ListItem
+                        key={areaCode}
+                        style={{
+                          marginBottom: 15,
+                          border: "1px solid rgb(225, 228, 224)",
+                          borderRadius: 8
+                        }}
+                        disabled
+                      >
+                        <ListItemText primary={areaCode} />
+                        <ListItemSecondaryAction>
                           <span
                             style={{
                               color: isSuppressed
@@ -303,50 +318,47 @@ export default class CampaignPhoneNumbersForm extends React.Component {
                                 : theme.colors.gray
                             }}
                           >
-                            {`${assignedCount}${
-                              !isStarted ? ` / ${availableCount}` : ""
-                            }`}
+                            {!isStarted && isSuppressed && (
+                              <span
+                                style={{
+                                  marginTop: 15,
+                                  marginRight: 10,
+                                  color: theme.colors.red,
+                                  fontSize: 14
+                                }}
+                              >
+                                Not Enough to Reserve
+                              </span>
+                            )}
+                            {!isStarted && !isSuppressed && (
+                              <IconButton
+                                disabled={!assignedCount}
+                                onClick={() => unassignAreaCode(areaCode)}
+                              >
+                                <RemoveIcon />
+                              </IconButton>
+                            )}
+                            {assignedCount}{" "}
+                            {!isStarted && ` / ${availableCount}`}
+                            {!isStarted && !isSuppressed && (
+                              <IconButton
+                                disabled={
+                                  assignedCount === availableCount ||
+                                  assignedNumberCount === numbersNeeded
+                                }
+                                onClick={() => assignAreaCode(areaCode)}
+                              >
+                                <AddIcon />
+                              </IconButton>
+                            )}
                           </span>
-                        </span>
-                      }
-                      rightIconButton={
-                        !isStarted &&
-                        (!isSuppressed ? (
-                          <div style={{ marginRight: 50 }}>
-                            <IconButton
-                              disabled={!assignedCount}
-                              onClick={() => unassignAreaCode(areaCode)}
-                            >
-                              <RemoveIcon />
-                            </IconButton>
-                            <IconButton
-                              disabled={
-                                assignedCount === availableCount ||
-                                assignedNumberCount === numbersNeeded
-                              }
-                              onClick={() => assignAreaCode(areaCode)}
-                            >
-                              <AddIcon />
-                            </IconButton>
-                          </div>
-                        ) : (
-                          <div
-                            style={{
-                              marginTop: 15,
-                              marginRight: 10,
-                              color: theme.colors.red,
-                              fontSize: 14
-                            }}
-                          >
-                            Not Enough to Reserve
-                          </div>
-                        ))
-                      }
-                    />
-                  );
-                })}
-            />
-          ))
+                        </ListItemSecondaryAction>
+                      </ListItem>
+                    );
+                  })}
+              </List>
+            </Collapse>
+          ])
         )}
       </List>
     );
@@ -390,26 +402,28 @@ export default class CampaignPhoneNumbersForm extends React.Component {
       );
     }
 
-    const filter = (searchText, key) =>
-      key === "allphoneNumbers"
-        ? true
-        : AutoComplete.caseInsensitiveFilter(searchText, key);
-
     const autocomplete = (
-      <AutoComplete
+      <Autocomplete
         ref="autocomplete"
         style={inlineStyles.autocomplete}
-        onUpdateInput={searchText => this.setState({ searchText })}
-        searchText={this.state.searchText}
-        filter={filter}
-        hintText="Find State or Area Code"
+        onInputChange={(event, searchText) => this.setState({ searchText })}
+        inputValue={this.state.searchText}
         name="areaCode"
-        label="Find State or Area Code"
-        dataSource={[]}
+        getOptionLabel={option =>
+          `${option.state}: ${option.areaCode} / available: ${option.availableCount}`
+        }
+        options={phoneNumberCounts}
+        renderInput={params => (
+          <TextField
+            {...params}
+            label="Find State or Area Code"
+            variant="outlined"
+          />
+        )}
       />
     );
     const showAutocomplete = !isStarted && phoneNumberCounts.length > 0;
-    return <div>{showAutocomplete ? autocomplete : ""}</div>;
+    return <div>{showAutocomplete && autocomplete}</div>;
   }
 
   renderErrorMessage() {
@@ -603,44 +617,23 @@ export default class CampaignPhoneNumbersForm extends React.Component {
         className={css(styles.container)}
         style={{ flex: 1, marginRight: 50, maxWidth: 500 }}
       >
-        <div className={css(styles.headerContainer)} style={{ height: 90 }}>
+        <div className={css(styles.headerContainer)} style={{ height: "auto" }}>
           <div
             style={{
               flex: 1,
-              fontSize: 22,
+              fontSize: 14,
               color: headerColor
             }}
           >
-            <div style={{ display: "flex", margin: "5px 0 10px 5px" }}>
-              <span>
-                {"Reserved phone numbers: "}
-                {`${assignedNumberCount}/${numbersNeeded}`}
-              </span>
-
-              {!isStarted && (
-                <FlatButton
-                  style={{
-                    marginLeft: "auto",
-                    fontSize: 12
-                  }}
-                  label="Reset"
-                  secondary
-                  disabled={!assignedNumberCount || isRendering}
-                  onClick={() => resetReserved()}
-                />
-              )}
+            <div style={{ display: "block", margin: "5px 0 10px 5px" }}>
+              Reserved phone numbers:
+              {` ${assignedNumberCount}/${numbersNeeded}`}
             </div>
             {!isStarted && (
-              <div style={{ display: "flex" }}>
-                <RaisedButton
-                  style={{
-                    width: 250,
-                    height: 40,
-                    fontSize: 17,
-                    margin: "0 0 5px 5px"
-                  }}
-                  label={`Auto-Reserve Remaining ${remaining}`}
-                  primary
+              <div>
+                <Button
+                  color="primary"
+                  variant="contained"
                   disabled={!remaining || isRendering}
                   onClick={() => {
                     this.setState({ isRendering: true });
@@ -649,25 +642,47 @@ export default class CampaignPhoneNumbersForm extends React.Component {
                       this.setState({ isRendering: false });
                     }, 500);
                   }}
-                />
+                >
+                  Auto-Reserve Remaining {remaining}
+                </Button>
 
-                <Checkbox
-                  style={{
-                    margin: "5px 5px 0 auto",
-                    fontSize: 14,
-                    width: "auto"
-                  }}
-                  iconStyle={{ marginLeft: 4 }}
-                  disabled={!reservedNumbers.length}
-                  labelPosition="left"
+                {!isStarted && (
+                  <Button
+                    style={{
+                      marginLeft: "auto",
+                      fontSize: 12,
+                      textAlign: "right"
+                    }}
+                    size="small"
+                    color="secondary"
+                    variant="contained"
+                    disabled={!assignedNumberCount || isRendering}
+                    onClick={() => resetReserved()}
+                  >
+                    Reset
+                  </Button>
+                )}
+
+                <FormControlLabel
                   label="Only show reserved"
-                  checked={this.state.showOnlySelected}
-                  onCheck={() => {
-                    this.setState(({ showOnlySelected }) => ({
-                      showOnlySelected: !showOnlySelected,
-                      searchText: ""
-                    }));
-                  }}
+                  labelPlacement="start"
+                  control={
+                    <Checkbox
+                      style={{
+                        margin: "5px 5px 0 auto",
+                        fontSize: 14,
+                        width: "auto"
+                      }}
+                      disabled={!reservedNumbers.length}
+                      checked={this.state.showOnlySelected}
+                      onChange={() => {
+                        this.setState(({ showOnlySelected }) => ({
+                          showOnlySelected: !showOnlySelected,
+                          searchText: ""
+                        }));
+                      }}
+                    />
+                  }
                 />
               </div>
             )}
@@ -763,8 +778,7 @@ export default class CampaignPhoneNumbersForm extends React.Component {
           style={{
             maxHeight: 420,
             minHeight: 420,
-            overflowY: "auto",
-            padding: "0 15px 0 0"
+            overflowY: "auto"
           }}
         >
           {isRendering ? (
@@ -772,59 +786,69 @@ export default class CampaignPhoneNumbersForm extends React.Component {
           ) : (
             states.map(({ state, needed: stateNeeded }) => {
               const stateAssigned = getAssignedCount({ state });
-              return (
+              return [
                 <ListItem
                   key={state}
-                  primaryText={
-                    <div
+                  button
+                  onClick={() =>
+                    this.setState({
+                      [`${state}-open`]: !this.state[`${state}-open`]
+                    })
+                  }
+                >
+                  <ListItemText primary={state} />
+                  <ListItemSecondaryAction>
+                    <span
                       style={{
-                        display: "flex",
-                        alignItems: "center"
+                        width: 70,
+                        fontSize: 14,
+                        color:
+                          stateAssigned && stateAssigned >= stateNeeded
+                            ? theme.colors.green
+                            : theme.colors.black
                       }}
                     >
-                      <span style={{ width: 170 }}>{state}</span>
-                      <span
-                        style={{
-                          width: 70,
-                          fontSize: 14,
-                          color:
-                            stateAssigned && stateAssigned >= stateNeeded
-                              ? theme.colors.green
-                              : theme.colors.black
-                        }}
-                      >
-                        {stateAssigned || 0}
-                        {" / "}
-                        {stateNeeded}
-                      </span>
-                    </div>
-                  }
-                  primaryTogglesNestedList
-                  initiallyOpen
-                  nestedItems={filteredAreaCodes
-                    .filter(areaCode => areaCode.state === state)
-                    .map(({ areaCode, count }) => {
-                      const needed = Math.ceil(count / contactsPerPhoneNumber);
-                      const assignedCount = getAssignedCount({ areaCode });
-                      return (
-                        <ListItem
-                          key={areaCode}
-                          style={{
-                            marginLeft: 15,
-                            marginBottom: 15,
-                            border: "1px solid rgb(225, 228, 224)",
-                            borderRadius: 8
-                          }}
-                          primaryText={
+                      {stateAssigned || 0}
+                      {" / "}
+                      {stateNeeded}
+                    </span>
+                    {this.state[`${state}-open`] ? (
+                      <ExpandLess />
+                    ) : (
+                      <ExpandMore />
+                    )}
+                  </ListItemSecondaryAction>
+                </ListItem>,
+                <Collapse
+                  in={this.state[`${state}-open`]}
+                  timeout="auto"
+                  unmountOnExit
+                  style={{ margin: "0 10px" }}
+                >
+                  <List>
+                    {filteredAreaCodes
+                      .filter(areaCode => areaCode.state === state)
+                      .map(({ areaCode, count }) => {
+                        const needed = Math.ceil(
+                          count / contactsPerPhoneNumber
+                        );
+                        const assignedCount = getAssignedCount({ areaCode });
+                        return (
+                          <ListItem
+                            key={areaCode}
+                            style={{
+                              marginBottom: 15,
+                              border: "1px solid rgb(225, 228, 224)",
+                              borderRadius: 8
+                            }}
+                          >
                             <div
                               style={{
                                 display: "flex",
                                 alignItems: "center"
                               }}
                             >
-                              <span style={{ marginLeft: -15, width: 110 }}>
-                                {areaCode}
-                              </span>
+                              <span style={{ width: 110 }}>{areaCode}</span>
                               <span
                                 style={{
                                   width: 70,
@@ -855,12 +879,12 @@ export default class CampaignPhoneNumbersForm extends React.Component {
                                 %
                               </span>
                             </div>
-                          }
-                        />
-                      );
-                    })}
-                />
-              );
+                          </ListItem>
+                        );
+                      })}
+                  </List>
+                </Collapse>
+              ];
             })
           )}
         </List>
@@ -903,8 +927,8 @@ export default class CampaignPhoneNumbersForm extends React.Component {
               {this.renderContactsAreaCodesTable()}
             </div>
 
-            <Form.Button
-              type="submit"
+            <Form.Submit
+              as={GSSubmitButton}
               disabled={
                 this.props.saveDisabled ||
                 assignedNumberCount !== numbersNeeded ||

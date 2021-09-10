@@ -1,14 +1,20 @@
 import { mapFieldsToModel } from "./lib/utils";
 import { getConfig, getFeatures } from "./lib/config";
 import { r, Organization, cacheableData } from "../models";
+import ownedPhoneNumber from "./lib/owned-phone-number";
 import { getTags } from "./tag";
 import { accessRequired } from "./errors";
-import { getCampaigns, getCampaignsCount } from "./campaign";
+import { getCampaigns } from "./campaign";
 import { buildUsersQuery } from "./user";
 import {
   getAvailableActionHandlers,
   getActionChoiceData
 } from "../../extensions/action-handlers";
+import {
+  fullyConfigured,
+  getServiceMetadata
+} from "../../extensions/service-vendors";
+import { getServiceManagerData } from "../../extensions/service-managers";
 
 export const ownerConfigurable = {
   // ACTION_HANDLERS: 1,
@@ -50,30 +56,6 @@ export const getSideboxChoices = organization => {
       : (sideboxes && sideboxes.split(",")) || [];
   return sideboxChoices;
 };
-
-const campaignNumbersEnabled = organization => {
-  const inventoryEnabled =
-    getConfig("EXPERIMENTAL_PHONE_INVENTORY", organization, {
-      truthy: true
-    }) ||
-    getConfig("PHONE_INVENTORY", organization, {
-      truthy: true
-    });
-
-  return (
-    inventoryEnabled &&
-    getConfig("EXPERIMENTAL_CAMPAIGN_PHONE_NUMBERS", organization, {
-      truthy: true
-    })
-  );
-};
-
-const manualMessagingServicesEnabled = organization =>
-  getConfig(
-    "EXPERIMENTAL_TWILIO_PER_CAMPAIGN_MESSAGING_SERVICE",
-    organization,
-    { truthy: true }
-  );
 
 export const resolvers = {
   Organization: {
@@ -229,69 +211,51 @@ export const resolvers = {
       };
     },
     cacheable: (org, _, { user }) =>
-      //quanery logic.  levels are 0, 1, 2
+      // quanery logic.  levels are 0, 1, 2
       r.redis ? (getConfig("REDIS_CONTACT_CACHE", org) ? 2 : 1) : 0,
-    twilioAccountSid: async (organization, _, { user }) => {
+    serviceVendor: async (organization, _, { user }) => {
       try {
         await accessRequired(user, organization.id, "OWNER");
-        return organization.features.indexOf("TWILIO_ACCOUNT_SID") !== -1
-          ? JSON.parse(organization.features).TWILIO_ACCOUNT_SID
-          : null;
-      } catch (err) {
+        const serviceName = cacheableData.organization.getMessageService(
+          organization
+        );
+        const serviceMetadata = getServiceMetadata(serviceName);
+        return {
+          id: `org${organization.id}-${serviceName}`,
+          ...serviceMetadata,
+          config: cacheableData.organization.getMessageServiceConfig(
+            organization,
+            { restrictToOrgFeatures: true, obscureSensitiveInformation: true }
+          )
+        };
+      } catch (caught) {
+        console.log("organization.messageService error", caught);
         return null;
       }
     },
-    twilioAuthToken: async (organization, _, { user }) => {
+    serviceManagers: async (organization, _, { user, loaders }) => {
       try {
-        await accessRequired(user, organization.id, "OWNER");
-        return JSON.parse(organization.features || "{}")
-          .TWILIO_AUTH_TOKEN_ENCRYPTED
-          ? "<Encrypted>"
-          : null;
+        await accessRequired(user, organization.id, "OWNER", true);
+        const result = await getServiceManagerData(
+          "getOrganizationData",
+          organization,
+          { organization, user, loaders }
+        );
+        return result.map(r => ({
+          id: `${r.name}-org${organization.id}-`,
+          organization,
+          // defaults
+          fullyConfigured: null,
+          data: null,
+          ...r
+        }));
       } catch (err) {
-        return null;
-      }
-    },
-    twilioMessageServiceSid: async (organization, _, { user }) => {
-      try {
-        await accessRequired(user, organization.id, "OWNER");
-        return organization.features.indexOf("TWILIO_MESSAGE_SERVICE_SID") !==
-          -1
-          ? JSON.parse(organization.features).TWILIO_MESSAGE_SERVICE_SID
-          : null;
-      } catch (err) {
-        return null;
+        console.log("orgaization.serviceManagers error", err);
+        return [];
       }
     },
     fullyConfigured: async organization => {
-      const serviceName =
-        getConfig("service", organization) || getConfig("DEFAULT_SERVICE");
-      if (serviceName === "twilio") {
-        const {
-          authToken,
-          accountSid
-        } = await cacheableData.organization.getTwilioAuth(organization);
-
-        let messagingServiceConfigured;
-        if (
-          manualMessagingServicesEnabled(organization) ||
-          campaignNumbersEnabled(organization) ||
-          getConfig("SKIP_TWILIO_MESSAGING_SERVICE", organization, {
-            truthy: true
-          })
-        ) {
-          messagingServiceConfigured = true;
-        } else {
-          messagingServiceConfigured = await cacheableData.organization.getMessageServiceSid(
-            organization
-          );
-        }
-
-        if (!(authToken && accountSid && messagingServiceConfigured)) {
-          return false;
-        }
-      }
-      return true;
+      return fullyConfigured(organization);
     },
     emailEnabled: async (organization, _, { user }) => {
       await accessRequired(user, organization.id, "SUPERVOLUNTEER", true);
@@ -309,6 +273,7 @@ export const resolvers = {
       );
     },
     campaignPhoneNumbersEnabled: async (organization, _, { user }) => {
+      // TODO: consider removal (moved to extensions/service-managers/per-campaign-messageservices
       await accessRequired(user, organization.id, "SUPERVOLUNTEER");
       const inventoryEnabled =
         getConfig("EXPERIMENTAL_PHONE_INVENTORY", organization, {
@@ -371,29 +336,7 @@ export const resolvers = {
       ) {
         return [];
       }
-      const usAreaCodes = require("us-area-codes");
-      const service =
-        getConfig("service", organization) || getConfig("DEFAULT_SERVICE");
-      const counts = await r
-        .knex("owned_phone_number")
-        .select(
-          "area_code",
-          r.knex.raw("COUNT(allocated_to) as allocated_count"),
-          r.knex.raw(
-            "SUM(CASE WHEN allocated_to IS NULL THEN 1 END) as available_count"
-          )
-        )
-        .where({
-          service,
-          organization_id: organization.id
-        })
-        .groupBy("area_code");
-      return counts.map(row => ({
-        areaCode: row.area_code,
-        state: usAreaCodes.get(Number(row.area_code)),
-        allocatedCount: Number(row.allocated_count),
-        availableCount: Number(row.available_count)
-      }));
+      return await ownedPhoneNumber.listOrganizationCounts(organization);
     }
   }
 };

@@ -2,14 +2,15 @@ import PropTypes from "prop-types";
 import React, { Component } from "react";
 import { StyleSheet, css } from "aphrodite";
 
-import theme from "../styles/theme";
-import CampaignFormSectionHeading from "../components/CampaignFormSectionHeading";
-import TextField from "material-ui/TextField";
-import { ListItem, List } from "material-ui/List";
-import RaisedButton from "material-ui/RaisedButton";
-import ErrorIcon from "material-ui/svg-icons/alert/error";
+import TextField from "@material-ui/core/TextField";
+import List from "@material-ui/core/List";
+import ListItem from "@material-ui/core/ListItem";
+import ListItemText from "@material-ui/core/ListItemText";
+import ListItemIcon from "@material-ui/core/ListItemIcon";
+import Button from "@material-ui/core/Button";
+import ErrorIcon from "@material-ui/icons/Error";
 
-const errorIcon = <ErrorIcon color={theme.colors.red} />;
+import CampaignFormSectionHeading from "../components/CampaignFormSectionHeading";
 
 const styles = StyleSheet.create({
   buttonDiv: {
@@ -22,7 +23,7 @@ export default class AdminScriptImport extends Component {
     startImport: PropTypes.func,
     hasPendingJob: PropTypes.bool,
     jobError: PropTypes.bool,
-    onSubmit: PropTypes.bool
+    onSubmit: PropTypes.func
   };
 
   constructor(props) {
@@ -42,12 +43,17 @@ export default class AdminScriptImport extends Component {
     this.props.onSubmit();
   };
 
-  handleUrlChange = (_eventId, newValue) => this.setState({ url: newValue });
+  handleUrlChange = ({ target }) => this.setState({ url: target.value });
 
   renderErrors = () =>
     this.state.error && (
       <List>
-        <ListItem primaryText={this.state.error} leftIcon={errorIcon} />
+        <ListItem>
+          <ListItemIcon>
+            <ErrorIcon color="error" />
+          </ListItemIcon>
+          <ListItemText primary={this.state.error} />
+        </ListItem>
       </List>
     );
 
@@ -63,6 +69,7 @@ export default class AdminScriptImport extends Component {
               You can import interactions and canned responses from a properly
               formatted Google Doc. Please refer to{" "}
               <a target="_blank" href={url}>
+                {" "}
                 this document
               </a>{" "}
               for more details.
@@ -70,19 +77,21 @@ export default class AdminScriptImport extends Component {
           }
         />
         <TextField
-          hintText="URL of the Google Doc"
-          floatingLabelText="Google Doc URL"
-          style={{ width: "100%" }}
+          variant="outlined"
+          label="Google Doc URL"
+          fullWidth
           onChange={this.handleUrlChange}
         />
         {this.renderErrors()}
         <div className={css(styles.buttonDiv)}>
-          <RaisedButton
-            label="Import"
+          <Button
+            variant="contained"
             disabled={this.props.hasPendingJob}
-            primary
-            onTouchTap={this.startImport}
-          />
+            color="primary"
+            onClick={this.startImport}
+          >
+            Import
+          </Button>
         </div>
       </div>
     );

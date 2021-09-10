@@ -3,7 +3,7 @@ import bodyParser from "body-parser";
 import express from "express";
 import appRenderer from "./middleware/app-renderer";
 import { graphqlExpress, graphiqlExpress } from "apollo-server-express";
-import { makeExecutableSchema, addMockFunctionsToSchema } from "graphql-tools";
+import { makeExecutableSchema } from "graphql-tools";
 // ORDERING: ./models import must be imported above ./api to help circular imports
 import { createLoaders, createTablesIfNecessary, r } from "./models";
 import { resolvers } from "./api/schema";
@@ -11,11 +11,9 @@ import { schema } from "../api/schema";
 import passport from "passport";
 import cookieSession from "cookie-session";
 import passportSetup from "./auth-passport";
-import wrap from "./wrap";
 import { log } from "../lib";
 import telemetry from "./telemetry";
-import nexmo from "./api/lib/nexmo";
-import twilio from "./api/lib/twilio";
+import { addServerEndpoints as messagingServicesAddServerEndpoints } from "../extensions/service-vendors/service_map";
 import { getConfig } from "./api/lib/config";
 import { seedZipCodes } from "./seeds/seed-zip-codes";
 import { seedAreaCodes } from "./seeds/seed-area-codes";
@@ -23,6 +21,7 @@ import { setupUserNotificationObservers } from "./notifications";
 import { existsSync } from "fs";
 import { rawAllMethods } from "../extensions/contact-loaders";
 import herokuSslRedirect from "heroku-ssl-redirect";
+import { GraphQLError } from "graphql/error";
 
 process.on("uncaughtException", ex => {
   log.error(ex);
@@ -115,35 +114,12 @@ Object.keys(configuredIngestMethods).forEach(ingestMethodName => {
   }
 });
 
-twilio.addServerEndpoints(app);
+const routeAdders = {
+  get: (_app, route, ...handlers) => _app.get(route, ...handlers),
+  post: (_app, route, ...handlers) => _app.post(route, ...handlers)
+};
 
-if (process.env.NEXMO_API_KEY) {
-  app.post(
-    "/nexmo",
-    wrap(async (req, res) => {
-      try {
-        const messageId = await nexmo.handleIncomingMessage(req.body);
-        res.send(messageId);
-      } catch (ex) {
-        log.error(ex);
-        res.send("done");
-      }
-    })
-  );
-
-  app.post(
-    "/nexmo-message-report",
-    wrap(async (req, res) => {
-      try {
-        const body = req.body;
-        await nexmo.handleDeliveryReport(body);
-      } catch (ex) {
-        log.error(ex);
-      }
-      res.send("done");
-    })
-  );
-}
+messagingServicesAddServerEndpoints(app, routeAdders);
 
 app.get("/logout-callback", (req, res) => {
   req.logOut();
@@ -193,10 +169,15 @@ app.use(
         // drop if this fails
         .catch(() => {})
         .then(() => {});
+
       if (process.env.SHOW_SERVER_ERROR || process.env.DEBUG) {
-        return error;
+        if (error instanceof GraphQLError) {
+          return error;
+        }
+        return new GraphQLError(error.message);
       }
-      return new Error(
+
+      return new GraphQLError(
         error &&
         error.originalError &&
         error.originalError.code === "UNAUTHORIZED"

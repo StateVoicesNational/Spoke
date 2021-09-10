@@ -14,6 +14,7 @@ import { schema as campaignContactSchema } from "./campaign-contact";
 import { schema as cannedResponseSchema } from "./canned-response";
 import { schema as inviteSchema } from "./invite";
 import { schema as tagSchema } from "./tag";
+import { schema as serviceSchema } from "./service";
 
 const rootSchema = gql`
   input CampaignContactInput {
@@ -35,6 +36,14 @@ const rootSchema = gql`
     campaignContactId: String!
     interactionStepId: String!
     value: String!
+  }
+
+  input BulkUpdateScriptInput {
+    searchString: String!
+    replaceString: String!
+    includeArchived: Boolean!
+    campaignTitlePrefixes: [String]!
+    targetObject: [String]!
   }
 
   input AnswerOptionInput {
@@ -286,12 +295,18 @@ const rootSchema = gql`
       organizationId: String!
       optOutMessage: String!
     ): Organization
-    updateTwilioAuth(
+    updateServiceVendorConfig(
       organizationId: String!
-      twilioAccountSid: String
-      twilioAuthToken: String
-      twilioMessageServiceSid: String
-    ): Organization
+      serviceName: String!
+      config: JSON!
+    ): ServiceVendor
+    updateServiceManager(
+      organizationId: String!
+      campaignId: String
+      serviceManagerName: String!
+      updateData: JSON!
+      fromCampaignStatsPage: Boolean
+    ): ServiceManager
     bulkSendMessages(assignmentId: Int!): [CampaignContact]
     sendMessage(
       message: MessageInput!
@@ -303,6 +318,10 @@ const rootSchema = gql`
       campaignContactId: String!
       noReply: Boolean
     ): CampaignContact
+    bulkUpdateScript(
+      organizationId: String!
+      findAndReplace: BulkUpdateScriptInput!
+    ): [ScriptUpdateResult]
     editCampaignContactMessageStatus(
       messageStatus: String!
       campaignContactId: String!
@@ -396,5 +415,6 @@ export const schema = [
   questionSchema,
   inviteSchema,
   conversationSchema,
-  tagSchema
+  tagSchema,
+  serviceSchema
 ];

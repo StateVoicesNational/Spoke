@@ -12,7 +12,8 @@ export const requestNewBatchCount = async ({
   texter,
   r,
   cacheableData,
-  loaders
+  loaders,
+  hasAny
 }) => {
   // START WITH SOME BASE-LINE THINGS EVERY POLICY SHOULD HAVE
   if (campaign.is_archived) {
@@ -30,7 +31,6 @@ export const requestNewBatchCount = async ({
   if (!isVetted) {
     return 0;
   }
-
   const availableCount = await r.getCount(
     r
       .knex("campaign_contact")

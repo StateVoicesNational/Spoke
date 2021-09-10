@@ -392,25 +392,27 @@ const campaignContactCache = {
         return false;
       }
     }
-
-    const assignmentFilter = messageServiceSid
-      ? { messageservice_sid: messageServiceSid }
-      : { user_number: userNumber };
     let messageQuery = r
       .knex("message")
       .select("campaign_contact_id")
-      .where(
-        Object.assign(
-          {
-            is_from_contact: false,
-            contact_number: cell,
-            service
-          },
-          assignmentFilter
-        )
-      )
+      .where({
+        is_from_contact: false,
+        contact_number: cell,
+        service
+      })
       .orderBy("message.created_at", "desc")
       .limit(1);
+
+    if (messageServiceSid) {
+      messageQuery = messageQuery.where(
+        "messageservice_sid",
+        messageServiceSid
+      );
+    } else {
+      messageQuery = messageQuery
+        .whereNull("messageservice_sid")
+        .where("user_number", userNumber);
+    }
     if (r.redis) {
       // we get the campaign_id so we can cache errorCount and needsResponseCount
       messageQuery = messageQuery
@@ -484,7 +486,12 @@ const campaignContactCache = {
       console.log("updateCampaignAssignmentCache", data[0], data.length);
     }
   },
-  updateStatus: async (contact, newStatus, messageServiceOrUserNumber, moreUpdates) => {
+  updateStatus: async (
+    contact,
+    newStatus,
+    messageServiceOrUserNumber,
+    moreUpdates
+  ) => {
     // console.log('updateSTATUS', newStatus, contact)
     try {
       await r

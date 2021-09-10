@@ -3,9 +3,10 @@
  */
 import React from "react";
 import { mount } from "enzyme";
-import MuiThemeProvider from "material-ui/styles/MuiThemeProvider";
 import { CampaignCannedResponsesForm } from "../../src/components/CampaignCannedResponsesForm";
 import { StyleSheetTestUtils } from "aphrodite";
+import IconButton from "@material-ui/core/IconButton";
+import ListItemText from "@material-ui/core/ListItemText";
 
 describe("CampaignCannedResponsesForm component", () => {
   // given
@@ -39,16 +40,14 @@ describe("CampaignCannedResponsesForm component", () => {
 
   StyleSheetTestUtils.suppressStyleInjection();
   const wrapper = mount(
-    <MuiThemeProvider>
-      <CampaignCannedResponsesForm formValues={formValues} data={data} />
-    </MuiThemeProvider>
+    <CampaignCannedResponsesForm formValues={formValues} data={data} />
   );
 
   // when
 
   test("Renders canned responses with correct text", () => {
-    expect(wrapper.find("ListItem").text()).toContain("Response1");
-    expect(wrapper.find("ListItem").text()).toContain("Response1 desc");
+    expect(wrapper.find(ListItemText).text()).toContain("Response1");
+    expect(wrapper.find(ListItemText).text()).toContain("Response1 desc");
     expect(wrapper.find("TagChips").prop("tagIds")).toEqual([1, 2]);
     expect(wrapper.find("TagChips").prop("tags")).toEqual([
       {
@@ -66,7 +65,7 @@ describe("CampaignCannedResponsesForm component", () => {
 
   test("Renders CampaignCannedResponseForm component for editing when edit icon clicked", () => {
     wrapper
-      .find("IconButton")
+      .find(IconButton)
       .first()
       .simulate("click");
 

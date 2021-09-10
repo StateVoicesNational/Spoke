@@ -8,6 +8,7 @@ import AdminIncomingMessageList from "./containers/AdminIncomingMessageList";
 import AdminCampaignEdit from "./containers/AdminCampaignEdit";
 import AdminReplySender from "./containers/AdminReplySender";
 import AdminCampaignMessagingService from "./containers/AdminCampaignMessagingService";
+import AdminBulkScriptEditor from "./containers/AdminBulkScriptEditor";
 import TexterDashboard from "./components/TexterDashboard";
 import TopNav from "./components/TopNav";
 import DashboardLoader from "./containers/DashboardLoader";
@@ -78,6 +79,7 @@ export default function makeRoutes(requireAuth = () => {}) {
           </Route>
           <Route path="people" component={AdminPersonList} />
           <Route path="incoming" component={AdminIncomingMessageList} />
+          <Route path="bulk-script-editor" component={AdminBulkScriptEditor} />
           <Route path="tags" component={Tags} />
           <Route path="settings" component={Settings} />
           <Route path="phone-numbers" component={AdminPhoneNumberInventory} />

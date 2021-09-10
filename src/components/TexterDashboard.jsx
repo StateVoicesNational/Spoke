@@ -39,7 +39,7 @@ TexterDashboard.propTypes = {
   location: PropTypes.object,
   main: PropTypes.element,
   topNav: PropTypes.element,
-  fullScreen: PropTypes.bool
+  fullScreen: PropTypes.object
 };
 
 export default withRouter(TexterDashboard);

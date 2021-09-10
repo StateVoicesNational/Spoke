@@ -25,13 +25,19 @@ import loadData from "./hoc/load-data";
 import gql from "graphql-tag";
 import { withRouter } from "react-router";
 import GSForm from "../components/forms/GSForm";
+import GSTextField from "../components/forms/GSTextField";
+import GSSubmitButton from "../components/forms/GSSubmitButton";
+import GSPasswordField from "../components/forms/GSPasswordField";
 import Form from "react-formal";
-import yup from "yup";
-import Dialog from "material-ui/Dialog";
-import RaisedButton from "material-ui/RaisedButton";
+import * as yup from "yup";
+
+import Dialog from "@material-ui/core/Dialog";
+import Button from "@material-ui/core/Button";
+import Card from "@material-ui/core/Card";
+import CardContent from "@material-ui/core/CardContent";
+
 import { StyleSheet, css } from "aphrodite";
 import apolloClient from "../network/apollo-client-singleton";
-import { Card, CardText } from "material-ui/Card";
 import { dataTest } from "../lib/attributes";
 
 const styles = StyleSheet.create({
@@ -258,7 +264,11 @@ export class UserEdit extends React.Component {
   renderProfileField(field) {
     return (
       <span className={css(styles.fields)} key={field.name}>
-        <Form.Field label={field.label} name={`extra.${field.name}`} />
+        <Form.Field
+          as={GSTextField}
+          label={field.label}
+          name={`extra.${field.name}`}
+        />
       </span>
     );
   }
@@ -282,7 +292,7 @@ export class UserEdit extends React.Component {
     const fieldsNeeded = router && !!router.location.query.fieldsNeeded;
 
     return (
-      <div style={{}}>
+      <div style={{ padding: 20 }}>
         {userId ? <div style={{}}>User Id: {userId}</div> : null}
         <GSForm
           style={{}}
@@ -292,25 +302,35 @@ export class UserEdit extends React.Component {
           className={style}
           {...dataTest("userEditForm")}
         >
-          <Form.Field label="Email" name="email" {...dataTest("email")} />
+          <Form.Field
+            fullWidth
+            as={GSTextField}
+            label="Email"
+            name="email"
+            {...dataTest("email")}
+          />
           {(!authType || authType === "signup") && (
             <span className={css(styles.fields)}>
               <Form.Field
+                as={GSTextField}
                 label="First name"
                 name="firstName"
                 {...dataTest("firstName")}
               />
               <Form.Field
+                as={GSTextField}
                 label="Last name"
                 name="lastName"
                 {...dataTest("lastName")}
               />
               <Form.Field
+                as={GSTextField}
                 label="Texting Alias (optional)"
                 name="alias"
                 {...dataTest("alias")}
               />
               <Form.Field
+                as={GSTextField}
                 label="Cell Number"
                 name="cell"
                 {...dataTest("cell")}
@@ -320,10 +340,18 @@ export class UserEdit extends React.Component {
           {fieldsNeeded && <h3>Please complete your profile</h3>}
           {!authType && org && org.profileFields.map(this.renderProfileField)}
           {authType && (
-            <Form.Field label="Password" name="password" type="password" />
+            <Form.Field
+              fullWidth
+              as={GSPasswordField}
+              label="Password"
+              name="password"
+              type="password"
+            />
           )}
           {authType === "change" && (
             <Form.Field
+              fullWidth
+              as={GSPasswordField}
               label="New Password"
               name="newPassword"
               type="password"
@@ -331,6 +359,8 @@ export class UserEdit extends React.Component {
           )}
           {authType && authType !== "login" && (
             <Form.Field
+              fullWidth
+              as={GSPasswordField}
               label="Confirm Password"
               name="passwordConfirm"
               type="password"
@@ -341,26 +371,25 @@ export class UserEdit extends React.Component {
             userId === currentUser.currentUser.id &&
             !fieldsNeeded && (
               <div className={css(styles.container)}>
-                <RaisedButton
-                  onTouchTap={this.handleClick}
-                  label="Change password"
-                  variant="outlined"
-                />
+                <Button onClick={this.handleClick} variant="outlined">
+                  Change password
+                </Button>
               </div>
             )}
           <div className={css(styles.buttons)}>
-            <Form.Button
+            <Form.Submit
+              as={GSSubmitButton}
               className={css(styles.submit)}
-              type="submit"
               label={saveLabel || "Save"}
             />
             {!authType && onCancel && !fieldsNeeded && (
-              <RaisedButton
+              <Button
                 className={css(styles.cancel)}
-                label="Cancel"
                 variant="outlined"
                 onClick={onCancel}
-              />
+              >
+                Cancel
+              </Button>
             )}
           </div>
         </GSForm>
@@ -368,9 +397,8 @@ export class UserEdit extends React.Component {
           <Dialog
             {...dataTest("changePasswordDialog")}
             title="Change your password"
-            modal={false}
             open={this.state.changePasswordDialog}
-            onRequestClose={this.handleClose}
+            onClose={this.handleClose}
           >
             <UserEdit
               authType="change"
@@ -384,21 +412,22 @@ export class UserEdit extends React.Component {
           <Dialog
             {...dataTest("successPasswordDialog")}
             title="Password changed successfully!"
-            modal={false}
             open={this.state.successDialog}
-            onRequestClose={this.handleClose}
+            onClose={this.handleClose}
             onBackdropClick={this.handleClose}
             onEscapeKeyDown={this.handleClose}
           >
-            <RaisedButton onTouchTap={this.handleClose} label="OK" primary />
+            <Button onClick={this.handleClose} color="primary">
+              OK
+            </Button>
           </Dialog>
         </div>
         <Card style={{ marginTop: "50px", maxWidth: "256px" }}>
-          <CardText style={{ fontSize: "90%" }}>
+          <CardContent style={{ fontSize: "90%" }}>
             Spoke is developed and maintained by people committed to fighting
             oppressive systems and structures, including economic injustice,
             racism, patriarchy, and militarism.
-          </CardText>
+          </CardContent>
         </Card>
       </div>
     );

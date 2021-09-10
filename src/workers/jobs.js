@@ -10,12 +10,16 @@ import {
 import telemetry from "../server/telemetry";
 import { log, gunzip, zipToTimeZone, convertOffsetsToStrings } from "../lib";
 import { sleep, updateJob } from "./lib";
-import serviceMap from "../server/api/lib/services";
-import twilio from "../server/api/lib/twilio";
+import serviceMap from "../extensions/service-vendors";
+import twilio from "../extensions/service-vendors/twilio";
 import {
   getLastMessage,
   saveNewIncomingMessage
-} from "../server/api/lib/message-sending";
+} from "../extensions/service-vendors/message-sending";
+import {
+  serviceManagersHaveImplementation,
+  processServiceManagers
+} from "../extensions/service-managers";
 import importScriptFromDocument from "../server/api/lib/import-script";
 import { rawIngestMethod } from "../extensions/contact-loaders";
 
@@ -26,6 +30,8 @@ import { sendEmail } from "../server/mail";
 import { Notifications, sendUserNotification } from "../server/notifications";
 import { getConfig } from "../server/api/lib/config";
 import { invokeTaskFunction, Tasks } from "./tasks";
+import { jobRunner } from "../extensions/job-runners";
+
 import fs from "fs";
 import path from "path";
 
@@ -278,11 +284,12 @@ export async function completeContactLoad(
   ingestResult
 ) {
   const campaignId = job.campaign_id;
-  const campaign = await Campaign.get(campaignId);
+  const campaign = await cacheableData.campaign.load(campaignId);
   const organization = await Organization.get(campaign.organization_id);
 
   let deleteOptOutCells = null;
   let deleteDuplicateCells = null;
+  console.log("completeContactLoad", campaignId, job.id);
   const knexOptOutDeleteResult = await r
     .knex("campaign_contact")
     .whereIn("cell", getOptOutSubQuery(campaign.organization_id))
@@ -349,6 +356,30 @@ export async function completeContactLoad(
     deleteDuplicateCells,
     ingestResult
   });
+
+  if (
+    serviceManagersHaveImplementation("onCampaignContactLoad", organization)
+  ) {
+    await invokeTaskFunction(Tasks.SERVICE_MANAGER_TRIGGER, {
+      functionName: "onCampaignContactLoad",
+      organizationId: organization.id,
+      data: {
+        campaign,
+        ingestResult,
+        ingestDataReference,
+        finalContactCount,
+        deleteOptOutCells
+      }
+    });
+  }
+  console.log(
+    "completeContactLoad completed",
+    campaignId,
+    job.id,
+    finalContactCount,
+    deleteOptOutCells,
+    deleteDuplicateCells
+  );
 }
 
 export async function unzipPayload(job) {
@@ -725,8 +756,8 @@ export async function exportCampaign(job) {
       };
   const contacts = await r
     .knexReadOnly("campaign_contact")
-    .join("assignment", "campaign_contact.assignment_id", "assignment.id")
-    .join("user", "assignment.user_id", "user.id")
+    .leftJoin("assignment", "campaign_contact.assignment_id", "assignment.id")
+    .leftJoin("user", "assignment.user_id", "user.id")
     .leftJoin("zip_code", "zip_code.zip", "campaign_contact.zip")
     .leftJoin("opt_out", optOutJoins)
     .column([
@@ -897,6 +928,88 @@ export async function exportCampaign(job) {
   await defensivelyDeleteJob(job);
 }
 
+export async function extensionJob(job) {
+  const payload = JSON.parse(job.payload);
+  if (payload.path && payload.method) {
+    const extension = require("../" + payload.path);
+    if (extension && typeof extension[payload.method] === "function") {
+      await extension[payload.method](job, payload);
+    }
+  }
+}
+
+export async function startCampaign(job) {
+  const payload = JSON.parse(job.payload);
+  const campaign = await cacheableData.campaign.load(job.campaign_id);
+  const organization = await cacheableData.organization.load(
+    payload.organizationId
+  );
+  const user = await cacheableData.user.userLoggedIn(
+    payload.userLookupField,
+    payload.userLookupValue
+  );
+  if (!campaign || !organization || !user) {
+    return;
+  }
+  const serviceManagerData = await processServiceManagers(
+    "onCampaignStart",
+    organization,
+    {
+      user,
+      campaign
+    }
+  );
+
+  if (serviceManagerData && serviceManagerData.blockCampaignStart) {
+    console.log(
+      "campaign blocked from starting",
+      campaign.id,
+      serviceManagerData.blockCampaignStart
+    );
+    return;
+  }
+
+  await r
+    .knex("campaign")
+    .where("id", campaign.id)
+    .update({ is_started: true });
+  const reloadedCampaign = await cacheableData.campaign.load(campaign.id, {
+    forceLoad: true
+  });
+  await sendUserNotification({
+    type: Notifications.CAMPAIGN_STARTED,
+    campaignId: campaign.id
+  });
+
+  if (job.id) {
+    await r
+      .knex("job_request")
+      .where("id", job.id)
+      .delete();
+  }
+
+  // One last update of is_opted_out during start in case contacts opted-out from running campaigns
+  const updateOptOuts = await cacheableData.optOut.updateIsOptedOuts(query =>
+    query
+      .join("opt_out", {
+        "opt_out.cell": "campaign_contact.cell",
+        ...(!process.env.OPTOUTS_SHARE_ALL_ORGS
+          ? { "opt_out.organization_id": "campaign.organization_id" }
+          : {})
+      })
+      .where("campaign_contact.campaign_id", campaign.id)
+  );
+  if (updateOptOuts) {
+    console.log("campaign start updated is_opted_out", updateOptOuts);
+  }
+  // We delete the job before invoking this task in case this process times out.
+  // TODO: Decide if we want/need this anymore, relying on FUTURE campaign-contact cache load changes
+  await jobRunner.dispatchTask(Tasks.CAMPAIGN_START_CACHE, {
+    organization,
+    campaign: reloadedCampaign
+  });
+}
+
 export async function importScript(job) {
   const payload = await unzipPayload(job);
   try {
@@ -966,33 +1079,32 @@ export async function sendMessages(queryFunc, defaultStatus) {
               message.id
           );
         }
-        message.service = message.service || process.env.DEFAULT_SERVICE;
+        message.service = message.service || getConfig("DEFAULT_SERVICE");
         const service = serviceMap[message.service];
         log.info(
           `Sending (${message.service}): ${message.user_number} -> ${message.contact_number}\nMessage: ${message.text}`
         );
         try {
-          await service.sendMessage(
+          await service.sendMessage({
             message,
-            {
-              // reconstruct contact
+            contact: {
               id: message.campaign_contact_id,
               message_status: message.message_status,
               campaign_id: message.campaign_id
             },
             trx,
-            {
-              // organization
+            organization: {
+              // TODO: probably not enough -- need a organization.load()
               id: message.organization_id,
               features: message.features
             },
-            {
-              // campaign
+            campaign: {
+              // TODO: probably not enough -- need a organization.load()
               id: message.campaign_id,
               organization_id: message.organization_id,
               messageservice_sid: message.messageservice_sid
             }
-          );
+          });
           pastMessages.push(message.id);
           pastMessages = pastMessages.slice(-100); // keep the last 100
         } catch (err) {
@@ -1237,6 +1349,7 @@ export async function buyPhoneNumbers(job) {
     });
   } catch (err) {
     log.error(`JOB ${job.id} FAILED: ${err.message}`, err);
+    console.log("full job error", err);
   } finally {
     await defensivelyDeleteJob(job);
   }
@@ -1267,113 +1380,6 @@ export async function deletePhoneNumbers(job) {
     });
   } catch (err) {
     log.error(`JOB ${job.id} FAILED: ${err.message}`, err);
-  } finally {
-    await defensivelyDeleteJob(job);
-  }
-}
-
-// Prepares a messaging service with owned number for the campaign
-async function prepareTwilioCampaign(campaign, organization, trx) {
-  const ts = Math.floor(new Date() / 1000);
-  const baseUrl = getConfig("BASE_URL", organization);
-  const friendlyName = `Campaign ${campaign.id}: ${campaign.organization_id}-${ts} [${baseUrl}]`;
-  const messagingService = await twilio.createMessagingService(
-    organization,
-    friendlyName
-  );
-  const msgSrvSid = messagingService.sid;
-  if (!msgSrvSid) {
-    throw new Error("Failed to create messaging service!");
-  }
-  const phoneSids = (
-    await trx("owned_phone_number")
-      .select("service_id")
-      .where({
-        organization_id: campaign.organization_id,
-        service: "twilio",
-        allocated_to: "campaign",
-        allocated_to_id: campaign.id.toString()
-      })
-  ).map(row => row.service_id);
-  console.log(`Transferring ${phoneSids.length} numbers to ${msgSrvSid}`);
-  try {
-    await twilio.addNumbersToMessagingService(
-      organization,
-      phoneSids,
-      msgSrvSid
-    );
-  } catch (e) {
-    console.error("Failed to add numbers to messaging service", e);
-    await twilio.deleteMessagingService(organization, msgSrvSid);
-    throw new Error("Failed to add numbers to messaging service");
-  }
-  return msgSrvSid;
-}
-
-// Start a campaign when EXPERIMENTAL_CAMPAIGN_PHONE_NUMBERS is enabled
-// TODO: refactor this to share more code with the startCampaign mutation
-export async function startCampaignWithPhoneNumbers(job) {
-  if (!job.campaign_id) {
-    throw new Error("Missing job.campaign_id");
-  }
-  try {
-    let organization;
-    await r.knex.transaction(async trx => {
-      const campaign = await trx("campaign")
-        .where("id", job.campaign_id)
-        // PG only: lock this campaign while starting, making this job idempotent
-        .forUpdate()
-        .first();
-      if (campaign.is_started) {
-        throw new Error("Campaign already started");
-      }
-      organization = await trx("organization")
-        .where("id", campaign.organization_id)
-        .first();
-      const service = getConfig("DEFAULT_SERVICE", organization);
-
-      let messagingServiceSid;
-      if (service === "twilio") {
-        messagingServiceSid = await prepareTwilioCampaign(
-          campaign,
-          organization,
-          trx
-        );
-      } else if (service === "fakeservice") {
-        // simulate some latency
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        messagingServiceSid = "FAKEMESSAGINGSERVICE";
-      } else {
-        throw new Error(
-          `Campaign phone numbers are not supported for service ${service}`
-        );
-      }
-
-      await trx("campaign")
-        .where("id", campaign.id)
-        .update({
-          is_started: true,
-          use_own_messaging_service: true,
-          messageservice_sid: messagingServiceSid
-        });
-    });
-
-    await cacheableData.campaign.clear(job.campaign_id);
-    const reloadedCampaign = await cacheableData.campaign.load(job.campaign_id);
-
-    await sendUserNotification({
-      type: Notifications.CAMPAIGN_STARTED,
-      campaignId: job.campaign_id
-    });
-
-    // We are already in an background job process, so invoke the task directly rather than
-    // kicking it off through the dispatcher
-    await invokeTaskFunction(Tasks.CAMPAIGN_START_CACHE, {
-      organization,
-      campaign: reloadedCampaign
-    });
-  } catch (e) {
-    console.error(`Job ${job.id} failed: ${e.message}`, e);
   } finally {
     await defensivelyDeleteJob(job);
   }

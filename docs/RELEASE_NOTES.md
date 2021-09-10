@@ -1,5 +1,111 @@
 # Release Notes
 
+## v11.0
+
+_August 2021:_ Version 11.0
+
+This major release upgrades several backend libraries and significantly extends and refactors the way vendors (e.g. Twilio) are connected.  First, Stefan Hayden has helped us upgrade our Material UI library -- so all components may look *slightly* different in style, but nothing should look unfamiliar. This will make future UI improvements much easier and for developer-contributors to use current documentation and resources (and less buggy!) for continuing UI evolution.
+
+More details below for a few migration steps depending on your deployment:
+* There is a database migration for anyone upgrading -- instances with a very large message table have special instructions
+* AWS Lambda deployments have slightly different deployment commands now
+* Anyone using  EXPERIMENTAL_CAMPAIGN_PHONE_NUMBERS or EXPERIMENTAL_TWILIO_PER_CAMPAIGN_MESSAGING_SERVICE require setup changes (these *were* experimental features)
+
+### Improvements
+
+#### Service vendors and Service managers extensions
+
+Based on work from Larry Person, there is a large refactor of "service-vendors" which makes it easier to contain the code to support a vendor connection like Twilio (and others -- there is an experimental Bandwidth.com implementation now, as well). Service Managers is in-turn an extension-api that allows one to hook into service-vendors and other campaign events easily. Adam Greenspan has created a Sticky Sender feature which allows one to keep the same phone number across conversations, so e.g. Twilio message services aren't necessary.
+
+#### Additional changes
+
+* Redis upgrade -- please report any issues -- new Heroku installs support Redis 6 which requires a TLS connection
+* keyboard shortcuts for advancing left/right
+* service-managers: carrier-lookup, scrub-bad-mobilenums, and per-campaign-messageservices (replacing EXPERIMENTAL_TWILIO_PER_CAMPAIGN_MESSAGING_SERVICE) 
+* NGPVAN updates and fixes to use their changed/most recent API
+
+### Migration Steps
+
+#### Database upgrades
+* This is a major release and includes a schema change.
+* For small instances simply leave/set SUPPRESS_MIGRATIONS="" or for [AWS Lambda, see the db migration instructions](https://moveonorg.github.io/Spoke/#/HOWTO_DEPLOYING_AWS_LAMBDA?id=migrating-the-database). 
+* For instances with a large `message` table, we recommend setting NO_INDEX_CHANGES=1 before running the migration, and then manually running two commands:
+  * `CREATE INDEX CONCURRENTLY cell_msgsvc_user_number_idx ON message (contact_number, messageservice_sid, user_number);`
+  * `DROP INDEX cell_messageservice_sid_idx;`
+
+The schema changes include adding a new table `organization_contact` which will track contacts across campaigns in an organization -- for things like subscription_status (in future), whether the number is a landline or what number has been used to contact them in the past (for 'sticky' sending). We also add user_number at the end of already-indexed cell-messageservice, to make it easier to search for user_numbers (also for sticky sending features).
+
+
+#### AWS Deployment changes
+
+Instead of running a single 'claudia' command, You will need to tweak two things:
+* Add an environment variable `ASSETS_DIR_PREBUILT` and set it to the absolute directory of your deployment checkout directory + "/build/client" (or whatever you have your ASSETS_DIR var set to).  For example, on a Mac it might be something like "/Users/Sky/spoke/build/client"
+* Instead of a single deployment command, you will first need to run
+  1. `ASSETS_DIR=./build/client/assets ASSETS_MAP_FILE=assets.json NODE_ENV=production yarn prod-build-client`
+  2. and then for your `claudia update` command you need to include your usual command line parameters and ADD `--no-optional-dependencies`
+
+These steps remove the client-side libraries from the server-side build, which is necessary now that the client-side libraries are too large to 'fit' into an AWS Lambda server deploy file.  This is documented in the [AWS setup/deploy steps](https://github.com/MoveOnOrg/Spoke/compare/main...stage-main-11-0#diff-548e8f704ad84645a42f2efaf1332490f6844d0a0dd50e9ac6b931c198d213f3)
+
+#### Changes for Experimental Per-campaign phone numbers/message services
+
+For those that used the experimental feature EXPERIMENTAL_CAMPAIGN_PHONE_NUMBERS, it has been moved and refactored into a  or Service Manager extension -- for these experimental installs (ONLY!), change to setting SERVICE_MANAGERS=per-campaign-messageservices
+
+EXPERIMENTAL_TWILIO_PER_CAMPAIGN_MESSAGING_SERVICE is no longer supported.  Please create an issue if you still have a use-case for this -- there is tentative work to move its functionality into per-campaign-messageservices as well, but only if it still has users.
+
+### Appreciations
+* [Adam Greenspan](agreenspan24), [Akash Jairam](https://github.com/Akash-Jairam), [Arique Aguilar](https://github.com/Arique1104) (our new Community Manager -- Welcome!), [Asha Sulaiman](https://github.com/asha15), [Cody Gordon](https://github.com/codygordon), [Fryda Guedes](https://github.com/Frydafly), [Kathy Nguyen](https://github.com/crayolakat), [Neely Kartha](https://github.com/nkartha2), [Schuyler Duveen](https://github.com/schuyler1d), [Stefan Hayden](https://github.com/stefanhayden),  and Mark Houghton and [Barbara Atkins](https://github.com/bdatkins) for QA
+
+
+## v10.2
+
+_April 2021:_ Version 10.2
+
+This is another minor release bringing some small features while in the background we are doing some major plumbing work to support other message service vendors better.  Some small improvements/bugfixes:
+
+### Improvements
+
+* Documentation improvements around some experimental service settings
+* Bulk Script Editor - Interaction Step / Canned Response (thanks to @bchrobot  from Politics Rewired branch)
+* Un-started Campaigns with the word 'template' in their title will have the "[Copy Campaign]" button on the edit page
+* Bugfix: Admin show/close menu improved
+* Bugfix: Fix graphql error responses within DEBUG/SHOW_SERVER_ERRORS
+* Experimental: You can now enable an environment variable HOLD_ENTER_KEY which means texters can hold the enter key down to text sequential contacts.
+* Experimental: A new dynamicassignment-batches strategy called `finished-replies-tz` - this will only assign contacts to texters with currently in-texting-hours timezones. Especially for campaign contact lists that have varied timezones and when texters will return to jumping in the campaign in later hours when new timezones are allowed, then this might be better than 'finished-replies' (please report experiences, good/bad)
+
+### Appreciations
+* [frydafly](https://github.com/Frydafly), [lperson](https://github.com/lperson), [oburbank](https://github.com/oburbank), [schuyler1d](https://github.com/schuyler1d)
+
+
+## v10.1
+
+_April 2021:_ Version 10.1
+
+The most significant change in this release is an upgrade to React and React-formal libraries -- this has little effect on the interface, but allows us to stay more current with the open-source libraries that this project depends on. This makes it easier to find current documentation and follow patterns that current developers expect to see. Much thanks to [Stefan Hayden](https://github.com/stefanhayden) for this difficult work.
+
+Looking to version 11, our next planned release, we will be focusing on abstracting our message service code so that we are not dependent as much on Twilio -- an important step as we navigate looming changes by phone carriers and message service providers.
+
+### Migration Notes
+
+This is a minor point release, and so has no database migrations or other required configuration changes.  If you deploy to AWS, we should note that we have tweaked the deploy code to use `aws` cli instead of `s3cmd` -- This is very likely to be installed already so nothing should need changing.  If not, then do install the aws command line CLI and configure your credentials that you used for s3cmd into ~/.aws/config
+
+### Other Improvements
+
+* Performance improvements to the Texter Todos page
+* Feature: Add ability to suppress tags in Message Review
+* Bugfix: export contacts including those without assignment
+* Bugfix: Mobilize event shifter texter sidebox autofill
+* UI tweak: Remove yellow badges for 'skipped/past messages' to avoid texter confusion
+* UI fix: cursor position should go to end when editing existing scripts.
+* Allow passing of custom fields to mobilecommons-signup action handler (config w/ UMC_FIELDS)
+* UI: show contact loader load-info in campaign edit page after campaign starts (e.g. to see name of csv uploaded)
+
+See links and notes from the [10.1 pull request](https://github.com/MoveOnOrg/Spoke/pull/1942) for a list of all changes that were included.
+
+### Appreciations
+* [codygordon](https://github.com/codygordon), [Frydafly](https://github.com/Frydafly), [lperson](https://github.com/lperson), [marzvrover](https://github.com/marzvrover), [schuyler1d](https://github.com/schuyler1d), [stefanhayden](https://github.com/stefanhayden)
+* Mark Houghton for QA and design help
+
+
 ## v10.0
 
 _January 2021:_ Version 10.0

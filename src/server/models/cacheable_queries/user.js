@@ -207,6 +207,7 @@ const userLoggedIn = async (field, val) => {
         return await userOrgHighestRole(userId, orgId);
       })
     );
+    user.lookupField = field;
   }
   return user;
 };

@@ -97,6 +97,7 @@ export const schema = gql`
     responseWindow: Float
     dueBy: Date
     isStarted: Boolean
+    isStarting: Boolean
     isArchived: Boolean
     isArchivedPermanently: Boolean
     creator: User
@@ -129,14 +130,24 @@ export const schema = gql`
     textingHoursStart: Int
     textingHoursEnd: Int
     timezone: String
+    serviceManagers(fromCampaignStatsPage: Boolean): [ServiceManager]
+
     messageserviceSid: String
     useOwnMessagingService: Boolean
+    messageServiceLink: String
     phoneNumbers: [String]
     inventoryPhoneNumberCounts: [CampaignPhoneNumberCount]
   }
 
   type CampaignsList {
     campaigns: [Campaign]
+  }
+
+  type ScriptUpdateResult {
+    campaign: Campaign!
+    found: String!
+    replaced: String!
+    target: String!
   }
 
   union CampaignsReturn = PaginatedCampaigns | CampaignsList

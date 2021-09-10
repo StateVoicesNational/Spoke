@@ -4,15 +4,14 @@
 import React from "react";
 import { mount } from "enzyme";
 import { StyleSheetTestUtils } from "aphrodite";
-import injectTapEventPlugin from "react-tap-event-plugin";
 import each from "jest-each";
-import MuiThemeProvider from "material-ui/styles/MuiThemeProvider";
 import { ApolloProvider } from "react-apollo";
 import ApolloClientSingleton from "../../src/network/apollo-client-singleton";
-import { CardActions, CardTitle } from "material-ui/Card";
 import { AssignmentSummary } from "../../src/components/AssignmentSummary";
-import Badge from "material-ui/Badge/Badge";
-import RaisedButton from "material-ui/RaisedButton/RaisedButton";
+import Badge from "@material-ui/core/Badge";
+import Button from "@material-ui/core/Button";
+import CardContent from "@material-ui/core/CardContent";
+import CardHeader from "@material-ui/core/CardHeader";
 
 function getAssignment({ isDynamic = false, counts = {} }) {
   return {
@@ -39,19 +38,17 @@ function getAssignment({ isDynamic = false, counts = {} }) {
 describe("AssignmentSummary text", function t() {
   beforeEach(() => {
     this.summary = mount(
-      <MuiThemeProvider>
-        <AssignmentSummary
-          assignment={getAssignment({
-            counts: {
-              unmessagedCount: 1,
-              unrepliedCount: 0,
-              badTimezoneCount: 0,
-              pastMessagesCount: 0,
-              skippedMessagesCount: 0
-            }
-          })}
-        />
-      </MuiThemeProvider>
+      <AssignmentSummary
+        assignment={getAssignment({
+          counts: {
+            unmessagedCount: 1,
+            unrepliedCount: 0,
+            badTimezoneCount: 0,
+            pastMessagesCount: 0,
+            skippedMessagesCount: 0
+          }
+        })}
+      />
     );
   });
 
@@ -65,9 +62,8 @@ describe("AssignmentSummary text", function t() {
     (notInUSA, allowSendAll) => {
       window.NOT_IN_USA = notInUSA;
       window.ALLOW_SEND_ALL = allowSendAll;
-      const title = this.summary.find(CardTitle);
+      const title = this.summary.find(CardHeader);
       expect(title.prop("title")).toBe("New Campaign");
-      // expect(title.find(CardTitle).prop('subtitle')).toBe('asdf - Jan 31 2018')
 
       const htmlWrapper = this.summary.findWhere(
         d => d.length && d.type() === "div" && d.prop("dangerouslySetInnerHTML")
@@ -80,7 +76,6 @@ describe("AssignmentSummary text", function t() {
 });
 
 describe("AssignmentSummary actions inUSA and NOT AllowSendAll", () => {
-  injectTapEventPlugin(); // prevents warning
   function create(
     unmessaged,
     unreplied,
@@ -93,24 +88,22 @@ describe("AssignmentSummary actions inUSA and NOT AllowSendAll", () => {
     window.ALLOW_SEND_ALL = false;
     return mount(
       <ApolloProvider client={ApolloClientSingleton}>
-        <MuiThemeProvider>
-          <AssignmentSummary
-            assignment={getAssignment({
-              isDynamic,
-              counts: {
-                allContactsCount:
-                  unmessaged + unreplied + badTimezone + past + skipped,
-                unmessagedCount: unmessaged,
-                unrepliedCount: unreplied,
-                badTimezoneCount: badTimezone,
-                pastMessagesCount: past,
-                skippedMessagesCount: skipped
-              }
-            })}
-          />
-        </MuiThemeProvider>
+        <AssignmentSummary
+          assignment={getAssignment({
+            isDynamic,
+            counts: {
+              allContactsCount:
+                unmessaged + unreplied + badTimezone + past + skipped,
+              unmessagedCount: unmessaged,
+              unrepliedCount: unreplied,
+              badTimezoneCount: badTimezone,
+              pastMessagesCount: past,
+              skippedMessagesCount: skipped
+            }
+          })}
+        />
       </ApolloProvider>
-    ).find(CardActions);
+    ).find(CardContent);
   }
 
   it('renders "send first texts (1)" with unmessaged (dynamic assignment)', () => {
@@ -123,9 +116,9 @@ describe("AssignmentSummary actions inUSA and NOT AllowSendAll", () => {
     ).toBe(5);
     expect(
       actions
-        .find(RaisedButton)
+        .find(Button)
         .at(0)
-        .prop("label")
+        .text()
     ).toBe("Send first texts");
   });
 
@@ -139,9 +132,9 @@ describe("AssignmentSummary actions inUSA and NOT AllowSendAll", () => {
     ).toBe(1);
     expect(
       actions
-        .find(RaisedButton)
+        .find(Button)
         .at(0)
-        .prop("label")
+        .text()
     ).toBe("Send first texts");
   });
 
@@ -150,36 +143,40 @@ describe("AssignmentSummary actions inUSA and NOT AllowSendAll", () => {
     // This button will come from the default-dynamicassignment texter-sidebox
     expect(
       actions
-        .find("div")
-        .children(RaisedButton)
-        .prop("label")
+        .find(Button)
+        .at(0)
+        .text()
     ).toBe("Start texting");
   });
 
   it('renders a "past messages" badge after messaged contacts', () => {
     const actions = create(0, 0, 0, 1, 0, false);
-    expect(actions.find(RaisedButton).length).toBe(1);
+    expect(actions.find(Button).length).toBe(1);
   });
 
   it("renders two buttons with unmessaged and unreplied", () => {
     const actions = create(3, 9, 0, 0, 0, false);
-    expect(actions.find(RaisedButton).length).toBe(2);
+    expect(actions.find(Button).length).toBe(2);
   });
 
   it('renders "past messages (n)" with messaged', () => {
     const actions = create(0, 0, 0, 9, 0, false);
     expect(
       actions
-        .find(Badge)
+        .find(Button)
         .at(0)
-        .prop("badgeContent")
-    ).toBe(9);
+        .prop("children")
+    ).toBe("Past 9 Messages");
+  });
+
+  it('renders "skipped messages (n)" with messaged', () => {
+    const actions = create(0, 0, 0, 0, 8, false);
     expect(
       actions
-        .find(RaisedButton)
+        .find(Button)
         .at(0)
-        .prop("label")
-    ).toBe("Past Messages");
+        .text()
+    ).toBe("Skipped 8 Messages");
   });
 });
 
@@ -195,30 +192,28 @@ describe("AssignmentSummary NOT inUSA and AllowSendAll", () => {
     window.NOT_IN_USA = 1;
     window.ALLOW_SEND_ALL = true;
     return mount(
-      <MuiThemeProvider>
-        <AssignmentSummary
-          assignment={getAssignment({
-            isDynamic,
-            counts: {
-              unmessagedCount: unmessaged,
-              unrepliedCount: unreplied,
-              badTimezoneCount: badTimezone,
-              pastMessagesCount: past,
-              skippedMessagesCount: skipped
-            }
-          })}
-        />
-      </MuiThemeProvider>
-    ).find(CardActions);
+      <AssignmentSummary
+        assignment={getAssignment({
+          isDynamic,
+          counts: {
+            unmessagedCount: unmessaged,
+            unrepliedCount: unreplied,
+            badTimezoneCount: badTimezone,
+            pastMessagesCount: past,
+            skippedMessagesCount: skipped
+          }
+        })}
+      />
+    ).find(CardContent);
   }
 
   it('renders "Send message" with unmessaged', () => {
     const actions = create(1, 0, 0, 0, 0, false);
     expect(
       actions
-        .find(RaisedButton)
+        .find(Button)
         .at(0)
-        .prop("label")
+        .text()
     ).toBe("Send messages");
   });
 
@@ -226,45 +221,44 @@ describe("AssignmentSummary NOT inUSA and AllowSendAll", () => {
     const actions = create(0, 1, 0, 0, 0, false);
     expect(
       actions
-        .find(RaisedButton)
+        .find(Button)
         .at(0)
-        .prop("label")
+        .text()
     ).toBe("Send messages");
   });
 });
 
 it('renders "Send later" when there is a badTimezoneCount', () => {
   const actions = mount(
-    <MuiThemeProvider>
-      <AssignmentSummary
-        assignment={getAssignment({
-          counts: {
-            unmessagedCount: 0,
-            unrepliedCount: 0,
-            badTimezoneCount: 4,
-            skippedMessagesCount: 0
-          }
-        })}
-      />
-    </MuiThemeProvider>
-  ).find(CardActions);
+    <AssignmentSummary
+      assignment={getAssignment({
+        counts: {
+          unmessagedCount: 0,
+          unrepliedCount: 0,
+          badTimezoneCount: 4,
+          skippedMessagesCount: 0,
+          pastMessagesCount: 0
+        }
+      })}
+    />
+  ).find(CardContent);
   expect(
     actions
       .find(Badge)
-      .at(1)
+      .at(0)
       .prop("badgeContent")
   ).toBe(4);
   expect(
     actions
-      .find(RaisedButton)
-      .at(0)
-      .prop("label")
-  ).toBe("Past Messages");
+      .find(Button)
+      .at(1)
+      .text()
+  ).toBe("Send later (outside timezone)");
   expect(
     actions
-      .find(RaisedButton)
-      .at(1)
-      .prop("label")
+      .find(Button)
+      .at(0)
+      .text()
   ).toBe("Send messages");
 });
 
@@ -273,6 +267,7 @@ describe("contacts filters", () => {
   // It would be better to simulate clicking them, but I can't
   // get it to work right now because of 'react-tap-event-plugin'
   // some hints are here https://github.com/mui-org/material-ui/issues/4200#issuecomment-217738345
+  // 'react-tap-event-plugin' was depricated
 
   it("filters correctly in USA", () => {
     window.NOT_IN_USA = 0;
@@ -280,18 +275,16 @@ describe("contacts filters", () => {
     const mockRender = jest.fn();
     AssignmentSummary.prototype.renderBadgedButton = mockRender;
     mount(
-      <MuiThemeProvider>
-        <AssignmentSummary
-          assignment={getAssignment({
-            counts: {
-              unmessagedCount: 1,
-              unrepliedCount: 1,
-              badTimezoneCount: 4,
-              skippedMessagesCount: 0
-            }
-          })}
-        />
-      </MuiThemeProvider>
+      <AssignmentSummary
+        assignment={getAssignment({
+          counts: {
+            unmessagedCount: 1,
+            unrepliedCount: 1,
+            badTimezoneCount: 4,
+            skippedMessagesCount: 0
+          }
+        })}
+      />
     );
     const sendFirstTexts = mockRender.mock.calls[0][0];
     expect(sendFirstTexts.title).toBe("Send first texts");
@@ -315,18 +308,16 @@ describe("contacts filters", () => {
     const mockRender = jest.fn();
     AssignmentSummary.prototype.renderBadgedButton = mockRender;
     mount(
-      <MuiThemeProvider>
-        <AssignmentSummary
-          assignment={getAssignment({
-            counts: {
-              unmessagedCount: 1,
-              unrepliedCount: 1,
-              badTimezoneCount: 4,
-              skippedMessagesCount: 0
-            }
-          })}
-        />
-      </MuiThemeProvider>
+      <AssignmentSummary
+        assignment={getAssignment({
+          counts: {
+            unmessagedCount: 1,
+            unrepliedCount: 1,
+            badTimezoneCount: 4,
+            skippedMessagesCount: 0
+          }
+        })}
+      />
     );
     const sendMessages = mockRender.mock.calls[0][0];
     expect(sendMessages.title).toBe("Past Messages");
