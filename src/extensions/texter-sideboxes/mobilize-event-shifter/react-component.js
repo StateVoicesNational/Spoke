@@ -231,6 +231,20 @@ export const adminSchema = () => ({
 });
 
 export class AdminConfig extends React.Component {
+  componentDidMount() {
+    const { settingsData } = this.props;
+    // set defaults
+    const defaults = {};
+    if (!settingsData.mobilizeEventShifterBaseUrl) {
+      defaults.mobilizeEventShifterBaseUrl =
+        window.MOBILIZE_EVENT_SHIFTER_URL || "";
+    }
+
+    if (Object.values(defaults).length) {
+      this.props.setDefaultsOnMount(defaults);
+    }
+  }
+
   render() {
     return (
       <div>
@@ -245,15 +259,12 @@ export class AdminConfig extends React.Component {
           name="mobilizeEventShifterBaseUrl"
           label="Set the Base Mobilize Url for the campaign."
           fullWidth
-          hintText={
-            window.MOBILIZE_EVENT_SHIFTER_URL
-              ? "Default: " + window.MOBILIZE_EVENT_SHIFTER_URL
-              : ""
-          }
         />
       </div>
     );
   }
 }
 
-AdminConfig.propTypes = {};
+AdminConfig.propTypes = {
+  setDefaultsOnMount: type.func
+};

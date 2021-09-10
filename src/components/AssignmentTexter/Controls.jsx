@@ -328,7 +328,13 @@ export class AssignmentTexterContactControls extends React.Component {
     const { questionResponses } = this.state;
     const { interactionSteps } = this.props.campaign;
     questionResponses[interactionStep.id] = questionResponseValue;
-
+    console.log(
+      "handleQuestionResponseChange",
+      questionResponseValue,
+      nextScript,
+      "interactionStep",
+      interactionStep
+    );
     const children = getChildren(interactionStep, interactionSteps);
     for (const childStep of children) {
       if (childStep.id in questionResponses) {
@@ -460,10 +466,11 @@ export class AssignmentTexterContactControls extends React.Component {
       campaign.interactionSteps
     );
 
-    const otherResponsesLink = currentInteractionStep &&
+    const otherResponsesLink =
+      currentInteractionStep &&
       currentInteractionStep.question.filteredAnswerOptions.length > 6 &&
-      filteredCannedResponses.length && (
-        <div className={css(flexStyles.popoverLink)}>
+      filteredCannedResponses.length ? (
+        <div className={css(flexStyles.popoverLink)} key={"otherresponses"}>
           <a
             href="#otherresponses"
             className={css(flexStyles.popoverLinkColor)}
@@ -471,7 +478,7 @@ export class AssignmentTexterContactControls extends React.Component {
             Other Responses
           </a>
         </div>
-      );
+      ) : null;
 
     const searchBar = currentInteractionStep &&
       currentInteractionStep.question.answerOptions.length +
@@ -670,7 +677,7 @@ export class AssignmentTexterContactControls extends React.Component {
         <GSForm
           setRef={this.formRef}
           schema={this.messageSchema}
-          value={{ messageText: this.state.messageText }}
+          value={{ messageText: this.state.messageText || "" }}
           onSubmit={this.props.onMessageFormSubmit(
             cannedResponseScript && cannedResponseScript.id
           )}
@@ -691,7 +698,7 @@ export class AssignmentTexterContactControls extends React.Component {
             onBlur={() => {
               this.setState({ messageFocus: false });
             }}
-            multiLine
+            multiline
             fullWidth
             rowsMax={6}
           />
@@ -994,12 +1001,14 @@ export class AssignmentTexterContactControls extends React.Component {
     if (sideboxOpen) {
       return (
         <Popover
-          style={inlineStyles.popoverSidebox}
           className={css(flexStyles.popover)}
+          classes={{
+            paper: css(flexStyles.popoverSideboxesInner)
+          }}
           open={sideboxOpen}
           anchorEl={this.refs.messageBox}
-          anchorOrigin={{ horizontal: "middle", vertical: "top" }}
-          transformOrigin={{ horizontal: "middle", vertical: "top" }}
+          anchorOrigin={{ horizontal: "middle", vertical: "middle" }}
+          transformOrigin={{ horizontal: "middle", vertical: "middle" }}
           onClose={this.handleClickSideboxDialog}
         >
           {sideboxList}
@@ -1035,19 +1044,22 @@ export class AssignmentTexterContactControls extends React.Component {
   }
 
   renderFirstMessage(enabledSideboxes) {
+    const { contact } = this.props;
     return [
       this.renderToolbar(enabledSideboxes),
       this.renderMessageBox(
         <Empty
           title={
-            "This is your first message to " + this.props.contact.firstName
+            contact.optOut
+              ? `${contact.firstName} is opted out -- skip this contact`
+              : `This is your first message to ${contact.firstName}`
           }
           icon={<CreateIcon color="primary" />}
         />,
         enabledSideboxes
       ),
       this.renderMessagingRowMessage(),
-      this.renderMessagingRowSendSkip(this.props.contact)
+      this.renderMessagingRowSendSkip(contact)
     ];
   }
 

@@ -5,7 +5,6 @@ import isUrl from "is-url";
 import _ from "lodash";
 import { gzip, makeTree, getHighestRole } from "../../lib";
 import { capitalizeWord, groupCannedResponses } from "./lib/utils";
-import twilio from "./lib/twilio";
 import ownedPhoneNumber from "./lib/owned-phone-number";
 
 import { getIngestMethod } from "../../extensions/contact-loaders";
@@ -38,7 +37,11 @@ import {
 } from "./errors";
 import { resolvers as interactionStepResolvers } from "./interaction-step";
 import { resolvers as inviteResolvers } from "./invite";
-import { saveNewIncomingMessage } from "./lib/message-sending";
+import { saveNewIncomingMessage } from "../../extensions/service-vendors/message-sending";
+import {
+  processServiceManagers,
+  serviceManagersHaveImplementation
+} from "../../extensions/service-managers";
 import { getConfig, getFeatures } from "./lib/config";
 import { resolvers as messageResolvers } from "./message";
 import { resolvers as optOutResolvers } from "./opt-out";
@@ -49,8 +52,6 @@ import { resolvers as questionResponseResolvers } from "./question-response";
 import { resolvers as tagResolvers } from "./tag";
 import { getUsers, resolvers as userResolvers } from "./user";
 import { change } from "../local-auth-helpers";
-import { symmetricEncrypt } from "./lib/crypto";
-import Twilio from "twilio";
 
 import {
   bulkSendMessages,
@@ -67,7 +68,9 @@ import {
   updateQuestionResponses,
   releaseCampaignNumbers,
   clearCachedOrgAndExtensionCaches,
-  updateFeedback
+  updateFeedback,
+  updateServiceManager,
+  updateServiceVendorConfig
 } from "./mutations";
 
 import { jobRunner } from "../../extensions/job-runners";
@@ -185,7 +188,8 @@ async function editCampaign(id, campaign, loaders, user, origCampaignRecord) {
     textingHoursEnforced,
     textingHoursStart,
     textingHoursEnd,
-    timezone
+    timezone,
+    serviceManagers
   } = campaign;
   // some changes require ADMIN and we recheck below
   const organizationId =
@@ -382,31 +386,6 @@ async function editCampaign(id, campaign, loaders, user, origCampaignRecord) {
     });
   }
 
-  if (campaign.hasOwnProperty("inventoryPhoneNumberCounts")) {
-    if (origCampaignRecord.isStarted) {
-      throw new Error(
-        "Cannot update phone numbers once a campaign has started"
-      );
-    }
-    const phoneCounts = campaign.inventoryPhoneNumberCounts;
-    await r.knex.transaction(async trx => {
-      await ownedPhoneNumber.releaseCampaignNumbers(id, trx);
-      for (const pc of phoneCounts) {
-        if (pc.count) {
-          await ownedPhoneNumber.allocateCampaignNumbers(
-            {
-              organizationId,
-              campaignId: id,
-              areaCode: pc.areaCode,
-              amount: pc.count
-            },
-            trx
-          );
-        }
-      }
-    });
-  }
-
   const campaignRefreshed = await cacheableData.campaign.load(id, {
     forceLoad: changed
   });
@@ -506,6 +485,8 @@ const rootMutations = {
     startCampaign,
     releaseCampaignNumbers,
     clearCachedOrgAndExtensionCaches,
+    updateServiceManager,
+    updateServiceVendorConfig,
     userAgreeTerms: async (_, { userId }, { user }) => {
       // We ignore userId: you can only agree to terms for yourself
       await r
@@ -747,45 +728,6 @@ const rootMutations = {
 
       return await Organization.get(organizationId);
     },
-    updateTwilioAuth: async (
-      _,
-      {
-        organizationId,
-        twilioAccountSid,
-        twilioAuthToken,
-        twilioMessageServiceSid
-      },
-      { user }
-    ) => {
-      await accessRequired(user, organizationId, "OWNER");
-
-      const organization = await Organization.get(organizationId);
-      const featuresJSON = getFeatures(organization);
-      featuresJSON.TWILIO_ACCOUNT_SID = twilioAccountSid.substr(0, 64);
-      featuresJSON.TWILIO_AUTH_TOKEN_ENCRYPTED = twilioAuthToken
-        ? symmetricEncrypt(twilioAuthToken).substr(0, 256)
-        : twilioAuthToken;
-      featuresJSON.TWILIO_MESSAGE_SERVICE_SID = twilioMessageServiceSid.substr(
-        0,
-        64
-      );
-      organization.features = JSON.stringify(featuresJSON);
-
-      try {
-        if (twilioAuthToken && global.TEST_ENVIRONMENT !== "1") {
-          // Make sure Twilio credentials work.
-          const twilio = Twilio(twilioAccountSid, twilioAuthToken);
-          const accounts = await twilio.api.accounts.list();
-        }
-      } catch (err) {
-        throw new GraphQLError("Invalid Twilio credentials");
-      }
-
-      await organization.save();
-      await cacheableData.organization.clear(organizationId);
-
-      return await Organization.get(organizationId);
-    },
     createInvite: async (_, { invite }, { user }) => {
       if (
         (user && user.is_superadmin) ||
@@ -968,6 +910,13 @@ const rootMutations = {
         throw new Error("Cannot archive permanently archived campaign");
       }
       campaign.is_archived = false;
+      const organization = await cacheableData.organization.load(
+        campaign.organization_id
+      );
+      await processServiceManagers("onCampaignUnarchive", organization, {
+        campaign,
+        user
+      });
       await campaign.save();
       await cacheableData.campaign.clear(id);
       return campaign;
@@ -978,6 +927,16 @@ const rootMutations = {
       campaign.is_archived = true;
       await campaign.save();
       await cacheableData.campaign.clear(id);
+      if (serviceManagersHaveImplementation("onCampaignArchive")) {
+        await jobRunner.dispatchTask(Tasks.SERVICE_MANAGER_TRIGGER, {
+          functionName: "onCampaignArchive",
+          organizationId: campaign.organization_id,
+          data: {
+            campaign,
+            user
+          }
+        });
+      }
       return campaign;
     },
     archiveCampaigns: async (_, { ids }, { user, loaders }) => {
@@ -1246,7 +1205,8 @@ const rootMutations = {
         reason,
         assignmentId,
         campaign,
-        noReply
+        noReply,
+        contact
       });
       console.log(
         "createOptOut post save",
@@ -1254,7 +1214,10 @@ const rootMutations = {
         contact.campaign_id
       );
 
-      return cacheableData.campaignContact.updateCacheForOptOut(contact);
+      const newContact = cacheableData.campaignContact.updateCacheForOptOut(
+        contact
+      );
+      return newContact;
     },
     deleteQuestionResponses: async (
       _,
@@ -1291,7 +1254,12 @@ const rootMutations = {
       { user }
     ) => {
       // verify permissions
-      await accessRequired(user, organizationId, "ADMIN", /* superadmin*/ true);
+      await accessRequired(
+        user,
+        organizationId,
+        "SUPERVOLUNTEER",
+        /* superadmin*/ true
+      );
 
       // group contactIds by campaign
       // group messages by campaign
@@ -1324,7 +1292,12 @@ const rootMutations = {
       { user }
     ) => {
       // verify permissions
-      await accessRequired(user, organizationId, "ADMIN", /* superadmin*/ true);
+      await accessRequired(
+        user,
+        organizationId,
+        "SUPERVOLUNTEER",
+        /* superadmin*/ true
+      );
       const { campaignIdContactIdsMap } = await getCampaignIdContactIdsMaps(
         organizationId,
         {

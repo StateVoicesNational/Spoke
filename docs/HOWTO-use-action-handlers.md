@@ -66,7 +66,7 @@ inside the function `serverAdministratorInstructions`
 The best way to make a new action handler is something like this in the codebase:
 
 ```
-cd src/extensions/contact-loaders
+cd src/extensions/action-handlers
 cp -rp test-action.js <NEW_CONTACT_LOADER_NAME>.js
 ```
 

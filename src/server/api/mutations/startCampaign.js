@@ -1,74 +1,30 @@
-import cacheableData from "../../models/cacheable_queries";
-import { r } from "../../models";
+import { cacheableData } from "../../models";
 import { accessRequired } from "../errors";
-import { Notifications, sendUserNotification } from "../../notifications";
-import twilio from "../lib/twilio";
-import { getConfig } from "../lib/config";
 import { jobRunner } from "../../../extensions/job-runners";
-import { Tasks } from "../../../workers/tasks";
 import { Jobs } from "../../../workers/job-processes";
 
-export const startCampaign = async (
-  _,
-  { id },
-  { user, loaders, remainingMilliseconds }
-) => {
+export const startCampaign = async (_, { id }, { user }) => {
   const campaign = await cacheableData.campaign.load(id);
   await accessRequired(user, campaign.organization_id, "ADMIN");
-  const organization = await loaders.organization.load(
-    campaign.organization_id
-  );
 
-  if (
-    getConfig("EXPERIMENTAL_CAMPAIGN_PHONE_NUMBERS", organization, {
-      truthy: true
-    })
-  ) {
-    await jobRunner.dispatchJob({
-      queue_name: `${id}:start_campaign`,
-      job_type: Jobs.START_CAMPAIGN_WITH_PHONE_NUMBERS,
-      locks_queue: false,
-      campaign_id: id,
-      payload: JSON.stringify({})
-    });
-
-    return await cacheableData.campaign.load(id, {
-      forceLoad: true
-    });
-  }
-
-  if (campaign.use_own_messaging_service) {
-    if (!campaign.messageservice_sid) {
-      const friendlyName = `Campaign: ${campaign.title} (${campaign.id}) [${process.env.BASE_URL}]`;
-      const messagingService = await twilio.createMessagingService(
-        organization,
-        friendlyName
-      );
-      campaign.messageservice_sid = messagingService.sid;
+  // onCampaignStart service managers get to do stuff,
+  // before we update campaign.is_started (see workers/jobs.js::startCampaign)
+  const userLookupField = user.lookupField || "id";
+  const job = await jobRunner.dispatchJob({
+    queue_name: `${id}:start_campaign`,
+    job_type: Jobs.START_CAMPAIGN,
+    locks_queue: true,
+    campaign_id: id,
+    payload: {
+      userLookupField,
+      userLookupValue: user[userLookupField],
+      organizationId: campaign.organization_id
     }
-  } else {
-    campaign.messageservice_sid = await cacheableData.organization.getMessageServiceSid(
-      organization
-    );
-  }
-
-  campaign.is_started = true;
-
-  await campaign.save();
-  const campaignRefreshed = await cacheableData.campaign.load(id, {
-    forceLoad: true
-  });
-  await sendUserNotification({
-    type: Notifications.CAMPAIGN_STARTED,
-    campaignId: id
   });
 
-  if (r.redis && !getConfig("DISABLE_CONTACT_CACHELOAD")) {
-    // some asynchronous cache-priming:
-    await jobRunner.dispatchTask(Tasks.CAMPAIGN_START_CACHE, {
-      campaign: campaignRefreshed,
-      organization
-    });
+  const updatedCampaign = await cacheableData.campaign.load(id);
+  if (!updatedCampaign.is_started) {
+    updatedCampaign.isStarting = true;
   }
-  return campaignRefreshed;
+  return updatedCampaign;
 };

@@ -1,4 +1,4 @@
-import crypto from "../../../../src/server/api/lib/crypto";
+import crypto from "../../../src/extensions/secret-manager/crypto";
 
 beforeEach(() => {
   jest.resetModules();
@@ -20,7 +20,7 @@ it("decrypted value should match original", () => {
 it("session secret must exist", () => {
   function encrypt() {
     delete global.SESSION_SECRET;
-    const crypto2 = require("../../../../src/server/api/lib/crypto");
+    const crypto2 = require("../../../src/extensions/secret-manager/crypto");
     const plaintext = "foo";
     const encrypted = crypto2.symmetricEncrypt(plaintext);
   }

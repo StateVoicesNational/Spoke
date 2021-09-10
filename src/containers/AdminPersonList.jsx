@@ -162,9 +162,9 @@ class AdminPersonList extends React.Component {
     );
   };
 
-  handleCampaignChange = (event, index, value) => {
+  handleCampaignChange = event => {
     // We send 0 when there is a campaign change, because presumably we start on page 1
-    this.handleFilterChange({ campaignId: value });
+    this.handleFilterChange({ campaignId: event.target.index });
   };
 
   handleOpen() {
@@ -181,12 +181,12 @@ class AdminPersonList extends React.Component {
     this.setState({ resetLink: false });
   };
 
-  handleSortByChanged = (event, index, sortBy) => {
-    this.handleFilterChange({ sortBy });
+  handleSortByChanged = event => {
+    this.handleFilterChange({ sortBy: event.target.value });
   };
 
-  handleFilterByChanged = (event, index, filterBy) => {
-    this.handleFilterChange({ filterBy });
+  handleFilterByChanged = event => {
+    this.handleFilterChange({ filterBy: event.target.value });
   };
 
   handleSearchRequested = searchString => {
