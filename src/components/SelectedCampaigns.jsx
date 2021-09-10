@@ -27,10 +27,10 @@ const SelectedCampaigns = props => (
         label="Clear campaigns"
       />
     )}
-    {props.campaigns.map(campaign => (
+    {props.campaigns.map((campaign, index) => (
       <Chip
         style={styles.chip}
-        key={campaign.key}
+        key={`${campaign.key}${index}`}
         onDelete={() => props.onDeleteRequested(campaign.key)}
         deleteIcon={<CloseIcon />}
         label={campaign.text}

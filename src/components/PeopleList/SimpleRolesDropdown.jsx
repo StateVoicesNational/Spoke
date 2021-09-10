@@ -11,7 +11,7 @@ export const ALL_ROLES = "ALL ROLES";
 const SimpleRolesDropdown = props => (
   <Select
     value={props.selectedRole}
-    onChange={(event, index, value) => props.onChange(value)}
+    onChange={event => props.onChange(event.target.value)}
   >
     {[ALL_ROLES].concat(ROLE_HIERARCHY).map(option => (
       <MenuItem key={option} value={option}>

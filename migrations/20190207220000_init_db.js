@@ -350,7 +350,7 @@ const initialize = async knex => {
         t.text("service_id")
           .notNullable()
           .defaultTo("");
-        t.enu("send_status", [
+        const statuses = [
           "QUEUED",
           "SENDING",
           "SENT",
@@ -358,7 +358,8 @@ const initialize = async knex => {
           "ERROR",
           "PAUSED",
           "NOT_ATTEMPTED"
-        ]).notNullable();
+        ];
+        t.enu("send_status", statuses).notNullable();
         t.timestamp("created_at")
           .defaultTo(knex.fn.now())
           .notNullable();

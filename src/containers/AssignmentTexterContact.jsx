@@ -175,6 +175,10 @@ export class AssignmentTexterContact extends React.Component {
 
   handleMessageFormSubmit = cannedResponseId => async ({ messageText }) => {
     const { campaign, contact, messageStatusFilter } = this.props;
+    if (!messageText || messageText == "false") {
+      // defensive code -- if somehow message form validation fails, don't send a dumb "false" message
+      return;
+    }
     try {
       const message = this.createMessageToContact(messageText);
       if (this.state.disabled) {
