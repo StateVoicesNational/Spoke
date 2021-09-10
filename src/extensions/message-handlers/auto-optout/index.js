@@ -1,6 +1,8 @@
 import { getConfig, getFeatures } from "../../../server/api/lib/config";
 import { cacheableData } from "../../../server/models";
 import { sendRawMessage } from "../../../server/api/mutations/sendMessage";
+import { getConfig } from "../../../server/api/lib/config";
+import { cacheableData } from "../../../server/models";
 
 const DEFAULT_AUTO_OPTOUT_REGEX_LIST_BASE64 =
   "W3sicmVnZXgiOiAiXlxccypzdG9wXFxifFxcYnJlbW92ZSBtZVxccyokfHJlbW92ZSBteSBuYW1lfFxcYnRha2UgbWUgb2ZmIHRoXFx3KyBsaXN0fFxcYmxvc2UgbXkgbnVtYmVyfGRvblxcVz90IGNvbnRhY3QgbWV8ZGVsZXRlIG15IG51bWJlcnxJIG9wdCBvdXR8c3RvcDJxdWl0fHN0b3BhbGx8Xlxccyp1bnN1YnNjcmliZVxccyokfF5cXHMqY2FuY2VsXFxzKiR8XlxccyplbmRcXHMqJHxeXFxzKnF1aXRcXHMqJCIsICJyZWFzb24iOiAic3RvcCJ9XQ==";
@@ -97,7 +99,7 @@ export const postMessageSave = async ({
       { cacheOnly: true }
     );
     campaign = campaign || { organization_id: organization.id };
-    
+
     // OPTOUT
     await cacheableData.optOut.save({
       cell: message.contact_number,
@@ -108,7 +110,9 @@ export const postMessageSave = async ({
       reason: handlerContext.autoOptOutReason,
       // RISKY: we depend on the contactUpdates in preMessageSave
       // but this can relieve a lot of database pressure
-      noContactUpdate: true
+      noContactUpdate: true,
+      contact,
+      organization
     });
 
     if (
@@ -116,7 +120,14 @@ export const postMessageSave = async ({
       getConfig("SEND_AUTO_OPT_OUT_RESPONSE", organization)
     ) {
       // https://support.twilio.com/hc/en-us/articles/223134027-Twilio-support-for-opt-out-keywords-SMS-STOP-filtering-
-      const twilioAutoOptOutWords = ["STOP", "STOPALL", "UNSUBSCRIBE", "CANCEL", "END", "QUIT"];
+      const twilioAutoOptOutWords = [
+        "STOP",
+        "STOPALL",
+        "UNSUBSCRIBE",
+        "CANCEL",
+        "END",
+        "QUIT"
+      ];
 
       if (
         getConfig("DEFAULT_SERVICE", organization) == "twilio" &&
@@ -125,11 +136,12 @@ export const postMessageSave = async ({
         return;
       }
 
-      contact = contact || await cacheableData.campaignContact.load(
-        message.campaign_contact_id
-      )
+      contact =
+        contact ||
+        (await cacheableData.campaignContact.load(message.campaign_contact_id));
 
-      const optOutMessage = getFeatures(organization).opt_out_message ||
+      const optOutMessage =
+        getFeatures(organization).opt_out_message ||
         getConfig("OPT_OUT_MESSAGE", organization) ||
         "I'm opting you out of texts immediately. Have a great day.";
 

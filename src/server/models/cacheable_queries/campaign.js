@@ -4,7 +4,7 @@ import {
   assembleAnswerOptions,
   getUsedScriptFields
 } from "../../../lib/interaction-step-helpers";
-import { getFeatures } from "../../api/lib/config";
+import { getFeatures, getConfig } from "../../api/lib/config";
 import organizationCache from "./organization";
 
 // This should be cached data for a campaign that will not change
@@ -100,11 +100,17 @@ const loadDeep = async id => {
       campaign.interactionSteps,
       "script"
     );
-    if (process.env.MOBILIZE_EVENT_SHIFTER_URL) {
+    if (getConfig("MOBILIZE_EVENT_SHIFTER_URL")) {
       campaign.usedFields.cell = 1;
       campaign.usedFields.email = 1;
       campaign.usedFields.zip = 1;
       campaign.usedFields.event_id = 1;
+    }
+    if (getConfig("TEXTER_SIDEBOX_FIELDS")) {
+      const fields = getConfig("TEXTER_SIDEBOX_FIELDS").split(",");
+      fields.forEach(f => {
+        campaign.usedFields[f] = 1;
+      });
     }
     campaign.contactTimezones = await dbContactTimezones(id);
     campaign.contactsCount = await r.getCount(
@@ -260,6 +266,45 @@ const campaignCache = {
       }
     }
     return null;
+  },
+  setFeatures: async (id, newFeatures) => {
+    if (!id || !newFeatures) {
+      return;
+    }
+    const features = await r.knex.transaction(async trx => {
+      const campaignDb = await trx("campaign")
+        .where("id", id)
+        .select("features");
+      const features = getFeatures(campaignDb);
+      let changes = false;
+      for (const [featureName, featureValue] of Object.entries(newFeatures)) {
+        if (features[featureName] !== featureValue) {
+          features[featureName] = featureValue;
+          changes = true;
+        }
+      }
+      if (changes) {
+        const featuresString = JSON.stringify(features);
+        await trx("campaign")
+          .where("id", id)
+          .update("features", featuresString);
+        if (r.redis) {
+          const campaignCache = await r.redis.getAsync(cacheKey(id));
+          if (campaignCache) {
+            const campaignObj = JSON.parse(campaignCache);
+            campaignObj.feature = features;
+            campaignObj.features = featuresString;
+            await r.redis
+              .multi()
+              .set(cacheKey(id), JSON.stringify(campaignObj))
+              .expire(cacheKey(id), 10000)
+              .execAsync();
+          }
+        }
+      }
+      return features;
+    });
+    return features;
   },
   updateAssignedCount: async id => {
     if (r.redis) {

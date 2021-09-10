@@ -1,14 +1,21 @@
 import gql from "graphql-tag";
 import pick from "lodash/pick";
-import Dialog from "material-ui/Dialog";
-import FlatButton from "material-ui/FlatButton";
-import Paper from "material-ui/Paper";
-import RaisedButton from "material-ui/RaisedButton";
-import TextField from "material-ui/TextField";
-import SelectField from "material-ui/SelectField";
-import MenuItem from "material-ui/MenuItem";
-import Toggle from "material-ui/Toggle";
 import React, { Component } from "react";
+
+import Paper from "@material-ui/core/Paper";
+import Dialog from "@material-ui/core/Dialog";
+import DialogActions from "@material-ui/core/DialogActions";
+import DialogContent from "@material-ui/core/DialogContent";
+import DialogContentText from "@material-ui/core/DialogContentText";
+import DialogTitle from "@material-ui/core/DialogTitle";
+import Button from "@material-ui/core/Button";
+import TextField from "@material-ui/core/TextField";
+import FormControl from "@material-ui/core/FormControl";
+import FormControlLabel from "@material-ui/core/FormControlLabel";
+import Switch from "@material-ui/core/Switch";
+import InputLabel from "@material-ui/core/InputLabel";
+import MenuItem from "@material-ui/core/MenuItem";
+import Select from "@material-ui/core/Select";
 
 import loadData from "./hoc/load-data";
 
@@ -47,23 +54,23 @@ class AdminBulkScriptEditor extends Component {
     targetObject: ["interactionStep", "cannedResponse"]
   };
 
-  handleChangeSearchString = (_event, searchString) => {
+  handleChangeSearchString = event => {
     const flaggedCharacters = PROTECTED_CHARACTERS.filter(
-      character => searchString.indexOf(character) > -1
+      character => event.target.value.indexOf(character) > -1
     );
-    this.setState({ searchString, flaggedCharacters });
+    this.setState({ searchString: event.target.value, flaggedCharacters });
   };
 
-  handleChangeReplaceString = (_event, replaceString) => {
-    this.setState({ replaceString });
+  handleChangeReplaceString = event => {
+    this.setState({ replaceString: event.target.value });
   };
 
-  handleToggleIncludeArchived = (_event, includeArchived) => {
-    this.setState({ includeArchived });
+  handleToggleIncludeArchived = event => {
+    this.setState({ includeArchived: event.target.checked });
   };
 
-  handleCampaignPrefixChange = (_event, campaignTitlePrefix) => {
-    this.setState({ campaignTitlePrefix });
+  handleCampaignPrefixChange = event => {
+    this.setState({ campaignTitlePrefix: event.target.value });
   };
 
   handleSubmitJob = async () => {
@@ -125,17 +132,28 @@ class AdminBulkScriptEditor extends Component {
     const isSubmitDisabled = isSubmitting || !searchString;
 
     const flaggedCharacterActions = [
-      <FlatButton key="cancel" label="Cancel" onClick={this.handleClose} />,
-      <FlatButton
+      <Button key="cancel" onClick={this.handleClose}>
+        Cancel
+      </Button>,
+      <Button
         key="confirm"
-        label="Confirm"
-        primary
+        variant="contained"
+        color="primary"
         onClick={this.handleConfirmSubmit}
-      />
+      >
+        Confirm
+      </Button>
     ];
 
     const dialogActions = [
-      <FlatButton key="ok" label="OK" primary onClick={this.handleClose} />
+      <Button
+        key="ok"
+        variant="contained"
+        color="primary"
+        onClick={this.handleClose}
+      >
+        OK
+      </Button>
     ];
 
     return (
@@ -143,13 +161,16 @@ class AdminBulkScriptEditor extends Component {
         <h1>Bulk Script Editor</h1>
         <Paper style={styles.paddedPaper}>
           <p style={styles.bold}>Find and replace</p>
-          <TextField
-            hintText="Replace this text..."
-            value={searchString}
-            fullWidth
-            disabled={isSubmitting}
-            onChange={this.handleChangeSearchString}
-          />
+          <FormControl fullWidth>
+            <TextField
+              placeholder="Replace this text..."
+              value={searchString}
+              fullWidth
+              disabled={isSubmitting}
+              onChange={this.handleChangeSearchString}
+              style={{ marginBottom: "25px" }}
+            />
+          </FormControl>
           {flaggedCharacters.length > 0 && (
             <p style={{ color: "#FFAA00" }}>
               Warning: Your search text contains the following special
@@ -162,13 +183,15 @@ class AdminBulkScriptEditor extends Component {
               Be careful with this!
             </p>
           )}
-          <TextField
-            hintText="...with this text"
-            value={replaceString}
-            fullWidth
-            disabled={isSubmitting}
-            onChange={this.handleChangeReplaceString}
-          />
+          <FormControl fullWidth>
+            <TextField
+              placeholder="...with this text"
+              value={replaceString}
+              fullWidth
+              disabled={isSubmitting}
+              onChange={this.handleChangeReplaceString}
+            />
+          </FormControl>
           <p style={{ fontStyle: "italic" }}>
             Note: the text must be an exact match! For example, there a couple
             apostraphe characters: <span style={styles.code}>'</span> vs{" "}
@@ -177,38 +200,39 @@ class AdminBulkScriptEditor extends Component {
         </Paper>
         <Paper style={styles.paddedPaper}>
           <p style={styles.bold}>Filters</p>
-          <Toggle
+          <FormControlLabel
             label="Include archived campaigns"
-            style={{ marginBottom: "25px" }}
-            toggled={includeArchived}
             disabled={isSubmitting}
-            onToggle={this.handleToggleIncludeArchived}
+            style={{ marginBottom: "25px" }}
+            control={
+              <Switch
+                color="primary"
+                checked={includeArchived}
+                onChange={this.handleToggleIncludeArchived}
+              />
+            }
           />
 
-          <SelectField
-            multiple
-            value={this.state.targetObject}
-            floatingLabelText={"Script Types Affected"}
-            floatingLabelFixed
-            onChange={(proxy, _, val) => this.setState({ targetObject: val })}
-            style={{ width: "100%" }}
-          >
-            <MenuItem
-              key="interactionStep"
-              value="interactionStep"
-              primaryText="Interaction Steps"
-              checked={this.state.targetObject.indexOf("interactionStep") != -1}
-            />
-            <MenuItem
-              key="cannedResponse"
-              value="cannedResponse"
-              primaryText="Canned Responses"
-              checked={this.state.targetObject.indexOf("cannedResponse") != -1}
-            />
-          </SelectField>
+          <FormControl fullWidth>
+            <InputLabel id="scriptTypes">Script Types Affected</InputLabel>
+            <Select
+              multiple
+              fullWidth
+              labelId="scriptTypes"
+              value={this.state.targetObject}
+              // floatingLabelText={"Script Types Affected"}
+              // floatingLabelFixed
+              onChange={event =>
+                this.setState({ targetObject: event.target.value })
+              }
+            >
+              <MenuItem value="interactionStep">Interaction Steps</MenuItem>
+              <MenuItem value="cannedResponse">Canned Responses</MenuItem>
+            </Select>
+          </FormControl>
           <p>Restrict to campaigns beginning with text (optional):</p>
           <TextField
-            hintText="Campaign title prefix"
+            placeholder="Campaign title prefix"
             value={campaignTitlePrefix}
             fullWidth
             disabled={isSubmitting}
@@ -221,76 +245,76 @@ class AdminBulkScriptEditor extends Component {
             onChange={this.handleCampaignPrefixChange}
           /> */}
         </Paper>
-        <RaisedButton
-          label={isSubmitting ? "Working..." : "Find & replace"}
-          primary
+        <Button
+          variant="contained"
+          color="primary"
           disabled={isSubmitDisabled}
           onClick={this.handleSubmitJob}
-        />
-        {confirmFlaggedCharacters && (
-          <Dialog
-            title="Confirm Flagged Characters"
-            actions={flaggedCharacterActions}
-            open
-            onRequestClose={this.handleClose}
-          >
-            <p>
+        >
+          {isSubmitting ? "Working..." : "Find & replace"}
+        </Button>
+
+        <Dialog open={!!confirmFlaggedCharacters} onClose={this.handleClose}>
+          <DialogTitle>Confirm Flagged Characters</DialogTitle>
+          <DialogContent>
+            <DialogContentText>
               Are you sure you want to run run a bulk script update with special
               characters?
-            </p>
-            <p>
+            </DialogContentText>
+            <DialogContentText>
               If you don't know what this means, you should cancel and ask an
               admin!
-            </p>
-          </Dialog>
-        )}
-        {this.state.error && (
-          <Dialog
-            title="Error"
-            actions={dialogActions}
-            open
-            onRequestClose={this.handleClose}
-          >
-            <p>
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions>{flaggedCharacterActions}</DialogActions>
+        </Dialog>
+
+        <Dialog open={!!this.state.error} onClose={this.handleClose}>
+          <DialogTitle>Error</DialogTitle>
+          <DialogContent>
+            <DialogContentText>
               Spoke ran into the following error when trying to update scripts:
-            </p>
-            <p style={{ fontFamily: "monospace" }}>{this.state.error}</p>
-          </Dialog>
-        )}
-        {this.state.result !== null && (
-          <Dialog
-            title={`Updated ${this.state.result.length} Occurence(s)`}
-            actions={dialogActions}
-            modal={false}
-            open
-            autoScrollBodyContent
-            contentStyle={{
-              width: "100%",
-              maxWidth: "none"
-            }}
-            onRequestClose={this.handleClose}
-          >
+            </DialogContentText>
+            <DialogContentText style={{ fontFamily: "monospace" }}>
+              {this.state.error}
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions>{dialogActions}</DialogActions>
+        </Dialog>
+
+        <Dialog
+          open={this.state.result !== null}
+          fullWidth
+          maxWidth="sm"
+          onClose={this.handleClose}
+        >
+          <DialogTitle>
+            Updated {this.state.result && this.state.result.length} Occurence(s)
+          </DialogTitle>
+          <DialogContent>
             <ul>
-              {this.state.result.map(
-                ({ campaign, found, replaced, target }) => (
-                  <li key={`${campaign.id}|${found}|${replaced}`}>
-                    Campaign ID: {campaign.id} ({target})
-                    <br />
-                    Found: <span style={styles.code}>{found}</span>
-                    <br />
-                    Replaced with: <span style={styles.code}>{replaced}</span>
-                  </li>
-                )
-              )}
+              {this.state.result &&
+                this.state.result.map(
+                  ({ campaign, found, replaced, target }) => (
+                    <li key={`${campaign.id}|${found}|${replaced}`}>
+                      Campaign ID: {campaign.id} ({target})
+                      <br />
+                      Found: <span style={styles.code}>{found}</span>
+                      <br />
+                      Replaced with: <span style={styles.code}>{replaced}</span>
+                    </li>
+                  )
+                )}
             </ul>
-            {this.state.result.length === 0 && (
+            {this.state.result && this.state.result.length === 0 && (
               <p>
                 No occurences were found. Check your search parameters and try
                 again.
               </p>
             )}
-          </Dialog>
-        )}
+          </DialogContent>
+          <DialogActions>{dialogActions}</DialogActions>
+        </Dialog>
       </div>
     );
   }

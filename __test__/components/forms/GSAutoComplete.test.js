@@ -4,17 +4,18 @@
 import React from "react";
 import { mount } from "enzyme";
 import { StyleSheetTestUtils } from "aphrodite";
-import AutoComplete from "material-ui/AutoComplete";
-
 import * as yup from "yup";
-
 import Form from "react-formal";
+
+import Autocomplete from "@material-ui/lab/Autocomplete";
+import TextField from "@material-ui/core/TextField";
+
 import { GSAutoComplete, GSForm } from "../../../src/components/forms";
 import App from "../../../src/components/App";
 
 describe("GSAutoComplete", () => {
   let colors;
-  let dataSource;
+  let options;
   beforeEach(async () => {
     StyleSheetTestUtils.suppressStyleInjection();
     colors = [
@@ -32,18 +33,18 @@ describe("GSAutoComplete", () => {
       }
     ];
 
-    dataSource = [
+    options = [
       expect.objectContaining({
-        rawValue: "#FF0000",
-        text: "Red"
+        value: "#FF0000",
+        label: "Red"
       }),
       expect.objectContaining({
-        rawValue: "#800080",
-        text: "Purple"
+        value: "#800080",
+        label: "Purple"
       }),
       expect.objectContaining({
-        rawValue: "#663399",
-        text: "RebeccaPurple"
+        value: "#663399",
+        label: "RebeccaPurple"
       })
     ];
   });
@@ -59,69 +60,33 @@ describe("GSAutoComplete", () => {
       appWrapper = mount(
         <App>
           <GSAutoComplete
-            choices={colors}
+            options={colors}
             value={colors[0]}
-            hintText={"What's your favorite color?"}
-            floatingLabel={"Favorite color"}
+            placeholder={"What's your favorite color?"}
+            label={"Favorite color"}
             onChange={fakeOnChange}
           />
         </App>
       );
-      autoCompleteWrapper = appWrapper.find("AutoComplete");
+      autoCompleteWrapper = appWrapper.find(Autocomplete);
       gsAutoCompleteWrapper = appWrapper.find("GSAutoComplete");
       autoCompleteInstance = autoCompleteWrapper.instance();
-      expect(autoCompleteInstance).toBeTruthy();
+      // expect(autoCompleteInstance).toBeTruthy();
+      expect(autoCompleteWrapper.length).toBe(1);
     });
 
     it("sets its properties", async () => {
       expect(autoCompleteWrapper.props()).toEqual(
         expect.objectContaining({
-          hintText: "What's your favorite color?",
-          searchText: "Red",
-          floatingLabel: "Favorite color",
-          dataSource,
-          onNewRequest: expect.any(Function),
-          onUpdateInput: expect.any(Function)
+          value: expect.objectContaining({
+            value: "#FF0000",
+            label: "Red"
+          }),
+          options,
+          onChange: expect.any(Function),
+          getOptionLabel: expect.any(Function)
         })
       );
-
-      expect(gsAutoCompleteWrapper.instance().state).toEqual(
-        expect.objectContaining({
-          dataSource,
-          name: "Red",
-          value: colors[0]
-        })
-      );
-    });
-
-    describe("when search text changes", () => {
-      it("clears its value in the GSForm when the updated search text doesn't match the previous search text", async () => {
-        autoCompleteInstance.props.onUpdateInput("Orange");
-        expect(fakeOnChange.mock.calls).toEqual([[undefined]]);
-      });
-
-      it("does not clear its value in the GSForm when the updated search text doesn't match the previous search text", async () => {
-        autoCompleteInstance.props.onUpdateInput("Red");
-        expect(fakeOnChange).not.toHaveBeenCalled();
-      });
-    });
-
-    describe("when the user selects an item or hits enter", () => {
-      describe("when the user hits enter", () => {
-        describe("and the text matches one of the choices", () => {
-          it("changes its value in the GSForm", async () => {
-            autoCompleteInstance.props.onNewRequest("RebeccaPurple");
-            expect(fakeOnChange.mock.calls).toEqual([[colors[2]]]);
-          });
-        });
-
-        describe("and the text doesn't match one of the choices", () => {
-          it("changes its value in the GSForm", async () => {
-            autoCompleteInstance.props.onNewRequest("Cherry Red");
-            expect(fakeOnChange.mock.calls).toEqual([[undefined]]);
-          });
-        });
-      });
     });
   });
 
@@ -130,6 +95,7 @@ describe("GSAutoComplete", () => {
     let formWrapper;
     let autoCompleteWrapper;
     let gsAutoCompleteWrapper;
+    let autoCompleteTextField;
 
     beforeEach(async () => {
       StyleSheetTestUtils.suppressStyleInjection();
@@ -148,34 +114,35 @@ describe("GSAutoComplete", () => {
             <Form.Field
               name="colors"
               as={GSAutoComplete}
-              choices={colors}
-              hintText="What's your favorite color?"
+              options={colors}
+              placeholder="What's your favorite color?"
             />
           </GSForm>
         </App>
       );
 
       gsAutoCompleteWrapper = formWrapper.find(GSAutoComplete);
-      autoCompleteWrapper = gsAutoCompleteWrapper.find(AutoComplete);
+      autoCompleteWrapper = gsAutoCompleteWrapper.find(Autocomplete);
+      autoCompleteTextField = autoCompleteWrapper.find(TextField);
     });
 
     it("the GSForm creates it and sets its properties", async () => {
-      expect(autoCompleteWrapper.prop("searchText")).toEqual(colors[1].label);
-      expect(autoCompleteWrapper.prop("hintText")).toEqual(
+      expect(autoCompleteWrapper.prop("value").label).toEqual(colors[1].label);
+      expect(autoCompleteTextField.prop("placeholder")).toEqual(
         "What's your favorite color?"
       );
-      expect(autoCompleteWrapper.prop("dataSource")).toEqual([
+      expect(autoCompleteWrapper.prop("options")).toEqual([
         expect.objectContaining({
-          text: "Red",
-          rawValue: "#FF0000"
+          label: "Red",
+          value: "#FF0000"
         }),
         expect.objectContaining({
-          text: "Purple",
-          rawValue: "#800080"
+          label: "Purple",
+          value: "#800080"
         }),
         expect.objectContaining({
-          text: "RebeccaPurple",
-          rawValue: "#663399"
+          label: "RebeccaPurple",
+          value: "#663399"
         })
       ]);
     });

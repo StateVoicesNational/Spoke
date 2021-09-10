@@ -1125,6 +1125,7 @@ describe("ngpvn-action", () => {
     describe("when the contact has a VanPhoneId", () => {
       beforeEach(async () => {
         contact = {
+          cell: "+15555550990",
           custom_fields: JSON.stringify({
             VanID: "8675309",
             VanPhoneId: "789"
@@ -1133,13 +1134,17 @@ describe("ngpvn-action", () => {
 
         body = {
           canvassContext: {
-            phoneId: "789"
+            phoneId: "789",
+            phone: {
+              dialingPrefix: "1",
+              phoneNumber: "555-555-0990"
+            }
           },
           willVote: true
         };
       });
 
-      it("calls the people endpoint and includes VanPhoneId in the canvass context", async () => {
+      it("calls the people endpoint and includes VanPhoneId and phone in the canvass context", async () => {
         const postPeopleCanvassResponsesNock = nock(
           "https://api.securevan.com:443",
           {

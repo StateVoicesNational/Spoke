@@ -1,12 +1,15 @@
 import type from "prop-types";
 import React from "react";
-import RaisedButton from "material-ui/RaisedButton";
-import { ListItem, List } from "material-ui/List";
 import { StyleSheet, css } from "aphrodite";
-import AutoComplete from "material-ui/AutoComplete";
-import Subheader from "material-ui/Subheader";
 
-import { dataSourceItem } from "../../../components/utils";
+import Button from "@material-ui/core/Button";
+import List from "@material-ui/core/List";
+import ListItem from "@material-ui/core/ListItem";
+import ListItemIcon from "@material-ui/core/ListItemIcon";
+import ListItemText from "@material-ui/core/ListItemText";
+import ListSubheader from "@material-ui/core/ListSubheader";
+import Autocomplete from "@material-ui/lab/Autocomplete";
+import TextField from "@material-ui/core/TextField";
 
 const styles = StyleSheet.create({
   form: {
@@ -32,71 +35,53 @@ export class CampaignContactsForm extends React.Component {
 
   buildSelectData = () => {
     const { clientChoiceData } = this.props;
+
     const clientChoiceDataObject = JSON.parse(clientChoiceData);
-    return clientChoiceDataObject.items.map(item =>
-      dataSourceItem(item.name, item.savedListId)
-    );
+    if (!clientChoiceDataObject || !clientChoiceDataObject.items) {
+      return [];
+    }
+    return clientChoiceDataObject.items;
   };
 
   renderSavedLists = () => {
     const selectData = this.buildSelectData();
     return (
-      <AutoComplete
-        ref="autocomplete"
-        // style={inlineStyles.autocomplete}
-        autoFocus
-        onFocus={() => {
-          this.setState({ searchText: "", savedListId: undefined });
-          this.props.onChange(undefined);
-        }}
-        onUpdateInput={searchText => {
-          this.setState({ searchText });
-          if (searchText.trim().length === 0) {
-            this.props.onChange(undefined);
-          }
-        }}
-        searchText={this.state.searchText}
-        filter={AutoComplete.caseInsensitiveFilter}
-        hintText="Select a list to import"
-        dataSource={selectData}
-        onNewRequest={value => {
-          // If you're searching but get no match, value is a string
-          // representing your search term, but we only want to handle matches
-          if (typeof value === "object") {
-            const savedListId = value.rawValue;
-            this.setState({ savedListId });
+      <Autocomplete
+        options={selectData}
+        getOptionLabel={option => option.name}
+        onChange={(event, value) => {
+          if (value) {
+            this.setState({ savedListId: value.savedListId });
             this.props.onChange(
               JSON.stringify({
-                savedListId,
-                savedListName: this.state.searchText
+                savedListId: value.savedListId,
+                savedListName: value.name
               })
             );
           } else {
-            // if it matches one item, that's their selection
-            const regex = new RegExp(`.*${value}.*`, "i");
-            const matches = selectData.filter(item => regex.test(item.text));
-
-            if (matches.length === 1) {
-              const savedListId = matches[0].rawValue;
-              const searchText = matches[0].text;
-              this.setState({ searchText, savedListId });
-              this.props.onChange(
-                JSON.stringify({ savedListId, savedListName: searchText })
-              );
-            }
+            this.props.onChange(undefined);
+            this.setState({ savedListId: undefined });
           }
         }}
+        renderInput={params => (
+          <TextField
+            {...params}
+            style={{ width: 200 }}
+            label="Select a list to import"
+          />
+        )}
       />
     );
   };
 
   renderSaveButton = () => (
-    <RaisedButton
-      primary
+    <Button
+      color="primary"
       disabled={this.props.saveDisabled}
-      label={this.props.saveLabel}
       onClick={() => this.props.onSubmit()}
-    />
+    >
+      {this.props.saveLabel}
+    </Button>
   );
 
   renderJobResult = () => {
@@ -108,33 +93,36 @@ export class CampaignContactsForm extends React.Component {
       (lastResult.reference && JSON.parse(lastResult.reference)) || {};
     const result = (lastResult.result && JSON.parse(lastResult.result)) || {};
     return (
-      <List>
-        <Subheader>Last Import</Subheader>
+      <List
+        subheader={<ListSubheader component="div">Last Import</ListSubheader>}
+      >
         {reference.savedListName && (
-          <ListItem
-            primaryText={`List name: ${reference.savedListName}`}
-            leftIcon={this.props.icons.info}
-          />
+          <ListItem>
+            <ListItemIcon>{this.props.icons.info}</ListItemIcon>
+            <ListItemText primary={`List name: ${reference.savedListName}`} />
+          </ListItem>
         )}
         {result.errors &&
           result.errors.map(error => (
-            <ListItem
-              primaryText={`${error}`}
-              leftIcon={this.props.icons.error}
-            />
+            <ListItem>
+              <ListItemIcon>{this.props.icons.error}</ListItemIcon>
+              <ListItemText primary={error} />
+            </ListItem>
           ))}
         {(result.dupeCount && (
-          <ListItem
-            primaryText={`${result.dupeCount} duplicates removed`}
-            leftIcon={this.props.icons.warning}
-          />
+          <ListItem>
+            <ListItemIcon>{this.props.icons.warning}</ListItemIcon>
+            <ListItemText primary={`${result.dupeCount} duplicates removed`} />
+          </ListItem>
         )) ||
           null}
         {(result.missingCellCount && (
-          <ListItem
-            primaryText={`${result.missingCellCount} contacts with no cell phone removed`}
-            leftIcon={this.props.icons.warning}
-          />
+          <ListItem>
+            <ListItemIcon>{this.props.icons.warning}</ListItemIcon>
+            <ListItemText
+              primary={`${result.missingCellCount} contacts with no cell phone removed`}
+            />
+          </ListItem>
         )) ||
           null}
         {(result.zipCount &&
@@ -144,7 +132,13 @@ export class CampaignContactsForm extends React.Component {
               primaryText={`${lastResult.contactsCount -
                 result.zipCount} contacts with no ZIP code imported`}
               leftIcon={this.props.icons.info}
-            />
+            >
+              <ListItemIcon>{this.props.icons.info}</ListItemIcon>
+              <ListItemText
+                primary={`${lastResult.contactsCount -
+                  result.zipCount} contacts with no ZIP code imported`}
+              />
+            </ListItem>
           )) ||
           null}
       </List>

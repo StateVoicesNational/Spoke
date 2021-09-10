@@ -3,10 +3,12 @@ import React from "react";
 import GSForm from "../components/forms/GSForm";
 import * as yup from "yup";
 import Form from "react-formal";
-import Toggle from "material-ui/Toggle";
 import { dataTest } from "../lib/attributes";
 import GSTextField from "./forms/GSTextField";
 import GSSubmitButton from "./forms/GSSubmitButton";
+
+import FormControlLabel from "@material-ui/core/FormControlLabel";
+import Switch from "@material-ui/core/Switch";
 
 const configurableFields = {
   ACTION_HANDLERS: {
@@ -38,7 +40,7 @@ const configurableFields = {
     component: props => {
       // maybe show the list and then validate
       return (
-        <div>
+        <div key={props.key}>
           <Form.Field
             as={GSTextField}
             label="Action Handlers (comma-separated)"
@@ -62,17 +64,26 @@ const configurableFields = {
     schema: () => yup.boolean(),
     ready: true,
     component: props => {
-      if (!window.ALLOW_SEND_ALL) {
+      if (typeof window === "undefined" || !window.ALLOW_SEND_ALL) {
         return null;
       }
       return (
-        <div>
-          <Toggle
-            toggled={props.parent.state.ALLOW_SEND_ALL_ENABLED}
-            label="Allow 'Send All' single-button"
-            onToggle={(toggler, val) =>
-              props.parent.toggleChange("ALLOW_SEND_ALL_ENABLED", val)
+        <div key={props.key}>
+          <FormControlLabel
+            control={
+              <Switch
+                checked={props.parent.state.ALLOW_SEND_ALL_ENABLED}
+                onChange={event =>
+                  props.parent.toggleChange(
+                    "ALLOW_SEND_ALL_ENABLED",
+                    event.target.checked
+                  )
+                }
+                color="primary"
+              />
             }
+            label="Allow 'Send All' single-button"
+            labelPlacement="start"
           />
           {props.parent.state.ALLOW_SEND_ALL_ENABLED ? (
             <div style={{ padding: "8px" }}>
@@ -102,12 +113,13 @@ const configurableFields = {
     schema: () =>
       yup
         .number()
+        .transform(cv => (isNaN(cv) ? undefined : cv))
         .integer()
         .notRequired(),
     ready: true,
     component: props => {
       return (
-        <div>
+        <div key={props.key}>
           <Form.Field
             as={GSTextField}
             label="Default Batch Size"
@@ -123,11 +135,15 @@ const configurableFields = {
     }
   },
   DEFAULT_RESPONSEWINDOW: {
-    schema: () => yup.number().notRequired(),
+    schema: () =>
+      yup
+        .number()
+        .transform(cv => (isNaN(cv) ? undefined : cv))
+        .notRequired(),
     ready: true,
     component: props => {
       return (
-        <div>
+        <div key={props.key}>
           <Form.Field
             as={GSTextField}
             label="Default Response Window"
@@ -148,12 +164,13 @@ const configurableFields = {
     schema: () =>
       yup
         .number()
+        .transform(cv => (isNaN(cv) ? undefined : cv))
         .integer()
         .notRequired(),
     ready: true,
     component: props => {
       return (
-        <div>
+        <div key={props.key}>
           <Form.Field
             as={GSTextField}
             label="Maximum Number of Contacts per-texter"
@@ -178,12 +195,13 @@ const configurableFields = {
     schema: () =>
       yup
         .number()
+        .transform(cv => (isNaN(cv) ? undefined : cv))
         .integer()
         .notRequired(),
     ready: true,
     component: props => {
       return (
-        <div>
+        <div key={props.key}>
           <Form.Field
             as={GSTextField}
             label="Max Message Length"
@@ -199,6 +217,14 @@ const configurableFields = {
   }
 };
 
+/**
+ * remove the key if we don't need it so yup will validate
+ * corectly and submit the form.
+ */
+if (typeof window === "undefined" || !window.ALLOW_SEND_ALL) {
+  delete configurableFields.ALLOW_SEND_ALL_ENABLED;
+}
+
 export default class OrganizationFeatureSettings extends React.Component {
   constructor(props) {
     super(props);
@@ -208,6 +234,8 @@ export default class OrganizationFeatureSettings extends React.Component {
         JSON.parse(formValues.settings.featuresJSON)) ||
       {};
     this.state = { ...settingsData, unsetFeatures: [] };
+    // expects a boolean
+    this.state.ALLOW_SEND_ALL_ENABLED = !!this.state.ALLOW_SEND_ALL_ENABLED;
   }
 
   onChange = formValues => {
@@ -243,7 +271,11 @@ export default class OrganizationFeatureSettings extends React.Component {
           ...this.props,
           ...this.state
         });
-        return configurableFields[f].component({ ...this.props, parent: this });
+        return configurableFields[f].component({
+          key: f,
+          ...this.props,
+          parent: this
+        });
       });
     return (
       <div>
@@ -251,11 +283,11 @@ export default class OrganizationFeatureSettings extends React.Component {
           schema={yup.object(schemaObject)}
           value={this.state}
           onChange={this.onChange}
+          onSubmit={this.props.onSubmit}
         >
           {adminItems}
           <Form.Submit
             as={GSSubmitButton}
-            onClick={this.props.onSubmit}
             label={this.props.saveLabel}
             disabled={this.props.saveDisabled}
             {...dataTest("submitOrganizationFeatureSettings")}

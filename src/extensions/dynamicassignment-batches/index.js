@@ -9,7 +9,7 @@ export const getDynamicAssignmentBatchPolicies = ({
   const configuredHandlers =
     campaignEnabled ||
     getConfig(handlerKey, organization) ||
-    "finished-replies,vetted-texters";
+    "finished-replies-tz,vetted-texters,finished-replies";
   const enabledHandlers =
     (configuredHandlers && configuredHandlers.split(",")) || [];
   if (!campaignEnabled) {
