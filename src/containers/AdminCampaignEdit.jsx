@@ -1,18 +1,29 @@
 import PropTypes from "prop-types";
 import React from "react";
-
-import WarningIcon from "material-ui/svg-icons/alert/warning";
-import DoneIcon from "material-ui/svg-icons/action/done";
-import CancelIcon from "material-ui/svg-icons/navigation/cancel";
-
-import Avatar from "material-ui/Avatar";
-import theme from "../styles/theme";
-import CircularProgress from "material-ui/CircularProgress";
-import { Card, CardHeader, CardText, CardActions } from "material-ui/Card";
-import { Link } from "react-router";
 import gql from "graphql-tag";
+import { Link } from "react-router";
+
+import Button from "@material-ui/core/Button";
+import ButtonGroup from "@material-ui/core/ButtonGroup";
+
+import WarningIcon from "@material-ui/icons/Warning";
+import DoneIcon from "@material-ui/icons/Done";
+import CancelIcon from "@material-ui/icons/Cancel";
+import { css } from "aphrodite";
+
+import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
+import IconButton from "@material-ui/core/IconButton";
+
+import Card from "@material-ui/core/Card";
+import CardActions from "@material-ui/core/CardActions";
+import CardHeader from "@material-ui/core/CardHeader";
+import Collapse from "@material-ui/core/Collapse";
+
+import Avatar from "@material-ui/core/Avatar";
+import CircularProgress from "@material-ui/core/CircularProgress";
+
+import theme from "../styles/theme";
 import loadData from "./hoc/load-data";
-import RaisedButton from "material-ui/RaisedButton";
 import AdminCampaignCopy from "./AdminCampaignCopy";
 import CampaignBasicsForm from "../components/CampaignBasicsForm";
 import CampaignMessagingServiceForm from "../components/CampaignMessagingServiceForm";
@@ -23,9 +34,9 @@ import CampaignCannedResponsesForm from "../components/CampaignCannedResponsesFo
 import CampaignDynamicAssignmentForm from "../components/CampaignDynamicAssignmentForm";
 import CampaignTexterUIForm from "../components/CampaignTexterUIForm";
 import CampaignPhoneNumbersForm from "../components/CampaignPhoneNumbersForm";
+import CampaignServiceManagers from "../components/CampaignServiceManagers";
 import { dataTest, camelCase } from "../lib/attributes";
 import CampaignTextingHoursForm from "../components/CampaignTextingHoursForm";
-import { css } from "aphrodite";
 import { styles } from "./AdminCampaignStats";
 import AdminScriptImport from "../containers/AdminScriptImport";
 import { makeTree } from "../lib";
@@ -47,8 +58,6 @@ const campaignInfoFragment = `
   logoImageUrl
   introHtml
   primaryColor
-  useOwnMessagingService
-  messageserviceSid
   overrideOrganizationTextingHours
   textingHoursEnforced
   textingHoursStart
@@ -107,6 +116,16 @@ const campaignInfoFragment = `
     status
     resultMessage
   }
+  serviceManagers {
+    id
+    name
+    displayName
+    supportsOrgConfig
+    data
+    fullyConfigured
+  }
+  useOwnMessagingService
+  messageserviceSid
   inventoryPhoneNumberCounts {
     areaCode
     count
@@ -174,7 +193,7 @@ export class AdminCampaignEdit extends React.Component {
     }
   }
 
-  componentWillReceiveProps(newProps) {
+  UNSAFE_componentWillReceiveProps(newProps) {
     // This should only update the campaignFormValues sections that
     // are NOT expanded so the form data doesn't compete with the user
     // The basic flow of data:
@@ -526,7 +545,42 @@ export class AdminCampaignEdit extends React.Component {
         expandableBySuperVolunteers: false
       }
     ];
-    if (window.EXPERIMENTAL_TWILIO_PER_CAMPAIGN_MESSAGING_SERVICE) {
+    if (
+      this.props.campaignData.campaign.serviceManagers &&
+      this.props.campaignData.campaign.serviceManagers.length
+    ) {
+      finalSections.push({
+        title: "Service Management",
+        content: CampaignServiceManagers,
+        keys: [],
+        checkCompleted: () =>
+          // fullyConfigured can be true or null, but if false, then it blocks
+          this.props.campaignData.campaign.serviceManagers
+            .map(sm => sm.fullyConfigured !== false)
+            .reduce((a, b) => a && b),
+        blocksStarting: true,
+        expandAfterCampaignStarts: true,
+        expandableBySuperVolunteers: false,
+        extraProps: {
+          campaign: this.props.campaignData.campaign,
+          organization: this.props.organizationData.organization,
+          onSubmit: async (serviceManagerName, updateData) => {
+            const result = await this.props.mutations.updateServiceManager(
+              serviceManagerName,
+              updateData
+            );
+            if (result.data.updateServiceManager.startPolling) {
+              this.startPollingIfNecessary();
+            }
+          },
+          serviceManagerComponentName: "CampaignConfig"
+        }
+      });
+    }
+    if (
+      window.EXPERIMENTAL_TWILIO_PER_CAMPAIGN_MESSAGING_SERVICE &&
+      window.EXPERIMENTAL_PER_CAMPAIGN_MESSAGING_LEGACY
+    ) {
       finalSections.push({
         title: "Messaging Service",
         content: CampaignMessagingServiceForm,
@@ -537,13 +591,17 @@ export class AdminCampaignEdit extends React.Component {
         expandableBySuperVolunteers: false
       });
     }
-    if (this.props.organizationData.organization.campaignPhoneNumbersEnabled) {
+    if (
+      this.props.organizationData.organization.campaignPhoneNumbersEnabled &&
+      window.EXPERIMENTAL_PER_CAMPAIGN_MESSAGING_LEGACY
+    ) {
       const contactsPerPhoneNumber = window.CONTACTS_PER_PHONE_NUMBER;
       finalSections.push({
         title: "Phone Numbers",
         content: CampaignPhoneNumbersForm,
         keys: ["inventoryPhoneNumberCounts"],
         checkCompleted: () => {
+          // logic to move to the component itself or backend
           const {
             contactsCount,
             inventoryPhoneNumberCounts
@@ -608,7 +666,11 @@ export class AdminCampaignEdit extends React.Component {
     let jobMessage = null;
     let jobId = null;
     if (pendingJobs.length > 0) {
-      if (section.title === "Contacts") {
+      if (section.title === "Basics") {
+        relatedJob = pendingJobs.filter(
+          job => job.jobType === "start_campaign"
+        )[0];
+      } else if (section.title === "Contacts") {
         relatedJob = pendingJobs.filter(job =>
           job.jobType.startsWith("ingest")
         )[0];
@@ -619,6 +681,10 @@ export class AdminCampaignEdit extends React.Component {
       } else if (section.title === "Script Import") {
         relatedJob = pendingJobs.filter(
           job => job.jobType === "import_script"
+        )[0];
+      } else if (section.title === "Service Management") {
+        relatedJob = pendingJobs.filter(
+          job => job.jobType === "extension_job"
         )[0];
       }
     }
@@ -664,7 +730,7 @@ export class AdminCampaignEdit extends React.Component {
 
   renderHeader() {
     let startJob = this.props.campaignData.campaign.pendingJobs.filter(
-      job => job.jobType === "start_campaign_with_phone_numbers"
+      job => job.jobType === "start_campaign"
     )[0];
     const isStarting = startJob || this.state.startingCampaign;
     const organizationId = this.props.params.organizationId;
@@ -723,24 +789,30 @@ export class AdminCampaignEdit extends React.Component {
             <div className={css(styles.rightAlign)}>
               <div className={css(styles.inline)}>
                 <div className={css(styles.inline)}>
-                  <RaisedButton
-                    {...dataTest("statsCampaign")}
-                    onClick={() =>
-                      this.props.router.push(
-                        `/admin/${organizationId}/campaigns/${campaign.id}`
-                      )
-                    }
-                    label="Stats"
-                  />
-                  <RaisedButton
-                    {...dataTest("convoCampaign")}
-                    onClick={() =>
-                      this.props.router.push(
-                        `/admin/${organizationId}/incoming?campaigns=${campaign.id}`
-                      )
-                    }
-                    label="Convos"
-                  />
+                  <ButtonGroup>
+                    <Button
+                      variant="outlined"
+                      {...dataTest("statsCampaign")}
+                      onClick={() =>
+                        this.props.router.push(
+                          `/admin/${organizationId}/campaigns/${campaign.id}`
+                        )
+                      }
+                    >
+                      Stats
+                    </Button>
+                    <Button
+                      variant="outlined"
+                      {...dataTest("convoCampaign")}
+                      onClick={() =>
+                        this.props.router.push(
+                          `/admin/${organizationId}/incoming?campaigns=${campaign.id}`
+                        )
+                      }
+                    >
+                      Convos
+                    </Button>
+                  </ButtonGroup>
                 </div>
               </div>
             </div>
@@ -796,51 +868,67 @@ export class AdminCampaignEdit extends React.Component {
           {this.renderCurrentEditors()}
         </div>
         <div>
-          {isArchived ? (
-            <RaisedButton
-              label="Unarchive"
-              onClick={async () =>
-                await this.props.mutations.unarchiveCampaign(
+          <ButtonGroup>
+            {isArchived ? (
+              <Button
+                variant="outlined"
+                color="primary"
+                onClick={async () =>
+                  await this.props.mutations.unarchiveCampaign(
+                    this.props.campaignData.campaign.id
+                  )
+                }
+              >
+                Unarchive!
+              </Button>
+            ) : (
+              <Button
+                variant="outlined"
+                color="primary"
+                onClick={async () =>
+                  await this.props.mutations.archiveCampaign(
+                    this.props.campaignData.campaign.id
+                  )
+                }
+              >
+                Archive
+              </Button>
+            )}
+            <Button
+              variant="contained"
+              color="primary"
+              {...dataTest("startCampaign")}
+              disabled={isArchived || !isCompleted || !orgConfigured}
+              onClick={async () => {
+                if (!isCompleted || !orgConfigured) {
+                  return;
+                }
+                this.setState({
+                  startingCampaign: true
+                });
+                const result = await this.props.mutations.startCampaign(
                   this.props.campaignData.campaign.id
-                )
-              }
-            />
-          ) : (
-            <RaisedButton
-              label="Archive"
-              onClick={async () =>
-                await this.props.mutations.archiveCampaign(
-                  this.props.campaignData.campaign.id
-                )
-              }
-            />
-          )}
-          <RaisedButton
-            {...dataTest("startCampaign")}
-            primary
-            label="Start This Campaign!"
-            disabled={isArchived || !isCompleted || !orgConfigured}
-            onClick={async () => {
-              if (!isCompleted || !orgConfigured) {
-                return;
-              }
-              this.setState({
-                startingCampaign: true
-              });
-              await this.props.mutations.startCampaign(
-                this.props.campaignData.campaign.id
-              );
-              this.setState({
-                startingCampaign: false
-              });
-            }}
-          />
-          {/template/i.test(this.props.campaignData.campaign.title) ? (
-            <AdminCampaignCopy
-              campaignId={this.props.campaignData.campaign.id}
-              organizationId={this.props.organizationData.organization.id}
-            />
-          ) : null}
+                );
+                if (result.isStarted || !result.isStarting) {
+                  this.setState({
+                    startingCampaign: false
+                  });
+                } else {
+                  // if starting didn't happen synchronously, then we should
+                  // check to see if the startCampaign job completed
+                  this.startPollingIfNecessary();
+                }
+              }}
+            >
+              Start This Campaign!
+            </Button>
+            {/template/i.test(this.props.campaignData.campaign.title) && (
+              <AdminCampaignCopy
+                campaignId={this.props.campaignData.campaign.id}
+                organizationId={this.props.organizationData.organization.id}
+              />
+            )}
+          </ButtonGroup>
         </div>
       </div>
     );
@@ -862,8 +950,8 @@ export class AdminCampaignEdit extends React.Component {
             backgroundColor: theme.colors.lightGray
           };
           const avatarStyle = {
-            display: "inline-block",
-            verticalAlign: "middle"
+            height: 25,
+            width: 25
           };
 
           const {
@@ -887,20 +975,21 @@ export class AdminCampaignEdit extends React.Component {
             cardHeaderStyle.backgroundColor = theme.colors.lightGray;
           } else if (sectionIsDone) {
             avatar = (
-              <Avatar
-                icon={<DoneIcon style={{ fill: theme.colors.darkGreen }} />}
-                style={avatarStyle}
-                size={25}
-              />
+              <Avatar style={avatarStyle} color="primary">
+                <DoneIcon
+                  fontSize="small"
+                  style={{ color: theme.colors.darkGreen }}
+                />
+              </Avatar>
             );
             cardHeaderStyle.backgroundColor = theme.colors.green;
           } else if (!sectionIsDone) {
             avatar = (
-              <Avatar
-                icon={<WarningIcon style={{ fill: theme.colors.orange }} />}
-                style={avatarStyle}
-                size={25}
-              />
+              <Avatar style={avatarStyle} color="primary">
+                <WarningIcon
+                  style={{ color: theme.colors.orange, fontSize: 16 }}
+                />
+              </Avatar>
             );
             cardHeaderStyle.backgroundColor = theme.colors.yellow;
           }
@@ -908,39 +997,49 @@ export class AdminCampaignEdit extends React.Component {
             <Card
               {...dataTest(camelCase(`${section.title}`))}
               key={section.title}
-              expanded={sectionIsExpanded && sectionCanExpandOrCollapse}
-              expandable={sectionCanExpandOrCollapse}
-              onExpandChange={newExpandedState =>
-                this.onExpandChange(sectionIndex, newExpandedState)
-              }
               style={{
                 marginTop: 1
               }}
             >
               <CardHeader
                 title={section.title}
-                titleStyle={{
-                  width: "100%"
-                }}
-                style={cardHeaderStyle}
-                actAsExpander={!sectionIsSaving && sectionCanExpandOrCollapse}
-                showExpandableButton={
-                  !sectionIsSaving && sectionCanExpandOrCollapse
+                action={
+                  <IconButton>
+                    <ExpandMoreIcon />
+                  </IconButton>
                 }
+                style={cardHeaderStyle}
                 avatar={avatar}
+                onClick={newExpandedState => {
+                  if (sectionCanExpandOrCollapse) {
+                    const currentlyOpen =
+                      this.state.expandedSection === sectionIndex;
+                    this.onExpandChange(sectionIndex, !currentlyOpen);
+                  }
+                }}
               />
-              <CardText expandable>
+              <Collapse
+                in={sectionIsExpanded && sectionCanExpandOrCollapse}
+                timeout="auto"
+                unmountOnExit
+                style={{
+                  margin: "20px"
+                }}
+              >
                 {this.renderCampaignFormSection(section, sectionIsSaving)}
-              </CardText>
+              </Collapse>
               {sectionIsSaving && adminPerms ? (
                 <CardActions>
                   <div>Current Status: {savePercent}% complete</div>
                   {jobMessage ? <div>Message: {jobMessage}</div> : null}
-                  <RaisedButton
-                    label="Discard Job"
-                    icon={<CancelIcon />}
+                  <Button
+                    variant="contained"
+                    color="secondary"
+                    startIcon={<CancelIcon />}
                     onClick={() => this.handleDeleteJob(jobId)}
-                  />
+                  >
+                    Discard Job
+                  </Button>
                 </CardActions>
               ) : null}
             </Card>
@@ -1034,6 +1133,7 @@ const mutations = {
     mutation: gql`mutation startCampaign($campaignId: String!) {
         startCampaign(id: $campaignId) {
           ${campaignInfoFragment}
+          isStarting
         }
       }`,
     variables: { campaignId }
@@ -1077,6 +1177,34 @@ const mutations = {
     variables: {
       campaignId,
       url
+    }
+  }),
+  updateServiceManager: ownProps => (serviceManagerName, updateData) => ({
+    mutation: gql`
+      mutation updateServiceManager(
+        $organizationId: String!
+        $campaignId: String!
+        $serviceManagerName: String!
+        $updateData: JSON!
+      ) {
+        updateServiceManager(
+          organizationId: $organizationId
+          campaignId: $campaignId
+          serviceManagerName: $serviceManagerName
+          updateData: $updateData
+        ) {
+          id
+          data
+          fullyConfigured
+          startPolling
+        }
+      }
+    `,
+    variables: {
+      organizationId: ownProps.organizationData.organization.id,
+      campaignId: ownProps.campaignData.campaign.id,
+      serviceManagerName,
+      updateData
     }
   })
 };

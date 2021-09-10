@@ -37,7 +37,7 @@ If you're using postgres (see below), you should set `DB_TYPE=pg` and if you're 
 
 #### Using Docker to run postgres (optional)
 
-Docker is optional, but can help with a consistent development environment using postgres. You can also set up postgres without docker ([documented here](HOWTO_USE_POSTGRESQL.md)) but we recommend the docker route.
+Docker is optional, but can help with a consistent development environment using postgres. You can also ([set up postgres without docker](HOWTO_USE_POSTGRESQL.md)) but we recommend the docker route.
 
 1. Install docker and docker compose
 

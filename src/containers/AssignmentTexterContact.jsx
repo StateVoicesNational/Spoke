@@ -8,8 +8,8 @@ import gql from "graphql-tag";
 import loadData from "./hoc/load-data";
 import * as yup from "yup";
 import BulkSendButton from "../components/AssignmentTexter/BulkSendButton";
-import CircularProgress from "material-ui/CircularProgress";
-import Snackbar from "material-ui/Snackbar";
+import CircularProgress from "@material-ui/core/CircularProgress";
+import Snackbar from "@material-ui/core/Snackbar";
 import { isBetweenTextingHours } from "../lib";
 import { withRouter } from "react-router";
 import { getContactTimezone } from "../lib/timezones";
@@ -175,6 +175,10 @@ export class AssignmentTexterContact extends React.Component {
 
   handleMessageFormSubmit = cannedResponseId => async ({ messageText }) => {
     const { campaign, contact, messageStatusFilter } = this.props;
+    if (!messageText || messageText == "false") {
+      // defensive code -- if somehow message form validation fails, don't send a dumb "false" message
+      return;
+    }
     try {
       const message = this.createMessageToContact(messageText);
       if (this.state.disabled) {
@@ -399,13 +403,13 @@ export class AssignmentTexterContact extends React.Component {
         {this.state.disabled &&
         this.props.messageStatusFilter !== "needsMessage" ? (
           <div className={css(styles.overlay)}>
-            <CircularProgress size={0.5} />
+            <CircularProgress color="primary" size={20} />
             {this.state.disabledText}
           </div>
-        ) : (
-          ""
-        )}
+        ) : null}
         <ControlsComponent
+          handleNavigateNext={this.props.handleNavigateNext}
+          handleNavigatePrevious={this.props.handleNavigatePrevious}
           contact={this.props.contact}
           campaign={this.props.campaign}
           texter={this.props.texter}
@@ -437,9 +441,7 @@ export class AssignmentTexterContact extends React.Component {
             bulkSendMessages={this.bulkSendMessages}
             setDisabled={this.setDisabled}
           />
-        ) : (
-          ""
-        )}
+        ) : null}
         <Snackbar
           style={inlineStyles.snackbar}
           open={!!this.state.snackbarError}
@@ -454,6 +456,8 @@ export class AssignmentTexterContact extends React.Component {
 
 AssignmentTexterContact.propTypes = {
   reviewContactId: PropTypes.string,
+  handleNavigateNext: PropTypes.func,
+  handleNavigatePrevious: PropTypes.func,
   contact: PropTypes.object,
   campaign: PropTypes.object,
   assignment: PropTypes.object,

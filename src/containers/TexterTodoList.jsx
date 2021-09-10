@@ -1,6 +1,6 @@
 import PropTypes from "prop-types";
 import React from "react";
-import Check from "material-ui/svg-icons/action/check-circle";
+import CheckCircleIcon from "@material-ui/icons/CheckCircle";
 import Empty from "../components/Empty";
 import LoadingIndicator from "../components/LoadingIndicator";
 import AssignmentSummary from "../components/AssignmentSummary";
@@ -114,7 +114,9 @@ class TexterTodoList extends React.Component {
     const todos = data.user.todos;
     const renderedTodos = this.renderTodoList(todos);
 
-    const empty = <Empty title="You have nothing to do!" icon={<Check />} />;
+    const empty = (
+      <Empty title="You have nothing to do!" icon={<CheckCircleIcon />} />
+    );
 
     return <div>{renderedTodos.length === 0 ? empty : renderedTodos}</div>;
   }

@@ -1,12 +1,13 @@
 import PropTypes from "prop-types";
 import React from "react";
-import RaisedButton from "material-ui/RaisedButton";
-import CircularProgress from "material-ui/CircularProgress";
-import { getRaisedButtonProps } from "../utils";
+import Button from "@material-ui/core/Button";
+import CircularProgress from "@material-ui/core/CircularProgress";
+import { getButtonProps } from "../utils";
 
 const styles = {
   button: {
-    marginTop: 15
+    marginTop: 15,
+    display: "inline-block"
   }
 };
 
@@ -17,10 +18,11 @@ const GSSubmitButton = props => {
     extraProps.disabled = true;
     icon = (
       <CircularProgress
-        size={0.5}
+        size={20}
         style={{
           verticalAlign: "middle",
-          display: "inline-block"
+          display: "inline-block",
+          marginLeft: "5px"
         }}
       />
     );
@@ -28,13 +30,16 @@ const GSSubmitButton = props => {
 
   return (
     <div style={styles.button}>
-      <RaisedButton
-        primary
+      <Button
+        variant="contained"
+        color="primary"
         type="submit"
         value="submit"
-        {...getRaisedButtonProps(props)}
+        {...getButtonProps(props)}
         {...extraProps}
-      />
+      >
+        {props.label}
+      </Button>
       {icon}
     </div>
   );

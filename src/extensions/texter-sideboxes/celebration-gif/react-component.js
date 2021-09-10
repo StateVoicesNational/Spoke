@@ -68,7 +68,7 @@ export const adminSchema = () => ({
 export class AdminConfig extends React.Component {
   render() {
     return (
-      <div>
+      <React.Fragment>
         <Form.Field
           as={GSTextField}
           name="celebrationGifTopMessage"
@@ -87,7 +87,7 @@ export class AdminConfig extends React.Component {
           label="GIF alt text"
           fullWidth
         />
-      </div>
+      </React.Fragment>
     );
   }
 }

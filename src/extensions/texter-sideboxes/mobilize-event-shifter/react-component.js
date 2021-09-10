@@ -2,11 +2,16 @@ import type from "prop-types";
 import React from "react";
 import * as yup from "yup";
 import Form from "react-formal";
-import FlatButton from "material-ui/FlatButton";
-import Dialog from "material-ui/Dialog";
-import CircularProgress from "material-ui/CircularProgress";
-import { Tabs, Tab } from "material-ui/Tabs";
 import { css, StyleSheet } from "aphrodite";
+
+import Dialog from "@material-ui/core/Dialog";
+import DialogActions from "@material-ui/core/DialogActions";
+import DialogContent from "@material-ui/core/DialogContent";
+import Button from "@material-ui/core/Button";
+import CircularProgress from "@material-ui/core/CircularProgress";
+import Tabs from "@material-ui/core/Tabs";
+import Tab from "@material-ui/core/Tab";
+
 import GSTextField from "../../../components/forms/GSTextField";
 import {
   flexStyles,
@@ -33,10 +38,6 @@ const styles = StyleSheet.create({
     height: "80vh",
     width: "100%",
     border: "none"
-  },
-  loader: {
-    paddingTop: 50,
-    paddingLeft: "calc(50% - 25px)"
   }
 });
 
@@ -90,9 +91,9 @@ export class TexterSidebox extends React.Component {
     this.setState(update);
   };
 
-  changeTab = e => {
+  changeTab = (e, value) => {
     this.setState({
-      dialogTab: e
+      dialogTab: value
     });
   };
 
@@ -146,71 +147,65 @@ export class TexterSidebox extends React.Component {
 
     return (
       <div>
-        <FlatButton
-          label="Schedule for Events"
+        <Button
           onClick={() => this.setState({ dialogOpen: true })}
           className={css(flexStyles.flatButton)}
-          labelStyle={inlineStyles.flatButtonLabel}
-        />
-        <Dialog
-          actions={[
-            <FlatButton label="Cancel" primary onClick={this.closeDialog} />
-          ]}
-          open={this.state.dialogOpen}
-          onRequestClose={this.closeDialog}
-          className={css(styles.dialog)}
-          contentClassName={css(styles.dialogContentStyle)}
         >
-          {eventId ? (
-            <Tabs value={this.state.dialogTab} onChange={this.changeTab}>
-              <Tab label="Event" value="event" />
-              <Tab label="All Events" value="all" />
-            </Tabs>
-          ) : (
-            ""
-          )}
-          {eventId ? (
+          Schedule for Events
+        </Button>
+        <Dialog
+          maxWidth="md"
+          open={this.state.dialogOpen}
+          onClose={this.closeDialog}
+          className={css(styles.dialog)}
+        >
+          <DialogContent>
+            {eventId && (
+              <Tabs value={this.state.dialogTab} onChange={this.changeTab}>
+                <Tab label="Event" value="event" />
+                <Tab label="All Events" value="all" />
+              </Tabs>
+            )}
+            {eventId && (
+              <div
+                style={{
+                  display: this.state.dialogTab == "event" ? "block" : "none"
+                }}
+              >
+                {this.state.eventiFrameLoading && (
+                  <CircularProgress size={50} />
+                )}
+                <iframe
+                  className={css(styles.iframe)}
+                  src={`${mobilizeBaseUrl}/event/${eventId}/?${urlParamString}`}
+                  onLoad={() => this.iframeLoaded("eventiFrameLoading")}
+                  style={{
+                    display: this.state.eventiFrameLoading ? "none" : "block"
+                  }}
+                />
+              </div>
+            )}
             <div
               style={{
-                display: this.state.dialogTab == "event" ? "block" : "none"
+                display: this.state.dialogTab == "all" ? "block" : "none"
               }}
             >
-              {this.state.eventiFrameLoading ? (
-                <CircularProgress size={50} className={css(styles.loader)} />
-              ) : (
-                ""
-              )}
+              {this.state.alliFrameLoading && <CircularProgress size={50} />}
               <iframe
                 className={css(styles.iframe)}
-                src={`${mobilizeBaseUrl}/event/${eventId}/?${urlParamString}`}
-                onLoad={() => this.iframeLoaded("eventiFrameLoading")}
+                src={`${mobilizeBaseUrl}/?${allEventsUrlParams}`}
+                onLoad={() => this.iframeLoaded("alliFrameLoading")}
                 style={{
-                  display: this.state.eventiFrameLoading ? "none" : "block"
+                  display: this.state.alliFrameLoading ? "none" : "block"
                 }}
               />
             </div>
-          ) : (
-            ""
-          )}
-          <div
-            style={{
-              display: this.state.dialogTab == "all" ? "block" : "none"
-            }}
-          >
-            {this.state.alliFrameLoading ? (
-              <CircularProgress size={50} className={css(styles.loader)} />
-            ) : (
-              ""
-            )}
-            <iframe
-              className={css(styles.iframe)}
-              src={`${mobilizeBaseUrl}/?${allEventsUrlParams}`}
-              onLoad={() => this.iframeLoaded("alliFrameLoading")}
-              style={{
-                display: this.state.alliFrameLoading ? "none" : "block"
-              }}
-            />
-          </div>
+          </DialogContent>
+          <DialogActions>
+            <Button color="primary" onClick={this.closeDialog}>
+              Cancel
+            </Button>
+          </DialogActions>
         </Dialog>
       </div>
     );
@@ -236,6 +231,20 @@ export const adminSchema = () => ({
 });
 
 export class AdminConfig extends React.Component {
+  componentDidMount() {
+    const { settingsData } = this.props;
+    // set defaults
+    const defaults = {};
+    if (!settingsData.mobilizeEventShifterBaseUrl) {
+      defaults.mobilizeEventShifterBaseUrl =
+        window.MOBILIZE_EVENT_SHIFTER_URL || "";
+    }
+
+    if (Object.values(defaults).length) {
+      this.props.setDefaultsOnMount(defaults);
+    }
+  }
+
   render() {
     return (
       <div>
@@ -250,15 +259,12 @@ export class AdminConfig extends React.Component {
           name="mobilizeEventShifterBaseUrl"
           label="Set the Base Mobilize Url for the campaign."
           fullWidth
-          hintText={
-            window.MOBILIZE_EVENT_SHIFTER_URL
-              ? "Default: " + window.MOBILIZE_EVENT_SHIFTER_URL
-              : ""
-          }
         />
       </div>
     );
   }
 }
 
-AdminConfig.propTypes = {};
+AdminConfig.propTypes = {
+  setDefaultsOnMount: type.func
+};

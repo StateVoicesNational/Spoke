@@ -44,7 +44,6 @@ export class AdminIncomingMessageList extends Component {
   }
 
   shouldComponentUpdate = (dummy, nextState) => {
-    console.log("shouldComponentUpdate", nextState.needsRender);
     if (
       !nextState.needsRender &&
       _.isEqual(this.state.contactsFilter, nextState.contactsFilter) &&
@@ -53,11 +52,10 @@ export class AdminIncomingMessageList extends Component {
     ) {
       return false;
     }
-    console.log("shouldComponentUpdate updating");
     return true;
   };
 
-  componentDidUpdate = () => {
+  UNSAFE_componentWillReceiveProps = nextProps => {
     if (this.state.clearSelectedMessages) {
       this.setState({
         clearSelectedMessages: false,
@@ -232,23 +230,33 @@ export class AdminIncomingMessageList extends Component {
   };
 
   handleRowSelection = async (selectedRows, data) => {
+    let updateState;
     if (this.state.previousSelectedRows === "all" && selectedRows !== "all") {
-      await this.setState({
+      updateState = {
         previousSelectedRows: [],
         campaignIdsContactIds: [],
         needsRender: false
-      });
+      };
     } else {
-      await this.setState({
+      updateState = {
         previousSelectedRows: selectedRows,
         campaignIdsContactIds: data,
         needsRender: false
-      });
+      };
     }
+    // after sub-component clears its messages, we should reset the clearSelectedMessages value
+    if (
+      this.state.clearSelectedMessages &&
+      selectedRows &&
+      selectedRows.length === 0
+    ) {
+      updateState.clearSelectedMessages = false;
+      updateState.needsRender = true;
+    }
+    await this.setState(updateState);
   };
 
   handleCampaignsReceived = async campaigns => {
-    console.log("campaigns:", campaigns);
     let selectedCampaigns = [];
     if (this.state.campaignsFilter.campaignIds) {
       this.state.campaignsFilter.campaignIds.forEach(campaignId => {
@@ -261,7 +269,6 @@ export class AdminIncomingMessageList extends Component {
   };
 
   handleCampaignTextersReceived = async campaignTexters => {
-    console.log("handleCampaignTextersReceived", campaignTexters.length);
     let texterDisplayName = "";
     if (this.state.assignmentsFilter.texterId) {
       const texter = campaignTexters.find(texter => {

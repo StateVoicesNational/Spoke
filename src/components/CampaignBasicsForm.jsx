@@ -4,19 +4,24 @@ import Form from "react-formal";
 import moment from "moment";
 import CampaignFormSectionHeading from "./CampaignFormSectionHeading";
 import GSForm from "./forms/GSForm";
+import GSColorPicker from "./forms/GSColorPicker";
 import GSTextField from "./forms/GSTextField";
 import GSDateField from "./forms/GSDateField";
 import GSSubmitButton from "./forms/GSSubmitButton";
 import * as yup from "yup";
-import Toggle from "material-ui/Toggle";
-import ColorPicker from "material-ui-color-picker";
 import { dataTest } from "../lib/attributes";
-import RaisedButton from "material-ui/RaisedButton";
 
-const FormSchema = {
-  title: yup.string(),
-  description: yup.string(),
-  dueBy: yup.mixed(),
+const FormSchemaBeforeStarted = {
+  title: yup.string().required(),
+  description: yup.string().required(),
+  dueBy: yup
+    .mixed()
+    .required()
+    .test(
+      "in-future",
+      "Due date should be in the future: when you expect the campaign to end",
+      val => new Date(val) > new Date()
+    ),
   logoImageUrl: yup
     .string()
     .url()
@@ -26,7 +31,7 @@ const FormSchema = {
   introHtml: yup.string().nullable()
 };
 
-const EnsureCompletedFormSchema = {
+const FormSchemaAfterStarted = {
   title: yup.string().required(),
   description: yup.string().required(),
   dueBy: yup.mixed().required(),
@@ -46,18 +51,12 @@ const EnsureCompletedFormSchema = {
 };
 
 export default class CampaignBasicsForm extends React.Component {
-  formValues() {
-    return {
-      ...this.props.formValues,
-      dueBy: this.props.formValues.dueBy
-    };
-  }
-
   formSchema() {
-    if (!this.props.ensureComplete) {
-      return yup.object(FormSchema);
+    if (this.props.ensureComplete) {
+      // i.e. campaign.isStarted
+      return yup.object(FormSchemaAfterStarted);
     }
-    return yup.object(EnsureCompletedFormSchema);
+    return yup.object(FormSchemaBeforeStarted);
   }
 
   render() {
@@ -66,7 +65,7 @@ export default class CampaignBasicsForm extends React.Component {
         <CampaignFormSectionHeading title="What's your campaign about?" />
         <GSForm
           schema={this.formSchema()}
-          value={this.formValues()}
+          value={this.props.formValues}
           onChange={this.props.onChange}
           onSubmit={this.props.onSubmit}
           {...dataTest("campaignBasicsForm")}
@@ -76,7 +75,7 @@ export default class CampaignBasicsForm extends React.Component {
             {...dataTest("title")}
             name="title"
             label="Title (required)"
-            hintText="e.g. Election Day 2016"
+            helpertext="e.g. Election Day 2016"
             fullWidth
           />
           <Form.Field
@@ -84,39 +83,36 @@ export default class CampaignBasicsForm extends React.Component {
             {...dataTest("description")}
             name="description"
             label="Description (required)"
-            hintText="Get out the vote"
+            helpertext="Get out the vote"
             fullWidth
           />
           <Form.Field
-            as={props => <GSDateField utcOffset={0} fullWidth {...props} />}
+            as={GSDateField}
             {...dataTest("dueBy")}
             name="dueBy"
             label="Due date (required)"
             locale="en-US"
             shouldDisableDate={date => moment(date).diff(moment()) < 0}
-            autoOk
             fullWidth
           />
           <Form.Field
             as={GSTextField}
             name="introHtml"
             label="Intro HTML"
-            multiLine
+            multiline
             fullWidth
           />
           <Form.Field
             as={GSTextField}
             name="logoImageUrl"
             label="Logo Image URL"
-            hintText="https://www.mysite.com/images/logo.png"
+            helpertext="https://www.mysite.com/images/logo.png"
             fullWidth
           />
-          <label>Primary color</label>
           <Form.Field
+            as={GSColorPicker}
             name="primaryColor"
             label="Primary color"
-            defaultValue={this.props.formValues.primaryColor || "#ffffff"}
-            as={ColorPicker}
           />
           <Form.Submit
             as={GSSubmitButton}

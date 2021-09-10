@@ -28,7 +28,7 @@ export const getOrDefault = (value, defaultValue) =>
 export function getConfig(key, organization, opts) {
   if (organization) {
     // TODO: update to not parse if features is an object (vs. a string)
-    let features = getFeatures(organization);
+    const features = getFeatures(organization);
     if (features.hasOwnProperty(key)) {
       return getOrDefault(features[key], opts && opts.default);
     }
@@ -60,8 +60,8 @@ export function getConfig(key, organization, opts) {
   return opts && opts.default;
 }
 
-export function hasConfig(key, organization) {
-  const val = getConfig(key, organization);
+export function hasConfig(key, organization, options = {}) {
+  const val = exports.getConfig(key, organization, options);
   // we need to allow "" as no config since env vars will occasionally be set to that to undefine it
   return Boolean(typeof val !== "undefined" && val !== "");
 }
