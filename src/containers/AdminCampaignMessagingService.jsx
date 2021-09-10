@@ -27,7 +27,6 @@ const styles = StyleSheet.create({
 class AdminCampaignMessagingService extends React.Component {
   render() {
     const campaign = this.props.data.campaign;
-    const messagingServiceUrl = `https://www.twilio.com/console/sms/services/${campaign.messageserviceSid}/`;
     const phoneNumbers = campaign.phoneNumbers || [];
     return (
       <div>
@@ -36,10 +35,12 @@ class AdminCampaignMessagingService extends React.Component {
           <br />
           Campaign ID: {campaign.id}
           <br />
-          <DisplayLink
-            url={messagingServiceUrl}
-            textContent={"Messaging Service URL:"}
-          />
+          {campaign.messageServiceLink ? (
+            <DisplayLink
+              url={campaign.messageServiceLink}
+              textContent={"Messaging Service URL:"}
+            />
+          ) : null}
           <br />
           Total Phone Numbers: {phoneNumbers.length}
         </div>
@@ -76,6 +77,7 @@ const queries = {
           id
           title
           messageserviceSid
+          messageServiceLink
           phoneNumbers
         }
       }

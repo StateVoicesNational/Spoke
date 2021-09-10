@@ -34,6 +34,9 @@ export const showSidebox = ({ contact, campaign, messageStatusFilter }) => {
   );
 };
 
+const defaultTagHeaderText = "Tag a contact here:";
+const defaultTagButtonText = "Save tags";
+
 export class TexterSidebox extends React.Component {
   state = {
     newTags: {},
@@ -59,7 +62,7 @@ export class TexterSidebox extends React.Component {
     );
     return (
       <div>
-        <h3>{settingsData.tagHeaderText || "Tag a contact here:"}</h3>
+        <h3>{settingsData.tagHeaderText || defaultTagHeaderText}</h3>
         <div>
           {escalatedTags.map((tag, index) => (
             <TagChip
@@ -129,7 +132,7 @@ export class TexterSidebox extends React.Component {
             submitted >= 1
           }
         >
-          {settingsData.tagButtonText || "Save tags"}
+          {settingsData.tagButtonText || defaultTagButtonText}
         </Button>
       </div>
     );
@@ -156,6 +159,22 @@ export const adminSchema = () => ({
 });
 
 export class AdminConfig extends React.Component {
+  componentDidMount() {
+    const { settingsData } = this.props;
+    // set defaults
+    const defaults = {};
+    if (!settingsData.tagHeaderText) {
+      defaults.tagHeaderText = defaultTagHeaderText;
+    }
+    if (!settingsData.tagButtonText) {
+      defaults.tagButtonText = defaultTagButtonText;
+    }
+
+    if (Object.values(defaults).length) {
+      this.props.setDefaultsOnMount(defaults);
+    }
+  }
+
   render() {
     return (
       <div>
@@ -191,5 +210,6 @@ export class AdminConfig extends React.Component {
 AdminConfig.propTypes = {
   settingsData: type.object,
   onToggle: type.func,
-  organization: type.object
+  organization: type.object,
+  setDefaultsOnMount: type.func
 };
