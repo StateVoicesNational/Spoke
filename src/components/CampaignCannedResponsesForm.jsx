@@ -55,8 +55,7 @@ const styles = StyleSheet.create({
     display: "-webkit-box",
     WebkitBoxOrient: "vertical",
     WebkitLineClamp: 2,
-    overflow: "hidden",
-    height: 32
+    overflow: "hidden"
   },
   redText: {
     color: theme.colors.red
@@ -127,7 +126,7 @@ export class CampaignCannedResponsesForm extends React.Component {
           </Button>
           <div>
             <div className={css(styles.flexEnd)}>
-              <Tooltip title="Upload a CSV of canned responses with columns for Title, Text, and Tags">
+              <Tooltip title="Upload a CSV of canned responses with columns for Title, Text, Action, ActionData, and Tags">
                 <IconButton
                   onClick={() => this.uploadCsvInputRef.current.click()}
                   disabled={this.state.uploadingCsv}
@@ -289,13 +288,14 @@ export class CampaignCannedResponsesForm extends React.Component {
 
     const file = event.target.files[0];
     const tags = this.props.data.organization.tags;
+    const availableActions = this.props.availableActions;
 
     if (!file) return;
 
     this.setState({ uploadingCsv: true, uploadCsvError: null }, () =>
       parseCannedResponseCsv(
         file,
-        this.state.availableActionsLookup,
+        availableActions,
         tags,
         ({ error, cannedResponses }) => {
           this.setState({
