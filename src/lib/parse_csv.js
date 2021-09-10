@@ -148,22 +148,24 @@ export const parseCSV = (file, onCompleteCallback, options) => {
   });
 };
 
-const clean = str => str.toLowerCase().trim();
+const clean = str => str && str.toLowerCase().trim();
 
 const parseTags = (org_tags, tag_text) => {
   const tagIds = [];
-  for (var t of tag_text.split(",")) {
-    const tag_name = clean(t);
+  if (tag_text) {
+    for (var t of tag_text.split(",")) {
+      const tag_name = clean(t);
 
-    if (!tag_name) continue;
+      if (!tag_name) continue;
 
-    const tag = org_tags.find(tag => clean(tag.name) == tag_name);
+      const tag = org_tags.find(tag => clean(tag.name) == tag_name);
 
-    if (!tag) {
-      throw `"${tag_name}" cannot be found in your organization's tags`;
+      if (!tag) {
+        throw `"${tag_name}" cannot be found in your organization's tags`;
+      }
+
+      tagIds.push(tag.id);
     }
-
-    tagIds.push(tag.id);
   }
 
   return tagIds;
@@ -186,7 +188,7 @@ const parseAction = (availableActions, actionText, actionDataText) => {
     availableAction.clientChoiceData &&
     availableAction.clientChoiceData.length
   ) {
-    if (!actionDataText)
+    if (!actionDataClean)
       throw `Action data choice is required for action ${actionText}`;
 
     const actionDataChoice = availableAction.clientChoiceData.find(
