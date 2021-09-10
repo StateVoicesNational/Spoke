@@ -55,7 +55,7 @@ const styles = StyleSheet.create({
     display: "-webkit-box",
     WebkitBoxOrient: "vertical",
     WebkitLineClamp: 2,
-    overflow: "hidden"
+    width: "90%"
   },
   redText: {
     color: theme.colors.red
@@ -78,6 +78,7 @@ export class CampaignCannedResponsesForm extends React.Component {
       showForm: false,
       formButtonText: "",
       responseId: null,
+      showFullTextId: null,
       uploadingCsv: false,
       uploadCsvError: null,
       availableActionsLookup:
@@ -227,9 +228,26 @@ export class CampaignCannedResponsesForm extends React.Component {
         value={response.text}
         key={response.id}
       >
-        <ListItemText>
+        <ListItemText
+          onClick={() =>
+            this.setState({
+              showFullTextId:
+                this.state.showFullTextId === response.id ? null : response.id
+            })
+          }
+        >
           <div className={css(styles.title)}>{response.title}</div>
-          <div className={css(styles.text)}>
+          <div
+            className={css(styles.text)}
+            style={
+              this.state.showFullTextId === response.id
+                ? {}
+                : {
+                    WebkitLineClamp: 2,
+                    overflow: "hidden"
+                  }
+            }
+          >
             {response.answerActions ? (
               <span>
                 Action: &nbsp;

@@ -527,7 +527,7 @@ export class AssignmentTexterContactControls extends React.Component {
               name="optOutMessageText"
               fullWidth
               autoFocus
-              multiLine
+              multiline
             />
             <Button variant="outlined" onClick={this.handleCloseDialog}>
               Cancel
@@ -589,7 +589,7 @@ export class AssignmentTexterContactControls extends React.Component {
             className={css(styles.textField)}
             name="messageText"
             label="Your message"
-            multiLine
+            multiline
             fullWidth
             rowsMax={6}
           />

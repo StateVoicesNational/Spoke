@@ -20,8 +20,10 @@ const requestWithRetry = async (
   {
     validStatuses,
     statusValidationFunction,
+    bodyRetryFunction,
     retries: retriesInput,
     timeout = 2000,
+    retryDelayMs = 50,
     ...props
   } = {}
 ) => {
@@ -29,7 +31,7 @@ const requestWithRetry = async (
   const requestId = uuid();
 
   const retryDelay = () => {
-    const baseDelay = 50;
+    const baseDelay = retryDelayMs || 50;
     const randomDelay = Math.floor(Math.random() * (baseDelay / 2));
     return baseDelay + randomDelay;
   };
@@ -115,7 +117,14 @@ const requestWithRetry = async (
       error,
       response
     );
-
+    if (bodyRetryFunction) {
+      const bodyRetryResult = await bodyRetryFunction(response);
+      if (bodyRetryResult && bodyRetryResult.RETRY) {
+        retryReturnError = RetryReturnError.RETRY;
+      } else {
+        response = bodyRetryResult;
+      }
+    }
     if (retryReturnError === RetryReturnError.RETRY) {
       await setTimeout(() => {}, retryDelay());
       continue;

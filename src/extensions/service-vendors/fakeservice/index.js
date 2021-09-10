@@ -1,12 +1,29 @@
-import { getLastMessage } from "./message-sending";
-import { Message, PendingMessagePart, r, cacheableData } from "../../models";
+import { getLastMessage } from "../message-sending";
+import {
+  Message,
+  PendingMessagePart,
+  r,
+  cacheableData
+} from "../../../server/models";
 import uuid from "uuid";
 
 // This 'fakeservice' allows for fake-sending messages
 // that end up just in the db appropriately and then using sendReply() graphql
 // queries for the reception (rather than a real service)
 
-async function sendMessage(message, contact, trx, organization, campaign) {
+export const getMetadata = () => ({
+  supportsOrgConfig: false,
+  supportsCampaignConfig: false,
+  name: "fakeservice"
+});
+
+export async function sendMessage({
+  message,
+  contact,
+  trx,
+  organization,
+  campaign
+}) {
   const errorCode = message.text.match(/error(\d+)/);
   const changes = {
     service: "fakeservice",
@@ -48,7 +65,7 @@ async function sendMessage(message, contact, trx, organization, campaign) {
         ]
       : null;
     await cacheableData.message.save({
-      contact: contact,
+      contact,
       messageInstance: new Message({
         ...message,
         ...changes,
@@ -76,7 +93,8 @@ async function convertMessagePartsToMessage(messageParts) {
   const lastMessage = await getLastMessage({
     contactNumber,
     service: "fakeservice",
-    messageServiceSid: "fakeservice"
+    messageServiceSid: "fakeservice",
+    userNumber
   });
 
   const service_id =
@@ -98,7 +116,7 @@ async function convertMessagePartsToMessage(messageParts) {
   });
 }
 
-async function handleIncomingMessage(message) {
+export async function handleIncomingMessage(message) {
   const { contact_number, user_number, service_id, text } = message;
   const pendingMessagePart = new PendingMessagePart({
     service: "fakeservice",
@@ -113,7 +131,7 @@ async function handleIncomingMessage(message) {
   return part.id;
 }
 
-async function buyNumbersInAreaCode(organization, areaCode, limit) {
+export async function buyNumbersInAreaCode(organization, areaCode, limit) {
   const rows = [];
   for (let i = 0; i < limit; i++) {
     const last4 = limit.toString().padStart(4, "0");
@@ -132,7 +150,7 @@ async function buyNumbersInAreaCode(organization, areaCode, limit) {
   return limit;
 }
 
-async function deleteNumbersInAreaCode(organization, areaCode) {
+export async function deleteNumbersInAreaCode(organization, areaCode) {
   const numbersToDelete = (
     await r
       .knex("owned_phone_number")
@@ -154,11 +172,35 @@ async function deleteNumbersInAreaCode(organization, areaCode) {
   return count;
 }
 
+// Does a lookup for carrier and optionally the contact name
+export async function getContactInfo({
+  organization,
+  contactNumber,
+  // Boolean: maybe twilio-specific?
+  lookupName
+}) {
+  if (!contactNumber) {
+    return {};
+  }
+  const contactInfo = {
+    carrier: "FakeCarrier",
+    // -1 is a landline, 1 is a mobile number
+    // we test against one of the lower digits to randomly
+    // but deterministically vary on the landline
+    status_code: contactNumber[11] === "2" ? -1 : 1
+  };
+  if (lookupName) {
+    contactInfo.lookup_name = `Foo ${parseInt(Math.random() * 1000)}`;
+  }
+  return contactInfo;
+}
+
 export default {
   sendMessage,
   buyNumbersInAreaCode,
   deleteNumbersInAreaCode,
   // useless unused stubs
   convertMessagePartsToMessage,
-  handleIncomingMessage
+  handleIncomingMessage,
+  getMetadata
 };
