@@ -698,10 +698,13 @@ async function addNumberToMessagingService(
  * Buy a phone number and add it to the owned_phone_number table
  */
 async function buyNumber(organization, twilioInstance, phoneNumber, opts = {}) {
+  const twilioBaseUrl =
+    getConfig("TWILIO_BASE_CALLBACK_URL", organization) || "";
   const response = await twilioInstance.incomingPhoneNumbers.create({
     phoneNumber,
     friendlyName: `Managed by Spoke [${process.env.BASE_URL}]: ${phoneNumber}`,
-    voiceUrl: getConfig("TWILIO_VOICE_URL", organization) // will use default twilio recording if undefined
+    voiceUrl: getConfig("TWILIO_VOICE_URL", organization), // will use default twilio recording if undefined
+    smsUrl: urlJoin(twilioBaseUrl, "twilio", organization.id.toString())
   });
 
   if (response.error) {
@@ -825,6 +828,7 @@ async function deleteNumber(twilioInstance, phoneSid, phoneNumber) {
       }
     });
   log.debug(`Deleted number ${phoneNumber} [${phoneSid}]`);
+
   return await r
     .knex("owned_phone_number")
     .del()
@@ -1083,7 +1087,10 @@ export const fullyConfigured = async (organization, serviceManagerData) => {
     (serviceManagerData && serviceManagerData.skipOrgMessageService) ||
     // legacy options
     exports.manualMessagingServicesEnabled(organization) ||
-    exports.campaignNumbersEnabled(organization)
+    exports.campaignNumbersEnabled(organization) ||
+    getConfig("SKIP_TWILIO_MESSAGING_SERVICE", organization, {
+      truthy: true
+    })
   ) {
     return true;
   }

@@ -16,6 +16,7 @@ import telemetry from "./telemetry";
 import { addServerEndpoints as messagingServicesAddServerEndpoints } from "../extensions/service-vendors/service_map";
 import { getConfig } from "./api/lib/config";
 import { seedZipCodes } from "./seeds/seed-zip-codes";
+import { seedAreaCodes } from "./seeds/seed-area-codes";
 import { setupUserNotificationObservers } from "./notifications";
 import { existsSync } from "fs";
 import { rawAllMethods } from "../extensions/contact-loaders";
@@ -30,6 +31,7 @@ const DEBUG = process.env.NODE_ENV === "development";
 
 if (!getConfig("SUPPRESS_SEED_CALLS", null, { truthy: 1 })) {
   seedZipCodes();
+  seedAreaCodes();
 }
 
 if (!getConfig("SUPPRESS_DATABASE_AUTOCREATE", null, { truthy: 1 })) {
@@ -37,6 +39,7 @@ if (!getConfig("SUPPRESS_DATABASE_AUTOCREATE", null, { truthy: 1 })) {
     // seed above won't have succeeded if we needed to create first
     if (didCreate && !getConfig("SUPPRESS_SEED_CALLS", null, { truthy: 1 })) {
       seedZipCodes();
+      seedAreaCodes();
     }
     if (!didCreate && !getConfig("SUPPRESS_MIGRATIONS", null, { truthy: 1 })) {
       r.k.migrate.latest();

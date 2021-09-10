@@ -6,6 +6,7 @@
 /// All functions are OPTIONAL EXCEPT metadata() and const name=.
 /// DO NOT IMPLEMENT ANYTHING YOU WILL NOT USE -- the existence of a function adds behavior/UI (sometimes costly)
 
+import { getConfig } from "../../../server/api/lib/config";
 import { cacheableData } from "../../../server/models";
 
 export const name = "sticky-sender";
@@ -54,6 +55,26 @@ export async function onMessageSend({
   if (organizationContact && organizationContact.user_number) {
     return { user_number: organizationContact.user_number };
   }
+
+  const phoneInventoryEnabled =
+    getConfig("EXPERIMENTAL_PHONE_INVENTORY", organization, { truthy: true }) ||
+    getConfig("PHONE_INVENTORY", organization, { truthy: true });
+  if (
+    phoneInventoryEnabled &&
+    serviceName === "twilio" &&
+    getConfig("SKIP_TWILIO_MESSAGING_SERVICE", organization, {
+      truthy: true
+    })
+  ) {
+    const phoneNumber = await ownedPhoneNumber.getOwnedPhoneNumberForStickySender(
+      organization.id,
+      contactNumber
+    );
+
+    if (phoneNumber && phoneNumber.phone_number) {
+      return { user_number: phoneNumber.phone_number };
+    }
+  }
 }
 
 // NOTE: this is somewhat expensive relatively what it usually is,
@@ -92,4 +113,11 @@ export async function onDeliveryReport({
       });
     }
   }
+}
+
+export async function onOptOut({ organization, contact }) {
+  await cacheableData.organizationContact.remove({
+    organizationId: organization.id,
+    contactNumber: contact.cell
+  });
 }

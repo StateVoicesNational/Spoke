@@ -57,8 +57,7 @@ will have more sophisticated algorithms which take into account past success wit
 maybe depending on the carrier per-contact.
 
 ### sticky-sender
-
-
+Creates permanent mappings between contact numbers and user numbers per organization when a recipient is texted. Once the mapping exists, that contact number will always be texted by that user number. This also means that messaging services will be skipped in favor of the direct user number.  
 
 ### test-fake-example
 

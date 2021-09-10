@@ -35,7 +35,7 @@ const cacheKey = id => `${process.env.CACHE_PREFIX || ""}contact-${id}`;
 const messageStatusKey = id =>
   `${process.env.CACHE_PREFIX || ""}contactstatus-${id}`;
 
-// allows a lookup of contact_id, assignment_id, and timezone_offset by cell+messageservice_sid
+// allows a lookup of contact_id, assignment_id, and timezone_offset by cell+messageservice_sid or cell+userNumber
 const cellTargetKey = (cell, messageServiceOrUserNumber) =>
   `${process.env.CACHE_PREFIX || ""}cell-${cell}-${messageServiceOrUserNumber ||
     "x"}`;

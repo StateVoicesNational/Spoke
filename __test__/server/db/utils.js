@@ -5,6 +5,7 @@ export const tables = [
   "job_request",
   "pending_message_part",
   "zip_code",
+  "area_code",
   "invite",
   "user",
   "user_organization",
