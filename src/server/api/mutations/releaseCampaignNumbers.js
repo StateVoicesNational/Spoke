@@ -2,7 +2,7 @@ import { r } from "../../models";
 import cacheableData from "../../models/cacheable_queries";
 import { accessRequired } from "../errors";
 import { getConfig } from "../lib/config";
-import twilio from "../lib/twilio";
+import twilio from "../../../extensions/service-vendors/twilio";
 import ownedPhoneNumber from "../lib/owned-phone-number";
 
 export const releaseCampaignNumbers = async (_, { campaignId }, { user }) => {

@@ -42,32 +42,34 @@ describe("End-to-end campaign flow", () => {
     // Selectors are fairly brittle, consider upgrading material-ui for easier test interaction
 
     // Open picker by focusing input
-    cy.get("[data-test=dueBy] input").click();
+    cy.get("[data-test=dueBy] input").type("1");
     // Click next month (>)
     cy.get("div.MuiPickersCalendarHeader-switchHeader > button:nth-child(3)")
       .first()
       .click();
-
+    cy.task("log", "cyLOG basic-campaign-e2e-test 1");
     // Click first of the month
     cy.get(".MuiPickersCalendar-week button:not(.MuiPickersDay-hidden)")
       .eq(3)
       .click();
-
+    cy.task("log", "cyLOG basic-campaign-e2e-test 2");
     // Click okay on calendar
+    /*
     cy.get(".MuiDialogActions-root button")
       .eq(1)
       .click();
-
+    */
+    cy.task("log", "cyLOG basic-campaign-e2e-test 3");
     // Wait for modal to close then submit
     // TODO: use cy.waitUntil() instead of wait()
     cy.wait(400);
     cy.get("[data-test=campaignBasicsForm]").submit();
-
+    cy.task("log", "cyLOG basic-campaign-e2e-test 4");
     // Upload Contacts
     cy.get("#contact-upload").attachFile("two-contacts.csv"), { force: true };
     cy.wait(400);
     cy.get("button[data-test=submitContactsCsvUpload]").click();
-
+    cy.task("log", "cyLOG basic-campaign-e2e-test 5");
     // Assignments
     // Note: Material UI v0 AutoComplete component appears to require a click on the element
     // later versions should just allow you to hit enter
@@ -84,7 +86,9 @@ describe("End-to-end campaign flow", () => {
     cy.wait(400);
 
     // Interaction Steps
-    cy.get("[data-test=editorInteraction] input").click();
+    // the editorInteraction selector might seem overly precise
+    // -- the problem is that multiline fields have two textareas, one hidden
+    cy.get("[data-test=editorInteraction] textarea[name=script]").click();
     cy.wait(400);
     cy.get(".DraftEditor-root").type(
       "Hi {{}firstName{}} this is {{}texterFirstName{}}, how are you?"
@@ -93,7 +97,7 @@ describe("End-to-end campaign flow", () => {
     cy.get("[data-test=questionText] input").type("How are you?");
     cy.get("button[data-test=addResponse]").click();
     cy.get("[data-test=answerOption] input").type("Good");
-    cy.get("[data-test=editorInteraction] input")
+    cy.get("[data-test=editorInteraction] textarea[name=script]")
       .eq(1)
       .click();
     cy.get(".DraftEditor-root").type("Great!");
@@ -122,12 +126,12 @@ describe("End-to-end campaign flow", () => {
         .find("button[data-test=sendFirstTexts]")
         .click();
       cy.get("[name=messageText]").then(els => {
-        console.log(els[0]);
+        console.log("name=messageText", els[0]);
         expect(els[0].value).to.match(
           /Hi ContactFirst(\d) this is TexterFirst, how are you\?/
         );
       });
-
+      cy.task("log", "cyLOG basic-campaign-e2e-test 6");
       cy.get("button[data-test=send]")
         .eq(0)
         .click();
@@ -144,7 +148,9 @@ describe("End-to-end campaign flow", () => {
 
       // Shows we're done and click back to /todos
       cy.get("body").contains("You've messaged all your assigned contacts.");
+      cy.task("log", "cyLOG basic-campaign-e2e-test 7");
       cy.get("button:contains(Back To Todos)").click();
+      cy.task("log", "cyLOG basic-campaign-e2e-test 8");
       cy.waitUntil(() => cy.url().then(url => url.match(/\/todos$/)));
     });
   });

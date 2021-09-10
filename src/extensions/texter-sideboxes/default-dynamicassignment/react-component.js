@@ -7,6 +7,7 @@ import Button from "@material-ui/core/Button";
 import { withRouter } from "react-router";
 import gql from "graphql-tag";
 import GSTextField from "../../../components/forms/GSTextField";
+import { dataTest } from "../../../lib/attributes";
 
 import loadData from "../../../containers/hoc/load-data";
 
@@ -41,6 +42,10 @@ export const showSummary = ({ campaign, assignment, settingsData }) =>
   campaign.useDynamicAssignment &&
   !assignment.unmessagedCount &&
   assignment.maxContacts !== 0;
+
+const defaultDynamicAssignmentRequestMoreMessage =
+  "Finished sending all your messages, and want to send more?";
+const defaultDynamicAssignmentRequestMoreLabel = "Send more texts";
 
 export class TexterSideboxClass extends React.Component {
   requestNewContacts = async () => {
@@ -97,11 +102,12 @@ export class TexterSideboxClass extends React.Component {
       assignment.allContactsCount === 0
         ? "Start texting with your first batch"
         : settingsData.dynamicAssignmentRequestMoreMessage ||
-          "Finished sending all your messages, and want to send more?";
+          defaultDynamicAssignmentRequestMoreMessage;
     const nextBatchMoreLabel =
       assignment.allContactsCount === 0
         ? "Start texting"
-        : settingsData.dynamicAssignmentRequestMoreLabel || "Send more texts";
+        : settingsData.dynamicAssignmentRequestMoreLabel ||
+          defaultDynamicAssignmentRequestMoreLabel;
     const headerStyle = messageStatusFilter ? { textAlign: "center" } : {};
     return (
       <div style={headerStyle}>
@@ -139,7 +145,11 @@ export class TexterSideboxClass extends React.Component {
         ) : null}
         {contact /*the empty list*/ ? (
           <div style={{ marginBottom: "8px" }}>
-            <Button variant="contained" onClick={this.gotoTodos}>
+            <Button
+              variant="contained"
+              onClick={this.gotoTodos}
+              {...dataTest("gotoTodos")}
+            >
               Back To Todos
             </Button>
           </div>
@@ -217,6 +227,22 @@ export const adminSchema = () => ({
 });
 
 export class AdminConfig extends React.Component {
+  componentDidMount() {
+    const { settingsData } = this.props;
+    // set defaults
+    const defaults = {};
+    if (!settingsData.dynamicAssignmentRequestMoreLabel) {
+      defaults.dynamicAssignmentRequestMoreLabel = defaultDynamicAssignmentRequestMoreLabel;
+    }
+    if (!settingsData.dynamicAssignmentRequestMoreMessage) {
+      defaults.dynamicAssignmentRequestMoreMessage = defaultDynamicAssignmentRequestMoreMessage;
+    }
+
+    if (Object.values(defaults).length) {
+      this.props.setDefaultsOnMount(defaults);
+    }
+  }
+
   render() {
     return (
       <div>
@@ -225,14 +251,12 @@ export class AdminConfig extends React.Component {
           name="dynamicAssignmentRequestMoreLabel"
           label="Request More Label"
           fullWidth
-          hintText="default: Send more texts"
         />
         <Form.Field
           as={GSTextField}
           name="dynamicAssignmentRequestMoreMessage"
           label="Request More Top Message"
           fullWidth
-          hintText="default: Finished sending all your messages, and want to send more?"
         />
         <Form.Field
           as={GSTextField}
