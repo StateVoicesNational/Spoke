@@ -1,5 +1,60 @@
 # Release Notes
 
+## v11.0
+
+_August 2021:_ Version 11.0
+
+This major release upgrades several backend libraries and significantly extends and refactors the way vendors (e.g. Twilio) are connected.  First, Stefan Hayden has helped us upgrade our Material UI library -- so all components may look *slightly* different in style, but nothing should look unfamiliar. This will make future UI improvements much easier and for developer-contributors to use current documentation and resources (and less buggy!) for continuing UI evolution.
+
+More details below for a few migration steps depending on your deployment:
+* There is a database migration for anyone upgrading -- instances with a very large message table have special instructions
+* AWS Lambda deployments have slightly different deployment commands now
+* Anyone using  EXPERIMENTAL_CAMPAIGN_PHONE_NUMBERS or EXPERIMENTAL_TWILIO_PER_CAMPAIGN_MESSAGING_SERVICE require setup changes (these *were* experimental features)
+
+### Improvements
+
+#### Service vendors and Service managers extensions
+
+Based on work from Larry Person, there is a large refactor of "service-vendors" which makes it easier to contain the code to support a vendor connection like Twilio (and others -- there is an experimental Bandwidth.com implementation now, as well). Service Managers is in-turn an extension-api that allows one to hook into service-vendors and other campaign events easily. Adam Greenspan has created a Sticky Sender feature which allows one to keep the same phone number across conversations, so e.g. Twilio message services aren't necessary.
+
+#### Additional changes
+
+* Redis upgrade -- please report any issues -- new Heroku installs support Redis 6 which requires a TLS connection
+* keyboard shortcuts for advancing left/right
+* service-managers: carrier-lookup, scrub-bad-mobilenums, and per-campaign-messageservices (replacing EXPERIMENTAL_TWILIO_PER_CAMPAIGN_MESSAGING_SERVICE) 
+* NGPVAN updates and fixes to use their changed/most recent API
+
+### Migration Steps
+
+#### Database upgrades
+* This is a major release and includes a schema change.
+* For small instances simply leave/set SUPPRESS_MIGRATIONS="" or for [AWS Lambda, see the db migration instructions](https://moveonorg.github.io/Spoke/#/HOWTO_DEPLOYING_AWS_LAMBDA?id=migrating-the-database). 
+* For instances with a large `message` table, we recommend setting NO_INDEX_CHANGES=1 before running the migration, and then manually running two commands:
+  * `CREATE INDEX CONCURRENTLY cell_msgsvc_user_number_idx ON message (contact_number, messageservice_sid, user_number);`
+  * `DROP INDEX cell_messageservice_sid_idx;`
+
+The schema changes include adding a new table `organization_contact` which will track contacts across campaigns in an organization -- for things like subscription_status (in future), whether the number is a landline or what number has been used to contact them in the past (for 'sticky' sending). We also add user_number at the end of already-indexed cell-messageservice, to make it easier to search for user_numbers (also for sticky sending features).
+
+
+#### AWS Deployment changes
+
+Instead of running a single 'claudia' command, You will need to tweak two things:
+* Add an environment variable `ASSETS_DIR_PREBUILT` and set it to the absolute directory of your deployment checkout directory + "/build/client" (or whatever you have your ASSETS_DIR var set to).  For example, on a Mac it might be something like "/Users/Sky/spoke/build/client"
+* Instead of a single deployment command, you will first need to run
+  1. `ASSETS_DIR=./build/client/assets ASSETS_MAP_FILE=assets.json NODE_ENV=production yarn prod-build-client`
+  2. and then for your `claudia update` command you need to include your usual command line parameters and ADD `--no-optional-dependencies`
+
+These steps remove the client-side libraries from the server-side build, which is necessary now that the client-side libraries are too large to 'fit' into an AWS Lambda server deploy file.  This is documented in the [AWS setup/deploy steps](https://github.com/MoveOnOrg/Spoke/compare/main...stage-main-11-0#diff-548e8f704ad84645a42f2efaf1332490f6844d0a0dd50e9ac6b931c198d213f3)
+
+#### Changes for Experimental Per-campaign phone numbers/message services
+
+For those that used the experimental feature EXPERIMENTAL_CAMPAIGN_PHONE_NUMBERS, it has been moved and refactored into a  or Service Manager extension -- for these experimental installs (ONLY!), change to setting SERVICE_MANAGERS=per-campaign-messageservices
+
+EXPERIMENTAL_TWILIO_PER_CAMPAIGN_MESSAGING_SERVICE is no longer supported.  Please create an issue if you still have a use-case for this -- there is tentative work to move its functionality into per-campaign-messageservices as well, but only if it still has users.
+
+### Appreciations
+* [Adam Greenspan](agreenspan24), [Akash Jairam](https://github.com/Akash-Jairam), [Arique Aguilar](https://github.com/Arique1104) (our new Community Manager -- Welcome!), [Asha Sulaiman](https://github.com/asha15), [Cody Gordon](https://github.com/codygordon), [Fryda Guedes](https://github.com/Frydafly), [Kathy Nguyen](https://github.com/crayolakat), [Neely Kartha](https://github.com/nkartha2), [Schuyler Duveen](https://github.com/schuyler1d), [Stefan Hayden](https://github.com/stefanhayden),  and Mark Houghton and [Barbara Atkins](https://github.com/bdatkins) for QA
+
 
 ## v10.2
 

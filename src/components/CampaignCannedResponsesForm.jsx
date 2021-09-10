@@ -63,6 +63,7 @@ export class CampaignCannedResponsesForm extends React.Component {
       showForm: false,
       formButtonText: "",
       responseId: null,
+      showFullTextId: null,
       availableActionsLookup:
         props.availableActions &&
         props.availableActions.reduce((lookup, action) => {
@@ -164,9 +165,26 @@ export class CampaignCannedResponsesForm extends React.Component {
         value={response.text}
         key={response.id}
       >
-        <ListItemText>
+        <ListItemText
+          onClick={() =>
+            this.setState({
+              showFullTextId:
+                this.state.showFullTextId === response.id ? null : response.id
+            })
+          }
+        >
           <div className={css(styles.title)}>{response.title}</div>
-          <div className={css(styles.text)}>
+          <div
+            className={css(styles.text)}
+            style={
+              this.state.showFullTextId === response.id
+                ? {}
+                : {
+                    WebkitLineClamp: 2,
+                    overflow: "hidden"
+                  }
+            }
+          >
             {response.answerActions ? (
               <span>
                 Action: &nbsp;

@@ -129,7 +129,7 @@ export class CampaignContactsChoiceForm extends React.Component {
               saveLabel={this.props.saveLabel}
               clientChoiceData={ingestMethod && ingestMethod.clientChoiceData}
               lastResult={lastResult}
-              jobResultMessage={null}
+              jobResultMessage={null /* use lastResult.result instead */}
               contactsPerPhoneNumber={contactsPerPhoneNumber}
               maxNumbersPerCampaign={maxNumbersPerCampaign}
             />

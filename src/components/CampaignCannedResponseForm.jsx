@@ -53,7 +53,7 @@ export default class CannedResponseForm extends React.Component {
           return toReturn;
         }, {})
     };
-  };
+  }
 
   handleSave = () => {
     const toSave = {
@@ -66,7 +66,7 @@ export default class CannedResponseForm extends React.Component {
     };
 
     delete toSave.availableActionsLookup;
-    
+
     const { onSaveCannedResponse } = this.props;
     onSaveCannedResponse(toSave);
   };
@@ -128,12 +128,12 @@ export default class CannedResponseForm extends React.Component {
             name="text"
             type="script"
             label="Script"
-            multiLine
+            multiline
             fullWidth
           />
           {availableActions && availableActions.length ? (
             <div>
-              <div style={{display: 'flex'}}>
+              <div style={{ display: "flex" }}>
                 <Form.Field
                   {...dataTest("actionSelect")}
                   label="Action Handler"
@@ -144,11 +144,9 @@ export default class CannedResponseForm extends React.Component {
                     label: action.displayName
                   }))}
                   fullWidth
-                  style={{flexGrow: 1}}
+                  style={{ flexGrow: 1 }}
                 />
-                <Tooltip
-                  title="An action is something that is triggered by this answer being chosen, often in an outside system"
-                >
+                <Tooltip title="An action is something that is triggered by this answer being chosen, often in an outside system">
                   <IconButton>
                     <HelpOutlineIcon />
                   </IconButton>

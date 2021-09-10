@@ -338,7 +338,7 @@ export class PeopleList extends Component {
           case "propsUpdate":
             break;
           default:
-            console.log(`action not handled: ${action}`);
+            break;
         }
       }
     };

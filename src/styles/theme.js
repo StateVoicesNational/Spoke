@@ -3,7 +3,7 @@ import tinycolor from "tinycolor2";
 const coreBackgroundColor = global.CORE_BACKGROUND_COLOR || "rgb(83, 180, 119)";
 
 const colors = {
-  coreBackgroundColor: coreBackgroundColor,
+  coreBackgroundColor,
   coreBackgroundColorDisabled: tinycolor(coreBackgroundColor)
     .darken(10)
     .toHexString(),

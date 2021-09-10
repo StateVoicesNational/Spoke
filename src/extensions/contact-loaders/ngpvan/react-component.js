@@ -35,7 +35,11 @@ export class CampaignContactsForm extends React.Component {
 
   buildSelectData = () => {
     const { clientChoiceData } = this.props;
+
     const clientChoiceDataObject = JSON.parse(clientChoiceData);
+    if (!clientChoiceDataObject || !clientChoiceDataObject.items) {
+      return [];
+    }
     return clientChoiceDataObject.items;
   };
 
@@ -43,7 +47,7 @@ export class CampaignContactsForm extends React.Component {
     const selectData = this.buildSelectData();
     return (
       <Autocomplete
-        options={this.buildSelectData()}
+        options={selectData}
         getOptionLabel={option => option.name}
         onChange={(event, value) => {
           if (value) {

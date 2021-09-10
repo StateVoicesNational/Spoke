@@ -11,10 +11,17 @@ import GSSubmitButton from "./forms/GSSubmitButton";
 import * as yup from "yup";
 import { dataTest } from "../lib/attributes";
 
-const FormSchema = {
-  title: yup.string(),
-  description: yup.string(),
-  dueBy: yup.mixed(),
+const FormSchemaBeforeStarted = {
+  title: yup.string().required(),
+  description: yup.string().required(),
+  dueBy: yup
+    .mixed()
+    .required()
+    .test(
+      "in-future",
+      "Due date should be in the future: when you expect the campaign to end",
+      val => new Date(val) > new Date()
+    ),
   logoImageUrl: yup
     .string()
     .url()
@@ -24,7 +31,7 @@ const FormSchema = {
   introHtml: yup.string().nullable()
 };
 
-const EnsureCompletedFormSchema = {
+const FormSchemaAfterStarted = {
   title: yup.string().required(),
   description: yup.string().required(),
   dueBy: yup.mixed().required(),
@@ -44,18 +51,12 @@ const EnsureCompletedFormSchema = {
 };
 
 export default class CampaignBasicsForm extends React.Component {
-  formValues() {
-    return {
-      ...this.props.formValues,
-      dueBy: this.props.formValues.dueBy
-    };
-  }
-
   formSchema() {
-    if (!this.props.ensureComplete) {
-      return yup.object(FormSchema);
+    if (this.props.ensureComplete) {
+      // i.e. campaign.isStarted
+      return yup.object(FormSchemaAfterStarted);
     }
-    return yup.object(EnsureCompletedFormSchema);
+    return yup.object(FormSchemaBeforeStarted);
   }
 
   render() {
@@ -64,7 +65,7 @@ export default class CampaignBasicsForm extends React.Component {
         <CampaignFormSectionHeading title="What's your campaign about?" />
         <GSForm
           schema={this.formSchema()}
-          value={this.formValues()}
+          value={this.props.formValues}
           onChange={this.props.onChange}
           onSubmit={this.props.onSubmit}
           {...dataTest("campaignBasicsForm")}
@@ -86,20 +87,19 @@ export default class CampaignBasicsForm extends React.Component {
             fullWidth
           />
           <Form.Field
-            as={props => <GSDateField utcOffset={0} fullWidth {...props} />}
+            as={GSDateField}
             {...dataTest("dueBy")}
             name="dueBy"
             label="Due date (required)"
             locale="en-US"
             shouldDisableDate={date => moment(date).diff(moment()) < 0}
-            autoOk
             fullWidth
           />
           <Form.Field
             as={GSTextField}
             name="introHtml"
             label="Intro HTML"
-            multiLine
+            multiline
             fullWidth
           />
           <Form.Field
