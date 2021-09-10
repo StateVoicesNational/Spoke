@@ -138,11 +138,11 @@ class AdminPhoneNumberInventory extends React.Component {
     });
   };
 
-  handleDeleteNumbersOpen = row => {
+  handleDeleteNumbersOpen = ([areaCode, , , availableCount]) => {
     this.setState({
       deleteNumbersDialogOpen: true,
-      deleteNumbersAreaCode: row.areaCode,
-      deleteNumbersCount: row.availableCount
+      deleteNumbersAreaCode: areaCode,
+      deleteNumbersCount: availableCount
     });
   };
 
@@ -194,12 +194,17 @@ class AdminPhoneNumberInventory extends React.Component {
         label: " ",
         options: {
           sort: false,
-          customBodyRender: (value, tableMeta) =>
-            this.props.params.ownerPerms && (
-              <IconButton onClick={() => this.handleDeleteNumbersOpen(row)}>
-                <DeleteIcon />
-              </IconButton>
-            )
+          customBodyRender: (value, { rowData }) => {
+            return (
+              this.props.params.ownerPerms && (
+                <IconButton
+                  onClick={() => this.handleDeleteNumbersOpen(rowData)}
+                >
+                  <DeleteIcon />
+                </IconButton>
+              )
+            );
+          }
         }
       },
       // TODO: display additional information here about pending and past jobs
@@ -270,6 +275,9 @@ class AdminPhoneNumberInventory extends React.Component {
   }
 
   renderBuyNumbersForm() {
+    const service = this.props.data.organization.serviceVendor;
+    const serviceName = service.name;
+    const serviceConfig = service.config || "{}";
     return (
       <GSForm
         schema={this.buyNumbersFormSchema()}
@@ -291,7 +299,9 @@ class AdminPhoneNumberInventory extends React.Component {
             name="limit"
             {...dataTest("limit")}
           />
-          {this.props.data.organization.twilioMessageServiceSid &&
+          {serviceName === "twilio" &&
+            serviceConfig.TWILIO_MESSAGE_SERVICE_SID &&
+            serviceConfig.TWILIO_MESSAGE_SERVICE_SID.length > 0 &&
             !this.props.data.organization.campaignPhoneNumbersEnabled && (
               <Form.Field
                 name="addToOrganizationMessagingService"
@@ -464,7 +474,10 @@ const queries = {
       query getOrganizationData($organizationId: String!) {
         organization(id: $organizationId) {
           id
-          twilioMessageServiceSid
+          serviceVendor {
+            name
+            config
+          }
           campaignPhoneNumbersEnabled
           phoneNumberCounts {
             areaCode

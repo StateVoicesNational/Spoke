@@ -56,18 +56,19 @@ const styles = StyleSheet.create({
     WebkitBoxOrient: "vertical",
     WebkitLineClamp: 2,
     overflow: "hidden",
-    height: 32
+    height: 32,
+    width: "90%"
   },
   redText: {
     color: theme.colors.red
   },
   spaceBetween: {
-    display: 'flex',
-    justifyContent: 'space-between'
+    display: "flex",
+    justifyContent: "space-between"
   },
   flexEnd: {
-    display: 'flex',
-    justifyContent: 'flex-end'
+    display: "flex",
+    justifyContent: "flex-end"
   }
 });
 
@@ -76,6 +77,7 @@ export class CampaignCannedResponsesForm extends React.Component {
     showForm: false,
     formButtonText: "",
     responseId: null,
+    showFullTextId: null,
     uploadingCsv: false,
     uploadCsvError: null
   };
@@ -92,7 +94,7 @@ export class CampaignCannedResponsesForm extends React.Component {
   getCannedResponseId() {
     return Math.random()
       .toString(36)
-      .replace(/[^a-zA-Z1-9]+/g, "")
+      .replace(/[^a-zA-Z1-9]+/g, "");
   }
 
   showAddButton(cannedResponses) {
@@ -116,9 +118,7 @@ export class CampaignCannedResponsesForm extends React.Component {
           </Button>
           <div>
             <div className={css(styles.flexEnd)}>
-              <Tooltip
-                title="Upload a CSV of canned responses with columns for Title, Text, and Tags"
-              >
+              <Tooltip title="Upload a CSV of canned responses with columns for Title, Text, and Tags">
                 <IconButton
                   onClick={() => this.uploadCsvInputRef.current.click()}
                   disabled={this.state.uploadingCsv}
@@ -127,16 +127,20 @@ export class CampaignCannedResponsesForm extends React.Component {
                 </IconButton>
               </Tooltip>
               {cannedResponses.length ? (
-                <Tooltip title="Remove all canned responses" >
+                <Tooltip title="Remove all canned responses">
                   <IconButton
-                    onClick={() => this.props.onChange({
-                      cannedResponses: []
-                    })}
+                    onClick={() =>
+                      this.props.onChange({
+                        cannedResponses: []
+                      })
+                    }
                   >
                     <ClearIcon />
                   </IconButton>
                 </Tooltip>
-              ) : ""}
+              ) : (
+                ""
+              )}
             </div>
             <input
               type="file"
@@ -213,9 +217,28 @@ export class CampaignCannedResponsesForm extends React.Component {
         value={response.text}
         key={response.id}
       >
-        <ListItemText>
+        <ListItemText
+          onClick={() =>
+            this.setState({
+              showFullTextId:
+                this.state.showFullTextId === response.id ? null : response.id
+            })
+          }
+        >
           <div className={css(styles.title)}>{response.title}</div>
-          <div className={css(styles.text)}>{response.text}</div>
+          <div
+            className={css(styles.text)}
+            style={
+              this.state.showFullTextId === response.id
+                ? {}
+                : {
+                    WebkitLineClamp: 2,
+                    overflow: "hidden"
+                  }
+            }
+          >
+            {response.text}
+          </div>
           {response.tagIds && response.tagIds.length > 0 && (
             <TagChips
               tags={this.props.data.organization.tags}
@@ -267,29 +290,25 @@ export class CampaignCannedResponsesForm extends React.Component {
 
     if (!file) return;
 
-    this.setState({ uploadingCsv: true, uploadCsvError: null },
-      () => parseCannedResponseCsv(
-        file,
-        tags,
-        ({ error, cannedResponses }) => {
-          this.setState({
-            uploadingCsv: false,
-            uploadCsvError: error
-          });
+    this.setState({ uploadingCsv: true, uploadCsvError: null }, () =>
+      parseCannedResponseCsv(file, tags, ({ error, cannedResponses }) => {
+        this.setState({
+          uploadingCsv: false,
+          uploadCsvError: error
+        });
 
-          if (error) return;
+        if (error) return;
 
-          this.props.onChange({
-            cannedResponses: [
-              ...this.props.formValues.cannedResponses,
-              ...cannedResponses.map(r => ({
-                ...r,
-                id: this.getCannedResponseId()
-              }))
-            ]
-          });
-        }
-      )
+        this.props.onChange({
+          cannedResponses: [
+            ...this.props.formValues.cannedResponses,
+            ...cannedResponses.map(r => ({
+              ...r,
+              id: this.getCannedResponseId()
+            }))
+          ]
+        });
+      })
     );
   };
 
@@ -303,7 +322,7 @@ export class CampaignCannedResponsesForm extends React.Component {
           <Divider />
         </List>
       );
-      
+
     return (
       <React.Fragment>
         <GSForm

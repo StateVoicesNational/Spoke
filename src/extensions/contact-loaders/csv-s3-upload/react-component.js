@@ -207,7 +207,11 @@ export class CampaignContactsForm extends React.Component {
     const { uploading } = this.state;
     return (
       <div>
-        <Button disabled={uploading} onClick={() => this.uploadButton.click()}>
+        <Button
+          variant="contained"
+          disabled={uploading}
+          onClick={() => this.uploadButton.click()}
+        >
           {uploading ? "Uploading..." : "Upload contacts"}
         </Button>
         <input

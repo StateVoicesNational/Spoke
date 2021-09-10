@@ -44,8 +44,28 @@ thinkyConn.r.getCountDistinct = async (query, distinctConstraint) =>
     (await query.countDistinct(distinctConstraint + " as count").first()).count
   );
 
-if (process.env.REDIS_URL) {
-  thinkyConn.r.redis = redis.createClient({ url: process.env.REDIS_URL });
+const redisUrl = process.env.REDIS_TLS_URL || process.env.REDIS_URL;
+
+if (redisUrl) {
+  // new redis client doesn't respect username placeholders so replace it
+  // this is especially true for legacy Heroku instances which had redis://h:<password>...
+  const redisSettings = {
+    url: redisUrl.replace(/redis:\/\/\w+:/, "redis://:")
+  };
+  if (/rediss/.test(redisSettings.url)) {
+    // secure redis protocol for Redis 6.0+
+    // https://devcenter.heroku.com/articles/securing-heroku-redis#using-node-js
+    redisSettings.tls = {
+      rejectUnauthorized: false,
+      requestCert: true,
+      agent: false
+    };
+  }
+  if (process.env.REDIS_JSON) {
+    Object.assign(redisSettings, JSON.parse(process.env.REDIS_JSON));
+  }
+
+  thinkyConn.r.redis = redis.createClient(redisSettings);
 } else if (process.env.REDIS_FAKE) {
   const fakeredis = require("fakeredis");
   bluebird.promisifyAll(fakeredis.RedisClient.prototype);
