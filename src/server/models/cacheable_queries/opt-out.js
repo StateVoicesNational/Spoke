@@ -1,6 +1,5 @@
 import { r, OptOut } from "../../models";
 import campaignCache from "./campaign";
-import organizationContactCache from "./organization-contact";
 import organizationCache from "./organization";
 import {
   processServiceManagers,
@@ -191,13 +190,6 @@ const optOutCache = {
         noReply,
         reason,
         assignmentId
-      });
-    }
-
-    if (process.env.EXPERIMENTAL_STICKY_SENDER) {
-      await organizationContactCache.remove({
-        organizationId,
-        contactNumber: cell
       });
     }
   },

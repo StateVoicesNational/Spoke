@@ -57,18 +57,23 @@ export async function onMessageSend({
   }
 
   if (
+    serviceName === "twiliio" &&
+    getConfig("SKIP_TWILIO_MESSAGING_SERVICE", organization, {
+      truthy: true
+    }) &&
     (getConfig("EXPERIMENTAL_PHONE_INVENTORY", organization, {
       truthy: true
     }) ||
-      getConfig("PHONE_INVENTORY", organization, { truthy: true })) &&
-    getConfig("SKIP_TWILIO_MESSAGING_SERVICE", organization, { truthy: true })
+      getConfig("PHONE_INVENTORY", organization, { truthy: true }))
   ) {
     const phoneNumber = await ownedPhoneNumber.getOwnedPhoneNumberForStickySender(
       organization.id,
       contactNumber
     );
 
-    return phoneNumber && phoneNumber.phone_number;
+    if (phoneNumber && phoneNumber.phone_number) {
+      return { user_number: phoneNumber.phone_number };
+    }
   }
 }
 
@@ -108,4 +113,11 @@ export async function onDeliveryReport({
       });
     }
   }
+}
+
+export async function onOptOut({ organization, contact }) {
+  await cacheableData.organizationContact.remove({
+    organizationId: organization.id,
+    contactNumber: contact.cell
+  });
 }

@@ -157,8 +157,7 @@ const deliveryReport = async ({
 }) => {
   const changes = {
     service_response_at: new Date(),
-    send_status: newStatus,
-    user_number: userNumber
+    send_status: newStatus
   };
   if (userNumber) {
     changes.user_number = userNumber;
