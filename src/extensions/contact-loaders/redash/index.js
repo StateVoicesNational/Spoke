@@ -215,7 +215,7 @@ export async function processContactLoad(job, maxContacts, organization) {
   }
   // 1. start query
   const startQueryUrl = `${baseUrl}/api/queries/${queryId}/refresh${params}`;
-  console.log("REDASH 1");
+  console.log("redash 1");
   let refreshRedashResult;
   try {
     refreshRedashResult = await httpRequest(startQueryUrl, {
@@ -249,12 +249,12 @@ export async function processContactLoad(job, maxContacts, organization) {
   // 2. poll job status
   const jobQueryId = redashJobData.job.id;
   const redashPollStatusUrl = `${baseUrl}/api/jobs/${jobQueryId}`;
-  console.log("REDASH 2", redashJobData);
+  console.log("redash 2", redashJobData);
   const redashQueryCompleted = await httpRequest(redashPollStatusUrl, {
     method: "get",
     bodyRetryFunction: async res => {
       const json = await res.json();
-      console.log("statusValidation", json);
+      console.log("redash statusValidation", json);
       const jobStatus = json && json.job && json.job.status;
       return jobStatus === 3 || jobStatus === 4 ? json : { RETRY: 1 };
     },
@@ -263,7 +263,7 @@ export async function processContactLoad(job, maxContacts, organization) {
     retryDelayMs: 3000, // 3 seconds
     ...httpsArgs(organization)
   });
-  console.log("refreshDataResult", redashQueryCompleted);
+  console.log("redash refreshDataResult", redashQueryCompleted);
   if (redashQueryCompleted.job.status === 4) {
     await failedContactLoad(
       job,
