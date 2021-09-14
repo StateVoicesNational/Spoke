@@ -324,8 +324,9 @@ const rootSchema = gql`
     ): [ScriptUpdateResult]
     editCampaignContactMessageStatus(
       messageStatus: String!
-      campaignContactId: String!
-    ): CampaignContact
+      campaignContactId: String
+      campaignIdsContactIds: [CampaignIdContactId]
+    ): [CampaignContact]
     deleteQuestionResponses(
       interactionStepIds: [String]
       campaignContactId: String!

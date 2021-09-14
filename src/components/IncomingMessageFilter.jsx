@@ -91,6 +91,28 @@ export const TEXTER_FILTERS = [
   [UNASSIGNED, " Unassigned"]
 ];
 
+export const MessageStatusSelection = ({
+  label,
+  width,
+  statusFilter,
+  ...props
+}) => (
+  <FormControl style={{ width }}>
+    <InputLabel id="contact-message-status">
+      {label || "Contact message status"}
+    </InputLabel>
+    <Select {...props} labelId="contact-message-status" input={<Input />}>
+      {Object.keys(MESSAGE_STATUSES)
+        .filter(statusFilter || (() => true))
+        .map(messageStatus => (
+          <MenuItem key={messageStatus} value={messageStatus}>
+            {MESSAGE_STATUSES[messageStatus].name}
+          </MenuItem>
+        ))}
+    </Select>
+  </FormControl>
+);
+
 class IncomingMessageFilter extends Component {
   constructor(props) {
     super(props);
@@ -299,28 +321,16 @@ class IncomingMessageFilter extends Component {
 
             <div className={css(styles.container)}>
               <div className={css(styles.flexColumn)}>
-                <FormControl style={{ width: "100%" }}>
-                  <InputLabel id="contact-message-status">
-                    Contact message status
-                  </InputLabel>
-                  <Select
-                    multiple
-                    labelId="contact-message-status"
-                    value={this.state.messageFilter || []}
-                    placeholder={"Which messages?"}
-                    input={<Input />}
-                    onChange={event => {
-                      const { value } = event.target;
-                      this.onMessageFilterSelectChanged(value);
-                    }}
-                  >
-                    {Object.keys(MESSAGE_STATUSES).map(messageStatus => (
-                      <MenuItem key={messageStatus} value={messageStatus}>
-                        {MESSAGE_STATUSES[messageStatus].name}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
+                <MessageStatusSelection
+                  width="100%"
+                  multiple
+                  placeholder={"Which messages?"}
+                  value={this.state.messageFilter || []}
+                  onChange={event => {
+                    const { value } = event.target;
+                    this.onMessageFilterSelectChanged(value);
+                  }}
+                />
               </div>
               <div className={css(styles.spacer)} />
               <div className={css(styles.flexColumn)}>
