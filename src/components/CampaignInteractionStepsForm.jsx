@@ -363,7 +363,7 @@ export default class CampaignInteractionStepsForm extends React.Component {
                       </Tooltip>
                       {instructions && <div>{instructions}</div>}
                     </div>
-                    {clientChoiceData && clientChoiceData.length && (
+                    {clientChoiceData && clientChoiceData.length ? (
                       <div>
                         <GSAutoComplete
                           {...dataTest("actionDataAutoComplete")}
@@ -389,7 +389,7 @@ export default class CampaignInteractionStepsForm extends React.Component {
                           </div>
                         )}
                       </div>
-                    )}
+                    ) : null}
                   </div>
                 )}
               <Form.Field

@@ -16,7 +16,9 @@ describe("CampaignCannedResponsesForm component", () => {
         id: 1,
         title: "Response1",
         text: "Response1 desc",
-        tagIds: [1, 2]
+        tagIds: [1, 2],
+        answerActions: "fake-action",
+        answerActionsData: JSON.stringify({ label: "Test Property" })
       }
     ]
   };
@@ -38,9 +40,20 @@ describe("CampaignCannedResponsesForm component", () => {
     }
   };
 
+  const availableActions = [
+    {
+      name: "fake-action",
+      displayName: "Fake Action"
+    }
+  ];
+
   StyleSheetTestUtils.suppressStyleInjection();
   const wrapper = mount(
-    <CampaignCannedResponsesForm formValues={formValues} data={data} />
+    <CampaignCannedResponsesForm
+      formValues={formValues}
+      data={data}
+      availableActions={availableActions}
+    />
   );
 
   // when
@@ -48,6 +61,8 @@ describe("CampaignCannedResponsesForm component", () => {
   test("Renders canned responses with correct text", () => {
     expect(wrapper.find(ListItemText).text()).toContain("Response1");
     expect(wrapper.find(ListItemText).text()).toContain("Response1 desc");
+    expect(wrapper.find(ListItemText).text()).toContain("Fake Action");
+    expect(wrapper.find(ListItemText).text()).toContain("Test Property");
     expect(wrapper.find("TagChips").prop("tagIds")).toEqual([1, 2]);
     expect(wrapper.find("TagChips").prop("tags")).toEqual([
       {
@@ -76,7 +91,9 @@ describe("CampaignCannedResponsesForm component", () => {
       id: 1,
       title: "Response1",
       text: "Response1 desc",
-      tagIds: [1, 2]
+      tagIds: [1, 2],
+      answerActions: "fake-action",
+      answerActionsData: JSON.stringify({ label: "Test Property" })
     });
     expect(cannedResponseForm.prop("formButtonText")).toBe("Edit Response");
   });
