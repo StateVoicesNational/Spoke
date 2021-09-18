@@ -103,7 +103,7 @@ export const flexStyles = StyleSheet.create({
   },
   sectionSideBoxHeader: {
     height: 56,
-    backgroundColor: "rgba(126, 128, 139, .7)",
+    backgroundColor: "rgba(126, 128, 139, .7)"
   },
   sectionSideBoxContent: {
     padding: 24,
@@ -128,7 +128,7 @@ export const flexStyles = StyleSheet.create({
   sectionLeftSideBox: {
     flex: "1 0 280px",
     maxWidth: 280,
-    overflow: "hidden scroll",
+    overflow: "hidden scroll"
   },
   superSectionMessagePage: {
     display: "flex",
@@ -197,7 +197,7 @@ export const flexStyles = StyleSheet.create({
     // height:105: webkit needs constraint on height sometimes
     //   during the inflection point of showing the shortcut-buttons
     //   without the height, the exit buttons get pushed down oddly
-    // height: "15px", //TODO
+    height: "15px", //TODO
     // internal:
     margin: "9px 0px 0px 9px",
     width: "100%"
