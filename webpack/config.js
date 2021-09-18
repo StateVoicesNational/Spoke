@@ -2,7 +2,6 @@ const path = require("path");
 const webpack = require("webpack");
 const ManifestPlugin = require("webpack-manifest-plugin");
 const TerserPlugin = require("terser-webpack-plugin");
-const NodePolyfillPlugin = require("node-polyfill-webpack-plugin");
 
 const DEBUG =
   process.env.NODE_ENV === "development" || !!process.env.WEBPACK_HOT_RELOAD;
@@ -19,8 +18,7 @@ const plugins = [
     {
       tzdata: "tzdata"
     }
-  ),
-  new NodePolyfillPlugin()
+  )
 ];
 const jsxLoaders = [{ loader: "babel-loader" }];
 const assetsDir = process.env.ASSETS_DIR;
@@ -67,10 +65,7 @@ const config = {
   },
   resolve: {
     mainFields: ["browser", "main", "module"],
-    extensions: [".js", ".jsx", ".json"],
-    fallback: {
-      domain: false
-    }
+    extensions: [".js", ".jsx", ".json"]
   },
   plugins,
   output: {

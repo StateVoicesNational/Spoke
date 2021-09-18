@@ -10,9 +10,6 @@
   "env": {
     "dev": {
       "plugins":["react-hot-loader/babel"]
-    },
-    "development": {
-      "plugins":["react-hot-loader/babel"]
     }
   }
 }
