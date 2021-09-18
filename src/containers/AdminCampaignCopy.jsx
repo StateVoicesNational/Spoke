@@ -49,10 +49,11 @@ export class AdminCampaignCopy extends React.Component {
           }}
           action={
             <Button
+              variant="contained"
               onClick={() => {
                 this.props.router.push(
                   "/admin/" +
-                    encodeURIComponent(organizationId) +
+                    encodeURIComponent(this.props.organizationId) +
                     "/campaigns/" +
                     encodeURIComponent(this.state.copyCampaignId) +
                     "/edit"

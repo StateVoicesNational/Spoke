@@ -492,7 +492,9 @@ export class ContactController extends React.Component {
           title={emptyMessage}
           icon={<CheckCircleIcon />}
           content={
-            <Button onClick={this.handleExitTexter}>Back To Todos</Button>
+            <Button variant="contained" onClick={this.handleExitTexter}>
+              Back To Todos
+            </Button>
           }
         />
         {sideboxList}

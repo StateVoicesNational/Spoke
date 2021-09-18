@@ -1,10 +1,10 @@
 {
   "name": "spoke",
-  "version": "10.2.0",
+  "version": "11.0.0",
   "description": "Spoke",
   "main": "src/server",
   "engines": {
-    "node": ">=10.3",
+    "node": ">=10.17",
     "npm": "3.10.10"
   },
   "scripts": {
@@ -148,7 +148,7 @@
     "prop-types": "^15.6.0",
     "query-string": "^4.1.0",
     "react": "16.14.0",
-    "redis": "^2.8.0",
+    "redis": "3",
     "request": "^2.81.0",
     "rethink-knex-adapter": "0.4.20",
     "rollbar": "^2.4.4",
@@ -230,6 +230,7 @@
     "react-formal": "2.2.2",
     "react-router": "^3.2.0",
     "react-tooltip": "^4.2.13",
-    "recompose": "^0.30.0"
+    "recompose": "^0.30.0",
+    "webpack-cli": "^4.7.2"
   }
 }

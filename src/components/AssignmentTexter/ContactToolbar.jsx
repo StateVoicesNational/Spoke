@@ -54,6 +54,14 @@ const styles = StyleSheet.create({
       width: "50px"
     }
   },
+  titleArea: {
+    // give room for the wrench sideboxes icon
+    maxWidth: "calc(100% - 100px)"
+  },
+  contactArea: {
+    // give room for prev/next arrows
+    maxWidth: "calc(100% - 200px)"
+  },
   navigation: {
     flexGrow: 0,
     flexShrink: 0,
@@ -118,15 +126,21 @@ const ContactToolbar = function ContactToolbar(props) {
 
   return (
     <Toolbar style={{ ...inlineStyles.toolbar, backgroundColor: "#7E808B" }}>
-      <Tooltip title={global.ASSIGNMENT_CONTACTS_SIDEBAR ? 'Toggle Contact List' : ''}>
+      <Tooltip
+        title={global.ASSIGNMENT_CONTACTS_SIDEBAR ? "Toggle Contact List" : ""}
+      >
         <IconButton
           className={css(styles.contactToolbarIconButton)}
-          onClick={() => { global.ASSIGNMENT_CONTACTS_SIDEBAR ? props.toggleContactList() : null }}
+          onClick={() => {
+            global.ASSIGNMENT_CONTACTS_SIDEBAR
+              ? props.toggleContactList()
+              : null;
+          }}
         >
           <FaceIcon style={{ width: 42 }} htmlColor="white" />
         </IconButton>
       </Tooltip>
-      <div>
+      <div className={css(styles.contactArea)}>
         <div className={css(styles.titleSmall)} style={{ color: "white" }}>
           {formattedLocalTime} - {formattedLocation}
         </div>
@@ -139,10 +153,10 @@ const ContactToolbar = function ContactToolbar(props) {
       <div className={css(styles.navigation)} style={{ flexBasis: "130px" }}>
         <Tooltip title="Previous Contact">
           {/*
-            *  Tooltips can not wrap buttons that are disabled.
-            *  A disabled element does not fire events.
-            *  Tooltip needs to listen to the child element's events to display the title.
-            */}
+           *  Tooltips can not wrap buttons that are disabled.
+           *  A disabled element does not fire events.
+           *  Tooltip needs to listen to the child element's events to display the title.
+           */}
           <span>
             <IconButton
               onClick={navigationToolbarChildren.onPrevious}
@@ -159,10 +173,10 @@ const ContactToolbar = function ContactToolbar(props) {
         </div>
         <Tooltip title="Next Contact">
           {/*
-            *  Tooltips can not wrap buttons that are disabled.
-            *  A disabled element does not fire events.
-            *  Tooltip needs to listen to the child element's events to display the title.
-            */}
+           *  Tooltips can not wrap buttons that are disabled.
+           *  A disabled element does not fire events.
+           *  Tooltip needs to listen to the child element's events to display the title.
+           */}
           <span>
             <IconButton
               onClick={navigationToolbarChildren.onNext}
@@ -183,7 +197,7 @@ ContactToolbar.propTypes = {
   campaignContact: PropTypes.object, // contacts for current assignment
   campaign: PropTypes.object,
   navigationToolbarChildren: PropTypes.object,
-  toggleContactList: PropTypes.func,
+  toggleContactList: PropTypes.func
 };
 
 export default ContactToolbar;

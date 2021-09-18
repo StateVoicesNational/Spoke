@@ -21,6 +21,35 @@ const styles = StyleSheet.create({
   grow: {
     flexGrow: 1
   },
+  topFlex: {
+    display: "flex",
+    flexWrap: "wrap",
+    flexDirection: "column",
+    alignContent: "flex-start"
+    // marginLeft: "-24px"
+  },
+  campaignData: {
+    flex: "1 2 auto",
+    maxWidth: "80%",
+    "@media(max-width: 375px)": {
+      maxWidth: "70%" // iphone 5 and X
+    }
+  },
+  contactData: {
+    flex: "1 2 auto",
+    maxWidth: "80%",
+    "@media(max-width: 375px)": {
+      maxWidth: "50%" // iphone 5 and X
+    }
+  },
+  titleArea: {
+    // give room for the wrench sideboxes icon
+    maxWidth: "calc(100% - 100px)"
+  },
+  contactArea: {
+    // give room for prev/next arrows
+    maxWidth: "calc(100% - 200px)"
+  },
   titleSmall: {
     height: "18px",
     lineHeight: "18px",
@@ -40,7 +69,6 @@ const styles = StyleSheet.create({
     overflow: "hidden",
     textOverflow: "ellipsis",
     whiteSpace: "nowrap"
-    // maxWidth: "90%"
   },
   contactToolbarIconButton: {
     padding: "3px",
@@ -83,7 +111,7 @@ const CampaignToolbar = props => (
         <HomeIcon style={{ width: 42 }} htmlColor="white" />
       </IconButton>
     </Tooltip>
-    <div>
+    <div className={css(styles.titleArea)}>
       <div className={css(styles.titleSmall)} style={{ color: "#B0B0B0" }}>
         Campaign ID: {props.campaign.id}
       </div>
@@ -117,7 +145,7 @@ const CampaignToolbar = props => (
 CampaignToolbar.propTypes = {
   campaign: PropTypes.object,
   onSideboxButtonClick: PropTypes.func,
-  onExit: PropTypes.func,
+  onExit: PropTypes.func
 };
 
 export default CampaignToolbar;

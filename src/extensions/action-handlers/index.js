@@ -43,7 +43,7 @@ const CONFIGURED_TAG_HANDLERS = _.pickBy(
 
 export async function getSetCacheableResult(cacheKey, fallbackFunc) {
   if (r.redis && cacheKey) {
-    const cacheRes = await r.redis.getAsync(cacheKey);
+    const cacheRes = await r.redis.getAsync(String(cacheKey));
     if (cacheRes) {
       return JSON.parse(cacheRes);
     }
@@ -52,8 +52,8 @@ export async function getSetCacheableResult(cacheKey, fallbackFunc) {
   if (r.redis && cacheKey && slowRes && slowRes.expiresSeconds) {
     await r.redis
       .multi()
-      .set(cacheKey, JSON.stringify(slowRes))
-      .expire(cacheKey, slowRes.expiresSeconds)
+      .set(String(cacheKey), JSON.stringify(slowRes))
+      .expire(String(cacheKey), slowRes.expiresSeconds)
       .execAsync();
   }
   return slowRes;

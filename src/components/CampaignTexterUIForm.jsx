@@ -66,9 +66,11 @@ export default class CampaignTexterUIForm extends React.Component {
    * and they will be properly set on mount of this component
    */
   collectedDefaults = {};
+  collectedDefaultsSet = false;
 
   componentDidMount() {
     this.setState(this.collectedDefaults);
+    this.collectedDefaultSet = true;
   }
 
   render() {
@@ -103,8 +105,14 @@ export default class CampaignTexterUIForm extends React.Component {
                   settingsData={this.state}
                   onToggle={this.toggleChange}
                   setDefaultsOnMount={defaults => {
-                    // collect default to setState on mount
-                    Object.assign(this.collectedDefaults, defaults);
+                    if (this.collectedDefaultSet) {
+                      // After mount, if the user toggles-on, then AdminConfig will mount
+                      // after CampaignTexterUIForm has already mounted
+                      this.setState(defaults);
+                    } else {
+                      // collect default to setState on mount
+                      Object.assign(this.collectedDefaults, defaults);
+                    }
                   }}
                   organization={this.props.organization}
                 />

@@ -60,7 +60,10 @@ export async function processAction({
     : defaultProfileOptInId;
   const cell = contact.cell.substring(1);
 
-  actionKitSignup(contact);
+  if (!contact.external_id) {
+    // if there is already an external_id, then we have an existing user
+    actionKitSignup(contact);
+  }
 
   const extraFields = {};
   const umcFields = getConfig("UMC_FIELDS", organization);

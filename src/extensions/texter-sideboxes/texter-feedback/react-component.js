@@ -315,7 +315,7 @@ export class TexterSideboxClass extends React.Component {
             style={inlineStyles.messageInputWrapper}
             textareaStyle={inlineStyles.messageInput}
             fullWidth
-            multiLine
+            multiline
             rows={4}
             rowsMax={6}
           />

@@ -6,6 +6,10 @@ export function getMessageHandlers(organization) {
   const enabledHandlers =
     (configuredHandlers && configuredHandlers.split(",")) || [];
 
+  if (typeof configuredHandlers === "undefined") {
+    enabledHandlers.push("auto-optout", "outbound-unassign");
+  }
+
   const handlers = [];
   enabledHandlers.forEach(name => {
     try {
