@@ -2,14 +2,12 @@ import PropTypes from "prop-types";
 import React from "react";
 import { StyleSheet, css } from "aphrodite";
 import momenttz from "moment-timezone";
-
 import Toolbar from "@material-ui/core/Toolbar";
 import IconButton from "@material-ui/core/IconButton";
 import Tooltip from "@material-ui/core/Tooltip";
 import FaceIcon from "@material-ui/icons/Face";
 import ArrowBackIcon from "@material-ui/icons/ArrowBack";
 import ArrowForwardIcon from "@material-ui/icons/ArrowForward";
-
 import { getLocalTime, getContactTimezone } from "../../lib/timezones";
 import { getProcessEnvDstReferenceTimezone } from "../../lib/tz-helpers";
 

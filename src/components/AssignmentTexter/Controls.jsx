@@ -1109,7 +1109,6 @@ export class AssignmentTexterContactControls extends React.Component {
   render() {
     const { enabledSideboxes } = this.props;
     const firstMessage = this.props.messageStatusFilter === "needsMessage";
-
     const content = firstMessage
       ? this.renderFirstMessage(enabledSideboxes)
       : [
