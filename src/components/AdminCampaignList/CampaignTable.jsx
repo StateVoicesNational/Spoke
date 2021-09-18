@@ -404,7 +404,7 @@ export class CampaignTable extends React.Component {
           case "propsUpdate":
             break;
           default:
-            console.log(`action not handled: ${action}`);
+            break;
         }
       }
     };

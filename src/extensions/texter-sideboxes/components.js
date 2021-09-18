@@ -12,7 +12,9 @@ function getComponents() {
           "default-releasecontacts",
           "contact-reference",
           "tag-contact",
-          "default-editinitial"
+          "default-editinitial",
+          "take-conversations",
+          "texter-feedback"
         ];
   const components = {};
   enabledComponents.forEach(componentName => {

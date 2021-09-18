@@ -43,7 +43,7 @@ export default class AdminScriptImport extends Component {
     this.props.onSubmit();
   };
 
-  handleUrlChange = (_eventId, newValue) => this.setState({ url: newValue });
+  handleUrlChange = ({ target }) => this.setState({ url: target.value });
 
   renderErrors = () =>
     this.state.error && (

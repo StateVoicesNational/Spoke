@@ -1,12 +1,12 @@
 import { resolvers } from "../src/server/api/schema";
 import { schema } from "../src/api/schema";
-import twilio from "../src/server/api/lib/twilio";
+import twilio from "../src/extensions/service-vendors/twilio";
 import { getConfig, hasConfig } from "../src/server/api/lib/config";
 import { makeExecutableSchema } from "graphql-tools";
 
 const mySchema = makeExecutableSchema({
   typeDefs: schema,
-  resolvers: resolvers,
+  resolvers,
   allowUndefinedInResolve: true
 });
 
