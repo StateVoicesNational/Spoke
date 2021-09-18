@@ -14,7 +14,7 @@ import Pagination from "@material-ui/lab/Pagination";
 
 const pageSize = 50;
 
-const statusLabels = {
+const messageStatusLabels = {
   needsResponse: "Respond",
   convo: "Past",
   closed: "Skipped"
@@ -25,10 +25,7 @@ class AssignmentContactsList extends React.Component {
     super(props);
 
     const counts = props.contacts.reduce((cts, c) => {
-      if (!cts[c.messageStatus]) {
-        cts[c.messageStatus] = 0;
-      }
-
+      if (!cts[c.messageStatus]) cts[c.messageStatus] = 0;
       cts[c.messageStatus] += 1;
       return cts;
     }, {});
@@ -37,7 +34,7 @@ class AssignmentContactsList extends React.Component {
       search: "",
       currentPage: 0,
       filterEl: null,
-      statuses: Object.keys(statusLabels),
+      filterStatuses: Object.keys(messageStatusLabels),
       counts
     };
   }
@@ -48,9 +45,13 @@ class AssignmentContactsList extends React.Component {
       c => c.id === this.props.currentContact.id
     );
 
-    this.setState({
-      currentPage: currentIndex == -1 ? 0 : Math.floor(currentIndex / pageSize)
-    });
+    this.setState(
+      {
+        currentPage:
+          currentIndex == -1 ? 0 : Math.floor(currentIndex / pageSize)
+      },
+      this.focusOnCurrentContact
+    );
   };
 
   getContactListItemId = id => `switch-to-contact-id-${id}`;
@@ -85,23 +86,22 @@ class AssignmentContactsList extends React.Component {
 
   componentDidMount = () => {
     this.resetCurrentPage();
-    this.focusOnCurrentContact();
   };
 
   openFilterMenu = e => this.setState({ filterEl: e.currentTarget });
   closeMenu = () => this.setState({ filterEl: null });
 
   handleFilterUpdate = status => {
-    const statuses = [...this.state.statuses];
-    const statusIndex = statuses.indexOf(status);
+    const filterStatuses = [...this.state.filterStatuses];
+    const statusIndex = filterStatuses.indexOf(status);
 
     statusIndex === -1
-      ? statuses.push(status)
-      : statuses.splice(statusIndex, 1);
+      ? filterStatuses.push(status)
+      : filterStatuses.splice(statusIndex, 1);
 
     this.setState(
       {
-        statuses
+        filterStatuses
       },
       this.resetCurrentPage
     );
@@ -115,7 +115,7 @@ class AssignmentContactsList extends React.Component {
   getFilteredContacts = contacts => {
     return contacts.filter(
       c =>
-        this.state.statuses.includes(c.messageStatus) &&
+        this.state.filterStatuses.includes(c.messageStatus) &&
         this.getContactName(c)
           .toLowerCase()
           .includes(this.state.search.toLowerCase())
@@ -148,10 +148,8 @@ class AssignmentContactsList extends React.Component {
             }
           }}
         />
-        <ListItemSecondaryAction>
-          <span style={inlineStyles.updatedAt}>
-            {moment.utc(contact.updatedAt).fromNow()}
-          </span>
+        <ListItemSecondaryAction style={inlineStyles.updatedAt}>
+          {moment.utc(contact.updatedAt).fromNow()}
         </ListItemSecondaryAction>
       </ListItem>
     );
@@ -208,13 +206,13 @@ class AssignmentContactsList extends React.Component {
             onClose={this.closeMenu}
             keepMounted
           >
-            {Object.keys(statusLabels).map(status => (
+            {Object.keys(messageStatusLabels).map(status => (
               <MenuItem
                 key={status}
-                selected={this.state.statuses.includes(status)}
+                selected={this.state.filterStatuses.includes(status)}
                 onClick={() => this.handleFilterUpdate(status)}
               >
-                {statusLabels[status]} ({this.state.counts[status] || 0})
+                {messageStatusLabels[status]} ({this.state.counts[status] || 0})
               </MenuItem>
             ))}
           </Menu>
@@ -273,8 +271,6 @@ const inlineStyles = {
   },
   updatedAt: {
     fontSize: 12,
-    width: "auto",
-    top: "auto",
     margin: "0 4px"
   },
   pagination: {
