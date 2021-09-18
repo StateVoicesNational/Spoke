@@ -1040,8 +1040,8 @@ export class AssignmentTexterContactControls extends React.Component {
       !!enabledSideboxes.find(sidebox => sidebox.name === "texter-feedback");
     return (
       <div
-        key="messageBox"
         ref="messageBox"
+        key="renderMessageBox"
         className={css(flexStyles.superSectionMessageBox)}
         style={isFeedbackEnabled ? { width: "calc(100% - 382px)" } : undefined}
       >
@@ -1057,17 +1057,13 @@ export class AssignmentTexterContactControls extends React.Component {
     );
   }
 
-  renderAssignmentContactsList = (
-    contacts,
-    contact,
-    updateCurrentContactById
-  ) => {
+  renderAssignmentContactsList = () => {
     return (
       <div className={css(flexStyles.sectionLeftSideBox)}>
         <AssignmentContactsList
-          contacts={contacts}
-          currentContact={contact}
-          updateCurrentContactById={updateCurrentContactById}
+          contacts={this.props.assignment.contacts}
+          currentContact={this.props.contact}
+          updateCurrentContactById={this.props.updateCurrentContactById}
         />
       </div>
     );
@@ -1100,13 +1096,7 @@ export class AssignmentTexterContactControls extends React.Component {
   }
 
   render() {
-    const {
-      enabledSideboxes,
-      assignment,
-      contact,
-      updateCurrentContactById
-    } = this.props;
-    const { contacts } = assignment;
+    const { enabledSideboxes } = this.props;
     const firstMessage = this.props.messageStatusFilter === "needsMessage";
 
     const content = firstMessage
@@ -1119,9 +1109,9 @@ export class AssignmentTexterContactControls extends React.Component {
           >
             {this.state.contactListOpen &&
               this.renderAssignmentContactsList(
-                contacts,
-                contact,
-                updateCurrentContactById
+                this.props.assignment.contacts,
+                this.props.contact,
+                this.props.updateCurrentContactById
               )}
             <div className={css(flexStyles.superSectionMessageListAndControls)}>
               <ContactToolbar
