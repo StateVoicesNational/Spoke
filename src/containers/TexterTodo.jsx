@@ -159,7 +159,7 @@ export const dataQuery = gql`
         firstName
         lastName
         messageStatus
-        updated_at
+        updatedAt
       }
       allContactsCount: contactsCount
       unmessagedCount: contactsCount(contactsFilter: $needsMessageFilter)
@@ -264,12 +264,11 @@ const queries = {
     query: dataQuery,
     options: ownProps => {
       console.log("TexterTodo ownProps", ownProps);
-      const messageStatus = (
-        !global.ASSIGNMENT_CONTACTS_SIDEBAR || 
+      const messageStatus =
+        !global.ASSIGNMENT_CONTACTS_SIDEBAR ||
         ownProps.messageStatus === "needsMessage"
-      )
-        ? ownProps.messageStatus
-        : "allReplies";
+          ? ownProps.messageStatus
+          : "allReplies";
 
       // based on ?review=1 in location.search
       // exclude isOptedOut: false, validTimezone: true

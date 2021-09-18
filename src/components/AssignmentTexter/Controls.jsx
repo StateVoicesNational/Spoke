@@ -64,12 +64,13 @@ export class AssignmentTexterContactControls extends React.Component {
         currentInteractionStep.question.answerOptions;
     }
 
-    let contactListOpen = global.ASSIGNMENT_CONTACTS_SIDEBAR &&
+    let contactListOpen =
+      global.ASSIGNMENT_CONTACTS_SIDEBAR &&
       document.documentElement.clientWidth > 575;
-    
+
     const contactListOpenCookie = getCookie("assignmentContactListOpen");
     if (contactListOpenCookie) {
-      contactListOpen = contactListOpenCookie === "true"
+      contactListOpen = contactListOpenCookie === "true";
     }
 
     this.state = {
@@ -150,10 +151,10 @@ export class AssignmentTexterContactControls extends React.Component {
   };
 
   toggleContactList = () => {
-    console.log('toggling', this.state.contactListOpen)
-    setCookie("assignmentContactListOpen", !this.state.contactListOpen, 1);
-    this.setState({ contactListOpen: !this.state.contactListOpen });
-  }
+    this.setState({ contactListOpen: !this.state.contactListOpen }, () => {
+      setCookie("assignmentContactListOpen", this.state.contactListOpen, 1);
+    });
+  };
 
   blockWithCtrl = evt => {
     // HACK: This blocks Ctrl-Enter from triggering 'click'
@@ -477,20 +478,19 @@ export class AssignmentTexterContactControls extends React.Component {
       campaign.interactionSteps
     );
 
-    const otherResponsesLink = (
+    const otherResponsesLink =
       currentInteractionStep &&
       currentInteractionStep.question.filteredAnswerOptions.length > 6 &&
-      filteredCannedResponses.length
-    ) ? ( 
-      <div className={css(flexStyles.popoverLink)}>
-        <a
-          href="#otherresponses"
-          className={css(flexStyles.popoverLinkColor)}
-        >
-          Other Responses
-        </a>
+      filteredCannedResponses.length ? (
+        <div className={css(flexStyles.popoverLink)}>
+          <a
+            href="#otherresponses"
+            className={css(flexStyles.popoverLinkColor)}
+          >
+            Other Responses
+          </a>
         </div>
-    ) : null;
+      ) : null;
 
     const searchBar = currentInteractionStep &&
       currentInteractionStep.question.answerOptions.length +
@@ -1004,7 +1004,7 @@ export class AssignmentTexterContactControls extends React.Component {
     const settingsData = JSON.parse(
       this.props.campaign.texterUIConfig.options || "{}"
     );
-    const sideboxList = enabledSideboxes.map(sidebox => 
+    const sideboxList = enabledSideboxes.map(sidebox =>
       renderSidebox(sidebox, settingsData, this)
     );
     const sideboxOpen = this.getSideboxDialogOpen(enabledSideboxes);
@@ -1057,7 +1057,11 @@ export class AssignmentTexterContactControls extends React.Component {
     );
   }
 
-  renderAssignmentContactsList = (contacts, contact, updateCurrentContactById) => {
+  renderAssignmentContactsList = (
+    contacts,
+    contact,
+    updateCurrentContactById
+  ) => {
     return (
       <div className={css(flexStyles.sectionLeftSideBox)}>
         <AssignmentContactsList
@@ -1067,7 +1071,7 @@ export class AssignmentTexterContactControls extends React.Component {
         />
       </div>
     );
-  }
+  };
 
   renderFirstMessage(enabledSideboxes) {
     return [
@@ -1077,8 +1081,8 @@ export class AssignmentTexterContactControls extends React.Component {
         campaignContact={this.props.contact}
         campaign={this.props.campaign}
         navigationToolbarChildren={this.props.navigationToolbarChildren}
-        toggleContactList={
-          () => this.setState({ contactListOpen: !this.state.contactListOpen })
+        toggleContactList={() =>
+          this.setState({ contactListOpen: !this.state.contactListOpen })
         }
       />,
       this.renderMessageBox(
@@ -1096,7 +1100,12 @@ export class AssignmentTexterContactControls extends React.Component {
   }
 
   render() {
-    const { enabledSideboxes, assignment, contact, updateCurrentContactById } = this.props;
+    const {
+      enabledSideboxes,
+      assignment,
+      contact,
+      updateCurrentContactById
+    } = this.props;
     const { contacts } = assignment;
     const firstMessage = this.props.messageStatusFilter === "needsMessage";
 
@@ -1104,9 +1113,16 @@ export class AssignmentTexterContactControls extends React.Component {
       ? this.renderFirstMessage(enabledSideboxes)
       : [
           this.renderToolbar(enabledSideboxes),
-          <div key="superSectionMessagePage" className={css(flexStyles.superSectionMessagePage)}>
+          <div
+            key="superSectionMessagePage"
+            className={css(flexStyles.superSectionMessagePage)}
+          >
             {this.state.contactListOpen &&
-              this.renderAssignmentContactsList(contacts, contact, updateCurrentContactById)}
+              this.renderAssignmentContactsList(
+                contacts,
+                contact,
+                updateCurrentContactById
+              )}
             <div className={css(flexStyles.superSectionMessageListAndControls)}>
               <ContactToolbar
                 campaignContact={this.props.contact}
