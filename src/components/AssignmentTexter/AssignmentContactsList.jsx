@@ -9,76 +9,53 @@ import SearchBar from "material-ui-search-bar";
 import moment from "moment";
 import IconButton from "@material-ui/core/IconButton";
 import FilterListIcon from "@material-ui/icons/FilterList";
-import { Menu } from "@material-ui/core";
+import Menu from "@material-ui/core/Menu";
+import Pagination from "@material-ui/lab/Pagination";
 
-const inlineStyles = {
-  contactsListParent: {
-    display: "flex",
-    flexDirection: "column",
-    height: "100%"
-  },
-  contactsListFilters: {
-    margin: 12,
-    borderRight: "1px solid #C1C3CC",
-    width: "calc(100% - 24px)"
-  },
-  contactListScrollContainer: {
-    overflow: "hidden scroll",
-    borderRight: "1px solid #C1C3CC",
-    height: "100%"
-  },
-  contactsListSearch: {
-    height: 32,
-    margin: "12px 0 12px 12px"
-  },
-  updatedAt: {
-    fontSize: 12,
-    width: "auto",
-    top: "auto",
-    margin: "0 4px"
-  },
-  searchBar: {
-    display: "flex",
-    backgroundColor: "rgba(126, 128, 139, .7)"
-  }
-};
+const pageSize = 50;
 
-const momentConfigShort = {
-  future: "%s",
-  past: "%s",
-  s: "%ds",
-  ss: "%ds",
-  m: "%dm",
-  mm: "%dm",
-  h: "%dh",
-  hh: "%dh",
-  d: "%dd",
-  dd: "%dd",
-  w: "%dw",
-  ww: "%dw",
-  M: "%dmo",
-  MM: "%dmo",
-  y: "%dy",
-  yy: "%dy"
+const statusLabels = {
+  needsResponse: "Respond",
+  convo: "Past",
+  closed: "Skipped"
 };
 
 class AssignmentContactsList extends React.Component {
   constructor(props) {
     super(props);
 
+    const counts = props.contacts.reduce((cts, c) => {
+      if (!cts[c.messageStatus]) {
+        cts[c.messageStatus] = 0;
+      }
+
+      cts[c.messageStatus] += 1;
+      return cts;
+    }, {});
+
     this.state = {
       search: "",
-      limit: 100,
+      currentPage: 0,
       filterEl: null,
-      statuses: ["needsResponse", "convo", "closed"]
+      statuses: Object.keys(statusLabels),
+      counts
     };
   }
 
-  getContactListItemId(id) {
-    return `switch-to-contact-id-${id}`;
-  }
+  resetCurrentPage = () => {
+    const filteredContacts = this.getFilteredContacts(this.props.contacts);
+    const currentIndex = filteredContacts.findIndex(
+      c => c.id === this.props.currentContact.id
+    );
 
-  componentDidMount() {
+    this.setState({
+      currentPage: Math.max(Math.floor(currentIndex / pageSize), 0)
+    });
+  };
+
+  getContactListItemId = id => `switch-to-contact-id-${id}`;
+
+  focusOnCurrentContact = () => {
     const { currentContact } = this.props;
 
     const node = document.getElementById(
@@ -104,10 +81,46 @@ class AssignmentContactsList extends React.Component {
           node.offsetTop - 300;
       }
     }
-  }
+  };
+
+  componentDidMount = () => {
+    this.resetCurrentPage();
+    this.focusOnCurrentContact();
+  };
 
   openFilterMenu = e => this.setState({ filterEl: e.currentTarget });
   closeMenu = () => this.setState({ filterEl: null });
+
+  handleFilterUpdate = status => {
+    const statuses = [...this.state.statuses];
+    const statusIndex = statuses.indexOf(status);
+
+    statusIndex === -1
+      ? statuses.push(status)
+      : statuses.splice(statusIndex, 1);
+
+    this.resetCurrentPage();
+
+    this.setState({
+      filterEl: null,
+      statuses
+    });
+  };
+
+  getContactName = contact => {
+    return `${contact.firstName} ${contact.lastName &&
+      `${contact.lastName.slice(0, 1)}.`}`;
+  };
+
+  getFilteredContacts = contacts => {
+    return contacts.filter(
+      c =>
+        this.state.statuses.includes(c.messageStatus) &&
+        this.getContactName(c)
+          .toLowerCase()
+          .includes(this.state.search.toLowerCase())
+    );
+  };
 
   renderContact = contact => {
     const { updateCurrentContactById, currentContact } = this.props;
@@ -121,7 +134,7 @@ class AssignmentContactsList extends React.Component {
         button
       >
         <ListItemText
-          primary={`${contact.firstName} ${contact.lastName}`}
+          primary={this.getContactName(contact)}
           primaryTypographyProps={{
             color:
               contact.messageStatus === "closed"
@@ -137,54 +150,23 @@ class AssignmentContactsList extends React.Component {
         />
         <ListItemSecondaryAction>
           <span style={inlineStyles.updatedAt}>
-            {moment.utc(contact.updated_at).fromNow()}
+            {moment.utc(contact.updatedAt).fromNow()}
           </span>
         </ListItemSecondaryAction>
       </ListItem>
     );
   };
 
-  // Prevent refreshes on any updates in the controls, since they shouldn't change what's in here.
-  // shouldComponentUpdate = () => false
-
-  renderContacts = contacts => {
-    // Filter contacts by message status and search
-    const filteredContacts = contacts.filter(
-      c =>
-        `${c.firstName} ${c.lastName}`
-          .toLowerCase()
-          .includes(this.state.search.toLowerCase()) &&
-        this.state.statuses.indexOf(c.messageStatus) > -1
+  renderContacts = filteredContacts => {
+    const contactsToDisplay = filteredContacts.slice(
+      this.state.currentPage * pageSize,
+      this.state.currentPage * pageSize + pageSize
     );
 
-    const contactsToDisplay = filteredContacts.slice(0, this.state.limit);
-
-    return (
-      <List
-        id="assignment-contacts-list"
-        style={inlineStyles.contactListScrollContainer}
-      >
-        {contactsToDisplay.map(c => this.renderContact(c))}
-        {this.state.limit <= filteredContacts.length && (
-          <ListItem
-            key="SeeMoreLink"
-            onClick={() => this.setState({ limit: this.state.limit + 100 })}
-            button
-          >
-            <ListItemText
-              primary="See more"
-              primaryTypographyProps={{
-                color: "primary"
-              }}
-            />
-          </ListItem>
-        )}
-      </List>
-    );
+    return contactsToDisplay.map(this.renderContact);
   };
 
   render() {
-    console.log("rendering ACL");
     const momentConfigOrig = moment()
       .locale("en")
       .localeData()._relativeTime;
@@ -192,35 +174,25 @@ class AssignmentContactsList extends React.Component {
     // Hack around fromNow formatting. We want to keep formatting short only here, so we have to revert back after rendering.
     moment.updateLocale("en", { relativeTime: momentConfigShort });
 
-    const contactList = this.renderContacts(this.props.contacts);
+    const filteredContacts = this.getFilteredContacts(this.props.contacts);
+    const totalPages = Math.ceil(filteredContacts.length / pageSize);
+
+    const contactList = this.renderContacts(filteredContacts);
 
     moment.updateLocale("en", { relativeTime: momentConfigOrig });
-
-    const counts = this.props.contacts.reduce((cts, c) => {
-      if (!cts[c.messageStatus]) {
-        cts[c.messageStatus] = 1;
-      } else {
-        cts[c.messageStatus] += 1;
-      }
-      return cts;
-    }, {});
-
-    const statusLabels = {
-      needsResponse: "Respond",
-      convo: "Past",
-      closed: "Skipped"
-    };
 
     return (
       <div style={inlineStyles.contactsListParent}>
         <div style={inlineStyles.searchBar}>
           <SearchBar
-            onChange={search => this.setState({ search: search || "" })}
-            onCancelSearch={() => this.setState({ search: "" })}
+            onChange={search =>
+              this.setState({ search: search || "", currentPage: 0 })
+            }
+            onCancelSearch={() => this.setState({ search: "", currentPage: 0 })}
             onRequestSearch={() => undefined}
+            placeholder="Search Contacts"
             value={this.state.search}
             style={inlineStyles.contactsListSearch}
-            placeholder="Search Contacts"
           />
           <IconButton
             aria-controls="filter-contacts"
@@ -241,25 +213,28 @@ class AssignmentContactsList extends React.Component {
                 key={status}
                 value={status}
                 selected={this.state.statuses.includes(status)}
-                onClick={() => {
-                  const statuses = [...this.state.statuses];
-                  const statusIndex = statuses.indexOf(status);
-                  statusIndex === -1
-                    ? statuses.push(status)
-                    : statuses.splice(statusIndex, 1);
-
-                  this.setState({
-                    filterEl: null,
-                    statuses
-                  });
-                }}
+                onClick={() => this.handleFilterUpdate(status)}
               >
-                {statusLabels[status]} ({counts[status] || 0})
+                {statusLabels[status]} ({this.state.counts[status] || 0})
               </MenuItem>
             ))}
           </Menu>
         </div>
-        {contactList}
+        <List
+          id="assignment-contacts-list"
+          style={inlineStyles.contactListScrollContainer}
+        >
+          {contactList}
+        </List>
+        {totalPages > 1 && (
+          <Pagination
+            count={totalPages}
+            page={this.state.currentPage + 1}
+            onChange={(_, page) => this.setState({ currentPage: page - 1 })}
+            style={inlineStyles.pagination}
+            size="small"
+          />
+        )}
       </div>
     );
   }
@@ -272,3 +247,60 @@ AssignmentContactsList.propTypes = {
 };
 
 export default AssignmentContactsList;
+
+const inlineStyles = {
+  contactsListParent: {
+    display: "flex",
+    flexDirection: "column",
+    height: "100%"
+  },
+  contactsListFilters: {
+    margin: 12,
+    borderRight: "1px solid #C1C3CC",
+    width: "calc(100% - 24px)"
+  },
+  searchBar: {
+    display: "flex",
+    backgroundColor: "rgba(126, 128, 139, .7)"
+  },
+  contactsListSearch: {
+    height: 32,
+    margin: "12px 0 12px 12px"
+  },
+  contactListScrollContainer: {
+    overflow: "hidden scroll",
+    borderRight: "1px solid #C1C3CC",
+    height: "100%"
+  },
+  updatedAt: {
+    fontSize: 12,
+    width: "auto",
+    top: "auto",
+    margin: "0 4px"
+  },
+  pagination: {
+    display: "flex",
+    justifyContent: "center",
+    padding: 12,
+    borderRight: "1px solid #C1C3CC"
+  }
+};
+
+const momentConfigShort = {
+  future: "%s",
+  past: "%s",
+  s: "%ds",
+  ss: "%ds",
+  m: "%dm",
+  mm: "%dm",
+  h: "%dh",
+  hh: "%dh",
+  d: "%dd",
+  dd: "%dd",
+  w: "%dw",
+  ww: "%dw",
+  M: "%dmo",
+  MM: "%dmo",
+  y: "%dy",
+  yy: "%dy"
+};

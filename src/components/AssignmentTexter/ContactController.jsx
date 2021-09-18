@@ -66,10 +66,12 @@ export class ContactController extends React.Component {
       global.ASSIGNMENT_CONTACTS_SIDEBAR &&
       this.props.messageStatusFilter !== "needsMessage"
     ) {
-      startIndex =
+      startIndex = Math.max(
         this.props.contacts.findIndex(
           c => c.messageStatus === this.props.messageStatusFilter
-        ) || 0;
+        ),
+        0
+      );
     }
     this.updateCurrentContactIndex(startIndex);
   }
@@ -246,9 +248,9 @@ export class ContactController extends React.Component {
   }
 
   updateCurrentContactById = newId => {
-    const newIndex = this.props.contacts.findIndex(c => c.id == newId);
-
-    this.updateCurrentContactIndex(newIndex);
+    this.updateCurrentContactIndex(
+      this.props.contacts.findIndex(c => c.id == newId)
+    );
   };
 
   hasPrevious() {

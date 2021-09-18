@@ -52,13 +52,12 @@ export class TexterSidebox extends React.Component {
           <IconButton
             onClick={this.copyToClipboard}
             style={{ padding: 0, height: 20, width: 20, paddingRight: 6 }}
-            // iconStyle={{ height: 14, width: 14 }}
           >
             <FileCopyIcon />
           </IconButton>
         </Tooltip>
         <span onClick={this.copyToClipboard}>Get</span>
-        {" a "},
+        {" a "}
         {settingsData.contactReferenceClickable ? (
           <Link target="_blank" to={url}>
             conversation link
@@ -77,7 +76,7 @@ export class TexterSidebox extends React.Component {
           name={url}
           value={url}
           fullWidth
-          // inputStyle={{ fontSize: "12px" }}
+          inputProps={{ style: { fontSize: "12px " } }}
         />
       </div>
     );
