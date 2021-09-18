@@ -49,7 +49,7 @@ class AssignmentContactsList extends React.Component {
     );
 
     this.setState({
-      currentPage: Math.max(Math.floor(currentIndex / pageSize), 0)
+      currentPage: currentIndex == -1 ? 0 : Math.floor(currentIndex / pageSize)
     });
   };
 
@@ -99,12 +99,12 @@ class AssignmentContactsList extends React.Component {
       ? statuses.push(status)
       : statuses.splice(statusIndex, 1);
 
-    this.resetCurrentPage();
-
-    this.setState({
-      filterEl: null,
-      statuses
-    });
+    this.setState(
+      {
+        statuses
+      },
+      this.resetCurrentPage
+    );
   };
 
   getContactName = contact => {
@@ -195,23 +195,22 @@ class AssignmentContactsList extends React.Component {
             style={inlineStyles.contactsListSearch}
           />
           <IconButton
-            aria-controls="filter-contacts"
-            aria-haspopup="true"
             onClick={this.openFilterMenu}
+            aria-controls="contacts-sidebar-status-filter"
+            aria-haspopup="true"
           >
             <FilterListIcon />
           </IconButton>
           <Menu
-            id="filter-contacts"
+            id="contacts-sidebar-status-filter"
             anchorEl={this.state.filterEl}
-            open={Boolean(this.state.filterEl)}
-            keepMounted
+            open={!!this.state.filterEl}
             onClose={this.closeMenu}
+            keepMounted
           >
             {Object.keys(statusLabels).map(status => (
               <MenuItem
                 key={status}
-                value={status}
                 selected={this.state.statuses.includes(status)}
                 onClick={() => this.handleFilterUpdate(status)}
               >
