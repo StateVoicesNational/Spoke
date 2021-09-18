@@ -11,7 +11,7 @@ Object.keys(config.entry).forEach(key => {
   config.entry[key].unshift(
     `webpack-dev-server/client?http://${webpackHost}:${webpackPort}/`
   );
-  config.entry[key].unshift("webpack/hot/dev-server");
+  config.entry[key].unshift("webpack/hot/only-dev-server");
 });
 
 const compiler = webpack(config);
