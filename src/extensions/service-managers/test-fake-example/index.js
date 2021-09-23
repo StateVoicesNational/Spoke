@@ -121,6 +121,15 @@ export async function getOrganizationData({ organization, user, loaders }) {
   };
 }
 
+export async function onBuyPhoneNumbers({
+  organization,
+  user,
+  serviceName,
+  areaCode,
+  limit,
+  opts
+}) {}
+
 export async function onOrganizationServiceVendorSetup({
   organization,
   user,
