@@ -2,6 +2,8 @@ import React from "react";
 import { shallow } from "enzyme";
 import Accordion from "@material-ui/core/Accordion";
 import AccordionSummary from "@material-ui/core/AccordionSummary";
+import MenuItem from "@material-ui/core/MenuItem";
+import ListItem from "@material-ui/core/ListItem";
 import Survey from "../../../src/components/AssignmentTexter/Survey";
 
 describe("Survey component", () => {
@@ -19,53 +21,85 @@ describe("Survey component", () => {
         },
         {
           value: "Foo is a mineral",
-          interactionStepId: 3,
+          interactionStepId: 4,
           nextInteractionStep: { script: "bar" }
         },
         {
           value: "Foo is a vegetable",
-          interactionStepId: 3,
+          interactionStepId: 5,
           nextInteractionStep: { script: "fizz" }
         }
       ],
       filteredAnswerOptions: [
         {
           value: "Foo is a mineral",
-          interactionStepId: 3,
+          interactionStepId: 4,
           nextInteractionStep: { script: "bar" }
         }
       ]
     }
   };
-  const interactionSteps = [currentInteractionStep];
-
-  const wrapper = shallow(
+  const secondStep = {
+    id: 4,
+    script: "bar",
+    question: {
+      text: "Is Foo bigger than a breadbox?",
+      answerOptions: [
+        {
+          value: "Yes",
+          interactionStepId: "100",
+          nextInteractionStep: {
+            id: "100",
+            script: "Is it human-made?"
+          }
+        }
+      ]
+    }
+  };
+  const wrapper1 = shallow(
     <Survey
       questionResponses={questionResponses}
-      interactionSteps={interactionSteps}
+      interactionSteps={[currentInteractionStep]}
       currentInteractionStep={currentInteractionStep}
     />
   );
 
-  test("Accordion started open with correct text", () => {
-    const accordion = wrapper.find(Accordion);
-    const accordionSummary = wrapper.find(AccordionSummary);
-    const cardHeader = wrapper.find("CardHeader");
-    const cardText = wrapper.find("CardText").at(0);
+  const wrapper2 = shallow(
+    <Survey
+      questionResponses={questionResponses}
+      interactionSteps={[currentInteractionStep, secondStep]}
+      currentInteractionStep={currentInteractionStep}
+    />
+  );
 
-    expect(accordion.prop("expanded")).toBe(true);
-    expect(accordionSummary.prop("children")).toContain("Current question");
+  test("Accordion started closed with correct text", () => {
+    const accordion = wrapper2.find(Accordion);
+    const accordionSummary = wrapper2.find(AccordionSummary);
+    const menuItem = wrapper2.find(MenuItem).at(1); // 2nd for mineral
+    const listItems = wrapper2.find(ListItem);
+
+    expect(accordion.prop("expanded")).toBe(false);
+    expect(accordionSummary.prop("children")).toContain("All questions");
+    expect(menuItem.prop("value")).toContain("Foo is a mineral");
+    // filtered list includes mineral
+    expect(
+      listItems.findWhere(x => x.prop("value") === "Foo is a mineral").length
+    ).toBe(1);
+    // filtered list does NOT include vegetable
+    expect(
+      listItems.findWhere(x => x.prop("value") === "Foo is a vegetable").length
+    ).toBe(0);
   });
 
   test("handleExpandChange Function", () => {
-    expect(wrapper.state().showAllQuestions).toEqual(false);
-    wrapper.instance().handleExpandChange(true);
-    expect(wrapper.state().showAllQuestions).toEqual(true);
+    expect(wrapper1.state().showAllQuestions).toEqual(false);
+    wrapper1.instance().handleExpandChange(true);
+    expect(wrapper1.state().showAllQuestions).toEqual(true);
   });
 
   test("getNextScript Function", () => {
     expect(
-      wrapper.instance().getNextScript({
+      wrapper1.instance().getNextScript({
         interactionStep: currentInteractionStep,
         answerIndex: 0
       })

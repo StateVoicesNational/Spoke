@@ -7,6 +7,7 @@ import Button from "@material-ui/core/Button";
 import { withRouter } from "react-router";
 import gql from "graphql-tag";
 import GSTextField from "../../../components/forms/GSTextField";
+import { dataTest } from "../../../lib/attributes";
 
 import loadData from "../../../containers/hoc/load-data";
 
@@ -110,7 +111,7 @@ export class TexterSideboxClass extends React.Component {
     const headerStyle = messageStatusFilter ? { textAlign: "center" } : {};
     return (
       <div style={headerStyle}>
-        {assignment.hasUnassignedContactsForTexter && (
+        {assignment.hasUnassignedContactsForTexter ? (
           <div>
             <h3>{nextBatchMessage}</h3>
             <Button
@@ -121,8 +122,8 @@ export class TexterSideboxClass extends React.Component {
               {nextBatchMoreLabel}
             </Button>
           </div>
-        )}
-        {messageStatusFilter === "needsMessage" && assignment.unrepliedCount && (
+        ) : null}
+        {messageStatusFilter === "needsMessage" && assignment.unrepliedCount ? (
           <div style={{ marginBottom: "8px", paddingLeft: "12px" }}>
             <Badge badgeContent={assignment.unrepliedCount} color="primary">
               <Button variant="contained" onClick={this.gotoReplies}>
@@ -130,35 +131,39 @@ export class TexterSideboxClass extends React.Component {
               </Button>
             </Badge>
           </div>
-        )}
+        ) : null}
         {messageStatusFilter &&
-          messageStatusFilter !== "needsMessage" &&
-          assignment.unmessagedCount && (
-            <div style={{ marginBottom: "8px", paddingLeft: "12px" }}>
-              <Badge badgeContent={assignment.unmessagedCount} color="primary">
-                <Button variant="contained" onClick={this.gotoInitials}>
-                  Send first texts
-                </Button>
-              </Badge>
-            </div>
-          )}
-        {contact /*the empty list*/ && (
+        messageStatusFilter !== "needsMessage" &&
+        assignment.unmessagedCount ? (
+          <div style={{ marginBottom: "8px", paddingLeft: "12px" }}>
+            <Badge badgeContent={assignment.unmessagedCount} color="primary">
+              <Button variant="contained" onClick={this.gotoInitials}>
+                Send first texts
+              </Button>
+            </Badge>
+          </div>
+        ) : null}
+        {contact /*the empty list*/ ? (
           <div style={{ marginBottom: "8px" }}>
-            <Button variant="contained" onClick={this.gotoTodos}>
+            <Button
+              variant="contained"
+              onClick={this.gotoTodos}
+              {...dataTest("gotoTodos")}
+            >
               Back To Todos
             </Button>
           </div>
-        )}
+        ) : null}
         {!assignment.hasUnassignedContactsForTexter &&
-          !contact &&
-          !assignment.unmessagedCount &&
-          !assignment.unrepliedCount &&
-          settingsData.dynamicAssignmentNothingToDoMessage && (
-            // assignment summary when there is nothing to do
-            <div style={{ marginBottom: "8px", marginLeft: "12px" }}>
-              {settingsData.dynamicAssignmentNothingToDoMessage}
-            </div>
-          )}
+        !contact &&
+        !assignment.unmessagedCount &&
+        !assignment.unrepliedCount &&
+        settingsData.dynamicAssignmentNothingToDoMessage ? (
+          // assignment summary when there is nothing to do
+          <div style={{ marginBottom: "8px", marginLeft: "12px" }}>
+            {settingsData.dynamicAssignmentNothingToDoMessage}
+          </div>
+        ) : null}
       </div>
     );
   }

@@ -154,7 +154,7 @@ describe("ngpvan", () => {
         }
       })
         .get(
-          `/v4/savedLists?$top=&maxPeopleCount=${process.env.NGP_VAN_MAXIMUM_LIST_SIZE}`
+          `/v4/savedLists?$top=100&maxPeopleCount=${process.env.NGP_VAN_MAXIMUM_LIST_SIZE}`
         )
         .reply(200, {
           items: listItems,
@@ -168,6 +168,42 @@ describe("ngpvan", () => {
       getSavedListsNock.done();
     });
 
+    it("gets extra when more than 100 count", async () => {
+      const savedListsNock = nock(`${fakeNgpVanBaseApiUrl}:443`, {
+        encodedQueryParams: true,
+        reqheaders: {
+          authorization: "Basic c3Bva2U6dG9wc2VjcmV0fDA="
+        }
+      });
+
+      const getSavedListsNock = savedListsNock
+        .get(
+          `/v4/savedLists?$top=100&maxPeopleCount=${process.env.NGP_VAN_MAXIMUM_LIST_SIZE}`
+        )
+        .reply(200, {
+          items: listItems.slice(0, 4),
+          nextPageLink: null,
+          count: 101
+        });
+
+      const getExtraSavedListsNock = savedListsNock
+        .get(
+          `/v4/savedLists?$top=100&maxPeopleCount=${process.env.NGP_VAN_MAXIMUM_LIST_SIZE}&$skip=1`
+        )
+        .reply(200, {
+          items: listItems.slice(4),
+          nextPageLink: null,
+          count: 1
+        });
+
+      const savedListsResponse = await getClientChoiceData();
+
+      expect(JSON.parse(savedListsResponse.data).items).toEqual(listItems);
+      expect(savedListsResponse.expiresSeconds).toEqual(30);
+      getSavedListsNock.done();
+      getExtraSavedListsNock.done();
+    });
+
     describe("when there is an error retrieving the list", () => {
       it("returns what we expect", async () => {
         const getSavedListsNock = nock(`${fakeNgpVanBaseApiUrl}:443`, {
@@ -177,7 +213,7 @@ describe("ngpvan", () => {
           }
         })
           .get(
-            `/v4/savedLists?$top=&maxPeopleCount=${process.env.NGP_VAN_MAXIMUM_LIST_SIZE}`
+            `/v4/savedLists?$top=100&maxPeopleCount=${process.env.NGP_VAN_MAXIMUM_LIST_SIZE}`
           )
           .reply(404);
 
@@ -1374,6 +1410,18 @@ describe("ngpvan", () => {
       expect(autocomplete.props().options).toEqual(dataSourceExpectation);
       expect(autocomplete.props().value).toBe(undefined);
       expect(autocomplete.html()).toContain("Select a list to import");
+    });
+
+    it("populates as empty when client choice data errors", async () => {
+      const props = {
+        ...commonProps,
+        clientChoiceData: JSON.stringify({ error: "error occurred" })
+      };
+
+      wrapper = shallow(<CampaignContactsForm {...props} />);
+      component = wrapper.instance();
+      const autocomplete = wrapper.find(Autocomplete);
+      expect(autocomplete.props().options).toEqual([]);
     });
 
     describe("when lastResult indicates a success", () => {

@@ -46,7 +46,10 @@ const sender =
 export const sendEmail = async ({ to, subject, text, html, replyTo }) => {
   log.info(`Sending e-mail to ${to} with subject ${subject}.`);
 
-  if (process.env.NODE_ENV === "development") {
+  if (
+    process.env.NODE_ENV === "development" ||
+    (!getConfig("EMAIL_FROM") && process.env.NODE_ENV === "test")
+  ) {
     log.debug(`Would send e-mail with subject ${subject} and text ${text}.`);
     return null;
   }

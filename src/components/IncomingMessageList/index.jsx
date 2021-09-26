@@ -88,20 +88,19 @@ export class IncomingMessageList extends Component {
       this.props.campaignsFilter.campaignIds.length === 1 &&
       this.props.assignmentsFilter.texterId;
   };
-  UNSAFE_componentWillReceiveProps = prevProps => {
-    if (
-      this.props.clearSelectedMessages &&
-      this.state.selectedRows.length > 0
-    ) {
-      this.setState({
-        selectedRows: []
-      });
+  UNSAFE_componentWillReceiveProps = nextProps => {
+    if (nextProps.clearSelectedMessages) {
+      if (this.state.selectedRows.length > 0) {
+        this.setState({
+          selectedRows: []
+        });
+      }
       this.props.onConversationSelected([], []);
     }
 
-    let previousPageInfo = { total: 0 };
-    if (prevProps.conversations.conversations) {
-      previousPageInfo = prevProps.conversations.conversations.pageInfo;
+    let nextPageInfo = { total: 0 };
+    if (nextProps.conversations.conversations) {
+      nextPageInfo = nextProps.conversations.conversations.pageInfo;
     }
 
     let pageInfo = { total: 0 };
@@ -109,11 +108,8 @@ export class IncomingMessageList extends Component {
       pageInfo = this.props.conversations.conversations.pageInfo;
     }
 
-    if (
-      previousPageInfo.total !== pageInfo.total ||
-      (!previousPageInfo && pageInfo)
-    ) {
-      this.props.onConversationCountChanged(pageInfo.total);
+    if (nextPageInfo.total !== pageInfo.total || (!nextPageInfo && pageInfo)) {
+      this.props.onConversationCountChanged(nextPageInfo.total);
     }
   };
 
@@ -132,8 +128,9 @@ export class IncomingMessageList extends Component {
               {value.id !== null ? (
                 <span>
                   {value.displayName +
-                    (getHighestRole(value.roles) === "SUSPENDED" &&
-                      " (Suspended)")}{" "}
+                    (getHighestRole(value.roles) === "SUSPENDED"
+                      ? " (Suspended)"
+                      : "")}{" "}
                   <RouterLink
                     target="_blank"
                     to={`/app/${this.props.organizationId}/todos/other/${value.id}`}
@@ -386,7 +383,6 @@ export class IncomingMessageList extends Component {
             this.handleRowsSelected(ids);
             break;
           default:
-            console.log(`action not handled: ${action}`);
             break;
         }
       }

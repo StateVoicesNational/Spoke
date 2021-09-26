@@ -56,7 +56,7 @@ export class AdminIncomingMessageList extends Component {
     return true;
   };
 
-  UNSAFE_componentWillReceiveProps = () => {
+  UNSAFE_componentWillReceiveProps = nextProps => {
     if (this.state.clearSelectedMessages) {
       this.setState({
         clearSelectedMessages: false,
@@ -231,19 +231,30 @@ export class AdminIncomingMessageList extends Component {
   };
 
   handleRowSelection = async (selectedRows, data) => {
+    let updateState;
     if (this.state.previousSelectedRows === "all" && selectedRows !== "all") {
-      await this.setState({
+      updateState = {
         previousSelectedRows: [],
         campaignIdsContactIds: [],
         needsRender: false
-      });
+      };
     } else {
-      await this.setState({
+      updateState = {
         previousSelectedRows: selectedRows,
         campaignIdsContactIds: data,
         needsRender: false
-      });
+      };
     }
+    // after sub-component clears its messages, we should reset the clearSelectedMessages value
+    if (
+      this.state.clearSelectedMessages &&
+      selectedRows &&
+      selectedRows.length === 0
+    ) {
+      updateState.clearSelectedMessages = false;
+      updateState.needsRender = true;
+    }
+    await this.setState(updateState);
   };
 
   handleCampaignsReceived = async campaigns => {

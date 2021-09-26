@@ -66,7 +66,7 @@ describe("extensions.message-handlers.ngpvan", () => {
       ]);
     });
 
-    describe.only("when NGP_VAN_INITIAL_TEXT_CANVASS_RESULT is not found in the actions", () => {
+    describe("when NGP_VAN_INITIAL_TEXT_CANVASS_RESULT is not found in the actions", () => {
       beforeEach(async () => {
         ActionHandlers.getActionChoiceData.mockRestore();
         jest.spyOn(ActionHandlers, "getActionChoiceData").mockResolvedValue([]);

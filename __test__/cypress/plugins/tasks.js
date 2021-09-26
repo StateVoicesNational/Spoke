@@ -52,6 +52,11 @@ export function defineTasks(on, config) {
       });
       user.password = userInfo.password;
       return user;
+    },
+
+    log(message, arg1, arg2) {
+      console.log("LOG", message, arg1, arg2);
+      return null;
     }
   });
 
