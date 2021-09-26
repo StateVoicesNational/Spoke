@@ -2,6 +2,8 @@
 import { r } from "../../../src/server/models/";
 import { getCampaignsQuery } from "../../../src/containers/AdminCampaignList";
 import { GraphQLError } from "graphql/error";
+import gql from "graphql-tag";
+import * as messagingServices from "../../../src/extensions/service-vendors";
 
 import {
   cleanupTest,
@@ -14,6 +16,9 @@ import {
   runGql,
   setupTest
 } from "../../test_helpers";
+import * as srcServerApiErrors from "../../../src/server/api/errors";
+import * as orgCache from "../../../src/server/models/cacheable_queries/organization";
+import * as serviceMap from "../../../src/extensions/service-vendors/service_map";
 
 const ActionHandlerFramework = require("../../../src/extensions/action-handlers");
 
@@ -43,6 +48,7 @@ describe("organization", async () => {
 
   afterEach(async () => {
     await cleanupTest();
+    jest.restoreAllMocks();
     if (r.redis) r.redis.flushdb();
   }, global.DATABASE_SETUP_TEARDOWN_TIMEOUT);
 
@@ -288,6 +294,100 @@ describe("organization", async () => {
           instructions: "Thing 2 instructions",
           clientChoiceData: []
         }
+      ]);
+    });
+  });
+
+  describe(".fullyconfigured", () => {
+    let gqlQuery;
+    let variables;
+    beforeEach(async () => {
+      gqlQuery = gql`
+        query fullyConfigured($organizationId: String!) {
+          organization(id: $organizationId) {
+            fullyConfigured
+          }
+        }
+      `;
+
+      variables = { organizationId: 1 };
+
+      jest.spyOn(messagingServices, "fullyConfigured").mockResolvedValue(false);
+    });
+    it("delegates to its dependency and returns the result", async () => {
+      const result = await runGql(gqlQuery, variables, testAdminUser);
+      expect(result.data.organization.fullyConfigured).toEqual(false);
+      expect(messagingServices.fullyConfigured.mock.calls).toEqual([
+        [expect.objectContaining({ id: 1 })]
+      ]);
+    });
+  });
+
+  describe(".serviceVendor", () => {
+    let gqlQuery;
+    let variables;
+    let fakeConfig;
+    let fakeMetadata;
+    beforeEach(async () => {
+      fakeConfig = { fake: "faker_and_faker" };
+      fakeMetadata = {
+        name: "super_fake",
+        supportsOrgConfig: true
+      };
+
+      jest
+        .spyOn(srcServerApiErrors, "accessRequired")
+        .mockImplementation(() => {});
+      jest
+        .spyOn(orgCache.default, "getMessageService")
+        .mockReturnValue("fake_fake_fake");
+      jest
+        .spyOn(orgCache.default, "getMessageServiceConfig")
+        .mockReturnValue(fakeConfig);
+      jest
+        .spyOn(serviceMap, "getServiceMetadata")
+        .mockReturnValue(fakeMetadata);
+
+      gqlQuery = gql`
+        query serviceVendor($organizationId: String!) {
+          organization(id: $organizationId) {
+            serviceVendor {
+              name
+              supportsOrgConfig
+              config
+            }
+          }
+        }
+      `;
+
+      variables = {
+        organizationId: testOrganization.data.createOrganization.id
+      };
+    });
+    it("calls functions and returns the result", async () => {
+      const result = await runGql(gqlQuery, variables, testAdminUser);
+      expect(result.data.organization.serviceVendor).toEqual({
+        ...fakeMetadata,
+        config: fakeConfig
+      });
+      expect(srcServerApiErrors.accessRequired.mock.calls[1]).toEqual([
+        expect.objectContaining({
+          auth0_id: "test123"
+        }),
+        parseInt(testOrganization.data.createOrganization.id, 10),
+        "OWNER"
+      ]);
+      expect(orgCache.default.getMessageService.mock.calls).toEqual([
+        [expect.objectContaining({ id: 1 })]
+      ]);
+      expect(serviceMap.getServiceMetadata.mock.calls).toEqual([
+        ["fake_fake_fake"]
+      ]);
+      expect(orgCache.default.getMessageServiceConfig.mock.calls).toEqual([
+        [
+          expect.objectContaining({ id: 1 }),
+          { obscureSensitiveInformation: true, restrictToOrgFeatures: true }
+        ]
       ]);
     });
   });

@@ -122,7 +122,7 @@ export class AssignmentSummary extends Component {
     const sideboxProps = { assignment, campaign, texter, settingsData };
     const enabledSideboxes = getSideboxes(sideboxProps, "TexterTodoList");
     // if there's a sidebox marked popup, then we will only show that sidebox and little else
-    const hasPopupSidebox = enabledSideboxes.popups.length;
+    const hasPopupSidebox = Boolean(enabledSideboxes.popups.length);
     const sideboxList = enabledSideboxes
       .filter(sb =>
         hasPopupSidebox ? sb.name === enabledSideboxes.popups[0] : true

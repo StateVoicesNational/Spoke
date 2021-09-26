@@ -13,6 +13,7 @@ import Link from "@material-ui/core/Link";
 
 import TexterStats from "../components/TexterStats";
 import OrganizationJoinLink from "../components/OrganizationJoinLink";
+import CampaignServiceManagers from "../components/CampaignServiceManagers";
 import AdminCampaignCopy from "./AdminCampaignCopy";
 import { withRouter, Link as RouterLink } from "react-router";
 import { StyleSheet, css } from "aphrodite";
@@ -265,11 +266,17 @@ class AdminCampaignStats extends React.Component {
                         disabled={shouldDisableExport}
                       >
                         {exportLabel}
-                      </Button>, // unarchive
+                      </Button>,
+                      // unarchive
                       campaign.isArchived && (
                         <Button
                           key="unarchiveCampaign"
-                          disabled={campaign.isArchivedPermanently}
+                          disabled={
+                            campaign.isArchivedPermanently ||
+                            campaign.serviceManagers
+                              .map(sm => sm.unArchiveable)
+                              .reduce((a, b) => a || b, false)
+                          }
                           onClick={async () =>
                             await this.props.mutations.unarchiveCampaign(
                               campaignId
@@ -279,6 +286,7 @@ class AdminCampaignStats extends React.Component {
                           Unarchive
                         </Button>
                       ),
+                      // archive
                       !campaign.isArchived && (
                         <Button
                           key="archiveCampaign"
@@ -290,7 +298,8 @@ class AdminCampaignStats extends React.Component {
                         >
                           Archive
                         </Button>
-                      ), // copy
+                      ),
+                      // copy
                       <AdminCampaignCopy
                         key="AdminCampaignCopy"
                         organizationId={organizationId}
@@ -366,7 +375,12 @@ class AdminCampaignStats extends React.Component {
             campaignId={campaignId}
           />
         )}
-
+        <CampaignServiceManagers
+          campaign={campaign}
+          organization={this.props.organizationData.organization}
+          serviceManagerComponentName={"CampaignStats"}
+          onSubmit={this.props.mutations.updateServiceManager}
+        />
         <div className={css(styles.container)}>
           <div className={css(styles.flexColumn, styles.spacer)}>
             <Stat title="Contacts" count={campaign.contactsCount} />
@@ -446,14 +460,15 @@ const queries = {
         $contactsFilter: ContactsFilter!
         $needsResponseFilter: ContactsFilter!
         $assignmentsFilter: AssignmentsFilter
+        $fromCampaignStatsPage: Boolean
       ) {
         campaign(id: $campaignId) {
           id
           title
           isArchived
-          isArchivedPermanently
           joinToken
           useDynamicAssignment
+          isArchivedPermanently
           useOwnMessagingService
           messageserviceSid
           assignments(assignmentsFilter: $assignmentsFilter) {
@@ -502,6 +517,13 @@ const queries = {
             }
           }
           cacheable
+          serviceManagers(fromCampaignStatsPage: $fromCampaignStatsPage) {
+            id
+            name
+            displayName
+            data
+            unArchiveable
+          }
         }
       }
     `,
@@ -518,7 +540,8 @@ const queries = {
         needsResponseFilter: {
           messageStatus: "needsResponse",
           isOptedOut: false
-        }
+        },
+        fromCampaignStatsPage: true
       },
       pollInterval: 5000
     })
@@ -596,6 +619,36 @@ const mutations = {
     `,
     variables: { campaignId },
     refetchQueries: () => ["getOrganizationData"]
+  }),
+  updateServiceManager: ownProps => (serviceManagerName, updateData) => ({
+    mutation: gql`
+      mutation updateServiceManager(
+        $organizationId: String!
+        $campaignId: String!
+        $serviceManagerName: String!
+        $updateData: JSON!
+        $fromCampaignStatsPage: Boolean
+      ) {
+        updateServiceManager(
+          organizationId: $organizationId
+          campaignId: $campaignId
+          serviceManagerName: $serviceManagerName
+          updateData: $updateData
+          fromCampaignStatsPage: $fromCampaignStatsPage
+        ) {
+          id
+          data
+          unArchiveable
+        }
+      }
+    `,
+    variables: {
+      organizationId: ownProps.organizationData.organization.id,
+      campaignId: ownProps.data.campaign.id,
+      serviceManagerName,
+      updateData,
+      fromCampaignStatsPage: true
+    }
   })
 };
 

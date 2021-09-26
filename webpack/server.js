@@ -29,6 +29,7 @@ const app = new WebpackDevServer(compiler, {
   proxy: {
     "*": `http://127.0.0.1:${appPort}`
   },
+  clientLogLevel: "debug",
   stats: {
     colors: true,
     hash: false,
@@ -40,8 +41,8 @@ const app = new WebpackDevServer(compiler, {
     reasons: false,
     children: false,
     source: false,
-    errors: false,
-    errorDetails: false,
+    errors: true,
+    errorDetails: true,
     warnings: true,
     publicPath: false
   }

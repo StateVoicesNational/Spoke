@@ -48,10 +48,6 @@ export const inlineStyles = {
   flatButtonLabel: {
     textTransform: "none",
     fontWeight: "bold"
-  },
-  popoverSidebox: {
-    backgroundColor: "rgb(240, 240, 240)",
-    padding: "20px"
   }
 };
 
@@ -66,6 +62,15 @@ export const flexStyles = StyleSheet.create({
     display: "flex",
     flexDirection: "column",
     height: "100%"
+  },
+  popoverSideboxesInner: {
+    // expand to fill the whole popover
+    width: "100%",
+    height: "100%",
+    // show campaign header in-view
+    top: "50px",
+    left: "18px",
+    padding: "20px"
   },
   popover: {
     width: "85%",
@@ -182,7 +187,7 @@ export const flexStyles = StyleSheet.create({
   subSubAnswerButtonsColumns: {
     height: "0px",
     "@media(min-height: 600px)": {
-      height: "40px" // TODO
+      height: "37px" // TODO
     },
     display: "inline-block",
     //flex: "1 1 50%",
