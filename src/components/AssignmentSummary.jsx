@@ -136,7 +136,6 @@ export class AssignmentSummary extends Component {
     // NOTE: we bring back archived campaigns if they have feedback
     // but want to get rid of them once feedback is acknowledged
     if (campaign.isArchived && !hasPopupSidebox) return null;
-    console.log("primaryColor", primaryColor);
     return (
       <div
         className={css(styles.container)}
