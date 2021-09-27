@@ -697,7 +697,13 @@ async function addNumberToMessagingService(
 /**
  * Buy a phone number and add it to the owned_phone_number table
  */
-async function buyNumber(organization, twilioInstance, phoneNumber, opts = {}) {
+async function buyNumber(
+  organization,
+  twilioInstance,
+  phoneNumber,
+  opts = {},
+  messageServiceSid
+) {
   const response = await twilioInstance.incomingPhoneNumbers.create({
     phoneNumber,
     friendlyName: `Managed by Spoke [${process.env.BASE_URL}]: ${phoneNumber}`,
@@ -711,10 +717,7 @@ async function buyNumber(organization, twilioInstance, phoneNumber, opts = {}) {
   log.debug(`Bought number ${phoneNumber} [${response.sid}]`);
 
   let allocationFields = {};
-  let messagingServiceSid = getConfig(
-    "TWILIO_MESSAGE_SERVICE_SID",
-    organization
-  );
+  let messagingServiceSid = messageServiceSid;
   if (opts) {
     if (opts.messagingServiceSid) {
       messagingServiceSid = opts.messagingServiceSid;
@@ -768,6 +771,7 @@ export async function buyNumbersInAreaCode(
 ) {
   const twilioInstance = await exports.getTwilio(organization);
   const countryCode = getConfig("PHONE_NUMBER_COUNTRY ", organization) || "US";
+  const messageServiceSid = await getMessageServiceSid(organization);
   async function buyBatch(size) {
     let successCount = 0;
     log.debug(`Attempting to buy batch of ${size} numbers`);
@@ -780,7 +784,13 @@ export async function buyNumbersInAreaCode(
     );
 
     await bulkRequest(response, async item => {
-      await buyNumber(organization, twilioInstance, item.phoneNumber, opts);
+      await buyNumber(
+        organization,
+        twilioInstance,
+        item.phoneNumber,
+        opts,
+        messageServiceSid
+      );
       successCount++;
     });
 
