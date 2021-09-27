@@ -158,6 +158,7 @@ export class OrgConfig extends React.Component {
               schema={formSchema}
               onChange={this.onFormChange}
               defaultValue={this.state}
+              onSubmit={this.handleOpenTwilioDialog}
             >
               <Form.Field
                 as={GSTextField}
@@ -181,7 +182,6 @@ export class OrgConfig extends React.Component {
               <Form.Submit
                 as={GSSubmitButton}
                 label={this.props.saveLabel || "Save Twilio Credentials"}
-                onClick={this.handleOpenTwilioDialog}
               />
               <Dialog open={this.state.twilioDialogOpen}>
                 <DialogContent>
@@ -198,13 +198,12 @@ export class OrgConfig extends React.Component {
                   >
                     Cancel
                   </Button>
-                  <Form.Submit
-                    as={GSSubmitButton}
-                    label="Save"
+                  <Button
                     style={inlineStyles.dialogButton}
-                    component={GSSubmitButton}
                     onClick={this.handleSubmitTwilioAuthForm}
-                  />
+                  >
+                    Save
+                  </Button>
                 </DialogActions>
               </Dialog>
             </GSForm>
