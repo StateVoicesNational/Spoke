@@ -852,8 +852,13 @@ export async function deleteNumbersInAreaCode(organization, areaCode) {
     .where({
       organization_id: organization.id,
       area_code: areaCode,
-      service: "twilio",
-      allocated_to: null
+      service: "twilio"
+    })
+    .where(function() {
+      this.whereNull("allocated_to").orWhere(
+        "allocated_to",
+        "messaging_service"
+      );
     });
   let successCount = 0;
   for (const n of numbersToDelete) {
