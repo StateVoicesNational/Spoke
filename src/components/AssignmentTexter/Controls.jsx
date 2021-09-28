@@ -530,36 +530,49 @@ export class AssignmentTexterContactControls extends React.Component {
   renderNeedsResponseToggleButton(contact) {
     const { messageStatus } = contact;
     let button = null;
-    if (messageStatus === "needsMessage") {
-      return null;
-    } else if (messageStatus === "closed") {
-      // todo: add flex: style.
-      button = (
-        <Button
-          onClick={() => this.props.onEditStatus("needsResponse")}
-          className={css(flexStyles.button)}
-          style={{ flex: "1 1 auto" }}
-          disabled={!!this.props.contact.optOut}
-          color="default"
-          variant="outlined"
-        >
-          Reopen
-        </Button>
-      );
-    } else {
-      button = (
-        <Button
-          onClick={() => this.props.onEditStatus("closed", true)}
-          className={css(flexStyles.button)}
-          disabled={!!this.props.contact.optOut}
-          color="default"
-          variant="outlined"
-        >
-          Skip
-        </Button>
-      );
+    if (messageStatus !== "needsMessage") {
+      const status = this.state.messageStatus || messageStatus;
+      const onClick = (newStatus, finishContact) => async () => {
+        const res = await this.props.onEditStatus(newStatus, finishContact);
+        if (
+          res &&
+          res.data &&
+          res.data.editCampaignContactMessageStatus &&
+          res.data.editCampaignContactMessageStatus.messageStatus
+        ) {
+          this.setState({
+            messageStatus:
+              res.data.editCampaignContactMessageStatus.messageStatus
+          });
+        }
+      };
+      if (status === "closed") {
+        button = (
+          <Button
+            onClick={onClick("needsResponse")}
+            className={css(flexStyles.button)}
+            style={{ flex: "1 1 auto" }}
+            disabled={!!this.props.contact.optOut}
+            color="default"
+            variant="outlined"
+          >
+            Reopen
+          </Button>
+        );
+      } else {
+        button = (
+          <Button
+            onClick={onClick("closed", true)}
+            className={css(flexStyles.button)}
+            disabled={!!this.props.contact.optOut}
+            color="default"
+            variant="outlined"
+          >
+            Skip
+          </Button>
+        );
+      }
     }
-
     return button;
   }
 
