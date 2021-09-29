@@ -40,12 +40,23 @@ export const getMetadata = () => ({
   name: "twilio"
 });
 
-export const getTwilio = async organization => {
-  const { authToken, accountSid } = await getMessageServiceConfig(
-    "twilio",
-    organization,
-    { obscureSensitiveInformation: false }
-  );
+export const getTwilio = async (organization, serviceManagerData) => {
+  let authToken;
+  let accountSid;
+  if (
+    serviceManagerData &&
+    serviceManagerData.twilio &&
+    serviceManagerData.twilio.authToken &&
+    serviceManagerData.twilio.accountSid
+  ) {
+    ({ authToken, accountSid } = serviceManagerData.twilio);
+  } else {
+    ({ authToken, accountSid } = await getMessageServiceConfig(
+      "twilio",
+      organization,
+      { obscureSensitiveInformation: false }
+    ));
+  }
   if (accountSid && authToken) {
     return twilioLibrary.Twilio(accountSid, authToken); // eslint-disable-line new-cap
   }
@@ -238,7 +249,7 @@ export async function sendMessage({
   campaign,
   serviceManagerData
 }) {
-  const twilio = await exports.getTwilio(organization);
+  const twilio = await exports.getTwilio(organization, serviceManagerData);
   const APITEST = /twilioapitest/.test(message.text);
   if (!twilio && !APITEST) {
     log.warn(
