@@ -150,7 +150,14 @@ export class MessageList extends React.Component {
   }
 
   render() {
-    const { contact, styles, review, currentUser, organizationId } = this.props;
+    const {
+      contact,
+      styles,
+      review,
+      currentUser,
+      organizationId,
+      muiTheme
+    } = this.props;
     let received = defaultStyles.received;
     let sent = defaultStyles.sent;
     if (styles) {
