@@ -74,7 +74,7 @@ export class ContactController extends React.Component {
     // In fact, without the code below, we will 'double-jump' each message
     // we send or change the status in some way.
     // Below, we update our index with the contact that matches our current index.
-
+    console.log("ContactController", nextProps, nextState);
     if (nextState.currentContactIndex != this.state.currentContactIndex) {
       console.log(
         "updateindex <cur> <next>",
