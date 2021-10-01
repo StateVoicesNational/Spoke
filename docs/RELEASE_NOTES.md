@@ -1,5 +1,22 @@
 # Release Notes
 
+## v11.1
+
+_October 2021:_ Version 11.1
+
+11.1 is a bug-fix release.  After many changes in 11.0, there were a few problems that surfaced and with the help of reporting from the community (special shoutout to Karla Bradley at NYCET and Brendan, Daniel, and Amy at State Voices).
+
+### Bug-fixes
+* Campaign Admin: Texter manual changing/adding of assigned triggered app failure
+* Setting/Updating Twilio credentials in admin Settings failed
+* Buying numbers for an organization's message service failed
+* Clicking Re-open
+* minor additions/fixes to service-managers api
+
+### Appreciations
+
+* [Larry Person](https://github.com/lperson), [Kathy Nguyen](https://github.com/crayolakat), [Schuyler Duveen](https://github.com/schuyler1d), Mark Houghton, everyone at NYCET and State Voices for bug reporting and testing.
+
 ## v11.0
 
 _August 2021:_ Version 11.0
