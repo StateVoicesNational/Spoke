@@ -286,7 +286,7 @@ export class AssignmentTexterContact extends React.Component {
 
   handleEditStatus = async (messageStatus, finishContact) => {
     const { contact } = this.props;
-    await this.props.mutations.editCampaignContactMessageStatus(
+    const res = await this.props.mutations.editCampaignContactMessageStatus(
       messageStatus,
       contact.id
     );
@@ -294,6 +294,7 @@ export class AssignmentTexterContact extends React.Component {
       await this.handleSubmitSurveys();
       this.props.onFinishContact();
     }
+    return res;
   };
 
   handleOptOut = async ({ optOutMessageText }) => {
