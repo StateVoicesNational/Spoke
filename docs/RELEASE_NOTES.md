@@ -8,14 +8,14 @@ _October 2021:_ Version 11.1
 
 ### Bug-fixes
 * Campaign Admin: Texter manual changing/adding of assigned triggered app failure
-* Setting/Updating Twilio credentials in admin Settings failed
-* Buying numbers for an organization's message service failed
+* Setting/Updating Twilio credentials in admin Settings failure
+* Buying numbers for an organization's message service failure
 * Clicking Re-open
 * minor additions/fixes to service-managers api
 
 ### Appreciations
 
-* [Larry Person](https://github.com/lperson), [Kathy Nguyen](https://github.com/crayolakat), [Schuyler Duveen](https://github.com/schuyler1d), Mark Houghton, everyone at NYCET and State Voices for bug reporting and testing.
+* [Arique Aguilar](https://github.com/Arique1104), [Larry Person](https://github.com/lperson), [Kathy Nguyen](https://github.com/crayolakat), [Schuyler Duveen](https://github.com/schuyler1d), Mark Houghton, everyone at NYCET and State Voices for bug reporting and testing.
 
 ## v11.0
 
