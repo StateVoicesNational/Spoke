@@ -2,6 +2,7 @@ import _ from "lodash";
 import { r, cacheableData } from "../../../server/models";
 import { getConfig, getFeatures } from "../../../server/api/lib/config";
 import { Jobs } from "../../../workers/job-processes";
+import { Tasks } from "../../../workers/tasks";
 import { jobRunner } from "../../job-runners";
 import { getServiceFromOrganization } from "../../service-vendors";
 /// All functions are OPTIONAL EXCEPT metadata() and const name=.
@@ -131,15 +132,42 @@ export async function getCampaignData({
 
 export async function processJobNumberLookups(job, payload) {
   // called async from onCampaignUpdateSignal
-  const organization = await cacheableData.organization.load(
-    job.organization_id
-  );
   console.log(
-    "processJobNumberLookups",
+    "scrub-bad-mobilenums.processJobNumberLookups",
     job,
     payload,
     "organization",
-    organization.id
+    job.organization_id
+  );
+  // maxes out in 15min for around 20K contacts, we we recycle tasks from that time.
+  await jobRunner.dispatchTask(Tasks.EXTENSION_TASK, {
+    method: "nextBatchJobLookups",
+    path: "extensions/service-managers/scrub-bad-mobilenums",
+    job,
+    lookupCount: payload.lookupCount,
+    steps: 0,
+    lastCount: payload.lookupCount
+  });
+}
+
+export async function nextBatchJobLookups({
+  job,
+  lookupCount,
+  steps,
+  lastCount
+}) {
+  // called async from processJobNumberLookups which in-turn is called by onCampaignUpdateSignal
+  console.log(
+    "scrub-bad-mobilenums.nextBatchJobLookups",
+    job,
+    "organization",
+    job.organization_id,
+    steps,
+    lastCount,
+    lookupCount
+  );
+  const organization = await cacheableData.organization.load(
+    job.organization_id
   );
   const serviceClient = getServiceFromOrganization(organization);
   if (!serviceClient.getContactInfo) {
@@ -150,9 +178,39 @@ export async function processJobNumberLookups(job, payload) {
     job.campaign_id,
     job.organization_id
   ).select("cell", "last_lookup", "organization_contact.id", "organization_id");
+
+  if (contacts.length === 0 || (steps > 0 && lastCount === contacts.length)) {
+    // FINISHED: either no more to process or we are not making progress
+
+    // actually delete/clear the campaign's landline contacts
+    const deletedCount = await deleteLandlineContacts(job.campaign_id);
+
+    await cacheableData.campaign.setFeatures(job.campaign_id, {
+      scrubBadMobileNumsFinished: true,
+      scrubBadMobileNumsFinishedCount: contacts.length,
+      scrubBadMobileNumsFinishedDeleteCount: deletedCount
+    });
+    await r
+      .knex("job_request")
+      .where("id", job.id)
+      .delete();
+    console.log(
+      "scrub-bad-mobilenums finsihed job",
+      job.id,
+      job.organization_id,
+      contacts.length,
+      lastCount,
+      steps
+    );
+    return; // END FINSIHED
+  }
+
   // Do 100 at a time, so we don't lose our work if it dies early
-  const chunks = _.chunk(contacts, 100);
-  for (let i = 0, l = chunks.length; i < l; i++) {
+  const chunkSize = 100;
+  const chunks = _.chunk(contacts, chunkSize);
+  // maxes out in 15min for around 20K contacts, we we recycle tasks from that time.
+  const maxChunksToProcessThisTime = Math.min(chunks.length, 200);
+  for (let i = 0; i < maxChunksToProcessThisTime; i++) {
     const chunk = chunks[i];
     const lookupChunk = await Promise.all(
       chunk.map(async contact => {
@@ -206,21 +264,17 @@ export async function processJobNumberLookups(job, payload) {
     await r
       .knex("job_request")
       .where("id", job.id)
-      .update({ status: Math.ceil((100 * (i + 1)) / l) });
+      .update({ status: Math.ceil((100 * (i * chunkSize + 1)) / lookupCount) });
   }
 
-  // actually delete/clear the campaign's landline contacts
-  const deletedCount = await deleteLandlineContacts(job.campaign_id);
-
-  await cacheableData.campaign.setFeatures(job.campaign_id, {
-    scrubBadMobileNumsFinished: true,
-    scrubBadMobileNumsFinishedCount: contacts.length,
-    scrubBadMobileNumsFinishedDeleteCount: deletedCount
+  await jobRunner.dispatchTask(Tasks.EXTENSION_TASK, {
+    method: "nextBatchJobLookups",
+    path: "extensions/service-managers/scrub-bad-mobilenums",
+    job,
+    lookupCount,
+    steps: steps + 1,
+    lastCount: contacts.length
   });
-  await r
-    .knex("job_request")
-    .where("id", job.id)
-    .delete();
 }
 
 export async function onCampaignUpdateSignal({
@@ -235,6 +289,11 @@ export async function onCampaignUpdateSignal({
   if (typeof service.getContactInfo !== "function") {
     return;
   }
+
+  const lookupCount = await r.getCount(
+    lookupQuery(campaign.id, campaign.organization_id)
+  );
+
   const job = await jobRunner.dispatchJob({
     queue_name: `${organization.id}:number_lookup`,
     result_message: "Srubbing Bad Mobile Nums: Processing",
@@ -245,7 +304,8 @@ export async function onCampaignUpdateSignal({
     // NOTE: stringifying because compressedString is a binary buffer
     payload: JSON.stringify({
       method: "processJobNumberLookups",
-      path: "extensions/service-managers/scrub-bad-mobilenums"
+      path: "extensions/service-managers/scrub-bad-mobilenums",
+      lookupCount
     })
   });
   await cacheableData.campaign.setFeatures(campaign.id, {
