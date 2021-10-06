@@ -25,8 +25,8 @@ export const metadata = () => ({
   supportsCampaignConfig: true
 });
 
-const lookupQuery = (campaignId, organizationId) =>
-  r
+const lookupQuery = (campaignId, organizationId) => {
+  let query = r
     .knex("campaign_contact")
     .leftJoin(
       "organization_contact",
@@ -40,8 +40,9 @@ const lookupQuery = (campaignId, organizationId) =>
     .where(function() {
       this.whereNull("status_code") // no entry
         .orWhere("status_code", 0); // unknown status
-    })
-    .where(function() {
+    });
+  if (!getConfig("OPTOUTS_SHARE_ALL_ORGS")) {
+    query = query.where(function() {
       // FUTURE: consider leveraging other organizations
       // challenge 1: might get contact_number dupes w/o it
       // challenge 2: need to insert instead of update
@@ -50,6 +51,9 @@ const lookupQuery = (campaignId, organizationId) =>
         organizationId
       );
     });
+  }
+  return query;
+};
 
 const deleteLandlineContacts = campaignId =>
   r

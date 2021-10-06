@@ -586,7 +586,6 @@ export async function getContactInfo({
   const phoneNumber = await twilio.lookups.v1
     .phoneNumbers(contactNumber)
     .fetch({ type: types });
-  // console.log('twilio getContactInfo', phoneNumber);
   const contactInfo = {
     contact_number: contactNumber,
     organization_id: organization.id,
@@ -600,18 +599,29 @@ export async function getContactInfo({
     contactInfo.status_code = -2;
     contactInfo.last_error_code = phoneNumber.carrier.error_code;
   } else if (
+    phoneNumber.carrier.type &&
+    phoneNumber.carrier.type === "landline"
+  ) {
+    // landline (not mobile or voip)
+    contactInfo.status_code = -1;
+  } else if (
+    phoneNumber.countryCode &&
     getConfig("PHONE_NUMBER_COUNTRY", organization) &&
-    getConfig("PHONE_NUMBER_COUNTRY", organization) !== contactInfo.countryCode
+    getConfig("PHONE_NUMBER_COUNTRY", organization) !== phoneNumber.countryCode
   ) {
     contactInfo.status_code = -3; // wrong country
-  } else if (phoneNumber.carrier.type) {
-    // landline, mobile, voip, <null>
-    contactInfo.status_code = phoneNumber.carrier.type === "landline" ? -1 : 1;
+  } else if (
+    phoneNumber.carrier.type &&
+    phoneNumber.carrier.type !== "landline"
+  ) {
+    // mobile, voip
+    contactInfo.status_code = 1;
   }
 
   if (phoneNumber.callerName) {
     contactInfo.lookup_name = phoneNumber.callerName;
   }
+  // console.log('twilio.getContactInfo', contactInfo, phoneNumber);
   return contactInfo;
 }
 
