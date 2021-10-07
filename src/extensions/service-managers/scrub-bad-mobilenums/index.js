@@ -166,6 +166,15 @@ export async function nextBatchJobLookups({
     lastCount,
     lookupCount
   );
+  const jobStillExists = await r
+    .knex("job_request")
+    .where("id", job.id)
+    .first();
+  if (!jobStillExists) {
+    console.log("scrub-bad-mobilenums aborted job", job.id);
+    return;
+  }
+
   const organization = await cacheableData.organization.load(
     job.organization_id
   );
@@ -206,10 +215,13 @@ export async function nextBatchJobLookups({
   }
 
   // Do 100 at a time, so we don't lose our work if it dies early
-  const chunkSize = 100;
+  const chunkSize = 200;
   const chunks = _.chunk(contacts, chunkSize);
   // maxes out in 15min for around 20K contacts, we we recycle tasks from that time.
-  const maxChunksToProcessThisTime = Math.min(chunks.length, 200);
+  const maxChunksToProcessThisTime = Math.min(
+    chunks.length,
+    Math.ceil(20000 / chunkSize)
+  );
   for (let i = 0; i < maxChunksToProcessThisTime; i++) {
     const chunk = chunks[i];
     const lookupChunk = await Promise.all(
