@@ -107,6 +107,7 @@
     "babel-runtime": "^6.26.0",
     "body-parser": "^1.15.2",
     "camelcase-keys": "^4.1.0",
+    "color-difference": "^0.3.4",
     "cookie-session": "^2.0.0-alpha.1",
     "dataloader": "^1.2.0",
     "dotenv": "^2.0.0",

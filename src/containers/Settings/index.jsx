@@ -21,17 +21,16 @@ import Collapse from "@material-ui/core/Collapse";
 import IconButton from "@material-ui/core/IconButton";
 
 import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
-import loadData from "./hoc/load-data";
-import withSetTheme from "./hoc/withSetTheme";
-import GSSubmitButton from "../components/forms/GSSubmitButton";
-import DisplayLink from "../components/DisplayLink";
-import GSForm from "../components/forms/GSForm";
-import CampaignTexterUIForm from "../components/CampaignTexterUIForm";
-import OrganizationFeatureSettings from "../components/OrganizationFeatureSettings";
-import { getServiceVendorComponent } from "../extensions/service-vendors/components";
-import { getServiceManagerComponent } from "../extensions/service-managers/components";
-import GSTextField from "../components/forms/GSTextField";
-import GSColorPicker from "../components/forms/GSColorPicker";
+import loadData from "../hoc/load-data";
+import withSetTheme from "../hoc/withSetTheme";
+import GSSubmitButton from "../../components/forms/GSSubmitButton";
+import GSForm from "../../components/forms/GSForm";
+import CampaignTexterUIForm from "../../components/CampaignTexterUIForm";
+import OrganizationFeatureSettings from "../../components/OrganizationFeatureSettings";
+import { getServiceVendorComponent } from "../../extensions/service-vendors/components";
+import { getServiceManagerComponent } from "../../extensions/service-managers/components";
+import GSTextField from "../../components/forms/GSTextField";
+import ThemeEditor from "./themeEditor";
 
 const styles = StyleSheet.create({
   section: {
@@ -276,18 +275,9 @@ class Settings extends React.Component {
 
   render() {
     const { organization } = this.props.data;
-    const { optOutMessage } = organization;
+    const { optOutMessage, id: organizationId } = organization;
     const formSchema = yup.object({
       optOutMessage: yup.string().required()
-    });
-
-    const themeFormSchema = yup.object({
-      primary: yup.string().required(),
-      secondary: yup.string().required(),
-      info: yup.string().required(),
-      success: yup.string().required(),
-      warning: yup.string().required(),
-      error: yup.string().required()
     });
 
     return (
@@ -361,72 +351,9 @@ class Settings extends React.Component {
               </Button>
             )}
           </CardActions>
-          <CardContent>
-            <h2>Theme</h2>
-            <GSForm
-              schema={themeFormSchema}
-              onSubmit={data => {
-                this.props.mutations.updateTheme(data).then(() => {
-                  this.props.setTheme({
-                    palette: {
-                      primary: { main: data.primary },
-                      secondary: { main: data.secondary },
-                      info: { main: data.info },
-                      success: { main: data.success },
-                      warning: { main: data.warning },
-                      error: { main: data.error }
-                    }
-                  });
-                });
-              }}
-              defaultValue={{
-                primary: this.props.muiTheme.palette.primary.main,
-                secondary: this.props.muiTheme.palette.secondary.main,
-                info: this.props.muiTheme.palette.info.main,
-                success: this.props.muiTheme.palette.success.main,
-                warning: this.props.muiTheme.palette.warning.main,
-                error: this.props.muiTheme.palette.error.main
-              }}
-            >
-              <Form.Field
-                as={GSColorPicker}
-                label="Primary"
-                name="primary"
-                fullWidth
-              />
-              <Form.Field
-                as={GSColorPicker}
-                label="Secondary"
-                name="secondary"
-                fullWidth
-              />
-              <Form.Field
-                as={GSColorPicker}
-                label="Info"
-                name="info"
-                fullWidth
-              />
-              <Form.Field
-                as={GSColorPicker}
-                label="Success"
-                name="success"
-                fullWidth
-              />
-              <Form.Field
-                as={GSColorPicker}
-                label="Warning"
-                name="warning"
-                fullWidth
-              />
-              <Form.Field
-                as={GSColorPicker}
-                label="Error"
-                name="error"
-                fullWidth
-              />
 
-              <Form.Submit as={GSSubmitButton} label="Save Theme" />
-            </GSForm>
+          <CardContent>
+            <ThemeEditor organizationId={organizationId} />
           </CardContent>
         </Card>
         <div>{this.renderTextingHoursForm()}</div>
@@ -522,7 +449,8 @@ class Settings extends React.Component {
           </Card>
         )}
 
-        {this.props.data.organization && this.props.params.adminPerms && (
+        {(true ||
+          (this.props.data.organization && this.props.params.adminPerms)) && (
           <Card>
             <CardHeader
               title="External configuration"
@@ -550,7 +478,7 @@ class Settings extends React.Component {
                 </p>
                 <Button
                   color="secondary"
-                  variant="contained"
+                  variant="outlined"
                   style={this.inlineStyles.dialogButton}
                   onClick={
                     this.props.mutations.clearCachedOrgAndExtensionCaches
@@ -750,47 +678,6 @@ const mutations = {
     variables: {
       organizationId: ownProps.params.organizationId,
       optOutMessage
-    }
-  }),
-  updateTheme: ownProps => ({
-    primary,
-    secondary,
-    info,
-    success,
-    warning,
-    error
-  }) => ({
-    mutation: gql`
-      mutation updateTheme(
-        $primary: String
-        $secondary: String
-        $info: String
-        $success: String
-        $warning: String
-        $error: String
-        $organizationId: String!
-      ) {
-        updateTheme(
-          primary: $primary
-          secondary: $secondary
-          info: $info
-          success: $success
-          warning: $warning
-          error: $error
-          organizationId: $organizationId
-        ) {
-          theme
-        }
-      }
-    `,
-    variables: {
-      organizationId: ownProps.params.organizationId,
-      primary,
-      secondary,
-      info,
-      success,
-      warning,
-      error
     }
   }),
   updateServiceVendorConfig: ownProps => newConfig => {

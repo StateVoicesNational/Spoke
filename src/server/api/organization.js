@@ -156,7 +156,7 @@ export const resolvers = {
             main: "#209556"
           },
           secondary: {
-            main: "#ffffff"
+            main: "#555555"
           },
           warning: {
             main: "#fabe28"

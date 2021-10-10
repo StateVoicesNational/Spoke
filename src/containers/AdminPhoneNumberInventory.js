@@ -457,6 +457,7 @@ class AdminPhoneNumberInventory extends React.Component {
             <Button
               variant="contained"
               color="secondary"
+              variant="outlined"
               onClick={this.handleDeletePhoneNumbersSubmit}
             >
               Delete {this.state.deleteNumbersCount} Numbers
