@@ -1,6 +1,6 @@
 import _ from "lodash";
 import { r, cacheableData } from "../../../server/models";
-import { getFeatures } from "../../../server/api/lib/config";
+import { getConfig, getFeatures } from "../../../server/api/lib/config";
 import { Jobs } from "../../../workers/job-processes";
 import { jobRunner } from "../../job-runners";
 import { getServiceFromOrganization } from "../../service-vendors";
@@ -80,7 +80,6 @@ export async function getCampaignData({
   // MUST NOT RETURN SECRETS!
   // called both from edit and stats contexts: editMode==true for edit page
   if (!fromCampaignStatsPage) {
-    // TODO: get campaignFeatures current
     const features = getFeatures(campaign);
     const {
       scrubBadMobileNumsFreshStart = false,
@@ -90,6 +89,10 @@ export async function getCampaignData({
       scrubBadMobileNumsDeletedOnUpload = null
     } = features;
 
+    const scrubMobileOptional = getConfig(
+      "SCRUB_MOBILE_OPTIONAL",
+      organization
+    );
     const serviceClient = getServiceFromOrganization(organization);
     const scrubBadMobileNumsGettable =
       typeof serviceClient.getContactInfo === "function";
@@ -111,10 +114,13 @@ export async function getCampaignData({
         scrubBadMobileNumsGettable,
         scrubBadMobileNumsCount,
         scrubBadMobileNumsFinishedDeleteCount,
-        scrubBadMobileNumsDeletedOnUpload
+        scrubBadMobileNumsDeletedOnUpload,
+        scrubMobileOptional
       },
       fullyConfigured:
-        scrubBadMobileNumsFinished || scrubBadMobileNumsCount === 0
+        scrubBadMobileNumsFinished ||
+        scrubBadMobileNumsCount === 0 ||
+        scrubMobileOptional
     };
   }
 }
