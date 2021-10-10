@@ -21,7 +21,13 @@ const formatTheme = newTheme => {
 
 const App = ({ children }) => {
   const [theme, setTheme] = useState(defaultTheme);
-  const muiTheme = createMuiTheme(theme);
+  let muiTheme = createMuiTheme(defaultTheme);
+  try {
+    // if a bad value is saved this will fail.
+    muiTheme = createMuiTheme(theme);
+  } catch (e) {
+    console.error("failed to create theme", theme);
+  }
   const handleSetTheme = newPalette => {
     if (newPalette === undefined) {
       // happpens when OrganizationWrapper unmounts

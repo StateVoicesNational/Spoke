@@ -74,8 +74,8 @@ export class CampaignCannedResponsesForm extends React.Component {
       return (
         <div>
           <Button
-            color="secondary"
-            startIcon={<CreateIcon color="secondary" />}
+            variant="outlined"
+            startIcon={<CreateIcon color="primary" />}
             onClick={() =>
               this.setState({
                 showForm: true,

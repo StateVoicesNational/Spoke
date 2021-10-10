@@ -206,6 +206,7 @@ export class InnerConversationPreviewModal extends Component {
         {...dataTest("conversationPreviewModalOptOutButton")}
         label="Opt-Out"
         color="secondary"
+        variant="outlined"
         onClick={this.handleClickOptOut}
       >
         Opt-Out

@@ -7,7 +7,6 @@ import loadData from "../containers/hoc/load-data";
 import withSetTheme from "../containers/hoc/withSetTheme";
 
 const OrganizationWrapper = ({ children, ...props }) => {
-  console.log("render OrganizationWrapper", props);
   return <React.Fragment>{children}</React.Fragment>;
 };
 
