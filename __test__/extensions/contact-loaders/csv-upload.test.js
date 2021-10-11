@@ -251,7 +251,6 @@ describe("ingest-contact-loader method: csv-upload frontend", async () => {
     );
     const choiceComponent = choiceWrapper.instance();
     expect(choiceComponent.getCurrentMethod().name).toBe("csv-upload");
-    const contactsForm = choiceWrapper.find(CampaignContactsForm);
     expect(choiceWrapper.html()).toContain("Save");
   });
   it("csv-upload:component passes headerTransformer to Papa.parse", async () => {
