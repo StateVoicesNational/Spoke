@@ -26,7 +26,6 @@ const jobs = require("../../../../src/workers/jobs");
 import React from "react";
 import { shallow } from "enzyme";
 import { StyleSheetTestUtils } from "aphrodite";
-import { icons } from "../../../../src/components/CampaignContactsChoiceForm";
 
 describe("ngpvan", () => {
   let fakeNgpVanBaseApiUrl;
@@ -1379,7 +1378,12 @@ describe("ngpvan", () => {
         onChange,
         onSubmit,
         campaignIsStarted: false,
-        icons,
+        icons: {
+          check: <div />,
+          warning: <div />,
+          error: <div />,
+          info: <div />
+        },
         saveDisabled: false,
         saveLabel: "Save",
         clientChoiceData: JSON.stringify({
