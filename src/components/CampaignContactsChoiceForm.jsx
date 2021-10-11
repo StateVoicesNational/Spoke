@@ -18,17 +18,7 @@ import components from "../extensions/contact-loaders/components";
 import * as yup from "yup";
 import { withRouter } from "react-router";
 
-const innerStyles = {
-  button: {
-    margin: "24px 5px 24px 0",
-    fontSize: "10px"
-  },
-  nestedItem: {
-    fontSize: "12px"
-  }
-};
-
-export class CampaignContactsChoiceForm extends React.Component {
+export class CampaignContactsChoiceFormBase extends React.Component {
   state = {
     uploading: false,
     validationStats: null,
@@ -230,7 +220,7 @@ export class CampaignContactsChoiceForm extends React.Component {
          </GSForm>
 
 */
-CampaignContactsChoiceForm.propTypes = {
+CampaignContactsChoiceFormBase.propTypes = {
   onChange: type.func.isRequired,
   formValues: type.object,
   ensureComplete: type.bool,
@@ -246,4 +236,7 @@ CampaignContactsChoiceForm.propTypes = {
   contactsPerPhoneNumber: type.number
 };
 
-export default compose(withMuiTheme, withRouter)(CampaignContactsChoiceForm);
+export default compose(
+  withMuiTheme,
+  withRouter
+)(CampaignContactsChoiceFormBase);
