@@ -99,7 +99,7 @@ const fetchOrg = async organizationId =>
     variables: { organizationId }
   });
 
-export class UserEdit extends React.Component {
+export class UserEditBase extends React.Component {
   static propTypes = {
     mutations: PropTypes.object,
     currentUser: PropTypes.object,
@@ -504,8 +504,10 @@ const mutations = {
   })
 };
 
-export default compose(
+const UserEdit = compose(
   withMuiTheme,
   withRouter,
   loadData({ queries, mutations })
-)(UserEdit);
+)(UserEditBase);
+
+export default UserEdit;

@@ -7,6 +7,8 @@ import { CampaignCannedResponsesForm } from "../../src/components/CampaignCanned
 import { StyleSheetTestUtils } from "aphrodite";
 import IconButton from "@material-ui/core/IconButton";
 import ListItemText from "@material-ui/core/ListItemText";
+import ThemeContext from "../../src/containers/context/ThemeContext";
+import { muiTheme } from "../test_helpers";
 
 describe("CampaignCannedResponsesForm component", () => {
   // given
@@ -40,7 +42,9 @@ describe("CampaignCannedResponsesForm component", () => {
 
   StyleSheetTestUtils.suppressStyleInjection();
   const wrapper = mount(
-    <CampaignCannedResponsesForm formValues={formValues} data={data} />
+    <ThemeContext.Provider value={{ muiTheme }}>
+      <CampaignCannedResponsesForm formValues={formValues} data={data} />
+    </ThemeContext.Provider>
   );
 
   // when
