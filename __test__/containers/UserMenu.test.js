@@ -8,7 +8,7 @@ import { StyleSheetTestUtils } from "aphrodite";
 import Avatar from "@material-ui/core/Avatar";
 import Popover from "@material-ui/core/Popover";
 
-import { UserMenu } from "../../src/containers/UserMenu";
+import { UserMenuBase as UserMenu } from "../../src/containers/UserMenu";
 
 function getData(isSuperAdmin = false) {
   return {
@@ -34,7 +34,9 @@ function getData(isSuperAdmin = false) {
 }
 
 function getWrapper(data) {
-  return mount(<UserMenu data={data} />).find(UserMenu);
+  return mount(<UserMenu data={data} currentUser={data.currentUser} />).find(
+    UserMenu
+  );
 }
 
 describe("UserMenu", () => {

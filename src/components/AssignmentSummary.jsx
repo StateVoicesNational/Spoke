@@ -33,7 +33,7 @@ const styles = StyleSheet.create({
   }
 });
 
-export class AssignmentSummary extends Component {
+export class AssignmentSummaryBase extends Component {
   state = {
     badTimezoneTooltipOpen: false
   };
@@ -260,7 +260,7 @@ export class AssignmentSummary extends Component {
   }
 }
 
-AssignmentSummary.propTypes = {
+AssignmentSummaryBase.propTypes = {
   organizationId: PropTypes.string,
   router: PropTypes.object,
   assignment: PropTypes.object,
@@ -269,4 +269,4 @@ AssignmentSummary.propTypes = {
   todoLink: PropTypes.func
 };
 
-export default compose(withMuiTheme, withRouter)(AssignmentSummary);
+export default compose(withMuiTheme, withRouter)(AssignmentSummaryBase);

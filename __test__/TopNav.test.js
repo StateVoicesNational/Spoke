@@ -2,7 +2,7 @@ import React from "react";
 import { shallow } from "enzyme";
 import { StyleSheetTestUtils } from "aphrodite";
 import IconButton from "@material-ui/core/IconButton";
-import TopNav from "../src/components/TopNav";
+import { TopNavBase as TopNav } from "../src/components/TopNav";
 
 describe("TopNav", () => {
   it("can render only title", () => {

@@ -25,7 +25,7 @@ import { makeTree } from "../lib";
 import { dataTest } from "../lib/attributes";
 import withMuiTheme from "../containers/hoc/withMuiTheme";
 
-class CampaignInteractionStepsForm extends React.Component {
+export class CampaignInteractionStepsFormBase extends React.Component {
   constructor(props) {
     super(props);
     this.styles = {
@@ -478,7 +478,7 @@ class CampaignInteractionStepsForm extends React.Component {
   }
 }
 
-CampaignInteractionStepsForm.propTypes = {
+CampaignInteractionStepsFormBase.propTypes = {
   formValues: type.object,
   onChange: type.func,
   ensureComplete: type.bool,
@@ -489,4 +489,4 @@ CampaignInteractionStepsForm.propTypes = {
   availableActions: type.array
 };
 
-export default compose(withMuiTheme)(CampaignInteractionStepsForm);
+export default compose(withMuiTheme)(CampaignInteractionStepsFormBase);

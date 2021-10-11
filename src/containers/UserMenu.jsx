@@ -17,7 +17,7 @@ import { dataTest } from "../lib/attributes";
 import loadData from "./hoc/load-data";
 import withMuiTheme from "./hoc/withSetTheme";
 
-export class UserMenu extends Component {
+export class UserMenuBase extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -179,7 +179,7 @@ export class UserMenu extends Component {
   }
 }
 
-UserMenu.propTypes = {
+UserMenuBase.propTypes = {
   data: PropTypes.object,
   orgId: PropTypes.string,
   router: PropTypes.object
@@ -215,4 +215,4 @@ export default compose(
   loadData({ queries }),
   withRouter,
   withMuiTheme
-)(UserMenu);
+)(UserMenuBase);

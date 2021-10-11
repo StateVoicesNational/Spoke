@@ -145,7 +145,7 @@ export const campaignDataQuery = gql`query getCampaign($campaignId: String!) {
         }
       }`;
 
-export class AdminCampaignEdit extends React.Component {
+export class AdminCampaignEditBase extends React.Component {
   constructor(props) {
     super(props);
     const isNew = props.location.query.new;
@@ -1057,7 +1057,7 @@ export class AdminCampaignEdit extends React.Component {
   }
 }
 
-AdminCampaignEdit.propTypes = {
+AdminCampaignEditBase.propTypes = {
   campaignData: PropTypes.object,
   mutations: PropTypes.object,
   organizationData: PropTypes.object,
@@ -1218,4 +1218,7 @@ const mutations = {
 
 export const operations = { queries, mutations };
 
-export default compose(loadData(operations), withMuiTheme)(AdminCampaignEdit);
+export default compose(
+  loadData(operations),
+  withMuiTheme
+)(AdminCampaignEditBase);

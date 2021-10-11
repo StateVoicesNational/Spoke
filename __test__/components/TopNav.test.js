@@ -1,7 +1,7 @@
 import React from "react";
 import { shallow } from "enzyme";
 import { StyleSheetTestUtils } from "aphrodite";
-import TopNav from "../../src/components/TopNav";
+import { TopNavBase as TopNav } from "../../src/components/TopNav";
 import UserMenu from "../../src/containers/UserMenu";
 
 describe("TopNav component", () => {

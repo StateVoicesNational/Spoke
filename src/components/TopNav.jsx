@@ -13,7 +13,7 @@ import { Link as RouterLink } from "react-router";
 import UserMenu from "../containers/UserMenu";
 import withMuiTheme from "./../containers/hoc/withMuiTheme";
 
-function TopNav(props) {
+export function TopNavBase(props) {
   const useStyles = makeStyles(() => ({
     toolBar: {
       flexGrow: 1
@@ -45,10 +45,10 @@ function TopNav(props) {
   );
 }
 
-TopNav.propTypes = {
+TopNavBase.propTypes = {
   backToURL: PropTypes.string,
   title: PropTypes.string.isRequired,
   orgId: PropTypes.string
 };
 
-export default compose(withMuiTheme)(TopNav);
+export default compose(withMuiTheme)(TopNavBase);
