@@ -33,6 +33,9 @@ import {
   contactDataFragment
 } from "../../../../src/containers/TexterTodo";
 
+import { muiTheme } from "../../../test_helpers";
+import ThemeContext from "../../../../src/containers/context/ThemeContext";
+
 describe("mutations.updateQuestionResponses", () => {
   let adminUser;
   let campaign;
@@ -386,17 +389,19 @@ describe("mutations.updateQuestionResponses", () => {
         );
 
         const component = await mount(
-          <AssignmentTexterContact
-            mutations={wrappedMutations}
-            find-me="here"
-            texter={{ ...texterUser }}
-            campaign={{ ...updatedCampaign }}
-            assignment={{ ...updatedAssignment }}
-            refreshData={jest.fn()}
-            contact={{ ...updatedContacts[0] }}
-            navigationToolbarChildren={navigationToolbarChildren}
-            location={{ query: {} }}
-          />
+          <ThemeContext.Provider value={{ muiTheme }}>
+            <AssignmentTexterContact
+              mutations={wrappedMutations}
+              find-me="here"
+              texter={{ ...texterUser }}
+              campaign={{ ...updatedCampaign }}
+              assignment={{ ...updatedAssignment }}
+              refreshData={jest.fn()}
+              contact={{ ...updatedContacts[0] }}
+              navigationToolbarChildren={navigationToolbarChildren}
+              location={{ query: {} }}
+            />
+          </ThemeContext.Provider>
         );
 
         const assignmentTexterContactWrapper = component.find(
