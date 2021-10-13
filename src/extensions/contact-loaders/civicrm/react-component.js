@@ -30,11 +30,12 @@ function sleep(delay = 0) {
   });
 }
 
-export default function Asynchronous() {
+export default function CiviCRMLoaderField(props) {
   const [open, setOpen] = React.useState(false);
   const [searchCrit, setSearchCrit] = React.useState("");
   const [options, setOptions] = React.useState([]);
   const [loading, setLoading] = React.useState(false);
+  const [loadValues, setLoadValues] = React.useState([]);
 
   React.useEffect(() => {
     setLoading(true);
@@ -65,42 +66,86 @@ export default function Asynchronous() {
   }, [open]);
 
   return (
-    <Autocomplete
-      id="asynchronous-demo"
-      style={{ width: 300 }}
-      open={open}
-      onOpen={() => {
-        setOpen(true);
-      }}
-      onClose={() => {
-        setOpen(false);
-      }}
-      getOptionSelected={(option, value) => option.title === value.title}
-      getOptionLabel={option => option.title}
-      options={options}
-      loading={loading}
-      onInputChange={(event, text) => {
-        setSearchCrit(text);
-      }}
-      renderInput={params => (
-        <TextField
-          {...params}
-          label="Asynchronous"
-          variant="outlined"
-          InputProps={{
-            ...params.InputProps,
-            endAdornment: (
-              <React.Fragment>
-                {loading ? (
-                  <CircularProgress color="inherit" size={20} />
-                ) : null}
-                {params.InputProps.endAdornment}
-              </React.Fragment>
-            )
-          }}
-        />
-      )}
-    />
+    <div style={{ display: "flex" }}>
+      <Paper elevation={2} style={{ flexBasis: "50%" }}>
+        <div style={{ padding: "5px" }}>
+          <div style={{ display: "flex" }}>
+            <List style={{ flexBasis: "50%" }}>
+              <ListSubheader inset={true}>Selected groups</ListSubheader>
+              {loadValues.map(value => (
+                <ListItem key={value.id}>
+                  <ListItemAvatar>
+                    <Avatar>
+                      <FolderIcon />
+                    </Avatar>
+                  </ListItemAvatar>
+                  <ListItemText primary={value.title} />
+                  <ListItemSecondaryAction>
+                    <IconButton
+                      edge="end"
+                      aria-label="delete"
+                      //         onClick={this.remove.bind(this, value.id)}
+                    >
+                      <DeleteIcon />
+                    </IconButton>
+                  </ListItemSecondaryAction>
+                </ListItem>
+              ))}
+            </List>
+          </div>
+          <div style={{ display: "flex" }}>
+            <Autocomplete
+              id="asynchronous-demo"
+              style={{ width: 300 }}
+              open={open}
+              onOpen={() => {
+                setOpen(true);
+              }}
+              onClose={() => {
+                setOpen(false);
+              }}
+              getOptionSelected={(option, value) =>
+                option.title === value.title
+              }
+              getOptionLabel={option => option.title}
+              options={options}
+              loading={loading}
+              onInputChange={(event, text) => {
+                setSearchCrit(text);
+              }}
+              onChange={function(event, el) {
+                if (el) {
+                  const newLoadValues = loadValues.concat([el]);
+                  props.onChange(newLoadValues);
+                  setLoadValues(newLoadValues);
+                } else {
+                  setLoadValues([]);
+                }
+              }}
+              renderInput={params => (
+                <TextField
+                  {...params}
+                  label="CiviCRM Groups"
+                  variant="outlined"
+                  InputProps={{
+                    ...params.InputProps,
+                    endAdornment: (
+                      <React.Fragment>
+                        {loading ? (
+                          <CircularProgress color="inherit" size={20} />
+                        ) : null}
+                        {params.InputProps.endAdornment}
+                      </React.Fragment>
+                    )
+                  }}
+                />
+              )}
+            />
+            {loading && <LoadingIndicator />}
+          </div>
+        </div>
+      </Paper>
+    </div>
   );
 }
 
@@ -217,7 +262,7 @@ class MultiAutoCompleteSelect extends React.Component {
                 renderInput={params => (
                   <TextField
                     {...params}
-                    label="CiviCRM list"
+                    label="CiviCRM Groups"
                     variant="outlined"
                   />
                 )}
@@ -227,7 +272,6 @@ class MultiAutoCompleteSelect extends React.Component {
             </div>
           </div>
         </Paper>
-        <Asynchronous />
       </div>
     );
   }
@@ -265,11 +309,11 @@ export class CampaignContactsForm extends React.Component {
           this.props.onSubmit();
         }}
       >
-        <Form.Field name="groupIds" as={MultiAutoCompleteSelect}></Form.Field>
+        <Form.Field name="groupIds" as={CiviCRMLoaderField}></Form.Field>
         <List>
           {resultMessage ? (
             <ListItem>
-              <ListItemIcon>{this.props.icons.warning}</ListItemIcon>
+              <ListItemIcon>{this.props.icons.check}</ListItemIcon>
               <ListItemText primary={resultMessage} />
             </ListItem>
           ) : null}
