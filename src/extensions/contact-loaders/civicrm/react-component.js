@@ -21,6 +21,7 @@ import IconButton from "@material-ui/core/IconButton";
 import GSForm from "../../../components/forms/GSForm";
 import GSSubmitButton from "../../../components/forms/GSSubmitButton";
 import fetch from "node-fetch";
+import { CIVICRM_BASE_ENDPOINT, CIVICRM_MINQUERY_SIZE } from "./util";
 
 class MultiAutoCompleteSelect extends React.Component {
   state = {
@@ -32,13 +33,13 @@ class MultiAutoCompleteSelect extends React.Component {
   };
 
   refreshList(query) {
-    if (query.length < 3) {
+    if (query.length < CIVICRM_MINQUERY_SIZE) {
       this.setState({ result: [] });
       return;
     }
 
     this.setState({ loading: true });
-    fetch("/integration/civicrm/groupsearch?query=" + query, {
+    fetch(`${CIVICRM_BASE_ENDPOINT}?query=${query}`, {
       credentials: "same-origin"
     })
       .then(res => res.json())

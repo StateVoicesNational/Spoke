@@ -1,7 +1,13 @@
 import { completeContactLoad, failedContactLoad } from "../../../workers/jobs";
 import { r } from "../../../server/models";
 import { getConfig, hasConfig } from "../../../server/api/lib/config";
-import { searchGroups, getGroupMembers, CUSTOM_DATA } from "./util";
+import {
+  searchGroups,
+  getGroupMembers,
+  CUSTOM_DATA,
+  CIVICRM_BASE_ENDPOINT,
+  CIVICRM_MINQUERY_SIZE
+} from "./util";
 import _ from "lodash";
 import { getFormattedPhoneNumber } from "../../../lib";
 
@@ -45,13 +51,13 @@ export function addServerEndpoints(expressApp) {
   /// this is where you would run e.g. app.post(....)
   /// Be mindful of security and make sure there's
   /// This is NOT where or how the client send or receive contact data
-  expressApp.get("/integration/civicrm/groupsearch", (req, res) => {
+  expressApp.get(CIVICRM_BASE_ENDPOINT, (req, res) => {
     if (!req.isAuthenticated()) {
       return res.status(401).json({});
     }
 
     const { query } = req.query;
-    if (query.length < 3) return res.json({ groups: [] }); // ignore dumb queries
+    if (query.length < CIVICRM_MINQUERY_SIZE) return res.json({ groups: [] }); // ignore dumb queries
 
     searchGroups(query || "")
       .then(groups => res.json({ groups }))
