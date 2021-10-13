@@ -22,6 +22,87 @@ import GSForm from "../../../components/forms/GSForm";
 import GSSubmitButton from "../../../components/forms/GSSubmitButton";
 import fetch from "node-fetch";
 import { CIVICRM_BASE_ENDPOINT, CIVICRM_MINQUERY_SIZE } from "./util";
+import CircularProgress from "@material-ui/core/CircularProgress";
+
+function sleep(delay = 0) {
+  return new Promise(resolve => {
+    setTimeout(resolve, delay);
+  });
+}
+
+export default function Asynchronous() {
+  const [open, setOpen] = React.useState(false);
+  const [searchCrit, setSearchCrit] = React.useState("");
+  const [options, setOptions] = React.useState([]);
+  const [loading, setLoading] = React.useState(false);
+
+  React.useEffect(() => {
+    setLoading(true);
+    let active = true;
+
+    (async () => {
+      const response = await fetch(
+        `${CIVICRM_BASE_ENDPOINT}?query=${searchCrit}`
+      );
+      const json = await response.json();
+      console.log(json.groups);
+
+      if (active) {
+        setOptions(json.groups);
+      }
+    })();
+    setLoading(false);
+
+    return () => {
+      active = false;
+    };
+  }, [searchCrit]);
+
+  React.useEffect(() => {
+    if (!open) {
+      setOptions([]);
+    }
+  }, [open]);
+
+  return (
+    <Autocomplete
+      id="asynchronous-demo"
+      style={{ width: 300 }}
+      open={open}
+      onOpen={() => {
+        setOpen(true);
+      }}
+      onClose={() => {
+        setOpen(false);
+      }}
+      getOptionSelected={(option, value) => option.title === value.title}
+      getOptionLabel={option => option.title}
+      options={options}
+      loading={loading}
+      onInputChange={(event, text) => {
+        setSearchCrit(text);
+      }}
+      renderInput={params => (
+        <TextField
+          {...params}
+          label="Asynchronous"
+          variant="outlined"
+          InputProps={{
+            ...params.InputProps,
+            endAdornment: (
+              <React.Fragment>
+                {loading ? (
+                  <CircularProgress color="inherit" size={20} />
+                ) : null}
+                {params.InputProps.endAdornment}
+              </React.Fragment>
+            )
+          }}
+        />
+      )}
+    />
+  );
+}
 
 class MultiAutoCompleteSelect extends React.Component {
   state = {
@@ -146,6 +227,7 @@ class MultiAutoCompleteSelect extends React.Component {
             </div>
           </div>
         </Paper>
+        <Asynchronous />
       </div>
     );
   }
