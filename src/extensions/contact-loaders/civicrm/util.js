@@ -11,6 +11,9 @@ export const CUSTOM_DATA = [
   "phone_id"
 ];
 
+export const CIVICRM_BASE_ENDPOINT = "/integration/civicrm/groupsearch";
+export const CIVICRM_MINQUERY_SIZE = 3;
+
 async function paginate(get, config, entity, options, callback) {
   let count = 0;
 
@@ -41,8 +44,7 @@ async function get(config, entity, params) {
     entity +
     "&action=get" +
     "&json=" +
-    JSON.stringify(params);
-
+    encodeURIComponent(JSON.stringify(params));
   try {
     const result = await fetch(url);
     const json = await result.json();
@@ -85,12 +87,14 @@ export async function searchGroups(query) {
     title: { LIKE: "%" + query + "%" },
     [key]: 1
   });
-  console.log(res);
-  return res.map(group => ({
-    title: group.title + ` (${group[key]})`,
-    count: group[key],
-    id: group.id
-  }));
+  if (res) {
+    return res.map(group => ({
+      title: group.title + ` (${group[key]})`,
+      count: group[key],
+      id: group.id
+    }));
+  }
+  return [];
 }
 
 export async function getGroupMembers(groupId, callback) {
