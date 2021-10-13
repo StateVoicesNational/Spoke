@@ -20,6 +20,7 @@ import ListItemSecondaryAction from "@material-ui/core/ListItemSecondaryAction";
 import IconButton from "@material-ui/core/IconButton";
 import GSForm from "../../../components/forms/GSForm";
 import GSSubmitButton from "../../../components/forms/GSSubmitButton";
+import fetch from "node-fetch";
 
 class MultiAutoCompleteSelect extends React.Component {
   state = {

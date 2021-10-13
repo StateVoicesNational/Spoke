@@ -1,5 +1,5 @@
-import { parse } from "url";
 import { getConfig } from "../../../server/api/lib/config";
+import fetch from "node-fetch";
 
 const PAGE_SIZE = 100;
 
@@ -57,7 +57,7 @@ async function get(config, entity, params) {
 }
 
 function getCivi() {
-  const civicrm = parse(getConfig("CIVICRM_API_URL"));
+  const civicrm = new URL(getConfig("CIVICRM_API_URL"));
 
   const config = {
     server: civicrm.protocol + "//" + civicrm.host,
@@ -85,7 +85,7 @@ export async function searchGroups(query) {
     title: { LIKE: "%" + query + "%" },
     [key]: 1
   });
-
+  console.log(res);
   return res.map(group => ({
     title: group.title + ` (${group[key]})`,
     count: group[key],
