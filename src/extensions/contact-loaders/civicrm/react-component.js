@@ -26,12 +26,13 @@ import {
   CIVICRM_MINQUERY_SIZE
 } from "./util";
 import CircularProgress from "@material-ui/core/CircularProgress";
+import { log } from '../../../lib/log';
 
-function sleep(delay = 0) {
-  return new Promise(resolve => {
-    setTimeout(resolve, delay);
-  });
-}
+// function sleep(delay = 0) {
+//   return new Promise(resolve => {
+//     setTimeout(resolve, delay);
+//   });
+// }
 
 export default function CiviCRMLoaderField(props) {
   const [open, setOpen] = React.useState(false);
@@ -54,7 +55,7 @@ export default function CiviCRMLoaderField(props) {
           );
           const json = await response.json();
 
-          console.log(json.groups);
+          log.debug(json.groups);
 
           if (active) {
             setOptions(json.groups);
@@ -62,7 +63,7 @@ export default function CiviCRMLoaderField(props) {
           setError("");
         } catch (err) {
           setError(err.message);
-          console.log(error);
+          log.debug(error);
         }
       })();
     }
@@ -90,7 +91,7 @@ export default function CiviCRMLoaderField(props) {
         <div style={{ padding: "5px" }}>
           <div style={{ display: "flex" }}>
             <List style={{ flexBasis: "50%" }}>
-              <ListSubheader inset={true}>Selected groups</ListSubheader>
+              <ListSubheader inset>Selected groups</ListSubheader>
               {loadValues.map(value => (
                 <ListItem key={`listitem ${value.id}`}>
                   <ListItemAvatar>
@@ -125,8 +126,8 @@ export default function CiviCRMLoaderField(props) {
               getOptionLabel={option => option.title}
               options={options}
               loading={loading}
-              clearOnEscape={true}
-              clearOnBlur={true}
+              clearOnEscape
+              clearOnBlur
               onInputChange={(event, text) => {
                 setSearchCrit(text);
               }}
@@ -197,7 +198,7 @@ class MultiAutoCompleteSelect extends React.Component {
         }
       })
       .catch(error => {
-        console.error(error);
+        log.error(error);
         this.setError(error);
       });
   }
@@ -233,7 +234,7 @@ class MultiAutoCompleteSelect extends React.Component {
           <div style={{ padding: "5px" }}>
             <div style={{ display: "flex" }}>
               <List style={{ flexBasis: "50%" }}>
-                <ListSubheader inset={true}>Selected groups</ListSubheader>
+                <ListSubheader inset>Selected groups</ListSubheader>
                 {(this.props.value || []).map(value => (
                   <ListItem key={value.id}>
                     <ListItemAvatar>
