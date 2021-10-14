@@ -43,6 +43,17 @@ export default function CiviCRMLoaderField(props) {
   const [selectedGroups, setSelectedGroups] = React.useState([]);
   const [error, setError] = React.useState("");
 
+  // https://v4.mui.com/components/autocomplete/#controllable-states
+  // TODO: This is mainly a reminder during dev, might want to remove later
+  // The component has two states that can be controlled:
+  // 1. the "value" state the one w the value/onChange props combination. This
+  //    state represents the value selected by the user, for instance when
+  //    pressing Enter.
+  // 2. the "input value" state with the inputValue/onInputChange props
+  //    combination. This state represents the value displayed in the textbox.
+  const [value, setValue] = React.useState(null);
+  const [inputValue, setInputValue] = React.useState('');
+
   React.useEffect(() => {
     setLoading(true);
     let active = true;
@@ -92,15 +103,15 @@ export default function CiviCRMLoaderField(props) {
           <div style={{ display: "flex" }}>
             <List style={{ flexBasis: "50%" }}>
               <ListSubheader inset>Selected groups</ListSubheader>
-              {selectedGroups.map(value => (
-                <ListItem key={`listitem ${value.id}`}>
+              {selectedGroups.map(x => (
+                <ListItem key={`listitem ${x.id}`}>
                   <ListItemAvatar>
                     <Avatar>
                       <FolderIcon />
                     </Avatar>
                   </ListItemAvatar>
-                  <ListItemText primary={value.title} />
-                  <ListItemSecondaryAction onClick={() => removeId(value.id)}>
+                  <ListItemText primary={x.title} />
+                  <ListItemSecondaryAction onClick={() => removeId(x.id)}>
                     <IconButton edge="end" aria-label="delete">
                       <DeleteIcon />
                     </IconButton>
@@ -111,6 +122,9 @@ export default function CiviCRMLoaderField(props) {
           </div>
           <div style={{ display: "flex" }}>
             <Autocomplete
+              value={value}
+              inputValue={inputValue}
+
               id="asynchronous-demo"
               style={{ width: 300 }}
               open={open}
@@ -120,18 +134,22 @@ export default function CiviCRMLoaderField(props) {
               onClose={() => {
                 setOpen(false);
               }}
-              getOptionSelected={(option, value) =>
-                option.title === value.title
-              }
-              getOptionLabel={option => option.title}
+              getOptionSelected={(option, theValue) => theValue ? option.title  === theValue.title : false}
+              // filterSelectedOptions
+              getOptionLabel={option => option ? option.title : ''}
               options={options}
               loading={loading}
-              clearOnEscape
-              clearOnBlur
+              // clearOnEscape
+              // clearOnBlur
+              disableClearable
               onInputChange={(_event, text) => {
+                // Fired when the text changes (i.e typing)
+                // TODO: combine these, don't need them separate?
                 setSearchCrit(text);
+                setInputValue(text);
               }}
               onChange={(_event, el, _reason) => {
+                // Fired when the input value changes (i.e something is selected)
                 if (el) {
                   const elid = el.id;
                   if (!selectedGroups.find(element => element.id === elid)) {
@@ -141,6 +159,14 @@ export default function CiviCRMLoaderField(props) {
                     setSelectedGroups(newSelectedGroups);
                   }
                 }
+                  // Finally we clear the value, which is a bit counter
+                  // intuitive but how we want this to operate
+                  log.debug('setting value to undefined/empty');
+                  setValue(null);
+                  setInputValue('');
+                  // setOpen(false);
+                  // setSearchCrit('');
+                  // setOptions([]);
               }}
               renderInput={params => (
                 <TextField
