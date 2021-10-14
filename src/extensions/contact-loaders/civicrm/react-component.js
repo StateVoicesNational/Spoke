@@ -68,6 +68,10 @@ export default function CiviCRMLoaderField(props) {
     }
   }, [open]);
 
+  const removeId = id => {
+    setLoadValues(loadValues.filter(item => item.id !== id));
+  };
+
   return (
     <div style={{ display: "flex" }}>
       <Paper elevation={2} style={{ flexBasis: "50%" }}>
@@ -76,19 +80,15 @@ export default function CiviCRMLoaderField(props) {
             <List style={{ flexBasis: "50%" }}>
               <ListSubheader inset={true}>Selected groups</ListSubheader>
               {loadValues.map(value => (
-                <ListItem key={value.id}>
+                <ListItem key={`listitem ${value.id}`}>
                   <ListItemAvatar>
                     <Avatar>
                       <FolderIcon />
                     </Avatar>
                   </ListItemAvatar>
                   <ListItemText primary={value.title} />
-                  <ListItemSecondaryAction>
-                    <IconButton
-                      edge="end"
-                      aria-label="delete"
-                      onClick={alert(value.id)}
-                    >
+                  <ListItemSecondaryAction onClick={() => removeId(value.id)}>
+                    <IconButton edge="end" aria-label="delete">
                       <DeleteIcon />
                     </IconButton>
                   </ListItemSecondaryAction>
