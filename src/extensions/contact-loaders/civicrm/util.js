@@ -11,7 +11,8 @@ export const CUSTOM_DATA = [
   "phone_id"
 ];
 
-export const CIVICRM_BASE_ENDPOINT = "/integration/civicrm/groupsearch";
+export const CIVICRM_INTEGRATION_GROUPSEARCH_ENDPOINT =
+  "/integration/civicrm/groupsearch";
 export const CIVICRM_MINQUERY_SIZE = 3;
 
 async function paginate(get, config, entity, options, callback) {

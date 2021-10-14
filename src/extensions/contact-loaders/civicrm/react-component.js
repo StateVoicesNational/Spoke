@@ -21,7 +21,10 @@ import IconButton from "@material-ui/core/IconButton";
 import GSForm from "../../../components/forms/GSForm";
 import GSSubmitButton from "../../../components/forms/GSSubmitButton";
 import fetch from "node-fetch";
-import { CIVICRM_BASE_ENDPOINT, CIVICRM_MINQUERY_SIZE } from "./util";
+import {
+  CIVICRM_INTEGRATION_GROUPSEARCH_ENDPOINT,
+  CIVICRM_MINQUERY_SIZE
+} from "./util";
 import CircularProgress from "@material-ui/core/CircularProgress";
 
 function sleep(delay = 0) {
@@ -43,7 +46,7 @@ export default function CiviCRMLoaderField(props) {
 
     (async () => {
       const response = await fetch(
-        `${CIVICRM_BASE_ENDPOINT}?query=${searchCrit}`
+        `${CIVICRM_INTEGRATION_GROUPSEARCH_ENDPOINT}?query=${searchCrit}`
       );
       const json = await response.json();
       console.log(json.groups);
@@ -84,7 +87,7 @@ export default function CiviCRMLoaderField(props) {
                     <IconButton
                       edge="end"
                       aria-label="delete"
-                      //         onClick={this.remove.bind(this, value.id)}
+                      onClick={alert(value.id)}
                     >
                       <DeleteIcon />
                     </IconButton>
@@ -165,7 +168,7 @@ class MultiAutoCompleteSelect extends React.Component {
     }
 
     this.setState({ loading: true });
-    fetch(`${CIVICRM_BASE_ENDPOINT}?query=${query}`, {
+    fetch(`${CIVICRM_INTEGRATION_GROUPSEARCH_ENDPOINT}?query=${query}`, {
       credentials: "same-origin"
     })
       .then(res => res.json())

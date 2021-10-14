@@ -5,7 +5,7 @@ import {
   searchGroups,
   getGroupMembers,
   CUSTOM_DATA,
-  CIVICRM_BASE_ENDPOINT,
+  CIVICRM_INTEGRATION_GROUPSEARCH_ENDPOINT,
   CIVICRM_MINQUERY_SIZE
 } from "./util";
 import _ from "lodash";
@@ -51,7 +51,7 @@ export function addServerEndpoints(expressApp) {
   /// this is where you would run e.g. app.post(....)
   /// Be mindful of security and make sure there's
   /// This is NOT where or how the client send or receive contact data
-  expressApp.get(CIVICRM_BASE_ENDPOINT, (req, res) => {
+  expressApp.get(CIVICRM_INTEGRATION_GROUPSEARCH_ENDPOINT, (req, res) => {
     if (!req.isAuthenticated()) {
       return res.status(401).json({});
     }
