@@ -40,7 +40,7 @@ export default function CiviCRMLoaderField(props) {
   const [searchCrit, setSearchCrit] = React.useState("");
   const [options, setOptions] = React.useState([]);
   const [loading, setLoading] = React.useState(false);
-  const [loadValues, setLoadValues] = React.useState([]);
+  const [selectedGroups, setSelectedGroups] = React.useState([]);
   const [error, setError] = React.useState("");
 
   React.useEffect(() => {
@@ -82,7 +82,7 @@ export default function CiviCRMLoaderField(props) {
   }, [open]);
 
   const removeId = id => {
-    setLoadValues(loadValues.filter(item => item.id !== id));
+    setSelectedGroups(selectedGroups.filter(item => item.id !== id));
   };
 
   return (
@@ -92,7 +92,7 @@ export default function CiviCRMLoaderField(props) {
           <div style={{ display: "flex" }}>
             <List style={{ flexBasis: "50%" }}>
               <ListSubheader inset>Selected groups</ListSubheader>
-              {loadValues.map(value => (
+              {selectedGroups.map(value => (
                 <ListItem key={`listitem ${value.id}`}>
                   <ListItemAvatar>
                     <Avatar>
@@ -134,11 +134,11 @@ export default function CiviCRMLoaderField(props) {
               onChange={(_event, el, _reason) => {
                 if (el) {
                   const elid = el.id;
-                  if (!loadValues.find(element => element.id === elid)) {
-                    const newLoadValues = loadValues.concat([el]);
+                  if (!selectedGroups.find(element => element.id === elid)) {
+                    const newSelectedGroups = selectedGroups.concat([el]);
                     // ! I've commented this out because I'm not clear if its needed and was causing eslint warning
-                    // props.onChange(newLoadValues);
-                    setLoadValues(newLoadValues);
+                    // props.onChange(newSelectedGroups);
+                    setSelectedGroups(newSelectedGroups);
                   }
                 }
               }}
