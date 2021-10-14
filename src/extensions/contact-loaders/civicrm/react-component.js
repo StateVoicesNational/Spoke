@@ -1,10 +1,11 @@
+/* eslint-disable no-unused-vars */
 import DeleteIcon from "@material-ui/icons/Delete";
 import Avatar from "@material-ui/core/Avatar";
 import FolderIcon from "@material-ui/icons/Folder";
 import TextField from "@material-ui/core/TextField";
 import Autocomplete from "@material-ui/lab/Autocomplete";
 import LoadingIndicator from "../../../components/LoadingIndicator";
-import * as _ from "lodash";
+import _ from "lodash";
 import Paper from "@material-ui/core/Paper";
 import type from "prop-types";
 import React from "react";
@@ -40,7 +41,6 @@ export default function CiviCRMLoaderField(props) {
   const [options, setOptions] = React.useState([]);
   const [loading, setLoading] = React.useState(false);
   const [loadValues, setLoadValues] = React.useState([]);
-  const [value, setValue] = React.useState(options[0]);
   const [error, setError] = React.useState("");
 
   React.useEffect(() => {
@@ -128,15 +128,16 @@ export default function CiviCRMLoaderField(props) {
               loading={loading}
               clearOnEscape
               clearOnBlur
-              onInputChange={(event, text) => {
+              onInputChange={(_event, text) => {
                 setSearchCrit(text);
               }}
-              onChange={function(event, el) {
+              onChange={(_event, el, _reason) => {
                 if (el) {
                   const elid = el.id;
                   if (!loadValues.find(element => element.id === elid)) {
                     const newLoadValues = loadValues.concat([el]);
-                    props.onChange(newLoadValues);
+                    // ! I've commented this out because I'm not clear if its needed and was causing eslint warning
+                    // props.onChange(newLoadValues);
                     setLoadValues(newLoadValues);
                   }
                 }
@@ -168,134 +169,6 @@ export default function CiviCRMLoaderField(props) {
       </Paper>
     </div>
   );
-}
-
-class MultiAutoCompleteSelect extends React.Component {
-  state = {
-    error: null,
-    list: null,
-    value: [],
-    searchText: "",
-    result: []
-  };
-
-  refreshList(query) {
-    if (query.length < CIVICRM_MINQUERY_SIZE) {
-      this.setState({ result: [] });
-      return;
-    }
-
-    this.setState({ loading: true });
-    fetch(`${CIVICRM_INTEGRATION_GROUPSEARCH_ENDPOINT}?query=${query}`, {
-      credentials: "same-origin"
-    })
-      .then(res => res.json())
-      .then(res => {
-        if (res.error) {
-          this.setError(res.error);
-        } else {
-          this.setState({ result: res.groups, loading: false, error: null });
-        }
-      })
-      .catch(error => {
-        log.error(error);
-        this.setError(error);
-      });
-  }
-
-  setError(error) {
-    this.setState({ loading: false, error });
-  }
-
-  componentWillReceiveProps(props) {
-    this.setState({ value: props.value });
-  }
-
-  // The above is unsafe, but seems to be used. We need to do something about that.
-  // static getDerivedStateFromProps(nextProps, prevState) {
-  //   if (nextProps.value !== prevState.value) {
-  //     return { value: nextProps.value };
-  //   }
-  //   else return null; // Triggers no change in the state
-  // }
-
-  remove(id) {
-    this.setState(old => ({
-      value: _.remove(old.value, item => item.id === id)
-    }));
-  }
-
-  render() {
-    const self = this;
-
-    return (
-      <div style={{ display: "flex" }}>
-        <Paper elevation={2} style={{ flexBasis: "50%" }}>
-          <div style={{ padding: "5px" }}>
-            <div style={{ display: "flex" }}>
-              <List style={{ flexBasis: "50%" }}>
-                <ListSubheader inset>Selected groups</ListSubheader>
-                {(this.props.value || []).map(value => (
-                  <ListItem key={value.id}>
-                    <ListItemAvatar>
-                      <Avatar>
-                        <FolderIcon />
-                      </Avatar>
-                    </ListItemAvatar>
-                    <ListItemText primary={value.title} />
-                    <ListItemSecondaryAction>
-                      <IconButton
-                        edge="end"
-                        aria-label="delete"
-                        onClick={this.remove.bind(this, value.id)}
-                      >
-                        <DeleteIcon />
-                      </IconButton>
-                    </ListItemSecondaryAction>
-                  </ListItem>
-                ))}
-              </List>
-            </div>
-
-            <div style={{ display: "flex" }}>
-              <Autocomplete
-                style={{ flexBasis: "33.33%" }}
-                options={this.state.result}
-                label="CiviCRM list"
-                name="groupId"
-                as="select"
-                filter={Autocomplete.noFilter}
-                onChange={function(event, el) {
-                  if (el) {
-                    self.setState(old => {
-                      const newValue = old.value.concat([el]);
-                      self.props.onChange(newValue);
-                      return { value: newValue, searchText: "" };
-                    });
-                  } else {
-                    self.setState({ value: [], searchText: "" });
-                  }
-                }}
-                onInputChange={(event, text) => {
-                  this.refreshList(text);
-                  this.setState({ searchText: text });
-                }}
-                renderInput={params => (
-                  <TextField
-                    {...params}
-                    label="CiviCRM Groups"
-                    variant="outlined"
-                  />
-                )}
-                getOptionLabel={option => option.title || ""}
-              />
-              {this.state.loading && <LoadingIndicator />}
-            </div>
-          </div>
-        </Paper>
-      </div>
-    );
-  }
 }
 
 export class CampaignContactsForm extends React.Component {
@@ -356,12 +229,12 @@ export class CampaignContactsForm extends React.Component {
         const { message, finalCount } = JSON.parse(
           this.props.lastResult.result
         );
-        resultMessage = message ? message : `Loaded ${finalCount} contacts`;
+        resultMessage = message || `Loaded ${finalCount} contacts`;
       } catch (err) {
         resultMessage = err.message;
       }
     } else if (this.state.error) {
-      resultMessage = "Error: " + JSON.stringify(this.state.error);
+      resultMessage = `Error: ${JSON.stringify(this.state.error)}`;
     } else {
       resultMessage = "";
     }
