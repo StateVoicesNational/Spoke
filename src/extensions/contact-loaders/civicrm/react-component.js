@@ -27,7 +27,7 @@ import {
   CIVICRM_MINQUERY_SIZE
 } from "./util";
 import CircularProgress from "@material-ui/core/CircularProgress";
-import { log } from '../../../lib/log';
+import { log } from "../../../lib/log";
 
 // function sleep(delay = 0) {
 //   return new Promise(resolve => {
@@ -52,7 +52,7 @@ export default function CiviCRMLoaderField(props) {
   // 2. the "input value" state with the inputValue/onInputChange props
   //    combination. This state represents the value displayed in the textbox.
   const [value, setValue] = React.useState(null);
-  const [inputValue, setInputValue] = React.useState('');
+  const [inputValue, setInputValue] = React.useState("");
 
   React.useEffect(() => {
     setLoading(true);
@@ -124,7 +124,6 @@ export default function CiviCRMLoaderField(props) {
             <Autocomplete
               value={value}
               inputValue={inputValue}
-
               id="asynchronous-demo"
               style={{ width: 300 }}
               open={open}
@@ -134,9 +133,11 @@ export default function CiviCRMLoaderField(props) {
               onClose={() => {
                 setOpen(false);
               }}
-              getOptionSelected={(option, theValue) => theValue ? option.title  === theValue.title : false}
+              getOptionSelected={(option, theValue) =>
+                theValue ? option.title === theValue.title : false
+              }
               // filterSelectedOptions
-              getOptionLabel={option => option ? option.title : ''}
+              getOptionLabel={option => (option ? option.title : "")}
               options={options}
               loading={loading}
               // clearOnEscape
@@ -155,18 +156,18 @@ export default function CiviCRMLoaderField(props) {
                   if (!selectedGroups.find(element => element.id === elid)) {
                     const newSelectedGroups = selectedGroups.concat([el]);
                     // ! I've commented this out because I'm not clear if its needed and was causing eslint warning
-                    // props.onChange(newSelectedGroups);
+                    props.onChange(newSelectedGroups);
                     setSelectedGroups(newSelectedGroups);
                   }
                 }
-                  // Finally we clear the value, which is a bit counter
-                  // intuitive but how we want this to operate
-                  log.debug('setting value to undefined/empty');
-                  setValue(null);
-                  setInputValue('');
-                  // setOpen(false);
-                  // setSearchCrit('');
-                  // setOptions([]);
+                // Finally we clear the value, which is a bit counter
+                // intuitive but how we want this to operate
+                log.debug("setting value to undefined/empty");
+                setValue(null);
+                setInputValue("");
+                // setOpen(false);
+                // setSearchCrit('');
+                // setOptions([]);
               }}
               renderInput={params => (
                 <TextField
@@ -290,4 +291,8 @@ CampaignContactsForm.propTypes = {
   clientChoiceData: type.string,
   jobResultMessage: type.string,
   lastResult: type.object
+};
+
+CiviCRMLoaderField.propTypes = {
+  onChange: type.func
 };
