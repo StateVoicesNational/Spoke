@@ -127,7 +127,7 @@ export default function CiviCRMLoaderField(props) {
               options={options}
               loading={loading}
               clearOnEscape={true}
-              clearOnBlue={true}
+              clearOnBlur={true}
               inputValue={inputValue}
               value={value}
               onInputChange={(event, text) => {
