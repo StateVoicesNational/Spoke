@@ -39,6 +39,8 @@ export default function CiviCRMLoaderField(props) {
   const [options, setOptions] = React.useState([]);
   const [loading, setLoading] = React.useState(false);
   const [loadValues, setLoadValues] = React.useState([]);
+  const [inputValue, setInputValue] = React.useState("");
+  const [value, setValue] = React.useState(options[0]);
 
   React.useEffect(() => {
     setLoading(true);
@@ -106,6 +108,9 @@ export default function CiviCRMLoaderField(props) {
               }}
               onClose={() => {
                 setOpen(false);
+                setInputValue("");
+                setOptions([]);
+                setValue(null);
               }}
               getOptionSelected={(option, value) =>
                 option.title === value.title
@@ -113,17 +118,26 @@ export default function CiviCRMLoaderField(props) {
               getOptionLabel={option => option.title}
               options={options}
               loading={loading}
+              clearOnEscape={true}
+              clearOnBlue={true}
+              inputValue={inputValue}
+              value={value}
               onInputChange={(event, text) => {
                 setSearchCrit(text);
+                setInputValue(text);
               }}
               onChange={function(event, el) {
                 if (el) {
-                  const newLoadValues = loadValues.concat([el]);
-                  props.onChange(newLoadValues);
-                  setLoadValues(newLoadValues);
-                } else {
-                  setLoadValues([]);
+                  const elid = el.id;
+                  if (!loadValues.find(element => element.id === elid)) {
+                    const newLoadValues = loadValues.concat([el]);
+                    props.onChange(newLoadValues);
+                    setLoadValues(newLoadValues);
+                  }
                 }
+                setInputValue("");
+                setOptions([]);
+                setValue(el);
               }}
               renderInput={params => (
                 <TextField
