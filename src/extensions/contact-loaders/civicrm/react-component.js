@@ -47,24 +47,27 @@ export default function CiviCRMLoaderField(props) {
     setLoading(true);
     let active = true;
 
-    (async () => {
-      try {
-        const response = await fetch(
-          `${CIVICRM_INTEGRATION_GROUPSEARCH_ENDPOINT}?query=${searchCrit}`
-        );
-        const json = await response.json();
+    if (searchCrit.length >= CIVICRM_MINQUERY_SIZE) {
+      (async () => {
+        try {
+          const response = await fetch(
+            `${CIVICRM_INTEGRATION_GROUPSEARCH_ENDPOINT}?query=${searchCrit}`
+          );
+          const json = await response.json();
 
-        console.log(json.groups);
+          console.log(json.groups);
 
-        if (active) {
-          setOptions(json.groups);
+          if (active) {
+            setOptions(json.groups);
+          }
+          setError("");
+        } catch (err) {
+          setError(err.message);
+          console.log(error);
         }
-        setError("");
-      } catch (err) {
-        setError(err.message);
-        console.log(error);
-      }
-    })();
+      })();
+    }
+
     setLoading(false);
 
     return () => {
@@ -145,7 +148,7 @@ export default function CiviCRMLoaderField(props) {
                 }
                 setInputValue("");
                 setOptions([]);
-                setValue(el);
+                setValue(null);
               }}
               renderInput={params => (
                 <TextField
