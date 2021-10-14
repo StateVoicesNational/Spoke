@@ -41,20 +41,28 @@ export default function CiviCRMLoaderField(props) {
   const [loadValues, setLoadValues] = React.useState([]);
   const [inputValue, setInputValue] = React.useState("");
   const [value, setValue] = React.useState(options[0]);
+  const [error, setError] = React.useState("");
 
   React.useEffect(() => {
     setLoading(true);
     let active = true;
 
     (async () => {
-      const response = await fetch(
-        `${CIVICRM_INTEGRATION_GROUPSEARCH_ENDPOINT}?query=${searchCrit}`
-      );
-      const json = await response.json();
-      console.log(json.groups);
+      try {
+        const response = await fetch(
+          `${CIVICRM_INTEGRATION_GROUPSEARCH_ENDPOINT}?query=${searchCrit}`
+        );
+        const json = await response.json();
 
-      if (active) {
-        setOptions(json.groups);
+        console.log(json.groups);
+
+        if (active) {
+          setOptions(json.groups);
+        }
+        setError("");
+      } catch (err) {
+        setError(err.message);
+        console.log(error);
       }
     })();
     setLoading(false);
@@ -144,6 +152,8 @@ export default function CiviCRMLoaderField(props) {
                   {...params}
                   label="CiviCRM Groups"
                   variant="outlined"
+                  error={error.length > 0}
+                  helperText={error}
                   InputProps={{
                     ...params.InputProps,
                     endAdornment: (
