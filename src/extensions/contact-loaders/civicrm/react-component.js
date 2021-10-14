@@ -39,7 +39,6 @@ export default function CiviCRMLoaderField(props) {
   const [options, setOptions] = React.useState([]);
   const [loading, setLoading] = React.useState(false);
   const [loadValues, setLoadValues] = React.useState([]);
-  const [inputValue, setInputValue] = React.useState("");
   const [value, setValue] = React.useState(options[0]);
   const [error, setError] = React.useState("");
 
@@ -119,9 +118,6 @@ export default function CiviCRMLoaderField(props) {
               }}
               onClose={() => {
                 setOpen(false);
-                setInputValue("");
-                setOptions([]);
-                setValue(null);
               }}
               getOptionSelected={(option, value) =>
                 option.title === value.title
@@ -131,11 +127,8 @@ export default function CiviCRMLoaderField(props) {
               loading={loading}
               clearOnEscape={true}
               clearOnBlur={true}
-              inputValue={inputValue}
-              value={value}
               onInputChange={(event, text) => {
                 setSearchCrit(text);
-                setInputValue(text);
               }}
               onChange={function(event, el) {
                 if (el) {
@@ -146,9 +139,6 @@ export default function CiviCRMLoaderField(props) {
                     setLoadValues(newLoadValues);
                   }
                 }
-                setInputValue("");
-                setOptions([]);
-                setValue(null);
               }}
               renderInput={params => (
                 <TextField
