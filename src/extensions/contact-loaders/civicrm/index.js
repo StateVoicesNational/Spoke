@@ -1,6 +1,10 @@
+/* eslint-disable consistent-return */
+/* eslint-disable no-unused-vars */
+/* eslint-disable dot-notation */
 import { completeContactLoad, failedContactLoad } from "../../../workers/jobs";
 import { r } from "../../../server/models";
 import { getConfig, hasConfig } from "../../../server/api/lib/config";
+import { log } from '../../../lib/log'
 import {
   searchGroups,
   getGroupMembers,
@@ -29,7 +33,7 @@ export function serverAdministratorInstructions() {
   };
 }
 
-export async function available(organization, user) {
+export async function available(_organization, _user) {
   // return an object with two keys: result: true/false
   // these keys indicate if the ingest-contact-loader is usable
   // Sometimes credentials need to be setup, etc.
@@ -38,7 +42,7 @@ export async function available(organization, user) {
   // to e.g. verify credentials or test server availability,
   // then it's better to allow the result to be cached
   const result = serverAdministratorInstructions().environmentVariables.every(
-    name => hasConfig(name)
+    varName => hasConfig(varName)
   );
   return {
     result,
@@ -47,10 +51,10 @@ export async function available(organization, user) {
 }
 
 export function addServerEndpoints(expressApp) {
-  /// If you need to create API endpoints for server-to-server communication
-  /// this is where you would run e.g. app.post(....)
-  /// Be mindful of security and make sure there's
-  /// This is NOT where or how the client send or receive contact data
+  // If you need to create API endpoints for server-to-server communication
+  // this is where you would run e.g. app.post(....)
+  // Be mindful of security and make sure there's
+  // This is NOT where or how the client send or receive contact data
   expressApp.get(CIVICRM_INTEGRATION_GROUPSEARCH_ENDPOINT, (req, res) => {
     if (!req.isAuthenticated()) {
       return res.status(401).json({});
@@ -62,56 +66,56 @@ export function addServerEndpoints(expressApp) {
     searchGroups(query || "")
       .then(groups => res.json({ groups }))
       .catch(error => {
-        console.error(error);
+        log.error(error);
         res.json({ groups: [], error });
       });
   });
 }
 
-export function clientChoiceDataCacheKey(campaign, user) {
-  /// returns a string to cache getClientChoiceData -- include items that relate to cacheability
+export function clientChoiceDataCacheKey(campaign, _user) {
+  // returns a string to cache getClientChoiceData -- include items that relate to cacheability
   return `${campaign.id}`;
 }
 
-export async function getClientChoiceData(organization, campaign, user) {
-  /// data to be sent to the admin client to present options to the component or similar
-  /// The react-component will be sent this data as a property
-  /// return a json object which will be cached for expiresSeconds long
-  /// `data` should be a single string -- it can be JSON which you can parse in the client component
+export async function getClientChoiceData(_organization, _campaign, _user) {
+  // data to be sent to the admin client to present options to the component or similar
+  // The react-component will be sent this data as a property
+  // return a json object which will be cached for expiresSeconds long
+  // `data` should be a single string -- it can be JSON which you can parse in the client component
   return {
     data: "{}",
     expiresSeconds: 0
   };
 }
 
-export async function processContactLoad(job, maxContacts, organization) {
-  /// Trigger processing -- this will likely be the most important part
-  /// you should load contacts into the contact table with the job.campaign_id
-  /// Since this might just *begin* the processing and other work might
-  /// need to be completed asynchronously after this is completed (e.g. to distribute loads)
-  /// After true contact-load completion, this (or another function)
-  /// MUST call src/workers/jobs.js::completeContactLoad(job)
-  ///   The async function completeContactLoad(job) will
-  ///      * delete contacts that are in the opt_out table,
-  ///      * delete duplicate cells,
-  ///      * clear/update caching, etc.
-  /// The organization parameter is an object containing the name and other
-  ///   details about the organization on whose behalf this contact load
-  ///   was initiated. It is included here so it can be passed as the
-  ///   second parameter of getConfig in order to retrieve organization-
-  ///   specific configuration values.
-  /// Basic responsibilities:
-  /// 1. Delete previous campaign contacts on a previous choice/upload
-  /// 2. Set campaign_contact.campaign_id = job.campaign_id on all uploaded contacts
-  /// 3. Set campaign_contact.message_status = "needsMessage" on all uploaded contacts
-  /// 4. Ensure that campaign_contact.cell is in the standard phone format "+15551234567"
-  ///    -- do NOT trust your backend to ensure this
-  /// 5. If your source doesn't have timezone offset info already, then you need to
-  ///    fill the campaign_contact.timezone_offset with getTimezoneByZip(contact.zip) (from "../../workers/jobs")
-  /// Things to consider in your implementation:
-  /// * Batching
-  /// * Error handling
-  /// * "Request of Doom" scenarios -- queries or jobs too big to complete
+export async function processContactLoad(job, _maxContacts, _organization) {
+  //  Trigger processing -- this will likely be the most important part
+  //  you should load contacts into the contact table with the job.campaign_id
+  //  Since this might just *begin* the processing and other work might
+  //  need to be completed asynchronously after this is completed (e.g. to distribute loads)
+  //  After true contact-load completion, this (or another function)
+  //  MUST call src/workers/jobs.js::completeContactLoad(job)
+  //    The async function completeContactLoad(job) will
+  //       - delete contacts that are in the opt_out table,
+  //       - delete duplicate cells,
+  //       - clear/update caching, etc.
+  //  The organization parameter is an object containing the name and other
+  //    details about the organization on whose behalf this contact load
+  //    was initiated. It is included here so it can be passed as the
+  //    second parameter of getConfig in order to retrieve organization-
+  //    specific configuration values.
+  //  Basic responsibilities:
+  //  1. Delete previous campaign contacts on a previous choice/upload
+  //  2. Set campaign_contact.campaign_id = job.campaign_id on all uploaded contacts
+  //  3. Set campaign_contact.message_status = "needsMessage" on all uploaded contacts
+  //  4. Ensure that campaign_contact.cell is in the standard phone format "+15551234567"
+  //     -- do NOT trust your backend to ensure this
+  //  5. If your source doesn't have timezone offset info already, then you need to
+  //     fill the campaign_contact.timezone_offset with getTimezoneByZip(contact.zip) (from "../../workers/jobs")
+  //  Things to consider in your implementation:
+  //      - Batching
+  //      - Error handling
+  //      - "Request of Doom" scenarios -- queries or jobs too big to complete
 
   const campaignId = job.campaign_id;
 
@@ -121,14 +125,14 @@ export async function processContactLoad(job, maxContacts, organization) {
     .delete();
 
   const contactData = JSON.parse(job.payload);
-  console.log("contactData: " + JSON.stringify(contactData));
+  log.debug(`contactData: ${JSON.stringify(contactData)}`);
 
-  const totalExpected = _.sum(_.map(contactData.groupIds, "count"));
+  // const totalExpected = _.sum(_.map(contactData.groupIds, "count"));
 
   let finalCount = 0;
   for (const group of contactData.groupIds) {
     await getGroupMembers(group.id, async results => {
-      console.log(results);
+      log.debug(results);
       const newContacts = results
         .filter(res => res["api.Phone.get"]["count"] > 0)
         .map(res => ({
@@ -150,7 +154,7 @@ export async function processContactLoad(job, maxContacts, organization) {
         }))
         .filter(res => res.cell !== "");
 
-      console.log("loading", newContacts.length, "contacts");
+      log.debug("loading", newContacts.length, "contacts");
       finalCount += newContacts.length;
 
       if (newContacts.length) {
