@@ -6,7 +6,6 @@ import TextField from "@material-ui/core/TextField";
 import Autocomplete from "@material-ui/lab/Autocomplete";
 import LoadingIndicator from "../../../components/LoadingIndicator";
 import _ from "lodash";
-import Paper from "@material-ui/core/Paper";
 import type from "prop-types";
 import React from "react";
 import * as yup from "yup";
@@ -16,7 +15,6 @@ import ListItem from "@material-ui/core/ListItem";
 import ListItemIcon from "@material-ui/core/ListItemIcon";
 import ListItemText from "@material-ui/core/ListItemText";
 import ListItemAvatar from "@material-ui/core/ListItemAvatar";
-import ListSubheader from "@material-ui/core/ListSubheader";
 import ListItemSecondaryAction from "@material-ui/core/ListItemSecondaryAction";
 import IconButton from "@material-ui/core/IconButton";
 import GSForm from "../../../components/forms/GSForm";
@@ -28,12 +26,6 @@ import {
 } from "./util";
 import CircularProgress from "@material-ui/core/CircularProgress";
 import { log } from "../../../lib/log";
-
-// function sleep(delay = 0) {
-//   return new Promise(resolve => {
-//     setTimeout(resolve, delay);
-//   });
-// }
 
 export default function CiviCRMLoaderField(props) {
   const [open, setOpen] = React.useState(false);
@@ -98,102 +90,93 @@ export default function CiviCRMLoaderField(props) {
 
   return (
     <div style={{ display: "flex" }}>
-      <Paper elevation={2} style={{ flexBasis: "50%" }}>
-        <div style={{ padding: "5px" }}>
-          <div style={{ display: "flex" }}>
-            <List style={{ flexBasis: "50%" }}>
-              <ListSubheader inset>Selected groups</ListSubheader>
-              {selectedGroups.map(x => (
-                <ListItem key={`listitem ${x.id}`}>
-                  <ListItemAvatar>
-                    <Avatar>
-                      <FolderIcon />
-                    </Avatar>
-                  </ListItemAvatar>
-                  <ListItemText primary={x.title} />
-                  <ListItemSecondaryAction onClick={() => removeId(x.id)}>
-                    <IconButton edge="end" aria-label="delete">
-                      <DeleteIcon />
-                    </IconButton>
-                  </ListItemSecondaryAction>
-                </ListItem>
-              ))}
-            </List>
-          </div>
-          <div style={{ display: "flex" }}>
-            <Autocomplete
-              value={value}
-              inputValue={inputValue}
-              id="asynchronous-demo"
-              style={{ width: 300 }}
-              open={open}
-              onOpen={() => {
-                setOpen(true);
-              }}
-              onClose={() => {
-                setOpen(false);
-              }}
-              getOptionSelected={(option, theValue) =>
-                theValue ? option.title === theValue.title : false
-              }
-              // filterSelectedOptions
-              getOptionLabel={option => (option ? option.title : "")}
-              options={options}
-              loading={loading}
-              // clearOnEscape
-              // clearOnBlur
-              disableClearable
-              onInputChange={(_event, text) => {
-                // Fired when the text changes (i.e typing)
-                // TODO: combine these, don't need them separate?
-                setSearchCrit(text);
-                setInputValue(text);
-              }}
-              onChange={(_event, el, _reason) => {
-                // Fired when the input value changes (i.e something is selected)
-                if (el) {
-                  const elid = el.id;
-                  if (!selectedGroups.find(element => element.id === elid)) {
-                    const newSelectedGroups = selectedGroups.concat([el]);
-                    // ! I've commented this out because I'm not clear if its needed and was causing eslint warning
-                    props.onChange(newSelectedGroups);
-                    setSelectedGroups(newSelectedGroups);
-                  }
+      <div style={{ padding: "5px", flexBasis: "50%" }}>
+        <div style={{ display: "flex" }}>
+          <Autocomplete
+            value={value}
+            inputValue={inputValue}
+            id="asynchronous-demo"
+            style={{ width: 300 }}
+            open={open}
+            onOpen={() => {
+              setOpen(true);
+            }}
+            onClose={() => {
+              setOpen(false);
+            }}
+            getOptionSelected={(option, theValue) =>
+              theValue ? option.title === theValue.title : false
+            }
+            getOptionLabel={option => (option ? option.title : "")}
+            options={options}
+            loading={loading}
+            disableClearable
+            onInputChange={(_event, text) => {
+              // Fired when the text changes (i.e typing)
+              // TODO: combine these, don't need them separate?
+              setSearchCrit(text);
+              setInputValue(text);
+            }}
+            onChange={(_event, el, _reason) => {
+              // Fired when the input value changes (i.e something is selected)
+              if (el) {
+                const elid = el.id;
+                if (!selectedGroups.find(element => element.id === elid)) {
+                  const newSelectedGroups = selectedGroups.concat([el]);
+                  props.onChange(newSelectedGroups);
+                  setSelectedGroups(newSelectedGroups);
                 }
-                // Finally we clear the value, which is a bit counter
-                // intuitive but how we want this to operate
-                log.debug("setting value to undefined/empty");
-                setValue(null);
-                setInputValue("");
-                // setOpen(false);
-                // setSearchCrit('');
-                // setOptions([]);
-              }}
-              renderInput={params => (
-                <TextField
-                  {...params}
-                  label="CiviCRM Groups"
-                  variant="outlined"
-                  error={error.length > 0}
-                  helperText={error}
-                  InputProps={{
-                    ...params.InputProps,
-                    endAdornment: (
-                      <React.Fragment>
-                        {loading ? (
-                          <CircularProgress color="inherit" size={20} />
-                        ) : null}
-                        {params.InputProps.endAdornment}
-                      </React.Fragment>
-                    )
-                  }}
-                />
-              )}
-            />
-            {loading && <LoadingIndicator />}
-          </div>
+              }
+              // Finally we clear the value, which is a bit counter
+              // intuitive but how we want this to operate
+              log.debug("setting value to undefined/empty");
+              setValue(null);
+              setInputValue("");
+            }}
+            renderInput={params => (
+              <TextField
+                {...params}
+                label="CiviCRM Groups"
+                variant="outlined"
+                error={error.length > 0}
+                helperText={error}
+                InputProps={{
+                  ...params.InputProps,
+                  endAdornment: (
+                    <React.Fragment>
+                      {loading ? (
+                        <CircularProgress color="inherit" size={20} />
+                      ) : null}
+                      {params.InputProps.endAdornment}
+                    </React.Fragment>
+                  )
+                }}
+              />
+            )}
+          />
+          {loading && <LoadingIndicator />}
         </div>
-      </Paper>
+        <h4>Selected Groups</h4>
+        <div style={{ display: "flex" }}>
+          <List style={{ flexBasis: "100%" }}>
+            {selectedGroups.map(x => (
+              <ListItem key={`listitem ${x.id}`}>
+                <ListItemAvatar>
+                  <Avatar>
+                    <FolderIcon />
+                  </Avatar>
+                </ListItemAvatar>
+                <ListItemText primary={x.title} />
+                <ListItemSecondaryAction onClick={() => removeId(x.id)}>
+                  <IconButton edge="end" aria-label="delete">
+                    <DeleteIcon />
+                  </IconButton>
+                </ListItemSecondaryAction>
+              </ListItem>
+            ))}
+          </List>
+        </div>
+      </div>
     </div>
   );
 }
@@ -268,7 +251,8 @@ export class CampaignContactsForm extends React.Component {
 
     let subtitle = (
       <span>
-        Your source should be a CiviCRM group with contacts you wish to upload.
+        Please select one or more CiviCRM groups that contain contact
+        information you wish to load.
       </span>
     );
 
