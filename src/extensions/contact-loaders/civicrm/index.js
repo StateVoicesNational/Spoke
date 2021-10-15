@@ -4,7 +4,7 @@
 import { completeContactLoad, failedContactLoad } from "../../../workers/jobs";
 import { r } from "../../../server/models";
 import { getConfig, hasConfig } from "../../../server/api/lib/config";
-import { log } from '../../../lib/log'
+import { log } from "../../../lib/log";
 import {
   searchGroups,
   getGroupMembers,
@@ -131,6 +131,7 @@ export async function processContactLoad(job, _maxContacts, _organization) {
 
   let finalCount = 0;
   for (const group of contactData.groupIds) {
+    // eslint-disable-next-line no-loop-func
     await getGroupMembers(group.id, async results => {
       log.debug(results);
       const newContacts = results
