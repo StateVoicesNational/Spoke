@@ -1,3 +1,4 @@
+/* eslint-disable no-param-reassign */
 import { getConfig } from "../../../server/api/lib/config";
 import fetch from "node-fetch";
 
@@ -15,11 +16,12 @@ export const CIVICRM_INTEGRATION_GROUPSEARCH_ENDPOINT =
   "/integration/civicrm/groupsearch";
 export const CIVICRM_MINQUERY_SIZE = 3;
 
-async function paginate(get, config, entity, options, callback) {
+async function paginate(getMethod, config, entity, options, callback) {
   let count = 0;
 
+  // eslint-disable-next-line no-constant-condition
   while (true) {
-    const once = await get(config, entity, options);
+    const once = await getMethod(config, entity, options);
 
     if (!once.length) {
       return count;
@@ -34,26 +36,12 @@ async function paginate(get, config, entity, options, callback) {
 }
 
 async function get(config, entity, params) {
-  const url =
-    config.server +
-    config.path +
-    "?key=" +
-    config.key +
-    "&api_key=" +
-    config.api_key +
-    "&entity=" +
-    entity +
-    "&action=get" +
-    "&json=" +
-    encodeURIComponent(JSON.stringify(params));
+  const jsonParams = encodeURIComponent(JSON.stringify(params));
+  const url = `${config.server}${config.path}?key=${config.key}&api_key=${config.api_key}&entity=${entity}&action=get&json=${jsonParams}`;
   try {
     const result = await fetch(url);
     const json = await result.json();
-    if (json.is_error) {
-      return false;
-    } else {
-      return json.values;
-    }
+    return json.is_error ? false : json.values;
   } catch (error) {
     return error;
   }
@@ -63,7 +51,7 @@ function getCivi() {
   const civicrm = new URL(getConfig("CIVICRM_API_URL"));
 
   const config = {
-    server: civicrm.protocol + "//" + civicrm.host,
+    server: `${civicrm.protocol}//${civicrm.host}`,
     path: civicrm.pathname,
     debug: 1,
     key: getConfig("CIVICRM_SITE_KEY"),
@@ -85,12 +73,12 @@ export async function searchGroups(query) {
   const res = await get(config, "group", {
     sequential: 1,
     return: ["id", "title"],
-    title: { LIKE: "%" + query + "%" },
+    title: { LIKE: `%${query}%` },
     [key]: 1
   });
   if (res) {
     return res.map(group => ({
-      title: group.title + ` (${group[key]})`,
+      title: `${group.title} (${group[key]})`,
       count: group[key],
       id: group.id
     }));
