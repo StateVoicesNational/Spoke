@@ -36,7 +36,7 @@ export default function CiviCRMLoaderField(props) {
   const [error, setError] = React.useState("");
 
   // https://v4.mui.com/components/autocomplete/#controllable-states
-  // TODO: This is mainly a reminder during dev, might want to remove later
+  // This is mainly a reminder during dev, might want to remove later
   // The component has two states that can be controlled:
   // 1. the "value" state the one w the value/onChange props combination. This
   //    state represents the value selected by the user, for instance when
@@ -95,8 +95,8 @@ export default function CiviCRMLoaderField(props) {
           <Autocomplete
             value={value}
             inputValue={inputValue}
-            id="asynchronous-demo"
-            style={{ width: 300 }}
+            id="civicrmloader"
+            style={{ width: "100%" }}
             open={open}
             onOpen={() => {
               setOpen(true);
@@ -140,6 +140,7 @@ export default function CiviCRMLoaderField(props) {
                 variant="outlined"
                 error={error.length > 0}
                 helperText={error}
+                style={{ width: "100%" }}
                 InputProps={{
                   ...params.InputProps,
                   endAdornment: (
