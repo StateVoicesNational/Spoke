@@ -29,7 +29,6 @@ import { log } from "../../../lib/log";
 
 export default function CiviCRMLoaderField(props) {
   const [open, setOpen] = React.useState(false);
-  const [searchCrit, setSearchCrit] = React.useState("");
   const [options, setOptions] = React.useState([]);
   const [loading, setLoading] = React.useState(false);
   const [selectedGroups, setSelectedGroups] = React.useState([]);
@@ -50,11 +49,11 @@ export default function CiviCRMLoaderField(props) {
     setLoading(true);
     let active = true;
 
-    if (searchCrit.length >= CIVICRM_MINQUERY_SIZE) {
+    if (inputValue.length >= CIVICRM_MINQUERY_SIZE) {
       (async () => {
         try {
           const response = await fetch(
-            `${CIVICRM_INTEGRATION_GROUPSEARCH_ENDPOINT}?query=${searchCrit}`
+            `${CIVICRM_INTEGRATION_GROUPSEARCH_ENDPOINT}?query=${inputValue}`
           );
           const json = await response.json();
 
@@ -76,7 +75,7 @@ export default function CiviCRMLoaderField(props) {
     return () => {
       active = false;
     };
-  }, [searchCrit]);
+  }, [inputValue]);
 
   React.useEffect(() => {
     if (!open) {
@@ -112,9 +111,6 @@ export default function CiviCRMLoaderField(props) {
             loading={loading}
             disableClearable
             onInputChange={(_event, text) => {
-              // Fired when the text changes (i.e typing)
-              // TODO: combine these, don't need them separate?
-              setSearchCrit(text);
               setInputValue(text);
             }}
             onChange={(_event, el, _reason) => {
