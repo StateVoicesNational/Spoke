@@ -157,6 +157,9 @@ export async function processContactLoad(job, _maxContacts, _organization) {
       log.debug("loading", newContacts.length, "contacts");
       finalCount += newContacts.length;
 
+      // TODO: If a person is in two groups, they'll be added twice.
+      // Spoke will later dedupe them due to the same phone/cell appearing, but
+      // thats not what the deduping is designed for.
       if (newContacts.length) {
         await r.knex.batchInsert(
           "campaign_contact",
