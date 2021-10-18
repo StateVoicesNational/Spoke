@@ -15,6 +15,19 @@ import {
 import _ from "lodash";
 import { getFormattedPhoneNumber } from "../../../lib";
 
+// Some enviornmental variables are mandatory; others are optional.
+
+const ENVIRONMENTAL_VARIABLES_MANDATORY = [
+  "CIVICRM_API_KEY",
+  "CIVICRM_SITE_KEY",
+  "CIVICRM_API_URL"
+];
+
+const ENVIRONMENTAL_VARIABLES_OPTIONAL = [
+  "CIVICRM_CUSTOM_METHOD",
+  "CIVICRM_CUSTOM_DATA"
+];
+
 export const name = "civicrm";
 
 export function displayName() {
@@ -24,9 +37,8 @@ export function displayName() {
 export function serverAdministratorInstructions() {
   return {
     environmentVariables: [
-      "CIVICRM_API_KEY",
-      "CIVICRM_SITE_KEY",
-      "CIVICRM_API_URL"
+      ...ENVIRONMENTAL_VARIABLES_MANDATORY,
+      ...ENVIRONMENTAL_VARIABLES_OPTIONAL
     ],
     description: "Allows you to pull contacts directly from CiviCRM",
     setupInstructions: "Configure the environment variables"
@@ -41,8 +53,8 @@ export async function available(_organization, _user) {
   // If this is instantaneous, you can have it be 0 (i.e. always), but if it takes time
   // to e.g. verify credentials or test server availability,
   // then it's better to allow the result to be cached
-  const result = serverAdministratorInstructions().environmentVariables.every(
-    varName => hasConfig(varName)
+  const result = ENVIRONMENTAL_VARIABLES_MANDATORY.every(varName =>
+    hasConfig(varName)
   );
   return {
     result,

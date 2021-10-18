@@ -4,6 +4,8 @@ import fetch from "node-fetch";
 
 const PAGE_SIZE = 100;
 
+const DEFAULT_CONTACT_ENTITY_METHOD_NAME = "Contact";
+
 export const CUSTOM_DATA = [
   "middle_name",
   "individual_prefix",
@@ -89,10 +91,13 @@ export async function searchGroups(query) {
 export async function getGroupMembers(groupId, callback) {
   const config = getCivi();
 
+  const contactEntityMethodName =
+    getConfig("CIVICRM_CUSTOM_METHOD") || DEFAULT_CONTACT_ENTITY_METHOD_NAME;
+
   return await paginate(
     fetchfromAPI,
     config,
-    "Contact",
+    contactEntityMethodName,
     {
       sequential: 1,
       options: { limit: PAGE_SIZE },
