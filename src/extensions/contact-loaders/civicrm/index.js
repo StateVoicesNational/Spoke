@@ -182,7 +182,7 @@ export async function processContactLoad(job, _maxContacts, _organization) {
         })
         .filter(res => res.cell !== "");
       log.debug(newContacts);
-      log.debug("loading", newContacts.length, "contacts");
+      log.debug(`loading ${newContacts.length} contacts`);
       finalCount += newContacts.length;
 
       // TODO: If a person is in two groups, they'll be added twice.
