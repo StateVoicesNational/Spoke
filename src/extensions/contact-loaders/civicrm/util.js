@@ -16,12 +16,12 @@ export const CIVICRM_INTEGRATION_GROUPSEARCH_ENDPOINT =
   "/integration/civicrm/groupsearch";
 export const CIVICRM_MINQUERY_SIZE = 3;
 
-async function paginate(getMethod, config, entity, options, callback) {
+async function paginate(fetchfromAPIMethod, config, entity, options, callback) {
   let count = 0;
 
   // eslint-disable-next-line no-constant-condition
   while (true) {
-    const once = await getMethod(config, entity, options);
+    const once = await fetchfromAPIMethod(config, entity, options);
 
     if (!once.length) {
       return count;
@@ -35,7 +35,7 @@ async function paginate(getMethod, config, entity, options, callback) {
   }
 }
 
-async function get(config, entity, params) {
+async function fetchfromAPI(config, entity, params) {
   const jsonParams = encodeURIComponent(JSON.stringify(params));
   const url = `${config.server}${config.path}?key=${config.key}&api_key=${config.api_key}&entity=${entity}&action=get&json=${jsonParams}`;
   try {
@@ -70,7 +70,7 @@ export async function searchGroups(query) {
 
   const key = "api.GroupContact.getcount";
 
-  const res = await get(config, "group", {
+  const res = await fetchfromAPI(config, "group", {
     sequential: 1,
     return: ["id", "title"],
     title: { LIKE: `%${query}%` },
@@ -90,7 +90,7 @@ export async function getGroupMembers(groupId, callback) {
   const config = getCivi();
 
   return await paginate(
-    get,
+    fetchfromAPI,
     config,
     "Contact",
     {
