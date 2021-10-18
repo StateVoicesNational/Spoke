@@ -6,13 +6,23 @@ const PAGE_SIZE = 100;
 
 const DEFAULT_CONTACT_ENTITY_METHOD_NAME = "Contact";
 
-export const CUSTOM_DATA = [
-  "middle_name",
-  "individual_prefix",
-  "gender",
-  "city",
-  "phone_id"
-];
+export function getCustomFields(customDataEnv) {
+  const pairsFieldAndLabel = {};
+
+  if (customDataEnv) {
+    const csvParts = customDataEnv.split(",");
+    for (const csvPart of csvParts) {
+      const colonParts = csvPart.split(":");
+      const fieldName = colonParts[0];
+      if (colonParts.length === 1) {
+        pairsFieldAndLabel[fieldName] = fieldName;
+      } else {
+        pairsFieldAndLabel[fieldName] = colonParts[1];
+      }
+    }
+  }
+  return pairsFieldAndLabel;
+}
 
 export const CIVICRM_INTEGRATION_GROUPSEARCH_ENDPOINT =
   "/integration/civicrm/groupsearch";
@@ -94,7 +104,10 @@ export async function getGroupMembers(groupId, callback) {
   const contactEntityMethodName =
     getConfig("CIVICRM_CUSTOM_METHOD") || DEFAULT_CONTACT_ENTITY_METHOD_NAME;
 
-  return await paginate(
+  const customFields = getCustomFields(getConfig("CIVICRM_CUSTOM_DATA"));
+  const customFieldNames = Object.keys(customFields);
+
+  const paginatedData = await paginate(
     fetchfromAPI,
     config,
     contactEntityMethodName,
@@ -108,7 +121,13 @@ export async function getGroupMembers(groupId, callback) {
       is_opt_out: { "=": 0 },
       contact_type: "Individual",
 
-      return: ["id", "first_name", "last_name", "postal_code", CUSTOM_DATA],
+      return: [
+        "id",
+        "first_name",
+        "last_name",
+        "postal_code",
+        ...customFieldNames
+      ],
 
       "api.Phone.get": {
         contact_id: "$value.id",
@@ -122,4 +141,5 @@ export async function getGroupMembers(groupId, callback) {
     },
     callback
   );
+  return paginatedData;
 }

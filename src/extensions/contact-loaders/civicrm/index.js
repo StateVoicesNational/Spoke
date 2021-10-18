@@ -1,18 +1,16 @@
 /* eslint-disable consistent-return */
-/* eslint-disable no-unused-vars */
 /* eslint-disable dot-notation */
-import { completeContactLoad, failedContactLoad } from "../../../workers/jobs";
+import { completeContactLoad } from "../../../workers/jobs";
 import { r } from "../../../server/models";
 import { getConfig, hasConfig } from "../../../server/api/lib/config";
 import { log } from "../../../lib/log";
 import {
   searchGroups,
   getGroupMembers,
-  CUSTOM_DATA,
   CIVICRM_INTEGRATION_GROUPSEARCH_ENDPOINT,
-  CIVICRM_MINQUERY_SIZE
+  CIVICRM_MINQUERY_SIZE,
+  getCustomFields
 } from "./util";
-import _ from "lodash";
 import { getFormattedPhoneNumber } from "../../../lib";
 
 // Some enviornmental variables are mandatory; others are optional.
@@ -45,6 +43,7 @@ export function serverAdministratorInstructions() {
   };
 }
 
+// eslint-disable-next-line no-unused-vars
 export async function available(_organization, _user) {
   // return an object with two keys: result: true/false
   // these keys indicate if the ingest-contact-loader is usable
@@ -84,11 +83,13 @@ export function addServerEndpoints(expressApp) {
   });
 }
 
+// eslint-disable-next-line no-unused-vars
 export function clientChoiceDataCacheKey(campaign, _user) {
   // returns a string to cache getClientChoiceData -- include items that relate to cacheability
   return `${campaign.id}`;
 }
 
+// eslint-disable-next-line no-unused-vars
 export async function getClientChoiceData(_organization, _campaign, _user) {
   // data to be sent to the admin client to present options to the component or similar
   // The react-component will be sent this data as a property
@@ -100,6 +101,7 @@ export async function getClientChoiceData(_organization, _campaign, _user) {
   };
 }
 
+// eslint-disable-next-line no-unused-vars
 export async function processContactLoad(job, _maxContacts, _organization) {
   //  Trigger processing -- this will likely be the most important part
   //  you should load contacts into the contact table with the job.campaign_id
@@ -131,6 +133,9 @@ export async function processContactLoad(job, _maxContacts, _organization) {
 
   const campaignId = job.campaign_id;
 
+  const customFields = getCustomFields(getConfig("CIVICRM_CUSTOM_DATA"));
+  const customFieldNames = Object.keys(customFields);
+
   await r
     .knex("campaign_contact")
     .where("campaign_id", campaignId)
@@ -148,25 +153,35 @@ export async function processContactLoad(job, _maxContacts, _organization) {
       log.debug(results);
       const newContacts = results
         .filter(res => res["api.Phone.get"]["count"] > 0)
-        .map(res => ({
-          first_name: res.first_name,
-          last_name: res.last_name,
-          cell: getFormattedPhoneNumber(
-            res["api.Phone.get"]["values"][0]["phone_numeric"],
-            getConfig("PHONE_NUMBER_COUNTRY")
-          ),
-          zip: res.postal_code,
-          external_id: res.id,
-          custom_fields: JSON.stringify(
-            _.pick({
-              phone_id: res["api.Phone.get"]["values"][0]["id"]
-            })
-          ),
-          message_status: "needsMessage",
-          campaign_id: campaignId
-        }))
-        .filter(res => res.cell !== "");
+        .map(res => {
+          log.debug(res);
 
+          const customFieldOutput = {
+            phone_id: res["api.Phone.get"]["values"][0]["id"]
+          };
+          for (const customFieldName of customFieldNames) {
+            if (customFieldName in res) {
+              customFieldOutput[customFields[customFieldName]] =
+                res[customFieldName];
+            }
+          }
+
+          return {
+            first_name: res.first_name,
+            last_name: res.last_name,
+            cell: getFormattedPhoneNumber(
+              res["api.Phone.get"]["values"][0]["phone_numeric"],
+              getConfig("PHONE_NUMBER_COUNTRY")
+            ),
+            zip: res.postal_code,
+            external_id: res.id,
+            custom_fields: JSON.stringify(customFieldOutput),
+            message_status: "needsMessage",
+            campaign_id: campaignId
+          };
+        })
+        .filter(res => res.cell !== "");
+      log.debug(newContacts);
       log.debug("loading", newContacts.length, "contacts");
       finalCount += newContacts.length;
 
