@@ -6,7 +6,7 @@ import {
 } from "../contact-loaders/civicrm";
 import { searchGroups } from "../contact-loaders/civicrm/util";
 
-export const name = "addcontact-civicrmgroup";
+export const name = "civicrm-addtogroup";
 
 // What the user sees as the option
 export const displayName = () => "Add contact to CiviCRM group";
