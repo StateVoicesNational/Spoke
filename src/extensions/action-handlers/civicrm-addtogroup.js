@@ -12,14 +12,14 @@ import {
 import { getConfig } from "../../server/api/lib/config";
 import { log } from "../../lib/log";
 
-export const name = "addcontact-civicrmgroup";
+export const name = "civicrm-addtogroup";
 
 // What the user sees as the option
-export const displayName = () => "Add contact to CiviCRM group";
+export const displayName = () => "Add to CiviCRM group";
 
 // The Help text for the user after selecting the action
 export const instructions = () =>
-  "What CiviCRM group would you like to add the contact to? Select from the following options.";
+  "What CiviCRM group would you like to add the person to? Select from the following options.";
 
 export function serverAdministratorInstructions() {
   return {
@@ -27,7 +27,7 @@ export function serverAdministratorInstructions() {
       This action is for allowing texters to add contacts to CiviCRM groups.
       `,
     setupInstructions: `
-      1. Add "addcontact-civicrmgroup" to the environment variable "ACTION_HANDLERS";
+      1. Add "civicrm-addtogroup" to the environment variable "ACTION_HANDLERS";
       2. Set up Spoke to use the existing civicrm contact loader.
       `,
     environmentVariables: [...ENVIRONMENTAL_VARIABLES_MANDATORY]
