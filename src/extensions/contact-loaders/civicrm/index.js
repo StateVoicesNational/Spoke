@@ -147,6 +147,7 @@ export async function processContactLoad(job, _maxContacts, _organization) {
   // const totalExpected = _.sum(_.map(contactData.groupIds, "count"));
 
   let finalCount = 0;
+  const contactsForAdding = {};
   for (const group of contactData.groupIds) {
     // eslint-disable-next-line no-loop-func
     await getGroupMembers(group.id, async results => {
@@ -181,21 +182,26 @@ export async function processContactLoad(job, _maxContacts, _organization) {
           };
         })
         .filter(res => res.cell !== "");
-      log.debug(newContacts);
-      log.debug(`loading ${newContacts.length} contacts`);
-      finalCount += newContacts.length;
 
-      // TODO: If a person is in two groups, they'll be added twice.
-      // Spoke will later dedupe them due to the same phone/cell appearing, but
-      // thats not what the deduping is designed for.
-      if (newContacts.length) {
-        await r.knex.batchInsert(
-          "campaign_contact",
-          newContacts,
-          newContacts.length
-        );
+      // Spoke will not store multiple records with the same phone number.
+      // It goes for a "last record wins" strategy, so we do the same. Note
+      // that this also helps us prevent double-counting of contacts when
+      // they appear in more than one group.
+
+      for (const contactRecord of newContacts) {
+        contactsForAdding[contactRecord.cell] = contactRecord;
       }
     });
+  }
+
+  const newContactRecords = Object.values(contactsForAdding);
+  finalCount = newContactRecords.length;
+
+  log.debug(newContactRecords);
+  log.info(`loading ${finalCount} contacts`);
+
+  if (finalCount) {
+    await r.knex.batchInsert("campaign_contact", newContactRecords, finalCount);
   }
 
   await completeContactLoad(
