@@ -1,6 +1,7 @@
 /* eslint-disable no-param-reassign */
 import { getConfig } from "../../../server/api/lib/config";
 import fetch from "node-fetch";
+import log from "loglevel";
 
 const PAGE_SIZE = 100;
 
@@ -47,11 +48,17 @@ async function paginate(fetchfromAPIMethod, config, entity, options, callback) {
   }
 }
 
-async function fetchfromAPI(config, entity, params) {
+async function fetchfromAPI(
+  config,
+  entity,
+  params,
+  entityAction = "get",
+  fetchOptions = {}
+) {
   const jsonParams = encodeURIComponent(JSON.stringify(params));
-  const url = `${config.server}${config.path}?key=${config.key}&api_key=${config.api_key}&entity=${entity}&action=get&json=${jsonParams}`;
+  const url = `${config.server}${config.path}?key=${config.key}&api_key=${config.api_key}&entity=${entity}&action=${entityAction}&json=${jsonParams}`;
   try {
-    const result = await fetch(url);
+    const result = await fetch(url, fetchOptions);
     const json = await result.json();
     return json.is_error ? false : json.values;
   } catch (error) {
@@ -142,4 +149,21 @@ export async function getGroupMembers(groupId, callback) {
     callback
   );
   return paginatedData;
+}
+
+export async function addContactToGroup(contactId, groupId) {
+  const config = getCivi();
+
+  const res = await fetchfromAPI(
+    config,
+    "GroupContact",
+    {
+      contact_id: contactId,
+      group_id: groupId
+    },
+    "create",
+    { method: "post" }
+  );
+  log.debug(res);
+  return res;
 }
