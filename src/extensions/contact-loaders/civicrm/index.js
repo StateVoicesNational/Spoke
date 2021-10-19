@@ -15,13 +15,13 @@ import { getFormattedPhoneNumber } from "../../../lib";
 
 // Some enviornmental variables are mandatory; others are optional.
 
-const ENVIRONMENTAL_VARIABLES_MANDATORY = [
+export const ENVIRONMENTAL_VARIABLES_MANDATORY = [
   "CIVICRM_API_KEY",
   "CIVICRM_SITE_KEY",
   "CIVICRM_API_URL"
 ];
 
-const ENVIRONMENTAL_VARIABLES_OPTIONAL = [
+export const ENVIRONMENTAL_VARIABLES_OPTIONAL = [
   "CIVICRM_CUSTOM_METHOD",
   "CIVICRM_CUSTOM_DATA"
 ];
@@ -39,7 +39,8 @@ export function serverAdministratorInstructions() {
       ...ENVIRONMENTAL_VARIABLES_OPTIONAL
     ],
     description: "Allows you to pull contacts directly from CiviCRM",
-    setupInstructions: "Configure the environment variables"
+    setupInstructions:
+      "Configure the mandatory environment variables to connect to a CiviCRM instance"
   };
 }
 
