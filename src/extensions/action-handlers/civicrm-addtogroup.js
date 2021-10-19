@@ -67,9 +67,13 @@ export async function processAction({
   const originalContactId = contact.external_id;
   const destinationGroupId = JSON.parse(interactionStep.answer_actions_data)
     .value;
-  await addContactToGroup(originalContactId, destinationGroupId);
   log.debug(originalContactId);
   log.debug(destinationGroupId);
+  const addConstantResult = await addContactToGroup(
+    originalContactId,
+    destinationGroupId
+  );
+  log.debug(addConstantResult);
   const customFields = JSON.parse(contact.custom_fields || "{}");
   customFields.processed_test_action = (interactionStep || {}).answer_actions;
   customFields.test_action_details = (
