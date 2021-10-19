@@ -2,9 +2,15 @@
 import { r } from "../../server/models";
 import {
   available as loaderAvailable,
-  ENVIRONMENTAL_VARIABLES_MANDATORY
+  ENVIRONMENTAL_VARIABLES_MANDATORY,
+  name as loaderName
 } from "../contact-loaders/civicrm";
-import { searchGroups } from "../contact-loaders/civicrm/util";
+import {
+  searchGroups,
+  addContactToGroup
+} from "../contact-loaders/civicrm/util";
+import { getConfig } from "../../server/api/lib/config";
+import { log } from "../../lib/log";
 
 export const name = "addcontact-civicrmgroup";
 
@@ -39,7 +45,12 @@ export function clientChoiceDataCacheKey(organization, user) {
 // Besides this returning true, "test-action" will also need to be added to
 // process.env.ACTION_HANDLERS
 export async function available(organizationId) {
-  return loaderAvailable(organizationId, 0);
+  const contactLoadersConfig = getConfig("CONTACT_LOADERS").split(",");
+  if (contactLoadersConfig.indexOf(loaderName) !== -1) {
+    const hasLoader = await loaderAvailable(organizationId, 0);
+    return hasLoader;
+  }
+  return { result: false, expiresSeconds: 0 };
 }
 
 // What happens when a texter saves the answer that triggers the action
@@ -52,13 +63,18 @@ export async function processAction({
   // This is a meta action that updates a variable in the contact record itself.
   // Generally, you want to send action data to the outside world, so you
   // might want the request library loaded above
+
+  const originalContactId = contact.external_id;
+  const destinationGroupId = JSON.parse(interactionStep.answer_actions_data)
+    .value;
+  await addContactToGroup(originalContactId, destinationGroupId);
+  log.debug(originalContactId);
+  log.debug(destinationGroupId);
   const customFields = JSON.parse(contact.custom_fields || "{}");
-  if (customFields) {
-    customFields.processed_test_action = (interactionStep || {}).answer_actions;
-    customFields.test_action_details = (
-      interactionStep || {}
-    ).answer_actions_data;
-  }
+  customFields.processed_test_action = (interactionStep || {}).answer_actions;
+  customFields.test_action_details = (
+    interactionStep || {}
+  ).answer_actions_data;
 
   await r
     .knex("campaign_contact")
