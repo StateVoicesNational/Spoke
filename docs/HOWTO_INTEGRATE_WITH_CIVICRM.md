@@ -42,7 +42,7 @@ Modify your Spoke .env file to include the following environment variables:
   (eg. https://example.com/sites/all/modules/civicrm/extern/rest.php)
 - CIVICRM_API_KEY - the key you generated in step one
 - CIVICRM_SITE_KEY - the site key for your CiviCRM installation. Defined in your `civicrm.settings.php` file ([more info](https://docs.civicrm.org/sysadmin/en/latest/setup/secret-keys/)).
-- ACTION_HANDLERS - add `civicrm-addgroup` and `civicrm-addtag` to enable the "Add to Group" and "Add tag to Contact" handlers respectively
+- ACTION_HANDLERS - add `civicrm-addtogroup` and `civicrm-addtag` to enable the "Add to Group" and "Add tag to Contact" handlers respectively
 
 ## Optional contact loader configuration
 
