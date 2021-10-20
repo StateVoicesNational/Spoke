@@ -1,7 +1,7 @@
 /* eslint-disable no-param-reassign */
 import { getConfig } from "../../../server/api/lib/config";
 import fetch from "node-fetch";
-import log from "loglevel";
+import { log } from "../../../lib/log";
 
 const PAGE_SIZE = 100;
 
