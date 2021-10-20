@@ -182,13 +182,16 @@ export async function nextBatchJobLookups({
   if (!serviceClient.getContactInfo) {
     return;
   }
+  const batchMax = 20000;
   // 1. find all numbers that haven't already been looked up
-  const contacts = await lookupQuery(
-    job.campaign_id,
-    job.organization_id
-  ).select("cell", "last_lookup", "organization_contact.id", "organization_id");
+  const contacts = await lookupQuery(job.campaign_id, job.organization_id)
+    .select("cell", "last_lookup", "organization_contact.id", "organization_id")
+    .limit(batchMax);
 
-  if (contacts.length === 0 || (steps > 0 && lastCount === contacts.length)) {
+  if (
+    contacts.length === 0 ||
+    (steps > 0 && lastCount === contacts.length && contacts.length != batchMax)
+  ) {
     // FINISHED: either no more to process or we are not making progress
 
     // actually delete/clear the campaign's landline contacts
@@ -220,7 +223,7 @@ export async function nextBatchJobLookups({
   // maxes out in 15min for around 20K contacts, we we recycle tasks from that time.
   const maxChunksToProcessThisTime = Math.min(
     chunks.length,
-    Math.ceil(20000 / chunkSize)
+    Math.ceil(batchMax / chunkSize)
   );
   for (let i = 0; i < maxChunksToProcessThisTime; i++) {
     const chunk = chunks[i];
