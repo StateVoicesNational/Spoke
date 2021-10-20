@@ -93,7 +93,8 @@ export async function searchGroups(query) {
     sequential: 1,
     return: ["id", "title"],
     title: { LIKE: `%${query}%` },
-    [key]: 1
+    [key]: 1,
+    options: { limit: 0 }
   });
   if (res) {
     return res.map(group => ({
