@@ -2,6 +2,7 @@
 import { getConfig } from "../../../server/api/lib/config";
 import fetch from "node-fetch";
 import { log } from "../../../lib/log";
+import moment from "moment-timezone";
 
 const PAGE_SIZE = 100;
 
@@ -161,6 +162,98 @@ export async function addContactToGroup(contactId, groupId) {
     {
       contact_id: contactId,
       group_id: groupId
+    },
+    "create",
+    { method: "post" }
+  );
+  log.debug(res);
+  return res;
+}
+
+export async function sendEmailToContact(contactId, templateId) {
+  const config = getCivi();
+
+  const res = await fetchfromAPI(
+    config,
+    "Email",
+    {
+      contact_id: contactId,
+      template_id: templateId
+    },
+    "send",
+    { method: "post" }
+  );
+  log.debug(res);
+  return res;
+}
+
+export async function addContactToTag(contactId, tagId) {
+  const config = getCivi();
+
+  const res = await fetchfromAPI(
+    config,
+    "EntityTag",
+    {
+      entity_id: contactId,
+      entity_table: "civicrm_contact",
+      tag_id: tagId
+    },
+    "create",
+    { method: "post" }
+  );
+  log.debug(res);
+  return res;
+}
+
+/**
+ * @returns {Promise<{ name: string; id: number }[]>}
+ */
+export async function searchTags() {
+  const config = getCivi();
+
+  const res = await fetchfromAPI(config, "tag", {
+    sequential: 1,
+    return: ["id", "name"],
+    options: { limit: 0 }
+  });
+  if (res) {
+    return res;
+  }
+  return [];
+}
+
+/**
+ * @returns {Promise<{ name: string; id: number }[]>}
+ */
+export async function searchEvents() {
+  const config = getCivi();
+  const currentNow = moment().format();
+  const res = await fetchfromAPI(config, "event", {
+    sequential: 1,
+    return: ["id", "title"],
+    title: { "!=": "" },
+    is_monetary: 0,
+    requires_approval: 0,
+    end_date: {
+      ">": currentNow
+    },
+    options: { limit: 0 }
+  });
+  if (res) {
+    return res;
+  }
+  return [];
+}
+
+export async function registerContactForEvent(contactId, eventId) {
+  const config = getCivi();
+
+  const res = await fetchfromAPI(
+    config,
+    "Participant",
+    {
+      contact_id: contactId,
+      event_id: eventId
     },
     "create",
     { method: "post" }
