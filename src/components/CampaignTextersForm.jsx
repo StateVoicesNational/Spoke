@@ -323,25 +323,6 @@ export default class CampaignTextersForm extends React.Component {
     return <div>{orgTexters.length > 0 ? autocomplete : null}</div>;
   }
 
-  addAllTexters() {
-    const { orgTexters } = this.props;
-
-    const textersToAdd = orgTexters.map(orgTexter => {
-      const id = orgTexter.id;
-      const firstName = orgTexter.firstName;
-      return {
-        id,
-        firstName,
-        assignment: {
-          contactsCount: 0,
-          needsMessageCount: 0
-        }
-      };
-    });
-
-    this.onChange({ texters: textersToAdd });
-  }
-
   getDisplayName(texterId) {
     const texterObj = this.props.orgTexters.find(o => o.id === texterId);
     const suffix =
@@ -469,14 +450,6 @@ export default class CampaignTextersForm extends React.Component {
         >
           <div style={{ display: "flex", justifyContent: "space-between" }}>
             {this.showSearch()}
-            <div>
-              <Button
-                {...dataTest("addAll")}
-                onClick={() => this.addAllTexters()}
-              >
-                Add All
-              </Button>
-            </div>
           </div>
           <div className={css(styles.sliderContainer)}>
             <div className={css(styles.headerContainer)}>
