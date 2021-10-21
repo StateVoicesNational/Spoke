@@ -185,3 +185,39 @@ export async function sendEmailToContact(contactId, templateId) {
   log.debug(res);
   return res;
 }
+
+export async function addContactToTag(contactId, tagId) {
+  const config = getCivi();
+
+  const res = await fetchfromAPI(
+    config,
+    "EntityTag",
+    {
+      entity_id: contactId,
+      entity_table: "civicrm_contact",
+      tag_id: tagId
+    },
+    "create",
+    { method: "post" }
+  );
+  log.debug(res);
+  return res;
+}
+
+/**
+ * @param {string} query
+ * @returns {Promise<{ title: string; count: number; id: number }[]>}
+ */
+export async function searchTags() {
+  const config = getCivi();
+
+  const res = await fetchfromAPI(config, "tag", {
+    sequential: 1,
+    return: ["id", "name"],
+    options: { limit: 0 }
+  });
+  if (res) {
+    return res;
+  }
+  return [];
+}
