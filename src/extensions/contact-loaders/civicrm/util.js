@@ -2,6 +2,7 @@
 import { getConfig } from "../../../server/api/lib/config";
 import fetch from "node-fetch";
 import { log } from "../../../lib/log";
+import moment from "moment";
 
 const PAGE_SIZE = 100;
 
@@ -205,8 +206,7 @@ export async function addContactToTag(contactId, tagId) {
 }
 
 /**
- * @param {string} query
- * @returns {Promise<{ title: string; count: number; id: number }[]>}
+ * @returns {Promise<{ name: string; id: number }[]>}
  */
 export async function searchTags() {
   const config = getCivi();
@@ -220,4 +220,45 @@ export async function searchTags() {
     return res;
   }
   return [];
+}
+
+/**
+ * @returns {Promise<{ name: string; id: number }[]>}
+ */
+export async function searchEvents() {
+  const config = getCivi();
+  const currentNow = moment().format("YYYY-MM-DD HH:mm:ss");
+  log.info(currentNow);
+  const res = await fetchfromAPI(config, "event", {
+    sequential: 1,
+    return: ["id", "title"],
+    title: { "!=": "" },
+    is_monetary: 0,
+    //  requires_approval: 0,
+    start_date: {
+      ">": currentNow
+    },
+    options: { limit: 0 }
+  });
+  if (res) {
+    return res;
+  }
+  return [];
+}
+
+export async function registerContactForEvent(contactId, eventId) {
+  const config = getCivi();
+
+  const res = await fetchfromAPI(
+    config,
+    "Participant",
+    {
+      contact_id: contactId,
+      event_id: eventId
+    },
+    "create",
+    { method: "post" }
+  );
+  log.debug(res);
+  return res;
 }
