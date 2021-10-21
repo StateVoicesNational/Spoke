@@ -168,3 +168,20 @@ export async function addContactToGroup(contactId, groupId) {
   log.debug(res);
   return res;
 }
+
+export async function sendEmailToContact(contactId, templateId) {
+  const config = getCivi();
+
+  const res = await fetchfromAPI(
+    config,
+    "Email",
+    {
+      contact_id: contactId,
+      template_id: templateId
+    },
+    "send",
+    { method: "post" }
+  );
+  log.debug(res);
+  return res;
+}
