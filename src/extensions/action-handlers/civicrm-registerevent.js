@@ -36,7 +36,7 @@ export function serverAdministratorInstructions() {
 
 // eslint-disable-next-line no-unused-vars
 export function clientChoiceDataCacheKey(organization, user) {
-  return "";
+  return `${organization.id}`;
 }
 
 // return true, if the action is usable and available for the organizationId
