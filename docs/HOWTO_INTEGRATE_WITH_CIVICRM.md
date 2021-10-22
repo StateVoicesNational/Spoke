@@ -21,10 +21,9 @@ The loader can be configured to import additional fields through the use of Spok
 
 Add to Group - add a contact to a specified CiviCRM group from within a Spoke conversation
 Add tag to Contact - add a tag to a contact in CiviCRM from within a Spoke conversation
+Register for Event - register a person for an event in CiviCRM
 
 These handlers require the CiviCRM contact loaader be configured and available for use.
-
-Additional action handlers and service managers are in active development.
 
 ## Instructions
 
@@ -37,21 +36,21 @@ The [CiviCRM System Administration guide](https://docs.civicrm.org/sysadmin/en/l
 
 Modify your Spoke .env file to include the following environment variables:
 
-- CONTACT_LOADERS - add `civicrm`
+- CONTACT_LOADERS - add `civicrm` to the comma-separated list
 - CIVICRM_API_URL - should be the full URL of the [CiviCRM REST API](https://docs.civicrm.org/dev/en/latest/api/v3/rest/)
   (eg. https://example.com/sites/all/modules/civicrm/extern/rest.php)
 - CIVICRM_API_KEY - the key you generated in step one
 - CIVICRM_SITE_KEY - the site key for your CiviCRM installation. Defined in your `civicrm.settings.php` file ([more info](https://docs.civicrm.org/sysadmin/en/latest/setup/secret-keys/)).
-- ACTION_HANDLERS - add `civicrm-addtogroup` and `civicrm-addtag` to enable the "Add to Group" and "Add tag to Contact" handlers respectively
+- ACTION_HANDLERS - add `civicrm-addtogroup`, `civicrm-addtag` and `civicrm-registerevent` to enable the "Add to Group", "Add tag to Contact" and "Register for Event" handlers respectively
 
 ## Optional contact loader configuration
 
-The CiviCRM contact loader offers two optional customizations to support any additional requirements you may have.
+The CiviCRM contact loader offers two optional customizations to support additional requirements you may have.
 
 ### Additional custom data
 The environment variable `CIVICRM_CUSTOM_DATA` can be used to specify additional data fields you wish to retrieve from CiviCRM.
 
-By default, these attributes must be directly "attached" to a person's Contact record in CiviCRM and retrievable via CiviCRM's API interface.
+By default, these attributes must be directly "attached" to a person's Contact record in CiviCRM and retrievable via CiviCRM's API interface when making a `Contact.get` API call.
 
 Some examples include:
 - `birth_date`
