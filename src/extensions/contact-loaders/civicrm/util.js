@@ -85,7 +85,7 @@ function getCivi() {
  * @param {string} query
  * @returns {Promise<{ title: string; count: number; id: number }[]>}
  */
-export async function searchGroups(query) {
+export async function searchGroups(query, getcountVal = 0) {
   const config = getCivi();
 
   const key = "api.GroupContact.getcount";
@@ -94,7 +94,7 @@ export async function searchGroups(query) {
     sequential: 1,
     return: ["id", "title"],
     title: { LIKE: `%${query}%` },
-    [key]: 1,
+    [key]: getcountVal,
     options: { limit: 0 }
   });
   if (res) {
