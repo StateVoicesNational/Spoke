@@ -228,7 +228,7 @@ export async function searchTags() {
 export async function searchEvents() {
   const config = getCivi();
   const currentNow = moment()
-    .tz("Australia/Melbourne")
+    .tz(getConfig("CIVICRM_SERVER_TIMEZONE"))
     .format("YYYY-MM-DD HH:mm:ss");
   const res = await fetchfromAPI(config, "event", {
     sequential: 1,

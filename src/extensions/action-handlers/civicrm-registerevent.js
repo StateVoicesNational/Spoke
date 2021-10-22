@@ -9,7 +9,7 @@ import {
   searchEvents,
   registerContactForEvent
 } from "../contact-loaders/civicrm/util";
-import { getConfig } from "../../server/api/lib/config";
+import { getConfig, hasConfig } from "../../server/api/lib/config";
 import { log } from "../../lib/log";
 
 export const name = "civicrm-registerevent";
@@ -29,8 +29,13 @@ export function serverAdministratorInstructions() {
     setupInstructions: `
       1. Add "civicrm-registerevent" to the environment variable "ACTION_HANDLERS";
       2. Set up Spoke to use the existing civicrm contact loader.
+      3. Set the "CIVICRM_SERVER_TIMEZONE" environmental variable to contain the timezone
+         (e.g., "Australia/Melbourne") for the CiviCRM server. 
       `,
-    environmentVariables: [...ENVIRONMENTAL_VARIABLES_MANDATORY]
+    environmentVariables: [
+      ...ENVIRONMENTAL_VARIABLES_MANDATORY,
+      "CIVICRM_SERVER_TIMEZONE"
+    ]
   };
 }
 
@@ -46,7 +51,11 @@ export function clientChoiceDataCacheKey(organization, user) {
 // process.env.ACTION_HANDLERS
 export async function available(organizationId) {
   const contactLoadersConfig = getConfig("CONTACT_LOADERS").split(",");
-  if (contactLoadersConfig.indexOf(loaderName) !== -1) {
+  const hasCiviCRMServerTimezone = hasConfig("CIVICRM_SERVER_TIMEZONE");
+  if (
+    contactLoadersConfig.indexOf(loaderName) !== -1 &&
+    hasCiviCRMServerTimezone
+  ) {
     const hasLoader = await loaderAvailable(organizationId, 0);
     return hasLoader;
   }
