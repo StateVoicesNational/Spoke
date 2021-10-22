@@ -11,6 +11,7 @@ import {
 } from "../contact-loaders/civicrm/util";
 import { getConfig } from "../../server/api/lib/config";
 import { log } from "../../lib/log";
+import moment from "moment";
 
 export const name = "civicrm-addtogroup";
 
@@ -36,7 +37,7 @@ export function serverAdministratorInstructions() {
 
 // eslint-disable-next-line no-unused-vars
 export function clientChoiceDataCacheKey(organization, user) {
-  return "";
+  return `${organization.id}`;
 }
 
 // return true, if the action is usable and available for the organizationId
@@ -92,12 +93,13 @@ export async function processDeletedQuestionResponse(options) {}
 
 // eslint-disable-next-line no-unused-vars
 export async function getClientChoiceData(organization, user) {
+  log.debug(`getClientChoiceData at ${moment().format("HHHH/MM/DD HH:mm:ss")}`);
   const getGroupData = await searchGroups("");
   const items = getGroupData.map(item => {
     return { name: item.title, details: item.id };
   });
   return {
     data: `${JSON.stringify({ items })}`,
-    expiresSeconds: 300
+    expiresSeconds: 3600
   };
 }
