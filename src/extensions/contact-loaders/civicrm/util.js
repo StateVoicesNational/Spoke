@@ -235,7 +235,7 @@ export async function searchEvents() {
     return: ["id", "title"],
     title: { "!=": "" },
     is_monetary: 0,
-    //  requires_approval: 0,
+    requires_approval: 0,
     start_date: {
       ">": currentNow
     },
