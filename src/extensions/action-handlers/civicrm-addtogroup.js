@@ -11,6 +11,7 @@ import {
 } from "../contact-loaders/civicrm/util";
 import { getConfig } from "../../server/api/lib/config";
 import { log } from "../../lib/log";
+import moment from "moment";
 
 export const name = "civicrm-addtogroup";
 
@@ -36,13 +37,13 @@ export function serverAdministratorInstructions() {
 
 // eslint-disable-next-line no-unused-vars
 export function clientChoiceDataCacheKey(organization, user) {
-  return "";
+  return `${organization.id}`;
 }
 
 // return true, if the action is usable and available for the organizationId
 // Sometimes this means certain variables/credentials must be setup
 // either in environment variables or organization.features json data
-// Besides this returning true, "test-action" will also need to be added to
+// Besides this returning true, "civicrm-addtogroup" will also need to be added to
 // process.env.ACTION_HANDLERS
 export async function available(organizationId) {
   const contactLoadersConfig = getConfig("CONTACT_LOADERS").split(",");
@@ -64,13 +65,13 @@ export async function processAction({
   // Generally, you want to send action data to the outside world, so you
   // might want the request library loaded above
 
-  const originalContactId = contact.external_id;
+  const civiContactId = contact.external_id;
   const destinationGroupId = JSON.parse(interactionStep.answer_actions_data)
     .value;
-  log.debug(originalContactId);
+  log.debug(civiContactId);
   log.debug(destinationGroupId);
   const addConstantResult = await addContactToGroup(
-    originalContactId,
+    civiContactId,
     destinationGroupId
   );
   log.debug(addConstantResult);
@@ -92,12 +93,14 @@ export async function processDeletedQuestionResponse(options) {}
 
 // eslint-disable-next-line no-unused-vars
 export async function getClientChoiceData(organization, user) {
+  log.debug(`getClientChoiceData at ${moment().format("HHHH/MM/DD HH:mm:ss")}`);
   const getGroupData = await searchGroups("");
+  log.debug(getGroupData);
   const items = getGroupData.map(item => {
     return { name: item.title, details: item.id };
   });
   return {
     data: `${JSON.stringify({ items })}`,
-    expiresSeconds: 300
+    expiresSeconds: 3600
   };
 }

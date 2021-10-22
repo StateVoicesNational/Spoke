@@ -8,6 +8,21 @@ const PAGE_SIZE = 100;
 
 const DEFAULT_CONTACT_ENTITY_METHOD_NAME = "Contact";
 
+export function getIntegerArray(envVariable) {
+  const retValue = [];
+  if (envVariable) {
+    const csvParts = envVariable.split(",");
+    for (const csvPart of csvParts) {
+      const csvPartAsInt = parseInt(csvPart, 10);
+      if (isNaN(csvPartAsInt)) {
+        return [];
+      }
+      retValue.push(csvPartAsInt);
+    }
+  }
+  return retValue;
+}
+
 export function getCustomFields(customDataEnv) {
   const pairsFieldAndLabel = {};
 
@@ -67,7 +82,7 @@ async function fetchfromAPI(
   }
 }
 
-function getCivi() {
+export function getCivi() {
   const civicrm = new URL(getConfig("CIVICRM_API_URL"));
 
   const config = {
@@ -85,7 +100,7 @@ function getCivi() {
  * @param {string} query
  * @returns {Promise<{ title: string; count: number; id: number }[]>}
  */
-export async function searchGroups(query) {
+export async function searchGroups(query, getcountVal = 0) {
   const config = getCivi();
 
   const key = "api.GroupContact.getcount";
@@ -94,13 +109,19 @@ export async function searchGroups(query) {
     sequential: 1,
     return: ["id", "title"],
     title: { LIKE: `%${query}%` },
-    [key]: 1,
+    [key]: getcountVal,
     options: { limit: 0 }
   });
   if (res) {
+    if (getcountVal) {
+      return res.map(group => ({
+        title: `${group.title} (${group[key]})`,
+        count: group[key],
+        id: group.id
+      }));
+    }
     return res.map(group => ({
-      title: `${group.title} (${group[key]})`,
-      count: group[key],
+      title: `${group.title}`,
       id: group.id
     }));
   }
@@ -230,7 +251,7 @@ export async function searchEvents() {
   const currentNow = moment().format();
   const res = await fetchfromAPI(config, "event", {
     sequential: 1,
-    return: ["id", "title"],
+    return: ["id", "title", "default_role_id"],
     title: { "!=": "" },
     is_monetary: 0,
     requires_approval: 0,
@@ -245,7 +266,7 @@ export async function searchEvents() {
   return [];
 }
 
-export async function registerContactForEvent(contactId, eventId) {
+export async function registerContactForEvent(contactId, eventId, roleId) {
   const config = getCivi();
 
   const res = await fetchfromAPI(
@@ -253,11 +274,27 @@ export async function registerContactForEvent(contactId, eventId) {
     "Participant",
     {
       contact_id: contactId,
-      event_id: eventId
+      event_id: eventId,
+      role_id: roleId
     },
     "create",
     { method: "post" }
   );
   log.debug(res);
   return res;
+}
+
+export async function searchMessageTemplates() {
+  const config = getCivi();
+  const res = await fetchfromAPI(config, "MessageTemplate", {
+    sequential: 1,
+    return: ["id", "msg_title"],
+    msg_title: { "!=": "" },
+    id: { IN: getIntegerArray(getConfig("CIVICRM_MESSAGE_IDS")) },
+    options: { limit: 0 }
+  });
+  if (res) {
+    return res;
+  }
+  return [];
 }
