@@ -2,7 +2,7 @@
 import { getConfig } from "../../../server/api/lib/config";
 import fetch from "node-fetch";
 import { log } from "../../../lib/log";
-import moment from "moment";
+import moment from "moment-timezone";
 
 const PAGE_SIZE = 100;
 
@@ -227,8 +227,9 @@ export async function searchTags() {
  */
 export async function searchEvents() {
   const config = getCivi();
-  const currentNow = moment().format("YYYY-MM-DD HH:mm:ss");
-  log.info(currentNow);
+  const currentNow = moment()
+    .tz("Australia/Melbourne")
+    .format("YYYY-MM-DD HH:mm:ss");
   const res = await fetchfromAPI(config, "event", {
     sequential: 1,
     return: ["id", "title"],
