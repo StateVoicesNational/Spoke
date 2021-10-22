@@ -227,16 +227,14 @@ export async function searchTags() {
  */
 export async function searchEvents() {
   const config = getCivi();
-  const currentNow = moment()
-    .tz(getConfig("CIVICRM_SERVER_TIMEZONE"))
-    .format("YYYY-MM-DD HH:mm:ss");
+  const currentNow = moment().format();
   const res = await fetchfromAPI(config, "event", {
     sequential: 1,
     return: ["id", "title"],
     title: { "!=": "" },
     is_monetary: 0,
     requires_approval: 0,
-    start_date: {
+    end_date: {
       ">": currentNow
     },
     options: { limit: 0 }
