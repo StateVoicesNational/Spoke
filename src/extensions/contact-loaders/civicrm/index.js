@@ -75,7 +75,7 @@ export function addServerEndpoints(expressApp) {
     const { query } = req.query;
     if (query.length < CIVICRM_MINQUERY_SIZE) return res.json({ groups: [] }); // ignore dumb queries
 
-    searchGroups(query || "")
+    searchGroups(query || "", 1)
       .then(groups => res.json({ groups }))
       .catch(error => {
         log.error(error);
