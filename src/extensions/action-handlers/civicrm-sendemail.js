@@ -9,29 +9,29 @@ import { sendEmailToContact } from "../contact-loaders/civicrm/util";
 import { getConfig, hasConfig } from "../../server/api/lib/config";
 import { log } from "../../lib/log";
 
-export const name = "civicrm-sendrosteremail";
+export const name = "civicrm-sendemail";
 
 // What the user sees as the option
-export const displayName = () => "Send self-roster email to contact";
+export const displayName = () => "Send email to contact";
 
 // The Help text for the user after selecting the action
 export const instructions = () =>
-  "Selecting this action means that the user receives a self-rostering email.";
+  "Selecting this action means that the user receives a email (using a template chosen by the texter).";
 
 export function serverAdministratorInstructions() {
   return {
     description: `
-      This action is for texters to send self-rostering emails to contacts.
+      This action is for texter to choose a template to send an email to contact.
       `,
     setupInstructions: `
-      1. Add "civicrm-sendrosteremail" to the environment variable "ACTION_HANDLERS";
+      1. Add "civicrm-sendemail" to the environment variable "ACTION_HANDLERS";
       2. Set up Spoke to use the existing civicrm contact loader.
-      3. Set the "CIVICRM_SELFROSTER_MESSAGE_ID" environmental variable to contain the id
-         of the mailing template to be sent to the contact. 
+      3. Set the "CIVICRM_MESSAGE_IDS" environmental variable to contain a
+         comma-separated list of mailing templates. 
       `,
     environmentVariables: [
       ...ENVIRONMENTAL_VARIABLES_MANDATORY,
-      "CIVICRM_SELFROSTER_MESSAGE_ID"
+      "CIVICRM_MESSAGE_IDS"
     ]
   };
 }
@@ -48,11 +48,8 @@ export function clientChoiceDataCacheKey(organization, user) {
 // process.env.ACTION_HANDLERS
 export async function available(organizationId) {
   const contactLoadersConfig = getConfig("CONTACT_LOADERS").split(",");
-  const hasSelfRosterMessageId = hasConfig("CIVICRM_SELFROSTER_MESSAGE_ID");
-  if (
-    contactLoadersConfig.indexOf(loaderName) !== -1 &&
-    hasSelfRosterMessageId
-  ) {
+  const hasMessageIds = hasConfig("CIVICRM_MESSAGE_IDS");
+  if (contactLoadersConfig.indexOf(loaderName) !== -1 && hasMessageIds) {
     const hasLoader = await loaderAvailable(organizationId, 0);
     return hasLoader;
   }
@@ -71,7 +68,7 @@ export async function processAction({
   // might want the request library loaded above
 
   const civiContactId = contact.external_id;
-  const destinationTemplateId = getConfig("CIVICRM_SELFROSTER_MESSAGE_ID");
+  const destinationTemplateId = getConfig("CIVICRM_MESSAGE_IDS");
   log.debug(civiContactId);
   log.debug(destinationTemplateId);
   const addConstantResult = await sendEmailToContact(
