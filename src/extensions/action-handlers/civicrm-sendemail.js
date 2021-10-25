@@ -76,7 +76,8 @@ export async function processAction({
   // might want the request library loaded above
 
   const civiContactId = contact.external_id;
-  const destinationTemplateId = getConfig("CIVICRM_MESSAGE_IDS");
+  const destinationTemplateId = JSON.parse(interactionStep.answer_actions_data)
+    .value;
   log.debug(civiContactId);
   log.debug(destinationTemplateId);
   const addConstantResult = await sendEmailToContact(
