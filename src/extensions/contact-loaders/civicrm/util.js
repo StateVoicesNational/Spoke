@@ -98,9 +98,15 @@ export async function searchGroups(query, getcountVal = 0) {
     options: { limit: 0 }
   });
   if (res) {
+    if (getcountVal) {
+      return res.map(group => ({
+        title: `${group.title} (${group[key]})`,
+        count: group[key],
+        id: group.id
+      }));
+    }
     return res.map(group => ({
-      title: `${group.title} (${group[key]})`,
-      count: group[key],
+      title: `${group.title}`,
       id: group.id
     }));
   }
