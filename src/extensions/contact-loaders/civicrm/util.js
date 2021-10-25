@@ -8,6 +8,19 @@ const PAGE_SIZE = 100;
 
 const DEFAULT_CONTACT_ENTITY_METHOD_NAME = "Contact";
 
+export function getIntegerArray(envVariable) {
+  const retValue = [];
+  const csvParts = envVariable.split(",");
+  for (const csvPart of csvParts) {
+    const csvPartAsInt = parseInt(csvPart, 10);
+    if (isNaN(csvPartAsInt)) {
+      return [];
+    }
+    retValue.push(csvPartAsInt);
+  }
+  return retValue;
+}
+
 export function getCustomFields(customDataEnv) {
   const pairsFieldAndLabel = {};
 
@@ -266,4 +279,19 @@ export async function registerContactForEvent(contactId, eventId) {
   );
   log.debug(res);
   return res;
+}
+
+export async function searchMessageTemplates() {
+  const config = getCivi();
+  const res = await fetchfromAPI(config, "MessageTemplate", {
+    sequential: 1,
+    return: ["id", "msg_title"],
+    msg_title: { "!=": "" },
+    id: { IN: getIntegerArray(getConfig("CIVICRM_MESSAGE_IDS")) },
+    options: { limit: 0 }
+  });
+  if (res) {
+    return res;
+  }
+  return [];
 }

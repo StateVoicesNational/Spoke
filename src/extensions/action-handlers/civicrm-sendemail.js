@@ -5,7 +5,11 @@ import {
   ENVIRONMENTAL_VARIABLES_MANDATORY,
   name as loaderName
 } from "../contact-loaders/civicrm";
-import { sendEmailToContact } from "../contact-loaders/civicrm/util";
+import {
+  sendEmailToContact,
+  searchMessageTemplates,
+  getIntegerArray
+} from "../contact-loaders/civicrm/util";
 import { getConfig, hasConfig } from "../../server/api/lib/config";
 import { log } from "../../lib/log";
 
@@ -49,7 +53,11 @@ export function clientChoiceDataCacheKey(organization, user) {
 export async function available(organizationId) {
   const contactLoadersConfig = getConfig("CONTACT_LOADERS").split(",");
   const hasMessageIds = hasConfig("CIVICRM_MESSAGE_IDS");
-  if (contactLoadersConfig.indexOf(loaderName) !== -1 && hasMessageIds) {
+  if (
+    contactLoadersConfig.indexOf(loaderName) !== -1 &&
+    hasMessageIds &&
+    getIntegerArray(getConfig("CIVICRM_MESSAGE_IDS")).length !== 0
+  ) {
     const hasLoader = await loaderAvailable(organizationId, 0);
     return hasLoader;
   }
@@ -91,3 +99,16 @@ export async function processAction({
 // What happens when a texter remotes an answer that triggers the action
 // eslint-disable-next-line no-unused-vars
 export async function processDeletedQuestionResponse(options) {}
+
+// eslint-disable-next-line no-unused-vars
+export async function getClientChoiceData(organization, user) {
+  const getMessageTemplateData = await searchMessageTemplates();
+  log.debug(getMessageTemplateData);
+  const items = getMessageTemplateData.map(item => {
+    return { name: item.msg_title, details: item.id };
+  });
+  return {
+    data: `${JSON.stringify({ items })}`,
+    expiresSeconds: 300
+  };
+}
