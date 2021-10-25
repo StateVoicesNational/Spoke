@@ -65,13 +65,14 @@ export async function processAction({
   // might want the request library loaded above
 
   const civiContactId = contact.external_id;
-  const destinationEventId = JSON.parse(interactionStep.answer_actions_data)
-    .value;
-  log.debug(civiContactId);
-  log.debug(destinationEventId);
+  const civiEventId = JSON.parse(interactionStep.answer_actions_data).value
+    .details.id;
+  const civiRoleId = JSON.parse(interactionStep.answer_actions_data).value
+    .details.role_id;
   const addConstantResult = await registerContactForEvent(
     civiContactId,
-    destinationEventId
+    civiEventId,
+    civiRoleId
   );
   log.debug(addConstantResult);
   const customFields = JSON.parse(contact.custom_fields || "{}");
@@ -92,9 +93,12 @@ export async function processDeletedQuestionResponse(options) {}
 
 // eslint-disable-next-line no-unused-vars
 export async function getClientChoiceData(organization, user) {
-  const getGroupData = await searchEvents();
-  const items = getGroupData.map(item => {
-    return { name: item.title, details: item.id };
+  const getEventData = await searchEvents();
+  const items = getEventData.map(item => {
+    return {
+      name: item.title,
+      details: { id: item.id, role_id: item.default_role_id }
+    };
   });
   return {
     data: `${JSON.stringify({ items })}`,

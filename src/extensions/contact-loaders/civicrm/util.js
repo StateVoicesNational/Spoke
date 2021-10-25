@@ -236,7 +236,7 @@ export async function searchEvents() {
   const currentNow = moment().format();
   const res = await fetchfromAPI(config, "event", {
     sequential: 1,
-    return: ["id", "title"],
+    return: ["id", "title", "default_role_id"],
     title: { "!=": "" },
     is_monetary: 0,
     requires_approval: 0,
@@ -251,7 +251,7 @@ export async function searchEvents() {
   return [];
 }
 
-export async function registerContactForEvent(contactId, eventId) {
+export async function registerContactForEvent(contactId, eventId, roleId) {
   const config = getCivi();
 
   const res = await fetchfromAPI(
@@ -259,7 +259,8 @@ export async function registerContactForEvent(contactId, eventId) {
     "Participant",
     {
       contact_id: contactId,
-      event_id: eventId
+      event_id: eventId,
+      role_id: roleId
     },
     "create",
     { method: "post" }
