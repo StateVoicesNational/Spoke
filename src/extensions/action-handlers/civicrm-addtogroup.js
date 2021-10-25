@@ -95,6 +95,7 @@ export async function processDeletedQuestionResponse(options) {}
 export async function getClientChoiceData(organization, user) {
   log.debug(`getClientChoiceData at ${moment().format("HHHH/MM/DD HH:mm:ss")}`);
   const getGroupData = await searchGroups("");
+  log.debug(getGroupData);
   const items = getGroupData.map(item => {
     return { name: item.title, details: item.id };
   });
