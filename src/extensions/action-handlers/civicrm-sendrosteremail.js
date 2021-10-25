@@ -70,12 +70,12 @@ export async function processAction({
   // Generally, you want to send action data to the outside world, so you
   // might want the request library loaded above
 
-  const originalContactId = contact.external_id;
+  const civiContactId = contact.external_id;
   const destinationTemplateId = getConfig("CIVICRM_SELFROSTER_MESSAGE_ID");
-  log.debug(originalContactId);
+  log.debug(civiContactId);
   log.debug(destinationTemplateId);
   const addConstantResult = await sendEmailToContact(
-    originalContactId,
+    civiContactId,
     destinationTemplateId
   );
   log.debug(addConstantResult);

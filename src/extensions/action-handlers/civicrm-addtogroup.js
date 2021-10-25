@@ -65,13 +65,13 @@ export async function processAction({
   // Generally, you want to send action data to the outside world, so you
   // might want the request library loaded above
 
-  const originalContactId = contact.external_id;
+  const civiContactId = contact.external_id;
   const destinationGroupId = JSON.parse(interactionStep.answer_actions_data)
     .value;
-  log.debug(originalContactId);
+  log.debug(civiContactId);
   log.debug(destinationGroupId);
   const addConstantResult = await addContactToGroup(
-    originalContactId,
+    civiContactId,
     destinationGroupId
   );
   log.debug(addConstantResult);
