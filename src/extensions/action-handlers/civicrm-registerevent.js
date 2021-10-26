@@ -10,6 +10,7 @@ import {
   registerContactForEvent
 } from "../contact-loaders/civicrm/util";
 import { getConfig } from "../../server/api/lib/config";
+import { log } from "../../lib/log";
 
 export const name = "civicrm-registerevent";
 
@@ -41,7 +42,7 @@ export function clientChoiceDataCacheKey(organization, user) {
 // return true, if the action is usable and available for the organizationId
 // Sometimes this means certain variables/credentials must be setup
 // either in environment variables or organization.features json data
-// Besides this returning true, "test-action" will also need to be added to
+// Besides this returning true, "civicrm-registerevent" will also need to be added to
 // process.env.ACTION_HANDLERS
 export async function available(organizationId) {
   const contactLoadersConfig = getConfig("CONTACT_LOADERS").split(",");
@@ -67,11 +68,15 @@ export async function processAction({
   const answerData = JSON.parse(interactionStep.answer_actions_data);
   const civiEventId = JSON.parse(answerData.value).id;
   const civiRoleId = JSON.parse(answerData.value).role_id;
+  log.debug(civiContactId);
+  log.debug(civiEventId);
+  log.debug(civiRoleId);
   const registerContactResult = await registerContactForEvent(
     civiContactId,
     civiEventId,
     civiRoleId
   );
+  log.debug(registerContactResult);
   const customFields = JSON.parse(contact.custom_fields || "{}");
   customFields.processed_test_action = (interactionStep || {}).answer_actions;
   customFields.test_action_details = (

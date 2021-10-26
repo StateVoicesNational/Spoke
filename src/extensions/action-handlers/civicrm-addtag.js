@@ -39,7 +39,7 @@ export function clientChoiceDataCacheKey(organization, user) {
 // return true, if the action is usable and available for the organizationId
 // Sometimes this means certain variables/credentials must be setup
 // either in environment variables or organization.features json data
-// Besides this returning true, "test-action" will also need to be added to
+// Besides this returning true, "civicrm-addtag" will also need to be added to
 // process.env.ACTION_HANDLERS
 export async function available(organizationId) {
   const contactLoadersConfig = getConfig("CONTACT_LOADERS").split(",");
