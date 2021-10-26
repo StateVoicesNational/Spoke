@@ -10,13 +10,15 @@ const DEFAULT_CONTACT_ENTITY_METHOD_NAME = "Contact";
 
 export function getIntegerArray(envVariable) {
   const retValue = [];
-  const csvParts = envVariable.split(",");
-  for (const csvPart of csvParts) {
-    const csvPartAsInt = parseInt(csvPart, 10);
-    if (isNaN(csvPartAsInt)) {
-      return [];
+  if (envVariable) {
+    const csvParts = envVariable.split(",");
+    for (const csvPart of csvParts) {
+      const csvPartAsInt = parseInt(csvPart, 10);
+      if (isNaN(csvPartAsInt)) {
+        return [];
+      }
+      retValue.push(csvPartAsInt);
     }
-    retValue.push(csvPartAsInt);
   }
   return retValue;
 }
@@ -80,7 +82,7 @@ async function fetchfromAPI(
   }
 }
 
-function getCivi() {
+export function getCivi() {
   const civicrm = new URL(getConfig("CIVICRM_API_URL"));
 
   const config = {
