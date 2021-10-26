@@ -583,46 +583,58 @@ export async function getContactInfo({
     // caller-name is more expensive
     types.push("caller-name");
   }
-  const phoneNumber = await twilio.lookups.v1
-    .phoneNumbers(contactNumber)
-    .fetch({ type: types });
   const contactInfo = {
     contact_number: contactNumber,
     organization_id: organization.id,
     service: "twilio"
   };
-  if (phoneNumber.carrier) {
-    contactInfo.carrier = phoneNumber.carrier.name;
-  }
-  if (phoneNumber.carrier.error_code) {
-    // e.g. 60600: Unprovisioned or Out of Coverage
-    contactInfo.status_code = -2;
-    contactInfo.last_error_code = phoneNumber.carrier.error_code;
-  } else if (
-    phoneNumber.carrier.type &&
-    phoneNumber.carrier.type === "landline"
-  ) {
-    // landline (not mobile or voip)
-    contactInfo.status_code = -1;
-  } else if (
-    phoneNumber.countryCode &&
-    getConfig("PHONE_NUMBER_COUNTRY", organization) &&
-    getConfig("PHONE_NUMBER_COUNTRY", organization) !== phoneNumber.countryCode
-  ) {
-    contactInfo.status_code = -3; // wrong country
-  } else if (
-    phoneNumber.carrier.type &&
-    phoneNumber.carrier.type !== "landline"
-  ) {
-    // mobile, voip
-    contactInfo.status_code = 1;
-  }
+  try {
+    const phoneNumber = await twilio.lookups.v1
+      .phoneNumbers(contactNumber)
+      .fetch({ type: types });
 
-  if (phoneNumber.callerName) {
-    contactInfo.lookup_name = phoneNumber.callerName;
+    if (phoneNumber.carrier) {
+      contactInfo.carrier = phoneNumber.carrier.name;
+    }
+    if (phoneNumber.carrier.error_code) {
+      // e.g. 60600: Unprovisioned or Out of Coverage
+      contactInfo.status_code = -2;
+      contactInfo.last_error_code = phoneNumber.carrier.error_code;
+    } else if (
+      phoneNumber.carrier.type &&
+      phoneNumber.carrier.type === "landline"
+    ) {
+      // landline (not mobile or voip)
+      contactInfo.status_code = -1;
+    } else if (
+      phoneNumber.countryCode &&
+      getConfig("PHONE_NUMBER_COUNTRY", organization) &&
+      getConfig("PHONE_NUMBER_COUNTRY", organization) !==
+        phoneNumber.countryCode
+    ) {
+      contactInfo.status_code = -3; // wrong country
+    } else if (
+      phoneNumber.carrier.type &&
+      phoneNumber.carrier.type !== "landline"
+    ) {
+      // mobile, voip
+      contactInfo.status_code = 1;
+    }
+
+    if (phoneNumber.callerName) {
+      contactInfo.lookup_name = phoneNumber.callerName;
+    }
+    // console.log('twilio.getContactInfo', contactInfo, phoneNumber);
+    return contactInfo;
+  } catch (err) {
+    if (err.message.includes("was not found")) {
+      return {
+        ...contactInfo,
+        status_code: -4 // twilio api error
+      };
+    }
+    throw err;
   }
-  // console.log('twilio.getContactInfo', contactInfo, phoneNumber);
-  return contactInfo;
 }
 
 /**
