@@ -627,6 +627,19 @@ export async function getContactInfo({
     // console.log('twilio.getContactInfo', contactInfo, phoneNumber);
     return contactInfo;
   } catch (err) {
+    /* oddly, very rarely Twilio returns a 404 error message
+       when looking up what appears to be a valid number
+       https://www.twilio.com/docs/api/errors/20404
+
+       the message appears like:
+      "The requested resource /PhoneNumbers/{cell} was not found"
+
+      the assumption is that this must not be a real number if it can't
+      even be validated, so we should just delete it
+
+      try it with this number:
+      https://lookups.twilio.com/v1/PhoneNumbers/+15056405970?Type=carrier
+    */
     if (err.message.includes("was not found")) {
       return {
         ...contactInfo,
