@@ -10,7 +10,6 @@ import {
   registerContactForEvent
 } from "../contact-loaders/civicrm/util";
 import { getConfig } from "../../server/api/lib/config";
-import { log } from "../../lib/log";
 
 export const name = "civicrm-registerevent";
 
@@ -65,16 +64,14 @@ export async function processAction({
   // might want the request library loaded above
 
   const civiContactId = contact.external_id;
-  const civiEventId = JSON.parse(interactionStep.answer_actions_data).value
-    .details.id;
-  const civiRoleId = JSON.parse(interactionStep.answer_actions_data).value
-    .details.role_id;
-  const addConstantResult = await registerContactForEvent(
+  const answerData = JSON.parse(interactionStep.answer_actions_data);
+  const civiEventId = JSON.parse(answerData.value).id;
+  const civiRoleId = JSON.parse(answerData.value).role_id;
+  const registerContactResult = await registerContactForEvent(
     civiContactId,
     civiEventId,
     civiRoleId
   );
-  log.debug(addConstantResult);
   const customFields = JSON.parse(contact.custom_fields || "{}");
   customFields.processed_test_action = (interactionStep || {}).answer_actions;
   customFields.test_action_details = (
@@ -97,7 +94,7 @@ export async function getClientChoiceData(organization, user) {
   const items = getEventData.map(item => {
     return {
       name: item.title,
-      details: { id: item.id, role_id: item.default_role_id }
+      details: JSON.stringify({ id: item.id, role_id: item.default_role_id })
     };
   });
   return {
