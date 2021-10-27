@@ -6,7 +6,7 @@ import {
 
 import * as HandlerToTest from "../../../src/extensions/action-handlers/civicrm-sendemail";
 import { getConfig, hasConfig } from "../../../src/server/api/lib/config";
-import { searchMessageTemplates } from "../../../src/extensions/contact-loaders/civicrm/util";
+const Util = require("../../../src/extensions/contact-loaders/civicrm/util");
 
 jest.mock("../../../src/server/api/lib/config");
 
@@ -100,34 +100,30 @@ describe("civicrm-sendemail", () => {
     });
   });
 
-  xdescribe("civicrm-sendemail getClientChoiceData()", () => {
-    beforeEach(async () => {
-      jest.mock("../../../src/extensions/contact-loaders/civicrm/util");
-    });
-
+  describe("civicrm-sendemail getClientChoiceData()", () => {
     afterEach(async () => {
-      jest.restoreAllMocks();
+      jest.clearAllMocks();
     });
-    xit("returns successful data when data is available", async () => {
+    it("returns successful data when data is available", async () => {
       const theTemplateData = [
         { id: "65", msg_title: "Sample CiviMail Newsletter Template" },
         { id: "68", msg_title: "Volunteer - Registration (on-line)" },
         { id: "69", msg_title: "Self-Roster Invite Email" }
       ];
-
-      searchMessageTemplates.mockResolvedValue(theTemplateData);
+      jest
+        .spyOn(Util, "searchMessageTemplates")
+        .mockResolvedValue(theTemplateData);
       expect(await HandlerToTest.getClientChoiceData({ id: 1 })).toEqual({
         data:
-          '{"items":[{"name":"Company","details":"2"},{"name":"Government Entity","details":"3"},{"name":"Major Donor","details":"4"},{"name":"Non-profit","details":"1"},{"name":"Volunteer","details":"5"}]}',
+          '{"items":[{"name":"Sample CiviMail Newsletter Template","details":"65"},{"name":"Volunteer - Registration (on-line)","details":"68"},{"name":"Self-Roster Invite Email","details":"69"}]}',
         expiresSeconds: 3600
       });
     });
 
     it("returns successful data when data is empty", async () => {
       const theTemplateData = [];
-
-      when(searchMessageTemplates)
-        .calledWith()
+      jest
+        .spyOn(Util, "searchMessageTemplates")
         .mockResolvedValue(theTemplateData);
       expect(await HandlerToTest.getClientChoiceData({ id: 1 })).toEqual({
         data: '{"items":[]}',
