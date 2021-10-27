@@ -3,10 +3,10 @@ import { getConfig } from "../../../server/api/lib/config";
 import fetch from "node-fetch";
 import { log } from "../../../lib/log";
 import moment from "moment-timezone";
-
-const PAGE_SIZE = 100;
-
-const DEFAULT_CONTACT_ENTITY_METHOD_NAME = "Contact";
+import {
+  CIVICRM_PAGINATE_SIZE,
+  DEFAULT_CONTACT_ENTITY_ACTION_NAME
+} from "./const";
 
 export function getIntegerArray(envVariable) {
   const retValue = [];
@@ -41,16 +41,24 @@ export function getCustomFields(customDataEnv) {
   return pairsFieldAndLabel;
 }
 
-export const CIVICRM_INTEGRATION_GROUPSEARCH_ENDPOINT =
-  "/integration/civicrm/groupsearch";
-export const CIVICRM_MINQUERY_SIZE = 3;
-
-async function paginate(fetchfromAPIMethod, config, entity, options, callback) {
+async function paginate(
+  fetchfromAPIMethod,
+  config,
+  entity,
+  entityAction,
+  options,
+  callback
+) {
   let count = 0;
 
   // eslint-disable-next-line no-constant-condition
   while (true) {
-    const once = await fetchfromAPIMethod(config, entity, options);
+    const once = await fetchfromAPIMethod(
+      config,
+      entity,
+      options,
+      entityAction
+    );
 
     if (!once.length) {
       return count;
@@ -60,7 +68,8 @@ async function paginate(fetchfromAPIMethod, config, entity, options, callback) {
     count += once.length;
 
     options.options = options.options || {};
-    options.options.offset = (options.options.offset || 0) + PAGE_SIZE;
+    options.options.offset =
+      (options.options.offset || 0) + CIVICRM_PAGINATE_SIZE;
   }
 }
 
@@ -131,8 +140,9 @@ export async function searchGroups(query, getcountVal = 0) {
 export async function getGroupMembers(groupId, callback) {
   const config = getCivi();
 
-  const contactEntityMethodName =
-    getConfig("CIVICRM_CUSTOM_METHOD") || DEFAULT_CONTACT_ENTITY_METHOD_NAME;
+  const contactEntityAction =
+    getConfig("CIVICRM_CUSTOM_CONTACT_ACTION") ||
+    DEFAULT_CONTACT_ENTITY_ACTION_NAME;
 
   const customFields = getCustomFields(getConfig("CIVICRM_CUSTOM_DATA"));
   const customFieldNames = Object.keys(customFields);
@@ -140,10 +150,11 @@ export async function getGroupMembers(groupId, callback) {
   const paginatedData = await paginate(
     fetchfromAPI,
     config,
-    contactEntityMethodName,
+    "Contact",
+    contactEntityAction,
     {
       sequential: 1,
-      options: { limit: PAGE_SIZE },
+      options: { limit: CIVICRM_PAGINATE_SIZE },
       first_name: { "IS NOT NULL": 1 },
       do_not_sms: { "=": 0 },
       is_deleted: { "=": 0 },
@@ -297,4 +308,22 @@ export async function searchMessageTemplates() {
     return res;
   }
   return [];
+}
+
+export async function optoutContactToGroup(contactId) {
+  const config = getCivi();
+  log.info("optoutContactToGroup");
+  log.info(contactId);
+  const res = await fetchfromAPI(
+    config,
+    "Contact",
+    {
+      id: contactId,
+      do_not_sms: 1
+    },
+    "create",
+    { method: "post" }
+  );
+  log.info(res);
+  return res;
 }

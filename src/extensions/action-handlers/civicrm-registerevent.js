@@ -1,18 +1,20 @@
 /* eslint-disable no-empty-function */
 import { r } from "../../server/models";
-import {
-  available as loaderAvailable,
-  ENVIRONMENTAL_VARIABLES_MANDATORY,
-  name as loaderName
-} from "../contact-loaders/civicrm";
+import { available as loaderAvailable } from "../contact-loaders/civicrm";
 import {
   searchEvents,
   registerContactForEvent
 } from "../contact-loaders/civicrm/util";
 import { getConfig } from "../../server/api/lib/config";
 import { log } from "../../lib/log";
+import {
+  CIVICRM_CACHE_SECONDS,
+  ENVIRONMENTAL_VARIABLES_MANDATORY,
+  CIVICRM_CONTACT_LOADER,
+  CIVICRM_ACTION_HANDLER_REGISTEREVENT
+} from "../contact-loaders/civicrm/const";
 
-export const name = "civicrm-registerevent";
+export const name = CIVICRM_ACTION_HANDLER_REGISTEREVENT;
 
 // What the user sees as the option
 export const displayName = () => "Register contact for CiviCRM event";
@@ -46,11 +48,11 @@ export function clientChoiceDataCacheKey(organization, user) {
 // process.env.ACTION_HANDLERS
 export async function available(organizationId) {
   const contactLoadersConfig = getConfig("CONTACT_LOADERS").split(",");
-  if (contactLoadersConfig.indexOf(loaderName) !== -1) {
+  if (contactLoadersConfig.indexOf(CIVICRM_CONTACT_LOADER) !== -1) {
     const hasLoader = await loaderAvailable(organizationId, 0);
     return hasLoader;
   }
-  return { result: false, expiresSeconds: 0 };
+  return { result: false, expiresSeconds: CIVICRM_CACHE_SECONDS };
 }
 
 // What happens when a texter saves the answer that triggers the action
@@ -96,6 +98,7 @@ export async function processDeletedQuestionResponse(options) {}
 // eslint-disable-next-line no-unused-vars
 export async function getClientChoiceData(organization, user) {
   const getEventData = await searchEvents();
+  log.debug(getEventData);
   const items = getEventData.map(item => {
     return {
       name: item.title,
@@ -104,6 +107,6 @@ export async function getClientChoiceData(organization, user) {
   });
   return {
     data: `${JSON.stringify({ items })}`,
-    expiresSeconds: 300
+    expiresSeconds: CIVICRM_CACHE_SECONDS
   };
 }
