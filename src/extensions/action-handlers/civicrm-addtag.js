@@ -8,6 +8,7 @@ import {
 import { searchTags, addContactToTag } from "../contact-loaders/civicrm/util";
 import { getConfig } from "../../server/api/lib/config";
 import { log } from "../../lib/log";
+import { CIVICRM_CACHE_SECONDS } from "../contact-loaders/civicrm/const";
 
 export const name = "civicrm-addtag";
 
@@ -47,7 +48,7 @@ export async function available(organizationId) {
     const hasLoader = await loaderAvailable(organizationId, 0);
     return hasLoader;
   }
-  return { result: false, expiresSeconds: 3600 };
+  return { result: false, expiresSeconds: CIVICRM_CACHE_SECONDS };
 }
 
 // What happens when a texter saves the answer that triggers the action
@@ -96,6 +97,6 @@ export async function getClientChoiceData(organization, user) {
   });
   return {
     data: `${JSON.stringify({ items })}`,
-    expiresSeconds: 3600
+    expiresSeconds: CIVICRM_CACHE_SECONDS
   };
 }

@@ -7,6 +7,7 @@ import { searchGroups } from "../../../src/extensions/contact-loaders/civicrm/ut
 
 import * as HandlerToTest from "../../../src/extensions/action-handlers/civicrm-addtogroup";
 import { getConfig, hasConfig } from "../../../src/server/api/lib/config";
+import { CIVICRM_CACHE_SECONDS } from "../../../src/extensions/contact-loaders/civicrm/const";
 
 jest.mock("../../../src/server/api/lib/config");
 jest.mock("../../../src/extensions/contact-loaders/civicrm/util");
@@ -48,7 +49,7 @@ describe("civicrm-addtogroup", () => {
         .mockReturnValue("civicrm");
       expect(await HandlerToTest.available({ id: 1 })).toEqual({
         result: true,
-        expiresSeconds: 3600
+        expiresSeconds: CIVICRM_CACHE_SECONDS
       });
     });
 
@@ -58,7 +59,7 @@ describe("civicrm-addtogroup", () => {
         .mockReturnValue("");
       expect(await HandlerToTest.available({ id: 1 })).toEqual({
         result: false,
-        expiresSeconds: 3600
+        expiresSeconds: CIVICRM_CACHE_SECONDS
       });
     });
   });
@@ -79,7 +80,7 @@ describe("civicrm-addtogroup", () => {
       expect(await HandlerToTest.getClientChoiceData({ id: 1 })).toEqual({
         data:
           '{"items":[{"name":"Administrators","details":"2"},{"name":"Volunteers","details":"3"},{"name":"Donors","details":"4"},{"name":"Newsletter Subscribers","details":"1"},{"name":"Volunteer","details":"5"}]}',
-        expiresSeconds: 3600
+        expiresSeconds: CIVICRM_CACHE_SECONDS
       });
     });
 
@@ -91,7 +92,7 @@ describe("civicrm-addtogroup", () => {
         .mockResolvedValue(theGroupData);
       expect(await HandlerToTest.getClientChoiceData({ id: 1 })).toEqual({
         data: '{"items":[]}',
-        expiresSeconds: 3600
+        expiresSeconds: CIVICRM_CACHE_SECONDS
       });
     });
   });
