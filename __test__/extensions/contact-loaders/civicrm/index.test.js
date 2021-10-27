@@ -1,6 +1,7 @@
 import { when } from "jest-when";
 import * as LoaderToTest from "../../../../src/extensions/contact-loaders/civicrm";
 import { hasConfig } from "../../../../src/server/api/lib/config";
+import { CIVICRM_CACHE_SECONDS } from "../../../../src/extensions/contact-loaders/civicrm/const";
 jest.mock("../../../../src/server/api/lib/config");
 
 describe("civicrm contact loader", () => {
@@ -22,7 +23,7 @@ describe("civicrm contact loader", () => {
       await LoaderToTest.getClientChoiceData({ id: 1 }, null, null)
     ).toEqual({
       data: "{}",
-      expiresSeconds: 3600
+      expiresSeconds: CIVICRM_CACHE_SECONDS
     });
     expect(typeof LoaderToTest.addServerEndpoints).toEqual("function");
     expect(typeof LoaderToTest.available).toEqual("function");
@@ -46,7 +47,7 @@ describe("civicrm contact loader", () => {
         .mockReturnValue(true);
       expect(await LoaderToTest.available({ id: 1 })).toEqual({
         result: true,
-        expiresSeconds: 3600
+        expiresSeconds: CIVICRM_CACHE_SECONDS
       });
     });
 
@@ -62,7 +63,7 @@ describe("civicrm contact loader", () => {
         .mockReturnValue(false);
       expect(await LoaderToTest.available({ id: 1 })).toEqual({
         result: false,
-        expiresSeconds: 3600
+        expiresSeconds: CIVICRM_CACHE_SECONDS
       });
     });
   });

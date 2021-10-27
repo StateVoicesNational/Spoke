@@ -7,6 +7,7 @@ import {
 import * as HandlerToTest from "../../../src/extensions/action-handlers/civicrm-sendemail";
 import { getConfig, hasConfig } from "../../../src/server/api/lib/config";
 const Util = require("../../../src/extensions/contact-loaders/civicrm/util");
+import { CIVICRM_CACHE_SECONDS } from "../../../src/extensions/contact-loaders/civicrm/const";
 
 jest.mock("../../../src/server/api/lib/config");
 
@@ -53,7 +54,7 @@ describe("civicrm-sendemail", () => {
         .mockReturnValue("1");
       expect(await HandlerToTest.available({ id: 1 })).toEqual({
         result: true,
-        expiresSeconds: 3600
+        expiresSeconds: CIVICRM_CACHE_SECONDS
       });
     });
 
@@ -69,7 +70,7 @@ describe("civicrm-sendemail", () => {
         .mockReturnValue("1");
       expect(await HandlerToTest.available({ id: 1 })).toEqual({
         result: false,
-        expiresSeconds: 3600
+        expiresSeconds: CIVICRM_CACHE_SECONDS
       });
     });
 
@@ -85,7 +86,7 @@ describe("civicrm-sendemail", () => {
         .mockReturnValue("false");
       expect(await HandlerToTest.available({ id: 1 })).toEqual({
         result: false,
-        expiresSeconds: 3600
+        expiresSeconds: CIVICRM_CACHE_SECONDS
       });
     });
 
@@ -95,7 +96,7 @@ describe("civicrm-sendemail", () => {
         .mockReturnValue("");
       expect(await HandlerToTest.available({ id: 1 })).toEqual({
         result: false,
-        expiresSeconds: 3600
+        expiresSeconds: CIVICRM_CACHE_SECONDS
       });
     });
   });
@@ -116,7 +117,7 @@ describe("civicrm-sendemail", () => {
       expect(await HandlerToTest.getClientChoiceData({ id: 1 })).toEqual({
         data:
           '{"items":[{"name":"Sample CiviMail Newsletter Template","details":"65"},{"name":"Volunteer - Registration (on-line)","details":"68"},{"name":"Self-Roster Invite Email","details":"69"}]}',
-        expiresSeconds: 3600
+        expiresSeconds: CIVICRM_CACHE_SECONDS
       });
     });
 
@@ -127,7 +128,7 @@ describe("civicrm-sendemail", () => {
         .mockResolvedValue(theTemplateData);
       expect(await HandlerToTest.getClientChoiceData({ id: 1 })).toEqual({
         data: '{"items":[]}',
-        expiresSeconds: 3600
+        expiresSeconds: CIVICRM_CACHE_SECONDS
       });
     });
   });

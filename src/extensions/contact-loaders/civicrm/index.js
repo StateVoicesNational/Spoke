@@ -12,6 +12,7 @@ import {
   getCustomFields
 } from "./util";
 import { getFormattedPhoneNumber } from "../../../lib";
+import { CIVICRM_CACHE_SECONDS } from "./const";
 
 // Some enviornmental variables are mandatory; others are optional.
 
@@ -58,7 +59,7 @@ export async function available(_organization, _user) {
   );
   return {
     result,
-    expiresSeconds: 3600
+    expiresSeconds: CIVICRM_CACHE_SECONDS
   };
 }
 
@@ -98,7 +99,7 @@ export async function getClientChoiceData(_organization, _campaign, _user) {
   // `data` should be a single string -- it can be JSON which you can parse in the client component
   return {
     data: "{}",
-    expiresSeconds: 3600
+    expiresSeconds: CIVICRM_CACHE_SECONDS
   };
 }
 
