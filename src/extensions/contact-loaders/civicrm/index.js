@@ -98,7 +98,7 @@ export async function getClientChoiceData(_organization, _campaign, _user) {
   // `data` should be a single string -- it can be JSON which you can parse in the client component
   return {
     data: "{}",
-    expiresSeconds: 0
+    expiresSeconds: 3600
   };
 }
 
