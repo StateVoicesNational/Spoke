@@ -3,13 +3,15 @@ import {
   validateActionHandler,
   validateActionHandlerWithClientChoices
 } from "../../../src/extensions/action-handlers";
+import { searchGroups } from "../../../src/extensions/contact-loaders/civicrm/util";
 
 import * as HandlerToTest from "../../../src/extensions/action-handlers/civicrm-addtogroup";
 import { getConfig, hasConfig } from "../../../src/server/api/lib/config";
 
 jest.mock("../../../src/server/api/lib/config");
+jest.mock("../../../src/extensions/contact-loaders/civicrm/util");
 
-describe("test-action-civicrm-addtogroup", () => {
+describe("civicrm-addtogroup", () => {
   beforeEach(async () => {
     when(hasConfig)
       .calledWith("CIVICRM_API_KEY")
@@ -39,7 +41,7 @@ describe("test-action-civicrm-addtogroup", () => {
     expect(HandlerToTest.clientChoiceDataCacheKey({ id: 1 })).toEqual("1");
   });
 
-  describe("test-action-civicrm-addtogroup available()", () => {
+  describe("civicrm-addtogroup available()", () => {
     it("is available if the civicrm contact loader is available", async () => {
       when(getConfig)
         .calledWith("CONTACT_LOADERS")
@@ -57,6 +59,39 @@ describe("test-action-civicrm-addtogroup", () => {
       expect(await HandlerToTest.available({ id: 1 })).toEqual({
         result: false,
         expiresSeconds: 0
+      });
+    });
+  });
+
+  describe("civicrm-addtag getClientChoiceData()", () => {
+    it("returns successful data when data is available", async () => {
+      const theGroupData = [
+        { id: "2", title: "Administrators" },
+        { id: "3", title: "Volunteers" },
+        { id: "4", title: "Donors" },
+        { id: "1", title: "Newsletter Subscribers" },
+        { id: "5", title: "Volunteer" }
+      ];
+
+      when(searchGroups)
+        .calledWith("")
+        .mockResolvedValue(theGroupData);
+      expect(await HandlerToTest.getClientChoiceData({ id: 1 })).toEqual({
+        data:
+          '{"items":[{"name":"Administrators","details":"2"},{"name":"Volunteers","details":"3"},{"name":"Donors","details":"4"},{"name":"Newsletter Subscribers","details":"1"},{"name":"Volunteer","details":"5"}]}',
+        expiresSeconds: 3600
+      });
+    });
+
+    it("returns successful data when data is empty", async () => {
+      const theGroupData = [];
+
+      when(searchGroups)
+        .calledWith("")
+        .mockResolvedValue(theGroupData);
+      expect(await HandlerToTest.getClientChoiceData({ id: 1 })).toEqual({
+        data: '{"items":[]}',
+        expiresSeconds: 3600
       });
     });
   });

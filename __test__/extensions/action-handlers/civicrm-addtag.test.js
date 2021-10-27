@@ -11,7 +11,7 @@ import { searchTags } from "../../../src/extensions/contact-loaders/civicrm/util
 jest.mock("../../../src/server/api/lib/config");
 jest.mock("../../../src/extensions/contact-loaders/civicrm/util");
 
-describe("test-action-civicrm-addtag", () => {
+describe("civicrm-addtag", () => {
   beforeEach(async () => {
     when(hasConfig)
       .calledWith("CIVICRM_API_KEY")
@@ -41,7 +41,7 @@ describe("test-action-civicrm-addtag", () => {
     expect(HandlerToTest.clientChoiceDataCacheKey({ id: 1 })).toEqual("1");
   });
 
-  describe("test-action-civicrm-addtag available()", () => {
+  describe("civicrm-addtag available()", () => {
     it("is available if the civicrm contact loader is available", async () => {
       when(getConfig)
         .calledWith("CONTACT_LOADERS")
@@ -63,7 +63,7 @@ describe("test-action-civicrm-addtag", () => {
     });
   });
 
-  describe("test-action-civicrm-addtag available()", () => {
+  describe("civicrm-addtag available()", () => {
     it("is available if the civicrm contact loader is available", async () => {
       when(getConfig)
         .calledWith("CONTACT_LOADERS")
@@ -85,7 +85,7 @@ describe("test-action-civicrm-addtag", () => {
     });
   });
 
-  describe("test-action-civicrm-addtag getClientChoiceData()", () => {
+  describe("civicrm-addtag getClientChoiceData()", () => {
     it("returns successful data when data is available", async () => {
       const theTagData = [
         { id: "2", name: "Company" },
