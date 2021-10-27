@@ -6,6 +6,8 @@ import { getTwilio } from "../../service-vendors/twilio";
 // https://www.twilio.com/docs/sms/a2p-10dlc/onboarding-isv-api
 // API setup options
 // https://www.twilio.com/docs/sms/a2p-10dlc/onboarding-isv#1-create-a-twilio-business-profile-in-trust-hub
+// Messaging Throughput in the US
+// https://support.twilio.com/hc/en-us/articles/1260803225669-Message-throughput-MPS-and-Trust-Scores-for-A2P-10DLC-in-the-US
 
 export class TwilioISV {
   constructor({ organization, limit, debug }) {
@@ -72,8 +74,68 @@ export class TwilioISV {
     const brands = await twilio.messaging.brandRegistrations.list({
       limit: this.limit
     });
-    if (this.debug) console.log("BRANDS", brands);
+    if (this.debug) {
+      console.log(
+        "brand uri",
+        twilio.messaging.brandRegistrations._uri,
+        twilio.messaging.brandRegistrations._version.fetch
+      );
+      console.log("BRANDS", brands);
+    }
+    const brandRegContext = twilio.messaging.brandRegistrations;
+    await Promise.all(
+      brands.map(async bnd => {
+        if (bnd.sid) {
+          // FUTURE: Vetting SDK then we dont' have to hack this
+          const vettingResp = await brandRegContext._version.fetch({
+            uri: `${brandRegContext._uri}/${bnd.sid}/Vettings`,
+            method: "GET"
+          });
+          if (vettingResp && vettingResp.data && vettingResp.data.length) {
+            bnd.vettings = vettingResp.data;
+          }
+        }
+      })
+    );
     return brands;
+  }
+
+  async setBrandCampaignVerify({ brandId, campaignVerifyToken }) {
+    if (!brandId || !campaignVerifyToken) {
+      throw new Error(
+        "setBrandCampaignVerify requires brandId and campaignVerifyToken"
+      );
+    }
+    const twilio = await this.client();
+    const brandRegContext = twilio.messaging.brandRegistrations;
+    // FUTURE: Vetting SDK then we dont' have to hack this
+    const vettingResp = await brandRegContext._version.fetch({
+      uri: `${brandRegContext._uri}/${brandId}/Vettings`,
+      method: "POST",
+      data: {
+        VettingProvider: "campaign-verify",
+        VettingId: campaignVerifyToken
+      }
+    });
+    console.log("setBrandCampaignVerify", vettingResp);
+    // Response: (200 OK)
+    // {
+    // "vettingSid": "VT12445353",
+    // "vettingProvider": "campaign-verify",
+    // "vettingId":
+    // "cv|1.0|tcr|10dlc|9975c339-d46f-49b7-a399-2e6d5ebac66d|EXAMPLEjEd8xSlaAgRXAXXBUNBT2AgL-LdQuPveFhEyY",
+    // "vettingClass": "POLITICAL",
+    // "vettingStatus": "IN_PROGRESS",
+    // "dateCreated": "2021-09-01T20:25:24.258Z",
+    // "dateUpdated": "2021-09-01T20:25:24.258Z"
+    // }
+    // Response: (400 Bad request)
+    // {
+    // "code": 412,
+    // "message": "Campaign verify vetting ID cannot be submitted when import
+    // of another vetting ID is in progress"
+    // }
+    return vettingResp;
   }
 }
 

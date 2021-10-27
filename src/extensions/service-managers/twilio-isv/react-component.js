@@ -4,6 +4,8 @@ import PropTypes from "prop-types";
 import React from "react";
 import Form from "react-formal";
 import * as yup from "yup";
+import ButtonGroup from "@material-ui/core/ButtonGroup";
+import Button from "@material-ui/core/Button";
 import DisplayLink from "../../../components/DisplayLink";
 import GSForm from "../../../components/forms/GSForm";
 import GSTextField from "../../../components/forms/GSTextField";
@@ -13,6 +15,58 @@ export class OrgConfig extends React.Component {
   constructor(props) {
     super(props);
     this.state = {};
+  }
+
+  renderAddCampaignVerifyTokenForm(brandId) {
+    const formSchema = yup.object({
+      campaignVerifyToken: yup.string()
+    });
+    return (
+      <div>
+        A{" "}
+        <a href="https://www.campaignverify.org/" target="_blank">
+          CampaignVerify
+        </a>
+        Token should look something like:
+        <code>
+          cv|1.0|tcr|10dlc|9975c339-d46f-49b7-a399-2e6d5ebac66d|EXAMPLEjEd8xSlaAgRXAXXBUNBT2AgL-LdQuPveFhEyY
+        </code>
+        <GSForm
+          schema={formSchema}
+          onSubmit={async x => {
+            console.log("onSubmit", x, brandId);
+            const { campaignVerifyToken } = x;
+            const res = await this.props.onSubmit({
+              command: "addCampaignVerifyToken",
+              brandId,
+              campaignVerifyToken
+            });
+            console.log("addCampaignVerifyToken result", res);
+          }}
+        >
+          <Form.Field
+            as={GSTextField}
+            label="Campaign Verify Token"
+            name="campaignVerifyToken"
+            fullWidth
+          />
+          <Form.Submit
+            as={GSSubmitButton}
+            color="primary"
+            variant="outlined"
+            label="Submit"
+            style={this.props.inlineStyles.dialogButton}
+          />
+          <Button
+            style={this.props.inlineStyles.dialogButton}
+            variant="outlined"
+            onClick={() => this.setState({ [brandId]: {} })}
+          >
+            Cancel
+          </Button>
+        </GSForm>
+      </div>
+    );
   }
 
   render() {
@@ -53,20 +107,75 @@ export class OrgConfig extends React.Component {
                     <b>Brands/Brand Registrations</b>
                   </lh>
                   {profBrands.map(bnd => (
-                    <li>
-                      <i>{bnd.sid}</i> status: {bnd.status}
-                      <br />
-                      {bnd.failureReason ? `Failure: ${bnd.failureReason}` : ""}
-                      {bnd.tcrId ? `tcrId: ${bnd.tcrId}` : ""}
+                    <li key={bnd.sid}>
+                      <div>
+                        <i>{bnd.sid}</i> status: {bnd.status}
+                        <br />
+                        {bnd.failureReason
+                          ? `Failure: ${bnd.failureReason}`
+                          : ""}
+                        {bnd.tcrId ? `tcrId: ${bnd.tcrId}` : ""}
+                      </div>
+                      {bnd.vettings &&
+                      !bnd.vettings.find(
+                        v => v.vetting_provider === "campaign-verify"
+                      ) ? (
+                        <div>
+                          {this.state[bnd.sid] &&
+                          this.state[bnd.sid].campaignVerifyToken ? (
+                            this.renderAddCampaignVerifyTokenForm(bnd.sid)
+                          ) : (
+                            <div>
+                              <Button
+                                variant="outlined"
+                                onClick={() =>
+                                  this.setState({
+                                    [bnd.sid]: { campaignVerifyToken: true }
+                                  })
+                                }
+                              >
+                                Add CV Token
+                              </Button>{" "}
+                              for{" "}
+                              <a
+                                href="https://www.campaignverify.org/"
+                                target="_blank"
+                              >
+                                CampaignVerify
+                              </a>
+                            </div>
+                          )}
+                        </div>
+                      ) : null}
+                      <ul>
+                        {(bnd.vettings || []).map(v => (
+                          <li>
+                            Vetting Source: {v.vetting_provider}(
+                            {v.vetting_class}):, status: {v.vetting_status}
+                          </li>
+                        ))}
+                      </ul>
                     </li>
                   ))}
                 </ul>
               ) : (
                 ""
               )}
+              <br />
             </div>
           );
         })}
+        <Button
+          style={this.props.inlineStyles.dialogButton}
+          variant="outlined"
+          onClick={() =>
+            this.props.onSubmit({
+              command: "clearCache"
+            })
+          }
+        >
+          Clear Cache
+        </Button>
       </div>
     );
   }
