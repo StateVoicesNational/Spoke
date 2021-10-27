@@ -50,7 +50,7 @@ describe("civicrm-registerevent", () => {
         .mockReturnValue("civicrm");
       expect(await HandlerToTest.available({ id: 1 })).toEqual({
         result: true,
-        expiresSeconds: 0
+        expiresSeconds: 3600
       });
     });
 
@@ -60,7 +60,7 @@ describe("civicrm-registerevent", () => {
         .mockReturnValue("");
       expect(await HandlerToTest.available({ id: 1 })).toEqual({
         result: false,
-        expiresSeconds: 0
+        expiresSeconds: 3600
       });
     });
   });
