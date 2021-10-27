@@ -10,6 +10,22 @@ import { getConfig, hasConfig } from "../../../src/server/api/lib/config";
 jest.mock("../../../src/server/api/lib/config");
 
 describe("test-action-civicrm-addtogroup", () => {
+  beforeEach(async () => {
+    when(hasConfig)
+      .calledWith("CIVICRM_API_KEY")
+      .mockReturnValue(true);
+    when(hasConfig)
+      .calledWith("CIVICRM_SITE_KEY")
+      .mockReturnValue(true);
+    when(hasConfig)
+      .calledWith("CIVICRM_API_URL")
+      .mockReturnValue(true);
+  });
+
+  afterEach(async () => {
+    jest.restoreAllMocks();
+  });
+
   it("passes validation, and comes with standard action handler functionality", async () => {
     expect(() => validateActionHandler(HandlerToTest)).not.toThrowError();
     expect(() =>
@@ -24,22 +40,6 @@ describe("test-action-civicrm-addtogroup", () => {
   });
 
   describe("test-action-civicrm-addtogroup available()", () => {
-    beforeEach(async () => {
-      when(hasConfig)
-        .calledWith("CIVICRM_API_KEY")
-        .mockReturnValue(true);
-      when(hasConfig)
-        .calledWith("CIVICRM_SITE_KEY")
-        .mockReturnValue(true);
-      when(hasConfig)
-        .calledWith("CIVICRM_API_URL")
-        .mockReturnValue(true);
-    });
-
-    afterEach(async () => {
-      jest.restoreAllMocks();
-    });
-
     it("is available if the civicrm contact loader is available", async () => {
       when(getConfig)
         .calledWith("CONTACT_LOADERS")
