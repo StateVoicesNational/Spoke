@@ -104,7 +104,7 @@ export async function processDeletedQuestionResponse(options) {}
 // eslint-disable-next-line no-unused-vars
 export async function getClientChoiceData(organization, user) {
   const getMessageTemplateData = await searchMessageTemplates();
-  log.info(getMessageTemplateData);
+  log.debug(getMessageTemplateData);
   const items = getMessageTemplateData.map(item => {
     return { name: item.msg_title, details: item.id };
   });
