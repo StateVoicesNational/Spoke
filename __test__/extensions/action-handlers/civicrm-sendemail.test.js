@@ -10,7 +10,7 @@ import { searchMessageTemplates } from "../../../src/extensions/contact-loaders/
 
 jest.mock("../../../src/server/api/lib/config");
 
-describe("test-action-civicrm-sendemail", () => {
+describe("civicrm-sendemail", () => {
   beforeEach(async () => {
     when(hasConfig)
       .calledWith("CIVICRM_API_KEY")
@@ -40,7 +40,7 @@ describe("test-action-civicrm-sendemail", () => {
     expect(HandlerToTest.clientChoiceDataCacheKey({ id: 1 })).toEqual("1");
   });
 
-  describe("test-action-civicrm-sendemail available()", () => {
+  describe("civicrm-sendemail available()", () => {
     it("is available if the civicrm contact loader is available and has CIVICRM_MESSAGE_IDS in env", async () => {
       when(getConfig)
         .calledWith("CONTACT_LOADERS")
@@ -100,7 +100,7 @@ describe("test-action-civicrm-sendemail", () => {
     });
   });
 
-  xdescribe("test-action-civicrm-sendemail getClientChoiceData()", () => {
+  xdescribe("civicrm-sendemail getClientChoiceData()", () => {
     beforeEach(async () => {
       jest.mock("../../../src/extensions/contact-loaders/civicrm/util");
     });

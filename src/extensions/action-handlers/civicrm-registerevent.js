@@ -96,6 +96,7 @@ export async function processDeletedQuestionResponse(options) {}
 // eslint-disable-next-line no-unused-vars
 export async function getClientChoiceData(organization, user) {
   const getEventData = await searchEvents();
+  log.debug(getEventData);
   const items = getEventData.map(item => {
     return {
       name: item.title,
@@ -104,6 +105,6 @@ export async function getClientChoiceData(organization, user) {
   });
   return {
     data: `${JSON.stringify({ items })}`,
-    expiresSeconds: 300
+    expiresSeconds: 3600
   };
 }
