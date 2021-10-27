@@ -47,7 +47,7 @@ export async function available(organizationId) {
     const hasLoader = await loaderAvailable(organizationId, 0);
     return hasLoader;
   }
-  return { result: false, expiresSeconds: 0 };
+  return { result: false, expiresSeconds: 3600 };
 }
 
 // What happens when a texter saves the answer that triggers the action

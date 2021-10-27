@@ -53,7 +53,7 @@ describe("civicrm-sendemail", () => {
         .mockReturnValue("1");
       expect(await HandlerToTest.available({ id: 1 })).toEqual({
         result: true,
-        expiresSeconds: 0
+        expiresSeconds: 3600
       });
     });
 
@@ -69,7 +69,7 @@ describe("civicrm-sendemail", () => {
         .mockReturnValue("1");
       expect(await HandlerToTest.available({ id: 1 })).toEqual({
         result: false,
-        expiresSeconds: 0
+        expiresSeconds: 3600
       });
     });
 
@@ -85,7 +85,7 @@ describe("civicrm-sendemail", () => {
         .mockReturnValue("false");
       expect(await HandlerToTest.available({ id: 1 })).toEqual({
         result: false,
-        expiresSeconds: 0
+        expiresSeconds: 3600
       });
     });
 
@@ -95,7 +95,7 @@ describe("civicrm-sendemail", () => {
         .mockReturnValue("");
       expect(await HandlerToTest.available({ id: 1 })).toEqual({
         result: false,
-        expiresSeconds: 0
+        expiresSeconds: 3600
       });
     });
   });

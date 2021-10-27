@@ -58,7 +58,7 @@ export async function available(_organization, _user) {
   );
   return {
     result,
-    expiresSeconds: 0
+    expiresSeconds: 3600
   };
 }
 
