@@ -1,6 +1,7 @@
 import originalFetch from "node-fetch";
 import AbortController from "node-abort-controller";
 import { log } from "../../lib";
+import { sleep } from "../../workers/lib";
 import { v4 as uuid } from "uuid";
 
 // An HTTP client that supports timeout, retries and flexible status validation
@@ -126,7 +127,7 @@ const requestWithRetry = async (
       }
     }
     if (retryReturnError === RetryReturnError.RETRY) {
-      await setTimeout(() => {}, retryDelay());
+      await sleep(retryDelay());
       continue;
     } else if (retryReturnError === RetryReturnError.ERROR) {
       if (attempt >= retries && retries > 0) {
