@@ -33,7 +33,8 @@ export class CampaignConfig extends React.Component {
       scrubBadMobileNumsGettable,
       scrubBadMobileNumsCount,
       scrubBadMobileNumsFinishedDeleteCount,
-      scrubBadMobileNumsDeletedOnUpload
+      scrubBadMobileNumsDeletedOnUpload,
+      scrubMobileOptional
     } = this.props.serviceManagerInfo.data;
     const { isStarted, contactsCount, pendingJobs } = this.props.campaign;
     const scrubJobs = pendingJobs.filter(
@@ -66,7 +67,10 @@ export class CampaignConfig extends React.Component {
     let scrubState = null;
     if (isStarted) {
       scrubState = states.F_CAMPAIGN_STARTED;
-    } else if (scrubBadMobileNumsFinished || scrubBadMobileNumsCount === 0) {
+    } else if (
+      contactsCount &&
+      (scrubBadMobileNumsFinished || scrubBadMobileNumsCount === 0)
+    ) {
       scrubState = states.E_PROCESS_COMPLETE;
     } else if (scrubJobs.length) {
       scrubState = states.D_PROCESSING;
@@ -96,7 +100,9 @@ export class CampaignConfig extends React.Component {
         )}
         {scrubState === states.B_NEEDS_UPLOAD && (
           <p>
-            This is a required step to lookup numbers you&rsquo;ve uploaded, but
+            {scrubMobileOptional
+              ? ""
+              : "This is a required step to lookup numbers you&rsquo;ve uploaded, but"}
             FIRST you need to upload your contacts -- go to the Contacts section
             and upload your list -- then check back here to look them up.
           </p>
@@ -104,10 +110,13 @@ export class CampaignConfig extends React.Component {
         {scrubState === states.C_NEEDS_RUN && (
           <div>
             <p>
-              This is a required step to lookup numbers you&rsquo;ve uploaded,
-              however, looking them up costs money, so only trigger this lookup
-              before starting the campaign. If you upload a new set of numbers,
-              we&rsquo;ll have to look them up again?!
+              {scrubMobileOptional
+                ? "This is a tool "
+                : "This is a required step "}
+              to lookup numbers you&rsquo;ve uploaded, however, looking them up
+              costs money, so only trigger this lookup before starting the
+              campaign. If you upload a new set of numbers, we&rsquo;ll have to
+              look them up again?!
             </p>
             {scrubBadMobileNumsCount ? (
               <p>
