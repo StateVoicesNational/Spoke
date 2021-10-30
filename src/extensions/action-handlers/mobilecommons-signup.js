@@ -41,7 +41,6 @@ export async function available(organization) {
 }
 
 export async function processAction({
-  interactionStep,
   contact,
   organization
 }) {
