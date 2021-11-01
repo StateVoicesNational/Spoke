@@ -137,6 +137,31 @@ export class TwilioISV {
     // }
     return vettingResp;
   }
+
+  async listUseCases({ brandId, messageServiceSid }) {
+    const twilio = await this.client();
+    const useCases = await twilio.messaging
+      .services(messageServiceSid /*"MG...."*/)
+      .usAppToPersonUsecases.fetch({
+        brandRegistrationSid: brandId /*"BN..."*/
+      });
+    // maybe see what current
+  }
+
+  async createMessagingUseCase() {
+    /*
+    await twilio.messaging.services('MGXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX')
+      .usAppToPerson
+      .create({
+         description: 'Send marketing messages about sales and offers',
+         usAppToPersonUsecase: 'MARKETING',
+         hasEmbeddedLinks: true,
+         hasEmbeddedPhone: true,
+         brandRegistrationSid: 'BNXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX',
+         messageSamples: ['message_samples']
+       })
+    */
+  }
 }
 
 // MOCK BRANDS:
