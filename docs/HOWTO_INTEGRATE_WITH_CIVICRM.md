@@ -68,10 +68,9 @@ For example:
 ### Custom API call
 In more complex cases, data you wish to retrieve may not be "attached" to Contact records in CiviCRM. An example might be data attached to a related entity such as a membership record.
 
-One way of solving this problem is to create a CiviCRM extension that defines a new API method for the Contact entity that compiles all the desired data and returns it to Spoke.
+One way of solving this problem is to create a CiviCRM extension that defines a new API action for the Contact entity that compiles all the desired data and returns it to Spoke.
 
-In such a scenario, you can then use the `CIVICRM_CUSTOM_METHOD` variable in your Spoke installation to tell the CiviCRM contact loader to query CiviCRM's API via this method
-instead of the default `Contact.get`.
+In such a scenario, you can then use the `CIVICRM_CUSTOM_CONTACT_ACTION` variable in your Spoke installation to tell the CiviCRM contact loader to query CiviCRM's API via this action instead of the default `Contact.get`.
 
 For example:
-`CIVICRM_CUSTOM_METHOD=getSpokeData` would generate a `Contact.getSpokeData` request to the CiviCRM API.
+`CIVICRM_CUSTOM_CONTACT_ACTION=getspokedata` would generate a `Contact.getspokedata` request to the CiviCRM API.

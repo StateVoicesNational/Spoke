@@ -13,10 +13,9 @@ export const CIVICRM_CACHE_SECONDS = 3600;
 
 export const CIVICRM_PAGINATE_SIZE = 100;
 
-// This is the default contact entity name for retrieving data from CiviCRM.
-// Will be changed for COVID-11.
+// This is the default Contact entity action for retrieving data from CiviCRM.
 
-export const DEFAULT_CONTACT_ENTITY_METHOD_NAME = "Contact";
+export const DEFAULT_CONTACT_ENTITY_ACTION_NAME = "get";
 
 // This is the endpoint that React code should use to access CiviCRM data.
 
@@ -38,7 +37,7 @@ export const ENVIRONMENTAL_VARIABLES_MANDATORY = [
 ];
 
 export const ENVIRONMENTAL_VARIABLES_OPTIONAL = [
-  "CIVICRM_CUSTOM_METHOD",
+  "CIVICRM_CUSTOM_CONTACT_ACTION",
   "CIVICRM_CUSTOM_DATA",
   "CIVICRM_MESSAGE_IDS"
 ];
