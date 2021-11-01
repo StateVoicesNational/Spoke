@@ -23,7 +23,7 @@ import fetch from "node-fetch";
 import {
   CIVICRM_INTEGRATION_GROUPSEARCH_ENDPOINT,
   CIVICRM_MINQUERY_SIZE
-} from "./util";
+} from "./const";
 import CircularProgress from "@material-ui/core/CircularProgress";
 import { log } from "../../../lib/log";
 

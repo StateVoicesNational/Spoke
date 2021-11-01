@@ -1,10 +1,6 @@
 /* eslint-disable no-empty-function */
 import { r } from "../../server/models";
-import {
-  available as loaderAvailable,
-  ENVIRONMENTAL_VARIABLES_MANDATORY,
-  name as loaderName
-} from "../contact-loaders/civicrm";
+import { available as loaderAvailable } from "../contact-loaders/civicrm";
 import {
   sendEmailToContact,
   searchMessageTemplates,
@@ -12,9 +8,14 @@ import {
 } from "../contact-loaders/civicrm/util";
 import { getConfig, hasConfig } from "../../server/api/lib/config";
 import { log } from "../../lib/log";
-import { CIVICRM_CACHE_SECONDS } from "../contact-loaders/civicrm/const";
+import {
+  CIVICRM_CACHE_SECONDS,
+  ENVIRONMENTAL_VARIABLES_MANDATORY,
+  CIVICRM_CONTACT_LOADER,
+  CIVICRM_ACTION_HANDLER_SENDEMAIL
+} from "../contact-loaders/civicrm/const";
 
-export const name = "civicrm-sendemail";
+export const name = CIVICRM_ACTION_HANDLER_SENDEMAIL;
 
 // What the user sees as the option
 export const displayName = () => "Send email to contact";
@@ -55,7 +56,7 @@ export async function available(organizationId) {
   const contactLoadersConfig = getConfig("CONTACT_LOADERS").split(",");
   const hasMessageIds = hasConfig("CIVICRM_MESSAGE_IDS");
   if (
-    contactLoadersConfig.indexOf(loaderName) !== -1 &&
+    contactLoadersConfig.indexOf(CIVICRM_CONTACT_LOADER) !== -1 &&
     hasMessageIds &&
     getIntegerArray(getConfig("CIVICRM_MESSAGE_IDS")).length !== 0
   ) {
