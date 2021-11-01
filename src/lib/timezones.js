@@ -214,16 +214,20 @@ export function convertOffsetsToStrings(offsetArray) {
 }
 
 export const getOffsets = (config, campaignOffsets) => {
-  // TODO: campaignOffsetes will sometimes have an array of e.g. ['-5_1', ...]
-  // future we should split that out and then only process the dst/offset cases passed in
-  const offsets = /*campaignOffsets || */ ALL_OFFSETS;
+  // campaignOffsets is an array of strings. E.g.: ['-5_1', ...]. Convert this
+  // to an array of ints to make it consistent with ALL_OFFSETS
+  const offsets = campaignOffsets
+    ? campaignOffsets.map(offset => {
+        return parseInt(offset.split("_", 1)[0]);
+      })
+    : ALL_OFFSETS;
   const valid = [];
   const invalid = [];
 
   const dst = [true, false];
   dst.forEach(hasDST =>
     offsets.forEach(offset => {
-      if (offset) {
+      if (offset === 0 || offset) {
         if (isBetweenTextingHours({ offset, hasDST }, config)) {
           valid.push([offset, hasDST]);
         } else {
