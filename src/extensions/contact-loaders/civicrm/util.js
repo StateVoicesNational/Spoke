@@ -5,7 +5,7 @@ import { log } from "../../../lib/log";
 import moment from "moment-timezone";
 import {
   CIVICRM_PAGINATE_SIZE,
-  DEFAULT_CONTACT_ENTITY_METHOD_NAME
+  DEFAULT_CONTACT_ENTITY_ACTION_NAME
 } from "./const";
 
 export function getIntegerArray(envVariable) {
@@ -128,8 +128,9 @@ export async function searchGroups(query, getcountVal = 0) {
 export async function getGroupMembers(groupId, callback) {
   const config = getCivi();
 
-  const contactEntityMethodName =
-    getConfig("CIVICRM_CUSTOM_METHOD") || DEFAULT_CONTACT_ENTITY_METHOD_NAME;
+  const contactEntityAction =
+    getConfig("CIVICRM_CUSTOM_CONTACT_ACTION") ||
+    DEFAULT_CONTACT_ENTITY_ACTION_NAME;
 
   const customFields = getCustomFields(getConfig("CIVICRM_CUSTOM_DATA"));
   const customFieldNames = Object.keys(customFields);
@@ -137,7 +138,7 @@ export async function getGroupMembers(groupId, callback) {
   const paginatedData = await paginate(
     fetchfromAPI,
     config,
-    contactEntityMethodName,
+    "Contact",
     {
       sequential: 1,
       options: { limit: CIVICRM_PAGINATE_SIZE },
