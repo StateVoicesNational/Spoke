@@ -41,12 +41,24 @@ export function getCustomFields(customDataEnv) {
   return pairsFieldAndLabel;
 }
 
-async function paginate(fetchfromAPIMethod, config, entity, options, callback) {
+async function paginate(
+  fetchfromAPIMethod,
+  config,
+  entity,
+  entityAction,
+  options,
+  callback
+) {
   let count = 0;
 
   // eslint-disable-next-line no-constant-condition
   while (true) {
-    const once = await fetchfromAPIMethod(config, entity, options);
+    const once = await fetchfromAPIMethod(
+      config,
+      entity,
+      options,
+      entityAction
+    );
 
     if (!once.length) {
       return count;
@@ -139,6 +151,7 @@ export async function getGroupMembers(groupId, callback) {
     fetchfromAPI,
     config,
     "Contact",
+    contactEntityAction,
     {
       sequential: 1,
       options: { limit: CIVICRM_PAGINATE_SIZE },
