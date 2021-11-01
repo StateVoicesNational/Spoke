@@ -3,10 +3,10 @@ import { getConfig } from "../../../server/api/lib/config";
 import fetch from "node-fetch";
 import { log } from "../../../lib/log";
 import moment from "moment-timezone";
-
-const PAGE_SIZE = 100;
-
-const DEFAULT_CONTACT_ENTITY_METHOD_NAME = "Contact";
+import {
+  CIVICRM_PAGINATE_SIZE,
+  DEFAULT_CONTACT_ENTITY_METHOD_NAME
+} from "./const";
 
 export function getIntegerArray(envVariable) {
   const retValue = [];
@@ -41,10 +41,6 @@ export function getCustomFields(customDataEnv) {
   return pairsFieldAndLabel;
 }
 
-export const CIVICRM_INTEGRATION_GROUPSEARCH_ENDPOINT =
-  "/integration/civicrm/groupsearch";
-export const CIVICRM_MINQUERY_SIZE = 3;
-
 async function paginate(fetchfromAPIMethod, config, entity, options, callback) {
   let count = 0;
 
@@ -60,7 +56,8 @@ async function paginate(fetchfromAPIMethod, config, entity, options, callback) {
     count += once.length;
 
     options.options = options.options || {};
-    options.options.offset = (options.options.offset || 0) + PAGE_SIZE;
+    options.options.offset =
+      (options.options.offset || 0) + CIVICRM_PAGINATE_SIZE;
   }
 }
 
@@ -143,7 +140,7 @@ export async function getGroupMembers(groupId, callback) {
     contactEntityMethodName,
     {
       sequential: 1,
-      options: { limit: PAGE_SIZE },
+      options: { limit: CIVICRM_PAGINATE_SIZE },
       first_name: { "IS NOT NULL": 1 },
       do_not_sms: { "=": 0 },
       is_deleted: { "=": 0 },

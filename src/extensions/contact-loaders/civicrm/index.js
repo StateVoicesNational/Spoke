@@ -4,30 +4,20 @@ import { completeContactLoad } from "../../../workers/jobs";
 import { r } from "../../../server/models";
 import { getConfig, hasConfig } from "../../../server/api/lib/config";
 import { log } from "../../../lib/log";
+import { searchGroups, getGroupMembers, getCustomFields } from "./util";
 import {
-  searchGroups,
-  getGroupMembers,
   CIVICRM_INTEGRATION_GROUPSEARCH_ENDPOINT,
   CIVICRM_MINQUERY_SIZE,
-  getCustomFields
-} from "./util";
+  CIVICRM_CACHE_SECONDS,
+  ENVIRONMENTAL_VARIABLES_MANDATORY,
+  ENVIRONMENTAL_VARIABLES_OPTIONAL,
+  CIVICRM_CONTACT_LOADER
+} from "./const";
 import { getFormattedPhoneNumber } from "../../../lib";
-import { CIVICRM_CACHE_SECONDS } from "./const";
 
 // Some enviornmental variables are mandatory; others are optional.
 
-export const ENVIRONMENTAL_VARIABLES_MANDATORY = [
-  "CIVICRM_API_KEY",
-  "CIVICRM_SITE_KEY",
-  "CIVICRM_API_URL"
-];
-
-export const ENVIRONMENTAL_VARIABLES_OPTIONAL = [
-  "CIVICRM_CUSTOM_METHOD",
-  "CIVICRM_CUSTOM_DATA"
-];
-
-export const name = "civicrm";
+export const name = CIVICRM_CONTACT_LOADER;
 
 export function displayName() {
   return "CiviCRM";
