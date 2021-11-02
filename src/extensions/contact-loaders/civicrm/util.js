@@ -309,3 +309,21 @@ export async function searchMessageTemplates() {
   }
   return [];
 }
+
+export async function optoutContactToGroup(contactId) {
+  const config = getCivi();
+  log.info("optoutContactToGroup");
+  log.info(contactId);
+  const res = await fetchfromAPI(
+    config,
+    "Contact",
+    {
+      id: contactId,
+      do_not_sms: 1
+    },
+    "create",
+    { method: "post" }
+  );
+  log.info(res);
+  return res;
+}
