@@ -155,7 +155,7 @@ export async function processContactLoad(job, _maxContacts, _organization) {
           for (const customFieldName of customFieldNames) {
             if (customFieldName in res) {
               customFieldOutput[customFields[customFieldName]] =
-                res[customFieldName];
+                res[customFieldName] || "";
             }
           }
 
