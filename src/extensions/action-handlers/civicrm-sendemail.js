@@ -7,7 +7,6 @@ import {
   getIntegerArray
 } from "../contact-loaders/civicrm/util";
 import { getConfig, hasConfig } from "../../server/api/lib/config";
-import { log } from "../../lib/log";
 import {
   CIVICRM_CACHE_SECONDS,
   ENVIRONMENTAL_VARIABLES_MANDATORY,
@@ -33,7 +32,7 @@ export function serverAdministratorInstructions() {
       1. Add "civicrm-sendemail" to the environment variable "ACTION_HANDLERS";
       2. Set up Spoke to use the existing civicrm contact loader.
       3. Set the "CIVICRM_MESSAGE_IDS" environmental variable to contain a
-         comma-separated list of mailing templates. 
+         comma-separated list of mailing templates.
       `,
     environmentVariables: [
       ...ENVIRONMENTAL_VARIABLES_MANDATORY,
@@ -80,13 +79,9 @@ export async function processAction({
   const civiContactId = contact.external_id;
   const destinationTemplateId = JSON.parse(interactionStep.answer_actions_data)
     .value;
-  log.debug(civiContactId);
-  log.debug(destinationTemplateId);
-  const addConstantResult = await sendEmailToContact(
-    civiContactId,
-    destinationTemplateId
-  );
-  log.debug(addConstantResult);
+
+  await sendEmailToContact(civiContactId, destinationTemplateId);
+
   const customFields = JSON.parse(contact.custom_fields || "{}");
   customFields.processed_test_action = (interactionStep || {}).answer_actions;
   customFields.test_action_details = (
@@ -106,7 +101,6 @@ export async function processDeletedQuestionResponse(options) {}
 // eslint-disable-next-line no-unused-vars
 export async function getClientChoiceData(organization, user) {
   const getMessageTemplateData = await searchMessageTemplates();
-  log.debug(getMessageTemplateData);
   const items = getMessageTemplateData.map(item => {
     return { name: item.msg_title, details: item.id };
   });

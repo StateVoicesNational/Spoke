@@ -6,7 +6,6 @@ import {
   registerContactForEvent
 } from "../contact-loaders/civicrm/util";
 import { getConfig } from "../../server/api/lib/config";
-import { log } from "../../lib/log";
 import {
   CIVICRM_CACHE_SECONDS,
   ENVIRONMENTAL_VARIABLES_MANDATORY,
@@ -70,15 +69,9 @@ export async function processAction({
   const answerData = JSON.parse(interactionStep.answer_actions_data);
   const civiEventId = JSON.parse(answerData.value).id;
   const civiRoleId = JSON.parse(answerData.value).role_id;
-  log.debug(civiContactId);
-  log.debug(civiEventId);
-  log.debug(civiRoleId);
-  const registerContactResult = await registerContactForEvent(
-    civiContactId,
-    civiEventId,
-    civiRoleId
-  );
-  log.debug(registerContactResult);
+
+  await registerContactForEvent(civiContactId, civiEventId, civiRoleId);
+
   const customFields = JSON.parse(contact.custom_fields || "{}");
   customFields.processed_test_action = (interactionStep || {}).answer_actions;
   customFields.test_action_details = (
@@ -98,7 +91,6 @@ export async function processDeletedQuestionResponse(options) {}
 // eslint-disable-next-line no-unused-vars
 export async function getClientChoiceData(organization, user) {
   const getEventData = await searchEvents();
-  log.debug(getEventData);
   const items = getEventData.map(item => {
     return {
       name: item.title,

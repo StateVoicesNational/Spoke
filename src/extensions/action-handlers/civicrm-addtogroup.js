@@ -6,8 +6,6 @@ import {
   addContactToGroup
 } from "../contact-loaders/civicrm/util";
 import { getConfig } from "../../server/api/lib/config";
-import { log } from "../../lib/log";
-import moment from "moment";
 import {
   CIVICRM_CACHE_SECONDS,
   ENVIRONMENTAL_VARIABLES_MANDATORY,
@@ -70,13 +68,9 @@ export async function processAction({
   const civiContactId = contact.external_id;
   const destinationGroupId = JSON.parse(interactionStep.answer_actions_data)
     .value;
-  log.debug(civiContactId);
-  log.debug(destinationGroupId);
-  const addConstantResult = await addContactToGroup(
-    civiContactId,
-    destinationGroupId
-  );
-  log.debug(addConstantResult);
+
+  await addContactToGroup(civiContactId, destinationGroupId);
+
   const customFields = JSON.parse(contact.custom_fields || "{}");
   customFields.processed_test_action = (interactionStep || {}).answer_actions;
   customFields.test_action_details = (
@@ -95,9 +89,7 @@ export async function processDeletedQuestionResponse(options) {}
 
 // eslint-disable-next-line no-unused-vars
 export async function getClientChoiceData(organization, user) {
-  log.debug(`getClientChoiceData at ${moment().format("HHHH/MM/DD HH:mm:ss")}`);
   const getGroupData = await searchGroups("");
-  log.debug(getGroupData);
   const items = getGroupData.map(item => {
     return { name: item.title, details: item.id };
   });
