@@ -34,14 +34,7 @@ export default function CiviCRMLoaderField(props) {
   const [selectedGroups, setSelectedGroups] = React.useState([]);
   const [error, setError] = React.useState("");
 
-  // https://v4.mui.com/components/autocomplete/#controllable-states
-  // This is mainly a reminder during dev, might want to remove later
-  // The component has two states that can be controlled:
-  // 1. the "value" state the one w the value/onChange props combination. This
-  //    state represents the value selected by the user, for instance when
-  //    pressing Enter.
-  // 2. the "input value" state with the inputValue/onInputChange props
-  //    combination. This state represents the value displayed in the textbox.
+  // See https://v4.mui.com/components/autocomplete/#controllable-states
   const [value, setValue] = React.useState(null);
   const [inputValue, setInputValue] = React.useState("");
 
@@ -57,15 +50,13 @@ export default function CiviCRMLoaderField(props) {
           );
           const json = await response.json();
 
-          log.debug(json.groups);
-
           if (active) {
             setOptions(json.groups);
           }
           setError("");
         } catch (err) {
           setError(err.message);
-          log.debug(error);
+          log.error(error);
         }
       })();
     }
@@ -125,7 +116,6 @@ export default function CiviCRMLoaderField(props) {
               }
               // Finally we clear the value, which is a bit counter
               // intuitive but how we want this to operate
-              log.debug("setting value to undefined/empty");
               setValue(null);
               setInputValue("");
             }}

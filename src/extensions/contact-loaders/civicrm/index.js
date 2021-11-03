@@ -134,21 +134,15 @@ export async function processContactLoad(job, _maxContacts, _organization) {
     .delete();
 
   const contactData = JSON.parse(job.payload);
-  log.debug(`contactData: ${JSON.stringify(contactData)}`);
-
-  // const totalExpected = _.sum(_.map(contactData.groupIds, "count"));
 
   let finalCount = 0;
   const contactsForAdding = {};
   for (const group of contactData.groupIds) {
     // eslint-disable-next-line no-loop-func
     await getGroupMembers(group.id, async results => {
-      log.debug(results);
       const newContacts = results
         .filter(res => res["api.Phone.get"]["count"] > 0)
         .map(res => {
-          log.debug(res);
-
           const customFieldOutput = {
             phone_id: res["api.Phone.get"]["values"][0]["id"]
           };
@@ -188,9 +182,6 @@ export async function processContactLoad(job, _maxContacts, _organization) {
 
   const newContactRecords = Object.values(contactsForAdding);
   finalCount = newContactRecords.length;
-
-  log.debug(newContactRecords);
-  log.info(`loading ${finalCount} contacts`);
 
   if (finalCount) {
     await r.knex.batchInsert("campaign_contact", newContactRecords, finalCount);
