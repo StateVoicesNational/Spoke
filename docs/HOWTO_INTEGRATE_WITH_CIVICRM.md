@@ -23,8 +23,11 @@ The loader can be configured to import additional fields through the use of Spok
 Add to Group - add a contact to a specified CiviCRM group from within a Spoke conversation
 Add tag to Contact - add a tag to a contact in CiviCRM from within a Spoke conversation
 Register for Event - register a person for an event in CiviCRM
+Send email - send a person an email using a CiviCRM message template
 
-These handlers require the CiviCRM contact loaader be configured and available for use.
+These handlers require the CiviCRM contact loader be configured and available for use.
+
+Additionally, the "Send email" action handler requires your CiviCRM installation has the [E-Mail API extension](https://civicrm.org/extensions/e-mail-api) installed and enabled.
 
 ## Instructions
 
@@ -42,7 +45,7 @@ Modify your Spoke .env file to include the following environment variables:
   (eg. <https://example.com/sites/all/modules/civicrm/extern/rest.php>)
 - CIVICRM_API_KEY - the key you generated in step one
 - CIVICRM_SITE_KEY - the site key for your CiviCRM installation. Defined in your `civicrm.settings.php` file ([more info](https://docs.civicrm.org/sysadmin/en/latest/setup/secret-keys/)).
-- ACTION_HANDLERS - add `civicrm-addtogroup`, `civicrm-addtag` and `civicrm-registerevent` to enable the "Add to Group", "Add tag to Contact" and "Register for Event" handlers respectively
+- ACTION_HANDLERS - add `civicrm-addtogroup`, `civicrm-addtag`, `civicrm-registerevent` and `civicrm-sendemail to enable the particular handlers of interest
 
 ## Optional contact loader configuration
 
@@ -78,3 +81,16 @@ In such a scenario, you can then use the `CIVICRM_CUSTOM_CONTACT_ACTION` variabl
 
 For example:
 `CIVICRM_CUSTOM_CONTACT_ACTION=getforspoke` would generate a `Contact.getforspoke` request to the CiviCRM API.
+
+## Action Handler configuration
+
+The "Add to Group", "Add tag to Contact" and "Register for Event" handlers require no configuration. The first two will retrieve all groups and tags in your CiviCRM installation.
+If you have a very large number of groups or tags this can cause delays in the Spoke UI.
+
+The "Register for Event" handler will only retrieve CiviCRM events that:
+- have no monetary component (ie. don't require payment)
+- do not require approval
+- have a future end date
+
+The "Send email" handler requires the variable `CIVICRM_MESSAGE_IDS` be present in your .env file. It should contain a comma-separated list of CiviCRM message template IDs (without spaces).
+This gives you control over which email templates you want to be available within Spoke.
