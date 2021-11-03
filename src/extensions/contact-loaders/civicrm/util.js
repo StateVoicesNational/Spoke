@@ -1,7 +1,6 @@
 /* eslint-disable no-param-reassign */
 import { getConfig } from "../../../server/api/lib/config";
 import fetch from "node-fetch";
-import { log } from "../../../lib/log";
 import moment from "moment-timezone";
 import {
   CIVICRM_PAGINATE_SIZE,
@@ -198,7 +197,7 @@ export async function addContactToGroup(contactId, groupId) {
     "create",
     { method: "post" }
   );
-  log.debug(res);
+
   return res;
 }
 
@@ -215,7 +214,7 @@ export async function sendEmailToContact(contactId, templateId) {
     "send",
     { method: "post" }
   );
-  log.debug(res);
+
   return res;
 }
 
@@ -233,7 +232,7 @@ export async function addContactToTag(contactId, tagId) {
     "create",
     { method: "post" }
   );
-  log.debug(res);
+
   return res;
 }
 
@@ -291,7 +290,7 @@ export async function registerContactForEvent(contactId, eventId, roleId) {
     "create",
     { method: "post" }
   );
-  log.debug(res);
+
   return res;
 }
 
@@ -312,8 +311,7 @@ export async function searchMessageTemplates() {
 
 export async function optoutContactToGroup(contactId) {
   const config = getCivi();
-  log.info("optoutContactToGroup");
-  log.info(contactId);
+
   const res = await fetchfromAPI(
     config,
     "Contact",
@@ -324,6 +322,6 @@ export async function optoutContactToGroup(contactId) {
     "create",
     { method: "post" }
   );
-  log.info(res);
+
   return res;
 }
