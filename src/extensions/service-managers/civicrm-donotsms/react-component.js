@@ -133,6 +133,7 @@ export class CampaignStats extends React.Component {
         {!this.props.campaign.isStarted ? (
           <GSForm
             schema={formSchema}
+            // eslint-disable-next-line no-unused-vars
             onSubmit={x => {
               this.props.onSubmit({ a: "b" });
             }}
