@@ -27,6 +27,6 @@ export async function onOptOut({
   reason,
   assignmentId
 }) {
-  const returnVal = await optoutContactToGroup(contact.externalId);
+  const returnVal = await optoutContactToGroup(contact.external_id);
   return returnVal;
 }
