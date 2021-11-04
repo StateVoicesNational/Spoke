@@ -82,21 +82,29 @@ policies around what the conditions for getting a second batch are.  The default
 before completing another batch.  But this extension point allows different rules (per-campaign)
 to dictate when a texter can request more messages.
 
+## [Service Managers](HOWTO-use-service-managers.md)
+
+Service Managers have been designed to cross-cut many hooks both across organization and campaign settings.
+They can also implement features across different vendors. Besides having standardized ways to add/supplement
+organization/campaign settings, they also have hooks for message sending, opt-outs, campaign start and archiving,
+post-campaign contact load, and others.
+
+## [Service Vendors](HOWTO-use-service-vendors.md)
+
+Spoke has been developed to work best with Twilio at time of writing (Aug 2021).  However,
+you can set the DEFAULT_SERVICE either in the environment variable or in an organization's `features` column
+to change the message service for that organization.  Service Vendors need additional settings which can
+be configured through their hooks into organization setup or through environment variables if you
+have credentials, etc that cross all internal 'organizations' in Spoke.
+
+(Note: These were previously sometimes called "message services" but that was confusing with
+Twilio's internal 'service' called Messaging/Message services -- so we now call these service *vendors*)
 
 # Other places to extend Spoke
 
 We are slowly trying to make the pattern that extensible parts of Spoke are in the
 src/extensions directory and behave in similar ways.  However a couple have not been moved yet
 (If you have time, consider helping with a pull request to do so!)
-
-## Message Services
-
-Spoke has been developed to work best with Twilio at time of writing (Aug 2020).  However,
-you can set the DEFAULT_SERVICE either in the environment variable or in an organization
-to change the message service for that organization.  Message services are currently in files
-in the [src/server/api/lib](https://github.com/MoveOnOrg/Spoke/tree/main/src/server/api/lib) directory,
-and adding a message service is possible by making
-
 
 ## Login
 
@@ -110,10 +118,8 @@ login through Slack.  All of these implementations are *mostly* implemented in t
 However there are a couple places here or there that have hooks -- at least for more sophisticated
 integrations.  Ideally we will consolidate these hooks into a src/extensions/login/ in the future.
 
+## Secrets managers
 
-# Future hooks
-
-* On-campaign-start and on-campaign-completion are good places to trigger some actions
-* Just like contact-loaders hook in to ways to load contacts, it would be good to allow extensions
-  to load scripts and canned responses from other sources.  There's already a Google Doc script import
-  option.  Abstracting this could provide useful tools and integrations into other campaigning systems/APIs.
+Currently, only encrypting locally in src/extensions/secret-manager/default-encrypt is implemented,
+but you can implement a different manager and set SECRET_MANAGER= to use it instead. We imagine (and need)
+implementations for Amazon Secrets Manager and Google's/Azure's secrets manangers.

@@ -1,14 +1,18 @@
 import type from "prop-types";
 import React from "react";
 import GSForm from "../components/forms/GSForm";
-import yup from "yup";
+import GSSubmitButton from "../components/forms/GSSubmitButton";
+import GSTextField from "../components/forms/GSTextField";
+import * as yup from "yup";
 import Form from "react-formal";
 import OrganizationJoinLink from "./OrganizationJoinLink";
-import Toggle from "material-ui/Toggle";
 import { dataTest } from "../lib/attributes";
 import cloneDeep from "lodash/cloneDeep";
 import TagChips from "./TagChips";
 import theme from "../styles/theme";
+
+import FormControlLabel from "@material-ui/core/FormControlLabel";
+import Switch from "@material-ui/core/Switch";
 
 export default class CampaignDynamicAssignmentForm extends React.Component {
   constructor(props) {
@@ -54,18 +58,25 @@ export default class CampaignDynamicAssignmentForm extends React.Component {
       .map(p => ({ id: p, name: p }));
     return (
       <div>
-        <Toggle
-          {...dataTest("useDynamicAssignment")}
-          label="Allow texters with a link to join and start texting when the campaign is started?"
-          toggled={useDynamicAssignment}
-          onToggle={(toggler, val) =>
-            this.toggleChange("useDynamicAssignment", val)
+        <FormControlLabel
+          control={
+            <Switch
+              color="primary"
+              checked={useDynamicAssignment || false}
+              onChange={(toggler, val) => {
+                console.log(toggler, val);
+                this.toggleChange("useDynamicAssignment", val);
+              }}
+            />
           }
+          label="Allow texters with a link to join and start texting when the campaign is started?"
+          labelPlacement="start"
         />
         <GSForm
           schema={this.formSchema}
           value={this.state}
           onChange={this.onChange}
+          onSubmit={this.props.onSubmit}
         >
           {!useDynamicAssignment ? null : (
             <div>
@@ -90,6 +101,8 @@ export default class CampaignDynamicAssignmentForm extends React.Component {
                 switch to replying.
               </p>
               <Form.Field
+                as={GSTextField}
+                fullWidth
                 name="batchSize"
                 type="number"
                 label="How large should a batch be?"
@@ -107,6 +120,8 @@ export default class CampaignDynamicAssignmentForm extends React.Component {
           ) : null}
           <div>
             <Form.Field
+              as={GSTextField}
+              fullWidth
               name="responseWindow"
               type="number"
               label="Expected Response Window (hours)"
@@ -158,7 +173,7 @@ export default class CampaignDynamicAssignmentForm extends React.Component {
                   extraProps={listedTag => ({
                     backgroundColor: theme.colors.lightGray,
                     onClick: evt => {
-                      if (evt.ctrlKey) {
+                      if (evt.ctrlKey || evt.altKey) {
                         this.onChange({
                           batchPolicies: [...batchPolicies, listedTag.id]
                         });
@@ -171,9 +186,8 @@ export default class CampaignDynamicAssignmentForm extends React.Component {
               </div>
             ) : null}
           </div>
-          <Form.Button
-            type="submit"
-            onTouchTap={this.props.onSubmit}
+          <Form.Submit
+            as={GSSubmitButton}
             label={this.props.saveLabel}
             disabled={this.props.saveDisabled}
             {...dataTest("submitCampaignDynamicAssignmentForm")}

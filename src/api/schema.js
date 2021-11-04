@@ -14,6 +14,7 @@ import { schema as campaignContactSchema } from "./campaign-contact";
 import { schema as cannedResponseSchema } from "./canned-response";
 import { schema as inviteSchema } from "./invite";
 import { schema as tagSchema } from "./tag";
+import { schema as serviceSchema } from "./service";
 
 const rootSchema = gql`
   input CampaignContactInput {
@@ -35,6 +36,14 @@ const rootSchema = gql`
     campaignContactId: String!
     interactionStepId: String!
     value: String!
+  }
+
+  input BulkUpdateScriptInput {
+    searchString: String!
+    replaceString: String!
+    includeArchived: Boolean!
+    campaignTitlePrefixes: [String]!
+    targetObject: [String]!
   }
 
   input AnswerOptionInput {
@@ -148,7 +157,7 @@ const rootSchema = gql`
 
   type CampaignIdAssignmentId {
     campaignId: String!
-    assignmentId: String!
+    assignmentId: String
   }
 
   input TagInput {
@@ -163,6 +172,7 @@ const rootSchema = gql`
 
   input ContactTagInput {
     id: String
+    name: String
     value: String
   }
 
@@ -262,6 +272,7 @@ const rootSchema = gql`
       campaignId: String
       queryParams: String
     ): Organization
+    resetOrganizationJoinLink(organizationId: String!): Organization
     editOrganizationRoles(
       organizationId: String!
       userId: String!
@@ -284,12 +295,18 @@ const rootSchema = gql`
       organizationId: String!
       optOutMessage: String!
     ): Organization
-    updateTwilioAuth(
+    updateServiceVendorConfig(
       organizationId: String!
-      twilioAccountSid: String
-      twilioAuthToken: String
-      twilioMessageServiceSid: String
-    ): Organization
+      serviceName: String!
+      config: JSON!
+    ): ServiceVendor
+    updateServiceManager(
+      organizationId: String!
+      campaignId: String
+      serviceManagerName: String!
+      updateData: JSON!
+      fromCampaignStatsPage: Boolean
+    ): ServiceManager
     bulkSendMessages(assignmentId: Int!): [CampaignContact]
     sendMessage(
       message: MessageInput!
@@ -301,6 +318,10 @@ const rootSchema = gql`
       campaignContactId: String!
       noReply: Boolean
     ): CampaignContact
+    bulkUpdateScript(
+      organizationId: String!
+      findAndReplace: BulkUpdateScriptInput!
+    ): [ScriptUpdateResult]
     editCampaignContactMessageStatus(
       messageStatus: String!
       campaignContactId: String!
@@ -309,6 +330,11 @@ const rootSchema = gql`
       interactionStepIds: [String]
       campaignContactId: String!
     ): CampaignContact
+    updateFeedback(
+      assignmentId: String!
+      feedback: JSON
+      acknowledge: Boolean
+    ): Assignment
     updateContactTags(
       tags: [ContactTagInput]
       campaignContactId: String!
@@ -358,8 +384,8 @@ const rootSchema = gql`
       organizationId: ID!
       areaCode: String!
       limit: Int!
-      addToOrganizationMessagingService: Boolean
     ): JobRequest
+    deletePhoneNumbers(organizationId: ID!, areaCode: String!): JobRequest
     releaseCampaignNumbers(campaignId: ID!): Campaign!
     clearCachedOrgAndExtensionCaches(organizationId: String!): String
   }
@@ -388,5 +414,6 @@ export const schema = [
   questionSchema,
   inviteSchema,
   conversationSchema,
-  tagSchema
+  tagSchema,
+  serviceSchema
 ];

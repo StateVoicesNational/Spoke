@@ -5,8 +5,9 @@ import {
   getProcessEnvDstReferenceTimezone
 } from "../lib/tz-helpers";
 import { DstHelper } from "./dst-helper";
+import { getConfig } from "../server/api/lib/config";
 
-const TIMEZONE_CONFIG = {
+const TIMEZONE_US_FALLBACK_WINDOW = {
   missingTimeZone: {
     offset: -5, // EST
     hasDST: true,
@@ -30,8 +31,8 @@ export const getContactTimezone = (campaign, location) => {
         const hasDST = DstHelper.timezoneHasDst(getProcessEnvTz());
         timezoneData = { offset, hasDST };
       } else {
-        const offset = TIMEZONE_CONFIG.missingTimeZone.offset;
-        const hasDST = TIMEZONE_CONFIG.missingTimeZone.hasDST;
+        const offset = TIMEZONE_US_FALLBACK_WINDOW.missingTimeZone.offset;
+        const hasDST = TIMEZONE_US_FALLBACK_WINDOW.missingTimeZone.hasDST;
         timezoneData = { offset, hasDST };
       }
       returnLocation.timezone = timezoneData;
@@ -93,13 +94,9 @@ export const getSendBeforeTimeUtc = (
     return null;
   }
 
-  if (getProcessEnvTz()) {
-    return getUtcFromTimezoneAndHour(
-      getProcessEnvTz(),
-      organization.textingHoursEnd
-    );
-  }
-
+  const defaultTimezone = getProcessEnvTz(
+    getConfig("DEFAULT_TZ", organization)
+  );
   if (contactTimezone && contactTimezone.offset) {
     return getUtcFromOffsetAndHour(
       contactTimezone.offset,
@@ -107,10 +104,15 @@ export const getSendBeforeTimeUtc = (
       organization.textingHoursEnd,
       getProcessEnvDstReferenceTimezone()
     );
+  } else if (defaultTimezone) {
+    return getUtcFromTimezoneAndHour(
+      defaultTimezone,
+      organization.textingHoursEnd
+    );
   } else {
     return getUtcFromOffsetAndHour(
-      TIMEZONE_CONFIG.missingTimeZone.offset,
-      TIMEZONE_CONFIG.missingTimeZone.hasDST,
+      TIMEZONE_US_FALLBACK_WINDOW.missingTimeZone.offset,
+      TIMEZONE_US_FALLBACK_WINDOW.missingTimeZone.hasDST,
       organization.textingHoursEnd,
       getProcessEnvDstReferenceTimezone()
     );
@@ -118,13 +120,10 @@ export const getSendBeforeTimeUtc = (
 };
 
 export const getLocalTime = (offset, hasDST, dstReferenceTimezone) => {
+  const isDateDST = DstHelper.isDateDst(new Date(), dstReferenceTimezone);
   return moment()
     .utc()
-    .utcOffset(
-      DstHelper.isDateDst(new Date(), dstReferenceTimezone) && hasDST
-        ? offset + 1
-        : offset
-    );
+    .utcOffset(hasDST && isDateDST ? offset + 1 : offset);
 };
 
 const isOffsetBetweenTextingHours = (
@@ -160,6 +159,7 @@ export const isBetweenTextingHours = (offsetData, config) => {
       return true;
     }
   } else if (!config.textingHoursEnforced) {
+    // organization setting
     return true;
   }
 
@@ -181,53 +181,54 @@ export const isBetweenTextingHours = (offsetData, config) => {
     );
   }
 
-  if (getProcessEnvTz()) {
-    const today = moment.tz(getProcessEnvTz()).format("YYYY-MM-DD");
+  const localTimezone = getProcessEnvTz(config.defaultTimezone);
+  if (!offsetData && localTimezone) {
+    const today = moment.tz(localTimezone).format("YYYY-MM-DD");
     const start = moment
-      .tz(`${today}`, getProcessEnvTz())
+      .tz(`${today}`, localTimezone)
       .add(config.textingHoursStart, "hours");
     const stop = moment
-      .tz(`${today}`, getProcessEnvTz())
+      .tz(`${today}`, localTimezone)
       .add(config.textingHoursEnd, "hours");
-    return moment.tz(getProcessEnvTz()).isBetween(start, stop, null, "[]");
+    return moment.tz(localTimezone).isBetween(start, stop, null, "[]");
   }
-
   return isOffsetBetweenTextingHours(
     offsetData,
     config.textingHoursStart,
     config.textingHoursEnd,
-    TIMEZONE_CONFIG.missingTimeZone,
+    TIMEZONE_US_FALLBACK_WINDOW.missingTimeZone,
     getProcessEnvDstReferenceTimezone()
   );
 };
 
-// Currently USA (-4 through -11) and Australia (10)
+// Currently USA (-4 through -11), but campaign timezones will supplant this list
 const ALL_OFFSETS = [-4, -5, -6, -7, -8, -9, -10, -11, 10];
 
 export const defaultTimezoneIsBetweenTextingHours = config =>
   isBetweenTextingHours(null, config);
 
 export function convertOffsetsToStrings(offsetArray) {
-  const result = [];
-  offsetArray.forEach(offset => {
-    result.push(offset[0].toString() + "_" + (offset[1] === true ? "1" : "0"));
-  });
-  return result;
+  return offsetArray.map(
+    offset => offset[0].toString() + "_" + (offset[1] === true ? "1" : "0")
+  );
 }
 
-export const getOffsets = config => {
-  const offsets = ALL_OFFSETS.slice(0);
-
+export const getOffsets = (config, campaignOffsets) => {
+  // TODO: campaignOffsetes will sometimes have an array of e.g. ['-5_1', ...]
+  // future we should split that out and then only process the dst/offset cases passed in
+  const offsets = /*campaignOffsets || */ ALL_OFFSETS;
   const valid = [];
   const invalid = [];
 
   const dst = [true, false];
   dst.forEach(hasDST =>
     offsets.forEach(offset => {
-      if (isBetweenTextingHours({ offset, hasDST }, config)) {
-        valid.push([offset, hasDST]);
-      } else {
-        invalid.push([offset, hasDST]);
+      if (offset) {
+        if (isBetweenTextingHours({ offset, hasDST }, config)) {
+          valid.push([offset, hasDST]);
+        } else {
+          invalid.push([offset, hasDST]);
+        }
       }
     })
   );

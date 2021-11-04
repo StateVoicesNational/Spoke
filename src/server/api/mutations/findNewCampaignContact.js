@@ -28,6 +28,10 @@ export const findNewCampaignContact = async (
     return falseRetVal;
   }
   const campaign = await loaders.campaign.load(assignment.campaign_id);
+  await telemetry.reportEvent("Assignment Dynamic Request", {
+    count: 1,
+    organizationId: campaign.organization_id
+  });
 
   await assignmentRequiredOrAdminRole(
     user,
@@ -88,10 +92,15 @@ export const findNewCampaignContact = async (
     numberContacts = assignment.max_contacts - contactsCount;
   }
 
+  policyArgs.numberContacts = numberContacts;
+  policyArgs.contactsCount = contactsCount;
+
   let batchQuery = r
     .knex("campaign_contact")
     .select("id")
-    .limit(numberContacts);
+    .limit(numberContacts)
+    .forUpdate();
+
   let hasCurrentQuery = r.knex("campaign_contact").where({
     assignment_id: assignmentId,
     message_status: "needsMessage",
@@ -126,6 +135,10 @@ export const findNewCampaignContact = async (
   const hasCurrent = await r.getCount(hasCurrentQuery);
   if (hasCurrent >= numberContacts) {
     return falseRetVal;
+  }
+
+  if (batchQuery.skipLocked && /pg|mysql/.test(r.knex.client.config.client)) {
+    batchQuery.skipLocked();
   }
 
   const updatedCount = await r

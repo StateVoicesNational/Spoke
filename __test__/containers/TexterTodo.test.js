@@ -3,7 +3,6 @@
  */
 import React from "react";
 import { mount } from "enzyme";
-import MuiThemeProvider from "material-ui/styles/MuiThemeProvider";
 import { StyleSheetTestUtils } from "aphrodite";
 
 import { genAssignment, contactGenerator } from "../test_client_helpers";
@@ -24,32 +23,31 @@ function genComponent(
   }
   StyleSheetTestUtils.suppressStyleInjection();
   return mount(
-    <MuiThemeProvider>
-      <TexterTodo
-        messageStatus={statusMessage}
-        params={{ organizationId: 123, assignmentId: assignmentId }}
-        contactData={{
-          findNewCampaignContact: { found: false },
-          refetch: function() {
-            // console.log('REFETCHING')
-          },
-          assignment: assignment
-        }}
-        campaignData={{
-          assignment: assignment
-        }}
-        mutations={{
-          getAssignmentContacts: function(contactIds) {
-            // console.log('GETASSIGNCONTACTS', contactIds)
-            return Promise.resolve(contactIds.map(contactMapper));
-          },
-          findNewCampaignContact: function(assignmentId) {
-            return Promise.resolve({ found: false });
-          }
-        }}
-        router={routerPushes} // used to push redirect
-      />
-    </MuiThemeProvider>
+    <TexterTodo
+      messageStatus={statusMessage}
+      params={{ organizationId: 123, assignmentId: assignmentId }}
+      contactData={{
+        findNewCampaignContact: { found: false },
+        refetch: function() {
+          // console.log('REFETCHING')
+        },
+        assignment: assignment
+      }}
+      campaignData={{
+        assignment: assignment
+      }}
+      mutations={{
+        getAssignmentContacts: function(contactIds) {
+          // console.log('GETASSIGNCONTACTS', contactIds)
+          return Promise.resolve(contactIds.map(contactMapper));
+        },
+        findNewCampaignContact: function(assignmentId) {
+          return Promise.resolve({ found: false });
+        }
+      }}
+      router={routerPushes} // used to push redirect
+      location={{ query: {} }}
+    />
   );
 }
 

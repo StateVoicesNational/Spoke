@@ -4,7 +4,7 @@ import {
   assembleAnswerOptions,
   getUsedScriptFields
 } from "../../../lib/interaction-step-helpers";
-import { getFeatures } from "../../api/lib/config";
+import { getFeatures, getConfig } from "../../api/lib/config";
 import organizationCache from "./organization";
 
 // This should be cached data for a campaign that will not change
@@ -27,6 +27,8 @@ import organizationCache from "./organization";
 const cacheKey = id => `${process.env.CACHE_PREFIX || ""}campaign-${id}`;
 const infoCacheKey = id =>
   `${process.env.CACHE_PREFIX || ""}campaigninfo-${id}`;
+const exportCampaignCacheKey = id =>
+  `${process.env.CACHE_PREFIX || ""}campaignexport-${id}`;
 
 const CONTACT_CACHE_ENABLED =
   process.env.REDIS_CONTACT_CACHE || global.REDIS_CONTACT_CACHE;
@@ -98,6 +100,18 @@ const loadDeep = async id => {
       campaign.interactionSteps,
       "script"
     );
+    if (getConfig("MOBILIZE_EVENT_SHIFTER_URL")) {
+      campaign.usedFields.cell = 1;
+      campaign.usedFields.email = 1;
+      campaign.usedFields.zip = 1;
+      campaign.usedFields.event_id = 1;
+    }
+    if (getConfig("TEXTER_SIDEBOX_FIELDS")) {
+      const fields = getConfig("TEXTER_SIDEBOX_FIELDS").split(",");
+      fields.forEach(f => {
+        campaign.usedFields[f] = 1;
+      });
+    }
     campaign.contactTimezones = await dbContactTimezones(id);
     campaign.contactsCount = await r.getCount(
       r.knex("campaign_contact").where("campaign_id", id)
@@ -232,6 +246,65 @@ const campaignCache = {
       return data || {};
     }
     return {};
+  },
+  saveExportData: async (id, data) => {
+    if (r.redis) {
+      const exportCacheKey = exportCampaignCacheKey(id);
+      await r.redis
+        .multi()
+        .set(exportCacheKey, JSON.stringify(data))
+        .expire(exportCacheKey, 43200)
+        .execAsync();
+    }
+  },
+  getExportData: async id => {
+    if (r.redis) {
+      const exportCacheKey = exportCampaignCacheKey(id);
+      const data = await r.redis.getAsync(exportCacheKey);
+      if (data) {
+        return JSON.parse(data);
+      }
+    }
+    return null;
+  },
+  setFeatures: async (id, newFeatures) => {
+    if (!id || !newFeatures) {
+      return;
+    }
+    const features = await r.knex.transaction(async trx => {
+      const campaignDb = await trx("campaign")
+        .where("id", id)
+        .select("features");
+      const features = getFeatures(campaignDb);
+      let changes = false;
+      for (const [featureName, featureValue] of Object.entries(newFeatures)) {
+        if (features[featureName] !== featureValue) {
+          features[featureName] = featureValue;
+          changes = true;
+        }
+      }
+      if (changes) {
+        const featuresString = JSON.stringify(features);
+        await trx("campaign")
+          .where("id", id)
+          .update("features", featuresString);
+        if (r.redis) {
+          const campaignCache = await r.redis.getAsync(cacheKey(id));
+          if (campaignCache) {
+            const campaignObj = JSON.parse(campaignCache);
+            campaignObj.feature = features;
+            campaignObj.features = featuresString;
+            await r.redis
+              .multi()
+              .set(cacheKey(id), JSON.stringify(campaignObj))
+              .expire(cacheKey(id), 10000)
+              .execAsync();
+          }
+        }
+      }
+      return features;
+    });
+    return features;
   },
   updateAssignedCount: async id => {
     if (r.redis) {

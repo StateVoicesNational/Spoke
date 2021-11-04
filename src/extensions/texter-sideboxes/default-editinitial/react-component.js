@@ -1,7 +1,8 @@
 import type from "prop-types";
 import React from "react";
-import yup from "yup";
+import * as yup from "yup";
 import Form from "react-formal";
+import GSTextField from "../../../components/forms/GSTextField";
 
 export const displayName = () => "Allow editing of initial messages";
 
@@ -9,12 +10,8 @@ export const showSidebox = ({ contact, messageStatusFilter }) =>
   contact && messageStatusFilter === "needsMessage";
 
 const defaultExpandText = "Sending Initial Messages";
-const defaultMessagePre = (
-  <span>
-    It’s important to follow all training materials and campaign manager
-    guidance while texting. Please <u>don’t</u>
-  </span>
-);
+const defaultMessagePre =
+  "It's important to follow all training materials and campaign manager guidance while texting. Please don't";
 const defaultLinkText = "change the initial script";
 const defaultMessagePost =
   "unless instructed by your campaign administrator.  Making changes may flag your account for admins.";
@@ -99,6 +96,28 @@ export const adminSchema = () => ({
 });
 
 export class AdminConfig extends React.Component {
+  componentDidMount() {
+    const { settingsData } = this.props;
+    // set defaults
+    const defaults = {};
+    if (!settingsData.editInitialExpandText) {
+      defaults.editInitialExpandText = defaultExpandText;
+    }
+    if (!settingsData.editInitialMessagePre) {
+      defaults.editInitialMessagePre = defaultMessagePre;
+    }
+    if (!settingsData.editInitialLinkText) {
+      defaults.editInitialLinkText = defaultLinkText;
+    }
+    if (!settingsData.editInitialMessagePost) {
+      defaults.editInitialMessagePost = defaultMessagePost;
+    }
+
+    if (Object.values(defaults).length) {
+      this.props.setDefaultsOnMount(defaults);
+    }
+  }
+
   render() {
     return (
       <div>
@@ -111,27 +130,27 @@ export class AdminConfig extends React.Component {
           itself.
         </p>
         <Form.Field
+          as={GSTextField}
           name="editInitialExpandText"
-          label="Text to expand instructions"
-          hintText={`default: ${defaultExpandText} - set to a single space to disable the expand click`}
+          label="Text to expand instructions - set to a single space to disable the expand click"
           fullWidth
         />
         <Form.Field
+          as={GSTextField}
           name="editInitialMessagePre"
           label="Text before link"
-          hintText={`default: ${defaultMessagePre}`}
           fullWidth
         />
         <Form.Field
+          as={GSTextField}
           name="editInitialLinkText"
-          label="Link text to enable editing "
-          hintText={`default: ${defaultLinkText}`}
+          label={`Link text to enable editing.`}
           fullWidth
         />
         <Form.Field
+          as={GSTextField}
           name="editInitialMessagePost"
           label="Text after link"
-          hintText={`default: ${defaultMessagePost}`}
           fullWidth
         />
       </div>
@@ -141,5 +160,6 @@ export class AdminConfig extends React.Component {
 
 AdminConfig.propTypes = {
   settingsData: type.object,
-  onToggle: type.func
+  onToggle: type.func,
+  setDefaultsOnMount: type.func
 };

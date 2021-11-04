@@ -1,6 +1,6 @@
 import PropTypes from "prop-types";
 import React from "react";
-import Check from "material-ui/svg-icons/action/check-circle";
+import CheckCircleIcon from "@material-ui/icons/CheckCircle";
 import Empty from "../components/Empty";
 import LoadingIndicator from "../components/LoadingIndicator";
 import AssignmentSummary from "../components/AssignmentSummary";
@@ -17,9 +17,19 @@ class TexterTodoList extends React.Component {
   }
 
   renderTodoList(assignments) {
-    const organizationId = this.props.params.organizationId;
     return assignments
       .sort((x, y) => {
+        // Sort with feedback at the top, and then based on Text assignment size
+        const xHasFeedback =
+          x.feedback && x.feedback.sweepComplete && !x.feedback.isAcknowledged;
+        const yHasFeedback =
+          y.feedback && y.feedback.sweepComplete && !y.feedback.isAcknowledged;
+        if (xHasFeedback && !yHasFeedback) {
+          return -1;
+        }
+        if (yHasFeedback && !xHasFeedback) {
+          return 1;
+        }
         const xToText = x.unmessagedCount + x.unrepliedCount;
         const yToText = y.unmessagedCount + y.unrepliedCount;
         if (xToText === yToText) {
@@ -34,7 +44,7 @@ class TexterTodoList extends React.Component {
         ) {
           return (
             <AssignmentSummary
-              organizationId={organizationId}
+              organizationId={assignment.campaign.organization.id}
               key={assignment.id}
               assignment={assignment}
               texter={this.props.data.user}
@@ -47,7 +57,6 @@ class TexterTodoList extends React.Component {
       .filter(ele => ele !== null);
   }
   componentDidMount() {
-    console.log("TexterTodoList componentDidMount");
     if (refreshOnReturn) {
       this.props.data.refetch();
     }
@@ -105,7 +114,9 @@ class TexterTodoList extends React.Component {
     const todos = data.user.todos;
     const renderedTodos = this.renderTodoList(todos);
 
-    const empty = <Empty title="You have nothing to do!" icon={<Check />} />;
+    const empty = (
+      <Empty title="You have nothing to do!" icon={<CheckCircleIcon />} />
+    );
 
     return <div>{renderedTodos.length === 0 ? empty : renderedTodos}</div>;
   }
@@ -121,6 +132,7 @@ export const dataQuery = gql`
   query getTodos(
     $userId: Int
     $organizationId: String!
+    $todosOrg: String
     $needsMessageFilter: ContactsFilter
     $needsResponseFilter: ContactsFilter
     $badTimezoneFilter: ContactsFilter
@@ -134,7 +146,7 @@ export const dataQuery = gql`
       profileComplete(organizationId: $organizationId)
       cacheable
       roles(organizationId: $organizationId)
-      todos(organizationId: $organizationId) {
+      todos(organizationId: $todosOrg) {
         id
         hasUnassignedContactsForTexter
         campaign {
@@ -146,6 +158,7 @@ export const dataQuery = gql`
           introHtml
           primaryColor
           logoImageUrl
+          isArchived
           texterUIConfig {
             options
             sideboxChoices
@@ -153,6 +166,16 @@ export const dataQuery = gql`
           organization {
             id
           }
+        }
+        feedback {
+          isAcknowledged
+          createdBy {
+            name
+          }
+          message
+          issueCounts
+          skillCounts
+          sweepComplete
         }
         allContactsCount: contactsCount
         unmessagedCount: contactsCount(contactsFilter: $needsMessageFilter)
@@ -199,6 +222,11 @@ const queries = {
       variables: {
         userId: ownProps.params.userId || null,
         organizationId: ownProps.params.organizationId,
+        todosOrg:
+          ownProps.location.query["org"] == "all" ||
+          !ownProps.params.organizationId
+            ? null
+            : ownProps.params.organizationId,
         needsMessageFilter: {
           messageStatus: "needsMessage",
           isOptedOut: false,

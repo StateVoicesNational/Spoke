@@ -8,18 +8,22 @@ import Survey from "./Survey";
 import ScriptList from "./ScriptList";
 import Empty from "../Empty";
 import GSForm from "../forms/GSForm";
-import RaisedButton from "material-ui/RaisedButton";
-import FlatButton from "material-ui/FlatButton";
-import IconButton from "material-ui/IconButton/IconButton";
-import { Card, CardActions, CardTitle } from "material-ui/Card";
-import Divider from "material-ui/Divider";
-import CreateIcon from "material-ui/svg-icons/content/create";
-import DownIcon from "material-ui/svg-icons/navigation/arrow-drop-down";
-import yup from "yup";
+import GSTextField from "../forms/GSTextField";
+
+import Card from "@material-ui/core/Card";
+import CardHeader from "@material-ui/core/CardHeader";
+import CardContent from "@material-ui/core/CardContent";
+import Button from "@material-ui/core/Button";
+import Popover from "@material-ui/core/Popover";
+import SearchBar from "material-ui-search-bar";
+import ArrowDropDownIcon from "@material-ui/icons/ArrowDropDown";
+import CreateIcon from "@material-ui/icons/Create";
+
+import * as yup from "yup";
 import theme from "../../styles/theme";
 import Form from "react-formal";
-import Popover from "material-ui/Popover";
 import { messageListStyles, inlineStyles, flexStyles } from "./StyleControls";
+import { searchFor } from "../../lib/search-helpers";
 
 import { renderSidebox } from "../../extensions/texter-sideboxes/components";
 
@@ -38,6 +42,8 @@ export class AssignmentTexterContactControls extends React.Component {
   constructor(props) {
     super(props);
 
+    this.formRef = React.createRef();
+
     const questionResponses = {};
     // initial values
     props.contact.questionResponseValues.forEach(questionResponse => {
@@ -48,8 +54,17 @@ export class AssignmentTexterContactControls extends React.Component {
       questionResponses,
       props.campaign.interactionSteps
     );
+
+    let currentInteractionStep = null;
+    if (availableSteps.length > 0) {
+      currentInteractionStep = availableSteps[availableSteps.length - 1];
+      currentInteractionStep.question.filteredAnswerOptions =
+        currentInteractionStep.question.answerOptions;
+    }
+
     this.state = {
       questionResponses,
+      filteredCannedResponses: props.campaign.cannedResponses,
       optOutMessageText: props.campaign.organization.optOutMessage,
       responsePopoverOpen: false,
       answerPopoverOpen: false,
@@ -60,12 +75,10 @@ export class AssignmentTexterContactControls extends React.Component {
       optOutDialogOpen: false,
       currentShortcutSpace: 0,
       messageFocus: false,
-      availableSteps: availableSteps,
+      availableSteps,
       messageReadOnly: false,
-      currentInteractionStep:
-        availableSteps.length > 0
-          ? availableSteps[availableSteps.length - 1]
-          : null
+      hideMedia: false,
+      currentInteractionStep
     };
   }
 
@@ -75,14 +88,16 @@ export class AssignmentTexterContactControls extends React.Component {
     setTimeout(() => {
       node.scrollTop = Math.floor(node.scrollHeight);
     }, 0);
-    document.body.addEventListener("keyup", this.onKeyUp);
+    const keyAction = window.HOLD_ENTER_KEY ? "keydown" : "keyup";
+    document.body.addEventListener(keyAction, this.onKeyUp);
     document.body.addEventListener("keypress", this.blockWithCtrl);
     window.addEventListener("resize", this.onResize);
     window.addEventListener("orientationchange", this.onResize);
   }
 
   componentWillUnmount() {
-    document.body.removeEventListener("keyup", this.onKeyUp);
+    const keyAction = window.HOLD_ENTER_KEY ? "keydown" : "keyup";
+    document.body.removeEventListener(keyAction, this.onKeyUp);
     document.body.removeEventListener("keypress", this.blockWithCtrl);
     window.removeEventListener("resize", this.onResize);
     window.removeEventListener("orientationchange", this.onResize);
@@ -106,11 +121,12 @@ export class AssignmentTexterContactControls extends React.Component {
 
   getStartingMessageText() {
     const { campaign, messageStatusFilter } = this.props;
-    return messageStatusFilter === "needsMessage"
-      ? this.props.getMessageTextFromScript(
-          getTopMostParent(campaign.interactionSteps).script
-        )
-      : "";
+    return (
+      messageStatusFilter === "needsMessage" &&
+      this.props.getMessageTextFromScript(
+        getTopMostParent(campaign.interactionSteps).script
+      )
+    );
   }
 
   onResize = evt => {
@@ -148,6 +164,24 @@ export class AssignmentTexterContactControls extends React.Component {
       );
     }
 
+    if (
+      // SEND: Ctrl-> OR Ctrl-.
+      (evt.key === ">" || evt.key === ".") &&
+      // need to use ctrlKey in non-first texting context for accessibility
+      evt.ctrlKey
+    ) {
+      this.props.handleNavigateNext();
+    }
+
+    if (
+      // SEND: Ctrl-< OR Ctrl-,
+      (evt.key === "<" || evt.key === ",") &&
+      // need to use ctrlKey in non-first texting context for accessibility
+      evt.ctrlKey
+    ) {
+      this.props.handleNavigatePrevious();
+    }
+
     if (evt.key === "Escape") {
       this.setState({
         optOutDialogOpen: false,
@@ -159,7 +193,7 @@ export class AssignmentTexterContactControls extends React.Component {
     // console.log('KEYBOARD', evt.key, document.activeElement);
     if (
       // SEND: Ctrl-Enter/Ctrl-z
-      (evt.key === "Enter" || evt.key === "z") &&
+      evt.key === "Enter" &&
       // need to use ctrlKey in non-first texting context for accessibility
       evt.ctrlKey
     ) {
@@ -223,9 +257,31 @@ export class AssignmentTexterContactControls extends React.Component {
     ) {
       this.setState({ doneFirstClick: true });
     } else {
-      this.refs.form.submit();
+      this.formRef.current.submit();
       this.setState({ doneFirstClick: false });
     }
+  };
+
+  handleSearchChange = searchValue => {
+    // filter answerOptions for this step's question
+    const answerOptions = this.state.currentInteractionStep.question
+      .answerOptions;
+    const filteredAnswerOptions = searchFor(searchValue, answerOptions, [
+      "value",
+      "nextInteractionStep.script"
+    ]);
+    this.state.currentInteractionStep.question.filteredAnswerOptions = filteredAnswerOptions;
+
+    const filteredCannedResponses = searchFor(
+      searchValue,
+      this.props.campaign.cannedResponses,
+      ["title", "text"]
+    );
+
+    this.setState({
+      currentInteractionStep: this.state.currentInteractionStep,
+      filteredCannedResponses
+    });
   };
 
   handleCannedResponseChange = cannedResponseScript => {
@@ -272,7 +328,13 @@ export class AssignmentTexterContactControls extends React.Component {
     const { questionResponses } = this.state;
     const { interactionSteps } = this.props.campaign;
     questionResponses[interactionStep.id] = questionResponseValue;
-
+    console.log(
+      "handleQuestionResponseChange",
+      questionResponseValue,
+      nextScript,
+      "interactionStep",
+      interactionStep
+    );
     const children = getChildren(interactionStep, interactionSteps);
     for (const childStep of children) {
       if (childStep.id in questionResponses) {
@@ -312,29 +374,27 @@ export class AssignmentTexterContactControls extends React.Component {
 
   handleMessageFormChange = ({ messageText }) => this.setState({ messageText });
 
-  handleOpenAnswerPopover = event => {
+  handleOpenAnswerResponsePopover = event => {
     event.preventDefault();
-    this.setState({
+    const newState = {
       answerPopoverAnchorEl: event.currentTarget,
-      answerPopoverOpen: true
-    });
+      answerPopoverOpen: true,
+      responsePopoverAnchorEl: event.currentTarget,
+      responsePopoverOpen: true,
+      filteredCannedResponses: this.props.campaign.cannedResponses
+    };
+    if (this.state.currentInteractionStep) {
+      this.state.currentInteractionStep.question.filteredAnswerOptions = this.state.currentInteractionStep.question.answerOptions;
+      newState.currentInteractionStep = this.state.currentInteractionStep;
+    }
+    this.setState(newState);
   };
 
-  handleCloseAnswerPopover = () => {
+  handleCloseAnswerResponsePopover = () => {
     this.setState({
       answerPopoverOpen: false
     });
-  };
 
-  handleOpenResponsePopover = event => {
-    event.preventDefault();
-    this.setState({
-      responsePopoverAnchorEl: event.currentTarget,
-      responsePopoverOpen: true
-    });
-  };
-
-  handleCloseResponsePopover = () => {
     // delay to avoid accidental tap pass-through with focusing on
     // the text field -- this is annoying on mobile where the keyboard
     // pops up, inadvertantly
@@ -395,7 +455,9 @@ export class AssignmentTexterContactControls extends React.Component {
     const {
       answerPopoverOpen,
       questionResponses,
-      cannedResponseScript
+      cannedResponseScript,
+      currentInteractionStep,
+      filteredCannedResponses
     } = this.state;
     const { messages } = contact;
 
@@ -405,10 +467,10 @@ export class AssignmentTexterContactControls extends React.Component {
     );
 
     const otherResponsesLink =
-      this.state.currentInteractionStep &&
-      this.state.currentInteractionStep.question.answerOptions.length > 6 &&
-      campaign.cannedResponses.length ? (
-        <div className={css(flexStyles.popoverLink)}>
+      currentInteractionStep &&
+      currentInteractionStep.question.filteredAnswerOptions.length > 6 &&
+      filteredCannedResponses.length ? (
+        <div className={css(flexStyles.popoverLink)} key={"otherresponses"}>
           <a
             href="#otherresponses"
             className={css(flexStyles.popoverLinkColor)}
@@ -418,27 +480,42 @@ export class AssignmentTexterContactControls extends React.Component {
         </div>
       ) : null;
 
+    const searchBar = currentInteractionStep &&
+      currentInteractionStep.question.answerOptions.length +
+        campaign.cannedResponses.length >
+        5 && (
+        <SearchBar
+          onRequestSearch={this.handleSearchChange}
+          onChange={this.handleSearchChange}
+          value={""}
+          placeholder={"Search replies..."}
+        />
+      );
+
     return (
       <Popover
-        style={inlineStyles.popover}
-        className={css(flexStyles.popover)}
+        key="renderSurveySection"
+        classes={{
+          paper: css(flexStyles.popover)
+        }}
         open={answerPopoverOpen}
         anchorEl={this.state.answerPopoverAnchorEl}
         anchorOrigin={{ horizontal: "left", vertical: "bottom" }}
-        targetOrigin={{ horizontal: "left", vertical: "bottom" }}
-        onRequestClose={this.handleCloseAnswerPopover}
+        transformOrigin={{ horizontal: "left", vertical: "bottom" }}
+        onClose={this.handleCloseAnswerResponsePopover}
       >
+        {searchBar}
         <Survey
           contact={contact}
           interactionSteps={availableInteractionSteps}
           onQuestionResponseChange={this.handleQuestionResponseChange}
-          currentInteractionStep={this.state.currentInteractionStep}
+          currentInteractionStep={currentInteractionStep}
           listHeader={otherResponsesLink}
           questionResponses={questionResponses}
-          onRequestClose={this.handleCloseAnswerPopover}
+          onRequestClose={this.handleCloseAnswerResponsePopover}
         />
         <ScriptList
-          scripts={campaign.cannedResponses}
+          scripts={filteredCannedResponses}
           showAddScriptButton={false}
           customFields={campaign.customFields}
           currentCannedResponseScript={cannedResponseScript}
@@ -453,49 +530,60 @@ export class AssignmentTexterContactControls extends React.Component {
   renderNeedsResponseToggleButton(contact) {
     const { messageStatus } = contact;
     let button = null;
-    if (messageStatus === "needsMessage") {
-      return null;
-    } else if (messageStatus === "closed") {
-      // todo: add flex: style.
-      button = (
-        <FlatButton
-          onClick={() => this.props.onEditStatus("needsResponse")}
-          label="Reopen"
-          className={css(flexStyles.flatButton)}
-          style={{ flex: "1 1 auto" }}
-          labelStyle={inlineStyles.flatButtonLabel}
-          backgroundColor="white"
-          disabled={!!this.props.contact.optOut}
-        />
-      );
-    } else {
-      button = (
-        <FlatButton
-          onClick={() => this.props.onEditStatus("closed", true)}
-          label="Skip"
-          className={css(flexStyles.flatButton)}
-          style={{
-            /*WTF: TODO resolve with reopen and labelStyle */
-            flex: "1 2 auto"
-          }}
-          labelStyle={{ ...inlineStyles.flatButtonLabel, flex: "1 1 auto" }}
-          backgroundColor="white"
-          disabled={!!this.props.contact.optOut}
-        />
-      );
+    if (messageStatus !== "needsMessage") {
+      const status = this.state.messageStatus || messageStatus;
+      const onClick = (newStatus, finishContact) => async () => {
+        const res = await this.props.onEditStatus(newStatus, finishContact);
+        if (
+          res &&
+          res.data &&
+          res.data.editCampaignContactMessageStatus &&
+          res.data.editCampaignContactMessageStatus.messageStatus
+        ) {
+          this.setState({
+            messageStatus:
+              res.data.editCampaignContactMessageStatus.messageStatus
+          });
+        }
+      };
+      if (status === "closed") {
+        button = (
+          <Button
+            onClick={onClick("needsResponse")}
+            className={css(flexStyles.button)}
+            style={{ flex: "1 1 auto" }}
+            disabled={!!this.props.contact.optOut}
+            color="default"
+            variant="outlined"
+          >
+            Reopen
+          </Button>
+        );
+      } else {
+        button = (
+          <Button
+            onClick={onClick("closed", true)}
+            className={css(flexStyles.button)}
+            disabled={!!this.props.contact.optOut}
+            color="default"
+            variant="outlined"
+          >
+            Skip
+          </Button>
+        );
+      }
     }
-
     return button;
   }
 
   renderOptOutDialog() {
     if (!this.state.optOutDialogOpen) {
-      return "";
+      return null;
     }
     return (
       <Card className={css(flexStyles.sectionOptOutDialog)}>
-        <CardTitle title="Opt out user" />
-        <CardActions className={css(flexStyles.sectionOptOutDialog)}>
+        <CardHeader title="Opt out user" />
+        <CardContent className={css(flexStyles.sectionOptOutDialog)}>
           <GSForm
             className={css(flexStyles.sectionOptOutDialog)}
             schema={this.optOutSchema}
@@ -512,9 +600,7 @@ export class AssignmentTexterContactControls extends React.Component {
                 justifyContent: "left"
               }}
             >
-              <FlatButton
-                className={css(flexStyles.flatButton)}
-                labelStyle={inlineStyles.flatButtonLabel}
+              <Button
                 style={{
                   margin: "9px",
                   color:
@@ -528,17 +614,17 @@ export class AssignmentTexterContactControls extends React.Component {
                       ? "#727272"
                       : "white"
                 }}
-                label="Standard Message"
                 onClick={() => {
                   this.setState({
                     optOutMessageText: this.props.campaign.organization
                       .optOutMessage
                   });
                 }}
-              />
-              <FlatButton
-                className={css(flexStyles.flatButton)}
-                labelStyle={inlineStyles.flatButtonLabel}
+                variant="contained"
+              >
+                Standard Message
+              </Button>
+              <Button
                 style={{
                   margin: "0 9px 0 9px",
                   color:
@@ -546,49 +632,65 @@ export class AssignmentTexterContactControls extends React.Component {
                   backgroundColor:
                     this.state.optOutMessageText === "" ? "#727272" : "white"
                 }}
-                label="No Message"
                 onClick={() => {
                   this.setState({ optOutMessageText: "" });
                 }}
-              />
+                variant="contained"
+              >
+                No Message
+              </Button>
             </div>
-            <Form.Field name="optOutMessageText" fullWidth multiLine />
+            <Form.Field
+              as={GSTextField}
+              name="optOutMessageText"
+              fullWidth
+              multiline
+              rows={2}
+            />
             <div className={css(flexStyles.subSectionOptOutDialogActions)}>
-              <FlatButton
-                className={css(flexStyles.flatButton)}
-                labelStyle={inlineStyles.flatButtonLabel}
+              <Button
+                className={css(flexStyles.button)}
                 style={inlineStyles.inlineBlock}
-                label="Cancel"
                 onClick={this.handleCloseDialog}
-              />
-              <FlatButton
+                variant="outlined"
+              >
+                Cancel
+              </Button>
+              <Button
                 type="submit"
-                className={css(flexStyles.flatButton)}
-                labelStyle={inlineStyles.flatButtonLabel}
                 style={{
                   ...inlineStyles.inlineBlock,
                   borderColor: "#790000",
                   color: "white",
-                  marginLeft: "9px"
+                  marginLeft: "9px",
+                  backgroundColor: "#BC0000"
                 }}
-                backgroundColor="#BC0000"
-                label={<span>&crarr; Opt-Out</span>}
-              />
+                variant="contained"
+              >
+                &crarr; Opt-Out
+              </Button>
             </div>
           </GSForm>
-        </CardActions>
+        </CardContent>
       </Card>
     );
   }
 
-  renderMessagingRowMessage() {
+  renderMessagingRowMessage(enabledSideboxes) {
     const { cannedResponseScript } = this.state;
+    const isFeedbackEnabled =
+      !!enabledSideboxes &&
+      !!enabledSideboxes.find(sidebox => sidebox.name === "texter-feedback");
     return (
-      <div className={css(flexStyles.sectionMessageField)}>
+      <div
+        key="renderMessagingRowMessage"
+        className={css(flexStyles.sectionMessageField)}
+        style={isFeedbackEnabled ? { width: "calc(100% - 390px)" } : undefined}
+      >
         <GSForm
-          ref="form"
+          setRef={this.formRef}
           schema={this.messageSchema}
-          value={{ messageText: this.state.messageText }}
+          value={{ messageText: this.state.messageText || "" }}
           onSubmit={this.props.onMessageFormSubmit(
             cannedResponseScript && cannedResponseScript.id
           )}
@@ -599,6 +701,7 @@ export class AssignmentTexterContactControls extends React.Component {
           }
         >
           <Form.Field
+            as={GSTextField}
             className={css(flexStyles.subSectionMessageFieldTextField)}
             name="messageText"
             label="Your message"
@@ -608,7 +711,7 @@ export class AssignmentTexterContactControls extends React.Component {
             onBlur={() => {
               this.setState({ messageFocus: false });
             }}
-            multiLine
+            multiline
             fullWidth
             rowsMax={6}
           />
@@ -721,9 +824,8 @@ export class AssignmentTexterContactControls extends React.Component {
     return (
       <div>
         {currentQuestionOptions.map(opt => (
-          <FlatButton
+          <Button
             key={`shortcutStep_${opt.answer.value}`}
-            label={opt.label}
             onClick={evt => {
               this.handleQuestionResponseChange({
                 interactionStep: currentInteractionStep,
@@ -737,32 +839,33 @@ export class AssignmentTexterContactControls extends React.Component {
                   null
               });
             }}
-            className={css(flexStyles.flatButton)}
-            style={{ marginRight: "9px" }}
-            labelStyle={{
-              ...inlineStyles.flatButtonLabel,
+            style={{
+              marginRight: "9px",
+              backgroundColor: isCurrentAnswer(opt) ? "#727272" : "white",
               color: isCurrentAnswer(opt) ? "white" : "#494949"
             }}
-            backgroundColor={isCurrentAnswer(opt) ? "#727272" : "white"}
-          />
+            variant="outlined"
+          >
+            {opt.label}
+          </Button>
         ))}
         {shortCannedResponses.map(script => (
-          <FlatButton
+          <Button
             key={`shortcutScript_${script.id}`}
-            label={script.title.replace(/^(\+|\-)/, "")}
             onClick={evt => {
               this.handleCannedResponseChange(script);
             }}
-            className={css(flexStyles.flatButton)}
-            style={{ marginLeft: "9px" }}
-            labelStyle={{
-              ...inlineStyles.flatButtonLabel,
-              color: isCurrentCannedResponse(script) ? "white" : "#494949"
+            style={{
+              marginLeft: "9px",
+              color: isCurrentCannedResponse(script) ? "white" : "#494949",
+              backgroundColor: isCurrentCannedResponse(script)
+                ? "#727272"
+                : "white"
             }}
-            backgroundColor={
-              isCurrentCannedResponse(script) ? "#727272" : "white"
-            }
-          />
+            variant="outlined"
+          >
+            {script.title.replace(/^(\+|\-)/, "")}
+          </Button>
         ))}
       </div>
     );
@@ -777,31 +880,34 @@ export class AssignmentTexterContactControls extends React.Component {
         !availableSteps[0].question.answerOptions.length);
     return (
       <div className={css(flexStyles.subButtonsExitButtons)}>
-        <FlatButton
-          label={
-            <span>
-              All Responses <DownIcon style={{ verticalAlign: "middle" }} />
-            </span>
+        <Button
+          onClick={
+            !disabled ? this.handleOpenAnswerResponsePopover : noAction => {}
           }
-          role="button"
-          onClick={!disabled ? this.handleOpenAnswerPopover : noAction => {}}
-          className={css(flexStyles.flatButton)}
-          labelStyle={inlineStyles.flatButtonLabel}
-          backgroundColor={
-            availableSteps.length ? "white" : "rgb(176, 176, 176)"
-          }
+          style={{
+            backgroundColor: availableSteps.length
+              ? "white"
+              : "rgb(176, 176, 176)"
+          }}
           disabled={disabled}
-        />
+          variant="outlined"
+        >
+          All Responses{" "}
+          <ArrowDropDownIcon style={{ verticalAlign: "middle" }} />
+        </Button>
 
-        <FlatButton
+        <Button
           {...dataTest("optOut")}
-          label="Opt-out"
           onClick={this.handleOpenDialog}
-          className={css(flexStyles.flatButton)}
-          labelStyle={{ ...inlineStyles.flatButtonLabel, color: "#DE1A1A" }}
-          backgroundColor="white"
+          style={{
+            color: "#DE1A1A",
+            backgroundColor: "#FFF"
+          }}
           disabled={!!this.props.contact.optOut}
-        />
+          variant="outlined"
+        >
+          Opt-out
+        </Button>
       </div>
     );
   }
@@ -810,38 +916,28 @@ export class AssignmentTexterContactControls extends React.Component {
     const firstMessage = this.props.messageStatusFilter === "needsMessage";
     return (
       <div
+        key="renderMessagingRowSendSkip"
         className={css(flexStyles.sectionSend)}
         style={firstMessage ? { height: "54px" } : { height: "36px" }}
       >
-        <FlatButton
+        <Button
           {...dataTest("send")}
           onClick={this.handleClickSendMessageButton}
           disabled={this.props.disabled || !!this.props.contact.optOut}
-          label={<span>&crarr; Send</span>}
-          className={`${css(flexStyles.flatButton)} ${css(
-            flexStyles.subSectionSendButton
-          )}`}
-          labelStyle={inlineStyles.flatButtonLabel}
-          backgroundColor={
-            this.props.disabled
-              ? theme.colors.coreBackgroundColorDisabled
-              : this.state.doneFirstClick
-              ? theme.colors.darkBlue
-              : theme.colors.coreBackgroundColor
-          }
-          hoverColor={
-            this.state.doneFirstClick
-              ? theme.colors.lightBlue
-              : theme.colors.coreHoverColor
-          }
-          primary
-        />
+          style={{
+            width: "70%"
+          }}
+          color="primary"
+          variant="contained"
+        >
+          &crarr; Send
+        </Button>
         {this.renderNeedsResponseToggleButton(contact)}
       </div>
     );
   }
 
-  renderMessageControls() {
+  renderMessageControls(enabledSideboxes) {
     const { contact, messageStatusFilter, assignment, campaign } = this.props;
     const {
       availableSteps,
@@ -860,18 +956,17 @@ export class AssignmentTexterContactControls extends React.Component {
       currentQuestionAnswered = questionResponses[currentInteractionStep.id];
     }
     return [
-      this.renderMessagingRowMessage({}),
+      this.renderMessagingRowMessage(enabledSideboxes),
       <div key="sectionButtons" className={css(flexStyles.sectionButtons)}>
         <div
           className={css(flexStyles.subButtonsAnswerButtons)}
           ref="answerButtons"
         >
-          {currentQuestion
-            ? this.renderMessagingRowCurrentQuestion(
-                currentQuestion,
-                currentQuestionAnswered
-              )
-            : null}
+          {currentQuestion &&
+            this.renderMessagingRowCurrentQuestion(
+              currentQuestion,
+              currentQuestionAnswered
+            )}
           <div className={css(flexStyles.subSubAnswerButtonsColumns)}>
             {this.renderMessagingRowReplyShortcuts()}
           </div>
@@ -896,9 +991,9 @@ export class AssignmentTexterContactControls extends React.Component {
           navigationToolbarChildren={this.props.navigationToolbarChildren}
           onExit={this.props.onExitTexter}
           onSideboxButtonClick={
-            enabledSideboxes && enabledSideboxes.length > 0
-              ? this.handleClickSideboxDialog
-              : null
+            enabledSideboxes &&
+            enabledSideboxes.length > 0 &&
+            this.handleClickSideboxDialog
           }
         />
       </div>
@@ -919,25 +1014,35 @@ export class AssignmentTexterContactControls extends React.Component {
     if (sideboxOpen) {
       return (
         <Popover
-          style={inlineStyles.popoverSidebox}
           className={css(flexStyles.popover)}
+          classes={{
+            paper: css(flexStyles.popoverSideboxesInner)
+          }}
           open={sideboxOpen}
           anchorEl={this.refs.messageBox}
-          anchorOrigin={{ horizontal: "middle", vertical: "top" }}
-          targetOrigin={{ horizontal: "middle", vertical: "top" }}
-          onRequestClose={this.handleClickSideboxDialog}
+          anchorOrigin={{ horizontal: "middle", vertical: "middle" }}
+          transformOrigin={{ horizontal: "middle", vertical: "middle" }}
+          onClose={this.handleClickSideboxDialog}
         >
           {sideboxList}
         </Popover>
       );
     }
-    // TODO: max height and scroll-y
+    // TODO: max height
     return <div className={css(flexStyles.sectionSideBox)}>{sideboxList}</div>;
   }
 
   renderMessageBox(internalComponent, enabledSideboxes) {
+    const isFeedbackEnabled =
+      !!enabledSideboxes &&
+      !!enabledSideboxes.find(sidebox => sidebox.name === "texter-feedback");
     return (
-      <div ref="messageBox" className={css(flexStyles.superSectionMessageBox)}>
+      <div
+        ref="messageBox"
+        key="renderMessageBox"
+        className={css(flexStyles.superSectionMessageBox)}
+        style={isFeedbackEnabled ? { width: "calc(100% - 382px)" } : undefined}
+      >
         <div
           {...dataTest("messageList")}
           key="messageScrollContainer"
@@ -952,19 +1057,22 @@ export class AssignmentTexterContactControls extends React.Component {
   }
 
   renderFirstMessage(enabledSideboxes) {
+    const { contact } = this.props;
     return [
       this.renderToolbar(enabledSideboxes),
       this.renderMessageBox(
         <Empty
           title={
-            "This is your first message to " + this.props.contact.firstName
+            contact.optOut
+              ? `${contact.firstName} is opted out -- skip this contact`
+              : `This is your first message to ${contact.firstName}`
           }
-          icon={<CreateIcon color="rgb(83, 180, 119)" />}
+          icon={<CreateIcon color="primary" />}
         />,
         enabledSideboxes
       ),
       this.renderMessagingRowMessage(),
-      this.renderMessagingRowSendSkip(this.props.contact)
+      this.renderMessagingRowSendSkip(contact)
     ];
   }
 
@@ -978,8 +1086,12 @@ export class AssignmentTexterContactControls extends React.Component {
           this.renderMessageBox(
             <MessageList
               contact={this.props.contact}
+              currentUser={this.props.currentUser}
               messages={this.props.contact.messages}
+              organizationId={this.props.organizationId}
+              review={this.props.review}
               styles={messageListStyles}
+              hideMedia={this.state.hideMedia}
             />,
             enabledSideboxes
           ),
@@ -991,17 +1103,21 @@ export class AssignmentTexterContactControls extends React.Component {
 
 AssignmentTexterContactControls.propTypes = {
   // data
+  handleNavigateNext: PropTypes.func,
+  handleNavigatePrevious: PropTypes.func,
   contact: PropTypes.object,
   campaign: PropTypes.object,
   assignment: PropTypes.object,
   currentUser: PropTypes.object,
   texter: PropTypes.object,
+  organizationId: PropTypes.string,
 
   // parent state
   disabled: PropTypes.bool,
   navigationToolbarChildren: PropTypes.object,
   messageStatusFilter: PropTypes.string,
   enabledSideboxes: PropTypes.arrayOf(PropTypes.object),
+  review: PropTypes.string,
 
   // parent config/callbacks
   startingMessage: PropTypes.string,

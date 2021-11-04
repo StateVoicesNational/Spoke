@@ -1,12 +1,18 @@
 import PropTypes from "prop-types";
 import React from "react";
-import RaisedButton from "material-ui/RaisedButton";
 import Chart from "../components/Chart";
-import { Card, CardTitle, CardText } from "material-ui/Card";
-import LinearProgress from "material-ui/LinearProgress";
+
+import LinearProgress from "@material-ui/core/LinearProgress";
+import Button from "@material-ui/core/Button";
+import ButtonGroup from "@material-ui/core/ButtonGroup";
+import Snackbar from "@material-ui/core/Snackbar";
+import Card from "@material-ui/core/Card";
+import CardContent from "@material-ui/core/CardContent";
+
 import TexterStats from "../components/TexterStats";
 import OrganizationJoinLink from "../components/OrganizationJoinLink";
-import Snackbar from "material-ui/Snackbar";
+import CampaignServiceManagers from "../components/CampaignServiceManagers";
+import AdminCampaignCopy from "./AdminCampaignCopy";
 import { withRouter, Link } from "react-router";
 import { StyleSheet, css } from "aphrodite";
 import loadData from "./hoc/load-data";
@@ -28,8 +34,7 @@ const inlineStyles = {
   },
   title: {
     textTransform: "uppercase",
-    textAlign: "center",
-    color: "gray"
+    textAlign: "center"
   }
 };
 
@@ -79,8 +84,10 @@ export const styles = StyleSheet.create({
 
 const Stat = ({ title, count }) => (
   <Card key={title} style={inlineStyles.stat}>
-    <CardTitle title={count} titleStyle={inlineStyles.count} />
-    <CardText style={inlineStyles.title}>{title}</CardText>
+    <CardContent style={inlineStyles.title}>
+      <div style={inlineStyles.count}>{count}</div>
+      {title}
+    </CardContent>
   </Card>
 );
 
@@ -102,7 +109,7 @@ class AdminCampaignStats extends React.Component {
 
     return interactionSteps.map(step => {
       if (step.question === "") {
-        return <div></div>;
+        return <div key={step.id}></div>;
       }
 
       const totalResponseCount = step.question.answerOptions.reduce(
@@ -166,8 +173,7 @@ class AdminCampaignStats extends React.Component {
               </Link>
             </div>
             <LinearProgress
-              color="red"
-              mode="determinate"
+              variant="determinate"
               value={Math.round((100 * error.count) / contactsCount)}
             />
           </div>
@@ -177,7 +183,7 @@ class AdminCampaignStats extends React.Component {
   }
 
   render() {
-    const { data, params } = this.props;
+    const { data, params, organizationData } = this.props;
     const { adminPerms, organizationId, campaignId } = params;
     const campaign = data.campaign;
     const currentExportJob = this.props.data.campaign.pendingJobs.filter(
@@ -200,10 +206,11 @@ class AdminCampaignStats extends React.Component {
           {campaign.isArchived ? (
             <div className={css(styles.archivedBanner)}>
               This campaign is archived
+              {campaign.isArchivedPermanently
+                ? " and its phone numbers have been released"
+                : null}
             </div>
-          ) : (
-            ""
-          )}
+          ) : null}
 
           <div className={css(styles.header)}>
             {campaign.title}
@@ -214,121 +221,168 @@ class AdminCampaignStats extends React.Component {
             <div className={css(styles.rightAlign)}>
               <div className={css(styles.inline)}>
                 <div className={css(styles.inline)}>
-                  {!campaign.isArchived ? (
-                    // edit
-                    <RaisedButton
-                      {...dataTest("editCampaign")}
-                      onTouchTap={() =>
+                  <ButtonGroup>
+                    {!campaign.isArchived ? (
+                      // edit
+                      <Button
+                        {...dataTest("editCampaign")}
+                        onClick={() =>
+                          this.props.router.push(
+                            `/admin/${organizationId}/campaigns/${campaignId}/edit`
+                          )
+                        }
+                      >
+                        Edit
+                      </Button>
+                    ) : null}
+                    <Button
+                      {...dataTest("convoCampaign")}
+                      onClick={() =>
                         this.props.router.push(
-                          `/admin/${organizationId}/campaigns/${campaignId}/edit`
+                          `/admin/${organizationId}/incoming?campaigns=${campaignId}`
                         )
                       }
-                      label="Edit"
-                    />
-                  ) : null}
-                  <RaisedButton
-                    {...dataTest("convoCampaign")}
-                    onTouchTap={() =>
-                      this.props.router.push(
-                        `/admin/${organizationId}/incoming?campaigns=${campaignId}`
-                      )
-                    }
-                    label="Convos"
-                  />
-                  {adminPerms
-                    ? [
-                        // Buttons for Admins (and not Supervolunteers)
-                        // export
-                        <RaisedButton
-                          onTouchTap={async () => {
-                            this.setState(
-                              {
+                    >
+                      Convos
+                    </Button>
+                    {adminPerms && [
+                      // Buttons for Admins (and not Supervolunteers)
+                      // export
+                      <Button
+                        key="exportCampaign"
+                        onClick={async () => {
+                          this.setState(
+                            {
+                              exportMessageOpen: true,
+                              disableExportButton: true
+                            },
+                            () => {
+                              this.setState({
                                 exportMessageOpen: true,
-                                disableExportButton: true
-                              },
-                              () => {
-                                this.setState({
-                                  exportMessageOpen: true,
-                                  disableExportButton: false
-                                });
-                              }
-                            );
-                            await this.props.mutations.exportCampaign(
+                                disableExportButton: false
+                              });
+                            }
+                          );
+                          await this.props.mutations.exportCampaign(campaignId);
+                        }}
+                        disabled={shouldDisableExport}
+                      >
+                        {exportLabel}
+                      </Button>,
+                      // unarchive
+                      campaign.isArchived && (
+                        <Button
+                          key="unarchiveCampaign"
+                          disabled={
+                            campaign.isArchivedPermanently ||
+                            campaign.serviceManagers
+                              .map(sm => sm.unArchiveable)
+                              .reduce((a, b) => a || b, false)
+                          }
+                          onClick={async () =>
+                            await this.props.mutations.unarchiveCampaign(
                               campaignId
-                            );
-                          }}
-                          label={exportLabel}
-                          disabled={shouldDisableExport}
-                        />, // unarchive
-                        campaign.isArchived ? (
-                          <RaisedButton
-                            disabled={campaign.isArchivedPermanently}
-                            onTouchTap={async () =>
-                              await this.props.mutations.unarchiveCampaign(
-                                campaignId
-                              )
-                            }
-                            label="Unarchive"
-                          />
-                        ) : null,
-                        !campaign.isArchived ? (
-                          <RaisedButton
-                            onTouchTap={async () =>
-                              await this.props.mutations.archiveCampaign(
-                                campaignId
-                              )
-                            }
-                            label="Archive"
-                          />
-                        ) : null, // copy
-                        <RaisedButton
-                          {...dataTest("copyCampaign")}
-                          label="Copy Campaign"
-                          onTouchTap={async () => {
-                            let result = await this.props.mutations.copyCampaign(
-                              this.props.params.campaignId
-                            );
-                            this.setState({
-                              copyCampaignId: result.data.copyCampaign.id,
-                              copyMessageOpen: true
-                            });
-                          }}
-                        />,
-                        campaign.useOwnMessagingService ? (
-                          <RaisedButton
-                            {...dataTest("messagingService")}
-                            onTouchTap={() =>
-                              this.props.router.push(
-                                `/admin/${organizationId}/campaigns/${campaignId}/messaging-service`
-                              )
-                            }
-                            label="Messaging Service"
-                          />
-                        ) : null,
-                        showReleaseNumbers ? (
-                          <RaisedButton
-                            onTouchTap={async () =>
-                              this.props.mutations.releaseCampaignNumbers(
-                                campaignId
-                              )
-                            }
-                            label="Release Numbers"
-                          />
-                        ) : null
-                      ]
-                    : null}
+                            )
+                          }
+                        >
+                          Unarchive
+                        </Button>
+                      ),
+                      // archive
+                      !campaign.isArchived && (
+                        <Button
+                          key="archiveCampaign"
+                          onClick={async () =>
+                            await this.props.mutations.archiveCampaign(
+                              campaignId
+                            )
+                          }
+                        >
+                          Archive
+                        </Button>
+                      ),
+                      // copy
+                      <AdminCampaignCopy
+                        key="AdminCampaignCopy"
+                        organizationId={organizationId}
+                        campaignId={campaignId}
+                      />,
+                      campaign.useOwnMessagingService && (
+                        <Button
+                          key="messagingService"
+                          {...dataTest("messagingService")}
+                          disabled={campaign.isArchivedPermanently}
+                          onClick={() =>
+                            this.props.router.push(
+                              `/admin/${organizationId}/campaigns/${campaignId}/messaging-service`
+                            )
+                          }
+                        >
+                          Messaging Service
+                        </Button>
+                      ),
+                      showReleaseNumbers && (
+                        <Button
+                          key="releaseCampaignNumbers"
+                          disabled={campaign.isArchivedPermanently}
+                          onClick={async () =>
+                            this.props.mutations.releaseCampaignNumbers(
+                              campaignId
+                            )
+                          }
+                        >
+                          Release Numbers
+                        </Button>
+                      )
+                    ]}
+                  </ButtonGroup>
                 </div>
               </div>
             </div>
           </div>
         </div>
+        {campaign.exportResults ? (
+          <div>
+            {campaign.exportResults.error ? (
+              <div>Export failed: {campaign.exportResults.error}</div>
+            ) : null}
+            {campaign.exportResults.campaignExportUrl &&
+            campaign.exportResults.campaignExportUrl.startsWith("http") ? (
+              <div>
+                Most recent export:
+                <a href={campaign.exportResults.campaignExportUrl} download>
+                  Contacts Export CSV
+                </a>
+                <a
+                  href={campaign.exportResults.campaignMessagesExportUrl}
+                  download
+                >
+                  Messages Export CSV
+                </a>
+              </div>
+            ) : (
+              <div>
+                Local export was successful, saved on the server at:
+                <br />
+                {campaign.exportResults.campaignExportUrl}
+                <br />
+                {campaign.exportResults.campaignMessagesExportUrl}
+              </div>
+            )}
+          </div>
+        ) : null}
         {campaign.joinToken && campaign.useDynamicAssignment ? (
           <OrganizationJoinLink
             organizationUuid={campaign.joinToken}
             campaignId={campaignId}
           />
         ) : null}
-
+        <CampaignServiceManagers
+          campaign={campaign}
+          organization={this.props.organizationData.organization}
+          serviceManagerComponentName={"CampaignStats"}
+          onSubmit={this.props.mutations.updateServiceManager}
+        />
         <div className={css(styles.container)}>
           <div className={css(styles.flexColumn, styles.spacer)}>
             <Stat title="Contacts" count={campaign.contactsCount} />
@@ -362,28 +416,31 @@ class AdminCampaignStats extends React.Component {
         <TexterStats campaign={campaign} organizationId={organizationId} />
         <Snackbar
           open={this.state.exportMessageOpen}
-          message="Export started - we'll e-mail you when it's done"
-          autoHideDuration={5000}
-          onRequestClose={() => {
+          message={
+            <span>
+              Export started -
+              {this.props.organizationData &&
+              this.props.organizationData.emailEnabled
+                ? " we'll e-mail you when it's done."
+                : null}
+              {campaign.cacheable ? (
+                <span>
+                  <a
+                    onClick={() => {
+                      this.props.data.refetch();
+                    }}
+                    style={{ textDecoration: "underline" }}
+                  >
+                    Reload the page
+                  </a>{" "}
+                  to see a download link when its ready.
+                </span>
+              ) : null}
+            </span>
+          }
+          autoHideDuration={campaign.cacheable ? null : 5000}
+          onClose={() => {
             this.setState({ exportMessageOpen: false });
-          }}
-        />
-        <Snackbar
-          open={this.state.copyMessageOpen}
-          message="A new copy has been made."
-          action="Edit"
-          onActionClick={() => {
-            this.props.router.push(
-              "/admin/" +
-                encodeURIComponent(organizationId) +
-                "/campaigns/" +
-                encodeURIComponent(this.state.copyCampaignId) +
-                "/edit"
-            );
-          }}
-          autoHideDuration={5000}
-          onRequestClose={() => {
-            this.setState({ copyMessageOpen: false });
           }}
         />
       </div>
@@ -407,14 +464,15 @@ const queries = {
         $contactsFilter: ContactsFilter!
         $needsResponseFilter: ContactsFilter!
         $assignmentsFilter: AssignmentsFilter
+        $fromCampaignStatsPage: Boolean
       ) {
         campaign(id: $campaignId) {
           id
           title
           isArchived
-          isArchivedPermanently
           joinToken
           useDynamicAssignment
+          isArchivedPermanently
           useOwnMessagingService
           messageserviceSid
           assignments(assignmentsFilter: $assignmentsFilter) {
@@ -428,6 +486,11 @@ const queries = {
             unmessagedCount: contactsCount(contactsFilter: $contactsFilter)
             unrepliedCount: contactsCount(contactsFilter: $needsResponseFilter)
             contactsCount
+          }
+          exportResults {
+            error
+            campaignExportUrl
+            campaignMessagesExportUrl
           }
           pendingJobs {
             id
@@ -457,6 +520,14 @@ const queries = {
               link
             }
           }
+          cacheable
+          serviceManagers(fromCampaignStatsPage: $fromCampaignStatsPage) {
+            id
+            name
+            displayName
+            data
+            unArchiveable
+          }
         }
       }
     `,
@@ -473,7 +544,8 @@ const queries = {
         needsResponseFilter: {
           messageStatus: "needsResponse",
           isOptedOut: false
-        }
+        },
+        fromCampaignStatsPage: true
       },
       pollInterval: 5000
     })
@@ -484,6 +556,7 @@ const queries = {
         organization(id: $organizationId) {
           id
           campaignPhoneNumbersEnabled
+          emailEnabled
         }
       }
     `,
@@ -549,6 +622,36 @@ const mutations = {
     `,
     variables: { campaignId },
     refetchQueries: () => ["getOrganizationData"]
+  }),
+  updateServiceManager: ownProps => (serviceManagerName, updateData) => ({
+    mutation: gql`
+      mutation updateServiceManager(
+        $organizationId: String!
+        $campaignId: String!
+        $serviceManagerName: String!
+        $updateData: JSON!
+        $fromCampaignStatsPage: Boolean
+      ) {
+        updateServiceManager(
+          organizationId: $organizationId
+          campaignId: $campaignId
+          serviceManagerName: $serviceManagerName
+          updateData: $updateData
+          fromCampaignStatsPage: $fromCampaignStatsPage
+        ) {
+          id
+          data
+          unArchiveable
+        }
+      }
+    `,
+    variables: {
+      organizationId: ownProps.organizationData.organization.id,
+      campaignId: ownProps.data.campaign.id,
+      serviceManagerName,
+      updateData,
+      fromCampaignStatsPage: true
+    }
   })
 };
 

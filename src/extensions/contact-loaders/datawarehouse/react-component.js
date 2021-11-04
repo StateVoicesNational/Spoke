@@ -1,13 +1,19 @@
 import type from "prop-types";
 import React from "react";
-import RaisedButton from "material-ui/RaisedButton";
 import GSForm from "../../../components/forms/GSForm";
+import GSTextField from "../../../components/forms/GSTextField";
+import GSSubmitButton from "../../../components/forms/GSSubmitButton";
 import Form from "react-formal";
-import { ListItem, List } from "material-ui/List";
-import CampaignFormSectionHeading from "../../../components/CampaignFormSectionHeading";
+
+import List from "@material-ui/core/List";
+import ListItem from "@material-ui/core/ListItem";
+import ListItemIcon from "@material-ui/core/ListItemIcon";
+import ListItemText from "@material-ui/core/ListItemText";
+import Button from "@material-ui/core/Button";
+
 import theme from "../../../styles/theme";
 import { StyleSheet, css } from "aphrodite";
-import yup from "yup";
+import * as yup from "yup";
 
 const innerStyles = {
   button: {
@@ -103,21 +109,18 @@ export class CampaignContactsForm extends React.Component {
     }
     return (
       <div>
-        {results.errors ? (
+        {results.errors && (
           <div>
             <h4 style={{ color: theme.colors.red }}>Previous Errors</h4>
             <List>
               {results.errors.map(e => (
-                <ListItem
-                  key={e}
-                  primaryText={e}
-                  leftIcon={this.props.icons.error}
-                />
+                <ListItem key={e}>
+                  <ListItemIcon>{this.props.icons.error}</ListItemIcon>
+                  <ListItemText primary={e} />
+                </ListItem>
               ))}
             </List>
           </div>
-        ) : (
-          ""
         )}
         <GSForm
           schema={yup.object({
@@ -169,31 +172,31 @@ export class CampaignContactsForm extends React.Component {
               </ul>
             </div>
             <Form.Field
+              as={GSTextField}
               id="contact-sql"
               name="contactSql"
               type="textarea"
               rows="5"
               style={innerStyles.sqlBox}
             />
-            <RaisedButton
+            <Button
               style={innerStyles.button}
-              label="Validate SQL"
-              labelPosition="before"
+              variant="contained"
               onClick={this.validateSql}
-            />
-            {contactSqlError ? (
+            >
+              Validate SQL
+            </Button>
+            {contactSqlError && (
               <List>
-                <ListItem
-                  primaryText={contactSqlError}
-                  leftIcon={this.props.icons.error}
-                />
+                <ListItem>
+                  <ListItemIcon>{this.props.icons.error}</ListItemIcon>
+                  <ListItemText primary={contactSqlError} />
+                </ListItem>
               </List>
-            ) : (
-              ""
             )}
           </div>
-          <Form.Button
-            type="submit"
+          <Form.Submit
+            as={GSSubmitButton}
             disabled={this.props.saveDisabled}
             label={this.props.saveLabel}
           />

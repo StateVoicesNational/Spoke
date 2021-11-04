@@ -6,7 +6,11 @@ import gql from "graphql-tag";
 import theme from "../styles/theme";
 import DisplayLink from "../components/DisplayLink";
 import { StyleSheet, css } from "aphrodite";
-import { Table, TableBody, TableRow, TableRowColumn } from "material-ui/Table";
+
+import Table from "@material-ui/core/Table";
+import TableBody from "@material-ui/core/TableBody";
+import TableCell from "@material-ui/core/TableCell";
+import TableRow from "@material-ui/core/TableRow";
 
 const styles = StyleSheet.create({
   container: {
@@ -23,7 +27,7 @@ const styles = StyleSheet.create({
 class AdminCampaignMessagingService extends React.Component {
   render() {
     const campaign = this.props.data.campaign;
-    const messagingServiceUrl = `https://www.twilio.com/console/sms/services/${campaign.messageserviceSid}/`;
+    const phoneNumbers = campaign.phoneNumbers || [];
     return (
       <div>
         <div className={css(styles.header)}>
@@ -31,22 +35,23 @@ class AdminCampaignMessagingService extends React.Component {
           <br />
           Campaign ID: {campaign.id}
           <br />
-          <DisplayLink
-            url={messagingServiceUrl}
-            textContent={"Messaging Service URL:"}
-          />
+          {campaign.messageServiceLink ? (
+            <DisplayLink
+              url={campaign.messageServiceLink}
+              textContent={"Messaging Service URL:"}
+            />
+          ) : null}
           <br />
-          Total Phone Numbers: {campaign.phoneNumbers.length}
+          Total Phone Numbers: {phoneNumbers.length}
         </div>
         <div>
-          <Table selectable={false}>
-            <TableBody displayRowCheckbox={false} showRowHover>
-              {campaign.phoneNumbers.map(phoneNumber => (
+          <Table>
+            <TableBody>
+              {phoneNumbers.map(phoneNumber => (
                 <TableRow key={phoneNumber}>
-                  <TableRowColumn>{phoneNumber}</TableRowColumn>
+                  <TableCell>{phoneNumber}</TableCell>
                 </TableRow>
               ))}
-              ;
             </TableBody>
           </Table>
         </div>
@@ -72,6 +77,7 @@ const queries = {
           id
           title
           messageserviceSid
+          messageServiceLink
           phoneNumbers
         }
       }

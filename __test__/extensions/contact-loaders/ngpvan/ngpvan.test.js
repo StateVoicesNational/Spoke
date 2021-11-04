@@ -9,6 +9,10 @@ import {
   getClientChoiceData,
   available
 } from "../../../../src/extensions/contact-loaders/ngpvan";
+import Autocomplete from "@material-ui/lab/Autocomplete";
+import List from "@material-ui/core/List";
+import ListItem from "@material-ui/core/ListItem";
+import ListItemText from "@material-ui/core/ListItemText";
 
 import { CampaignContactsForm } from "../../../../src/extensions/contact-loaders/ngpvan/react-component";
 
@@ -150,7 +154,7 @@ describe("ngpvan", () => {
         }
       })
         .get(
-          `/v4/savedLists?$top=&maxPeopleCount=${process.env.NGP_VAN_MAXIMUM_LIST_SIZE}`
+          `/v4/savedLists?$top=100&maxPeopleCount=${process.env.NGP_VAN_MAXIMUM_LIST_SIZE}`
         )
         .reply(200, {
           items: listItems,
@@ -164,6 +168,42 @@ describe("ngpvan", () => {
       getSavedListsNock.done();
     });
 
+    it("gets extra when more than 100 count", async () => {
+      const savedListsNock = nock(`${fakeNgpVanBaseApiUrl}:443`, {
+        encodedQueryParams: true,
+        reqheaders: {
+          authorization: "Basic c3Bva2U6dG9wc2VjcmV0fDA="
+        }
+      });
+
+      const getSavedListsNock = savedListsNock
+        .get(
+          `/v4/savedLists?$top=100&maxPeopleCount=${process.env.NGP_VAN_MAXIMUM_LIST_SIZE}`
+        )
+        .reply(200, {
+          items: listItems.slice(0, 4),
+          nextPageLink: null,
+          count: 101
+        });
+
+      const getExtraSavedListsNock = savedListsNock
+        .get(
+          `/v4/savedLists?$top=100&maxPeopleCount=${process.env.NGP_VAN_MAXIMUM_LIST_SIZE}&$skip=1`
+        )
+        .reply(200, {
+          items: listItems.slice(4),
+          nextPageLink: null,
+          count: 1
+        });
+
+      const savedListsResponse = await getClientChoiceData();
+
+      expect(JSON.parse(savedListsResponse.data).items).toEqual(listItems);
+      expect(savedListsResponse.expiresSeconds).toEqual(30);
+      getSavedListsNock.done();
+      getExtraSavedListsNock.done();
+    });
+
     describe("when there is an error retrieving the list", () => {
       it("returns what we expect", async () => {
         const getSavedListsNock = nock(`${fakeNgpVanBaseApiUrl}:443`, {
@@ -173,7 +213,7 @@ describe("ngpvan", () => {
           }
         })
           .get(
-            `/v4/savedLists?$top=&maxPeopleCount=${process.env.NGP_VAN_MAXIMUM_LIST_SIZE}`
+            `/v4/savedLists?$top=100&maxPeopleCount=${process.env.NGP_VAN_MAXIMUM_LIST_SIZE}`
           )
           .reply(404);
 
@@ -245,7 +285,7 @@ describe("ngpvan", () => {
 1286,6678759,"1229 Dubud Cir, Gujufbik, MA 67577",Zachary,Chapman,1229 Dubud Cir,Gujufbik,MA,,Suffolk,,,,(530) 591-9876,0,(770) 500-5813,,,(865) 787-7929,,,,001,004,002,O,,,
 1286,6687736,"1660 Tiwa Pike, Owucudji, MD 78594",Phoebe,König,1660 Tiwa Pike,Owucudji,MD,,Suffolk,,,,,,(765) 927-7705,,,(232) 872-2395,,,,001,004,002,D,,,
 1286,6687737,"1820 Kasi Plz, Uhokuicu, NJ 70521",Andrew,Coli,1820 Kasi Plz,Uhokuicu,NJ,,Suffolk,,,,,,(830) 978-5900,,,(256) 289-2236,,,,001,004,002,R,,,
-1286,6740265,"1864 Pohe Path, Lahutci, IA 21134",Francis,Anderson,1864 Pohe Path,Lahutci,IA,,Suffolk,,,,(229) 403-7155,0,,,,(839) 862-7352,,,,001,004,002,R,,,
+1286,6740265,"1864 Pohe Path, Lahutci, IA 21134",Francis,Anderson,1864 Pohe Path,Lahutci,IA,,Suffolk,,,,(229) 403-7155,0,,,,(899) 862-7352,,,,001,004,002,R,,,
 1286,6848857,"296 Bilez Sq, Efabodgun, NC 26984",Florence,Adkins,296 Bilez Sq,Efabodgun,NC,,Suffolk,,,,,,,,,,,,,001,004,002,D,,,
 1286,6870533,"701 Zetli Plz, Nuwdope, CA 62375",Leona,Orsini,701 Zetli Plz,Nuwdope,CA,,Suffolk,,,,(968) 346-8020,0,,,,(874) 366-8307,,,,001,004,002,R,,,
 1286,15597061,"1591 Zuote Rdg, Pudugpu, MA 56190",Francis,Reyes,1591 Zuote Rdg,Pudugpu,MA,,Suffolk,,,,,,,,,,,,,001,004,002,R,,,
@@ -338,7 +378,7 @@ describe("ngpvan", () => {
       jest.restoreAllMocks();
     });
 
-    it("calls the api and its dependencies", async () => {
+    it("calls the api and its dependencies for processContactLoad", async () => {
       const exportJobsNock = makeSuccessfulExportJobPostNock("Completed");
       const getCsvNock = makeSuccessfulGetCsvNock();
 
@@ -357,6 +397,8 @@ describe("ngpvan", () => {
 
       expect(helpers.finalizeContactLoad).toHaveBeenCalledTimes(1);
       expect(helpers.finalizeContactLoad.mock.calls[0][0]).toEqual(job);
+      // Should be only the rows that have a Phone value that's valid (w/getFormattedPhoneNumber)
+      // so e.g. 899 and 968 are not a valid area codes (yet) so Anderson and Orsini rows are excluded
       expect(helpers.finalizeContactLoad.mock.calls[0][1]).toEqual([
         {
           cell: "+13214028326",
@@ -1325,11 +1367,11 @@ describe("ngpvan", () => {
 
       dataSourceExpectation = [
         {
-          rawValue: 682913,
-          text: "200-220 W 103",
-          value: expect.objectContaining({
-            props: expect.objectContaining({ primaryText: "200-220 W 103" })
-          })
+          description: null,
+          doorCount: 127,
+          listCount: 171,
+          name: "200-220 W 103",
+          savedListId: 682913
         }
       ];
 
@@ -1364,10 +1406,22 @@ describe("ngpvan", () => {
     it("populates its data correctly", async () => {
       wrapper = shallow(<CampaignContactsForm {...commonProps} />);
       component = wrapper.instance();
-      const autocomplete = wrapper.find("AutoComplete");
-      expect(autocomplete.props().dataSource).toEqual(dataSourceExpectation);
-      expect(autocomplete.props().searchText).toBe(undefined);
-      expect(autocomplete.props().hintText).toEqual("Select a list to import");
+      const autocomplete = wrapper.find(Autocomplete);
+      expect(autocomplete.props().options).toEqual(dataSourceExpectation);
+      expect(autocomplete.props().value).toBe(undefined);
+      expect(autocomplete.html()).toContain("Select a list to import");
+    });
+
+    it("populates as empty when client choice data errors", async () => {
+      const props = {
+        ...commonProps,
+        clientChoiceData: JSON.stringify({ error: "error occurred" })
+      };
+
+      wrapper = shallow(<CampaignContactsForm {...props} />);
+      component = wrapper.instance();
+      const autocomplete = wrapper.find(Autocomplete);
+      expect(autocomplete.props().options).toEqual([]);
     });
 
     describe("when lastResult indicates a success", () => {
@@ -1394,8 +1448,8 @@ describe("ngpvan", () => {
       });
 
       it("populates the selected list name in the autocomplete and displays the results", async () => {
-        const autocomplete = wrapper.find("AutoComplete");
-        expect(autocomplete.props().dataSource).toEqual(dataSourceExpectation);
+        const autocomplete = wrapper.find(Autocomplete);
+        expect(autocomplete.props().options).toEqual(dataSourceExpectation);
         expect(component.props.lastResult).toEqual({
           contactsCount: 9,
           deletedDupes: 0,
@@ -1407,21 +1461,22 @@ describe("ngpvan", () => {
           success: true,
           updatedAt: "2020-03-25T02:53:37.514Z"
         });
-        expect(autocomplete.props().searchText).toEqual("200-220 W 103");
-        expect(autocomplete.props().hintText).toEqual(
-          "Select a list to import"
-        );
-        const subheader = wrapper.find("Subheader");
-        expect(subheader.props().children).toEqual("Last Import");
+        expect(autocomplete.html()).toContain("Select a list to import");
+        const list = wrapper.find(List);
+        expect(list.props().subheader.props.children).toEqual("Last Import");
 
-        const listItems = wrapper.find("ListItem");
-        expect(listItems.at(0).props().primaryText).toEqual(
+        const listItems = wrapper.find(ListItem);
+        const listItemText0 = listItems.at(0).find(ListItemText);
+        const listItemText1 = listItems.at(1).find(ListItemText);
+        const listItemText2 = listItems.at(2).find(ListItemText);
+
+        expect(listItemText0.props().primary).toEqual(
           "List name: 200-220 W 103"
         );
-        expect(listItems.at(1).props().primaryText).toEqual(
+        expect(listItemText1.props().primary).toEqual(
           "260 contacts with no cell phone removed"
         );
-        expect(listItems.at(2).props().primaryText).toEqual(
+        expect(listItemText2.props().primary).toEqual(
           "0 contacts with no ZIP code imported"
         );
         expect(listItems.at(3).exists()).toEqual(false);
@@ -1452,8 +1507,8 @@ describe("ngpvan", () => {
       });
 
       it("populates the selected list name in the autocomplete and displays the results", async () => {
-        const autocomplete = wrapper.find("AutoComplete");
-        expect(autocomplete.props().dataSource).toEqual(dataSourceExpectation);
+        const autocomplete = wrapper.find(Autocomplete);
+        expect(autocomplete.props().options).toEqual(dataSourceExpectation);
         expect(component.props.lastResult).toEqual({
           contactsCount: 9,
           deletedDupes: null,
@@ -1465,18 +1520,19 @@ describe("ngpvan", () => {
           success: false,
           updatedAt: "2020-03-25T02:53:37.514Z"
         });
-        expect(autocomplete.props().searchText).toEqual("200-220 W 103");
-        expect(autocomplete.props().hintText).toEqual(
-          "Select a list to import"
-        );
-        const subheader = wrapper.find("Subheader");
-        expect(subheader.props().children).toEqual("Last Import");
+        expect(autocomplete.html()).toContain("Select a list to import");
+        const list = wrapper.find(List);
 
-        const listItems = wrapper.find("ListItem");
-        expect(listItems.at(0).props().primaryText).toEqual(
+        expect(list.props().subheader.props.children).toEqual("Last Import");
+
+        const listItems = wrapper.find(ListItem);
+        const listItemText0 = listItems.at(0).find(ListItemText);
+        const listItemText1 = listItems.at(1).find(ListItemText);
+
+        expect(listItemText0.props().primary).toEqual(
           "List name: 200-220 W 103"
         );
-        expect(listItems.at(1).props().primaryText).toEqual(
+        expect(listItemText1.props().primary).toEqual(
           "Error requesting VAN export job. Error: Request failed with status code 404"
         );
         expect(listItems.at(2).exists()).toEqual(false);
@@ -1493,21 +1549,19 @@ describe("ngpvan", () => {
       });
 
       it("does not display any results or previously selected list", async () => {
-        const autocomplete = wrapper.find("AutoComplete");
-        expect(autocomplete.props().dataSource).toEqual([
+        const autocomplete = wrapper.find(Autocomplete);
+        expect(autocomplete.props().options).toEqual([
           {
-            rawValue: 682913,
-            text: "200-220 W 103",
-            value: expect.objectContaining({
-              props: expect.objectContaining({ primaryText: "200-220 W 103" })
-            })
+            savedListId: 682913,
+            name: "200-220 W 103",
+            description: null,
+            listCount: 171,
+            doorCount: 127
           }
         ]);
         expect(component.props.lastResult).toEqual(null);
         expect(autocomplete.props().searchText).toEqual(undefined);
-        expect(autocomplete.props().hintText).toEqual(
-          "Select a list to import"
-        );
+        expect(autocomplete.html()).toContain("Select a list to import");
         const subheader = wrapper.find("Subheader");
         expect(subheader.exists()).toEqual(false);
 

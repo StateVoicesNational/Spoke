@@ -1,124 +1,171 @@
-import ActionDelete from "material-ui/svg-icons/action/delete";
-import Subheader from "material-ui/Subheader";
-import Avatar from "material-ui/Avatar";
-import FileFolder from "material-ui/svg-icons/file/folder";
+/* eslint-disable no-unused-vars */
+import DeleteIcon from "@material-ui/icons/Delete";
+import Avatar from "@material-ui/core/Avatar";
+import FolderIcon from "@material-ui/icons/Folder";
+import TextField from "@material-ui/core/TextField";
+import Autocomplete from "@material-ui/lab/Autocomplete";
+import LoadingIndicator from "../../../components/LoadingIndicator";
+import _ from "lodash";
 import type from "prop-types";
 import React from "react";
-import GSForm from "../../../components/forms/GSForm";
+import * as yup from "yup";
 import Form from "react-formal";
-import { ListItem, List } from "material-ui/List";
-import yup from "yup";
-import AutoComplete from "material-ui/AutoComplete";
-import LoadingIndicator from "../../../components/LoadingIndicator";
-import * as _ from "lodash";
-import Paper from "material-ui/Paper";
+import List from "@material-ui/core/List";
+import ListItem from "@material-ui/core/ListItem";
+import ListItemIcon from "@material-ui/core/ListItemIcon";
+import ListItemText from "@material-ui/core/ListItemText";
+import ListItemAvatar from "@material-ui/core/ListItemAvatar";
+import ListItemSecondaryAction from "@material-ui/core/ListItemSecondaryAction";
+import IconButton from "@material-ui/core/IconButton";
+import GSForm from "../../../components/forms/GSForm";
+import GSSubmitButton from "../../../components/forms/GSSubmitButton";
+import fetch from "node-fetch";
+import {
+  CIVICRM_INTEGRATION_GROUPSEARCH_ENDPOINT,
+  CIVICRM_MINQUERY_SIZE
+} from "./const";
+import CircularProgress from "@material-ui/core/CircularProgress";
+import { log } from "../../../lib/log";
 
-class MultiAutoCompleteSelect extends React.Component {
-  state = {
-    error: null,
-    list: null,
-    value: [],
-    searchText: "",
-    result: []
-  };
+export default function CiviCRMLoaderField(props) {
+  const [open, setOpen] = React.useState(false);
+  const [options, setOptions] = React.useState([]);
+  const [loading, setLoading] = React.useState(false);
+  const [selectedGroups, setSelectedGroups] = React.useState([]);
+  const [error, setError] = React.useState("");
 
-  refreshList(query) {
-    if (query.length < 3) {
-      this.setState({ result: [] });
-      return;
+  // See https://v4.mui.com/components/autocomplete/#controllable-states
+  const [value, setValue] = React.useState(null);
+  const [inputValue, setInputValue] = React.useState("");
+
+  React.useEffect(() => {
+    setLoading(true);
+    let active = true;
+
+    if (inputValue.length >= CIVICRM_MINQUERY_SIZE) {
+      (async () => {
+        try {
+          const response = await fetch(
+            `${CIVICRM_INTEGRATION_GROUPSEARCH_ENDPOINT}?query=${inputValue}`
+          );
+          const json = await response.json();
+
+          if (active) {
+            setOptions(json.groups);
+          }
+          setError("");
+        } catch (err) {
+          setError(err.message);
+          log.error(error);
+        }
+      })();
     }
 
-    this.setState({ loading: true });
-    fetch("/integration/civicrm/groupsearch?query=" + query, {
-      credentials: "same-origin"
-    })
-      .then(res => res.json())
-      .then(res => {
-        if (res.error) {
-          this.setError(res.error);
-        } else {
-          this.setState({ result: res.groups, loading: false, error: null });
-        }
-      })
-      .catch(error => {
-        console.error(error);
-        this.setError(error);
-      });
-  }
+    setLoading(false);
 
-  setError(error) {
-    this.setState({ loading: false, error });
-  }
+    return () => {
+      active = false;
+    };
+  }, [inputValue]);
 
-  componentWillReceiveProps(props) {
-    this.setState({ value: props.value });
-  }
+  React.useEffect(() => {
+    if (!open) {
+      setOptions([]);
+    }
+  }, [open]);
 
-  remove(id) {
-    this.setState(old => ({
-      value: _.remove(old.value, item => item.id === id)
-    }));
-  }
+  const removeId = id => {
+    setSelectedGroups(selectedGroups.filter(item => item.id !== id));
+  };
 
-  render() {
-    const self = this;
-
-    console.log(this.props);
-    return (
-      <div style={{ display: "flex" }}>
-        <Paper zDepth={2} style={{ flexBasis: "50%" }}>
-          <div style={{ padding: "5px" }}>
-            <div style={{ display: "flex" }}>
-              <List style={{ flexBasis: "50%" }}>
-                <Subheader inset={true}>Selected groups</Subheader>
-                {(this.props.value || []).map(value => (
-                  <ListItem
-                    leftAvatar={<Avatar icon={<FileFolder />} />}
-                    rightIcon={
-                      <ActionDelete
-                        onClick={this.remove.bind(this, value.id)}
-                      />
-                    }
-                    key={value.id}
-                    primaryText={value.title}
-                  />
-                ))}
-              </List>
-            </div>
-
-            <div style={{ display: "flex" }}>
-              <AutoComplete
-                style={{ flexBasis: "33.33%" }}
-                label="CiviCRM list"
-                name="groupId"
-                as="select"
-                searchText={this.state.searchText}
-                filter={AutoComplete.noFilter}
-                dataSource={this.state.result}
-                onNewRequest={function(el) {
-                  self.setState(old => {
-                    const newValue = old.value.concat([el]);
-                    self.props.onChange(newValue);
-                    return { value: newValue, searchText: "" };
-                  });
+  return (
+    <div style={{ display: "flex" }}>
+      <div style={{ padding: "5px", flexBasis: "50%" }}>
+        <div style={{ display: "flex" }}>
+          <Autocomplete
+            value={value}
+            inputValue={inputValue}
+            id="civicrmloader"
+            style={{ width: "100%" }}
+            open={open}
+            onOpen={() => {
+              setOpen(true);
+            }}
+            onClose={() => {
+              setOpen(false);
+            }}
+            getOptionSelected={(option, theValue) =>
+              theValue ? option.title === theValue.title : false
+            }
+            getOptionLabel={option => (option ? option.title : "")}
+            options={options}
+            loading={loading}
+            disableClearable
+            onInputChange={(_event, text) => {
+              setInputValue(text);
+            }}
+            onChange={(_event, el, _reason) => {
+              // Fired when the input value changes (i.e something is selected)
+              if (el) {
+                const elid = el.id;
+                if (!selectedGroups.find(element => element.id === elid)) {
+                  const newSelectedGroups = selectedGroups.concat([el]);
+                  props.onChange(newSelectedGroups);
+                  setSelectedGroups(newSelectedGroups);
+                }
+              }
+              // Finally we clear the value, which is a bit counter
+              // intuitive but how we want this to operate
+              setValue(null);
+              setInputValue("");
+            }}
+            renderInput={params => (
+              <TextField
+                {...params}
+                label="CiviCRM Groups"
+                variant="outlined"
+                error={error.length > 0}
+                helperText={error}
+                style={{ width: "100%" }}
+                InputProps={{
+                  ...params.InputProps,
+                  endAdornment: (
+                    <React.Fragment>
+                      {loading ? (
+                        <CircularProgress color="inherit" size={20} />
+                      ) : null}
+                      {params.InputProps.endAdornment}
+                    </React.Fragment>
+                  )
                 }}
-                onUpdateInput={text => {
-                  this.refreshList(text);
-                  this.setState({ searchText: text });
-                }}
-                dataSourceConfig={{
-                  text: "title",
-                  value: "id"
-                }}
-                hintText="Choose CiviCRM list"
               />
-              {this.state.loading && <LoadingIndicator />}
-            </div>
-          </div>
-        </Paper>
+            )}
+          />
+          {loading && <LoadingIndicator />}
+        </div>
+        <h4>Selected Groups</h4>
+        <div style={{ display: "flex" }}>
+          <List style={{ flexBasis: "100%" }}>
+            {selectedGroups.map(x => (
+              <ListItem key={`listitem ${x.id}`}>
+                <ListItemAvatar>
+                  <Avatar>
+                    <FolderIcon />
+                  </Avatar>
+                </ListItemAvatar>
+                <ListItemText primary={x.title} />
+                <ListItemSecondaryAction onClick={() => removeId(x.id)}>
+                  <IconButton edge="end" aria-label="delete">
+                    <DeleteIcon />
+                  </IconButton>
+                </ListItemSecondaryAction>
+              </ListItem>
+            ))}
+          </List>
+        </div>
       </div>
-    );
-  }
+    </div>
+  );
 }
 
 export class CampaignContactsForm extends React.Component {
@@ -127,17 +174,7 @@ export class CampaignContactsForm extends React.Component {
     result: []
   };
 
-  render() {
-    const { lastResult } = this.props,
-      props = this.props;
-    let resultMessage = "";
-    if (lastResult && lastResult.result) {
-      const { message, finalCount } = JSON.parse(lastResult.result);
-      resultMessage = message ? message : `Loaded ${finalCount} contacts`;
-    } else if (this.state.error) {
-      resultMessage = "Error: " + JSON.stringify(this.state.error);
-    }
-
+  renderForm(resultMessage) {
     return (
       <GSForm
         schema={yup.object({
@@ -149,37 +186,68 @@ export class CampaignContactsForm extends React.Component {
             })
           )
         })}
-        initialValues={{ groupIds: [] }}
+        // initialValues={{ groupIds: [] }}
         onChange={formValues => {
           this.setState({ ...formValues });
-          props.onChange(JSON.stringify(formValues));
+          this.props.onChange(JSON.stringify(formValues));
         }}
         onSubmit={formValues => {
           // sets values locally
           this.setState({ ...formValues });
           // triggers the parent to update values
-          props.onChange(JSON.stringify(formValues));
+          this.props.onChange(JSON.stringify(formValues));
           // and now do whatever happens when clicking 'Next'
-          props.onSubmit();
+          this.props.onSubmit();
         }}
       >
-        <Form.Field name="groupIds" type={MultiAutoCompleteSelect}></Form.Field>
-
+        <Form.Field name="groupIds" as={CiviCRMLoaderField}></Form.Field>
         <List>
           {resultMessage ? (
-            <ListItem
-              primaryText={resultMessage}
-              leftIcon={props.icons.warning}
-            />
+            <ListItem>
+              <ListItemIcon>{this.props.icons.check}</ListItemIcon>
+              <ListItemText primary={resultMessage} />
+            </ListItem>
           ) : null}
         </List>
-
-        <Form.Button
-          type="submit"
-          disabled={props.saveDisabled}
-          label={props.saveLabel}
+        <Form.Submit
+          as={GSSubmitButton}
+          disabled={this.props.saveDisabled}
+          label={this.props.saveLabel}
         />
       </GSForm>
+    );
+  }
+
+  render() {
+    let resultMessage = "";
+
+    if (this.props.lastResult && this.props.lastResult.result) {
+      try {
+        const { message, finalCount } = JSON.parse(
+          this.props.lastResult.result
+        );
+        resultMessage = message || `Loaded ${finalCount} contacts`;
+      } catch (err) {
+        resultMessage = err.message;
+      }
+    } else if (this.state.error) {
+      resultMessage = `Error: ${JSON.stringify(this.state.error)}`;
+    } else {
+      resultMessage = "";
+    }
+
+    let subtitle = (
+      <span>
+        Please select one or more CiviCRM groups that contain contact
+        information you wish to load.
+      </span>
+    );
+
+    return (
+      <div>
+        {subtitle}
+        {this.renderForm(resultMessage)}
+      </div>
     );
   }
 }
@@ -188,13 +256,14 @@ CampaignContactsForm.propTypes = {
   onChange: type.func,
   onSubmit: type.func,
   campaignIsStarted: type.bool,
-
   icons: type.object,
-
   saveDisabled: type.bool,
   saveLabel: type.string,
-
   clientChoiceData: type.string,
   jobResultMessage: type.string,
   lastResult: type.object
+};
+
+CiviCRMLoaderField.propTypes = {
+  onChange: type.func
 };

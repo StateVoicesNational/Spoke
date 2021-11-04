@@ -2,20 +2,27 @@ import type from "prop-types";
 import React from "react";
 import orderBy from "lodash/orderBy";
 import Slider from "./Slider";
-import AutoComplete from "material-ui/AutoComplete";
-import IconButton from "material-ui/IconButton";
-import RaisedButton from "material-ui/RaisedButton";
-import Snackbar from "material-ui/Snackbar";
+
+import Autocomplete from "@material-ui/lab/Autocomplete";
+import TextField from "@material-ui/core/TextField";
+import Button from "@material-ui/core/Button";
+import DeleteIcon from "@material-ui/icons/Delete";
+import CloseIcon from "@material-ui/icons/Close";
+import IconButton from "@material-ui/core/IconButton";
+import Snackbar from "@material-ui/core/Snackbar";
+
+import Switch from "@material-ui/core/Switch";
+import FormControlLabel from "@material-ui/core/FormControlLabel";
+
 import GSForm from "../components/forms/GSForm";
-import yup from "yup";
+import GSTextField from "./forms/GSTextField";
+import GSSubmitButton from "./forms/GSSubmitButton";
+import * as yup from "yup";
 import Form from "react-formal";
 import CampaignFormSectionHeading from "./CampaignFormSectionHeading";
 import { StyleSheet, css } from "aphrodite";
 import theme from "../styles/theme";
-import Toggle from "material-ui/Toggle";
-import DeleteIcon from "material-ui/svg-icons/action/delete";
 import { dataTest } from "../lib/attributes";
-import { dataSourceItem } from "./utils";
 import { getHighestRole } from "../lib/permissions";
 
 const styles = StyleSheet.create({
@@ -49,7 +56,8 @@ const styles = StyleSheet.create({
   },
   splitToggle: {
     ...theme.text.body,
-    flex: "1 1 50%"
+    flex: "1 1 50%",
+    textAlign: "right"
   },
   slider: {
     flex: "1 1 35%",
@@ -93,7 +101,8 @@ const styles = StyleSheet.create({
 
 const inlineStyles = {
   autocomplete: {
-    marginBottom: 24
+    marginBottom: 24,
+    width: 250
   },
   radioButtonGroup: {
     marginBottom: 12
@@ -121,7 +130,6 @@ export default class CampaignTextersForm extends React.Component {
     let totalMessaged = 0;
     const texterCountChanged =
       newFormValues.texters.length !== existingFormValues.texters.length;
-
     // 1. map form texters to existing texters. with needsMessageCount tweaked to minimums when invalid or useless
     newFormValues.texters = newFormValues.texters.map(newTexter => {
       const existingTexter = existingFormValues.texters.filter(texter =>
@@ -275,29 +283,23 @@ export default class CampaignTextersForm extends React.Component {
 
     const dataSource = orgTexters
       .filter(orgTexter => !texters.find(texter => texter.id === orgTexter.id))
-      .filter(orgTexter => getHighestRole(orgTexter.roles) !== "SUSPENDED")
-      .map(orgTexter => dataSourceItem(orgTexter.displayName, orgTexter.id));
-
-    const filter = (searchText, key) =>
-      key === "allTexters" ? true : AutoComplete.fuzzyFilter(searchText, key);
+      .filter(orgTexter => getHighestRole(orgTexter.roles) !== "SUSPENDED");
 
     const autocomplete = (
-      <AutoComplete
-        ref="autocomplete"
-        style={inlineStyles.autocomplete}
-        autoFocus
-        onFocus={() => this.setState({ searchText: "" })}
-        onUpdateInput={searchText => this.setState({ searchText })}
-        searchText={this.state.searchText}
-        filter={filter}
-        hintText="Search for texters to assign"
-        dataSource={dataSource}
+      <Autocomplete
         {...dataTest("texterSearch")}
-        onNewRequest={value => {
+        autoFocus
+        getOptionLabel={({ displayName }) => displayName}
+        style={inlineStyles.autocomplete}
+        options={dataSource}
+        renderInput={params => {
+          return <TextField {...params} label="Search for texters to assign" />;
+        }}
+        onChange={(event, value) => {
           // If you're searching but get no match, value is a string
           // representing your search term, but we only want to handle matches
-          if (typeof value === "object") {
-            const texterId = value.value.key;
+          if (typeof value === "object" && value !== null) {
+            const texterId = value.id;
             const newTexter = this.props.orgTexters.find(
               texter => texter.id === texterId
             );
@@ -318,8 +320,7 @@ export default class CampaignTextersForm extends React.Component {
         }}
       />
     );
-
-    return <div>{orgTexters.length > 0 ? autocomplete : ""}</div>;
+    return <div>{orgTexters.length > 0 ? autocomplete : null}</div>;
   }
 
   addAllTexters() {
@@ -372,6 +373,7 @@ export default class CampaignTextersForm extends React.Component {
           </div>
           <div className={css(styles.input)}>
             <Form.Field
+              as={GSTextField}
               {...dataTest("texterAssignment")}
               name={`texters[${index}].assignment.needsMessageCount`}
               hintText="Contacts"
@@ -395,6 +397,7 @@ export default class CampaignTextersForm extends React.Component {
           {this.props.useDynamicAssignment ? (
             <div className={css(styles.input)}>
               <Form.Field
+                as={GSTextField}
                 name={`texters[${index}].assignment.maxContacts`}
                 hintText="Max"
                 fullWidth
@@ -406,12 +409,10 @@ export default class CampaignTextersForm extends React.Component {
                 }
               />
             </div>
-          ) : (
-            ""
-          )}
+          ) : null}
           <div className={css(styles.removeButton)}>
             <IconButton
-              onTouchTap={async () => {
+              onClick={async () => {
                 const currentFormValues = this.formValues();
                 const newFormValues = {
                   ...currentFormValues
@@ -469,11 +470,12 @@ export default class CampaignTextersForm extends React.Component {
           <div style={{ display: "flex", justifyContent: "space-between" }}>
             {this.showSearch()}
             <div>
-              <RaisedButton
+              <Button
                 {...dataTest("addAll")}
-                label="Add All"
-                onTouchTap={() => this.addAllTexters()}
-              />
+                onClick={() => this.addAllTexters()}
+              >
+                Add All
+              </Button>
             </div>
           </div>
           <div className={css(styles.sliderContainer)}>
@@ -490,37 +492,46 @@ export default class CampaignTextersForm extends React.Component {
                 }`}
               </div>
               <div className={css(styles.splitToggle)}>
-                <Toggle
-                  {...dataTest("autoSplit")}
+                <FormControlLabel
                   label="Split assignments"
-                  style={{
-                    width: "auto",
-                    marginLeft: "auto"
-                  }}
-                  toggled={this.state.autoSplit}
-                  onToggle={() => {
-                    this.setState({ autoSplit: !this.state.autoSplit }, () => {
-                      if (this.state.autoSplit) {
-                        const contactsCount = Math.floor(
-                          this.formValues().contactsCount /
-                            this.formValues().texters.length
-                        );
-                        const newTexters = this.formValues().texters.map(
-                          texter => ({
-                            ...texter,
-                            assignment: {
-                              ...texter.assignment,
-                              contactsCount
+                  labelPlacement="start"
+                  control={
+                    <Switch
+                      {...dataTest("autoSplit")}
+                      style={{
+                        width: "auto",
+                        marginLeft: "auto"
+                      }}
+                      color="primary"
+                      checked={this.state.autoSplit}
+                      onChange={() => {
+                        this.setState(
+                          { autoSplit: !this.state.autoSplit },
+                          () => {
+                            if (this.state.autoSplit) {
+                              const contactsCount = Math.floor(
+                                this.formValues().contactsCount /
+                                  this.formValues().texters.length
+                              );
+                              const newTexters = this.formValues().texters.map(
+                                texter => ({
+                                  ...texter,
+                                  assignment: {
+                                    ...texter.assignment,
+                                    contactsCount
+                                  }
+                                })
+                              );
+                              this.onChange({
+                                ...this.formValues(),
+                                texters: newTexters
+                              });
                             }
-                          })
+                          }
                         );
-                        this.onChange({
-                          ...this.formValues(),
-                          texters: newTexters
-                        });
-                      }
-                    });
-                  }}
+                      }}
+                    />
+                  }
                 />
               </div>
             </div>
@@ -540,18 +551,34 @@ export default class CampaignTextersForm extends React.Component {
             </div>
             {this.showTexters()}
           </div>
-          <Form.Button
-            type="submit"
+          <Form.Submit
+            as={GSSubmitButton}
             label={this.props.saveLabel}
             disabled={this.props.saveDisabled}
             {...dataTest("submitCampaignTextersForm")}
           />
         </GSForm>
         <Snackbar
+          anchorOrigin={{
+            vertical: "bottom",
+            horizontal: "center"
+          }}
           open={this.state.snackbarOpen}
-          message={this.state.snackbarMessage}
           autoHideDuration={3000}
-          onRequestClose={this.handleSnackbarClose}
+          onClose={this.handleSnackbarClose}
+          message={this.state.snackbarMessage}
+          action={
+            <React.Fragment>
+              <IconButton
+                size="small"
+                aria-label="close"
+                color="inherit"
+                onClick={this.handleSnackbarClose}
+              >
+                <CloseIcon fontSize="small" />
+              </IconButton>
+            </React.Fragment>
+          }
         />
       </div>
     );

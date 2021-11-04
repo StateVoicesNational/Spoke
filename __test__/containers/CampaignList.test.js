@@ -3,7 +3,6 @@
  */
 import React from "react";
 import { mount } from "enzyme";
-import MuiThemeProvider from "material-ui/styles/MuiThemeProvider";
 import { AdminCampaignList } from "../../src/containers/AdminCampaignList";
 import { TIMEZONE_SORT } from "../../src/components/AdminCampaignList/SortBy";
 import { StyleSheetTestUtils } from "aphrodite";
@@ -31,6 +30,9 @@ describe("CampaignList", () => {
         contactsCount: 1300,
         messagedCount: 98,
         assignedCount: 199
+      },
+      organization: {
+        id: 77
       }
     };
 
@@ -53,13 +55,7 @@ describe("CampaignList", () => {
     test("Renders for campaign with null creator, doesn't include created by", () => {
       StyleSheetTestUtils.suppressStyleInjection();
       const wrapper = mount(
-        <MuiThemeProvider>
-          <AdminCampaignList
-            data={data}
-            mutations={mutations}
-            params={params}
-          />
-        </MuiThemeProvider>
+        <AdminCampaignList data={data} mutations={mutations} params={params} />
       );
       const text = wrapper.text();
       expect(text.includes("Created by")).toBeFalsy();
@@ -77,7 +73,10 @@ describe("CampaignList", () => {
       creator: {
         displayName: "Lorem Ipsum"
       },
-      completionStats: {}
+      completionStats: {},
+      organization: {
+        id: 1
+      }
     };
 
     const data = {
@@ -99,13 +98,7 @@ describe("CampaignList", () => {
     test("Renders for campaign with creator, includes created by", () => {
       StyleSheetTestUtils.suppressStyleInjection();
       const wrapper = mount(
-        <MuiThemeProvider>
-          <AdminCampaignList
-            data={data}
-            mutations={mutations}
-            params={params}
-          />
-        </MuiThemeProvider>
+        <AdminCampaignList data={data} mutations={mutations} params={params} />
       );
       expect(
         wrapper.containsMatchingElement(
@@ -121,7 +114,10 @@ describe("CampaignList", () => {
       creator: {
         displayName: "Lorem Ipsum"
       },
-      completionStats: {}
+      completionStats: {},
+      organization: {
+        id: 1
+      }
     };
 
     const data = {
@@ -140,36 +136,22 @@ describe("CampaignList", () => {
     };
 
     test("Timezone column is displayed when timezone is current sort", () => {
+      StyleSheetTestUtils.suppressStyleInjection();
       const wrapper = mount(
-        <MuiThemeProvider>
-          <AdminCampaignList
-            data={data}
-            mutations={mutations}
-            params={params}
-          />
-        </MuiThemeProvider>
+        <AdminCampaignList data={data} mutations={mutations} params={params} />
       );
-      wrapper.childAt(0).setState({
+      wrapper.setState({
         sortBy: TIMEZONE_SORT.value
       });
-      expect(
-        wrapper.containsMatchingElement(<span>Timezone</span>)
-      ).toBeTruthy();
+      expect(wrapper.containsMatchingElement("Timezone")).toBeTruthy();
     });
 
     test("Timezone column is hidden when it isn't the current sort", () => {
+      StyleSheetTestUtils.suppressStyleInjection();
       const wrapper = mount(
-        <MuiThemeProvider>
-          <AdminCampaignList
-            data={data}
-            mutations={mutations}
-            params={params}
-          />
-        </MuiThemeProvider>
+        <AdminCampaignList data={data} mutations={mutations} params={params} />
       );
-      expect(
-        wrapper.containsMatchingElement(<span>Timezone</span>)
-      ).toBeFalsy();
+      expect(wrapper.containsMatchingElement("Timezone")).toBeFalsy();
     });
   });
 });

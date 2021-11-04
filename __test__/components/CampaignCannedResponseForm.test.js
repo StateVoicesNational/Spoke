@@ -3,7 +3,7 @@
  */
 import React from "react";
 import { mount } from "enzyme";
-import MuiThemeProvider from "material-ui/styles/MuiThemeProvider";
+import AutoComplete from "@material-ui/lab/Autocomplete";
 import CampaignCannedResponseForm from "../../src/components/CampaignCannedResponseForm";
 import { StyleSheetTestUtils } from "aphrodite";
 
@@ -51,11 +51,7 @@ describe("CampaignCannedResponseForm component", () => {
   // when
   test("Renders form with correct fields and label for editing", () => {
     StyleSheetTestUtils.suppressStyleInjection();
-    const wrapper = mount(
-      <MuiThemeProvider>
-        <CampaignCannedResponseForm {...props1} />
-      </MuiThemeProvider>
-    );
+    const wrapper = mount(<CampaignCannedResponseForm {...props1} />);
     expect(
       wrapper
         .find({ label: "Title" })
@@ -68,8 +64,7 @@ describe("CampaignCannedResponseForm component", () => {
         .find("button")
         .text()
     ).toBe("Edit Response");
-    expect(wrapper.find("TagChips").prop("tagIds")).toEqual([1, 2]);
-    expect(wrapper.find("TagChips").prop("tags")).toEqual([
+    expect(wrapper.find(AutoComplete).prop("value")).toEqual([
       {
         id: 1,
         name: "Tag1",
@@ -85,11 +80,7 @@ describe("CampaignCannedResponseForm component", () => {
 
   test("Renders form with correct fields and label for adding", () => {
     StyleSheetTestUtils.suppressStyleInjection();
-    const wrapper = mount(
-      <MuiThemeProvider>
-        <CampaignCannedResponseForm {...props2} />
-      </MuiThemeProvider>
-    );
+    const wrapper = mount(<CampaignCannedResponseForm {...props2} />);
     expect(
       wrapper
         .find({ label: "Title" })
@@ -102,18 +93,5 @@ describe("CampaignCannedResponseForm component", () => {
         .find("button")
         .text()
     ).toBe("Add Response");
-    expect(wrapper.find("TagChips").prop("tagIds")).toEqual([]);
-    expect(wrapper.find("TagChips").prop("tags")).toEqual([
-      {
-        id: 1,
-        name: "Tag1",
-        description: "Tag1Desc"
-      },
-      {
-        id: 2,
-        name: "Tag2",
-        description: "Tag2Desc"
-      }
-    ]);
   });
 });

@@ -5,8 +5,12 @@ import React from "react";
 import { mount } from "enzyme";
 import { r } from "../../src/server/models";
 import { StyleSheetTestUtils } from "aphrodite";
-import MuiThemeProvider from "material-ui/styles/MuiThemeProvider";
-import { Card, CardHeader } from "material-ui/Card";
+
+import Card from "@material-ui/core/Card";
+import CardHeader from "@material-ui/core/CardHeader";
+
+import GSSelectField from "../../src/components/forms/GSSelectField";
+import GSScriptField from "../../src/components/forms/GSScriptField";
 import CampaignInteractionStepsForm from "../../src/components/CampaignInteractionStepsForm";
 import CampaignFormSectionHeading from "../../src/components/CampaignFormSectionHeading";
 import {
@@ -33,20 +37,18 @@ describe("CampaignInteractionStepsForm", () => {
     beforeEach(() => {
       StyleSheetTestUtils.suppressStyleInjection();
       wrappedComponent = mount(
-        <MuiThemeProvider>
-          <CampaignInteractionStepsForm
-            formValues={{
-              interactionSteps: getInteractionSteps()
-            }}
-            onChange={() => {}}
-            onSubmit={() => {}}
-            ensureComplete
-            customFields={[]}
-            saveLabel="save"
-            errors={[]}
-            availableActions={[]}
-          />
-        </MuiThemeProvider>
+        <CampaignInteractionStepsForm
+          formValues={{
+            interactionSteps: getInteractionSteps()
+          }}
+          onChange={() => {}}
+          onSubmit={() => {}}
+          ensureComplete
+          customFields={[]}
+          saveLabel="save"
+          errors={[]}
+          availableActions={[]}
+        />
       );
       component = wrappedComponent.find(CampaignInteractionStepsForm);
     });
@@ -71,28 +73,20 @@ describe("CampaignInteractionStepsForm", () => {
       const cards = component.find(Card);
       const card = cards.at(0);
       const cardHeader = card.find(CardHeader);
+
       expect(cardHeader.props().subtitle).toEqual(
         expect.stringMatching(/^Enter a script.*/)
       );
 
       const interactionSteps = getInteractionSteps();
-      const scripts = component
-        .findWhere(
-          x => x.length && x.props()["data-test"] === "editorInteraction"
-        )
-        .hostNodes();
+      const scripts = component.find(GSScriptField);
+
       expect(scripts.at(0).props().value).toEqual(interactionSteps[0].script);
     });
 
     it("rendered all the interaction steps", () => {
       const interactionSteps = getInteractionSteps().map(step => step.script);
-
-      const scripts = component
-        .findWhere(
-          x => x.length && x.props()["data-test"] === "editorInteraction"
-        )
-        .hostNodes()
-        .map(script => script.props().value);
+      const scripts = component.find(GSScriptField).map(c => c.props().value);
 
       expect(interactionSteps.sort()).toEqual(scripts.sort());
     });
@@ -155,20 +149,18 @@ describe("CampaignInteractionStepsForm", () => {
 
         StyleSheetTestUtils.suppressStyleInjection();
         wrappedComponent = mount(
-          <MuiThemeProvider>
-            <CampaignInteractionStepsForm
-              formValues={{
-                interactionSteps
-              }}
-              onChange={() => {}}
-              onSubmit={() => {}}
-              ensureComplete
-              customFields={[]}
-              saveLabel="save"
-              errors={[]}
-              availableActions={[]}
-            />
-          </MuiThemeProvider>
+          <CampaignInteractionStepsForm
+            formValues={{
+              interactionSteps
+            }}
+            onChange={() => {}}
+            onSubmit={() => {}}
+            ensureComplete
+            customFields={[]}
+            saveLabel="save"
+            errors={[]}
+            availableActions={[]}
+          />
         );
       });
 
@@ -227,31 +219,29 @@ describe("CampaignInteractionStepsForm", () => {
 
         StyleSheetTestUtils.suppressStyleInjection();
         wrappedComponent = mount(
-          <MuiThemeProvider>
-            <CampaignInteractionStepsForm
-              formValues={{
-                interactionSteps
-              }}
-              onChange={() => {}}
-              onSubmit={() => {}}
-              ensureComplete
-              customFields={[]}
-              saveLabel="save"
-              errors={[]}
-              availableActions={[
-                {
-                  name: "red-handler",
-                  displayName: "Red Action",
-                  instructions: "red action instructions"
-                },
-                {
-                  name: "purple-handler",
-                  displayName: "Purple Action",
-                  instructions: "purple action instructions"
-                }
-              ]}
-            />
-          </MuiThemeProvider>
+          <CampaignInteractionStepsForm
+            formValues={{
+              interactionSteps
+            }}
+            onChange={() => {}}
+            onSubmit={() => {}}
+            ensureComplete
+            customFields={[]}
+            saveLabel="save"
+            errors={[]}
+            availableActions={[
+              {
+                name: "red-handler",
+                displayName: "Red Action",
+                instructions: "red action instructions"
+              },
+              {
+                name: "purple-handler",
+                displayName: "Purple Action",
+                instructions: "purple action instructions"
+              }
+            ]}
+          />
         );
       });
 
@@ -261,15 +251,19 @@ describe("CampaignInteractionStepsForm", () => {
 
         // FIRST STEP VALIDATION
         const step1 = cards.at(1);
+        const selectField1 = step1.find(GSSelectField);
         const step1AnswerActionNodes = step1.findWhere(
           node => node.props()["data-test"] === "actionSelect"
         );
-
-        expect(step1AnswerActionNodes.last().props().value).toEqual(
+        expect(step1AnswerActionNodes.first().props().value).toEqual(
           "red-handler"
         );
 
-        expect(step1AnswerActionNodes.last().props().choices).toEqual([
+        expect(selectField1.props().choices).toEqual([
+          {
+            value: "",
+            label: "None"
+          },
           {
             value: "red-handler",
             label: "Red Action"
@@ -288,15 +282,20 @@ describe("CampaignInteractionStepsForm", () => {
 
         // SECOND STEP VALIDATION
         const step2 = cards.at(2);
+        const selectField2 = step2.find(GSSelectField);
         const step2AnswerActionNodes = step2.findWhere(
           node => node.props()["data-test"] === "actionSelect"
         );
 
-        expect(step2AnswerActionNodes.last().props().value).toEqual(
+        expect(step2AnswerActionNodes.first().props().value).toEqual(
           "purple-handler"
         );
 
-        expect(step2AnswerActionNodes.last().props().choices).toEqual([
+        expect(selectField2.props().choices).toEqual([
+          {
+            value: "",
+            label: "None"
+          },
           {
             value: "red-handler",
             label: "Red Action"
@@ -315,13 +314,18 @@ describe("CampaignInteractionStepsForm", () => {
 
         // THIRD STEP VALIDATION
         const step3 = cards.at(3);
+        const selectField3 = step3.find(GSSelectField);
         const step3AnswerActionNodes = step3.findWhere(
           node => node.props()["data-test"] === "actionSelect"
         );
 
-        expect(step3AnswerActionNodes.last().props().value).toEqual("");
+        expect(step3AnswerActionNodes.first().props().value).toEqual("");
 
-        expect(step3AnswerActionNodes.last().props().choices).toEqual([
+        expect(selectField3.props().choices).toEqual([
+          {
+            value: "",
+            label: "None"
+          },
           {
             value: "red-handler",
             label: "Red Action"
@@ -403,45 +407,43 @@ describe("CampaignInteractionStepsForm", () => {
 
         StyleSheetTestUtils.suppressStyleInjection();
         wrappedComponent = mount(
-          <MuiThemeProvider>
-            <CampaignInteractionStepsForm
-              formValues={{
-                interactionSteps
-              }}
-              onChange={() => {}}
-              onSubmit={() => {}}
-              ensureComplete
-              customFields={[]}
-              saveLabel="save"
-              errors={[]}
-              availableActions={[
-                {
-                  name: "color-handler",
-                  displayName: "Color Action",
-                  instructions: "color action instructions",
-                  clientChoiceData: [
-                    {
-                      name: "red",
-                      details: "#FF0000"
-                    },
-                    {
-                      name: "purple",
-                      details: "#800080"
-                    },
-                    {
-                      name: "fuschsia",
-                      details: "#FF00FF"
-                    }
-                  ]
-                },
-                {
-                  name: "pink-handler",
-                  displayName: "Pink Action",
-                  instructions: "pink action instructions"
-                }
-              ]}
-            />
-          </MuiThemeProvider>
+          <CampaignInteractionStepsForm
+            formValues={{
+              interactionSteps
+            }}
+            onChange={() => {}}
+            onSubmit={() => {}}
+            ensureComplete
+            customFields={[]}
+            saveLabel="save"
+            errors={[]}
+            availableActions={[
+              {
+                name: "color-handler",
+                displayName: "Color Action",
+                instructions: "color action instructions",
+                clientChoiceData: [
+                  {
+                    name: "red",
+                    details: "#FF0000"
+                  },
+                  {
+                    name: "purple",
+                    details: "#800080"
+                  },
+                  {
+                    name: "fuschsia",
+                    details: "#FF00FF"
+                  }
+                ]
+              },
+              {
+                name: "pink-handler",
+                displayName: "Pink Action",
+                instructions: "pink action instructions"
+              }
+            ]}
+          />
         );
       });
 
@@ -451,15 +453,20 @@ describe("CampaignInteractionStepsForm", () => {
 
         // FIRST STEP VALIDATION
         const step1 = cards.at(1);
+        const selectField1 = step1.find(GSSelectField);
         const step1AnswerActionNodes = step1.findWhere(
           node => node.props()["data-test"] === "actionSelect"
         );
 
-        expect(step1AnswerActionNodes.last().props().value).toEqual(
+        expect(step1AnswerActionNodes.first().props().value).toEqual(
           "color-handler"
         );
 
-        expect(step1AnswerActionNodes.last().props().choices).toEqual([
+        expect(selectField1.props().choices).toEqual([
+          {
+            value: "",
+            label: "None"
+          },
           {
             value: "color-handler",
             label: "Color Action"
@@ -474,12 +481,7 @@ describe("CampaignInteractionStepsForm", () => {
           node => node.props()["data-test"] === "actionDataAutoComplete"
         );
 
-        expect(step1ClientChoiceNodes.last().props().value).toEqual({
-          label: "red",
-          value: "#FF0000"
-        });
-
-        expect(step1ClientChoiceNodes.last().props().choices).toEqual([
+        expect(step1ClientChoiceNodes.at(2).props().options).toEqual([
           {
             label: "red",
             value: "#FF0000"
@@ -496,15 +498,20 @@ describe("CampaignInteractionStepsForm", () => {
 
         // SECOND STEP VALIDATION
         const step2 = cards.at(2);
+        const selectField2 = step2.find(GSSelectField);
         const step2AnswerActionNodes = step2.findWhere(
           node => node.props()["data-test"] === "actionSelect"
         );
 
-        expect(step2AnswerActionNodes.last().props().value).toEqual(
+        expect(step2AnswerActionNodes.first().props().value).toEqual(
           "color-handler"
         );
 
-        expect(step2AnswerActionNodes.last().props().choices).toEqual([
+        expect(selectField2.props().choices).toEqual([
+          {
+            value: "",
+            label: "None"
+          },
           {
             value: "color-handler",
             label: "Color Action"
@@ -519,12 +526,12 @@ describe("CampaignInteractionStepsForm", () => {
           node => node.props()["data-test"] === "actionDataAutoComplete"
         );
 
-        expect(step2ClientChoiceNodes.last().props().value).toEqual({
+        expect(step2ClientChoiceNodes.first().props().value).toEqual({
           label: "purple",
           value: "#800080"
         });
 
-        expect(step2ClientChoiceNodes.last().props().choices).toEqual([
+        expect(step2ClientChoiceNodes.first().props().options).toEqual([
           {
             label: "red",
             value: "#FF0000"
@@ -541,15 +548,20 @@ describe("CampaignInteractionStepsForm", () => {
 
         // THIRD STEP VALIDATION
         const step3 = cards.at(3);
+        const selectField3 = step3.find(GSSelectField);
         const step3AnswerActionNodes = step3.findWhere(
           node => node.props()["data-test"] === "actionSelect"
         );
 
-        expect(step3AnswerActionNodes.last().props().value).toEqual(
+        expect(step3AnswerActionNodes.first().props().value).toEqual(
           "pink-handler"
         );
 
-        expect(step3AnswerActionNodes.last().props().choices).toEqual([
+        expect(selectField3.props().choices).toEqual([
+          {
+            value: "",
+            label: "None"
+          },
           {
             value: "color-handler",
             label: "Color Action"
@@ -568,13 +580,18 @@ describe("CampaignInteractionStepsForm", () => {
 
         // FOURTH STEP VALIDATION
         const step4 = cards.at(4);
+        const selectField4 = step4.find(GSSelectField);
         const step4AnswerActionNodes = step4.findWhere(
           node => node.props()["data-test"] === "actionSelect"
         );
 
-        expect(step4AnswerActionNodes.last().props().value).toEqual("");
+        expect(step4AnswerActionNodes.first().props().value).toEqual("");
 
-        expect(step4AnswerActionNodes.last().props().choices).toEqual([
+        expect(selectField4.props().choices).toEqual([
+          {
+            value: "",
+            label: "None"
+          },
           {
             value: "color-handler",
             label: "Color Action"
@@ -700,16 +717,14 @@ describe("CampaignInteractionStepsForm", () => {
 
         StyleSheetTestUtils.suppressStyleInjection();
         wrappedComponent = mount(
-          <MuiThemeProvider>
-            <AdminCampaignEdit
-              {...queryResults}
-              mutations={wrappedMutations}
-              params={params}
-              location={{
-                query: {}
-              }}
-            />
-          </MuiThemeProvider>
+          <AdminCampaignEdit
+            {...queryResults}
+            mutations={wrappedMutations}
+            params={params}
+            location={{
+              query: {}
+            }}
+          />
         );
       });
 
@@ -721,102 +736,99 @@ describe("CampaignInteractionStepsForm", () => {
 
         expect(interactionStepsBefore).toHaveLength(0);
 
-        return wrappedComponent
-          .children()
-          .first()
-          .setState(
-            {
-              expandedSection: 3,
-              campaignFormValues: {
-                ...queryResults.campaignData.campaign,
-                interactionSteps
-              }
-            },
-            async () => {
-              const campaignInteractionStepsForm = wrappedComponent.find(
-                CampaignInteractionStepsForm
-              );
-
-              expect(campaignInteractionStepsForm.exists()).toEqual(true);
-
-              const instance = campaignInteractionStepsForm.instance();
-
-              await instance.onSave();
-
-              const interactionStepsAfter = await r
-                .knex("interaction_step")
-                .where({ campaign_id: campaign.id });
-
-              interactionStepsAfter.forEach(step => {
-                // eslint-disable-next-line no-param-reassign
-                step.is_deleted = !!step.is_deleted;
-              });
-
-              expect(interactionStepsAfter).toEqual(
-                expect.arrayContaining([
-                  expect.objectContaining({
-                    answer_actions: "",
-                    answer_actions_data: null,
-                    answer_option: "",
-                    campaign_id: Number(campaign.id),
-                    id: expect.any(Number),
-                    is_deleted: false,
-                    parent_interaction_id: null,
-                    question: "What's your favorite color?",
-                    script: "Hi {firstName}!  Let's talk about colors."
-                  }),
-                  expect.objectContaining({
-                    answer_actions: "complex-test-action",
-                    answer_actions_data:
-                      '{"value":"{\\"hex\\":\\"#B22222\\",\\"rgb\\":{\\"r\\":178,\\"g\\":34,\\"b\\":34}}","label":"firebrick"}',
-                    answer_option: "Red",
-                    id: expect.any(Number),
-                    campaign_id: Number(campaign.id),
-                    is_deleted: false,
-                    parent_interaction_id: expect.any(Number),
-                    question: "What's your favorite shade of red?",
-                    script: "Red is a great color, {firstName}!"
-                  }),
-                  expect.objectContaining({
-                    answer_actions: "",
-                    answer_actions_data: "",
-                    answer_option: "Crimson",
-                    campaign_id: Number(campaign.id),
-                    id: expect.any(Number),
-                    is_deleted: false,
-                    parent_interaction_id: expect.any(Number),
-                    question: "",
-                    script: "Crimson is a great shade of red, {firstName}!"
-                  }),
-                  expect.objectContaining({
-                    answer_actions: "",
-                    answer_actions_data: "",
-                    answer_option: "Cherry",
-                    campaign_id: Number(campaign.id),
-                    id: expect.any(Number),
-                    is_deleted: false,
-                    parent_interaction_id: expect.any(Number),
-                    question: "",
-                    script: "Cherry is a great shade of red, {firstName}!"
-                  }),
-                  expect.objectContaining({
-                    answer_actions: "complex-test-action",
-                    answer_actions_data:
-                      '{"value":"{\\"hex\\":\\"#4B0082\\",\\"rgb\\":{\\"r\\":75,\\"g\\":0,\\"b\\":130}}","label":"indigo"}',
-                    answer_option: "Purple",
-                    campaign_id: Number(campaign.id),
-                    id: expect.any(Number),
-                    is_deleted: false,
-                    parent_interaction_id: expect.any(Number),
-                    question: "",
-                    script: "Purple is a great color, {firstName}!"
-                  })
-                ])
-              );
-
-              done();
+        return wrappedComponent.setState(
+          {
+            expandedSection: 3,
+            campaignFormValues: {
+              ...queryResults.campaignData.campaign,
+              interactionSteps
             }
-          );
+          },
+          async () => {
+            const campaignInteractionStepsForm = wrappedComponent.find(
+              CampaignInteractionStepsForm
+            );
+
+            expect(campaignInteractionStepsForm.exists()).toEqual(true);
+
+            const instance = campaignInteractionStepsForm.instance();
+
+            await instance.onSave();
+
+            const interactionStepsAfter = await r
+              .knex("interaction_step")
+              .where({ campaign_id: campaign.id });
+
+            interactionStepsAfter.forEach(step => {
+              // eslint-disable-next-line no-param-reassign
+              step.is_deleted = !!step.is_deleted;
+            });
+
+            expect(interactionStepsAfter).toEqual(
+              expect.arrayContaining([
+                expect.objectContaining({
+                  answer_actions: "",
+                  answer_actions_data: null,
+                  answer_option: "",
+                  campaign_id: Number(campaign.id),
+                  id: expect.any(Number),
+                  is_deleted: false,
+                  parent_interaction_id: null,
+                  question: "What's your favorite color?",
+                  script: "Hi {firstName}!  Let's talk about colors."
+                }),
+                expect.objectContaining({
+                  answer_actions: "complex-test-action",
+                  answer_actions_data:
+                    '{"value":"{\\"hex\\":\\"#B22222\\",\\"rgb\\":{\\"r\\":178,\\"g\\":34,\\"b\\":34}}","label":"firebrick"}',
+                  answer_option: "Red",
+                  id: expect.any(Number),
+                  campaign_id: Number(campaign.id),
+                  is_deleted: false,
+                  parent_interaction_id: expect.any(Number),
+                  question: "What's your favorite shade of red?",
+                  script: "Red is a great color, {firstName}!"
+                }),
+                expect.objectContaining({
+                  answer_actions: "",
+                  answer_actions_data: "",
+                  answer_option: "Crimson",
+                  campaign_id: Number(campaign.id),
+                  id: expect.any(Number),
+                  is_deleted: false,
+                  parent_interaction_id: expect.any(Number),
+                  question: "",
+                  script: "Crimson is a great shade of red, {firstName}!"
+                }),
+                expect.objectContaining({
+                  answer_actions: "",
+                  answer_actions_data: "",
+                  answer_option: "Cherry",
+                  campaign_id: Number(campaign.id),
+                  id: expect.any(Number),
+                  is_deleted: false,
+                  parent_interaction_id: expect.any(Number),
+                  question: "",
+                  script: "Cherry is a great shade of red, {firstName}!"
+                }),
+                expect.objectContaining({
+                  answer_actions: "complex-test-action",
+                  answer_actions_data:
+                    '{"value":"{\\"hex\\":\\"#4B0082\\",\\"rgb\\":{\\"r\\":75,\\"g\\":0,\\"b\\":130}}","label":"indigo"}',
+                  answer_option: "Purple",
+                  campaign_id: Number(campaign.id),
+                  id: expect.any(Number),
+                  is_deleted: false,
+                  parent_interaction_id: expect.any(Number),
+                  question: "",
+                  script: "Purple is a great color, {firstName}!"
+                })
+              ])
+            );
+
+            done();
+          }
+        );
       });
     });
   });

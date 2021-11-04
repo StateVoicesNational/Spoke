@@ -1,9 +1,8 @@
 import { getConfig } from "../../../server/api/lib/config";
-import { cacheableData, Message } from "../../../server/models";
-import serviceMap from "../../../server/api/lib/services";
+import { cacheableData } from "../../../server/models";
 
 const DEFAULT_AUTO_OPTOUT_REGEX_LIST_BASE64 =
-  "W3sicmVnZXgiOiAiXlxccypzdG9wXFxifFxcYnJlbW92ZSBtZVxccyokfHJlbW92ZSBteSBuYW1lfFxcYnRha2UgbWUgb2ZmIHRoXFx3KyBsaXN0fFxcYmxvc2UgbXkgbnVtYmVyfGRlbGV0ZSBteSBudW1iZXJ8Xlxccyp1bnN1YnNjcmliZVxccyokfF5cXHMqY2FuY2VsXFxzKiR8XlxccyplbmRcXHMqJHxeXFxzKnF1aXRcXHMqJCIsICJyZWFzb24iOiAic3RvcCJ9XQ==";
+  "W3sicmVnZXgiOiAiXlxccypzdG9wXFxifFxcYnJlbW92ZSBtZVxccyokfHJlbW92ZSBteSBuYW1lfFxcYnRha2UgbWUgb2ZmIHRoXFx3KyBsaXN0fFxcYmxvc2UgbXkgbnVtYmVyfGRvblxcVz90IGNvbnRhY3QgbWV8ZGVsZXRlIG15IG51bWJlcnxJIG9wdCBvdXR8c3RvcDJxdWl0fHN0b3BhbGx8Xlxccyp1bnN1YnNjcmliZVxccyokfF5cXHMqY2FuY2VsXFxzKiR8XlxccyplbmRcXHMqJHxeXFxzKnF1aXRcXHMqJCIsICJyZWFzb24iOiAic3RvcCJ9XQ==";
 
 export const serverAdministratorInstructions = () => {
   return {
@@ -55,7 +54,7 @@ export const preMessageSave = async ({ messageToSave, organization }) => {
       const re = new RegExp(matcher.regex, "i");
       return String(messageToSave.text).match(re);
     });
-    console.log("auto-optout", matches, messageToSave.text, regexList);
+    // console.log("auto-optout", matches, messageToSave.text, regexList);
     if (matches.length) {
       console.log(
         "auto-optout MATCH",
@@ -65,7 +64,11 @@ export const preMessageSave = async ({ messageToSave, organization }) => {
       const reason = matches[0].reason || "auto_optout";
       messageToSave.error_code = -133;
       return {
-        contactUpdates: { is_opted_out: true, error_code: -133 },
+        contactUpdates: {
+          is_opted_out: true,
+          error_code: -133,
+          message_status: "closed"
+        },
         handlerContext: { autoOptOutReason: reason },
         messageToSave
       };
@@ -98,7 +101,10 @@ export const postMessageSave = async ({
       reason: handlerContext.autoOptOutReason,
       // RISKY: we depend on the contactUpdates in preMessageSave
       // but this can relieve a lot of database pressure
-      noContactUpdate: true
+      noContactUpdate: true,
+      contact,
+      organization,
+      user: null // If this is auto-optout, there is no user happening.
     });
   }
 };

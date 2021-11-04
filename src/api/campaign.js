@@ -74,6 +74,18 @@ export const schema = gql`
     count: Int!
   }
 
+  type CampaignContactsAreaCodeCount {
+    areaCode: String!
+    state: String!
+    count: Int!
+  }
+
+  type CampaignExportData {
+    error: String
+    campaignExportUrl: String
+    campaignMessagesExportUrl: String
+  }
+
   type Campaign {
     id: ID
     organization: Organization
@@ -85,6 +97,7 @@ export const schema = gql`
     responseWindow: Float
     dueBy: Date
     isStarted: Boolean
+    isStarting: Boolean
     isArchived: Boolean
     isArchivedPermanently: Boolean
     creator: User
@@ -93,6 +106,7 @@ export const schema = gql`
     interactionSteps: [InteractionStep]
     contacts: [CampaignContact]
     contactsCount: Int
+    contactsAreaCodeCounts: [CampaignContactsAreaCodeCount]
     hasUnassignedContacts: Boolean
     hasUnassignedContactsForTexter: Boolean
     hasUnsentInitialMessages: Boolean
@@ -102,6 +116,7 @@ export const schema = gql`
     stats: CampaignStats
     completionStats: CampaignCompletionStats
     pendingJobs: [JobRequest]
+    exportResults: CampaignExportData
     ingestMethodsAvailable: [IngestMethod]
     ingestMethod: IngestMethod
     useDynamicAssignment: Boolean
@@ -115,14 +130,24 @@ export const schema = gql`
     textingHoursStart: Int
     textingHoursEnd: Int
     timezone: String
+    serviceManagers(fromCampaignStatsPage: Boolean): [ServiceManager]
+
     messageserviceSid: String
     useOwnMessagingService: Boolean
+    messageServiceLink: String
     phoneNumbers: [String]
     inventoryPhoneNumberCounts: [CampaignPhoneNumberCount]
   }
 
   type CampaignsList {
     campaigns: [Campaign]
+  }
+
+  type ScriptUpdateResult {
+    campaign: Campaign!
+    found: String!
+    replaced: String!
+    target: String!
   }
 
   union CampaignsReturn = PaginatedCampaigns | CampaignsList

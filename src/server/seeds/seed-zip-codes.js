@@ -5,11 +5,7 @@ import fs from "fs";
 
 export async function seedZipCodes() {
   log.info("Checking if zip code is needed");
-  const hasZip =
-    (await r
-      .table("zip_code")
-      .limit(1)
-      .count()) > 0;
+  const hasZip = await r.getCount(r.knex("zip_code").limit(1));
 
   if (!hasZip) {
     log.info("Starting to seed zip codes");
@@ -20,7 +16,7 @@ export async function seedZipCodes() {
       throw new Error("Failed to seed zip codes");
     } else {
       log.info("Parsed a CSV with ", data.length, " zip codes");
-      const zipCodes = data
+      let zipCodes = data
         .filter(row => !zipToTimeZone(row.zip))
         .map(row => ({
           zip: row.zip,
@@ -31,11 +27,17 @@ export async function seedZipCodes() {
           latitude: Number(row.latitude),
           longitude: Number(row.longitude)
         }));
-
+      if (process.env.HEROKU_PR_NUMBER) {
+        // FUTURE: Maybe there's a way to test for hobby-dev database?
+        // Hobby-dev databases only allow 10K rows, so don't fill it up with zips
+        zipCodes = zipCodes.slice(0, 10);
+      }
       log.info(zipCodes.length, "ZIP CODES");
-      ZipCode.save(zipCodes)
-        .then(() => log.info("Finished seeding"))
-        .error(err => log.error("error", err));
+      try {
+        await r.knex.batchInsert("zip_code", zipCodes);
+      } catch (err) {
+        log.error("error", err);
+      }
     }
   }
 }

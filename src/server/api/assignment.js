@@ -1,4 +1,5 @@
 import { mapFieldsToModel } from "./lib/utils";
+import { getConfig } from "./lib/config";
 import { Assignment, r, cacheableData } from "../models";
 import { getOffsets, defaultTimezoneIsBetweenTextingHours } from "../../lib";
 import { getDynamicAssignmentBatchPolicies } from "../../extensions/dynamicassignment-batches";
@@ -30,6 +31,11 @@ export function addWhereClauseForContactsFilterMessageStatusIrrespectiveOfPastDu
   } else {
     query.whereIn("message_status", messageStatusFilter.split(","));
   }
+  if (getConfig("CONVERSATIONS_RECENT")) {
+    query.whereRaw(
+      "campaign_contact.id > (SELECT max(id)-20000000 from campaign_contact)"
+    );
+  }
   return query;
 }
 
@@ -37,7 +43,13 @@ export function getCampaignOffsets(campaign, organization, timezoneFilter) {
   const textingHoursEnforced = organization.texting_hours_enforced;
   const textingHoursStart = organization.texting_hours_start;
   const textingHoursEnd = organization.texting_hours_end;
-  const config = { textingHoursStart, textingHoursEnd, textingHoursEnforced };
+
+  const config = {
+    textingHoursStart,
+    textingHoursEnd,
+    textingHoursEnforced,
+    defaultTimezone: getConfig("DEFAULT_TZ", organization)
+  };
 
   if (campaign.override_organization_texting_hours) {
     const textingHoursStart = campaign.texting_hours_start;
@@ -52,7 +64,10 @@ export function getCampaignOffsets(campaign, organization, timezoneFilter) {
       timezone
     };
   }
-  const [validOffsets, invalidOffsets] = getOffsets(config);
+  const [validOffsets, invalidOffsets] = getOffsets(
+    config,
+    campaign.contactTimezones
+  );
   const defaultIsValid = defaultTimezoneIsBetweenTextingHours(config);
   if (timezoneFilter === true && defaultIsValid) {
     // missing timezone ok
@@ -94,9 +109,12 @@ export function getContacts(
     return [];
   }
 
-  let query = r.knex("campaign_contact").where({
-    assignment_id: assignment.id
-  });
+  let query = r.knex("campaign_contact");
+  if (assignment) {
+    query = query.where({
+      assignment_id: assignment.id
+    });
+  }
 
   if (contactsFilter) {
     if (contactsFilter.contactId) {
@@ -124,6 +142,17 @@ export function getContacts(
       if (Object.prototype.hasOwnProperty.call(contactsFilter, "isOptedOut")) {
         query = query.where("is_opted_out", contactsFilter.isOptedOut);
       }
+
+      if (contactsFilter.errorCode && contactsFilter.errorCode.length) {
+        if (contactsFilter.errorCode[0] === 0) {
+          query.whereNull("campaign_contact.error_code");
+        } else {
+          query.whereIn(
+            "campaign_contact.error_code",
+            contactsFilter.errorCode
+          );
+        }
+      }
     }
   }
 
@@ -137,6 +166,21 @@ export function getContacts(
 
   return query;
 }
+
+// Used for Assignment.contactsCount to get a cross-section of timezone/status counts
+const filterCount = (assignment, statusFilter, offsetFilter) =>
+  Object.keys(assignment.tzStatusCounts) // .entries post-node10.x
+    .map(m => ({ status: m, offsets: assignment.tzStatusCounts[m] }))
+    .filter(statusFilter)
+    .map(({ offsets }) =>
+      offsets
+        .filter(offsetFilter)
+        .map(x => Number(x.count))
+        .reduce((a, b) => {
+          return a + b;
+        }, 0)
+    )
+    .reduce((a, b) => a + b, 0);
 
 export const resolvers = {
   Assignment: {
@@ -171,6 +215,7 @@ export const resolvers = {
       const organization = await loaders.organization.load(
         campaign.organization_id
       );
+
       const policies = getDynamicAssignmentBatchPolicies({
         organization,
         campaign
@@ -186,7 +231,8 @@ export const resolvers = {
         organization,
         campaign,
         assignment,
-        texter: user
+        texter: user,
+        hasAny: true
       });
       const suggestedCount = Math.min(
         assignment.max_contacts || campaign.batch_size,
@@ -238,22 +284,10 @@ export const resolvers = {
           organization,
           contactsFilter && contactsFilter.validTimezone
         );
-        const filterCount = (statusFilter, offsetFilter) =>
-          Object.keys(assignment.tzStatusCounts) // .entries post-node10.x
-            .map(m => ({ status: m, offsets: assignment.tzStatusCounts[m] }))
-            .filter(statusFilter)
-            .map(({ offsets }) =>
-              offsets
-                .filter(offsetFilter)
-                .map(x => Number(x.count))
-                .reduce((a, b) => {
-                  return a + b;
-                }, 0)
-            )
-            .reduce((a, b) => a + b, 0);
         if (contactsFilter && !contactsFilter.messageStatus) {
           // ASSUME: invalidTimezones
           const invalidTzCount = filterCount(
+            assignment,
             ({ status }) =>
               status === "needsMessage" || status === "needsResponse",
             offset => invalidOffsets.indexOf(offset.tz) !== -1
@@ -267,12 +301,14 @@ export const resolvers = {
           contactsFilter.validTimezone
         ) {
           const validStatusCount = filterCount(
+            assignment,
             ({ status }) => status === contactsFilter.messageStatus,
             offset => validOffsets.indexOf(offset.tz) !== -1
           );
           return validStatusCount;
         } else if (!contactsFilter) {
           return filterCount(
+            assignment,
             status => true,
             offset => true
           );
@@ -323,6 +359,63 @@ export const resolvers = {
       await cacheableData.cannedResponse.query({
         userId: assignment.user_id,
         campaignId: assignment.campaign_id
-      })
+      }),
+    feedback: async assignment => {
+      if (!/texter-feedback/.test(getConfig("TEXTER_SIDEBOXES"))) {
+        return null;
+      }
+      const defaultFeedback = {
+        isAcknowledged: false,
+        message: "",
+        issueCounts: {},
+        skillCounts: {},
+        createdBy: { id: null, name: "" },
+        sweepComplete: false
+      };
+
+      const assignmentFeedback = assignment.hasOwnProperty("feedback")
+        ? assignment
+        : await r
+            .knex("assignment_feedback")
+            .where({ assignment_id: assignment.id })
+            .first();
+      if (!assignmentFeedback) {
+        return defaultFeedback;
+      }
+
+      let feedback = assignmentFeedback.feedback;
+      try {
+        feedback = JSON.parse(feedback);
+      } catch (err) {
+        // do nothing
+      }
+
+      if (
+        feedback &&
+        !assignmentFeedback.is_acknowledged &&
+        !feedback.isAcknowledged
+      ) {
+        const createdBy = await r
+          .knexReadOnly("user")
+          .select("id", "first_name", "last_name")
+          .where("id", assignmentFeedback.creator_id || feedback.createdBy)
+          .first();
+
+        feedback.createdBy = {
+          id: createdBy.id,
+          name: `${createdBy.first_name} ${createdBy.last_name}`
+        };
+      } else if (feedback) {
+        feedback.createdBy = defaultFeedback.createdBy;
+      }
+      if (assignmentFeedback.is_acknowledged) {
+        feedback.isAcknowledged = true;
+      }
+      if (assignmentFeedback.complete) {
+        feedback.sweepComplete = true;
+      }
+
+      return feedback || defaultFeedback;
+    }
   }
 };

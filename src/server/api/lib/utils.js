@@ -1,4 +1,14 @@
+import escapeRegExp from "lodash/escapeRegExp";
 import humps from "humps";
+
+export function mapFieldsOrNull(fields) {
+  const resolvers = {};
+
+  fields.forEach(field => {
+    resolvers[field] = o => o[field] || null;
+  });
+  return resolvers;
+}
 
 export function mapFieldsToModel(fields, model) {
   const resolvers = {};
@@ -47,3 +57,6 @@ export const groupCannedResponses = cannedResponses => {
   });
   return grouped;
 };
+
+export const replaceAll = (str, find, replace) =>
+  str.replace(new RegExp(escapeRegExp(find), "g"), replace);

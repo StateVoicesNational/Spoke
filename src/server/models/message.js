@@ -29,6 +29,7 @@ const Message = thinky.createModel(
         .required()
         .allowNull(false),
       text: optionalString(),
+      media: type.string().default(null),
       assignment_id: optionalString(), //deprecated: use refs by campaign_contact_id or user_id
       campaign_contact_id: optionalString(),
       messageservice_sid: optionalString().stopReference(),
@@ -63,9 +64,11 @@ Message.ensureIndex("campaign_contact_id");
 Message.ensureIndex("send_status");
 //Message.ensureIndex("contact_number");
 Message.ensureIndex("service_id");
-Message.ensureIndex("cell_messageservice_sid_idx", doc => [
+Message.ensureIndex("cell_msgsvc_user_number_idx", doc => [
   doc("contact_number"),
-  doc("messageservice_sid")
+  doc("messageservice_sid"),
+  // for when/if there is no service messageservice, we then index by number
+  doc("user_number")
 ]);
 
 export default Message;
