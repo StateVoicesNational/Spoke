@@ -92,8 +92,9 @@ export async function processDeletedQuestionResponse(options) {}
 export async function getClientChoiceData(organization, user) {
   const getEventData = await searchEvents();
   const items = getEventData.map(item => {
+    startDate = item.start_date.substring(0, item.start_date.indexOf(" "));
     return {
-      name: item.title,
+      name: `${item.title} (${startDate})`,
       details: JSON.stringify({ id: item.id, role_id: item.default_role_id })
     };
   });

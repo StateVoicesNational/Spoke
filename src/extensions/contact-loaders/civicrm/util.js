@@ -261,7 +261,7 @@ export async function searchEvents() {
   const currentNow = moment().format();
   const res = await fetchfromAPI(config, "event", {
     sequential: 1,
-    return: ["id", "title", "default_role_id"],
+    return: ["id", "title", "default_role_id", "start_date"],
     title: { "!=": "" },
     is_monetary: 0,
     requires_approval: 0,
