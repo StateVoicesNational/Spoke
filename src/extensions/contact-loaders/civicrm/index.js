@@ -128,6 +128,7 @@ export async function processContactLoad(job, _maxContacts, _organization) {
   const customFields = getCustomFields(getConfig("CIVICRM_CUSTOM_DATA"));
   const customFieldNames = Object.keys(customFields);
 
+
   await r
     .knex("campaign_contact")
     .where("campaign_id", campaignId)
