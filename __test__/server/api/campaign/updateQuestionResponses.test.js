@@ -720,6 +720,7 @@ describe("mutations.updateQuestionResponses", () => {
             [
               {
                 actionObject: expect.objectWithId(colorInteractionSteps[0]),
+                questionResponse: expect.objectContaining(questionResponses[0]),
                 campaignContactId: Number(contacts[0].id),
                 contact: expect.objectWithId(contacts[0]),
                 campaign: expect.objectWithId(campaign),
@@ -732,6 +733,7 @@ describe("mutations.updateQuestionResponses", () => {
                 actionObject: expect.objectWithId(
                   shadesOfRedInteractionSteps[0]
                 ),
+                questionResponse: expect.objectContaining(questionResponses[1]),
                 campaignContactId: Number(contacts[0].id),
                 contact: expect.objectWithId(contacts[0]),
                 campaign: expect.objectWithId(campaign),
@@ -887,6 +889,9 @@ describe("mutations.updateQuestionResponses", () => {
                 [
                   expect.objectContaining({
                     actionObject: expect.objectWithId(colorInteractionSteps[2]),
+                    questionResponse: expect.objectContaining(
+                      questionResponses[0]
+                    ),
                     campaignContactId: Number(contacts[0].id),
                     contact: expect.objectWithId(contacts[0]),
                     campaign: expect.objectWithId(campaign),
@@ -1017,6 +1022,7 @@ describe("mutations.updateQuestionResponses", () => {
                 actionObject: expect.objectWithId(
                   shadesOfRedInteractionSteps[0]
                 ),
+                questionResponse: expect.objectContaining(questionResponses[1]),
                 campaignContactId: Number(contacts[0].id),
                 contact: expect.objectWithId(contacts[0]),
                 campaign: expect.objectWithId(campaign),
@@ -1064,6 +1070,9 @@ describe("mutations.updateQuestionResponses", () => {
               [
                 {
                   actionObject: expect.objectWithId(colorInteractionSteps[0]),
+                  questionResponse: expect.objectContaining(
+                    questionResponses[0]
+                  ),
                   campaignContactId: Number(contacts[0].id),
                   contact: expect.objectWithId(contacts[0]),
                   campaign: expect.objectWithId(campaign),
@@ -1075,6 +1084,9 @@ describe("mutations.updateQuestionResponses", () => {
                 {
                   actionObject: expect.objectWithId(
                     shadesOfRedInteractionSteps[0]
+                  ),
+                  questionResponse: expect.objectContaining(
+                    questionResponses[1]
                   ),
                   campaignContactId: Number(contacts[0].id),
                   contact: expect.objectWithId(contacts[0]),
