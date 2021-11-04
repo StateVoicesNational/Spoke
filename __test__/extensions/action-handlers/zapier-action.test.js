@@ -666,7 +666,7 @@ describe("zapier-action", () => {
       process.env.ZAPIER_ACTION_URL = undefined;
       const ret = await ZapierAction.processAction({
         questionResponse,
-        interactionStep,
+        actionObject: interactionStep,
         campaignContactId,
         contact,
         campaign,
@@ -689,7 +689,7 @@ describe("zapier-action", () => {
 
       await ZapierAction.processAction({
         questionResponse,
-        interactionStep,
+        actionObject: interactionStep,
         campaignContactId,
         contact,
         campaign,
@@ -728,7 +728,7 @@ describe("zapier-action", () => {
 
       await ZapierAction.processAction({
         questionResponse,
-        interactionStep,
+        actionObject: interactionStep,
         campaignContactId,
         contact,
         campaign,
@@ -767,7 +767,7 @@ describe("zapier-action", () => {
 
       await ZapierAction.processAction({
         questionResponse,
-        interactionStep,
+        actionObject: interactionStep,
         campaignContactId,
         contact,
         campaign,
@@ -811,7 +811,7 @@ describe("zapier-action", () => {
 
       await ZapierAction.processAction({
         questionResponse,
-        interactionStep,
+        actionObject: interactionStep,
         campaignContactId,
         contact,
         campaign,
@@ -854,7 +854,7 @@ describe("zapier-action", () => {
 
       let expected_payload = {
         questionResponse,
-        interactionStep,
+        actionObject: interactionStep,
         campaignContactId,
         contact,
         campaign: sanitized_campaign,
@@ -870,7 +870,7 @@ describe("zapier-action", () => {
 
       await ZapierAction.processAction({
         questionResponse,
-        interactionStep,
+        actionObject: interactionStep,
         campaignContactId,
         contact,
         campaign,

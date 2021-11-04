@@ -76,6 +76,7 @@ const questionResponseActionHandler = async ({
     // TODO: clean up processAction interface
     return handler.processAction({
       actionObject: interactionStep,
+      questionResponse,
       campaignContactId: contact.id,
       contact,
       campaign,

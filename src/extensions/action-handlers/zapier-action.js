@@ -84,7 +84,7 @@ export async function onTagUpdate(
 // This is presumably the meat of the action
 export async function processAction({
   questionResponse,
-  interactionStep,
+  actionObject,
   campaignContactId,
   contact,
   campaign,
@@ -113,7 +113,7 @@ export async function processAction({
     delete campaignCopy.features;
     const payload = {
       questionResponse,
-      interactionStep,
+      actionObject,
       campaignContactId,
       contact,
       campaign: campaignCopy,
@@ -128,7 +128,7 @@ export async function processAction({
     log.info(`Zapier timeout: ${zap_timeout}`);
 
     let final_url = "";
-    const answer_option = interactionStep.answer_option;
+    const answer_option = actionObject.answer_option;
 
     if (Object.keys(config).length != 0) {
       if (Array.isArray(config.processAction)) {
