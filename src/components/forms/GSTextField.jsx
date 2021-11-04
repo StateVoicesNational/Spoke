@@ -25,6 +25,8 @@ export default class GSTextField extends GSFormField {
       multiline,
       name,
       onChange,
+      onFocus,
+      onBlur,
       placeholder,
       required,
       rows,
@@ -56,6 +58,7 @@ export default class GSTextField extends GSFormField {
       margin,
       multiline,
       name,
+      onBlur,
       placeholder,
       required,
       rows,
@@ -83,7 +86,12 @@ export default class GSTextField extends GSFormField {
       <TextField
         {...dataTest}
         label={this.floatingLabelText()}
-        onFocus={event => event.target.select()}
+        onFocus={event => {
+          event.target.select();
+          if (onFocus) {
+            onFocus(event);
+          }
+        }}
         {...textFieldProps}
         onChange={event => {
           onChange(event.target.value);
