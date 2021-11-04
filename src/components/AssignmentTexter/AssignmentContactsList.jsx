@@ -34,7 +34,11 @@ class AssignmentContactsList extends React.Component {
       search: "",
       currentPage: 0,
       filterEl: null,
-      filterStatuses: Object.keys(messageStatusLabels),
+      filterStatuses: {
+        needsResponse: true,
+        convo: true,
+        closed: true
+      },
       counts
     };
   }
@@ -92,12 +96,10 @@ class AssignmentContactsList extends React.Component {
   closeMenu = () => this.setState({ filterEl: null });
 
   handleFilterUpdate = status => {
-    const filterStatuses = [...this.state.filterStatuses];
-    const statusIndex = filterStatuses.indexOf(status);
-
-    statusIndex === -1
-      ? filterStatuses.push(status)
-      : filterStatuses.splice(statusIndex, 1);
+    const filterStatuses = {
+      ...this.state.filterStatuses,
+      [status]: !this.state.filterStatuses[status]
+    };
 
     this.setState(
       {
@@ -115,7 +117,7 @@ class AssignmentContactsList extends React.Component {
   getFilteredContacts = contacts => {
     return contacts.filter(
       c =>
-        this.state.filterStatuses.includes(c.messageStatus) &&
+        this.state.filterStatuses[c.messageStatus] &&
         this.getContactName(c)
           .toLowerCase()
           .includes(this.state.search.toLowerCase())
@@ -206,10 +208,10 @@ class AssignmentContactsList extends React.Component {
             onClose={this.closeMenu}
             keepMounted
           >
-            {Object.keys(messageStatusLabels).map(status => (
+            {Object.keys(this.state.filterStatuses).map(status => (
               <MenuItem
                 key={status}
-                selected={this.state.filterStatuses.includes(status)}
+                selected={this.state.filterStatuses[status]}
                 onClick={() => this.handleFilterUpdate(status)}
               >
                 {messageStatusLabels[status]} ({this.state.counts[status] || 0})
@@ -276,7 +278,7 @@ const inlineStyles = {
   pagination: {
     display: "flex",
     justifyContent: "center",
-    padding: 12,
+    padding: "12px 0",
     borderRight: "1px solid #C1C3CC"
   }
 };

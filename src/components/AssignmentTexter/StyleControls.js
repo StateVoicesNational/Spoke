@@ -131,8 +131,8 @@ export const flexStyles = StyleSheet.create({
     overflowY: "scroll"
   },
   sectionLeftSideBox: {
-    flex: "1 0 280px",
-    maxWidth: 280,
+    flex: "1 0 260px",
+    maxWidth: 260,
     overflow: "hidden scroll"
   },
   superSectionMessagePage: {
