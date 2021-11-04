@@ -1191,6 +1191,7 @@ const rootMutations = {
         contact.campaign_id
       );
       const { assignmentId, reason } = optOut;
+      const organization = await Organization.get(campaign.organization_id);
       await cacheableData.optOut.save({
         cell: contact.cell,
         campaignContactId,
@@ -1198,7 +1199,9 @@ const rootMutations = {
         assignmentId,
         campaign,
         noReply,
-        contact
+        contact,
+        user,
+        organization
       });
       console.log(
         "createOptOut post save",
