@@ -1,18 +1,27 @@
 import React, { Component } from "react";
 import type from "prop-types";
-import FlatButton from "material-ui/FlatButton";
-import ActionOpenInNew from "material-ui/svg-icons/action/open-in-new";
-import loadData from "../../containers/hoc/load-data";
+import moment from "moment";
 import { Link, withRouter } from "react-router";
 import gql from "graphql-tag";
+import { StyleSheet, css } from "aphrodite";
+
+import MUIDataTable from "mui-datatables";
+import OpenInNewIcon from "@material-ui/icons/OpenInNew";
+import IconButton from "@material-ui/core/IconButton";
+
+import loadData from "../../containers/hoc/load-data";
 import { getHighestRole } from "../../lib/permissions";
 import LoadingIndicator from "../../components/LoadingIndicator";
-import DataTables from "material-ui-datatables";
 import ConversationPreviewModal from "./ConversationPreviewModal";
 import TagChip from "../TagChip";
-import moment from "moment";
 import theme from "../../styles/theme";
 import { MESSAGE_STATUSES } from "../../components/IncomingMessageFilter";
+
+const styles = StyleSheet.create({
+  link_light_bg: {
+    ...theme.text.link_light_bg
+  }
+});
 
 export const prepareDataTableData = conversations =>
   conversations.map(conversation => ({
@@ -76,20 +85,26 @@ export class IncomingMessageList extends Component {
     this.props.onConversationCountChanged(conversationCount);
   }
 
-  componentDidUpdate = prevProps => {
-    if (
-      this.props.clearSelectedMessages &&
-      this.state.selectedRows.length > 0
-    ) {
-      this.setState({
-        selectedRows: []
-      });
+  componentWillUpdate = () => {
+    this.state.showAllRepliesLink =
+      this.props.conversations.conversations.pageInfo.total > 0 &&
+      this.props.campaignsFilter.campaignIds &&
+      this.props.campaignsFilter.campaignIds.length === 1 &&
+      this.props.assignmentsFilter.texterId;
+  };
+  UNSAFE_componentWillReceiveProps = nextProps => {
+    if (nextProps.clearSelectedMessages) {
+      if (this.state.selectedRows.length > 0) {
+        this.setState({
+          selectedRows: []
+        });
+      }
       this.props.onConversationSelected([], []);
     }
 
-    let previousPageInfo = { total: 0 };
-    if (prevProps.conversations.conversations) {
-      previousPageInfo = prevProps.conversations.conversations.pageInfo;
+    let nextPageInfo = { total: 0 };
+    if (nextProps.conversations.conversations) {
+      nextPageInfo = nextProps.conversations.conversations.pageInfo;
     }
 
     let pageInfo = { total: 0 };
@@ -97,143 +112,135 @@ export class IncomingMessageList extends Component {
       pageInfo = this.props.conversations.conversations.pageInfo;
     }
 
-    if (
-      previousPageInfo.total !== pageInfo.total ||
-      (!previousPageInfo && pageInfo)
-    ) {
-      this.props.onConversationCountChanged(pageInfo.total);
+    if (nextPageInfo.total !== pageInfo.total || (!nextPageInfo && pageInfo)) {
+      this.props.onConversationCountChanged(nextPageInfo.total);
     }
   };
 
-  prepareTableColumns = () => [
+  prepareTableColumns = tableData => [
     {
-      key: "campaignTitle",
-      label: "Campaign",
-      style: {
-        textOverflow: "ellipsis",
-        overflow: "hidden",
-        whiteSpace: "pre-line"
-      }
+      name: "campaignTitle",
+      label: "Campaign"
     },
     {
-      key: "texter",
+      name: "texter",
       label: "Texter",
-      style: {
-        textOverflow: "ellipsis",
-        overflow: "hidden",
-        whiteSpace: "pre-line"
-      },
-      render: (columnKey, row) => (
-        <span>
-          {row.texter.id !== null ? (
+      options: {
+        customBodyRender: (value, tableMeta) => {
+          return (
             <span>
-              {row.texter.displayName +
-                (getHighestRole(row.texter.roles) === "SUSPENDED"
-                  ? " (Suspended)"
-                  : "")}{" "}
-              <Link
-                target="_blank"
-                to={`/app/${this.props.organizationId}/todos/other/${row.texter.id}`}
-              >
-                <ActionOpenInNew
-                  style={{ width: 14, height: 14, color: theme.colors.green }}
-                />
-              </Link>
+              {value.id !== null ? (
+                <span>
+                  {value.displayName +
+                    (getHighestRole(value.roles) === "SUSPENDED"
+                      ? " (Suspended)"
+                      : "")}{" "}
+                  <Link
+                    target="_blank"
+                    to={`/app/${this.props.organizationId}/todos/other/${value.id}`}
+                  >
+                    <OpenInNewIcon
+                      style={{
+                        width: 14,
+                        height: 14,
+                        color: theme.colors.green
+                      }}
+                    />
+                  </Link>
+                </span>
+              ) : (
+                "unassigned"
+              )}
             </span>
-          ) : (
-            "unassigned"
-          )}
-        </span>
-      )
-    },
-    {
-      key: "to",
-      label: "To",
-      style: {
-        textOverflow: "ellipsis",
-        overflow: "hidden",
-        whiteSpace: "pre-line"
-      }
-    },
-    {
-      key: "status",
-      label: "Conversation Status",
-      style: {
-        textOverflow: "ellipsis",
-        overflow: "hidden",
-        whiteSpace: "pre-line"
-      },
-      render: (columnKey, row) => (
-        <div>
-          {MESSAGE_STATUSES[row.status].name}
-          {row.errorCode ? (
-            <div style={{ color: theme.colors.darkRed }}>
-              error: {row.errorCode}
-            </div>
-          ) : null}
-        </div>
-      )
-    },
-    {
-      key: "latestMessage",
-      label: "Latest Message",
-      style: {
-        textOverflow: "ellipsis",
-        overflow: "hidden",
-        whiteSpace: "pre-line"
-      },
-      render: (columnKey, row) => {
-        let lastMessage = null;
-        let lastMessageEl = <p>No Messages</p>;
-        if (row.messages && row.messages.length > 0) {
-          lastMessage = row.messages[row.messages.length - 1];
-          lastMessageEl = (
-            <p
-              style={{
-                textOverflow: "ellipsis",
-                overflow: "hidden",
-                whiteSpace: "nowrap"
-              }}
-              title={lastMessage.text}
-            >
-              <span
-                style={{ color: lastMessage.isFromContact ? "blue" : "black" }}
-              >
-                <b>{lastMessage.isFromContact ? "Contact:" : "Texter:"} </b>
-              </span>
-              {lastMessage.text}
-              <br />
-              <span style={{ color: "gray", fontSize: "85%" }}>
-                {moment.utc(lastMessage.createdAt).fromNow()}
-              </span>
-            </p>
           );
         }
-        return lastMessageEl;
       }
     },
     {
-      key: "viewConversation",
+      name: "to",
+      label: "To"
+    },
+    {
+      name: "status",
+      label: "Conversation Status",
+      options: {
+        customBodyRender: (value, tableMeta) => {
+          const row = tableData[tableMeta.rowIndex];
+          return (
+            <div>
+              {MESSAGE_STATUSES[row.status].name}
+              {row.errorCode ? (
+                <div style={{ color: theme.colors.darkRed }}>
+                  error: {row.errorCode}
+                </div>
+              ) : null}
+            </div>
+          );
+        }
+      }
+    },
+    {
+      name: "latestMessage",
+      label: "Latest Message",
+      options: {
+        customBodyRender: (value, tableMeta) => {
+          const row = tableData[tableMeta.rowIndex];
+          let lastMessage = null;
+          let lastMessageEl = <p>No Messages</p>;
+          if (row.messages && row.messages.length > 0) {
+            lastMessage = row.messages[row.messages.length - 1];
+            lastMessageEl = (
+              <p
+                style={{
+                  textOverflow: "ellipsis",
+                  overflow: "hidden",
+                  whiteSpace: "nowrap",
+                  maxWidth: 150
+                }}
+                title={lastMessage.text}
+              >
+                <span
+                  style={{
+                    color: lastMessage.isFromContact ? "blue" : "black"
+                  }}
+                >
+                  <b>{lastMessage.isFromContact ? "Contact:" : "Texter:"} </b>
+                </span>
+                {lastMessage.text}
+                <br />
+                <span style={{ color: "gray", fontSize: "85%" }}>
+                  {moment.utc(lastMessage.createdAt).fromNow()}
+                </span>
+              </p>
+            );
+          }
+          return lastMessageEl;
+        }
+      }
+    },
+    {
+      name: "viewConversation",
       label: "View Conversation",
-      style: {
-        textOverflow: "ellipsis",
-        overflow: "hidden",
-        whiteSpace: "pre-line"
-      },
-      render: (columnKey, row) => (
-        <div>
-          {row.messages && row.messages.length > 1 && (
-            <FlatButton
-              onClick={event => {
-                event.stopPropagation();
-                this.handleOpenConversation(row);
-              }}
-              icon={<ActionOpenInNew />}
-            />
-          )}
-          {this.renderTags(row.tags, row)}
-        </div>
-      )
+      options: {
+        customBodyRender: (value, tableMeta) => {
+          const row = tableData[tableMeta.rowIndex];
+          return (
+            <div>
+              {row.messages && row.messages.length > 1 && (
+                <IconButton
+                  onClick={event => {
+                    event.stopPropagation();
+                    this.handleOpenConversation(row);
+                  }}
+                >
+                  <OpenInNewIcon />
+                </IconButton>
+              )}
+              {this.renderTags(row.tags, row)}
+            </div>
+          );
+        }
+      }
     }
   ];
 
@@ -297,17 +304,16 @@ export class IncomingMessageList extends Component {
                 ? null
                 : theme.colors.lightGray
             }
-            onRequestDelete={
-              tagNames[name].value !== "RESOLVED"
-                ? async () => {
-                    console.log("resolving tag", name, tagNames[name]);
-                    const res = await this.props.mutations.updateTag(
-                      row.campaignContactId,
-                      tagNames[name].id,
-                      "RESOLVED"
-                    );
-                  }
-                : null
+            onDelete={
+              tagNames[name].value !== "RESOLVED" &&
+              (async () => {
+                console.log("resolving tag", name, tagNames[name]);
+                const res = await this.props.mutations.updateTag(
+                  row.campaignContactId,
+                  tagNames[name].id,
+                  "RESOLVED"
+                );
+              })
             }
           />
         ))}
@@ -326,23 +332,90 @@ export class IncomingMessageList extends Component {
     const displayPage = Math.floor(offset / limit) + 1;
     const tableData = prepareDataTableData(conversations);
 
+    let firstAssignmentid = null;
+    let firstAssignmentTexter = null;
+    let firstAssignmentCampaignTitle = null;
+    if (tableData.length) {
+      firstAssignmentid = tableData[0].assignmentId;
+      firstAssignmentTexter = tableData[0].texter.displayName;
+      firstAssignmentCampaignTitle = tableData[0].campaignTitle;
+    }
+
+    let rowSizeList = [10, 20, 50, 100];
+
+    try {
+      if (window.CONVERSATION_LIST_ROW_SIZES !== "") {
+        rowSizeList = JSON.parse(window.CONVERSATION_LIST_ROW_SIZES);
+      }
+    } catch (err) {
+      console.log(err);
+    }
+
+    const options = {
+      filterType: "checkbox",
+      selectableRows: "multiple",
+      elevation: 0,
+      download: false,
+      print: false,
+      searchable: false,
+      filter: false,
+      sort: true,
+      search: false,
+      viewColumns: false,
+      page: displayPage - 1,
+      serverSide: true,
+      count: total,
+      rowsPerPage: limit,
+      rowsPerPageOptions: rowSizeList,
+      rowsSelected: clearSelectedMessages ? null : this.state.selectedRows,
+      customToolbarSelect: () => null,
+      onTableChange: (action, tableState) => {
+        switch (action) {
+          case "sort":
+            break;
+          case "changePage":
+            if (tableState.page > displayPage - 1) {
+              this.handleNextPageClick();
+            } else {
+              this.handlePreviousPageClick();
+            }
+            break;
+          case "changeRowsPerPage":
+            const _ = undefined;
+            this.handleRowSizeChanged(_, tableState.rowsPerPage);
+            break;
+          case "rowSelectionChange":
+            const ids = tableState.selectedRows.data.map(({ index }) => index);
+            this.handleRowsSelected(ids);
+            break;
+          default:
+            break;
+        }
+      }
+    };
+
     return (
       <div>
-        <DataTables
+        {this.state.showAllRepliesLink && (
+          <div>
+            <Link
+              className={css(styles.link_light_bg)}
+              target="_blank"
+              to={`/app/${this.props.organizationId}/todos/${firstAssignmentid}/allreplies?review=1`}
+            >
+              Sweep {firstAssignmentTexter}'s messages in{" "}
+              {firstAssignmentCampaignTitle}
+              <OpenInNewIcon
+                style={{ width: 14, height: 14, color: theme.colors.green }}
+              />
+            </Link>
+          </div>
+        )}
+
+        <MUIDataTable
           data={tableData}
-          columns={this.prepareTableColumns()}
-          multiSelectable
-          selectable
-          enableSelectAll
-          showCheckboxes
-          page={displayPage}
-          rowSize={limit}
-          count={total}
-          onNextPageClick={this.handleNextPageClick}
-          onPreviousPageClick={this.handlePreviousPageClick}
-          onRowSizeChange={this.handleRowSizeChanged}
-          onRowSelection={this.handleRowsSelected}
-          selectedRows={clearSelectedMessages ? null : this.state.selectedRows}
+          columns={this.prepareTableColumns(tableData)}
+          options={options}
         />
         <ConversationPreviewModal
           organizationTags={this.state.tags}

@@ -1,4 +1,5 @@
 import { hasConfig, getConfig } from "../api/lib/config";
+import { getProcessEnvTz, getProcessEnvDstReferenceTimezone } from "../../lib";
 
 const canGoogleImport = hasConfig("GOOGLE_SECRET");
 
@@ -83,11 +84,11 @@ export default function renderIndex(html, css, assetMap) {
       window.TERMS_REQUIRE=${getConfig("TERMS_REQUIRE", null, {
         truthy: 1
       }) || false}
-      window.TZ="${process.env.TZ || ""}"
+      window.TZ="${getProcessEnvTz() || ""}"
       window.CONTACT_LOADERS="${process.env.CONTACT_LOADERS ||
         "csv-upload,test-fakedata,datawarehouse"}"
-      window.DST_REFERENCE_TIMEZONE="${process.env.DST_REFERENCE_TIMEZONE ||
-        "America/New_York"}"
+      window.DST_REFERENCE_TIMEZONE="${getProcessEnvDstReferenceTimezone() ||
+        "US/Eastern"}"
       window.PASSPORT_STRATEGY="${process.env.PASSPORT_STRATEGY || "auth0"}"
       window.PEOPLE_PAGE_CAMPAIGN_FILTER_SORT = "${process.env
         .PEOPLE_PAGE_CAMPAIGN_FILTER_SORT || ""}"
@@ -98,6 +99,13 @@ export default function renderIndex(html, css, assetMap) {
       window.CAN_GOOGLE_IMPORT=${canGoogleImport}
       window.DOWNTIME="${process.env.DOWNTIME || ""}"
       window.DOWNTIME_TEXTER="${process.env.DOWNTIME_TEXTER || ""}"
+      window.EXPERIMENTAL_PER_CAMPAIGN_MESSAGING_LEGACY=${getConfig(
+        "EXPERIMENTAL_PER_CAMPAIGN_MESSAGING_LEGACY",
+        null,
+        {
+          truthy: 1
+        }
+      ) || false}
       window.EXPERIMENTAL_TWILIO_PER_CAMPAIGN_MESSAGING_SERVICE=${process.env
         .EXPERIMENTAL_TWILIO_PER_CAMPAIGN_MESSAGING_SERVICE || false}
       window.TWILIO_MULTI_ORG=${process.env.TWILIO_MULTI_ORG || false}
@@ -107,6 +115,9 @@ export default function renderIndex(html, css, assetMap) {
           ? 'window.TEXTER_SIDEBOXES="' + process.env.TEXTER_SIDEBOXES + '"'
           : ""
       }
+      window.HOLD_ENTER_KEY=${getConfig("HOLD_ENTER_KEY", null, {
+        truthy: 1
+      }) || false}
       window.TEXTER_TWOCLICK=${getConfig("TEXTER_TWOCLICK", null, {
         truthy: 1
       }) || false}
@@ -115,6 +126,9 @@ export default function renderIndex(html, css, assetMap) {
       window.CONTACTS_PER_PHONE_NUMBER=${getConfig(
         "CONTACTS_PER_PHONE_NUMBER"
       ) || 200};      
+      window.MOBILIZE_EVENT_SHIFTER_URL='${getConfig(
+        "MOBILIZE_EVENT_SHIFTER_URL"
+      )}';
     </script>
     <script src="${assetMap["bundle.js"]}"></script>
   </body>

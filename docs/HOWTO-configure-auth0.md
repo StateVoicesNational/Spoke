@@ -51,7 +51,7 @@ callback(null, user, context);
       <script src="https://cdn.auth0.com/js/base64.js"></script>
       <script src="https://cdn.auth0.com/js/es5-shim.min.js"></script>
       <![endif]-->
-      <script src="https://cdn.auth0.com/js/lock/11.11/lock.min.js"></script>
+      <script src="https://cdn.auth0.com/js/lock/11.28/lock.min.js"></script>
       <script>
         // Decode utf8 characters properly
         var config = JSON.parse(decodeURIComponent(escape(window.atob('@@config@@'))));
@@ -88,7 +88,7 @@ callback(null, user, context);
           language: language,
           languageDictionary: {
             title: 'Spoke',
-            signUpTerms: 'I agree to the <a href="YOUR_LINK HERE" target="_new">terms of service and privacy policy</a>.'
+            signUpTerms: 'I agree to the <a href="YOUR_TOS_LINK_HERE" target="_new">terms of service</a> and <a href="YOUR_PRIVACY_POLICY_LINK_HERE" target="_new">privacy policy</a>.'
           },
           mustAcceptTerms: true,
           theme: {
@@ -125,4 +125,4 @@ callback(null, user, context);
     ```
 
     </details>
-
+8. Replace `YOUR_TOS_LINK_HERE` with the link to your Terms of Service and replace `YOUR_PRIVACY_POLICY_LINK_HERE` with the link to your Privacy Policy

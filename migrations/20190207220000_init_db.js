@@ -1,4 +1,4 @@
-const initialize = async (knex, Promise) => {
+const initialize = async knex => {
   // This object's keys are table names and each key's value is a function that defines that table's schema.
   const isSqlite = /sqlite/.test(knex.client.config.client);
   const buildTableSchema = [
@@ -350,7 +350,7 @@ const initialize = async (knex, Promise) => {
         t.text("service_id")
           .notNullable()
           .defaultTo("");
-        t.enu("send_status", [
+        const statuses = [
           "QUEUED",
           "SENDING",
           "SENT",
@@ -358,7 +358,8 @@ const initialize = async (knex, Promise) => {
           "ERROR",
           "PAUSED",
           "NOT_ATTEMPTED"
-        ]).notNullable();
+        ];
+        t.enu("send_status", statuses).notNullable();
         t.timestamp("created_at")
           .defaultTo(knex.fn.now())
           .notNullable();
@@ -427,7 +428,7 @@ const initialize = async (knex, Promise) => {
 
 module.exports = {
   up: initialize,
-  down: (knex, Promise) => {
+  down: knex => {
     // consider a rollback here that would simply drop all the tables
     Promise.resolve();
   }

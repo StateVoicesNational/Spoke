@@ -57,7 +57,7 @@ export const tests = testName => {
             {
               id: "13",
               script:
-                "Hi {firstName}, it's {texterAliasOrFirstName} a volunteer with MoveOn. There is an election in Arizona coming Tuesday. Will you vote progressive?",
+                "Hi {firstName}, it's {texterAliasOrFirstName} a volunteer with MoveOn. There is an election in Arizona coming Tuesday. Will you vote progressive? STOP2quit",
               question: { text: "", answerOptions: [] }
             }
           ],
@@ -355,6 +355,31 @@ export const tests = testName => {
                   }
                 ]
               }
+            },
+            {
+              id: "20",
+              script: "Super, we'll add your +1",
+              question: {
+                text: "Is your friend part of your household?",
+                answerOptions: [
+                  {
+                    value: "Yes, household",
+                    interactionStepId: "45",
+                    nextInteractionStep: {
+                      id: "45",
+                      script: "Thanks for telling us"
+                    }
+                  },
+                  {
+                    value: "No, not household",
+                    interactionStepId: "46",
+                    nextInteractionStep: {
+                      id: "46",
+                      script: "Ok, thanks for telling us"
+                    }
+                  }
+                ]
+              }
             }
           ],
           customFields: ["donationLink", "vendor_id"],
@@ -453,7 +478,14 @@ export const tests = testName => {
             id: "fake2",
             text: "Yes! We need to help save the world.",
             isFromContact: true,
-            createdAt: new Date(Number(new Date()) - 142 * 60 * 1000)
+            createdAt: new Date(Number(new Date()) - 142 * 60 * 1000),
+            media: [
+              {
+                type: "image/png",
+                url:
+                  "https://s3-us-west-1.amazonaws.com/spoke-public/spoke_logo.svg?demo"
+              }
+            ]
           },
           {
             id: "fake3",
@@ -529,17 +561,142 @@ export const tests = testName => {
         hasUnassignedContactsForTexter: 200
       },
       texter: {
+        id: 123,
         firstName: "Carlos",
         lastName: "Tlastname"
+      },
+      currentUser: {
+        id: 123,
+        roles: ["SUSPENDED", "TEXTER", "VETTED_TEXTER"]
       }
-    }
+    },
 
     // other tests:
     // c: current question response is deeper in the state
     // d: no questions at all
     // e: opted out
+    todos1: {
+      organizationId: "fake",
+      texter: {
+        id: 123,
+        profileComplete: true,
+        terms: true,
+        roles: ["SUSPENDED", "TEXTER"]
+      },
+      assignment: {
+        id: "fakeassignment",
+        hasUnassignedContactsForTexter: true,
+        allContactsCount: 100,
+        unmessagedCount: 10,
+        unrepliedCount: 5,
+        badTimezoneCount: 20,
+        totalMessagedCount: 5,
+        pastMessagesCount: 5,
+        skippedMessagesCount: 5,
+        campaign: {
+          id: "fakecampaign",
+          title: "Fake Campaign",
+          description: "Will save the world",
+          batchSize: 100,
+          useDynamicAssignment: true,
+          introHtml: null,
+          primaryColor: null,
+          texterUIConfig: {
+            options: JSON.stringify(sideboxOptions),
+            sideboxChoices
+          },
+          organization: {
+            id: "fake"
+          }
+        }
+      },
+      refreshData: () => {
+        console.log("Summary refresh triggered");
+      },
+      todoLink: (contactsFilter, aId, router) => {
+        console.log("todoLink", contactsFilter, aId);
+        if (contactsFilter === "text") {
+          router.push("/demo/text");
+        } else {
+          router.push("/demo/reply");
+        }
+      }
+    },
+    todos2: {
+      organizationId: "fake",
+      texter: {
+        id: 123,
+        profileComplete: true,
+        terms: true,
+        roles: ["SUSPENDED", "TEXTER"]
+      },
+      assignment: {
+        id: "fakeassignment",
+        hasUnassignedContactsForTexter: false,
+        allContactsCount: 100,
+        unmessagedCount: 10,
+        unrepliedCount: 5,
+        badTimezoneCount: 20,
+        totalMessagedCount: 5,
+        pastMessagesCount: 5,
+        skippedMessagesCount: 5,
+        campaign: {
+          id: "fakecampaign",
+          title: "Fake Campaign",
+          description: "Will save the world",
+          batchSize: 100,
+          useDynamicAssignment: true,
+          introHtml: null,
+          primaryColor: null,
+          texterUIConfig: {
+            options: JSON.stringify(sideboxOptions),
+            sideboxChoices
+          },
+          organization: {
+            id: "fake"
+          }
+        },
+        feedback: {
+          isAcknowledged: false,
+          createdBy: {
+            name: "Mx Reviewer"
+          },
+          message:
+            "You did so well! Note this is a demo and issues, skills and messaging are customizable, and this would be a final message written by the reviewer.",
+          issueCounts: {
+            optOut: 1,
+            tagging: 1,
+            response: 1,
+            scriptEdit: 1,
+            engagement: 1
+          },
+          skillCounts: {
+            extraOptOut: 1,
+            jumpAhead: 1,
+            multiMessage: 1,
+            composing: 1
+          },
+          sweepComplete: true
+        }
+      },
+      refreshData: () => {
+        console.log("Summary refresh triggered");
+      },
+      todoLink: (contactsFilter, aId, router) => {
+        console.log("todoLink", contactsFilter, aId);
+        if (contactsFilter === "text") {
+          router.push("/demo/text");
+        } else {
+          router.push("/demo/reply");
+        }
+      }
+    }
   };
   return testData[testName];
+};
+
+export const assignmentSummaryTestProps = {
+  summaryA: {}
 };
 
 export function generateDemoTexterContact(testName) {
@@ -566,6 +723,7 @@ export function generateDemoTexterContact(testName) {
         campaign={test.assignment.campaign}
         texter={test.texter}
         assignment={test.assignment}
+        currentUser={test.currentUser}
         navigationToolbarChildren={test.navigationToolbarChildren}
         enabledSideboxes={props.enabledSideboxes}
         messageStatusFilter={test.messageStatusFilter}
@@ -588,6 +746,7 @@ export function generateDemoTexterContact(testName) {
   };
 
   const DemoTexterTest = function(props) {
+    console.log("DemoTexterTest", test);
     return (
       <ContactController
         assignment={test.assignment}
@@ -603,6 +762,7 @@ export function generateDemoTexterContact(testName) {
         organizationId={"1"}
         ChildComponent={DemoAssignmentTexterContact}
         messageStatusFilter={test.messageStatusFilter}
+        currentUser={test.currentUser}
       />
     );
   };

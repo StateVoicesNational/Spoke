@@ -5,12 +5,16 @@ function getComponents() {
     "TEXTER_SIDEBOXES" in global
       ? (global.TEXTER_SIDEBOXES && global.TEXTER_SIDEBOXES.split(",")) || []
       : [
+          "hide-media",
+          "texter-feedback",
           "celebration-gif",
           "default-dynamicassignment",
           "default-releasecontacts",
           "contact-reference",
           "tag-contact",
-          "default-editinitial"
+          "default-editinitial",
+          "take-conversations",
+          "texter-feedback"
         ];
   const components = {};
   enabledComponents.forEach(componentName => {
@@ -37,7 +41,8 @@ export const getSideboxes = (
     navigationToolbarChildren,
     messageStatusFilter,
     finished,
-    loading
+    loading,
+    review
   },
   context
 ) => {
@@ -65,7 +70,8 @@ export const getSideboxes = (
             navigationToolbarChildren,
             messageStatusFilter,
             finished,
-            loading
+            loading,
+            review
           });
         } else if (
           context === "TexterTodoList" &&

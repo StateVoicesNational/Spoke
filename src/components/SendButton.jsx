@@ -1,6 +1,6 @@
 import PropTypes from "prop-types";
 import React, { Component } from "react";
-import RaisedButton from "material-ui/RaisedButton";
+import Button from "@material-ui/core/Button";
 import { StyleSheet, css } from "aphrodite";
 import { dataTest } from "../lib/attributes";
 
@@ -16,21 +16,24 @@ class SendButton extends Component {
   render() {
     return (
       <div className={css(styles.container)}>
-        <RaisedButton
+        <Button
           {...dataTest("send")}
-          onTouchTap={this.props.onFinalTouchTap}
+          onClick={this.props.onClick}
           disabled={this.props.disabled}
-          label="Send"
-          primary
-        />
+          color="primary"
+          variant="contained"
+        >
+          {this.props.doneFirstClick ? "Confirm Send" : "Send"}
+        </Button>
       </div>
     );
   }
 }
 
 SendButton.propTypes = {
-  onFinalTouchTap: PropTypes.func,
-  disabled: PropTypes.bool
+  onClick: PropTypes.func,
+  disabled: PropTypes.bool,
+  doneFirstClick: PropTypes.bool
 };
 
 export default SendButton;

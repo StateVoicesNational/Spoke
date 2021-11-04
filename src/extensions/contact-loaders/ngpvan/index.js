@@ -99,30 +99,43 @@ export function clientChoiceDataCacheKey(campaign, user) {
   return "";
 }
 
+async function requestVanSavedLists(organization, skip) {
+  const maxPeopleCount =
+    Number(getConfig("NGP_VAN_MAXIMUM_LIST_SIZE", organization)) ||
+    DEFAULT_NGP_VAN_MAXIMUM_LIST_SIZE;
+
+  const url = Van.makeUrl(
+    `v4/savedLists?$top=100&maxPeopleCount=${maxPeopleCount}${skip ? "&$skip=" + skip : ""}`,
+    organization
+  );
+
+  // The savedLists endpoint supports pagination; we are ignoring pagination now
+  const response = await HttpRequest(url, {
+    method: "GET",
+    headers: {
+      Authorization: Van.getAuth(organization)
+    },
+    retries: 0,
+    timeout: Van.getNgpVanTimeout(organization)
+  });
+
+  return await response.json();
+}
+
 export async function getClientChoiceData(organization, campaign, user) {
   let responseJson;
 
   try {
-    const maxPeopleCount =
-      Number(getConfig("NGP_VAN_MAXIMUM_LIST_SIZE", organization)) ||
-      DEFAULT_NGP_VAN_MAXIMUM_LIST_SIZE;
+    responseJson = await requestVanSavedLists(organization);
 
-    const url = Van.makeUrl(
-      `v4/savedLists?$top=&maxPeopleCount=${maxPeopleCount}`,
-      organization
-    );
+    if (responseJson.count > 100) {
+      // Hack to get most recently created 100 saved lists
+      const mostRecentListsJson = await requestVanSavedLists(organization, responseJson.count - 100);
 
-    // The savedLists endpoint supports pagination; we are ignoring pagination now
-    const response = await HttpRequest(url, {
-      method: "GET",
-      headers: {
-        Authorization: Van.getAuth(organization)
-      },
-      retries: 0,
-      timeout: Van.getNgpVanTimeout(organization)
-    });
-
-    responseJson = await response.json();
+      if (mostRecentListsJson.items && mostRecentListsJson.items.length) {
+        responseJson.items = responseJson.items.concat(mostRecentListsJson.items);
+      }
+    }
   } catch (error) {
     const message = `Error retrieving saved list metadata from VAN ${error}`;
     // eslint-disable-next-line no-console
@@ -183,7 +196,7 @@ const getPhoneNumberIfLikelyCell = (phoneType, row) => {
       treatAsCellPhone(row[isCellPhoneKey], phoneType.assumeCellIfPresent)
     ) {
       return {
-        number: `${row[dialingPrefixKey]}${row[phoneKey]}`,
+        number: `${row[dialingPrefixKey] || ""}${row[phoneKey]}`,
         id: row[phoneIdKey]
       };
     }
@@ -350,7 +363,6 @@ export async function processContactLoad(job, maxContacts, organization) {
       headerTransformer,
       additionalCustomFields: ["VanPhoneId"]
     });
-
     if (contacts.length === 0) {
       await exports.handleFailedContactLoad(
         job,

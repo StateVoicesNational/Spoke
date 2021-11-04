@@ -4,7 +4,6 @@
 import React from "react";
 import moment from "moment-timezone";
 import { mount } from "enzyme";
-import MuiThemeProvider from "material-ui/styles/MuiThemeProvider";
 import { StyleSheetTestUtils } from "aphrodite";
 import { AssignmentTexterContact } from "../../src/containers/AssignmentTexterContact";
 
@@ -50,7 +49,7 @@ const propsWithEnforcedTextingHoursCampaign = {
     lastName: "person",
     assignedCell: null
   },
-  campaign: campaign,
+  campaign,
   assignment: {
     id: 9,
     texter: {
@@ -59,7 +58,7 @@ const propsWithEnforcedTextingHoursCampaign = {
       lastName: "person",
       assignedCell: null
     },
-    campaign: campaign,
+    campaign,
     contacts: [
       {
         id: 19
@@ -99,7 +98,8 @@ const propsWithEnforcedTextingHoursCampaign = {
     title: "1 of 2",
     total: 2,
     currentIndex: 1
-  }
+  },
+  location: { query: {} }
 };
 
 describe("when contact is not within texting hours...", () => {
@@ -116,18 +116,17 @@ describe("when contact is not within texting hours...", () => {
     );
     StyleSheetTestUtils.suppressStyleInjection();
     let component = mount(
-      <MuiThemeProvider>
-        <AssignmentTexterContact
-          texter={propsWithEnforcedTextingHoursCampaign.texter}
-          campaign={campaign}
-          assignment={propsWithEnforcedTextingHoursCampaign.assignment}
-          refreshData={propsWithEnforcedTextingHoursCampaign.refreshData}
-          contact={propsWithEnforcedTextingHoursCampaign.contact}
-          navigationToolbarChildren={
-            propsWithEnforcedTextingHoursCampaign.navigationToolbarChildren
-          }
-        />
-      </MuiThemeProvider>
+      <AssignmentTexterContact
+        texter={propsWithEnforcedTextingHoursCampaign.texter}
+        campaign={campaign}
+        assignment={propsWithEnforcedTextingHoursCampaign.assignment}
+        refreshData={propsWithEnforcedTextingHoursCampaign.refreshData}
+        contact={propsWithEnforcedTextingHoursCampaign.contact}
+        navigationToolbarChildren={
+          propsWithEnforcedTextingHoursCampaign.navigationToolbarChildren
+        }
+        location={propsWithEnforcedTextingHoursCampaign.location}
+      />
     );
     jest.runOnlyPendingTimers();
     expect(
@@ -147,18 +146,17 @@ describe("when contact is within texting hours...", () => {
     );
     StyleSheetTestUtils.suppressStyleInjection();
     component = mount(
-      <MuiThemeProvider>
-        <AssignmentTexterContact
-          texter={propsWithEnforcedTextingHoursCampaign.texter}
-          campaign={campaign}
-          assignment={propsWithEnforcedTextingHoursCampaign.assignment}
-          refreshData={propsWithEnforcedTextingHoursCampaign.refreshData}
-          contact={propsWithEnforcedTextingHoursCampaign.contact}
-          navigationToolbarChildren={
-            propsWithEnforcedTextingHoursCampaign.navigationToolbarChildren
-          }
-        />
-      </MuiThemeProvider>
+      <AssignmentTexterContact
+        texter={propsWithEnforcedTextingHoursCampaign.texter}
+        campaign={campaign}
+        assignment={propsWithEnforcedTextingHoursCampaign.assignment}
+        refreshData={propsWithEnforcedTextingHoursCampaign.refreshData}
+        contact={propsWithEnforcedTextingHoursCampaign.contact}
+        navigationToolbarChildren={
+          propsWithEnforcedTextingHoursCampaign.navigationToolbarChildren
+        }
+        location={propsWithEnforcedTextingHoursCampaign.location}
+      />
     );
   });
   afterEach(() => {

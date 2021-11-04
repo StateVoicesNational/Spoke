@@ -1,27 +1,29 @@
 import type from "prop-types";
 import React from "react";
-import RaisedButton from "material-ui/RaisedButton";
 import GSForm from "../components/forms/GSForm";
-import Form from "react-formal";
-import Subheader from "material-ui/Subheader";
-import Divider from "material-ui/Divider";
-import SelectField from "material-ui/SelectField";
-import MenuItem from "material-ui/MenuItem";
-import { ListItem, List } from "material-ui/List";
 import CampaignFormSectionHeading from "./CampaignFormSectionHeading";
-import CheckIcon from "material-ui/svg-icons/action/check-circle";
-import WarningIcon from "material-ui/svg-icons/alert/warning";
-import ErrorIcon from "material-ui/svg-icons/alert/error";
-import InfoIcon from "material-ui/svg-icons/action/info";
+
+import CheckIcon from "@material-ui/icons/Check";
+import WarningIcon from "@material-ui/icons/Warning";
+import ErrorIcon from "@material-ui/icons/Error";
+import InfoIcon from "@material-ui/icons/Info";
+
+import Select from "@material-ui/core/Select";
+import MenuItem from "@material-ui/core/MenuItem";
+
 import theme from "../styles/theme";
 import components from "../extensions/contact-loaders/components";
-import yup from "yup";
+import * as yup from "yup";
 import { withRouter } from "react-router";
 
-const check = <CheckIcon color={theme.colors.green} />;
-const warning = <WarningIcon color={theme.colors.orange} />;
-const error = <ErrorIcon color={theme.colors.red} />;
-const info = <InfoIcon color={theme.colors.green} />;
+const check = (
+  <CheckIcon color="primary" style={{ color: theme.colors.green }} />
+);
+const warning = (
+  <WarningIcon color="primary" style={{ color: theme.colors.orange }} />
+);
+const error = <ErrorIcon color="primary" style={{ color: theme.colors.red }} />;
+const info = <InfoIcon color="primary" style={{ color: theme.colors.green }} />;
 
 export const icons = {
   check,
@@ -66,19 +68,25 @@ export class CampaignContactsChoiceForm extends React.Component {
     return ingestMethodChoices[0];
   }
 
-  ingestMethodChanged(event, index, val) {
+  ingestMethodChanged(index) {
     this.setState({ ingestMethodIndex: index });
   }
 
   handleChange(contactData) {
     this.props.onChange({
-      contactData: contactData,
+      contactData,
       ingestMethod: this.getCurrentMethod().name
     });
   }
 
   render() {
-    const { ingestMethodChoices, pastIngestMethod } = this.props;
+    const {
+      maxNumbersPerCampaign,
+      contactsPerPhoneNumber,
+      ingestMethodChoices,
+      pastIngestMethod,
+      ensureComplete
+    } = this.props;
     const ingestMethod = this.getCurrentMethod();
     const ingestMethodName = ingestMethod && ingestMethod.name;
     const lastResult =
@@ -86,13 +94,78 @@ export class CampaignContactsChoiceForm extends React.Component {
         ? pastIngestMethod
         : null;
     const IngestComponent = components[ingestMethodName];
+    if (ensureComplete) {
+      // isStarted
+      return (
+        <div>
+          {this.props.contactsCount && (
+            <div>
+              <div>Ingest Method: {ingestMethod.displayName}</div>
+              <div>Loaded Contacts: {this.props.contactsCount}</div>
+              {lastResult ? (
+                <div>
+                  <div>Deleted Duplicates: {lastResult.deletedDupes}</div>
+                  <div>Deleted OptOuts: {lastResult.deletedOptouts}</div>
+                </div>
+              ) : null}
+            </div>
+          )}
+          {this.props.jobResultMessage && (
+            <div>
+              <CampaignFormSectionHeading title="Job Outcome" />
+              <div>{this.props.jobResultMessage}</div>
+            </div>
+          )}
+
+          {IngestComponent && IngestComponent.prototype.renderAfterStart ? (
+            <IngestComponent
+              onChange={chg => {
+                this.handleChange(chg);
+              }}
+              onSubmit={this.props.onSubmit}
+              campaignIsStarted={ensureComplete}
+              icons={icons}
+              saveDisabled={this.props.saveDisabled}
+              saveLabel={this.props.saveLabel}
+              clientChoiceData={ingestMethod && ingestMethod.clientChoiceData}
+              lastResult={lastResult}
+              jobResultMessage={null /* use lastResult.result instead */}
+              contactsPerPhoneNumber={contactsPerPhoneNumber}
+              maxNumbersPerCampaign={maxNumbersPerCampaign}
+            />
+          ) : null}
+        </div>
+      );
+    }
+
     return (
       <div>
         <CampaignFormSectionHeading title="Who are you contacting?" />
+
+        {contactsPerPhoneNumber && maxNumbersPerCampaign && (
+          <div
+            style={{
+              marginBottom: 10,
+              fontSize: 17,
+              color: theme.colors.darkBlue
+            }}
+          >
+            <div>
+              You can only upload a max of{" "}
+              {Number(
+                contactsPerPhoneNumber * maxNumbersPerCampaign
+              ).toLocaleString()}{" "}
+              contacts per campaign.
+            </div>
+            <div>
+              Each campaign can be assigned {maxNumbersPerCampaign} numbers max
+              with {contactsPerPhoneNumber} contacts per phone.
+            </div>
+          </div>
+        )}
+
         <div>
-          {!this.props.contactsCount ? (
-            ""
-          ) : (
+          {!this.props.contactsCount ? null : (
             <div>
               <CampaignFormSectionHeading
                 title={`Loaded Contacts: ${this.props.contactsCount}`}
@@ -103,9 +176,7 @@ export class CampaignContactsChoiceForm extends React.Component {
               </div>
             </div>
           )}
-          {!this.props.jobResultMessage ? (
-            ""
-          ) : (
+          {!this.props.jobResultMessage ? null : (
             <div>
               <CampaignFormSectionHeading title="Job Outcome" />
               <div>{this.props.jobResultMessage}</div>
@@ -117,26 +188,23 @@ export class CampaignContactsChoiceForm extends React.Component {
             })}
             onSubmit={formValues => {}}
           >
-            <SelectField
+            <Select
               name={"ingestMethod"}
               value={ingestMethodName}
-              floatingLabelText={"Contact Load Method"}
-              floatingLabelFixed
-              onChange={(e, index, val) =>
-                this.ingestMethodChanged(e, index, val)
-              }
+              label={"Contact Load Method"}
+              onChange={event => {
+                const index = ingestMethodChoices.findIndex(e => {
+                  return e.name === event.target.value;
+                });
+                this.ingestMethodChanged(index);
+              }}
             >
               {ingestMethodChoices.map(methodChoice => (
-                <MenuItem
-                  key={methodChoice.name}
-                  value={methodChoice.name}
-                  primaryText={methodChoice.displayName}
-                  checked={
-                    ingestMethod && ingestMethod.name === methodChoice.name
-                  }
-                />
+                <MenuItem key={methodChoice.name} value={methodChoice.name}>
+                  {methodChoice.displayName}
+                </MenuItem>
               ))}
-            </SelectField>
+            </Select>
           </GSForm>
           {IngestComponent && (
             <IngestComponent
@@ -144,13 +212,15 @@ export class CampaignContactsChoiceForm extends React.Component {
                 this.handleChange(chg);
               }}
               onSubmit={this.props.onSubmit}
-              campaignIsStarted={this.props.ensureComplete}
+              campaignIsStarted={ensureComplete}
               icons={icons}
               saveDisabled={this.props.saveDisabled}
               saveLabel={this.props.saveLabel}
               clientChoiceData={ingestMethod && ingestMethod.clientChoiceData}
               lastResult={lastResult}
               jobResultMessage={null}
+              contactsPerPhoneNumber={contactsPerPhoneNumber}
+              maxNumbersPerCampaign={maxNumbersPerCampaign}
             />
           )}
         </div>
@@ -173,7 +243,9 @@ CampaignContactsChoiceForm.propTypes = {
   jobResultMessage: type.string,
   ingestMethodChoices: type.array.isRequired,
   pastIngestMethod: type.object,
-  contactsCount: type.number
+  contactsCount: type.number,
+  maxNumbersPerCampaign: type.number,
+  contactsPerPhoneNumber: type.number
 };
 
 export default withRouter(CampaignContactsChoiceForm);

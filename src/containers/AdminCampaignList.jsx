@@ -1,31 +1,34 @@
 import PropTypes from "prop-types";
 import React from "react";
-import FloatingActionButton from "material-ui/FloatingActionButton";
-import ContentAdd from "material-ui/svg-icons/content/add";
-import ArchiveIcon from "material-ui/svg-icons/content/archive";
-import MoreVertIcon from "material-ui/svg-icons/navigation/more-vert";
-import loadData from "./hoc/load-data";
+import { StyleSheet, css } from "aphrodite";
 import { withRouter } from "react-router";
 import gql from "graphql-tag";
-import theme from "../styles/theme";
+
+import Fab from "@material-ui/core/Fab";
+import AddIcon from "@material-ui/icons/Add";
+import ArchiveIcon from "@material-ui/icons/Archive";
+import MoreVertIcon from "@material-ui/icons/MoreVert";
+import Paper from "@material-ui/core/Paper";
+import IconButton from "@material-ui/core/IconButton";
+import Menu from "@material-ui/core/Menu";
+import MenuItem from "@material-ui/core/MenuItem";
+import Select from "@material-ui/core/Select";
+
 import LoadingIndicator from "../components/LoadingIndicator";
-import DropDownMenu from "material-ui/DropDownMenu";
-import IconMenu from "material-ui/IconMenu";
-import { MenuItem } from "material-ui/Menu";
 import { dataTest } from "../lib/attributes";
-import IconButton from "material-ui/IconButton/IconButton";
+import loadData from "./hoc/load-data";
+import theme from "../styles/theme";
 import SortBy, {
   DUE_DATE_DESC_SORT
 } from "../components/AdminCampaignList/SortBy";
-import Paper from "material-ui/Paper";
 import Search from "../components/Search";
-import { StyleSheet, css } from "aphrodite";
 import CampaignTable from "../components/AdminCampaignList/CampaignTable";
 
 const styles = StyleSheet.create({
   settings: {
     display: "flex",
     flexDirection: "row",
+    flexWrap: "wrap",
     padding: "20px"
   }
 });
@@ -57,7 +60,8 @@ export class AdminCampaignList extends React.Component {
     archiveMultiple: false,
     campaignsToArchive: [],
     campaignsWithChangingStatus: [],
-    sortBy: INITIAL_SORT_BY
+    sortBy: INITIAL_SORT_BY,
+    archiveMultipleMenu: false
   };
 
   handleClickNewButton = async () => {
@@ -97,20 +101,14 @@ export class AdminCampaignList extends React.Component {
     }
   };
 
-  handleArchiveFilterChange = async (event, index, isArchived) => {
-    this.changeFilter({ isArchived });
+  handleArchiveFilterChange = async event => {
+    this.changeFilter({ isArchived: event.target.value });
   };
 
   handleChecked = campaignIds => {
     this.setState({
       campaignsToArchive: [...campaignIds]
     });
-  };
-
-  toggleStateWithDelay = (property, delay) => {
-    setTimeout(() => {
-      this.setState(prevState => ({ [property]: !prevState[property] }));
-    }, delay);
   };
 
   handleSearchRequested = searchString => {
@@ -132,18 +130,17 @@ export class AdminCampaignList extends React.Component {
   renderArchivedAndSortBy = () => {
     return (
       !this.state.archiveMultiple && (
-        <span>
-          <span>
-            <DropDownMenu
-              value={this.state.campaignsFilter.isArchived}
-              onChange={this.handleArchiveFilterChange}
-            >
-              <MenuItem value={false} primaryText="Current" />
-              <MenuItem value primaryText="Archived" />
-            </DropDownMenu>
-            <SortBy onChange={this.changeSortBy} sortBy={this.state.sortBy} />
-          </span>
-        </span>
+        <React.Fragment>
+          <Select
+            value={this.state.campaignsFilter.isArchived}
+            onChange={this.handleArchiveFilterChange}
+            style={{ marginRight: "20px" }}
+          >
+            <MenuItem value={false}>Current</MenuItem>
+            <MenuItem value>Archived</MenuItem>
+          </Select>
+          <SortBy onChange={this.changeSortBy} sortBy={this.state.sortBy} />
+        </React.Fragment>
       )
     );
   };
@@ -151,28 +148,46 @@ export class AdminCampaignList extends React.Component {
   renderSearch = () => {
     return (
       !this.state.archiveMultiple && (
-        <Search
-          onSearchRequested={this.handleSearchRequested}
-          searchString={this.state.campaignsFilter.searchString}
-          onCancelSearch={this.handleCancelSearch}
-          hintText="Search for campaign title. Hit enter to search."
-          style={{ width: "50%" }}
-        />
+        <div style={{ width: "100%" }}>
+          <Search
+            onSearchRequested={this.handleSearchRequested}
+            searchString={this.state.campaignsFilter.searchString}
+            onCancelSearch={this.handleCancelSearch}
+          />
+        </div>
       )
     );
   };
 
   renderFilters = () => (
-    <Paper className={css(styles.settings)} zDepth={3}>
-      {this.props.params.adminPerms && this.renderArchiveMultiple()}
-      {this.renderArchivedAndSortBy()}
+    <Paper className={css(styles.settings)} elevation={3}>
+      <div style={{ display: "flex", alignItems: "center", width: "100%" }}>
+        {this.props.params.adminPerms && this.renderArchiveMultiple()}
+        {this.renderArchivedAndSortBy()}
+      </div>
       {this.renderSearch()}
     </Paper>
   );
 
+  handleMenuClick = event => {
+    console.log("event.target", event.target);
+    this.setState({ menuAnchorEl: event.target });
+  };
+
+  handleMenuClose = () => {
+    this.setState({ menuAnchorEl: null });
+  };
+
   renderArchiveMultiple() {
     const iconButton = (
-      <IconButton>
+      <IconButton
+        onClick={event => {
+          this.handleMenuClick(event);
+          this.setState({
+            archiveMultipleMenu: !this.state.archiveMultipleMenu
+          });
+        }}
+      >
         <MoreVertIcon />
       </IconButton>
     );
@@ -182,29 +197,37 @@ export class AdminCampaignList extends React.Component {
     }
 
     return (
-      <IconMenu iconButtonElement={iconButton}>
-        {/*
-          The IconMenu component delays hiding the menu after it is
-          clicked for 200ms. This looks nice, so the state change is
-          delayed for 201ms to avoid switching the menu text before the
-          menu is hidden.
-        */}
-        {this.state.archiveMultiple ? (
-          <MenuItem
-            primaryText="Cancel"
-            onClick={() => {
-              this.toggleStateWithDelay("archiveMultiple", 250);
-            }}
-          />
-        ) : (
-          <MenuItem
-            primaryText="Archive multiple campaigns"
-            onClick={() => {
-              this.toggleStateWithDelay("archiveMultiple", 250);
-            }}
-          />
-        )}
-      </IconMenu>
+      <React.Fragment>
+        {iconButton}
+        <Menu
+          open={this.state.archiveMultipleMenu}
+          anchorEl={this.state.menuAnchorEl}
+        >
+          {this.state.archiveMultiple ? (
+            <MenuItem
+              onClick={() => {
+                this.setState({
+                  archiveMultipleMenu: !this.state.archiveMultipleMenu,
+                  archiveMultiple: !this.state.archiveMultiple
+                });
+              }}
+            >
+              Cancel
+            </MenuItem>
+          ) : (
+            <MenuItem
+              onClick={() => {
+                this.setState({
+                  archiveMultipleMenu: !this.state.archiveMultipleMenu,
+                  archiveMultiple: !this.state.archiveMultiple
+                });
+              }}
+            >
+              Archive multiple campaigns
+            </MenuItem>
+          )}
+        </Menu>
+      </React.Fragment>
     );
   }
 
@@ -306,24 +329,26 @@ export class AdminCampaignList extends React.Component {
     if (this.state.archiveMultiple) {
       const keys = this.state.campaignsToArchive;
       return (
-        <FloatingActionButton
+        <Fab
+          color="primary"
           {...dataTest("archiveCampaigns")}
           style={theme.components.floatingButton}
-          onTouchTap={() => this.handleClickArchiveMultipleButton(keys)}
+          onClick={() => this.handleClickArchiveMultipleButton(keys)}
           disabled={!keys.length}
         >
           <ArchiveIcon />
-        </FloatingActionButton>
+        </Fab>
       );
     }
     return (
-      <FloatingActionButton
+      <Fab
+        color="primary"
         {...dataTest("addCampaign")}
         style={theme.components.floatingButton}
-        onTouchTap={this.handleClickNewButton}
+        onClick={this.handleClickNewButton}
       >
-        <ContentAdd />
-      </FloatingActionButton>
+        <AddIcon />
+      </Fab>
     );
   }
 
@@ -369,6 +394,9 @@ const campaignInfoFragment = `
   description
   timezone
   dueBy
+  organization {
+    id
+  }
   creator {
     displayName
   }

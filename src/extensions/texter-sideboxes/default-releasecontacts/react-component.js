@@ -1,18 +1,23 @@
 import type from "prop-types";
 import React from "react";
-import yup from "yup";
-import { css } from "aphrodite";
-import Form from "react-formal";
-import FlatButton from "material-ui/FlatButton";
-import Toggle from "material-ui/Toggle";
+import * as yup from "yup";
+import { StyleSheet, css } from "aphrodite";
 import { withRouter } from "react-router";
-import gql from "graphql-tag";
+import Form from "react-formal";
+import Button from "@material-ui/core/Button";
+import Switch from "@material-ui/core/Switch";
+import FormControlLabel from "@material-ui/core/FormControlLabel";
 
+import gql from "graphql-tag";
+import GSTextField from "../../../components/forms/GSTextField";
 import loadData from "../../../containers/hoc/load-data";
-import {
-  flexStyles,
-  inlineStyles
-} from "../../../components/AssignmentTexter/StyleControls";
+import theme from "../../../styles/mui-theme";
+
+const styles = StyleSheet.create({
+  marginBottom: {
+    marginBottom: theme.spacing(2)
+  }
+});
 
 export const displayName = () => "Release Contacts";
 
@@ -40,6 +45,11 @@ export const showSidebox = ({
 
 export const showSummary = showSidebox;
 
+const defaulReleaseContactsBatchTitle = "Can't send the rest of these texts?";
+const defaultReleaseContactsBatchLabel = "Done for the day";
+const defaultReleaseContactsConvosTitle = "Need to give up?";
+const defaultReleaseContactsConvosLabel = "Release all my contacts";
+
 export class TexterSideboxClass extends React.Component {
   handleReleaseContacts = async releaseConversations => {
     await this.props.mutations.releaseContacts(releaseConversations);
@@ -59,45 +69,44 @@ export class TexterSideboxClass extends React.Component {
         assignment.unrepliedCount ||
         assignment.hasUnreplied);
     return (
-      <div style={{}}>
+      <div>
         {assignment.unmessagedCount ||
         (messageStatusFilter === "needsMessage" && assignment.hasUnmessaged) ? (
-          <div>
+          <div className={css(styles.marginBottom)}>
             <div>
-              {settingsData.releaseContactsBatchTitle ? (
-                settingsData.releaseContactsBatchTitle
-              ) : (
-                <span>Can&rsquo;t send the rest of these texts?</span>
-              )}
+              {settingsData.releaseContactsBatchTitle
+                ? settingsData.releaseContactsBatchTitle
+                : defaulReleaseContactsBatchTitle}
             </div>
-            <FlatButton
+            <Button
+              variant="outlined"
               onClick={() => this.handleReleaseContacts(false)}
-              label={
-                settingsData.releaseContactsBatchLabel || "Done for the day"
-              }
-              className={css(flexStyles.flatButton)}
-              labelStyle={inlineStyles.flatButtonLabel}
-            />
+            >
+              {settingsData.releaseContactsBatchLabel ||
+                defaultReleaseContactsBatchLabel}
+            </Button>
           </div>
         ) : null}
-        {showReleaseConvos ? (
-          <div style={{ marginTop: "12px" }}>
+        {showReleaseConvos && (
+          <div className={css(styles.marginBottom)}>
             <div>
               {settingsData.releaseContactsConvosTitle
                 ? settingsData.releaseContactsConvosTitle
-                : "Need to give up?"}
+                : defaultReleaseContactsConvosTitle}
             </div>
-            <FlatButton
+            <Button
+              variant="outlined"
               onClick={() => this.handleReleaseContacts(true)}
               label={
                 settingsData.releaseContactsConvosLabel ||
-                "Release all my contacts"
+                defaultReleaseContactsConvosLabel
               }
-              className={css(flexStyles.flatButton)}
-              labelStyle={inlineStyles.flatButtonLabel}
-            />
+            >
+              {settingsData.releaseContactsConvosLabel ||
+                defaultReleaseContactsConvosLabel}
+            </Button>
           </div>
-        ) : null}
+        )}
       </div>
     );
   }
@@ -181,46 +190,87 @@ export const adminSchema = () => ({
 });
 
 export class AdminConfig extends React.Component {
+  componentDidMount() {
+    const { settingsData } = this.props;
+    // set defaults
+    const defaults = {};
+    if (!settingsData.releaseContactsBatchTitle) {
+      defaults.releaseContactsBatchTitle = defaulReleaseContactsBatchTitle;
+    }
+    if (!settingsData.releaseContactsBatchLabel) {
+      defaults.releaseContactsBatchLabel = defaultReleaseContactsBatchLabel;
+    }
+    if (!settingsData.releaseContactsConvosTitle) {
+      defaults.releaseContactsConvosTitle = defaultReleaseContactsConvosTitle;
+    }
+    if (!settingsData.releaseContactsConvosLabel) {
+      defaults.releaseContactsConvosLabel = defaultReleaseContactsConvosLabel;
+    }
+
+    if (Object.values(defaults).length) {
+      this.props.setDefaultsOnMount(defaults);
+    }
+  }
+
   render() {
     return (
       <div>
-        <Toggle
+        <FormControlLabel
           label="Also allow release of conversations"
-          toggled={this.props.settingsData.releaseContactsReleaseConvos}
-          onToggle={(toggler, val) =>
-            this.props.onToggle("releaseContactsReleaseConvos", val)
+          labelPlacement="start"
+          control={
+            <Switch
+              color="primary"
+              checked={!!this.props.settingsData.releaseContactsReleaseConvos}
+              onChange={event =>
+                this.props.onToggle(
+                  "releaseContactsReleaseConvos",
+                  event.target.checked
+                )
+              }
+            />
           }
         />
-        <Toggle
+
+        <FormControlLabel
           label="Enable for campaigns even without Dynamic Assignment enabled."
-          toggled={this.props.settingsData.releaseContactsNonDynamicToo}
-          onToggle={(toggler, val) =>
-            this.props.onToggle("releaseContactsNonDynamicToo", val)
+          labelPlacement="start"
+          control={
+            <Switch
+              color="primary"
+              checked={!!this.props.settingsData.releaseContactsNonDynamicToo}
+              onChange={event =>
+                this.props.onToggle(
+                  "releaseContactsNonDynamicToo",
+                  event.target.checked
+                )
+              }
+            />
           }
         />
         <Form.Field
+          as={GSTextField}
           name="releaseContactsBatchTitle"
           label="Title for releasing contacts"
           fullWidth
-          hintText="default: Can't send the rest of these texts?"
         />
         <Form.Field
+          as={GSTextField}
           name="releaseContactsBatchLabel"
           label="Button label for releasing unmessaged contacts"
           fullWidth
-          hintText="default: Done for the day"
         />
         <Form.Field
+          as={GSTextField}
           name="releaseContactsConvosTitle"
           label="Title for releasing even replies"
           fullWidth
-          hintText="default: Need to give up?"
         />
         <Form.Field
+          as={GSTextField}
           name="releaseContactsConvosLabel"
           label="Button label for releasing all assigned contacts"
           fullWidth
-          hintText="default: Release all my contacts"
         />
       </div>
     );
@@ -229,5 +279,6 @@ export class AdminConfig extends React.Component {
 
 AdminConfig.propTypes = {
   enabled: type.bool,
-  data: type.string
+  data: type.string,
+  setDefaultsOnMount: type.func
 };

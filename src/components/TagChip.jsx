@@ -1,10 +1,9 @@
 import React from "react";
-import Chip from "material-ui/Chip";
+import Chip from "@material-ui/core/Chip";
 import type from "prop-types";
-import Avatar from "material-ui/Avatar";
-import FlagIcon from "material-ui/svg-icons/content/flag";
+import Avatar from "@material-ui/core/Avatar";
+import FlagIcon from "@material-ui/icons/Flag";
 import theme from "../styles/theme";
-import { gray900 } from "material-ui/styles/colors";
 
 const inlineStyles = {
   chip: {
@@ -20,7 +19,11 @@ const inlineStyles = {
   text: {
     fontSize: "12px",
     fontWeight: "900",
-    color: gray900
+    color: "#111",
+    maxWidth: 200,
+    whiteSpace: "nowrap",
+    overflow: "hidden",
+    textOverflow: "ellipsis"
   },
   icon: {
     width: "16px",
@@ -32,23 +35,25 @@ const inlineStyles = {
 
 export const TagChip = props => (
   <Chip
-    {...props}
     style={{
       ...inlineStyles.chip,
       backgroundColor: props.backgroundColor || theme.colors.lightYellow,
       ...(props.style ? props.style : {})
     }}
-  >
-    <Avatar
-      style={{
-        ...inlineStyles.icon,
-        backgroundColor: props.backgroundColor || theme.colors.lightYellow
-      }}
-    >
-      {props.icon || <FlagIcon />}
-    </Avatar>
-    <div style={inlineStyles.text}>{props.text}</div>
-  </Chip>
+    onClick={props.onClick}
+    onDelete={props.onDelete}
+    label={props.text}
+    avatar={
+      <Avatar
+        style={{
+          ...inlineStyles.icon,
+          backgroundColor: props.backgroundColor || theme.colors.lightYellow
+        }}
+      >
+        {props.icon || <FlagIcon fontSize="small" />}
+      </Avatar>
+    }
+  />
 );
 
 TagChip.propTypes = {

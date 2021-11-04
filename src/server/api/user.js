@@ -22,7 +22,7 @@ function buildSelect(sortBy) {
   } else if (sortBy === "OLDEST") {
     fragmentArray = [userStar];
   } else {
-    //FIRST_NAME, LAST_NAME, Default
+    // FIRST_NAME, LAST_NAME, Default
     fragmentArray = [userStar, lower(lastName), lower(firstName)];
   }
   return r.knex.select(r.knex.raw(fragmentArray.join(", ")));
@@ -58,17 +58,21 @@ export function buildUsersQuery(
   filterBy
 ) {
   const queryParam = buildSelect(sortBy);
-  const roleFilter = role && role !== "ANY" ? { role } : {};
-  const suspendedFilter =
-    role === "SUSPENDED" || role === "ANY" ? {} : { role: "SUSPENDED" };
 
   let query = queryParam
     .from("user_organization")
     .innerJoin("user", "user_organization.user_id", "user.id")
-    .where(roleFilter)
-    .whereNot(suspendedFilter)
-    .whereRaw('"user_organization"."organization_id" = ?', organizationId)
+    .where("organization_id", organizationId)
     .distinct();
+
+  if (role !== "ANY") {
+    if (role) {
+      query = query.where({ role: role });
+    }
+    if (role !== "SUSPENDED") {
+      query = query.whereNot({ role: "SUSPENDED" });
+    }
+  }
 
   if (filterString) {
     const filterStringWithPercents = (
@@ -92,7 +96,7 @@ export function buildUsersQuery(
     } else {
       query = query.andWhere(
         r.knex.raw(
-          "lower(first_name) like ? OR lower(last_name) like ? OR lower(email) like ?",
+          "(lower(first_name) like ? OR lower(last_name) like ? OR lower(email) like ?)",
           [
             filterStringWithPercents,
             filterStringWithPercents,
@@ -252,41 +256,61 @@ export const resolvers = {
         "assignment.campaign_id",
         "assignment.user_id",
         "assignment.max_contacts",
-        "assignment.created_at"
+        "assignment.created_at",
+        "assignment_feedback.feedback",
+        "assignment_feedback.is_acknowledged",
+        "assignment_feedback.creator_id",
+        "campaign.use_dynamic_assignment"
       ];
       let query = r
         .knexReadOnly("assignment")
         .join("campaign", "assignment.campaign_id", "campaign.id")
-        .where({
-          is_started: true,
-          organization_id: organizationId,
-          is_archived: false
+        .leftJoin(
+          "assignment_feedback",
+          "assignment.id",
+          "assignment_feedback.assignment_id"
+        )
+        .andWhere({
+          is_started: true
         })
-        .where("assignment.user_id", user.id);
+        .andWhere("assignment.user_id", user.id);
+
+      if (/texter-feedback/.test(getConfig("TEXTER_SIDEBOXES"))) {
+        query = query.whereRaw(
+          `(
+          is_archived = false
+          OR (assignment_feedback.is_acknowledged = true
+              AND assignment_feedback.complete = true)
+          )`
+        );
+      } else {
+        query.andWhere("is_archived", false);
+      }
+
+      if (organizationId) {
+        query.where("organization_id", organizationId);
+      }
 
       if (getConfig("FILTER_DUEBY", null, { truthy: 1 })) {
         query = query.where("campaign.due_by", ">", new Date());
       }
+
       if (withOutCounts) {
         return await query.select(fields);
       } else {
         query
-          .leftJoin(
-            "campaign_contact",
-            "campaign_contact.assignment_id",
-            "assignment.id"
-          )
+          .leftOuterJoin("campaign_contact", function() {
+            this.on("campaign_contact.assignment_id", "assignment.id").andOn(
+              "campaign_contact.is_opted_out",
+              r.knex.raw("?", [false])
+            );
+            // https://github.com/knex/knex/issues/1003#issuecomment-287302118
+          })
           .groupBy(
             ...fields,
             "campaign_contact.timezone_offset",
             "campaign_contact.message_status"
           )
-          .where(function() {
-            // we need to allow null for empty assignments like dynamic assignment
-            this.where("campaign_contact.is_opted_out", false).orWhereNull(
-              "campaign_contact.is_opted_out"
-            );
-          })
           .select(
             ...fields,
             "campaign_contact.timezone_offset",
@@ -296,10 +320,38 @@ export const resolvers = {
             )
           );
         const result = await query;
+        const campaignIds = result
+          .filter(a => a.use_dynamic_assignment)
+          .map(a => a.campaign_id);
+        const campaignsWithUnassigned = {};
+        let hasUnassigned = [];
+        if (campaignIds.length) {
+          hasUnassigned = await r
+            .knex("campaign_contact")
+            .where({
+              is_opted_out: false,
+              message_status: "needsMessage"
+            })
+            .whereNull("assignment_id")
+            .whereIn("campaign_id", campaignIds)
+            .select("campaign_id")
+            .groupBy("campaign_id")
+            .havingRaw("count(1) > 0");
+          hasUnassigned.forEach(c => {
+            campaignsWithUnassigned[c.campaign_id] = 1;
+          });
+        }
         const assignments = {};
-        result.forEach(assn => {
+        for (const assn of result) {
           if (!assignments[assn.id]) {
-            assignments[assn.id] = { ...assn, tzStatusCounts: {} };
+            assignments[assn.id] = {
+              ...assn,
+              tzStatusCounts: {}
+            };
+            if (assn.use_dynamic_assignment && campaignIds.length) {
+              assignments[assn.id].hasUnassigned =
+                campaignsWithUnassigned[assn.campaign_id] || 0;
+            }
           }
           if (!assignments[assn.id].tzStatusCounts[assn.message_status]) {
             assignments[assn.id].tzStatusCounts[assn.message_status] = [];
@@ -308,7 +360,7 @@ export const resolvers = {
             tz: assn.timezone_offset,
             count: assn.tz_status_count
           });
-        });
+        }
         return Object.values(assignments);
       }
     },

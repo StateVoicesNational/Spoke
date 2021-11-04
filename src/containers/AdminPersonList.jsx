@@ -3,13 +3,17 @@ import React from "react";
 import { withRouter } from "react-router";
 import _ from "lodash";
 import OrganizationJoinLink from "../components/OrganizationJoinLink";
-import FlatButton from "material-ui/FlatButton";
-import FloatingActionButton from "material-ui/FloatingActionButton";
-import DropDownMenu from "material-ui/DropDownMenu";
-import MenuItem from "material-ui/MenuItem";
-import ContentAdd from "material-ui/svg-icons/content/add";
-import Dialog from "material-ui/Dialog";
-import Paper from "material-ui/Paper";
+
+import Button from "@material-ui/core/Button";
+import Fab from "@material-ui/core/Fab";
+import AddIcon from "@material-ui/icons/Add";
+import Paper from "@material-ui/core/Paper";
+import Dialog from "@material-ui/core/Dialog";
+import DialogTitle from "@material-ui/core/DialogTitle";
+import DialogContent from "@material-ui/core/DialogContent";
+import Select from "@material-ui/core/Select";
+import MenuItem from "@material-ui/core/MenuItem";
+
 import theme from "../styles/theme";
 import loadData from "./hoc/load-data";
 import gql from "graphql-tag";
@@ -31,7 +35,15 @@ const styles = StyleSheet.create({
   settings: {
     display: "flex",
     flexDirection: "column",
-    padding: "20px"
+    padding: 20,
+    marginBottom: 20
+  },
+  selects: {
+    display: "flex",
+    flexWrap: "wrap"
+  },
+  select: {
+    margin: "0 20px 20px 0"
   }
 });
 
@@ -44,7 +56,8 @@ class AdminPersonList extends React.Component {
     this.state = {
       open: false,
       userEdit: false,
-      passwordResetHash: ""
+      passwordResetHash: "",
+      resetLink: false
     };
   }
 
@@ -149,9 +162,9 @@ class AdminPersonList extends React.Component {
     );
   };
 
-  handleCampaignChange = (event, index, value) => {
+  handleCampaignChange = event => {
     // We send 0 when there is a campaign change, because presumably we start on page 1
-    this.handleFilterChange({ campaignId: value });
+    this.handleFilterChange({ campaignId: event.target.index });
   };
 
   handleOpen() {
@@ -162,12 +175,18 @@ class AdminPersonList extends React.Component {
     this.setState({ open: false, passwordResetHash: "" });
   }
 
-  handleSortByChanged = (event, index, sortBy) => {
-    this.handleFilterChange({ sortBy });
+  handleResetInviteLink = async () => {
+    console.log("handleResetInviteLink");
+    await this.props.mutations.resetOrganizationJoinLink();
+    this.setState({ resetLink: false });
   };
 
-  handleFilterByChanged = (event, index, filterBy) => {
-    this.handleFilterChange({ filterBy });
+  handleSortByChanged = event => {
+    this.handleFilterChange({ sortBy: event.target.value });
+  };
+
+  handleFilterByChanged = event => {
+    this.handleFilterChange({ filterBy: event.target.value });
   };
 
   handleSearchRequested = searchString => {
@@ -184,54 +203,46 @@ class AdminPersonList extends React.Component {
     } = this.props;
     const campaigns = organization ? organization.campaigns : { campaigns: [] };
     return (
-      <DropDownMenu
+      <Select
         value={this.props.location.query.campaignId || ALL_CAMPAIGNS}
         onChange={this.handleCampaignChange}
       >
-        <MenuItem
-          primaryText="All Campaigns"
-          value={ALL_CAMPAIGNS}
-          key={ALL_CAMPAIGNS}
-        />
+        <MenuItem value={ALL_CAMPAIGNS} key={ALL_CAMPAIGNS}>
+          All Campaigns
+        </MenuItem>
         {campaigns.campaigns.map(campaign => (
-          <MenuItem
-            value={campaign.id}
-            primaryText={campaign.title}
-            key={campaign.id}
-          />
+          <MenuItem value={campaign.id} key={campaign.id}>
+            {campaign.title}
+          </MenuItem>
         ))}
-      </DropDownMenu>
+      </Select>
     );
   };
 
   renderSortBy = () => (
-    <DropDownMenu
+    <Select
       value={this.props.location.query.sortBy || this.DEFAULT_SORT_BY_VALUE}
       onChange={this.handleSortByChanged}
     >
       {this.SORTS.map(sort => (
-        <MenuItem
-          value={sort.value}
-          key={sort.value}
-          primaryText={"Sort by " + sort.display}
-        />
+        <MenuItem value={sort.value} key={sort.value}>
+          Sort by {sort.display}
+        </MenuItem>
       ))}
-    </DropDownMenu>
+    </Select>
   );
 
   renderFilterBy = () => (
-    <DropDownMenu
+    <Select
       value={this.props.location.query.filterBy || this.DEFAULT_FILTER_BY_VALUE}
       onChange={this.handleFilterByChanged}
     >
       {this.FILTERS.map(filter => (
-        <MenuItem
-          value={filter.value}
-          key={filter.value}
-          primaryText={"Filter by " + filter.display}
-        />
+        <MenuItem value={filter.value} key={filter.value}>
+          Filter by {filter.display}
+        </MenuItem>
       ))}
-    </DropDownMenu>
+    </Select>
   );
 
   renderRoles = () => (
@@ -246,15 +257,52 @@ class AdminPersonList extends React.Component {
     const {
       userData: { currentUser }
     } = this.props;
-
+    const joinActions = [
+      <Button
+        {...dataTest("inviteOk")}
+        color="primary"
+        onClick={this.handleClose}
+      >
+        OK
+      </Button>
+    ];
+    if (currentUser.roles.indexOf("ADMIN") !== -1) {
+      if (this.state.resetLink) {
+        joinActions.unshift(
+          <Button
+            {...dataTest("inviteResetConfirm")}
+            onClick={this.handleResetInviteLink}
+          >
+            Confirm Reset Link -- will break current link
+          </Button>,
+          <Button
+            {...dataTest("inviteResetCancel")}
+            onClick={() => this.setState({ resetLink: false })}
+          >
+            Cancel
+          </Button>
+        );
+      } else {
+        joinActions.unshift(
+          <Button
+            {...dataTest("inviteReset")}
+            onClick={() => this.setState({ resetLink: true })}
+          >
+            Reset Link (Security)
+          </Button>
+        );
+      }
+    }
     return (
       <div>
-        <Paper className={css(styles.settings)} zDepth={3}>
-          <div>
-            {this.renderCampaignList()}
-            {this.renderRoles()}
-            {this.renderSortBy()}
-            {this.renderFilterBy()}
+        <Paper className={css(styles.settings)} elevation={3}>
+          <div className={css(styles.selects)}>
+            <div className={css(styles.select)}>
+              {this.renderCampaignList()}
+            </div>
+            <div className={css(styles.select)}>{this.renderRoles()}</div>
+            <div className={css(styles.select)}>{this.renderSortBy()}</div>
+            <div className={css(styles.select)}>{this.renderFilterBy()}</div>
           </div>
           <Search
             onSearchRequested={this.handleSearchRequested}
@@ -284,32 +332,27 @@ class AdminPersonList extends React.Component {
           role={this.props.location.query.role}
           location={this.props.location}
         />
-        <FloatingActionButton
+        <Fab
           {...dataTest("addPerson")}
+          color="primary"
           style={theme.components.floatingButton}
-          onTouchTap={this.handleOpen}
+          onClick={this.handleOpen}
         >
-          <ContentAdd />
-        </FloatingActionButton>
+          <AddIcon />
+        </Fab>
         {organizationData.organization && (
           <div>
             <Dialog
-              title="Invite new texters"
-              actions={[
-                <FlatButton
-                  {...dataTest("inviteOk")}
-                  label="OK"
-                  primary
-                  onTouchTap={this.handleClose}
-                />
-              ]}
-              modal={false}
+              actions={joinActions}
               open={this.state.open}
-              onRequestClose={this.handleClose}
+              onClose={this.handleClose}
             >
-              <OrganizationJoinLink
-                organizationUuid={organizationData.organization.uuid}
-              />
+              <DialogTitle>Invite new texters</DialogTitle>
+              <DialogContent>
+                <OrganizationJoinLink
+                  organizationUuid={organizationData.organization.uuid}
+                />
+              </DialogContent>
             </Dialog>
           </div>
         )}
@@ -325,6 +368,22 @@ AdminPersonList.propTypes = {
   organizationData: PropTypes.object,
   router: PropTypes.object,
   location: PropTypes.object
+};
+
+const mutations = {
+  resetOrganizationJoinLink: ownProps => () => ({
+    mutation: gql`
+      mutation resetOrganizationJoinLink($organizationId: String!) {
+        resetOrganizationJoinLink(organizationId: $organizationId) {
+          id
+          uuid
+        }
+      }
+    `,
+    variables: {
+      organizationId: ownProps.organizationData.organization.id
+    }
+  })
 };
 
 const queries = {
@@ -374,4 +433,4 @@ const queries = {
   }
 };
 
-export default loadData({ queries })(withRouter(AdminPersonList));
+export default loadData({ queries, mutations })(withRouter(AdminPersonList));

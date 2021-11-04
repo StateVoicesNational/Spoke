@@ -21,6 +21,7 @@ import ZipCode from "./zip-code";
 import Log from "./log";
 import Tag from "./tag";
 import TagCampaignContact from "./tag-campaign-contact";
+import OrganizationContact from "./organization-contact";
 
 import thinky from "./thinky";
 import datawarehouse from "./datawarehouse";
@@ -52,8 +53,10 @@ const tableList = [
   "campaign_admin",
   "assignment",
   // the rest are alphabetical
+  "assignment_feedback",
   "campaign_contact", // ?good candidate (or by cell)
   "canned_response", // good candidate
+  "organization_contact",
   "interaction_step",
   "invite",
   "job_request",
@@ -153,6 +156,7 @@ export {
   Campaign,
   CampaignAdmin,
   CampaignContact,
+  OrganizationContact,
   InteractionStep,
   Invite,
   JobRequest,

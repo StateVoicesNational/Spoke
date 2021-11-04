@@ -1,12 +1,15 @@
 export const tagsFilterStateFromTagsFilter = tagsFilter => {
-  let newTagsFilter = null;
+  const newTagsFilter = {};
   if (tagsFilter.anyTag) {
-    newTagsFilter = ["*"];
+    newTagsFilter.include = ["*"];
   } else if (tagsFilter.noTag) {
-    newTagsFilter = [];
+    newTagsFilter.include = [];
   } else if (!tagsFilter.ignoreTags) {
-    newTagsFilter = Object.values(tagsFilter.selectedTags).map(
-      tagFilter => tagFilter.id
+    newTagsFilter.include = Object.values(tagsFilter.selectedTags || {}).map(
+      tagFilter => (tagFilter || {}).id
+    );
+    newTagsFilter.suppress = Object.values(tagsFilter.suppressedTags || {}).map(
+      tagFilter => (tagFilter || {}).id
     );
   }
   return newTagsFilter;
@@ -101,13 +104,21 @@ export const getConversationFiltersFromQuery = (query, organizationTags) => {
       filters.tagsFilter = { [query.tags]: true };
     } else {
       const selectedTags = {};
+      const suppressedTags = {};
       query.tags.split(",").forEach(t => {
-        selectedTags[t] = organizationTags.find(ot => ot.id === t);
+        if (isNaN(parseInt(t, 10))) {
+          const tag = organizationTags.find(ot => `s_${ot.id}` === t);
+          tag.id = t;
+          suppressedTags[t] = tag;
+        } else {
+          selectedTags[t] = organizationTags.find(ot => ot.id === t);
+        }
       });
-      filters.tagsFilter = { selectedTags };
+      filters.tagsFilter = { selectedTags, suppressedTags };
     }
   }
   const newTagsFilter = tagsFilterStateFromTagsFilter(filters.tagsFilter);
-  filters.contactsFilter.tags = newTagsFilter;
+  filters.contactsFilter.tags = newTagsFilter.include;
+  filters.contactsFilter.suppressedTags = newTagsFilter.suppress;
   return filters;
 };

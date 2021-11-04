@@ -3,13 +3,15 @@ import React from "react";
 import loadData from "./hoc/load-data";
 import gql from "graphql-tag";
 import Form from "react-formal";
-import yup from "yup";
+import * as yup from "yup";
 import { StyleSheet, css } from "aphrodite";
 import theme from "../styles/theme";
 import TopNav from "../components/TopNav";
-import Paper from "material-ui/Paper";
+import Paper from "@material-ui/core/Paper";
 import { withRouter } from "react-router";
 import GSForm from "../components/forms/GSForm";
+import GSTextField from "../components/forms/GSTextField";
+import GSSubmitButton from "../components/forms/GSSubmitButton";
 import { dataTest } from "../lib/attributes";
 
 const styles = StyleSheet.create({
@@ -66,14 +68,15 @@ class CreateAdditionalOrganization extends React.Component {
               }}
             >
               <Form.Field
+                as={GSTextField}
                 {...dataTest("organization")}
                 name="name"
                 label="Your organization"
                 hintText="Bartlet Campaign"
                 fullWidth
               />
-              <Form.Button
-                type="submit"
+              <Form.Submit
+                as={GSSubmitButton}
                 label="Create"
                 name="submit"
                 value="Create"

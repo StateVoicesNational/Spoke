@@ -1,19 +1,22 @@
 import React from "react";
 import type from "prop-types";
 
-import DropDownMenu from "material-ui/DropDownMenu";
-import MenuItem from "material-ui/MenuItem";
+import Select from "@material-ui/core/Select";
+import MenuItem from "@material-ui/core/MenuItem";
+
 import { getHighestRole, ROLE_HIERARCHY } from "../../lib";
 
 const RolesDropdown = props => (
-  <DropDownMenu
+  <Select
     value={getHighestRole(props.roles)}
     disabled={
       props.texterId === props.currentUser.id ||
       (getHighestRole(props.roles) === "OWNER" &&
         getHighestRole(props.currentUser.roles) !== "OWNER")
     }
-    onChange={(event, index, value) => props.onChange(props.texterId, value)}
+    onChange={event => {
+      return props.onChange(props.texterId, event.target.value);
+    }}
   >
     {ROLE_HIERARCHY.map(option => (
       <MenuItem
@@ -23,13 +26,15 @@ const RolesDropdown = props => (
           option === "OWNER" &&
           getHighestRole(props.currentUser.roles) !== "OWNER"
         }
-        primaryText={`${option.charAt(0).toUpperCase()}${option
+      >
+        {option.charAt(0).toUpperCase()}
+        {option
           .substring(1)
           .replace("_", " ")
-          .toLowerCase()}`}
-      />
+          .toLowerCase()}
+      </MenuItem>
     ))}
-  </DropDownMenu>
+  </Select>
 );
 
 RolesDropdown.propTypes = {
