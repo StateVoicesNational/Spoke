@@ -20,7 +20,6 @@ import DialogContentText from "@material-ui/core/DialogContentText";
 import DisplayLink from "../../../components/DisplayLink";
 import GSForm from "../../../components/forms/GSForm";
 import GSTextField from "../../../components/forms/GSTextField";
-import GSSubmitButton from "../../../components/forms/GSSubmitButton";
 
 export class OrgConfig extends React.Component {
   constructor(props) {
@@ -178,11 +177,13 @@ export class OrgConfig extends React.Component {
                 fullWidth
               />
 
-              <Form.Submit
-                as={GSSubmitButton}
-                label={this.props.saveLabel || "Save Twilio Credentials"}
+              <Button
+                color="primary"
+                variant="contained"
                 onClick={this.handleOpenTwilioDialog}
-              />
+              >
+                {this.props.saveLabel || "Save Twilio Credentials"}
+              </Button>
               <Dialog open={this.state.twilioDialogOpen}>
                 <DialogContent>
                   <DialogContentText>
@@ -198,13 +199,13 @@ export class OrgConfig extends React.Component {
                   >
                     Cancel
                   </Button>
-                  <Form.Submit
-                    as={GSSubmitButton}
-                    label="Save"
-                    style={inlineStyles.dialogButton}
-                    component={GSSubmitButton}
+                  <Button
+                    color="primary"
+                    variant="contained"
                     onClick={this.handleSubmitTwilioAuthForm}
-                  />
+                  >
+                    Save
+                  </Button>
                 </DialogActions>
               </Dialog>
             </GSForm>
