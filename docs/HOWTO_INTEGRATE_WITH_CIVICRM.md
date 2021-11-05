@@ -29,6 +29,10 @@ These handlers require the CiviCRM contact loader be configured and available fo
 
 Additionally, the "Send email" action handler requires your CiviCRM installation has the [E-Mail API extension](https://civicrm.org/extensions/e-mail-api) installed and enabled.
 
+### Service Manager
+
+Do not SMS - whenever a contact is opted out in Spoke, the contact's record in CiviCRM will have the "do not SMS" flag enabled.
+
 ## Instructions
 
 ### Step One - creating an API key for CiviCRM
@@ -46,6 +50,7 @@ Modify your Spoke .env file to include the following environment variables:
 - CIVICRM_API_KEY - the key you generated in step one
 - CIVICRM_SITE_KEY - the site key for your CiviCRM installation. Defined in your `civicrm.settings.php` file ([more info](https://docs.civicrm.org/sysadmin/en/latest/setup/secret-keys/)).
 - ACTION_HANDLERS - add `civicrm-addtogroup`, `civicrm-addtag`, `civicrm-registerevent` and `civicrm-sendemail to enable the particular handlers of interest
+- SERVICE_MANAGERS - add `civicrm-donotsms` to the comma-separated list
 
 ## Optional contact loader configuration
 
