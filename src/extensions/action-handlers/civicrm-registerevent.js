@@ -93,7 +93,10 @@ export async function getClientChoiceData(organization, user) {
   const getEventData = await searchEvents();
   const items = getEventData.map(item => {
     return {
-      name: item.title,
+      name: `${item.title} (${item.start_date.substring(
+        0,
+        item.start_date.indexOf(" ")
+      )})`,
       details: JSON.stringify({ id: item.id, role_id: item.default_role_id })
     };
   });
