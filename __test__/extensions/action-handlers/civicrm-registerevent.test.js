@@ -73,14 +73,15 @@ describe("civicrm-registerevent", () => {
           id: "2",
           title: "Company",
           event_title: "Demo Event",
-          default_role_id: "1"
+          default_role_id: "1",
+          start_date: "2021-11-01 16:00:00"
         }
       ];
 
       when(searchEvents).mockResolvedValue(theEventData);
       expect(await HandlerToTest.getClientChoiceData({ id: 1 })).toEqual({
         data:
-          '{"items":[{"name":"Company","details":"{\\"id\\":\\"2\\",\\"role_id\\":\\"1\\"}"}]}',
+          '{"items":[{"name":"Company (2021-11-01)","details":"{\\"id\\":\\"2\\",\\"role_id\\":\\"1\\"}"}]}',
         expiresSeconds: CIVICRM_CACHE_SECONDS
       });
     });
