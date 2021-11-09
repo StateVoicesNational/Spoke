@@ -26,7 +26,6 @@ You will need to create a Twilio account in order to test outgoing and incoming 
     - Set `FALLBACK URL` to the same as `REQUEST URL`
   - Under `Outbound Settings`
     - `STATUS CALLBACK URL` in your Twilio console is `https://<YOUR_APP_URL>/twilio-message-report`
-    - In your .env file, set `TWILIO_STATUS_CALLBACK_URL` to this same URL
 8. Click `Save`, and then visit the [dashboard](https://www.twilio.com/console)
 9. Under `Project Info`
   - `TWILIO_ACCOUNT_SID` in your .env file is `ACCOUNT SID` in your Twilio console
