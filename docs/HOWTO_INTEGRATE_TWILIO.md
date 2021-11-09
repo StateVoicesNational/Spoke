@@ -24,7 +24,6 @@ You will need to create a Twilio account in order to test outgoing and incoming 
     - Make sure `SEND A WEBHOOK` is selected
     - `REQUEST URL` is `https://<YOUR_APP_URL>/twilio` using `HTTP POST`
     - Set `FALLBACK URL` to the same as `REQUEST URL`
-    - In your .env file, set `TWILIO_MESSAGE_CALLBACK_URL` to this same URL
   - Under `Outbound Settings`
     - `STATUS CALLBACK URL` in your Twilio console is `https://<YOUR_APP_URL>/twilio-message-report`
     - In your .env file, set `TWILIO_STATUS_CALLBACK_URL` to this same URL
@@ -36,7 +35,7 @@ You will need to create a Twilio account in order to test outgoing and incoming 
 11. If you want to send live text messages as part of your testing, you must buy a phone number and attach it to your project.
   - Click on `Phone Numbers` and press on `+`. Search for a area code and click on buy (trial Twilio accounts give you $15~ to work with). In order to send messages, you will have to connect a credit card with a minimum charge of $20. It is recommended to purchase at least 1 phone numbers per 200 contacts you plan to send to.
   - To attach it to your project, go back to the Messaging Service you created and click `Sender Pool`. Click `Add Sender` and add the phone number you just bought.
-  
+
 ## Multi-Org Twilio Setup
 If you follow the instructions above, every organization and campaign in your instance will use the same Twilio account and the same messaging service (phone number pool). If you want to use different twilio accounts and/or messaging services for each organization, you can basically follow the same instuctions with a couple of tweaks.
 
