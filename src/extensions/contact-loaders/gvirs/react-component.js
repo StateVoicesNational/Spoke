@@ -23,6 +23,7 @@ import fetch from "node-fetch";
 import { GVIRS_INTEGRATION_ENDPOINT, GVIRS_MINQUERY_SIZE } from "./const";
 import CircularProgress from "@material-ui/core/CircularProgress";
 import { log } from "../../../lib/log";
+import { fetchfromGvirs } from "./util";
 
 export default function GvirsLoaderField(props) {
   const [open, setOpen] = React.useState(false);

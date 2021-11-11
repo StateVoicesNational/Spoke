@@ -12,10 +12,7 @@ import {
   GVIRS_CONTACT_LOADER
 } from "./const";
 import { log } from "../../../lib/log";
-
-async function searchSegments(segments, value) {
-  return segments;
-}
+import { searchSegments, fetchfromGvirs } from "./util";
 
 export const name = GVIRS_CONTACT_LOADER;
 

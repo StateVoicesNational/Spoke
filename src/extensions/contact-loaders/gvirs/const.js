@@ -26,11 +26,7 @@ export const GVIRS_MINQUERY_SIZE = 3;
 // and action handlers; others are optional. (These need to be worked on
 // the fly.)
 
-export const GVIRS_ENVIRONMENTAL_VARIABLES_MANDATORY = [
-  //  "GVIRS_API_KEY",
-  //  "GVIRS_SITE_KEY",
-  //  "GVIRS_API_URL"
-];
+export const GVIRS_ENVIRONMENTAL_VARIABLES_MANDATORY = ["GVIRS_CONNECTIONS"];
 
 export const GVIRS_ENVIRONMENTAL_VARIABLES_OPTIONAL = [
   // Something.
