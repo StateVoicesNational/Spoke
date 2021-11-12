@@ -80,7 +80,7 @@ export async function fetchfromGvirs(
     const json = await result.json();
     return json;
   } catch (error) {
-    return error;
+    return null;
   }
 }
 
