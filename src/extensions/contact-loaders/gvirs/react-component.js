@@ -44,7 +44,7 @@ export default function GvirsLoaderField(props) {
       (async () => {
         try {
           const response = await fetch(
-            `${GVIRS_INTEGRATION_ENDPOINT}?query=${inputValue}`
+            `${GVIRS_INTEGRATION_ENDPOINT}?query=${inputValue}&`
           );
           const json = await response.json();
 

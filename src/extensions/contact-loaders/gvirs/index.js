@@ -12,7 +12,11 @@ import {
   GVIRS_CONTACT_LOADER
 } from "./const";
 import { log } from "../../../lib/log";
-import { searchSegments, fetchfromGvirs } from "./util";
+import {
+  searchSegments,
+  fetchfromGvirs,
+  decomposeGVIRSConnections
+} from "./util";
 
 export const name = GVIRS_CONTACT_LOADER;
 
@@ -40,9 +44,12 @@ export async function available(organization, user) {
   // / If this is instantaneous, you can have it be 0 (i.e. always), but if it takes time
   // / to e.g. verify credentials or test server availability,
   // / then it's better to allow the result to be cached
-  const result = GVIRS_ENVIRONMENTAL_VARIABLES_MANDATORY.every(varName =>
-    hasConfig(varName)
-  );
+  const result =
+    GVIRS_ENVIRONMENTAL_VARIABLES_MANDATORY.every(varName =>
+      hasConfig(varName)
+    ) &&
+    organization.name in
+      decomposeGVIRSConnections(getConfig("GVIRS_CONNECTIONS"));
   return {
     result,
     expiresSeconds: GVIRS_CACHE_SECONDS
@@ -81,8 +88,15 @@ export async function getClientChoiceData(organization, campaign, user) {
   // / The react-component will be sent this data as a property
   // / return a json object which will be cached for expiresSeconds long
   // / `data` should be a single string -- it can be JSON which you can parse in the client component
+  const connectionData = decomposeGVIRSConnections(
+    getConfig("GVIRS_CONNECTIONS")
+  );
+  let passClientChoiceData = "{}";
+  if (organization.name in connectionData) {
+    passClientChoiceData = JSON.stringify({ name: organization.name });
+  }
   return {
-    data: "{}",
+    data: passClientChoiceData,
     expiresSeconds: GVIRS_CACHE_SECONDS
   };
 }
