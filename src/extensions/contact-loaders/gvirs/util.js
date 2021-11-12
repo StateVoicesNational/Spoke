@@ -64,9 +64,17 @@ export async function fetchfromGvirs(
   load,
   xapikey,
   xappid,
+  searchTree = "",
+  params = "",
   fetchOptions = {}
 ) {
-  const url = `${base}/api/v3/entity_action?entity_class=${entity}&action=${action}&load_type=${load}`;
+  let url = `${base}/api/v3/entity_action?entity_class=${entity}&action=${action}&load_type=${load}`;
+  if (searchTree) {
+    url += `&search_tree=${encodeURI(searchTree)}`;
+  }
+  if (params) {
+    url += `&params=${encodeURI(params)}`;
+  }
   const headers = new Headers();
   headers.append("X-Api-Key", xapikey);
   headers.append("X-App-Id", xappid);
