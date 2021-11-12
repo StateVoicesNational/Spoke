@@ -1,5 +1,6 @@
 /* eslint-disable no-unused-vars */
 import fetch, { Headers } from "node-fetch";
+import { getConfig } from "../../../server/api/lib/config";
 
 /* This reads the value of GVIRS_CONNECTIONS and decomposes it into:
 // {
@@ -50,10 +51,6 @@ export function decomposeGVIRSConnections(customDataEnv) {
   return prefixesAndValues;
 }
 
-export async function searchSegments(segments, value) {
-  return segments;
-}
-
 // Example:
 // https://localdev1.gvirs.com/api/v3/entity_action?entity_class=voter&action=count_total&load_type=extended_flat
 
@@ -85,4 +82,39 @@ export async function fetchfromGvirs(
   } catch (error) {
     return error;
   }
+}
+
+// This gets all segments for an organisation name
+
+export async function searchSegments(query, organizationName) {
+  if (!organizationName) {
+    return [];
+  }
+  const connectionData = decomposeGVIRSConnections(
+    getConfig("GVIRS_CONNECTIONS")
+  );
+  if (!(organizationName in connectionData)) {
+    return [];
+  }
+  const { domain, xapikey, xappid } = connectionData[organizationName];
+  const searchTreeObj = `{"node_type": "comparison", "field": "name", "operator": "ilike", "value": "%${query}%"}`;
+
+  const gVIRSData = await fetchfromGvirs(
+    domain,
+    "voter_segment",
+    "search",
+    "extended_flat",
+    xapikey,
+    xappid,
+    searchTreeObj,
+    '{"select_fields":["id","name","num_voters"]}'
+  );
+  if (gVIRSData) {
+    return gVIRSData.entities.map(segment => ({
+      title: `${segment.name} (${segment.num_voters})`,
+      count: segment.num_voters,
+      id: segment.id
+    }));
+  }
+  return [];
 }

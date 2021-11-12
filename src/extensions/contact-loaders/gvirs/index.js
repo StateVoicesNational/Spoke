@@ -66,10 +66,16 @@ export function addServerEndpoints(expressApp) {
       return res.status(401).json({});
     }
 
-    const { query } = req.query;
-    if (query.length < GVIRS_MINQUERY_SIZE) return res.json({ segments: [] }); // ignore dumb queries
-
-    searchSegments(query || "", 1)
+    const { query, clientchoicedata } = req.query;
+    if (query.length < GVIRS_MINQUERY_SIZE) {
+      return res.json({ segments: [] }); // ignore dumb queries
+    }
+    // If there is no organization, nothing will be shown.
+    const decodeClientChoiceData = JSON.parse(clientchoicedata);
+    if (!("name" in decodeClientChoiceData)) {
+      return res.json({ segments: [] });
+    }
+    searchSegments(query || "", decodeClientChoiceData.name)
       .then(segments => res.json({ segments }))
       .catch(error => {
         log.error(error);

@@ -44,7 +44,9 @@ export default function GvirsLoaderField(props) {
       (async () => {
         try {
           const response = await fetch(
-            `${GVIRS_INTEGRATION_ENDPOINT}?query=${inputValue}&`
+            `${GVIRS_INTEGRATION_ENDPOINT}?query=${encodeURI(
+              inputValue
+            )}&clientchoicedata=${encodeURI(props.clientChoiceData)}`
           );
           const json = await response.json();
 
@@ -198,7 +200,14 @@ export class CampaignContactsForm extends React.Component {
           this.props.onSubmit();
         }}
       >
-        <Form.Field name="segmentIds" as={GvirsLoaderField}></Form.Field>
+        <Form.Field name="segmentIds">
+          {props => (
+            <GvirsLoaderField
+              clientChoiceData={this.props.clientChoiceData}
+              {...props}
+            />
+          )}
+        </Form.Field>
         <List>
           {resultMessage ? (
             <ListItem>
@@ -263,5 +272,6 @@ CampaignContactsForm.propTypes = {
 };
 
 GvirsLoaderField.propTypes = {
-  onChange: type.func
+  onChange: type.func,
+  clientChoiceData: type.string
 };
