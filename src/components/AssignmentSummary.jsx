@@ -129,9 +129,16 @@ export class AssignmentSummaryBase extends Component {
       )
       .map(sb => renderSummary(sb, settingsData, this, sideboxProps));
 
-    const cardTitleTextColor = this.props.muiTheme.palette.getContrastText(
-      primaryColor || this.props.muiTheme.palette.background.default
+    let cardTitleTextColor = this.props.muiTheme.palette.getContrastText(
+      this.props.muiTheme.palette.background.default
     );
+    if (primaryColor) {
+      try {
+        cardTitleTextColor = this.props.muiTheme.palette.getContrastText(
+          primaryColor
+        );
+      } catch (e) {}
+    }
 
     // NOTE: we bring back archived campaigns if they have feedback
     // but want to get rid of them once feedback is acknowledged
