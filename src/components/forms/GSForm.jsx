@@ -62,6 +62,11 @@ class GSForm extends React.Component {
           return child;
         } else if (child.type === Form.Field) {
           const name = child.props.name;
+          let required = false;
+          try {
+            // if is set as required through YUP
+            required = this.props.schema.fields[name].exclusiveTests.required;
+          } catch (e) {}
           let error = this.state.formErrors
             ? this.state.formErrors[name]
             : null;
@@ -76,7 +81,8 @@ class GSForm extends React.Component {
             });
           }
           return React.cloneElement(clonedElement, {
-            events: ["onBlur"]
+            events: ["onBlur"],
+            required
           });
         } else if (child.type === Form.Submit) {
           const { isSubmitting } = this.state;
