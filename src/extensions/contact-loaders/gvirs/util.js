@@ -2,6 +2,7 @@
 import fetch, { Headers } from "node-fetch";
 import { getConfig } from "../../../server/api/lib/config";
 import { getFormattedPhoneNumber } from "../../../lib";
+import { isNull } from "lodash/fp";
 
 /* This reads the value of GVIRS_CONNECTIONS and decomposes it into:
 // {
@@ -81,6 +82,7 @@ export async function fetchfromGvirs(
   xappid,
   searchTree = "",
   params = "",
+  id = 0,
   fetchOptions = {}
 ) {
   let url = `${base}/api/v3/entity_action?entity_class=${entity}&action=${action}&load_type=${load}`;
@@ -89,6 +91,9 @@ export async function fetchfromGvirs(
   }
   if (params) {
     url += `&params=${encodeURI(params)}`;
+  }
+  if (id) {
+    url += `&id=${id}`;
   }
   const headers = new Headers();
   headers.append("X-Api-Key", xapikey);
@@ -139,7 +144,7 @@ export async function searchSegments(query, organizationName) {
 
 // This gets the contacts for a segment, given by an id (and organization name).
 
-export async function getSegmentContacts(
+export async function getSegmentVoters(
   segmentId,
   campaignId,
   organizationName
@@ -156,7 +161,44 @@ export async function getSegmentContacts(
   const { domain, xapikey, xappid } = connectionData[organizationName];
   const searchTreeObj = `{"node_type": "comparison","field": "_in_voter_segment_id","operator": "=","value": "${segmentId}"}`;
 
-  const gVIRSData = await fetchfromGvirs(
+  const segmentInformation = await fetchfromGvirs(
+    domain,
+    "voter_segment",
+    "load",
+    "single_table",
+    xapikey,
+    xappid,
+    null,
+    null,
+    segmentId
+  );
+  if (!segmentInformation) {
+    return [];
+  }
+  const phoneFilterId = segmentInformation.entity.phone_filter_id || null;
+  let phoneFilter = {};
+  let phoneFilterString = "{}";
+  if (!isNull(phoneFilterId)) {
+    phoneFilter = await fetchfromGvirs(
+      domain,
+      "phone_filter",
+      "get",
+      "single_table",
+      xapikey,
+      xappid,
+      null,
+      null,
+      phoneFilterId
+    );
+    if (phoneFilter) {
+      console.log(phoneFilter.entity.filter_tree);
+      //    phoneFilterString = phoneFilter.entity.filter_tree;
+    }
+  }
+
+  // "from_alias_search_trees": {"voter_mobile_latest": FILTER_TREE_HERE}
+
+  const gVIRSVoterData = await fetchfromGvirs(
     domain,
     "voter_for_spoke",
     "search",
@@ -166,10 +208,10 @@ export async function getSegmentContacts(
     searchTreeObj,
     '{"select_fields": ["id", "surname", "first_name", "locality_postcode", "mobile_latest_phone_number", "enrolled_federal_division_name", "enrolled_state_district_name", "enrolled_local_gov_area_name", "v_lsc_contact_date", "v_lsc_support_level", "v_lsc_notes", "v_lsc_contact_status_name", "v_lsc_campaign_long_name", "v_lsc_contact_labels"]}'
   );
-  if (gVIRSData) {
+  if (gVIRSVoterData) {
     const customFields = getGVIRSCustomFields(getConfig("GVIRS_CUSTOM_DATA"));
     const customFieldNames = Object.keys(customFields);
-    return gVIRSData.entities
+    return gVIRSVoterData.entities
       .map(res => {
         const customFieldOutput = {};
         for (const customFieldName of customFieldNames) {

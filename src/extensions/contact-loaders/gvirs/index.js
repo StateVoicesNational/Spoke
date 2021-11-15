@@ -16,7 +16,7 @@ import {
   searchSegments,
   decomposeGVIRSConnections,
   getGVIRSCustomFields,
-  getSegmentContacts
+  getSegmentVoters
 } from "./util";
 
 export const name = GVIRS_CONTACT_LOADER;
@@ -152,7 +152,7 @@ export async function processContactLoad(job, maxContacts, organization) {
   let finalCount = 0;
   const contactsForAdding = {};
   for (const segment of contactData.segmentIds) {
-    const newContacts = await getSegmentContacts(
+    const newContacts = await getSegmentVoters(
       segment.id,
       campaignId,
       organization.name
