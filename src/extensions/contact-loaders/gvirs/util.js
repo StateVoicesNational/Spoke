@@ -3,6 +3,8 @@ import fetch, { Headers } from "node-fetch";
 import { getConfig } from "../../../server/api/lib/config";
 import { getFormattedPhoneNumber } from "../../../lib";
 import { isNull } from "lodash/fp";
+import {} from './js-doc-types';
+import { decamelizeKeys, camelizeKeys, decamelize } from "humps";
 
 /* This reads the value of GVIRS_CONNECTIONS and decomposes it into:
 // {
@@ -72,6 +74,94 @@ export function getGVIRSCustomFields(customDataEnv) {
 
 // Example:
 // https://localdev1.gvirs.com/api/v3/entity_action?entity_class=voter&action=count_total&load_type=extended_flat
+
+class GvirsApiError extends Error {
+  constructor(message, status, gvirsName) {
+    super(`GvirsApiError [status=${status}, name=${gvirsName}]: ${message}`);
+    this.gvirsName = gvirsName;
+    this.status = status;
+  }
+}
+
+/**
+ * Make a GET request to gVIRS APIv3, retrieving information about entities.
+ *
+ * @param   {GvirsApiConnectionData}  connData  - Must be specific to
+ * organisation.
+ *
+ * @param   {'voter_segment'|'voter_for_spoke'|'phone_filter'}  entity - The
+ * entity. Others are technically available depending on permissions for the
+ * app, but not relevant here.
+ *
+ * @param   {'load'|'search'}  action - Other actions are technically available,
+ * depending on permissions for the app, but are not relevant.
+ *
+ * @param   {'single_table'|'extended_flat'}  loadType - single_table is faster
+ * with less information, extended_flat is slower and richer, but also supported
+ * select_fields.
+ *
+ * @param   {GvirsApiQuery}  entityQuery - For search, a searchTree must be
+ * provided. For load an id
+ *
+ * @param   {GvirsApiParams}  params - Adjusts how the query is performed
+ *
+ * @param   {object}  fetchOptions - Additional options to pass to fetch()
+ *
+ * @return  {Promise<GvirsApiSuccessfulResult>} - If successful, will resolve
+ * into the data with entities if search action, entity if load action. On
+ * failure will reject with an GvirsApiError containing information
+ */
+export async function gvirsApi3Get(
+  connData,
+  entity,
+  action,
+  loadType,
+  entityQuery,
+  params = {},
+  fetchOptions = {}
+) {
+  let url = `${connData.domain}/api/v3/entity_action?`;
+  url += `entity_class=${entity}`
+  url += `&action=${action}`;
+  url += `&load_type=${loadType}`;
+
+  if ('id' in entityQuery) {
+    url += `&id=${entityQuery.id}`;
+  }
+
+  if ('searchTree' in entityQuery) {
+    // The tree will already have its bits in snake case
+    url += `&search_tree=${encodeURI(JSON.stringify(entityQuery.searchTree))}`;
+  }
+
+  if (Object.keys(params).length > 0) {
+    const paramsSnake = decamelizeKeys(params);
+    url += `&params=${encodeURI(JSON.stringify(paramsSnake))}`;
+  }
+
+  const headers = new Headers();
+  headers.append("X-Api-Key", connData.apiKey);
+  headers.append("X-App-Id", connData.appId);
+  try {
+    const result = await fetch(url, { ...fetchOptions, headers });
+    const json = await result.json();
+    // fetch's Response resolves even if request was non in 200-299 range, but
+    // it will set ok to false
+    if (result.ok) {
+      return json;
+    }
+
+    const errData = json.error;
+    if (errData) {
+      throw new GvirsApiError(errData.message, errData.status, errData.name);
+    } else {
+      throw new Error('API error with no detail!');
+    }
+  } catch (err) {
+    throw err
+  }
+}
+
 
 export async function fetchfromGvirs(
   base,
@@ -159,7 +249,14 @@ export async function getSegmentVoters(
     return [];
   }
   const { domain, xapikey, xappid } = connectionData[organizationName];
-  const searchTreeObj = `{"node_type": "comparison","field": "_in_voter_segment_id","operator": "=","value": "${segmentId}"}`;
+  // const searchTreeObj = `{"node_type": "comparison","field": "_in_voter_segment_id","operator": "=","value": "${segmentId}"}`;
+  const searchTree = {
+    // TODO: Would it make more sense for this to be in camelCase and then converted?
+    node_type: "comparison",
+    field: "_in_voter_segment_id",
+    operator: "=",
+    value: segmentId
+  };
 
   const segmentInformation = await fetchfromGvirs(
     domain,
@@ -177,7 +274,7 @@ export async function getSegmentVoters(
   }
   const phoneFilterId = segmentInformation.entity.phone_filter_id || null;
   let phoneFilter = {};
-  let phoneFilterString = "{}";
+  // let phoneFilterString = "{}";
   if (!isNull(phoneFilterId)) {
     phoneFilter = await fetchfromGvirs(
       domain,
@@ -198,17 +295,35 @@ export async function getSegmentVoters(
 
   // "from_alias_search_trees": {"voter_mobile_latest": FILTER_TREE_HERE}
 
-  const gVIRSVoterData = await fetchfromGvirs(
-    domain,
-    "voter_for_spoke",
-    "search",
-    "extended_flat",
-    xapikey,
-    xappid,
-    searchTreeObj,
-    '{"select_fields": ["id", "surname", "first_name", "locality_postcode", "mobile_latest_phone_number", "enrolled_federal_division_name", "enrolled_state_district_name", "enrolled_local_gov_area_name", "v_lsc_contact_date", "v_lsc_support_level", "v_lsc_notes", "v_lsc_contact_status_name", "v_lsc_campaign_long_name", "v_lsc_contact_labels"]}'
-  );
-  if (gVIRSVoterData) {
+  const params = {
+    selectFields: [
+      "id",
+      "surname",
+      "first_name",
+      "locality_postcode",
+      "mobile_latest_phone_number",
+      "enrolled_federal_division_name",
+      "enrolled_state_district_name",
+      "enrolled_local_gov_area_name",
+      "v_lsc_contact_date",
+      "v_lsc_support_level",
+      "v_lsc_notes",
+      "v_lsc_contact_status_name",
+      "v_lsc_campaign_long_name",
+      "v_lsc_contact_labels"
+    ]
+  };
+
+  try {
+    const gVIRSVoterData = await gvirsApi3Get(
+      {domain, appId: xappid, apiKey: xapikey},
+      'voter_for_spoke', 'search', 'extended_flat',
+      {searchTree},
+      {
+        selectFields: ["id","surname","first_name","locality_postcode","mobile_latest_phone_number","enrolled_federal_division_name","enrolled_state_district_name","enrolled_local_gov_area_name","v_lsc_contact_date","v_lsc_support_level","v_lsc_notes","v_lsc_contact_status_name","v_lsc_campaign_long_name","v_lsc_contact_labels"]
+      }
+    );
+
     const customFields = getGVIRSCustomFields(getConfig("GVIRS_CUSTOM_DATA"));
     const customFieldNames = Object.keys(customFields);
     return gVIRSVoterData.entities
@@ -236,6 +351,8 @@ export async function getSegmentVoters(
         };
       })
       .filter(res => res.cell !== "");
+  } catch (err) {
+    console.error(err);
+    return [];
   }
-  return [];
 }
