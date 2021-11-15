@@ -28,9 +28,7 @@ export const GVIRS_MINQUERY_SIZE = 3;
 
 export const GVIRS_ENVIRONMENTAL_VARIABLES_MANDATORY = ["GVIRS_CONNECTIONS"];
 
-export const GVIRS_ENVIRONMENTAL_VARIABLES_OPTIONAL = [
-  // Something.
-];
+export const GVIRS_ENVIRONMENTAL_VARIABLES_OPTIONAL = ["GVIRS_CUSTOM_DATA"];
 
 // These are the 'names' of the gVIRS contact loader and action
 // handlers.
