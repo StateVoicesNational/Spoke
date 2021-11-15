@@ -135,3 +135,39 @@ export async function searchSegments(query, organizationName) {
   }
   return [];
 }
+
+// This gets the contacts for a segment, given by an id (and organization name).
+
+export async function getSegmentContacts(segmentId, organizationName) {
+  if (!organizationName) {
+    return [];
+  }
+  const connectionData = decomposeGVIRSConnections(
+    getConfig("GVIRS_CONNECTIONS")
+  );
+  if (!(organizationName in connectionData)) {
+    return [];
+  }
+  const { domain, xapikey, xappid } = connectionData[organizationName];
+  const searchTreeObj = `{"node_type": "comparison","field": "_in_voter_segment_id","operator": "=","value": "${segmentId}"}`;
+
+  const gVIRSData = await fetchfromGvirs(
+    domain,
+    "voter_for_spoke",
+    "search",
+    "extended_flat",
+    xapikey,
+    xappid,
+    searchTreeObj,
+    '{"select_fields": ["id", "surname", "first_name", "locality_postcode", "mobile_latest_phone_number", "enrolled_federal_division_name", "enrolled_state_district_name", "enrolled_local_gov_area_name", "v_lsc_contact_date", "v_lsc_support_level", "v_lsc_notes", "v_lsc_contact_status_name", "v_lsc_campaign_long_name", "v_lsc_contact_labels"]}'
+  );
+  if (gVIRSData) {
+    // console.log(gVIRSData);
+    // return gVIRSData.entities.map(segment => ({
+    //   title: `${segment.name} (${segment.num_voters})`,
+    //   count: segment.num_voters,
+    //   id: segment.id
+    // }));
+  }
+  return [];
+}
