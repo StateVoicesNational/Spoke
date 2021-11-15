@@ -1,6 +1,7 @@
 /* eslint-disable no-unused-vars */
 import fetch, { Headers } from "node-fetch";
 import { getConfig } from "../../../server/api/lib/config";
+import { getFormattedPhoneNumber } from "../../../lib";
 
 /* This reads the value of GVIRS_CONNECTIONS and decomposes it into:
 // {
@@ -138,7 +139,11 @@ export async function searchSegments(query, organizationName) {
 
 // This gets the contacts for a segment, given by an id (and organization name).
 
-export async function getSegmentContacts(segmentId, organizationName) {
+export async function getSegmentContacts(
+  segmentId,
+  campaignId,
+  organizationName
+) {
   if (!organizationName) {
     return [];
   }
@@ -162,12 +167,33 @@ export async function getSegmentContacts(segmentId, organizationName) {
     '{"select_fields": ["id", "surname", "first_name", "locality_postcode", "mobile_latest_phone_number", "enrolled_federal_division_name", "enrolled_state_district_name", "enrolled_local_gov_area_name", "v_lsc_contact_date", "v_lsc_support_level", "v_lsc_notes", "v_lsc_contact_status_name", "v_lsc_campaign_long_name", "v_lsc_contact_labels"]}'
   );
   if (gVIRSData) {
-    // console.log(gVIRSData);
-    // return gVIRSData.entities.map(segment => ({
-    //   title: `${segment.name} (${segment.num_voters})`,
-    //   count: segment.num_voters,
-    //   id: segment.id
-    // }));
+    const customFields = getGVIRSCustomFields(getConfig("GVIRS_CUSTOM_DATA"));
+    const customFieldNames = Object.keys(customFields);
+    return gVIRSData.entities
+      .map(res => {
+        const customFieldOutput = {};
+        for (const customFieldName of customFieldNames) {
+          if (customFieldName in res) {
+            customFieldOutput[customFields[customFieldName]] =
+              res[customFieldName] || "";
+          }
+        }
+
+        return {
+          first_name: res.first_name,
+          last_name: res.surname,
+          cell: getFormattedPhoneNumber(
+            res.mobile_latest_phone_number,
+            getConfig("PHONE_NUMBER_COUNTRY")
+          ),
+          zip: res.postal_code,
+          external_id: res.id,
+          custom_fields: JSON.stringify(customFieldOutput),
+          message_status: "needsMessage",
+          campaign_id: campaignId
+        };
+      })
+      .filter(res => res.cell !== "");
   }
   return [];
 }

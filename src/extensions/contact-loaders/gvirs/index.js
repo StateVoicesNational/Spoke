@@ -151,40 +151,12 @@ export async function processContactLoad(job, maxContacts, organization) {
 
   let finalCount = 0;
   const contactsForAdding = {};
-  console.log(organization);
   for (const segment of contactData.segmentIds) {
-    console.log(segment.id);
-    const newContacts = await getSegmentContacts(segment.id, organization.name);
-    // eslint-disable-next-line no-loop-func
-    // await getGroupMembers(group.id, async results => {
-    //   const newContacts = results
-    //     .filter(res => res["api.Phone.get"]["count"] > 0)
-    //     .map(res => {
-    //       const customFieldOutput = {
-    //         phone_id: res["api.Phone.get"]["values"][0]["id"]
-    //       };
-    //       for (const customFieldName of customFieldNames) {
-    //         if (customFieldName in res) {
-    //           customFieldOutput[customFields[customFieldName]] =
-    //             res[customFieldName] || "";
-    //         }
-    //       }
-
-    //       return {
-    //         first_name: res.first_name,
-    //         last_name: res.last_name,
-    //         cell: getFormattedPhoneNumber(
-    //           res["api.Phone.get"]["values"][0]["phone_numeric"],
-    //           getConfig("PHONE_NUMBER_COUNTRY")
-    //         ),
-    //         zip: res.postal_code,
-    //         external_id: res.id,
-    //         custom_fields: JSON.stringify(customFieldOutput),
-    //         message_status: "needsMessage",
-    //         campaign_id: campaignId
-    //       };
-    //     })
-    //     .filter(res => res.cell !== "");
+    const newContacts = await getSegmentContacts(
+      segment.id,
+      campaignId,
+      organization.name
+    );
 
     // Spoke will not store multiple records with the same phone number.
     // It goes for a "last record wins" strategy, so we do the same. Note
