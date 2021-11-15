@@ -1,5 +1,8 @@
 import { when } from "jest-when";
-import { decomposeGVIRSConnections } from "../../../../src/extensions/contact-loaders/gvirs/util";
+import {
+  decomposeGVIRSConnections,
+  getGVIRSCustomFields
+} from "../../../../src/extensions/contact-loaders/gvirs/util";
 import { getConfig } from "../../../../src/server/api/lib/config";
 
 jest.mock("../../../../src/server/api/lib/config");
@@ -13,6 +16,16 @@ describe("civicrm/util", () => {
 
   afterEach(async () => {
     jest.restoreAllMocks();
+  });
+
+  it("expects getGVIRSCustomFields to work as expected.", () => {
+    expect(getGVIRSCustomFields(undefined)).toEqual({});
+    expect(getGVIRSCustomFields(null)).toEqual({});
+    expect(getGVIRSCustomFields("")).toEqual({});
+    expect(getGVIRSCustomFields("a")).toEqual({ a: "a" });
+    expect(getGVIRSCustomFields("a:b")).toEqual({ a: "b" });
+    expect(getGVIRSCustomFields("a,c")).toEqual({ a: "a", c: "c" });
+    expect(getGVIRSCustomFields("a:b,c:d")).toEqual({ a: "b", c: "d" });
   });
 
   it("expects decomposeGVIRSConnections to work as expected.", () => {

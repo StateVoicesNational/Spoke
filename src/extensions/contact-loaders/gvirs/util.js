@@ -51,6 +51,23 @@ export function decomposeGVIRSConnections(customDataEnv) {
   return prefixesAndValues;
 }
 
+export function getGVIRSCustomFields(customDataEnv) {
+  const pairsFieldAndLabel = {};
+  if (customDataEnv) {
+    const csvParts = customDataEnv.split(",");
+    for (const csvPart of csvParts) {
+      const colonParts = csvPart.split(":");
+      const fieldName = colonParts[0];
+      if (colonParts.length === 1) {
+        pairsFieldAndLabel[fieldName] = fieldName;
+      } else {
+        pairsFieldAndLabel[fieldName] = colonParts[1];
+      }
+    }
+  }
+  return pairsFieldAndLabel;
+}
+
 // Example:
 // https://localdev1.gvirs.com/api/v3/entity_action?entity_class=voter&action=count_total&load_type=extended_flat
 
