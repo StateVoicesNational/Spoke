@@ -3,7 +3,7 @@ import fetch, { Headers } from "node-fetch";
 import { getConfig } from "../../../server/api/lib/config";
 import { getFormattedPhoneNumber } from "../../../lib";
 import { isNull } from "lodash/fp";
-import {} from './js-doc-types';
+import {} from "./js-doc-types";
 import { decamelizeKeys, camelizeKeys, decamelize } from "humps";
 
 /* This reads the value of GVIRS_CONNECTIONS and decomposes it into:
@@ -121,15 +121,15 @@ export async function gvirsApi3Get(
   fetchOptions = {}
 ) {
   let url = `${connData.domain}/api/v3/entity_action?`;
-  url += `entity_class=${entity}`
+  url += `entity_class=${entity}`;
   url += `&action=${action}`;
   url += `&load_type=${loadType}`;
 
-  if ('id' in entityQuery) {
+  if ("id" in entityQuery) {
     url += `&id=${entityQuery.id}`;
   }
 
-  if ('searchTree' in entityQuery) {
+  if ("searchTree" in entityQuery) {
     // The tree will already have its bits in snake case
     url += `&search_tree=${encodeURI(JSON.stringify(entityQuery.searchTree))}`;
   }
@@ -155,13 +155,12 @@ export async function gvirsApi3Get(
     if (errData) {
       throw new GvirsApiError(errData.message, errData.status, errData.name);
     } else {
-      throw new Error('API error with no detail!');
+      throw new Error("API error with no detail!");
     }
   } catch (err) {
-    throw err
+    throw err;
   }
 }
-
 
 export async function fetchfromGvirs(
   base,
@@ -316,17 +315,35 @@ export async function getSegmentVoters(
 
   try {
     const gVIRSVoterData = await gvirsApi3Get(
-      {domain, appId: xappid, apiKey: xapikey},
-      'voter_for_spoke', 'search', 'extended_flat',
-      {searchTree},
+      { domain, appId: xappid, apiKey: xapikey },
+      "voter_for_spoke",
+      "search",
+      "extended_flat",
+      { searchTree },
       {
-        selectFields: ["id","surname","first_name","locality_postcode","mobile_latest_phone_number","enrolled_federal_division_name","enrolled_state_district_name","enrolled_local_gov_area_name","v_lsc_contact_date","v_lsc_support_level","v_lsc_notes","v_lsc_contact_status_name","v_lsc_campaign_long_name","v_lsc_contact_labels"]
+        selectFields: [
+          "id",
+          "surname",
+          "first_name",
+          "locality_postcode",
+          "mobile_latest_phone_number",
+          "enrolled_federal_division_name",
+          "enrolled_state_district_name",
+          "enrolled_local_gov_area_name",
+          "v_lsc_contact_date",
+          "v_lsc_support_level",
+          "v_lsc_notes",
+          "v_lsc_contact_status_name",
+          "v_lsc_campaign_long_name",
+          "v_lsc_contact_labels"
+        ]
       }
     );
 
     const customFields = getGVIRSCustomFields(getConfig("GVIRS_CUSTOM_DATA"));
     const customFieldNames = Object.keys(customFields);
     return gVIRSVoterData.entities
+      .filter(res => res.mobile_latest_phone_number)
       .map(res => {
         const customFieldOutput = {};
         for (const customFieldName of customFieldNames) {
@@ -350,7 +367,7 @@ export async function getSegmentVoters(
           campaign_id: campaignId
         };
       })
-      .filter(res => res.cell !== "");
+      .filter(res => res.cell !== ""); // Yes: still necessary as well.
   } catch (err) {
     console.error(err);
     return [];
