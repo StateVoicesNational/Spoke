@@ -4,7 +4,9 @@ import { getConfig } from "../../../server/api/lib/config";
 import { getFormattedPhoneNumber } from "../../../lib";
 import { isNull } from "lodash/fp";
 import {} from "./js-doc-types";
-import { decamelizeKeys, camelizeKeys, decamelize } from "humps";
+import { decamelizeKeys } from "humps";
+import { GVIRS_VOTERS_FIELDS, GVIRS_CUSTOM_VOTERS_FIELDS } from "./const";
+import { log } from "../../../lib/log";
 
 /* This reads the value of GVIRS_CONNECTIONS and decomposes it into:
 // {
@@ -256,64 +258,34 @@ export async function getSegmentVoters(
     operator: "=",
     value: segmentId
   };
-
-  const segmentInformation = await fetchfromGvirs(
-    domain,
-    "voter_segment",
-    "load",
-    "single_table",
-    xapikey,
-    xappid,
-    null,
-    null,
-    segmentId
-  );
-  if (!segmentInformation) {
-    return [];
-  }
-  const phoneFilterId = segmentInformation.entity.phone_filter_id || null;
-  let phoneFilter = {};
-  // let phoneFilterString = "{}";
-  if (!isNull(phoneFilterId)) {
-    phoneFilter = await fetchfromGvirs(
-      domain,
-      "phone_filter",
-      "get",
-      "single_table",
-      xapikey,
-      xappid,
-      null,
-      null,
-      phoneFilterId
-    );
-    if (phoneFilter) {
-      console.log(phoneFilter.entity.filter_tree);
-      //    phoneFilterString = phoneFilter.entity.filter_tree;
-    }
-  }
-
-  // "from_alias_search_trees": {"voter_mobile_latest": FILTER_TREE_HERE}
-
-  const params = {
-    selectFields: [
-      "id",
-      "surname",
-      "first_name",
-      "locality_postcode",
-      "mobile_latest_phone_number",
-      "enrolled_federal_division_name",
-      "enrolled_state_district_name",
-      "enrolled_local_gov_area_name",
-      "v_lsc_contact_date",
-      "v_lsc_support_level",
-      "v_lsc_notes",
-      "v_lsc_contact_status_name",
-      "v_lsc_campaign_long_name",
-      "v_lsc_contact_labels"
-    ]
-  };
-
   try {
+    const segmentInformation = await gvirsApi3Get(
+      { domain, appId: xappid, apiKey: xapikey },
+      "voter_segment",
+      "load",
+      "single_table",
+      { id: segmentId }
+    );
+    const phoneFilterId = segmentInformation.entity.phone_filter_id || null;
+    let phoneFilter = {};
+    let phoneFilterString = "{}";
+    if (!isNull(phoneFilterId)) {
+      phoneFilter = await gvirsApi3Get(
+        { domain, appId: xappid, apiKey: xapikey },
+        "phone_filter",
+        "load",
+        "single_table",
+        { id: phoneFilterId }
+      );
+      phoneFilterString = phoneFilter.entity.filter_tree || "{}";
+    }
+
+    // "from_alias_search_trees": {"voter_mobile_latest": FILTER_TREE_HERE}
+
+    const params = {
+      selectFields: GVIRS_VOTERS_FIELDS
+    };
+
     const gVIRSVoterData = await gvirsApi3Get(
       { domain, appId: xappid, apiKey: xapikey },
       "voter_for_spoke",
@@ -321,22 +293,10 @@ export async function getSegmentVoters(
       "extended_flat",
       { searchTree },
       {
-        selectFields: [
-          "id",
-          "surname",
-          "first_name",
-          "locality_postcode",
-          "mobile_latest_phone_number",
-          "enrolled_federal_division_name",
-          "enrolled_state_district_name",
-          "enrolled_local_gov_area_name",
-          "v_lsc_contact_date",
-          "v_lsc_support_level",
-          "v_lsc_notes",
-          "v_lsc_contact_status_name",
-          "v_lsc_campaign_long_name",
-          "v_lsc_contact_labels"
-        ]
+        selectFields: GVIRS_VOTERS_FIELDS,
+        fromAliasSearchTrees: {
+          voterMobileLatest: JSON.parse(phoneFilterString)
+        }
       }
     );
 
@@ -350,6 +310,14 @@ export async function getSegmentVoters(
           if (customFieldName in res) {
             customFieldOutput[customFields[customFieldName]] =
               res[customFieldName] || "";
+          }
+        }
+        const remainderCustomFields = GVIRS_CUSTOM_VOTERS_FIELDS.filter(
+          x => customFieldNames.indexOf(x) === -1
+        );
+        for (const customFieldName of remainderCustomFields) {
+          if (customFieldName in res) {
+            customFieldOutput[customFieldName] = res[customFieldName] || "";
           }
         }
 
@@ -369,7 +337,7 @@ export async function getSegmentVoters(
       })
       .filter(res => res.cell !== ""); // Yes: still necessary as well.
   } catch (err) {
-    console.error(err);
+    log.error(err);
     return [];
   }
 }
