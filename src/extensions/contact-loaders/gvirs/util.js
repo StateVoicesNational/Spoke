@@ -2,7 +2,6 @@
 import fetch, { Headers } from "node-fetch";
 import { getConfig } from "../../../server/api/lib/config";
 import { getFormattedPhoneNumber } from "../../../lib";
-import { isNull } from "lodash/fp";
 import {} from "./js-doc-types";
 import { decamelizeKeys } from "humps";
 import { GVIRS_VOTERS_FIELDS, GVIRS_CUSTOM_VOTERS_FIELDS } from "./const";
@@ -273,7 +272,7 @@ export async function getSegmentVoters(
 
     const phoneFilterId = segmentInformation.entity.phone_filter_id || null;
     let phoneFilterTree = {};
-    if (!isNull(phoneFilterId)) {
+    if (phoneFilterId === null) {
       const phoneFilter = await gvirsApi3Get(
         { domain, appId: xappid, apiKey: xapikey },
         "phone_filter",
