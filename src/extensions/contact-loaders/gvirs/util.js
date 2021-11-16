@@ -155,7 +155,11 @@ export async function gvirsApi3Get(
 
     const errData = json.error;
     if (errData) {
-      throw new GvirsApiError(errData.message, errData.status, errData.name);
+      throw new GvirsApiError(
+        errData.message,
+        errData.status || result.status,
+        errData.name
+      );
     } else {
       throw new Error("API error with no detail!");
     }
@@ -250,14 +254,14 @@ export async function getSegmentVoters(
     return [];
   }
   const { domain, xapikey, xappid } = connectionData[organizationName];
-  // const searchTreeObj = `{"node_type": "comparison","field": "_in_voter_segment_id","operator": "=","value": "${segmentId}"}`;
-  const searchTree = {
-    // TODO: Would it make more sense for this to be in camelCase and then converted?
+
+  const voterSearchTree = {
     node_type: "comparison",
     field: "_in_voter_segment_id",
     operator: "=",
     value: segmentId
   };
+
   try {
     const segmentInformation = await gvirsApi3Get(
       { domain, appId: xappid, apiKey: xapikey },
@@ -266,36 +270,31 @@ export async function getSegmentVoters(
       "single_table",
       { id: segmentId }
     );
+
     const phoneFilterId = segmentInformation.entity.phone_filter_id || null;
-    let phoneFilter = {};
-    let phoneFilterString = "{}";
+    let phoneFilterTree = {};
     if (!isNull(phoneFilterId)) {
-      phoneFilter = await gvirsApi3Get(
+      const phoneFilter = await gvirsApi3Get(
         { domain, appId: xappid, apiKey: xapikey },
         "phone_filter",
         "load",
         "single_table",
         { id: phoneFilterId }
       );
-      phoneFilterString = phoneFilter.entity.filter_tree || "{}";
+      const phoneFilterTreeJson = phoneFilter.entity.filter_tree || "{}";
+      phoneFilterTree = JSON.parse(phoneFilterTreeJson);
     }
-
-    // "from_alias_search_trees": {"voter_mobile_latest": FILTER_TREE_HERE}
-
-    const params = {
-      selectFields: GVIRS_VOTERS_FIELDS
-    };
 
     const gVIRSVoterData = await gvirsApi3Get(
       { domain, appId: xappid, apiKey: xapikey },
       "voter_for_spoke",
       "search",
       "extended_flat",
-      { searchTree },
+      { searchTree: voterSearchTree },
       {
         selectFields: GVIRS_VOTERS_FIELDS,
         fromAliasSearchTrees: {
-          voterMobileLatest: JSON.parse(phoneFilterString)
+          voterMobileLatest: phoneFilterTree
         }
       }
     );
