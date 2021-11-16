@@ -11,19 +11,19 @@ import { log } from "../../../lib/log";
 // {
 //   org1_prefix: {
 //    domain: domain for gVIRS instance for org1,
-//    xapikey: X-Api-Key for gVIRS instance,
-//    xappid: X-App-Id for gVIRS instance,
+//    apiKey: X-Api-Key for gVIRS instance,
+//    appId: X-App-Id for gVIRS instance,
 //  },
 //   org2_prefix: {
 //    domain: domain for gVIRS instance for org2,
-//    xapikey: X-Api-Key for gVIRS instance,
-//    xappid: X-App-Id for gVIRS instance,
+//    apiKey: X-Api-Key for gVIRS instance,
+//    appId: X-App-Id for gVIRS instance,
 //  },
 //  ...
 //   orgn_prefix: {
 //    domain: domain for gVIRS instance for orgn,
-//    xapikey: X-Api-Key for gVIRS instance,
-//    xappid: X-App-Id for gVIRS instance,
+//    apiKey: X-Api-Key for gVIRS instance,
+//    appId: X-App-Id for gVIRS instance,
 //  },
 // }
 //
@@ -48,8 +48,8 @@ export function decomposeGVIRSConnections(customDataEnv) {
       const prefixName = commaParts[0];
       prefixesAndValues[prefixName] = {
         domain: commaParts[1],
-        xapikey: commaParts[2],
-        xappid: commaParts[3]
+        apiKey: commaParts[2],
+        appId: commaParts[3]
       };
     }
   }
@@ -167,7 +167,6 @@ export async function fetchFromGvirs(
   }
 }
 
-
 // This gets all segments for an organisation name
 
 export async function searchSegments(query, organizationName) {
@@ -180,7 +179,7 @@ export async function searchSegments(query, organizationName) {
   if (!(organizationName in connectionData)) {
     return [];
   }
-  const { domain, xapikey, xappid } = connectionData[organizationName];
+
   const searchTree = {
     node_type: "comparison",
     field: "name",
@@ -190,7 +189,7 @@ export async function searchSegments(query, organizationName) {
 
   try {
     const gVIRSData = await fetchFromGvirs(
-      { domain, appId: xappid, apiKey: xapikey },
+      connectionData[organizationName],
       "voter_segment",
       "search",
       "extended_flat",
@@ -228,7 +227,7 @@ export async function getSegmentVoters(
   if (!(organizationName in connectionData)) {
     return [];
   }
-  const { domain, xapikey, xappid } = connectionData[organizationName];
+  const apiConnData = connectionData[organizationName];
 
   const voterSearchTree = {
     node_type: "comparison",
@@ -239,7 +238,7 @@ export async function getSegmentVoters(
 
   try {
     const segmentInformation = await fetchFromGvirs(
-      { domain, appId: xappid, apiKey: xapikey },
+      apiConnData,
       "voter_segment",
       "load",
       "single_table",
@@ -250,7 +249,7 @@ export async function getSegmentVoters(
     let phoneFilterTree = {};
     if (phoneFilterId !== null) {
       const phoneFilter = await fetchFromGvirs(
-        { domain, appId: xappid, apiKey: xapikey },
+        apiConnData,
         "phone_filter",
         "load",
         "single_table",
@@ -261,7 +260,7 @@ export async function getSegmentVoters(
     }
 
     const gVIRSVoterData = await fetchFromGvirs(
-      { domain, appId: xappid, apiKey: xapikey },
+      apiConnData,
       "voter_for_spoke",
       "search",
       "extended_flat",
@@ -275,6 +274,8 @@ export async function getSegmentVoters(
       }
     );
 
+    const blankIfEmpty = (x) => x === null || x === undefined ? '' : x;
+
     const customFields = getGVIRSCustomFields(getConfig("GVIRS_CUSTOM_DATA"));
     const customFieldNames = Object.keys(customFields);
     return gVIRSVoterData.entities
@@ -283,8 +284,7 @@ export async function getSegmentVoters(
         const customFieldOutput = {};
         for (const customFieldName of customFieldNames) {
           if (customFieldName in res) {
-            customFieldOutput[customFields[customFieldName]] =
-              res[customFieldName] || "";
+            customFieldOutput[customFields[customFieldName]] = blankIfEmpty(res[customFieldName]);
           }
         }
         const remainderCustomFields = GVIRS_CUSTOM_VOTERS_FIELDS.filter(
@@ -292,7 +292,7 @@ export async function getSegmentVoters(
         );
         for (const customFieldName of remainderCustomFields) {
           if (customFieldName in res) {
-            customFieldOutput[customFieldName] = res[customFieldName] || "";
+            customFieldOutput[customFieldName] = blankIfEmpty(res[customFieldName]);
           }
         }
 
