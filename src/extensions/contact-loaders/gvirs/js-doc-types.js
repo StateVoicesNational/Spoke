@@ -16,8 +16,8 @@
  * @property {number} [limit=100]
  * @property {array} [selectFields] If not set, all fields are selected
  * @property {number} [offset=0]
- * @property {boolean} [no_limit=false]
- * @property {object} [from_alias_search_trees]
+ * @property {boolean} [noLimit=false]
+ * @property {object} [fromAliasSearchTrees]
  */
 
 /**
