@@ -294,7 +294,8 @@ export async function getSegmentVoters(
         selectFields: GVIRS_VOTERS_FIELDS,
         fromAliasSearchTrees: {
           voterMobileLatest: phoneFilterTree
-        }
+        },
+        noLimit: true,
       }
     );
 
