@@ -272,7 +272,7 @@ export async function getSegmentVoters(
 
     const phoneFilterId = segmentInformation.entity.phone_filter_id || null;
     let phoneFilterTree = {};
-    if (phoneFilterId === null) {
+    if (phoneFilterId !== null) {
       const phoneFilter = await gvirsApi3Get(
         { domain, appId: xappid, apiKey: xapikey },
         "phone_filter",
