@@ -34,3 +34,36 @@ export const GVIRS_ENVIRONMENTAL_VARIABLES_OPTIONAL = ["GVIRS_CUSTOM_DATA"];
 // handlers.
 
 export const GVIRS_CONTACT_LOADER = "gvirs";
+
+// These are "custom" gVIRS fields for voters, where the Spoke texters can
+// provide custom tokens representing their values in text messages.
+
+export const GVIRS_CUSTOM_VOTERS_FIELDS = [
+  "enrolled_federal_division_name",
+  "enrolled_state_district_name",
+  "enrolled_local_gov_area_name",
+  "v_lsc_contact_date",
+  "v_lsc_support_level",
+  "v_lsc_notes",
+  "v_lsc_contact_status_name",
+  "v_lsc_campaign_long_name",
+  "v_lsc_contact_labels"
+];
+
+// These are "non-custom" gVIRS fields, where their values are mapped to
+// standard Spoke fields.
+
+export const GVIRS_NONCUSTOM_VOTERS_FIELDS = [
+  "id",
+  "surname",
+  "first_name",
+  "locality_postcode",
+  "mobile_latest_phone_number"
+];
+
+// These are the fields together (non-custom ones first)
+
+export const GVIRS_VOTERS_FIELDS = [
+  ...GVIRS_NONCUSTOM_VOTERS_FIELDS,
+  ...GVIRS_CUSTOM_VOTERS_FIELDS
+];
