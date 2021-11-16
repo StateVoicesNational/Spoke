@@ -112,7 +112,7 @@ class GvirsApiError extends Error {
  * into the data with entities if search action, entity if load action. On
  * failure will reject with an GvirsApiError containing information
  */
-export async function gvirsApi3Get(
+export async function fetchFromGvirs(
   connData,
   entity,
   action,
@@ -167,39 +167,6 @@ export async function gvirsApi3Get(
   }
 }
 
-export async function fetchfromGvirs(
-  base,
-  entity,
-  action,
-  load,
-  xapikey,
-  xappid,
-  searchTree = "",
-  params = "",
-  id = 0,
-  fetchOptions = {}
-) {
-  let url = `${base}/api/v3/entity_action?entity_class=${entity}&action=${action}&load_type=${load}`;
-  if (searchTree) {
-    url += `&search_tree=${encodeURI(searchTree)}`;
-  }
-  if (params) {
-    url += `&params=${encodeURI(params)}`;
-  }
-  if (id) {
-    url += `&id=${id}`;
-  }
-  const headers = new Headers();
-  headers.append("X-Api-Key", xapikey);
-  headers.append("X-App-Id", xappid);
-  try {
-    const result = await fetch(url, { ...fetchOptions, headers });
-    const json = await result.json();
-    return json;
-  } catch (error) {
-    return null;
-  }
-}
 
 // This gets all segments for an organisation name
 
@@ -214,26 +181,35 @@ export async function searchSegments(query, organizationName) {
     return [];
   }
   const { domain, xapikey, xappid } = connectionData[organizationName];
-  const searchTreeObj = `{"node_type": "comparison", "field": "name", "operator": "ilike", "value": "%${query}%"}`;
+  const searchTree = {
+    node_type: "comparison",
+    field: "name",
+    operator: "ilike",
+    value: `%${query}%`
+  };
 
-  const gVIRSData = await fetchfromGvirs(
-    domain,
-    "voter_segment",
-    "search",
-    "extended_flat",
-    xapikey,
-    xappid,
-    searchTreeObj,
-    '{"select_fields":["id","name","num_voters"]}'
-  );
-  if (gVIRSData) {
+  try {
+    const gVIRSData = await fetchFromGvirs(
+      { domain, appId: xappid, apiKey: xapikey },
+      "voter_segment",
+      "search",
+      "extended_flat",
+      { searchTree },
+      {
+        selectFields: ["id", "name", "num_voters"],
+        limit: 500
+      }
+    );
+
     return gVIRSData.entities.map(segment => ({
       title: `${segment.name} (${segment.num_voters})`,
       count: segment.num_voters,
       id: segment.id
     }));
+  } catch (err) {
+    log.error(err);
+    return [];
   }
-  return [];
 }
 
 // This gets the contacts for a segment, given by an id (and organization name).
@@ -262,7 +238,7 @@ export async function getSegmentVoters(
   };
 
   try {
-    const segmentInformation = await gvirsApi3Get(
+    const segmentInformation = await fetchFromGvirs(
       { domain, appId: xappid, apiKey: xapikey },
       "voter_segment",
       "load",
@@ -273,7 +249,7 @@ export async function getSegmentVoters(
     const phoneFilterId = segmentInformation.entity.phone_filter_id || null;
     let phoneFilterTree = {};
     if (phoneFilterId !== null) {
-      const phoneFilter = await gvirsApi3Get(
+      const phoneFilter = await fetchFromGvirs(
         { domain, appId: xappid, apiKey: xapikey },
         "phone_filter",
         "load",
@@ -284,7 +260,7 @@ export async function getSegmentVoters(
       phoneFilterTree = JSON.parse(phoneFilterTreeJson);
     }
 
-    const gVIRSVoterData = await gvirsApi3Get(
+    const gVIRSVoterData = await fetchFromGvirs(
       { domain, appId: xappid, apiKey: xapikey },
       "voter_for_spoke",
       "search",
@@ -295,7 +271,7 @@ export async function getSegmentVoters(
         fromAliasSearchTrees: {
           voterMobileLatest: phoneFilterTree
         },
-        noLimit: true,
+        noLimit: true
       }
     );
 
