@@ -305,7 +305,12 @@ export async function getSegmentVoters(
           ),
           zip: res.postal_code,
           external_id: res.id,
-          custom_fields: JSON.stringify(customFieldOutput),
+          custom_fields: JSON.stringify({
+            ...customFieldOutput,
+            // The following are from the segment and non-optional
+            gvirsCampaignId: segmentInformation.entity.campaign_id,
+            gvirsContactPurposeId: segmentInformation.entity.contact_purpose_id
+          }),
           message_status: "needsMessage",
           campaign_id: campaignId
         };
