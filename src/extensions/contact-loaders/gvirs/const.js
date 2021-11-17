@@ -50,7 +50,7 @@ export const GVIRS_CUSTOM_VOTERS_FIELDS = [
   "v_lsc_notes",
   "v_lsc_contact_status_name",
   "v_lsc_campaign_long_name",
-  "v_lsc_contact_labels"
+  "v_lsc_contact_labels",
 ];
 
 // These are "non-custom" gVIRS fields, where their values are mapped to
@@ -61,7 +61,7 @@ export const GVIRS_NONCUSTOM_VOTERS_FIELDS = [
   "surname",
   "first_name",
   "locality_postcode",
-  "mobile_latest_phone_number"
+  "mobile_latest_phone_number",
 ];
 
 // These are the fields together (non-custom ones first)

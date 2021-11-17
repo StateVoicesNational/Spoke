@@ -266,7 +266,11 @@ export async function getSegmentVoters(
       "extended_flat",
       { searchTree: voterSearchTree },
       {
-        selectFields: GVIRS_VOTERS_FIELDS,
+        selectFields: [
+          ...GVIRS_VOTERS_FIELDS,
+          // We always include state_abbrev, but it can't be renamed
+          "state_abbrev"
+        ],
         fromAliasSearchTrees: {
           voterMobileLatest: phoneFilterTree
         },
@@ -308,8 +312,10 @@ export async function getSegmentVoters(
           custom_fields: JSON.stringify({
             ...customFieldOutput,
             // The following are from the segment and non-optional
-            gvirsCampaignId: segmentInformation.entity.campaign_id,
-            gvirsContactPurposeId: segmentInformation.entity.contact_purpose_id
+            gvirs_campaign_id: segmentInformation.entity.campaign_id,
+            gvirs_contact_purpose_id: segmentInformation.entity.contact_purpose_id,
+            // State abbrev is always required, even if renamed
+            gvirs_state_abbrev: res.state_abbrev,
           }),
           message_status: "needsMessage",
           campaign_id: campaignId
