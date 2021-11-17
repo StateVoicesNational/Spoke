@@ -7,25 +7,25 @@ import {
   GVIRS_CACHE_SECONDS,
   ENVIRONMENTAL_VARIABLES_MANDATORY,
   GVIRS_CONTACT_LOADER,
-  GVIRS_ACTION_HANDLER_SETMEANINGFUL
+  GVIRS_ACTION_HANDLER_CREATESIGNIFICANT
 } from "../contact-loaders/gvirs/const";
 
-export const name = GVIRS_ACTION_HANDLER_SETMEANINGFUL;
+export const name = GVIRS_ACTION_HANDLER_CREATESIGNIFICANT;
 
 // What the user sees as the option
-export const displayName = () => "Record a meaningful interaction with a voter";
+export const displayName = () => "Create a significant interaction for a voter";
 
 // The Help text for the user after selecting the action
 export const instructions = () =>
-  "What support level would you like to record for the voter? Select from the following options.";
+  "What type of significant interaction would you like to record for the voter? Select from the following options.";
 
 export function serverAdministratorInstructions() {
   return {
     description: `
-      This action is for allowing texters to record meaningful interactions for voters in gVIRS.
+      This action is for allowing texters to record significant interactions for in gVIRS.
       `,
     setupInstructions: `
-      1. Add "civicrm-setmeaningful" to the environment variable "ACTION_HANDLERS";
+      1. Add "civicrm-createsignificant" to the environment variable "ACTION_HANDLERS";
       2. Set up Spoke to use the existing gVIRS contact loader.
       `,
     environmentVariables: [...ENVIRONMENTAL_VARIABLES_MANDATORY]
@@ -87,11 +87,11 @@ export async function processDeletedQuestionResponse(options) {}
 // eslint-disable-next-line no-unused-vars
 export async function getClientChoiceData(organization, user) {
   const items = [
-    { name: "Support level 1 (Strong support)", details: "1" },
-    { name: "Support level 2 (Weak support)", details: "2" },
-    { name: "Support level 3 (Undecided)", details: "3" },
-    { name: "Support level 4 (Weak oppose)", details: "4" },
-    { name: "Support level 5 (Strong oppose)", details: "5" }
+    { name: "Non-Meaningful Interaction", details: "1" },
+    { name: "Busy", details: "2" },
+    { name: "Language Barrier", details: "3" },
+    { name: "Bad Info", details: "4" },
+    { name: "Refused", details: "5" }
   ];
   return {
     data: `${JSON.stringify({ items })}`,
