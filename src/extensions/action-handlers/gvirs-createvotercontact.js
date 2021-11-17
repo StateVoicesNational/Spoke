@@ -7,25 +7,26 @@ import {
   GVIRS_CACHE_SECONDS,
   ENVIRONMENTAL_VARIABLES_MANDATORY,
   GVIRS_CONTACT_LOADER,
-  GVIRS_ACTION_HANDLER_CREATESIGNIFICANT
+  GVIRS_ACTION_HANDLER_CREATEVOTERCONTACT
 } from "../contact-loaders/gvirs/const";
 
-export const name = GVIRS_ACTION_HANDLER_CREATESIGNIFICANT;
+export const name = GVIRS_ACTION_HANDLER_CREATEVOTERCONTACT;
 
 // What the user sees as the option
-export const displayName = () => "Create a significant interaction for a voter";
+export const displayName = () =>
+  "Creates a contact (or interaction) with a voter";
 
 // The Help text for the user after selecting the action
 export const instructions = () =>
-  "What type of significant interaction would you like to record for the voter? Select from the following options.";
+  "What type of interaction would you like to record for the voter? Select from the following options.";
 
 export function serverAdministratorInstructions() {
   return {
     description: `
-      This action is for allowing texters to record significant interactions for in gVIRS.
+      This action is for allowing texters to record types of interactions for voters in gVIRS.
       `,
     setupInstructions: `
-      1. Add "civicrm-createsignificant" to the environment variable "ACTION_HANDLERS";
+      1. Add "gvirs-createvotercontact" to the environment variable "ACTION_HANDLERS";
       2. Set up Spoke to use the existing gVIRS contact loader.
       `,
     environmentVariables: [...ENVIRONMENTAL_VARIABLES_MANDATORY]
@@ -84,15 +85,42 @@ export async function processAction({
 // eslint-disable-next-line no-unused-vars
 export async function processDeletedQuestionResponse(options) {}
 
+const VOTER_SUPPORT_LEVELS = [
+  {
+    name: "Support level 1 (Strong support)",
+    support: 1,
+    contact_status_id: 1
+  },
+  { name: "Support level 2 (Weak support)", support: 2, contact_status_id: 1 },
+  { name: "Support level 3 (Undecided)", support: 3, contact_status_id: 1 },
+  { name: "Support level 4 (Weak oppose)", support: 4, contact_status_id: 1 },
+  { name: "Support level 5 (Strong oppose)", support: 5, contact_status_id: 1 },
+  { name: "Non-Meaningful Interaction", support: 0, contact_status_id: 0 },
+  { name: "Busy", support: 0, contact_status_id: 2 },
+  { name: "Language Barrier", support: 0, contact_status_id: 3 },
+  { name: "No Answer", support: 0, contact_status_id: 4 },
+  { name: "Bad Info", support: 0, contact_status_id: 5 },
+  { name: "Inaccessible", support: 0, contact_status_id: 6 },
+  { name: "Refused", support: 0, contact_status_id: 7 }
+];
+
+const VOTER_SUPPORT_LEVELS_CHOICE_DATA = VOTER_SUPPORT_LEVELS.map(
+  (value, index) => {
+    return {
+      name: value.name,
+      details: JSON.stringify({
+        index,
+        support: value.support,
+        contact_status_id: value.contact_status_id,
+        notes: "[From Spoke]"
+      })
+    };
+  }
+);
+
 // eslint-disable-next-line no-unused-vars
 export async function getClientChoiceData(organization, user) {
-  const items = [
-    { name: "Non-Meaningful Interaction", details: "1" },
-    { name: "Busy", details: "2" },
-    { name: "Language Barrier", details: "3" },
-    { name: "Bad Info", details: "4" },
-    { name: "Refused", details: "5" }
-  ];
+  const items = VOTER_SUPPORT_LEVELS_CHOICE_DATA;
   return {
     data: `${JSON.stringify({ items })}`,
     expiresSeconds: GVIRS_CACHE_SECONDS

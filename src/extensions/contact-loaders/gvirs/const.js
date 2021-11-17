@@ -35,7 +35,8 @@ export const GVIRS_ENVIRONMENTAL_VARIABLES_OPTIONAL = ["GVIRS_CUSTOM_DATA"];
 
 export const GVIRS_CONTACT_LOADER = "gvirs";
 export const GVIRS_ACTION_HANDLER_SETMEANINGFUL = "gvirs-setmeaningful";
-export const GVIRS_ACTION_HANDLER_CREATESIGNIFICANT = "gvirs-createsignificant";
+export const GVIRS_ACTION_HANDLER_CREATEVOTERCONTACT =
+  "gvirs-createvotercontact";
 
 // These are "custom" gVIRS fields for voters, where the Spoke texters can
 // provide custom tokens representing their values in text messages.
