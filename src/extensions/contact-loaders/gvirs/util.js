@@ -269,7 +269,9 @@ export async function getSegmentVoters(
         selectFields: [
           ...GVIRS_VOTERS_FIELDS,
           // We always include state_abbrev, but it can't be renamed
-          "state_abbrev"
+          "state_abbrev",
+          // Similarly, we already include the mobile_latest_phone_number_id
+          "mobile_latest_phone_number_id",
         ],
         fromAliasSearchTrees: {
           voterMobileLatest: phoneFilterTree
@@ -314,8 +316,10 @@ export async function getSegmentVoters(
             // The following are from the segment and non-optional
             gvirs_campaign_id: segmentInformation.entity.campaign_id,
             gvirs_contact_purpose_id: segmentInformation.entity.contact_purpose_id,
-            // State abbrev is always required, even if renamed
+            // State abbrev is always required
             gvirs_state_abbrev: res.state_abbrev,
+            // Ditto for the id of the phone number
+            gvirs_phone_number_id: res.mobile_latest_phone_number_id,
           }),
           message_status: "needsMessage",
           campaign_id: campaignId
