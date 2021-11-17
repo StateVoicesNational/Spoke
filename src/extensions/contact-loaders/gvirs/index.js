@@ -139,9 +139,6 @@ export async function processContactLoad(job, maxContacts, organization) {
 
   const campaignId = job.campaign_id;
 
-  const customFields = getGVIRSCustomFields(getConfig("GVIRS_CUSTOM_DATA"));
-  const customFieldNames = Object.keys(customFields);
-
   await r
     .knex("campaign_contact")
     .where("campaign_id", campaignId)
