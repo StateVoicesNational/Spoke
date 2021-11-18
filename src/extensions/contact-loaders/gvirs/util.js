@@ -393,7 +393,8 @@ export async function createGvirsContact(
   gvirsNotes,
   gvirsContactPurposeId,
   gvirsCampaignId,
-  organizationName
+  organizationName,
+  gvirsFollowup
 ) {
   if (!organizationName) {
     return [];
@@ -404,8 +405,24 @@ export async function createGvirsContact(
   if (!(organizationName in connectionData)) {
     return [];
   }
+
+  const contactEntity = {
+    voter_id: gvirsVoterId,
+    phone_number_id: gvirsPhoneNumberId,
+    contact_status_id: gvirsContactStatusId,
+    contact_method_id: GVIRS_SPOKE_CONTACT_METHOD_ID,
+    support_level: gvirsSupportLevel,
+    notes: gvirsNotes,
+    campaign_id: gvirsCampaignId,
+    contact_purpose_id: gvirsContactPurposeId
+  };
+  // Only add the followup if explicitly specified
+  if (gvirsFollowup !== undefined) contactEntity.followup = gvirsFollowup;
+
   const apiConnData = connectionData[organizationName];
   try {
+
+
     const contactCreationInformation = await fetchFromGvirs(
       apiConnData,
       "contact_for_spoke",
@@ -415,18 +432,7 @@ export async function createGvirsContact(
       {},
       {
         method: "POST",
-        body: JSON.stringify({
-          entity: {
-            voter_id: gvirsVoterId,
-            phone_number_id: gvirsPhoneNumberId,
-            contact_status_id: gvirsContactStatusId,
-            contact_method_id: GVIRS_SPOKE_CONTACT_METHOD_ID,
-            support_level: gvirsSupportLevel,
-            notes: gvirsNotes,
-            campaign_id: gvirsCampaignId,
-            contact_purpose_id: gvirsContactPurposeId
-          }
-        })
+        body: JSON.stringify({ entity: contactEntity})
       }
     );
     log.info(`Logged gvirs contact against voter_id=${gvirsVoterId}: Status=${gvirsContactStatusId}, SL=${gvirsSupportLevel}`)
