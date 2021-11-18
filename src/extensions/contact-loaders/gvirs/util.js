@@ -4,7 +4,11 @@ import { getConfig } from "../../../server/api/lib/config";
 import { getFormattedPhoneNumber } from "../../../lib";
 import {} from "./js-doc-types";
 import { decamelizeKeys } from "humps";
-import { GVIRS_VOTERS_FIELDS, GVIRS_CUSTOM_VOTERS_FIELDS } from "./const";
+import {
+  GVIRS_VOTERS_FIELDS,
+  GVIRS_CUSTOM_VOTERS_FIELDS,
+  GVIRS_SPOKE_CONTACT_METHOD_ID
+} from "./const";
 import { log } from "../../../lib/log";
 
 /* This reads the value of GVIRS_CONNECTIONS and decomposes it into:
@@ -245,6 +249,7 @@ export async function reportWrongNumber(
       {},
       { method: "POST", body: JSON.stringify({ entity: { correct: false } }) }
     );
+    log.info(`Marked gvirs phone-number-linkage (voter_id=${gvirsVoterId}, phone_number_id=${gvirsPhoneNumberId}) as incorrect`);
     return wrongNumberUpdateInformation;
   } catch (err) {
     log.error(err);
@@ -379,7 +384,6 @@ export async function getSegmentVoters(
 
 // This creates a new contact for a voter.
 
-const GVIRS_SMS_CONTACT_ID = 10;
 
 export async function createGvirsContact(
   gvirsVoterId,
@@ -416,7 +420,7 @@ export async function createGvirsContact(
             voter_id: gvirsVoterId,
             phone_number_id: gvirsPhoneNumberId,
             contact_status_id: gvirsContactStatusId,
-            contact_method_id: GVIRS_SMS_CONTACT_ID,
+            contact_method_id: GVIRS_SPOKE_CONTACT_METHOD_ID,
             support_level: gvirsSupportLevel,
             notes: gvirsNotes,
             campaign_id: gvirsCampaignId,
@@ -425,7 +429,7 @@ export async function createGvirsContact(
         })
       }
     );
-    console.log(contactCreationInformation);
+    log.info(`Logged gvirs contact against voter_id=${gvirsVoterId}: Status=${gvirsContactStatusId}, SL=${gvirsSupportLevel}`)
     return contactCreationInformation;
   } catch (err) {
     log.error(err);
