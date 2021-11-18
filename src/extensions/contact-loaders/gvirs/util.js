@@ -249,7 +249,9 @@ export async function reportWrongNumber(
       {},
       { method: "POST", body: JSON.stringify({ entity: { correct: false } }) }
     );
-    log.info(`Marked gvirs phone-number-linkage (voter_id=${gvirsVoterId}, phone_number_id=${gvirsPhoneNumberId}) as incorrect`);
+    log.info(
+      `Marked gvirs phone-number-linkage (voter_id=${gvirsVoterId}, phone_number_id=${gvirsPhoneNumberId}) as incorrect`
+    );
     return wrongNumberUpdateInformation;
   } catch (err) {
     log.error(err);
@@ -384,7 +386,6 @@ export async function getSegmentVoters(
 
 // This creates a new contact for a voter.
 
-
 export async function createGvirsContact(
   gvirsVoterId,
   gvirsPhoneNumberId,
@@ -421,8 +422,6 @@ export async function createGvirsContact(
 
   const apiConnData = connectionData[organizationName];
   try {
-
-
     const contactCreationInformation = await fetchFromGvirs(
       apiConnData,
       "contact_for_spoke",
@@ -432,10 +431,12 @@ export async function createGvirsContact(
       {},
       {
         method: "POST",
-        body: JSON.stringify({ entity: contactEntity})
+        body: JSON.stringify({ entity: contactEntity })
       }
     );
-    log.info(`Logged gvirs contact against voter_id=${gvirsVoterId}: Status=${gvirsContactStatusId}, SL=${gvirsSupportLevel}`)
+    log.info(
+      `Logged gvirs contact against voter_id=${gvirsVoterId}: Status=${gvirsContactStatusId}, SL=${gvirsSupportLevel}`
+    );
     return contactCreationInformation;
   } catch (err) {
     log.error(err);
