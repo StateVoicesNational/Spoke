@@ -7,7 +7,8 @@ import {
   GVIRS_CACHE_SECONDS,
   ENVIRONMENTAL_VARIABLES_MANDATORY,
   GVIRS_CONTACT_LOADER,
-  GVIRS_ACTION_HANDLER_CREATEVOTERCONTACT
+  GVIRS_ACTION_HANDLER_CREATEVOTERCONTACT,
+  GVIRS_CREATE_CONTACT_CHOICE_DEFINITIONS
 } from "../contact-loaders/gvirs/const";
 
 export const name = GVIRS_ACTION_HANDLER_CREATEVOTERCONTACT;
@@ -105,72 +106,7 @@ export async function processAction({
 // eslint-disable-next-line no-unused-vars
 export async function processDeletedQuestionResponse(options) {}
 
-const VOTER_SUPPORT_LEVELS = [
-  {
-    name: "Support level 1 (Strong support)",
-    support_level: 1,
-    contact_status_id: 1
-    // notes: "[From Spoke]",
-    // followup: false,
-  },
-  {
-    name: "Support level 2 (Weak support)",
-    support_level: 2,
-    contact_status_id: 1
-  },
-  {
-    name: "Support level 3 (Undecided)",
-    support_level: 3,
-    contact_status_id: 1
-  },
-  {
-    name: "Support level 4 (Weak oppose)",
-    support_level: 4,
-    contact_status_id: 1
-  },
-  {
-    name: "Support level 5 (Strong oppose)",
-    support_level: 5,
-    contact_status_id: 1
-  },
-  {
-    name: "Non-Meaningful Interaction",
-    support_level: 0,
-    contact_status_id: 0
-  },
-  {
-    name: "Busy",
-    support_level: 0,
-    contact_status_id: 2
-  },
-  {
-    name: "Language Barrier",
-    support_level: 0,
-    contact_status_id: 3
-  },
-  {
-    name: "No Answer",
-    support_level: 0,
-    contact_status_id: 4
-  },
-  {
-    name: "Bad Info",
-    support_level: 0,
-    contact_status_id: 5
-  },
-  {
-    name: "Inaccessible",
-    support_level: 0,
-    contact_status_id: 6
-  },
-  {
-    name: "Refused",
-    support_level: 0,
-    contact_status_id: 7
-  }
-];
-
-const VOTER_SUPPORT_LEVELS_CHOICE_DATA = VOTER_SUPPORT_LEVELS.map(
+const VOTER_SUPPORT_LEVELS_CHOICE_DATA = GVIRS_CREATE_CONTACT_CHOICE_DEFINITIONS.map(
   (value, index) => {
     return {
       name: value.name,
