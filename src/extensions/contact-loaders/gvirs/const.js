@@ -50,7 +50,7 @@ export const GVIRS_CUSTOM_VOTERS_FIELDS = [
   "v_lsc_notes",
   "v_lsc_contact_status_name",
   "v_lsc_campaign_long_name",
-  "v_lsc_contact_labels",
+  "v_lsc_contact_labels"
 ];
 
 // These are "non-custom" gVIRS fields, where their values are mapped to
@@ -61,7 +61,7 @@ export const GVIRS_NONCUSTOM_VOTERS_FIELDS = [
   "surname",
   "first_name",
   "locality_postcode",
-  "mobile_latest_phone_number",
+  "mobile_latest_phone_number"
 ];
 
 // These are the fields together (non-custom ones first)
@@ -72,3 +72,70 @@ export const GVIRS_VOTERS_FIELDS = [
 ];
 
 export const GVIRS_SPOKE_CONTACT_METHOD_ID = 10; // SMS
+
+export const GVIRS_CREATE_CONTACT_CHOICE_DEFINITIONS = [
+  // Required fields: name, support_level, contact_status_id
+  // Optional fields:
+  // - notes (default is "[From Spoke]"
+  // - followup (default false)
+  {
+    name: "Support level 1 (Strong support)",
+    support_level: 1,
+    contact_status_id: 1
+  },
+  {
+    name: "Support level 2 (Weak support)",
+    support_level: 2,
+    contact_status_id: 1
+  },
+  {
+    name: "Support level 3 (Undecided)",
+    support_level: 3,
+    contact_status_id: 1
+  },
+  {
+    name: "Support level 4 (Weak oppose)",
+    support_level: 4,
+    contact_status_id: 1
+  },
+  {
+    name: "Support level 5 (Strong oppose)",
+    support_level: 5,
+    contact_status_id: 1
+  },
+  {
+    name: "Non-Meaningful Interaction",
+    support_level: 0,
+    contact_status_id: 0
+  },
+  {
+    name: "Busy",
+    support_level: 0,
+    contact_status_id: 2
+  },
+  {
+    name: "Language Barrier",
+    support_level: 0,
+    contact_status_id: 3
+  },
+  {
+    name: "No Answer",
+    support_level: 0,
+    contact_status_id: 4
+  },
+  {
+    name: "Bad Info",
+    support_level: 0,
+    contact_status_id: 5
+  },
+  {
+    name: "Inaccessible",
+    support_level: 0,
+    contact_status_id: 6
+  },
+  {
+    name: "Refused",
+    support_level: 0,
+    contact_status_id: 7
+  }
+];
