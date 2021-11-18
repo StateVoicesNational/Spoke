@@ -58,13 +58,13 @@ export async function processAction({
   // Generally, you want to send action data to the outside world, so you
   // might want the request library loaded above
 
-  const gvirsContactId = contact.external_id;
+  const gvirsVoterId = contact.external_id;
   // const destinationInteraction = JSON.parse(interactionStep.answer_actions_data)
   //   .value;
 
-  await reportWrongNumber(gvirsContactId, organization.name);
-
   const customFields = JSON.parse(contact.custom_fields || "{}");
+  const gvirsPhoneNumberId = customFields.gvirs_phone_number_id;
+  await reportWrongNumber(gvirsVoterId, gvirsPhoneNumberId, organization.name);
   customFields.processed_test_action = (interactionStep || {}).answer_actions;
   customFields.test_action_details = (
     interactionStep || {}

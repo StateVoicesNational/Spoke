@@ -128,6 +128,8 @@ export async function fetchFromGvirs(
 
   if ("id" in entityQuery) {
     url += `&id=${entityQuery.id}`;
+  } else if ("identifier" in entityQuery) {
+    url += `&identifier=${entityQuery.identifier}`;
   }
 
   if ("searchTree" in entityQuery) {
@@ -135,7 +137,7 @@ export async function fetchFromGvirs(
     url += `&search_tree=${encodeURI(JSON.stringify(entityQuery.searchTree))}`;
   }
 
-  if (Object.keys(params).length > 0) {
+  if (params && Object.keys(params).length > 0) {
     const paramsSnake = decamelizeKeys(params);
     url += `&params=${encodeURI(JSON.stringify(paramsSnake))}`;
   }
@@ -211,9 +213,13 @@ export async function searchSegments(query, organizationName) {
   }
 }
 
-// This reports the wrong number for a gVIRS contact, given by an id (and organization name).
+// This reports the wrong number for a gVIRS contact, given by an id, phone id (and organization name).
 
-export async function reportWrongNumber(gvirsContactId, organizationName) {
+export async function reportWrongNumber(
+  gvirsVoterId,
+  gvirsPhoneNumberId,
+  organizationName
+) {
   if (!organizationName) {
     return [];
   }
@@ -224,7 +230,26 @@ export async function reportWrongNumber(gvirsContactId, organizationName) {
     return [];
   }
   const apiConnData = connectionData[organizationName];
-  return [];
+  try {
+    const wrongNumberUpdateInformation = await fetchFromGvirs(
+      apiConnData,
+      "voter_to_phone_number_linkage",
+      "edit",
+      "single_table",
+      {
+        identifier: JSON.stringify({
+          voter_id: gvirsVoterId,
+          phone_number_id: gvirsPhoneNumberId
+        })
+      },
+      {},
+      { method: "POST", body: JSON.stringify({ entity: { correct: false } }) }
+    );
+    return wrongNumberUpdateInformation;
+  } catch (err) {
+    log.error(err);
+    return [];
+  }
 }
 
 // This gets the contacts for a segment, given by an id (and organization name).
@@ -321,7 +346,6 @@ export async function getSegmentVoters(
             );
           }
         }
-
         return {
           first_name: res.first_name,
           last_name: res.surname,
