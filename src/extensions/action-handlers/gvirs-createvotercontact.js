@@ -71,11 +71,12 @@ export async function processAction({
 
   const destinationInteractionParsed = JSON.parse(destinationInteraction);
   const gvirsPhoneNumberId = customFields.gvirs_phone_number_id;
-  const gvirsSupportLevel = destinationInteractionParsed.support;
+  const gvirsSupportLevel = destinationInteractionParsed.support_level;
   const gvirsContactStatusId = destinationInteractionParsed.contact_status_id;
   const gvirsNotes = destinationInteractionParsed.notes;
   const gvirsContactPurposeId = customFields.gvirs_contact_purpose_id;
   const gvirsCampaignId = customFields.gvirs_campaign_id;
+  const gvirsFollowup = customFields.followup;
 
   await createGvirsContact(
     gvirsVoterId,
@@ -85,7 +86,8 @@ export async function processAction({
     gvirsNotes,
     gvirsContactPurposeId,
     gvirsCampaignId,
-    organization.name
+    organization.name,
+    gvirsFollowup
   );
 
   customFields.processed_test_action = (interactionStep || {}).answer_actions;
@@ -106,20 +108,66 @@ export async function processDeletedQuestionResponse(options) {}
 const VOTER_SUPPORT_LEVELS = [
   {
     name: "Support level 1 (Strong support)",
-    support: 1,
+    support_level: 1,
+    contact_status_id: 1
+    // notes: "[From Spoke]",
+    // followup: false,
+  },
+  {
+    name: "Support level 2 (Weak support)",
+    support_level: 2,
     contact_status_id: 1
   },
-  { name: "Support level 2 (Weak support)", support: 2, contact_status_id: 1 },
-  { name: "Support level 3 (Undecided)", support: 3, contact_status_id: 1 },
-  { name: "Support level 4 (Weak oppose)", support: 4, contact_status_id: 1 },
-  { name: "Support level 5 (Strong oppose)", support: 5, contact_status_id: 1 },
-  { name: "Non-Meaningful Interaction", support: 0, contact_status_id: 0 },
-  { name: "Busy", support: 0, contact_status_id: 2 },
-  { name: "Language Barrier", support: 0, contact_status_id: 3 },
-  { name: "No Answer", support: 0, contact_status_id: 4 },
-  { name: "Bad Info", support: 0, contact_status_id: 5 },
-  { name: "Inaccessible", support: 0, contact_status_id: 6 },
-  { name: "Refused", support: 0, contact_status_id: 7 }
+  {
+    name: "Support level 3 (Undecided)",
+    support_level: 3,
+    contact_status_id: 1
+  },
+  {
+    name: "Support level 4 (Weak oppose)",
+    support_level: 4,
+    contact_status_id: 1
+  },
+  {
+    name: "Support level 5 (Strong oppose)",
+    support_level: 5,
+    contact_status_id: 1
+  },
+  {
+    name: "Non-Meaningful Interaction",
+    support_level: 0,
+    contact_status_id: 0
+  },
+  {
+    name: "Busy",
+    support_level: 0,
+    contact_status_id: 2
+  },
+  {
+    name: "Language Barrier",
+    support_level: 0,
+    contact_status_id: 3
+  },
+  {
+    name: "No Answer",
+    support_level: 0,
+    contact_status_id: 4
+  },
+  {
+    name: "Bad Info",
+    support_level: 0,
+    contact_status_id: 5
+  },
+  {
+    name: "Inaccessible",
+    support_level: 0,
+    contact_status_id: 6
+  },
+  {
+    name: "Refused",
+    support_level: 0,
+    contact_status_id: 7
+  }
 ];
 
 const VOTER_SUPPORT_LEVELS_CHOICE_DATA = VOTER_SUPPORT_LEVELS.map(
@@ -128,9 +176,10 @@ const VOTER_SUPPORT_LEVELS_CHOICE_DATA = VOTER_SUPPORT_LEVELS.map(
       name: value.name,
       details: JSON.stringify({
         index,
-        support: value.support,
+        support_level: value.support_level,
         contact_status_id: value.contact_status_id,
-        notes: "[From Spoke]"
+        notes: value.notes || "[From Spoke]",
+        followup: "followup" in value ? value.followup : undefined
       })
     };
   }
