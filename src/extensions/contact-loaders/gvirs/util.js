@@ -3,7 +3,6 @@ import fetch, { Headers } from "node-fetch";
 import { getConfig } from "../../../server/api/lib/config";
 import { getFormattedPhoneNumber } from "../../../lib";
 import {} from "./js-doc-types";
-import { decamelizeKeys } from "humps";
 import {
   GVIRS_VOTERS_FIELDS,
   GVIRS_CUSTOM_VOTERS_FIELDS,
@@ -105,7 +104,7 @@ class GvirsApiError extends Error {
  * with less information, extended_flat is slower and richer, but also supported
  * select_fields.
  *
- * @param   {GvirsApiQuery}  entityQuery - For search, a searchTree must be
+ * @param   {GvirsApiQuery}  entityQuery - For search, a search_tree must be
  * provided. For load an id
  *
  * @param   {GvirsApiParams}  params - Adjusts how the query is performed
@@ -136,14 +135,13 @@ export async function fetchFromGvirs(
     url += `&identifier=${entityQuery.identifier}`;
   }
 
-  if ("searchTree" in entityQuery) {
+  if ("search_tree" in entityQuery) {
     // The tree will already have its bits in snake case
-    url += `&search_tree=${encodeURI(JSON.stringify(entityQuery.searchTree))}`;
+    url += `&search_tree=${encodeURI(JSON.stringify(entityQuery.search_tree))}`;
   }
 
   if (params && Object.keys(params).length > 0) {
-    const paramsSnake = decamelizeKeys(params);
-    url += `&params=${encodeURI(JSON.stringify(paramsSnake))}`;
+    url += `&params=${encodeURI(JSON.stringify(params))}`;
   }
 
   const headers = new Headers();
@@ -186,7 +184,7 @@ export async function searchSegments(query, organizationName) {
     return [];
   }
 
-  const searchTree = {
+  const segmentSearchTree = {
     node_type: "comparison",
     field: "name",
     operator: "ilike",
@@ -199,9 +197,9 @@ export async function searchSegments(query, organizationName) {
       "voter_segment",
       "search",
       "extended_flat",
-      { searchTree },
+      { search_tree: segmentSearchTree },
       {
-        selectFields: ["id", "name", "num_voters"],
+        select_fields: ["id", "name", "num_voters"],
         limit: 500
       }
     );
@@ -312,19 +310,19 @@ export async function getSegmentVoters(
       "voter_for_spoke",
       "search",
       "extended_flat",
-      { searchTree: voterSearchTree },
+      { search_tree: voterSearchTree },
       {
-        selectFields: [
+        select_fields: [
           ...GVIRS_VOTERS_FIELDS,
           // We always include state_abbrev, but it can't be renamed
           "state_abbrev",
           // Similarly, we already include the mobile_latest_phone_number_id
           "mobile_latest_phone_number_id"
         ],
-        fromAliasSearchTrees: {
-          voterMobileLatest: phoneFilterTree
+        from_alias_search_trees: {
+          voter_mobile_latest: phoneFilterTree
         },
-        noLimit: true
+        no_limit: true
       }
     );
 
