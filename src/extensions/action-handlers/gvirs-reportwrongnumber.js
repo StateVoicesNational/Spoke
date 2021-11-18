@@ -1,7 +1,7 @@
 /* eslint-disable no-empty-function */
 import { r } from "../../server/models";
 import { available as loaderAvailable } from "../contact-loaders/gvirs";
-// import { searchTags, addContactToTag } from "../contact-loaders/civicrm/util";
+import { reportWrongNumber } from "../contact-loaders/gvirs/util";
 import { getConfig } from "../../server/api/lib/config";
 import {
   GVIRS_CACHE_SECONDS,
@@ -51,17 +51,18 @@ export async function available(organization) {
 export async function processAction({
   interactionStep,
   campaignContactId,
-  contact
+  contact,
+  organization
 }) {
   // This is a meta action that updates a variable in the contact record itself.
   // Generally, you want to send action data to the outside world, so you
   // might want the request library loaded above
 
-  // const gvirsContactId = contact.external_id;
+  const gvirsContactId = contact.external_id;
   // const destinationInteraction = JSON.parse(interactionStep.answer_actions_data)
   //   .value;
 
-  //  await setMeaningFul(gvirsContactId, destinationInteraction);
+  await reportWrongNumber(gvirsContactId, organization.name);
 
   const customFields = JSON.parse(contact.custom_fields || "{}");
   customFields.processed_test_action = (interactionStep || {}).answer_actions;
