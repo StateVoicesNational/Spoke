@@ -1,7 +1,7 @@
 /* eslint-disable no-empty-function */
 import { r } from "../../server/models";
 import { available as loaderAvailable } from "../contact-loaders/gvirs";
-// import { searchTags, addContactToTag } from "../contact-loaders/civicrm/util";
+import { createGvirsContact } from "../contact-loaders/gvirs/util";
 import { getConfig } from "../../server/api/lib/config";
 import {
   GVIRS_CACHE_SECONDS,
@@ -57,19 +57,40 @@ export async function available(organization) {
 export async function processAction({
   interactionStep,
   campaignContactId,
-  contact
+  contact,
+  organization
 }) {
   // This is a meta action that updates a variable in the contact record itself.
   // Generally, you want to send action data to the outside world, so you
   // might want the request library loaded above
 
-  // const gvirsContactId = contact.external_id;
-  // const destinationInteraction = JSON.parse(interactionStep.answer_actions_data)
-  //   .value;
-
-  //  await setMeaningFul(gvirsContactId, destinationInteraction);
-
+  const gvirsVoterId = contact.external_id;
   const customFields = JSON.parse(contact.custom_fields || "{}");
+  const destinationInteraction = JSON.parse(interactionStep.answer_actions_data)
+    .value;
+
+  console.log(destinationInteraction);
+  const destinationInteractionParsed = JSON.parse(destinationInteraction);
+  const gvirsPhoneNumberId = customFields.gvirs_phone_number_id;
+  const gvirsSupportLevel = destinationInteractionParsed.support;
+  const gvirsContactStatusId = destinationInteractionParsed.contact_status_id;
+  const gvirsNotes = destinationInteractionParsed.notes;
+  const gvirsContactPurposeId = customFields.gvirs_contact_purpose_id;
+  const gvirsCampaignId = customFields.gvirs_campaign_id;
+  console.log(gvirsContactStatusId);
+  console.log(gvirsSupportLevel);
+  console.log(gvirsNotes);
+  await createGvirsContact(
+    gvirsVoterId,
+    gvirsPhoneNumberId,
+    gvirsSupportLevel,
+    gvirsContactStatusId,
+    gvirsNotes,
+    gvirsContactPurposeId,
+    gvirsCampaignId,
+    organization.name
+  );
+
   customFields.processed_test_action = (interactionStep || {}).answer_actions;
   customFields.test_action_details = (
     interactionStep || {}
