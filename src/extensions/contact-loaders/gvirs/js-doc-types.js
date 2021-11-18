@@ -7,17 +7,17 @@
 
 /**
  * @typedef GvirsApiQuery
- * @property {object} [searchTree]
+ * @property {object} [search_tree]
  * @property {number} [id]
  */
 
 /**
  * @typedef GvirsApiParams
  * @property {number} [limit=100]
- * @property {array} [selectFields] If not set, all fields are selected
+ * @property {array} [select_fields] If not set, all fields are selected
  * @property {number} [offset=0]
- * @property {boolean} [noLimit=false]
- * @property {object} [fromAliasSearchTrees]
+ * @property {boolean} [no_limit=false]
+ * @property {object} [from_alias_search_trees]
  */
 
 /**
