@@ -211,6 +211,22 @@ export async function searchSegments(query, organizationName) {
   }
 }
 
+// This reports the wrong number for a gVIRS contact, given by an id (and organization name).
+
+export async function reportWrongNumber(gvirsContactId, organizationName) {
+  if (!organizationName) {
+    return [];
+  }
+  const connectionData = decomposeGVIRSConnections(
+    getConfig("GVIRS_CONNECTIONS")
+  );
+  if (!(organizationName in connectionData)) {
+    return [];
+  }
+  const apiConnData = connectionData[organizationName];
+  return [];
+}
+
 // This gets the contacts for a segment, given by an id (and organization name).
 
 export async function getSegmentVoters(
@@ -271,7 +287,7 @@ export async function getSegmentVoters(
           // We always include state_abbrev, but it can't be renamed
           "state_abbrev",
           // Similarly, we already include the mobile_latest_phone_number_id
-          "mobile_latest_phone_number_id",
+          "mobile_latest_phone_number_id"
         ],
         fromAliasSearchTrees: {
           voterMobileLatest: phoneFilterTree
@@ -280,7 +296,7 @@ export async function getSegmentVoters(
       }
     );
 
-    const blankIfEmpty = (x) => x === null || x === undefined ? '' : x;
+    const blankIfEmpty = x => (x === null || x === undefined ? "" : x);
 
     const customFields = getGVIRSCustomFields(getConfig("GVIRS_CUSTOM_DATA"));
     const customFieldNames = Object.keys(customFields);
@@ -290,7 +306,9 @@ export async function getSegmentVoters(
         const customFieldOutput = {};
         for (const customFieldName of customFieldNames) {
           if (customFieldName in res) {
-            customFieldOutput[customFields[customFieldName]] = blankIfEmpty(res[customFieldName]);
+            customFieldOutput[customFields[customFieldName]] = blankIfEmpty(
+              res[customFieldName]
+            );
           }
         }
         const remainderCustomFields = GVIRS_CUSTOM_VOTERS_FIELDS.filter(
@@ -298,7 +316,9 @@ export async function getSegmentVoters(
         );
         for (const customFieldName of remainderCustomFields) {
           if (customFieldName in res) {
-            customFieldOutput[customFieldName] = blankIfEmpty(res[customFieldName]);
+            customFieldOutput[customFieldName] = blankIfEmpty(
+              res[customFieldName]
+            );
           }
         }
 
@@ -315,11 +335,12 @@ export async function getSegmentVoters(
             ...customFieldOutput,
             // The following are from the segment and non-optional
             gvirs_campaign_id: segmentInformation.entity.campaign_id,
-            gvirs_contact_purpose_id: segmentInformation.entity.contact_purpose_id,
+            gvirs_contact_purpose_id:
+              segmentInformation.entity.contact_purpose_id,
             // State abbrev is always required
             gvirs_state_abbrev: res.state_abbrev,
             // Ditto for the id of the phone number
-            gvirs_phone_number_id: res.mobile_latest_phone_number_id,
+            gvirs_phone_number_id: res.mobile_latest_phone_number_id
           }),
           message_status: "needsMessage",
           campaign_id: campaignId
