@@ -376,3 +376,59 @@ export async function getSegmentVoters(
     return [];
   }
 }
+
+// This creates a new contact for a voter.
+
+const GVIRS_SMS_CONTACT_ID = 10;
+
+export async function createGvirsContact(
+  gvirsVoterId,
+  gvirsPhoneNumberId,
+  gvirsSupportLevel,
+  gvirsContactStatusId,
+  gvirsNotes,
+  gvirsContactPurposeId,
+  gvirsCampaignId,
+  organizationName
+) {
+  if (!organizationName) {
+    return [];
+  }
+  const connectionData = decomposeGVIRSConnections(
+    getConfig("GVIRS_CONNECTIONS")
+  );
+  if (!(organizationName in connectionData)) {
+    return [];
+  }
+  const apiConnData = connectionData[organizationName];
+  try {
+    const contactCreationInformation = await fetchFromGvirs(
+      apiConnData,
+      "contact_for_spoke",
+      "create",
+      "single_table",
+      {},
+      {},
+      {
+        method: "POST",
+        body: JSON.stringify({
+          entity: {
+            voter_id: gvirsVoterId,
+            phone_number_id: gvirsPhoneNumberId,
+            contact_status_id: gvirsContactStatusId,
+            contact_method_id: GVIRS_SMS_CONTACT_ID,
+            support_level: gvirsSupportLevel,
+            notes: gvirsNotes,
+            campaign_id: gvirsCampaignId,
+            contact_purpose_id: gvirsContactPurposeId
+          }
+        })
+      }
+    );
+    console.log(contactCreationInformation);
+    return contactCreationInformation;
+  } catch (err) {
+    log.error(err);
+    return [];
+  }
+}
