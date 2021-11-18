@@ -69,7 +69,6 @@ export async function processAction({
   const destinationInteraction = JSON.parse(interactionStep.answer_actions_data)
     .value;
 
-  console.log(destinationInteraction);
   const destinationInteractionParsed = JSON.parse(destinationInteraction);
   const gvirsPhoneNumberId = customFields.gvirs_phone_number_id;
   const gvirsSupportLevel = destinationInteractionParsed.support;
@@ -77,9 +76,7 @@ export async function processAction({
   const gvirsNotes = destinationInteractionParsed.notes;
   const gvirsContactPurposeId = customFields.gvirs_contact_purpose_id;
   const gvirsCampaignId = customFields.gvirs_campaign_id;
-  console.log(gvirsContactStatusId);
-  console.log(gvirsSupportLevel);
-  console.log(gvirsNotes);
+
   await createGvirsContact(
     gvirsVoterId,
     gvirsPhoneNumberId,
