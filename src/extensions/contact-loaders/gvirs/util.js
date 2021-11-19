@@ -441,3 +441,39 @@ export async function createGvirsContact(
     return [];
   }
 }
+
+export async function gvirsOptoutVoter(gvirsPhoneNumberId, organizationName) {
+  if (!organizationName) {
+    return [];
+  }
+  const connectionData = decomposeGVIRSConnections(
+    getConfig("GVIRS_CONNECTIONS")
+  );
+  if (!(organizationName in connectionData)) {
+    return [];
+  }
+  const apiConnData = connectionData[organizationName];
+  try {
+    const donotSMSUpdateInformation = await fetchFromGvirs(
+      apiConnData,
+      "phone_number",
+      "edit",
+      "single_table",
+      { id: gvirsPhoneNumberId },
+      {},
+      {
+        method: "POST",
+        body: JSON.stringify({
+          entity: { do_not_sms: true, do_not_sms_reason: "Set by Spoke" }
+        })
+      }
+    );
+    log.info(
+      `Marked gvirs phone-number-linkage (phone_number_id=${gvirsPhoneNumberId}) as do not sms`
+    );
+    return donotSMSUpdateInformation;
+  } catch (err) {
+    log.error(err);
+    return [];
+  }
+}
