@@ -16,11 +16,14 @@ When creating an authorised app in gVIRS for Spoke, you have to grant it several
 The following table shows with actions are required for the various entities and data models (single_table, etc.) that the
 contact loader uses.
 
-| Entity          | single_table              | extended_flat             | extended_nested |
-| --------------- | ------------------------- | ------------------------- | --------------- |
-| phone_filter    | load                      |                           |                 |
-| voter_for_spoke |                           | all actions               |                 |
-| voter_segment   | count_total, load, search | count_total, load, search |                 |
+| Entity                        | single_table | extended_flat | extended_nested |
+| ------------------------------|--------------|---------------|-----------------|
+| contact_for_spoke             | create       |               |                 |
+| phone_filter                  | load         |               |                 |
+| phone_number                  | edit         |               |                 |
+| voter_for_spoke               |              | search        |                 |
+| voter_segment                 | load         | search        |                 |
+| voter_to_phone_number_linkage | edit         |               |                 |
 
 ## Spoke configuration
 
