@@ -13,7 +13,7 @@ import {
 export const name = GVIRS_ACTION_HANDLER_REPORTWRONGNUMBER;
 
 // What the user sees as the option
-export const displayName = () => "Report a wrong number for a voter";
+export const displayName = () => "gVIRS: Report a wrong number for a voter";
 
 // The Help text for the user after selecting the action
 export const instructions = () =>

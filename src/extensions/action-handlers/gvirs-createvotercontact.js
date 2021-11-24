@@ -15,7 +15,7 @@ export const name = GVIRS_ACTION_HANDLER_CREATEVOTERCONTACT;
 
 // What the user sees as the option
 export const displayName = () =>
-  "Creates a contact (or interaction) with a voter";
+  "gVIRS: Creates a contact (or interaction) with a voter";
 
 // The Help text for the user after selecting the action
 export const instructions = () =>
