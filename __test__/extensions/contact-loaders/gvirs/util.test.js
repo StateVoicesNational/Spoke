@@ -46,8 +46,8 @@ describe("civicrm/util", () => {
     ).toEqual({
       default1: {
         domain: "https://localdev1.gvirs.com",
-        xapikey: "xapikey1",
-        xappid: "xappid1"
+        apiKey: "xapikey1",
+        appId: "xappid1"
       }
     });
     expect(
@@ -72,13 +72,13 @@ describe("civicrm/util", () => {
     ).toEqual({
       default1: {
         domain: "https://localdev1.gvirs.com",
-        xapikey: "xapikey1",
-        xappid: "xappid1"
+        apiKey: "xapikey1",
+        appId: "xappid1"
       },
       default2: {
         domain: "https://localdev2.gvirs.com",
-        xapikey: "xapikey2",
-        xappid: "xappid2"
+        apiKey: "xapikey2",
+        appId: "xappid2"
       }
     });
   });
