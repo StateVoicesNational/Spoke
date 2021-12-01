@@ -28,6 +28,7 @@ export const schema = `
     cell: Phone
     zip: String
     external_id: String
+    updated_at: Date
     customFields: JSON
     messages: [Message]
     tags(tagId: String): [ContactTag]
