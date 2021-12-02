@@ -67,7 +67,7 @@ export function buildUsersQuery(
 
   if (role !== "ANY") {
     if (role) {
-      query = query.where({ role: role });
+      query = query.where({ role });
     }
     if (role !== "SUSPENDED") {
       query = query.whereNot({ role: "SUSPENDED" });
@@ -367,7 +367,10 @@ export const resolvers = {
     profileComplete: async (user, { organizationId }, { loaders }) => {
       const org = await loaders.organization.load(organizationId);
       // @todo: standardize on escaped or not once there's an interface.
-      let fields = getConfig("TEXTER_PROFILE_FIELDS", org) || [];
+      let fields =
+        getConfig("TEXTER_PROFILE_FIELDS", org) ||
+        getConfig("profile_fields", org) ||
+        [];
 
       if (typeof fields === "string") {
         try {

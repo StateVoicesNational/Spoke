@@ -114,7 +114,10 @@ export const resolvers = {
         : ["finished-replies", "vetted-texters"];
     },
     profileFields: organization => {
-      let fields = getConfig("TEXTER_PROFILE_FIELDS", organization) || [];
+      let fields =
+        getConfig("TEXTER_PROFILE_FIELDS", organization) ||
+        getConfig("profile_fields", organization) ||
+        [];
 
       if (typeof fields === "string") {
         try {

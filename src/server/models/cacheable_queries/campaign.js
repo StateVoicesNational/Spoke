@@ -58,7 +58,10 @@ const dbCustomFields = async (id, organizationId) => {
   if (organizationId) {
     const organization = await organizationCache.load(organizationId);
 
-    let fields = getConfig("TEXTER_PROFILE_FIELDS", organization) || [];
+    let fields =
+      getConfig("TEXTER_PROFILE_FIELDS", organization) ||
+      getConfig("profile_fields", organization) ||
+      [];
 
     if (typeof fields === "string") {
       try {
