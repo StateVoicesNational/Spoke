@@ -32,6 +32,7 @@ export const schema = gql`
   type ProfileField {
     name: String!
     label: String!
+    isRequired: Boolean
   }
 
   type OrgSettings {
