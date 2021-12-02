@@ -244,7 +244,7 @@ export class UserEdit extends React.Component {
       org.profileFields.forEach(field => {
         fields[field.name] = field.isRequired
           ? yup.string().required()
-          : yup.string();
+          : yup.string().nullable();
       });
       profileFields = {
         extra: yup.object({
@@ -290,6 +290,7 @@ export class UserEdit extends React.Component {
     if (user && typeof user.extra === "string") {
       user.extra = JSON.parse(user.extra);
     }
+
     const org = this.state.currentOrg && this.state.currentOrg.organization;
     const formSchema = this.buildFormSchema(authType, org);
     const fieldsNeeded = router && !!router.location.query.fieldsNeeded;

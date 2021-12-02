@@ -22,7 +22,8 @@ export const ownerConfigurable = {
   DEFAULT_BATCHSIZE: 1,
   DEFAULT_RESPONSEWINDOW: 1,
   MAX_CONTACTS_PER_TEXTER: 1,
-  MAX_MESSAGE_LENGTH: 1
+  MAX_MESSAGE_LENGTH: 1,
+  TEXTER_PROFILE_FIELDS: 1
   // MESSAGE_HANDLERS: 1,
   // There is already an endpoint and widget for this:
   // opt_out_message: 1
@@ -130,9 +131,16 @@ export const resolvers = {
 
       if (!Array.isArray(fields)) fields = [];
 
+      /*
+        because all user fields were originally required by default,
+        for backwards compatability treat undefined isRequired
+        as if it was intended to be required.
+
+        optional field entries will need to have isRequired: false defined
+      */
       return fields.map(field => ({
         ...field,
-        isRequired: !!field.isRequired
+        isRequired: field.isRequired === undefined ? true : !!field.isRequired
       }));
     },
     availableActions: async (organization, _, { user, loaders }) => {

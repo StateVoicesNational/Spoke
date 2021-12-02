@@ -214,6 +214,64 @@ const configurableFields = {
         </div>
       );
     }
+  },
+  TEXTER_PROFILE_FIELDS: {
+    schema: () =>
+      yup
+        .string()
+        .test(
+          "array-object-format",
+          'Must be an ARRAY of OBJECTS containing entry format: { "name": "[STRING]", "label": "[STRING]", "isRequired": [BOOLEAN] }',
+          value => {
+            if (!value) {
+              return true;
+            }
+            try {
+              /* this should be an ARRAY of OBJECTS with the following format:
+              {
+                 "name": "{String}",
+                 "label": "{String}"
+                 "isRequired": {Boolean}
+              }
+            */
+              const parsedValue = JSON.parse(value);
+              if (!Array.isArray(parsedValue)) return false;
+
+              let isValid = true;
+              parsedValue.forEach(item => {
+                if (typeof item !== "object") {
+                  isValid = false;
+                }
+                if (typeof item.name !== "string") {
+                  isValid = false;
+                }
+                if (typeof item.label !== "string") {
+                  isValid = false;
+                }
+                if (typeof item.isRequired !== "boolean") {
+                  isValid = false;
+                }
+              });
+              return isValid;
+            } catch (err) {
+              return false;
+            }
+          }
+        )
+        .notRequired(),
+    ready: true,
+    component: props => {
+      return (
+        <div key={props.key}>
+          <Form.Field
+            as={GSTextField}
+            label="Extra Texter Profile Fields JSON"
+            name="TEXTER_PROFILE_FIELDS"
+            fullWidth
+          />
+        </div>
+      );
+    }
   }
 };
 

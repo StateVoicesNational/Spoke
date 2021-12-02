@@ -384,7 +384,17 @@ export const resolvers = {
       if (!Array.isArray(fields)) fields = [];
 
       for (const field of fields) {
-        if (field.isRequired && (!user.extra || !user.extra[field.name])) {
+        /*
+          because all user fields were originally required by default,
+          for backwards compatability treat undefined isRequired
+          as if it was intended to be required.
+
+          optional field entries will need to have isRequired: false defined
+        */
+        if (
+          (field.isRequired || field.isRequired === undefined) &&
+          (!user.extra || !user.extra[field.name])
+        ) {
           return false;
         }
       }
