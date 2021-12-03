@@ -27,10 +27,10 @@ jobs:
     - uses: actions/checkout@v2
     - name: Cypress run
       uses: cypress-io/github-action@v2
-      env: 
+      env:
         DEBUG: '@cypress/github-action'
         NODE_ENV: test
-        PORT: 3001
+        PORT: 3005
         OUTPUT_DIR: ./build
         ASSETS_DIR: ./build/client/assets
         ASSETS_MAP_FILE: assets.json
@@ -49,7 +49,7 @@ jobs:
         browser: chrome
         build: npm run prod-build
         start: npm start
-        wait-on: 'http://localhost:3001'
+        wait-on: 'http://localhost:3005'
     - uses: actions/upload-artifact@v2
       if: failure()
       with:
