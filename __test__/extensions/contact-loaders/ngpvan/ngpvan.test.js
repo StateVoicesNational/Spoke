@@ -734,19 +734,21 @@ describe("ngpvan", () => {
     });
 
     it("calls failedContactLoad", async () => {
-      handleFailedContactLoad(job, payload, "fake_message");
-
-      expect(jobs.failedContactLoad.mock.calls).toEqual([
-        [
-          job,
-          null,
-          job.payload,
-          {
-            errors: ["fake_message"],
-            ...payload
-          }
-        ]
-      ]);
+      try {
+        await handleFailedContactLoad(job, payload, "fake_message");
+      } catch (err) {
+        expect(jobs.failedContactLoad.mock.calls).toEqual([
+          [
+            job,
+            null,
+            job.payload,
+            {
+              errors: ["fake_message"],
+              ...payload
+            }
+          ]
+        ]);
+      }
     });
   });
 
