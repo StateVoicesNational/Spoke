@@ -1,5 +1,5 @@
 import { handler } from "../lambda.js";
-import { setupTest, cleanupTest } from "./test_helpers";
+import { cleanupTest } from "./test_helpers";
 
 beforeAll(async () => {
   await cleanupTest();
@@ -9,8 +9,8 @@ afterAll(
   global.DATABASE_SETUP_TEARDOWN_TIMEOUT
 );
 
-describe("AWS Lambda", async () => {
-  test("completes request to lambda", () => {
+describe("AWS Lambda", () => {
+  test("completes request to lambda", async () => {
     const fakeEvent = {
       resource: "/{proxy+}",
       path: "/",
@@ -51,21 +51,26 @@ describe("AWS Lambda", async () => {
       },
       isBase64Encoded: false
     };
-    handler(
-      fakeEvent,
-      {
-        succeed: response => {
-          expect(response.statusCode).toBe(200);
-          expect(response.headers["content-type"]).toBe(
-            "text/html; charset=utf-8"
-          );
-          // console.log('context.succeed response', response)
+
+    try {
+      await handler(
+        fakeEvent,
+        {
+          succeed: response => {
+            expect(response.statusCode).toBe(200);
+            expect(response.headers["content-type"]).toBe(
+              "text/html; charset=utf-8"
+            );
+            // console.log('context.succeed response', response)
+          }
+        },
+        (err, res) => {
+          console.log("result returned through callback", err, res);
         }
-      },
-      (err, res) => {
-        console.log("result returned through callback", err, res);
-      }
-    );
+      );
+    } catch (err) {
+      console.error(err);
+    }
     // console.log('lambda server', result)
   });
 });
