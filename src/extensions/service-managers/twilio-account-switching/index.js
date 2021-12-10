@@ -1,6 +1,6 @@
 import { accessRequired } from "../../../server/api/errors";
 import { getFeatures } from "../../../server/api/lib/config";
-import { r } from "../../../server/models";
+import { cacheableData, r } from "../../../server/models";
 import { getSecret, convertSecret } from "../../secret-manager";
 
 let orgChanges, orgFeatures;
@@ -90,15 +90,9 @@ export async function onCampaignUpdateSignal({
   campaign,
   updateData
 }) {
-  const changes = {
-    features: getFeatures(campaign)
-  };
-
-  changes.features.multiTwilioId = updateData;
-  await r
-    .knex("campaign")
-    .where("id", campaign.id)
-    .update(changes);
+  await cacheableData.campaign.setFeatures(campaign.id, {
+    multiTwilioId: updateData
+  });
 
   return {
     data: {
@@ -137,6 +131,7 @@ export async function onOrganizationUpdateSignal({
         orgChanges.features.MULTI_TWILIO[i].authToken
       );
     }
+    await cacheableData.organization.clear(organization.id);
     await r
       .knex("organization")
       .where("id", organization.id)
