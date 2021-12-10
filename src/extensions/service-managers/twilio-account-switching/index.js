@@ -126,7 +126,7 @@ export async function onOrganizationUpdateSignal({
     await accessRequired(user, organization.id, "OWNER", true);
     for (let i = 0; i < orgChanges.features.MULTI_TWILIO.length; i++) {
       orgChanges.features.MULTI_TWILIO[i].authToken = await convertSecret(
-        "MULTI_TWILIO_AUTH_" + orgChanges.features.MULTI_TWILIO[i].accounSid,
+        "MULTI_TWILIO_AUTH_" + orgChanges.features.MULTI_TWILIO[i].accountSid,
         organization,
         orgChanges.features.MULTI_TWILIO[i].authToken
       );
