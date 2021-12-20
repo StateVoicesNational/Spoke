@@ -128,11 +128,7 @@ export const GVIRS_CREATE_CONTACT_CHOICE_DEFINITIONS = [
     support_level: 0,
     contact_status_id: 5
   },
-  {
-    name: "Inaccessible",
-    support_level: 0,
-    contact_status_id: 6
-  },
+  // Inaccessible was removed to match changes made in gVIRS 3.10.8
   {
     name: "Refused",
     support_level: 0,
