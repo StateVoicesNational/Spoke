@@ -61,7 +61,7 @@ It turns out we need those instructions for a different portion of the setup, bu
 - Run `yarn install`
 - Begin the [Spoke Minimalist Deploy](https://github.com/MoveOnOrg/Spoke/blob/main/docs/HOWTO_MINIMALIST_DEPLOY.md) 
 
-### If you run `yarn run prod-build-client` GAVE AN ERROR OF FAILING TO LOAD ‘/home/arique/Spoke/webpack/config.js’
+### If you run `yarn run prod-build-client` GAVE AN ERROR OF FAILING TO LOAD ‘/home/{username}/Spoke/webpack/config.js’
 - Install Docker for preliminary database and cache setup, [linked here](https://docs.docker.com/engine/install/ubuntu/)
 - Verify your docker is set up correctly: $ sudo docker run hello-world
 - Install docker compose (click on the Linux tab) [Link to Docker Documentation](https://docs.docker.com/compose/install/)
@@ -142,8 +142,8 @@ YARN VERSION IS:
 - vrspotcheck << the logic is contained in this
 
 ## Node deployment with Azure from Major League Hacking
-https://www.youtube.com/watch?v=0BsR9TrR6do
+- https://www.youtube.com/watch?v=0BsR9TrR6do
 
 ## Node deployment from Microsoft
-https://www.youtube.com/watch?v=z_4sMQKE_zw
-https://docs.microsoft.com/en-us/azure/app-service/quickstart-nodejs?tabs=linux&pivots=development-environment-vscode
+- https://www.youtube.com/watch?v=z_4sMQKE_zw
+- [Microsoft Documentation](https://docs.microsoft.com/en-us/azure/app-service/quickstart-nodejs?tabs=linux&pivots=development-environment-vscode)
