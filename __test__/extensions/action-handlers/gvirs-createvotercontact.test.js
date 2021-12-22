@@ -31,7 +31,7 @@ describe("gvirs-createvotercontact", () => {
     ).not.toThrowError();
     expect(HandlerToTest.name).toEqual("gvirs-createvotercontact");
     expect(HandlerToTest.displayName()).toEqual(
-      "Creates a contact (or interaction) with a voter"
+      "gVIRS: Create a contact (or interaction) with a voter"
     );
     expect(await HandlerToTest.processDeletedQuestionResponse()).toEqual(
       undefined
