@@ -40,7 +40,7 @@ export class TexterSidebox extends React.Component {
               <ListItemText>
                 <strong>State District</strong>
                 <br />
-                {contactCustomData.stateDistrict}
+                {contactCustomData.stateElec}
               </ListItemText>
             </ListItem>
             <ListItem>
@@ -119,7 +119,7 @@ export class AdminConfig extends React.Component {
         <p>
           There is one configurable <em>optional</em> item. You can provide
           optional text that you can display to Spoke volunteers working on this
-          campaign. It&quot's a useful way of providing reminders about campaign
+          campaign. It&quot;s a useful way of providing reminders about campaign
           messages and general tips about how to engage people effectively in
           conversation.
         </p>
