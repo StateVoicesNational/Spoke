@@ -25,7 +25,7 @@ describe("gvirs-createvotercontact", () => {
     expect(() => validateActionHandler(HandlerToTest)).not.toThrowError();
     expect(HandlerToTest.name).toEqual("gvirs-reportwrongnumber");
     expect(HandlerToTest.displayName()).toEqual(
-      "Report a wrong number for a voter"
+      "gVIRS: Report a wrong number for a voter"
     );
     expect(await HandlerToTest.processDeletedQuestionResponse()).toEqual(
       undefined
