@@ -3,7 +3,7 @@
 This document describes tips and current gotchas in our code base and explains the context
 for parts that are evolving in a certain direction (or we *want* to evolve in a certain direction).
 
-See [CONTRIBUTING.md](../CONTRIBUTING.md) and the [README](../README.md) for setup
+See [ENVIRONMENT](https://github.com/percworld/Spoke/blob/main/docs/HOWTO_DEVELOPMENT_LOCAL_SETUP.md) to calibrate your development environment, [DEVELOPMENT TIPS](https://github.com/MoveOnOrg/Spoke/blob/main/docs/EXPLANATION-development-guidelines.md), [CONTRIBUTING.md](../CONTRIBUTING.md) and the [README](../README.md) for setup
 instructions and an overview about how to help and join in development.
 
 ## Documentation Organization
