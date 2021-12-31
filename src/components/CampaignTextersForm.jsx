@@ -113,9 +113,9 @@ const inlineStyles = {
 };
 
 export default class CampaignTextersForm extends React.Component {
+  focusedTexterId = null; // eslint-disable-line react/sort-comp
   state = {
     autoSplit: false,
-    focusedTexterId: null,
     snackbarOpen: false,
     snackbarMessage: ""
   };
@@ -378,12 +378,8 @@ export default class CampaignTextersForm extends React.Component {
               name={`texters[${index}].assignment.needsMessageCount`}
               hintText="Contacts"
               fullWidth
-              onFocus={() => this.setState({ focusedTexterId: texter.id })}
-              onBlur={() =>
-                this.setState({
-                  focusedTexterId: null
-                })
-              }
+              onFocus={() => (this.focusedTexterId = texter.id)}
+              onBlur={() => (this.focusedTexterId = null)}
             />
           </div>
           <div className={css(styles.slider)}>
@@ -401,12 +397,8 @@ export default class CampaignTextersForm extends React.Component {
                 name={`texters[${index}].assignment.maxContacts`}
                 hintText="Max"
                 fullWidth
-                onFocus={() => this.setState({ focusedTexterId: texter.id })}
-                onBlur={() =>
-                  this.setState({
-                    focusedTexterId: null
-                  })
-                }
+                onFocus={() => (this.focusedTexterId = texter.id)}
+                onBlur={() => (this.focusedTexterId = null)}
               />
             </div>
           ) : null}
@@ -421,7 +413,7 @@ export default class CampaignTextersForm extends React.Component {
                 if (messagedCount === 0) {
                   newFormValues.texters.splice(index, 1);
                 } else {
-                  await this.setState({ focusedTexterId: texter.id });
+                  this.focusedTexterId = texter.id;
                   newFormValues.texters[index] = {
                     ...texter,
                     assignment: {
