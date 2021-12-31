@@ -122,7 +122,7 @@ export default class CampaignTextersForm extends React.Component {
 
   onChange = formValues => {
     const existingFormValues = this.formValues();
-    const changedTexterId = this.state.focusedTexterId;
+    const changedTexterId = this.focusedTexterId;
     const newFormValues = {
       ...formValues
     };
@@ -147,8 +147,8 @@ export default class CampaignTextersForm extends React.Component {
         newTexter.assignment.needsMessageCount,
         10
       );
-      let convertedMaxContacts = !!newTexter.assignment.maxContacts
-        ? parseInt(newTexter.assignment.maxContacts)
+      const convertedMaxContacts = !!newTexter.assignment.maxContacts
+        ? parseInt(newTexter.assignment.maxContacts, 10)
         : null;
 
       if (isNaN(convertedNeedsMessageCount)) {
@@ -214,7 +214,7 @@ export default class CampaignTextersForm extends React.Component {
       // 3. if we don't have extraTexterCapacity and auto-split is on, then fill the texters with assignments
       const factor = 1;
       let index = 0;
-      let skipsByIndex = new Array(newFormValues.texters.length).fill(0);
+      const skipsByIndex = new Array(newFormValues.texters.length).fill(0);
       if (newFormValues.texters.length === 1) {
         const messagedCount =
           newFormValues.texters[0].assignment.contactsCount -
@@ -445,7 +445,6 @@ export default class CampaignTextersForm extends React.Component {
   };
 
   render() {
-    const { organizationUuid, campaignId } = this.props;
     const assignedContacts = this.formValues().texters.reduce(
       (prev, texter) => prev + texter.assignment.contactsCount,
       0
