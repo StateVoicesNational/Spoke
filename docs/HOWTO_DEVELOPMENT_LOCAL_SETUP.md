@@ -1,13 +1,27 @@
 ## Getting started
 
+### Repo
+1. If you have not already, Fork this repo then clone your forked copy. Then future pull requests can be made from your repo to Spoke. ```git clone <url of your forked repo>```
+
+2. change your pwd (present working directory) to the spoke directory before installations ```cd spoke``
+
+3. You may use this opportunity to set the remote upstream to spoke's repo for future fetches.```git remote add upstream https://github.com/MoveOnOrg/Spoke.git``` 
+   -  you can check that this is configured correctly to push to the origin and fetch from spoke's repo. ```git remote -v``` Your origin and Upstream should appear configured correctly.
+   - this is a good time to take a look at [Syncing a Fork](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/working-with-forks/syncing-a-fork) for full understanding.
+
 
 ### Downloading
 
 1. Install the Node version listed in `.nvmrc`. [NVM](https://github.com/creationix/nvm) is one way to do this (from the spoke directory):
    ```
-   nvm install
-   nvm use
+   nvm install 12
+   nvm use 12
    ```
+   - this assumes you have nvm (node version manager) installed.  If not, either
+   * run ```curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.1/install.sh | bash```
+   * or visit this readme for a better understanding [NVM INTRO](https://github.com/nvm-sh/nvm/blob/master/README.md)
+   - at this time of this writing, nvm install will install a version above 17 but we want to run 12 and then yarn will have to be installed again, even if you use yarn already. 
+    
 2. Install yarn.
 
 - Yarn is a package manager that will download all required packages to run Spoke.
