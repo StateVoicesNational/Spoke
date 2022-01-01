@@ -1,15 +1,29 @@
 ## Getting started
 
-### Repo
-1. If you have not already, Fork this repo then clone your forked copy. Then future pull requests can be made from your repo to Spoke. ```git clone <url of your forked repo>```
+---
+### [Repository](https://github.com/MoveOnOrg/Spoke)
+1. If you have not already, Fork this repo then clone your forked copy. Then future pull requests can be made from your repo to Spoke. 
+```
+git clone <url of your forked repo>
+```
 
-2. change your pwd (present working directory) to the spoke directory before installations ```cd spoke``
+2. change your pwd (present working directory) to the spoke directory before installations 
+```
+cd spoke
+```
 
-3. You may use this opportunity to set the remote upstream to spoke's repo for future fetches.```git remote add upstream https://github.com/MoveOnOrg/Spoke.git``` 
-   -  you can check that this is configured correctly to push to the origin and fetch from spoke's repo. ```git remote -v``` Your origin and Upstream should appear configured correctly.
+3. You may use this opportunity to set the remote upstream to spoke's repo for future fetches.
+```
+git remote add upstream https://github.com/MoveOnOrg/Spoke.git
+``` 
+   -  you can check that this is configured correctly to push to the origin and fetch from spoke's repo. 
+   ```
+   git remote -v
+   ```
+   Your origin and Upstream should appear configured correctly.
    - this is a good time to take a look at [Syncing a Fork](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/working-with-forks/syncing-a-fork) for full understanding.
 
-
+---
 ### Downloading
 
 1. Install the Node version listed in `.nvmrc`. [NVM](https://github.com/creationix/nvm) is one way to do this (from the spoke directory):
@@ -18,8 +32,11 @@
    nvm use 12
    ```
    - this assumes you have nvm (node version manager) installed.  If not, either
-   * run ```curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.1/install.sh | bash```
-   * or visit this readme for a better understanding [NVM INTRO](https://github.com/nvm-sh/nvm/blob/master/README.md)
+   * run 
+   ```
+   curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.1/install.sh | bash
+   ```
+   * or visit [NVM INTRO](https://github.com/nvm-sh/nvm/blob/master/README.md) for a better understanding.
    - at this time of this writing, nvm install will install a version above 17 but we want to run 12 and then yarn will have to be installed again, even if you use yarn already. 
     
 2. Install yarn.
@@ -38,10 +55,12 @@
 
 - This creates a copy of `.env.example`, but renames it `.env` so the system will use it. _Make sure you use this new file._
 
+---
 ### Your `.env` file
 
 We use environment variables to allow instance admins to customize their Spoke experience. If you end up doing dev work on an area that is configured through environment variables, it will be helpful to be familiar with the patterns used. Because of this, we recommend that you take a look at the [environment variable reference](REFERENCE-environment_variables.md) to get a lay of the land.  
 
+---
 ### Your Database
 
 We have 2 recommended ways to set up your database for your development environment and you can choose either based on your preference or comfort level. You can use sqlite (which is the default DB so you can proceed to the next section if you choose this) or postgres. At this time, all production Spoke instances use postgres.
