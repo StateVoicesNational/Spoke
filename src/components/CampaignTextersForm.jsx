@@ -15,7 +15,7 @@ import Switch from "@material-ui/core/Switch";
 import FormControlLabel from "@material-ui/core/FormControlLabel";
 
 import GSForm from "../components/forms/GSForm";
-import GSTextField from "./forms/GSTextField";
+import GSFormField from "../components/forms/GSFormField";
 import GSSubmitButton from "./forms/GSSubmitButton";
 import * as yup from "yup";
 import Form from "react-formal";
@@ -111,6 +111,91 @@ const inlineStyles = {
     ...theme.text.header
   }
 };
+
+class TexterInputs extends GSFormField {
+  render = () => {
+    const {
+      contactsCount,
+      displayName,
+      onChange,
+      onDelete,
+      texter,
+      useDynamicAssignment
+    } = this.props;
+    const messagedCount =
+      texter.assignment.contactsCount - texter.assignment.needsMessageCount;
+    return (
+      <div
+        {...dataTest("texterRow")}
+        key={texter.id}
+        className={css(styles.texterRow)}
+      >
+        <div className={css(styles.leftSlider)}>
+          <Slider
+            maxValue={contactsCount}
+            value={messagedCount}
+            color={theme.colors.darkGray}
+            direction={1}
+          />
+        </div>
+        <div className={css(styles.assignedCount)}>{messagedCount}</div>
+        <div {...dataTest("texterName")} className={css(styles.nameColumn)}>
+          {displayName}
+        </div>
+        <div className={css(styles.input)}>
+          <TextField
+            {...dataTest("texterAssignment")}
+            hintText="Contacts"
+            fullWidth
+            onChange={({ target: { value } }) => {
+              const {
+                id,
+                assignment: { maxContacts }
+              } = this.props.texter;
+              onChange({
+                id,
+                maxContacts,
+                needsMessageCount: value
+              });
+            }}
+          />
+        </div>
+        <div className={css(styles.slider)}>
+          <Slider
+            maxValue={contactsCount}
+            value={texter.assignment.needsMessageCount}
+            color={theme.colors.green}
+            direction={0}
+          />
+        </div>
+        {useDynamicAssignment ? (
+          <div className={css(styles.input)}>
+            <TextField
+              hintText="Max"
+              fullWidth
+              onChange={({ target: { value } }) => {
+                const {
+                  id,
+                  assignment: { needsMessageCount }
+                } = this.props.texter;
+                onChange({
+                  id,
+                  maxContacts: value,
+                  needsMessageCount
+                });
+              }}
+            />
+          </div>
+        ) : null}
+        <div className={css(styles.removeButton)}>
+          <IconButton onClick={onDelete(this.props.texter.id)}>
+            <DeleteIcon />
+          </IconButton>
+        </div>
+      </div>
+    );
+  };
+}
 
 export default class CampaignTextersForm extends React.Component {
   focusedTexterId = null; // eslint-disable-line react/sort-comp
@@ -351,83 +436,16 @@ export default class CampaignTextersForm extends React.Component {
 
   showTexters() {
     return this.formValues().texters.map((texter, index) => {
-      const messagedCount =
-        texter.assignment.contactsCount - texter.assignment.needsMessageCount;
       return (
-        <div
-          {...dataTest("texterRow")}
-          key={texter.id}
-          className={css(styles.texterRow)}
-        >
-          <div className={css(styles.leftSlider)}>
-            <Slider
-              maxValue={this.formValues().contactsCount}
-              value={messagedCount}
-              color={theme.colors.darkGray}
-              direction={1}
-            />
-          </div>
-          <div className={css(styles.assignedCount)}>{messagedCount}</div>
-          <div {...dataTest("texterName")} className={css(styles.nameColumn)}>
-            {this.getDisplayName(texter.id)}
-          </div>
-          <div className={css(styles.input)}>
-            <Form.Field
-              as={GSTextField}
-              {...dataTest("texterAssignment")}
-              name={`texters[${index}].assignment.needsMessageCount`}
-              hintText="Contacts"
-              fullWidth
-              onFocus={() => (this.focusedTexterId = texter.id)}
-              onBlur={() => (this.focusedTexterId = null)}
-            />
-          </div>
-          <div className={css(styles.slider)}>
-            <Slider
-              maxValue={this.formValues().contactsCount}
-              value={texter.assignment.needsMessageCount}
-              color={theme.colors.green}
-              direction={0}
-            />
-          </div>
-          {this.props.useDynamicAssignment ? (
-            <div className={css(styles.input)}>
-              <Form.Field
-                as={GSTextField}
-                name={`texters[${index}].assignment.maxContacts`}
-                hintText="Max"
-                fullWidth
-                onFocus={() => (this.focusedTexterId = texter.id)}
-                onBlur={() => (this.focusedTexterId = null)}
-              />
-            </div>
-          ) : null}
-          <div className={css(styles.removeButton)}>
-            <IconButton
-              onClick={async () => {
-                const currentFormValues = this.formValues();
-                const newFormValues = {
-                  ...currentFormValues
-                };
-                newFormValues.texters = newFormValues.texters.slice();
-                if (messagedCount === 0) {
-                  newFormValues.texters.splice(index, 1);
-                } else {
-                  this.focusedTexterId = texter.id;
-                  newFormValues.texters[index] = {
-                    ...texter,
-                    assignment: {
-                      needsMessageCount: 0
-                    }
-                  };
-                }
-                this.onChange(newFormValues);
-              }}
-            >
-              <DeleteIcon />
-            </IconButton>
-          </div>
-        </div>
+        <TexterInputs
+          name={`texters[${index}].assignment.needsMessageCount`}
+          texter={texter}
+          useDynamicAssignment={this.props.useDynamicAssignment}
+          contactsCount={this.formValues().contactsCount}
+          onChange={() => {}}
+          onDelete={() => {}}
+          displayName={this.getDisplayName(texter.id)}
+        />
       );
     });
   }
