@@ -145,6 +145,7 @@ class TexterInputs extends GSFormField {
         <div className={css(styles.input)}>
           <TextField
             {...dataTest("texterAssignment")}
+            value={texter.assignment.needsMessageCount}
             hintText="Contacts"
             fullWidth
             onChange={({ target: { value } }) => {
@@ -155,7 +156,7 @@ class TexterInputs extends GSFormField {
               onChange({
                 id,
                 maxContacts,
-                needsMessageCount: value
+                contactsCount: value
               });
             }}
           />
@@ -176,12 +177,12 @@ class TexterInputs extends GSFormField {
               onChange={({ target: { value } }) => {
                 const {
                   id,
-                  assignment: { needsMessageCount }
+                  assignment: { contactsCount: texterContactsCount }
                 } = this.props.texter;
                 onChange({
                   id,
                   maxContacts: value,
-                  needsMessageCount
+                  contactsCount: texterContactsCount
                 });
               }}
             />
@@ -198,16 +199,33 @@ class TexterInputs extends GSFormField {
 }
 
 export default class CampaignTextersForm extends React.Component {
-  focusedTexterId = null; // eslint-disable-line react/sort-comp
   state = {
     autoSplit: false,
     snackbarOpen: false,
     snackbarMessage: ""
   };
 
-  onChange = formValues => {
+  onTexterChange = ({ id, maxContacts, contactsCount }) => {
     const existingFormValues = this.formValues();
-    const changedTexterId = this.focusedTexterId;
+    const newFormValues = {
+      ...existingFormValues
+    };
+
+    newFormValues.texters = newFormValues.texters.map(texter => {
+      if (texter.id === id) {
+        const newTexter = { ...texter };
+        newTexter.assignment.maxContacts = maxContacts;
+        newTexter.assignment.needsMessageCount = contactsCount;
+        return newTexter;
+      }
+      return texter;
+    });
+
+    this.onChange(newFormValues, id);
+  };
+
+  onChange = (formValues, changedTexterId) => {
+    const existingFormValues = this.formValues();
     const newFormValues = {
       ...formValues
     };
@@ -338,17 +356,31 @@ export default class CampaignTextersForm extends React.Component {
     this.props.onChange(newFormValues);
   };
 
-  formSchema = yup.object({
-    texters: yup.array().of(
-      yup.object({
-        id: yup.string(),
-        assignment: yup.object({
-          needsMessageCount: yup.string(),
-          maxContacts: yup.string().nullable()
-        })
-      })
-    )
-  });
+  getDisplayName(texterId) {
+    const texterObj = this.props.orgTexters.find(o => o.id === texterId);
+    const suffix =
+      getHighestRole(texterObj.roles) === "SUSPENDED" ? " (Suspended)" : "";
+    return texterObj.displayName + suffix;
+  }
+
+  addAllTexters() {
+    const { orgTexters } = this.props;
+
+    const textersToAdd = orgTexters.map(orgTexter => {
+      const id = orgTexter.id;
+      const firstName = orgTexter.firstName;
+      return {
+        id,
+        firstName,
+        assignment: {
+          contactsCount: 0,
+          needsMessageCount: 0
+        }
+      };
+    });
+
+    this.onChange({ texters: textersToAdd });
+  }
 
   formValues() {
     const unorderedTexters = this.props.formValues.texters;
@@ -361,6 +393,18 @@ export default class CampaignTextersForm extends React.Component {
       )
     };
   }
+
+  formSchema = yup.object({
+    texters: yup.array().of(
+      yup.object({
+        id: yup.string(),
+        assignment: yup.object({
+          needsMessageCount: yup.string(),
+          maxContacts: yup.string().nullable()
+        })
+      })
+    )
+  });
 
   showSearch() {
     const { orgTexters } = this.props;
@@ -408,32 +452,6 @@ export default class CampaignTextersForm extends React.Component {
     return <div>{orgTexters.length > 0 ? autocomplete : null}</div>;
   }
 
-  addAllTexters() {
-    const { orgTexters } = this.props;
-
-    const textersToAdd = orgTexters.map(orgTexter => {
-      const id = orgTexter.id;
-      const firstName = orgTexter.firstName;
-      return {
-        id,
-        firstName,
-        assignment: {
-          contactsCount: 0,
-          needsMessageCount: 0
-        }
-      };
-    });
-
-    this.onChange({ texters: textersToAdd });
-  }
-
-  getDisplayName(texterId) {
-    const texterObj = this.props.orgTexters.find(o => o.id === texterId);
-    const suffix =
-      getHighestRole(texterObj.roles) === "SUSPENDED" ? " (Suspended)" : "";
-    return texterObj.displayName + suffix;
-  }
-
   showTexters() {
     return this.formValues().texters.map((texter, index) => {
       return (
@@ -442,7 +460,7 @@ export default class CampaignTextersForm extends React.Component {
           texter={texter}
           useDynamicAssignment={this.props.useDynamicAssignment}
           contactsCount={this.formValues().contactsCount}
-          onChange={() => {}}
+          onChange={this.onTexterChange}
           onDelete={() => {}}
           displayName={this.getDisplayName(texter.id)}
         />
