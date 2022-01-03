@@ -1,13 +1,4 @@
 import { handler } from "../lambda.js";
-import { cleanupTest } from "./test_helpers";
-
-beforeAll(async () => {
-  await cleanupTest();
-}, global.DATABASE_SETUP_TEARDOWN_TIMEOUT);
-afterAll(
-  async () => await cleanupTest(),
-  global.DATABASE_SETUP_TEARDOWN_TIMEOUT
-);
 
 describe("AWS Lambda", () => {
   test("completes request to lambda", async () => {
