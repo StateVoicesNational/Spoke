@@ -118,7 +118,7 @@ class TexterInputs extends GSFormField {
       contactsCount,
       displayName,
       onChange,
-      onDelete,
+      onRemove,
       texter,
       useDynamicAssignment
     } = this.props;
@@ -146,7 +146,7 @@ class TexterInputs extends GSFormField {
           <TextField
             {...dataTest("texterAssignment")}
             value={texter.assignment.needsMessageCount}
-            hintText="Contacts"
+            placeholder="Contacts"
             fullWidth
             onChange={({ target: { value } }) => {
               const {
@@ -156,7 +156,7 @@ class TexterInputs extends GSFormField {
               onChange({
                 id,
                 maxContacts,
-                contactsCount: value
+                needsMessageCount: value
               });
             }}
           />
@@ -172,24 +172,24 @@ class TexterInputs extends GSFormField {
         {useDynamicAssignment ? (
           <div className={css(styles.input)}>
             <TextField
-              hintText="Max"
+              placeholder="Max"
               fullWidth
               onChange={({ target: { value } }) => {
                 const {
                   id,
-                  assignment: { contactsCount: texterContactsCount }
+                  assignment: { needsMessageCount }
                 } = this.props.texter;
                 onChange({
                   id,
                   maxContacts: value,
-                  contactsCount: texterContactsCount
+                  needsMessageCount
                 });
               }}
             />
           </div>
         ) : null}
         <div className={css(styles.removeButton)}>
-          <IconButton onClick={onDelete(this.props.texter.id)}>
+          <IconButton onClick={() => onRemove(this.props.texter.id)}>
             <DeleteIcon />
           </IconButton>
         </div>
@@ -205,7 +205,7 @@ export default class CampaignTextersForm extends React.Component {
     snackbarMessage: ""
   };
 
-  onTexterChange = ({ id, maxContacts, contactsCount }) => {
+  onTexterChange = ({ id, maxContacts, needsMessageCount }) => {
     const existingFormValues = this.formValues();
     const newFormValues = {
       ...existingFormValues
@@ -214,12 +214,37 @@ export default class CampaignTextersForm extends React.Component {
     newFormValues.texters = newFormValues.texters.map(texter => {
       if (texter.id === id) {
         const newTexter = { ...texter };
+        newTexter.assignment = { ...texter.assignment };
         newTexter.assignment.maxContacts = maxContacts;
-        newTexter.assignment.needsMessageCount = contactsCount;
+        newTexter.assignment.needsMessageCount = needsMessageCount;
         return newTexter;
       }
       return texter;
     });
+
+    this.onChange(newFormValues, id);
+  };
+
+  onTexterRemove = id => {
+    const existingFormValues = this.formValues();
+    const newFormValues = {
+      ...existingFormValues
+    };
+
+    const newTexters = newFormValues.texters.map(texter => {
+      if (texter.id === id) {
+        if (!texter.assignment.messagedCount) {
+          return null;
+        }
+        const newTexter = { ...texter };
+        newTexter.assignment = { ...texter.assignment };
+        newTexter.assignment.needsMessageCount = 0;
+        return newTexter;
+      }
+      return texter;
+    });
+
+    newFormValues.texters = newTexters.filter(texter => texter);
 
     this.onChange(newFormValues, id);
   };
@@ -461,7 +486,7 @@ export default class CampaignTextersForm extends React.Component {
           useDynamicAssignment={this.props.useDynamicAssignment}
           contactsCount={this.formValues().contactsCount}
           onChange={this.onTexterChange}
-          onDelete={() => {}}
+          onRemove={this.onTexterRemove}
           displayName={this.getDisplayName(texter.id)}
         />
       );
