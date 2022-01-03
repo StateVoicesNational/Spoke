@@ -172,6 +172,7 @@ class TexterInputs extends GSFormField {
         {useDynamicAssignment ? (
           <div className={css(styles.input)}>
             <TextField
+              value={texter.assignment.maxContacts}
               placeholder="Max"
               fullWidth
               onChange={({ target: { value } }) => {
