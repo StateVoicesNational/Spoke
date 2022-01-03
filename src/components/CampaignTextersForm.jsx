@@ -119,15 +119,21 @@ class TexterInputs extends GSFormField {
       displayName,
       onChange,
       onRemove,
-      texter,
+      texter: {
+        id,
+        assignment: {
+          contactsCount: texterContactsCount,
+          needsMessageCount,
+          maxContacts
+        }
+      },
       useDynamicAssignment
     } = this.props;
-    const messagedCount =
-      texter.assignment.contactsCount - texter.assignment.needsMessageCount;
+    const messagedCount = texterContactsCount - needsMessageCount;
     return (
       <div
         {...dataTest("texterRow")}
-        key={texter.id}
+        key={id}
         className={css(styles.texterRow)}
       >
         <div className={css(styles.leftSlider)}>
@@ -145,14 +151,10 @@ class TexterInputs extends GSFormField {
         <div className={css(styles.input)}>
           <TextField
             {...dataTest("texterAssignment")}
-            value={texter.assignment.needsMessageCount}
+            {...(needsMessageCount && { value: needsMessageCount })}
             placeholder="Contacts"
             fullWidth
             onChange={({ target: { value } }) => {
-              const {
-                id,
-                assignment: { maxContacts }
-              } = this.props.texter;
               onChange({
                 id,
                 maxContacts,
@@ -164,7 +166,7 @@ class TexterInputs extends GSFormField {
         <div className={css(styles.slider)}>
           <Slider
             maxValue={contactsCount}
-            value={texter.assignment.needsMessageCount}
+            value={needsMessageCount}
             color={theme.colors.green}
             direction={0}
           />
@@ -172,14 +174,10 @@ class TexterInputs extends GSFormField {
         {useDynamicAssignment ? (
           <div className={css(styles.input)}>
             <TextField
-              value={texter.assignment.maxContacts}
+              {...(maxContacts && { value: maxContacts })}
               placeholder="Max"
               fullWidth
               onChange={({ target: { value } }) => {
-                const {
-                  id,
-                  assignment: { needsMessageCount }
-                } = this.props.texter;
                 onChange({
                   id,
                   maxContacts: value,
@@ -190,7 +188,7 @@ class TexterInputs extends GSFormField {
           </div>
         ) : null}
         <div className={css(styles.removeButton)}>
-          <IconButton onClick={() => onRemove(this.props.texter.id)}>
+          <IconButton onClick={() => onRemove(id)}>
             <DeleteIcon />
           </IconButton>
         </div>
