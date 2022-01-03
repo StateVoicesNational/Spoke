@@ -151,7 +151,7 @@ class TexterInputs extends GSFormField {
         <div className={css(styles.input)}>
           <TextField
             {...dataTest("texterAssignment")}
-            {...(needsMessageCount && { value: needsMessageCount })}
+            value={needsMessageCount || ""}
             placeholder="Contacts"
             fullWidth
             onChange={({ target: { value } }) => {
@@ -174,7 +174,7 @@ class TexterInputs extends GSFormField {
         {useDynamicAssignment ? (
           <div className={css(styles.input)}>
             <TextField
-              {...(maxContacts && { value: maxContacts })}
+              value={maxContacts || ""}
               placeholder="Max"
               fullWidth
               onChange={({ target: { value } }) => {
@@ -481,6 +481,7 @@ export default class CampaignTextersForm extends React.Component {
       return (
         <TexterInputs
           name={`texters[${index}].assignment.needsMessageCount`}
+          key={`texters[${index}].assignment.needsMessageCount`}
           texter={texter}
           useDynamicAssignment={this.props.useDynamicAssignment}
           contactsCount={this.formValues().contactsCount}
