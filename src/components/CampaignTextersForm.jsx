@@ -89,7 +89,7 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.lightGray
   },
   input: {
-    width: 50,
+    width: 70,
     paddingLeft: 0,
     paddingRight: 0,
     marginRight: 10,
