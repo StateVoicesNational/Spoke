@@ -25,8 +25,8 @@ gratitude and appreciation of everyone's time and work.
 
 Generally, the first steps are:
 
-- Fork this repository and clone it locally. Note that unlike the git default, our main branch is called `main`.
-- Get a working development environment (see the [ENVIRONMENT](https://github.com/percworld/Spoke/blob/main/docs/HOWTO_DEVELOPMENT_LOCAL_SETUP.md) to onboard, [README](https://github.com/MoveOnOrg/Spoke/#spoke),  and [DEVELOPMENT TIPS](https://github.com/MoveOnOrg/Spoke/blob/main/docs/EXPLANATION-development-guidelines.md) which is included in the explanation section [docs/](https://github.com/MoveOnOrg/Spoke/tree/main/docs))-- reach out through our communication channels (above) if you have issues.
+- Fork this repository and clone it on your local. Our main branch is called `main`.
+- Get a working development environment (see the [ENVIRONMENT](https://github.com/percworld/Spoke/blob/main/docs/HOWTO_DEVELOPMENT_LOCAL_SETUP.md) to onboard and [DEVELOPMENT TIPS](https://github.com/MoveOnOrg/Spoke/blob/main/docs/EXPLANATION-development-guidelines.md) which is included in the explanation section [docs/](https://github.com/MoveOnOrg/Spoke/tree/main/docs))-- reach out through our communication channels (above) if you have issues.
 
 ### Picking an issue
 
