@@ -42,7 +42,7 @@
 - Microsoft will provide you with a public IP address (which is static)
 - In terminal: $ssh <your-username>@<static IP address>
 - Enter your password for this user
-- For production purposes, you will want to attach permanent disk storage (Documentation Update Coming Soon)
+- For production purposes, you will want to attach permanent disk storage (documentation update coming soon)
 - Set up the domain you want associated with it.
 
 ## NODE.JS SETUP
@@ -127,12 +127,7 @@ YARN VERSION IS:
 
 
 ## Heroku Deployment
-- In order for people to download csv’s we used Bucketeer
-- Where the csv files go if you are trying to export data out of spoke.
-- Designated temp directory for csv exports
-- What is the expected workflow is for the data exports
-    - MAILGUN_API_KEY, knows that it works but doesn’t know what’s going on.
-    - USING UBUNTU TO DEPLOY THIS: Email is included as a thing works.
+- Documentation update coming soon.
 
 
 ## AZURE AUTOMATED CONFIGURATION FILE
