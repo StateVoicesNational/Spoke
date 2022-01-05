@@ -26,18 +26,19 @@ git remote add upstream https://github.com/MoveOnOrg/Spoke.git
 ---
 ### Downloading
 
-1. Install the Node version listed in `.nvmrc`. [NVM](https://github.com/creationix/nvm) is one way to do this (from the spoke directory):
+1. Install the Node version listed in `.nvmrc`. This can also be found here:[.nvmrc](https://github.com/MoveOnOrg/Spoke/blob/main/.nvmrc). 
+From the spoke directory:
    ```
-   nvm install 12
-   nvm use 12
+   nvm install
+   nvm use
    ```
    - this assumes you have nvm (node version manager) installed.  If not, either
    * run 
    ```
    curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.1/install.sh | bash
    ```
-   * or visit [NVM INTRO](https://github.com/nvm-sh/nvm/blob/master/README.md) for a better understanding.
-   - at this time of this writing, nvm install will install a version above 17 but we want to run 12 and then yarn will have to be installed again, even if you use yarn already. 
+   * or visit [NVM](https://github.com/nvm-sh/nvm/blob/master/README.md), a great resource for installation if your terminal isn't recognizing nvm or if you'd like more background on these commands.
+   - at this time of this writing, nvm install will install a version above 17 but we want to run 12.  Yarn will have to be installed again, even if you have yarn installed already, as it will need to be compatible with this version of nvm. 
     
 2. Install yarn.
 
