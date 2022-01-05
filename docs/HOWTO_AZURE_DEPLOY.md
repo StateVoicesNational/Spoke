@@ -42,7 +42,7 @@
 - Microsoft will provide you with a public IP address (which is static)
 - In terminal: $ssh <your-username>@<static IP address>
 - Enter your password for this user
-- Note for later(?) for production purposes, you will want to attach permanent disk storage
+- For production purposes, you will want to attach permanent disk storage (Documentation Update Coming Soon)
 - Set up the domain you want associated with it.
 
 ## NODE.JS SETUP
