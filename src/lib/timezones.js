@@ -217,9 +217,13 @@ export const getOffsets = (config, campaignOffsets) => {
   // campaignOffsets is an array of strings. E.g.: ['-5_1', ...]. Convert this
   // to an array of ints to make it consistent with ALL_OFFSETS
   const offsets = campaignOffsets
-    ? campaignOffsets.map(offset => {
-        return parseInt(offset.split("_", 1)[0]);
-      })
+    ? [
+        ...new Set(
+          campaignOffsets.map(offset => {
+            return parseInt(offset.split("_", 1)[0]);
+          })
+        )
+      ]
     : ALL_OFFSETS;
   const valid = [];
   const invalid = [];
