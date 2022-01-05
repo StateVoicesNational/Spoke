@@ -101,7 +101,7 @@ YARN VERSION IS:
 - But need to look for [Azure Cache for Redis instructions] (https://github.com/MoveOnOrg/Spoke/blob/main/docs/HOWTO_CONNECT_WITH_REDIS.md)
 
 ## Install Postgres
-- In our documentation there are some information for setting this up.
+- In our documentation there is some information for setting this up.
 - The way we set it up is that we have a different database set in Azure and then connected within the container of your Azure project.
 - More [expanded Docker descriptions](https://github.com/MoveOnOrg/Spoke/blob/main/docs/HOWTO_USE_POSTGRESQL.md) if people who are doing this wanted to go that route
 - Configure environment variables
