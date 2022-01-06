@@ -4,11 +4,11 @@ import { available as loaderAvailable } from "../contact-loaders/civicrm";
 import {
   sendEmailToContact,
   searchMessageTemplates,
-  getIntegerArray
+  getIntegerArray,
+  getCacheLength
 } from "../contact-loaders/civicrm/util";
 import { getConfig, hasConfig } from "../../server/api/lib/config";
 import {
-  CIVICRM_CACHE_SECONDS,
   ENVIRONMENTAL_VARIABLES_MANDATORY,
   CIVICRM_CONTACT_LOADER,
   CIVICRM_ACTION_HANDLER_SENDEMAIL
@@ -60,9 +60,15 @@ export async function available(organizationId) {
     getIntegerArray(getConfig("CIVICRM_MESSAGE_IDS")).length !== 0
   ) {
     const hasLoader = await loaderAvailable(organizationId, 0);
-    return hasLoader;
+    return {
+      result: hasLoader.result,
+      expiresSeconds: getCacheLength(CIVICRM_ACTION_HANDLER_SENDEMAIL)
+    };
   }
-  return { result: false, expiresSeconds: CIVICRM_CACHE_SECONDS };
+  return {
+    result: false,
+    expiresSeconds: getCacheLength(CIVICRM_ACTION_HANDLER_SENDEMAIL)
+  };
 }
 
 // What happens when a texter saves the answer that triggers the action
@@ -106,6 +112,6 @@ export async function getClientChoiceData(organization, user) {
   });
   return {
     data: `${JSON.stringify({ items })}`,
-    expiresSeconds: CIVICRM_CACHE_SECONDS
+    expiresSeconds: getCacheLength(CIVICRM_ACTION_HANDLER_SENDEMAIL)
   };
 }

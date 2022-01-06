@@ -99,3 +99,28 @@ The "Register for Event" handler will only retrieve CiviCRM events that:
 
 The "Send email" handler requires the variable `CIVICRM_MESSAGE_IDS` be present in your .env file. It should contain a comma-separated list of CiviCRM message template IDs (without spaces).
 This gives you control over which email templates you want to be available within Spoke.
+
+## Caching
+
+If you choose to use caching with CiviCRM, all data is cached by default for 1 hour (3600 seconds).
+However, this can be changed by adding a `CIVICRM_CACHE_LENGTHS` environmental variable to your
+`.env` file. This allows you to set individual cache lengths for the `civicrm` contact loader and
+all CiviCRM action handlers on one line, but only for the loader and/or handlers you choose. This
+uses the same "comma-separated list of entity names (without spaces)" syntax as used for the
+`CIVICRM_CUSTOM_CONTACT_ACTION` variable; the values after the colons are lengths in seconds.
+Any contact loader or action handles not listed default to 1 hour of cache time. An example of this
+is:
+
+```
+CIVICRM_CACHE_LENGTHS=civicrm:7200,civicrm-registerevent:0,civicrm-sendemail:1800
+```
+
+This tells Spoke that:
+
+- The `civicrm` contact loader should cache for 7200 seconds (2 hours).
+- The `civicrm-registerevent` action handler should cache for 0 seconds (i.e, no caching).
+- The `civicrm-sendemail` action handler should cache for 1800 seconds (30 minutes).
+- The other action handlers (`civicrm-addtogroup` and `civicrm-addtag`) cache for the default hour.
+
+Of course, caching has to be turned on for these values to be of effect.
+
