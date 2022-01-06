@@ -3,11 +3,11 @@ import { r } from "../../server/models";
 import { available as loaderAvailable } from "../contact-loaders/civicrm";
 import {
   searchEvents,
-  registerContactForEvent
+  registerContactForEvent,
+  getCacheLength
 } from "../contact-loaders/civicrm/util";
 import { getConfig } from "../../server/api/lib/config";
 import {
-  CIVICRM_CACHE_SECONDS,
   ENVIRONMENTAL_VARIABLES_MANDATORY,
   CIVICRM_CONTACT_LOADER,
   CIVICRM_ACTION_HANDLER_REGISTEREVENT
@@ -49,9 +49,15 @@ export async function available(organizationId) {
   const contactLoadersConfig = getConfig("CONTACT_LOADERS").split(",");
   if (contactLoadersConfig.indexOf(CIVICRM_CONTACT_LOADER) !== -1) {
     const hasLoader = await loaderAvailable(organizationId, 0);
-    return hasLoader;
+    return {
+      result: hasLoader.result,
+      expiresSeconds: getCacheLength(CIVICRM_ACTION_HANDLER_REGISTEREVENT)
+    };
   }
-  return { result: false, expiresSeconds: CIVICRM_CACHE_SECONDS };
+  return {
+    result: false,
+    expiresSeconds: getCacheLength(CIVICRM_ACTION_HANDLER_REGISTEREVENT)
+  };
 }
 
 // What happens when a texter saves the answer that triggers the action
@@ -102,6 +108,6 @@ export async function getClientChoiceData(organization, user) {
   });
   return {
     data: `${JSON.stringify({ items })}`,
-    expiresSeconds: CIVICRM_CACHE_SECONDS
+    expiresSeconds: getCacheLength(CIVICRM_ACTION_HANDLER_REGISTEREVENT)
   };
 }

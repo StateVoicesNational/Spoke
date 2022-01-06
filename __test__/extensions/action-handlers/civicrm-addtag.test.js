@@ -6,8 +6,11 @@ import {
 
 import * as HandlerToTest from "../../../src/extensions/action-handlers/civicrm-addtag";
 import { getConfig, hasConfig } from "../../../src/server/api/lib/config";
-import { searchTags } from "../../../src/extensions/contact-loaders/civicrm/util";
-import { CIVICRM_CACHE_SECONDS } from "../../../src/extensions/contact-loaders/civicrm/const";
+import {
+  searchTags,
+  getCacheLength
+} from "../../../src/extensions/contact-loaders/civicrm/util";
+import { CIVICRM_ACTION_HANDLER_ADDTAG } from "../../../src/extensions/contact-loaders/civicrm/const";
 
 jest.mock("../../../src/server/api/lib/config");
 jest.mock("../../../src/extensions/contact-loaders/civicrm/util");
@@ -34,7 +37,7 @@ describe("civicrm-addtag", () => {
     expect(() =>
       validateActionHandlerWithClientChoices(HandlerToTest)
     ).not.toThrowError();
-    expect(HandlerToTest.name).toEqual("civicrm-addtag");
+    expect(HandlerToTest.name).toEqual(CIVICRM_ACTION_HANDLER_ADDTAG);
     expect(HandlerToTest.displayName()).toEqual("Add tag to CiviCRM contact");
     expect(await HandlerToTest.processDeletedQuestionResponse()).toEqual(
       undefined
@@ -47,9 +50,12 @@ describe("civicrm-addtag", () => {
       when(getConfig)
         .calledWith("CONTACT_LOADERS")
         .mockReturnValue("civicrm");
+      when(getCacheLength)
+        .calledWith(CIVICRM_ACTION_HANDLER_ADDTAG)
+        .mockReturnValue(1800);
       expect(await HandlerToTest.available({ id: 1 })).toEqual({
         result: true,
-        expiresSeconds: CIVICRM_CACHE_SECONDS
+        expiresSeconds: 1800
       });
     });
 
@@ -57,31 +63,12 @@ describe("civicrm-addtag", () => {
       when(getConfig)
         .calledWith("CONTACT_LOADERS")
         .mockReturnValue("");
+      when(getCacheLength)
+        .calledWith(CIVICRM_ACTION_HANDLER_ADDTAG)
+        .mockReturnValue(1800);
       expect(await HandlerToTest.available({ id: 1 })).toEqual({
         result: false,
-        expiresSeconds: CIVICRM_CACHE_SECONDS
-      });
-    });
-  });
-
-  describe("civicrm-addtag available()", () => {
-    it("is available if the civicrm contact loader is available", async () => {
-      when(getConfig)
-        .calledWith("CONTACT_LOADERS")
-        .mockReturnValue("civicrm");
-      expect(await HandlerToTest.available({ id: 1 })).toEqual({
-        result: true,
-        expiresSeconds: CIVICRM_CACHE_SECONDS
-      });
-    });
-
-    it("is not available if the civicrm contact loader is not available", async () => {
-      when(getConfig)
-        .calledWith("CONTACT_LOADERS")
-        .mockReturnValue("");
-      expect(await HandlerToTest.available({ id: 1 })).toEqual({
-        result: false,
-        expiresSeconds: CIVICRM_CACHE_SECONDS
+        expiresSeconds: 1800
       });
     });
   });
@@ -97,10 +84,13 @@ describe("civicrm-addtag", () => {
       ];
 
       when(searchTags).mockResolvedValue(theTagData);
+      when(getCacheLength)
+        .calledWith(CIVICRM_ACTION_HANDLER_ADDTAG)
+        .mockReturnValue(7200);
       expect(await HandlerToTest.getClientChoiceData({ id: 1 })).toEqual({
         data:
           '{"items":[{"name":"Company","details":"2"},{"name":"Government Entity","details":"3"},{"name":"Major Donor","details":"4"},{"name":"Non-profit","details":"1"},{"name":"Volunteer","details":"5"}]}',
-        expiresSeconds: CIVICRM_CACHE_SECONDS
+        expiresSeconds: 7200
       });
     });
 
@@ -108,9 +98,12 @@ describe("civicrm-addtag", () => {
       const theTagData = [];
 
       when(searchTags).mockResolvedValue(theTagData);
+      when(getCacheLength)
+        .calledWith(CIVICRM_ACTION_HANDLER_ADDTAG)
+        .mockReturnValue(7200);
       expect(await HandlerToTest.getClientChoiceData({ id: 1 })).toEqual({
         data: '{"items":[]}',
-        expiresSeconds: CIVICRM_CACHE_SECONDS
+        expiresSeconds: 7200
       });
     });
   });

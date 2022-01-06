@@ -3,11 +3,17 @@ import {
   validateActionHandler,
   validateActionHandlerWithClientChoices
 } from "../../../src/extensions/action-handlers";
-import { searchEvents } from "../../../src/extensions/contact-loaders/civicrm/util";
+import {
+  searchEvents,
+  getCacheLength
+} from "../../../src/extensions/contact-loaders/civicrm/util";
 
 import * as HandlerToTest from "../../../src/extensions/action-handlers/civicrm-registerevent";
 import { getConfig, hasConfig } from "../../../src/server/api/lib/config";
-import { CIVICRM_CACHE_SECONDS } from "../../../src/extensions/contact-loaders/civicrm/const";
+import {
+  CIVICRM_ACTION_HANDLER_REGISTEREVENT,
+  CIVICRM_CONTACT_LOADER
+} from "../../../src/extensions/contact-loaders/civicrm/const";
 
 jest.mock("../../../src/server/api/lib/config");
 jest.mock("../../../src/extensions/contact-loaders/civicrm/util");
@@ -30,11 +36,14 @@ describe("civicrm-registerevent", () => {
   });
 
   it("passes validation, and comes with standard action handler functionality", async () => {
+    when(getCacheLength)
+      .calledWith(CIVICRM_CONTACT_LOADER)
+      .mockReturnValue(7200);
     expect(() => validateActionHandler(HandlerToTest)).not.toThrowError();
     expect(() =>
       validateActionHandlerWithClientChoices(HandlerToTest)
     ).not.toThrowError();
-    expect(HandlerToTest.name).toEqual("civicrm-registerevent");
+    expect(HandlerToTest.name).toEqual(CIVICRM_ACTION_HANDLER_REGISTEREVENT);
     expect(HandlerToTest.displayName()).toEqual(
       "Register contact for CiviCRM event"
     );
@@ -49,9 +58,12 @@ describe("civicrm-registerevent", () => {
       when(getConfig)
         .calledWith("CONTACT_LOADERS")
         .mockReturnValue("civicrm");
+      when(getCacheLength)
+        .calledWith(CIVICRM_ACTION_HANDLER_REGISTEREVENT)
+        .mockReturnValue(1800);
       expect(await HandlerToTest.available({ id: 1 })).toEqual({
         result: true,
-        expiresSeconds: CIVICRM_CACHE_SECONDS
+        expiresSeconds: 1800
       });
     });
 
@@ -59,9 +71,12 @@ describe("civicrm-registerevent", () => {
       when(getConfig)
         .calledWith("CONTACT_LOADERS")
         .mockReturnValue("");
+      when(getCacheLength)
+        .calledWith(CIVICRM_ACTION_HANDLER_REGISTEREVENT)
+        .mockReturnValue(1800);
       expect(await HandlerToTest.available({ id: 1 })).toEqual({
         result: false,
-        expiresSeconds: CIVICRM_CACHE_SECONDS
+        expiresSeconds: 1800
       });
     });
   });
@@ -79,10 +94,13 @@ describe("civicrm-registerevent", () => {
       ];
 
       when(searchEvents).mockResolvedValue(theEventData);
+      when(getCacheLength)
+        .calledWith(CIVICRM_ACTION_HANDLER_REGISTEREVENT)
+        .mockReturnValue(7200);
       expect(await HandlerToTest.getClientChoiceData({ id: 1 })).toEqual({
         data:
           '{"items":[{"name":"Company (2021-11-01)","details":"{\\"id\\":\\"2\\",\\"role_id\\":\\"1\\"}"}]}',
-        expiresSeconds: CIVICRM_CACHE_SECONDS
+        expiresSeconds: 7200
       });
     });
 
@@ -90,9 +108,12 @@ describe("civicrm-registerevent", () => {
       const theEventData = [];
 
       when(searchEvents).mockResolvedValue(theEventData);
+      when(getCacheLength)
+        .calledWith(CIVICRM_ACTION_HANDLER_REGISTEREVENT)
+        .mockReturnValue(7200);
       expect(await HandlerToTest.getClientChoiceData({ id: 1 })).toEqual({
         data: '{"items":[]}',
-        expiresSeconds: CIVICRM_CACHE_SECONDS
+        expiresSeconds: 7200
       });
     });
   });

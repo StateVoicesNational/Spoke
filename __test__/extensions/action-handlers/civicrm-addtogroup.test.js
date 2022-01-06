@@ -3,11 +3,14 @@ import {
   validateActionHandler,
   validateActionHandlerWithClientChoices
 } from "../../../src/extensions/action-handlers";
-import { searchGroups } from "../../../src/extensions/contact-loaders/civicrm/util";
+import {
+  searchGroups,
+  getCacheLength
+} from "../../../src/extensions/contact-loaders/civicrm/util";
 
 import * as HandlerToTest from "../../../src/extensions/action-handlers/civicrm-addtogroup";
 import { getConfig, hasConfig } from "../../../src/server/api/lib/config";
-import { CIVICRM_CACHE_SECONDS } from "../../../src/extensions/contact-loaders/civicrm/const";
+import { CIVICRM_ACTION_HANDLER_ADDGROUP } from "../../../src/extensions/contact-loaders/civicrm/const";
 
 jest.mock("../../../src/server/api/lib/config");
 jest.mock("../../../src/extensions/contact-loaders/civicrm/util");
@@ -34,7 +37,7 @@ describe("civicrm-addtogroup", () => {
     expect(() =>
       validateActionHandlerWithClientChoices(HandlerToTest)
     ).not.toThrowError();
-    expect(HandlerToTest.name).toEqual("civicrm-addtogroup");
+    expect(HandlerToTest.name).toEqual(CIVICRM_ACTION_HANDLER_ADDGROUP);
     expect(HandlerToTest.displayName()).toEqual("Add to CiviCRM group");
     expect(await HandlerToTest.processDeletedQuestionResponse()).toEqual(
       undefined
@@ -47,9 +50,12 @@ describe("civicrm-addtogroup", () => {
       when(getConfig)
         .calledWith("CONTACT_LOADERS")
         .mockReturnValue("civicrm");
+      when(getCacheLength)
+        .calledWith(CIVICRM_ACTION_HANDLER_ADDGROUP)
+        .mockReturnValue(1800);
       expect(await HandlerToTest.available({ id: 1 })).toEqual({
         result: true,
-        expiresSeconds: CIVICRM_CACHE_SECONDS
+        expiresSeconds: 1800
       });
     });
 
@@ -57,9 +63,12 @@ describe("civicrm-addtogroup", () => {
       when(getConfig)
         .calledWith("CONTACT_LOADERS")
         .mockReturnValue("");
+      when(getCacheLength)
+        .calledWith(CIVICRM_ACTION_HANDLER_ADDGROUP)
+        .mockReturnValue(1800);
       expect(await HandlerToTest.available({ id: 1 })).toEqual({
         result: false,
-        expiresSeconds: CIVICRM_CACHE_SECONDS
+        expiresSeconds: 1800
       });
     });
   });
@@ -77,10 +86,13 @@ describe("civicrm-addtogroup", () => {
       when(searchGroups)
         .calledWith("")
         .mockResolvedValue(theGroupData);
+      when(getCacheLength)
+        .calledWith(CIVICRM_ACTION_HANDLER_ADDGROUP)
+        .mockReturnValue(7200);
       expect(await HandlerToTest.getClientChoiceData({ id: 1 })).toEqual({
         data:
           '{"items":[{"name":"Administrators","details":"2"},{"name":"Volunteers","details":"3"},{"name":"Donors","details":"4"},{"name":"Newsletter Subscribers","details":"1"},{"name":"Volunteer","details":"5"}]}',
-        expiresSeconds: CIVICRM_CACHE_SECONDS
+        expiresSeconds: 7200
       });
     });
 
@@ -90,9 +102,12 @@ describe("civicrm-addtogroup", () => {
       when(searchGroups)
         .calledWith("")
         .mockResolvedValue(theGroupData);
+      when(getCacheLength)
+        .calledWith(CIVICRM_ACTION_HANDLER_ADDGROUP)
+        .mockReturnValue(7200);
       expect(await HandlerToTest.getClientChoiceData({ id: 1 })).toEqual({
         data: '{"items":[]}',
-        expiresSeconds: CIVICRM_CACHE_SECONDS
+        expiresSeconds: 7200
       });
     });
   });
