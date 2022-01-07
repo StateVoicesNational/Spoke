@@ -28,10 +28,6 @@ process.on("uncaughtException", ex => {
 });
 const DEBUG = process.env.NODE_ENV === "development";
 
-if (!getConfig("SUPPRESS_SEED_CALLS", null, { truthy: 1 })) {
-  seedZipCodes();
-}
-
 if (!getConfig("SUPPRESS_DATABASE_AUTOCREATE", null, { truthy: 1 })) {
   createTablesIfNecessary().then(didCreate => {
     // seed above won't have succeeded if we needed to create first
@@ -42,8 +38,13 @@ if (!getConfig("SUPPRESS_DATABASE_AUTOCREATE", null, { truthy: 1 })) {
       r.k.migrate.latest();
     }
   });
-} else if (!getConfig("SUPPRESS_MIGRATIONS", null, { truthy: 1 })) {
-  r.k.migrate.latest();
+} else {
+  if (!getConfig("SUPPRESS_MIGRATIONS", null, { truthy: 1 })) {
+    r.k.migrate.latest();
+  }
+  if (!getConfig("SUPPRESS_SEED_CALLS", null, { truthy: 1 })) {
+    seedZipCodes();
+  }
 }
 
 setupUserNotificationObservers();
