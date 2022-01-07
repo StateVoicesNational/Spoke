@@ -12,7 +12,7 @@ export const metadata = () => ({
   displayName: "Twilio Accounts",
   description: "Add, delete, and edit Twilio accounts",
   canSpendMoney: false,
-  moneySpendingOperations: ["onCampaignStart"],
+  moneySpendingOperations: [],
   supportsOrgConfig: true,
   supportsCampaignConfig: true
 });
