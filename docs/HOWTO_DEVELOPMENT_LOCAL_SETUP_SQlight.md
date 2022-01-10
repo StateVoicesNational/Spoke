@@ -12,7 +12,8 @@
 2. Then clone down the repository to your local environment as seen in image 1.1
 
    image 1.1
-   ![Clone Repository](https://user-images.githubusercontent.com/54221369/148839097-50f858c6-1f4f-4221-8eef-b809e87e15d5.png)
+   ![Clone Repository](https://user-images.githubusercontent.com/54221369/148852070-bf3480bd-7069-478b-9884-a994ca4dada8.png)
+
 
 3. Then in your Terminal run 
 
