@@ -3,9 +3,9 @@ import { r } from "../../server/models";
 import { available as loaderAvailable } from "../contact-loaders/civicrm";
 import {
   searchGroups,
-  addContactToGroup,
-  getCacheLength
+  addContactToGroup
 } from "../contact-loaders/civicrm/util";
+import { getCacheLength } from "../contact-loaders/civicrm/getcachelength";
 import { getConfig } from "../../server/api/lib/config";
 import {
   ENVIRONMENTAL_VARIABLES_MANDATORY,

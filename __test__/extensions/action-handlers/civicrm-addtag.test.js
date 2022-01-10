@@ -6,14 +6,13 @@ import {
 
 import * as HandlerToTest from "../../../src/extensions/action-handlers/civicrm-addtag";
 import { getConfig, hasConfig } from "../../../src/server/api/lib/config";
-import {
-  searchTags,
-  getCacheLength
-} from "../../../src/extensions/contact-loaders/civicrm/util";
+import { searchTags } from "../../../src/extensions/contact-loaders/civicrm/util";
+import { getCacheLength } from "../../../src/extensions/contact-loaders/civicrm/getcachelength";
 import { CIVICRM_ACTION_HANDLER_ADDTAG } from "../../../src/extensions/contact-loaders/civicrm/const";
 
 jest.mock("../../../src/server/api/lib/config");
 jest.mock("../../../src/extensions/contact-loaders/civicrm/util");
+jest.mock("../../../src/extensions/contact-loaders/civicrm/getcachelength");
 
 describe("civicrm-addtag", () => {
   beforeEach(async () => {
