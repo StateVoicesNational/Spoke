@@ -3,17 +3,15 @@ import {
   validateActionHandler,
   validateActionHandlerWithClientChoices
 } from "../../../src/extensions/action-handlers";
-import {
-  searchGroups,
-  getCacheLength
-} from "../../../src/extensions/contact-loaders/civicrm/util";
-
+import { searchGroups } from "../../../src/extensions/contact-loaders/civicrm/util";
+import { getCacheLength } from "../../../src/extensions/contact-loaders/civicrm/getcachelength";
 import * as HandlerToTest from "../../../src/extensions/action-handlers/civicrm-addtogroup";
 import { getConfig, hasConfig } from "../../../src/server/api/lib/config";
 import { CIVICRM_ACTION_HANDLER_ADDGROUP } from "../../../src/extensions/contact-loaders/civicrm/const";
 
 jest.mock("../../../src/server/api/lib/config");
 jest.mock("../../../src/extensions/contact-loaders/civicrm/util");
+jest.mock("../../../src/extensions/contact-loaders/civicrm/getcachelength");
 
 describe("civicrm-addtogroup", () => {
   beforeEach(async () => {

@@ -4,9 +4,9 @@ import { available as loaderAvailable } from "../contact-loaders/civicrm";
 import {
   sendEmailToContact,
   searchMessageTemplates,
-  getIntegerArray,
-  getCacheLength
+  getIntegerArray
 } from "../contact-loaders/civicrm/util";
+import { getCacheLength } from "../contact-loaders/civicrm/getcachelength";
 import { getConfig, hasConfig } from "../../server/api/lib/config";
 import {
   ENVIRONMENTAL_VARIABLES_MANDATORY,

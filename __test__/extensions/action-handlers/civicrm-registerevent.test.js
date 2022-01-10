@@ -3,11 +3,8 @@ import {
   validateActionHandler,
   validateActionHandlerWithClientChoices
 } from "../../../src/extensions/action-handlers";
-import {
-  searchEvents,
-  getCacheLength
-} from "../../../src/extensions/contact-loaders/civicrm/util";
-
+import { searchEvents } from "../../../src/extensions/contact-loaders/civicrm/util";
+import { getCacheLength } from "../../../src/extensions/contact-loaders/civicrm/getcachelength";
 import * as HandlerToTest from "../../../src/extensions/action-handlers/civicrm-registerevent";
 import { getConfig, hasConfig } from "../../../src/server/api/lib/config";
 import {
@@ -17,6 +14,7 @@ import {
 
 jest.mock("../../../src/server/api/lib/config");
 jest.mock("../../../src/extensions/contact-loaders/civicrm/util");
+jest.mock("../../../src/extensions/contact-loaders/civicrm/getcachelength");
 
 describe("civicrm-registerevent", () => {
   beforeEach(async () => {

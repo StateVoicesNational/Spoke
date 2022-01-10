@@ -1,11 +1,10 @@
 /* eslint-disable no-param-reassign */
-import { hasConfig, getConfig } from "../../../server/api/lib/config";
+import { getConfig } from "../../../server/api/lib/config";
 import fetch from "node-fetch";
 import moment from "moment-timezone";
 import {
   CIVICRM_PAGINATE_SIZE,
-  DEFAULT_CONTACT_ENTITY_ACTION_NAME,
-  CIVICRM_CACHE_SECONDS
+  DEFAULT_CONTACT_ENTITY_ACTION_NAME
 } from "./const";
 
 export function getIntegerArray(envVariable) {
@@ -39,21 +38,6 @@ export function getCustomFields(customDataEnv) {
     }
   }
   return pairsFieldAndLabel;
-}
-
-export function getCacheLength(nameActionOrLoader) {
-  if (!hasConfig("CIVICRM_CACHE_LENGTHS")) {
-    return CIVICRM_CACHE_SECONDS;
-  }
-  const cacheLengths = getCustomFields(getConfig("CIVICRM_CACHE_LENGTHS"));
-  if (nameActionOrLoader in cacheLengths) {
-    const nameActionOrLoaderParsed = Number(cacheLengths[nameActionOrLoader]);
-    if (isNaN(nameActionOrLoaderParsed)) {
-      return CIVICRM_CACHE_SECONDS;
-    }
-    return nameActionOrLoaderParsed;
-  }
-  return CIVICRM_CACHE_SECONDS;
 }
 
 async function paginate(
