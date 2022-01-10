@@ -8,11 +8,11 @@ import { searchGroups, getGroupMembers, getCustomFields } from "./util";
 import {
   CIVICRM_INTEGRATION_GROUPSEARCH_ENDPOINT,
   CIVICRM_MINQUERY_SIZE,
-  CIVICRM_CACHE_SECONDS,
   ENVIRONMENTAL_VARIABLES_MANDATORY,
   ENVIRONMENTAL_VARIABLES_OPTIONAL,
   CIVICRM_CONTACT_LOADER
 } from "./const";
+import { getCacheLength } from "./getcachelength";
 import { getFormattedPhoneNumber } from "../../../lib";
 
 // Some enviornmental variables are mandatory; others are optional.
@@ -49,7 +49,7 @@ export async function available(_organization, _user) {
   );
   return {
     result,
-    expiresSeconds: CIVICRM_CACHE_SECONDS
+    expiresSeconds: getCacheLength(CIVICRM_CONTACT_LOADER)
   };
 }
 
@@ -89,7 +89,7 @@ export async function getClientChoiceData(_organization, _campaign, _user) {
   // `data` should be a single string -- it can be JSON which you can parse in the client component
   return {
     data: "{}",
-    expiresSeconds: CIVICRM_CACHE_SECONDS
+    expiresSeconds: getCacheLength(CIVICRM_CONTACT_LOADER)
   };
 }
 
