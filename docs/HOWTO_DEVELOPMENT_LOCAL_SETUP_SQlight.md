@@ -27,7 +27,7 @@
    nvm install
    nvm use
    ```
- - This is what the "nvm use" command should look like after running the command see image 1.2
+   - This is what the "nvm use" command should look like after running the command see image 1.2
 
    image 1.2
 
@@ -35,8 +35,8 @@
 
 5. Install yarn.
 
-- Yarn is a package manager that will download all required packages to run Spoke it is similar to NPM.
-- Install using the [directions provided by Yarn](https://yarnpkg.com/en/docs/install).
+   - Yarn is a package manager that will download all required packages to run Spoke it is similar to NPM.
+   - Install using the [directions provided by Yarn](https://yarnpkg.com/en/docs/install).
 
 6. Install the packages.
    ```
@@ -46,31 +46,78 @@
    ```
    cp .env.example .env
    ```
-- This creates a copy of `.env.example`, but renames it `.env` so the system will use it. _Make sure you use this new file._
+   - This creates a copy of `.env.example`, but renames it `.env` so the system will use it. _Make sure you use this new file._
    After running "cp .env.example .env" in the terminal you can run the following command in your terminal
   
    ```
    ls -a
    ```
-- This will verify the file has been added as seen in image 1.3
+   - This will verify the file has been added as seen in image 1.3
    
    image 1.3
 
    ![.env file](https://user-images.githubusercontent.com/54221369/148842257-d9219866-ed3c-4ee6-984d-e7b206b96316.png)
 
-- If using Visual Studio Code (VS Code) [VS Code installation for Mac](https://code.visualstudio.com/docs/setup/mac) you can open the file by typing the folling in your terminal  
+   - If using Visual Studio Code (VS Code) [VS Code installation for Mac](https://code.visualstudio.com/docs/setup/mac) you can open the file by typing the folling in your terminal  
 
    ```
-   code .
+   code . 
    ```
 
 ### Your `.env` file
 
-We use environment variables to allow instance admins to customize their Spoke experience. If you end up doing dev work on an area that is configured through environment variables, it will be helpful to be familiar with the patterns used. Because of this, we recommend that you take a look at the [environment variable reference](REFERENCE-environment_variables.md) to get a lay of the land.  
+   We use environment variables to allow instance admins to customize their Spoke experience. If you end up doing dev work on an area that is configured through environment variables, it will be helpful to be familiar with the patterns used. Because of this, we recommend that you take a look at the [environment variable reference](REFERENCE-environment_variables.md) to get a lay of the land.  
 
-- Initial look for the .env file as of Jan 10, 2022 
+   - Initial look for the .env file as of Jan 10, 2022 as seen in image 1.4
 
-![.env file on open](https://user-images.githubusercontent.com/54221369/148844985-0d50f770-db88-4891-9a08-342a9564013d.png)
+   image 1.4 
+
+   ![.env file on open](https://user-images.githubusercontent.com/54221369/148844985-0d50f770-db88-4891-9a08-342a9564013d.png)
+
+
+### Your Database
+
+We have 2 recommended ways to set up your database for your development environment and you can choose either based on your preference or comfort level. This Document covers how to use the use sqlite (which is the default DB so you can proceed to the next section if you choose this) or postgres. At this time, all production Spoke instances use postgres.
+
+#### Using Docker to run postgres (optional and not needed for SQlight quick setup skip if using SQlight "Fixes and updates") 
+
+If you're using postgres (see below),if you're using sqlite, you don't need to change anything about your .env file. 
+
+Docker is optional, but can help with a consistent development environment using postgres. 
+
+   1. Either install docker (recommended) or postgresql on your machine:
+      * If you installed docker run the database using: `docker-compose up`
+   
+      * Documents on install docker and docker compose 
+
+       Downloading Docker: [Link](https://docs.docker.com/get-docker/)
+        
+       Downloading Docker compose: [Link](https://docs.docker.com/compose/install/)
+
+      * If you installed postgres locally, create the spoke dev database: `psql -c "create database spokedev;"`
+
+   2. Then create a spoke user to connect to the database with `createuser -P spoke` with password "spoke" (to match the credentials in the .env.example file)as seen in image 1.5
+
+      image 1.5
+
+      ![Name and Password must match .env file](https://user-images.githubusercontent.com/54221369/149003896-6b7d6835-4dfe-4688-a586-c22fdb095707.png)
+
+
+   3. In `.env` set `DB_TYPE=pg` as seen in image 1.6
+
+      image 1.6
+
+      ![.env update to DB type](https://user-images.githubusercontent.com/54221369/149000893-8022a76a-e191-4d0c-8152-d55593574c5a.png)
+
+
+   4. Set `DB_PORT=5432`, which is the default port for Postgres.
+
+      That's all you need to do initially. The tables will be created the first time the app runs. As seen in image 1.7
+
+      Image 1.7
+
+      ![Setting port to 5432]https://user-images.githubusercontent.com/54221369/149005198-f90cd5ae-5c94-4f6f-b389-901bb241c039.png
+
 
 ### Fixes and updates 
 
@@ -80,11 +127,6 @@ image 2.0
 
 ![Zipcode Fix](https://user-images.githubusercontent.com/54221369/148846192-f508ed9b-f0b6-4670-8ea6-6728df948bb8.png)
 
-### Your Database
-
-We have 2 recommended ways to set up your database for your development environment and you can choose either based on your preference or comfort level. This Document covers how to use the use sqlite (which is the default DB so you can proceed to the next section if you choose this) or postgres. At this time, all production Spoke instances use postgres.
-
-If you're using postgres (see HOWTO_DEVELOPMENT_LOCAL_SETUP)
 
 ### Getting the app running
 
