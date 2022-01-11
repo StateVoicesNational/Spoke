@@ -121,42 +121,44 @@ Docker is optional, but can help with a consistent development environment using
 
 ### Fixes and updates 
 
--There has been a breaking line of code that will prevent the file from running in the "src/server/index.js" file as of Jan 10, 2022, the fix to this can be viewed in image 2.0 a Pull Request has been made to update this error 
+   -There has been a breaking line of code that will prevent the file from running in the "src/server/index.js" file as of Jan 10, 2022, the fix to this can be viewed in image 2.0 a 
+   
+   - Pull Request has been made to update this error 
 
-image 2.0
+   image 2.0
 
-![Zipcode Fix](https://user-images.githubusercontent.com/54221369/148846192-f508ed9b-f0b6-4670-8ea6-6728df948bb8.png)
+   ![Zipcode Fix](https://user-images.githubusercontent.com/54221369/148846192-f508ed9b-f0b6-4670-8ea6-6728df948bb8.png)
 
 
 ### Getting the app running
 
 At this point, you should be ready to start your app in development mode.
 
-1. Run `yarn dev` to start the application.
+   1. Run `yarn dev` to start the application.
    - Wait until you see both "Node app is running ..." and "webpack: Compiled successfully." before attempting to connect. (make sure environment variable `JOBS_SAME_PROCESS=1`)› As seen in image 3.0
 
-   image 3.0
+      image 3.0
 
-   ![Running in Terminal](https://user-images.githubusercontent.com/54221369/148850583-e79fc190-5f76-43df-a3a7-49dd8c71dc67.png)
+      ![Running in Terminal](https://user-images.githubusercontent.com/54221369/148850583-e79fc190-5f76-43df-a3a7-49dd8c71dc67.png)
 
-2. Go to `http://localhost:3000` to load the app. (Note: the terminal will say it's running on port 8090 -- don't believe it :-) See image 3.1
+   2. Go to `http://localhost:3000` to load the app. (Note: the terminal will say it's running on port 8090 -- don't believe it :-) See image 3.1
 
-   image 3.1
+      image 3.1
 
-   ![Localhost image](https://user-images.githubusercontent.com/54221369/148851287-09554cbb-f863-4707-9ecd-65f85eba540e.png)
+      ![Localhost image](https://user-images.githubusercontent.com/54221369/148851287-09554cbb-f863-4707-9ecd-65f85eba540e.png)
 
-3. As long as you leave `SUPPRESS_SELF_INVITE=` blank in your `.env` you should be able to invite yourself from the homepage.
-   - If you DO set that variable, then spoke will be invite-only and you'll need to generate an invite. Run:
-     ```
-     echo "INSERT INTO invite (hash,is_valid) VALUES ('E4502B28-301E-4E63-9A97-ACA14E8160C8', 1);" |sqlite3 mydb.sqlite
-     # Note: When doing this with PostgreSQL, you would replace the `1` with `true`
-     ```
+   3. As long as you leave `SUPPRESS_SELF_INVITE=` blank in your `.env` you should be able to invite yourself from the homepage.
+      - If you DO set that variable, then spoke will be invite-only and you'll need to generate an invite. Run:
+       ```
+      echo "INSERT INTO invite (hash,is_valid) VALUES ('E4502B28-301E-4E63-9A97-ACA14E8160C8', 1);" |sqlite3 mydb.sqlite
+       # Note: When doing this with PostgreSQL, you would replace the `1` with `true`
+       ```
    - Then use the generated key to visit an invite link, e.g.: http://localhost:3000/invite/E4502B28-301E-4E63-9A97-ACA14E8160C8. This should redirect you to the login screen. Use the "Sign Up" option to create your account.
-4. You should then be prompted to create an organization. Create it.
-5. Once you've created your organization, we recommend setting the env var `SUPPRESS_SELF_INVITE=1` so you don't get prompted to create a new org every time you log in
-6. See the [Admin](https://youtu.be/PTMykMX8gII) and [Texter](https://youtu.be/EqE1UDvKGco) demos to learn about how Spoke works.
-7. See [the development guidelines](EXPLANATION-development-guidelines.md)
-8. See [How to Run Tests](HOWTO-run_tests.md)
+   4. You should then be prompted to create an organization. Create it.
+   5. Once you've created your organization, we recommend setting the env var `SUPPRESS_SELF_INVITE=1` so you don't get prompted to create a new org every time you log in
+   6. See the [Admin](https://youtu.be/PTMykMX8gII) and [Texter](https://youtu.be/EqE1UDvKGco) demos to learn about how Spoke works.
+   7. See [the development guidelines](EXPLANATION-development-guidelines.md)
+   8. See [How to Run Tests](HOWTO-run_tests.md)
 
 ### SMS and Twilio in development
 
