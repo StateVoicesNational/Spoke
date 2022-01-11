@@ -1,63 +1,150 @@
-## Getting started
+## Getting Started
 
 
 ### Downloading
 
-1. Install the Node version listed in `.nvmrc`. [NVM](https://github.com/creationix/nvm) is one way to do this (from the spoke directory):
+1. Fork the repository as seen in photo 1.0 (note this might change when granted more permissions but for now, fork and clone) 
+
+   image 1.0
+   ![Where is the fork](https://user-images.githubusercontent.com/54221369/148837584-0460afda-a9dd-4f0c-8d83-8eb46eed693c.png)
+
+
+2. Then clone down the repository to your local environment as seen in image 1.1
+
+   image 1.1
+   ![Clone Repository](https://user-images.githubusercontent.com/54221369/148852070-bf3480bd-7069-478b-9884-a994ca4dada8.png)
+
+
+3. Then in your Terminal run 
+
+   ```
+   cd Spoke
+   ```
+   this moves into the file 
+
+4. Install the Node version listed in `.nvmrc`. [NVM](https://github.com/creationix/nvm) is one way to do this (from the spoke directory):
    ```
    nvm install
    nvm use
    ```
-2. Install yarn.
+   - This is what the "nvm use" command should look like after running the command see image 1.2
 
-- Yarn is a package manager that will download all required packages to run Spoke.
-- Install using the [directions provided by Yarn](https://yarnpkg.com/en/docs/install).
+   image 1.2
 
-3. Install the packages.
+   ![NVM Use](https://user-images.githubusercontent.com/54221369/148840015-c8151dd1-5d43-421b-a5b8-5fdaa2d93f57.png)
+
+5. Install yarn.
+
+   - Yarn is a package manager that will download all required packages to run Spoke it is similar to NPM.
+   - Install using the [directions provided by Yarn](https://yarnpkg.com/en/docs/install).
+
+6. Install the packages.
    ```
    yarn install
    ```
-4. Create a real environment file:
+7. Create a real environment file:
    ```
    cp .env.example .env
    ```
+   - This creates a copy of `.env.example`, but renames it `.env` so the system will use it. _Make sure you use this new file._
+   After running "cp .env.example .env" in the terminal you can run the following command in your terminal
+  
+   ```
+   ls -a
+   ```
+   - This will verify the file has been added as seen in image 1.3
+   
+   image 1.3
 
-- This creates a copy of `.env.example`, but renames it `.env` so the system will use it. _Make sure you use this new file._
+   ![.env file](https://user-images.githubusercontent.com/54221369/148842257-d9219866-ed3c-4ee6-984d-e7b206b96316.png)
+
+   - If using Visual Studio Code (VS Code) [VS Code installation for Mac](https://code.visualstudio.com/docs/setup/mac) you can open the file by typing the folling in your terminal  
+
+   ```
+   code . 
+   ```
 
 ### Your `.env` file
 
-We use environment variables to allow instance admins to customize their Spoke experience. If you end up doing dev work on an area that is configured through environment variables, it will be helpful to be familiar with the patterns used. Because of this, we recommend that you take a look at the [environment variable reference](REFERENCE-environment_variables.md) to get a lay of the land.  
+   We use environment variables to allow instance admins to customize their Spoke experience. If you end up doing dev work on an area that is configured through environment variables, it will be helpful to be familiar with the patterns used. Because of this, we recommend that you take a look at the [environment variable reference](REFERENCE-environment_variables.md) to get a lay of the land.  
+
+   - Initial look for the .env file as of Jan 10, 2022 as seen in image 1.4
+
+   image 1.4 
+
+   ![.env file on open](https://user-images.githubusercontent.com/54221369/148844985-0d50f770-db88-4891-9a08-342a9564013d.png)
+
 
 ### Your Database
 
-We have 2 recommended ways to set up your database for your development environment and you can choose either based on your preference or comfort level. You can use sqlite (which is the default DB so you can proceed to the next section if you choose this) or postgres. At this time, all production Spoke instances use postgres.
+We have 2 recommended ways to set up your database for your development environment and you can choose either based on your preference or comfort level. This Document covers how to use the use sqlite (which is the default DB so you can proceed to the next section if you choose this) or postgres. At this time, all production Spoke instances use postgres.
 
-If you're using postgres (see below), you should set `DB_TYPE=pg` and if you're using sqlite, you don't need to change anything about your .env file.
+#### Using Docker to run postgres (optional and not needed for SQlight quick setup skip if using SQlight "Fixes and updates") 
+
+If you're using postgres (see below),if you're using sqlite, you don't need to change anything about your .env file. 
+
+Docker is optional, but can help with a consistent development environment using postgres. 
+
+   1. Either install docker (recommended) or postgresql on your machine:
+      * If you installed docker run the database using: `docker-compose up`
+   
+      * Documents on install docker and docker compose 
+
+       Downloading Docker: [Link](https://docs.docker.com/get-docker/)
+        
+       Downloading Docker compose: [Link](https://docs.docker.com/compose/install/)
+
+      * If you installed postgres locally, create the spoke dev database: `psql -c "create database spokedev;"`
+
+   2. Then create a spoke user to connect to the database with `createuser -P spoke` with password "spoke" (to match the credentials in the .env.example file)as seen in image 1.5
+
+      image 1.5
+
+      ![Name and Password must match .env file](https://user-images.githubusercontent.com/54221369/149003896-6b7d6835-4dfe-4688-a586-c22fdb095707.png)
 
 
-#### Using Docker to run postgres (optional)
+   3. In `.env` set `DB_TYPE=pg` as seen in image 1.6
 
-Docker is optional, but can help with a consistent development environment using postgres. You can also ([set up postgres without docker](HOWTO_USE_POSTGRESQL.md)) but we recommend the docker route.
+      image 1.6
 
-1. Install docker and docker compose
+      ![.env update to DB type](https://user-images.githubusercontent.com/54221369/149000893-8022a76a-e191-4d0c-8152-d55593574c5a.png)
 
-- Docker allows you to run apps in containers and can be installed [here with Docker's instructions](https://docs.docker.com/desktop/)
-- Docker Compose is the tool used to create and run docker configurations. If you installed Docker on Mac, you already have Docker Compose, if you're using Linux or Windows you can install Docker Compose [with these instructions](https://docs.docker.com/compose/install/)
 
-2. Make sure Docker is running on your machine and then build and run Spoke with `docker-compose up -d` to run redis and postgres in the background
-   - You can stop docker compose at any time with `docker-compose down`, and data will persist next time you run `docker-compose up`.
+   4. Set `DB_PORT=5432`, which is the default port for Postgres.
 
-3. Run `./dev-tools/create-test-database` to populate the test database
+      That's all you need to do initially. The tables will be created the first time the app runs. As seen in image 1.7
 
-4. When done testing, clean up resources with `docker-compose down`, or `docker-compose down -v` to **_completely destroy_** your Postgres database & Redis datastore volumes.
+      Image 1.7
+
+      ![Setting port to 5432]https://user-images.githubusercontent.com/54221369/149005198-f90cd5ae-5c94-4f6f-b389-901bb241c039.png
+
+
+### Fixes and updates 
+
+-There has been a breaking line of code that will prevent the file from running in the "src/server/index.js" file as of Jan 10, 2022, the fix to this can be viewed in image 2.0 a Pull Request has been made to update this error 
+
+image 2.0
+
+![Zipcode Fix](https://user-images.githubusercontent.com/54221369/148846192-f508ed9b-f0b6-4670-8ea6-6728df948bb8.png)
+
 
 ### Getting the app running
 
 At this point, you should be ready to start your app in development mode.
 
-1. Run `yarn dev` to create and populate the tables.
-   - Wait until you see both "Node app is running ..." and "webpack: Compiled successfully." before attempting to connect. (make sure environment variable `JOBS_SAME_PROCESS=1`)
-2. Go to `http://localhost:3000` to load the app. (Note: the terminal will say it's running on port 8090 -- don't believe it :-)
+1. Run `yarn dev` to start the application.
+   - Wait until you see both "Node app is running ..." and "webpack: Compiled successfully." before attempting to connect. (make sure environment variable `JOBS_SAME_PROCESS=1`)› As seen in image 3.0
+
+   image 3.0
+
+   ![Running in Terminal](https://user-images.githubusercontent.com/54221369/148850583-e79fc190-5f76-43df-a3a7-49dd8c71dc67.png)
+
+2. Go to `http://localhost:3000` to load the app. (Note: the terminal will say it's running on port 8090 -- don't believe it :-) See image 3.1
+
+   image 3.1
+
+   ![Localhost image](https://user-images.githubusercontent.com/54221369/148851287-09554cbb-f863-4707-9ecd-65f85eba540e.png)
+
 3. As long as you leave `SUPPRESS_SELF_INVITE=` blank in your `.env` you should be able to invite yourself from the homepage.
    - If you DO set that variable, then spoke will be invite-only and you'll need to generate an invite. Run:
      ```
