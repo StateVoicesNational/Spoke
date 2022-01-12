@@ -16,6 +16,7 @@ export class CampaignStats extends React.Component {
       this.props.serviceManagerInfo && this.props.serviceManagerInfo.data;
     return (
       <div>
+        Campaign cost estimates: <br />
         Outbound cost: {outboundCost} <br />
         Inbound cost: {inboundCost} <br />
         Total cost: {totalCost}
