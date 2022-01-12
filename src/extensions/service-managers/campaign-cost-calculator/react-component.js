@@ -16,16 +16,26 @@ export class OrgConfig extends React.Component {
   }
 
   render() {
-    console.log("testfakedata OrgConfig", this.props);
+    console.log("campaign-cost-calculator OrgConfig", this.props);
     const formSchema = yup.object({
-      savedText: yup
-        .string()
+      outboundCost: yup
+        .number()
         .nullable()
-        .max(64)
+        .positive(),
+      inboundCost: yup
+        .number()
+        .nullable()
+        .positive(),
+      currency: yup
+        .string()
+        .max(3)
+        .nullable()
+        .uppercase()
     });
     return (
       <div>
-        THIS IS TEST_FAKE_DATA
+        Set the currency and cost per inbound and outbound SMS message segment
+        here to show SMS costs in the campaign stats section
         <GSForm
           schema={formSchema}
           defaultValue={this.props.serviceManagerInfo.data}
@@ -36,8 +46,20 @@ export class OrgConfig extends React.Component {
         >
           <Form.Field
             as={GSTextField}
-            label="Some saveable text"
-            name="savedText"
+            label="Cost per outbound SMS segment (eg. 0.0075)"
+            name="outboundCost"
+            fullWidth
+          />
+          <Form.Field
+            as={GSTextField}
+            label="Cost per inbound SMS segment (eg. 0.00049)"
+            name="inboundCost"
+            fullWidth
+          />
+          <Form.Field
+            as={GSTextField}
+            label="Currency (eg. AUD, EUR, USD, etc.)"
+            name="currency"
             fullWidth
           />
           <Form.Submit
@@ -56,110 +78,6 @@ OrgConfig.propTypes = {
   serviceManagerInfo: PropTypes.object,
   inlineStyles: PropTypes.object,
   styles: PropTypes.object,
-  saveLabel: PropTypes.string,
-  onSubmit: PropTypes.func
-};
-
-export class CampaignConfig extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = {};
-  }
-
-  render() {
-    console.log("testfakedata CampaignConfig", this.props);
-    const foo =
-      this.props.serviceManagerInfo &&
-      this.props.serviceManagerInfo.data &&
-      this.props.serviceManagerInfo.data.foo;
-    const formSchema = yup.object({
-      savedText: yup
-        .string()
-        .nullable()
-        .max(64)
-    });
-    return (
-      <div>
-        THIS IS TEST_FAKE_DATA
-        {!this.props.campaign.isStarted ? (
-          <GSForm
-            schema={formSchema}
-            defaultValue={
-              (this.props.serviceManagerInfo &&
-                this.props.serviceManagerInfo.data) ||
-              {}
-            }
-            onSubmit={x => {
-              console.log("onSubmit", x);
-              this.props.onSubmit(x);
-            }}
-          >
-            <Form.Field
-              as={GSTextField}
-              label="Some saveable text"
-              name="savedText"
-              fullWidth
-            />
-            <Form.Submit as={GSSubmitButton} label="Save" />
-          </GSForm>
-        ) : (
-          <div>Campaign is now started! {foo}</div>
-        )}
-      </div>
-    );
-  }
-}
-
-CampaignConfig.propTypes = {
-  user: PropTypes.object,
-  campaign: PropTypes.object,
-  serviceManagerInfo: PropTypes.object,
-  saveLabel: PropTypes.string,
-  onSubmit: PropTypes.func
-};
-
-export class CampaignStats extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = {};
-  }
-
-  render() {
-    console.log("testfakedata CampaignStats", this.props);
-    const foo =
-      this.props.serviceManagerInfo &&
-      this.props.serviceManagerInfo.data &&
-      this.props.serviceManagerInfo.data.foo;
-    const formSchema = yup.object({});
-    return (
-      <div>
-        THIS IS TEST_FAKE_DATA {foo}
-        {!this.props.campaign.isStarted ? (
-          <GSForm
-            schema={formSchema}
-            onSubmit={x => {
-              console.log("onSubmit", x);
-              this.props.onSubmit({ a: "b" });
-            }}
-          >
-            <Form.Submit
-              as={GSSubmitButton}
-              label="Beep Boop"
-              component={GSSubmitButton}
-            />
-          </GSForm>
-        ) : (
-          <div>Campaign is now started! {foo}</div>
-        )}
-      </div>
-    );
-  }
-}
-
-CampaignStats.propTypes = {
-  user: PropTypes.object,
-  campaign: PropTypes.object,
-  serviceManagerInfo: PropTypes.object,
   saveLabel: PropTypes.string,
   onSubmit: PropTypes.func
 };
