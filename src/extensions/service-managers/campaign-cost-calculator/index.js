@@ -1,18 +1,16 @@
-/// All functions are OPTIONAL EXCEPT metadata() and const name=.
-/// DO NOT IMPLEMENT ANYTHING YOU WILL NOT USE -- the existence of a function adds behavior/UI (sometimes costly)
+import { r } from "../../../server/models";
+import { getConfig } from "../../../server/api/lib/config";
 
-export const name = "twilio-cost-calculator";
+export const name = "campaign-cost-calculator";
 
 export const metadata = () => ({
-  // set canSpendMoney=true, if this extension can lead to (additional) money being spent
-  // if it can, which operations below can trigger money being spent?
-  displayName: "Twilio Cost Calculator",
+  displayName: "Campaign Cost Calculator",
   description:
-    "Displays campaign costs when using Twilio as your service vendor",
+    "Displays costs for outbound and inbound messages in campaign states",
   canSpendMoney: false,
   moneySpendingOperations: ["onCampaignStart"],
   supportsOrgConfig: true,
-  supportsCampaignConfig: true
+  supportsCampaignConfig: false
 });
 
 export async function getCampaignData({
@@ -23,13 +21,42 @@ export async function getCampaignData({
   fromCampaignStatsPage
 }) {
   // called both from edit and stats contexts: editMode==true for edit page
-  if (fromCampaignStatsPage) {
-    const costs = await r.knex.raw("SELECT SMSCampaignCost(?)", [campaign]);
+  //  if (fromCampaignStatsPage) {
+  //    const costs = await r.knex.raw("SELECT SMSCampaignCost(?)", [campaign]);
+  //
+  //    return {
+  //      data: {
+  //        costs: costs
+  //      }
+  //    };
+  //  }
+}
 
-    return {
-      data: {
-        costs: costs
-      }
-    };
-  }
+export async function getOrganizationData({ organization, user, loaders }) {
+  const features = getFeatures(organization);
+  const {
+    calcCampaignOutboundCost = null,
+    calcCampaignInboundCost = null,
+    calcCampaignCurrency = null
+  } = features;
+
+  return {
+    data: {
+      inboundCost: organization.features.inboundCost,
+      outboundCost: organization.features.outboundCost,
+      currency: organization.features.currency
+    },
+    fullyConfigured: null
+  };
+}
+
+export async function onOrganizationUpdateSignal({
+  organization,
+  user,
+  updateData
+}) {
+  return {
+    data: updateData,
+    fullyConfigured: true
+  };
 }
