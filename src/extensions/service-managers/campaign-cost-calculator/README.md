@@ -76,10 +76,10 @@ $$ LANGUAGE plv8 IMMUTABLE STRICT;
 
 // 5. Calculate total cost of campaign
 
-CREATE OR REPLACE FUNCTION SMSCampaignCost(cid INT) RETURNS JSON AS $$
+CREATE OR REPLACE FUNCTION SMSCampaignCost(cid INT, obp FLOAT4, ibp FLOAT4) RETURNS JSON AS $$
   const campaignId = cid;
-  const outboundPrice = 0.075;
-  const inboundPrice = 0.0049;
+  const outboundPrice = obp;
+  const inboundPrice = ibp;
   let fnCount = plv8.find_function("SMSSegments");
   const messages = plv8.execute('SELECT m.text, m.is_from_contact FROM message m INNER JOIN campaign_contact cc ON cc.id = m.campaign_contact_id WHERE cc.campaign_id = $1',[ campaignId ]);
 
@@ -92,8 +92,8 @@ CREATE OR REPLACE FUNCTION SMSCampaignCost(cid INT) RETURNS JSON AS $$
     ? inboundSegments += fnCount(messages[i].text)
     : outboundSegments += fnCount(messages[i].text);
   }
-  outboundCost = outboundSegments * outboundPrice;
-  inboundCost = inboundSegments * inboundPrice;
+  outboundCost = +(Math.round((outboundSegments * outboundPrice) + "e+2") + "e-2");
+  inboundCost = +(Math.round((inboundSegments * inboundPrice) + "e+2") + "e-2");
 
   return {
     outboundCost: outboundCost,
@@ -101,4 +101,3 @@ CREATE OR REPLACE FUNCTION SMSCampaignCost(cid INT) RETURNS JSON AS $$
     totalCost: outboundCost + inboundCost
   }
 $$ LANGUAGE plv8 IMMUTABLE STRICT;
-
