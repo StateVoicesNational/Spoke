@@ -45,7 +45,7 @@ export async function onMessageSend({
         twilioAccountSwitchingCreds: {
           accountSid: campaignTwilioAccount.accountSid,
           authToken: await getSecret(
-            `MULTI_TWILIO_AUTH_${campaignTwilioAccount.accountSid}`,
+            `MULTI_TWILIO_AUTH_${campaignTwilioAccount.id}`,
             campaignTwilioAccount.authToken,
             organization
           )
@@ -106,6 +106,12 @@ export async function onCampaignUpdateSignal({
 export async function getOrganizationData({ organization }) {
   const accounts = getFeatures(organization).MULTI_TWILIO;
 
+  // Instantiate orgChanges and orgFeatures upon Settings page load
+  orgChanges = {
+    features: getFeatures(organization)
+  };
+  orgFeatures = JSON.stringify(accounts);
+
   return {
     data: {
       multiTwilio: accounts ? _obscureSensitiveInformation(accounts) : []
@@ -125,11 +131,19 @@ export async function onOrganizationUpdateSignal({
     // Save changes to organization features
     await accessRequired(user, organization.id, "OWNER", true);
     for (let i = 0; i < orgChanges.features.MULTI_TWILIO.length; i++) {
-      orgChanges.features.MULTI_TWILIO[i].authToken = await convertSecret(
-        "MULTI_TWILIO_AUTH_" + orgChanges.features.MULTI_TWILIO[i].accountSid,
-        organization,
-        orgChanges.features.MULTI_TWILIO[i].authToken
-      );
+      const curAccount = orgChanges.features.MULTI_TWILIO[i];
+      const foundAccount = orgFeatures
+        ? JSON.parse(orgFeatures).find(account => account.id == curAccount.id)
+        : null;
+
+      // Only encrypt auth token if it's not already encrypted (new account or updated auth token)
+      if (!(foundAccount && curAccount.authToken == foundAccount.authToken)) {
+        curAccount.authToken = await convertSecret(
+          "MULTI_TWILIO_AUTH_" + curAccount.id,
+          organization,
+          curAccount.authToken
+        );
+      }
     }
     await cacheableData.organization.clear(organization.id);
     await r
@@ -140,13 +154,6 @@ export async function onOrganizationUpdateSignal({
     saveDisabled = true;
   } else {
     // Make changes to organization features
-    if (!orgChanges) {
-      orgChanges = {
-        features: getFeatures(organization)
-      };
-      orgFeatures = JSON.stringify(getFeatures(organization).MULTI_TWILIO);
-    }
-
     orgChanges.features.MULTI_TWILIO = updateData.map(account => {
       const existingAccount = orgChanges.features.MULTI_TWILIO
         ? orgChanges.features.MULTI_TWILIO.find(e => {
@@ -155,7 +162,10 @@ export async function onOrganizationUpdateSignal({
         : null;
 
       if (existingAccount && existingAccount.authToken != "<Encrypted>") {
-        account.authToken = existingAccount.authToken;
+        if (account.authToken == "<Encrypted>") {
+          // Set to value of encrypted auth token if it hasn't changed
+          account.authToken = existingAccount.authToken;
+        }
       }
 
       return account;
