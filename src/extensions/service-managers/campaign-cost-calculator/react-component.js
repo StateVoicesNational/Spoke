@@ -21,7 +21,7 @@ export class CampaignStats extends React.Component {
       outboundCost,
       inboundCost,
       totalCost
-    } = this.props.serviceManagerInfo.data;
+    } = this.props.serviceManagerInfo.data.campaignCosts;
     return (
       <div>
         <div className={css(styles.header)}>Campaign Costs</div>
