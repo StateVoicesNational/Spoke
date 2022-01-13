@@ -32,11 +32,9 @@ export async function getCampaignData({
     ]);
     return {
       data: {
-        costs: {
-          outboundCost: "$" + costs.outboundCost + " " + currency,
-          inboundCost: "$" + costs.inboundCost + " " + currency,
-          totalCost: "$" + costs.totalCost + " " + currency
-        }
+        outboundCost: "$" + costs.outboundCost + " " + currency,
+        inboundCost: "$" + costs.inboundCost + " " + currency,
+        totalCost: "$" + costs.totalCost + " " + currency
       }
     };
   }
