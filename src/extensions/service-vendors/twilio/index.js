@@ -239,7 +239,8 @@ export async function sendMessage({
   serviceManagerData
 }) {
   const twilio = await exports.getTwilio(
-    serviceManagerData.twilioAccountSwitching || organization
+    (serviceManagerData && serviceManagerData.twilioAccountSwitching) ||
+      organization
   );
   const APITEST = /twilioapitest/.test(message.text);
   if (!twilio && !APITEST) {
