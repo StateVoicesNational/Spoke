@@ -25,17 +25,32 @@ export async function getCampaignData({
     const outboundUnitCost = getConfig("CAMPAIGN_COST_OUTBOUND");
     const inboundUnitCost = getConfig("CAMPAIGN_COST_INBOUND");
     const currency = getConfig("CAMPAIGN_COST_CURRENCY");
-    const costs = await r.knex.raw("SELECT SMSCampaignCost(?, ?, ?)", [
-      campaign,
-      outboundUnitCost,
-      inboundUnitCost
-    ]);
+    // defaults in case our results are undefined or 0 (ie. no SMS sent/received)
+    let costs = {
+      campaignCosts: {
+        outboundCost: "$0.00 " + currency,
+        inboundCost: "$0.00 " + currency,
+        toalCost: "$0.00 " + currency
+      }
+    };
+    await r.knex
+      .raw("SELECT SMSCampaignCost(?, ?, ?)", [
+        campaign.id,
+        outboundUnitCost,
+        inboundUnitCost
+      ])
+      .then(res => {
+        costs = res.rows[0].smscampaigncost;
+      });
+
+    // We have to lowercase the JSON object keys because postgresql
+    // returns them in all lowercase
     return {
       data: {
         campaignCosts: {
-          outboundCost: "$" + costs.outboundCost + " " + currency,
-          inboundCost: "$" + costs.inboundCost + " " + currency,
-          totalCost: "$" + costs.totalCost + " " + currency
+          outboundCost: "$" + costs.outboundcost + " " + currency,
+          inboundCost: "$" + costs.inboundcost + " " + currency,
+          totalCost: "$" + costs.totalcost + " " + currency
         }
       }
     };
