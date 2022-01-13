@@ -1,9 +1,14 @@
 /* eslint no-console: 0 */
-import { css } from "aphrodite";
-import PropTypes from "prop-types";
 import React from "react";
-import Form from "react-formal";
+import PropTypes from "prop-types";
+import { StyleSheet, css } from "aphrodite";
+import theme from "../../../styles/theme";
 
+export const styles = StyleSheet.create({
+  header: {
+    ...theme.text.header
+  }
+});
 export class CampaignStats extends React.Component {
   constructor(props) {
     super(props);
@@ -12,14 +17,21 @@ export class CampaignStats extends React.Component {
 
   render() {
     console.log("campaign-cost-calculator CampaignStats", this.props);
-    const { outboundCost, inboundCost, totalCost } =
-      this.props.serviceManagerInfo && this.props.serviceManagerInfo.data;
+    const {
+      outboundCost,
+      inboundCost,
+      totalCost
+    } = this.props.serviceManagerInfo.data;
     return (
       <div>
-        Campaign cost estimates: <br />
-        Outbound cost: {outboundCost} <br />
-        Inbound cost: {inboundCost} <br />
-        Total cost: {totalCost}
+        <div className={css(styles.header)}>Campaign Costs</div>
+        <div>
+          Outbound cost: {outboundCost} <br />
+          Inbound cost: {inboundCost} <br />
+          Total cost: {totalCost} <br />
+          NB: these costs estimates may be <em>very slightly</em> inaccurate and
+          do not include phone rental costs.
+        </div>
       </div>
     );
   }
