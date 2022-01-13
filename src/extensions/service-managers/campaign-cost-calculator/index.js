@@ -41,17 +41,14 @@ export async function getCampaignData({
       ])
       .then(res => {
         costs = res.rows[0].smscampaigncost;
-        console.log(res.rows);
       });
 
-    // We have to lowercase the JSON object keys because postgresql
-    // returns them in all lowercase
     return {
       data: {
         campaignCosts: {
-          outboundCost: "$" + costs.outboundcost + " " + currency,
-          inboundCost: "$" + costs.inboundcost + " " + currency,
-          totalCost: "$" + costs.totalcost + " " + currency
+          outboundCost: "$" + costs.outboundCost + " " + currency,
+          inboundCost: "$" + costs.inboundCost + " " + currency,
+          totalCost: "$" + costs.totalCost + " " + currency
         }
       }
     };
