@@ -9,6 +9,29 @@ export const styles = StyleSheet.create({
     ...theme.text.header
   }
 });
+
+const DisplayCostError = () => {
+  return (
+    <div>
+      Warning: The campaign cost calculator service-manager extension is
+      misconfigured. <br />
+      Please ask your system administrator to review the Spoke .env file.
+    </div>
+  );
+};
+
+const DisplayCostData = props => {
+  const { outboundCost, inboundCost, totalCost } = props.data;
+  return (
+    <div>
+      Outbound cost: {outboundCost} <br />
+      Inbound cost: {inboundCost} <br />
+      Total cost: {totalCost} <br />
+      NB: these costs estimates may be <em>very slightly</em> inaccurate and do
+      not include phone rental costs.
+    </div>
+  );
+};
 export class CampaignStats extends React.Component {
   constructor(props) {
     super(props);
@@ -16,22 +39,22 @@ export class CampaignStats extends React.Component {
   }
 
   render() {
-    console.log("campaign-cost-calculator CampaignStats", this.props);
     const {
-      outboundCost,
-      inboundCost,
-      totalCost
+      error,
+      ...campaignCosts
     } = this.props.serviceManagerInfo.data.campaignCosts;
+
+    let content;
+    if (error) {
+      content = <DisplayCostError />;
+    } else {
+      content = <DisplayCostData data={campaignCosts} />;
+    }
+
     return (
       <div>
         <div className={css(styles.header)}>Campaign Costs</div>
-        <div>
-          Outbound cost: {outboundCost} <br />
-          Inbound cost: {inboundCost} <br />
-          Total cost: {totalCost} <br />
-          NB: these costs estimates may be <em>very slightly</em> inaccurate and
-          do not include phone rental costs.
-        </div>
+        {content}
       </div>
     );
   }
