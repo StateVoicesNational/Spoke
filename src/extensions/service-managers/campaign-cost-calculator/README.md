@@ -21,8 +21,8 @@ You will need administrator privileges in your database to perform installation.
 
 1. Add `campaign-cost-calculator` to your `SERVICE_MANAGERS` variable
 2. Add `CAMPAIGN_COST_CURRENCY` and assign it a three letter currency code in quotes (eg. `CAMPAIGN_COST_CURRENCY='USD'`)
-3. Add `CAMPAIGN_COST_INBOUND` and assign it the number (eg. `CAMPAIGN_COST_INBOUND=0.0025`)
-4. Add `CAMPAIGN_COST_OUTBOUND` and assign it the outbound pricea (eg. `CAMPAIGN_COST_OUTBOUND=0.055`)
+3. Add `CAMPAIGN_COST_INBOUND` and assign it the inbound price per segment (eg. `CAMPAIGN_COST_INBOUND=0.0025`)
+4. Add `CAMPAIGN_COST_OUTBOUND` and assign it the outbound price per segment (eg. `CAMPAIGN_COST_OUTBOUND=0.055`)
 
 ### Configure PostgreSQL
 
