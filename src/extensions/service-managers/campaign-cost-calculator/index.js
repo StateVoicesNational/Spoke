@@ -54,9 +54,9 @@ export async function getCampaignData({
     return {
       data: {
         campaignCosts: {
-          outboundCost: "$" + costs.outboundCost + " " + currency,
-          inboundCost: "$" + costs.inboundCost + " " + currency,
-          totalCost: "$" + costs.totalCost + " " + currency,
+          outboundCost: "$" + costs.outboundcost + " " + currency,
+          inboundCost: "$" + costs.inboundcost + " " + currency,
+          totalCost: "$" + costs.totalcost + " " + currency,
           error
         }
       }
