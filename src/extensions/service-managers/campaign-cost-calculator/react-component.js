@@ -21,12 +21,12 @@ const DisplayCostError = () => {
 };
 
 const DisplayCostData = props => {
-  const { outboundCost, inboundCost, totalCost } = props.data;
+  const { outboundcost, inboundcost, totalcost } = props.data;
   return (
     <div>
-      Outbound cost: {outboundCost} <br />
-      Inbound cost: {inboundCost} <br />
-      Total cost: {totalCost} <br />
+      Outbound cost: {outboundcost} <br />
+      Inbound cost: {inboundcost} <br />
+      Total cost: {totalcost} <br />
       NB: these costs estimates may be <em>very slightly</em> inaccurate and do
       not include phone rental costs.
     </div>

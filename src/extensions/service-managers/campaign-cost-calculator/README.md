@@ -30,151 +30,124 @@ You will need administrator privileges in your database to perform installation.
 Use `psql` or your preferred database client and connect as an administrator
 to your postgresql Spoke database. Then run the following commands:
 
-1. Install the PL/v8 language extension
+1. Install your language extension
 
 ```
-CREATE EXTENSION plv8;
+CREATE EXTENSION plpgsql;
 ```
 
 2. Create a function to detect message encoding
 
 ```
-CREATE OR REPLACE FUNCTION SMSDetectEncoding(msg TEXT) RETURNS INT AS $$
-  const gsm7bitChars = "@£$¥èéùìòÇ\\nØø\\rÅåΔ_ΦΓΛΩΠΨΣΘΞÆæßÉ !\\\"#¤%&'()*+,-./0123456789:;<=>?¡ABCDEFGHIJKLMNOPQRSTUVWXYZÄÖÑÜ§¿abcdefghijklmnopqrstuvwxyzäöñüà";
-  const gsm7bitExChar = "\\^{}\\\\\\[~\\]|€";
-  const gsm7bitRegExp = RegExp("^[" + gsm7bitChars + "]*$");
-  const gsm7bitExRegExp = RegExp("^[" + gsm7bitChars + gsm7bitExChar + "]*$");
-  switch (false) {
-    case msg.match(gsm7bitRegExp) == null:
-      return 1;
-    case msg.match(gsm7bitExRegExp) == null:
-      return 2;
-    default:
-      return 3;
-  }
-$$ LANGUAGE plv8 IMMUTABLE STRICT;
+CREATE OR REPLACE FUNCTION smsdetectencoding(msg TEXT) RETURNS INT AS $$
+DECLARE
+  encoding integer :=3;
+  _gsm7ch text := E'@£$¥èéùìòÇ\nØø\rÅåΔ_ΦΓΛΩΠΨΣΘΞÆæßÉ !\\"#¤%&\'()*+,-./0123456789:;<=>?¡ABCDEFGHIJKLMNOPQRSTUVWXYZÄÖÑÜ§¿abcdefghijklmnopqrstuvwxyzäöñüà';
+  _gsm7exch text := E'\\^{}\[~\\]\\|€';
+  _gsm7regex text := E'^[' || _gsm7ch || ']*$';
+  _gsm7exregex text := E'^[' || _gsm7ch || _gsm7exch || ']*$';
+BEGIN
+  IF REGEXP_MATCH(msg, _gsm7regex) IS NOT NULL THEN
+    encoding := 1;
+  ELSIF REGEXP_MATCH(msg, _gsm7exregex) IS NOT NULL THEN
+    encoding := 2;
+  ELSE
+    encoding := 3;
+  END IF;
+  RETURN encoding;
+END;
+$$ LANGUAGE plpgsql IMMUTABLE STRICT;
 ```
 
-3. Create a function to count extended GSM-7 messages
+3. Create a function to count extended GSM-7 messages properly
 
 ```
-CREATE OR REPLACE FUNCTION SMSCountGSMExt(msg TEXT) RETURNS INT AS $$
-  const gsm7bitExChar = "\\^{}\\\\\\[~\\]|€";
-  const gsm7bitExOnlyRegExp = RegExp("^[\\" + gsm7bitExChar + "]*$");
-  var char2, chars;
-  chars = (function() {
-    var _i, _len, _results;
-    _results = [];
-    for (_i = 0, _len = msg.length; _i < _len; _i++) {
-      char2 = msg[_i];
-      if (char2.match(this.gsm7bitExOnlyRegExp) != null) {
-        _results.push(char2);
-      }
-    }
-    return _results;
-  }).call(this);
-  return chars.length;
-$$ LANGUAGE plv8 IMMUTABLE STRICT;
+CREATE OR REPLACE FUNCTION smscountgsmext(msg TEXT) RETURNS INT AS $$
+DECLARE
+_gsm7exch TEXT := E'\\^{}\\\\\\[~\\]|€';
+_gsm7exregex TEXT := E'^[' || _gsm7exch || ']*$';
+x TEXT;
+_msgarr TEXT[];
+len INT := 0;
+BEGIN
+  SELECT string_to_array(msg::TEXT, NULL) INTO _msgarr;
+  FOREACH x IN ARRAY _msgarr LOOP
+    IF REGEXP_MATCH(x, _gsm7exregex) IS NOT NULL THEN
+      len := len + 2;
+    ELSE
+      len := len + 1;
+    END IF;
+  END LOOP;
+  RETURN len;
+END;
+$$ LANGUAGE plpgsql IMMUTABLE STRICT;
 ```
 
 4. Create a function to calculate the number of segments used for a message
 
 ```
-CREATE OR REPLACE FUNCTION SMSSegments(msg TEXT) RETURNS INT AS $$
-  const messageLength = {
-    1: 160,
-    2: 160,
-    3: 70
-  };
-  const multiMessageLength = {
-    1: 153,
-    2: 153,
-    3: 67
-  };
-  let fnDetect = plv8.find_function("SMSDetectEncoding", msg);
-  let fnCountExt = plv8.find_function("SMSCountGSMExt", msg);
-  let remaining;
-  const encoding = fnDetect(msg);
-  let length = msg.length;
-  if (encoding === 2) {
-    length += fnCountExt(msg);
-  }
-  let per_message = messageLength[encoding];
-  if (length > per_message) {
-    per_message = multiMessageLength[encoding];
-  }
-  let segments = Math.ceil(length / per_message);
-  remaining = (per_message * segments) - length;
-  if(remaining == 0 && segments == 0){
-    remaining = per_message;
-  }
-  return segments;
-$$ LANGUAGE plv8 IMMUTABLE STRICT;
+CREATE OR REPLACE FUNCTION smssegments(msg TEXT) RETURNS INT AS $$
+DECLARE
+  _msglen JSONB := '{ "1": 160, "2": 160, "3": 70 }';
+  _mulmsglen JSONB := '{ "1": 153, "2": 153, "3": 67 }';
+  _len INT;
+  _enc INT;
+  _permsg INT;
+  segments INT;
+BEGIN
+  SELECT smsdetectencoding(msg) INTO _enc;
+  SELECT length(msg) INTO _len;
+  RAISE NOTICE 'len: %', _len;
+  IF _enc = 2 THEN
+    _len := _len + smscountgsmext(msg);
+    RAISE NOTICE 'new len: %', _len;
+  END IF;
+  SELECT _msglen::jsonb->>_enc::TEXT INTO _permsg;
+  IF _len > _permsg THEN
+    SELECT _mulmsglen::jsonb->>_enc::TEXT INTO _permsg;
+  END IF;
+  SELECT ceil(_len::NUMERIC / _permsg) INTO segments;
+  RETURN segments;
+END;
+$$ LANGUAGE plpgsql IMMUTABLE STRICT;
 ```
 
 5. Create a function to calculate the inbound, outbound and total costs for a Spoke campaign
 
 ```
-CREATE OR REPLACE FUNCTION SMSCampaignCost(cid INT, obp FLOAT4, ibp FLOAT4) RETURNS JSON AS $$
-  const campaignId = cid;
-  const outboundPrice = obp;
-  const inboundPrice = ibp;
-  let fnCount = plv8.find_function("SMSSegments");
-  const messages = plv8.execute('SELECT m.text, m.is_from_contact FROM message m INNER JOIN campaign_contact cc ON cc.id = m.campaign_contact_id WHERE cc.campaign_id = $1',[ campaignId ]);
+CREATE OR REPLACE FUNCTION smscampaigncost(cid INT, obp FLOAT4, ibp FLOAT4) RETURNS JSON AS $$
+DECLARE
+  _obsegs INT := 0;
+  _insegs INT := 0;
+  _obcost FLOAT4 := 0.00;
+  _ibcost FLOAT4 := 0.00;
+  _totalcost FLOAT4;
+  _msg RECORD;
+  results RECORD;
+BEGIN
+  FOR _msg IN
+    SELECT m.text, m.is_from_contact
+    FROM message m
+    INNER JOIN campaign_contact cc ON cc.id = m.campaign_contact_id
+    WHERE cc.campaign_id = cid
+  LOOP
+    IF _msg.is_from_contact THEN
+      SELECT (_insegs + SMSSegments(_msg.text)) INTO _insegs;
+    ELSE
+      SELECT (_obsegs + SMSSegments(_msg.text)) INTO _obsegs;
+    END IF;
+  END LOOP;
 
-  let outboundSegments = 0;
-  let inboundSegments = 0;
-  let outboundCost = 0;
-  let inboundCost = 0;
-  for (let i = 0; i < messages.length; i++) {
-    (messages[i].is_from_contact)
-    ? inboundSegments += fnCount(messages[i].text)
-    : outboundSegments += fnCount(messages[i].text);
-  }
-  outboundCost = +(Math.round((outboundSegments * outboundPrice) + "e+2") + "e-2");
-  inboundCost = +(Math.round((inboundSegments * inboundPrice) + "e+2") + "e-2");
-
-  return {
-    outboundCost: outboundCost,
-    inboundCost: inboundCost,
-    totalCost: outboundCost + inboundCost
-  }
-$$ LANGUAGE plv8 IMMUTABLE STRICT;
+  _obcost := ROUND((_obsegs * obp)::NUMERIC, 2);
+  _ibcost := ROUND((_insegs * ibp)::NUMERIC, 2);
+  _totalcost := _obcost + _ibcost;
+  SELECT _obcost AS outboundcost, _ibcost AS inboundcost, _totalcost AS totalcost INTO results;
+  RETURN row_to_json(results);
+END;
+$$ LANGUAGE plpgsql IMMUTABLE STRICT;
 ```
-
-## Notes
-
-### Use of PL/v8
-
-The PL/v8 language extension is not included by default in PostgreSQL installations.
-It also appears to be an abandoned project. As such, there are plans to rewrite
-the database functions in Python. The PL/Python language extension is included in
-the standard PostgreSQL distribution and therefore more readily available for more
-people.
-
-### Data structure returned from database might be different
-
-While developing this extension it was noted that the structure of the JSON data
-returned by the SMSCampaignCost function to Spoke was slightly different depending
-on the version of PostgreSQL. In particular the JSON object either look like this:
-
-    {
-      smscampaigncost: { outboundCost: 0.3, inboundCost: 0.01, totalCost: 0.31 }
-    }
-
-or looked like this:
-
-    {
-      smscampaigncost: { outboundcost: 0.3, inboundcost: 0.01, totalcost: 0.31 }
-    }
-
-This is enough of a change to break the extension. Spoke will still run but
-the extension will report costs as `$undefined USD` or similar.
-
-If you find this to be true in your installation, you may need to modify the contents
-of the `index.js` file (lines 49-51 in particular).
 
 ## Acknowledgements
 
-The JavaScript code to calculate the number of segments is drawn almost entirely
-verbatim from [danxexe's sms-counter project](https://github.com/danxexe/sms-counter).
+The code to calculate the number of segments is strongly based on 
+[danxexe's sms-counter project](https://github.com/danxexe/sms-counter).
