@@ -21,7 +21,7 @@ const DisplayCostError = () => {
 };
 
 const DisplayCostData = props => {
-  const { outboundcost, inboundcost, totalcost } = props.data;
+  const { outboundCost, inboundCost, totalCost } = props.data;
   return (
     <div>
       Outbound cost: {outboundCost} <br />
