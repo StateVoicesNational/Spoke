@@ -24,9 +24,9 @@ const DisplayCostData = props => {
   const { outboundcost, inboundcost, totalcost } = props.data;
   return (
     <div>
-      Outbound cost: {outboundcost} <br />
-      Inbound cost: {inboundcost} <br />
-      Total cost: {totalcost} <br />
+      Outbound cost: {outboundCost} <br />
+      Inbound cost: {inboundCost} <br />
+      Total cost: {totalCost} <br />
       NB: these costs estimates may be <em>very slightly</em> inaccurate and do
       not include phone rental costs.
     </div>
