@@ -9,10 +9,9 @@ of costs.
 ## Requirements
 
 - [PostgreSQL](https://www.postgresql.org/)
-- [PL/v8 language extension for PostgreSQL](https://plv8.github.io/)
 
 This extension has been tested against PostgresSQL 11 specifically.
-Your mileage may vary with other versions.
+Your mileage may vary with other versions (but shouldn't).
 
 You will need administrator privileges in your database to perform installation.
 
