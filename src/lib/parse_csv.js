@@ -2,18 +2,9 @@ import Papa from "papaparse";
 import _ from "lodash";
 import { getFormattedPhoneNumber, getFormattedZip } from "../lib";
 
-// export const requiredUploadFields = ["firstName", "lastName", "cell"];
-
-// const topLevelUploadFields = [
-//   "firstName",
-//   "lastName",
-//   "cell",
-//   "zip",
-//   "external_id"
-// ];
 export const requiredUploadFields = {
   firstName: [
-    "firstName",
+    "firstname",
     "first_name",
     "givenname",
     "given_name",
