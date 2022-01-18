@@ -35,7 +35,7 @@ export const requiredUploadFields = {
   ]
 };
 
-const topLevelUploadFieldsTwo = {
+const topLevelUploadFields = {
   firstName: [
     "firstName",
     "first_name",
@@ -188,7 +188,7 @@ export const parseCSV = (file, onCompleteCallback, options) => {
         const { validationStats, validatedData } = getValidatedData(data);
 
         let customFields = fields.filter(field =>
-          Object.values(topLevelUploadFieldsTwo).find(
+          Object.values(topLevelUploadFields).find(
             e => e.indexOf(field.toLowerCase()) === -1
           )
         );
