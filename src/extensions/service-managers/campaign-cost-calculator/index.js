@@ -54,9 +54,30 @@ export async function getCampaignData({
     return {
       data: {
         campaignCosts: {
-          outboundCost: "$" + costs.outboundcost + " " + currency,
-          inboundCost: "$" + costs.inboundcost + " " + currency,
-          totalCost: "$" + costs.totalcost + " " + currency,
+          outboundCost:
+            new Intl.NumberFormat("en-US", {
+              style: "currency",
+              currency,
+              currencyDisplay: "narrowSymbol"
+            }).format(costs.outboundcost) +
+            " " +
+            currency,
+          inboundCost:
+            new Intl.NumberFormat("en-US", {
+              style: "currency",
+              currency,
+              currencyDisplay: "narrowSymbol"
+            }).format(costs.inboundcost) +
+            " " +
+            currency,
+          totalCost:
+            new Intl.NumberFormat("en-US", {
+              style: "currency",
+              currency,
+              currencyDisplay: "narrowSymbol"
+            }).format(costs.totalcost) +
+            " " +
+            currency,
           error
         }
       }
