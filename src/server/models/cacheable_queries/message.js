@@ -2,6 +2,7 @@ import { r, Message } from "../../models";
 import campaignCache from "./campaign";
 import campaignContactCache from "./campaign-contact";
 import orgCache from "./organization";
+import userCache from "./user";
 import organizationContactCache from "./organization-contact";
 import { getMessageHandlers } from "../../../extensions/message-handlers";
 import {
