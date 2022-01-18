@@ -2,15 +2,74 @@ import Papa from "papaparse";
 import _ from "lodash";
 import { getFormattedPhoneNumber, getFormattedZip } from "../lib";
 
-export const requiredUploadFields = ["firstName", "lastName", "cell"];
-const topLevelUploadFields = [
-  "firstName",
-  "lastName",
-  "cell",
-  "zip",
-  "external_id"
-];
+// export const requiredUploadFields = ["firstName", "lastName", "cell"];
 
+// const topLevelUploadFields = [
+//   "firstName",
+//   "lastName",
+//   "cell",
+//   "zip",
+//   "external_id"
+// ];
+export const requiredUploadFields = {
+  firstName: [
+    "firstName",
+    "first_name",
+    "givenname",
+    "given_name",
+    "f_name",
+    "first"
+  ],
+  lastName: ["lastname", "last_name", "familyname", "family_name"],
+  cell: [
+    "cell",
+    "cell_phone",
+    "mobile",
+    "number",
+    "phone",
+    "phone_number",
+    "phonenumber",
+    "cellphone",
+    "mobilenumber",
+    "mobile_number"
+  ]
+};
+
+const topLevelUploadFieldsTwo = {
+  firstName: [
+    "firstName",
+    "first_name",
+    "givenname",
+    "given_name",
+    "f_name",
+    "first"
+  ],
+  lastName: ["lastname", "last_name", "familyname", "family_name"],
+  cell: [
+    "cell",
+    "cell_phone",
+    "mobile",
+    "number",
+    "phone",
+    "phone_number",
+    "phonenumber",
+    "cellphone",
+    "mobilenumber",
+    "mobile_number"
+  ],
+  zip: [
+    "zip",
+    "zipcode",
+    "zip_code",
+    "postnumber",
+    "post_number",
+    "postal_code",
+    "postalcode",
+    "postalnumber",
+    "postal_number"
+  ],
+  external_id: ["external_id"]
+};
 const getValidatedData = data => {
   let validatedData;
   let result;
@@ -116,8 +175,8 @@ export const parseCSV = (file, onCompleteCallback, options) => {
         data = transformerResults.rows;
       }
 
-      for (const field of requiredUploadFields) {
-        if (fields.indexOf(field) === -1) {
+      for (const field of Object.keys(requiredUploadFields)) {
+        if (requiredUploadFields[field].indexOf(field) === -1) {
           missingFields.push(field);
         }
       }
@@ -128,8 +187,10 @@ export const parseCSV = (file, onCompleteCallback, options) => {
       } else {
         const { validationStats, validatedData } = getValidatedData(data);
 
-        let customFields = fields.filter(
-          field => topLevelUploadFields.indexOf(field) === -1
+        let customFields = fields.filter(field =>
+          Object.values(topLevelUploadFieldsTwo).find(
+            e => e.indexOf(field.toLowerCase()) === -1
+          )
         );
         customFields = [...customFields, ...additionalCustomFields];
 
