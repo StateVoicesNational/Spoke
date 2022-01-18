@@ -20,8 +20,8 @@ key = orgId
 value = highest_role:org_name
 
 QUERYS:
-userHasRole(userId, orgId, acceptableRoles) -> boolean
-userLoggedIn(authId) -> user object
+userHasRole(user, orgId, acceptableRoles) -> boolean
+userLoggedIn(field, authId_or_userId) -> user object
 currentEditors(campaign, user) -> string
 userOrgsWithRole(role, user.id) -> organization list
 */
@@ -30,6 +30,8 @@ const userRoleKey = userId =>
   `${process.env.CACHE_PREFIX || ""}texterroles-${userId}`;
 const userAuthKey = authId =>
   `${process.env.CACHE_PREFIX || ""}texterauth-${authId}`;
+const notificationsKey = userId =>
+  `${process.env.CACHE_PREFIX || ""}textertodos-${userId}`;
 
 const getHighestRolesPerOrg = userOrgs => {
   const highestRolesPerOrg = {};
@@ -97,7 +99,11 @@ const loadUserRoles = async userId => {
       const userRoles = {};
       Object.keys(roles).forEach(orgId => {
         const [highestRole, orgName] = roles[orgId].split(":");
-        userRoles[orgId] = { id: orgId, name: orgName, role: highestRole };
+        userRoles[orgId] = {
+          id: Number(orgId),
+          name: orgName,
+          role: highestRole
+        };
       });
       return userRoles;
     }
@@ -212,11 +218,41 @@ const userLoggedIn = async (field, val) => {
   return user;
 };
 
+const getAndClearNotifications = async userId => {
+  let notifications = [];
+  const key = notificationsKey(userId);
+  if (r.redis) {
+    const notifData = await r.redis
+      .multi()
+      .hkeys(key)
+      .del(key)
+      .execAsync();
+    // console.log('getAndClearNotifications', notifData);
+    if (notifData && notifData[0] && notifData[0].length) {
+      notifications = notifData[0];
+    }
+  }
+  return notifications;
+};
+
+const addNotification = async (userId, assignmentId) => {
+  const key = notificationsKey(userId);
+  if (r.redis) {
+    await r.redis
+      .multi()
+      .hset(key, assignmentId, 1)
+      .expire(key, 7200) // two hours
+      .execAsync();
+  }
+};
+
 const userCache = {
   userHasRole,
   userLoggedIn,
   userOrgs,
   orgRoles,
+  getAndClearNotifications,
+  addNotification,
   clearUser: async (userId, authId) => {
     if (r.redis) {
       await r.redis.delAsync(userRoleKey(userId));

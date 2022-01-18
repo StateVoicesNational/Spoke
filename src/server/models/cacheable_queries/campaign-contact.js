@@ -1,7 +1,9 @@
 import { r, CampaignContact } from "../../models";
 import telemetry from "../../telemetry";
+import assignmentCache from "./assignment";
 import campaignCache from "./campaign";
 import optOutCache from "./opt-out";
+import userCache from "./user";
 import organizationCache from "./organization";
 import { modelWithExtraProps } from "./lib";
 import { Writable } from "stream";
@@ -483,7 +485,7 @@ const campaignContactCache = {
         setCacheContactAssignment(dbRecord.id, campaignId, dbRecord)
       );
       const data = await Promise.all(promises);
-      console.log("updateCampaignAssignmentCache", data[0], data.length);
+      // console.log("updateCampaignAssignmentCache", data[0], data.length);
     }
   },
   updateStatus: async (
@@ -494,15 +496,28 @@ const campaignContactCache = {
   ) => {
     // console.log('updateSTATUS', newStatus, contact)
     try {
-      await r
+      const assignmentIds = await r
         .knex("campaign_contact")
         .where("id", contact.id)
         .update({
           message_status: newStatus,
           updated_at: new Date(),
           ...(moreUpdates || {})
-        });
-
+        })
+        .returning("assignment_id");
+      // console.log('contact.updateStatus assignmentIds', assignmentIds);
+      if (
+        r.redis &&
+        assignmentIds &&
+        assignmentIds.length &&
+        assignmentIds[0] &&
+        newStatus === "needsResponse"
+      ) {
+        const assignment = await assignmentCache.load(assignmentIds[0]);
+        if (assignment && assignment.user_id) {
+          await userCache.addNotification(assignment.user_id, assignmentIds[0]);
+        }
+      }
       if (r.redis && CONTACT_CACHE_ENABLED) {
         const contactKey = cacheKey(contact.id);
         const statusKey = messageStatusKey(contact.id);
