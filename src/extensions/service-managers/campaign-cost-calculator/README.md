@@ -10,7 +10,7 @@ of costs.
 
 - [PostgreSQL](https://www.postgresql.org/)
 
-This extension has been tested against PostgresSQL 11 specifically.
+This extension has been tested against PostgreSQL 11 specifically.
 Your mileage may vary with other versions (but shouldn't).
 
 You will need administrator privileges in your database to perform installation.
@@ -21,13 +21,13 @@ You will need administrator privileges in your database to perform installation.
 
 1. Add `campaign-cost-calculator` to your `SERVICE_MANAGERS` variable
 2. Add `CAMPAIGN_COST_CURRENCY` and assign it a three letter currency code in quotes (eg. `CAMPAIGN_COST_CURRENCY='USD'`)
-3. Add `CAMPAIGN_COST_INBOUND` and assign it the inbound price per segment (eg. `CAMPAIGN_COST_INBOUND=0.0025`)
-4. Add `CAMPAIGN_COST_OUTBOUND` and assign it the outbound price per segment (eg. `CAMPAIGN_COST_OUTBOUND=0.055`)
+3. Add `CAMPAIGN_COST_INBOUND` and assign it the inbound price per segment (eg. `CAMPAIGN_COST_INBOUND=0.0075`)
+4. Add `CAMPAIGN_COST_OUTBOUND` and assign it the outbound price per segment (eg. `CAMPAIGN_COST_OUTBOUND=0.049`)
 
 ### Configure PostgreSQL
 
 Use `psql` or your preferred database client and connect as an administrator
-to your postgresql Spoke database. Then run the following commands:
+to your PostgreSQL Spoke database. Then run the following commands:
 
 1. Install your language extension
 
@@ -148,5 +148,5 @@ $$ LANGUAGE plpgsql IMMUTABLE STRICT;
 
 ## Acknowledgements
 
-The code to calculate the number of segments is strongly based on 
-[danxexe's sms-counter project](https://github.com/danxexe/sms-counter).
+The code to calculate the number of segments is an adaptation of 
+[danxexe's sms-counter project](https://github.com/danxexe/sms-counter) work from JavaScript to PL/pgsql.
