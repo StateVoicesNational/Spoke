@@ -33,13 +33,13 @@ export const ensureCamelCaseRequiredHeaders = columnHeader => {
    * If other fields that could be either snake_case or camelCase
    * are added to `requiredUploadFields` it will do the same for them.
    * */
-  const camelizedColumnHeader = humps.camelize(columnHeader);
-  if (
-    requiredUploadFields.includes(camelizedColumnHeader) &&
-    camelizedColumnHeader !== columnHeader
-  ) {
-    return camelizedColumnHeader;
-  }
+  // const camelizedColumnHeader = humps.camelize(columnHeader);
+  // if (
+  //   requiredUploadFields.includes(camelizedColumnHeader) &&
+  //   camelizedColumnHeader !== columnHeader
+  // ) {
+  //   return camelizedColumnHeader;
+  // }
 
   return columnHeader;
 };
@@ -256,11 +256,10 @@ export class CampaignContactsForm extends React.Component {
           {this.renderValidationStats()}
           {contactUploadError && (
             <List>
-              <ListItem
-                id="uploadError"
-                primaryText={contactUploadError}
-                leftIcon={this.props.icons.error}
-              />
+              <ListItem id="uploadError">
+                <ListItemIcon>{this.props.icons.error}</ListItemIcon>
+                <ListItemText primary={contactUploadError} />
+              </ListItem>
             </List>
           )}
           <Form.Submit
