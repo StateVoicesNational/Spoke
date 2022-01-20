@@ -13,7 +13,12 @@ import ListItemIcon from "@material-ui/core/ListItemIcon";
 import ListItemText from "@material-ui/core/ListItemText";
 import ListSubheader from "@material-ui/core/ListSubheader";
 
-import { parseCSV, gzip, requiredUploadFields } from "../../../lib";
+import {
+  parseCSV,
+  gzip,
+  requiredUploadFields,
+  topLevelUploadFields
+} from "../../../lib";
 import GSForm from "../../../components/forms/GSForm";
 import CampaignFormSectionHeading from "../../../components/CampaignFormSectionHeading";
 import theme from "../../../styles/theme";
@@ -21,6 +26,26 @@ import { dataTest } from "../../../lib/attributes";
 import GSSubmitButton from "../../../components/forms/GSSubmitButton";
 
 export const ensureCamelCaseRequiredHeaders = columnHeader => {
+  let modifiedHeader = columnHeader;
+
+  switch (true) {
+    case topLevelUploadFields.firstName.includes(columnHeader):
+      modifiedHeader = "firstName";
+      break;
+    case topLevelUploadFields.lastName.includes(columnHeader):
+      modifiedHeader = "lastName";
+      break;
+    case topLevelUploadFields.cell.includes(columnHeader):
+      modifiedHeader = "cell";
+      break;
+    case topLevelUploadFields.zip.includes(columnHeader => columnHeader):
+      modifiedHeader = "zip";
+      break;
+    case topLevelUploadFields.external_id.includes(columnHeader):
+      modifiedHeader = "external_id";
+      break;
+  }
+  console.log("MOD'D Header", modifiedHeader);
   /*
    * This function changes:
    *  first_name to firstName
@@ -33,15 +58,16 @@ export const ensureCamelCaseRequiredHeaders = columnHeader => {
    * If other fields that could be either snake_case or camelCase
    * are added to `requiredUploadFields` it will do the same for them.
    * */
-  // const camelizedColumnHeader = humps.camelize(columnHeader);
-  // if (
-  //   requiredUploadFields.includes(camelizedColumnHeader) &&
-  //   camelizedColumnHeader !== columnHeader
-  // ) {
-  //   return camelizedColumnHeader;
-  // }
+  const camelizedColumnHeader = humps.camelize(modifiedHeader);
+  console.log(camelizedColumnHeader);
+  if (
+    Object.values(requiredUploadFields).includes(camelizedColumnHeader) &&
+    camelizedColumnHeader !== modifiedHeader
+  ) {
+    return camelizedColumnHeader;
+  }
 
-  return columnHeader;
+  return modifiedHeader;
 };
 
 const innerStyles = {
@@ -85,10 +111,9 @@ export class CampaignContactsForm extends React.Component {
     if (contactsPerPhoneNumber && maxNumbersPerCampaign) {
       maxContacts = contactsPerPhoneNumber * maxNumbersPerCampaign;
     }
-
+    console.log(ensureCamelCaseRequiredHeaders("Zip_Code"));
     event.preventDefault();
     const file = event.target.files[0];
-    console.log("file upload", file);
     this.setState({ uploading: true }, () => {
       parseCSV(
         file,
@@ -96,6 +121,7 @@ export class CampaignContactsForm extends React.Component {
           if (error) {
             this.handleUploadError(error);
           } else if (contacts.length === 0) {
+            console.log("Error - no contacts", contacts, customFields);
             this.handleUploadError("Upload at least one contact");
           } else if (maxContacts && contacts.length > maxContacts) {
             this.handleUploadError(
@@ -103,7 +129,7 @@ export class CampaignContactsForm extends React.Component {
                 maxContacts
               ).toLocaleString()} contacts max – your file contains ${contacts.length.toLocaleString()}.`
             );
-          } else if (contacts.length > 0) {
+          } else {
             this.handleUploadSuccess(
               validationStats,
               contacts,

@@ -9,9 +9,18 @@ export const requiredUploadFields = {
     "givenname",
     "given_name",
     "f_name",
-    "first"
+    "first",
+    "firstName",
+    "FirstName"
   ],
-  lastName: ["lastname", "last_name", "familyname", "family_name"],
+  lastName: [
+    "lastname",
+    "last_name",
+    "familyname",
+    "family_name",
+    "lastName",
+    "LastName"
+  ],
   cell: [
     "cell",
     "cell_phone",
@@ -22,20 +31,22 @@ export const requiredUploadFields = {
     "phonenumber",
     "cellphone",
     "mobilenumber",
-    "mobile_number"
+    "mobile_number",
+    "CellPhone"
   ]
 };
 
-const topLevelUploadFields = {
+export const topLevelUploadFields = {
   firstName: [
+    "firstname",
     "firstName",
-    "first_name",
     "givenname",
-    "given_name",
+    "givenName",
     "f_name",
-    "first"
+    "first",
+    "name"
   ],
-  lastName: ["lastname", "last_name", "familyname", "family_name"],
+  lastName: ["lastname", "lastName", "familyname", "familyName", "surname"],
   cell: [
     "cell",
     "cell_phone",
@@ -46,7 +57,8 @@ const topLevelUploadFields = {
     "phonenumber",
     "cellphone",
     "mobilenumber",
-    "mobile_number"
+    "mobile_number",
+    "CellPhone"
   ],
   zip: [
     "zip",
@@ -57,7 +69,8 @@ const topLevelUploadFields = {
     "postal_code",
     "postalcode",
     "postalnumber",
-    "postal_number"
+    "postal_number",
+    "ZipOrPostal"
   ],
   external_id: ["external_id"]
 };
@@ -66,8 +79,11 @@ const getValidatedData = data => {
   let result;
   // For some reason destructuring is not working here
   result = _.partition(data, row => !!row.cell);
+  console.log("Result: ", result);
   validatedData = result[0];
   const missingCellRows = result[1];
+  // Here there are missing fields that haven't been camel-checked
+  console.log("VALID: ", validatedData, "MISSING: ", missingCellRows);
 
   validatedData = _.map(validatedData, row =>
     _.extend(row, {
@@ -106,7 +122,10 @@ const getValidatedData = data => {
 export const organizationCustomFields = (contacts, customFieldsList) => {
   return contacts.map(contact => {
     const customFields = {};
+    console.log("contact: ", contact);
+    //THIS is where we either need to transform headers or have them transformed already
     const contactInput = {
+      //cell: contact[topLevelUploadFields.cell[Object.keys(cell)]],
       cell: contact.cell,
       first_name: contact.firstName,
       last_name: contact.lastName,
@@ -119,6 +138,7 @@ export const organizationCustomFields = (contacts, customFieldsList) => {
       }
     });
     contactInput.custom_fields = JSON.stringify(customFields);
+    console.log("contactInput: ", contactInput);
     return contactInput;
   });
 };
@@ -145,6 +165,7 @@ export const parseCSV = (file, onCompleteCallback, options) => {
     // eslint-disable-next-line no-shadow, no-unused-vars
     complete: ({ data: parserData, meta, errors }, file) => {
       const fields = meta.fields;
+      console.log("Fields line 154:", meta.fields);
       const missingFields = [];
 
       let data = parserData;
@@ -153,6 +174,7 @@ export const parseCSV = (file, onCompleteCallback, options) => {
         fields: []
       };
       if (rowTransformer) {
+        console.log("ROW TRANSFORMER EXISTS");
         transformerResults = parserData.reduce((results, originalRow) => {
           const { row, addedFields } = rowTransformer(fields, originalRow);
           results.rows.push(row);
@@ -176,18 +198,26 @@ export const parseCSV = (file, onCompleteCallback, options) => {
         const error = `Missing fields: ${missingFields.join(", ")}`;
         onCompleteCallback({ error });
       } else {
+        console.log("data that needs to be field-corrected: ", data);
         const { validationStats, validatedData } = getValidatedData(data);
-
+        console.log("Meta Fields to find custom fields: ", fields);
         let customFields = fields.filter(field =>
-          Object.values(topLevelUploadFields).find(
-            e => e.indexOf(field.toLowerCase()) === -1
-          )
+          Object.values(topLevelUploadFields).find(e => e.indexOf(field) === -1)
         );
+        console.log("Custom fields made from meta fields: ", customFields);
         customFields = [...customFields, ...additionalCustomFields];
-
+        console.log(
+          "Custom fields plus Additional Valid data: ",
+          customFields,
+          validatedData
+        );
         const contactsWithCustomFields = organizationCustomFields(
           validatedData,
           customFields
+        );
+        console.log(
+          "Contacts to send to OnCompleteCallback: ",
+          contactsWithCustomFields
         );
 
         onCompleteCallback({

@@ -54,5 +54,6 @@ export { gzip, gunzip } from "./gzip";
 export {
   parseCSV,
   organizationCustomFields,
-  requiredUploadFields
+  requiredUploadFields,
+  topLevelUploadFields
 } from "./parse_csv.js";
