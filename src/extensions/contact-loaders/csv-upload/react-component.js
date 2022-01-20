@@ -29,31 +29,28 @@ export const ensureCamelCaseRequiredHeaders = columnHeader => {
   let modifiedHeader = columnHeader;
 
   switch (true) {
-    case topLevelUploadFields.firstName.includes(columnHeader):
+    case topLevelUploadFields.firstName.includes(humps.camelize(columnHeader)):
       modifiedHeader = "firstName";
       break;
-    case topLevelUploadFields.lastName.includes(columnHeader):
+    case topLevelUploadFields.lastName.includes(humps.camelize(columnHeader)):
       modifiedHeader = "lastName";
       break;
-    case topLevelUploadFields.cell.includes(columnHeader):
+    case topLevelUploadFields.cell.includes(humps.camelize(columnHeader)):
       modifiedHeader = "cell";
       break;
-    case topLevelUploadFields.zip.includes(columnHeader => columnHeader):
+    case topLevelUploadFields.zip.includes(humps.camelize(columnHeader)):
       modifiedHeader = "zip";
       break;
-    case topLevelUploadFields.external_id.includes(columnHeader):
+    case topLevelUploadFields.external_id.includes(
+      humps.camelize(columnHeader)
+    ):
       modifiedHeader = "external_id";
       break;
   }
   console.log("MOD'D Header", modifiedHeader);
   /*
    * This function changes:
-   *  first_name to firstName
-   *  last_name to lastName
-   *  FirstName to firstName
-   *  LastName to lastName
-   *
-   * It changes no other fields.
+   *  first_name to firstName or  FirstName to firstName
    *
    * If other fields that could be either snake_case or camelCase
    * are added to `requiredUploadFields` it will do the same for them.
@@ -122,7 +119,9 @@ export class CampaignContactsForm extends React.Component {
             this.handleUploadError(error);
           } else if (contacts.length === 0) {
             console.log("Error - no contacts", contacts, customFields);
-            this.handleUploadError("Upload at least one contact");
+            this.handleUploadError(
+              "Unsuccessful - Check That your file's fields include a cell and first and last name"
+            );
           } else if (maxContacts && contacts.length > maxContacts) {
             this.handleUploadError(
               `You can only upload ${Number(
@@ -188,6 +187,10 @@ export class CampaignContactsForm extends React.Component {
         <ListItem>
           <ListItemIcon>{this.props.icons.check}</ListItemIcon>
           <ListItemText primary={`${contactsCount} contacts`} />
+        </ListItem>
+        <ListItem>
+          <ListItemIcon>{this.props.icons.check}</ListItemIcon>
+          <ListItemText primary={`${customFields.length} custom fields`} />
         </ListItem>
         <ListItem>
           <ListItemIcon>{this.props.icons.check}</ListItemIcon>
