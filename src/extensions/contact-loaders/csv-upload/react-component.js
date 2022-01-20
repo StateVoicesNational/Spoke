@@ -29,7 +29,9 @@ export const ensureCamelCaseRequiredHeaders = columnHeader => {
   let modifiedHeader = columnHeader;
 
   switch (true) {
-    case topLevelUploadFields.firstName.includes(humps.camelize(columnHeader)):
+    case topLevelUploadFields.firstName.includes(
+      humps.camelize(columnHeader).toLowerCase()
+    ):
       modifiedHeader = "firstName";
       break;
     case topLevelUploadFields.lastName.includes(humps.camelize(columnHeader)):
@@ -47,7 +49,6 @@ export const ensureCamelCaseRequiredHeaders = columnHeader => {
       modifiedHeader = "external_id";
       break;
   }
-  console.log("MOD'D Header", modifiedHeader);
   /*
    * This function changes:
    *  first_name to firstName or  FirstName to firstName
@@ -56,14 +57,12 @@ export const ensureCamelCaseRequiredHeaders = columnHeader => {
    * are added to `requiredUploadFields` it will do the same for them.
    * */
   const camelizedColumnHeader = humps.camelize(modifiedHeader);
-  console.log(camelizedColumnHeader);
   if (
     Object.values(requiredUploadFields).includes(camelizedColumnHeader) &&
     camelizedColumnHeader !== modifiedHeader
   ) {
     return camelizedColumnHeader;
   }
-
   return modifiedHeader;
 };
 
@@ -108,7 +107,6 @@ export class CampaignContactsForm extends React.Component {
     if (contactsPerPhoneNumber && maxNumbersPerCampaign) {
       maxContacts = contactsPerPhoneNumber * maxNumbersPerCampaign;
     }
-    console.log(ensureCamelCaseRequiredHeaders("Zip_Code"));
     event.preventDefault();
     const file = event.target.files[0];
     this.setState({ uploading: true }, () => {
@@ -118,9 +116,9 @@ export class CampaignContactsForm extends React.Component {
           if (error) {
             this.handleUploadError(error);
           } else if (contacts.length === 0) {
-            console.log("Error - no contacts", contacts, customFields);
+            //console.log("Error - no contacts", contacts, customFields);
             this.handleUploadError(
-              "Unsuccessful - Check That your file's fields include a cell and first and last name"
+              "Try again after confirming your file's fields include a first name, and last name and cell column"
             );
           } else if (maxContacts && contacts.length > maxContacts) {
             this.handleUploadError(
@@ -283,7 +281,10 @@ export class CampaignContactsForm extends React.Component {
             <List>
               <ListItem id="uploadError">
                 <ListItemIcon>{this.props.icons.error}</ListItemIcon>
-                <ListItemText primary={contactUploadError} />
+                <ListItemText
+                  id="fieldError"
+                  primaryText={contactUploadError}
+                />
               </ListItem>
             </List>
           )}
@@ -315,11 +316,10 @@ export class CampaignContactsForm extends React.Component {
     let subtitle = (
       <span>
         Your upload file should be in CSV format with column headings in the
-        first row. You must include{" "}
-        <span className={css(styles.csvHeader)}>firstName</span>, (or{" "}
-        <span className={css(styles.csvHeader)}>first_name</span>),
-        <span className={css(styles.csvHeader)}>lastName</span>
-        (or <span className={css(styles.csvHeader)}>last_name</span>), and
+        first row. The built-in header transformer will adapt to most
+        case-sensitivies, transforming to the required headers:{" "}
+        <span className={css(styles.csvHeader)}>firstName</span>,{" "}
+        <span className={css(styles.csvHeader)}>lastName</span> and
         <span className={css(styles.csvHeader)}>cell</span> columns. If you
         include a <span className={css(styles.csvHeader)}>zip</span> column,
         we'll use the zip to guess the contact's timezone for enforcing texting

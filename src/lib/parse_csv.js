@@ -2,30 +2,7 @@ import Papa from "papaparse";
 import _ from "lodash";
 import { getFormattedPhoneNumber, getFormattedZip } from "../lib";
 
-export const requiredUploadFields = {
-  firstName: [
-    "firstname",
-    "givenname",
-    "given_name",
-    "f_name",
-    "first",
-    "firstName"
-  ],
-  lastName: ["lastname", "familyname", "family_name", "lastName"],
-  cell: [
-    "cell",
-    "cellphone",
-    "cellPhone",
-    "CellPhone",
-    "mobile",
-    "number",
-    "phone",
-    "phone number",
-    "phoneNumber",
-    "mobilenumber",
-    "mobileNumber"
-  ]
-};
+export const requiredUploadFields = ["firstName", "lastName", "cell"];
 
 export const topLevelUploadFields = {
   firstName: [
@@ -62,18 +39,18 @@ export const topLevelUploadFields = {
     "postalNumber",
     "ZipOrPostal"
   ],
-  external_id: ["external_id"]
+  external_id: ["external_id", "externalId", "externalid"]
 };
 const getValidatedData = data => {
   let validatedData;
   let result;
   // For some reason destructuring is not working here
   result = _.partition(data, row => !!row.cell);
-  console.log("Result: ", result);
+  //console.log("Result: ", result);
   validatedData = result[0];
   const missingCellRows = result[1];
   // Here there are missing fields that haven't been camel-checked
-  console.log("VALID: ", validatedData, "MISSING: ", missingCellRows);
+  //console.log("VALID: ", validatedData, "MISSING: ", missingCellRows);
 
   validatedData = _.map(validatedData, row =>
     _.extend(row, {
@@ -112,10 +89,7 @@ const getValidatedData = data => {
 export const organizationCustomFields = (contacts, customFieldsList) => {
   return contacts.map(contact => {
     const customFields = {};
-    console.log("contact: ", contact);
-    //THIS is where we either need to transform headers or have them transformed already
     const contactInput = {
-      //cell: contact[topLevelUploadFields.cell[Object.keys(cell)]],
       cell: contact.cell,
       first_name: contact.firstName,
       last_name: contact.lastName,
@@ -128,14 +102,14 @@ export const organizationCustomFields = (contacts, customFieldsList) => {
       }
     });
     contactInput.custom_fields = JSON.stringify(customFields);
-    console.log("contactInput: ", contactInput);
     return contactInput;
   });
 };
 
 export const parseCSV = (file, onCompleteCallback, options) => {
-  // options is a custom object that currently supports two properties
-  // rowTransformer -- a function that gets called on each row in the file
+  // options is a custom object that currently supports three properties:
+  // rowTransformer (not called or supplied in this project but set up for
+  //   use if desired on line 148)-- a function that gets called on each row in the file
   //   after it is parsed. It takes 2 parameters, an array of fields and
   //   the object that results from parsing the row. It returns an object
   //   after transformation. The function can do lookups, field mappings,
@@ -146,6 +120,8 @@ export const parseCSV = (file, onCompleteCallback, options) => {
   //   returns the header that should be used for the column. An example
   //   would be to transform first_name to firstName, which is a required
   //   field in Spoke.
+  // additionalCustomFields (not called or supplied in this project)
+
   const { rowTransformer, headerTransformer, additionalCustomFields = [] } =
     options || {};
   Papa.parse(file, {
@@ -155,16 +131,14 @@ export const parseCSV = (file, onCompleteCallback, options) => {
     // eslint-disable-next-line no-shadow, no-unused-vars
     complete: ({ data: parserData, meta, errors }, file) => {
       const fields = meta.fields;
-      console.log("Fields line 154:", meta.fields);
-      const missingFields = [];
-
+      //console.log("Fields line 154:", meta.fields);
+      let missingFields = [];
       let data = parserData;
       let transformerResults = {
         rows: [],
         fields: []
       };
       if (rowTransformer) {
-        console.log("ROW TRANSFORMER EXISTS");
         transformerResults = parserData.reduce((results, originalRow) => {
           const { row, addedFields } = rowTransformer(fields, originalRow);
           results.rows.push(row);
@@ -178,37 +152,30 @@ export const parseCSV = (file, onCompleteCallback, options) => {
         data = transformerResults.rows;
       }
 
-      for (const field of Object.keys(requiredUploadFields)) {
-        if (requiredUploadFields[field].indexOf(field) === -1) {
-          missingFields.push(field);
+      let customFields = fields.filter(field => {
+        return !Object.keys(topLevelUploadFields).includes(field);
+      });
+      missingFields = requiredUploadFields.reduce((acc, field, index) => {
+        if (!fields.includes(field)) {
+          acc.push(field);
         }
-      }
+        return acc;
+      }, []);
 
       if (missingFields.length > 0) {
         const error = `Missing fields: ${missingFields.join(", ")}`;
         onCompleteCallback({ error });
       } else {
-        console.log("data that needs to be field-corrected: ", data);
         const { validationStats, validatedData } = getValidatedData(data);
-        console.log("Meta Fields to find custom fields: ", fields);
-        let customFields = fields.filter(field =>
-          Object.values(topLevelUploadFields).find(e => e.indexOf(field) === -1)
-        );
-        console.log("Custom fields made from meta fields: ", customFields);
+        // console.log("data that needs to be field-corrected: ", data);
+        // console.log("Meta Fields to find custom fields: ", fields);
+        // console.log("Custom fields made from meta fields: ", customFields);
         customFields = [...customFields, ...additionalCustomFields];
-        console.log(
-          "Custom fields plus Additional Valid data: ",
-          customFields,
-          validatedData
-        );
         const contactsWithCustomFields = organizationCustomFields(
           validatedData,
           customFields
         );
-        console.log(
-          "Contacts to send to OnCompleteCallback: ",
-          contactsWithCustomFields
-        );
+        // console.log("Contacts to send to OnCompleteCallback: ", contactsWithCustomFields);
 
         onCompleteCallback({
           customFields,
