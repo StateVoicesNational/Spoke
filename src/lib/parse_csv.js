@@ -5,34 +5,25 @@ import { getFormattedPhoneNumber, getFormattedZip } from "../lib";
 export const requiredUploadFields = {
   firstName: [
     "firstname",
-    "first_name",
     "givenname",
     "given_name",
     "f_name",
     "first",
-    "firstName",
-    "FirstName"
+    "firstName"
   ],
-  lastName: [
-    "lastname",
-    "last_name",
-    "familyname",
-    "family_name",
-    "lastName",
-    "LastName"
-  ],
+  lastName: ["lastname", "familyname", "family_name", "lastName"],
   cell: [
     "cell",
-    "cell_phone",
+    "cellphone",
+    "cellPhone",
+    "CellPhone",
     "mobile",
     "number",
     "phone",
-    "phone_number",
-    "phonenumber",
-    "cellphone",
+    "phone number",
+    "phoneNumber",
     "mobilenumber",
-    "mobile_number",
-    "CellPhone"
+    "mobileNumber"
   ]
 };
 
@@ -49,7 +40,6 @@ export const topLevelUploadFields = {
   lastName: ["lastname", "lastName", "familyname", "familyName", "surname"],
   cell: [
     "cell",
-    "cell_phone",
     "mobile",
     "number",
     "phone",
@@ -58,18 +48,18 @@ export const topLevelUploadFields = {
     "cellphone",
     "mobilenumber",
     "mobile_number",
-    "CellPhone"
+    "cellPhone"
   ],
   zip: [
     "zip",
     "zipcode",
-    "zip_code",
+    "zipCode",
     "postnumber",
-    "post_number",
-    "postal_code",
+    "postNumber",
     "postalcode",
+    "postalCode",
     "postalnumber",
-    "postal_number",
+    "postalNumber",
     "ZipOrPostal"
   ],
   external_id: ["external_id"]
@@ -201,11 +191,11 @@ export const parseCSV = (file, onCompleteCallback, options) => {
         console.log("data that needs to be field-corrected: ", data);
         const { validationStats, validatedData } = getValidatedData(data);
         console.log("Meta Fields to find custom fields: ", fields);
-        let customFields = fields.filter(field =>
-          Object.values(topLevelUploadFields).find(e => e.indexOf(field) === -1)
-        );
+        // let customFields = fields.filter(field =>
+        //   Object.values(topLevelUploadFields).find(e => e.indexOf(field) === -1)
+        // );
         console.log("Custom fields made from meta fields: ", customFields);
-        customFields = [...customFields, ...additionalCustomFields];
+        let customFields = [...additionalCustomFields];
         console.log(
           "Custom fields plus Additional Valid data: ",
           customFields,
