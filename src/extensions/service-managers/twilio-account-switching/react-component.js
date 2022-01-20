@@ -27,22 +27,21 @@ export class OrgConfig extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      acountId: "",
+      accountId: "",
+      accounts: this.props.serviceManagerInfo.data.multiTwilio || [],
       formButtonText: "",
       saveDisabled: true,
       showForm: false
     };
   }
 
-  componentDidUpdate(previousProps) {
-    // Allow user to save after making account changes
+  componentDidUpdate(previousProps, prevState) {
     if (
-      previousProps.serviceManagerInfo.data.version !=
-      this.props.serviceManagerInfo.data.version
+      JSON.stringify(prevState.accounts) != JSON.stringify(this.state.accounts)
     ) {
+      // Allow user to save after making account changes
       this.setState({
-        saveDisabled: this.props.serviceManagerInfo.data.saveDisabled,
-        showForm: false
+        saveDisabled: false
       });
     }
   }
@@ -96,46 +95,36 @@ export class OrgConfig extends React.Component {
               ref={this.form}
               schema={modelSchema}
               onSubmit={x => {
-                let newVals;
-                if (this.state.accountId) {
-                  // Edit account
-                  x.id = this.state.accountId;
-                  newVals = this.props.serviceManagerInfo.data.multiTwilio.map(
-                    accountToEdit => {
-                      if (accountToEdit.id == this.state.accountId) {
-                        return x;
-                      }
-                      return accountToEdit;
-                    }
-                  );
-                } else {
-                  // New account
-                  if (
-                    this.props.serviceManagerInfo.data.multiTwilio &&
-                    this.props.serviceManagerInfo.data.multiTwilio.length
-                  ) {
-                    x.id =
-                      this.props.serviceManagerInfo.data.multiTwilio.at(-1).id +
-                      1;
+                // The GSForm component will be unmounted when the showForm state is set to false. Since setState is an asynchronous function, GSForm ends up being unmounted before the setState function finishes. This leads to the following warning being printed to the console: "Warning: Can't perform a React state update on an unmounted component." setTimeout is a workaround to avoid this warning. This workaround was borrowed from the showAddForm() method in src/components/CampaignCannedResponsesForm.jsx. We can strive to find a better solution in the future.
+                setTimeout(() => {
+                  if (this.state.accountId) {
+                    // Edit account
+                    x.id = this.state.accountId;
+                    this.setState({
+                      accounts: this.state.accounts.map(account => {
+                        if (account.id == this.state.accountId) {
+                          return x;
+                        }
+                        return account;
+                      }),
+                      showForm: false
+                    });
                   } else {
-                    x.id = 1;
+                    // New account
+                    x.id = this.state.accounts.length
+                      ? this.state.accounts.at(-1).id + 1
+                      : 1;
+                    this.setState(prevState => ({
+                      accounts: [...prevState.accounts, x],
+                      showForm: false
+                    }));
                   }
-
-                  if (this.props.serviceManagerInfo.data.multiTwilio) {
-                    newVals = this.props.serviceManagerInfo.data.multiTwilio.concat(
-                      x
-                    );
-                  } else {
-                    newVals = [x];
-                  }
-                }
-                this.props.onSubmit(newVals);
+                }, 0);
               }}
               defaultValue={
-                (this.props.serviceManagerInfo.data.multiTwilio &&
-                  this.props.serviceManagerInfo.data.multiTwilio.find(
-                    res => res.id === this.state.accountId
-                  )) || {
+                this.state.accounts.find(
+                  res => res.id === this.state.accountId
+                ) || {
                   accountSid: "",
                   authToken: "",
                   friendlyName: "",
@@ -206,8 +195,8 @@ export class OrgConfig extends React.Component {
           </IconButton>
           <IconButton
             onClick={() => {
-              this.props.onSubmit(
-                this.props.serviceManagerInfo.data.multiTwilio
+              this.setState({
+                accounts: this.state.accounts
                   .map(accountToDelete => {
                     if (accountToDelete.id === account.id) {
                       return null;
@@ -215,7 +204,7 @@ export class OrgConfig extends React.Component {
                     return accountToDelete;
                   })
                   .filter(ele => ele !== null)
-              );
+              });
             }}
           >
             <DeleteIcon />
@@ -227,7 +216,7 @@ export class OrgConfig extends React.Component {
   }
 
   render() {
-    const accounts = this.props.serviceManagerInfo.data.multiTwilio;
+    const accounts = this.state.accounts;
     const list =
       !accounts || accounts.length === 0 ? null : (
         <List>
@@ -240,7 +229,10 @@ export class OrgConfig extends React.Component {
       <div>
         <GSForm
           onSubmit={() => {
-            this.props.onSubmit("save");
+            this.props.onSubmit(this.state.accounts);
+            this.setState({
+              saveDisabled: true
+            });
           }}
         >
           {list}
