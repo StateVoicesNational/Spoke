@@ -192,14 +192,10 @@ export class CampaignContactsForm extends React.Component {
           <ListItemIcon>{this.props.icons.check}</ListItemIcon>
           <ListItemText primary={`${customFields.length} custom fields`} />
         </ListItem>
-        <ListItem>
-          <ListItemIcon>{this.props.icons.check}</ListItemIcon>
-          <ListItemText primary={`${customFields.length} custom fields`} />
-        </ListItem>
         <List disablePadding>
           {customFields.map((field, index) => (
             <ListItem key={index}>
-              <ListItemText primary={field} />
+              <ListItemText primary={`* ${field}`} />
             </ListItem>
           ))}
         </List>

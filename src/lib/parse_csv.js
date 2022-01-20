@@ -191,11 +191,11 @@ export const parseCSV = (file, onCompleteCallback, options) => {
         console.log("data that needs to be field-corrected: ", data);
         const { validationStats, validatedData } = getValidatedData(data);
         console.log("Meta Fields to find custom fields: ", fields);
-        // let customFields = fields.filter(field =>
-        //   Object.values(topLevelUploadFields).find(e => e.indexOf(field) === -1)
-        // );
+        let customFields = fields.filter(field =>
+          Object.values(topLevelUploadFields).find(e => e.indexOf(field) === -1)
+        );
         console.log("Custom fields made from meta fields: ", customFields);
-        let customFields = [...additionalCustomFields];
+        customFields = [...customFields, ...additionalCustomFields];
         console.log(
           "Custom fields plus Additional Valid data: ",
           customFields,
