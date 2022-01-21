@@ -277,14 +277,15 @@ export class CampaignContactsForm extends React.Component {
           {this.renderUploadButton()}
           {this.renderContactStats()}
           {this.renderValidationStats()}
-          {contactUploadError && (
-            <List>
-              <ListItem id="uploadError">
-                <ListItemIcon>{this.props.icons.error}</ListItemIcon>
-                <ListItemText id="fieldError" primary={contactUploadError} />
-              </ListItem>
-            </List>
-          )}
+          {contactUploadError &&
+            this.props.saveDisabled && (
+              <List>
+                <ListItem id="uploadError">
+                  <ListItemIcon>{this.props.icons.error}</ListItemIcon>
+                  <ListItemText id="fieldError" primary={contactUploadError} />
+                </ListItem>
+              </List>
+            )}
           <Form.Submit
             as={GSSubmitButton}
             disabled={this.props.saveDisabled}
