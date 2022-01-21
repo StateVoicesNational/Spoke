@@ -115,11 +115,9 @@ export const parseCSV = (file, onCompleteCallback, options) => {
         }, transformerResults);
         data = transformerResults.rows;
       }
-
-      for (const field of requiredUploadFields) {
-        if (fields.indexOf(field) === -1) {
-          missingFields.push(field);
-        }
+      console.log(missingFields);
+      if (requiredUploadFields.includes(field)) {
+        missingFields.push(field);
       }
 
       if (missingFields.length > 0) {
