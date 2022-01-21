@@ -37,21 +37,19 @@ export const topLevelUploadFields = {
     "postalCode",
     "postalnumber",
     "postalNumber",
+    "zipOrPost",
     "ZipOrPostal"
   ],
   external_id: ["external_id", "externalId", "externalid"]
 };
+
 const getValidatedData = data => {
   let validatedData;
   let result;
   // For some reason destructuring is not working here
   result = _.partition(data, row => !!row.cell);
-  //console.log("Result: ", result);
   validatedData = result[0];
   const missingCellRows = result[1];
-  // Here there are missing fields that haven't been camel-checked
-  //console.log("VALID: ", validatedData, "MISSING: ", missingCellRows);
-
   validatedData = _.map(validatedData, row =>
     _.extend(row, {
       cell: getFormattedPhoneNumber(
@@ -131,7 +129,6 @@ export const parseCSV = (file, onCompleteCallback, options) => {
     // eslint-disable-next-line no-shadow, no-unused-vars
     complete: ({ data: parserData, meta, errors }, file) => {
       const fields = meta.fields;
-      //console.log("Fields line 154:", meta.fields);
       let missingFields = [];
       let data = parserData;
       let transformerResults = {
@@ -167,15 +164,12 @@ export const parseCSV = (file, onCompleteCallback, options) => {
         onCompleteCallback({ error });
       } else {
         const { validationStats, validatedData } = getValidatedData(data);
-        // console.log("data that needs to be field-corrected: ", data);
-        // console.log("Meta Fields to find custom fields: ", fields);
-        // console.log("Custom fields made from meta fields: ", customFields);
         customFields = [...customFields, ...additionalCustomFields];
         const contactsWithCustomFields = organizationCustomFields(
           validatedData,
           customFields
         );
-        // console.log("Contacts to send to OnCompleteCallback: ", contactsWithCustomFields);
+        //console.log("Contacts to send to OnCompleteCallback: ", contactsWithCustomFields);
 
         onCompleteCallback({
           customFields,
