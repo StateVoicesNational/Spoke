@@ -187,9 +187,11 @@ export class ContactController extends React.Component {
       // console.log('getContactData length', newIndex, getIds.length)
       this.setState({ loading: true });
       const contactData = await this.props.loadContacts(getIds);
-      const {
-        data: { getAssignmentContacts }
-      } = contactData;
+      let getAssignmentContacts;
+      if (contactData && contactData.data) {
+        getAssignmentContacts = contactData.data.getAssignmentContacts;
+      }
+
       if (getAssignmentContacts) {
         const newContactData = {};
         getAssignmentContacts.forEach((c, i) => {
