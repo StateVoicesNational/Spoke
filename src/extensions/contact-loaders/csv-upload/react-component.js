@@ -26,27 +26,24 @@ import { dataTest } from "../../../lib/attributes";
 import GSSubmitButton from "../../../components/forms/GSSubmitButton";
 
 export const ensureCamelCaseRequiredHeaders = columnHeader => {
-  let modifiedHeader = columnHeader;
-
+  //call headerTransfer(columnHeader)
   switch (true) {
-    case topLevelUploadFields.firstName.includes(
-      humps.camelize(columnHeader).toLowerCase()
-    ):
-      modifiedHeader = "firstName";
+    case topLevelUploadFields.firstName.includes(humps.camelize(columnHeader)):
+      columnHeader = "firstName";
       break;
     case topLevelUploadFields.lastName.includes(humps.camelize(columnHeader)):
-      modifiedHeader = "lastName";
+      columnHeader = "lastName";
       break;
     case topLevelUploadFields.cell.includes(humps.camelize(columnHeader)):
-      modifiedHeader = "cell";
+      columnHeader = "cell";
       break;
     case topLevelUploadFields.zip.includes(humps.camelize(columnHeader)):
-      modifiedHeader = "zip";
+      columnHeader = "zip";
       break;
     case topLevelUploadFields.external_id.includes(
       humps.camelize(columnHeader)
     ):
-      modifiedHeader = "external_id";
+      columnHeader = "external_id";
       break;
   }
   /*
@@ -56,14 +53,14 @@ export const ensureCamelCaseRequiredHeaders = columnHeader => {
    * If other fields that could be either snake_case or camelCase
    * are added to `requiredUploadFields` it will do the same for them.
    * */
-  const camelizedColumnHeader = humps.camelize(modifiedHeader);
+  const camelizedColumnHeader = humps.camelize(columnHeader);
   if (
     Object.values(requiredUploadFields).includes(camelizedColumnHeader) &&
-    camelizedColumnHeader !== modifiedHeader
+    camelizedColumnHeader !== columnHeader
   ) {
     return camelizedColumnHeader;
   }
-  return modifiedHeader;
+  return columnHeader;
 };
 
 const innerStyles = {
@@ -116,7 +113,6 @@ export class CampaignContactsForm extends React.Component {
           if (error) {
             this.handleUploadError(error);
           } else if (contacts.length === 0) {
-            //console.log("Error - no contacts", contacts, customFields);
             this.handleUploadError(
               "Try again after confirming your file's fields include a first name, and last name and cell column"
             );
@@ -181,7 +177,11 @@ export class CampaignContactsForm extends React.Component {
 
     return (
       <List>
-        <ListSubheader>Uploaded</ListSubheader>
+        <ListSubheader>
+          Confirm with
+          <span className={css(styles.csvHeader)}>SAVE</span> below or try to
+          <span className={css(styles.csvHeader)}>UPLOAD CONTACTS</span> again.
+        </ListSubheader>
         <ListItem>
           <ListItemIcon>{this.props.icons.check}</ListItemIcon>
           <ListItemText primary={`${contactsCount} contacts`} />
@@ -226,9 +226,9 @@ export class CampaignContactsForm extends React.Component {
         {stats.map((stat, index) => (
           <ListItem
             key={index}
-            leftIcon={this.props.icons.warning}
-            innerDivStyle={innerStyles.nestedItem}
-            primaryText={stat}
+            // leftIcon={this.props.icons.warning}
+            // innerDivStyle={innerStyles.nestedItem}
+            // primaryText={stat}
           />
         ))}
       </List>
@@ -281,10 +281,7 @@ export class CampaignContactsForm extends React.Component {
             <List>
               <ListItem id="uploadError">
                 <ListItemIcon>{this.props.icons.error}</ListItemIcon>
-                <ListItemText
-                  id="fieldError"
-                  primaryText={contactUploadError}
-                />
+                <ListItemText id="fieldError" primary={contactUploadError} />
               </ListItem>
             </List>
           )}

@@ -217,7 +217,7 @@ describe("ingest-contact-loader method: csv-upload frontend", async () => {
       "Missing fields: firstName"
     );
     // verify it's visible in interface
-    expect(wrapper.find("#fieldError").prop("primaryText")).toBe(
+    expect(wrapper.find("#fieldError").prop("primary")).toBe(
       "Missing fields: firstName"
     );
   });
