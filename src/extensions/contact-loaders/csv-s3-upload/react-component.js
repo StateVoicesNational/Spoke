@@ -34,13 +34,13 @@ export const ensureCamelCaseRequiredHeaders = columnHeader => {
    * If other fields that could be either snake_case or camelCase
    * are added to `requiredUploadFields` it will do the same for them.
    * */
-  const camelizedColumnHeader = humps.camelize(columnHeader);
-  if (
-    requiredUploadFields.includes(camelizedColumnHeader) &&
-    camelizedColumnHeader !== columnHeader
-  ) {
-    return camelizedColumnHeader;
-  }
+  // const camelizedColumnHeader = humps.camelize(columnHeader);
+  // if (
+  //   requiredUploadFields.includes(camelizedColumnHeader) &&
+  //   camelizedColumnHeader !== columnHeader
+  // ) {
+  //   return camelizedColumnHeader;
+  // }
 
   return columnHeader;
 };
