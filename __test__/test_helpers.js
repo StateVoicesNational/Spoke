@@ -454,6 +454,9 @@ export async function assignTexter(admin, user, campaign, assignments) {
   mutation editCampaign($campaignId: String!, $campaign: CampaignInput!) {
     editCampaign(id: $campaignId, campaign: $campaign) {
       id
+      assignments {
+        id
+      }
     }
   }`;
   const context = getContext({ user: admin });
