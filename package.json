@@ -161,6 +161,7 @@
     "wait-for-expect": "^1.1.1",
     "webpack": "4",
     "webpack-manifest-plugin": "^2.0.4",
+    "yarn": "^1.22.17",
     "yup": "0.32.3"
   },
   "devDependencies": {

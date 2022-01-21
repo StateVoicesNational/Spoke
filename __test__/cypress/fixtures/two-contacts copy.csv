@@ -1,3 +1,2 @@
-first_name,last_name,cell_phone,favorite_color, zip_code
-ContactFirst1,ContactLast1,12025550175,green, 80220
-ContactFirst2,ContactLast2,12025550176,orange, 80213
+lastName,cell_Phone,zipOrPostal,custom_foo,custom_xxx
+Dolores,Huerta,2095550100,95201,bar,yyy
