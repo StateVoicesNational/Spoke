@@ -53,10 +53,8 @@ export const topLevelUploadFields = {
 const getValidatedData = data => {
   let validatedData;
   let result;
-  //console.log("DATA TO VALIDATE: ", data)
   // For some reason destructuring is not working here
   result = _.partition(data, row => !!row.cell);
-  ///console.log("ValiData Result: ", result)
   validatedData = result[0];
   const missingCellRows = result[1];
   validatedData = _.map(validatedData, row =>
@@ -68,7 +66,6 @@ const getValidatedData = data => {
     })
   );
   result = _.partition(validatedData, row => !!row.cell);
-  //console.log("ValiData Result: ", result)
   validatedData = result[0];
   const invalidCellRows = result[1];
 
@@ -133,7 +130,6 @@ export const parseCSV = (file, onCompleteCallback, options) => {
 
   const { rowTransformer, headerTransformer, additionalCustomFields = [] } =
     options || {};
-  //console.log("Data For Papa: ", file)
   Papa.parse(file, {
     header: true,
     //delimiter: ",",
@@ -142,10 +138,8 @@ export const parseCSV = (file, onCompleteCallback, options) => {
     // eslint-disable-next-line no-shadow, no-unused-vars
     complete: ({ data: parserData, meta, errors }, file) => {
       const fields = meta.fields;
-      //console.log("Meta from Papa: ", meta)
       let missingFields = [];
       let data = parserData;
-      //console.log("Data from Papa: ", data)
       let transformerResults = {
         rows: [],
         fields: []
@@ -180,8 +174,6 @@ export const parseCSV = (file, onCompleteCallback, options) => {
       } else {
         const { validationStats, validatedData } = getValidatedData(data);
         customFields = [...customFields, ...additionalCustomFields];
-        //console.log("Validated Data: ",validatedData)
-        //console.log("Validated Stats: ", validationStats)
         const contactsWithCustomFields = organizationCustomFields(
           validatedData,
           customFields
