@@ -41,7 +41,7 @@ export const handleFailedContactLoad = async (
   message
 ) => {
   // eslint-disable-next-line no-console
-  console.error(message);
+  // console.error(message);
   await failedContactLoad(job, null, JSON.stringify(ingestDataReference), {
     errors: [message],
     ...ingestDataReference
@@ -62,11 +62,9 @@ export async function available(organization, user) {
     !!getConfig("NGP_VAN_APP_NAME", organization) &&
     !!getConfig("NGP_VAN_WEBHOOK_BASE_URL", organization);
 
-  if (!result) {
-    console.log(
-      "ngpvan contact loader unavailable. Missing one or more required environment variables."
-    );
-  }
+  // if (!result) {
+  //   console.log("ngpvan contact loader unavailable. Missing one or more required environment variables.");
+  // }
 
   return {
     result,
@@ -83,12 +81,12 @@ export function addServerEndpoints(expressApp) {
     "/integration/ngpvan/ingest/:jobId/:maxContacts/:vanListId",
     function(req, res) {
       const { jobId, maxContacts, vanListId } = req.params;
-      console.log(
-        "Received callback from VAN with parameters: jobId, maxContacts, vanListId",
-        jobId,
-        maxContacts,
-        vanListId
-      );
+      // console.log(
+      //   "Received callback from VAN with parameters: jobId, maxContacts, vanListId",
+      //   jobId,
+      //   maxContacts,
+      //   vanListId
+      // );
       res.send("OK");
     }
   );
@@ -105,7 +103,9 @@ async function requestVanSavedLists(organization, skip) {
     DEFAULT_NGP_VAN_MAXIMUM_LIST_SIZE;
 
   const url = Van.makeUrl(
-    `v4/savedLists?$top=100&maxPeopleCount=${maxPeopleCount}${skip ? "&$skip=" + skip : ""}`,
+    `v4/savedLists?$top=100&maxPeopleCount=${maxPeopleCount}${
+      skip ? "&$skip=" + skip : ""
+    }`,
     organization
   );
 
@@ -130,16 +130,21 @@ export async function getClientChoiceData(organization, campaign, user) {
 
     if (responseJson.count > 100) {
       // Hack to get most recently created 100 saved lists
-      const mostRecentListsJson = await requestVanSavedLists(organization, responseJson.count - 100);
+      const mostRecentListsJson = await requestVanSavedLists(
+        organization,
+        responseJson.count - 100
+      );
 
       if (mostRecentListsJson.items && mostRecentListsJson.items.length) {
-        responseJson.items = responseJson.items.concat(mostRecentListsJson.items);
+        responseJson.items = responseJson.items.concat(
+          mostRecentListsJson.items
+        );
       }
     }
   } catch (error) {
     const message = `Error retrieving saved list metadata from VAN ${error}`;
     // eslint-disable-next-line no-console
-    console.log(message);
+    // console.log(message);
     return { data: `${JSON.stringify({ error: message })}` };
   }
 
