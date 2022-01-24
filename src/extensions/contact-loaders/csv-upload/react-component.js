@@ -25,7 +25,7 @@ import theme from "../../../styles/theme";
 import { dataTest } from "../../../lib/attributes";
 import GSSubmitButton from "../../../components/forms/GSSubmitButton";
 
-export const ensureCamelCaseRequiredHeaders = columnHeader => {
+const translateHeader = columnHeader => {
   switch (true) {
     case topLevelUploadFields.firstName.includes(humps.camelize(columnHeader)):
       columnHeader = "firstName";
@@ -45,13 +45,16 @@ export const ensureCamelCaseRequiredHeaders = columnHeader => {
       columnHeader = "external_id";
       break;
   }
+  return columnHeader;
+};
+export const ensureCamelCaseRequiredHeaders = columnHeader => {
   /*
-   * This function changes:
-   *  first_name to firstName or  FirstName to firstName
-   *
-   * If other fields that could be either snake_case or camelCase
-   * are added to `requiredUploadFields` it will do the same for them.
-   * */
+   * translates fields from `topLevelUploadFields` that could be in a different syntax
+   */
+  columnHeader = translateHeader(columnHeader);
+  /*
+   * translates fields from `requiredUploadFields` that could be either snake_case or camelCase
+   */
   const camelizedColumnHeader = humps.camelize(columnHeader);
   if (
     Object.values(requiredUploadFields).includes(camelizedColumnHeader) &&
@@ -178,8 +181,7 @@ export class CampaignContactsForm extends React.Component {
       <List>
         <ListSubheader>
           Confirm with
-          <span className={css(styles.csvHeader)}>SAVE</span> below or try to
-          <span className={css(styles.csvHeader)}>UPLOAD CONTACTS</span> again.
+          <span className={css(styles.csvHeader)}>SAVE</span> below.
         </ListSubheader>
         <ListItem>
           <ListItemIcon>{this.props.icons.check}</ListItemIcon>

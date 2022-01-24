@@ -132,7 +132,6 @@ export const parseCSV = (file, onCompleteCallback, options) => {
     options || {};
   Papa.parse(file, {
     header: true,
-    //delimiter: ",",
     ...(headerTransformer && { transformHeader: headerTransformer }),
     skipEmptyLines: true,
     // eslint-disable-next-line no-shadow, no-unused-vars
