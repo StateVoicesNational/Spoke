@@ -26,7 +26,6 @@ import { dataTest } from "../../../lib/attributes";
 import GSSubmitButton from "../../../components/forms/GSSubmitButton";
 
 export const ensureCamelCaseRequiredHeaders = columnHeader => {
-  //call headerTransfer(columnHeader)
   switch (true) {
     case topLevelUploadFields.firstName.includes(humps.camelize(columnHeader)):
       columnHeader = "firstName";
@@ -114,7 +113,7 @@ export class CampaignContactsForm extends React.Component {
             this.handleUploadError(error);
           } else if (contacts.length === 0) {
             this.handleUploadError(
-              "Try again after confirming your file's fields include a first name, and last name and cell column"
+              "Confirm your file's fields include a first name, last name and cell column. "
             );
           } else if (maxContacts && contacts.length > maxContacts) {
             this.handleUploadError(
@@ -160,7 +159,7 @@ export class CampaignContactsForm extends React.Component {
       contacts
     };
     const self = this;
-    // uncomment here to make the data uncompresed on-upload
+    // uncomment here to make the data uncompressed on-upload
     // occasionally useful for debugging to see decoded data in-transit
     // return this.props.onChange(JSON.stringify(contactCollection));
     gzip(JSON.stringify(contactCollection)).then(gzippedData => {
@@ -277,15 +276,14 @@ export class CampaignContactsForm extends React.Component {
           {this.renderUploadButton()}
           {this.renderContactStats()}
           {this.renderValidationStats()}
-          {contactUploadError &&
-            this.props.saveDisabled && (
-              <List>
-                <ListItem id="uploadError">
-                  <ListItemIcon>{this.props.icons.error}</ListItemIcon>
-                  <ListItemText id="fieldError" primary={contactUploadError} />
-                </ListItem>
-              </List>
-            )}
+          {contactUploadError && this.props.saveDisabled && (
+            <List>
+              <ListItem id="uploadError">
+                <ListItemIcon>{this.props.icons.error}</ListItemIcon>
+                <ListItemText id="fieldError" primary={contactUploadError} />
+              </ListItem>
+            </List>
+          )}
           <Form.Submit
             as={GSSubmitButton}
             disabled={this.props.saveDisabled}
