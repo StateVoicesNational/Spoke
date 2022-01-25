@@ -38,6 +38,15 @@ export const getMetadata = () => ({
   name: "bandwidth"
 });
 
+export const costData = (organization, userNumber) => ({
+  // simplifying here -- depends on tollFree or shortCode
+  // FUTURE: conditionals based on userNumber
+  source: "https://www.bandwidth.com/pricing/",
+  lastChecked: "2022-01-25",
+  mmsMessage: 0.015,
+  smsSegment: 0.004
+});
+
 const webhooks = {
   "message-delivered": handleDeliveryReport,
   "message-failed": handleDeliveryReport,

@@ -3,6 +3,7 @@ import { GraphQLError } from "graphql/error";
 import { Message, cacheableData } from "../../models";
 
 import { getSendBeforeTimeUtc } from "../../../lib/timezones";
+import { replaceEasyGsmWins } from "../../../lib/gsm";
 import { jobRunner } from "../../../extensions/job-runners";
 import { Tasks } from "../../../workers/tasks";
 import { updateContactTags } from "./updateContactTags";
@@ -127,9 +128,6 @@ export const sendMessage = async (
     });
   }
 
-  const replaceCurlyApostrophes = rawText =>
-    rawText.replace(/[\u2018\u2019]/g, "'");
-
   let contactTimezone = {};
   if (contact.timezone_offset) {
     // couldn't look up the timezone by zip record, so we load it
@@ -173,7 +171,7 @@ export const sendMessage = async (
     process.env.DEFAULT_SERVICE ||
     "";
 
-  const finalText = replaceCurlyApostrophes(text);
+  const finalText = replaceEasyGsmWins(text);
   const messageInstance = new Message({
     text: finalText,
     contact_number: contact.cell,
