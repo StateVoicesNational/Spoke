@@ -102,6 +102,16 @@ export const errorDescriptions = {
   30008: "Message Delivery - Unknown error"
 };
 
+export function costData(organization, userNumber) {
+  // FUTURE: maybe send based on config vars if saved in the organization
+  return {
+    mmsMessage: 0.02,
+    smsSegment: 0.0075,
+    source: "https://www.twilio.com/sms/pricing/us",
+    lastChecked: "2022-01-25"
+  };
+}
+
 export function errorDescription(errorCode) {
   return {
     code: errorCode,
@@ -314,6 +324,17 @@ export async function sendMessage({
       changes.messageservice_sid = messagingServiceSid;
     }
 
+    const additionalMessageParams = parseMessageText(message);
+    if (
+      serviceManagerData &&
+      serviceManagerData.forceMms &&
+      !additionalMessageParams.mediaUrl
+    ) {
+      // https://www.twilio.com/docs/sms/api/message-resource#create-a-message-resource
+      additionalMessageParams.sendAsMms = true; // currently 'in beta'
+      // additionalMessageParams.mediaUrl = [];
+    }
+
     const messageParams = Object.assign(
       {
         to: message.contact_number,
@@ -323,7 +344,7 @@ export async function sendMessage({
       userNumber ? { from: userNumber } : {},
       messagingServiceSid ? { messagingServiceSid } : {},
       twilioValidityPeriod ? { validityPeriod: twilioValidityPeriod } : {},
-      parseMessageText(message)
+      additionalMessageParams
     );
 
     console.log("twilioMessage", messageParams);

@@ -9,6 +9,7 @@ import {
   Modifier
 } from "draft-js";
 import { delimit } from "../lib/scripts";
+import { replaceEasyGsmWins } from "../lib/gsm";
 import Chip from "./Chip";
 import { getCharCount } from "@trt2/gsm-charset-utils";
 
@@ -45,21 +46,6 @@ const styles = {
     padding: 5
   }
 };
-
-const gsmReplacements = [
-  ["‘", "'"],
-  ["’", "'"],
-  ["”", '"'],
-  ["”", '"'],
-  ["“", '"'],
-  ["–", "-"]
-];
-
-const replaceEasyGsmWins = text =>
-  gsmReplacements.reduce(
-    (acc, replacement) => acc.replace(replacement[0], replacement[1]),
-    text
-  );
 
 function findWithRegex(regex, contentBlock, callback) {
   const text = contentBlock.getText();
@@ -155,7 +141,7 @@ class ScriptEditor extends React.Component {
 
   getValue() {
     const { editorState } = this.state;
-    return editorState.getCurrentContent().getPlainText();
+    return replaceEasyGsmWins(editorState.getCurrentContent().getPlainText());
   }
 
   getCompositeDecorator(scriptFields) {
@@ -218,8 +204,8 @@ class ScriptEditor extends React.Component {
 
   render() {
     const { name } = this.props;
-    const text = this.state.editorState.getCurrentContent().getPlainText();
-    const segmentInfo = getCharCount(replaceEasyGsmWins(text));
+    const text = this.getValue();
+    const segmentInfo = getCharCount(text);
     return (
       <div>
         <div style={segmentInfo.charCount > 1600 ? { color: "red" } : {}}>

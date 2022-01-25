@@ -5,6 +5,7 @@ import appRenderer from "./middleware/app-renderer";
 import { graphqlExpress, graphiqlExpress } from "apollo-server-express";
 import { makeExecutableSchema } from "graphql-tools";
 // ORDERING: ./models import must be imported above ./api to help circular imports
+import { replaceEasyGsmWins } from "../lib/gsm";
 import { createLoaders, createTablesIfNecessary, r } from "./models";
 import { resolvers } from "./api/schema";
 import { schema } from "../api/schema";

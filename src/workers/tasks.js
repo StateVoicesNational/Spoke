@@ -45,7 +45,7 @@ const sendMessage = async ({
   const serviceManagerData = await processServiceManagers(
     "onMessageSend",
     organization,
-    { message, contact, campaign }
+    { message, contact, campaign, service }
   );
 
   await service.sendMessage({
