@@ -43,7 +43,7 @@ export class TexterSidebox extends React.Component {
               <ListItemText>
                 <strong>State District</strong>
                 <br />
-                {contactCustomData.stateDistrict}
+                {contactCustomData.stateElec}
               </ListItemText>
             </ListItem>
             <ListItem>
