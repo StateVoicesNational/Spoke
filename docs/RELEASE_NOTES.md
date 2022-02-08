@@ -9,12 +9,13 @@ _February 2022:_ Version 12.0
 
 ### Improvements
 * Implement Zapier response handling
+* Implement Canned Response CSV upload
 
 ### Additional changes
 * Remove "Add All" button from Texters admin page
 
 ### Appreciations
-* [Cody Gordon](https://github.com/codygordon), [Holden Green](https://github.com/holdengreen), [Kathy Nguyen](https://github.com/crayolakat), [Preston Maness](https://github.com/aggroskater), and Mark Houghton for QA
+* [Adam Greenspan](https://github.com/agreenspan24), [Cody Gordon](https://github.com/codygordon), [Holden Green](https://github.com/holdengreen), [Kathy Nguyen](https://github.com/crayolakat), [Preston Maness](https://github.com/aggroskater), and Mark Houghton for QA
 
 ## v11.1
 
