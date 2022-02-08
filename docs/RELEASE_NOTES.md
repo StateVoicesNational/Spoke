@@ -7,11 +7,14 @@ _February 2022:_ Version 12.0
 ### Bug-fixes
 * Fix failing GitHub Actions tests
 
+### Improvements
+* Implement Zapier response handling
+
 ### Additional changes
 * Remove "Add All" button from Texters admin page
 
 ### Appreciations
-* [Cody Gordon](https://github.com/codygordon), [Holden Green](https://github.com/holdengreen), [Kathy Nguyen](https://github.com/crayolakat), and Mark Houghton for QA
+* [Cody Gordon](https://github.com/codygordon), [Holden Green](https://github.com/holdengreen), [Kathy Nguyen](https://github.com/crayolakat), [Preston Maness](https://github.com/aggroskater), and Mark Houghton for QA
 
 ## v11.1
 
