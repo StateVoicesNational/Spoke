@@ -7,6 +7,12 @@ _February 2022:_ Version 12.0
 ### Bug-fixes
 * Fix failing GitHub Actions tests
 
+### Additional changes
+* Remove "Add All" button from Texters admin page
+
+### Appreciations
+* [Cody Gordon](https://github.com/codygordon), [Holden Green](https://github.com/holdengreen), [Kathy Nguyen](https://github.com/crayolakat), and Mark Houghton for QA
+
 ## v11.1
 
 _October 2021:_ Version 11.1
