@@ -1125,7 +1125,7 @@ describe("ngpvn-action", () => {
     describe("when the contact has a VanPhoneId", () => {
       beforeEach(async () => {
         contact = {
-          cell: '+15555550990',
+          cell: "+15555550990",
           custom_fields: JSON.stringify({
             VanID: "8675309",
             VanPhoneId: "789"
@@ -1136,8 +1136,8 @@ describe("ngpvn-action", () => {
           canvassContext: {
             phoneId: "789",
             phone: {
-              dialingPrefix: '1',
-              phoneNumber: '555-555-0990'
+              dialingPrefix: "1",
+              phoneNumber: "555-555-0990"
             }
           },
           willVote: true
