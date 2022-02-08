@@ -1,5 +1,12 @@
 # Release Notes
 
+## v12.0
+
+_February 2022:_ Version 12.0
+
+### Bug-fixes
+* Fix failing GitHub Actions tests
+
 ## v11.1
 
 _October 2021:_ Version 11.1
