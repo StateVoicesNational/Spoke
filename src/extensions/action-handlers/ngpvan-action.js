@@ -1,6 +1,9 @@
 import { getConfig } from "../../server/api/lib/config";
 import Van from "../contact-loaders/ngpvan/util";
-import { getCountryCode, getDashedPhoneNumberDisplay } from "../../lib/phone-format";
+import {
+  getCountryCode,
+  getDashedPhoneNumberDisplay
+} from "../../lib/phone-format";
 import httpRequest from "../../server/lib/http-request.js";
 
 export const name = "ngpvan-action";
