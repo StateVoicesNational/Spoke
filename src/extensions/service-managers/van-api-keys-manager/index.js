@@ -1,6 +1,9 @@
 /// All functions are OPTIONAL EXCEPT metadata() and const name=.
 /// DO NOT IMPLEMENT ANYTHING YOU WILL NOT USE -- the existence of a function adds behavior/UI (sometimes costly)
 
+import { getFeatures } from "../../../server/api/lib/config";
+import { cacheableData, r } from "../../../server/models";
+
 export const name = "van-api-keys-manager";
 
 export const metadata = () => ({
@@ -38,7 +41,20 @@ export async function onOrganizationUpdateSignal({
   // this is the function that should hit the db
   // call whatever mutation
   // console.log('the acutal data',updateData);
-  console.log(updateData);
+  // console.log(updateData);
+
+// should be grabbing feature changes from form?
+  let orgChanges = {
+    features: getFeatures(organization)
+  };
+
+  // what should our relationship with cacheableData here be?
+    // wiping old features (?)
+  await cacheableData.organization.clear(organization.id);
+  await r
+    .knex("organization")
+    .where("id", organization.id)
+    .update(orgChanges);
 
   return {
     data: updateData,
