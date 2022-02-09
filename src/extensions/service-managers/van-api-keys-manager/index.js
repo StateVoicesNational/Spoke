@@ -45,15 +45,18 @@ export async function onOrganizationUpdateSignal({
 
 // should be grabbing feature changes from form?
   let orgChanges = {
-    features: getFeatures(organization)
+    // features: getFeatures(organization)
+    features: "test write"
   };
 
   // what should our relationship with cacheableData here be?
     // wiping old features (?)
-  await cacheableData.organization.clear(organization.id);
+  // await cacheableData.organization.clear(organization.id);
+
   await r
     .knex("organization")
     .where("id", organization.id)
+    // .update(orgChanges);
     .update(orgChanges);
 
   return {
