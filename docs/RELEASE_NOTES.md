@@ -11,6 +11,7 @@ _February 2022:_ Version 12.0
 * Implement Zapier response handling
 * Implement Canned Response CSV upload
 * Message review action for multi-change message status
+* Implement Assignment Contacts sidebar
 
 ### Additional changes
 * Remove "Add All" button from Texters admin page
