@@ -42,7 +42,8 @@ describe("CampaignCannedResponseForm component", () => {
           { name: "Test Property", details: { property: "test" } }
         ]
       }
-    ]
+    ],
+    muiTheme: muiTheme
   };
 
   const props2 = {
@@ -59,7 +60,8 @@ describe("CampaignCannedResponseForm component", () => {
         name: "Tag2",
         description: "Tag2Desc"
       }
-    ]
+    ],
+    muiTheme: muiTheme
   };
 
   // when
