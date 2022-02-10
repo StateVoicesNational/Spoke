@@ -148,29 +148,74 @@ export const parseCSV = (file, onCompleteCallback, options) => {
   });
 };
 
-const clean = str => str.toLowerCase().trim();
+const clean = str => str && str.toLowerCase().trim();
 
 const parseTags = (org_tags, tag_text) => {
-  console.log(tag_text);
   const tagIds = [];
-  for (var t of tag_text.split(',')) {
-    const tag_name = clean(t);
+  if (tag_text) {
+    for (var t of tag_text.split(",")) {
+      const tag_name = clean(t);
 
-    if (!tag_name) continue;
+      if (!tag_name) continue;
 
-    const tag = org_tags.find(tag => clean(tag.name) == tag_name);
+      const tag = org_tags.find(tag => clean(tag.name) == tag_name);
 
-    if (!tag) {
-      throw `"${tag_name}" cannot be found in your organization's tags`;
+      if (!tag) {
+        throw `"${tag_name}" cannot be found in your organization's tags`;
+      }
+
+      tagIds.push(tag.id);
     }
-    
-    tagIds.push(tag.id);
   }
 
   return tagIds;
-}
+};
 
-export const parseCannedResponseCsv = (file, tags, onCompleteCallback) => {
+const parseAction = (availableActions, actionText, actionDataText) => {
+  const actionClean = clean(actionText);
+  const actionDataClean = clean(actionDataText);
+
+  if (!actionClean) return {};
+
+  const availableAction = availableActions.find(
+    x => clean(x.displayName) === actionClean
+  );
+
+  if (!availableAction) throw `"${actionText}" is not a valid action`;
+
+  let actionData;
+  if (
+    availableAction.clientChoiceData &&
+    availableAction.clientChoiceData.length
+  ) {
+    if (!actionDataClean)
+      throw `Action data choice is required for action ${actionText}`;
+
+    const actionDataChoice = availableAction.clientChoiceData.find(
+      x => clean(x.name) === actionDataClean
+    );
+
+    if (!actionDataChoice)
+      throw `"${actionDataText}" is not a valid action data choice`;
+
+    actionData = JSON.stringify({
+      label: actionDataChoice.name,
+      value: actionDataChoice.details
+    });
+  }
+
+  return {
+    action: availableAction.name,
+    actionData
+  };
+};
+
+export const parseCannedResponseCsv = (
+  file,
+  availableActions,
+  tags,
+  onCompleteCallback
+) => {
   Papa.parse(file, {
     header: true,
     skipEmptyLines: true,
@@ -180,6 +225,8 @@ export const parseCannedResponseCsv = (file, tags, onCompleteCallback) => {
 
       const titleLabel = meta.fields.find(f => clean(f) == "title");
       const textLabel = meta.fields.find(f => clean(f) == "text");
+      const actionLabel = meta.fields.find(f => clean(f) == "action");
+      const actionDataLabel = meta.fields.find(f => clean(f) == "actiondata");
       const tagsLabel = meta.fields.find(f => clean(f) == "tags");
 
       const missingFields = [];
@@ -201,7 +248,7 @@ export const parseCannedResponseCsv = (file, tags, onCompleteCallback) => {
         // Get basic details of canned response
         const newCannedResponse = {
           title: response[titleLabel].trim(),
-          text: response[textLabel].trim(),
+          text: response[textLabel].trim()
         };
 
         // Skip line if no title/text, error if only one empty
@@ -211,14 +258,27 @@ export const parseCannedResponseCsv = (file, tags, onCompleteCallback) => {
 
         if (!newCannedResponse.title || !newCannedResponse.text) {
           onCompleteCallback({
-            error: 
-              `Incomplete Line. Title: ${newCannedResponse.title}; Text: ${newCannedResponse.text}`
+            error: `Incomplete Line. Title: ${newCannedResponse.title}; Text: ${newCannedResponse.text}`
           });
           return;
         }
 
         try {
-          newCannedResponse.tagIds = parseTags(tags, response[tagsLabel])
+          const { action, actionData } = parseAction(
+            availableActions,
+            response[actionLabel],
+            response[actionDataLabel]
+          );
+
+          newCannedResponse.answerActions = action;
+          newCannedResponse.answerActionsData = actionData;
+        } catch (error) {
+          onCompleteCallback({ error });
+          return;
+        }
+
+        try {
+          newCannedResponse.tagIds = parseTags(tags, response[tagsLabel]);
         } catch (error) {
           onCompleteCallback({ error });
           return;

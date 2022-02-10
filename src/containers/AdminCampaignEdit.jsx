@@ -92,6 +92,8 @@ const campaignInfoFragment = `
     title
     text
     tagIds
+    answerActions
+    answerActionsData
   }
   ingestMethodsAvailable {
     name
@@ -495,7 +497,9 @@ export class AdminCampaignEdit extends React.Component {
         expandableBySuperVolunteers: true,
         extraProps: {
           customFields: this.props.campaignData.campaign.customFields,
-          organizationId: this.props.organizationData.organization.id
+          organizationId: this.props.organizationData.organization.id,
+          availableActions: this.props.organizationData.organization
+            .availableActions
         }
       },
       {

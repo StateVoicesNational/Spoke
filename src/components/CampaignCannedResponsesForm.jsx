@@ -73,14 +73,25 @@ const styles = StyleSheet.create({
 });
 
 export class CampaignCannedResponsesForm extends React.Component {
-  state = {
-    showForm: false,
-    formButtonText: "",
-    responseId: null,
-    showFullTextId: null,
-    uploadingCsv: false,
-    uploadCsvError: null
-  };
+  constructor(props) {
+    super(props);
+
+    this.state = {
+      showForm: false,
+      formButtonText: "",
+      responseId: null,
+      showFullTextId: null,
+      uploadingCsv: false,
+      uploadCsvError: null,
+      availableActionsLookup:
+        props.availableActions &&
+        props.availableActions.reduce((lookup, action) => {
+          const toReturn = { ...lookup };
+          toReturn[action.name] = action;
+          return toReturn;
+        }, {})
+    };
+  }
 
   formSchema = yup.object({
     cannedResponses: yup.array().of(
@@ -118,7 +129,7 @@ export class CampaignCannedResponsesForm extends React.Component {
           </Button>
           <div>
             <div className={css(styles.flexEnd)}>
-              <Tooltip title="Upload a CSV of canned responses with columns for Title, Text, and Tags">
+              <Tooltip title="Upload a CSV of canned responses with columns for Title, Text, Action, ActionData, and Tags">
                 <IconButton
                   onClick={() => this.uploadCsvInputRef.current.click()}
                   disabled={this.state.uploadingCsv}
@@ -203,6 +214,7 @@ export class CampaignCannedResponsesForm extends React.Component {
               }}
               customFields={this.props.customFields}
               tags={this.props.data.organization.tags}
+              availableActions={this.props.availableActions}
             />
           </div>
         </div>
@@ -211,6 +223,7 @@ export class CampaignCannedResponsesForm extends React.Component {
   }
 
   listItems(cannedResponses) {
+    const { availableActionsLookup } = this.state;
     const listItems = cannedResponses.map(response => (
       <ListItem
         {...dataTest("cannedResponse")}
@@ -237,7 +250,15 @@ export class CampaignCannedResponsesForm extends React.Component {
                   }
             }
           >
-            {response.text}
+            {response.answerActions ? (
+              <span>
+                Action: &nbsp;
+                {availableActionsLookup[response.answerActions].displayName}
+                &nbsp;{JSON.parse(response.answerActionsData || "{}").label}
+                <br />
+              </span>
+            ) : null}
+            <span>{response.text}</span>
           </div>
           {response.tagIds && response.tagIds.length > 0 && (
             <TagChips
@@ -287,28 +308,34 @@ export class CampaignCannedResponsesForm extends React.Component {
 
     const file = event.target.files[0];
     const tags = this.props.data.organization.tags;
+    const availableActions = this.props.availableActions;
 
     if (!file) return;
 
     this.setState({ uploadingCsv: true, uploadCsvError: null }, () =>
-      parseCannedResponseCsv(file, tags, ({ error, cannedResponses }) => {
-        this.setState({
-          uploadingCsv: false,
-          uploadCsvError: error
-        });
+      parseCannedResponseCsv(
+        file,
+        availableActions,
+        tags,
+        ({ error, cannedResponses }) => {
+          this.setState({
+            uploadingCsv: false,
+            uploadCsvError: error
+          });
 
-        if (error) return;
+          if (error) return;
 
-        this.props.onChange({
-          cannedResponses: [
-            ...this.props.formValues.cannedResponses,
-            ...cannedResponses.map(r => ({
-              ...r,
-              id: this.getCannedResponseId()
-            }))
-          ]
-        });
-      })
+          this.props.onChange({
+            cannedResponses: [
+              ...this.props.formValues.cannedResponses,
+              ...cannedResponses.map(r => ({
+                ...r,
+                id: this.getCannedResponseId()
+              }))
+            ]
+          });
+        }
+      )
     );
   };
 
@@ -359,7 +386,8 @@ CampaignCannedResponsesForm.propTypes = {
   formValues: type.object,
   customFields: type.array,
   organizationId: type.string,
-  data: type.object
+  data: type.object,
+  availableActions: type.array
 };
 
 const queries = {
