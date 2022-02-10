@@ -24,7 +24,7 @@ import theme from "../../styles/theme";
 import Form from "react-formal";
 import { messageListStyles, inlineStyles, flexStyles } from "./StyleControls";
 import { searchFor } from "../../lib/search-helpers";
-
+import AssignmentContactsList from "./AssignmentContactsList";
 import { renderSidebox } from "../../extensions/texter-sideboxes/components";
 
 import {
@@ -37,6 +37,8 @@ import {
 } from "../../lib";
 
 import { dataTest } from "../../lib/attributes";
+import ContactToolbar from "./ContactToolbar";
+import { getCookie, setCookie } from "../../lib/cookie";
 
 export class AssignmentTexterContactControls extends React.Component {
   constructor(props) {
@@ -62,6 +64,15 @@ export class AssignmentTexterContactControls extends React.Component {
         currentInteractionStep.question.answerOptions;
     }
 
+    let contactListOpen =
+      global.ASSIGNMENT_CONTACTS_SIDEBAR &&
+      document.documentElement.clientWidth > 575;
+
+    const contactListOpenCookie = getCookie("assignmentContactListOpen");
+    if (contactListOpenCookie) {
+      contactListOpen = contactListOpenCookie === "true";
+    }
+
     this.state = {
       questionResponses,
       filteredCannedResponses: props.campaign.cannedResponses,
@@ -78,7 +89,8 @@ export class AssignmentTexterContactControls extends React.Component {
       availableSteps,
       messageReadOnly: false,
       hideMedia: false,
-      currentInteractionStep
+      currentInteractionStep,
+      contactListOpen
     };
   }
 
@@ -136,6 +148,12 @@ export class AssignmentTexterContactControls extends React.Component {
         currentShortcutSpace: this.refs.answerButtons.offsetHeight
       });
     }
+  };
+
+  toggleContactList = () => {
+    this.setState({ contactListOpen: !this.state.contactListOpen }, () => {
+      setCookie("assignmentContactListOpen", this.state.contactListOpen, 1);
+    });
   };
 
   blockWithCtrl = evt => {
@@ -987,8 +1005,6 @@ export class AssignmentTexterContactControls extends React.Component {
       <div key="toolbar" className={css(flexStyles.sectionHeaderToolbar)}>
         <Toolbar
           campaign={this.props.campaign}
-          campaignContact={this.props.contact}
-          navigationToolbarChildren={this.props.navigationToolbarChildren}
           onExit={this.props.onExitTexter}
           onSideboxButtonClick={
             enabledSideboxes && enabledSideboxes.length > 0
@@ -1007,9 +1023,9 @@ export class AssignmentTexterContactControls extends React.Component {
     const settingsData = JSON.parse(
       this.props.campaign.texterUIConfig.options || "{}"
     );
-    const sideboxList = enabledSideboxes.map(sidebox => {
-      return renderSidebox(sidebox, settingsData, this);
-    });
+    const sideboxList = enabledSideboxes.map(sidebox =>
+      renderSidebox(sidebox, settingsData, this)
+    );
     const sideboxOpen = this.getSideboxDialogOpen(enabledSideboxes);
     if (sideboxOpen) {
       return (
@@ -1029,7 +1045,14 @@ export class AssignmentTexterContactControls extends React.Component {
       );
     }
     // TODO: max height
-    return <div className={css(flexStyles.sectionSideBox)}>{sideboxList}</div>;
+    return (
+      <div className={css(flexStyles.sectionSideBox)}>
+        <div className={css(flexStyles.sectionSideBoxHeader)} />
+        <div className={css(flexStyles.sectionSideBoxContent)}>
+          {sideboxList}
+        </div>
+      </div>
+    );
   }
 
   renderMessageBox(internalComponent, enabledSideboxes) {
@@ -1051,15 +1074,35 @@ export class AssignmentTexterContactControls extends React.Component {
         >
           {internalComponent}
         </div>
-        {this.renderSidebox(enabledSideboxes)}
       </div>
     );
   }
+
+  renderAssignmentContactsList = () => {
+    return (
+      <div className={css(flexStyles.sectionLeftSideBox)}>
+        <AssignmentContactsList
+          contacts={this.props.assignment.contacts}
+          currentContact={this.props.contact}
+          updateCurrentContactById={this.props.updateCurrentContactById}
+        />
+      </div>
+    );
+  };
 
   renderFirstMessage(enabledSideboxes) {
     const { contact } = this.props;
     return [
       this.renderToolbar(enabledSideboxes),
+      <ContactToolbar
+        key="contactToolbar"
+        campaignContact={this.props.contact}
+        campaign={this.props.campaign}
+        navigationToolbarChildren={this.props.navigationToolbarChildren}
+        toggleContactList={() =>
+          this.setState({ contactListOpen: !this.state.contactListOpen })
+        }
+      />,
       this.renderMessageBox(
         <Empty
           title={
@@ -1083,19 +1126,38 @@ export class AssignmentTexterContactControls extends React.Component {
       ? this.renderFirstMessage(enabledSideboxes)
       : [
           this.renderToolbar(enabledSideboxes),
-          this.renderMessageBox(
-            <MessageList
-              contact={this.props.contact}
-              currentUser={this.props.currentUser}
-              messages={this.props.contact.messages}
-              organizationId={this.props.organizationId}
-              review={this.props.review}
-              styles={messageListStyles}
-              hideMedia={this.state.hideMedia}
-            />,
-            enabledSideboxes
-          ),
-          this.renderMessageControls(enabledSideboxes)
+          <div
+            key="superSectionMessagePage"
+            className={css(flexStyles.superSectionMessagePage)}
+          >
+            {this.state.contactListOpen &&
+              this.renderAssignmentContactsList(
+                this.props.assignment.contacts,
+                this.props.contact,
+                this.props.updateCurrentContactById
+              )}
+            <div className={css(flexStyles.superSectionMessageListAndControls)}>
+              <ContactToolbar
+                campaignContact={this.props.contact}
+                campaign={this.props.campaign}
+                navigationToolbarChildren={this.props.navigationToolbarChildren}
+                toggleContactList={this.toggleContactList}
+              />
+              {this.renderMessageBox(
+                <MessageList
+                  contact={this.props.contact}
+                  currentUser={this.props.currentUser}
+                  messages={this.props.contact.messages}
+                  organizationId={this.props.organizationId}
+                  review={this.props.review}
+                  styles={messageListStyles}
+                  hideMedia={this.state.hideMedia}
+                />
+              )}
+              {this.renderMessageControls(enabledSideboxes)}
+            </div>
+            {this.renderSidebox(enabledSideboxes)}
+          </div>
         ];
     return <div className={css(flexStyles.topContainer)}>{content}</div>;
   }
@@ -1129,7 +1191,8 @@ AssignmentTexterContactControls.propTypes = {
   onExitTexter: PropTypes.func,
   onEditStatus: PropTypes.func,
   refreshData: PropTypes.func,
-  getMessageTextFromScript: PropTypes.func
+  getMessageTextFromScript: PropTypes.func,
+  updateCurrentContactById: PropTypes.func
 };
 
 export default AssignmentTexterContactControls;

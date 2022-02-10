@@ -6,7 +6,8 @@ export const messageListStyles = {
   // passesd directly to <MessageList>
   messageList: {
     overflow: "hidden",
-    overflow: "-moz-scrollbars-vertical"
+    overflow: "-moz-scrollbars-vertical",
+    padding: 8
   },
   messageSent: {
     textAlign: "left",
@@ -99,11 +100,20 @@ export const flexStyles = StyleSheet.create({
     flex: "0 1 240px",
     overflowY: "scroll",
     textAlign: "center",
-    padding: "24px",
+    overflow: "hidden scroll",
     maxWidth: "240px",
     "@media(max-width: 575px)": {
       display: "none"
     }
+  },
+  sectionSideBoxHeader: {
+    height: 56,
+    backgroundColor: "rgba(126, 128, 139, .7)"
+  },
+  sectionSideBoxContent: {
+    padding: 24,
+    borderLeft: "1px solid #C1C3CC",
+    height: "100%"
   },
   superSectionMessageBox: {
     flex: "1 2 auto",
@@ -119,6 +129,22 @@ export const flexStyles = StyleSheet.create({
     backgroundColor: "#f0f0f0",
     flex: "1 1 auto",
     overflowY: "scroll"
+  },
+  sectionLeftSideBox: {
+    flex: "1 0 260px",
+    maxWidth: 260,
+    overflow: "hidden scroll"
+  },
+  superSectionMessagePage: {
+    display: "flex",
+    flexGrow: 1,
+    overflow: "hidden scroll"
+  },
+  superSectionMessageListAndControls: {
+    display: "flex",
+    flexDirection: "column",
+    flexGrow: 1,
+    maxHeight: "100%"
   },
   /// * Section OptOut Dialog
   sectionOptOutDialog: {
@@ -141,8 +167,8 @@ export const flexStyles = StyleSheet.create({
   /// * Section Texting Input Field
   sectionMessageField: {
     // messageField
-    flex: "1 0 20px",
-    padding: "0px 4px",
+    flex: "0 0 20px",
+    padding: "0px 16px",
     marginBottom: "8px",
     backgroundColor: "white"
   },
@@ -168,7 +194,8 @@ export const flexStyles = StyleSheet.create({
     // flexWrap: "wrap",
     overflow: "hidden",
     position: "relative",
-    backgroundColor: bgGrey
+    backgroundColor: bgGrey,
+    paddingLeft: 12
   },
   subButtonsAnswerButtons: {
     flex: "1 1 auto", // keeps bottom buttons in place
@@ -228,7 +255,7 @@ export const flexStyles = StyleSheet.create({
     flexDirection: "column",
     flexWrap: "wrap",
     alignContent: "space-between",
-    padding: "9px",
+    padding: "9px 9px 9px 21px",
     "@media (hover: hover) and (pointer: fine)": {
       // for touchpads and phones, the edge of the tablet is easier
       // vs for desktops, we want to maximize how far the mouse needs to travel
