@@ -1,6 +1,7 @@
 import type from "prop-types";
 import React from "react";
 import orderBy from "lodash/orderBy";
+import { compose } from "recompose";
 import Slider from "./Slider";
 
 import Autocomplete from "@material-ui/lab/Autocomplete";
@@ -14,6 +15,7 @@ import Snackbar from "@material-ui/core/Snackbar";
 import Switch from "@material-ui/core/Switch";
 import FormControlLabel from "@material-ui/core/FormControlLabel";
 
+import withMuiTheme from "./../containers/hoc/withMuiTheme";
 import GSForm from "../components/forms/GSForm";
 import GSTextField from "./forms/GSTextField";
 import GSSubmitButton from "./forms/GSSubmitButton";
@@ -27,7 +29,7 @@ import { getHighestRole } from "../lib/permissions";
 
 const styles = StyleSheet.create({
   sliderContainer: {
-    border: `1px solid ${theme.colors.lightGray}`,
+    border: `1px solid`,
     padding: 10,
     borderRadius: 8
   },
@@ -73,7 +75,7 @@ const styles = StyleSheet.create({
   },
   headerContainer: {
     display: "flex",
-    borderBottom: `1px solid ${theme.colors.lightGray}`,
+    borderBottom: `1px solid`,
     marginBottom: 20
   },
   assignedCount: {
@@ -85,8 +87,7 @@ const styles = StyleSheet.create({
     marginTop: "auto",
     marginBottom: "auto",
     marginRight: 10,
-    display: "inline-block",
-    backgroundColor: theme.colors.lightGray
+    display: "inline-block"
   },
   input: {
     width: 50,
@@ -112,7 +113,7 @@ const inlineStyles = {
   }
 };
 
-export default class CampaignTextersForm extends React.Component {
+class CampaignTextersForm extends React.Component {
   state = {
     autoSplit: false,
     focusedTexterId: null,
@@ -344,7 +345,7 @@ export default class CampaignTextersForm extends React.Component {
             <Slider
               maxValue={this.formValues().contactsCount}
               value={messagedCount}
-              color={theme.colors.darkGray}
+              color={this.props.muiTheme.palette.text.secondary}
               direction={1}
             />
           </div>
@@ -371,7 +372,7 @@ export default class CampaignTextersForm extends React.Component {
             <Slider
               maxValue={this.formValues().contactsCount}
               value={texter.assignment.needsMessageCount}
-              color={theme.colors.green}
+              color={this.props.muiTheme.palette.primary.main}
               direction={0}
             />
           </div>
@@ -434,8 +435,8 @@ export default class CampaignTextersForm extends React.Component {
 
     const headerColor =
       assignedContacts === this.formValues().contactsCount
-        ? theme.colors.green
-        : theme.colors.orange;
+        ? this.props.muiTheme.palette.primary.main
+        : this.props.muiTheme.palette.error.main;
     return (
       <div>
         <CampaignFormSectionHeading
@@ -570,3 +571,5 @@ CampaignTextersForm.propTypes = {
   saveLabel: type.string,
   saveDisabled: type.bool
 };
+
+export default compose(withMuiTheme)(CampaignTextersForm);

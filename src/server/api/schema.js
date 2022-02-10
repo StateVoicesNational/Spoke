@@ -42,7 +42,7 @@ import {
   processServiceManagers,
   serviceManagersHaveImplementation
 } from "../../extensions/service-managers";
-import { getConfig, getFeatures } from "./lib/config";
+import { getConfig, getFeatures, getTheme } from "./lib/config";
 import { resolvers as messageResolvers } from "./message";
 import { resolvers as optOutResolvers } from "./opt-out";
 import { resolvers as organizationResolvers } from "./organization";
@@ -721,6 +721,32 @@ const rootMutations = {
       const organization = await Organization.get(organizationId);
       const featuresJSON = getFeatures(organization);
       featuresJSON.opt_out_message = optOutMessage;
+      organization.features = JSON.stringify(featuresJSON);
+
+      await organization.save();
+      await cacheableData.organization.clear(organizationId);
+
+      return await Organization.get(organizationId);
+    },
+    updateTheme: async (
+      _,
+      { organizationId, primary, secondary, info, success, warning, error },
+      { user }
+    ) => {
+      await accessRequired(user, organizationId, "OWNER");
+
+      const organization = await Organization.get(organizationId);
+      const featuresJSON = getFeatures(organization);
+      featuresJSON.theme = {
+        palette: {
+          primary: { main: primary },
+          secondary: { main: secondary },
+          info: { main: info },
+          success: { main: success },
+          warning: { main: warning },
+          error: { main: error }
+        }
+      };
       organization.features = JSON.stringify(featuresJSON);
 
       await organization.save();

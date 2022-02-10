@@ -5,6 +5,8 @@ import React from "react";
 import { mount } from "enzyme";
 import CampaignCannedResponseForm from "../../src/components/CampaignCannedResponseForm";
 import { StyleSheetTestUtils } from "aphrodite";
+import ThemeContext from "../../src/containers/context/ThemeContext";
+import { muiTheme } from "../test_helpers";
 
 describe("CampaignCannedResponseForm component", () => {
   // given
@@ -63,7 +65,11 @@ describe("CampaignCannedResponseForm component", () => {
   // when
   test("Renders form with correct fields and label for editing", () => {
     StyleSheetTestUtils.suppressStyleInjection();
-    const wrapper = mount(<CampaignCannedResponseForm {...props1} />);
+    const wrapper = mount(
+      <ThemeContext.Provider value={{ muiTheme }}>
+        <CampaignCannedResponseForm {...props1} />
+      </ThemeContext.Provider>
+    );
     expect(
       wrapper
         .find({ label: "Title" })
@@ -109,7 +115,11 @@ describe("CampaignCannedResponseForm component", () => {
 
   test("Renders form with correct fields and label for adding", () => {
     StyleSheetTestUtils.suppressStyleInjection();
-    const wrapper = mount(<CampaignCannedResponseForm {...props2} />);
+    const wrapper = mount(
+      <ThemeContext.Provider value={{ muiTheme }}>
+        <CampaignCannedResponseForm {...props2} />
+      </ThemeContext.Provider>
+    );
     expect(
       wrapper
         .find({ label: "Title" })

@@ -1,14 +1,15 @@
 import PropTypes from "prop-types";
 import React from "react";
-import { StyleSheet, css } from "aphrodite";
+import { css } from "aphrodite";
+import { compose } from "recompose";
 import Toolbar from "./Toolbar";
 import MessageList from "./MessageList";
-import CannedResponseMenu from "./CannedResponseMenu";
 import Survey from "./Survey";
 import ScriptList from "./ScriptList";
 import Empty from "../Empty";
 import GSForm from "../forms/GSForm";
 import GSTextField from "../forms/GSTextField";
+import withMuiTheme from "../../containers/hoc/withMuiTheme";
 
 import Card from "@material-ui/core/Card";
 import CardHeader from "@material-ui/core/CardHeader";
@@ -20,7 +21,6 @@ import ArrowDropDownIcon from "@material-ui/icons/ArrowDropDown";
 import CreateIcon from "@material-ui/icons/Create";
 
 import * as yup from "yup";
-import theme from "../../styles/theme";
 import Form from "react-formal";
 import { messageListStyles, inlineStyles, flexStyles } from "./StyleControls";
 import { searchFor } from "../../lib/search-helpers";
@@ -30,10 +30,7 @@ import { renderSidebox } from "../../extensions/texter-sideboxes/components";
 import {
   getChildren,
   getAvailableInteractionSteps,
-  getTopMostParent,
-  interactionStepForId,
-  log,
-  isBetweenTextingHours
+  getTopMostParent
 } from "../../lib";
 
 import { dataTest } from "../../lib/attributes";
@@ -568,11 +565,14 @@ export class AssignmentTexterContactControls extends React.Component {
         button = (
           <Button
             onClick={onClick("needsResponse")}
-            className={css(flexStyles.button)}
+            style={{
+              color: this.props.muiTheme.palette.text.primary,
+              backgroundColor: this.props.muiTheme.palette.background.default
+            }}
             style={{ flex: "1 1 auto" }}
             disabled={!!this.props.contact.optOut}
             color="default"
-            variant="outlined"
+            variant="contained"
           >
             Reopen
           </Button>
@@ -581,10 +581,13 @@ export class AssignmentTexterContactControls extends React.Component {
         button = (
           <Button
             onClick={onClick("closed", true)}
-            className={css(flexStyles.button)}
+            style={{
+              color: this.props.muiTheme.palette.text.primary,
+              backgroundColor: this.props.muiTheme.palette.background.default
+            }}
             disabled={!!this.props.contact.optOut}
             color="default"
-            variant="outlined"
+            variant="contained"
           >
             Skip
           </Button>
@@ -903,9 +906,8 @@ export class AssignmentTexterContactControls extends React.Component {
             !disabled ? this.handleOpenAnswerResponsePopover : noAction => {}
           }
           style={{
-            backgroundColor: availableSteps.length
-              ? "white"
-              : "rgb(176, 176, 176)"
+            backgroundColor: this.props.muiTheme.palette.background.default,
+            color: this.props.muiTheme.palette.text.primary
           }}
           disabled={disabled}
           variant="outlined"
@@ -918,11 +920,11 @@ export class AssignmentTexterContactControls extends React.Component {
           {...dataTest("optOut")}
           onClick={this.handleOpenDialog}
           style={{
-            color: "#DE1A1A",
-            backgroundColor: "#FFF"
+            color: this.props.muiTheme.palette.error.main,
+            backgroundColor: this.props.muiTheme.palette.background.default
           }}
           disabled={!!this.props.contact.optOut}
-          variant="outlined"
+          variant="contained"
         >
           Opt-out
         </Button>
@@ -936,7 +938,7 @@ export class AssignmentTexterContactControls extends React.Component {
       <div
         key="renderMessagingRowSendSkip"
         className={css(flexStyles.sectionSend)}
-        style={firstMessage ? { height: "54px" } : { height: "36px" }}
+        style={{ height: "54px" }}
       >
         <Button
           {...dataTest("send")}
@@ -1071,6 +1073,12 @@ export class AssignmentTexterContactControls extends React.Component {
           key="messageScrollContainer"
           ref="messageScrollContainer"
           className={css(flexStyles.sectionMessageThread)}
+          style={{
+            backgroundColor:
+              this.props.muiTheme.palette.type === "light"
+                ? "#f0f0f0"
+                : this.props.muiTheme.palette.grey[700]
+          }}
         >
           {internalComponent}
         </div>
@@ -1159,7 +1167,19 @@ export class AssignmentTexterContactControls extends React.Component {
             {this.renderSidebox(enabledSideboxes)}
           </div>
         ];
-    return <div className={css(flexStyles.topContainer)}>{content}</div>;
+    return (
+      <div
+        className={css(flexStyles.topContainer)}
+        style={{
+          backgroundColor:
+            this.props.muiTheme.palette.type === "light"
+              ? "#d6d7df"
+              : this.props.muiTheme.palette.grey[800]
+        }}
+      >
+        {content}
+      </div>
+    );
   }
 }
 
@@ -1195,4 +1215,4 @@ AssignmentTexterContactControls.propTypes = {
   updateCurrentContactById: PropTypes.func
 };
 
-export default AssignmentTexterContactControls;
+export default compose(withMuiTheme)(AssignmentTexterContactControls);

@@ -42,7 +42,6 @@ const styles = StyleSheet.create({
     textAlign: "left"
   },
   form: {
-    backgroundColor: theme.colors.white,
     padding: 10
   },
   title: {
@@ -50,7 +49,6 @@ const styles = StyleSheet.create({
   },
   text: {
     fontSize: 14,
-    color: theme.colors.gray,
     marginBottom: 8,
     display: "-webkit-box",
     WebkitBoxOrient: "vertical",
@@ -115,8 +113,8 @@ export class CampaignCannedResponsesForm extends React.Component {
       return (
         <div className={css(styles.spaceBetween)}>
           <Button
-            color="secondary"
-            startIcon={<CreateIcon color="secondary" />}
+            variant="outlined"
+            startIcon={<CreateIcon color="primary" />}
             onClick={() =>
               this.setState({
                 showForm: true,
