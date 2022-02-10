@@ -13,7 +13,7 @@ _February 2022:_ Version 12.0
 
 ### Additional changes
 * Remove "Add All" button from Texters admin page
-* Dependency updates: moment
+* Dependency updates: moment, nodemailer
 
 ### Appreciations
 * [Adam Greenspan](https://github.com/agreenspan24), [Cody Gordon](https://github.com/codygordon), [Holden Green](https://github.com/holdengreen), [Kathy Nguyen](https://github.com/crayolakat), [Preston Maness](https://github.com/aggroskater), and Mark Houghton for QA
