@@ -12,13 +12,14 @@ _February 2022:_ Version 12.0
 * Implement Canned Response CSV upload
 * Message review action for multi-change message status
 * Implement Assignment Contacts sidebar
+* Material UI Theming
 
 ### Additional changes
 * Remove "Add All" button from Texters admin page
 * Dependency updates: moment, nodemailer
 
 ### Appreciations
-* [Adam Greenspan](https://github.com/agreenspan24), [Cody Gordon](https://github.com/codygordon), [Holden Green](https://github.com/holdengreen), [Kathy Nguyen](https://github.com/crayolakat), [Preston Maness](https://github.com/aggroskater), [Schuyler Duveen](https://github.com/schuyler1d), and Mark Houghton for QA
+* [Adam Greenspan](https://github.com/agreenspan24), [Cody Gordon](https://github.com/codygordon), [Holden Green](https://github.com/holdengreen), [Kathy Nguyen](https://github.com/crayolakat), [Preston Maness](https://github.com/aggroskater), [Schuyler Duveen](https://github.com/schuyler1d), [Stefan Hayden](https://github.com/stefanhayden), and Mark Houghton for QA
 
 ## v11.1
 
