@@ -7,7 +7,7 @@ import {
 } from "../../../src/extensions/contact-loaders/csv-upload";
 import {
   ensureCamelCaseRequiredHeaders,
-  CampaignContactsForm
+  CampaignContactsFormBase as CampaignContactsForm
 } from "../../../src/extensions/contact-loaders/csv-upload/react-component";
 
 // csv-upload libs for validation
@@ -24,15 +24,15 @@ import {
   createInvite,
   createOrganization,
   createCampaign,
-  sleep
+  sleep,
+  muiTheme
 } from "../../test_helpers";
 
 // client-testing libs
 import React from "react";
 import { shallow, mount } from "enzyme";
 import { StyleSheetTestUtils } from "aphrodite";
-import { CampaignContactsChoiceForm } from "../../../src/components/CampaignContactsChoiceForm";
-import { icons } from "../../../src/components/CampaignContactsChoiceForm";
+import { CampaignContactsChoiceFormBase as CampaignContactsChoiceForm } from "../../../src/components/CampaignContactsChoiceForm";
 
 const contacts = [
   {
@@ -157,10 +157,16 @@ describe("ingest-contact-loader method: csv-upload frontend", async () => {
     StyleSheetTestUtils.suppressStyleInjection();
     wrapper = shallow(
       <CampaignContactsForm
+        muiTheme={muiTheme}
         onChange={onChange}
         onSubmit={onSubmit}
         campaignIsStarted={false}
-        icons={icons}
+        icons={{
+          check: <div />,
+          warning: <div />,
+          error: <div />,
+          info: <div />
+        }}
         saveDisabled={false}
         saveLabel={"Save"}
         clientChoiceData={""}
@@ -233,6 +239,7 @@ describe("ingest-contact-loader method: csv-upload frontend", async () => {
     changeData = null;
     const choiceWrapper = shallow(
       <CampaignContactsChoiceForm
+        muiTheme={muiTheme}
         onChange={onChange}
         ensureComplete={true}
         onSubmit={onSubmit}
@@ -244,8 +251,7 @@ describe("ingest-contact-loader method: csv-upload frontend", async () => {
     );
     const choiceComponent = choiceWrapper.instance();
     expect(choiceComponent.getCurrentMethod().name).toBe("csv-upload");
-    const contactsForm = choiceWrapper.find(CampaignContactsForm);
-    expect(contactsForm.props().saveLabel).toBe("Save");
+    expect(choiceWrapper.html()).toContain("Save");
   });
   it("csv-upload:component passes headerTransformer to Papa.parse", async () => {
     didSubmit = false;

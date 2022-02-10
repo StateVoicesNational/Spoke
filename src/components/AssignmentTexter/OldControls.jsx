@@ -450,7 +450,7 @@ export class AssignmentTexterContactControls extends React.Component {
             <Tooltip title="Opt out this contact">
               <Button
                 {...dataTest("optOut")}
-                color="secondary"
+                variant="outlined"
                 onClick={this.handleOpenDialog}
               >
                 Opt out

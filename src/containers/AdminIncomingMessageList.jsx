@@ -1,6 +1,7 @@
 import PropTypes from "prop-types";
 import React, { Component } from "react";
 import _ from "lodash";
+import { compose } from "react-apollo";
 
 import IncomingMessageActions from "../components/IncomingMessageActions";
 import IncomingMessageFilter, {
@@ -641,4 +642,7 @@ const mutations = {
 
 export const operations = { mutations, queries };
 
-export default loadData(operations)(withRouter(AdminIncomingMessageList));
+export default compose(
+  loadData(operations),
+  withRouter
+)(AdminIncomingMessageList);

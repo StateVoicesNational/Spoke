@@ -2,6 +2,7 @@ import PropTypes from "prop-types";
 import React from "react";
 import gql from "graphql-tag";
 import { Link } from "react-router";
+import { compose } from "recompose";
 
 import Button from "@material-ui/core/Button";
 import ButtonGroup from "@material-ui/core/ButtonGroup";
@@ -24,6 +25,7 @@ import CircularProgress from "@material-ui/core/CircularProgress";
 
 import theme from "../styles/theme";
 import loadData from "./hoc/load-data";
+import withMuiTheme from "./hoc/withMuiTheme";
 import AdminCampaignCopy from "./AdminCampaignCopy";
 import CampaignBasicsForm from "../components/CampaignBasicsForm";
 import CampaignMessagingServiceForm from "../components/CampaignMessagingServiceForm";
@@ -145,7 +147,7 @@ export const campaignDataQuery = gql`query getCampaign($campaignId: String!) {
         }
       }`;
 
-export class AdminCampaignEdit extends React.Component {
+export class AdminCampaignEditBase extends React.Component {
   constructor(props) {
     super(props);
     const isNew = props.location.query.new;
@@ -743,7 +745,7 @@ export class AdminCampaignEdit extends React.Component {
       <div
         {...dataTest("campaignIsStarted")}
         style={{
-          color: theme.colors.green,
+          color: this.props.muiTheme.palette.primary.main,
           fontWeight: 800
         }}
       >
@@ -757,8 +759,8 @@ export class AdminCampaignEdit extends React.Component {
     return (
       <div className={css(styles.container)}>
         {campaign.title && (
-          <div className={css(styles.header)}>
-            {campaign.title}
+          <div>
+            <h1>{campaign.title}</h1>
             {isStarting ? (
               <div
                 style={{
@@ -768,7 +770,7 @@ export class AdminCampaignEdit extends React.Component {
               >
                 <div
                   style={{
-                    color: theme.colors.gray,
+                    color: this.props.muiTheme.palette.grey[500],
                     fontWeight: 800
                   }}
                 >
@@ -941,6 +943,7 @@ export class AdminCampaignEdit extends React.Component {
     const sections = this.sections();
     const { expandedSection } = this.state;
     const { adminPerms } = this.props.params;
+    const { muiTheme } = this.props;
     return (
       <div>
         {this.renderHeader()}
@@ -951,9 +954,10 @@ export class AdminCampaignEdit extends React.Component {
           const sectionIsExpanded = sectionIndex === expandedSection;
           let avatar = null;
           const cardHeaderStyle = {
-            backgroundColor: theme.colors.lightGray
+            fontSize: 20
           };
           const avatarStyle = {
+            backgroundColor: this.props.muiTheme.palette.background.default,
             height: 25,
             width: 25
           };
@@ -971,47 +975,49 @@ export class AdminCampaignEdit extends React.Component {
 
           if (sectionIsSaving) {
             avatar = <CircularProgress style={avatarStyle} size={25} />;
-            cardHeaderStyle.background = theme.colors.lightGray;
             cardHeaderStyle.width = `${savePercent}%`;
           } else if (sectionIsExpanded && sectionCanExpandOrCollapse) {
-            cardHeaderStyle.backgroundColor = theme.colors.lightYellow;
-          } else if (!sectionCanExpandOrCollapse) {
-            cardHeaderStyle.backgroundColor = theme.colors.lightGray;
+            cardHeaderStyle.backgroundColor = muiTheme.palette.warning.light;
+            cardHeaderStyle.color = muiTheme.palette.warning.contrastText;
           } else if (sectionIsDone) {
             avatar = (
-              <Avatar style={avatarStyle} color="primary">
-                <DoneIcon
-                  fontSize="small"
-                  style={{ color: theme.colors.darkGreen }}
-                />
+              <Avatar style={avatarStyle}>
+                <DoneIcon fontSize="small" color="primary" />
               </Avatar>
             );
-            cardHeaderStyle.backgroundColor = theme.colors.green;
+            cardHeaderStyle.backgroundColor = muiTheme.palette.primary.main;
+            cardHeaderStyle.color = muiTheme.palette.primary.contrastText;
           } else if (!sectionIsDone) {
             avatar = (
               <Avatar style={avatarStyle} color="primary">
                 <WarningIcon
-                  style={{ color: theme.colors.orange, fontSize: 16 }}
+                  style={{
+                    color: muiTheme.palette.warning.main,
+                    height: 16,
+                    width: 16
+                  }}
                 />
               </Avatar>
             );
-            cardHeaderStyle.backgroundColor = theme.colors.yellow;
+            cardHeaderStyle.backgroundColor = muiTheme.palette.warning.main;
+            cardHeaderStyle.color = muiTheme.palette.warning.contrastText;
           }
           return (
             <Card
               {...dataTest(camelCase(`${section.title}`))}
               key={section.title}
-              style={{
-                marginTop: 1
-              }}
+              style={{ marginTop: 1 }}
             >
               <CardHeader
                 title={section.title}
                 action={
-                  <IconButton>
-                    <ExpandMoreIcon />
-                  </IconButton>
+                  sectionCanExpandOrCollapse && (
+                    <IconButton>
+                      <ExpandMoreIcon />
+                    </IconButton>
+                  )
                 }
+                disableTypography={true}
                 style={cardHeaderStyle}
                 avatar={avatar}
                 onClick={newExpandedState => {
@@ -1039,6 +1045,7 @@ export class AdminCampaignEdit extends React.Component {
                   <Button
                     variant="contained"
                     color="secondary"
+                    variant="outlined"
                     startIcon={<CancelIcon />}
                     onClick={() => this.handleDeleteJob(jobId)}
                   >
@@ -1054,7 +1061,7 @@ export class AdminCampaignEdit extends React.Component {
   }
 }
 
-AdminCampaignEdit.propTypes = {
+AdminCampaignEditBase.propTypes = {
   campaignData: PropTypes.object,
   mutations: PropTypes.object,
   organizationData: PropTypes.object,
@@ -1214,4 +1221,8 @@ const mutations = {
 };
 
 export const operations = { queries, mutations };
-export default loadData(operations)(AdminCampaignEdit);
+
+export default compose(
+  loadData(operations),
+  withMuiTheme
+)(AdminCampaignEditBase);
