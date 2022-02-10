@@ -3,7 +3,6 @@
  */
 import React from "react";
 import { mount } from "enzyme";
-import AutoComplete from "@material-ui/lab/Autocomplete";
 import CampaignCannedResponseForm from "../../src/components/CampaignCannedResponseForm";
 import { StyleSheetTestUtils } from "aphrodite";
 
@@ -15,7 +14,12 @@ describe("CampaignCannedResponseForm component", () => {
       id: 1,
       title: "Response1",
       text: "Response1 desc",
-      tagIds: [1, 2]
+      tagIds: [1, 2],
+      answerActions: "fake-action",
+      answerActionsData: JSON.stringify({
+        label: "Test Property",
+        value: { property: "test" }
+      })
     },
     tags: [
       {
@@ -27,6 +31,14 @@ describe("CampaignCannedResponseForm component", () => {
         id: 2,
         name: "Tag2",
         description: "Tag2Desc"
+      }
+    ],
+    availableActions: [
+      {
+        name: "fake-action",
+        clientChoiceData: [
+          { name: "Test Property", details: { property: "test" } }
+        ]
       }
     ]
   };
@@ -64,7 +76,12 @@ describe("CampaignCannedResponseForm component", () => {
         .find("button")
         .text()
     ).toBe("Edit Response");
-    expect(wrapper.find(AutoComplete).prop("value")).toEqual([
+    expect(
+      wrapper
+        .find({ "data-test": "autocompleteTags" })
+        .first()
+        .prop("value")
+    ).toEqual([
       {
         id: 1,
         name: "Tag1",
@@ -76,6 +93,18 @@ describe("CampaignCannedResponseForm component", () => {
         description: "Tag2Desc"
       }
     ]);
+    expect(
+      wrapper
+        .find({ "data-test": "actionSelect" })
+        .find("input")
+        .prop("value")
+    ).toBe(props1.defaultValue.answerActions);
+    expect(
+      wrapper
+        .find({ "data-test": "actionDataAutoComplete" })
+        .find("input")
+        .prop("value")
+    ).toEqual(JSON.parse(props1.defaultValue.answerActionsData).label);
   });
 
   test("Renders form with correct fields and label for adding", () => {

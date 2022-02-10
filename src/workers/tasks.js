@@ -9,6 +9,7 @@ import { processServiceManagers } from "../extensions/service-managers";
 export const Tasks = Object.freeze({
   ACTION_HANDLER_QUESTION_RESPONSE: "action_handler:question_response",
   ACTION_HANDLER_TAG_UPDATE: "action_handler:tag_update",
+  ACTION_HANDLER_CANNED_RESPONSE: "action_handler:canned_response",
   CAMPAIGN_START_CACHE: "campaign_start_cache",
   EXTENSION_TASK: "extension_task",
   SEND_MESSAGE: "send_message",
@@ -74,8 +75,7 @@ const questionResponseActionHandler = async ({
   if (!wasDeleted) {
     // TODO: clean up processAction interface
     return handler.processAction({
-      questionResponse,
-      interactionStep,
+      actionObject: interactionStep,
       campaignContactId: contact.id,
       contact,
       campaign,
@@ -108,6 +108,25 @@ const tagUpdateActionHandler = async ({
 }) => {
   const handler = await ActionHandlers.rawActionHandler(name);
   await handler.onTagUpdate(tags, contact, campaign, organization, texter);
+};
+
+const cannedResponseActionHandler = async ({
+  cannedResponse,
+  organization,
+  campaign,
+  contact
+}) => {
+  const handler = await ActionHandlers.rawActionHandler(
+    cannedResponse.answer_actions
+  );
+
+  return handler.processAction({
+    actionObject: cannedResponse,
+    campaignContactId: contact.id,
+    contact,
+    campaign,
+    organization
+  });
 };
 
 const startCampaignCache = async ({ campaign, organization }, contextVars) => {
@@ -145,6 +164,7 @@ const extensionTask = async (taskData, contextVars) => {
 const taskMap = Object.freeze({
   [Tasks.ACTION_HANDLER_QUESTION_RESPONSE]: questionResponseActionHandler,
   [Tasks.ACTION_HANDLER_TAG_UPDATE]: tagUpdateActionHandler,
+  [Tasks.ACTION_HANDLER_CANNED_RESPONSE]: cannedResponseActionHandler,
   [Tasks.CAMPAIGN_START_CACHE]: startCampaignCache,
   [Tasks.EXTENSION_TASK]: extensionTask,
   [Tasks.SEND_MESSAGE]: sendMessage,
