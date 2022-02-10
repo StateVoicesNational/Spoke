@@ -17,7 +17,7 @@ _February 2022:_ Version 12.0
 * Dependency updates: moment, nodemailer
 
 ### Appreciations
-* [Adam Greenspan](https://github.com/agreenspan24), [Cody Gordon](https://github.com/codygordon), [Holden Green](https://github.com/holdengreen), [Kathy Nguyen](https://github.com/crayolakat), [Preston Maness](https://github.com/aggroskater), and Mark Houghton for QA
+* [Adam Greenspan](https://github.com/agreenspan24), [Cody Gordon](https://github.com/codygordon), [Holden Green](https://github.com/holdengreen), [Kathy Nguyen](https://github.com/crayolakat), [Preston Maness](https://github.com/aggroskater), [Schuyler Duveen](https://github.com/schuyler1d), and Mark Houghton for QA
 
 ## v11.1
 
