@@ -56,6 +56,7 @@ describe("CampaignCannedResponsesForm component", () => {
         formValues={formValues}
         data={data}
         availableActions={availableActions}
+        muiTheme={muiTheme}
       />
     </ThemeContext.Provider>
   );

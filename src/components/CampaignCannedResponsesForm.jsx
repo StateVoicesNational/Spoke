@@ -30,46 +30,6 @@ import { parseCannedResponseCsv } from "../lib/parse_csv";
 
 const Span = ({ children }) => <span>{children}</span>;
 
-const styles = StyleSheet.create({
-  formContainer: {
-    ...theme.layouts.greenBox,
-    maxWidth: "100%",
-    paddingTop: 10,
-    paddingBottom: 10,
-    paddingRight: 10,
-    paddingLeft: 10,
-    marginTop: 15,
-    textAlign: "left"
-  },
-  form: {
-    padding: 10
-  },
-  title: {
-    marginBottom: 8
-  },
-  text: {
-    fontSize: 14,
-    marginBottom: 8,
-    display: "-webkit-box",
-    WebkitBoxOrient: "vertical",
-    WebkitLineClamp: 2,
-    overflow: "hidden",
-    height: 32,
-    width: "90%"
-  },
-  redText: {
-    color: theme.colors.red
-  },
-  spaceBetween: {
-    display: "flex",
-    justifyContent: "space-between"
-  },
-  flexEnd: {
-    display: "flex",
-    justifyContent: "flex-end"
-  }
-});
-
 export class CampaignCannedResponsesForm extends React.Component {
   constructor(props) {
     super(props);
@@ -89,6 +49,46 @@ export class CampaignCannedResponsesForm extends React.Component {
           return toReturn;
         }, {})
     };
+
+    this.styles = StyleSheet.create({
+      formContainer: {
+        ...theme.layouts.greenBox,
+        maxWidth: "100%",
+        paddingTop: 10,
+        paddingBottom: 10,
+        paddingRight: 10,
+        paddingLeft: 10,
+        marginTop: 15,
+        textAlign: "left"
+      },
+      form: {
+        padding: 10
+      },
+      title: {
+        marginBottom: 8
+      },
+      text: {
+        fontSize: 14,
+        marginBottom: 8,
+        display: "-webkit-box",
+        WebkitBoxOrient: "vertical",
+        WebkitLineClamp: 2,
+        overflow: "hidden",
+        height: 32,
+        width: "90%"
+      },
+      redText: {
+        color: this.props.muiTheme.palette.error.main
+      },
+      spaceBetween: {
+        display: "flex",
+        justifyContent: "space-between"
+      },
+      flexEnd: {
+        display: "flex",
+        justifyContent: "flex-end"
+      }
+    });
   }
 
   formSchema = yup.object({
@@ -111,7 +111,7 @@ export class CampaignCannedResponsesForm extends React.Component {
 
     if (!this.state.showForm) {
       return (
-        <div className={css(styles.spaceBetween)}>
+        <div className={css(this.styles.spaceBetween)}>
           <Button
             variant="outlined"
             startIcon={<CreateIcon color="primary" />}
@@ -126,7 +126,7 @@ export class CampaignCannedResponsesForm extends React.Component {
             Add new canned response
           </Button>
           <div>
-            <div className={css(styles.flexEnd)}>
+            <div className={css(this.styles.flexEnd)}>
               <Tooltip title="Upload a CSV of canned responses with columns for Title, Text, Action, ActionData, and Tags">
                 <IconButton
                   onClick={() => this.uploadCsvInputRef.current.click()}
@@ -160,7 +160,7 @@ export class CampaignCannedResponsesForm extends React.Component {
               style={{ display: "none" }}
             />
             {this.state.uploadCsvError && (
-              <div className={css(styles.redText)}>
+              <div className={css(this.styles.redText)}>
                 {this.state.uploadCsvError}
               </div>
             )}
@@ -177,8 +177,8 @@ export class CampaignCannedResponsesForm extends React.Component {
 
     if (this.state.showForm) {
       return (
-        <div className={css(styles.formContainer)}>
-          <div className={css(styles.form)}>
+        <div className={css(this.styles.formContainer)}>
+          <div className={css(this.styles.form)}>
             <CampaignCannedResponseForm
               defaultValue={
                 this.props.formValues.cannedResponses.find(
@@ -213,6 +213,7 @@ export class CampaignCannedResponsesForm extends React.Component {
               customFields={this.props.customFields}
               tags={this.props.data.organization.tags}
               availableActions={this.props.availableActions}
+              muiTheme={this.props.muiTheme}
             />
           </div>
         </div>
@@ -236,9 +237,9 @@ export class CampaignCannedResponsesForm extends React.Component {
             })
           }
         >
-          <div className={css(styles.title)}>{response.title}</div>
+          <div className={css(this.styles.title)}>{response.title}</div>
           <div
-            className={css(styles.text)}
+            className={css(this.styles.text)}
             style={
               this.state.showFullTextId === response.id
                 ? {}

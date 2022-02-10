@@ -16,23 +16,6 @@ import AutoComplete from "@material-ui/lab/Autocomplete";
 import TextField from "@material-ui/core/TextField";
 import { dataTest } from "../lib/attributes";
 import GSSubmitButton from "./forms/GSSubmitButton";
-import theme from "../styles/theme";
-
-const styles = StyleSheet.create({
-  buttonRow: {
-    marginTop: 5
-  },
-  tagChips: {
-    display: "flex",
-    flexWrap: "wrap"
-  },
-  errorMessage: {
-    color: theme.colors.red
-  },
-  button: {
-    marginRight: 10
-  }
-});
 
 // THIS IS A COPY/PASTE FROM CANNED RESPONSE FORM BECAUSE I CANT MAKE FORM.CONTEXT WORK
 export default class CannedResponseForm extends React.Component {
@@ -53,6 +36,21 @@ export default class CannedResponseForm extends React.Component {
           return toReturn;
         }, {})
     };
+    this.styles = StyleSheet.create({
+      buttonRow: {
+        marginTop: 5
+      },
+      tagChips: {
+        display: "flex",
+        flexWrap: "wrap"
+      },
+      errorMessage: {
+        color: this.props.muiTheme.palette.error.main
+      },
+      button: {
+        marginRight: 10
+      }
+    });
   }
 
   handleSave = () => {
@@ -153,7 +151,9 @@ export default class CannedResponseForm extends React.Component {
                 </Tooltip>
               </div>
               {instructions ? (
-                <div style={{ color: theme.colors.gray }}>{instructions}</div>
+                <div style={{ color: this.props.muiTheme.palette.grey[500] }}>
+                  {instructions}
+                </div>
               ) : null}
               {clientChoiceData && clientChoiceData.length ? (
                 <div>
@@ -170,7 +170,7 @@ export default class CannedResponseForm extends React.Component {
                     as={GSAutoComplete}
                   />
                   {needRequiredAnswerActionsData ? (
-                    <div className={css(styles.errorMessage)}>
+                    <div className={css(this.styles.errorMessage)}>
                       Action requires additional data. Please select something.
                     </div>
                   ) : null}
@@ -199,12 +199,12 @@ export default class CannedResponseForm extends React.Component {
               return <TextField {...params} label="Tags" />;
             }}
           />
-          <div className={css(styles.buttonRow)}>
+          <div className={css(this.styles.buttonRow)}>
             <Form.Submit
               as={GSSubmitButton}
               {...dataTest("addResponse")}
               label={formButtonText}
-              className={css(styles.button)}
+              className={css(this.styles.button)}
               disabled={!!needRequiredAnswerActionsData}
             />
             <Button variant="contained" onClick={handleCloseAddForm}>

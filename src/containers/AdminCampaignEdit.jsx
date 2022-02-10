@@ -501,7 +501,8 @@ export class AdminCampaignEditBase extends React.Component {
           customFields: this.props.campaignData.campaign.customFields,
           organizationId: this.props.organizationData.organization.id,
           availableActions: this.props.organizationData.organization
-            .availableActions
+            .availableActions,
+          muiTheme: this.props.muiTheme
         }
       },
       {
