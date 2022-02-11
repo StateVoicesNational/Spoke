@@ -27,7 +27,7 @@ jobs:
         uses: docker/metadata-action@v3
         with:
           images: |
-            ghcr.io/volsweep/Spoke
+            ghcr.io/moveonorg/spoke
           tags: |
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}
