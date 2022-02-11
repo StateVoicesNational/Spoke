@@ -32,8 +32,7 @@ export async function getOrganizationData({ organization, user, loaders }) {
     // data is any JSON-able data that you want to send.
     // This can/should map to the return value if you implement onOrganizationUpdateSignal()
     // which will then get updated data in the Settings component on-save
-    // data: {
-    // },
+    data: {},
     // fullyConfigured: null means (more) configuration is optional -- maybe not required to be enabled
     // fullyConfigured: true means it is fully enabled and configured for operation
     // fullyConfigured: false means more configuration is REQUIRED (i.e. manager is necessary and needs more configuration for Spoke campaigns to run)
