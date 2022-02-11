@@ -21,11 +21,19 @@ export const metadata = () => ({
 export async function getOrganizationData({ organization, user, loaders }) {
   // MUST NOT RETURN SECRETS!
 
+  const parsed = JSON.parse(organization.features);
+  const vanKeys = {
+    vanApiKey: parsed.VAN_API_KEY,
+    appName: parsed.APP_NAME,
+    webHookUrl: parsed.WEB_HOOK_URL
+  };
+
   return {
     // data is any JSON-able data that you want to send.
     // This can/should map to the return value if you implement onOrganizationUpdateSignal()
     // which will then get updated data in the Settings component on-save
-    data: {},
+    // data: {
+    // },
     // fullyConfigured: null means (more) configuration is optional -- maybe not required to be enabled
     // fullyConfigured: true means it is fully enabled and configured for operation
     // fullyConfigured: false means more configuration is REQUIRED (i.e. manager is necessary and needs more configuration for Spoke campaigns to run)
@@ -39,28 +47,25 @@ export async function onOrganizationUpdateSignal({
   updateData
 }) {
   // this is the function that should hit the db
-  // call whatever mutation
-  // console.log('the acutal data',updateData);
-  // console.log(updateData);
 
-// should be grabbing feature changes from form?
+  // should be grabbing feature changes from form?
   let orgChanges = {
-    // features: getFeatures(organization)
-    features: "test write"
+    features: updateData
   };
 
-  // what should our relationship with cacheableData here be?
-    // wiping old features (?)
-  // await cacheableData.organization.clear(organization.id);
+  if (organization.features) {
+    orgChanges = {
+      features: { ...JSON.parse(organization.features), ...updateData }
+    };
+  }
 
   await r
     .knex("organization")
     .where("id", organization.id)
-    // .update(orgChanges);
     .update(orgChanges);
 
   return {
-    data: updateData,
+    data: orgChanges,
     fullyConfigured: true
   };
 }

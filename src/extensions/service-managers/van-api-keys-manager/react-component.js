@@ -17,22 +17,22 @@ export class OrgConfig extends React.Component {
 
   render() {
     const formSchema = yup.object({
-      vanApiKey: yup
+      VAN_API_KEY: yup
         .string()
         .nullable()
         .max(64),
-      appName: yup
+      APP_NAME: yup
         .string()
         .nullable()
         .max(64),
-      webhookUrl: yup
+      WEB_HOOK_URL: yup
         .string()
         .nullable()
         .max(64)
     });
     return (
       <div>
-        VAN Variables {this.props.serviceManagerInfo.data.foo}
+        VAN Variables {this.props.serviceManagerInfo.data.vanKeys}
         <GSForm
           schema={formSchema}
           defaultValue={this.props.serviceManagerInfo.data}
@@ -44,19 +44,19 @@ export class OrgConfig extends React.Component {
           <Form.Field
             as={GSTextField}
             label="Api Key"
-            name="vanApiKey"
+            name="VAN_API_KEY"
             fullWidth
           />
           <Form.Field
             as={GSTextField}
             label="App Name"
-            name="appName"
+            name="APP_NAME"
             fullWidth
           />
           <Form.Field
             as={GSTextField}
             label="Webhook Base URL"
-            name="webhookUrl"
+            name="WEB_HOOK_URL"
             fullWidth
           />
           <Form.Submit
