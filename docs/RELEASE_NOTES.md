@@ -13,6 +13,7 @@ _February 2022:_ Version 12.0
 * Message review action for multi-change message status
 * Implement Assignment Contacts sidebar
 * Material UI Theming
+* Add auth/account hook to Twilio onMessageSend
 
 ### Additional changes
 * Remove "Add All" button from Texters admin page
