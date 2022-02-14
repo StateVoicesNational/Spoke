@@ -90,5 +90,8 @@ export async function getServiceManagerData(
       ...(await sm[funcName]({ organization, ...funcArgs }))
     }))
   );
-  return resultArray;
+  return resultArray.map(r => ({
+    ...r,
+    fullyConfigured: r.fullyConfigured === undefined ? null : r.fullyConfigured
+  }));
 }
