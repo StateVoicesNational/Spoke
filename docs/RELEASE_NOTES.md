@@ -6,6 +6,8 @@ _February 2022:_ Version 12.0
 
 ### Bug-fixes
 * Fix failing GitHub Actions tests
+* Fix scrub landlines bug
+* Set default twilioDialogOpen value for Dialog open prop
 
 ### Improvements
 * Implement Zapier response handling
