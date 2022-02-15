@@ -20,9 +20,10 @@ _February 2022:_ Version 12.0
 ### Additional changes
 * Remove "Add All" button from Texters admin page
 * Dependency updates: moment, nodemailer
+* Remove unnecessary Twilio env variables
 
 ### Appreciations
-* [Adam Greenspan](https://github.com/agreenspan24), [Cody Gordon](https://github.com/codygordon), [Holden Green](https://github.com/holdengreen), [Kathy Nguyen](https://github.com/crayolakat), [Preston Maness](https://github.com/aggroskater), [Schuyler Duveen](https://github.com/schuyler1d), [Stefan Hayden](https://github.com/stefanhayden), and Mark Houghton for QA
+* [Adam Greenspan](https://github.com/agreenspan24), [Arique Aguilar](https://github.com/Arique1104), [Cody Gordon](https://github.com/codygordon), [Holden Green](https://github.com/holdengreen), [Kathy Nguyen](https://github.com/crayolakat), [Preston Maness](https://github.com/aggroskater), [Schuyler Duveen](https://github.com/schuyler1d), [Stefan Hayden](https://github.com/stefanhayden), and Mark Houghton for QA
 
 ## v11.1
 
