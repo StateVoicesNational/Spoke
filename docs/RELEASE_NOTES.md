@@ -8,6 +8,7 @@ _February 2022:_ Version 12.0
 * Fix failing GitHub Actions tests
 * Fix scrub landlines bug
 * Set default twilioDialogOpen value for Dialog open prop
+* Parse campaign timezone offsets
 
 ### Improvements
 * Implement Zapier response handling
