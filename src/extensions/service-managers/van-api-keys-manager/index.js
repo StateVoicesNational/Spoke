@@ -20,23 +20,35 @@ export const metadata = () => ({
 
 export async function getOrganizationData({ organization, user, loaders }) {
   // MUST NOT RETURN SECRETS!
+  let parsed = {};
+  if (organization.features) {
+    parsed = JSON.parse(organization.features);
+  }
 
-  const parsed = JSON.parse(organization.features);
-  const vanKeys = {
-    vanApiKey: parsed.VAN_API_KEY,
-    appName: parsed.APP_NAME,
-    webHookUrl: parsed.WEB_HOOK_URL
-  };
+  const vanKeys = parsed
+    ? {
+        VAN_API_KEY: parsed.VAN_API_KEY,
+        APP_NAME: parsed.APP_NAME,
+        WEB_HOOK_URL: parsed.WEB_HOOK_URL
+      }
+    : {};
+
+  const isFullyConfigured = Object.keys(vanKeys).reduce((acc, vanKey) => {
+    if (!vanKeys[vanKey]) {
+      acc = false;
+    }
+    return acc;
+  }, true);
 
   return {
     // data is any JSON-able data that you want to send.
     // This can/should map to the return value if you implement onOrganizationUpdateSignal()
     // which will then get updated data in the Settings component on-save
-    data: {},
+    data: vanKeys,
     // fullyConfigured: null means (more) configuration is optional -- maybe not required to be enabled
     // fullyConfigured: true means it is fully enabled and configured for operation
     // fullyConfigured: false means more configuration is REQUIRED (i.e. manager is necessary and needs more configuration for Spoke campaigns to run)
-    fullyConfigured: null
+    fullyConfigured: isFullyConfigured
   };
 }
 
@@ -46,7 +58,14 @@ export async function onOrganizationUpdateSignal({
   updateData
 }) {
   // this is the function that should hit the db
+  const isFullyConfigured = Object.keys(updateData).reduce((acc, vanKey) => {
+    if (!updateData[vanKey]) {
+      acc = false;
+    }
+    return acc;
+  }, true);
 
+  console.log("from front end", updateData);
   // should be grabbing feature changes from form?
   let orgChanges = {
     features: updateData
@@ -58,14 +77,15 @@ export async function onOrganizationUpdateSignal({
     };
   }
 
+  console.log(orgChanges);
   await r
     .knex("organization")
     .where("id", organization.id)
     .update(orgChanges);
 
   return {
-    data: orgChanges,
-    fullyConfigured: true
+    data: orgChanges.features,
+    fullyConfigured: isFullyConfigured
   };
 }
 
