@@ -489,6 +489,7 @@ class CampaignTextersForm extends React.Component {
           onChange={this.onTexterChange}
           onRemove={this.onTexterRemove}
           displayName={this.getDisplayName(texter.id)}
+          muiTheme={this.props.muiTheme}
         />
       );
     });
