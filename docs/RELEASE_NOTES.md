@@ -9,6 +9,7 @@ _February 2022:_ Version 12.0
 * Fix scrub landlines bug
 * Set default twilioDialogOpen value for Dialog open prop
 * Parse campaign timezone offsets
+* Fix service manager's "onOptOut" function
 
 ### Improvements
 * Implement Zapier response handling
@@ -26,7 +27,7 @@ _February 2022:_ Version 12.0
 * Remove old texting interface
 
 ### Appreciations
-* [Adam Greenspan](https://github.com/agreenspan24), [Arique Aguilar](https://github.com/Arique110), [Cody Gordon](https://github.com/codygordon), [Holden Green](https://github.com/holdengreen), [Kathy Nguyen](https://github.com/crayolakat), [Preston Maness](https://github.com/aggroskater), [Schuyler Duveen](https://github.com/schuyler1d), [Stefan Hayden](https://github.com/stefanhayden), and Mark Houghton for QA
+* [Adam Greenspan](https://github.com/agreenspan24), [Arique Aguilar](https://github.com/Arique110), [Cody Gordon](https://github.com/codygordon), [Holden Green](https://github.com/holdengreen), [Kathy Nguyen](https://github.com/crayolakat), [Peter Murphy](https://github.com/peterkmurphy), [Preston Maness](https://github.com/aggroskater), [Schuyler Duveen](https://github.com/schuyler1d), [Stefan Hayden](https://github.com/stefanhayden), and Mark Houghton for QA
 
 ## v11.1
 
