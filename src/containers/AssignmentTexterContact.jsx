@@ -1,7 +1,6 @@
 import PropTypes from "prop-types";
 import React from "react";
 import { StyleSheet, css } from "aphrodite";
-import OldControls from "../components/AssignmentTexter/OldControls";
 import Controls from "../components/AssignmentTexter/Controls";
 import { applyScript } from "../lib/scripts";
 import gql from "graphql-tag";
@@ -394,11 +393,6 @@ export class AssignmentTexterContact extends React.Component {
   };
 
   render() {
-    const ControlsComponent =
-      /old=1/.test(document.location.search) ||
-      window.DEPRECATED_TEXTERUI === "GONE_SOON"
-        ? OldControls
-        : Controls;
     return (
       <div {...dataTest("assignmentTexterContactFirstDiv")}>
         {this.state.disabled &&
@@ -408,7 +402,7 @@ export class AssignmentTexterContact extends React.Component {
             {this.state.disabledText}
           </div>
         ) : null}
-        <ControlsComponent
+        <Controls
           handleNavigateNext={this.props.handleNavigateNext}
           handleNavigatePrevious={this.props.handleNavigatePrevious}
           contact={this.props.contact}
