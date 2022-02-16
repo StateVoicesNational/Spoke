@@ -17,7 +17,7 @@ import FormControlLabel from "@material-ui/core/FormControlLabel";
 
 import withMuiTheme from "./../containers/hoc/withMuiTheme";
 import GSForm from "../components/forms/GSForm";
-import GSTextField from "./forms/GSTextField";
+import GSFormField from "../components/forms/GSFormField";
 import GSSubmitButton from "./forms/GSSubmitButton";
 import * as yup from "yup";
 import Form from "react-formal";
@@ -90,7 +90,7 @@ const styles = StyleSheet.create({
     display: "inline-block"
   },
   input: {
-    width: 50,
+    width: 70,
     paddingLeft: 0,
     paddingRight: 0,
     marginRight: 10,
@@ -113,17 +113,144 @@ const inlineStyles = {
   }
 };
 
+class TexterInputs extends GSFormField {
+  render = () => {
+    const {
+      contactsCount,
+      displayName,
+      onChange,
+      onRemove,
+      texter: {
+        id,
+        assignment: {
+          contactsCount: texterContactsCount,
+          needsMessageCount,
+          maxContacts
+        }
+      },
+      useDynamicAssignment
+    } = this.props;
+    const messagedCount = texterContactsCount - needsMessageCount;
+    return (
+      <div
+        {...dataTest("texterRow")}
+        key={id}
+        className={css(styles.texterRow)}
+      >
+        <div className={css(styles.leftSlider)}>
+          <Slider
+            maxValue={contactsCount}
+            value={messagedCount}
+            color={this.props.muiTheme.palette.text.secondary}
+            direction={1}
+          />
+        </div>
+        <div className={css(styles.assignedCount)}>{messagedCount}</div>
+        <div {...dataTest("texterName")} className={css(styles.nameColumn)}>
+          {displayName}
+        </div>
+        <div className={css(styles.input)}>
+          <TextField
+            {...dataTest("texterAssignment")}
+            value={needsMessageCount || ""}
+            placeholder="Contacts"
+            fullWidth
+            onChange={({ target: { value } }) => {
+              onChange({
+                id,
+                maxContacts,
+                needsMessageCount: value
+              });
+            }}
+          />
+        </div>
+        <div className={css(styles.slider)}>
+          <Slider
+            maxValue={contactsCount}
+            value={needsMessageCount}
+            color={this.props.muiTheme.palette.primary.main}
+            direction={0}
+          />
+        </div>
+        {useDynamicAssignment ? (
+          <div className={css(styles.input)}>
+            <TextField
+              value={maxContacts || ""}
+              placeholder="Max"
+              fullWidth
+              onChange={({ target: { value } }) => {
+                onChange({
+                  id,
+                  maxContacts: value,
+                  needsMessageCount
+                });
+              }}
+            />
+          </div>
+        ) : null}
+        <div className={css(styles.removeButton)}>
+          <IconButton onClick={() => onRemove(id)}>
+            <DeleteIcon />
+          </IconButton>
+        </div>
+      </div>
+    );
+  };
+}
+
 class CampaignTextersForm extends React.Component {
   state = {
     autoSplit: false,
-    focusedTexterId: null,
     snackbarOpen: false,
     snackbarMessage: ""
   };
 
-  onChange = formValues => {
+  onTexterChange = ({ id, maxContacts, needsMessageCount }) => {
     const existingFormValues = this.formValues();
-    const changedTexterId = this.state.focusedTexterId;
+    const newFormValues = {
+      ...existingFormValues
+    };
+
+    newFormValues.texters = newFormValues.texters.map(texter => {
+      if (texter.id === id) {
+        const newTexter = { ...texter };
+        newTexter.assignment = { ...texter.assignment };
+        newTexter.assignment.maxContacts = maxContacts;
+        newTexter.assignment.needsMessageCount = needsMessageCount;
+        return newTexter;
+      }
+      return texter;
+    });
+
+    this.onChange(newFormValues, id);
+  };
+
+  onTexterRemove = id => {
+    const existingFormValues = this.formValues();
+    const newFormValues = {
+      ...existingFormValues
+    };
+
+    const newTexters = newFormValues.texters.map(texter => {
+      if (texter.id === id) {
+        if (!texter.assignment.messagedCount) {
+          return null;
+        }
+        const newTexter = { ...texter };
+        newTexter.assignment = { ...texter.assignment };
+        newTexter.assignment.needsMessageCount = 0;
+        return newTexter;
+      }
+      return texter;
+    });
+
+    newFormValues.texters = newTexters.filter(texter => texter);
+
+    this.onChange(newFormValues, id);
+  };
+
+  onChange = (formValues, changedTexterId) => {
+    const existingFormValues = this.formValues();
     const newFormValues = {
       ...formValues
     };
@@ -148,8 +275,8 @@ class CampaignTextersForm extends React.Component {
         newTexter.assignment.needsMessageCount,
         10
       );
-      let convertedMaxContacts = !!newTexter.assignment.maxContacts
-        ? parseInt(newTexter.assignment.maxContacts)
+      const convertedMaxContacts = !!newTexter.assignment.maxContacts
+        ? parseInt(newTexter.assignment.maxContacts, 10)
         : null;
 
       if (isNaN(convertedNeedsMessageCount)) {
@@ -215,7 +342,7 @@ class CampaignTextersForm extends React.Component {
       // 3. if we don't have extraTexterCapacity and auto-split is on, then fill the texters with assignments
       const factor = 1;
       let index = 0;
-      let skipsByIndex = new Array(newFormValues.texters.length).fill(0);
+      const skipsByIndex = new Array(newFormValues.texters.length).fill(0);
       if (newFormValues.texters.length === 1) {
         const messagedCount =
           newFormValues.texters[0].assignment.contactsCount -
@@ -254,17 +381,31 @@ class CampaignTextersForm extends React.Component {
     this.props.onChange(newFormValues);
   };
 
-  formSchema = yup.object({
-    texters: yup.array().of(
-      yup.object({
-        id: yup.string(),
-        assignment: yup.object({
-          needsMessageCount: yup.string(),
-          maxContacts: yup.string().nullable()
-        })
-      })
-    )
-  });
+  getDisplayName(texterId) {
+    const texterObj = this.props.orgTexters.find(o => o.id === texterId);
+    const suffix =
+      getHighestRole(texterObj.roles) === "SUSPENDED" ? " (Suspended)" : "";
+    return texterObj.displayName + suffix;
+  }
+
+  addAllTexters() {
+    const { orgTexters } = this.props;
+
+    const textersToAdd = orgTexters.map(orgTexter => {
+      const id = orgTexter.id;
+      const firstName = orgTexter.firstName;
+      return {
+        id,
+        firstName,
+        assignment: {
+          contactsCount: 0,
+          needsMessageCount: 0
+        }
+      };
+    });
+
+    this.onChange({ texters: textersToAdd });
+  }
 
   formValues() {
     const unorderedTexters = this.props.formValues.texters;
@@ -277,6 +418,18 @@ class CampaignTextersForm extends React.Component {
       )
     };
   }
+
+  formSchema = yup.object({
+    texters: yup.array().of(
+      yup.object({
+        id: yup.string(),
+        assignment: yup.object({
+          needsMessageCount: yup.string(),
+          maxContacts: yup.string().nullable()
+        })
+      })
+    )
+  });
 
   showSearch() {
     const { orgTexters } = this.props;
@@ -324,100 +477,19 @@ class CampaignTextersForm extends React.Component {
     return <div>{orgTexters.length > 0 ? autocomplete : null}</div>;
   }
 
-  getDisplayName(texterId) {
-    const texterObj = this.props.orgTexters.find(o => o.id === texterId);
-    const suffix =
-      getHighestRole(texterObj.roles) === "SUSPENDED" ? " (Suspended)" : "";
-    return texterObj.displayName + suffix;
-  }
-
   showTexters() {
     return this.formValues().texters.map((texter, index) => {
-      const messagedCount =
-        texter.assignment.contactsCount - texter.assignment.needsMessageCount;
       return (
-        <div
-          {...dataTest("texterRow")}
-          key={texter.id}
-          className={css(styles.texterRow)}
-        >
-          <div className={css(styles.leftSlider)}>
-            <Slider
-              maxValue={this.formValues().contactsCount}
-              value={messagedCount}
-              color={this.props.muiTheme.palette.text.secondary}
-              direction={1}
-            />
-          </div>
-          <div className={css(styles.assignedCount)}>{messagedCount}</div>
-          <div {...dataTest("texterName")} className={css(styles.nameColumn)}>
-            {this.getDisplayName(texter.id)}
-          </div>
-          <div className={css(styles.input)}>
-            <Form.Field
-              as={GSTextField}
-              {...dataTest("texterAssignment")}
-              name={`texters[${index}].assignment.needsMessageCount`}
-              hintText="Contacts"
-              fullWidth
-              onFocus={() => this.setState({ focusedTexterId: texter.id })}
-              onBlur={() =>
-                this.setState({
-                  focusedTexterId: null
-                })
-              }
-            />
-          </div>
-          <div className={css(styles.slider)}>
-            <Slider
-              maxValue={this.formValues().contactsCount}
-              value={texter.assignment.needsMessageCount}
-              color={this.props.muiTheme.palette.primary.main}
-              direction={0}
-            />
-          </div>
-          {this.props.useDynamicAssignment ? (
-            <div className={css(styles.input)}>
-              <Form.Field
-                as={GSTextField}
-                name={`texters[${index}].assignment.maxContacts`}
-                hintText="Max"
-                fullWidth
-                onFocus={() => this.setState({ focusedTexterId: texter.id })}
-                onBlur={() =>
-                  this.setState({
-                    focusedTexterId: null
-                  })
-                }
-              />
-            </div>
-          ) : null}
-          <div className={css(styles.removeButton)}>
-            <IconButton
-              onClick={async () => {
-                const currentFormValues = this.formValues();
-                const newFormValues = {
-                  ...currentFormValues
-                };
-                newFormValues.texters = newFormValues.texters.slice();
-                if (messagedCount === 0) {
-                  newFormValues.texters.splice(index, 1);
-                } else {
-                  await this.setState({ focusedTexterId: texter.id });
-                  newFormValues.texters[index] = {
-                    ...texter,
-                    assignment: {
-                      needsMessageCount: 0
-                    }
-                  };
-                }
-                this.onChange(newFormValues);
-              }}
-            >
-              <DeleteIcon />
-            </IconButton>
-          </div>
-        </div>
+        <TexterInputs
+          name={`texters[${index}].assignment.needsMessageCount`}
+          key={`texters[${index}].assignment.needsMessageCount`}
+          texter={texter}
+          useDynamicAssignment={this.props.useDynamicAssignment}
+          contactsCount={this.formValues().contactsCount}
+          onChange={this.onTexterChange}
+          onRemove={this.onTexterRemove}
+          displayName={this.getDisplayName(texter.id)}
+        />
       );
     });
   }
@@ -427,7 +499,6 @@ class CampaignTextersForm extends React.Component {
   };
 
   render() {
-    const { organizationUuid, campaignId } = this.props;
     const assignedContacts = this.formValues().texters.reduce(
       (prev, texter) => prev + texter.assignment.contactsCount,
       0
