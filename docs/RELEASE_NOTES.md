@@ -11,6 +11,7 @@ _February 2022:_ Version 12.0
 * Parse campaign timezone offsets
 * Fix service manager's "onOptOut" function
 * Fix outbound unassign behavior when Redis isn't configured
+* Fix need to click twice on save button after assigning contacts to texter
 
 ### Improvements
 * Implement Zapier response handling
@@ -29,7 +30,7 @@ _February 2022:_ Version 12.0
 * Remove old texting interface
 
 ### Appreciations
-* [Adam Greenspan](https://github.com/agreenspan24), [Arique Aguilar](https://github.com/Arique110), [Cody Gordon](https://github.com/codygordon), [Holden Green](https://github.com/holdengreen), [John Twyman](https://github.com/johntwyman), [Kathy Nguyen](https://github.com/crayolakat), [Peter Murphy](https://github.com/peterkmurphy), [Preston Maness](https://github.com/aggroskater), [Schuyler Duveen](https://github.com/schuyler1d), [Stefan Hayden](https://github.com/stefanhayden), and Mark Houghton for QA
+* [Adam Greenspan](https://github.com/agreenspan24), [Arique Aguilar](https://github.com/Arique110), [Cody Gordon](https://github.com/codygordon), [Holden Green](https://github.com/holdengreen), [John Twyman](https://github.com/johntwyman), [Kathy Nguyen](https://github.com/crayolakat), [Larry Person](https://github.com/lperson), [Peter Murphy](https://github.com/peterkmurphy), [Preston Maness](https://github.com/aggroskater), [Schuyler Duveen](https://github.com/schuyler1d), [Stefan Hayden](https://github.com/stefanhayden), and Mark Houghton for QA
 
 ## v11.1
 
