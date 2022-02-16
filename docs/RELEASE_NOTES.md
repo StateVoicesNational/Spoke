@@ -10,6 +10,7 @@ _February 2022:_ Version 12.0
 * Set default twilioDialogOpen value for Dialog open prop
 * Parse campaign timezone offsets
 * Fix service manager's "onOptOut" function
+* Fix outbound unassign behavior when Redis isn't configured
 
 ### Improvements
 * Implement Zapier response handling
