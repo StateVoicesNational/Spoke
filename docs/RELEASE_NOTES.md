@@ -22,6 +22,7 @@ _February 2022:_ Version 12.0
 * Add auth/account hook to Twilio onMessageSend
 * Document --no-optional-dependencies for AWS Lambda
 * Document TEXTER_SIDEBOX_FIELDS environment variable
+* Update default auto optout documentation
 
 ### Additional changes
 * Remove "Add All" button from Texters admin page
