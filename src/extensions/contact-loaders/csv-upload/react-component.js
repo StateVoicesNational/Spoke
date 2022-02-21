@@ -45,16 +45,6 @@ export const ensureCamelCaseRequiredHeaders = columnHeader => {
   return columnHeader;
 };
 
-const innerStyles = {
-  button: {
-    margin: "24px 5px 24px 0",
-    fontSize: "10px"
-  },
-  nestedItem: {
-    fontSize: "12px"
-  }
-};
-
 export class CampaignContactsFormBase extends React.Component {
   state = {
     uploading: false,
@@ -89,7 +79,6 @@ export class CampaignContactsFormBase extends React.Component {
 
     event.preventDefault();
     const file = event.target.files[0];
-    console.log("file upload", file);
     this.setState({ uploading: true }, () => {
       parseCSV(
         file,
@@ -202,12 +191,10 @@ export class CampaignContactsFormBase extends React.Component {
       <List>
         <Divider />
         {stats.map((stat, index) => (
-          <ListItem
-            key={index}
-            leftIcon={this.props.icons.warning}
-            innerDivStyle={innerStyles.nestedItem}
-            primaryText={stat}
-          />
+          <ListItem key={index} dense={true}>
+            <ListItemIcon>{this.props.icons.warning}</ListItemIcon>
+            <ListItemText primary={stat} />
+          </ListItem>
         ))}
       </List>
     );
@@ -257,11 +244,10 @@ export class CampaignContactsFormBase extends React.Component {
           {this.renderValidationStats()}
           {contactUploadError && (
             <List>
-              <ListItem
-                id="uploadError"
-                primaryText={contactUploadError}
-                leftIcon={this.props.icons.error}
-              />
+              <ListItem id="uploadError">
+                <ListItemIcon>{this.props.icons.error}</ListItemIcon>
+                <ListItemText primary={contactUploadError} />
+              </ListItem>
             </List>
           )}
           <Form.Submit
