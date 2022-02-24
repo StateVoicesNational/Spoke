@@ -156,7 +156,6 @@ export async function getGroupMembers(groupId, callback) {
       options: { limit: CIVICRM_PAGINATE_SIZE },
       first_name: { "IS NOT NULL": 1 },
       last_name: { "IS NOT NULL": 1 },
-      postal_code: { "IS NOT NULL": 1 },
       do_not_sms: { "=": 0 },
       is_deleted: { "=": 0 },
       is_deceased: { "=": 0 },
