@@ -4,6 +4,7 @@
 import { getFeatures } from "../../../server/api/lib/config";
 import { cacheableData, r } from "../../../server/models";
 import { getConfig } from "../../../server/api/lib/config";
+import { getSecret, convertSecret } from "../../secret-manager";
 
 export const name = "van-api-keys-manager";
 
@@ -11,8 +12,7 @@ export const metadata = () => ({
   // set canSpendMoney=true, if this extension can lead to (additional) money being spent
   // if it can, which operations below can trigger money being spent?
   displayName: "VAN setup manager",
-  description:
-    "Used for testing and demonstrating service-manager capabilities",
+  description: "Used for VAN integration without environment variables",
   canSpendMoney: false,
   moneySpendingOperations: ["onCampaignStart"],
   supportsOrgConfig: true,
@@ -21,26 +21,6 @@ export const metadata = () => ({
 
 export async function getOrganizationData({ organization, user, loaders }) {
   // MUST NOT RETURN SECRETS!
-  let parsed = {};
-  if (organization.features) {
-    parsed = JSON.parse(organization.features);
-  }
-
-  const vanKeys = parsed
-    ? {
-        NGP_VAN_API_KEY: parsed.NGP_VAN_API_KEY,
-        NGP_VAN_APP_NAME: parsed.NGP_VAN_APP_NAME,
-        NGP_VAN_WEBHOOK_BASE_URL: parsed.NGP_VAN_WEB_HOOK_URL
-      }
-    : {};
-
-  // const isFullyConfigured = Object.keys(vanKeys).reduce((acc, vanKey) => {
-  //   if (!vanKeys[vanKey]) {
-  //     acc = false;
-  //   }
-  //   return acc;
-  // }, true);
-
   return {
     // data is any JSON-able data that you want to send.
     // This can/should map to the return value if you implement onOrganizationUpdateSignal()
@@ -58,19 +38,13 @@ export async function onOrganizationUpdateSignal({
   user,
   updateData
 }) {
-  console.log("testing here", getConfig("NGP_VAN_API_KEY", organization));
-  console.log("testing here", getConfig("NGP_VAN_APP_NAME", organization));
-  console.log(
-    "testing here",
-    getConfig("NGP_VAN_WEBHOOK_BASE_URL", organization)
+  const textToStoreInDb = await convertSecret(
+    "ngpVanApiKey",
+    organization,
+    updateData.NGP_VAN_API_KEY
   );
 
-  // const isFullyConfigured = Object.keys(updateData).reduce((acc, vanKey) => {
-  //   if (!updateData[vanKey]) {
-  //     acc = false;
-  //   }
-  //   return acc;
-  // }, true);
+  updateData.NGP_VAN_API_KEY = textToStoreInDb;
 
   let orgChanges = {
     features: updateData
@@ -81,6 +55,10 @@ export async function onOrganizationUpdateSignal({
       features: { ...JSON.parse(organization.features), ...updateData }
     };
   }
+
+  // example decryption, needs to be somewhere else
+  const dbKey = getConfig("NGP_VAN_API_KEY", organization);
+  const rawPasswordOrKey = await getSecret("ngpVanApiKey", dbKey, organization);
 
   await r
     .knex("organization")
