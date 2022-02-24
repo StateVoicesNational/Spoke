@@ -17,15 +17,15 @@ export class OrgConfig extends React.Component {
 
   render() {
     const formSchema = yup.object({
-      VAN_API_KEY: yup
+      MGP_VAN_API_KEY: yup
         .string()
         .nullable()
         .max(64),
-      APP_NAME: yup
+      NGP_VAN_APP_NAME: yup
         .string()
         .nullable()
         .max(64),
-      WEB_HOOK_URL: yup
+      NGP_VAN_WEBHOOK_BASE_URL: yup
         .string()
         .nullable()
         .max(64)
@@ -44,19 +44,19 @@ export class OrgConfig extends React.Component {
           <Form.Field
             as={GSTextField}
             label="Api Key"
-            name="VAN_API_KEY"
+            name="NGP_VAN_API_KEY"
             fullWidth
           />
           <Form.Field
             as={GSTextField}
             label="App Name"
-            name="APP_NAME"
+            name="NGP_VAN_APP_NAME"
             fullWidth
           />
           <Form.Field
             as={GSTextField}
             label="Webhook Base URL"
-            name="WEB_HOOK_URL"
+            name="NGP_VAN_WEBHOOK_BASE_URL"
             fullWidth
           />
           <Form.Submit

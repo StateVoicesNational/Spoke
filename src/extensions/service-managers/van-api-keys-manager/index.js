@@ -3,6 +3,7 @@
 
 import { getFeatures } from "../../../server/api/lib/config";
 import { cacheableData, r } from "../../../server/models";
+import { getConfig } from "../../../server/api/lib/config";
 
 export const name = "van-api-keys-manager";
 
@@ -15,7 +16,7 @@ export const metadata = () => ({
   canSpendMoney: false,
   moneySpendingOperations: ["onCampaignStart"],
   supportsOrgConfig: true,
-  supportsCampaignConfig: true
+  supportsCampaignConfig: false
 });
 
 export async function getOrganizationData({ organization, user, loaders }) {
@@ -27,28 +28,28 @@ export async function getOrganizationData({ organization, user, loaders }) {
 
   const vanKeys = parsed
     ? {
-        VAN_API_KEY: parsed.VAN_API_KEY,
-        APP_NAME: parsed.APP_NAME,
-        WEB_HOOK_URL: parsed.WEB_HOOK_URL
+        NGP_VAN_API_KEY: parsed.NGP_VAN_API_KEY,
+        NGP_VAN_APP_NAME: parsed.NGP_VAN_APP_NAME,
+        NGP_VAN_WEBHOOK_BASE_URL: parsed.NGP_VAN_WEB_HOOK_URL
       }
     : {};
 
-  const isFullyConfigured = Object.keys(vanKeys).reduce((acc, vanKey) => {
-    if (!vanKeys[vanKey]) {
-      acc = false;
-    }
-    return acc;
-  }, true);
+  // const isFullyConfigured = Object.keys(vanKeys).reduce((acc, vanKey) => {
+  //   if (!vanKeys[vanKey]) {
+  //     acc = false;
+  //   }
+  //   return acc;
+  // }, true);
 
   return {
     // data is any JSON-able data that you want to send.
     // This can/should map to the return value if you implement onOrganizationUpdateSignal()
     // which will then get updated data in the Settings component on-save
-    data: vanKeys,
+    data: {},
     // fullyConfigured: null means (more) configuration is optional -- maybe not required to be enabled
     // fullyConfigured: true means it is fully enabled and configured for operation
     // fullyConfigured: false means more configuration is REQUIRED (i.e. manager is necessary and needs more configuration for Spoke campaigns to run)
-    fullyConfigured: isFullyConfigured
+    fullyConfigured: null
   };
 }
 
@@ -57,16 +58,20 @@ export async function onOrganizationUpdateSignal({
   user,
   updateData
 }) {
-  // this is the function that should hit the db
-  const isFullyConfigured = Object.keys(updateData).reduce((acc, vanKey) => {
-    if (!updateData[vanKey]) {
-      acc = false;
-    }
-    return acc;
-  }, true);
+  console.log("testing here", getConfig("NGP_VAN_API_KEY", organization));
+  console.log("testing here", getConfig("NGP_VAN_APP_NAME", organization));
+  console.log(
+    "testing here",
+    getConfig("NGP_VAN_WEBHOOK_BASE_URL", organization)
+  );
 
-  console.log("from front end", updateData);
-  // should be grabbing feature changes from form?
+  // const isFullyConfigured = Object.keys(updateData).reduce((acc, vanKey) => {
+  //   if (!updateData[vanKey]) {
+  //     acc = false;
+  //   }
+  //   return acc;
+  // }, true);
+
   let orgChanges = {
     features: updateData
   };
@@ -77,17 +82,13 @@ export async function onOrganizationUpdateSignal({
     };
   }
 
-  console.log(orgChanges);
   await r
     .knex("organization")
     .where("id", organization.id)
     .update(orgChanges);
 
   return {
-    data: orgChanges.features,
-    fullyConfigured: isFullyConfigured
+    data: {},
+    fullyConfigured: null
   };
 }
-
-// Write new function that takes UpdateSignal's return to call mutation?
-// it'd have to be called somehow, why not just write it in this funct?
