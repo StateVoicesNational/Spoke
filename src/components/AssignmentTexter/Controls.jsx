@@ -1082,6 +1082,7 @@ export class AssignmentTexterContactControls extends React.Component {
         >
           {internalComponent}
         </div>
+        {this.renderSidebox(enabledSideboxes)}
       </div>
     );
   }
@@ -1164,7 +1165,6 @@ export class AssignmentTexterContactControls extends React.Component {
               )}
               {this.renderMessageControls(enabledSideboxes)}
             </div>
-            {this.renderSidebox(enabledSideboxes)}
           </div>
         ];
     return (
