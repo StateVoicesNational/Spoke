@@ -44,7 +44,7 @@ export class OrgConfig extends React.Component {
           <Form.Field
             as={GSTextField}
             label="Api Key"
-            name="NGP_VAN_API_KEY"
+            name="NGP_VAN_API_KEY_ENC"
             fullWidth
           />
           <Form.Field
