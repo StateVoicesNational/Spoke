@@ -41,10 +41,10 @@ export async function onOrganizationUpdateSignal({
   const textToStoreInDb = await convertSecret(
     "ngpVanApiKey",
     organization,
-    updateData.NGP_VAN_API_KEY
+    updateData.NGP_VAN_API_KEY_ENC
   );
 
-  updateData.NGP_VAN_API_KEY = textToStoreInDb;
+  updateData.NGP_VAN_API_KEY_ENC = textToStoreInDb;
 
   let orgChanges = {
     features: updateData
@@ -55,10 +55,6 @@ export async function onOrganizationUpdateSignal({
       features: { ...JSON.parse(organization.features), ...updateData }
     };
   }
-
-  // example decryption, needs to be somewhere else
-  const dbKey = getConfig("NGP_VAN_API_KEY", organization);
-  const rawPasswordOrKey = await getSecret("ngpVanApiKey", dbKey, organization);
 
   await r
     .knex("organization")
