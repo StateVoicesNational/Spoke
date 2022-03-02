@@ -17,7 +17,7 @@ export class OrgConfig extends React.Component {
 
   render() {
     const formSchema = yup.object({
-      MGP_VAN_API_KEY: yup
+      NGP_VAN_API_KEY: yup
         .string()
         .nullable()
         .max(64),
