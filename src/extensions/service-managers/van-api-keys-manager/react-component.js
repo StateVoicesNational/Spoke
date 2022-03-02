@@ -32,7 +32,8 @@ export class OrgConfig extends React.Component {
     });
     return (
       <div>
-        VAN Variables {this.props.serviceManagerInfo.data.vanKeys}
+        You can set VAN credentials specifically for this Organization by
+        entering them here.
         <GSForm
           schema={formSchema}
           defaultValue={this.props.serviceManagerInfo.data}
@@ -44,7 +45,7 @@ export class OrgConfig extends React.Component {
           <Form.Field
             as={GSTextField}
             label="Api Key"
-            name="NGP_VAN_API_KEY_ENC"
+            name="NGP_VAN_API_KEY"
             fullWidth
           />
           <Form.Field
