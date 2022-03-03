@@ -51,11 +51,11 @@ export const getTwilio = async (organization, serviceManagerData) => {
   ) {
     ({ authToken, accountSid } = serviceManagerData.twilio);
   } else {
-    ({ authToken, accountSid } = await getMessageServiceConfig(
-      "twilio",
-      organization,
-      { obscureSensitiveInformation: false }
-    ));
+    ({ authToken, accountSid } =
+      organization.twilioAccountSwitchingCreds ||
+      (await getMessageServiceConfig("twilio", organization, {
+        obscureSensitiveInformation: false
+      })));
   }
   if (accountSid && authToken) {
     return twilioLibrary.Twilio(accountSid, authToken); // eslint-disable-line new-cap
@@ -249,7 +249,11 @@ export async function sendMessage({
   campaign,
   serviceManagerData
 }) {
-  const twilio = await exports.getTwilio(organization, serviceManagerData);
+  const twilio = await exports.getTwilio(
+    (serviceManagerData && serviceManagerData.twilioAccountSwitching) ||
+      organization,
+    serviceManagerData
+  );
   const APITEST = /twilioapitest/.test(message.text);
   if (!twilio && !APITEST) {
     log.warn(
