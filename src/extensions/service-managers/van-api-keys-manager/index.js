@@ -44,7 +44,7 @@ export async function onOrganizationUpdateSignal({
     updateData.NGP_VAN_API_KEY
   );
 
-  delete updateData.NGP_VAN_API_KEY;
+  updateData.NGP_VAN_API_KEY = "van api key has been configured";
 
   updateData.NGP_VAN_API_KEY_ENC = textToStoreInDb;
 
