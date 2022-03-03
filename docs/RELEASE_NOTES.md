@@ -24,6 +24,7 @@ _February 2022:_ Version 12.0
 * Document --no-optional-dependencies for AWS Lambda
 * Document TEXTER_SIDEBOX_FIELDS environment variable
 * Update default auto optout documentation
+* Add per campaign Twilio account switching
 
 ### Additional changes
 * Remove "Add All" button from Texters admin page
