@@ -105,7 +105,9 @@ async function requestVanSavedLists(organization, skip) {
     DEFAULT_NGP_VAN_MAXIMUM_LIST_SIZE;
 
   const url = Van.makeUrl(
-    `v4/savedLists?$top=100&maxPeopleCount=${maxPeopleCount}${skip ? "&$skip=" + skip : ""}`,
+    `v4/savedLists?$top=100&maxPeopleCount=${maxPeopleCount}${
+      skip ? "&$skip=" + skip : ""
+    }`,
     organization
   );
 
@@ -113,7 +115,7 @@ async function requestVanSavedLists(organization, skip) {
   const response = await HttpRequest(url, {
     method: "GET",
     headers: {
-      Authorization: Van.getAuth(organization)
+      Authorization: await Van.getAuth(organization)
     },
     retries: 0,
     timeout: Van.getNgpVanTimeout(organization)
@@ -130,10 +132,15 @@ export async function getClientChoiceData(organization, campaign, user) {
 
     if (responseJson.count > 100) {
       // Hack to get most recently created 100 saved lists
-      const mostRecentListsJson = await requestVanSavedLists(organization, responseJson.count - 100);
+      const mostRecentListsJson = await requestVanSavedLists(
+        organization,
+        responseJson.count - 100
+      );
 
       if (mostRecentListsJson.items && mostRecentListsJson.items.length) {
-        responseJson.items = responseJson.items.concat(mostRecentListsJson.items);
+        responseJson.items = responseJson.items.concat(
+          mostRecentListsJson.items
+        );
       }
     }
   } catch (error) {

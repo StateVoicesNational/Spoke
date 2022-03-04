@@ -6,14 +6,15 @@ export const DEFAULT_NGP_VAN_DATABASE_MODE = 0;
 export const DEFAULT_NGPVAN_TIMEOUT = 32000;
 
 export default class Van {
-  static getAuth = organization => {
+  static getAuth = async organization => {
+    let apiKey;
     const appName = getConfig("NGP_VAN_APP_NAME", organization);
 
-    if (organization.features[NGP_VAN_API_KEY_ENC]) {
+    if (organization.features["NGP_VAN_API_KEY_ENC"]) {
       const dbKey = getConfig("NGP_VAN_API_KEY_ENC", organization);
-      const apiKey = getSecret("ngpVanApiKey", dbKey, organization);
+      apiKey = await getSecret("ngpVanApiKey", dbKey, organization);
     } else {
-      const apiKey = getConfig("NGP_VAN_API_KEY", organization);
+      apiKey = getConfig("NGP_VAN_API_KEY", organization);
     }
 
     const databaseMode = getConfig("NGP_VAN_DATABASE_MODE", organization);
