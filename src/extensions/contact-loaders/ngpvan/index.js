@@ -115,7 +115,7 @@ async function requestVanSavedLists(organization, skip) {
   const response = await HttpRequest(url, {
     method: "GET",
     headers: {
-      Authorization: Van.getAuth(organization)
+      Authorization: await Van.getAuth(organization)
     },
     retries: 0,
     timeout: Van.getNgpVanTimeout(organization)
