@@ -9,7 +9,7 @@ import ListItem from "@material-ui/core/ListItem";
 import ListItemText from "@material-ui/core/ListItemText";
 import ListItemIcon from "@material-ui/core/ListItemIcon";
 
-import theme from "../../../styles/theme";
+import withMuiTheme from "../../../containers/hoc/withMuiTheme";
 import GSForm from "../../../components/forms/GSForm";
 import GSTextField from "../../../components/forms/GSTextField";
 import GSSubmitButton from "../../../components/forms/GSSubmitButton";
