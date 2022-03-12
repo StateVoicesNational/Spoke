@@ -3,7 +3,7 @@ import Papa from "papaparse";
 import { log, zipToTimeZone } from "../../lib";
 import fs from "fs";
 
-export async function seedZipCodes() {
+export async function seedZipCodesIfNecessary() {
   log.info("Checking if zip code is needed");
   const hasZip = await r.getCount(r.knex("zip_code").limit(1));
 

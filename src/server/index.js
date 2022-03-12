@@ -15,7 +15,7 @@ import { log } from "../lib";
 import telemetry from "./telemetry";
 import { addServerEndpoints as messagingServicesAddServerEndpoints } from "../extensions/service-vendors/service_map";
 import { getConfig } from "./api/lib/config";
-import { seedZipCodes } from "./seeds/seed-zip-codes";
+import { seedZipCodesIfNecessary } from "./seeds/seed-zip-codes";
 import { setupUserNotificationObservers } from "./notifications";
 import { existsSync } from "fs";
 import { rawAllMethods } from "../extensions/contact-loaders";
@@ -28,22 +28,36 @@ process.on("uncaughtException", ex => {
 });
 const DEBUG = process.env.NODE_ENV === "development";
 
-if (!getConfig("SUPPRESS_SEED_CALLS", null, { truthy: 1 })) {
-  seedZipCodes();
-}
+const suppressDatabaseAutocreate = getConfig(
+  "SUPPRESS_DATABASE_AUTOCREATE",
+  null,
+  { truthy: 1 }
+);
 
-if (!getConfig("SUPPRESS_DATABASE_AUTOCREATE", null, { truthy: 1 })) {
+const suppressMigrations = getConfig("SUPPRESS_MIGRATIONS", null, {
+  truthy: 1
+});
+
+const suppressSeedCalls = getConfig("SUPPRESS_SEED_CALLS", null, {
+  truthy: 1
+});
+
+if (!suppressDatabaseAutocreate) {
   createTablesIfNecessary().then(didCreate => {
     // seed above won't have succeeded if we needed to create first
-    if (didCreate && !getConfig("SUPPRESS_SEED_CALLS", null, { truthy: 1 })) {
-      seedZipCodes();
+    if (didCreate && !suppressSeedCalls) {
+      seedZipCodesIfNecessary();
     }
-    if (!didCreate && !getConfig("SUPPRESS_MIGRATIONS", null, { truthy: 1 })) {
+    if (!didCreate && !suppressMigrations) {
       r.k.migrate.latest();
     }
   });
-} else if (!getConfig("SUPPRESS_MIGRATIONS", null, { truthy: 1 })) {
+} else if (!suppressMigrations) {
   r.k.migrate.latest();
+}
+
+if (suppressDatabaseAutocreate && !suppressSeedCalls) {
+  seedZipCodesIfNecessary();
 }
 
 setupUserNotificationObservers();

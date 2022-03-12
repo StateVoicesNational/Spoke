@@ -24,8 +24,6 @@ import { setupUserNotificationObservers } from "../server/notifications";
 import { loadContactsFromDataWarehouseFragment } from "../extensions/contact-loaders/datawarehouse";
 import { loadContactS3PullProcessFile } from "../extensions/contact-loaders/s3-pull";
 
-export { seedZipCodes } from "../server/seeds/seed-zip-codes";
-
 /* For the 'legacy' job runner when JOBS_SAME_PROCESS is false:
    The main in both cases is to process jobs and send/receive messages
    on separate loop(s) from the web server.
