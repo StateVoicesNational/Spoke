@@ -107,7 +107,9 @@ export default class GSScriptField extends GSFormField {
       name,
       onChange,
       value,
-      ref
+      ref,
+      error,
+      helperText
     } = this.props;
     const renderDataTest = { "data-test": this.props["data-test"] };
     return (
@@ -129,6 +131,8 @@ export default class GSScriptField extends GSFormField {
           name={name}
           onChange={onChange}
           value={value}
+          error={error}
+          helperText={helperText}
           style={{
             marginBottom: theme.spacing(2)
           }}
