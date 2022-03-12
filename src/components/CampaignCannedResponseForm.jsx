@@ -35,7 +35,7 @@ export default class CannedResponseForm extends React.Component {
     };
   }
   handleSave = () => {
-    const { onSaveCannedResponse, handleCloseAddForm } = this.props;
+    const { onSaveCannedResponse } = this.props;
     onSaveCannedResponse(this.state);
   };
 
