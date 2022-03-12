@@ -1161,7 +1161,8 @@ export class AssignmentTexterContactControls extends React.Component {
                   review={this.props.review}
                   styles={messageListStyles}
                   hideMedia={this.state.hideMedia}
-                />
+                />,
+                enabledSideboxes
               )}
               {this.renderMessageControls(enabledSideboxes)}
             </div>
