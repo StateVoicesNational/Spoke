@@ -36,9 +36,12 @@ export default class GSScriptField extends GSFormField {
         script: this.props.value
       },
       () => {
-        this.dialogScriptInput.current &&
+        if (this.dialogScriptInput.current) {
           this.dialogScriptInput.current.focus();
-        this.dialogScriptText.current && this.dialogScriptText.current.blur();
+        }
+        if (this.dialogScriptText.current) {
+          this.dialogScriptText.current.blur();
+        }
       }
     );
   };
@@ -106,11 +109,11 @@ export default class GSScriptField extends GSFormField {
       value,
       ref
     } = this.props;
-    const dataTest = { "data-test": this.props["data-test"] };
+    const renderDataTest = { "data-test": this.props["data-test"] };
     return (
       <div>
         <TextField
-          {...dataTest}
+          {...renderDataTest}
           inputRef={ref}
           inputRef={this.dialogScriptText}
           onClick={event => {
