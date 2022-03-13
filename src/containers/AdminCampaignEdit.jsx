@@ -206,17 +206,26 @@ export class AdminCampaignEdit extends React.Component {
     // 3. Refetch/poll updates data in loadData component wrapper
     //    and triggers *this* method => this.props.campaignData => this.state.campaignFormValues
     // So campaignFormValues should always be the diffs between server and client form data
-    let { expandedSection, isPolling } = this.state;
+    let { expandedSection } = this.state;
     let expandedKeys = [];
     if (expandedSection !== null) {
       expandedSection = this.sections()[expandedSection];
       expandedKeys = expandedSection.keys;
     }
 
+    const unsavedKeys = [];
+    this.sections().forEach(section => {
+      if (!this.checkSectionSaved(section)) {
+        unsavedKeys.push(...section.keys);
+      }
+    });
+
     const campaignDataCopy = {
       ...newProps.campaignData.campaign
     };
-    expandedKeys.forEach(key => {
+
+    const doNotUpdateKeys = [...new Set([...unsavedKeys, ...expandedKeys])];
+    doNotUpdateKeys.forEach(key => {
       // contactsCount is in two sections
       // That means it won't get updated if *either* is opened
       // but we want it to update in either
