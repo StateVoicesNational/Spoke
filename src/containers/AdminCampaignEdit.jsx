@@ -213,18 +213,29 @@ export class AdminCampaignEdit extends React.Component {
       expandedKeys = expandedSection.keys;
     }
 
-    const unsavedKeys = [];
+    const keysInUnsavedSections = [];
     this.sections().forEach(section => {
       if (!this.checkSectionSaved(section)) {
-        unsavedKeys.push(...section.keys);
+        keysInUnsavedSections.push(...section.keys);
       }
     });
+
+    const newCampaignData = newProps.campaignData.campaign;
+    const changedKeysInUnsavedSections = [];
+    keysInUnsavedSections.forEach(key => {
+      if (newCampaignData[key] !== this.state.campaignFormValues[key]) {
+        changedKeysInUnsavedSections.push(key);
+      }
+    });
+
+    const doNotUpdateKeys = [
+      ...new Set([...changedKeysInUnsavedSections, ...expandedKeys])
+    ];
 
     const campaignDataCopy = {
       ...newProps.campaignData.campaign
     };
 
-    const doNotUpdateKeys = [...new Set([...unsavedKeys, ...expandedKeys])];
     doNotUpdateKeys.forEach(key => {
       // contactsCount is in two sections
       // That means it won't get updated if *either* is opened
