@@ -41,6 +41,10 @@ import { styles } from "./AdminCampaignStats";
 import AdminScriptImport from "../containers/AdminScriptImport";
 import { makeTree } from "../lib";
 
+const CAMPAIGN_POLLING_INTERVAL = 60000;
+const JOB_WAITING_POLLING_INTERVAL = 2500;
+const ORG_POLLING_INTERVAL = 20000;
+
 const campaignInfoFragment = `
   id
   title
@@ -168,7 +172,7 @@ export class AdminCampaignEdit extends React.Component {
         {
           isPolling: true
         },
-        () => this.props.campaignData.startPolling(2500)
+        () => this.props.campaignData.startPolling(JOB_WAITING_POLLING_INTERVAL)
       );
     }
   };
@@ -181,7 +185,7 @@ export class AdminCampaignEdit extends React.Component {
           isPolling: false
         },
         () => {
-          this.props.campaignData.stopPolling();
+          this.props.campaignData.startPolling(CAMPAIGN_POLLING_INTERVAL);
         }
       );
     }
@@ -1065,7 +1069,7 @@ const queries = {
       variables: {
         campaignId: ownProps.params.campaignId
       },
-      pollInterval: 60000
+      pollInterval: CAMPAIGN_POLLING_INTERVAL
     })
   },
   organizationData: {
@@ -1106,7 +1110,7 @@ const queries = {
       variables: {
         organizationId: ownProps.params.organizationId
       },
-      pollInterval: 20000
+      pollInterval: ORG_POLLING_INTERVAL
     })
   }
 };
