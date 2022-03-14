@@ -39,6 +39,6 @@ Spoke requires the following environment variables to be set to send email:
 
 ## Postmark
 
-If you're using Postmark as your email provier, you will need to set `EMAIL_HOST_SECURE=0`. This is because [Postmark supports TLS via STARTTLS](https://postmarkapp.com/developer/user-guide/send-email-with-smtp), which and the [nodemailer library requires that you set the secure argument to false](https://nodemailer.com/smtp/#tls-options) in this case.
+If you're using Postmark as your email provier, you will need to set `EMAIL_HOST_SECURE=0`. This is because [Postmark supports TLS via STARTTLS](https://postmarkapp.com/developer/user-guide/send-email-with-smtp), which the [nodemailer library requires that you set the secure argument to false](https://nodemailer.com/smtp/#tls-options) in this case.
 
 See the [environment variables reference document](REFERENCE-environment_variables.md) for more information.
