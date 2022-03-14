@@ -160,6 +160,7 @@ export class AdminCampaignEdit extends React.Component {
     this.state = {
       expandedSection,
       campaignFormValues: props.campaignData.campaign,
+      lastCampaignProps: props.campaignData.campaign,
       startingCampaign: false,
       isPolling: false
     };
@@ -213,6 +214,8 @@ export class AdminCampaignEdit extends React.Component {
       expandedKeys = expandedSection.keys;
     }
 
+    // look at all the unsaved sections
+    // get all the keys in the unsaved sections
     const keysInUnsavedSections = [];
     this.sections().forEach(section => {
       if (!this.checkSectionSaved(section)) {
@@ -221,13 +224,21 @@ export class AdminCampaignEdit extends React.Component {
     });
 
     const newCampaignData = newProps.campaignData.campaign;
+
+    // find keys in unsaved sections that were changed by the user
+    // we'll assume a key was changed by the user if its value is
+    // different than the key's value in the last props we received
     const changedKeysInUnsavedSections = [];
     keysInUnsavedSections.forEach(key => {
-      if (newCampaignData[key] !== this.state.campaignFormValues[key]) {
+      if (
+        this.state.lastCampaignProps[key] !== this.state.campaignFormValues[key]
+      ) {
         changedKeysInUnsavedSections.push(key);
       }
     });
 
+    // don't update keys in the open section as well as unsaved keys changed
+    // by the user in closed sections
     const doNotUpdateKeys = [
       ...new Set([...changedKeysInUnsavedSections, ...expandedKeys])
     ];
@@ -274,7 +285,8 @@ export class AdminCampaignEdit extends React.Component {
     }
 
     this.setState({
-      campaignFormValues: pushToFormValues
+      campaignFormValues: pushToFormValues,
+      lastCampaignProps: newCampaignData
     });
   }
 
