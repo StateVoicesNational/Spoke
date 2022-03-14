@@ -228,19 +228,19 @@ export class AdminCampaignEdit extends React.Component {
     // find keys in unsaved sections that were changed by the user
     // we'll assume a key was changed by the user if its value is
     // different than the key's value in the last props we received
-    const changedKeysInUnsavedSections = [];
+    const keysInUnsavedSectionsChangedByTheUser = [];
     keysInUnsavedSections.forEach(key => {
       if (
         this.state.lastCampaignProps[key] !== this.state.campaignFormValues[key]
       ) {
-        changedKeysInUnsavedSections.push(key);
+        keysInUnsavedSectionsChangedByTheUser.push(key);
       }
     });
 
     // don't update keys in the open section as well as unsaved keys changed
     // by the user in closed sections
     const doNotUpdateKeys = [
-      ...new Set([...changedKeysInUnsavedSections, ...expandedKeys])
+      ...new Set([...keysInUnsavedSectionsChangedByTheUser, ...expandedKeys])
     ];
 
     const campaignDataCopy = {
