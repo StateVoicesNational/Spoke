@@ -115,8 +115,6 @@ export class CampaignContactsFormBase extends React.Component {
   }
 }
 
-CampaignContactsFormBase.prototype.renderAfterStart = true;
-
 CampaignContactsFormBase.propTypes = {
   onChange: type.func,
   onSubmit: type.func,
@@ -133,5 +131,7 @@ CampaignContactsFormBase.propTypes = {
 };
 
 const CampaignContactsForm = compose(withMuiTheme)(CampaignContactsFormBase);
+
+CampaignContactsForm.prototype.renderAfterStart = true;
 
 export { CampaignContactsForm };
