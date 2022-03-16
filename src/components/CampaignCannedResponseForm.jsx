@@ -73,7 +73,7 @@ export default class CannedResponseForm extends React.Component {
     const modelSchema = yup.object({
       title: yup.string().required(),
       text: yup.string().required(),
-      answerActions: yup.string(),
+      answerActions: yup.string().nullable(),
       answerActionsData: yup.mixed()
     });
     this.form = React.createRef();

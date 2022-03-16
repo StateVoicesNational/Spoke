@@ -5,7 +5,7 @@
 _February 2022:_ Version 12.0
 
 ### Migration Notes
-This is a major release and includes a schema change. This is a minor schema change, which you can run before/during migration (either by leaving/disabling SUPPRESS_MIGRATIONS="" or for [AWS Lambda, see the db migration instructions](./HOWTO_DEPLOYING_AWS_LAMBDA.md#migrating-the-database). It includes adding nullable columns "answer_actions" and "answer_actions_data" to the canned_response table.
+This is a major release and includes a schema change. This is a minor schema change, which you can run before/during deployment (either by leaving/disabling SUPPRESS_MIGRATIONS="" or for [AWS Lambda, see the db migration instructions](./HOWTO_DEPLOYING_AWS_LAMBDA.md#migrating-the-database). It includes adding nullable columns "answer_actions" and "answer_actions_data" to the canned_response table. If you are using Redis, you will need to clear the canned response cache keys after deployment.
 
 ### Bug-fixes
 * Fix failing GitHub Actions tests
