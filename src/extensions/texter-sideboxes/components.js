@@ -109,18 +109,19 @@ export const renderSidebox = (
 ) => {
   const Component = sideBox.Component;
   return (
-    <Component
-      key={sideBox.name}
-      settingsData={settingsData}
-      {...parentComponent.props}
-      {...(moreProps || {})}
-      parent={parentComponent}
-      updateState={state => {
-        // allows a component to preserve state across dialog open/close
-        parentComponent.setState({ [`sideboxState${name}`]: state });
-      }}
-      persistedState={parentComponent.state[`sideboxState${name}`]}
-    />
+    <div key={sideBox.name} style={{ marginBottom: "10px" }}>
+      <Component
+        settingsData={settingsData}
+        {...parentComponent.props}
+        {...(moreProps || {})}
+        parent={parentComponent}
+        updateState={state => {
+          // allows a component to preserve state across dialog open/close
+          parentComponent.setState({ [`sideboxState${name}`]: state });
+        }}
+        persistedState={parentComponent.state[`sideboxState${name}`]}
+      />
+    </div>
   );
 };
 
