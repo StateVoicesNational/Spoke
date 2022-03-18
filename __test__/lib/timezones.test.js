@@ -966,6 +966,41 @@ describe("test getOffsets", () => {
     expect(invalid_offsets_returned[12]).toBe("-11_0");
     expect(invalid_offsets_returned[13]).toBe("10_0");
   });
+
+  it("works for campaign offsets", () => {
+    MockDate.set("2018-02-01T17:00:00.000Z");
+    let offsets_returned = getOffsets(makeConfig(10, 12, true), [
+      "-12_1",
+      "-11_0",
+      "-5_1",
+      "-4_1",
+      "0_0",
+      "5_0",
+      "10_0",
+      ""
+    ]);
+    expect(offsets_returned).toHaveLength(2);
+
+    let valid_offsets_returned = offsets_returned[0];
+    expect(valid_offsets_returned).toHaveLength(2);
+    expect(valid_offsets_returned[0]).toBe("0_1");
+    expect(valid_offsets_returned[1]).toBe("0_0");
+
+    let invalid_offsets_returned = offsets_returned[1];
+    expect(invalid_offsets_returned).toHaveLength(12);
+    expect(invalid_offsets_returned[0]).toBe("-12_1");
+    expect(invalid_offsets_returned[1]).toBe("-11_1");
+    expect(invalid_offsets_returned[2]).toBe("-5_1");
+    expect(invalid_offsets_returned[3]).toBe("-4_1");
+    expect(invalid_offsets_returned[4]).toBe("5_1");
+    expect(invalid_offsets_returned[5]).toBe("10_1");
+    expect(invalid_offsets_returned[6]).toBe("-12_0");
+    expect(invalid_offsets_returned[7]).toBe("-11_0");
+    expect(invalid_offsets_returned[8]).toBe("-5_0");
+    expect(invalid_offsets_returned[9]).toBe("-4_0");
+    expect(invalid_offsets_returned[10]).toBe("5_0");
+    expect(invalid_offsets_returned[11]).toBe("10_0");
+  });
 });
 
 describe("test getContactTimezone", () => {

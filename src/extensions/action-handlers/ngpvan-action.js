@@ -1,6 +1,9 @@
 import { getConfig } from "../../server/api/lib/config";
 import Van from "../contact-loaders/ngpvan/util";
-import { getCountryCode, getDashedPhoneNumberDisplay } from "../../lib/phone-format";
+import {
+  getCountryCode,
+  getDashedPhoneNumberDisplay
+} from "../../lib/phone-format";
 import httpRequest from "../../server/lib/http-request.js";
 
 export const name = "ngpvan-action";
@@ -101,14 +104,10 @@ export const postCanvassResponse = async (contact, organization, bodyInput) => {
 
 // What happens when a texter saves the answer that triggers the action
 // This is presumably the meat of the action
-export async function processAction({
-  interactionStep,
-  contact,
-  organization
-}) {
+export async function processAction({ actionObject, contact, organization }) {
   try {
     const answerActionsData = JSON.parse(
-      (interactionStep || {}).answer_actions_data || "{}"
+      (actionObject || {}).answer_actions_data || "{}"
     );
 
     const body = JSON.parse(answerActionsData.value);
