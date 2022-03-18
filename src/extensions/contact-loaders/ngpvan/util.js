@@ -10,7 +10,7 @@ export default class Van {
     let apiKey;
     const appName = getConfig("NGP_VAN_APP_NAME", organization);
 
-    if (organization.features["NGP_VAN_API_KEY_ENC"]) {
+    if (getConfig("NGP_VAN_API_KEY_ENC", organization)) {
       const dbKey = getConfig("NGP_VAN_API_KEY_ENC", organization);
       apiKey = await getSecret("ngpVanApiKey", dbKey, organization);
     } else {
