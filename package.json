@@ -134,7 +134,7 @@
     "moment-timezone": "^0.5.14",
     "nexmo": "^2.3.2",
     "node-abort-controller": "^1.0.4",
-    "node-fetch": "^2.6.0",
+    "node-fetch": "^2.6.7",
     "nodemailer": "^6.4.16",
     "omit-deep-lodash": "^1.1.4",
     "papaparse": "^5.1.1",
