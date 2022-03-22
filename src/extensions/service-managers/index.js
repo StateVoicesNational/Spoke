@@ -5,6 +5,10 @@ export function getServiceManagers(organization) {
   const configuredHandlers = getConfig(handlerKey, organization);
   const enabledHandlers =
     (configuredHandlers && configuredHandlers.split(",")) || [];
+  const orgService = getConfig("service", organization);
+  const twilioAccountSwitchingIdx = enabledHandlers.indexOf(
+    "twilio-account-switching"
+  );
 
   if (
     typeof configuredHandlers === "undefined" &&
@@ -15,6 +19,15 @@ export function getServiceManagers(organization) {
     )
   ) {
     enabledHandlers.push("per-campaign-messageservices");
+  }
+
+  // Disable Twilio Account Switching if organization service is defined as something else besides "twilio"
+  if (
+    twilioAccountSwitchingIdx > -1 &&
+    orgService !== undefined &&
+    orgService != "twilio"
+  ) {
+    enabledHandlers.splice(twilioAccountSwitchingIdx, 1);
   }
 
   const handlers = [];
@@ -90,5 +103,8 @@ export async function getServiceManagerData(
       ...(await sm[funcName]({ organization, ...funcArgs }))
     }))
   );
-  return resultArray;
+  return resultArray.map(r => ({
+    ...r,
+    fullyConfigured: r.fullyConfigured === undefined ? null : r.fullyConfigured
+  }));
 }

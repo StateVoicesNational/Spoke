@@ -140,6 +140,7 @@ const optOutCache = {
     noContactUpdate,
     noReply,
     contact,
+    user,
     organization // not always present
   }) => {
     const organizationId = campaign.organization_id;
@@ -184,7 +185,7 @@ const optOutCache = {
       const org =
         organization || organizationCache.load(campaign.organization_id);
       await processServiceManagers("onOptOut", org, {
-        contact: newContact,
+        contact,
         campaign,
         user,
         noReply,

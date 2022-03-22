@@ -42,6 +42,7 @@ const FormSchemaAfterStarted = {
     .nullable(),
   primaryColor: yup
     .string()
+    .matches(/^#([a-fA-F0-9]{6}|[a-fA-F0-9]{3})$/)
     .transform(value => (!value ? null : value))
     .nullable(),
   introHtml: yup
@@ -60,11 +61,13 @@ export default class CampaignBasicsForm extends React.Component {
   }
 
   render() {
+    const formSchema = this.formSchema();
+
     return (
       <div>
         <CampaignFormSectionHeading title="What's your campaign about?" />
         <GSForm
-          schema={this.formSchema()}
+          schema={formSchema}
           value={this.props.formValues}
           onChange={this.props.onChange}
           onSubmit={this.props.onSubmit}
@@ -117,7 +120,10 @@ export default class CampaignBasicsForm extends React.Component {
           <Form.Submit
             as={GSSubmitButton}
             label={this.props.saveLabel}
-            disabled={this.props.saveDisabled}
+            disabled={
+              this.props.saveDisabled ||
+              !formSchema.isValidSync(this.props.formValues)
+            }
           />
         </GSForm>
       </div>
