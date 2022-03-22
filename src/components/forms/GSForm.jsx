@@ -1,21 +1,13 @@
 import PropTypes from "prop-types";
 import React from "react";
 import Form from "react-formal";
-import GSSubmitButton from "./GSSubmitButton";
-import theme from "../../styles/theme";
+import { compose } from "recompose";
 import { StyleSheet, css } from "aphrodite";
 import { GraphQLRequestError } from "../../network/errors";
 import { log } from "../../lib";
+import withMuiTheme from "../../containers/hoc/withMuiTheme";
 
-const styles = StyleSheet.create({
-  errorMessage: {
-    color: theme.colors.red,
-    marginRight: "auto",
-    marginLeft: "auto",
-    textAlign: "center"
-  }
-});
-export default class GSForm extends React.Component {
+class GSForm extends React.Component {
   static propTypes = {
     value: PropTypes.object,
     defaultValue: PropTypes.object,
@@ -32,6 +24,14 @@ export default class GSForm extends React.Component {
 
   constructor(props) {
     super(props);
+    this.styles = StyleSheet.create({
+      errorMessage: {
+        color: this.props.muiTheme.palette.error.main,
+        marginRight: "auto",
+        marginLeft: "auto",
+        textAlign: "center"
+      }
+    });
     // if you need to reference this (ex: for submit())
     // outside of this compoent you can pass a ref in
     if (props.setRef) {
@@ -56,38 +56,47 @@ export default class GSForm extends React.Component {
   }
 
   renderChildren(children) {
-    const childrenList = React.Children.map(children, child => {
-      if (child === null) {
-        return child;
-      } else if (child.type === Form.Field) {
-        const name = child.props.name;
-        let error = this.state.formErrors ? this.state.formErrors[name] : null;
-        let clonedElement = child;
-        if (error) {
-          error = error[0]
-            ? error[0].message.replace(name, child.props.label)
+    const childrenList =
+      React.Children.map(children, child => {
+        if (child === null) {
+          return child;
+        } else if (child.type === Form.Field) {
+          const name = child.props.name;
+          let required = false;
+          try {
+            // if is set as required through YUP
+            required = this.props.schema.fields[name].exclusiveTests.required;
+          } catch (e) {}
+          let error = this.state.formErrors
+            ? this.state.formErrors[name]
             : null;
-          clonedElement = React.cloneElement(child, {
-            helperText: error,
-            error: true
+          let clonedElement = child;
+          if (error) {
+            error = error[0]
+              ? error[0].message.replace(name, child.props.label)
+              : null;
+            clonedElement = React.cloneElement(child, {
+              helperText: error,
+              error: true
+            });
+          }
+          return React.cloneElement(clonedElement, {
+            events: ["onBlur"],
+            required
+          });
+        } else if (child.type === Form.Submit) {
+          const { isSubmitting } = this.state;
+          const As = child.props.as;
+          return React.cloneElement(child, {
+            as: props => <As isSubmitting={isSubmitting} {...props} />
+          });
+        } else if (child.props && child.props.children) {
+          return React.cloneElement(child, {
+            children: this.renderChildren(child.props.children)
           });
         }
-        return React.cloneElement(clonedElement, {
-          events: ["onBlur"]
-        });
-      } else if (child.type === Form.Submit) {
-        const { isSubmitting } = this.state;
-        const As = child.props.as;
-        return React.cloneElement(child, {
-          as: props => <As isSubmitting={isSubmitting} {...props} />
-        });
-      } else if (child.props && child.props.children) {
-        return React.cloneElement(child, {
-          children: this.renderChildren(child.props.children)
-        });
-      }
-      return child;
-    });
+        return child;
+      }) || [];
 
     return childrenList.length === 1 ? childrenList[0] : childrenList;
   }
@@ -98,14 +107,14 @@ export default class GSForm extends React.Component {
     }
 
     return (
-      <div className={css(styles.errorMessage)}>
+      <div className={css(this.styles.errorMessage)}>
         {this.state.globalErrorMessage}
       </div>
     );
   }
 
   render() {
-    const { setRef, ...props } = this.props;
+    const { setRef, muiTheme, ...props } = this.props;
     return (
       <Form
         ref={this.form}
@@ -145,3 +154,5 @@ export default class GSForm extends React.Component {
 GSForm.propTypes = {
   onSubmit: PropTypes.func
 };
+
+export default compose(withMuiTheme)(GSForm);

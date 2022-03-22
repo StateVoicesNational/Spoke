@@ -1,15 +1,16 @@
 import type from "prop-types";
 import React from "react";
-import theme from "../styles/theme";
+import { compose } from "react-apollo";
+import withMuiTheme from "./../containers/hoc/withMuiTheme";
 
-const Slider = ({ maxValue, value, color, direction }) => {
+const Slider = ({ maxValue, value, color, direction, muiTheme }) => {
   const valuePercent = Math.round((value / maxValue) * 100);
   return (
     <div
       style={{
         height: 25,
         width: "100%",
-        backgroundColor: theme.colors.white,
+        outline: `1px solid ${muiTheme.palette.text.disabled}`,
         textAlign: `${direction === 0 ? "left" : "right"}`
       }}
     >
@@ -33,4 +34,4 @@ Slider.propTypes = {
   direction: type.number
 };
 
-export default Slider;
+export default compose(withMuiTheme)(Slider);
