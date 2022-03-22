@@ -65,7 +65,7 @@ describe("TexterStats (Non-dynamic campaign)", () => {
       <TexterStats campaign={campaign} organizationId="1" />
     );
     expect(stats.text()).toEqual(
-      "Test Tester <Link />19%<Link />  |  <Link />  |  <Link />Someone Else (Suspended) <Link />99%<Link />  |  <Link />  |  <Link />"
+      "Test Tester 19%Sweep conversations  |  View conversations in Message Review  |  Unmessaged: 193Someone Else (Suspended) 99%Sweep conversations  |  View conversations in Message Review  |  Unmessaged: 4"
     );
   });
 
@@ -85,7 +85,7 @@ describe("TexterStats (Dynamic campaign)", () => {
   it("contains the right text", () => {
     const stats = shallow(<TexterStats campaign={campaignDynamic} />);
     expect(stats.text()).toEqual(
-      "Test Tester <Link />45 initial messages sent. <Link />  |  <Link />  |  <Link />Someone Else (Suspended) <Link />541 initial messages sent. <Link />  |  <Link />  |  <Link />"
+      "Test Tester 45 initial messages sent. Sweep conversations  |  View conversations in Message Review  |  Unmessaged: 193Someone Else (Suspended) 541 initial messages sent. Sweep conversations  |  View conversations in Message Review  |  Unmessaged: 4"
     );
   });
 });

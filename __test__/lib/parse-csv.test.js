@@ -1,5 +1,9 @@
 import Papa from "papaparse";
-import { parseCSV, organizationCustomFields } from "../../src/lib";
+import {
+  parseCSV,
+  organizationCustomFields,
+  parseCannedResponseCsv
+} from "../../src/lib";
 
 describe("parseCSV", () => {
   describe("with PHONE_NUMBER_COUNTRY set", () => {
@@ -343,5 +347,203 @@ describe("parseCSV", () => {
         expect(contactsWithoutCustomFields).toEqual(expected);
       });
     });
+  });
+});
+
+describe("parseCannedResponseCsv", () => {
+  const availableActions = [
+    {
+      name: "fake-action",
+      displayName: "Fake Action"
+    },
+    {
+      name: "complex-fake-action",
+      displayName: "Complex Fake Action",
+      clientChoiceData: [
+        {
+          name: "hello",
+          details: "details"
+        }
+      ]
+    }
+  ];
+
+  const tags = [
+    {
+      id: 1,
+      name: "Tag1",
+      description: "Tag1Desc"
+    },
+    {
+      id: 2,
+      name: "Tag2",
+      description: "Tag2Desc"
+    }
+  ];
+
+  it("fails when title header doesn't exist", () => {
+    const csv = "text,text,tags\nhello,world,tag1";
+    parseCannedResponseCsv(
+      csv,
+      availableActions,
+      tags,
+      ({ error, cannedResponses }) => {
+        expect(error).toBe("Missing columns: Title");
+        expect(cannedResponses).toBeFalsy();
+      }
+    );
+  });
+
+  it("fails when text header doesn't exist", () => {
+    const csv = "title,title,tags\nhello,world,tag1";
+    parseCannedResponseCsv(
+      csv,
+      availableActions,
+      tags,
+      ({ error, cannedResponses }) => {
+        expect(error).toBe("Missing columns: Text");
+        expect(cannedResponses).toBeFalsy();
+      }
+    );
+  });
+
+  it("fails when title and text header doesn't exist", () => {
+    const csv = "tags,tags,tags\nhello,world,tag1";
+    parseCannedResponseCsv(
+      csv,
+      availableActions,
+      tags,
+      ({ error, cannedResponses }) => {
+        expect(error).toBe("Missing columns: Title, Text");
+        expect(cannedResponses).toBeFalsy();
+      }
+    );
+  });
+
+  it("fails when row is missing title", () => {
+    const csv = "title,text,tags\n,world,tag1";
+    parseCannedResponseCsv(
+      csv,
+      availableActions,
+      tags,
+      ({ error, cannedResponses }) => {
+        expect(error).toBe("Incomplete Line. Title: ; Text: world");
+        expect(cannedResponses).toBeFalsy();
+      }
+    );
+  });
+
+  it("fails when row is missing text", () => {
+    const csv = "title,text,tags\nhello,,tag1";
+    parseCannedResponseCsv(
+      csv,
+      availableActions,
+      tags,
+      ({ error, cannedResponses }) => {
+        expect(error).toBe("Incomplete Line. Title: hello; Text: ");
+        expect(cannedResponses).toBeFalsy();
+      }
+    );
+  });
+
+  it("fails when tag cannot be matched", () => {
+    const csv = "title,text,tags\nhello,world,tag3";
+    parseCannedResponseCsv(
+      csv,
+      availableActions,
+      tags,
+      ({ error, cannedResponses }) => {
+        expect(error).toBe(
+          `"tag3" cannot be found in your organization's tags`
+        );
+        expect(cannedResponses).toBeFalsy();
+      }
+    );
+  });
+
+  it("fails when action cannot be matched", () => {
+    const csv = "title,text,action\nhello,world,no action";
+    parseCannedResponseCsv(
+      csv,
+      availableActions,
+      tags,
+      ({ error, cannedResponses }) => {
+        expect(error).toBe(`"no action" is not a valid action`);
+        expect(cannedResponses).toBeFalsy();
+      }
+    );
+  });
+
+  it("fails when action data is required but not provided", () => {
+    const csv = "title,text,action\nhello,world,complex Fake action";
+    parseCannedResponseCsv(
+      csv,
+      availableActions,
+      tags,
+      ({ error, cannedResponses }) => {
+        expect(error).toBe(
+          "Action data choice is required for action complex Fake action"
+        );
+        expect(cannedResponses).toBeFalsy();
+      }
+    );
+  });
+
+  it("fails when action data cannot be found", () => {
+    const csv =
+      "title,text,action,actionData\nhello,world,complex Fake action,goodbye";
+    parseCannedResponseCsv(
+      csv,
+      availableActions,
+      tags,
+      ({ error, cannedResponses }) => {
+        expect(error).toBe(`"goodbye" is not a valid action data choice`);
+        expect(cannedResponses).toBeFalsy();
+      }
+    );
+  });
+
+  it("succeeds with complete tag data", () => {
+    const csv = "title,text,tags\nhello,world,\nhi,there,tag1";
+    parseCannedResponseCsv(
+      csv,
+      availableActions,
+      tags,
+      ({ error, cannedResponses }) => {
+        expect(error).toBeFalsy();
+        expect(cannedResponses).toEqual([
+          { title: "hello", text: "world", tagIds: [] },
+          { title: "hi", text: "there", tagIds: [1] }
+        ]);
+      }
+    );
+  });
+
+  it("succeeds with complete action data", () => {
+    const csv =
+      "title,text,action,actiondata\nhello,world,fake action\nhi,there,complex fake action,hello";
+    parseCannedResponseCsv(
+      csv,
+      availableActions,
+      tags,
+      ({ error, cannedResponses }) => {
+        expect(error).toBeFalsy();
+        expect(cannedResponses).toEqual([
+          {
+            title: "hello",
+            text: "world",
+            answerActions: "fake-action",
+            tagIds: []
+          },
+          {
+            title: "hi",
+            text: "there",
+            answerActions: "complex-fake-action",
+            answerActionsData: '{"label":"hello","value":"details"}',
+            tagIds: []
+          }
+        ]);
+      }
+    );
   });
 });

@@ -1,5 +1,6 @@
 import type from "prop-types";
 import React from "react";
+import { compose } from "recompose";
 import GSForm from "../components/forms/GSForm";
 import GSSubmitButton from "../components/forms/GSSubmitButton";
 import GSTextField from "../components/forms/GSTextField";
@@ -9,12 +10,12 @@ import OrganizationJoinLink from "./OrganizationJoinLink";
 import { dataTest } from "../lib/attributes";
 import cloneDeep from "lodash/cloneDeep";
 import TagChips from "./TagChips";
-import theme from "../styles/theme";
+import withMuiTheme from "../containers/hoc/withMuiTheme";
 
 import FormControlLabel from "@material-ui/core/FormControlLabel";
 import Switch from "@material-ui/core/Switch";
 
-export default class CampaignDynamicAssignmentForm extends React.Component {
+class CampaignDynamicAssignmentForm extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -153,7 +154,7 @@ export default class CampaignDynamicAssignmentForm extends React.Component {
                       borderWidth: "2px",
                       borderStyle: "solid"
                     },
-                    backgroundColor: theme.colors.white,
+                    backgroundColor: this.props.muiTheme.palette.grey[50],
                     onRequestDelete:
                       i === 0
                         ? null
@@ -171,7 +172,7 @@ export default class CampaignDynamicAssignmentForm extends React.Component {
                   tags={unselectedPolicies}
                   tagIds={unselectedPolicies.map(p => p.id)}
                   extraProps={listedTag => ({
-                    backgroundColor: theme.colors.lightGray,
+                    backgroundColor: this.props.muiTheme.palette.grey[300],
                     onClick: evt => {
                       if (evt.ctrlKey || evt.altKey) {
                         this.onChange({
@@ -212,3 +213,5 @@ CampaignDynamicAssignmentForm.propTypes = {
   responseWindow: type.number,
   batchSize: type.string
 };
+
+export default compose(withMuiTheme)(CampaignDynamicAssignmentForm);
