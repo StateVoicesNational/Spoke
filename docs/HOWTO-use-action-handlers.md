@@ -1,7 +1,8 @@
 # Action Handlers Framework
 
 Action handlers are a mechanism in Spoke that allow Spoke to take action when a texter indicates
-that a contact signalled a certain answer to a question in a Spoke interaction script.
+that a contact signalled a certain answer to a question in a Spoke interaction script or the contact
+has received a certain canned response.
 
 There's a framework in Spoke that allows the System Administrator to enable
 action handlers, as well as to make it straightforward for developers to
@@ -86,6 +87,8 @@ There are three main "points" where a contact loader can hook into the applicati
    express app on-load of the function. This can allow asynchoronous server-to-server APIs if necessary.
    This is how an action handler would expose webhooks to which external systems can make requests.
 
+In addition, you can apply actions to canned responses in the "Canned Responses" section while editing any action. When a texter selects a canned response and sends a message with it, the framework will invoke the action handler's `processAction` method.
+
 ## Diagram
 
 _Coming in a future iteration of this document._
@@ -100,7 +103,7 @@ All action handlers ***must*** export the following:
 - `instructions` -- information system administrators need when they configure the action handler.
 - `available` -- whether the action handler is avaiable in the context of an organization. Implementers can use this
   method to check handler-specific configuration.
-- `processAction` -- called when a texter selects an answer that is linked to this action handler. This method can
+- `processAction` -- called when a texter selects an answer or response that is linked to this action handler. This method can
   be used to send information in an external system, update the database, or enqueue a job.
 
 These exports are documented in comments in the reference implementation

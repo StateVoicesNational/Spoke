@@ -18,8 +18,15 @@ export default class GSSelectField extends GSFormField {
   }
 
   render() {
-    const { name, value, label, onChange, style } = this.props;
+    const { name, label, onChange, style } = this.props;
+    let { value } = this.props;
     const dataTest = { "data-test": this.props["data-test"] };
+
+    // can't be undefined or react throw uncontroled component error
+    if (!value) {
+      value = "";
+    }
+
     return (
       <FormControl style={style}>
         <InputLabel>{label}</InputLabel>
