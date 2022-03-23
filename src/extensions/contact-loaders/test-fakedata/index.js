@@ -113,6 +113,10 @@ export async function processContactLoad(job, maxContacts, organization) {
     return; // bail early
   }
   const areaCodes = ["213", "323", "212", "718", "646", "661"];
+  // add a bunch more area codes
+  for (let ac = 200; ac < 1000; ac++) {
+    areaCodes.push(String(ac));
+  }
   // FUTURE -- maybe based on campaign default use 'surrounding' offsets
   const timezones = [
     "-12_1",

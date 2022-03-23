@@ -22,11 +22,11 @@ import LoadingIndicator from "../../components/LoadingIndicator";
 const isLoading = queryNames =>
   withProps(parentProps => {
     const loadingReducer = (loadingAcc, queryName) =>
-      loadingAcc || parentProps[queryName].loading;
+      loadingAcc || (parentProps[queryName] && parentProps[queryName].loading);
     const loading = queryNames.reduce(loadingReducer, false);
 
     const errorReducer = (errorAcc, queryName) => {
-      const error = parentProps[queryName].error;
+      const error = parentProps[queryName] && parentProps[queryName].error;
       return error ? errorAcc.concat([error]) : errorAcc;
     };
     const errors = queryNames.reduce(errorReducer, []);
@@ -37,8 +37,8 @@ const isLoading = queryNames =>
 export const withQueries = (queries = {}) => {
   const enhancers = Object.entries(
     queries
-  ).map(([name, { query: queryGql, ...config }]) =>
-    graphql(queryGql, { ...config, name })
+  ).map(([name, { query: queryGql, skip, ...config }]) =>
+    graphql(queryGql, { ...config, skip, name })
   );
 
   return compose(...enhancers, isLoading(Object.keys(queries)));

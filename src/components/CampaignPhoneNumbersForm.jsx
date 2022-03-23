@@ -4,6 +4,7 @@ import { StyleSheet, css } from "aphrodite";
 import _ from "lodash";
 import * as yup from "yup";
 import Form from "react-formal";
+import { compose } from "recompose";
 
 import Button from "@material-ui/core/Button";
 import IconButton from "@material-ui/core/IconButton";
@@ -27,40 +28,11 @@ import GSSubmitButton from "../components/forms/GSSubmitButton";
 import CampaignFormSectionHeading from "../components/CampaignFormSectionHeading";
 import LoadingIndicator from "./LoadingIndicator";
 import theme from "../styles/theme";
+import withMuiTheme from "../containers/hoc/withMuiTheme";
 
 /* eslint-disable no-nested-ternary */
 
 const maxNumbersPerCampaign = 400;
-
-const styles = StyleSheet.create({
-  container: {
-    border: `1px solid ${theme.colors.lightGray}`,
-    borderRadius: 8
-  },
-  removeButton: {
-    width: 50
-  },
-  headerContainer: {
-    display: "flex",
-    alignItems: "center",
-    borderBottom: `1px solid ${theme.colors.lightGray}`,
-    marginBottom: 0,
-    padding: 10
-  },
-  input: {
-    width: 50,
-    paddingLeft: 0,
-    paddingRight: 0,
-    marginRight: 10,
-    marginTop: "auto",
-    marginBottom: "auto",
-    display: "inline-block"
-  },
-  errorMessage: {
-    margin: "10px 0px",
-    color: theme.colors.red
-  }
-});
 
 const inlineStyles = {
   autocomplete: {
@@ -72,7 +44,7 @@ const inlineStyles = {
   }
 };
 
-export default class CampaignPhoneNumbersForm extends React.Component {
+class CampaignPhoneNumbersForm extends React.Component {
   static propTypes = {
     formValues: type.object,
     onChange: type.func,
@@ -95,6 +67,39 @@ export default class CampaignPhoneNumbersForm extends React.Component {
     error: "",
     suppressedAreaCodes: []
   };
+
+  constructor(props) {
+    super(props);
+    this.styles = StyleSheet.create({
+      container: {
+        border: `1px solid ${this.props.muiTheme.palette.grey[300]}`,
+        borderRadius: 8
+      },
+      removeButton: {
+        width: 50
+      },
+      headerContainer: {
+        display: "flex",
+        alignItems: "center",
+        borderBottom: `1px solid ${this.props.muiTheme.palette.grey[300]}`,
+        marginBottom: 0,
+        padding: 10
+      },
+      input: {
+        width: 50,
+        paddingLeft: 0,
+        paddingRight: 0,
+        marginRight: 10,
+        marginTop: "auto",
+        marginBottom: "auto",
+        display: "inline-block"
+      },
+      errorMessage: {
+        margin: "10px 0px",
+        color: this.props.muiTheme.palette.error.main
+      }
+    });
+  }
 
   componentDidMount() {
     this.setSuppressedAreaCodes();
@@ -314,8 +319,8 @@ export default class CampaignPhoneNumbersForm extends React.Component {
                           <span
                             style={{
                               color: isSuppressed
-                                ? theme.colors.red
-                                : theme.colors.gray
+                                ? this.props.muiTheme.palette.error.main
+                                : this.props.muiTheme.palette.grey[500]
                             }}
                           >
                             {!isStarted && isSuppressed && (
@@ -323,7 +328,7 @@ export default class CampaignPhoneNumbersForm extends React.Component {
                                 style={{
                                   marginTop: 15,
                                   marginRight: 10,
-                                  color: theme.colors.red,
+                                  color: this.props.muiTheme.palette.error.main,
                                   fontSize: 14
                                 }}
                               >
@@ -428,7 +433,7 @@ export default class CampaignPhoneNumbersForm extends React.Component {
 
   renderErrorMessage() {
     const { error } = this.state;
-    return <div className={css(styles.errorMessage)}>{error}</div>;
+    return <div className={css(this.styles.errorMessage)}>{error}</div>;
   }
 
   renderAreaCodeTable() {
@@ -447,8 +452,8 @@ export default class CampaignPhoneNumbersForm extends React.Component {
 
     const headerColor =
       assignedNumberCount === numbersNeeded
-        ? theme.colors.darkBlue
-        : theme.colors.red;
+        ? this.props.muiTheme.palette.primary.main
+        : this.props.muiTheme.palette.error.main;
 
     const autoAssignRemaining = () => {
       let inventory = this.formValues().inventoryPhoneNumberCounts;
@@ -614,10 +619,13 @@ export default class CampaignPhoneNumbersForm extends React.Component {
 
     return (
       <div
-        className={css(styles.container)}
+        className={css(this.styles.container)}
         style={{ flex: 1, marginRight: 50, maxWidth: 500 }}
       >
-        <div className={css(styles.headerContainer)} style={{ height: "auto" }}>
+        <div
+          className={css(this.styles.headerContainer)}
+          style={{ height: "auto" }}
+        >
           <div
             style={{
               flex: 1,
@@ -763,12 +771,18 @@ export default class CampaignPhoneNumbersForm extends React.Component {
     }
 
     return (
-      <div className={css(styles.container)} style={{ flex: 1, maxWidth: 340 }}>
-        <div className={css(styles.headerContainer)} style={{ height: 30 }}>
+      <div
+        className={css(this.styles.container)}
+        style={{ flex: 1, maxWidth: 340 }}
+      >
+        <div
+          className={css(this.styles.headerContainer)}
+          style={{ height: 30 }}
+        >
           <div
             style={{
               fontSize: 15,
-              color: theme.colors.darkBlue
+              color: this.props.muiTheme.palette.primary.main
             }}
           >
             Top Area Codes in Contacts List
@@ -804,8 +818,8 @@ export default class CampaignPhoneNumbersForm extends React.Component {
                         fontSize: 14,
                         color:
                           stateAssigned && stateAssigned >= stateNeeded
-                            ? theme.colors.green
-                            : theme.colors.black
+                            ? this.props.muiTheme.palette.success.main
+                            : this.props.muiTheme.palette.text.primary
                       }}
                     >
                       {stateAssigned || 0}
@@ -855,10 +869,10 @@ export default class CampaignPhoneNumbersForm extends React.Component {
                                   fontSize: 14,
                                   color:
                                     assignedCount && assignedCount >= needed
-                                      ? theme.colors.green
+                                      ? this.props.muiTheme.palette.success.main
                                       : assignedCount
-                                      ? theme.colors.red
-                                      : theme.colors.black
+                                      ? this.props.muiTheme.palette.error.main
+                                      : this.props.muiTheme.palette.text.primary
                                 }}
                               >
                                 {assignedCount || 0}
@@ -870,7 +884,8 @@ export default class CampaignPhoneNumbersForm extends React.Component {
                                 style={{
                                   marginLeft: "auto",
                                   fontSize: 14,
-                                  color: theme.colors.blue
+                                  color: this.props.muiTheme.palette.primary
+                                    .main
                                 }}
                               >
                                 {((count / contactsCount) * 100).toFixed(1)}
@@ -942,7 +957,7 @@ export default class CampaignPhoneNumbersForm extends React.Component {
             style={{
               flex: "1 1 50%",
               fontSize: 22,
-              color: theme.colors.red
+              color: this.props.muiTheme.palette.error.main
             }}
           >
             Sorry, you need to upload fewer contacts!
@@ -952,3 +967,5 @@ export default class CampaignPhoneNumbersForm extends React.Component {
     );
   }
 }
+
+export default compose(withMuiTheme)(CampaignPhoneNumbersForm);
