@@ -6,6 +6,7 @@ import Form from "react-formal";
 import moment from "moment";
 import * as yup from "yup";
 import { StyleSheet, css } from "aphrodite";
+import { compose } from "recompose";
 
 import Dialog from "@material-ui/core/Dialog";
 import DialogContent from "@material-ui/core/DialogContent";
@@ -20,16 +21,16 @@ import Collapse from "@material-ui/core/Collapse";
 import IconButton from "@material-ui/core/IconButton";
 
 import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
-import loadData from "./hoc/load-data";
-import GSSubmitButton from "../components/forms/GSSubmitButton";
-import theme from "../styles/theme";
-import DisplayLink from "../components/DisplayLink";
-import GSForm from "../components/forms/GSForm";
-import CampaignTexterUIForm from "../components/CampaignTexterUIForm";
-import OrganizationFeatureSettings from "../components/OrganizationFeatureSettings";
-import { getServiceVendorComponent } from "../extensions/service-vendors/components";
-import { getServiceManagerComponent } from "../extensions/service-managers/components";
-import GSTextField from "../components/forms/GSTextField";
+import loadData from "../hoc/load-data";
+import withSetTheme from "../hoc/withSetTheme";
+import GSSubmitButton from "../../components/forms/GSSubmitButton";
+import GSForm from "../../components/forms/GSForm";
+import CampaignTexterUIForm from "../../components/CampaignTexterUIForm";
+import OrganizationFeatureSettings from "../../components/OrganizationFeatureSettings";
+import { getServiceVendorComponent } from "../../extensions/service-vendors/components";
+import { getServiceManagerComponent } from "../../extensions/service-managers/components";
+import GSTextField from "../../components/forms/GSTextField";
+import ThemeEditor from "./themeEditor";
 
 const styles = StyleSheet.create({
   section: {
@@ -46,31 +47,39 @@ const styles = StyleSheet.create({
     textAlign: "right"
   },
   cardHeader: {
-    cursor: "pointer",
-    backgroundColor: theme.colors.green,
-    color: theme.colors.white
+    cursor: "pointer"
   }
 });
-
-const inlineStyles = {
-  dialogButton: {
-    display: "inline-block"
-  },
-  shadeBox: {
-    backgroundColor: theme.colors.lightGray
-  },
-  errorBox: {
-    backgroundColor: theme.colors.lightGray,
-    color: theme.colors.darkRed,
-    fontWeight: "bolder"
-  }
-};
 
 const formatTextingHours = hour => moment(hour, "H").format("h a");
 class Settings extends React.Component {
   state = {
     formIsSubmitting: false
   };
+
+  inlineStyles = {
+    dialogButton: {
+      display: "inline-block"
+    },
+    shadeBox: {
+      backgroundColor: this.props.muiTheme.palette.action.hover
+    },
+    cardHeader: {
+      cursor: "pointer"
+    },
+    errorBox: {
+      backgroundColor: this.props.muiTheme.palette.action.hover,
+      color: this.props.muiTheme.palette,
+      fontWeight: "bolder"
+    }
+  };
+
+  getCardHeaderStyle() {
+    return Object.assign({}, this.inlineStyles.cardHeader, {
+      backgroundColor: this.props.muiTheme.palette.primary.main,
+      color: this.props.muiTheme.palette.primary.contrastText
+    });
+  }
 
   handleSubmitTextingHoursForm = async ({
     textingHoursStart,
@@ -144,7 +153,7 @@ class Settings extends React.Component {
               </Button>
               <Form.Submit
                 as={GSSubmitButton}
-                style={inlineStyles.dialogButton}
+                style={this.inlineStyles.dialogButton}
                 label="Save"
               />
             </div>
@@ -171,8 +180,8 @@ class Settings extends React.Component {
           title={"Service Management"}
           style={{
             backgroundColor: allFullyConfigured
-              ? theme.colors.green
-              : theme.colors.yellow
+              ? this.props.muiTheme.palette.success.main
+              : this.props.muiTheme.palette.warning.main
           }}
         />
         <CardContent>
@@ -189,17 +198,17 @@ class Settings extends React.Component {
                   style={{
                     backgroundColor:
                       sm.fullyConfigured === true
-                        ? theme.colors.green
+                        ? this.props.muiTheme.palette.success.main
                         : sm.fullyConfigured === false
-                        ? theme.colors.yellow
-                        : theme.colors.lightGray
+                        ? this.props.muiTheme.palette.warning.main
+                        : this.props.muiTheme.palette.grey[300]
                   }}
                 />
                 <CardContent>
                   <ServiceManagerComp
                     serviceManagerInfo={sm}
                     organizationId={organizationId}
-                    inlineStyles={inlineStyles}
+                    inlineStyles={this.inlineStyles}
                     styles={styles}
                     saveLabel={this.props.saveLabel}
                     onSubmit={updateData =>
@@ -240,14 +249,14 @@ class Settings extends React.Component {
           title={`${name.toUpperCase().charAt(0) + name.slice(1)} Config`}
           style={{
             backgroundColor: this.state.serviceVendorAllSet
-              ? theme.colors.green
-              : theme.colors.yellow
+              ? this.props.muiTheme.palette.success.main
+              : this.props.muiTheme.palette.warning.main
           }}
         />
         <ConfigServiceVendor
           organizationId={organizationId}
           config={config}
-          inlineStyles={inlineStyles}
+          inlineStyles={this.inlineStyles}
           styles={styles}
           saveLabel={this.props.saveLabel}
           onSubmit={newConfig => {
@@ -266,7 +275,7 @@ class Settings extends React.Component {
 
   render() {
     const { organization } = this.props.data;
-    const { optOutMessage } = organization;
+    const { optOutMessage, id: organizationId } = organization;
     const formSchema = yup.object({
       optOutMessage: yup.string().required()
     });
@@ -274,13 +283,7 @@ class Settings extends React.Component {
     return (
       <div>
         <Card>
-          <CardHeader
-            title="Settings"
-            style={{
-              backgroundColor: theme.colors.green,
-              color: theme.colors.white
-            }}
-          />
+          <CardHeader title="Settings" style={this.getCardHeaderStyle()} />
           <CardContent>
             <div className={css(styles.section)}>
               <GSForm
@@ -348,6 +351,10 @@ class Settings extends React.Component {
               </Button>
             )}
           </CardActions>
+
+          <CardContent>
+            <ThemeEditor organizationId={organizationId} />
+          </CardContent>
         </Card>
         <div>{this.renderTextingHoursForm()}</div>
         {this.renderServiceManagers()}
@@ -358,7 +365,7 @@ class Settings extends React.Component {
             <Card>
               <CardHeader
                 title="Texter UI Defaults"
-                className={css(styles.cardHeader)}
+                style={this.getCardHeaderStyle()}
                 action={
                   <IconButton>
                     <ExpandMoreIcon />
@@ -401,7 +408,7 @@ class Settings extends React.Component {
           <Card>
             <CardHeader
               title="Overriding default settings"
-              className={css(styles.cardHeader)}
+              style={this.getCardHeaderStyle()}
               action={
                 <IconButton>
                   <ExpandMoreIcon />
@@ -446,7 +453,7 @@ class Settings extends React.Component {
           <Card>
             <CardHeader
               title="External configuration"
-              className={css(styles.cardHeader)}
+              style={this.getCardHeaderStyle()}
               action={
                 <IconButton>
                   <ExpandMoreIcon />
@@ -470,7 +477,8 @@ class Settings extends React.Component {
                 </p>
                 <Button
                   color="secondary"
-                  style={inlineStyles.dialogButton}
+                  variant="outlined"
+                  style={this.inlineStyles.dialogButton}
                   onClick={
                     this.props.mutations.clearCachedOrgAndExtensionCaches
                   }
@@ -703,4 +711,7 @@ const mutations = {
   })
 };
 
-export default loadData({ queries, mutations })(Settings);
+export default compose(
+  withSetTheme,
+  loadData({ queries, mutations })
+)(Settings);
