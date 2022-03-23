@@ -3,12 +3,18 @@
  */
 import React from "react";
 import { mount } from "enzyme";
-import { UserEdit } from "../../src/containers/UserEdit";
+import { UserEditBase as UserEdit } from "../../src/containers/UserEdit";
 import { StyleSheetTestUtils } from "aphrodite";
+import { muiTheme } from "../test_helpers";
+import ThemeContext from "../../src/containers/context/ThemeContext";
 
 describe("User edit page", () => {
   StyleSheetTestUtils.suppressStyleInjection();
-  const wrapper = mount(<UserEdit />);
+  const wrapper = mount(
+    <ThemeContext.Provider value={{ muiTheme }}>
+      <UserEdit />
+    </ThemeContext.Provider>
+  );
 
   test("Render edit page with standard fields", () => {
     expect(wrapper.exists({ name: "email" })).toBeTruthy();

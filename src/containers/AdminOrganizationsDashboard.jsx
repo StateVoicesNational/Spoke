@@ -3,54 +3,27 @@ import React from "react";
 import TopNav from "../components/TopNav";
 import gql from "graphql-tag";
 import loadData from "./hoc/load-data";
-import { withRouter, Link } from "react-router";
+import { withRouter, Link as RouterLink } from "react-router";
 
 import MUIDataTable from "mui-datatables";
 import Fab from "@material-ui/core/Fab";
 import AddIcon from "@material-ui/icons/Add";
+import Link from "@material-ui/core/Link";
 
 import { StyleSheet, css } from "aphrodite";
 import theme from "../styles/theme";
 
 const styles = StyleSheet.create({
-  fieldContainer: {
-    background: theme.colors.white,
-    padding: "15px",
-    width: "256px"
-  },
   loginPage: {
     display: "flex",
     "justify-content": "center",
     "align-items": "flex-start",
     height: "100vh",
     width: "100%",
-    "padding-top": "10vh",
-    background: theme.colors.veryLightGray
+    "padding-top": "10vh"
   },
   fullWidth: {
     width: "100%"
-  },
-  button: {
-    border: "none",
-    background: theme.colors.lightGray,
-    color: theme.colors.darkGreen,
-    padding: "16px 16px",
-    "font-size": "14px",
-    "text-transform": "uppercase",
-    cursor: "pointer",
-    width: "50%",
-    transition: "all 0.3s",
-    ":disabled": {
-      background: theme.colors.white,
-      cursor: "default",
-      color: theme.colors.green
-    }
-  },
-  header: {
-    ...theme.text.header,
-    color: theme.colors.coreBackgroundColor,
-    "text-align": "center",
-    "margin-bottom": 0
   }
 });
 
@@ -119,7 +92,11 @@ class AdminOrganizationsDashboard extends React.Component {
             const orgId = tableMeta.rowData[0];
             return (
               <div style={{ margin: "6px 0" }}>
-                <Link target="_blank" to={`/admin/${orgId}/campaigns`}>
+                <Link
+                  component={RouterLink}
+                  target="_blank"
+                  to={`/admin/${orgId}/campaigns`}
+                >
                   {value}
                 </Link>
               </div>
@@ -129,7 +106,11 @@ class AdminOrganizationsDashboard extends React.Component {
         render: (columnKey, organizations) => {
           return (
             <div style={{ margin: "6px 0" }}>
-              <Link target="_blank" to={`/admin/${organizations.id}/campaigns`}>
+              <Link
+                component={RouterLink}
+                target="_blank"
+                to={`/admin/${organizations.id}/campaigns`}
+              >
                 {columnKey}
               </Link>
             </div>
@@ -216,6 +197,7 @@ const queries = {
           id
           name
           campaignsCount
+          theme
         }
       }
     `,

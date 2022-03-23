@@ -48,7 +48,9 @@ const cannedResponseCache = {
         title: cannedRes.title,
         text: cannedRes.text,
         user_id: cannedRes.user_id,
-        tagIds: cannedRes.tagIds
+        tagIds: cannedRes.tagIds,
+        answer_actions: cannedRes.answer_actions,
+        answer_actions_data: cannedRes.answer_actions_data
       }));
       if (cacheData.length) {
         cacheData[0].usedFields = getUsedScriptFields(cacheData, "text");
