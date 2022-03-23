@@ -11,10 +11,10 @@ import CardHeader from "@material-ui/core/CardHeader";
 
 import GSSelectField from "../../src/components/forms/GSSelectField";
 import GSScriptField from "../../src/components/forms/GSScriptField";
-import CampaignInteractionStepsForm from "../../src/components/CampaignInteractionStepsForm";
+import { CampaignInteractionStepsFormBase as CampaignInteractionStepsForm } from "../../src/components/CampaignInteractionStepsForm";
 import CampaignFormSectionHeading from "../../src/components/CampaignFormSectionHeading";
 import {
-  AdminCampaignEdit,
+  AdminCampaignEditBase as AdminCampaignEdit,
   operations as adminCampaignEditOps
 } from "../../src/containers/AdminCampaignEdit";
 import {
@@ -22,8 +22,10 @@ import {
   cleanupTest,
   createStartedCampaign,
   makeRunnableMutations,
-  runComponentQueries
+  runComponentQueries,
+  muiTheme
 } from "../test_helpers";
+import ThemeContext from "../../src/containers/context/ThemeContext";
 
 describe("CampaignInteractionStepsForm", () => {
   describe("basic instantiation", function t() {
@@ -37,18 +39,21 @@ describe("CampaignInteractionStepsForm", () => {
     beforeEach(() => {
       StyleSheetTestUtils.suppressStyleInjection();
       wrappedComponent = mount(
-        <CampaignInteractionStepsForm
-          formValues={{
-            interactionSteps: getInteractionSteps()
-          }}
-          onChange={() => {}}
-          onSubmit={() => {}}
-          ensureComplete
-          customFields={[]}
-          saveLabel="save"
-          errors={[]}
-          availableActions={[]}
-        />
+        <ThemeContext.Provider value={{ muiTheme }}>
+          <CampaignInteractionStepsForm
+            muiTheme={muiTheme}
+            formValues={{
+              interactionSteps: getInteractionSteps()
+            }}
+            onChange={() => {}}
+            onSubmit={() => {}}
+            ensureComplete
+            customFields={[]}
+            saveLabel="save"
+            errors={[]}
+            availableActions={[]}
+          />
+        </ThemeContext.Provider>
       );
       component = wrappedComponent.find(CampaignInteractionStepsForm);
     });
@@ -149,18 +154,21 @@ describe("CampaignInteractionStepsForm", () => {
 
         StyleSheetTestUtils.suppressStyleInjection();
         wrappedComponent = mount(
-          <CampaignInteractionStepsForm
-            formValues={{
-              interactionSteps
-            }}
-            onChange={() => {}}
-            onSubmit={() => {}}
-            ensureComplete
-            customFields={[]}
-            saveLabel="save"
-            errors={[]}
-            availableActions={[]}
-          />
+          <ThemeContext.Provider value={{ muiTheme }}>
+            <CampaignInteractionStepsForm
+              muiTheme={muiTheme}
+              formValues={{
+                interactionSteps
+              }}
+              onChange={() => {}}
+              onSubmit={() => {}}
+              ensureComplete
+              customFields={[]}
+              saveLabel="save"
+              errors={[]}
+              availableActions={[]}
+            />
+          </ThemeContext.Provider>
         );
       });
 
@@ -219,29 +227,32 @@ describe("CampaignInteractionStepsForm", () => {
 
         StyleSheetTestUtils.suppressStyleInjection();
         wrappedComponent = mount(
-          <CampaignInteractionStepsForm
-            formValues={{
-              interactionSteps
-            }}
-            onChange={() => {}}
-            onSubmit={() => {}}
-            ensureComplete
-            customFields={[]}
-            saveLabel="save"
-            errors={[]}
-            availableActions={[
-              {
-                name: "red-handler",
-                displayName: "Red Action",
-                instructions: "red action instructions"
-              },
-              {
-                name: "purple-handler",
-                displayName: "Purple Action",
-                instructions: "purple action instructions"
-              }
-            ]}
-          />
+          <ThemeContext.Provider value={{ muiTheme }}>
+            <CampaignInteractionStepsForm
+              muiTheme={muiTheme}
+              formValues={{
+                interactionSteps
+              }}
+              onChange={() => {}}
+              onSubmit={() => {}}
+              ensureComplete
+              customFields={[]}
+              saveLabel="save"
+              errors={[]}
+              availableActions={[
+                {
+                  name: "red-handler",
+                  displayName: "Red Action",
+                  instructions: "red action instructions"
+                },
+                {
+                  name: "purple-handler",
+                  displayName: "Purple Action",
+                  instructions: "purple action instructions"
+                }
+              ]}
+            />
+          </ThemeContext.Provider>
         );
       });
 
@@ -407,43 +418,46 @@ describe("CampaignInteractionStepsForm", () => {
 
         StyleSheetTestUtils.suppressStyleInjection();
         wrappedComponent = mount(
-          <CampaignInteractionStepsForm
-            formValues={{
-              interactionSteps
-            }}
-            onChange={() => {}}
-            onSubmit={() => {}}
-            ensureComplete
-            customFields={[]}
-            saveLabel="save"
-            errors={[]}
-            availableActions={[
-              {
-                name: "color-handler",
-                displayName: "Color Action",
-                instructions: "color action instructions",
-                clientChoiceData: [
-                  {
-                    name: "red",
-                    details: "#FF0000"
-                  },
-                  {
-                    name: "purple",
-                    details: "#800080"
-                  },
-                  {
-                    name: "fuschsia",
-                    details: "#FF00FF"
-                  }
-                ]
-              },
-              {
-                name: "pink-handler",
-                displayName: "Pink Action",
-                instructions: "pink action instructions"
-              }
-            ]}
-          />
+          <ThemeContext.Provider value={{ muiTheme }}>
+            <CampaignInteractionStepsForm
+              muiTheme={muiTheme}
+              formValues={{
+                interactionSteps
+              }}
+              onChange={() => {}}
+              onSubmit={() => {}}
+              ensureComplete
+              customFields={[]}
+              saveLabel="save"
+              errors={[]}
+              availableActions={[
+                {
+                  name: "color-handler",
+                  displayName: "Color Action",
+                  instructions: "color action instructions",
+                  clientChoiceData: [
+                    {
+                      name: "red",
+                      details: "#FF0000"
+                    },
+                    {
+                      name: "purple",
+                      details: "#800080"
+                    },
+                    {
+                      name: "fuschsia",
+                      details: "#FF00FF"
+                    }
+                  ]
+                },
+                {
+                  name: "pink-handler",
+                  displayName: "Pink Action",
+                  instructions: "pink action instructions"
+                }
+              ]}
+            />
+          </ThemeContext.Provider>
         );
       });
 
@@ -717,14 +731,17 @@ describe("CampaignInteractionStepsForm", () => {
 
         StyleSheetTestUtils.suppressStyleInjection();
         wrappedComponent = mount(
-          <AdminCampaignEdit
-            {...queryResults}
-            mutations={wrappedMutations}
-            params={params}
-            location={{
-              query: {}
-            }}
-          />
+          <ThemeContext.Provider value={{ muiTheme }}>
+            <AdminCampaignEdit
+              {...queryResults}
+              mutations={wrappedMutations}
+              params={params}
+              location={{
+                query: {}
+              }}
+              muiTheme={muiTheme}
+            />
+          </ThemeContext.Provider>
         );
       });
 
