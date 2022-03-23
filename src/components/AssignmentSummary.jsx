@@ -1,7 +1,7 @@
 import PropTypes from "prop-types";
 import React, { Component } from "react";
 import { StyleSheet, css } from "aphrodite";
-import { setContrastingColor } from "../lib/color-contrast-helper";
+import { compose } from "recompose";
 
 import Button from "@material-ui/core/Button";
 import Badge from "@material-ui/core/Badge";
@@ -10,6 +10,7 @@ import CardContent from "@material-ui/core/CardContent";
 import CardHeader from "@material-ui/core/CardHeader";
 
 import { withRouter } from "react-router";
+import withMuiTheme from "../containers/hoc/withMuiTheme";
 import { dataTest } from "../lib/attributes";
 import {
   getSideboxes,
@@ -32,7 +33,7 @@ const styles = StyleSheet.create({
   }
 });
 
-export class AssignmentSummary extends Component {
+export class AssignmentSummaryBase extends Component {
   state = {
     badTimezoneTooltipOpen: false
   };
@@ -127,12 +128,21 @@ export class AssignmentSummary extends Component {
         hasPopupSidebox ? sb.name === enabledSideboxes.popups[0] : true
       )
       .map(sb => renderSummary(sb, settingsData, this, sideboxProps));
-    const cardTitleTextColor = setContrastingColor(primaryColor);
+
+    let cardTitleTextColor = this.props.muiTheme.palette.getContrastText(
+      this.props.muiTheme.palette.background.default
+    );
+    if (primaryColor) {
+      try {
+        cardTitleTextColor = this.props.muiTheme.palette.getContrastText(
+          primaryColor
+        );
+      } catch (e) {}
+    }
 
     // NOTE: we bring back archived campaigns if they have feedback
     // but want to get rid of them once feedback is acknowledged
     if (campaign.isArchived && !hasPopupSidebox) return null;
-
     return (
       <div
         className={css(styles.container)}
@@ -257,7 +267,7 @@ export class AssignmentSummary extends Component {
   }
 }
 
-AssignmentSummary.propTypes = {
+AssignmentSummaryBase.propTypes = {
   organizationId: PropTypes.string,
   router: PropTypes.object,
   assignment: PropTypes.object,
@@ -266,4 +276,4 @@ AssignmentSummary.propTypes = {
   todoLink: PropTypes.func
 };
 
-export default withRouter(AssignmentSummary);
+export default compose(withMuiTheme, withRouter)(AssignmentSummaryBase);
