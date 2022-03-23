@@ -3,9 +3,10 @@
  */
 import React from "react";
 import { mount } from "enzyme";
-import AutoComplete from "@material-ui/lab/Autocomplete";
 import CampaignCannedResponseForm from "../../src/components/CampaignCannedResponseForm";
 import { StyleSheetTestUtils } from "aphrodite";
+import ThemeContext from "../../src/containers/context/ThemeContext";
+import { muiTheme } from "../test_helpers";
 
 describe("CampaignCannedResponseForm component", () => {
   // given
@@ -15,7 +16,12 @@ describe("CampaignCannedResponseForm component", () => {
       id: 1,
       title: "Response1",
       text: "Response1 desc",
-      tagIds: [1, 2]
+      tagIds: [1, 2],
+      answerActions: "fake-action",
+      answerActionsData: JSON.stringify({
+        label: "Test Property",
+        value: { property: "test" }
+      })
     },
     tags: [
       {
@@ -28,7 +34,16 @@ describe("CampaignCannedResponseForm component", () => {
         name: "Tag2",
         description: "Tag2Desc"
       }
-    ]
+    ],
+    availableActions: [
+      {
+        name: "fake-action",
+        clientChoiceData: [
+          { name: "Test Property", details: { property: "test" } }
+        ]
+      }
+    ],
+    muiTheme: muiTheme
   };
 
   const props2 = {
@@ -45,13 +60,18 @@ describe("CampaignCannedResponseForm component", () => {
         name: "Tag2",
         description: "Tag2Desc"
       }
-    ]
+    ],
+    muiTheme: muiTheme
   };
 
   // when
   test("Renders form with correct fields and label for editing", () => {
     StyleSheetTestUtils.suppressStyleInjection();
-    const wrapper = mount(<CampaignCannedResponseForm {...props1} />);
+    const wrapper = mount(
+      <ThemeContext.Provider value={{ muiTheme }}>
+        <CampaignCannedResponseForm {...props1} />
+      </ThemeContext.Provider>
+    );
     expect(
       wrapper
         .find({ label: "Title" })
@@ -64,7 +84,12 @@ describe("CampaignCannedResponseForm component", () => {
         .find("button")
         .text()
     ).toBe("Edit Response");
-    expect(wrapper.find(AutoComplete).prop("value")).toEqual([
+    expect(
+      wrapper
+        .find({ "data-test": "autocompleteTags" })
+        .first()
+        .prop("value")
+    ).toEqual([
       {
         id: 1,
         name: "Tag1",
@@ -76,11 +101,27 @@ describe("CampaignCannedResponseForm component", () => {
         description: "Tag2Desc"
       }
     ]);
+    expect(
+      wrapper
+        .find({ "data-test": "actionSelect" })
+        .find("input")
+        .prop("value")
+    ).toBe(props1.defaultValue.answerActions);
+    expect(
+      wrapper
+        .find({ "data-test": "actionDataAutoComplete" })
+        .find("input")
+        .prop("value")
+    ).toEqual(JSON.parse(props1.defaultValue.answerActionsData).label);
   });
 
   test("Renders form with correct fields and label for adding", () => {
     StyleSheetTestUtils.suppressStyleInjection();
-    const wrapper = mount(<CampaignCannedResponseForm {...props2} />);
+    const wrapper = mount(
+      <ThemeContext.Provider value={{ muiTheme }}>
+        <CampaignCannedResponseForm {...props2} />
+      </ThemeContext.Provider>
+    );
     expect(
       wrapper
         .find({ label: "Title" })
