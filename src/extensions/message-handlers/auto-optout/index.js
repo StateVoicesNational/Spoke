@@ -103,7 +103,8 @@ export const postMessageSave = async ({
       // but this can relieve a lot of database pressure
       noContactUpdate: true,
       contact,
-      organization
+      organization,
+      user: null // If this is auto-optout, there is no user happening.
     });
   }
 };

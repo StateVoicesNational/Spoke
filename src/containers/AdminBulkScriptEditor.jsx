@@ -1,6 +1,7 @@
 import gql from "graphql-tag";
 import pick from "lodash/pick";
 import React, { Component } from "react";
+import { compose } from "react-apollo";
 
 import Paper from "@material-ui/core/Paper";
 import Dialog from "@material-ui/core/Dialog";
@@ -346,6 +347,4 @@ const mutations = {
   })
 };
 
-export default loadData({
-  mutations
-})(AdminBulkScriptEditor);
+export default compose(loadData({ mutations }))(AdminBulkScriptEditor);

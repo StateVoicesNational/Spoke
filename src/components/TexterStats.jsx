@@ -1,8 +1,9 @@
 import PropTypes from "prop-types";
 import React from "react";
-import { Link } from "react-router";
+import { Link as RouterLink } from "react-router";
 import LinearProgress from "@material-ui/core/LinearProgress";
 import OpenInNewIcon from "@material-ui/icons/OpenInNew";
+import Link from "@material-ui/core/Link";
 import { getHighestRole } from "../lib/permissions";
 import theme from "../styles/theme";
 
@@ -32,12 +33,14 @@ class TexterStats extends React.Component {
     }
     const bottomLinks = [
       <Link
+        component={RouterLink}
         key={id}
         to={`/app/${this.props.organizationId}/todos/${id}/allreplies?review=1`}
       >
         Sweep conversations
       </Link>,
       <Link
+        component={RouterLink}
         key={id}
         to={`/admin/${this.props.organizationId}/incoming?campaigns=${campaign.id}&texterId=${texter.id}`}
       >
@@ -48,6 +51,7 @@ class TexterStats extends React.Component {
     if (unmessagedCount) {
       bottomLinks.push(
         <Link
+          component={RouterLink}
           to={`/admin/${this.props.organizationId}/incoming?campaigns=${campaign.id}&texterId=${texter.id}&messageStatus=needsMessage`}
         >
           Unmessaged: {unmessagedCount}
@@ -59,6 +63,7 @@ class TexterStats extends React.Component {
         <span>
           {unrepliedCount} contacts{" "}
           <Link
+            component={RouterLink}
             to={`/admin/${this.props.organizationId}/incoming?campaigns=${campaign.id}&texterId=${texter.id}&messageStatus=needsResponse`}
           >
             awaiting a reply
@@ -71,12 +76,11 @@ class TexterStats extends React.Component {
         <h3>
           {displayName}{" "}
           <Link
+            component={RouterLink}
             target="_blank"
             to={`/app/${this.props.organizationId}/todos/other/${texter.id}`}
           >
-            <OpenInNewIcon
-              style={{ width: 14, height: 14, color: theme.colors.green }}
-            />
+            <OpenInNewIcon style={{ width: 14, height: 14 }} />
           </Link>
         </h3>
         {percentComplete ? (
