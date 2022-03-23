@@ -15,23 +15,26 @@ export default class GSAutoComplete extends GSFormField {
       label,
       fullWidth,
       placeholder,
-      value,
       onChange,
       getOptionLabel,
-      options
+      options,
+      getOptionSelected
     } = this.props;
+    let { value } = this.props;
     const dataTest = { "data-test": this.props["data-test"] };
+
+    // can't be undefined or react throw uncontroled component error
+    if (!value) {
+      value = "";
+    }
+
     return (
       <Autocomplete
         {...dataTest}
-        getOptionLabel={
-          getOptionLabel ||
-          (option => {
-            return option.label;
-          })
-        }
+        getOptionLabel={getOptionLabel || (option => option.label || "")}
         value={value}
         options={options}
+        getOptionSelected={getOptionSelected || (opt => opt.value || "")}
         renderInput={params => {
           return (
             <TextField

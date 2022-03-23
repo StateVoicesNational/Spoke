@@ -93,7 +93,7 @@ describe.skip("ConversationPreviewModal", async () => {
 
       component = mount(
         <ApolloProvider client={ApolloClientSingleton}>
-          <ConversationPreviewModal
+          <InnerConversationPreviewModal
             organizationId={startedCampaign.organizationId}
             conversation={conversation}
             onForceRefresh={() => {}}

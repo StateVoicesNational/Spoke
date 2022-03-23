@@ -3,21 +3,19 @@ import React from "react";
 import { Link } from "react-router";
 import * as yup from "yup";
 import Form from "react-formal";
-import Button from "@material-ui/core/Button";
-
-import TagChip from "../../../components/TagChip";
-import theme from "../../../styles/theme";
+import { css } from "aphrodite";
+import { compose } from "recompose";
 
 import CheckIcon from "@material-ui/icons/Check";
 import DoneIcon from "@material-ui/icons/Done";
+import Button from "@material-ui/core/Button";
 import CircularProgress from "@material-ui/core/CircularProgress";
 
-import { css } from "aphrodite";
 import GSTextField from "../../../components/forms/GSTextField";
-import {
-  flexStyles,
-  inlineStyles
-} from "../../../components/AssignmentTexter/StyleControls";
+import TagChip from "../../../components/TagChip";
+import theme from "../../../styles/theme";
+import { flexStyles } from "../../../components/AssignmentTexter/StyleControls";
+import withMuiTheme from "../../../containers/hoc/withMuiTheme";
 
 export const displayName = () => "Tagging Contacts";
 
@@ -37,7 +35,7 @@ export const showSidebox = ({ contact, campaign, messageStatusFilter }) => {
 const defaultTagHeaderText = "Tag a contact here:";
 const defaultTagButtonText = "Save tags";
 
-export class TexterSidebox extends React.Component {
+export class TexterSideboxBase extends React.Component {
   state = {
     newTags: {},
     submitted: 0
@@ -69,7 +67,7 @@ export class TexterSidebox extends React.Component {
               key={index}
               text={tag.name}
               icon={<CheckIcon />}
-              backgroundColor={theme.colors.white}
+              backgroundColor={this.props.muiTheme.palette.common.white}
             />
           ))}
         </div>
@@ -79,7 +77,9 @@ export class TexterSidebox extends React.Component {
             text={tag.name}
             icon={(newTags[tag.id] && <DoneIcon />) || null}
             backgroundColor={
-              newTags[tag.id] ? theme.colors.white : theme.colors.lightYellow
+              newTags[tag.id]
+                ? this.props.muiTheme.palette.common.white
+                : this.props.muiTheme.palette.warning.main
             }
             onClick={() => {
               if (tag.id in currentTags) {
@@ -97,6 +97,7 @@ export class TexterSidebox extends React.Component {
         ))}
         <br />
         <Button
+          variant="contained"
           style={{ marginTop: "20px" }}
           onClick={() => {
             const self = this;
@@ -139,7 +140,7 @@ export class TexterSidebox extends React.Component {
   }
 }
 
-TexterSidebox.propTypes = {
+TexterSideboxBase.propTypes = {
   // data
   contact: type.object,
   campaign: type.object,
@@ -152,6 +153,10 @@ TexterSidebox.propTypes = {
   messageStatusFilter: type.string,
   onUpdateTags: type.func
 };
+
+const TexterSidebox = compose(withMuiTheme)(TexterSideboxBase);
+
+export { TexterSidebox };
 
 export const adminSchema = () => ({
   tagButtonText: yup.string(),

@@ -6,6 +6,8 @@ export const schema = `
     campaignId: String
     userId: String
     tagIds: [Int]
+    answerActions: String
+    answerActionsData: String
   }
 
   type CannedResponse {
@@ -14,5 +16,7 @@ export const schema = `
     text: String
     isUserCreated: Boolean
     tagIds: [ID]
+    answerActions: String
+    answerActionsData: String
   }
 `;
