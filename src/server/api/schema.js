@@ -42,7 +42,7 @@ import {
   processServiceManagers,
   serviceManagersHaveImplementation
 } from "../../extensions/service-managers";
-import { getConfig, getFeatures } from "./lib/config";
+import { getConfig, getFeatures, getTheme } from "./lib/config";
 import { resolvers as messageResolvers } from "./message";
 import { resolvers as optOutResolvers } from "./opt-out";
 import { resolvers as organizationResolvers } from "./organization";
@@ -330,9 +330,13 @@ async function editCampaign(id, campaign, loaders, user, origCampaignRecord) {
     for (let index = 0; index < cannedResponses.length; index++) {
       const response = cannedResponses[index];
       convertedResponses.push({
-        ...response,
         campaign_id: id,
-        id: undefined
+        id: undefined,
+        title: response.title,
+        text: response.text,
+        tagIds: response.tagIds,
+        answer_actions: response.answerActions,
+        answer_actions_data: response.answerActionsData
       });
     }
 
@@ -724,6 +728,32 @@ const rootMutations = {
 
       return await Organization.get(organizationId);
     },
+    updateTheme: async (
+      _,
+      { organizationId, primary, secondary, info, success, warning, error },
+      { user }
+    ) => {
+      await accessRequired(user, organizationId, "OWNER");
+
+      const organization = await Organization.get(organizationId);
+      const featuresJSON = getFeatures(organization);
+      featuresJSON.theme = {
+        palette: {
+          primary: { main: primary },
+          secondary: { main: secondary },
+          info: { main: info },
+          success: { main: success },
+          warning: { main: warning },
+          error: { main: error }
+        }
+      };
+      organization.features = JSON.stringify(featuresJSON);
+
+      await organization.save();
+      await cacheableData.organization.clear(organizationId);
+
+      return await Organization.get(organizationId);
+    },
     createInvite: async (_, { invite }, { user }) => {
       if (
         (user && user.is_superadmin) ||
@@ -876,7 +906,9 @@ const rootMutations = {
               {
                 campaign_id: newCampaignId,
                 title: response.title,
-                text: response.text
+                text: response.text,
+                answer_actions: response.answer_actions,
+                answer_actions_data: response.answer_actions_data
               },
               ["id"]
             )
@@ -999,7 +1031,9 @@ const rootMutations = {
         campaign_id: cannedResponse.campaignId,
         user_id: cannedResponse.userId,
         title: cannedResponse.title,
-        text: cannedResponse.text
+        text: cannedResponse.text,
+        answer_actions: cannedResponse.answerActions,
+        answer_actions_data: cannedResponse.answerActionsData
       }).save();
       // deletes duplicate created canned_responses
       let query = r
@@ -1069,22 +1103,39 @@ const rootMutations = {
     },
     editCampaignContactMessageStatus: async (
       _,
-      { messageStatus, campaignContactId },
+      { messageStatus, campaignContactId, campaignIdsContactIds },
       { user }
     ) => {
-      const contact = await cacheableData.campaignContact.load(
-        campaignContactId
+      const contacts = campaignContactId
+        ? [{ campaignContactId }]
+        : campaignIdsContactIds;
+      // this is lazy but is not likely to be done in great bulk
+      console.log("editCampaignContactMessageStatus", contacts);
+      await Promise.all(
+        contacts.map(async ({ campaignContactId }) => {
+          const contact = await cacheableData.campaignContact.load(
+            campaignContactId
+          );
+          const organizationId = await cacheableData.campaignContact.orgId(
+            contact
+          );
+          await assignmentRequiredOrAdminRole(
+            user,
+            organizationId,
+            contact.assignment_id,
+            contact
+          );
+          contact.message_status = messageStatus;
+          await cacheableData.campaignContact.updateStatus(
+            contact,
+            messageStatus
+          );
+        })
       );
-      const organizationId = await cacheableData.campaignContact.orgId(contact);
-      await assignmentRequiredOrAdminRole(
-        user,
-        organizationId,
-        contact.assignment_id,
-        contact
-      );
-      contact.message_status = messageStatus;
-      await cacheableData.campaignContact.updateStatus(contact, messageStatus);
-      return contact;
+      return contacts.map(contact => ({
+        id: contact.campaignContactId,
+        message_status: messageStatus
+      }));
     },
     getAssignmentContacts: async (
       _,
