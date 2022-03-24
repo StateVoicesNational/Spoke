@@ -153,12 +153,12 @@ export class AssignmentTexterContactControls extends React.Component {
       sanitizedText.slice(0, limit) +
       (sanitizedText.length > limit ? "..." : "")
     );
+  };
 
   toggleContactList = () => {
     this.setState({ contactListOpen: !this.state.contactListOpen }, () => {
       setCookie("assignmentContactListOpen", this.state.contactListOpen, 1);
     });
-
   };
 
   blockWithCtrl = evt => {
