@@ -1,20 +1,12 @@
 /* eslint no-console: 0 */
 import type from "prop-types";
 import React from "react";
-import gql from "graphql-tag";
-import GSForm from "../components/forms/GSForm";
-import Form from "react-formal";
-import * as yup from "yup";
 import Card from "@material-ui/core/Card";
 import CardHeader from "@material-ui/core/CardHeader";
 import CardContent from "@material-ui/core/CardContent";
-import { StyleSheet, css } from "aphrodite";
-import theme from "../styles/theme";
-import moment from "moment";
-import CampaignTexterUIForm from "../components/CampaignTexterUIForm";
-import OrganizationFeatureSettings from "../components/OrganizationFeatureSettings";
-import { getServiceVendorComponent } from "../extensions/service-vendors/components";
+import { compose } from "recompose";
 import { getServiceManagerComponent } from "../extensions/service-managers/components";
+import withMuiTheme from "../containers/hoc/withMuiTheme";
 
 export class CampaignServiceManagers extends React.Component {
   static propTypes = {
@@ -57,10 +49,10 @@ export class CampaignServiceManagers extends React.Component {
                   style={{
                     backgroundColor:
                       sm.fullyConfigured === true
-                        ? theme.colors.green
+                        ? this.props.muiTheme.palette.success.main
                         : sm.fullyConfigured === false
-                        ? theme.colors.yellow
-                        : theme.colors.lightGray
+                        ? this.props.muiTheme.palette.warning.main
+                        : this.props.muiTheme.palette.grey[300]
                   }}
                 />
               ) : null}
@@ -83,4 +75,4 @@ export class CampaignServiceManagers extends React.Component {
   }
 }
 
-export default CampaignServiceManagers;
+export default compose(withMuiTheme)(CampaignServiceManagers);

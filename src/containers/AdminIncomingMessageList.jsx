@@ -1,6 +1,7 @@
 import PropTypes from "prop-types";
 import React, { Component } from "react";
 import _ from "lodash";
+import { compose } from "react-apollo";
 
 import IncomingMessageActions from "../components/IncomingMessageActions";
 import IncomingMessageFilter, {
@@ -185,6 +186,24 @@ export class AdminIncomingMessageList extends Component {
     };
     await this.setState({
       contactsFilter,
+      needsRender: true
+    });
+  };
+
+  handleChangeMessageStatus = async messageStatus => {
+    console.log(
+      "handleChangeMessageStatus",
+      this.props.params.organizationId,
+      this.state.campaignIdsContactIds,
+      messageStatus
+    );
+    await this.props.mutations.editCampaignContactMessageStatus(
+      this.state.campaignIdsContactIds,
+      messageStatus
+    );
+    this.setState({
+      utc: Date.now().toString(),
+      clearSelectedMessages: true,
       needsRender: true
     });
   };
@@ -471,6 +490,7 @@ export class AdminIncomingMessageList extends Component {
             onReassignAllMatchingRequested={
               this.handleReassignAllMatchingRequested
             }
+            onChangeMessageStatus={this.handleChangeMessageStatus}
             conversationCount={this.state.conversationCount}
             campaignsFilter={this.state.campaignsFilter}
           />
@@ -537,6 +557,21 @@ export const reassignCampaignContactsMutation = gql`
   }
 `;
 
+export const editCampaignContactMessageStatus = gql`
+  mutation editCampaignContactMessageStatus(
+    $campaignIdsContactIds: [CampaignIdContactId]!
+    $messageStatus: String!
+  ) {
+    editCampaignContactMessageStatus(
+      campaignIdsContactIds: $campaignIdsContactIds
+      messageStatus: $messageStatus
+    ) {
+      id
+      messageStatus
+    }
+  }
+`;
+
 AdminIncomingMessageList.propTypes = {
   conversations: PropTypes.object,
   mutations: PropTypes.object,
@@ -570,6 +605,13 @@ const queries = {
 };
 
 const mutations = {
+  editCampaignContactMessageStatus: ownProps => (
+    campaignIdsContactIds,
+    messageStatus
+  ) => ({
+    mutation: editCampaignContactMessageStatus,
+    variables: { messageStatus, campaignIdsContactIds }
+  }),
   reassignCampaignContacts: ownProps => (
     organizationId,
     campaignIdsContactIds,
@@ -600,4 +642,7 @@ const mutations = {
 
 export const operations = { mutations, queries };
 
-export default loadData(operations)(withRouter(AdminIncomingMessageList));
+export default compose(
+  loadData(operations),
+  withRouter
+)(AdminIncomingMessageList);
