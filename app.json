@@ -59,17 +59,6 @@
       "required": true
     },
 
-    "TWILIO_MESSAGE_SERVICE_SID": {
-      "description": "for twilio integration and connected to twilio account",
-      "required": true
-    },
-
-    "TWILIO_STATUS_CALLBACK_URL": {
-      "description": "for twilio integration and connected to twilio account",
-      "required": true,
-      "value": "https://<changeme>.herokuapp.com/twilio-message-report"
-    },
-
     "TWILIO_MULTI_ORG": {
       "description": "Allows each organization in the Spoke instance to set Twilio variables within the app",
       "required": false,

@@ -5,6 +5,8 @@ import React from "react";
 import { mount } from "enzyme";
 import TagChips from "../../src/components/TagChips";
 import { StyleSheetTestUtils } from "aphrodite";
+import ThemeContext from "../../src/containers/context/ThemeContext";
+import { muiTheme } from "../test_helpers";
 
 describe("TagChips component", () => {
   // given
@@ -23,7 +25,11 @@ describe("TagChips component", () => {
   const tagIds = [1, 2, 3];
 
   StyleSheetTestUtils.suppressStyleInjection();
-  const wrapper = mount(<TagChips tags={tags} tagIds={tagIds} />);
+  const wrapper = mount(
+    <ThemeContext.Provider value={{ muiTheme }}>
+      <TagChips tags={tags} tagIds={tagIds} />
+    </ThemeContext.Provider>
+  );
 
   // when
 
