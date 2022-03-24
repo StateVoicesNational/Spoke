@@ -16,8 +16,7 @@ import { dataTest } from "../lib/attributes";
 
 const styles = StyleSheet.create({
   container: {
-    textAlign: "center",
-    color: theme.colors.white
+    textAlign: "center"
   },
   formContainer: {
     ...theme.layouts.greenBox

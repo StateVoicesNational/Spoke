@@ -4,6 +4,7 @@ import PropTypes from "prop-types";
 import React from "react";
 import Form from "react-formal";
 import * as yup from "yup";
+import { compose } from "recompose";
 
 import Button from "@material-ui/core/Button";
 import Dialog from "@material-ui/core/Dialog";
@@ -26,8 +27,9 @@ import theme from "../../../styles/theme";
 import GSForm from "../../../components/forms/GSForm";
 import GSTextField from "../../../components/forms/GSTextField";
 import GSSubmitButton from "../../../components/forms/GSSubmitButton";
+import withMuiTheme from "../../../containers/hoc/withMuiTheme";
 
-export class OrgConfig extends React.Component {
+export class OrgConfigBase extends React.Component {
   constructor(props) {
     super(props);
     this.state = { ...this.props.config, country: "United States" };
@@ -254,7 +256,7 @@ export class OrgConfig extends React.Component {
                       title="Address"
                       style={{
                         cursor: "pointer",
-                        backgroundColor: theme.colors.lightGray
+                        backgroundColor: this.props.muiTheme.palette.grey[300]
                       }}
                       action={
                         <IconButton>
@@ -313,7 +315,7 @@ export class OrgConfig extends React.Component {
                     title={"Advanced"}
                     style={{
                       cursor: "pointer",
-                      backgroundColor: theme.colors.lightGray
+                      backgroundColor: this.props.muiTheme.palette.grey[300]
                     }}
                     action={
                       <IconButton>
@@ -419,7 +421,7 @@ export class OrgConfig extends React.Component {
   }
 }
 
-OrgConfig.propTypes = {
+OrgConfigBase.propTypes = {
   organizationId: PropTypes.string,
   config: PropTypes.object,
   inlineStyles: PropTypes.object,
@@ -429,3 +431,5 @@ OrgConfig.propTypes = {
   onAllSetChanged: PropTypes.func,
   requestRefetch: PropTypes.func
 };
+
+export const OrgConfig = compose(withMuiTheme)(OrgConfigBase);

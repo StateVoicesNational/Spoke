@@ -26,7 +26,6 @@ const jobs = require("../../../../src/workers/jobs");
 import React from "react";
 import { shallow } from "enzyme";
 import { StyleSheetTestUtils } from "aphrodite";
-import { icons } from "../../../../src/components/CampaignContactsChoiceForm";
 
 describe("ngpvan", () => {
   let fakeNgpVanBaseApiUrl;
@@ -734,19 +733,21 @@ describe("ngpvan", () => {
     });
 
     it("calls failedContactLoad", async () => {
-      handleFailedContactLoad(job, payload, "fake_message");
-
-      expect(jobs.failedContactLoad.mock.calls).toEqual([
-        [
-          job,
-          null,
-          job.payload,
-          {
-            errors: ["fake_message"],
-            ...payload
-          }
-        ]
-      ]);
+      try {
+        await handleFailedContactLoad(job, payload, "fake_message");
+      } catch (err) {
+        expect(jobs.failedContactLoad.mock.calls).toEqual([
+          [
+            job,
+            null,
+            job.payload,
+            {
+              errors: ["fake_message"],
+              ...payload
+            }
+          ]
+        ]);
+      }
     });
   });
 
@@ -1379,7 +1380,12 @@ describe("ngpvan", () => {
         onChange,
         onSubmit,
         campaignIsStarted: false,
-        icons,
+        icons: {
+          check: <div />,
+          warning: <div />,
+          error: <div />,
+          info: <div />
+        },
         saveDisabled: false,
         saveLabel: "Save",
         clientChoiceData: JSON.stringify({
