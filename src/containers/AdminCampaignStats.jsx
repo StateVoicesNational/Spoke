@@ -407,11 +407,8 @@ class AdminCampaignStats extends React.Component {
         {global.HIDE_BRANCHED_SCRIPTS ? (
           ""
         ) : (
-          <div className={css(styles.header)}>Survey Questions</div>
+          <Typography variant="h5">Survey Questions</Typography>
         )}
-
-        <Typography variant="h5">Survey Questions</Typography>
-
         {this.renderSurveyStats()}
         {campaign.stats.errorCounts.length > 0 && (
           <div>
