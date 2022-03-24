@@ -40,12 +40,23 @@ export const getMetadata = () => ({
   name: "twilio"
 });
 
-export const getTwilio = async organization => {
-  const { authToken, accountSid } = await getMessageServiceConfig(
-    "twilio",
-    organization,
-    { obscureSensitiveInformation: false }
-  );
+export const getTwilio = async (organization, serviceManagerData) => {
+  let authToken;
+  let accountSid;
+  if (
+    serviceManagerData &&
+    serviceManagerData.twilio &&
+    serviceManagerData.twilio.authToken &&
+    serviceManagerData.twilio.accountSid
+  ) {
+    ({ authToken, accountSid } = serviceManagerData.twilio);
+  } else {
+    ({ authToken, accountSid } =
+      organization.twilioAccountSwitchingCreds ||
+      (await getMessageServiceConfig("twilio", organization, {
+        obscureSensitiveInformation: false
+      })));
+  }
   if (accountSid && authToken) {
     return twilioLibrary.Twilio(accountSid, authToken); // eslint-disable-line new-cap
   }
@@ -248,7 +259,11 @@ export async function sendMessage({
   campaign,
   serviceManagerData
 }) {
-  const twilio = await exports.getTwilio(organization);
+  const twilio = await exports.getTwilio(
+    (serviceManagerData && serviceManagerData.twilioAccountSwitching) ||
+      organization,
+    serviceManagerData
+  );
   const APITEST = /twilioapitest/.test(message.text);
   if (!twilio && !APITEST) {
     log.warn(
@@ -604,36 +619,71 @@ export async function getContactInfo({
     // caller-name is more expensive
     types.push("caller-name");
   }
-  const phoneNumber = await twilio.lookups.v1
-    .phoneNumbers(contactNumber)
-    .fetch({ type: types });
-  // console.log('twilio getContactInfo', phoneNumber);
   const contactInfo = {
     contact_number: contactNumber,
     organization_id: organization.id,
     service: "twilio"
   };
-  if (phoneNumber.carrier) {
-    contactInfo.carrier = phoneNumber.carrier.name;
-  }
-  if (phoneNumber.carrier.error_code) {
-    // e.g. 60600: Unprovisioned or Out of Coverage
-    contactInfo.status_code = -2;
-    contactInfo.last_error_code = phoneNumber.carrier.error_code;
-  } else if (
-    getConfig("PHONE_NUMBER_COUNTRY", organization) &&
-    getConfig("PHONE_NUMBER_COUNTRY", organization) !== contactInfo.countryCode
-  ) {
-    contactInfo.status_code = -3; // wrong country
-  } else if (phoneNumber.carrier.type) {
-    // landline, mobile, voip, <null>
-    contactInfo.status_code = phoneNumber.carrier.type === "landline" ? -1 : 1;
-  }
+  try {
+    const phoneNumber = await twilio.lookups.v1
+      .phoneNumbers(contactNumber)
+      .fetch({ type: types });
 
-  if (phoneNumber.callerName) {
-    contactInfo.lookup_name = phoneNumber.callerName;
+    if (phoneNumber.carrier) {
+      contactInfo.carrier = phoneNumber.carrier.name;
+    }
+    if (phoneNumber.carrier.error_code) {
+      // e.g. 60600: Unprovisioned or Out of Coverage
+      contactInfo.status_code = -2;
+      contactInfo.last_error_code = phoneNumber.carrier.error_code;
+    } else if (
+      phoneNumber.carrier.type &&
+      phoneNumber.carrier.type === "landline"
+    ) {
+      // landline (not mobile or voip)
+      contactInfo.status_code = -1;
+    } else if (
+      phoneNumber.countryCode &&
+      getConfig("PHONE_NUMBER_COUNTRY", organization) &&
+      getConfig("PHONE_NUMBER_COUNTRY", organization) !==
+        phoneNumber.countryCode
+    ) {
+      contactInfo.status_code = -3; // wrong country
+    } else if (
+      phoneNumber.carrier.type &&
+      phoneNumber.carrier.type !== "landline"
+    ) {
+      // mobile, voip
+      contactInfo.status_code = 1;
+    }
+
+    if (phoneNumber.callerName) {
+      contactInfo.lookup_name = phoneNumber.callerName;
+    }
+    // console.log('twilio.getContactInfo', contactInfo, phoneNumber);
+    return contactInfo;
+  } catch (err) {
+    /* oddly, very rarely Twilio returns a 404 error message
+       when looking up what appears to be a valid number
+       https://www.twilio.com/docs/api/errors/20404
+
+       the message appears like:
+      "The requested resource /PhoneNumbers/{cell} was not found"
+
+      the assumption is that this must not be a real number if it can't
+      even be validated, so we should just delete it
+
+      try it with this number:
+      https://lookups.twilio.com/v1/PhoneNumbers/+15056405970?Type=carrier
+    */
+    if (err.message.includes("was not found")) {
+      return {
+        ...contactInfo,
+        status_code: -4 // twilio api error
+      };
+    }
+    throw err;
   }
-  return contactInfo;
 }
 
 /**

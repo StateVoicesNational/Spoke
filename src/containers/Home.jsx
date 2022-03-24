@@ -5,12 +5,13 @@ import gql from "graphql-tag";
 import { StyleSheet, css } from "aphrodite";
 import theme from "../styles/theme";
 import { withRouter } from "react-router";
+import Link from "@material-ui/core/Link";
+import { compose } from "recompose";
 
 export const styles = StyleSheet.create({
   container: {
     marginTop: "5vh",
-    textAlign: "center",
-    color: theme.colors.lightGray
+    textAlign: "center"
   },
   content: {
     ...theme.layouts.greenBox
@@ -28,11 +29,7 @@ export const styles = StyleSheet.create({
   },
   header: {
     ...theme.text.header,
-    marginBottom: 15,
-    color: theme.colors.white
-  },
-  link_dark_bg: {
-    ...theme.text.link_dark_bg
+    marginBottom: 15
   }
 });
 
@@ -70,7 +67,6 @@ class Home extends React.Component {
         alert("There was an error creating your invite");
         throw new Error(newInvite.errors);
       } else {
-        // alert(newInvite.data.createInvite.id)
         this.props.router.push(
           `/login?nextUrl=/invite/${newInvite.data.createInvite.hash}`
         );
@@ -91,13 +87,9 @@ class Home extends React.Component {
             here and start texting!
             <br />
             <br />
-            <a
-              id="logout"
-              className={css(styles.link_dark_bg)}
-              href="/logout-callback"
-            >
+            <Link id="logout" href="/logout-callback">
               Logout
-            </a>
+            </Link>
           </div>
         </div>
       );
@@ -108,14 +100,9 @@ class Home extends React.Component {
           Spoke is a new way to run campaigns using text messaging.
         </div>
         <div>
-          <a
-            id="login"
-            className={css(styles.link_dark_bg)}
-            href="/login"
-            onClick={this.handleOrgInviteClick}
-          >
+          <Link id="login" href="/login" onClick={this.handleOrgInviteClick}>
             Login and get started
-          </a>
+          </Link>
         </div>
       </div>
     );
@@ -182,4 +169,4 @@ const mutations = {
   })
 };
 
-export default loadData({ queries, mutations })(withRouter(Home));
+export default compose(withRouter, loadData({ queries, mutations }))(Home);

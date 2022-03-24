@@ -228,21 +228,28 @@ export const sendMessage = async (
       const cannedResponse = cannedResponses.find(
         res => res.id === Number(cannedResponseId)
       );
-      if (
-        cannedResponse &&
-        cannedResponse.tagIds &&
-        cannedResponse.tagIds.length
-      ) {
-        await updateContactTags(
-          null,
-          {
-            campaignContactId,
-            tags: cannedResponse.tagIds.map(t => ({
-              id: t
-            }))
-          },
-          { user, loaders }
-        );
+      if (cannedResponse) {
+        if (cannedResponse.tagIds && cannedResponse.tagIds.length) {
+          await updateContactTags(
+            null,
+            {
+              campaignContactId,
+              tags: cannedResponse.tagIds.map(t => ({
+                id: t
+              }))
+            },
+            { user, loaders }
+          );
+        }
+
+        if (cannedResponse.answer_actions) {
+          await jobRunner.dispatchTask(Tasks.ACTION_HANDLER_CANNED_RESPONSE, {
+            cannedResponse,
+            organization,
+            campaign,
+            contact
+          });
+        }
       }
     }
   }

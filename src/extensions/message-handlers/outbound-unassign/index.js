@@ -25,7 +25,6 @@ export const preMessageSave = async ({ contact, campaign, messageToSave }) => {
     contact.id &&
     contact.assignment_id &&
     contact.message_status === "needsMessage" &&
-    r.redis &&
     campaign
   ) {
     const features = getFeatures(campaign);
@@ -34,12 +33,14 @@ export const preMessageSave = async ({ contact, campaign, messageToSave }) => {
       features.TEXTER_UI_SETTINGS &&
       JSON.parse(features.TEXTER_UI_SETTINGS).takeConversationsOutboundUnassign
     ) {
-      await cacheableData.campaignContact.updateAssignmentCache(
-        contact.id,
-        null,
-        null,
-        contact.campaign_id
-      );
+      if (r.redis) {
+        await cacheableData.campaignContact.updateAssignmentCache(
+          contact.id,
+          null,
+          null,
+          contact.campaign_id
+        );
+      }
       contact.assignment_id = null;
       return {
         contactUpdates: { assignment_id: null }
