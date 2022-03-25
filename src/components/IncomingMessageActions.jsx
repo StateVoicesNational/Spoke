@@ -18,6 +18,7 @@ import { getHighestRole } from "../lib/permissions";
 import { css, StyleSheet } from "aphrodite";
 import theme from "../styles/theme";
 import { dataSourceItem } from "./utils";
+import { MessageStatusSelection } from "./IncomingMessageFilter";
 
 const styles = StyleSheet.create({
   container: {
@@ -57,7 +58,8 @@ class IncomingMessageActions extends Component {
     );
 
     this.state = {
-      confirmDialogOpen: false
+      confirmDialogOpen: false,
+      messageStatus: ""
     };
   }
 
@@ -211,6 +213,23 @@ class IncomingMessageActions extends Component {
                 </DialogActions>
               </Dialog>
             </div>
+            <div className={css(styles.container)}>
+              <MessageStatusSelection
+                label="Change conversation status"
+                width="30%"
+                value={this.state.messageStatus}
+                statusFilter={status =>
+                  status != "needsResponseExpired" && status != "all"
+                }
+                onChange={async event => {
+                  const { value } = event.target;
+                  console.log("change convo", value);
+                  this.setState({ messageStatus: value });
+                  await this.props.onChangeMessageStatus(value);
+                  this.setState({ messageStatus: "" });
+                }}
+              />
+            </div>
           </CardContent>
         </Collapse>
       </Card>
@@ -222,6 +241,7 @@ IncomingMessageActions.propTypes = {
   people: type.array,
   onReassignRequested: type.func.isRequired,
   onReassignAllMatchingRequested: type.func.isRequired,
+  onChangeMessageStatus: type.func.isRequired,
   conversationCount: type.number,
   campaignsFilter: type.object,
   texters: type.array
