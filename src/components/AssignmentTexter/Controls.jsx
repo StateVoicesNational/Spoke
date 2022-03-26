@@ -129,9 +129,10 @@ export class AssignmentTexterContactControls extends React.Component {
   }
 
   getStartingMessageText() {
-    const { campaign, messageStatusFilter } = this.props;
+    const { contact, campaign, messageStatusFilter } = this.props;
     return (
-      messageStatusFilter === "needsMessage" &&
+      contact != null &&
+      contact.messageStatus === "needsMessage" &&
       this.props.getMessageTextFromScript(
         getTopMostParent(campaign.interactionSteps).script
       )
