@@ -460,7 +460,6 @@ export class ContactController extends React.Component {
         onFinishContact={this.handleFinishContact}
         refreshData={this.props.refreshData}
         onExitTexter={this.handleExitTexter}
-        messageStatusFilter={this.props.messageStatusFilter}
         organizationId={this.props.organizationId}
         location={this.props.location}
         updateCurrentContactById={this.updateCurrentContactById}
