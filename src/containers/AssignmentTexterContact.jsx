@@ -173,7 +173,7 @@ export class AssignmentTexterContact extends React.Component {
   };
 
   handleMessageFormSubmit = cannedResponseId => async ({ messageText }) => {
-    const { campaign, contact, messageStatusFilter } = this.props;
+    const { campaign, contact } = this.props;
     if (!messageText || messageText == "false") {
       // defensive code -- if somehow message form validation fails, don't send a dumb "false" message
       return;
@@ -186,7 +186,7 @@ export class AssignmentTexterContact extends React.Component {
       this.setState({ disabled: true });
       console.log("sendMessage", contact.id);
       if (
-        messageStatusFilter === "needsMessage" &&
+        contact.messageStatus === "needsMessage" &&
         (/fast=1/.test(document.location.search) ||
           (campaign.title && /f=1/.test(campaign.title)))
       ) {
@@ -396,7 +396,7 @@ export class AssignmentTexterContact extends React.Component {
     return (
       <div {...dataTest("assignmentTexterContactFirstDiv")}>
         {this.state.disabled &&
-        this.props.messageStatusFilter !== "needsMessage" ? (
+        this.props.contact.messageStatus !== "needsMessage" ? (
           <div className={css(styles.overlay)}>
             <CircularProgress color="primary" size={20} />
             {this.state.disabledText}
@@ -465,7 +465,6 @@ AssignmentTexterContact.propTypes = {
   mutations: PropTypes.object,
   refreshData: PropTypes.func,
   onExitTexter: PropTypes.func,
-  messageStatusFilter: PropTypes.string,
   organizationId: PropTypes.string,
   location: PropTypes.object,
   updateCurrentContactById: PropTypes.func
