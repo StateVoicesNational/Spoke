@@ -19,15 +19,14 @@ import withMuiTheme from "../../../containers/hoc/withMuiTheme";
 
 export const displayName = () => "Tagging Contacts";
 
-export const showSidebox = ({ contact, campaign, messageStatusFilter }) => {
+export const showSidebox = ({ contact, campaign }) => {
   // Return anything False-y to not show
   // Return anything Truth-y to show
   // Return 'popup' to force a popup on mobile screens (instead of letting it hide behind a button)
-  // console.log("showsidebox", messageStatusFilter, contact, campaign);
   return (
     contact &&
     !contact.optOut &&
-    messageStatusFilter !== "needsMessage" &&
+    contact.messageStatus !== "needsMessage" &&
     campaign.organization.tags.length
   );
 };
@@ -150,7 +149,6 @@ TexterSideboxBase.propTypes = {
   // parent state
   disabled: type.bool,
   navigationToolbarChildren: type.object,
-  messageStatusFilter: type.string,
   onUpdateTags: type.func
 };
 

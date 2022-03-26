@@ -6,8 +6,8 @@ import GSTextField from "../../../components/forms/GSTextField";
 
 export const displayName = () => "Allow editing of initial messages";
 
-export const showSidebox = ({ contact, messageStatusFilter }) =>
-  contact && messageStatusFilter === "needsMessage";
+export const showSidebox = ({ contact }) =>
+  contact && contact.messageStatus === "needsMessage";
 
 const defaultExpandText = "Sending Initial Messages";
 const defaultMessagePre =
@@ -84,8 +84,7 @@ TexterSidebox.propTypes = {
 
   // parent state
   disabled: type.bool,
-  navigationToolbarChildren: type.object,
-  messageStatusFilter: type.string
+  navigationToolbarChildren: type.object
 };
 
 export const adminSchema = () => ({
