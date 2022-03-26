@@ -412,7 +412,6 @@ export class AssignmentTexterContact extends React.Component {
           currentUser={this.props.currentUser}
           organizationId={this.props.organizationId}
           navigationToolbarChildren={this.props.navigationToolbarChildren}
-          messageStatusFilter={this.props.messageStatusFilter}
           disabled={this.state.disabled || this.state.disabledSend}
           enabledSideboxes={this.props.enabledSideboxes}
           review={this.props.location.query.review}

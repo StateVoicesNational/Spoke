@@ -129,7 +129,7 @@ export class AssignmentTexterContactControls extends React.Component {
   }
 
   getStartingMessageText() {
-    const { contact, campaign, messageStatusFilter } = this.props;
+    const { contact, campaign } = this.props;
     return (
       contact != null &&
       contact.messageStatus === "needsMessage" &&
@@ -176,7 +176,7 @@ export class AssignmentTexterContactControls extends React.Component {
         evt.ctrlKey,
         evt.keyCode,
         this.state.messageReadOnly,
-        this.props.messageStatusFilter
+        this.props.contact.messageStatus
       );
     }
 
@@ -235,13 +235,12 @@ export class AssignmentTexterContactControls extends React.Component {
     // Allow initial sends to use any key, avoiding RSI injuries
     // the texter can distribute which button to press across the keyboard
     if (
-      this.props.messageStatusFilter === "needsMessage" &&
+      this.props.contact.messageStatus === "needsMessage" &&
       this.state.messageReadOnly &&
       !evt.ctrlKey &&
       !evt.metaKey &&
       !evt.altKey &&
-      (/[a-z,./;']/.test(evt.key) ||
-        evt.key === "Enter" ||
+      (evt.key === "Enter" ||
         evt.key === "Return" ||
         evt.key === "Space" ||
         evt.key === " " ||
@@ -934,7 +933,7 @@ export class AssignmentTexterContactControls extends React.Component {
   }
 
   renderMessagingRowSendSkip(contact) {
-    const firstMessage = this.props.messageStatusFilter === "needsMessage";
+    const firstMessage = contact.messageStatus === "needsMessage";
     return (
       <div
         key="renderMessagingRowSendSkip"
@@ -959,7 +958,7 @@ export class AssignmentTexterContactControls extends React.Component {
   }
 
   renderMessageControls(enabledSideboxes) {
-    const { contact, messageStatusFilter, assignment, campaign } = this.props;
+    const { contact, assignment, campaign } = this.props;
     const {
       availableSteps,
       questionResponses,
@@ -1131,7 +1130,7 @@ export class AssignmentTexterContactControls extends React.Component {
 
   render() {
     const { enabledSideboxes } = this.props;
-    const firstMessage = this.props.messageStatusFilter === "needsMessage";
+    const firstMessage = this.props.contact.messageStatus === "needsMessage";
     const content = firstMessage
       ? this.renderFirstMessage(enabledSideboxes)
       : [
@@ -1199,7 +1198,6 @@ AssignmentTexterContactControls.propTypes = {
   // parent state
   disabled: PropTypes.bool,
   navigationToolbarChildren: PropTypes.object,
-  messageStatusFilter: PropTypes.string,
   enabledSideboxes: PropTypes.arrayOf(PropTypes.object),
   review: PropTypes.string,
 
