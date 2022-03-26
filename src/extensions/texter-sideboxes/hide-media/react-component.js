@@ -31,8 +31,7 @@ TexterSidebox.propTypes = {
 
   // parent state
   disabled: type.bool,
-  navigationToolbarChildren: type.object,
-  messageStatusFilter: type.string
+  navigationToolbarChildren: type.object
 };
 
 export const adminSchema = () => ({});
