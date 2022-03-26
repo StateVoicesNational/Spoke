@@ -63,10 +63,20 @@ export class ContactController extends React.Component {
       global.ASSIGNMENT_CONTACTS_SIDEBAR &&
       this.props.messageStatusFilter !== "needsMessage"
     ) {
+      const messageStatusFilter = this.props.messageStatusFilter;
+      let status = null;
+      if (messageStatusFilter === "needsMessageOrResponse") {
+        status = ["needsResponse", "needsMessage"];
+      } else if (messageStatusFilter === "allReplies") {
+        status = ["messaged", "needsMessage"];
+      } else if (messageStatusFilter === "needsResponseExpired") {
+        status = ["needsResponse"];
+      } else {
+        status = messageStatusFilter.split(",");
+      }
+
       startIndex = Math.max(
-        this.props.contacts.findIndex(
-          c => c.messageStatus === this.props.messageStatusFilter
-        ),
+        this.props.contacts.findIndex(c => status.includes(c.messageStatus)),
         0
       );
     }
@@ -476,7 +486,7 @@ export class ContactController extends React.Component {
       );
     }
     const initials = messageStatusFilter === "needsMessage";
-    const action = initials ? "messaged" : "replied to";
+    const action = initials ? "messaged" : "messaged and replied to";
     const emptyMessage =
       allContactsCount === 0
         ? "No current contacts"
