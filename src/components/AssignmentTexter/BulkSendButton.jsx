@@ -48,7 +48,7 @@ export default class BulkSendButton extends Component {
 
 BulkSendButton.propTypes = {
   assignment: PropTypes.object,
-  onFinishContact: PropTypes.function,
-  bulkSendMessages: PropTypes.function,
-  setDisabled: PropTypes.function
+  onFinishContact: PropTypes.func,
+  bulkSendMessages: PropTypes.func,
+  setDisabled: PropTypes.func
 };
