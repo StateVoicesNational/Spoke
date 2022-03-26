@@ -269,31 +269,6 @@ export class ContactController extends React.Component {
     return this.state.currentContactIndex < this.contactCount() - 1;
   }
 
-  canRequestMore() {
-    const { assignment, campaign, messageStatusFilter } = this.props;
-    if (assignment.hasUnassignedContactsForTexter) {
-      if (
-        (messageStatusFilter === "needsMessage" ||
-          messageStatusFilter === "needsSecondPass") &&
-        !campaign.requestAfterReply
-      ) {
-        return true;
-      } else if (
-        messageStatusFilter === "needsResponse" &&
-        campaign.requestAfterReply
-      ) {
-        if (
-          assignment.unmessagedCount === 0 &&
-          assignment.unrepliedCount === 0 &&
-          assignment.secondpassCount === 0
-        ) {
-          return true;
-        }
-      }
-    }
-    return false;
-  }
-
   handleFinishContact = contactId => {
     if (this.hasNext()) {
       this.setState({ finishedContactId: null }, () => {
