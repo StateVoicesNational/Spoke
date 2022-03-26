@@ -1,7 +1,6 @@
 import PropTypes from "prop-types";
 import React from "react";
 
-import ContactController from "./ContactController";
 import Controls from "./Controls";
 import { applyScript } from "../../lib/scripts";
 
@@ -722,7 +721,6 @@ export function generateDemoTexterContact(testName) {
         currentUser={test.currentUser}
         navigationToolbarChildren={test.navigationToolbarChildren}
         enabledSideboxes={props.enabledSideboxes}
-        messageStatusFilter={test.messageStatusFilter}
         disabled={test.disabled}
         onMessageFormSubmit={() => async data => {
           console.log("logging data onMessageFormSubmit", data);
@@ -757,7 +755,6 @@ export function generateDemoTexterContact(testName) {
         onRefreshAssignmentContacts={logFunction}
         organizationId={"1"}
         ChildComponent={DemoAssignmentTexterContact}
-        messageStatusFilter={test.messageStatusFilter}
         currentUser={test.currentUser}
       />
     );
