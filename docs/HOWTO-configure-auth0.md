@@ -11,9 +11,16 @@ Spoke for Auth0.
 
 ## Configuration Steps
 
-1. First configure the environment variable `PASSPORT_STRATEGY=auth0` in `.env` or wherever to configure Spoke environment
+1. First configure the environment variable `PASSPORT_STRATEGY=auth0` in `.env` to configure Spoke environment
 variables.
-2. Create an [Auth0](https://auth0.com) account. In your Auth0 account, go to [Applications](https://manage.auth0.com/#/applications/), click on `Default App` and then grab your Client ID, Client Secret, and your Auth0 domain (should look like xxx.auth0.com). Add those inside your `.env` file (AUTH0_CLIENT_ID, AUTH0_CLIENT_SECRET, AUTH0_DOMAIN respectively).
+2. Create an [Auth0](https://auth0.com) account. In your Auth0 account, go to [Applications](https://manage.auth0.com/#/applications/), click on `Default App` and then grab your
+
+    + `Client ID`,
+    + `Client Secret`, and your
+    + `Auth0 domain` (should look like xxx.auth0.com)
+
+    Add those inside your `.env` file (AUTH0_CLIENT_ID, AUTH0_CLIENT_SECRET, AUTH0_DOMAIN respectively).
+
 3. Run `yarn dev` to create and populate the tables.
 4. In your Auth0 app settings, set the following (Note: for development use `http://localhost:3000` instead of `https://yourspoke.example.com`):
     + **Allowed Callback URLs** - `https://yourspoke.example.com/login-callback`
