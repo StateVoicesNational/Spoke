@@ -46,8 +46,8 @@ class Login extends React.Component {
         query: { nextUrl }
       }
     } = this.props;
-
     if (!this.isLocalLogin) {
+      // For Auth0
       window.AuthService.login(nextUrl);
       return;
     }
