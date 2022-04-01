@@ -113,10 +113,29 @@ const signup = async ({
 };
 
 const reset = ({ password, existingUser, reqBody, uuidMatch }) => {
-  if (existingUser.length === 0) {
+  if (global.PASSPORT_STRATEGY == "auth0") {
+    auth0_domain = window.AUTH0_DOMAIN;
+    var axios = require("axios").default;
+
+    var options = {
+      method: "PATCH",
+      url: "${auth0_domain}/api/v2/users/${existingUser.id}",
+      headers: { "content-type": "application/json" },
+      data: { password: password }
+    };
+
+    axios
+      .request(options)
+      .then(function(response) {
+        console.log(response.data);
+      })
+      .catch(function(error) {
+        console.error(error);
+      });
+  } else existingUser.length === 0;
+  {
     throw new Error(errorMessages.invalidResetHash);
   }
-
   // Get user resetHash and date of hash creation
   const pwFieldSplit = existingUser[0].auth0_id.split("|");
   const [resetHash, datetime] = [pwFieldSplit[1], pwFieldSplit[2]];
@@ -141,12 +160,14 @@ const reset = ({ password, existingUser, reqBody, uuidMatch }) => {
   return new Promise((resolve, reject) => {
     AuthHasher.hash(password, async function(err, hashed) {
       if (err) reject(err);
-      // .salt and .hash
-      const passwordToSave = `localauth|${hashed.salt}|${hashed.hash}`;
-      const updatedUser = await User.get(existingUser[0].id)
-        .update({ auth0_id: passwordToSave })
-        .run();
-      resolve(updatedUser);
+      if (global.PASSPORT_STRATEGY !== "auth0") {
+        // .salt and .hash
+        const passwordToSave = `localauth|${hashed.salt}|${hashed.hash}`;
+        const updatedUser = await User.get(existingUser[0].id)
+          .update({ auth0_id: passwordToSave })
+          .run();
+        resolve(updatedUser);
+      }
     });
   });
 };
