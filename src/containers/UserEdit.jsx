@@ -41,6 +41,7 @@ import { StyleSheet, css } from "aphrodite";
 import apolloClient from "../network/apollo-client-singleton";
 import { dataTest } from "../lib/attributes";
 import withMuiTheme from "./../containers/hoc/withMuiTheme";
+import { changePassword } from "../client/auth-service";
 
 const styles = StyleSheet.create({
   container: {
@@ -186,8 +187,14 @@ export class UserEditBase extends React.Component {
     }
   };
 
-  handleClick = () => {
-    this.setState({ changePasswordDialog: true });
+  handlePasswordChange = () => {
+    if (window.PASSPORT_STRATEGY == "local") {
+      this.setState({ changePasswordDialog: true });
+    } else {
+      export function changePassword() {
+        loginStrategies[window.PASSPORT_STRATEGY].changePassword();
+      }
+    }
   };
 
   handleClose = () => {
@@ -374,7 +381,7 @@ export class UserEditBase extends React.Component {
             userId === currentUser.currentUser.id &&
             !fieldsNeeded && (
               <div className={css(styles.container)}>
-                <Button onClick={this.handleClick} variant="outlined">
+                <Button onClick={this.handlePasswordChange} variant="outlined">
                   Change password
                 </Button>
               </div>
