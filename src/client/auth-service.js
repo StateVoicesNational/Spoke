@@ -27,6 +27,14 @@ const loginStrategies = {
         returnTo: `${baseURL}/logout-callback`,
         client_id: window.AUTH0_CLIENT_ID
       });
+    },
+
+    changePassword() {
+      const webAuth = new auth0.WebAuth({
+        domain: window.AUTH0_DOMAIN,
+        clientID: window.AUTH0_CLIENT_ID
+      });
+      webAuth.changePassword();
     }
   },
 
@@ -54,7 +62,7 @@ const loginStrategies = {
     }
   }
 };
-
+//
 export function logout() {
   loginStrategies[window.PASSPORT_STRATEGY].logout();
 }
