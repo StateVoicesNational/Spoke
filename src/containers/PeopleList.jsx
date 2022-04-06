@@ -165,25 +165,16 @@ export class PeopleList extends Component {
   resetPassword = async userId => {
     const { currentUser } = this.props;
     if (window.PASSPORT_STRATEGY === "auth0") {
-      let newUrl =
-        "https://manage.auth0.com/dashboard/us/" +
-        window.AUTH0_DOMAIN_MANAGEMENT;
+      let auth0Domain = "/" + window.AUTH0_DOMAIN;
+      let result = auth0Domain.split(".")[0] + "/users";
+      let country =
+        "https://manage.auth0.com/dashboard/" + auth0Domain.split(".")[1];
 
-      // notes for getting rid of AUTH0_DOMAIN_MANAGEMENT from the .env file
+      let newUrl = country + result;
 
-      //  call AUTH0_DOMAIN
+      // see if I can get ""/users" to show up at the end of that URL for better ease to Campaign Manager
 
-      // catch all the letters before the first period
-
-      // example: THIS-INFO.us.auth0.com
-
-      // add it to a local variable called auth0Domain
-
-      // add auth0Domain appropriately to the following url: "https://manage.auth0.com/dashboard/us/${auth0Domain}
-
-      // see if I can get /users to show up at the end of that URL for better ease to Campaign Manager
-
-      // needs information or a message letting them know they are being redirected to Auth0 for password management support
+      // needs information or a message letting administrator know they are being redirected to Auth0 for password management
 
       location.href = newUrl;
     } else if (currentUser.id !== userId) {
