@@ -129,21 +129,19 @@ export class PeopleList extends Component {
         }
       }
     ];
-    if (window.PASSPORT_STRATEGY !== "slack") {
-      columns.push({
-        key: "password",
-        name: "",
-        options: {
-          customBodyRender: this.renderChangePasswordButton
-        },
-        label: "",
-        style: {
-          textOverflow: "ellipsis",
-          overflow: "hidden",
-          whiteSpace: "pre-line"
-        }
-      });
-    }
+    columns.push({
+      key: "password",
+      name: "",
+      options: {
+        customBodyRender: this.renderChangePasswordButton
+      },
+      label: "",
+      style: {
+        textOverflow: "ellipsis",
+        overflow: "hidden",
+        whiteSpace: "pre-line"
+      }
+    });
     return columns;
   };
 
@@ -164,20 +162,7 @@ export class PeopleList extends Component {
 
   resetPassword = async userId => {
     const { currentUser } = this.props;
-    if (window.PASSPORT_STRATEGY === "auth0") {
-      let auth0Domain = "/" + window.AUTH0_DOMAIN;
-      let result = auth0Domain.split(".")[0] + "/users";
-      let country =
-        "https://manage.auth0.com/dashboard/" + auth0Domain.split(".")[1];
-
-      let newUrl = country + result;
-
-      // see if I can get ""/users" to show up at the end of that URL for better ease to Campaign Manager
-
-      // needs information or a message letting administrator know they are being redirected to Auth0 for password management
-
-      location.href = newUrl;
-    } else if (currentUser.id !== userId) {
+    if (currentUser.id !== userId) {
       const res = await this.props.mutations.resetUserPassword(
         this.props.organizationId,
         userId
@@ -359,6 +344,7 @@ export class PeopleList extends Component {
               open={!!this.state.passwordResetHash}
               requestClose={this.handlePasswordResetClose}
               passwordResetHash={this.state.passwordResetHash}
+              isAuth0={window.PASSPORT_STRATEGY === "auth0"}
             />
           </div>
         )}
