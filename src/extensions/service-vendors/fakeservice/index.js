@@ -73,6 +73,7 @@ export async function sendMessage({
         id: undefined,
         service_id: `mockedresponse${Math.random()}`,
         is_from_contact: true,
+        user_id: null,
         text: `responding to ${message.text}`,
         send_status: "DELIVERED",
         media
