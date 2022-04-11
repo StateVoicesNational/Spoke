@@ -11,6 +11,7 @@ _April 2022:_ Version 12.1
 * Delay seeding zip codes until database is created
 * Add error validation to canned responses
 * Fix documentation links
+* Fix bugs when viewing all messages
 
 ### Improvements
 * NGP Van user guide
