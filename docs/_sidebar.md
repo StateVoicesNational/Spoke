@@ -10,6 +10,7 @@
   - [Configuring texting hours enforcement](HOWTO_TEXTING_HOURS_ENFORCEMENT.md)
   - [How to buy numbers in Spoke](HOWTO_BUY_NUMBERS_IN_SPOKE.md)
   - [How to configure bulk sending outside the USA](HOWTO-use_bulk_sending_outside_the_USA.md)
+  - [NGPVAN integration user guide](REFERENCE-NGPVAN_user_guide.md)
 
 - Extensions Docs
   - [Extending Spoke](HOWTO-extend-spoke.md)
