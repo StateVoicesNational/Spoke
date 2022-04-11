@@ -112,7 +112,8 @@ Based on work from Larry Person, there is a large refactor of "service-vendors" 
 
 #### Database upgrades
 * This is a major release and includes a schema change.
-* For small instances simply leave/set SUPPRESS_MIGRATIONS="" or for [AWS Lambda, see the db migration instructions](https://moveonorg.github.io/Spoke/#/HOWTO_DEPLOYING_AWS_LAMBDA?id=migrating-the-database). 
+* For small instances simply leave/set SUPPRESS_MIGRATIONS="" or for [AWS Lambda, see the db migration instructions](https://moveonorg.github.io/Spoke/#/HOWTO_DEPLOYING_AWS_LAMBDA?id=migrating-the-database).
+* If you are running Spoke on Heroku and updating to version 11 or later, either remove SUPPRESS_MIGRATIONS="" if it is set in config, *or* set SUPPRESS_MIGRATIONS=false
 * For instances with a large `message` table, we recommend setting NO_INDEX_CHANGES=1 before running the migration, and then manually running two commands:
   * `CREATE INDEX CONCURRENTLY cell_msgsvc_user_number_idx ON message (contact_number, messageservice_sid, user_number);`
   * `DROP INDEX cell_messageservice_sid_idx;`
