@@ -27,12 +27,12 @@ export function clientChoiceDataCacheKey(organization, user) {
   return "";
 }
 
-// return true, if the action is usable and available for the organizationId
+// return true, if the action is usable and available for the organization
 // Sometimes this means certain variables/credentials must be setup
 // either in environment variables or organization.features json data
-// Besides this returning true, "test-action" will also need to be added to
-// process.env.ACTION_HANDLERS
-export async function available(organizationId) {
+// Besides this returning true, "complex-test-action" will also need to be added
+// to process.env.ACTION_HANDLERS
+export async function available(organization) {
   return {
     result: true,
     expiresSeconds: 600
@@ -44,7 +44,10 @@ export async function available(organizationId) {
 export async function processAction({
   actionObject,
   campaignContactId,
-  contact
+  contact,
+  campaign, // Not used here
+  organization, // Not used here
+  previousValue // Not used here
 }) {
   // This is a meta action that updates a variable in the contact record itself.
   // Generally, you want to send action data to the outside world, so you
@@ -61,7 +64,16 @@ export async function processAction({
     .update("custom_fields", JSON.stringify(customFields));
 }
 
-// What happens when a texter remotes an answer that triggers the action
+// What happens when a texter removes an answer that triggers the action
+// The 'options' parameter is of type: {
+// questionResponse,
+// interactionStep,
+// campaignContactId,
+// contact,
+// campaign,
+// organization,
+// previousValue} .
+
 export async function processDeletedQuestionResponse(options) {
   console.log(
     `complex-test-action handler called with parameters ${JSON.stringify(
