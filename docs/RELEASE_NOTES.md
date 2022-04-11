@@ -9,6 +9,7 @@ _April 2022:_ Version 12.1
 ### Bug-fixes
 * Fix action handler bugs
 * Delay seeding zip codes until database is created
+* Add error validation to canned responses
 
 ### Improvements
 * NGP Van user guide
@@ -26,7 +27,7 @@ _April 2022:_ Version 12.1
 * Add Nation Builder event RSVP action handler
 
 ### Appreciations
-* [Adam Greenspan](https://github.com/agreenspan24), [Arique Aguilar](https://github.com/Arique110), [Chuck Morris](https://github.com/percworld), [Cody Gordon](https://github.com/codygordon), [Daniel Bond](https://github.com/dwbond), [DJ Hartman](https://github.com/dj), [Eric Mayefsky](https://github.com/mayefsky), [Ilona Brand](https://github.com/ibrand), [Kathy Nguyen](https://github.com/crayolakat), [Michael Gratton](https://github.com/michael-gratton), [Noah Williams](https://github.com/noahsbwilliams), [Nolan Caine](https://github.com/n0land0), [Peter Murphy](https://github.com/peterkmurphy), [Schulyer Duveen](https://github.com/schuyler1d), and Harold Travis and Mark Houghton for QA
+* [Adam Greenspan](https://github.com/agreenspan24), [Arique Aguilar](https://github.com/Arique110), [Chuck Morris](https://github.com/percworld), [Cody Gordon](https://github.com/codygordon), [Daniel Bond](https://github.com/dwbond), [DJ Hartman](https://github.com/dj), [Eric Mayefsky](https://github.com/mayefsky), [Ilona Brand](https://github.com/ibrand), [Kathy Nguyen](https://github.com/crayolakat), [Larry Person](https://github.com/lperson), [Michael Gratton](https://github.com/michael-gratton), [Noah Williams](https://github.com/noahsbwilliams), [Nolan Caine](https://github.com/n0land0), [Peter Murphy](https://github.com/peterkmurphy), [Schulyer Duveen](https://github.com/schuyler1d), and Harold Travis and Mark Houghton for QA
 
 ## v12.0
 
