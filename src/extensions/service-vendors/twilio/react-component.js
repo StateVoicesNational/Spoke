@@ -26,7 +26,7 @@ export class OrgConfig extends React.Component {
     super(props);
     const { accountSid, authToken, messageServiceSid } = this.props.config;
     const allSet = accountSid && authToken && messageServiceSid;
-    this.state = { allSet, ...this.props.config };
+    this.state = { allSet, ...this.props.config, twilioDialogOpen: false };
     this.props.onAllSetChanged(allSet);
   }
 

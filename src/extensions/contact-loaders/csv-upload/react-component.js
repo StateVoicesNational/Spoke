@@ -4,6 +4,7 @@ import * as yup from "yup";
 import humps from "humps";
 import { StyleSheet, css } from "aphrodite";
 import Form from "react-formal";
+import { compose } from "recompose";
 
 import Divider from "@material-ui/core/Divider";
 import Button from "@material-ui/core/Button";
@@ -21,9 +22,9 @@ import {
 } from "../../../lib";
 import GSForm from "../../../components/forms/GSForm";
 import CampaignFormSectionHeading from "../../../components/CampaignFormSectionHeading";
-import theme from "../../../styles/theme";
 import { dataTest } from "../../../lib/attributes";
 import GSSubmitButton from "../../../components/forms/GSSubmitButton";
+import withMuiTheme from "../../../containers/hoc/withMuiTheme";
 
 const translateHeader = columnHeader => {
   switch (true) {
@@ -75,30 +76,30 @@ const innerStyles = {
   }
 };
 
-const styles = StyleSheet.create({
-  csvHeader: {
-    fontFamily: "Courier",
-    backgroundColor: theme.colors.lightGray,
-    padding: 3
-  },
-  exampleImageInput: {
-    cursor: "pointer",
-    position: "absolute",
-    top: 0,
-    bottom: 0,
-    right: 0,
-    left: 0,
-    width: "100%",
-    opacity: 0
-  }
-});
-
-export class CampaignContactsForm extends React.Component {
+export class CampaignContactsFormBase extends React.Component {
   state = {
     uploading: false,
     validationStats: null,
     contactUploadError: null
   };
+
+  styles = StyleSheet.create({
+    csvHeader: {
+      fontFamily: "Courier",
+      backgroundColor: this.props.muiTheme.palette.action.hover,
+      padding: 3
+    },
+    exampleImageInput: {
+      cursor: "pointer",
+      position: "absolute",
+      top: 0,
+      bottom: 0,
+      right: 0,
+      left: 0,
+      width: "100%",
+      opacity: 0
+    }
+  });
 
   handleUpload = event => {
     const { contactsPerPhoneNumber, maxNumbersPerCampaign } = this.props;
@@ -251,7 +252,7 @@ export class CampaignContactsForm extends React.Component {
           id="contact-upload"
           ref={input => input && (this.uploadButton = input)}
           type="file"
-          className={css(styles.exampleImageInput)}
+          className={css(this.styles.exampleImageInput)}
           onChange={this.handleUpload}
           style={{ display: "none" }}
         />
@@ -316,13 +317,13 @@ export class CampaignContactsForm extends React.Component {
         Your upload file should be in CSV format with column headings in the
         first row. The built-in header transformer will adapt to most
         case-sensitivies, transforming to the required headers:{" "}
-        <span className={css(styles.csvHeader)}>firstName</span>,{" "}
-        <span className={css(styles.csvHeader)}>lastName</span> and
-        <span className={css(styles.csvHeader)}>cell</span> columns. If you
-        include a <span className={css(styles.csvHeader)}>zip</span> column,
-        we'll use the zip to guess the contact's timezone for enforcing texting
-        hours. An optional column to map the contact to a CRM is{" "}
-        <span className={css(styles.csvHeader)}>external_id</span>
+        <span className={css(this.styles.csvHeader)}>firstName</span>,{" "}
+        <span className={css(this.styles.csvHeader)}>lastName</span> and
+        <span className={css(this.styles.csvHeader)}>cell</span> columns. If you
+        include a <span className={css(this.styles.csvHeader)}>zip</span>{" "}
+        column, we'll use the zip to guess the contact's timezone for enforcing
+        texting hours. An optional column to map the contact to a CRM is{" "}
+        <span className={css(this.styles.csvHeader)}>external_id</span>
         Any additional columns in your file will be available as custom fields
         to use in your texting scripts.
       </span>
@@ -337,9 +338,7 @@ export class CampaignContactsForm extends React.Component {
   }
 }
 
-CampaignContactsForm.prototype.renderAfterStart = true;
-
-CampaignContactsForm.propTypes = {
+CampaignContactsFormBase.propTypes = {
   onChange: type.func,
   onSubmit: type.func,
   campaignIsStarted: type.bool,
@@ -356,3 +355,9 @@ CampaignContactsForm.propTypes = {
   maxNumbersPerCampaign: type.number,
   contactsPerPhoneNumber: type.number
 };
+
+const CampaignContactsForm = compose(withMuiTheme)(CampaignContactsFormBase);
+
+CampaignContactsForm.prototype.renderAfterStart = true;
+
+export { CampaignContactsForm };
