@@ -12,6 +12,7 @@ _April 2022:_ Version 12.1
 * Add error validation to canned responses
 * Fix documentation links
 * Fix bugs when viewing all messages
+* Fix wrong message sending in bulk send
 
 ### Improvements
 * NGP Van user guide
