@@ -23,8 +23,8 @@ export const displayName = () => "Release Contacts";
 
 export const showSidebox = ({
   settingsData,
-  messageStatusFilter,
   assignment,
+  contact,
   campaign,
   finished,
   isSummary
@@ -33,12 +33,13 @@ export const showSidebox = ({
   // Return anything Truth-y to show
   // Return 'popup' to force a popup on mobile screens (instead of letting it hide behind a button)
   return (
-    (assignment.hasContacts || assignment.allContactsCount) &&
     !finished &&
     (campaign.useDynamicAssignment ||
       settingsData.releaseContactsNonDynamicToo) &&
+    (assignment.hasContacts || assignment.allContactsCount) &&
     (settingsData.releaseContactsReleaseConvos ||
-      (messageStatusFilter === "needsMessage" && assignment.unmessagedCount) ||
+      (contact.messageStatus === "needsMessage" &&
+        assignment.unmessagedCount) ||
       (isSummary && assignment.unmessagedCount))
   );
 };
@@ -62,16 +63,17 @@ export class TexterSideboxClass extends React.Component {
   };
 
   render() {
-    const { settingsData, messageStatusFilter, assignment } = this.props;
+    const { contact, settingsData, assignment } = this.props;
     const showReleaseConvos =
       settingsData.releaseContactsReleaseConvos &&
-      ((messageStatusFilter && messageStatusFilter !== "needsMessage") ||
+      (contact.messageStatus !== "needsMessage" ||
         assignment.unrepliedCount ||
         assignment.hasUnreplied);
     return (
       <div>
         {assignment.unmessagedCount ||
-        (messageStatusFilter === "needsMessage" && assignment.hasUnmessaged) ? (
+        (contact.messageStatus === "needsMessage" &&
+          assignment.hasUnmessaged) ? (
           <div className={css(styles.marginBottom)}>
             <div>
               {settingsData.releaseContactsBatchTitle
@@ -124,7 +126,6 @@ TexterSideboxClass.propTypes = {
 
   // parent state
   navigationToolbarChildren: type.object,
-  messageStatusFilter: type.string,
   finished: type.bool
 };
 

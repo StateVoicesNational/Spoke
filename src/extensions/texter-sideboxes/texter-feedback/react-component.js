@@ -350,7 +350,6 @@ TexterSideboxClassBase.propTypes = {
   // parent state
   disabled: PropTypes.bool,
   navigationToolbarChildren: PropTypes.object,
-  messageStatusFilter: PropTypes.string,
   onUpdateTags: PropTypes.func,
 
   mutations: PropTypes.object
