@@ -1,5 +1,27 @@
 # Release Notes
 
+## v12.1
+
+_April 2022:_ Version 12.1
+
+12.1 is a minor release bundling many small bug fixes, feature implementations, and documentation updates.
+
+### Bug-fixes
+* Fix action handler bugs
+* Delay seeding zip codes until database is created
+
+### Improvements
+* NGP Van user guide
+* Azure deployment documentation
+* Updates to onboarding documentation
+
+### New features
+* Ability to hide interactions workflow
+* Show duration of message assignment
+
+### Appreciations
+* [Adam Greenspan](https://github.com/agreenspan24), [Arique Aguilar](https://github.com/Arique110), [Chuck Morris](), [Daniel Bond](https://github.com/dwbond), [Eric Mayefsky](https://github.com/mayefsky), [Ilona Brand](https://github.com/ibrand), [Kathy Nguyen](https://github.com/crayolakat), [Nolan Caine](https://github.com/n0land0), [Peter Murphy](https://github.com/peterkmurphy), and Harold Travis and Mark Houghton for QA
+
 ## v12.0
 
 _February 2022:_ Version 12.0
