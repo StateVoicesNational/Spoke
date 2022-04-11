@@ -162,11 +162,9 @@
     "wait-for-expect": "^1.1.1",
     "webpack": "4",
     "webpack-manifest-plugin": "^2.0.4",
-    "yarn": "^1.22.17",
     "yup": "0.32.3"
   },
   "devDependencies": {
-    "@babel/core": "^7.16.7",
     "babel-eslint": "^6.1.2",
     "babel-jest": "^23.4.2",
     "babel-plugin-transform-runtime": "^6.23.0",
@@ -196,7 +194,7 @@
     "react-test-renderer": "15",
     "regenerator-runtime": "^0.10.5",
     "selenium-webdriver": "^3.6.0",
-    "sqlite3": "^4.2.0",
+    "sqlite3": "^4.1.1",
     "wait-on": "^2.1.0",
     "webpack-cli": "^4.7.2",
     "webpack-dev-server": "3"
