@@ -187,3 +187,150 @@ export const parseCSV = (file, onCompleteCallback, options) => {
     }
   });
 };
+
+const clean = str => str && str.toLowerCase().trim();
+
+const parseTags = (org_tags, tag_text) => {
+  const tagIds = [];
+  if (tag_text) {
+    for (var t of tag_text.split(",")) {
+      const tag_name = clean(t);
+
+      if (!tag_name) continue;
+
+      const tag = org_tags.find(tag => clean(tag.name) == tag_name);
+
+      if (!tag) {
+        throw `"${tag_name}" cannot be found in your organization's tags`;
+      }
+
+      tagIds.push(tag.id);
+    }
+  }
+
+  return tagIds;
+};
+
+const parseAction = (availableActions, actionText, actionDataText) => {
+  const actionClean = clean(actionText);
+  const actionDataClean = clean(actionDataText);
+
+  if (!actionClean) return {};
+
+  const availableAction = availableActions.find(
+    x => clean(x.displayName) === actionClean
+  );
+
+  if (!availableAction) throw `"${actionText}" is not a valid action`;
+
+  let actionData;
+  if (
+    availableAction.clientChoiceData &&
+    availableAction.clientChoiceData.length
+  ) {
+    if (!actionDataClean)
+      throw `Action data choice is required for action ${actionText}`;
+
+    const actionDataChoice = availableAction.clientChoiceData.find(
+      x => clean(x.name) === actionDataClean
+    );
+
+    if (!actionDataChoice)
+      throw `"${actionDataText}" is not a valid action data choice`;
+
+    actionData = JSON.stringify({
+      label: actionDataChoice.name,
+      value: actionDataChoice.details
+    });
+  }
+
+  return {
+    action: availableAction.name,
+    actionData
+  };
+};
+
+export const parseCannedResponseCsv = (
+  file,
+  availableActions,
+  tags,
+  onCompleteCallback
+) => {
+  Papa.parse(file, {
+    header: true,
+    skipEmptyLines: true,
+    // eslint-disable-next-line no-shadow, no-unused-vars
+    complete: ({ data: parserData, meta, errors }, file) => {
+      let cannedResponseRows = parserData;
+
+      const titleLabel = meta.fields.find(f => clean(f) == "title");
+      const textLabel = meta.fields.find(f => clean(f) == "text");
+      const actionLabel = meta.fields.find(f => clean(f) == "action");
+      const actionDataLabel = meta.fields.find(f => clean(f) == "actiondata");
+      const tagsLabel = meta.fields.find(f => clean(f) == "tags");
+
+      const missingFields = [];
+
+      if (!titleLabel) missingFields.push("Title");
+      if (!textLabel) missingFields.push("Text");
+
+      if (missingFields.length) {
+        onCompleteCallback({
+          error: `Missing columns: ${missingFields.join(", ")}`
+        });
+        return;
+      }
+
+      const cannedResponses = [];
+
+      // Loop through canned responses in CSV
+      for (var response of cannedResponseRows) {
+        // Get basic details of canned response
+        const newCannedResponse = {
+          title: response[titleLabel].trim(),
+          text: response[textLabel].trim()
+        };
+
+        // Skip line if no title/text, error if only one empty
+        if (!newCannedResponse.title && !newCannedResponse.text) {
+          continue;
+        }
+
+        if (!newCannedResponse.title || !newCannedResponse.text) {
+          onCompleteCallback({
+            error: `Incomplete Line. Title: ${newCannedResponse.title}; Text: ${newCannedResponse.text}`
+          });
+          return;
+        }
+
+        try {
+          const { action, actionData } = parseAction(
+            availableActions,
+            response[actionLabel],
+            response[actionDataLabel]
+          );
+
+          newCannedResponse.answerActions = action;
+          newCannedResponse.answerActionsData = actionData;
+        } catch (error) {
+          onCompleteCallback({ error });
+          return;
+        }
+
+        try {
+          newCannedResponse.tagIds = parseTags(tags, response[tagsLabel]);
+        } catch (error) {
+          onCompleteCallback({ error });
+          return;
+        }
+
+        cannedResponses.push(newCannedResponse);
+      }
+
+      onCompleteCallback({
+        error: null,
+        cannedResponses
+      });
+    }
+  });
+};

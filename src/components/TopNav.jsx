@@ -1,83 +1,54 @@
 import PropTypes from "prop-types";
 import React from "react";
+import { compose } from "recompose";
+
 import IconButton from "@material-ui/core/IconButton";
 import ArrowBackIcon from "@material-ui/icons/ArrowBack";
+import AppBar from "@material-ui/core/AppBar";
+import Toolbar from "@material-ui/core/Toolbar";
+import Typography from "@material-ui/core/Typography";
+import { makeStyles } from "@material-ui/core/styles";
 
-import { Link } from "react-router";
+import { Link as RouterLink } from "react-router";
 import UserMenu from "../containers/UserMenu";
-import theme from "../styles/theme";
-import { StyleSheet, css } from "aphrodite";
+import withMuiTheme from "./../containers/hoc/withMuiTheme";
 
-const styles = StyleSheet.create({
-  container: {
-    ...theme.layouts.multiColumn.container,
-    backgroundColor: theme.colors.coreBackgroundColor,
-    color: theme.colors.white,
-    height: 65,
-    verticalAlign: "middle",
-    paddingLeft: 15,
-    paddingRight: 15
-  },
-  inline: {
-    display: "inline-block",
-    marginLeft: 5,
-    marginTop: "auto",
-    marginBottom: "auto"
-  },
-  userMenu: {
-    marginTop: "auto",
-    marginBottom: "auto"
-  },
-  header: {
-    ...theme.text.header,
-    fontSize: 24,
-    color: theme.colors.white
-  },
-  flexColumn: {
-    flex: 1,
-    textAlign: "left",
-    display: "flex"
-  }
-});
-
-class TopNav extends React.Component {
-  state = {
-    userMenuOpen: false
-  };
-
-  renderBack(backToURL) {
-    if (backToURL) {
-      return (
-        <Link to={backToURL}>
-          <IconButton>
-            <ArrowBackIcon style={{ fill: "white" }} />
-          </IconButton>
-        </Link>
-      );
+export function TopNavBase(props) {
+  const useStyles = makeStyles(() => ({
+    toolBar: {
+      flexGrow: 1
+    },
+    title: {
+      flexGrow: 1
     }
-    return <div />;
-  }
-
-  render() {
-    const { backToURL, orgId, title } = this.props;
-    return (
-      <div className={css(styles.container)}>
-        <div className={css(styles.flexColumn)}>
-          <div className={css(styles.inline)}>{this.renderBack(backToURL)}</div>
-          <div className={css(styles.inline, styles.header)}>{title}</div>
-        </div>
-        <div className={css(styles.userMenu)}>
-          <UserMenu orgId={orgId} />
-        </div>
-      </div>
-    );
-  }
+  }));
+  const classes = useStyles();
+  const { backToURL, orgId, title, muiTheme } = props;
+  return (
+    <AppBar position="static">
+      <Toolbar className={classes.toolBar}>
+        {backToURL && (
+          <RouterLink to={backToURL}>
+            <IconButton>
+              <ArrowBackIcon
+                style={{ fill: muiTheme.palette.primary.contrastText }}
+              />
+            </IconButton>
+          </RouterLink>
+        )}
+        <Typography variant="h5" className={classes.title}>
+          {title}
+        </Typography>
+        <UserMenu orgId={orgId} />
+      </Toolbar>
+    </AppBar>
+  );
 }
 
-TopNav.propTypes = {
+TopNavBase.propTypes = {
   backToURL: PropTypes.string,
   title: PropTypes.string.isRequired,
   orgId: PropTypes.string
 };
 
-export default TopNav;
+export default compose(withMuiTheme)(TopNavBase);
