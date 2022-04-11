@@ -72,7 +72,7 @@ const generateCacheRecord = (
   external_id: dbRecord.external_id,
   // explicitly excluding:
   // message_status -- because it will be indexed by cell elsewhere
-  // updated_at -- because we will not update it
+  updated_at: dbRecord.updated_at,
   timezone_offset: dbRecord.timezone_offset,
   city: dbRecord.city,
   state: dbRecord.state
@@ -169,7 +169,7 @@ const saveCacheRecord = async (
         .set(statusKey, dbRecord.message_status)
         .expire(statusKey, 43200)
         .execAsync();
-      //await updateAssignmentContact(dbRecord, dbRecord.message_status);
+      // await updateAssignmentContact(dbRecord, dbRecord.message_status);
     }
     await setCacheContactAssignment(
       dbRecord.id,
@@ -542,7 +542,7 @@ const campaignContactCache = {
         }
 
         await redisQuery.execAsync();
-        //await updateAssignmentContact(contact, newStatus);
+        // await updateAssignmentContact(contact, newStatus);
       }
     } catch (err) {
       console.log("contact updateStatus Error", newStatus, contact, err);
