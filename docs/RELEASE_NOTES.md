@@ -16,6 +16,7 @@ _April 2022:_ Version 12.1
 * Updates to onboarding documentation
 * Automatic TexterTodoList updates (when we have Redis+Postgres)
 * Add GitHub workflow to automatically build Spoke images
+* Update dependency versions
 
 ### New features
 * Ability to hide interactions workflow
