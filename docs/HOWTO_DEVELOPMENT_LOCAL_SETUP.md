@@ -47,8 +47,8 @@ git remote add upstream https://github.com/MoveOnOrg/Spoke.git
 
 4. Install the Node version listed in `.nvmrc`. [NVM](https://github.com/creationix/nvm) is one way to do this (from the spoke directory):
    ```
-   nvm install 12
-   nvm use 12
+   nvm install
+   nvm use
    ```
    - this assumes you have nvm (node version manager) installed.  If not, either
    * run 

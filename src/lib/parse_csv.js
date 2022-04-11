@@ -114,19 +114,19 @@ export const organizationCustomFields = (contacts, customFieldsList) => {
 
 export const parseCSV = (file, onCompleteCallback, options) => {
   // options is a custom object that currently supports three properties:
-  // rowTransformer (not called or supplied in this project but set up for
+  // * rowTransformer (not called or supplied in this project but set up for
   //   use if desired on line 148)-- a function that gets called on each row in the file
   //   after it is parsed. It takes 2 parameters, an array of fields and
   //   the object that results from parsing the row. It returns an object
   //   after transformation. The function can do lookups, field mappings,
   //   remove fields, add fields, etc. If it adds fields, it should push
   //   them onto the fields array in the first parameter.
-  // headerTransformer -- a function that gets called once after the
+  // * headerTransformer -- a function that gets called once after the
   //   header row is parsed. It takes one parameter, the header name, and
   //   returns the header that should be used for the column. An example
   //   would be to transform first_name to firstName, which is a required
   //   field in Spoke.
-  // additionalCustomFields (not called or supplied in this project)
+  // * additionalCustomFields (not called or supplied in this project)
 
   const { rowTransformer, headerTransformer, additionalCustomFields = [] } =
     options || {};
