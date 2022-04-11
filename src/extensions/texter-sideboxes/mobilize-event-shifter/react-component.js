@@ -20,9 +20,9 @@ import {
 
 export const displayName = () => "Mobilize Event Shifter";
 
-export const showSidebox = ({ contact, messageStatusFilter, settingsData }) =>
+export const showSidebox = ({ contact, settingsData }) =>
   contact &&
-  messageStatusFilter !== "needsMessage" &&
+  contact.messageStatus !== "needsMessage" &&
   (settingsData.mobilizeEventShifterBaseUrl ||
     window.MOBILIZE_EVENT_SHIFTER_URL);
 
@@ -221,8 +221,7 @@ TexterSidebox.propTypes = {
 
   // parent state
   disabled: type.bool,
-  navigationToolbarChildren: type.object,
-  messageStatusFilter: type.string
+  navigationToolbarChildren: type.object
 };
 
 export const adminSchema = () => ({

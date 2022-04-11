@@ -63,10 +63,20 @@ export class ContactController extends React.Component {
       global.ASSIGNMENT_CONTACTS_SIDEBAR &&
       this.props.messageStatusFilter !== "needsMessage"
     ) {
+      const messageStatusFilter = this.props.messageStatusFilter;
+      let status = null;
+      if (messageStatusFilter === "needsMessageOrResponse") {
+        status = ["needsResponse", "needsMessage"];
+      } else if (messageStatusFilter === "allReplies") {
+        status = ["messaged", "needsMessage"];
+      } else if (messageStatusFilter === "needsResponseExpired") {
+        status = ["needsResponse"];
+      } else {
+        status = messageStatusFilter.split(",");
+      }
+
       startIndex = Math.max(
-        this.props.contacts.findIndex(
-          c => c.messageStatus === this.props.messageStatusFilter
-        ),
+        this.props.contacts.findIndex(c => status.includes(c.messageStatus)),
         0
       );
     }
@@ -259,31 +269,6 @@ export class ContactController extends React.Component {
     return this.state.currentContactIndex < this.contactCount() - 1;
   }
 
-  canRequestMore() {
-    const { assignment, campaign, messageStatusFilter } = this.props;
-    if (assignment.hasUnassignedContactsForTexter) {
-      if (
-        (messageStatusFilter === "needsMessage" ||
-          messageStatusFilter === "needsSecondPass") &&
-        !campaign.requestAfterReply
-      ) {
-        return true;
-      } else if (
-        messageStatusFilter === "needsResponse" &&
-        campaign.requestAfterReply
-      ) {
-        if (
-          assignment.unmessagedCount === 0 &&
-          assignment.unrepliedCount === 0 &&
-          assignment.secondpassCount === 0
-        ) {
-          return true;
-        }
-      }
-    }
-    return false;
-  }
-
   handleFinishContact = contactId => {
     if (this.hasNext()) {
       this.setState({ finishedContactId: null }, () => {
@@ -460,7 +445,6 @@ export class ContactController extends React.Component {
         onFinishContact={this.handleFinishContact}
         refreshData={this.props.refreshData}
         onExitTexter={this.handleExitTexter}
-        messageStatusFilter={this.props.messageStatusFilter}
         organizationId={this.props.organizationId}
         location={this.props.location}
         updateCurrentContactById={this.updateCurrentContactById}
@@ -477,7 +461,7 @@ export class ContactController extends React.Component {
       );
     }
     const initials = messageStatusFilter === "needsMessage";
-    const action = initials ? "messaged" : "replied to";
+    const action = initials ? "messaged" : "messaged and replied to";
     const emptyMessage =
       allContactsCount === 0
         ? "No current contacts"
