@@ -15,6 +15,7 @@ _April 2022:_ Version 12.1
 * Azure deployment documentation
 * Updates to onboarding documentation
 * Automatic TexterTodoList updates (when we have Redis+Postgres)
+* Add GitHub workflow to automatically build Spoke images
 
 ### New features
 * Ability to hide interactions workflow
@@ -22,7 +23,7 @@ _April 2022:_ Version 12.1
 * Features to reduce messaging costs
 
 ### Appreciations
-* [Adam Greenspan](https://github.com/agreenspan24), [Arique Aguilar](https://github.com/Arique110), [Chuck Morris](https://github.com/percworld), [Cody Gordon](https://github.com/codygordon), [Daniel Bond](https://github.com/dwbond), [Eric Mayefsky](https://github.com/mayefsky), [Ilona Brand](https://github.com/ibrand), [Kathy Nguyen](https://github.com/crayolakat), [Nolan Caine](https://github.com/n0land0), [Peter Murphy](https://github.com/peterkmurphy), [Schulyer Duveen](https://github.com/schuyler1d), and Harold Travis and Mark Houghton for QA
+* [Adam Greenspan](https://github.com/agreenspan24), [Arique Aguilar](https://github.com/Arique110), [Chuck Morris](https://github.com/percworld), [Cody Gordon](https://github.com/codygordon), [Daniel Bond](https://github.com/dwbond), [Eric Mayefsky](https://github.com/mayefsky), [Ilona Brand](https://github.com/ibrand), [Kathy Nguyen](https://github.com/crayolakat), [Noah Williams](https://github.com/noahsbwilliams), [Nolan Caine](https://github.com/n0land0), [Peter Murphy](https://github.com/peterkmurphy), [Schulyer Duveen](https://github.com/schuyler1d), and Harold Travis and Mark Houghton for QA
 
 ## v12.0
 
