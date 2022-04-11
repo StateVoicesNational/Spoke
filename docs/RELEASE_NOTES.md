@@ -10,15 +10,15 @@ _April 2022:_ Version 12.1
 * Fix action handler bugs
 * Delay seeding zip codes until database is created
 * Add error validation to canned responses
+* Fix documentation links
 
 ### Improvements
 * NGP Van user guide
 * Azure deployment documentation
-* Updates to onboarding documentation
+* Updates to onboarding and email configuration documentation
 * Automatic TexterTodoList updates (when we have Redis+Postgres)
 * Add GitHub workflow to automatically build Spoke images
 * Update dependency versions
-* Update email configuration documentation
 
 ### New features
 * Ability to hide interactions workflow
