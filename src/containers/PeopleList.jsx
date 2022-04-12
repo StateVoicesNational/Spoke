@@ -143,8 +143,8 @@ export class PeopleList extends Component {
           whiteSpace: "pre-line"
         }
       });
-      return columns;
     }
+    return columns;
   };
 
   editUser = userId => {
