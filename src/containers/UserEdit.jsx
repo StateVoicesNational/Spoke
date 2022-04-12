@@ -383,25 +383,20 @@ export class UserEditBase extends React.Component {
               </div>
             )}
           <div className={css(styles.buttons)}>
-            {window.PASSPORT_STRATEGY !== "auth0" && (
-              <Form.Submit
-                as={GSSubmitButton}
-                className={css(styles.submit)}
-                label={saveLabel || "Save"}
-              />
+            <Form.Submit
+              as={GSSubmitButton}
+              className={css(styles.submit)}
+              label={saveLabel || "Save"}
+            />
+            {!authType && onCancel && !fieldsNeeded && (
+              <Button
+                className={css(styles.cancel)}
+                variant="outlined"
+                onClick={onCancel}
+              >
+                Cancel
+              </Button>
             )}
-            {!authType &&
-              onCancel &&
-              !fieldsNeeded &&
-              window.PASSPORT_STRATEGY !== "auth0" && (
-                <Button
-                  className={css(styles.cancel)}
-                  variant="outlined"
-                  onClick={onCancel}
-                >
-                  Cancel
-                </Button>
-              )}
           </div>
         </GSForm>
         <div>
