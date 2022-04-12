@@ -186,12 +186,13 @@ export class CampaignContactsFormBase extends React.Component {
         </ListItem>
         <ListItem>
           <ListItemIcon>{this.props.icons.check}</ListItemIcon>
-          <ListItemText primary={`${customFields.length} custom fields`} />
+          <ListItemText primary={`${customFields.length} custom fields:`} />
         </ListItem>
         <List disablePadding>
           {customFields.map((field, index) => (
             <ListItem key={index}>
-              <ListItemText primary={`* ${field}`} />
+              <ListItemIcon>{this.props.icons.info}</ListItemIcon>
+              <ListItemText primary={`${field}`} />
             </ListItem>
           ))}
         </List>
@@ -224,9 +225,9 @@ export class CampaignContactsFormBase extends React.Component {
         {stats.map((stat, index) => (
           <ListItem
             key={index}
-            // leftIcon={this.props.icons.warning}
-            // innerDivStyle={innerStyles.nestedItem}
-            // primaryText={stat}
+            leftIcon={this.props.icons.warning}
+            innerDivStyle={innerStyles.nestedItem}
+            primaryText={stat}
           />
         ))}
       </List>
