@@ -49,13 +49,9 @@ const translateHeader = columnHeader => {
   return columnHeader;
 };
 export const ensureCamelCaseRequiredHeaders = columnHeader => {
-  /*
-   * translates fields from `topLevelUploadFields` that could be in a different syntax
-   */
+  // translates fields from `topLevelUploadFields` that could be in a different syntax
   columnHeader = translateHeader(columnHeader);
-  /*
-   * translates fields from `requiredUploadFields` that could be either snake_case or camelCase
-   */
+  // translates fields from `requiredUploadFields` that could be either snake_case or camelCase
   const camelizedColumnHeader = humps.camelize(columnHeader);
   if (
     Object.values(requiredUploadFields).includes(camelizedColumnHeader) &&
