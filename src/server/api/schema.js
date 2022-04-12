@@ -700,8 +700,6 @@ const rootMutations = {
           throw new Error(err);
         }
       } else {
-        //returns one of the options
-
         // Add date at the end in case user record is modified after password is reset
         const passwordResetHash = uuidv4();
         const auth0_id = `reset|${passwordResetHash}|${Date.now()}`;
