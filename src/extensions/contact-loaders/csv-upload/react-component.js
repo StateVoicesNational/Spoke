@@ -182,7 +182,7 @@ export class CampaignContactsFormBase extends React.Component {
       <List>
         <ListSubheader>
           Confirm with
-          <span className={css(styles.csvHeader)}>SAVE</span> below.
+          <span className={css(this.styles.csvHeader)}>SAVE</span> below.
         </ListSubheader>
         <ListItem>
           <ListItemIcon>{this.props.icons.check}</ListItemIcon>
