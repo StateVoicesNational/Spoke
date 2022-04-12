@@ -666,7 +666,6 @@ const rootMutations = {
 
       const passportStrategy = getConfig("PASSPORT_STRATEGY", organization);
       if (passportStrategy === "auth0") {
-        // BEGINNING
         const { email } = await r
           .knex("user")
           .select("email")
