@@ -129,20 +129,22 @@ export class PeopleList extends Component {
         }
       }
     ];
-    columns.push({
-      key: "password",
-      name: "",
-      options: {
-        customBodyRender: this.renderChangePasswordButton
-      },
-      label: "",
-      style: {
-        textOverflow: "ellipsis",
-        overflow: "hidden",
-        whiteSpace: "pre-line"
-      }
-    });
-    return columns;
+    if (window.PASSPORT_STRATEGY !== "slack") {
+      columns.push({
+        key: "password",
+        name: "",
+        options: {
+          customBodyRender: this.renderChangePasswordButton
+        },
+        label: "",
+        style: {
+          textOverflow: "ellipsis",
+          overflow: "hidden",
+          whiteSpace: "pre-line"
+        }
+      });
+      return columns;
+    }
   };
 
   editUser = userId => {
