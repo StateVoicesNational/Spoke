@@ -27,6 +27,29 @@ import CampaignFormSectionHeading from "../../../components/CampaignFormSectionH
 import { dataTest } from "../../../lib/attributes";
 import withMuiTheme from "../../../containers/hoc/withMuiTheme";
 
+const translateHeader = columnHeader => {
+  switch (true) {
+    case topLevelUploadFields.firstName.includes(humps.camelize(columnHeader)):
+      columnHeader = "firstName";
+      break;
+    case topLevelUploadFields.lastName.includes(humps.camelize(columnHeader)):
+      columnHeader = "lastName";
+      break;
+    case topLevelUploadFields.cell.includes(humps.camelize(columnHeader)):
+      columnHeader = "cell";
+      break;
+    case topLevelUploadFields.zip.includes(humps.camelize(columnHeader)):
+      columnHeader = "zip";
+      break;
+    case topLevelUploadFields.external_id.includes(
+      humps.camelize(columnHeader)
+    ):
+      columnHeader = "external_id";
+      break;
+  }
+  return columnHeader;
+};
+
 export const ensureCamelCaseRequiredHeaders = columnHeader => {
   // translates fields from `topLevelUploadFields` that could be in a different syntax
   columnHeader = translateHeader(columnHeader);
