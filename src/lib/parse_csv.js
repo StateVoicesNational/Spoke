@@ -70,7 +70,6 @@ const getValidatedData = data => {
   const invalidCellRows = result[1];
 
   const count = validatedData.length;
-  //Below unfortunately creates dupes for same zip
   validatedData = _.uniqBy(validatedData, row => row.cell);
   const dupeCount = count - validatedData.length;
 
