@@ -148,6 +148,27 @@ export const resolvers = {
           getConfig("ALLOW_SEND_ALL", organization, { truthy: 1 }) &&
           getFeatures(organization).ALLOW_SEND_ALL_ENABLED
       ),
+    theme: async organization => {
+      const themeOptions = {
+        palette: {
+          type: "light",
+          primary: {
+            main: "#209556"
+          },
+          secondary: {
+            main: "#555555"
+          },
+          warning: {
+            main: "#fabe28"
+          },
+          info: {
+            main: "#3f80b2"
+          }
+        }
+      };
+      // return themeOptions;
+      return getFeatures(organization).theme || themeOptions;
+    },
     settings: async (organization, _, { user, loaders }) => {
       try {
         await accessRequired(user, organization.id, "OWNER", true);

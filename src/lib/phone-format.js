@@ -32,8 +32,10 @@ export const getDisplayPhoneNumber = (e164Number, country = "US") => {
 
 export const getDashedPhoneNumberDisplay = (e164Number, country = "US") => {
   const parsed = parsePhoneNumber(e164Number, country);
-  return parsed.getNationalNumber().toString()
-    .replace(/(\d{3})(\d{3})(\d{4})/, '$1-$2-$3');
+  return parsed
+    .getNationalNumber()
+    .toString()
+    .replace(/(\d{3})(\d{3})(\d{4})/, "$1-$2-$3");
 };
 
 export const getCountryCode = (e164Number, country = "US") => {
