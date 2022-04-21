@@ -1,9 +1,9 @@
 import type from "prop-types";
 import React from "react";
-import GSForm from "../../../components/forms/GSForm";
-import GSTextField from "../../../components/forms/GSTextField";
-import GSSubmitButton from "../../../components/forms/GSSubmitButton";
 import Form from "react-formal";
+import { StyleSheet, css } from "aphrodite";
+import * as yup from "yup";
+import { compose } from "recompose";
 
 import List from "@material-ui/core/List";
 import ListItem from "@material-ui/core/ListItem";
@@ -11,9 +11,10 @@ import ListItemIcon from "@material-ui/core/ListItemIcon";
 import ListItemText from "@material-ui/core/ListItemText";
 import Button from "@material-ui/core/Button";
 
-import theme from "../../../styles/theme";
-import { StyleSheet, css } from "aphrodite";
-import * as yup from "yup";
+import GSForm from "../../../components/forms/GSForm";
+import GSTextField from "../../../components/forms/GSTextField";
+import GSSubmitButton from "../../../components/forms/GSSubmitButton";
+import withMuiTheme from "../../../containers/hoc/withMuiTheme";
 
 const innerStyles = {
   button: {
@@ -25,25 +26,25 @@ const innerStyles = {
   }
 };
 
-const styles = StyleSheet.create({
-  csvHeader: {
-    fontFamily: "Courier",
-    backgroundColor: theme.colors.lightGray,
-    padding: 3
-  },
-  exampleImageInput: {
-    cursor: "pointer",
-    position: "absolute",
-    top: 0,
-    bottom: 0,
-    right: 0,
-    left: 0,
-    width: "100%",
-    opacity: 0
-  }
-});
+export class CampaignContactsFormBase extends React.Component {
+  styles = StyleSheet.create({
+    csvHeader: {
+      fontFamily: "Courier",
+      backgroundColor: this.props.muiTheme.palette.action.hover,
+      padding: 3
+    },
+    exampleImageInput: {
+      cursor: "pointer",
+      position: "absolute",
+      top: 0,
+      bottom: 0,
+      right: 0,
+      left: 0,
+      width: "100%",
+      opacity: 0
+    }
+  });
 
-export class CampaignContactsForm extends React.Component {
   constructor(props) {
     super(props);
     const { lastResult } = props;
@@ -111,7 +112,9 @@ export class CampaignContactsForm extends React.Component {
       <div>
         {results.errors && (
           <div>
-            <h4 style={{ color: theme.colors.red }}>Previous Errors</h4>
+            <h4 style={{ color: this.props.muiTheme.palette.error.main }}>
+              Previous Errors
+            </h4>
             <List>
               {results.errors.map(e => (
                 <ListItem key={e}>
@@ -148,18 +151,20 @@ export class CampaignContactsForm extends React.Component {
                 <li>Do not include a trailing (or any) semicolon</li>
                 <li>
                   Three columns are necessary:
-                  <span className={css(styles.csvHeader)}>first_name</span>,
-                  <span className={css(styles.csvHeader)}>last_name</span>,
-                  <span className={css(styles.csvHeader)}>cell</span>,
+                  <span className={css(this.styles.csvHeader)}>first_name</span>
+                  ,<span className={css(this.styles.csvHeader)}>last_name</span>
+                  ,<span className={css(this.styles.csvHeader)}>cell</span>,
                 </li>
                 <li>
                   Optional fields are:
-                  <span className={css(styles.csvHeader)}>zip</span>,
-                  <span className={css(styles.csvHeader)}>external_id</span>
+                  <span className={css(this.styles.csvHeader)}>zip</span>,
+                  <span className={css(this.styles.csvHeader)}>
+                    external_id
+                  </span>
                 </li>
                 <li>
                   Make sure you make those names exactly possibly requiring an
-                  <span className={css(styles.csvHeader)}>
+                  <span className={css(this.styles.csvHeader)}>
                     as field_name
                   </span>{" "}
                   sometimes.
@@ -206,7 +211,7 @@ export class CampaignContactsForm extends React.Component {
   }
 }
 
-CampaignContactsForm.propTypes = {
+CampaignContactsFormBase.propTypes = {
   onChange: type.func,
   onSubmit: type.func,
   campaignIsStarted: type.bool,
@@ -219,3 +224,7 @@ CampaignContactsForm.propTypes = {
   clientChoiceData: type.string,
   jobResultMessage: type.string
 };
+
+const CampaignContactsForm = compose(withMuiTheme)(CampaignContactsFormBase);
+
+export { CampaignContactsForm };
