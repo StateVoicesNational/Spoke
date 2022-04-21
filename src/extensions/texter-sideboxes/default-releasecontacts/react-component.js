@@ -38,7 +38,8 @@ export const showSidebox = ({
       settingsData.releaseContactsNonDynamicToo) &&
     (assignment.hasContacts || assignment.allContactsCount) &&
     (settingsData.releaseContactsReleaseConvos ||
-      (contact.messageStatus === "needsMessage" &&
+      (contact &&
+        contact.messageStatus === "needsMessage" &&
         assignment.unmessagedCount) ||
       (isSummary && assignment.unmessagedCount))
   );
