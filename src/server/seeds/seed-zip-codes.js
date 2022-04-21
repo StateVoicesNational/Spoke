@@ -5,7 +5,12 @@ import fs from "fs";
 
 export async function seedZipCodes() {
   log.info("Checking if zip code is needed");
-  const hasZip = await r.getCount(r.knex("zip_code").limit(1));
+  let hasZip;
+  try {
+    hasZip = await r.getCount(r.knex("zip_code").limit(1));
+  } catch (err) {
+    return log.warn("zip_code table doesn't exist!");
+  }
 
   if (!hasZip) {
     log.info("Starting to seed zip codes");

@@ -49,12 +49,12 @@ Additionally, you can enable a Spoke setting MESSAGE_HANDLERS=auto-optout (not d
 
 The default set of phrases that automatically opt-out the contact include (single words are activated only if the text begins with that word):
 
-   stop, unsubscribe, cancel, end, quit, remove me, remove my name, take me off the list, lose my number, delete my number
+   stop, remove me, remove my name, take me off the list, lose my number, don't contact me, delete my number, I opt out, stop2quit, stopall, unsubscribe, cancel, end, quit
 
 
 You can modify what triggers an auto-optout by preparing JSON in the following structure and then running in a node.js prompt Buffer.from(jsonString).toString(‘base64’) and setting the value of AUTO_OPTOUT_REGEX_LIST_BASE64 to that. (make sure it is valid json and valid regular expressions!).  The default setting is:
     ```
-    [{"regex": "^\\\\s*stop\\\\b|\\\\bremove me\\\\s*$|remove my name|\\\\btake me off th\\\\w+ list|\\\\blose my number|delete my number|^\\\\s*unsubscribe\\\\s*$|^\\\\s*cancel\\\\s*$|^\\\\s*end\\\\s*$|^\\\\s*quit\\\\s*$", "reason": "stop"}]
+    [{"regex": "^\\s*stop\\b|\\bremove me\\s*$|remove my name|\\btake me off th\\w+ list|\\blose my number|don\\W?t contact me|delete my number|I opt out|stop2quit|stopall|^\\s*unsubscribe\\s*$|^\\s*cancel\\s*$|^\\s*end\\s*$|^\\s*quit\\s*$", "reason": "stop"}]
     ```
 
 You can add multiple objects in the array to match different reasons. The default Spoke install does not include all the phrases MoveOn uses to trigger an auto-optout -- we also include offensive/hostile phrases, for example.
