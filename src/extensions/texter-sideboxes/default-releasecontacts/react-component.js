@@ -67,13 +67,14 @@ export class TexterSideboxClass extends React.Component {
     const { contact, settingsData, assignment } = this.props;
     const showReleaseConvos =
       settingsData.releaseContactsReleaseConvos &&
-      (contact.messageStatus !== "needsMessage" ||
+      ((contact && contact.messageStatus !== "needsMessage") ||
         assignment.unrepliedCount ||
         assignment.hasUnreplied);
     return (
       <div>
         {assignment.unmessagedCount ||
-        (contact.messageStatus === "needsMessage" &&
+        (contact &&
+          contact.messageStatus === "needsMessage" &&
           assignment.hasUnmessaged) ? (
           <div className={css(styles.marginBottom)}>
             <div>
