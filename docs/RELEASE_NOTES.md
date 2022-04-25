@@ -13,6 +13,7 @@ _April 2022:_ Version 12.1
 * Fix documentation links
 * Fix bugs when viewing all messages
 * Fix wrong message sending in bulk send
+* Fix "Bulk Send" button display
 
 ### Improvements
 * NGP Van user guide
