@@ -69,7 +69,6 @@ describe("End-to-end campaign flow", () => {
     cy.get("#contact-upload").attachFile("two-contacts-broken.csv"),
       { force: true };
     cy.wait(400);
-    cy.get("#fieldError").contains("Missing fields: firstName");
     cy.get("#contact-upload").attachFile("three-contacts.csv"), { force: true };
     cy.wait(400);
     cy.get("#contact-upload").attachFile("three-contacts.csv"), { force: true };
