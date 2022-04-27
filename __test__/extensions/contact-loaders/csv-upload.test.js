@@ -222,10 +222,6 @@ describe("ingest-contact-loader method: csv-upload frontend", async () => {
     expect(component.state.contactUploadError).toBe(
       "Missing fields: firstName"
     );
-    //verified it's visible in interface in Cypress test
-    // expect(wrapper.find("#fieldError").prop("primary")).toBe(
-    //   "Missing fields: firstName"
-    // );
   });
   it("csv-upload:component loads into CampaignContactsChoiceForm", async () => {
     const methodChoices = [
