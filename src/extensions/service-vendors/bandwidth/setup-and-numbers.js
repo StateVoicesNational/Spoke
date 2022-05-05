@@ -1,5 +1,4 @@
 import { createHmac } from "crypto";
-import remove from "lodash/remove";
 
 import BandwidthNumbers from "@bandwidth/numbers";
 import BandwidthMessaging from "@bandwidth/messaging";
