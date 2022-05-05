@@ -24,7 +24,7 @@ const organizationContactCache = {
       })
       .first();
 
-    if (r.redis) {
+    if (r.redis && organizationContact) {
       await r.redis
         .multi()
         .set(cacheKey, JSON.stringify(organizationContact))
