@@ -194,6 +194,10 @@ export const resolvers = {
       JobRequest
     )
   },
+  CannedResponseStats: {
+    cannedResponse: {}
+  },
+
   CampaignStats: {
     sentMessagesCount: async (campaign, _, { user }) => {
       await accessRequired(
@@ -668,6 +672,15 @@ export const resolvers = {
         })
         .limit(1);
       return contacts.length > 0;
+    },
+    cannedResponseSends: async campaign => {
+      cannedResponse: async (campaign, { userId }, { user }) => {
+        await accessRequired(user, campaign.organization_id, "TEXTER", true);
+        return await cacheableData.cannedResponse.query({
+          userId: userId || "",
+          campaignId: campaign.id
+        });
+      };
     },
     customFields: async campaign =>
       campaign.customFields ||

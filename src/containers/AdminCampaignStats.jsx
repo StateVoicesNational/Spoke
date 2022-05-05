@@ -112,7 +112,7 @@ class AdminCampaignStats extends React.Component {
       if (step.question === "") {
         return <div key={step.id}></div>;
       }
-
+      debugger;
       const totalResponseCount = step.question.answerOptions.reduce(
         (prev, answer) => prev + answer.responderCount,
         0
@@ -509,6 +509,11 @@ const queries = {
                 value
                 responderCount
               }
+            }
+          }
+          cannedResponseSends {
+            cannedResponse {
+              id
             }
           }
           contactsCount

@@ -43,6 +43,11 @@ export const schema = gql`
     needsResponseCount: Int
   }
 
+  type CannedResponseStats {
+    cannedResponse: [CannedResponse]
+    cannedResponseCount: Int
+  }
+
   type IngestMethod {
     name: String!
     displayName: String
@@ -112,6 +117,7 @@ export const schema = gql`
     hasUnsentInitialMessages: Boolean
     customFields: [String]
     cannedResponses(userId: String): [CannedResponse]
+    cannedResponseSends: CannedResponseStats
     texterUIConfig: TexterUIConfig
     stats: CampaignStats
     completionStats: CampaignCompletionStats
