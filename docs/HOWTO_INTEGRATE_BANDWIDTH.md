@@ -2,7 +2,7 @@
 
 Bandwidth.com is a telephone service API company. To use Bandwidth, set `DEFAULT_SERVICE=bandwidth`. The `sticky-sender` and `num-picker` service managers are required for the Bandwidth extension to work. `sticky-sender` must come before `numpicker-basic` in the `SERVICE_MANAGERS` environment variable.
 
-For setting up a development environment with Bandwidth, first read [this section](#Local-Development-Instructions-with-ngrok).
+For setting up a development environment with Bandwidth, first read [this section](HOWTO_DEVELOPMENT_LOCAL_SETUP.md).
 
 
 ## Bandwidth Instructions
