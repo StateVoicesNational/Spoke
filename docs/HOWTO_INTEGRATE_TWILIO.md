@@ -8,11 +8,7 @@ You will need to create a Twilio account in order to test outgoing and incoming 
 ### Note on Using Heroku or AWS Lambda
 > If you are using these instructions for an Heroku instance or AWS Lambda instance, replace references to <YOUR_APP_URL> with your actual app url (i.e. examplespokeapp.herokuapp.com ), and skip step 1.
 
-1. If you are using these instructions for development (not Heroku), you can use [ngrok](https://ngrok.com/docs) to allow Twilio to communicate with Spoke.
-  - Create an ngrok account: https://ngrok.com/
-  - For a paid ngrok account, a reasonable command line for `ngrok` is `ngrok http -subdomain=<UNIQUE_NAME> 3000` (Replace <UNIQUE_NAME> with something likely to be globally unique. Use the same <UNIQUE_NAME> each time you start ngrok. If you use a different <UNIQUE_NAME> it will be necessary to change the configuration in Twilio and in your .env file.)
-  - For a free ngrok account, ngrok can be started with `ngrok http 3000` (Because a free account receives a different, randomly-assigned URL every time ngrok is started, it will be necessary to change the configuration in Twilio and in your .env file each time.)
-  - When you start `ngrok`, it will display the external-facing app URL. Use that below to replace <YOUR_APP_URL>
+1. If you are using these instructions for development (not Heroku), you can use [ngrok](https://ngrok.com/docs) to allow Twilio to communicate with Spoke. Follow the instructions in [this section](HOWTO_DEVELOPMENT_LOCAL_SETUP.md#ngrok) and use the ngrok external-facing app URL below to replace `<YOUR_APP_URL>`
 2. Create a Twilio acccount: https://www.twilio.com/ _If your organization is a non-profit organization, you may also apply for complementary twilio credits at [Twilio.org](https://www.twilio.org/application)_
 3. Click on `Programmable SMS` on the side panel
 4. Click on `Messaging Services`, and click `Create Messaging Service`
