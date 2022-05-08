@@ -195,7 +195,6 @@ export async function postMessageSend({
   } else {
     // ERROR
     changesToSave.send_status = "ERROR";
-    // TODO: maybe there is sometimes an error response in the JSON?
     changesToSave.error_code = response.statusCode;
     organizationContact.last_error_code = response.statusCode;
   }
