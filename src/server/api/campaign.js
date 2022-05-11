@@ -486,6 +486,10 @@ export const resolvers = {
               "campaign_contact.assignment_id",
               "assignment.id"
             )
+            .where(
+              "user_organization.organization_id",
+              campaign.organization_id
+            )
             .select(
               ...fields,
               r.knex.raw(
