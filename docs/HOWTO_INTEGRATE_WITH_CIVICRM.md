@@ -49,7 +49,7 @@ Modify your Spoke .env file to include the following environment variables:
   (eg. <https://example.com/sites/all/modules/civicrm/extern/rest.php>)
 - CIVICRM_API_KEY - the key you generated in step one
 - CIVICRM_SITE_KEY - the site key for your CiviCRM installation. Defined in your `civicrm.settings.php` file ([more info](https://docs.civicrm.org/sysadmin/en/latest/setup/secret-keys/)).
-- ACTION_HANDLERS - add `civicrm-addtogroup`, `civicrm-addtag`, `civicrm-registerevent` and `civicrm-sendemail to enable the particular handlers of interest
+- ACTION_HANDLERS - add `civicrm-addtogroup`, `civicrm-addtag`, `civicrm-registerevent` and `civicrm-sendemail` to enable the particular handlers of interest
 - SERVICE_MANAGERS - add `civicrm-donotsms` to the comma-separated list
 
 ## Optional contact loader configuration
@@ -108,7 +108,7 @@ However, this can be changed by adding a `CIVICRM_CACHE_LENGTHS` environmental v
 all CiviCRM action handlers on one line, but only for the loader and/or handlers you choose. This
 uses the same "comma-separated list of entity names (without spaces)" syntax as used for the
 `CIVICRM_CUSTOM_CONTACT_ACTION` variable; the values after the colons are lengths in seconds.
-Any contact loader or action handles not listed default to 1 hour of cache time. An example of this
+Any contact loader or action handlers not listed default to 1 hour of cache time. An example of this
 is:
 
 ```

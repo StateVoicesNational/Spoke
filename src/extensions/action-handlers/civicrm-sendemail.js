@@ -87,17 +87,6 @@ export async function processAction({
     .value;
 
   await sendEmailToContact(civiContactId, destinationTemplateId);
-
-  const customFields = JSON.parse(contact.custom_fields || "{}");
-  customFields.processed_test_action = (interactionStep || {}).answer_actions;
-  customFields.test_action_details = (
-    interactionStep || {}
-  ).answer_actions_data;
-
-  await r
-    .knex("campaign_contact")
-    .where("campaign_contact.id", campaignContactId)
-    .update("custom_fields", JSON.stringify(customFields));
 }
 
 // What happens when a texter remotes an answer that triggers the action
