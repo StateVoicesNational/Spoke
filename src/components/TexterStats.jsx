@@ -61,7 +61,7 @@ class TexterStats extends React.Component {
     if (unrepliedCount) {
       bottomLinks.push(
         <span>
-          {unrepliedCount} contact{unrepliedCount > 1 && "s"}{" "}
+          {unrepliedCount} contact{unrepliedCount > 1 ? "s " : " "}
           <Link
             component={RouterLink}
             to={`/admin/${this.props.organizationId}/incoming?campaigns=${campaign.id}&texterId=${texter.id}&messageStatus=needsResponse`}
