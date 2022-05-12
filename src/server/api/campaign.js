@@ -256,7 +256,9 @@ export const resolvers = {
         .select("error_code", r.knex.raw("count(*) as error_count"))
         .groupBy("error_code")
         .orderByRaw("count(*) DESC");
-      const organization = loaders.organization.load(campaign.organization_id);
+      const organization = await loaders.organization.load(
+        campaign.organization_id
+      );
       return errorCounts.map(e => ({
         ...errorDescription(
           e.error_code,
