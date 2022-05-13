@@ -31,6 +31,7 @@ import { getServiceVendorComponent } from "../../extensions/service-vendors/comp
 import { getServiceManagerComponent } from "../../extensions/service-managers/components";
 import GSTextField from "../../components/forms/GSTextField";
 import ThemeEditor from "./themeEditor";
+import ExtensionSettings from "../../components/ExtensionSettings";
 
 const styles = StyleSheet.create({
   section: {
@@ -115,7 +116,11 @@ class Settings extends React.Component {
     return (
       <Dialog
         maxWidth="md"
-        open={!!this.state.textingHoursDialogOpen}
+        open={
+          this.state.textingHoursDialogOpen === undefined
+            ? false
+            : this.state.textingHoursDialogOpen
+        }
         onClose={this.handleCloseTextingHoursDialog}
       >
         <DialogContent>
@@ -404,50 +409,51 @@ class Settings extends React.Component {
               </Collapse>
             </Card>
           )}
-        {this.props.data.organization && this.props.data.organization.settings && (
-          <Card>
-            <CardHeader
-              title="Overriding default settings"
-              style={this.getCardHeaderStyle()}
-              action={
-                <IconButton>
-                  <ExpandMoreIcon />
-                </IconButton>
-              }
-              onClick={() =>
-                this.setState({
-                  OverridingDefaultSettings: !this.state
-                    .OverridingDefaultSettings
-                })
-              }
-            />
-            <Collapse
-              in={this.state.OverridingDefaultSettings}
-              timeout="auto"
-              unmountOnExit
-            >
-              <CardContent>
-                <OrganizationFeatureSettings
-                  formValues={this.props.data.organization}
-                  organization={this.props.data.organization}
-                  onSubmit={async () => {
-                    const { settings } = this.state;
-                    await this.props.mutations.editOrganization({
-                      settings
-                    });
-                    this.setState({ settings: null });
-                  }}
-                  onChange={formValues => {
-                    console.log("change", formValues);
-                    this.setState(formValues);
-                  }}
-                  saveLabel="Save settings"
-                  saveDisabled={!this.state.settings}
-                />
-              </CardContent>
-            </Collapse>
-          </Card>
-        )}
+        {this.props.data.organization &&
+          this.props.data.organization.defaultSettings && (
+            <Card>
+              <CardHeader
+                title="Overriding default settings"
+                style={this.getCardHeaderStyle()}
+                action={
+                  <IconButton>
+                    <ExpandMoreIcon />
+                  </IconButton>
+                }
+                onClick={() =>
+                  this.setState({
+                    OverridingDefaultSettings: !this.state
+                      .OverridingDefaultSettings
+                  })
+                }
+              />
+              <Collapse
+                in={this.state.OverridingDefaultSettings}
+                timeout="auto"
+                unmountOnExit
+              >
+                <CardContent>
+                  <OrganizationFeatureSettings
+                    formValues={this.props.data.organization}
+                    organization={this.props.data.organization}
+                    onSubmit={async () => {
+                      const { settings } = this.state;
+                      await this.props.mutations.editOrganization({
+                        settings
+                      });
+                      this.setState({ settings: null });
+                    }}
+                    onChange={formValues => {
+                      console.log("change", formValues);
+                      this.setState(formValues);
+                    }}
+                    saveLabel="Save Default Settings"
+                    saveDisabled={!this.state.settings}
+                  />
+                </CardContent>
+              </Collapse>
+            </Card>
+          )}
 
         {this.props.data.organization && this.props.params.adminPerms && (
           <Card>
@@ -512,11 +518,18 @@ const queries = {
           textingHoursStart
           textingHoursEnd
           optOutMessage
-          settings {
-            messageHandlers
-            actionHandlers
+          defaultSettings {
             featuresJSON
             unsetFeatures
+          }
+          extensionSettings {
+            savedMessageHandlers
+            savedActionHandlers
+            savedContactLoaders
+            allowedMessageHandlers
+            allowedActionHandlers
+            allowedContactLoaders
+            handlerDisplayInformation
           }
           texterUIConfig {
             options

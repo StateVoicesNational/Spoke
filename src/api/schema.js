@@ -103,7 +103,8 @@ const rootSchema = gql`
 
   input OrganizationInput {
     texterUIConfig: TexterUIConfigInput
-    settings: OrgSettingsInput
+    defaultSettings: DefaultSettingsInput
+    extensionSettings: ExtensionSettingsInput
   }
 
   input MessageInput {

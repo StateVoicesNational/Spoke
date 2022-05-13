@@ -11,55 +11,6 @@ import FormControlLabel from "@material-ui/core/FormControlLabel";
 import Switch from "@material-ui/core/Switch";
 
 const configurableFields = {
-  ACTION_HANDLERS: {
-    ready: false, // TODO: let's wait for better interface
-    schema: ({ formValues }) =>
-      formValues.settings.actionHandlers
-        ? yup
-            .string()
-            .test(
-              "comma-separated-handlers",
-              "Must be a comma-separated list without spaces of action handlers.",
-              value => {
-                if (!value) {
-                  return true;
-                }
-                const handlers = value.split(",");
-                for (let i = 0; i < handlers.length; i++) {
-                  if (
-                    formValues.settings.actionHandlers.indexOf(handlers[i]) ===
-                    -1
-                  ) {
-                    return false;
-                  }
-                }
-                return true;
-              }
-            )
-        : yup.string(),
-    component: props => {
-      // maybe show the list and then validate
-      return (
-        <div key={props.key}>
-          <Form.Field
-            as={GSTextField}
-            label="Action Handlers (comma-separated)"
-            name="ACTION_HANDLERS"
-            fullWidth
-          />
-          <div style={{ padding: "8px" }}>
-            This should be a comma-separated list without spaces of the
-            available handlers.
-            <br />
-            Available handlers:
-            {props.formValues.settings.actionHandlers.map(h => (
-              <code> {h}</code>
-            ))}
-          </div>
-        </div>
-      );
-    }
-  },
   ALLOW_SEND_ALL_ENABLED: {
     schema: () => yup.boolean(),
     ready: true,
@@ -230,8 +181,8 @@ export default class OrganizationFeatureSettings extends React.Component {
     super(props);
     const { formValues } = this.props;
     const settingsData =
-      (formValues.settings.featuresJSON &&
-        JSON.parse(formValues.settings.featuresJSON)) ||
+      (formValues.defaultSettings.featuresJSON &&
+        JSON.parse(formValues.defaultSettings.featuresJSON)) ||
       {};
     this.state = { ...settingsData, unsetFeatures: [] };
     // expects a boolean
@@ -239,10 +190,9 @@ export default class OrganizationFeatureSettings extends React.Component {
   }
 
   onChange = formValues => {
-    console.log("onChange", formValues);
     this.setState(formValues, () => {
       this.props.onChange({
-        settings: {
+        defaultSettings: {
           featuresJSON: JSON.stringify(this.state),
           unsetFeatures: this.state.unsetFeatures
         }
@@ -254,7 +204,7 @@ export default class OrganizationFeatureSettings extends React.Component {
     console.log("toggleChange", key, value);
     this.setState({ [key]: value }, newData => {
       this.props.onChange({
-        settings: {
+        defaultSettings: {
           featuresJSON: JSON.stringify(this.state),
           unsetFeatures: this.state.unsetFeatures
         }
@@ -288,6 +238,7 @@ export default class OrganizationFeatureSettings extends React.Component {
           {adminItems}
           <Form.Submit
             as={GSSubmitButton}
+            key="OFS-submit"
             label={this.props.saveLabel}
             disabled={this.props.saveDisabled}
             {...dataTest("submitOrganizationFeatureSettings")}
