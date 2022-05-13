@@ -7,7 +7,7 @@ import moment from "moment";
 import * as yup from "yup";
 import { StyleSheet, css } from "aphrodite";
 import { compose } from "recompose";
-
+import { ToggleButton } from "@material-ui/lab";
 import Dialog from "@material-ui/core/Dialog";
 import DialogContent from "@material-ui/core/DialogContent";
 import Switch from "@material-ui/core/Switch";
@@ -454,47 +454,42 @@ class Settings extends React.Component {
               </Collapse>
             </Card>
           )}
-
-        {this.props.data.organization && this.props.params.adminPerms && (
+        ) : null}
+        {organization &&
+        organization.extensionSettings &&
+        (organization.extensionSettings.allowedActionHandlers.length > 0 ||
+          organization.extensionSettings.allowedMessageHandlers.length > 0 ||
+          organization.extensionSettings.allowedContactLoaders.length > 0) ? (
           <Card>
             <CardHeader
-              title="External configuration"
-              style={this.getCardHeaderStyle()}
-              action={
-                <IconButton>
-                  <ExpandMoreIcon />
-                </IconButton>
-              }
-              onClick={() =>
-                this.setState({
-                  ExternalConfiguration: !this.state.ExternalConfiguration
-                })
-              }
+              title="Extension Setting"
+              style={{ backgroundColor: theme.colors.green }}
             />
-            <Collapse
-              in={this.state.ExternalConfiguration}
-              timeout="auto"
-              unmountOnExit
-            >
-              <CardContent>
-                <h2>DEBUG Zone</h2>
-                <p>
-                  Only take actions here if you know what you&rsquo;re doing
-                </p>
-                <Button
-                  color="secondary"
-                  variant="outlined"
-                  style={this.inlineStyles.dialogButton}
-                  onClick={
-                    this.props.mutations.clearCachedOrgAndExtensionCaches
-                  }
-                >
-                  Clear Cached Organization And Extension Caches
-                </Button>
-              </CardContent>
-            </Collapse>
+            <CardText>
+              <ExtensionSettings
+                formValues={this.props.data.organization}
+                organization={this.props.data.organization}
+                onSubmit={async () => {
+                  const { extensionSettings } = this.state;
+                  await this.props.mutations.editOrganization({
+                    extensionSettings: {
+                      ...extensionSettings,
+                      allowedMessageHandlers: [],
+                      allowedActionHandlers: [],
+                      allowedContactLoaders: []
+                    }
+                  });
+                  this.setState({ extensionSettings: null });
+                }}
+                onChange={formValues => {
+                  this.setState(formValues);
+                }}
+                saveLabel="Save Extensions"
+                saveDisabled={!this.state.extensionSettings}
+              />
+            </CardText>
           </Card>
-        )}
+        ) : null}
       </div>
     );
   }
@@ -568,11 +563,17 @@ export const editOrganizationGql = gql`
   ) {
     editOrganization(id: $organizationId, organization: $organizationChanges) {
       id
-      settings {
-        messageHandlers
-        actionHandlers
+      defaultSettings {
         featuresJSON
         unsetFeatures
+      }
+      extensionSettings {
+        savedMessageHandlers
+        savedActionHandlers
+        savedContactLoaders
+        allowedMessageHandlers
+        allowedActionHandlers
+        allowedContactLoaders
       }
       texterUIConfig {
         options
@@ -618,13 +619,15 @@ export const updateServiceManagerGql = gql`
 `;
 
 const mutations = {
-  editOrganization: ownProps => organizationChanges => ({
-    mutation: editOrganizationGql,
-    variables: {
-      organizationId: ownProps.params.organizationId,
-      organizationChanges
-    }
-  }),
+  editOrganization: ownProps => organizationChanges => {
+    return {
+      mutation: editOrganizationGql,
+      variables: {
+        organizationId: ownProps.params.organizationId,
+        organizationChanges
+      }
+    };
+  },
   updateTextingHours: ownProps => (textingHoursStart, textingHoursEnd) => ({
     mutation: gql`
       mutation updateTextingHours(
