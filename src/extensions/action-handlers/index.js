@@ -206,6 +206,24 @@ export async function getActionChoiceData(actionHandler, organization, user) {
   }
   return items || [];
 }
+export function getHandlerDisplayName(name) {
+  try {
+    return require(`./${name}.js`).displayName();
+  } catch (exception) {
+    return "";
+  }
+}
+
+console.log();
+
+export function getHandlerDescription(name) {
+  try {
+    const serverAdministratorInstructions = require(`./${name}.js`).serverAdministratorInstructions();
+    return serverAdministratorInstructions.description;
+  } catch (exception) {
+    return "";
+  }
+}
 
 export const clearCacheForOrganization = async organizationId => {
   if (!r.redis) {
