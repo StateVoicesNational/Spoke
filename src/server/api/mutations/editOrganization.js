@@ -13,27 +13,29 @@ export const editOrganization = async (_, { id, organization }, { user }) => {
   if (organization.texterUIConfig) {
     // update texterUIConfig
     features.TEXTER_UI_SETTINGS = organization.texterUIConfig.options;
-    changes["features"] = features;
   }
 
-  if (organization.settings) {
-    const { unsetFeatures, featuresJSON } = organization.settings;
+  if (organization.defaultSettings) {
+    const { unsetFeatures, featuresJSON } = organization.defaultSettings;
     const newFeatureValues = JSON.parse(featuresJSON);
     getAllowed(orgRecord, user).forEach(f => {
-      if (
-        newFeatureValues.hasOwnProperty(f) &&
-        // don't save default values that aren't already overridden
-        (features.hasOwnProperty(f) || getConfig(f) != newFeatureValues[f])
-      ) {
-        features[f] = newFeatureValues[f];
+      // don't save default values that aren't already overridden
+      if (newFeatureValues.hasOwnProperty(f) && !unsetFeatures.includes(f)) {
+        features.DEFAULT_SETTINGS[f] = newFeatureValues[f];
       }
     });
-    unsetFeatures.forEach(f => {
-      delete features[f];
-    });
-    changes["features"] = features;
   }
 
+  if (organization.extensionSettings) {
+    const updatedExtensionSettings = {
+      MESSAGE_HANDLERS: organization.extensionSettings.savedMessageHandlers.join(),
+      ACTION_HANDLERS: organization.extensionSettings.savedActionHandlers.join(),
+      CONTACT_LOADERS: organization.extensionSettings.savedContactLoaders.join()
+    };
+    features.EXTENSION_SETTINGS = updatedExtensionSettings;
+  }
+
+  changes.features = features;
   if (Object.keys(changes).length) {
     if (changes.features) {
       changes.features = JSON.stringify(changes.features);
