@@ -1,6 +1,9 @@
 import { getConfig } from "../../../server/api/lib/config";
 import { r, cacheableData } from "../../../server/models";
 
+export function displayName() {
+  return "Profanity Tagger";
+}
 // Besides a bunch of horrible words, this includes "fakeslur" for easier testing.
 // These defaults include offensive slurs but do not include e.g. "fu**" or "sh**"
 // though they include some variants of those words -- the (default) goal is not to flag
