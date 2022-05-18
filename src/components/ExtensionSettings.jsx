@@ -1,7 +1,7 @@
 import type from "prop-types";
 import React from "react";
 import GSForm from "../components/forms/GSForm";
-import yup from "yup";
+import * as yup from "yup";
 import Form from "react-formal";
 import { ToggleButton } from "@material-ui/lab";
 import { dataTest } from "../lib/attributes";
