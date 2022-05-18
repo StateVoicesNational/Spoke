@@ -7,9 +7,18 @@ import { accessRequired } from "./errors";
 import { getCampaigns } from "./campaign";
 import { buildUsersQuery } from "./user";
 import {
-  getAvailableActionHandlers,
-  getActionChoiceData
+  getHandlerDisplayName as getActionHandlerDisplayName,
+  getHandlerDescription as getActionHandlerDescription
 } from "../../extensions/action-handlers";
+import {
+  getHandlerDisplayName as getMessageHandlerDisplayName,
+  getHandlerDescription as getMessageHandlerDescription
+} from "../../extensions/message-handlers";
+import {
+  getHandlerDisplayName as getContactLoaderDisplayName,
+  getHandlerDescription as getContactLoaderDescription
+} from "../../extensions/contact-loaders";
+
 import {
   fullyConfigured,
   getServiceMetadata
@@ -22,7 +31,8 @@ export const ownerConfigurable = {
   DEFAULT_BATCHSIZE: 1,
   DEFAULT_RESPONSEWINDOW: 1,
   MAX_CONTACTS_PER_TEXTER: 1,
-  MAX_MESSAGE_LENGTH: 1
+  MAX_MESSAGE_LENGTH: 1,
+  CONTACT_LOADERS: 1
   // MESSAGE_HANDLERS: 1,
   // There is already an endpoint and widget for this:
   // opt_out_message: 1
@@ -169,40 +179,140 @@ export const resolvers = {
       // return themeOptions;
       return getFeatures(organization).theme || themeOptions;
     },
-    settings: async (organization, _, { user, loaders }) => {
+    extensionSettings: async (organization, _, { user, loaders }) => {
       try {
         await accessRequired(user, organization.id, "OWNER", true);
       } catch (err) {
         return null;
       }
-      let messageHandlers = [];
-      let actionHandlers = [];
-      const features = getFeatures(organization);
-      const visibleFeatures = {};
-      const unsetFeatures = [];
-      getAllowed(organization, user).forEach(f => {
-        if (features.hasOwnProperty(f)) {
-          visibleFeatures[f] = features[f];
-        } else if (getConfig(f)) {
-          visibleFeatures[f] = getConfig(f);
-        } else {
-          visibleFeatures[f] = "";
-          unsetFeatures.push(f);
-        }
-        if (f === "MESSAGE_HANDLERS") {
-          const globalMessageHandlers = getConfig("MESSAGE_HANDLERS");
-          messageHandlers =
-            (globalMessageHandlers && globalMessageHandlers.split(",")) || [];
-        } else if (f === "ACTION_HANDLERS") {
-          const globalActionHandlers = getConfig("ACTION_HANDLERS");
-          actionHandlers =
-            (globalActionHandlers && globalActionHandlers.split(",")) || [];
-        }
+      const configurableSettings = getAllowed(organization, user);
+
+      const configurableMessageHandlers =
+        configurableSettings.includes("MESSAGE_HANDLERS") &&
+        getConfig("MESSAGE_HANDLERS");
+      const allowedMessageHandlers =
+        configurableMessageHandlers &&
+        configurableMessageHandlers !== undefined &&
+        configurableMessageHandlers !== ""
+          ? configurableMessageHandlers.split(",")
+          : [];
+
+      const configurableActionHandlers =
+        configurableSettings.includes("ACTION_HANDLERS") &&
+        getConfig("ACTION_HANDLERS");
+      const allowedActionHandlers =
+        configurableActionHandlers &&
+        configurableActionHandlers !== undefined &&
+        configurableActionHandlers !== ""
+          ? configurableActionHandlers.split(",")
+          : [];
+
+      const configurableContactLoaders =
+        configurableSettings.includes("CONTACT_LOADERS") &&
+        getConfig("CONTACT_LOADERS");
+
+      console.log("Configurable Contact Loaders", configurableContactLoaders);
+      console.log("Configurable Settings", configurableSettings);
+      console.log(
+        "Get Configurable Contact Loaders",
+        getConfig("CONTACT_LOADERS")
+      );
+
+      const allowedContactLoaders =
+        configurableContactLoaders !== undefined &&
+        configurableContactLoaders != ""
+          ? configurableContactLoaders.split(",")
+          : [];
+
+      // reads from DB, where these are grouped under features.EXTENSION_SETTINGS
+      const extensionSettings =
+        getConfig("EXTENSION_SETTINGS", organization) || [];
+      let savedMessageHandlers =
+        (extensionSettings.MESSAGE_HANDLERS &&
+          extensionSettings.MESSAGE_HANDLERS.split(",")) ||
+        [];
+      let savedActionHandlers =
+        (extensionSettings.ACTION_HANDLERS &&
+          extensionSettings.ACTION_HANDLERS.split(",")) ||
+        [];
+      let savedContactLoaders =
+        (extensionSettings.CONTACT_LOADERS &&
+          extensionSettings.CONTACT_LOADERS.split(",")) ||
+        [];
+
+      // build display name and description dictionary for each handler
+      const displayInformationDictionary = {};
+      allowedContactLoaders.map(handler => {
+        const displayName = getContactLoaderDisplayName(handler);
+        const description = getContactLoaderDescription(handler);
+        displayInformationDictionary[handler] = {
+          displayName: displayName,
+          description: description
+        };
+      });
+      allowedActionHandlers.map(handler => {
+        const displayName = getActionHandlerDisplayName(handler);
+        const description = getActionHandlerDescription(handler);
+        displayInformationDictionary[handler] = {
+          displayName: displayName,
+          description: description
+        };
+      });
+      allowedMessageHandlers.map(handler => {
+        const displayName = getMessageHandlerDisplayName(handler);
+        const description = getMessageHandlerDescription(handler);
+        displayInformationDictionary[handler] = {
+          displayName: displayName,
+          description: description
+        };
+      });
+
+      const handlerDisplayInformation = JSON.stringify(
+        displayInformationDictionary
+      );
+
+      console.log({
+        savedMessageHandlers,
+        savedActionHandlers,
+        savedContactLoaders,
+        allowedMessageHandlers,
+        allowedActionHandlers,
+        allowedContactLoaders,
+        handlerDisplayInformation
       });
 
       return {
-        messageHandlers,
-        actionHandlers,
+        savedMessageHandlers,
+        savedActionHandlers,
+        savedContactLoaders,
+        allowedMessageHandlers,
+        allowedActionHandlers,
+        allowedContactLoaders,
+        handlerDisplayInformation
+      };
+    },
+    defaultSettings: async (organization, _, { user, loaders }) => {
+      try {
+        await accessRequired(user, organization.id, "OWNER", true);
+      } catch (err) {
+        return null;
+      }
+
+      // reads from DB, where these are grouped under features.DEFAULT_SETTINGS
+      const features = getConfig("DEFAULT_SETTINGS", organization) || null;
+      const visibleFeatures = {};
+      const unsetFeatures = [];
+      if (features !== null) {
+        getAllowed(organization, user).forEach(f => {
+          if (features.hasOwnProperty(f)) {
+            visibleFeatures[f] = features[f];
+          } else {
+            unsetFeatures.push(f);
+          }
+        });
+      }
+
+      return {
         unsetFeatures,
         featuresJSON: JSON.stringify(visibleFeatures)
       };
