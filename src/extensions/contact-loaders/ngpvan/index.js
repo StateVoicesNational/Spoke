@@ -296,7 +296,7 @@ export async function processContactLoad(job, maxContacts, organization) {
       retries: 0,
       timeout: Van.getNgpVanTimeout(organization),
       headers: {
-        Authorization: Van.getAuth(organization),
+        Authorization: await Van.getAuth(organization),
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
