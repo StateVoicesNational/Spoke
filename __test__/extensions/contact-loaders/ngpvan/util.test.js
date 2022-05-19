@@ -126,6 +126,7 @@ describe("ngpvan/util", () => {
       } finally {
         expect(config.getConfig.mock.calls).toEqual([
           ["NGP_VAN_APP_NAME", organization],
+          ["NGP_VAN_API_KEY_ENC", organization],
           ["NGP_VAN_API_KEY", organization],
           ["NGP_VAN_DATABASE_MODE", organization]
         ]);
