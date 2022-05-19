@@ -5,6 +5,10 @@ import { getActionChoiceData } from "../../../extensions/action-handlers";
 
 export const DEFAULT_NGP_VAN_INITIAL_TEXT_CANVASS_RESULT = "Texted";
 
+export function displayName() {
+  return "NGP VAN";
+}
+
 export const serverAdministratorInstructions = () => {
   return {
     description: `
