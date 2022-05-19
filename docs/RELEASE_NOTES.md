@@ -1,5 +1,43 @@
 # Release Notes
 
+## v12.0
+
+_February 2022:_ Version 12.0
+
+### Migration Notes
+This is a major release and includes a schema change. This is a minor schema change, which you can run before/during deployment (either by leaving/disabling SUPPRESS_MIGRATIONS=false or for [AWS Lambda, see the db migration instructions](./HOWTO_DEPLOYING_AWS_LAMBDA.md#migrating-the-database). It includes adding nullable columns "answer_actions" and "answer_actions_data" to the canned_response table. If you are using Redis, you will need to clear the canned response cache keys after deployment.
+
+### Bug-fixes
+* Fix failing GitHub Actions tests
+* Fix scrub landlines bug
+* Set default twilioDialogOpen value for Dialog open prop
+* Parse campaign timezone offsets
+* Fix service manager's "onOptOut" function
+* Fix outbound unassign behavior when Redis isn't configured
+* Fix need to click twice on save button after assigning contacts to texter
+* Fix TZ issue
+
+### Improvements
+* Implement Zapier response handling
+* Implement Canned Response CSV upload
+* Message review action for multi-change message status
+* Implement Assignment Contacts sidebar
+* Material UI Theming
+* Add auth/account hook to Twilio onMessageSend
+* Document --no-optional-dependencies for AWS Lambda
+* Document TEXTER_SIDEBOX_FIELDS environment variable
+* Update default auto optout documentation
+* Add per campaign Twilio account switching
+
+### Additional changes
+* Remove "Add All" button from Texters admin page
+* Dependency updates: moment, nodemailer
+* Remove unnecessary Twilio env variables
+* Remove old texting interface
+
+### Appreciations
+* [Adam Greenspan](https://github.com/agreenspan24), [Arique Aguilar](https://github.com/Arique110), [Cody Gordon](https://github.com/codygordon), [Holden Green](https://github.com/holdengreen), [John Twyman](https://github.com/johntwyman), [Kathy Nguyen](https://github.com/crayolakat), [Larry Person](https://github.com/lperson), [Michael Gratton](https://github.com/michael-gratton), [Peter Murphy](https://github.com/peterkmurphy), [Preston Maness](https://github.com/aggroskater), [Schuyler Duveen](https://github.com/schuyler1d), [Stefan Hayden](https://github.com/stefanhayden), and Harold Travis and Mark Houghton for QA
+
 ## v11.1
 
 _October 2021:_ Version 11.1

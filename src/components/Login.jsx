@@ -1,49 +1,15 @@
 import PropTypes from "prop-types";
 import React from "react";
 import { withRouter } from "react-router";
-
+import { compose } from "recompose";
+import Paper from "@material-ui/core/Paper";
+import Button from "@material-ui/core/Button";
+import ButtonGroup from "@material-ui/core/ButtonGroup";
 import { StyleSheet, css } from "aphrodite";
 import theme from "../styles/theme";
+import withMuiTheme from "./../containers/hoc/withMuiTheme";
 
 import UserEdit from "../containers/UserEdit";
-
-const styles = StyleSheet.create({
-  fieldContainer: {
-    background: theme.colors.white,
-    padding: "15px",
-    width: "256px"
-  },
-  loginPage: {
-    display: "flex",
-    "justify-content": "center",
-    "align-items": "flex-start",
-    height: "100vh",
-    "padding-top": "10vh",
-    background: theme.colors.veryLightGray
-  },
-  button: {
-    border: "none",
-    background: theme.colors.lightGray,
-    color: theme.colors.darkGreen,
-    padding: "16px 16px",
-    "font-size": "14px",
-    "text-transform": "uppercase",
-    cursor: "pointer",
-    width: "50%",
-    transition: "all 0.3s",
-    ":disabled": {
-      background: theme.colors.white,
-      cursor: "default",
-      color: theme.colors.green
-    }
-  },
-  header: {
-    ...theme.text.header,
-    color: theme.colors.coreBackgroundColor,
-    "text-align": "center",
-    "margin-bottom": 0
-  }
-});
 
 class Login extends React.Component {
   constructor(props) {
@@ -54,6 +20,25 @@ class Login extends React.Component {
 
     this.isLocalLogin = window.PASSPORT_STRATEGY === "local";
   }
+
+  styles = StyleSheet.create({
+    fieldContainer: {
+      padding: "15px",
+      width: "256px"
+    },
+    loginPage: {
+      display: "flex",
+      "justify-content": "center",
+      "align-items": "flex-start",
+      height: "100vh",
+      "padding-top": "10vh"
+    },
+    header: {
+      ...theme.text.header,
+      "text-align": "center",
+      "margin-bottom": 0
+    }
+  });
 
   componentDidMount = () => {
     const {
@@ -75,8 +60,8 @@ class Login extends React.Component {
     }
   };
 
-  handleClick = e => {
-    this.setState({ active: e.target.name });
+  handleClick = active => {
+    this.setState({ active });
   };
 
   naiveVerifyInviteValid = (nextUrl, maybeSignup) =>
@@ -113,41 +98,40 @@ class Login extends React.Component {
     };
 
     return (
-      <div className={css(styles.loginPage)}>
+      <div className={css(this.styles.loginPage)}>
         <div>
           {/* Only display sign up option if there is a nextUrl */}
-          {displaySignUp && (
-            <section>
-              <button
-                className={css(styles.button)}
-                type="button"
-                name="login"
-                onClick={this.handleClick}
+          {true && ( // displaySignUp
+            <ButtonGroup fullWidth>
+              <Button
+                color="default"
+                variant="contained"
+                onClick={() => this.handleClick("login")}
                 disabled={this.state.active === "login"}
               >
                 Log In
-              </button>
-              <button
-                className={css(styles.button)}
-                type="button"
+              </Button>
+              <Button
+                color="default"
+                variant="contained"
                 name="signup"
-                onClick={this.handleClick}
+                onClick={() => this.handleClick("signup")}
                 disabled={this.state.active === "signup"}
               >
                 Sign Up
-              </button>
-            </section>
+              </Button>
+            </ButtonGroup>
           )}
-          <div className={css(styles.fieldContainer)}>
-            <h2 className={css(styles.header)}>Welcome to Spoke</h2>
+          <Paper className={css(this.styles.fieldContainer)}>
+            <h2 className={css(this.styles.header)}>Welcome to Spoke</h2>
             <UserEdit
               authType={this.state.active}
               saveLabel={saveLabels[this.state.active]}
               router={router}
               nextUrl={nextUrl}
-              style={css(styles.authFields)}
+              style={css(this.styles.authFields)}
             />
-          </div>
+          </Paper>
         </div>
       </div>
     );
@@ -159,4 +143,4 @@ Login.propTypes = {
   router: PropTypes.object
 };
 
-export default withRouter(Login);
+export default compose(withMuiTheme, withRouter)(Login);
