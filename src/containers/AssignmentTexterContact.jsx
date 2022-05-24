@@ -194,10 +194,15 @@ export class AssignmentTexterContact extends React.Component {
         // thinks they completed sending, but there are still waiting requests
         // This probably needs some interface tweaks to communicate something
         // to the texter.
+        // this.props.mutations
+        //   .sendMessage(message, contact.id, cannedResponseId)
+        //   .then(() => {
+        //     console.log("sentMessage", contact.id);
+        //   });
         this.props.mutations
-          .sendMessage(message, contact.id, cannedResponseId)
+          .createCannedResponseSend(cannedResponseId, contact.id)
           .then(() => {
-            console.log("sentMessage", contact.id);
+            console.log("It worked!");
           });
       } else {
         await this.props.mutations.sendMessage(
@@ -230,9 +235,27 @@ export class AssignmentTexterContact extends React.Component {
       await this.props.mutations.createCannedResponse(saveObject);
     } catch (err) {
       console.log(
-        "handleCreateCannedRepsonse Error",
+        "handleCreateCannedResponse Error",
         err,
         cannedResponse,
+        this
+      );
+    }
+  };
+
+  handleCreateCannedResponseSend = async ({ cannedResponseSend }) => {
+    try {
+      const cannedResponseSend = {
+        ...cannedResponseSend,
+        campaignContactId: this.props.campaign_contact.id,
+        cannedResponseId: this.props.canned_response.id
+      };
+      await this.props.mutations.createCannedResponseSend(cannedResponseSend);
+    } catch (err) {
+      console.log(
+        "handleCreateCannedResponseSend Error",
+        err,
+        cannedResponseSend,
         this
       );
     }
@@ -506,6 +529,24 @@ const mutations = {
       }
     `,
     variables: { cannedResponse }
+  }),
+  createCannedResponseSend: ownProps => (
+    cannedResponseSend,
+    campaignContactId,
+    cannedResponseId
+  ) => ({
+    mutation: gql`
+      mutation createCannedResponseSend(
+        $cannedResponseSend: CannedResponseSendInput!
+        $campaignContactId: String!
+        $cannedResponseId: String!
+      ) {
+        createCannedResponseSend(cannedResponseSend: $cannedResponseSend) {
+          id
+        }
+      }
+    `,
+    variables: { cannedResponseSend }
   }),
   editCampaignContactMessageStatus: ownProps => (
     messageStatus,

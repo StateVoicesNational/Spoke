@@ -12,6 +12,7 @@ import { schema as optOutSchema } from "./opt-out";
 import { schema as messageSchema } from "./message";
 import { schema as campaignContactSchema } from "./campaign-contact";
 import { schema as cannedResponseSchema } from "./canned-response";
+import { schema as cannedResponseSendSchema } from "./canned-response-send";
 import { schema as inviteSchema } from "./invite";
 import { schema as tagSchema } from "./tag";
 import { schema as serviceSchema } from "./service";
@@ -89,6 +90,7 @@ const rootSchema = gql`
     texters: [TexterInput]
     interactionSteps: InteractionStepInput
     cannedResponses: [CannedResponseInput]
+    cannedResponseSends: [CannedResponseSendInput]
     useOwnMessagingService: Boolean
     phoneNumbers: [String]
     messageserviceSid: String
@@ -262,6 +264,9 @@ const rootSchema = gql`
     copyCampaign(id: String!): Campaign
     exportCampaign(id: String!): JobRequest
     createCannedResponse(cannedResponse: CannedResponseInput!): CannedResponse
+    createCannedResponseSend(
+      cannedResponseSend: CannedResponseSendInput!
+    ): CannedResponseSend
     createOrganization(
       name: String!
       userId: String!
@@ -420,6 +425,7 @@ export const schema = [
   messageSchema,
   campaignContactSchema,
   cannedResponseSchema,
+  cannedResponseSendSchema,
   questionResponseSchema,
   questionSchema,
   inviteSchema,
