@@ -4,16 +4,57 @@ import CheckCircleIcon from "@material-ui/icons/CheckCircle";
 import Empty from "../components/Empty";
 import LoadingIndicator from "../components/LoadingIndicator";
 import AssignmentSummary from "../components/AssignmentSummary";
+import Snackbar from "@material-ui/core/Snackbar";
 import loadData from "./hoc/load-data";
 import gql from "graphql-tag";
 import { withRouter } from "react-router";
 
 let refreshOnReturn = false;
 
+// We want to back off on notifications both because if they don't leave the page
+// then there's no point in polling more frequently, and also to stop annoying
+// someone that's clearly ignoring it.
+// So 30sec, 2min, 8min, 32min, 2 hours -- so 4x each time
+const NOTIFICATION_START_DELAY = 7500;
+const NOTIFICATION_MAX_DELAY = 7680000; // 2.13 hours
+let notificationPollDelay = NOTIFICATION_START_DELAY;
+
 class TexterTodoList extends React.Component {
   constructor(props) {
     super(props);
-    this.state = { polling: null };
+    this.state = {};
+  }
+
+  componentWillUpdate(nextProps, nextState) {
+    const notifications =
+      nextProps.notifications && nextProps.notifications.user.notifications;
+    if (notifications && notifications.length) {
+      // Note, we are changing notification polling times only when there's a notification,
+      // otherwise keep polling at the same rate.
+      notificationPollDelay = Math.min(
+        4 * notificationPollDelay,
+        NOTIFICATION_MAX_DELAY
+      );
+      this.props.notifications.stopPolling();
+      this.props.notifications.startPolling(notificationPollDelay);
+      // move the result to state
+      nextProps.notifications.user.notifications = [];
+      // FUTURE: maybe append for a set of assignmentIds to display them
+      nextState.notifications = notifications;
+    }
+  }
+
+  componentDidMount() {
+    if (refreshOnReturn) {
+      this.props.data.refetch();
+    }
+    // reset notification state
+    notificationPollDelay = NOTIFICATION_START_DELAY;
+  }
+
+  componentWillUnmount() {
+    // not state: maintain this forever after
+    refreshOnReturn = true;
   }
 
   renderTodoList(assignments) {
@@ -56,34 +97,6 @@ class TexterTodoList extends React.Component {
       })
       .filter(ele => ele !== null);
   }
-  componentDidMount() {
-    if (refreshOnReturn) {
-      this.props.data.refetch();
-    }
-    // stopPolling is broken (at least in currently used version), so we roll our own so we can unmount correctly
-    if (
-      this.props.data &&
-      this.props.data.user &&
-      this.props.data.user.cacheable &&
-      !this.state.polling
-    ) {
-      const self = this;
-      this.setState({
-        polling: setInterval(() => {
-          self.props.data.refetch();
-        }, 5000)
-      });
-    }
-  }
-
-  componentWillUnmount() {
-    if (this.state.polling) {
-      clearInterval(this.state.polling);
-      this.setState({ polling: null });
-    }
-    // not state: maintain this forever after
-    refreshOnReturn = true;
-  }
 
   termsAgreed() {
     const { data, router } = this.props;
@@ -118,7 +131,18 @@ class TexterTodoList extends React.Component {
       <Empty title="You have nothing to do!" icon={<CheckCircleIcon />} />
     );
 
-    return <div>{renderedTodos.length === 0 ? empty : renderedTodos}</div>;
+    return (
+      <div>
+        <Snackbar
+          open={Boolean(this.state.notifications)}
+          message={"Some campaigns have replies for you to respond to!"}
+          onClose={() => {
+            this.setState({ notifications: false });
+          }}
+        />
+        {renderedTodos.length === 0 ? empty : renderedTodos}
+      </div>
+    );
   }
 }
 
@@ -128,25 +152,7 @@ TexterTodoList.propTypes = {
   data: PropTypes.object
 };
 
-export const dataQuery = gql`
-  query getTodos(
-    $userId: Int
-    $organizationId: String!
-    $todosOrg: String
-    $needsMessageFilter: ContactsFilter
-    $needsResponseFilter: ContactsFilter
-    $badTimezoneFilter: ContactsFilter
-    $completedConvosFilter: ContactsFilter
-    $pastMessagesFilter: ContactsFilter
-    $skippedMessagesFilter: ContactsFilter
-  ) {
-    user(organizationId: $organizationId, userId: $userId) {
-      id
-      terms
-      profileComplete(organizationId: $organizationId)
-      cacheable
-      roles(organizationId: $organizationId)
-      todos(organizationId: $todosOrg) {
+const assignmentQueryData = `
         id
         hasUnassignedContactsForTexter
         campaign {
@@ -178,16 +184,55 @@ export const dataQuery = gql`
           sweepComplete
         }
         allContactsCount: contactsCount
-        unmessagedCount: contactsCount(contactsFilter: $needsMessageFilter)
-        unrepliedCount: contactsCount(contactsFilter: $needsResponseFilter)
-        badTimezoneCount: contactsCount(contactsFilter: $badTimezoneFilter)
+        unmessagedCount: contactsCount(contactsFilter: {
+          messageStatus: "needsMessage"
+          isOptedOut: false
+          validTimezone: true
+        })
+        unrepliedCount: contactsCount(contactsFilter: {
+          messageStatus: "needsResponse"
+          isOptedOut: false
+          validTimezone: true
+        })
+        badTimezoneCount: contactsCount(contactsFilter: {
+          isOptedOut: false
+          validTimezone: false
+        })
         totalMessagedCount: contactsCount(
-          contactsFilter: $completedConvosFilter
+          contactsFilter: {
+          isOptedOut: false
+          validTimezone: true
+          messageStatus: "messaged"
+        }
         )
-        pastMessagesCount: contactsCount(contactsFilter: $pastMessagesFilter)
+        pastMessagesCount: contactsCount(contactsFilter: {
+          messageStatus: "convo"
+          isOptedOut: false
+          validTimezone: true
+        })
         skippedMessagesCount: contactsCount(
-          contactsFilter: $skippedMessagesFilter
+          contactsFilter: {
+           messageStatus: "closed"
+           isOptedOut: false
+           validTimezone: true
+          }
         )
+`;
+
+export const dataQuery = gql`
+  query getTodos(
+    $userId: Int
+    $organizationId: String!
+    $todosOrg: String
+  ) {
+    user(organizationId: $organizationId, userId: $userId) {
+      id
+      terms
+      profileComplete(organizationId: $organizationId)
+      notifiable
+      roles(organizationId: $organizationId)
+      todos(organizationId: $todosOrg) {
+         ${assignmentQueryData}
       }
     }
   }
@@ -226,38 +271,42 @@ const queries = {
           ownProps.location.query["org"] == "all" ||
           !ownProps.params.organizationId
             ? null
-            : ownProps.params.organizationId,
-        needsMessageFilter: {
-          messageStatus: "needsMessage",
-          isOptedOut: false,
-          validTimezone: true
-        },
-        needsResponseFilter: {
-          messageStatus: "needsResponse",
-          isOptedOut: false,
-          validTimezone: true
-        },
-        badTimezoneFilter: {
-          isOptedOut: false,
-          validTimezone: false
-        },
-        completedConvosFilter: {
-          isOptedOut: false,
-          validTimezone: true,
-          messageStatus: "messaged"
-        },
-        pastMessagesFilter: {
-          messageStatus: "convo",
-          isOptedOut: false,
-          validTimezone: true
-        },
-        skippedMessagesFilter: {
-          messageStatus: "closed",
-          isOptedOut: false,
-          validTimezone: true
-        }
+            : ownProps.params.organizationId
       }
     })
+  },
+  notifications: {
+    query: gql`
+      query getNotifications(
+        $userId: Int
+        $organizationId: String!
+      ) {
+        user(organizationId: $organizationId, userId: $userId) {
+          id
+          notifications {
+            ${assignmentQueryData}
+          }
+        }
+      }
+    `,
+    options: ownProps => {
+      const tryNotifications =
+        ownProps.data.user &&
+        ownProps.data.user.notifiable &&
+        ownProps.data.user.todos.length &&
+        // some messages have been sent, so there's a possibility of replies
+        ownProps.data.user.todos.find(
+          a => a.unmessagedCount !== a.allContactsCount
+        );
+      return {
+        variables: {
+          userId: ownProps.params.userId || null,
+          organizationId: ownProps.params.organizationId
+        },
+        fetchPolicy: "network-only",
+        pollInterval: tryNotifications ? NOTIFICATION_START_DELAY : 0
+      };
+    }
   }
 };
 

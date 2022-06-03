@@ -5,7 +5,7 @@ import { getConfig } from "../lib/config";
 import { applyScript } from "../../../lib/scripts";
 import { Assignment, User, r, cacheableData } from "../../models";
 
-import { getTopMostParent, log } from "../../../lib";
+import { log } from "../../../lib";
 
 import { sendMessage, findNewCampaignContact } from "./index";
 
@@ -58,10 +58,13 @@ export const bulkSendMessages = async (
       campaign_id: assignment.campaign_id
     })
     .where({
+      parent_interaction_id: null
+    })
+    .where({
       is_deleted: false
     });
 
-  const topmostParent = getTopMostParent(interactionSteps);
+  const topmostParent = interactionSteps[0];
 
   const texter = camelCaseKeys(await User.get(assignment.user_id));
   const customFields = Object.keys(JSON.parse(contacts[0].custom_fields));

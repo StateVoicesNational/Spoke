@@ -560,7 +560,7 @@ describe("action-handlers/index", () => {
       expect(returned).toEqual(expectedReturn);
 
       expect(ComplexTestAction.clientChoiceDataCacheKey.mock.calls).toEqual([
-        [user]
+        [organization, user]
       ]);
 
       expect(ComplexTestAction.getClientChoiceData.mock.calls).toEqual([
@@ -577,8 +577,8 @@ describe("action-handlers/index", () => {
       expect(secondCallReturned).toEqual(expectedReturn);
 
       expect(ComplexTestAction.clientChoiceDataCacheKey.mock.calls).toEqual([
-        [user],
-        [user]
+        [organization, user],
+        [organization, user]
       ]);
 
       expect(ComplexTestAction.getClientChoiceData.mock.calls).toEqual([
