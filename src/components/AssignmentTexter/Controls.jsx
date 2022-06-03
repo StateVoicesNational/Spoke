@@ -129,9 +129,10 @@ export class AssignmentTexterContactControls extends React.Component {
   }
 
   getStartingMessageText() {
-    const { campaign, messageStatusFilter } = this.props;
+    const { contact, campaign } = this.props;
     return (
-      messageStatusFilter === "needsMessage" &&
+      contact != null &&
+      contact.messageStatus === "needsMessage" &&
       this.props.getMessageTextFromScript(
         getTopMostParent(campaign.interactionSteps).script
       )
@@ -145,6 +146,14 @@ export class AssignmentTexterContactControls extends React.Component {
         currentShortcutSpace: this.refs.answerButtons.offsetHeight
       });
     }
+  };
+
+  getShortButtonText = (text, limit) => {
+    var sanitizedText = text.replace(/^(\+|\-)/, "");
+    return (
+      sanitizedText.slice(0, limit) +
+      (sanitizedText.length > limit ? "..." : "")
+    );
   };
 
   toggleContactList = () => {
@@ -175,7 +184,7 @@ export class AssignmentTexterContactControls extends React.Component {
         evt.ctrlKey,
         evt.keyCode,
         this.state.messageReadOnly,
-        this.props.messageStatusFilter
+        this.props.contact.messageStatus
       );
     }
 
@@ -234,13 +243,12 @@ export class AssignmentTexterContactControls extends React.Component {
     // Allow initial sends to use any key, avoiding RSI injuries
     // the texter can distribute which button to press across the keyboard
     if (
-      this.props.messageStatusFilter === "needsMessage" &&
+      this.props.contact.messageStatus === "needsMessage" &&
       this.state.messageReadOnly &&
       !evt.ctrlKey &&
       !evt.metaKey &&
       !evt.altKey &&
-      (/[a-z,./;']/.test(evt.key) ||
-        evt.key === "Enter" ||
+      (evt.key === "Enter" ||
         evt.key === "Return" ||
         evt.key === "Space" ||
         evt.key === " " ||
@@ -520,21 +528,31 @@ export class AssignmentTexterContactControls extends React.Component {
         onClose={this.handleCloseAnswerResponsePopover}
       >
         {searchBar}
-        <Survey
-          contact={contact}
-          interactionSteps={availableInteractionSteps}
-          onQuestionResponseChange={this.handleQuestionResponseChange}
-          currentInteractionStep={currentInteractionStep}
-          listHeader={otherResponsesLink}
-          questionResponses={questionResponses}
-          onRequestClose={this.handleCloseAnswerResponsePopover}
-        />
+        {!global.HIDE_BRANCHED_SCRIPTS ? (
+          <Survey
+            contact={contact}
+            interactionSteps={availableInteractionSteps}
+            onQuestionResponseChange={this.handleQuestionResponseChange}
+            currentInteractionStep={currentInteractionStep}
+            listHeader={otherResponsesLink}
+            questionResponses={questionResponses}
+            onRequestClose={this.handleCloseAnswerResponsePopover}
+          />
+        ) : (
+          ""
+        )}
         <ScriptList
           scripts={filteredCannedResponses}
           showAddScriptButton={false}
           customFields={campaign.customFields}
           currentCannedResponseScript={cannedResponseScript}
-          subheader={<div id="otherresponses">Other Responses</div>}
+          subheader={
+            global.HIDE_BRANCHED_SCRIPTS ? (
+              ""
+            ) : (
+              <div id="otherresponses">Other Responses</div>
+            )
+          }
           onSelectCannedResponse={this.handleCannedResponseChange}
           onCreateCannedResponse={this.props.onCreateCannedResponse}
         />
@@ -769,7 +787,8 @@ export class AssignmentTexterContactControls extends React.Component {
       availableSteps,
       questionResponses,
       currentInteractionStep,
-      cannedResponseScript
+      cannedResponseScript,
+      messageText
     } = this.state;
 
     let joinedLength = 0;
@@ -812,25 +831,47 @@ export class AssignmentTexterContactControls extends React.Component {
         joinedLength = 0;
       }
     }
+
     // 2. Canned Response Shortcuts
     let shortCannedResponses = [];
     // If there's a current interaction step but we aren't showing choices
     // then don't show canned response shortcuts either or it can
     // cause confusion.
     if (!currentStepHasAnswerOptions || joinedLength !== 0) {
-      shortCannedResponses = campaign.cannedResponses
-        .filter(
+      if (global.HIDE_BRANCHED_SCRIPTS) {
+        if (cannedResponseScript) {
+          shortCannedResponses = [cannedResponseScript];
+        } else {
+          const messageTextLowerCase = (messageText || "").toLowerCase();
+
+          shortCannedResponses = campaign.cannedResponses.filter(
+            script =>
+              script.title.toLowerCase().includes(messageTextLowerCase) ||
+              script.text.toLowerCase().includes(messageTextLowerCase)
+          );
+        }
+      } else {
+        shortCannedResponses = campaign.cannedResponses.filter(
           // allow for "Wrong Number", prefixes of + or - can force add or remove
           script =>
             (script.title.length < 13 || script.title[0] === "+") &&
             script.title[0] !== "-"
-        )
-        .filter(script => {
-          if (joinedLength + 1 + script.title.length < 80) {
-            joinedLength += 1 + script.title.length;
-            return true;
-          }
-        });
+        );
+      }
+
+      shortCannedResponses = shortCannedResponses.filter(script => {
+        var textLength = global.HIDE_BRANCHED_SCRIPTS
+          ? this.getShortButtonText(
+              script.title,
+              cannedResponseScript ? 40 : 13
+            ).length
+          : script.title.length;
+
+        if (joinedLength + 1 + textLength < 80) {
+          joinedLength += 1 + textLength;
+          return true;
+        }
+      });
     }
 
     if (!joinedLength) {
@@ -877,15 +918,19 @@ export class AssignmentTexterContactControls extends React.Component {
               this.handleCannedResponseChange(script);
             }}
             style={{
-              marginLeft: "9px",
+              marginRight: "9px",
               color: isCurrentCannedResponse(script) ? "white" : "#494949",
               backgroundColor: isCurrentCannedResponse(script)
                 ? "#727272"
                 : "white"
             }}
+            title={script.title}
             variant="outlined"
           >
-            {script.title.replace(/^(\+|\-)/, "")}
+            {this.getShortButtonText(
+              script.title,
+              cannedResponseScript ? 40 : 13
+            )}
           </Button>
         ))}
       </div>
@@ -933,7 +978,7 @@ export class AssignmentTexterContactControls extends React.Component {
   }
 
   renderMessagingRowSendSkip(contact) {
-    const firstMessage = this.props.messageStatusFilter === "needsMessage";
+    const firstMessage = contact.messageStatus === "needsMessage";
     return (
       <div
         key="renderMessagingRowSendSkip"
@@ -958,7 +1003,7 @@ export class AssignmentTexterContactControls extends React.Component {
   }
 
   renderMessageControls(enabledSideboxes) {
-    const { contact, messageStatusFilter, assignment, campaign } = this.props;
+    const { contact, assignment, campaign } = this.props;
     const {
       availableSteps,
       questionResponses,
@@ -1130,7 +1175,7 @@ export class AssignmentTexterContactControls extends React.Component {
 
   render() {
     const { enabledSideboxes } = this.props;
-    const firstMessage = this.props.messageStatusFilter === "needsMessage";
+    const firstMessage = this.props.contact.messageStatus === "needsMessage";
     const content = firstMessage
       ? this.renderFirstMessage(enabledSideboxes)
       : [
@@ -1198,7 +1243,6 @@ AssignmentTexterContactControls.propTypes = {
   // parent state
   disabled: PropTypes.bool,
   navigationToolbarChildren: PropTypes.object,
-  messageStatusFilter: PropTypes.string,
   enabledSideboxes: PropTypes.arrayOf(PropTypes.object),
   review: PropTypes.string,
 

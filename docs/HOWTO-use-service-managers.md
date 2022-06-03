@@ -47,6 +47,14 @@ from the contacts for that campaign.
 This scrubbing data is also remembered for future campaigns, so new uploads for the same numbers
 won't incur the same cost and only truly new numbers will be looked up.
 
+### mms-when-cheaper
+
+Often special characters (emojis and any non-English alphabet) will turn a single-segment message => many
+segments, driving up the cost which can then exceed the cost of an MMS
+message (mostly the cost of ~2-3 segments). This extension will switch
+those messages to use MMS.  Note that MMS messages often have a lower threshold of rate-limiting,
+So, it's better to send plain characters, when possible, at least in your Campaign's initial message.
+
 ### numpicker-basic
 
 Must be enabled for Bandwidth.com -- Bandwidth does not support automatic number selection like

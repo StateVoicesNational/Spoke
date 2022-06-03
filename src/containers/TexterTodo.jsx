@@ -265,10 +265,11 @@ const queries = {
     options: ownProps => {
       console.log("TexterTodo ownProps", ownProps);
       const messageStatus =
-        !global.ASSIGNMENT_CONTACTS_SIDEBAR ||
-        ownProps.messageStatus === "needsMessage"
-          ? ownProps.messageStatus
-          : "allReplies";
+        global.ASSIGNMENT_CONTACTS_SIDEBAR &&
+        ownProps.messageStatus !== "needsMessage" &&
+        ownProps.messageStatus !== "needsMessageOrResponse"
+          ? "allReplies"
+          : ownProps.messageStatus;
 
       // based on ?review=1 in location.search
       // exclude isOptedOut: false, validTimezone: true

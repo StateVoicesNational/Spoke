@@ -257,6 +257,10 @@ export class CampaignInteractionStepsFormBase extends React.Component {
       instructions = answerActions.instructions;
     }
 
+    const initialSubtitleText = global.HIDE_BRANCHED_SCRIPTS
+      ? "Enter an initial script for your texter."
+      : "Enter a script for your texter along with the question you want the texter be able to answer on behalf of the contact.";
+
     let answerActionsData = interactionStep.answerActionsData;
     try {
       answerActionsData = JSON.parse(interactionStep.answerActionsData);
@@ -294,9 +298,7 @@ export class CampaignInteractionStepsFormBase extends React.Component {
             style={this.styles.cardHeader}
             title={title}
             subtitle={
-              interactionStep.parentInteractionId
-                ? null
-                : "Enter a script for your texter along with the question you want the texter be able to answer on behalf of the contact."
+              interactionStep.parentInteractionId ? "" : initialSubtitleText
             }
           />
           <CardContent>
@@ -397,14 +399,18 @@ export class CampaignInteractionStepsFormBase extends React.Component {
                 multiline
                 hintText="This is what your texters will send to your contacts. E.g. Hi, {firstName}. It's {texterFirstName} here."
               />
-              <Form.Field
-                as={GSTextField}
-                {...dataTest("questionText")}
-                name="questionText"
-                label="Question"
-                fullWidth
-                hintText="A question for texters to answer. E.g. Can this person attend the event?"
-              />
+              {!global.HIDE_BRANCHED_SCRIPTS ? (
+                <Form.Field
+                  as={GSTextField}
+                  {...dataTest("questionText")}
+                  name="questionText"
+                  label="Question"
+                  fullWidth
+                  hintText="A question for texters to answer. E.g. Can this person attend the event?"
+                />
+              ) : (
+                ""
+              )}
             </GSForm>
           </CardContent>
         </Card>
@@ -455,11 +461,15 @@ export class CampaignInteractionStepsFormBase extends React.Component {
 
     const tree = makeTree(this.state.interactionSteps);
 
+    const sectionSubtitle = global.HIDE_BRANCHED_SCRIPTS
+      ? "Add an initial outbound message to begin your conversation, then add canned responses below to continue the conversation."
+      : "You can add scripts and questions and your texters can indicate responses from your contacts. For example, you might want to collect RSVPs to an event or find out whether to follow up about a different volunteer activity.";
+
     return (
       <div>
         <CampaignFormSectionHeading
           title="What do you want to discuss?"
-          subtitle="You can add scripts and questions and your texters can indicate responses from your contacts. For example, you might want to collect RSVPs to an event or find out whether to follow up about a different volunteer activity."
+          subtitle={sectionSubtitle}
         />
         {this.renderInteractionStep(tree, availableActions)}
         <Button

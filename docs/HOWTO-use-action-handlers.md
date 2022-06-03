@@ -15,7 +15,7 @@ external systems:
 
 - [ActionKit](HOWTO_INTEGRATE_WITH_ACTIONKIT.md)
 - [Mobile Commons](HOWTO_INTEGRATE_WITH_MOBILE_COMMONS.md)
-- NGPVAN and everyaction ***(coming soon)***
+- [NGPVAN and everyaction](REFERENCE-NGPVAN_user_guide.md)
 - [Revere](HOWTO_INTEGRATE_WITH_REVERE.md)
 
 In addition, there are two action handlers that don't do much, but they serve

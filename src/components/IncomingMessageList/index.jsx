@@ -33,6 +33,7 @@ export const prepareDataTableData = conversations =>
     cell: conversation.contact.cell,
     campaignContactId: conversation.contact.id,
     assignmentId: conversation.contact.assignmentId,
+    updatedAt: conversation.contact.updated_at,
     status: conversation.contact.messageStatus,
     errorCode: conversation.contact.errorCode,
     messages: conversation.contact.messages,
@@ -180,7 +181,16 @@ export class IncomingMessageList extends Component {
         customBodyRender: (value, tableMeta) => {
           const row = tableData[tableMeta.rowIndex];
           let lastMessage = null;
-          let lastMessageEl = <p>No Messages</p>;
+          let lastMessageEl = (
+            <p>
+              {"No Messages"}
+              <br />
+              <span style={{ color: "gray", fontSize: "85%" }}>
+                {"Assigned "} {moment.utc(row.updatedAt).fromNow()}
+              </span>
+            </p>
+          );
+
           if (row.messages && row.messages.length > 0) {
             lastMessage = row.messages[row.messages.length - 1];
             lastMessageEl = (
@@ -479,6 +489,7 @@ const queries = {
               firstName
               lastName
               cell
+              updated_at
               messageStatus
               errorCode
               messages {

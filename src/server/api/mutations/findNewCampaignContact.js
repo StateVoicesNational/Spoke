@@ -1,6 +1,6 @@
 import { log } from "../../../lib";
 import telemetry from "../../telemetry";
-import { Assignment, Campaign, r, cacheableData } from "../../models";
+import { r, cacheableData } from "../../models";
 import { assignmentRequiredOrAdminRole } from "../errors";
 import { getDynamicAssignmentBatchPolicies } from "../../../extensions/dynamicassignment-batches";
 
@@ -145,7 +145,8 @@ export const findNewCampaignContact = async (
     .knex("campaign_contact")
     .whereIn("id", batchQuery)
     .update({
-      assignment_id: assignmentId
+      assignment_id: assignmentId,
+      updated_at: new Date()
     })
     .catch(log.error);
 
@@ -165,7 +166,6 @@ export const findNewCampaignContact = async (
       ...falseRetVal,
       found: true
     };
-  } else {
-    return falseRetVal;
   }
+  return falseRetVal;
 };
