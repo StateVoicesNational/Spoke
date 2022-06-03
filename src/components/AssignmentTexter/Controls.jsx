@@ -842,7 +842,7 @@ export class AssignmentTexterContactControls extends React.Component {
         if (cannedResponseScript) {
           shortCannedResponses = [cannedResponseScript];
         } else {
-          const messageTextLowerCase = (messageText || '').toLowerCase();
+          const messageTextLowerCase = (messageText || "").toLowerCase();
 
           shortCannedResponses = campaign.cannedResponses.filter(
             script =>
