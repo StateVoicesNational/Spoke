@@ -115,7 +115,6 @@ class Settings extends React.Component {
 
     return (
       <Dialog
-        maxWidth="md"
         open={
           this.state.textingHoursDialogOpen === undefined
             ? false
@@ -399,7 +398,7 @@ class Settings extends React.Component {
                       this.setState({ texterUIConfig: null });
                     }}
                     onChange={formValues => {
-                      console.log("change", formValues);
+                      // console.log("change", formValues);
                       this.setState(formValues);
                     }}
                     saveLabel="Save Texter UI Campaign Defaults"
@@ -409,87 +408,108 @@ class Settings extends React.Component {
               </Collapse>
             </Card>
           )}
-        {this.props.data.organization &&
-          this.props.data.organization.defaultSettings && (
+
+        <div>
+          {this.props.data.organization &&
+            this.props.data.organization.defaultSettings && (
+              <Card>
+                <CardHeader
+                  title="Default Settings"
+                  style={this.getCardHeaderStyle()}
+                  action={
+                    <IconButton>
+                      <ExpandMoreIcon />
+                    </IconButton>
+                  }
+                  onClick={() =>
+                    this.setState({
+                      defaultSettings: !this.state.defaultSettings
+                    })
+                  }
+                />
+                <Collapse
+                  in={this.state.defaultSettings}
+                  timeout="auto"
+                  unmountOnExit
+                >
+                  <CardContent>
+                    <OrganizationFeatureSettings
+                      formValues={this.props.data.organization}
+                      organization={this.props.data.organization}
+                      // onChange={async (event, isToggled) => {
+                      //   const getSettings = this.state;
+                      //   await this.props.mutations.editOrganization({
+                      //     getSettings
+                      //   });
+                      //   this.setState({ settings: null });
+                      // }}
+                      onChange={formValues => {
+                        console.log("change", formValues);
+                        this.setState(formValues);
+                      }}
+                      saveLabel="Save Default Settings"
+                      saveDisabled={!this.state.defaultSettings}
+                    />
+                  </CardContent>
+                </Collapse>
+              </Card>
+            )}
+        </div>
+
+        <div>
+          {organization &&
+          organization.extensionSettings &&
+          (organization.extensionSettings.allowedActionHandlers.length > 0 ||
+            organization.extensionSettings.allowedMessageHandlers.length > 0 ||
+            organization.extensionSettings.allowedContactLoaders.length > 0) ? (
             <Card>
               <CardHeader
-                title="Overriding default settings"
+                title="Extension Settings"
                 style={this.getCardHeaderStyle()}
                 action={
                   <IconButton>
                     <ExpandMoreIcon />
                   </IconButton>
                 }
-                onClick={() =>
+                onClick={() => {
+                  console.log("STATE", this.state);
                   this.setState({
-                    OverridingDefaultSettings: !this.state
-                      .OverridingDefaultSettings
-                  })
-                }
+                    ExtensionSettings: !this.state.extensionSettings
+                  });
+                }}
               />
               <Collapse
-                in={this.state.OverridingDefaultSettings}
+                in={this.state.ExtensionSettings}
                 timeout="auto"
                 unmountOnExit
               >
                 <CardContent>
-                  <OrganizationFeatureSettings
+                  <ExtensionSettings
                     formValues={this.props.data.organization}
                     organization={this.props.data.organization}
                     onSubmit={async () => {
-                      const { settings } = this.state;
+                      const { extensionSettings } = this.state;
                       await this.props.mutations.editOrganization({
-                        settings
+                        ExtensionSettings: {
+                          ...extensionSettings,
+                          allowedMessageHandlers: [],
+                          allowedActionHandlers: [],
+                          allowedContactLoaders: []
+                        }
                       });
-                      this.setState({ settings: null });
+                      this.setState({ ExtensionSettings: null });
                     }}
                     onChange={formValues => {
-                      console.log("change", formValues);
                       this.setState(formValues);
                     }}
-                    saveLabel="Save Default Settings"
-                    saveDisabled={!this.state.settings}
+                    saveLabel="Save Extensions"
+                    saveDisabled={!this.state.extensionSettings}
                   />
                 </CardContent>
               </Collapse>
             </Card>
-          )}
-        ) : null}
-        {organization &&
-        organization.extensionSettings &&
-        (organization.extensionSettings.allowedActionHandlers.length > 0 ||
-          organization.extensionSettings.allowedMessageHandlers.length > 0 ||
-          organization.extensionSettings.allowedContactLoaders.length > 0) ? (
-          <Card>
-            <CardHeader
-              title="Extension Setting"
-              style={{ backgroundColor: theme.colors.green }}
-            />
-            <CardText>
-              <ExtensionSettings
-                formValues={this.props.data.organization}
-                organization={this.props.data.organization}
-                onSubmit={async () => {
-                  const { extensionSettings } = this.state;
-                  await this.props.mutations.editOrganization({
-                    extensionSettings: {
-                      ...extensionSettings,
-                      allowedMessageHandlers: [],
-                      allowedActionHandlers: [],
-                      allowedContactLoaders: []
-                    }
-                  });
-                  this.setState({ extensionSettings: null });
-                }}
-                onChange={formValues => {
-                  this.setState(formValues);
-                }}
-                saveLabel="Save Extensions"
-                saveDisabled={!this.state.extensionSettings}
-              />
-            </CardText>
-          </Card>
-        ) : null}
+          ) : null}
+        </div>
       </div>
     );
   }

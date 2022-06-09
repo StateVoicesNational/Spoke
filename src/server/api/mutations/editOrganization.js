@@ -2,7 +2,7 @@ import { getConfig, getFeatures } from "../lib/config";
 import { accessRequired } from "../errors";
 import { r, cacheableData } from "../../models";
 import { getAllowed } from "../organization";
-import ExtensionSettings from "../../../components/ExtensionSettings";
+// import ExtensionSettings from "../../../components/ExtensionSettings";
 
 export const editOrganization = async (_, { id, organization }, { user }) => {
   await accessRequired(user, id, "OWNER", true);
@@ -36,6 +36,7 @@ export const editOrganization = async (_, { id, organization }, { user }) => {
   }
 
   changes.features = features;
+
   if (Object.keys(changes).length) {
     if (changes.features) {
       changes.features = JSON.stringify(changes.features);

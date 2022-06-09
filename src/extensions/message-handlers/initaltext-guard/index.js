@@ -1,5 +1,9 @@
 import { r } from "../../../server/models";
 
+export function displayName() {
+  return "Initial Text Guard";
+}
+
 export const serverAdministratorInstructions = () => {
   return {
     description: `

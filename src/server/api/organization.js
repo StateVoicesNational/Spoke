@@ -265,31 +265,31 @@ export const resolvers = {
           displayName: displayName,
           description: description
         };
+        // console.log("DISPLAY INFORMATION DICTIONARY==========================================", displayInformationDictionary)
+        // const handlerDisplayInformation = JSON.stringify(
+        //   displayInformationDictionary
+        // );
+        //
+        // console.log({
+        //   savedMessageHandlers,
+        //   savedActionHandlers,
+        //   savedContactLoaders,
+        //   allowedMessageHandlers,
+        //   allowedActionHandlers,
+        //   allowedContactLoaders,
+        //   handlerDisplayInformation
+        // });
+
+        return {
+          savedMessageHandlers,
+          savedActionHandlers,
+          savedContactLoaders,
+          allowedMessageHandlers,
+          allowedActionHandlers,
+          allowedContactLoaders,
+          handlerDisplayInformation
+        };
       });
-
-      const handlerDisplayInformation = JSON.stringify(
-        displayInformationDictionary
-      );
-
-      console.log({
-        savedMessageHandlers,
-        savedActionHandlers,
-        savedContactLoaders,
-        allowedMessageHandlers,
-        allowedActionHandlers,
-        allowedContactLoaders,
-        handlerDisplayInformation
-      });
-
-      return {
-        savedMessageHandlers,
-        savedActionHandlers,
-        savedContactLoaders,
-        allowedMessageHandlers,
-        allowedActionHandlers,
-        allowedContactLoaders,
-        handlerDisplayInformation
-      };
     },
     defaultSettings: async (organization, _, { user, loaders }) => {
       try {

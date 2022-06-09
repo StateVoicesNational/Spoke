@@ -36,6 +36,11 @@ export function getConfig(key, organization, opts) {
   if (opts && opts.onlyLocal) {
     return opts.default;
   }
+
+  // FOR DEBUGGING PURPOSES:
+  // console.log("Config Global", global)
+  // if (key === "CONTACT_LOADERS"){console.log("Process.env", key in process.env)}
+
   if (key in global) {
     if (opts && opts.truthy) {
       return Boolean(
