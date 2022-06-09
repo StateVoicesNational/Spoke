@@ -6,7 +6,9 @@ import Form from "react-formal";
 import { dataTest } from "../lib/attributes";
 import GSTextField from "./forms/GSTextField";
 import GSSubmitButton from "./forms/GSSubmitButton";
-
+import Card from "@material-ui/core/Card";
+// import CardContent from "@material-ui/core/CardContent";
+import CardHeader from "@material-ui/core/CardHeader";
 import FormControlLabel from "@material-ui/core/FormControlLabel";
 import Switch from "@material-ui/core/Switch";
 
@@ -201,7 +203,7 @@ export default class OrganizationFeatureSettings extends React.Component {
   };
 
   toggleChange = (key, value) => {
-    console.log("toggleChange", key, value);
+    // console.log("toggleChange", key, value);
     this.setState({ [key]: value }, newData => {
       this.props.onChange({
         defaultSettings: {
@@ -227,23 +229,29 @@ export default class OrganizationFeatureSettings extends React.Component {
           parent: this
         });
       });
+    //
+    // console.log("CONFIGURABLE FIELDS!!!=================", configurableFields)
+
     return (
       <div>
-        <GSForm
-          schema={yup.object(schemaObject)}
-          value={this.state}
-          onChange={this.onChange}
-          onSubmit={this.props.onSubmit}
-        >
-          {adminItems}
-          <Form.Submit
-            as={GSSubmitButton}
-            key="OFS-submit"
-            label={this.props.saveLabel}
-            disabled={this.props.saveDisabled}
-            {...dataTest("submitOrganizationFeatureSettings")}
-          />
-        </GSForm>
+        <Card>
+          <CardHeader />
+          <GSForm
+            schema={yup.object(schemaObject)}
+            value={this.state}
+            onChange={this.onChange}
+            onSubmit={this.props.onSubmit}
+          >
+            {adminItems}
+            <Form.Submit
+              as={GSSubmitButton}
+              key="OFS-submit"
+              label={this.props.saveLabel}
+              disabled={this.props.saveDisabled}
+              // {...dataTest("submitOrganizationFeatureSettings")}
+            />
+          </GSForm>
+        </Card>
       </div>
     );
   }
