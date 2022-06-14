@@ -6,6 +6,7 @@ import { User, cacheableData } from "./models";
 import localAuthHelpers from "./local-auth-helpers";
 import wrap from "./wrap";
 import { capitalizeWord } from "./api/lib/utils";
+import { Strategy as JwtStrategy, ExtractJwt } from "passport-jwt";
 
 export const nextUrlRedirect = (nextUrl, defaultPath) =>
   nextUrl && !nextUrl.startsWith("http") ? nextUrl : defaultPath || "/";
@@ -141,6 +142,49 @@ export function setupLocalAuthPassport() {
     ]
   };
 }
+export function setupDelegatedPassport(app) {
+  var opts = {};
+  opts.jwtFromRequest = ExtractJwt.fromAuthHeaderAsBearerToken();
+
+  opts.secretOrKey = process.env.DELEGATED_AUTH_SHARED_SECRET;
+  opts.issuer = process.env.DELEGATED_AUTH_ISSUER;
+  opts.audience = process.env.DELEGATED_AUTH_AUDIENCE;
+
+  passport.use(
+    "delegated",
+    new JwtStrategy(opts, async function(jwt_payload, done) {
+      User.filter({ email: jwt_payload.sub }).then(users => {
+        if (users.length === 0) {
+          return done(null, false);
+        }
+
+        return done(null, users[0]);
+      });
+    })
+  );
+
+  passport.serializeUser((user, done) => {
+    done(null, user.id);
+  });
+
+  passport.deserializeUser(
+    wrap(async (id, done) => {
+      const userId = parseInt(id, 10);
+      const user =
+        userId && (await cacheableData.user.userLoggedIn("id", userId));
+      done(null, user || false);
+    })
+  );
+
+  return {
+    loginCallback: [
+      passport.authenticate("delegated"),
+      (req, res) => {
+        res.redirect(nextUrlRedirect(req.body.nextUrl));
+      }
+    ]
+  };
+}
 
 function slackLoginId(teamId, userId) {
   return ["slack", teamId, userId].join("|");
@@ -263,5 +307,6 @@ export function setupSlackPassport(app) {
 export default {
   local: setupLocalAuthPassport,
   auth0: setupAuth0Passport,
-  slack: setupSlackPassport
+  slack: setupSlackPassport,
+  delegated: setupDelegatedPassport
 };
