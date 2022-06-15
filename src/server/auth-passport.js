@@ -142,16 +142,21 @@ export function setupLocalAuthPassport() {
     ]
   };
 }
-export function setupDelegatedPassport(app) {
+export function setupTokenPassport(app) {
   var opts = {};
-  opts.jwtFromRequest = ExtractJwt.fromAuthHeaderAsBearerToken();
 
-  opts.secretOrKey = process.env.DELEGATED_AUTH_SHARED_SECRET;
-  opts.issuer = process.env.DELEGATED_AUTH_ISSUER;
-  opts.audience = process.env.DELEGATED_AUTH_AUDIENCE;
+  opts.jwtFromRequest = ExtractJwt.fromExtractors([
+    ExtractJwt.fromAuthHeaderAsBearerToken(),
+    ExtractJwt.fromBodyField("jwt"),
+    ExtractJwt.fromUrlQueryParameter("jwt")
+  ]);
+
+  opts.secretOrKey = process.env.TOKEN_AUTH_SHARED_SECRET;
+  opts.issuer = process.env.TOKEN_AUTH_ISSUER;
+  opts.audience = process.env.TOKEN_AUTH_AUDIENCE;
 
   passport.use(
-    "delegated",
+    "token",
     new JwtStrategy(opts, async function(jwt_payload, done) {
       User.filter({ email: jwt_payload.sub }).then(users => {
         if (users.length === 0) {
@@ -162,6 +167,16 @@ export function setupDelegatedPassport(app) {
       });
     })
   );
+
+  app.get("/login/token-redirect", (req, res) => {
+    const callbackUrl = new URL("/login-callback", process.env.BASE_URL);
+    callbackUrl.searchParams.set("nextUrl", req.query.nextUrl || "");
+
+    const tokenIssuerUrl = new URL(process.env.TOKEN_AUTH_URL);
+    tokenIssuerUrl.searchParams.set("callback", callbackUrl);
+
+    res.redirect(tokenIssuerUrl);
+  });
 
   passport.serializeUser((user, done) => {
     done(null, user.id);
@@ -178,9 +193,9 @@ export function setupDelegatedPassport(app) {
 
   return {
     loginCallback: [
-      passport.authenticate("delegated"),
+      passport.authenticate("token"),
       (req, res) => {
-        res.redirect(nextUrlRedirect(req.body.nextUrl));
+        res.redirect(nextUrlRedirect(req.query.nextUrl));
       }
     ]
   };
@@ -308,5 +323,5 @@ export default {
   local: setupLocalAuthPassport,
   auth0: setupAuth0Passport,
   slack: setupSlackPassport,
-  delegated: setupDelegatedPassport
+  token: setupTokenPassport
 };
