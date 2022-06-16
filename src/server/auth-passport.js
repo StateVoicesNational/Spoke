@@ -2,7 +2,7 @@ import passport from "passport";
 import Auth0Strategy from "passport-auth0";
 import { Strategy as LocalStrategy } from "passport-local";
 import slack from "@aoberoi/passport-slack";
-import { User, cacheableData } from "./models";
+import { User, UserOrganization, Organization, cacheableData } from "./models";
 import localAuthHelpers from "./local-auth-helpers";
 import wrap from "./wrap";
 import { capitalizeWord } from "./api/lib/utils";
@@ -158,13 +158,72 @@ export function setupTokenPassport(app) {
   passport.use(
     "token",
     new JwtStrategy(opts, async function(jwt_payload, done) {
-      User.filter({ email: jwt_payload.sub }).then(users => {
-        if (users.length === 0) {
-          return done(null, false);
-        }
+      User.filter({ email: jwt_payload.sub })
+        .then(users => {
+          if (users.length === 0) {
+            const userData = {
+              auth0_id: ["token", jwt_payload.sub].join("|"),
+              first_name: jwt_payload.name.split(" ")[0],
+              last_name: jwt_payload.name
+                .split(" ")
+                .slice(1)
+                .join(" "),
+              cell: "",
+              email: jwt_payload.email || jwt_payload.sub,
+              is_superadmin: false
+            };
 
-        return done(null, users[0]);
-      });
+            return User.save(userData);
+          }
+
+          return users[0];
+        })
+        .then(user => {
+          UserOrganization.filter({ user_id: user.id }).then(userOrgs => {
+            if (typeof jwt_payload.user_organizations === "undefined") {
+              // JWT does not contain any assertions about user roles
+              // so leaving that up to whatever the user has configured
+
+              done(null, user);
+              return;
+            }
+
+            const jwtUserOrgs = jwt_payload.user_organizations || [];
+            const userOrgIdsInDatabase = userOrgs.map(
+              existing => existing.organization_id
+            );
+            const userOrgIdsInAssertion = jwtUserOrgs.map(
+              asserted => asserted.organization_id
+            );
+
+            // Adding user to orgs based on jwt
+            const createPromises = jwtUserOrgs
+              .filter(uo => !userOrgIdsInDatabase.includes(uo.organization_id))
+              .map(asserted => ({
+                user_id: user.id,
+                organization_id: asserted.organization_id,
+                role: asserted.role
+              }))
+              .map(userOrg => UserOrganization.save(userOrg));
+
+            // Syncing roles in orgs that match both
+            const updatePromises = userOrgs
+              .filter(uo => userOrgIdsInAssertion.includes(uo.organization_id))
+              .map(userOrg => {
+                const { role } = jwtUserOrgs.find(
+                  a => a.organization_id == userOrg.organization_id
+                );
+                // Role is the only thing that can be updated
+                userOrg.role = role;
+
+                return userOrg.save();
+              });
+
+            Promise.all([...createPromises, ...updatePromises]).then(() =>
+              done(null, user)
+            );
+          });
+        });
     })
   );
 
@@ -172,10 +231,10 @@ export function setupTokenPassport(app) {
     const callbackUrl = new URL("/login-callback", process.env.BASE_URL);
     callbackUrl.searchParams.set("nextUrl", req.query.nextUrl || "");
 
-    const tokenIssuerUrl = new URL(process.env.TOKEN_AUTH_URL);
-    tokenIssuerUrl.searchParams.set("callback", callbackUrl);
+    const tokenAuthUrl = new URL(process.env.TOKEN_AUTH_URL);
+    tokenAuthUrl.searchParams.set("callback", callbackUrl);
 
-    res.redirect(tokenIssuerUrl);
+    res.redirect(tokenAuthUrl);
   });
 
   passport.serializeUser((user, done) => {
