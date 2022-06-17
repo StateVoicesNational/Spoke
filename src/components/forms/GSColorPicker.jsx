@@ -117,6 +117,12 @@ export default class GSTextField extends GSFormField {
       { marginBottom: theme.spacing(2) },
       textFieldProps.style
     );
+    const regex = new RegExp("^#([a-fA-F0-9]{6}|[a-fA-F0-9]{3})$");
+    const isValidColor = regex.test(textFieldProps.value);
+
+    // only show the error state if it is required or a value has been entered
+    const showError = this.props.required || textFieldProps.value;
+
     return (
       <div>
         <TextField
@@ -127,6 +133,12 @@ export default class GSTextField extends GSFormField {
           }}
           {...textFieldProps}
           fullWidth
+          error={(showError && !isValidColor) || textFieldProps.error}
+          helperText={
+            isValidColor || !showError
+              ? textFieldProps.helperText
+              : "Invalid color"
+          }
           onChange={event => {
             onChange(event.target.value);
           }}

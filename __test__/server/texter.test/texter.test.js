@@ -156,11 +156,12 @@ it("should be able to receive a response and reply (using fakeService)", async (
       expect.objectContaining({
         send_status: "DELIVERED",
         text: `responding to ${message.text}`,
-        user_id: testTexterUser.id,
+        user_id: null,
         contact_number: testContact.cell,
         campaign_contact_id: testContact.id
       })
     );
+    expect(dbMessage[1].is_from_contact).toBeTruthy();
   });
 
   await waitForExpect(async () => {

@@ -17,12 +17,9 @@ const styles = StyleSheet.create({
     position: "fixed",
     top: 0,
     left: 0,
-    // right: 0,
-    // bottom: 0
     width: "100%",
     height: "100%",
     zIndex: 1002,
-    backgroundColor: "white",
     overflow: "hidden"
   },
   requestContainer: {
@@ -62,6 +59,26 @@ export class ContactController extends React.Component {
       if (startIndex === -1) {
         startIndex = 0;
       }
+    } else if (
+      global.ASSIGNMENT_CONTACTS_SIDEBAR &&
+      this.props.messageStatusFilter !== "needsMessage"
+    ) {
+      const messageStatusFilter = this.props.messageStatusFilter;
+      let status = null;
+      if (messageStatusFilter === "needsMessageOrResponse") {
+        status = ["needsResponse", "needsMessage"];
+      } else if (messageStatusFilter === "allReplies") {
+        status = ["messaged", "needsMessage"];
+      } else if (messageStatusFilter === "needsResponseExpired") {
+        status = ["needsResponse"];
+      } else {
+        status = messageStatusFilter.split(",");
+      }
+
+      startIndex = Math.max(
+        this.props.contacts.findIndex(c => status.includes(c.messageStatus)),
+        0
+      );
     }
     this.updateCurrentContactIndex(startIndex);
   }
@@ -74,7 +91,6 @@ export class ContactController extends React.Component {
     // In fact, without the code below, we will 'double-jump' each message
     // we send or change the status in some way.
     // Below, we update our index with the contact that matches our current index.
-
     if (nextState.currentContactIndex != this.state.currentContactIndex) {
       console.log(
         "updateindex <cur> <next>",
@@ -188,9 +204,11 @@ export class ContactController extends React.Component {
       // console.log('getContactData length', newIndex, getIds.length)
       this.setState({ loading: true });
       const contactData = await this.props.loadContacts(getIds);
-      const {
-        data: { getAssignmentContacts }
-      } = contactData;
+      let getAssignmentContacts;
+      if (contactData && contactData.data) {
+        getAssignmentContacts = contactData.data.getAssignmentContacts;
+      }
+
       if (getAssignmentContacts) {
         const newContactData = {};
         getAssignmentContacts.forEach((c, i) => {
@@ -237,37 +255,18 @@ export class ContactController extends React.Component {
     this.getContactData(newIndex);
   }
 
+  updateCurrentContactById = newId => {
+    this.updateCurrentContactIndex(
+      this.props.contacts.findIndex(c => c.id == newId)
+    );
+  };
+
   hasPrevious() {
     return this.state.currentContactIndex > 0;
   }
 
   hasNext() {
     return this.state.currentContactIndex < this.contactCount() - 1;
-  }
-
-  canRequestMore() {
-    const { assignment, campaign, messageStatusFilter } = this.props;
-    if (assignment.hasUnassignedContactsForTexter) {
-      if (
-        (messageStatusFilter === "needsMessage" ||
-          messageStatusFilter === "needsSecondPass") &&
-        !campaign.requestAfterReply
-      ) {
-        return true;
-      } else if (
-        messageStatusFilter === "needsResponse" &&
-        campaign.requestAfterReply
-      ) {
-        if (
-          assignment.unmessagedCount === 0 &&
-          assignment.unrepliedCount === 0 &&
-          assignment.secondpassCount === 0
-        ) {
-          return true;
-        }
-      }
-    }
-    return false;
   }
 
   handleFinishContact = contactId => {
@@ -446,9 +445,9 @@ export class ContactController extends React.Component {
         onFinishContact={this.handleFinishContact}
         refreshData={this.props.refreshData}
         onExitTexter={this.handleExitTexter}
-        messageStatusFilter={this.props.messageStatusFilter}
         organizationId={this.props.organizationId}
         location={this.props.location}
+        updateCurrentContactById={this.updateCurrentContactById}
       />
     );
   }
@@ -462,7 +461,7 @@ export class ContactController extends React.Component {
       );
     }
     const initials = messageStatusFilter === "needsMessage";
-    const action = initials ? "messaged" : "replied to";
+    const action = initials ? "messaged" : "messaged and replied to";
     const emptyMessage =
       allContactsCount === 0
         ? "No current contacts"

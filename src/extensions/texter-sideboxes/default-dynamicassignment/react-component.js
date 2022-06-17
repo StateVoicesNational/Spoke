@@ -28,11 +28,10 @@ export const showSidebox = ({
   if (
     finished &&
     campaign.useDynamicAssignment &&
-    (assignment.hasUnassignedContactsForTexter ||
-      messageStatusFilter === "needsMessage" ||
-      assignment.unmessagedCount) &&
-    (messageStatusFilter === "needsMessage" ||
-      messageStatusFilter === "needsResponse")
+    assignment.hasUnassignedContactsForTexter &&
+    ["needsMessage", "needsMessageOrResponse", "needsResponse"].includes(
+      messageStatusFilter
+    )
   ) {
     return "popup";
   }

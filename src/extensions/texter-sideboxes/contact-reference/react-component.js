@@ -17,13 +17,12 @@ export const showSidebox = ({
   campaign,
   assignment,
   texter,
-  navigationToolbarChildren,
-  messageStatusFilter
+  navigationToolbarChildren
 }) => {
   // Return anything False-y to not show
   // Return anything Truth-y to show
   // Return 'popup' to force a popup on mobile screens (instead of letting it hide behind a button)
-  return contact && messageStatusFilter !== "needsMessage";
+  return contact && contact.messageStatus !== "needsMessage";
 };
 
 export class TexterSidebox extends React.Component {
@@ -95,8 +94,7 @@ TexterSidebox.propTypes = {
 
   // parent state
   disabled: type.bool,
-  navigationToolbarChildren: type.object,
-  messageStatusFilter: type.string
+  navigationToolbarChildren: type.object
 };
 
 export const adminSchema = () => ({
@@ -111,6 +109,7 @@ export class AdminConfig extends React.Component {
         labelPlacement="end"
         control={
           <Switch
+            color="primary"
             checked={this.props.settingsData.contactReferenceClickable}
             onChange={event =>
               this.props.onToggle(

@@ -67,7 +67,7 @@ async function listOrganizationCounts(organization) {
       "area_code",
       r.knex.raw("COUNT(allocated_to) as allocated_count"),
       r.knex.raw(
-        "SUM(CASE WHEN allocated_to IS NULL THEN 1 END) as available_count"
+        "SUM(CASE WHEN allocated_to IS NULL OR allocated_to = 'messaging_service' THEN 1 END) as available_count"
       )
     )
     .where({
