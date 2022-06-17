@@ -295,6 +295,15 @@ const rootSchema = gql`
       organizationId: String!
       optOutMessage: String!
     ): Organization
+    updateTheme(
+      primary: String
+      secondary: String
+      info: String
+      success: String
+      warning: String
+      error: String
+      organizationId: String!
+    ): Organization
     updateServiceVendorConfig(
       organizationId: String!
       serviceName: String!
@@ -324,8 +333,9 @@ const rootSchema = gql`
     ): [ScriptUpdateResult]
     editCampaignContactMessageStatus(
       messageStatus: String!
-      campaignContactId: String!
-    ): CampaignContact
+      campaignContactId: String
+      campaignIdsContactIds: [CampaignIdContactId]
+    ): [CampaignContact]
     deleteQuestionResponses(
       interactionStepIds: [String]
       campaignContactId: String!
@@ -384,7 +394,6 @@ const rootSchema = gql`
       organizationId: ID!
       areaCode: String!
       limit: Int!
-      addToOrganizationMessagingService: Boolean
     ): JobRequest
     deletePhoneNumbers(organizationId: ID!, areaCode: String!): JobRequest
     releaseCampaignNumbers(campaignId: ID!): Campaign!
@@ -400,10 +409,10 @@ const rootSchema = gql`
 export const schema = [
   rootSchema,
   userSchema,
-  organizationSchema,
   "scalar Date",
   "scalar JSON",
   "scalar Phone",
+  organizationSchema,
   campaignSchema,
   assignmentSchema,
   interactionStepSchema,

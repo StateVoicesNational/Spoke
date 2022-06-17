@@ -7,11 +7,12 @@ import { StyleSheetTestUtils } from "aphrodite";
 import each from "jest-each";
 import { ApolloProvider } from "react-apollo";
 import ApolloClientSingleton from "../../src/network/apollo-client-singleton";
-import { AssignmentSummary } from "../../src/components/AssignmentSummary";
+import { AssignmentSummaryBase as AssignmentSummary } from "../../src/components/AssignmentSummary";
 import Badge from "@material-ui/core/Badge";
 import Button from "@material-ui/core/Button";
 import CardContent from "@material-ui/core/CardContent";
 import CardHeader from "@material-ui/core/CardHeader";
+import { muiTheme } from "../test_helpers";
 
 function getAssignment({ isDynamic = false, counts = {} }) {
   return {
@@ -39,6 +40,7 @@ describe("AssignmentSummary text", function t() {
   beforeEach(() => {
     this.summary = mount(
       <AssignmentSummary
+        muiTheme={muiTheme}
         assignment={getAssignment({
           counts: {
             unmessagedCount: 1,
@@ -89,6 +91,7 @@ describe("AssignmentSummary actions inUSA and NOT AllowSendAll", () => {
     return mount(
       <ApolloProvider client={ApolloClientSingleton}>
         <AssignmentSummary
+          muiTheme={muiTheme}
           assignment={getAssignment({
             isDynamic,
             counts: {
@@ -193,6 +196,7 @@ describe("AssignmentSummary NOT inUSA and AllowSendAll", () => {
     window.ALLOW_SEND_ALL = true;
     return mount(
       <AssignmentSummary
+        muiTheme={muiTheme}
         assignment={getAssignment({
           isDynamic,
           counts: {
@@ -231,6 +235,7 @@ describe("AssignmentSummary NOT inUSA and AllowSendAll", () => {
 it('renders "Send later" when there is a badTimezoneCount', () => {
   const actions = mount(
     <AssignmentSummary
+      muiTheme={muiTheme}
       assignment={getAssignment({
         counts: {
           unmessagedCount: 0,
@@ -276,6 +281,7 @@ describe("contacts filters", () => {
     AssignmentSummary.prototype.renderBadgedButton = mockRender;
     mount(
       <AssignmentSummary
+        muiTheme={muiTheme}
         assignment={getAssignment({
           counts: {
             unmessagedCount: 1,
@@ -309,6 +315,7 @@ describe("contacts filters", () => {
     AssignmentSummary.prototype.renderBadgedButton = mockRender;
     mount(
       <AssignmentSummary
+        muiTheme={muiTheme}
         assignment={getAssignment({
           counts: {
             unmessagedCount: 1,

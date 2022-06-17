@@ -20,7 +20,7 @@ export const showSidebox = ({
   // Return 'popup' to force a popup on mobile screens (instead of letting it hide behind a button)
   if (
     (contact && finished) ||
-    (messageStatusFilter === "needsMessage" &&
+    (["needsMessage", "needsMessageOrResponse"].includes(messageStatusFilter) &&
       assignment.allContactsCount &&
       assignment.unmessagedCount === 0)
   ) {

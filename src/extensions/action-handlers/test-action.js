@@ -23,12 +23,12 @@ export function serverAdministratorInstructions() {
   };
 }
 
-// return true, if the action is usable and available for the organizationId
+// return true, if the action is usable and available for the organization
 // Sometimes this means certain variables/credentials must be setup
 // either in environment variables or organization.features json data
 // Besides this returning true, "test-action" will also need to be added to
 // process.env.ACTION_HANDLERS
-export async function available(organizationId) {
+export async function available(organization) {
   return {
     result: true,
     expiresSeconds: 600
@@ -38,10 +38,13 @@ export async function available(organizationId) {
 // What happens when a texter saves the answer that triggers the action
 // This is presumably the meat of the action
 export async function processAction({
+  questionResponse, // Not used here
+  interactionStep,
   campaignContactId,
-  contact
-  // campaign,    // unused parameter
-  // organization // unused parameter
+  contact,
+  campaign, // Not used here
+  organization, // Not used here
+  previousValue // Not used here
 }) {
   // This is a meta action that updates a variable in the contact record itself.
   // Generally, you want to send action data to the outside world, so you

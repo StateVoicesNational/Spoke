@@ -1,6 +1,7 @@
 import gql from "graphql-tag";
 import pick from "lodash/pick";
 import React, { Component } from "react";
+import { compose } from "react-apollo";
 
 import Paper from "@material-ui/core/Paper";
 import Dialog from "@material-ui/core/Dialog";
@@ -193,9 +194,9 @@ class AdminBulkScriptEditor extends Component {
             />
           </FormControl>
           <p style={{ fontStyle: "italic" }}>
-            Note: the text must be an exact match! For example, there a couple
-            apostraphe characters: <span style={styles.code}>'</span> vs{" "}
-            <span style={styles.code}>’</span> )
+            Note: the text must be an exact match. For example, be careful of
+            single quotes vs. double quotes: <span style={styles.code}>'</span>{" "}
+            vs <span style={styles.code}>’</span> )
           </p>
         </Paper>
         <Paper style={styles.paddedPaper}>
@@ -347,6 +348,4 @@ const mutations = {
   })
 };
 
-export default loadData({
-  mutations
-})(AdminBulkScriptEditor);
+export default compose(loadData({ mutations }))(AdminBulkScriptEditor);

@@ -3,6 +3,7 @@ import { GraphQLError } from "graphql/error";
 import { Message, cacheableData } from "../../models";
 
 import { getSendBeforeTimeUtc } from "../../../lib/timezones";
+import { replaceEasyGsmWins } from "../../../lib/gsm";
 import { jobRunner } from "../../../extensions/job-runners";
 import { Tasks } from "../../../workers/tasks";
 import { updateContactTags } from "./updateContactTags";
@@ -55,9 +56,6 @@ const newError = (message, code, details = {}) => {
   }
   return err;
 };
-
-const replaceCurlyApostrophes = rawText =>
-  rawText.replace(/[\u2018\u2019]/g, "'");
 
 export const sendRawMessage = async ({
   finalText,
@@ -233,7 +231,7 @@ export const sendMessage = async (
   }
 
   const initialMessageStatus = contact.message_status;
-  const finalText = replaceCurlyApostrophes(text);
+  const finalText = replaceEasyGsmWins(text);
 
   contact.message_status = await sendRawMessage({
     finalText,
@@ -254,21 +252,28 @@ export const sendMessage = async (
       const cannedResponse = cannedResponses.find(
         res => res.id === Number(cannedResponseId)
       );
-      if (
-        cannedResponse &&
-        cannedResponse.tagIds &&
-        cannedResponse.tagIds.length
-      ) {
-        await updateContactTags(
-          null,
-          {
-            campaignContactId,
-            tags: cannedResponse.tagIds.map(t => ({
-              id: t
-            }))
-          },
-          { user, loaders }
-        );
+      if (cannedResponse) {
+        if (cannedResponse.tagIds && cannedResponse.tagIds.length) {
+          await updateContactTags(
+            null,
+            {
+              campaignContactId,
+              tags: cannedResponse.tagIds.map(t => ({
+                id: t
+              }))
+            },
+            { user, loaders }
+          );
+        }
+
+        if (cannedResponse.answer_actions) {
+          await jobRunner.dispatchTask(Tasks.ACTION_HANDLER_CANNED_RESPONSE, {
+            cannedResponse,
+            organization,
+            campaign,
+            contact
+          });
+        }
       }
     }
   }

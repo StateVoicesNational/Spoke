@@ -7,8 +7,10 @@ import Button from "@material-ui/core/Button";
 // immediate child is a Button or other type it recognizes. Can get rid of this if we remove material-ui
 const styles = StyleSheet.create({
   container: {
-    display: "inline-block",
-    marginLeft: 20
+    display: "block",
+    width: "25ex",
+    marginLeft: "auto",
+    marginRight: "auto"
   }
 });
 
@@ -33,6 +35,7 @@ export default class BulkSendButton extends Component {
           onClick={this.sendMessages}
           disabled={this.state.isSending}
           color="primary"
+          variant="contained"
         >
           {this.state.isSending
             ? "Sending..."
@@ -45,7 +48,7 @@ export default class BulkSendButton extends Component {
 
 BulkSendButton.propTypes = {
   assignment: PropTypes.object,
-  onFinishContact: PropTypes.function,
-  bulkSendMessages: PropTypes.function,
-  setDisabled: PropTypes.function
+  onFinishContact: PropTypes.func,
+  bulkSendMessages: PropTypes.func,
+  setDisabled: PropTypes.func
 };

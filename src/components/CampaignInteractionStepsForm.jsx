@@ -1,8 +1,8 @@
 import type from "prop-types";
 import React from "react";
-import { StyleSheet, css } from "aphrodite";
 import Form from "react-formal";
 import * as yup from "yup";
+import { compose } from "recompose";
 
 import Button from "@material-ui/core/Button";
 import ButtonGroup from "@material-ui/core/ButtonGroup";
@@ -13,8 +13,8 @@ import HelpOutlineIcon from "@material-ui/icons/HelpOutline";
 import Card from "@material-ui/core/Card";
 import CardContent from "@material-ui/core/CardContent";
 import CardHeader from "@material-ui/core/CardHeader";
+import { Typography } from "@material-ui/core";
 
-import theme from "../styles/theme";
 import CampaignFormSectionHeading from "./CampaignFormSectionHeading";
 import GSForm from "./forms/GSForm";
 import GSTextField from "./forms/GSTextField";
@@ -23,40 +23,34 @@ import GSSelectField from "./forms/GSSelectField";
 import GSAutoComplete from "./forms/GSAutoComplete";
 import { makeTree } from "../lib";
 import { dataTest } from "../lib/attributes";
+import withMuiTheme from "../containers/hoc/withMuiTheme";
 
-const styleSheet = StyleSheet.create({
-  errorMessage: {
-    color: theme.colors.red
-  }
-});
-
-const styles = {
-  pullRight: {
-    float: "right",
-    position: "relative",
-    icon: "pointer"
-  },
-
-  cardHeader: {
-    backgroundColor: theme.colors.veryLightGray
-  },
-
-  interactionStep: {
-    borderLeft: `5px solid ${theme.colors.green}`,
-    marginBottom: 24,
-    width: "100%"
-  },
-
-  answerContainer: {
-    marginLeft: "35px",
-    marginTop: "10px",
-    borderLeft: `3px dashed ${theme.colors.veryLightGray}`
-  }
-};
-
-export default class CampaignInteractionStepsForm extends React.Component {
+export class CampaignInteractionStepsFormBase extends React.Component {
   constructor(props) {
     super(props);
+    this.styles = {
+      pullRight: {
+        float: "right",
+        position: "relative",
+        icon: "pointer"
+      },
+
+      cardHeader: {
+        backgroundColor: this.props.muiTheme.palette.action.hover
+      },
+
+      interactionStep: {
+        borderLeft: `5px solid ${this.props.muiTheme.palette.success.main}`,
+        marginBottom: 24,
+        width: "100%"
+      },
+
+      answerContainer: {
+        marginLeft: "35px",
+        marginTop: "10px",
+        borderLeft: `3px dashed ${this.props.muiTheme.palette.action.hover}`
+      }
+    };
     this.state = {
       focusedField: null,
       availableActionsLookup: props.availableActions.reduce(
@@ -263,6 +257,10 @@ export default class CampaignInteractionStepsForm extends React.Component {
       instructions = answerActions.instructions;
     }
 
+    const initialSubtitleText = global.HIDE_BRANCHED_SCRIPTS
+      ? "Enter an initial script for your texter."
+      : "Enter a script for your texter along with the question you want the texter be able to answer on behalf of the contact.";
+
     let answerActionsData = interactionStep.answerActionsData;
     try {
       answerActionsData = JSON.parse(interactionStep.answerActionsData);
@@ -273,7 +271,7 @@ export default class CampaignInteractionStepsForm extends React.Component {
         {interactionStep.parentInteractionId && (
           <div>
             <IconButton
-              style={styles.pullRight}
+              style={this.styles.pullRight}
               onClick={this.deleteStep(interactionStep.id).bind(this)}
             >
               <DeleteIcon />
@@ -292,17 +290,15 @@ export default class CampaignInteractionStepsForm extends React.Component {
           </div>
         )}
         <Card
-          style={styles.interactionStep}
+          style={this.styles.interactionStep}
           ref={interactionStep.id}
           key={interactionStep.id}
         >
           <CardHeader
-            style={styles.cardHeader}
+            style={this.styles.cardHeader}
             title={title}
             subtitle={
-              interactionStep.parentInteractionId
-                ? null
-                : "Enter a script for your texter along with the question you want the texter be able to answer on behalf of the contact."
+              interactionStep.parentInteractionId ? "" : initialSubtitleText
             }
           />
           <CardContent>
@@ -363,7 +359,7 @@ export default class CampaignInteractionStepsForm extends React.Component {
                       </Tooltip>
                       {instructions && <div>{instructions}</div>}
                     </div>
-                    {clientChoiceData && clientChoiceData.length && (
+                    {clientChoiceData && clientChoiceData.length ? (
                       <div>
                         <GSAutoComplete
                           {...dataTest("actionDataAutoComplete")}
@@ -383,13 +379,13 @@ export default class CampaignInteractionStepsForm extends React.Component {
                           }}
                         />
                         {interactionStep.needRequiredAnswerActionsData && (
-                          <div className={css(styleSheet.errorMessage)}>
+                          <Typography color="error">
                             Action requires additional data. Please select
                             something.
-                          </div>
+                          </Typography>
                         )}
                       </div>
-                    )}
+                    ) : null}
                   </div>
                 )}
               <Form.Field
@@ -403,18 +399,22 @@ export default class CampaignInteractionStepsForm extends React.Component {
                 multiline
                 hintText="This is what your texters will send to your contacts. E.g. Hi, {firstName}. It's {texterFirstName} here."
               />
-              <Form.Field
-                as={GSTextField}
-                {...dataTest("questionText")}
-                name="questionText"
-                label="Question"
-                fullWidth
-                hintText="A question for texters to answer. E.g. Can this person attend the event?"
-              />
+              {!global.HIDE_BRANCHED_SCRIPTS ? (
+                <Form.Field
+                  as={GSTextField}
+                  {...dataTest("questionText")}
+                  name="questionText"
+                  label="Question"
+                  fullWidth
+                  hintText="A question for texters to answer. E.g. Can this person attend the event?"
+                />
+              ) : (
+                ""
+              )}
             </GSForm>
           </CardContent>
         </Card>
-        <div style={styles.answerContainer}>
+        <div style={this.styles.answerContainer}>
           {interactionStep.questionText &&
             interactionStep.script &&
             (!interactionStep.parentInteractionId ||
@@ -461,11 +461,15 @@ export default class CampaignInteractionStepsForm extends React.Component {
 
     const tree = makeTree(this.state.interactionSteps);
 
+    const sectionSubtitle = global.HIDE_BRANCHED_SCRIPTS
+      ? "Add an initial outbound message to begin your conversation, then add canned responses below to continue the conversation."
+      : "You can add scripts and questions and your texters can indicate responses from your contacts. For example, you might want to collect RSVPs to an event or find out whether to follow up about a different volunteer activity.";
+
     return (
       <div>
         <CampaignFormSectionHeading
           title="What do you want to discuss?"
-          subtitle="You can add scripts and questions and your texters can indicate responses from your contacts. For example, you might want to collect RSVPs to an event or find out whether to follow up about a different volunteer activity."
+          subtitle={sectionSubtitle}
         />
         {this.renderInteractionStep(tree, availableActions)}
         <Button
@@ -484,7 +488,7 @@ export default class CampaignInteractionStepsForm extends React.Component {
   }
 }
 
-CampaignInteractionStepsForm.propTypes = {
+CampaignInteractionStepsFormBase.propTypes = {
   formValues: type.object,
   onChange: type.func,
   ensureComplete: type.bool,
@@ -494,3 +498,5 @@ CampaignInteractionStepsForm.propTypes = {
   errors: type.array,
   availableActions: type.array
 };
+
+export default compose(withMuiTheme)(CampaignInteractionStepsFormBase);

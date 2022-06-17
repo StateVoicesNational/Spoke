@@ -33,6 +33,7 @@ describe("twilio", () => {
   let testCampaign;
   let testTexterUser;
   let testContacts;
+  let testAssignment;
   let organizationId;
   let organizationId2;
   let dbCampaignContact;
@@ -95,7 +96,11 @@ describe("twilio", () => {
     testCampaign = await createCampaign(testAdminUser, testOrganization);
     testContacts = await createContacts(testCampaign, 100);
     testTexterUser = await createTexter(testOrganization);
-    await assignTexter(testAdminUser, testTexterUser, testCampaign);
+    testAssignment = await assignTexter(
+      testAdminUser,
+      testTexterUser,
+      testCampaign
+    );
     dbCampaignContact = await getCampaignContact(testContacts[0].id);
     await createScript(testAdminUser, testCampaign);
     await startCampaign(testAdminUser, testCampaign);
@@ -277,6 +282,10 @@ describe("twilio", () => {
     const campaign = await cacheableData.campaign.load(testCampaign.id, {
       forceLoad: true
     });
+    // load assignment into cache
+    const assn = await cacheableData.assignment.load(
+      testAssignment.data.editCampaign.assignments[0].id
+    );
     await cacheableData.campaignContact.loadMany(campaign, org, {});
     queryLog = [];
     await cacheableData.message.save({
@@ -475,7 +484,9 @@ describe("twilio", () => {
   describe("Number buying", () => {
     it("buys numbers in batches from twilio", async () => {
       const org2 = await cacheableData.organization.load(organizationId2);
-      await twilio.buyNumbersInAreaCode(org2, "212", 35);
+      await twilio.buyNumbersInAreaCode(org2, "212", 35, {
+        skipOrgMessageService: true
+      });
       const inventoryCount = await r.getCount(
         r.knex("owned_phone_number").where({
           area_code: "212",

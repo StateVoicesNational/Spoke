@@ -1,0 +1,60 @@
+name: Build
+
+on:
+  push:
+    branches:
+      - 'main'
+  release:
+    types:
+      - created
+    # `created` specifies a release that is NOT specified as a prerelease
+    # `published` would include prereleases
+  workflow_dispatch:
+
+jobs:
+  docker-build:
+    name: Build Docker image and and push to GHCR
+    runs-on: ubuntu-20.04
+    steps:
+      - name: ⚙️🐳 Set up QEMU
+        uses: docker/setup-qemu-action@v1
+
+      - name: ⚙️🐳 Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+
+      - name: ℹ️🐳 Set metadata
+        id: meta
+        uses: docker/metadata-action@v3
+        with:
+          images: |
+            ghcr.io/moveonorg/spoke
+          tags: |
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=ref,event=branch
+          # type=sha     Would tag the image with `sha-blahblahblah`
+          # type=sha,prefix={{branch}}-     Would tag the image with `gitbranch-blahblah`
+          flavor: |
+            latest=true
+          # Set to 'auto' if/when we want to stop tagging
+          # the most recent image as `latest`
+
+
+      - name: 🪵🐙 Login to GitHub Container Registry
+        id: login-ghcr
+        uses: docker/login-action@v1
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 🔨🐳 Build ➡️ Push to registries
+        id: docker_build
+        uses: docker/build-push-action@v2
+        with:
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+
+      - name: 🖨 Display image digest
+        run: echo ${{ steps.docker_build.outputs.digest }}
