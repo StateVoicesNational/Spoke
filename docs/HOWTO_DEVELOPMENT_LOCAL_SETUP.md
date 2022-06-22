@@ -113,3 +113,12 @@ To simulate receiving a reply from a contact you can use the Send Replies utilit
 
 If you need to use Twilio in development but with live keys, click [here](HOWTO_INTEGRATE_TWILIO.md) for instructions.
 When using instructions, please remember that references to NGROK urls should change to your Heroku app url.
+
+### ngrok
+
+If you want to test sending and receiving text messages with a real SMS provider in your local development environment, use [ngrok](https://ngrok.com/) to allow the vendor to communicate with Spoke.
+
+1. Create an ngrok account and download ngrok.
+2. Start up your Spoke dev env.
+3. Open a new terminal and cd to where you downloaded ngrok.
+4. Run the following command: `./ngrok http 3000`. You will see an external-facing app URL. Set the `BASE_URL` environment variable to that value. If you are using Auth0 for authentication, you will also need to log into Auth0 and update the Application URIs with the ngrok external-facing app URL.
