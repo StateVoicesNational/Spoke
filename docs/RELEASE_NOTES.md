@@ -8,9 +8,10 @@ _June 2022:_ Version 12.2
 
 ### New features
 * Send auto opt-out response
+* CiviCRM integration
 
 ### Appreciations
-* [Adam Greenspan](https://github.com/agreenspan24), [Arique Aguilar](https://github.com/Arique110), [Ilona Brand](https://github.com/ibrand), [Kathy Nguyen](https://github.com/crayolakat), and Harold Travis and Mark Houghton for QA
+* [Adam Greenspan](https://github.com/agreenspan24), [Andrew Cormick-Dockery](https://github.com/andrew-cormick-dockery), [Anthony Blond](https://github.com/anthonyblond), [Arique Aguilar](https://github.com/Arique110), [Ilona Brand](https://github.com/ibrand), [John Twyman](https://github.com/johntwyman), [Kathy Nguyen](https://github.com/crayolakat), [Peter Murphy](https://github.com/peterkmurphy), and Harold Travis and Mark Houghton for QA
 
 ## v12.1
 
