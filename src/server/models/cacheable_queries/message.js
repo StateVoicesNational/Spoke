@@ -206,7 +206,7 @@ const deliveryReport = async ({
         messageServiceSid,
         userNumber
       ));
-    let organizationId = orgid;
+    let organizationId = orgId;
     let campaignContact;
     if (!organizationId) {
       campaignContact = await campaignContactCache.load(

@@ -1,5 +1,4 @@
 import { createHmac } from "crypto";
-import remove from "lodash/remove";
 
 import BandwidthNumbers from "@bandwidth/numbers";
 import BandwidthMessaging from "@bandwidth/messaging";
@@ -237,7 +236,7 @@ export async function syncAccountNumbers(organization, options) {
       .whereIn("phone_number", nums)
       .pluck("phone_number");
     const newNums = existingNums.length
-      ? remove(nums, e => existingNums.indexOf(e) + 1)
+      ? nums.filter(e => existingNums.indexOf(e) == -1)
       : nums;
     if (newNums.length) {
       console.log("Bandwidth, new numbers to load", newNums.length, newNums[0]);
