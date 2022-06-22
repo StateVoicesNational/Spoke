@@ -6,12 +6,15 @@ _June 2022:_ Version 12.2
 
 12.2 is a minor release.
 
+### Bug fixes
+* Fix CSV upload error messages
+
 ### New features
 * Send auto opt-out response
 * CiviCRM integration
 
 ### Appreciations
-* [Adam Greenspan](https://github.com/agreenspan24), [Andrew Cormick-Dockery](https://github.com/andrew-cormick-dockery), [Anthony Blond](https://github.com/anthonyblond), [Arique Aguilar](https://github.com/Arique110), [Ilona Brand](https://github.com/ibrand), [John Twyman](https://github.com/johntwyman), [Kathy Nguyen](https://github.com/crayolakat), [Peter Murphy](https://github.com/peterkmurphy), and Harold Travis and Mark Houghton for QA
+* [Adam Greenspan](https://github.com/agreenspan24), [Andrew Cormick-Dockery](https://github.com/andrew-cormick-dockery), [Anthony Blond](https://github.com/anthonyblond), [Arique Aguilar](https://github.com/Arique110), [Chuck Morris](https://github.com/percworld), [Ilona Brand](https://github.com/ibrand), [John Twyman](https://github.com/johntwyman), [Kathy Nguyen](https://github.com/crayolakat), [Michael Walker](https://github.com/MichaelEWalker87), [Peter Murphy](https://github.com/peterkmurphy), and Harold Travis and Mark Houghton for QA
 
 ## v12.1
 
