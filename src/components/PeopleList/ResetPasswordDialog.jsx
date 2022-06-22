@@ -13,8 +13,13 @@ import { dataTest } from "../../lib/attributes";
 const ResetPasswordDialog = props => (
   <Dialog open={props.open} onClose={props.requestClose}>
     <DialogTitle>Reset user password</DialogTitle>
+
     <DialogContent>
-      <PasswordResetLink passwordResetHash={props.passwordResetHash} />
+      {props.isAuth0 ? (
+        <div>The user has been sent an Auth0 password reset link!</div>
+      ) : (
+        <PasswordResetLink passwordResetHash={props.passwordResetHash} />
+      )}
     </DialogContent>
     <DialogActions>
       <Button
@@ -31,7 +36,8 @@ const ResetPasswordDialog = props => (
 ResetPasswordDialog.propTypes = {
   open: PropTypes.bool,
   requestClose: PropTypes.func,
-  passwordResetHash: PropTypes.string
+  passwordResetHash: PropTypes.string,
+  isAuth0: PropTypes.bool
 };
 
 export default ResetPasswordDialog;
