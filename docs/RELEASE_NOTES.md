@@ -13,6 +13,9 @@ _June 2022:_ Version 12.2
 * Fix wrong service vendor error links
 * Fix modal going blank after clicking "Clear Response" button
 
+### Improvements
+* Update dependencies
+
 ### New features
 * Send auto opt-out response
 * CiviCRM integration
