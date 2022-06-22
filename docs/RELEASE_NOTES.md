@@ -11,6 +11,7 @@ _June 2022:_ Version 12.2
 * Fix Auth0 password reset behavior
 * Fix wrong counts in edge cases
 * Fix wrong service vendor error links
+* Fix modal going blank after clicking "Clear Response" button
 
 ### New features
 * Send auto opt-out response
