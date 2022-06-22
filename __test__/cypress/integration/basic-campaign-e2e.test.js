@@ -66,6 +66,16 @@ describe("End-to-end campaign flow", () => {
     cy.get("[data-test=campaignBasicsForm]").submit();
     cy.task("log", "cyLOG basic-campaign-e2e-test 4");
     // Upload Contacts
+    cy.get("#contact-upload").attachFile("two-contacts-broken.csv"),
+      { force: true };
+    cy.wait(400);
+    cy.get("#contact-upload").attachFile("three-contacts.csv"), { force: true };
+    cy.wait(400);
+    cy.get("#contact-upload").attachFile("three-contacts.csv"), { force: true };
+    cy.wait(400);
+    cy.get("#contact-upload").attachFile("csv-headers-test.csv"),
+      { force: true };
+    cy.wait(400);
     cy.get("#contact-upload").attachFile("two-contacts.csv"), { force: true };
     cy.wait(400);
     cy.get("button[data-test=submitContactsCsvUpload]").click();
