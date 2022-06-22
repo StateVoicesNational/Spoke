@@ -260,7 +260,7 @@ export class CampaignInteractionStepsFormBase extends React.Component {
     const initialSubtitleText = global.HIDE_BRANCHED_SCRIPTS
       ? "Enter an initial script for your texter."
       : "Enter a script for your texter along with the question you want the texter be able to answer on behalf of the contact.";
-    
+
     let answerActionsData = interactionStep.answerActionsData;
     try {
       answerActionsData = JSON.parse(interactionStep.answerActionsData);

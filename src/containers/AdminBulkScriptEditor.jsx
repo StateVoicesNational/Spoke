@@ -194,8 +194,9 @@ class AdminBulkScriptEditor extends Component {
             />
           </FormControl>
           <p style={{ fontStyle: "italic" }}>
-            Note: the text must be an exact match. For example, be careful of single quotes vs. double quotes: <span style={styles.code}>'</span> vs{" "}
-            <span style={styles.code}>’</span> )
+            Note: the text must be an exact match. For example, be careful of
+            single quotes vs. double quotes: <span style={styles.code}>'</span>{" "}
+            vs <span style={styles.code}>’</span> )
           </p>
         </Paper>
         <Paper style={styles.paddedPaper}>
