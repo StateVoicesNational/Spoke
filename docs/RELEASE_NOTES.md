@@ -10,6 +10,7 @@ _June 2022:_ Version 12.2
 * Fix CSV upload error messages
 * Fix Auth0 password reset behavior
 * Fix wrong counts in edge cases
+* Fix wrong service vendor error links
 
 ### New features
 * Send auto opt-out response
