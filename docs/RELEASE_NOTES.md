@@ -6,6 +6,9 @@ _June 2022:_ Version 12.2
 
 12.2 is a minor release.
 
+### New features
+* Send auto opt-out response
+
 ### Appreciations
 * [Adam Greenspan](https://github.com/agreenspan24), [Arique Aguilar](https://github.com/Arique110), [Ilona Brand](https://github.com/ibrand), [Kathy Nguyen](https://github.com/crayolakat), and Harold Travis and Mark Houghton for QA
 
