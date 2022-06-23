@@ -170,6 +170,7 @@ export function setupTokenPassport(app) {
                 .join(" "),
               cell: "",
               email: jwt_payload.email || jwt_payload.sub,
+              cell: jwt_payload.cell || jwt_payload.phone,
               is_superadmin: false
             };
 
