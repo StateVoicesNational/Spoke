@@ -48,6 +48,10 @@ export async function onOrganizationUpdateSignal({
 
   updateData.NGP_VAN_API_KEY_ENC = textToStoreInDb;
 
+  await cacheableData.organization.setFeatures(organization.id, {
+    ngpVanAPIKey: updateData
+  });
+
   let orgChanges = {
     features: updateData
   };
@@ -58,6 +62,7 @@ export async function onOrganizationUpdateSignal({
     };
   }
 
+  await cacheableData.organization.clear(organization.id);
   await r
     .knex("organization")
     .where("id", organization.id)
