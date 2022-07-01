@@ -27,6 +27,7 @@ import GSSubmitButton from "../../components/forms/GSSubmitButton";
 import GSForm from "../../components/forms/GSForm";
 import CampaignTexterUIForm from "../../components/CampaignTexterUIForm";
 import OrganizationFeatureSettings from "../../components/OrganizationFeatureSettings";
+import ExtensionSettings from "../../components/ExtensionSettings";
 import { getServiceVendorComponent } from "../../extensions/service-vendors/components";
 import { getServiceManagerComponent } from "../../extensions/service-managers/components";
 import GSTextField from "../../components/forms/GSTextField";
@@ -429,7 +430,7 @@ class Settings extends React.Component {
               <CardContent>
                 <OrganizationFeatureSettings
                   formValues={this.props.data.organization}
-                  organization={this.props.data.organization}
+                  organization={this.props.data.organization} // This line is not being used.
                   onSubmit={async () => {
                     const { settings } = this.state;
                     await this.props.mutations.editOrganization({
@@ -503,30 +504,17 @@ class Settings extends React.Component {
               }
               onClick={() =>
                 this.setState({
-                  ExtensionSettings: "Extension Settings"
+                  ExtensionSettings: !this.state.ExtensionSettings
                 })
               }
             />
             <Collapse
-              in={this.state.ExternalConfiguration}
+              in={this.state.ExtensionSettings}
               timeout="auto"
               unmountOnExit
             >
               <CardContent>
-                <h2>DEBUG Zone</h2>
-                <p>
-                  Only take actions here if you know what you&rsquo;re doing
-                </p>
-                <Button
-                  color="secondary"
-                  variant="outlined"
-                  style={this.inlineStyles.dialogButton}
-                  onClick={
-                    this.props.mutations.clearCachedOrgAndExtensionCaches
-                  }
-                >
-                  Clear Cached Organization And Extension Caches
-                </Button>
+                <ExtensionSettings />
               </CardContent>
             </Collapse>
           </Card>
