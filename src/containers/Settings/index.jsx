@@ -489,6 +489,48 @@ class Settings extends React.Component {
             </Collapse>
           </Card>
         )}
+
+        {
+          //Extension Settings need to find where state is being held. The component is named Settings
+          <Card>
+            <CardHeader
+              title="Extenstion Settings"
+              style={this.getCardHeaderStyle()}
+              action={
+                <IconButton>
+                  <ExpandMoreIcon />
+                </IconButton>
+              }
+              onClick={() =>
+                this.setState({
+                  ExtensionSettings: "Extension Settings"
+                })
+              }
+            />
+            <Collapse
+              in={this.state.ExternalConfiguration}
+              timeout="auto"
+              unmountOnExit
+            >
+              <CardContent>
+                <h2>DEBUG Zone</h2>
+                <p>
+                  Only take actions here if you know what you&rsquo;re doing
+                </p>
+                <Button
+                  color="secondary"
+                  variant="outlined"
+                  style={this.inlineStyles.dialogButton}
+                  onClick={
+                    this.props.mutations.clearCachedOrgAndExtensionCaches
+                  }
+                >
+                  Clear Cached Organization And Extension Caches
+                </Button>
+              </CardContent>
+            </Collapse>
+          </Card>
+        }
       </div>
     );
   }
