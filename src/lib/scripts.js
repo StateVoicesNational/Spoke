@@ -105,6 +105,7 @@ export const applyScript = ({ script, contact, customFields, texter }) => {
   let appliedScript = script;
 
   for (const field of scriptFields) {
+    if (field === "notes") continue;
     try {
       const re = new RegExp(`${delimit(field)}`, "g");
       appliedScript = appliedScript.replace(
