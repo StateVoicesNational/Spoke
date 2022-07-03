@@ -562,6 +562,58 @@ const campaignContactCache = {
     } catch (err) {
       console.log("contact updateStatus Error", newStatus, contact, err);
     }
+  },
+  updateCustomFields: async (contact, customFields, campaign, organization) => {
+    /* eslint-disable no-param-reassign */
+    try {
+      if (typeof customFields !== "string") {
+        customFields = JSON.stringify(customFields || {});
+      }
+      const updatedAt = new Date();
+      await r
+        .knex("campaign_contact")
+        .where("id", contact.id)
+        .update({
+          updated_at: updatedAt,
+          custom_fields: customFields
+        });
+
+      const updatedContact = {
+        ...contact,
+        updated_at: updatedAt.toString(),
+        custom_fields: JSON.parse(customFields)
+      };
+
+      if (CONTACT_CACHE_ENABLED) {
+        if (!campaign || !campaign.id) {
+          campaign = await campaignCache.load(contact.campaign_id);
+        }
+        if (!organization || !organization.id) {
+          organization = await organizationCache.load(campaign.organization_id);
+        }
+        const messageServiceSid = await organizationCache.getMessageServiceSid(
+          organization.id
+        );
+
+        await saveCacheRecord(
+          updatedContact,
+          organization,
+          messageServiceSid,
+          campaign
+        );
+      }
+
+      return updatedContact;
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      return console.log(
+        "contact updateCustomFields Error",
+        customFields,
+        contact,
+        err
+      );
+    }
+    /* eslint-enable no-param-reassign */
   }
 };
 

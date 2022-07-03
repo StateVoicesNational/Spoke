@@ -14,7 +14,8 @@ function getComponents() {
           "tag-contact",
           "default-editinitial",
           "take-conversations",
-          "texter-feedback"
+          "texter-feedback",
+          "contact-notes"
         ];
   const components = {};
   enabledComponents.forEach(componentName => {

@@ -8,6 +8,7 @@ export { releaseContacts } from "./releaseContacts";
 export { sendMessage } from "./sendMessage";
 export { startCampaign } from "./startCampaign";
 export { updateContactTags } from "./updateContactTags";
+export { updateContactCustomFields } from "./updateContactCustomFields";
 export { updateQuestionResponses } from "./updateQuestionResponses";
 export { releaseCampaignNumbers } from "./releaseCampaignNumbers";
 export { clearCachedOrgAndExtensionCaches } from "./clearCachedOrgAndExtensionCaches";

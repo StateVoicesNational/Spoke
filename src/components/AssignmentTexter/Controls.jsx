@@ -171,6 +171,12 @@ export class AssignmentTexterContactControls extends React.Component {
   };
 
   onKeyUp = evt => {
+    if (evt.target && evt.target.id === "contact-notes-input") {
+      /* if texter is entering text in contact-notes sidebar input
+         ignore this listener, space/enter will send texts otherwise */
+      return;
+    }
+
     if (
       window.document &&
       document.location &&
@@ -842,7 +848,7 @@ export class AssignmentTexterContactControls extends React.Component {
         if (cannedResponseScript) {
           shortCannedResponses = [cannedResponseScript];
         } else {
-          const messageTextLowerCase = (messageText || '').toLowerCase();
+          const messageTextLowerCase = (messageText || "").toLowerCase();
 
           shortCannedResponses = campaign.cannedResponses.filter(
             script =>
