@@ -149,10 +149,10 @@ export class UserEditBase extends React.Component {
   handleSave = async formData => {
     const { router, location } = this.props;
     if (!this.props.authType) {
-      if (formData.extra) {
-        formData.extra = JSON.stringify(formData.extra);
-      }
-      await this.props.mutations.editUser(formData);
+      await this.props.mutations.editUser({
+        ...formData,
+        extra: formData.extra ? JSON.stringify(formData.extra) : "{}"
+      });
       if (this.props.onRequestClose) {
         this.props.onRequestClose();
       }
