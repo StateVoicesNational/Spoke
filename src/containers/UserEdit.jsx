@@ -246,7 +246,10 @@ export class UserEditBase extends React.Component {
       const fields = {};
       org.profileFields.forEach(field => {
         fields[field.name] = field.isRequired
-          ? yup.string().required()
+          ? yup
+              .string()
+              .nullable()
+              .required(`${field.label} is a required field`)
           : yup.string().nullable();
       });
       profileFields = {
