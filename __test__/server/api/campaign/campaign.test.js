@@ -1,41 +1,39 @@
 import gql from "graphql-tag";
-import { r } from "../../../../src/server/models";
-import { getConfig } from "../../../../src/server/api/lib/config";
-import { dataQuery as TexterTodoListQuery } from "../../../../src/containers/TexterTodoList";
-import {
-  dataQuery as TexterTodoQuery,
-  campaignQuery
-} from "../../../../src/containers/TexterTodo";
 import { campaignDataQuery as AdminCampaignEditQuery } from "../../../../src/containers/AdminCampaignEdit";
-import { campaignsQuery } from "../../../../src/containers/PaginatedCampaignsRetriever";
-
 import {
   bulkReassignCampaignContactsMutation,
   reassignCampaignContactsMutation
 } from "../../../../src/containers/AdminIncomingMessageList";
-
-import { makeTree } from "../../../../src/lib";
-
+import { campaignsQuery } from "../../../../src/containers/PaginatedCampaignsRetriever";
 import {
-  setupTest,
+  campaignQuery,
+  dataQuery as TexterTodoQuery
+} from "../../../../src/containers/TexterTodo";
+import { dataQuery as TexterTodoListQuery } from "../../../../src/containers/TexterTodoList";
+import * as twilio from "../../../../src/extensions/messaging_services/twilio";
+import { makeTree } from "../../../../src/lib";
+import { getConfig } from "../../../../src/server/api/lib/config";
+import { r } from "../../../../src/server/models";
+import {
+  assignTexter,
+  bulkSendMessages,
   cleanupTest,
-  createUser,
+  copyCampaign,
+  createCampaign,
+  createCannedResponses,
+  createContacts,
   createInvite,
   createOrganization,
-  createCampaign,
-  saveCampaign,
-  copyCampaign,
-  createContacts,
-  createTexter,
-  assignTexter,
   createScript,
-  createCannedResponses,
-  startCampaign,
+  createTexter,
+  createUser,
   getCampaignContact,
-  sendMessage,
-  bulkSendMessages,
   runGql,
-  sleep
+  saveCampaign,
+  sendMessage,
+  setupTest,
+  sleep,
+  startCampaign
 } from "../../../test_helpers";
 
 jest.mock("../../../../src/extensions/messaging_services/twilio");
@@ -1231,15 +1229,21 @@ describe("useOwnMessagingService", async () => {
       global.TWILIO_MESSAGE_SERVICE_SID
     );
   });
-  it("creates new messaging service when true", async () => {
-    await saveCampaign(
-      testAdminUser,
-      { id: testCampaign.id, organizationId },
-      "test campaign new title",
-      true
-    );
+  describe("when true", () => {
+    beforeEach(() => {
+      jest.spyOn(twilio, "createMessagingService").mockReturnValue({
+        sid: "testTWILIOsid"
+      });
+    });
+    it("creates new messaging service when true", async () => {
+      await saveCampaign(
+        testAdminUser,
+        { id: testCampaign.id, organizationId },
+        "test campaign new title",
+        true
+      );
 
-    const getCampaignsQuery = `
+      const getCampaignsQuery = `
       query getCampaign($campaignId: String!) {
         campaign(id: $campaignId) {
           id
@@ -1249,24 +1253,25 @@ describe("useOwnMessagingService", async () => {
       }
     `;
 
-    const variables = {
-      campaignId: testCampaign.id
-    };
+      const variables = {
+        campaignId: testCampaign.id
+      };
 
-    await startCampaign(testAdminUser, testCampaign);
+      await startCampaign(testAdminUser, testCampaign);
 
-    const campaignDataResults = await runGql(
-      getCampaignsQuery,
-      variables,
-      testAdminUser
-    );
+      const campaignDataResults = await runGql(
+        getCampaignsQuery,
+        variables,
+        testAdminUser
+      );
 
-    expect(campaignDataResults.data.campaign.useOwnMessagingService).toEqual(
-      true
-    );
-    expect(campaignDataResults.data.campaign.messageserviceSid).toEqual(
-      "testTWILIOsid"
-    );
+      expect(campaignDataResults.data.campaign.useOwnMessagingService).toEqual(
+        true
+      );
+      expect(campaignDataResults.data.campaign.messageserviceSid).toEqual(
+        "testTWILIOsid"
+      );
+    });
   });
 });
 
