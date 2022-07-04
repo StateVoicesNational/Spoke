@@ -157,6 +157,10 @@ export const dataQuery = gql`
       hasUnassignedContactsForTexter
       contacts(contactsFilter: $contactsFilter) {
         id
+        firstName
+        lastName
+        messageStatus
+        updatedAt
       }
       allContactsCount: contactsCount
       unmessagedCount: contactsCount(contactsFilter: $needsMessageFilter)
@@ -181,6 +185,19 @@ export class TexterTodo extends React.Component {
         !(this.props.location.query.review === "1"))
     ) {
       this.props.router.push(`/app/${this.props.params.organizationId}/todos`);
+    }
+  }
+
+  componentDidMount() {
+    // Get the latest data for the sidebar every 30 seconds to catch new messages
+    if (global.ASSIGNMENT_CONTACTS_SIDEBAR && !this.refreshInterval) {
+      this.refreshInterval = setInterval(this.refreshData, 30000);
+    }
+  }
+
+  componentWillUnmount() {
+    if (this.refreshInterval) {
+      clearInterval(this.refreshInterval);
     }
   }
 
@@ -249,19 +266,26 @@ const queries = {
     query: dataQuery,
     options: ownProps => {
       console.log("TexterTodo ownProps", ownProps);
+      const messageStatus =
+        global.ASSIGNMENT_CONTACTS_SIDEBAR &&
+        ownProps.messageStatus !== "needsMessage" &&
+        ownProps.messageStatus !== "needsMessageOrResponse"
+          ? "allReplies"
+          : ownProps.messageStatus;
+
       // based on ?review=1 in location.search
       // exclude isOptedOut: false, validTimezone: true
       const contactsFilter =
         ownProps.location.query.review === "1"
           ? {
-              messageStatus: ownProps.messageStatus,
+              messageStatus,
               errorCode: ["0"],
               ...(ownProps.params.reviewContactId && {
                 contactId: ownProps.params.reviewContactId
               })
             }
           : {
-              messageStatus: ownProps.messageStatus,
+              messageStatus,
               ...(!ownProps.params.reviewContactId && { isOptedOut: false }),
               ...(ownProps.params.reviewContactId && {
                 contactId: ownProps.params.reviewContactId

@@ -1,7 +1,6 @@
 import PropTypes from "prop-types";
 import React from "react";
 import { StyleSheet, css } from "aphrodite";
-import OldControls from "../components/AssignmentTexter/OldControls";
 import Controls from "../components/AssignmentTexter/Controls";
 import { applyScript } from "../lib/scripts";
 import gql from "graphql-tag";
@@ -174,7 +173,7 @@ export class AssignmentTexterContact extends React.Component {
   };
 
   handleMessageFormSubmit = cannedResponseId => async ({ messageText }) => {
-    const { campaign, contact, messageStatusFilter } = this.props;
+    const { campaign, contact } = this.props;
     if (!messageText || messageText == "false") {
       // defensive code -- if somehow message form validation fails, don't send a dumb "false" message
       return;
@@ -187,7 +186,7 @@ export class AssignmentTexterContact extends React.Component {
       this.setState({ disabled: true });
       console.log("sendMessage", contact.id);
       if (
-        messageStatusFilter === "needsMessage" &&
+        contact.messageStatus === "needsMessage" &&
         (/fast=1/.test(document.location.search) ||
           (campaign.title && /f=1/.test(campaign.title)))
       ) {
@@ -394,21 +393,16 @@ export class AssignmentTexterContact extends React.Component {
   };
 
   render() {
-    const ControlsComponent =
-      /old=1/.test(document.location.search) ||
-      window.DEPRECATED_TEXTERUI === "GONE_SOON"
-        ? OldControls
-        : Controls;
     return (
       <div {...dataTest("assignmentTexterContactFirstDiv")}>
         {this.state.disabled &&
-        this.props.messageStatusFilter !== "needsMessage" ? (
+        this.props.contact.messageStatus !== "needsMessage" ? (
           <div className={css(styles.overlay)}>
             <CircularProgress color="primary" size={20} />
             {this.state.disabledText}
           </div>
         ) : null}
-        <ControlsComponent
+        <Controls
           handleNavigateNext={this.props.handleNavigateNext}
           handleNavigatePrevious={this.props.handleNavigatePrevious}
           contact={this.props.contact}
@@ -418,7 +412,6 @@ export class AssignmentTexterContact extends React.Component {
           currentUser={this.props.currentUser}
           organizationId={this.props.organizationId}
           navigationToolbarChildren={this.props.navigationToolbarChildren}
-          messageStatusFilter={this.props.messageStatusFilter}
           disabled={this.state.disabled || this.state.disabledSend}
           enabledSideboxes={this.props.enabledSideboxes}
           review={this.props.location.query.review}
@@ -431,6 +424,7 @@ export class AssignmentTexterContact extends React.Component {
           onEditStatus={this.handleEditStatus}
           refreshData={this.props.refreshData}
           getMessageTextFromScript={this.getMessageTextFromScript}
+          updateCurrentContactById={this.props.updateCurrentContactById}
         />
         {this.props.contact.messageStatus === "needsMessage" &&
         window.NOT_IN_USA &&
@@ -471,9 +465,9 @@ AssignmentTexterContact.propTypes = {
   mutations: PropTypes.object,
   refreshData: PropTypes.func,
   onExitTexter: PropTypes.func,
-  messageStatusFilter: PropTypes.string,
   organizationId: PropTypes.string,
-  location: PropTypes.object
+  location: PropTypes.object,
+  updateCurrentContactById: PropTypes.func
 };
 
 const mutations = {

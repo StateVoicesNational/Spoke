@@ -1,27 +1,23 @@
 import React, { Component } from "react";
 import type from "prop-types";
 import moment from "moment";
-import { Link, withRouter } from "react-router";
+import { Link as RouterLink, withRouter } from "react-router";
 import gql from "graphql-tag";
-import { StyleSheet, css } from "aphrodite";
+import { compose } from "recompose";
 
 import MUIDataTable from "mui-datatables";
 import OpenInNewIcon from "@material-ui/icons/OpenInNew";
 import IconButton from "@material-ui/core/IconButton";
+import Link from "@material-ui/core/Link";
+import Typography from "@material-ui/core/Typography";
 
 import loadData from "../../containers/hoc/load-data";
 import { getHighestRole } from "../../lib/permissions";
 import LoadingIndicator from "../../components/LoadingIndicator";
 import ConversationPreviewModal from "./ConversationPreviewModal";
 import TagChip from "../TagChip";
-import theme from "../../styles/theme";
 import { MESSAGE_STATUSES } from "../../components/IncomingMessageFilter";
-
-const styles = StyleSheet.create({
-  link_light_bg: {
-    ...theme.text.link_light_bg
-  }
-});
+import withMuiTheme from "../../containers/hoc/withMuiTheme";
 
 export const prepareDataTableData = conversations =>
   conversations.map(conversation => ({
@@ -37,6 +33,7 @@ export const prepareDataTableData = conversations =>
     cell: conversation.contact.cell,
     campaignContactId: conversation.contact.id,
     assignmentId: conversation.contact.assignmentId,
+    updatedAt: conversation.contact.updated_at,
     status: conversation.contact.messageStatus,
     errorCode: conversation.contact.errorCode,
     messages: conversation.contact.messages,
@@ -135,18 +132,18 @@ export class IncomingMessageList extends Component {
                     (getHighestRole(value.roles) === "SUSPENDED"
                       ? " (Suspended)"
                       : "")}{" "}
-                  <Link
+                  <RouterLink
                     target="_blank"
                     to={`/app/${this.props.organizationId}/todos/other/${value.id}`}
                   >
                     <OpenInNewIcon
+                      color="primary"
                       style={{
                         width: 14,
-                        height: 14,
-                        color: theme.colors.green
+                        height: 14
                       }}
                     />
-                  </Link>
+                  </RouterLink>
                 </span>
               ) : (
                 "unassigned"
@@ -170,9 +167,7 @@ export class IncomingMessageList extends Component {
             <div>
               {MESSAGE_STATUSES[row.status].name}
               {row.errorCode ? (
-                <div style={{ color: theme.colors.darkRed }}>
-                  error: {row.errorCode}
-                </div>
+                <Typography color="error">error: {row.errorCode}</Typography>
               ) : null}
             </div>
           );
@@ -186,7 +181,16 @@ export class IncomingMessageList extends Component {
         customBodyRender: (value, tableMeta) => {
           const row = tableData[tableMeta.rowIndex];
           let lastMessage = null;
-          let lastMessageEl = <p>No Messages</p>;
+          let lastMessageEl = (
+            <p>
+              {"No Messages"}
+              <br />
+              <span style={{ color: "gray", fontSize: "85%" }}>
+                {"Assigned "} {moment.utc(row.updatedAt).fromNow()}
+              </span>
+            </p>
+          );
+
           if (row.messages && row.messages.length > 0) {
             lastMessage = row.messages[row.messages.length - 1];
             lastMessageEl = (
@@ -302,7 +306,7 @@ export class IncomingMessageList extends Component {
             backgroundColor={
               tagNames[name].value !== "RESOLVED"
                 ? null
-                : theme.colors.lightGray
+                : this.props.muiTheme.palette.grey[300]
             }
             onDelete={
               tagNames[name].value !== "RESOLVED" &&
@@ -397,16 +401,16 @@ export class IncomingMessageList extends Component {
     return (
       <div>
         {this.state.showAllRepliesLink && (
-          <div>
+          <div style={{ marginBottom: "10px" }}>
             <Link
-              className={css(styles.link_light_bg)}
+              component={RouterLink}
               target="_blank"
               to={`/app/${this.props.organizationId}/todos/${firstAssignmentid}/allreplies?review=1`}
             >
-              Sweep {firstAssignmentTexter}'s messages in{" "}
-              {firstAssignmentCampaignTitle}
+              {`Sweep ${firstAssignmentTexter}'s messages in ${firstAssignmentCampaignTitle} `}
               <OpenInNewIcon
-                style={{ width: 14, height: 14, color: theme.colors.green }}
+                color="primary"
+                style={{ width: 14, height: 14 }}
               />
             </Link>
           </div>
@@ -485,6 +489,7 @@ const queries = {
               firstName
               lastName
               cell
+              updated_at
               messageStatus
               errorCode
               messages {
@@ -551,6 +556,8 @@ const mutations = {
   })
 };
 
-export default loadData({ queries, mutations })(
-  withRouter(IncomingMessageList)
-);
+export default compose(
+  withMuiTheme,
+  loadData({ queries, mutations }),
+  withRouter
+)(IncomingMessageList);

@@ -64,6 +64,7 @@ export const schema = gql`
     profileFields: [ProfileField]
     optOuts: [OptOut]
     allowSendAll: Boolean
+    theme: JSON
     availableActions: [Action]
     settings: OrgSettings
     batchPolicies: [String]

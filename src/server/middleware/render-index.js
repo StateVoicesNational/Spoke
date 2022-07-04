@@ -109,7 +109,6 @@ export default function renderIndex(html, css, assetMap) {
       window.EXPERIMENTAL_TWILIO_PER_CAMPAIGN_MESSAGING_SERVICE=${process.env
         .EXPERIMENTAL_TWILIO_PER_CAMPAIGN_MESSAGING_SERVICE || false}
       window.TWILIO_MULTI_ORG=${process.env.TWILIO_MULTI_ORG || false}
-      window.DEPRECATED_TEXTERUI="${process.env.DEPRECATED_TEXTERUI || ""}"
       ${
         process.env.TEXTER_SIDEBOXES
           ? 'window.TEXTER_SIDEBOXES="' + process.env.TEXTER_SIDEBOXES + '"'
@@ -125,10 +124,16 @@ export default function renderIndex(html, css, assetMap) {
         100};
       window.CONTACTS_PER_PHONE_NUMBER=${getConfig(
         "CONTACTS_PER_PHONE_NUMBER"
-      ) || 200};      
+      ) || 200};
+      window.HIDE_BRANCHED_SCRIPTS=${getConfig("HIDE_BRANCHED_SCRIPTS", null, {
+        truthy: 1
+      }) || false};
       window.MOBILIZE_EVENT_SHIFTER_URL='${getConfig(
         "MOBILIZE_EVENT_SHIFTER_URL"
       )}';
+      window.ASSIGNMENT_CONTACTS_SIDEBAR=${getConfig(
+        "ASSIGNMENT_CONTACTS_SIDEBAR"
+      )}
     </script>
     <script src="${assetMap["bundle.js"]}"></script>
   </body>

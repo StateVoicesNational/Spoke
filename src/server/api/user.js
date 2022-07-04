@@ -174,6 +174,129 @@ export async function getUsers(
   }
 }
 
+export const getUserTodos = async (
+  user,
+  { organizationId, withOutCounts },
+  { user: loggedInUser, queryFilter }
+) => {
+  const fields = [
+    "assignment.id",
+    "assignment.campaign_id",
+    "assignment.user_id",
+    "assignment.max_contacts",
+    "assignment.created_at",
+    "assignment_feedback.feedback",
+    "assignment_feedback.is_acknowledged",
+    "assignment_feedback.creator_id",
+    "campaign.use_dynamic_assignment"
+  ];
+  let query = r
+    .knexReadOnly("assignment")
+    .join("campaign", "assignment.campaign_id", "campaign.id")
+    .leftJoin(
+      "assignment_feedback",
+      "assignment.id",
+      "assignment_feedback.assignment_id"
+    )
+    .andWhere({
+      is_started: true
+    })
+    .andWhere("assignment.user_id", user.id);
+
+  if (/texter-feedback/.test(getConfig("TEXTER_SIDEBOXES"))) {
+    query = query.whereRaw(
+      `(
+          is_archived = false
+          OR (assignment_feedback.is_acknowledged = true
+              AND assignment_feedback.complete = true)
+          )`
+    );
+  } else {
+    query.andWhere("is_archived", false);
+  }
+
+  if (organizationId) {
+    query.where("organization_id", organizationId);
+  }
+
+  if (getConfig("FILTER_DUEBY", null, { truthy: 1 })) {
+    query = query.where("campaign.due_by", ">", new Date());
+  }
+
+  if (queryFilter) {
+    query = queryFilter(query);
+  }
+
+  if (withOutCounts) {
+    return await query.select(fields);
+  } else {
+    query
+      .leftOuterJoin("campaign_contact", function() {
+        this.on("campaign_contact.assignment_id", "assignment.id").andOn(
+          "campaign_contact.is_opted_out",
+          r.knex.raw("?", [false])
+        );
+        // https://github.com/knex/knex/issues/1003#issuecomment-287302118
+      })
+      .groupBy(
+        ...fields,
+        "campaign_contact.timezone_offset",
+        "campaign_contact.message_status"
+      )
+      .select(
+        ...fields,
+        "campaign_contact.timezone_offset",
+        "campaign_contact.message_status",
+        r.knexReadOnly.raw(
+          "SUM(CASE WHEN campaign_contact.id IS NOT NULL THEN 1 ELSE 0 END) as tz_status_count"
+        )
+      );
+    const result = await query;
+    const campaignIds = result
+      .filter(a => a.use_dynamic_assignment)
+      .map(a => a.campaign_id);
+    const campaignsWithUnassigned = {};
+    let hasUnassigned = [];
+    if (campaignIds.length) {
+      hasUnassigned = await r
+        .knex("campaign_contact")
+        .where({
+          is_opted_out: false,
+          message_status: "needsMessage"
+        })
+        .whereNull("assignment_id")
+        .whereIn("campaign_id", campaignIds)
+        .select("campaign_id")
+        .groupBy("campaign_id")
+        .havingRaw("count(1) > 0");
+      hasUnassigned.forEach(c => {
+        campaignsWithUnassigned[c.campaign_id] = 1;
+      });
+    }
+    const assignments = {};
+    for (const assn of result) {
+      if (!assignments[assn.id]) {
+        assignments[assn.id] = {
+          ...assn,
+          tzStatusCounts: {}
+        };
+        if (assn.use_dynamic_assignment && campaignIds.length) {
+          assignments[assn.id].hasUnassigned =
+            campaignsWithUnassigned[assn.campaign_id] || 0;
+        }
+      }
+      if (!assignments[assn.id].tzStatusCounts[assn.message_status]) {
+        assignments[assn.id].tzStatusCounts[assn.message_status] = [];
+      }
+      assignments[assn.id].tzStatusCounts[assn.message_status].push({
+        tz: assn.timezone_offset,
+        count: assn.tz_status_count
+      });
+    }
+    return Object.values(assignments);
+  }
+};
+
 export const resolvers = {
   UsersReturn: {
     __resolveType(obj) {
@@ -250,119 +373,21 @@ export const resolvers = {
         ? rolesEqualOrLess(user.role)
         : await cacheableData.user.orgRoles(user.id, organizationId);
     },
-    todos: async (user, { organizationId, withOutCounts }) => {
-      const fields = [
-        "assignment.id",
-        "assignment.campaign_id",
-        "assignment.user_id",
-        "assignment.max_contacts",
-        "assignment.created_at",
-        "assignment_feedback.feedback",
-        "assignment_feedback.is_acknowledged",
-        "assignment_feedback.creator_id",
-        "campaign.use_dynamic_assignment"
-      ];
-      let query = r
-        .knexReadOnly("assignment")
-        .join("campaign", "assignment.campaign_id", "campaign.id")
-        .leftJoin(
-          "assignment_feedback",
-          "assignment.id",
-          "assignment_feedback.assignment_id"
-        )
-        .andWhere({
-          is_started: true
-        })
-        .andWhere("assignment.user_id", user.id);
-
-      if (/texter-feedback/.test(getConfig("TEXTER_SIDEBOXES"))) {
-        query = query.whereRaw(
-          `(
-          is_archived = false
-          OR (assignment_feedback.is_acknowledged = true
-              AND assignment_feedback.complete = true)
-          )`
-        );
-      } else {
-        query.andWhere("is_archived", false);
+    todos: async (
+      user,
+      { organizationId, withOutCounts },
+      { user: loggedInUser }
+    ) => {
+      const assignments = await getUserTodos(
+        user,
+        { organizationId, withOutCounts },
+        { user: loggedInUser }
+      );
+      if (user.id === loggedInUser.id) {
+        // clears notifications
+        await cacheableData.user.getAndClearNotifications(user.id);
       }
-
-      if (organizationId) {
-        query.where("organization_id", organizationId);
-      }
-
-      if (getConfig("FILTER_DUEBY", null, { truthy: 1 })) {
-        query = query.where("campaign.due_by", ">", new Date());
-      }
-
-      if (withOutCounts) {
-        return await query.select(fields);
-      } else {
-        query
-          .leftOuterJoin("campaign_contact", function() {
-            this.on("campaign_contact.assignment_id", "assignment.id").andOn(
-              "campaign_contact.is_opted_out",
-              r.knex.raw("?", [false])
-            );
-            // https://github.com/knex/knex/issues/1003#issuecomment-287302118
-          })
-          .groupBy(
-            ...fields,
-            "campaign_contact.timezone_offset",
-            "campaign_contact.message_status"
-          )
-          .select(
-            ...fields,
-            "campaign_contact.timezone_offset",
-            "campaign_contact.message_status",
-            r.knexReadOnly.raw(
-              "SUM(CASE WHEN campaign_contact.id IS NOT NULL THEN 1 ELSE 0 END) as tz_status_count"
-            )
-          );
-        const result = await query;
-        const campaignIds = result
-          .filter(a => a.use_dynamic_assignment)
-          .map(a => a.campaign_id);
-        const campaignsWithUnassigned = {};
-        let hasUnassigned = [];
-        if (campaignIds.length) {
-          hasUnassigned = await r
-            .knex("campaign_contact")
-            .where({
-              is_opted_out: false,
-              message_status: "needsMessage"
-            })
-            .whereNull("assignment_id")
-            .whereIn("campaign_id", campaignIds)
-            .select("campaign_id")
-            .groupBy("campaign_id")
-            .havingRaw("count(1) > 0");
-          hasUnassigned.forEach(c => {
-            campaignsWithUnassigned[c.campaign_id] = 1;
-          });
-        }
-        const assignments = {};
-        for (const assn of result) {
-          if (!assignments[assn.id]) {
-            assignments[assn.id] = {
-              ...assn,
-              tzStatusCounts: {}
-            };
-            if (assn.use_dynamic_assignment && campaignIds.length) {
-              assignments[assn.id].hasUnassigned =
-                campaignsWithUnassigned[assn.campaign_id] || 0;
-            }
-          }
-          if (!assignments[assn.id].tzStatusCounts[assn.message_status]) {
-            assignments[assn.id].tzStatusCounts[assn.message_status] = [];
-          }
-          assignments[assn.id].tzStatusCounts[assn.message_status].push({
-            tz: assn.timezone_offset,
-            count: assn.tz_status_count
-          });
-        }
-        return Object.values(assignments);
-      }
+      return assignments;
     },
     profileComplete: async (user, { organizationId }, { loaders }) => {
       const org = await loaders.organization.load(organizationId);
@@ -400,6 +425,28 @@ export const resolvers = {
       }
       return true;
     },
-    cacheable: () => false // FUTURE: Boolean(r.redis) when full assignment data is cached
+    notifications: async (user, { organizationId }, { user: loggedInUser }) => {
+      if (user.id === loggedInUser.id) {
+        // if e.g. an ADMIN can run this for a user, then the admin will 'consume' the notifications
+        // so we block this for the admin
+        const updatedAssignmentIds = await cacheableData.user.getAndClearNotifications(
+          user.id
+        );
+        if (updatedAssignmentIds.length) {
+          return getUserTodos(
+            user,
+            { organizationId },
+            {
+              user: loggedInUser,
+              queryFilter: q => q.whereIn("assignment.id", updatedAssignmentIds)
+            }
+          );
+        }
+      }
+      return [];
+    },
+    // notifiable: we need Redis to store the notifications
+    //  and Postgres to support returning() in cacheableData.campaignContact.updateStatus
+    notifiable: () => Boolean(r.redis) && r.knex.client.config.client === "pg"
   }
 };

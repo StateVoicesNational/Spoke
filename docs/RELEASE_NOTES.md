@@ -1,5 +1,76 @@
 # Release Notes
 
+## v12.1
+
+_April 2022:_ Version 12.1
+
+12.1 is a minor release bundling many small bug fixes, feature implementations, and documentation updates.
+
+### Bug-fixes
+* Fix action handler bugs
+* Delay seeding zip codes until database is created
+* Add error validation to canned responses
+* Fix documentation links and formatting
+* Fix bugs when viewing all messages
+* Fix wrong message sending in bulk send
+* Fix "Bulk Send" button display
+
+### Improvements
+* NGP Van user guide
+* Azure deployment documentation
+* Updates to onboarding and email configuration documentation
+* Automatic TexterTodoList updates (when we have Redis+Postgres)
+* Add GitHub workflow to automatically build Spoke images
+* Update dependency versions
+* Update migration instructions for Heroku
+
+### New features
+* Ability to hide interactions workflow
+* Show duration of message assignment
+* Features to reduce messaging costs
+* Add Nation Builder event RSVP action handler
+
+### Appreciations
+* [Adam Greenspan](https://github.com/agreenspan24), [Arique Aguilar](https://github.com/Arique110), [Chuck Morris](https://github.com/percworld), [Cody Gordon](https://github.com/codygordon), [Daniel Bond](https://github.com/dwbond), [DJ Hartman](https://github.com/dj), [Eric Mayefsky](https://github.com/mayefsky), [Ilona Brand](https://github.com/ibrand), [Joe McLaughlin](https://github.com/joemcl), [Kathy Nguyen](https://github.com/crayolakat), [Kwanele Gamedze](https://github.com/0Kwanele0), [Larry Person](https://github.com/lperson), [Michael Gratton](https://github.com/michael-gratton), [Noah Williams](https://github.com/noahsbwilliams), [Nolan Caine](https://github.com/n0land0), [Peter Murphy](https://github.com/peterkmurphy), [Schulyer Duveen](https://github.com/schuyler1d), and Harold Travis and Mark Houghton for QA
+
+## v12.0
+
+_February 2022:_ Version 12.0
+
+### Migration Notes
+This is a major release and includes a schema change. This is a minor schema change, which you can run before/during deployment (either by leaving/disabling SUPPRESS_MIGRATIONS=false or for [AWS Lambda, see the db migration instructions](./HOWTO_DEPLOYING_AWS_LAMBDA.md#migrating-the-database). It includes adding nullable columns "answer_actions" and "answer_actions_data" to the canned_response table. If you are using Redis, you will need to clear the canned response cache keys after deployment.
+
+### Bug-fixes
+* Fix failing GitHub Actions tests
+* Fix scrub landlines bug
+* Set default twilioDialogOpen value for Dialog open prop
+* Parse campaign timezone offsets
+* Fix service manager's "onOptOut" function
+* Fix outbound unassign behavior when Redis isn't configured
+* Fix need to click twice on save button after assigning contacts to texter
+* Fix TZ issue
+
+### Improvements
+* Implement Zapier response handling
+* Implement Canned Response CSV upload
+* Message review action for multi-change message status
+* Implement Assignment Contacts sidebar
+* Material UI Theming
+* Add auth/account hook to Twilio onMessageSend
+* Document --no-optional-dependencies for AWS Lambda
+* Document TEXTER_SIDEBOX_FIELDS environment variable
+* Update default auto optout documentation
+* Add per campaign Twilio account switching
+
+### Additional changes
+* Remove "Add All" button from Texters admin page
+* Dependency updates: moment, nodemailer
+* Remove unnecessary Twilio env variables
+* Remove old texting interface
+
+### Appreciations
+* [Adam Greenspan](https://github.com/agreenspan24), [Arique Aguilar](https://github.com/Arique110), [Cody Gordon](https://github.com/codygordon), [Holden Green](https://github.com/holdengreen), [John Twyman](https://github.com/johntwyman), [Kathy Nguyen](https://github.com/crayolakat), [Larry Person](https://github.com/lperson), [Michael Gratton](https://github.com/michael-gratton), [Peter Murphy](https://github.com/peterkmurphy), [Preston Maness](https://github.com/aggroskater), [Schuyler Duveen](https://github.com/schuyler1d), [Stefan Hayden](https://github.com/stefanhayden), and Harold Travis and Mark Houghton for QA
+
 ## v11.1
 
 _October 2021:_ Version 11.1
@@ -45,7 +116,8 @@ Based on work from Larry Person, there is a large refactor of "service-vendors" 
 
 #### Database upgrades
 * This is a major release and includes a schema change.
-* For small instances simply leave/set SUPPRESS_MIGRATIONS="" or for [AWS Lambda, see the db migration instructions](https://moveonorg.github.io/Spoke/#/HOWTO_DEPLOYING_AWS_LAMBDA?id=migrating-the-database). 
+* For small instances simply leave/set SUPPRESS_MIGRATIONS="" or for [AWS Lambda, see the db migration instructions](https://moveonorg.github.io/Spoke/#/HOWTO_DEPLOYING_AWS_LAMBDA?id=migrating-the-database).
+* If you are running Spoke on Heroku and updating to version 11 or later, either remove SUPPRESS_MIGRATIONS="" if it is set in config, *or* set SUPPRESS_MIGRATIONS=false
 * For instances with a large `message` table, we recommend setting NO_INDEX_CHANGES=1 before running the migration, and then manually running two commands:
   * `CREATE INDEX CONCURRENTLY cell_msgsvc_user_number_idx ON message (contact_number, messageservice_sid, user_number);`
   * `DROP INDEX cell_messageservice_sid_idx;`

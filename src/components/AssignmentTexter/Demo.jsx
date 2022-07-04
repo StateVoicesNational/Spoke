@@ -1,8 +1,6 @@
 import PropTypes from "prop-types";
 import React from "react";
 
-import ContactController from "./ContactController";
-import OldControls from "./OldControls";
 import Controls from "./Controls";
 import { applyScript } from "../../lib/scripts";
 
@@ -702,9 +700,6 @@ export const assignmentSummaryTestProps = {
 export function generateDemoTexterContact(testName) {
   const test = tests(testName);
   const DemoAssignmentTexterContact = function(props) {
-    const ControlsComponent = /old=1/.test(document.location.search)
-      ? OldControls
-      : Controls;
     console.log("DemoAssignmentTexterContact", props);
     const getMessageTextFromScript = script => {
       return script
@@ -718,7 +713,7 @@ export function generateDemoTexterContact(testName) {
     };
 
     return (
-      <ControlsComponent
+      <Controls
         contact={test.contact}
         campaign={test.assignment.campaign}
         texter={test.texter}
@@ -726,7 +721,6 @@ export function generateDemoTexterContact(testName) {
         currentUser={test.currentUser}
         navigationToolbarChildren={test.navigationToolbarChildren}
         enabledSideboxes={props.enabledSideboxes}
-        messageStatusFilter={test.messageStatusFilter}
         disabled={test.disabled}
         onMessageFormSubmit={() => async data => {
           console.log("logging data onMessageFormSubmit", data);
@@ -748,7 +742,7 @@ export function generateDemoTexterContact(testName) {
   const DemoTexterTest = function(props) {
     console.log("DemoTexterTest", test);
     return (
-      <ContactController
+      <Controls
         assignment={test.assignment}
         campaign={test.assignment.campaign}
         contacts={test.contact ? [{ id: test.contact.id }] : []}
@@ -761,7 +755,6 @@ export function generateDemoTexterContact(testName) {
         onRefreshAssignmentContacts={logFunction}
         organizationId={"1"}
         ChildComponent={DemoAssignmentTexterContact}
-        messageStatusFilter={test.messageStatusFilter}
         currentUser={test.currentUser}
       />
     );
