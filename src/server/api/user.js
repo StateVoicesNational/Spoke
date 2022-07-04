@@ -401,6 +401,7 @@ export const resolvers = {
         try {
           fields = JSON.parse(fields) || [];
         } catch (err) {
+          // eslint-disable-next-line no-console
           console.log("Error parsing TEXTER_PROFILE_FIELDS", err);
           fields = [];
         }
