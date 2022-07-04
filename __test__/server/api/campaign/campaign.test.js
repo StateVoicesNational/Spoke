@@ -13,7 +13,7 @@ import { dataQuery as TexterTodoListQuery } from "../../../../src/containers/Tex
 import * as twilio from "../../../../src/extensions/messaging_services/twilio";
 import { makeTree } from "../../../../src/lib";
 import { getConfig } from "../../../../src/server/api/lib/config";
-import { r } from "../../../../src/server/models";
+import { r, cacheableData } from "../../../../src/server/models";
 import {
   assignTexter,
   bulkSendMessages,
@@ -1212,22 +1212,29 @@ describe("all interaction steps fields travel round trip", () => {
   });
 });
 
-describe("useOwnMessagingService", async () => {
-  it("uses default messaging service when false", async () => {
-    await startCampaign(testAdminUser, testCampaign);
+describe.only("useOwnMessagingService", async () => {
+  beforeEach(async () => {
+    jest
+      .spyOn(cacheableData.organization, "getMessageService")
+      .mockImplementation(() => "twilio");
+  });
+  describe("when false", () => {
+    it("uses default messaging service when false", async () => {
+      await startCampaign(testAdminUser, testCampaign);
 
-    const campaignDataResults = await runGql(
-      AdminCampaignEditQuery,
-      { campaignId: testCampaign.id },
-      testAdminUser
-    );
+      const campaignDataResults = await runGql(
+        AdminCampaignEditQuery,
+        { campaignId: testCampaign.id },
+        testAdminUser
+      );
 
-    expect(campaignDataResults.data.campaign.useOwnMessagingService).toEqual(
-      false
-    );
-    expect(campaignDataResults.data.campaign.messageserviceSid).toEqual(
-      global.TWILIO_MESSAGE_SERVICE_SID
-    );
+      expect(campaignDataResults.data.campaign.useOwnMessagingService).toEqual(
+        false
+      );
+      expect(campaignDataResults.data.campaign.messageserviceSid).toEqual(
+        global.TWILIO_MESSAGE_SERVICE_SID
+      );
+    });
   });
   describe("when true", () => {
     beforeEach(() => {

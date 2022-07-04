@@ -16,6 +16,7 @@ import { log } from "../lib";
 import telemetry from "./telemetry";
 import nexmo from "../extensions/messaging_services/nexmo";
 import twilio from "../extensions/messaging_services/twilio";
+import signalwire from "../extensions/messaging_services/signalwire";
 import { getConfig } from "./api/lib/config";
 import { seedZipCodes } from "./seeds/seed-zip-codes";
 import { setupUserNotificationObservers } from "./notifications";
@@ -113,6 +114,7 @@ Object.keys(configuredIngestMethods).forEach(ingestMethodName => {
 });
 
 twilio.addServerEndpoints(app);
+signalwire.addServerEndpoints(app);
 
 if (process.env.NEXMO_API_KEY) {
   app.post(

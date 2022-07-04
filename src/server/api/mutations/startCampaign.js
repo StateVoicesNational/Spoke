@@ -2,17 +2,13 @@ import cacheableData from "../../models/cacheable_queries";
 import { r } from "../../models";
 import { accessRequired } from "../errors";
 import { Notifications, sendUserNotification } from "../../notifications";
-import * as twilio from "../../../extensions/messaging_services/twilio";
+import { createMessagingService } from "../../../extensions/messaging_services";
 import { getConfig } from "../lib/config";
 import { jobRunner } from "../../../extensions/job-runners";
 import { Tasks } from "../../../workers/tasks";
 import { Jobs } from "../../../workers/job-processes";
 
-export const startCampaign = async (
-  _,
-  { id },
-  { user, loaders, remainingMilliseconds }
-) => {
+export const startCampaign = async (_, { id }, { user, loaders }) => {
   const campaign = await cacheableData.campaign.load(id);
   await accessRequired(user, campaign.organization_id, "ADMIN");
   const organization = await loaders.organization.load(
@@ -40,7 +36,7 @@ export const startCampaign = async (
   if (campaign.use_own_messaging_service) {
     if (!campaign.messageservice_sid) {
       const friendlyName = `Campaign: ${campaign.title} (${campaign.id}) [${process.env.BASE_URL}]`;
-      const messagingService = await twilio.createMessagingService(
+      const messagingService = await createMessagingService(
         organization,
         friendlyName
       );

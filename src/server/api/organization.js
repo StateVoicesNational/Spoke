@@ -1,14 +1,15 @@
-import { mapFieldsToModel } from "./lib/utils";
-import { getConfig, getFeatures } from "./lib/config";
-import { r, Organization, cacheableData } from "../models";
-import { getTags } from "./tag";
-import { accessRequired } from "./errors";
-import { getCampaigns, getCampaignsCount } from "./campaign";
-import { buildUsersQuery } from "./user";
 import {
-  getAvailableActionHandlers,
-  getActionChoiceData
+  getActionChoiceData,
+  getAvailableActionHandlers
 } from "../../extensions/action-handlers";
+import { fullyConfigured } from "../../extensions/messaging_services";
+import { cacheableData, Organization, r } from "../models";
+import { getCampaigns } from "./campaign";
+import { accessRequired } from "./errors";
+import { getConfig, getFeatures } from "./lib/config";
+import { mapFieldsToModel } from "./lib/utils";
+import { getTags } from "./tag";
+import { buildUsersQuery } from "./user";
 
 export const ownerConfigurable = {
   // ACTION_HANDLERS: 1,
@@ -50,30 +51,6 @@ export const getSideboxChoices = organization => {
       : (sideboxes && sideboxes.split(",")) || [];
   return sideboxChoices;
 };
-
-const campaignNumbersEnabled = organization => {
-  const inventoryEnabled =
-    getConfig("EXPERIMENTAL_PHONE_INVENTORY", organization, {
-      truthy: true
-    }) ||
-    getConfig("PHONE_INVENTORY", organization, {
-      truthy: true
-    });
-
-  return (
-    inventoryEnabled &&
-    getConfig("EXPERIMENTAL_CAMPAIGN_PHONE_NUMBERS", organization, {
-      truthy: true
-    })
-  );
-};
-
-const manualMessagingServicesEnabled = organization =>
-  getConfig(
-    "EXPERIMENTAL_TWILIO_PER_CAMPAIGN_MESSAGING_SERVICE",
-    organization,
-    { truthy: true }
-  );
 
 export const resolvers = {
   Organization: {
@@ -229,7 +206,7 @@ export const resolvers = {
       };
     },
     cacheable: (org, _, { user }) =>
-      //quanery logic.  levels are 0, 1, 2
+      // quanery logic.  levels are 0, 1, 2
       r.redis ? (getConfig("REDIS_CONTACT_CACHE", org) ? 2 : 1) : 0,
     twilioAccountSid: async (organization, _, { user }) => {
       try {
@@ -264,31 +241,7 @@ export const resolvers = {
       }
     },
     fullyConfigured: async organization => {
-      const serviceName =
-        getConfig("service", organization) || getConfig("DEFAULT_SERVICE");
-      if (serviceName === "twilio") {
-        const {
-          authToken,
-          accountSid
-        } = await cacheableData.organization.getTwilioAuth(organization);
-
-        let messagingServiceConfigured;
-        if (
-          manualMessagingServicesEnabled(organization) ||
-          campaignNumbersEnabled(organization)
-        ) {
-          messagingServiceConfigured = true;
-        } else {
-          messagingServiceConfigured = await cacheableData.organization.getMessageServiceSid(
-            organization
-          );
-        }
-
-        if (!(authToken && accountSid && messagingServiceConfigured)) {
-          return false;
-        }
-      }
-      return true;
+      return fullyConfigured(organization);
     },
     emailEnabled: async (organization, _, { user }) => {
       await accessRequired(user, organization.id, "SUPERVOLUNTEER", true);
@@ -366,8 +319,9 @@ export const resolvers = {
         return [];
       }
       const usAreaCodes = require("us-area-codes");
-      const service =
-        getConfig("service", organization) || getConfig("DEFAULT_SERVICE");
+      const service = cacheableData.organization.getMessageService(
+        organization
+      );
       const counts = await r
         .knex("owned_phone_number")
         .select(
@@ -393,7 +347,7 @@ export const resolvers = {
 };
 
 export async function getNumTextsInLastDay(organizationId) {
-  var yesterday = new Date();
+  const yesterday = new Date();
   yesterday.setDate(yesterday.getDate() - 1);
 
   const textsInLastDay = r.knex
