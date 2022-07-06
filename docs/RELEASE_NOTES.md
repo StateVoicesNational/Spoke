@@ -4,7 +4,7 @@
 
 _June 2022:_ Version 12.2
 
-12.2 is a minor release.
+12.2 is a minor release. This release includes the CiviCRM integration, a well-tested Bandwidth integration, as well as other minor bug fixes, improvements, and new features detailed below.
 
 ### Bug fixes
 * Fix CSV upload error messages
