@@ -28,7 +28,7 @@ For setting up a development environment with Bandwidth, first read [this sectio
 11. Paste the following code into the code editor:
     ```
     const crypto = require("crypto");
-    const hmac = crypto.createHmac("sha256", <SESSION_SECRET_ENV_VAR>);
+    const hmac = crypto.createHmac("sha256", "<SESSION_SECRET_ENV_VAR>");
     const test = hmac.update("<BASE_URL_ENV_VAR>");
     hmac.update(String(<ORGANIZATION_ID>));
     console.log(hmac.digest("base64"));
