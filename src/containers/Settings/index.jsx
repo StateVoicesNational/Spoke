@@ -514,7 +514,7 @@ class Settings extends React.Component {
               unmountOnExit
             >
               <CardContent>
-                <ExtensionSettings />
+                <ExtensionSettings formData={organization} />
               </CardContent>
             </Collapse>
           </Card>
