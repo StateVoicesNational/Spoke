@@ -22,7 +22,7 @@ _June 2022:_ Version 12.2
 * Bandwidth integration
 
 ### Appreciations
-* [Adam Greenspan](https://github.com/agreenspan24), [Andrew Cormick-Dockery](https://github.com/andrew-cormick-dockery), [Anthony Blond](https://github.com/anthonyblond), [Arique Aguilar](https://github.com/Arique110), [Chuck Morris](https://github.com/percworld), [Cody Gordon](https://github.com/codygordon), [Ilona Brand](https://github.com/ibrand), [John Twyman](https://github.com/johntwyman), [Kathy Nguyen](https://github.com/crayolakat), [Michael Walker](https://github.com/MichaelEWalker87), [Peter Murphy](https://github.com/peterkmurphy), and Harold Travis and Mark Houghton for QA
+* [Adam Greenspan](https://github.com/agreenspan24), [Andrew Cormick-Dockery](https://github.com/andrew-cormick-dockery), [Anthony Blond](https://github.com/anthonyblond), [Arique Aguilar](https://github.com/Arique1104), [Chuck Morris](https://github.com/percworld), [Cody Gordon](https://github.com/codygordon), [Ilona Brand](https://github.com/ibrand), [John Twyman](https://github.com/johntwyman), [Kathy Nguyen](https://github.com/crayolakat), [Michael Walker](https://github.com/MichaelEWalker87), [Peter Murphy](https://github.com/peterkmurphy), and Harold Travis and Mark Houghton for QA
 
 ## v12.1
 
