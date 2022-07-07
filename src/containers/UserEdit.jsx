@@ -310,6 +310,7 @@ export class UserEditBase extends React.Component {
             as={GSTextField}
             label="Email"
             name="email"
+            disabled={window.PASSPORT_STRATEGY === "auth0"}
             {...dataTest("email")}
           />
           {(!authType || authType === "signup") && (
@@ -374,9 +375,11 @@ export class UserEditBase extends React.Component {
             userId === currentUser.currentUser.id &&
             !fieldsNeeded && (
               <div className={css(styles.container)}>
-                <Button onClick={this.handleClick} variant="outlined">
-                  Change password
-                </Button>
+                {window.PASSPORT_STRATEGY !== "auth0" && (
+                  <Button onClick={this.handleClick} variant="outlined">
+                    Change password
+                  </Button>
+                )}
               </div>
             )}
           <div className={css(styles.buttons)}>

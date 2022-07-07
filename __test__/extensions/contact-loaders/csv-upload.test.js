@@ -9,7 +9,7 @@ import {
   ensureCamelCaseRequiredHeaders,
   CampaignContactsFormBase as CampaignContactsForm
 } from "../../../src/extensions/contact-loaders/csv-upload/react-component";
-
+import { topLevelUploadFields } from "../../../src/lib/parse_csv.js";
 // csv-upload libs for validation
 import { unzipPayload } from "../../../src/workers/jobs";
 import { gzip } from "../../../src/lib";
@@ -222,10 +222,6 @@ describe("ingest-contact-loader method: csv-upload frontend", async () => {
     expect(component.state.contactUploadError).toBe(
       "Missing fields: firstName"
     );
-    // verify it's visible in interface
-    expect(wrapper.find("#uploadError").prop("primaryText")).toBe(
-      "Missing fields: firstName"
-    );
   });
   it("csv-upload:component loads into CampaignContactsChoiceForm", async () => {
     const methodChoices = [
@@ -294,5 +290,36 @@ describe("ensureCamelCaseRequiredHeaders", () => {
   it("translates CamelCaps to camelCase for required fields firstName and lastName", () => {
     expect(ensureCamelCaseRequiredHeaders("FirstName")).toEqual("firstName");
     expect(ensureCamelCaseRequiredHeaders("LastName")).toEqual("lastName");
+  });
+  it("translates zip code headers relating to VAN files being accidentally uploaded via the CSV upload", () => {
+    expect(ensureCamelCaseRequiredHeaders("zipCode")).toEqual("zip");
+    expect(ensureCamelCaseRequiredHeaders("zipcode")).toEqual("zip");
+    expect(ensureCamelCaseRequiredHeaders("postnumber")).toEqual("zip");
+    expect(ensureCamelCaseRequiredHeaders("postalNumber")).toEqual("zip");
+    expect(ensureCamelCaseRequiredHeaders("zipOrPost")).toEqual("zip");
+  });
+  it("translates cell phone headers relating to VAN files being accidentally uploaded via the CSV upload", () => {
+    expect(ensureCamelCaseRequiredHeaders("cellPhone")).toEqual("cell");
+    expect(ensureCamelCaseRequiredHeaders("cell_phone")).toEqual("cell");
+    expect(ensureCamelCaseRequiredHeaders("mobile")).toEqual("cell");
+    expect(ensureCamelCaseRequiredHeaders("mobileNumber")).toEqual("cell");
+    expect(ensureCamelCaseRequiredHeaders("cellphone")).toEqual("cell");
+  });
+  it("translates first name headers that may be of an unsupported syntax before parsing", () => {
+    expect(ensureCamelCaseRequiredHeaders("first")).toEqual("firstName");
+    expect(ensureCamelCaseRequiredHeaders("givenName")).toEqual("firstName");
+    expect(ensureCamelCaseRequiredHeaders("Name")).toEqual("firstName");
+    expect(ensureCamelCaseRequiredHeaders("firstname")).toEqual("firstName");
+  });
+  it("translates last name headers that may be of an unsupported syntax before parsing", () => {
+    expect(ensureCamelCaseRequiredHeaders("last")).toEqual("lastName");
+    expect(ensureCamelCaseRequiredHeaders("surname")).toEqual("lastName");
+    expect(ensureCamelCaseRequiredHeaders("familyname")).toEqual("lastName");
+    expect(ensureCamelCaseRequiredHeaders("lastname")).toEqual("lastName");
+    expect(ensureCamelCaseRequiredHeaders("familyName")).toEqual("lastName");
+  });
+  it("translates external ID headers that may be of an unsupported syntax before parsing", () => {
+    expect(ensureCamelCaseRequiredHeaders("externalId")).toEqual("external_id");
+    expect(ensureCamelCaseRequiredHeaders("externalid")).toEqual("external_id");
   });
 });

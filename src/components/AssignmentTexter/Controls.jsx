@@ -54,13 +54,6 @@ export class AssignmentTexterContactControls extends React.Component {
       props.campaign.interactionSteps
     );
 
-    let currentInteractionStep = null;
-    if (availableSteps.length > 0) {
-      currentInteractionStep = availableSteps[availableSteps.length - 1];
-      currentInteractionStep.question.filteredAnswerOptions =
-        currentInteractionStep.question.answerOptions;
-    }
-
     let contactListOpen =
       global.ASSIGNMENT_CONTACTS_SIDEBAR &&
       document.documentElement.clientWidth > 575;
@@ -86,7 +79,7 @@ export class AssignmentTexterContactControls extends React.Component {
       availableSteps,
       messageReadOnly: false,
       hideMedia: false,
-      currentInteractionStep,
+      currentInteractionStep: this.getCurrentInteractionStep(availableSteps),
       contactListOpen
     };
   }
@@ -127,6 +120,18 @@ export class AssignmentTexterContactControls extends React.Component {
       nextState.sideboxOpens[sb] = (nextState.sideboxOpens[sb] || 0) + 1;
     });
   }
+
+  getCurrentInteractionStep = availableSteps => {
+    let currentInteractionStep = null;
+
+    if (availableSteps.length > 0) {
+      currentInteractionStep = availableSteps[availableSteps.length - 1];
+      currentInteractionStep.question.filteredAnswerOptions =
+        currentInteractionStep.question.answerOptions;
+    }
+
+    return currentInteractionStep;
+  };
 
   getStartingMessageText() {
     const { contact, campaign } = this.props;
@@ -369,12 +374,15 @@ export class AssignmentTexterContactControls extends React.Component {
       questionResponses,
       interactionSteps
     );
-    // TODO sky: ? do we sometimes need to update state.currentInteractionStep?
-    // it doesn't seem to be able to change if we clear a response
     this.setState(
       {
         questionResponses,
-        availableSteps
+        availableSteps,
+
+        // Update currentInteractionStep if a response was cleared
+        currentInteractionStep: questionResponseValue
+          ? this.state.currentInteractionStep
+          : this.getCurrentInteractionStep(availableSteps)
       },
       () => {
         this.handleChangeScript(nextScript);
@@ -842,7 +850,7 @@ export class AssignmentTexterContactControls extends React.Component {
         if (cannedResponseScript) {
           shortCannedResponses = [cannedResponseScript];
         } else {
-          const messageTextLowerCase = (messageText || '').toLowerCase();
+          const messageTextLowerCase = (messageText || "").toLowerCase();
 
           shortCannedResponses = campaign.cannedResponses.filter(
             script =>
