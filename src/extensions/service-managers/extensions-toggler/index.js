@@ -19,6 +19,7 @@ export const metadata = () => ({
 // Find Message Handlers: Profanity Tagger, Auto Optout, NGPVAN
 // Find Contact Loaders: CSV UPload, Fake Data Testing
 // Probably located in organization of getOrganizationData
+// How do we set Action Handler for Test action, set a env variable to be
 
 export async function getOrganizationData({ organization, user, loaders }) {
   // MUST NOT RETURN SECRETS!
