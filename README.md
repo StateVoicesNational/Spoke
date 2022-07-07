@@ -7,7 +7,7 @@ Spoke is an open source text-distribution tool for organizations to mobilize sup
 
 Spoke was created by Saikat Chakrabarti and Sheena Pakanati, and is now maintained by MoveOn.org.
 
-The latest version is [12.1](https://github.com/MoveOnOrg/Spoke/tree/v12.1) (see [release notes](https://github.com/MoveOnOrg/Spoke/blob/main/docs/RELEASE_NOTES.md#v121))
+The latest version is [12.1](https://github.com/MoveOnOrg/Spoke/tree/12.1.0) (see [release notes](https://github.com/MoveOnOrg/Spoke/blob/main/docs/RELEASE_NOTES.md#v121))
 
 
 ## Setting up Spoke
