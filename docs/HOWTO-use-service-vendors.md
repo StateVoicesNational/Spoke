@@ -34,13 +34,9 @@ supports many aspects like phone number buying, sending messages, replies (any m
 sent with the text "autorespond" in it, will automatically receive a reply) -- all fake,
 but this helps with dev/testing features supported in Twilio, Bandwidth and other service-vendors.
 
-### bandwidth (experimental)
+### bandwidth
 
-Bandwidth.com is another telephone service API company. Setting DEFAULT_SERVICE=bandwidth
-should work, but this implementation has not yet been used in production -- just for testing,
-so there may be issues with it.  Please create an issue or contact us if you are using this
-implementation (successfully or not).  Besides setting DEFAULT_SERVICE, bandwidth won't work
-without two service managers -- make sure to include SERVICE_MANAGERS=numpicker-basic,sticky-sender
+See [How to integrate Bandwidth](HOWTO_INTEGRATE_BANDWIDTH.md)
 
 ### nexmo (broken, unknown status)
 

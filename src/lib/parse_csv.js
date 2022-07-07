@@ -3,13 +3,52 @@ import _ from "lodash";
 import { getFormattedPhoneNumber, getFormattedZip } from "../lib";
 
 export const requiredUploadFields = ["firstName", "lastName", "cell"];
-const topLevelUploadFields = [
-  "firstName",
-  "lastName",
-  "cell",
-  "zip",
-  "external_id"
-];
+
+export const topLevelUploadFields = {
+  firstName: [
+    "firstname",
+    "firstName",
+    "givenname",
+    "givenName",
+    "f_name",
+    "first",
+    "name"
+  ],
+  lastName: [
+    "last",
+    "lastname",
+    "lastName",
+    "familyname",
+    "familyName",
+    "surname"
+  ],
+  cell: [
+    "cell",
+    "mobile",
+    "number",
+    "phone",
+    "phone_number",
+    "phonenumber",
+    "cellphone",
+    "mobilenumber",
+    "mobileNumber",
+    "cellPhone"
+  ],
+  zip: [
+    "zip",
+    "zipcode",
+    "zipCode",
+    "postnumber",
+    "postNumber",
+    "postalcode",
+    "postalCode",
+    "postalnumber",
+    "postalNumber",
+    "zipOrPost",
+    "ZipOrPostal"
+  ],
+  external_id: ["external_id", "externalId", "externalid"]
+};
 
 const getValidatedData = data => {
   let validatedData;
@@ -18,7 +57,6 @@ const getValidatedData = data => {
   result = _.partition(data, row => !!row.cell);
   validatedData = result[0];
   const missingCellRows = result[1];
-
   validatedData = _.map(validatedData, row =>
     _.extend(row, {
       cell: getFormattedPhoneNumber(
@@ -74,18 +112,21 @@ export const organizationCustomFields = (contacts, customFieldsList) => {
 };
 
 export const parseCSV = (file, onCompleteCallback, options) => {
-  // options is a custom object that currently supports two properties
-  // rowTransformer -- a function that gets called on each row in the file
+  // options is a custom object that currently supports three properties:
+  // * rowTransformer (not called or supplied in this project but set up for
+  //   use if desired on line 148)-- a function that gets called on each row in the file
   //   after it is parsed. It takes 2 parameters, an array of fields and
   //   the object that results from parsing the row. It returns an object
   //   after transformation. The function can do lookups, field mappings,
   //   remove fields, add fields, etc. If it adds fields, it should push
   //   them onto the fields array in the first parameter.
-  // headerTransformer -- a function that gets called once after the
+  // * headerTransformer -- a function that gets called once after the
   //   header row is parsed. It takes one parameter, the header name, and
   //   returns the header that should be used for the column. An example
   //   would be to transform first_name to firstName, which is a required
   //   field in Spoke.
+  // * additionalCustomFields (not called or supplied in this project)
+
   const { rowTransformer, headerTransformer, additionalCustomFields = [] } =
     options || {};
   Papa.parse(file, {
@@ -95,8 +136,7 @@ export const parseCSV = (file, onCompleteCallback, options) => {
     // eslint-disable-next-line no-shadow, no-unused-vars
     complete: ({ data: parserData, meta, errors }, file) => {
       const fields = meta.fields;
-      const missingFields = [];
-
+      let missingFields = [];
       let data = parserData;
       let transformerResults = {
         rows: [],
@@ -116,23 +156,22 @@ export const parseCSV = (file, onCompleteCallback, options) => {
         data = transformerResults.rows;
       }
 
-      for (const field of requiredUploadFields) {
-        if (fields.indexOf(field) === -1) {
-          missingFields.push(field);
+      let customFields = fields.filter(field => {
+        return !Object.keys(topLevelUploadFields).includes(field);
+      });
+      missingFields = requiredUploadFields.reduce((acc, field, index) => {
+        if (!fields.includes(field)) {
+          acc.push(field);
         }
-      }
+        return acc;
+      }, []);
 
       if (missingFields.length > 0) {
         const error = `Missing fields: ${missingFields.join(", ")}`;
         onCompleteCallback({ error });
       } else {
         const { validationStats, validatedData } = getValidatedData(data);
-
-        let customFields = fields.filter(
-          field => topLevelUploadFields.indexOf(field) === -1
-        );
         customFields = [...customFields, ...additionalCustomFields];
-
         const contactsWithCustomFields = organizationCustomFields(
           validatedData,
           customFields
