@@ -55,5 +55,6 @@ export {
   parseCSV,
   organizationCustomFields,
   requiredUploadFields,
+  topLevelUploadFields,
   parseCannedResponseCsv
 } from "./parse_csv.js";

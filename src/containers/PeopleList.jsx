@@ -346,6 +346,7 @@ export class PeopleList extends Component {
               open={!!this.state.passwordResetHash}
               requestClose={this.handlePasswordResetClose}
               passwordResetHash={this.state.passwordResetHash}
+              isAuth0={window.PASSPORT_STRATEGY === "auth0"}
             />
           </div>
         )}

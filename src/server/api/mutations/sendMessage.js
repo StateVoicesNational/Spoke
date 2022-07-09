@@ -57,6 +57,71 @@ const newError = (message, code, details = {}) => {
   return err;
 };
 
+export const sendRawMessage = async ({
+  finalText,
+  contact,
+  campaign,
+  organization,
+  user,
+  sendBeforeDate,
+  cannedResponseId
+}) => {
+  const orgFeatures = JSON.parse(organization.features || "{}");
+
+  const serviceName =
+    orgFeatures.service ||
+    global.DEFAULT_SERVICE ||
+    process.env.DEFAULT_SERVICE ||
+    "";
+
+  const messageInstance = new Message({
+    text: finalText,
+    contact_number: contact.cell,
+    user_number: "",
+    user_id: user.id,
+    campaign_contact_id: contact.id,
+    messageservice_sid: null,
+    send_status: JOBS_SAME_PROCESS ? "SENDING" : "QUEUED",
+    service: serviceName,
+    is_from_contact: false,
+    queued_at: new Date(),
+    send_before: sendBeforeDate
+  });
+
+  const saveResult = await cacheableData.message.save({
+    messageInstance,
+    contact,
+    campaign,
+    organization,
+    texter: user,
+    cannedResponseId
+  });
+
+  if (!saveResult.message) {
+    console.log("SENDERR_SAVEFAIL", saveResult);
+    throw newError(
+      `Message send error ${saveResult.texterError ||
+        saveResult.matchError ||
+        saveResult.error ||
+        ""}`,
+      saveResult.error || "SENDERR_SAVEFAIL"
+    );
+  }
+
+  if (!saveResult.blockSend) {
+    await jobRunner.dispatchTask(Tasks.SEND_MESSAGE, {
+      message: saveResult.message,
+      contact,
+      // TODO: start a transaction inside the service send message function
+      trx: null,
+      organization,
+      campaign
+    });
+  }
+
+  return saveResult.contactStatus;
+};
+
 export const sendMessage = async (
   _,
   { message, campaignContactId, cannedResponseId },
@@ -81,7 +146,6 @@ export const sendMessage = async (
   const organization = await loaders.organization.load(
     campaign.organization_id
   );
-  const orgFeatures = JSON.parse(organization.features || "{}");
 
   const optOut = await cacheableData.optOut.query({
     cell: contact.cell,
@@ -165,59 +229,19 @@ export const sendMessage = async (
       }
     );
   }
-  const serviceName =
-    orgFeatures.service ||
-    global.DEFAULT_SERVICE ||
-    process.env.DEFAULT_SERVICE ||
-    "";
-
-  const finalText = replaceEasyGsmWins(text);
-  const messageInstance = new Message({
-    text: finalText,
-    contact_number: contact.cell,
-    user_number: "",
-    user_id: user.id,
-    campaign_contact_id: contact.id,
-    messageservice_sid: null,
-    send_status: JOBS_SAME_PROCESS ? "SENDING" : "QUEUED",
-    service: serviceName,
-    is_from_contact: false,
-    queued_at: new Date(),
-    send_before: sendBeforeDate
-  });
 
   const initialMessageStatus = contact.message_status;
+  const finalText = replaceEasyGsmWins(text);
 
-  const saveResult = await cacheableData.message.save({
-    messageInstance,
+  contact.message_status = await sendRawMessage({
+    finalText,
     contact,
     campaign,
     organization,
-    texter: user,
+    user,
+    sendBeforeDate,
     cannedResponseId
   });
-  if (!saveResult.message) {
-    console.log("SENDERR_SAVEFAIL", saveResult);
-    throw newError(
-      `Message send error ${saveResult.texterError ||
-        saveResult.matchError ||
-        saveResult.error ||
-        ""}`,
-      saveResult.error || "SENDERR_SAVEFAIL"
-    );
-  }
-  contact.message_status = saveResult.contactStatus;
-
-  if (!saveResult.blockSend) {
-    await jobRunner.dispatchTask(Tasks.SEND_MESSAGE, {
-      message: saveResult.message,
-      contact,
-      // TODO: start a transaction inside the service send message function
-      trx: null,
-      organization,
-      campaign
-    });
-  }
 
   if (cannedResponseId) {
     const cannedResponses = await cacheableData.cannedResponse.query({

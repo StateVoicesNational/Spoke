@@ -178,19 +178,37 @@ export async function postMessageSend({
         ...changes
       }
     : {};
+  const organizationContact = {
+    contact_number: message.contact_number,
+    organization_id: organization.id,
+    service: "bandwidth"
+  };
   if (response && response.statusCode === 202 && response.result) {
     changesToSave.service_id = response.result.id;
+    organizationContact.status_code = 1;
+    organizationContact.user_number = response.result.from;
+    cacheableData.campaignContact.updateStatus(
+      contact,
+      undefined,
+      changesToSave.messageservice_sid || changesToSave.user_number
+    );
   } else {
     // ERROR
     changesToSave.send_status = "ERROR";
-    // TODO: maybe there is sometimes an error response in the JSON?
     changesToSave.error_code = response.statusCode;
+    organizationContact.last_error_code = response.statusCode;
   }
   let updateQuery = r.knex("message").where("id", message.id);
   if (trx) {
     updateQuery = updateQuery.transacting(trx);
   }
   await updateQuery.update(changesToSave);
+  await cacheableData.organizationContact.save(organizationContact, {
+    update: await cacheableData.organizationContact.query({
+      organizationId: organization.id,
+      contactNumber: message.contact_number
+    })
+  });
   // TODO: error_code or
   // TODO: campaign_contact update if errorcode
 }

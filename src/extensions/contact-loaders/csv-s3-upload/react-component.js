@@ -17,32 +17,50 @@ import ListItemText from "@material-ui/core/ListItemText";
 
 import GSForm from "../../../components/forms/GSForm";
 import GSSubmitButton from "../../../components/forms/GSSubmitButton";
-import { parseCSV, gzip, requiredUploadFields } from "../../../lib";
+import {
+  parseCSV,
+  gzip,
+  requiredUploadFields,
+  topLevelUploadFields
+} from "../../../lib";
 import CampaignFormSectionHeading from "../../../components/CampaignFormSectionHeading";
 import { dataTest } from "../../../lib/attributes";
 import withMuiTheme from "../../../containers/hoc/withMuiTheme";
 
+const translateHeader = columnHeader => {
+  switch (true) {
+    case topLevelUploadFields.firstName.includes(humps.camelize(columnHeader)):
+      columnHeader = "firstName";
+      break;
+    case topLevelUploadFields.lastName.includes(humps.camelize(columnHeader)):
+      columnHeader = "lastName";
+      break;
+    case topLevelUploadFields.cell.includes(humps.camelize(columnHeader)):
+      columnHeader = "cell";
+      break;
+    case topLevelUploadFields.zip.includes(humps.camelize(columnHeader)):
+      columnHeader = "zip";
+      break;
+    case topLevelUploadFields.external_id.includes(
+      humps.camelize(columnHeader)
+    ):
+      columnHeader = "external_id";
+      break;
+  }
+  return columnHeader;
+};
+
 export const ensureCamelCaseRequiredHeaders = columnHeader => {
-  /*
-   * This function changes:
-   *  first_name to firstName
-   *  last_name to lastName
-   *  FirstName to firstName
-   *  LastName to lastName
-   *
-   * It changes no other fields.
-   *
-   * If other fields that could be either snake_case or camelCase
-   * are added to `requiredUploadFields` it will do the same for them.
-   * */
+  // translates fields from `topLevelUploadFields` that could be in a different syntax
+  columnHeader = translateHeader(columnHeader);
+  // translates fields from `requiredUploadFields` that could be either snake_case or camelCase
   const camelizedColumnHeader = humps.camelize(columnHeader);
   if (
-    requiredUploadFields.includes(camelizedColumnHeader) &&
+    Object.values(requiredUploadFields).includes(camelizedColumnHeader) &&
     camelizedColumnHeader !== columnHeader
   ) {
     return camelizedColumnHeader;
   }
-
   return columnHeader;
 };
 
@@ -83,6 +101,11 @@ export class CampaignContactsFormBase extends React.Component {
   });
 
   handleUpload = event => {
+    const { contactsPerPhoneNumber, maxNumbersPerCampaign } = this.props;
+    let maxContacts = null;
+    if (contactsPerPhoneNumber && maxNumbersPerCampaign) {
+      maxContacts = contactsPerPhoneNumber * maxNumbersPerCampaign;
+    }
     event.preventDefault();
     const file = event.target.files[0];
     this.setState({ uploading: true }, () => {
@@ -92,8 +115,16 @@ export class CampaignContactsFormBase extends React.Component {
           if (error) {
             this.handleUploadError(error);
           } else if (contacts.length === 0) {
-            this.handleUploadError("Upload at least one contact");
-          } else if (contacts.length > 0) {
+            this.handleUploadError(
+              "Confirm your file's fields include a first name, last name and cell column. "
+            );
+          } else if (maxContacts && contacts.length > maxContacts) {
+            this.handleUploadError(
+              `You can only upload ${Number(
+                maxContacts
+              ).toLocaleString()} contacts max – your file contains ${contacts.length.toLocaleString()}.`
+            );
+          } else {
             this.handleUploadSuccess(
               validationStats,
               contacts,
@@ -285,11 +316,10 @@ export class CampaignContactsFormBase extends React.Component {
     let subtitle = (
       <span>
         Your upload file should be in CSV format with column headings in the
-        first row. You must include{" "}
-        <span className={css(this.styles.csvHeader)}>firstName</span>, (or{" "}
-        <span className={css(this.styles.csvHeader)}>first_name</span>),
-        <span className={css(this.styles.csvHeader)}>lastName</span>
-        (or <span className={css(this.styles.csvHeader)}>last_name</span>), and
+        first row. The built-in header transformer will adapt to most
+        case-sensitivies, transforming to the required headers:{" "}
+        <span className={css(this.styles.csvHeader)}>firstName</span>,{" "}
+        <span className={css(this.styles.csvHeader)}>lastName</span> and
         <span className={css(this.styles.csvHeader)}>cell</span> columns. If you
         include a <span className={css(this.styles.csvHeader)}>zip</span>{" "}
         column, we'll use the zip to guess the contact's timezone for enforcing
