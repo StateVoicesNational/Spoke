@@ -293,8 +293,17 @@ export class UserEditBase extends React.Component {
     } = this.props;
     const onCancel = this.props.onCancel || (router && router.goBack);
     const user = (this.state.editedUser && this.state.editedUser.user) || {};
-    if (user && typeof user.extra === "string") {
-      user.extra = JSON.parse(user.extra);
+
+    if (user.extra && typeof user.extra === "string") {
+      try {
+        user.extra = JSON.parse(user.extra);
+      } catch (err) {
+        // eslint-disable-next-line no-console
+        console.warn(err);
+        user.extra = {};
+      }
+    } else if (!user.extra) {
+      user.extra = {};
     }
 
     const org = this.state.currentOrg && this.state.currentOrg.organization;
