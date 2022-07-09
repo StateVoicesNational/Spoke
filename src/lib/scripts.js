@@ -44,12 +44,18 @@ export const coreFields = {
   contactIdBase62: 1
 };
 
-// TODO: This will include zipCode even if you ddin't upload it
-export const allScriptFields = (customFields, includeDeprecated) =>
-  TOP_LEVEL_UPLOAD_FIELDS.concat(TEXTER_SCRIPT_FIELDS)
+// TODO: This will include zipCode even if you din't upload it
+export const allScriptFields = (customFields, includeDeprecated) => {
+  const shouldHideNotesField = /contact-notes/.test(window.TEXTER_SIDEBOXES);
+  if (shouldHideNotesField) {
+    // eslint-disable-next-line no-param-reassign
+    customFields = (customFields || []).filter(field => field !== "notes");
+  }
+  return TOP_LEVEL_UPLOAD_FIELDS.concat(TEXTER_SCRIPT_FIELDS)
     .concat(customFields)
     .concat(SYSTEM_FIELDS)
     .concat(includeDeprecated ? DEPRECATED_SCRIPT_FIELDS : []);
+};
 
 const capitalize = str => {
   const strTrimmed = str.trim();
@@ -105,7 +111,6 @@ export const applyScript = ({ script, contact, customFields, texter }) => {
   let appliedScript = script;
 
   for (const field of scriptFields) {
-    if (field === "notes") continue;
     try {
       const re = new RegExp(`${delimit(field)}`, "g");
       appliedScript = appliedScript.replace(
