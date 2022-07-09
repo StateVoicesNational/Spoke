@@ -1,5 +1,29 @@
 # Release Notes
 
+## v12.2
+
+_June 2022:_ Version 12.2
+
+12.2 is a minor release. This release includes the CiviCRM integration, a well-tested Bandwidth integration, as well as other minor bug fixes, improvements, and new features detailed below.
+
+### Bug fixes
+* Fix CSV upload error messages
+* Fix Auth0 password reset behavior
+* Fix wrong counts in edge cases
+* Fix wrong service vendor error links
+* Fix modal going blank after clicking "Clear Response" button
+
+### Improvements
+* Update dependencies
+
+### New features
+* Send auto opt-out response
+* CiviCRM integration
+* Bandwidth integration
+
+### Appreciations
+* [Adam Greenspan](https://github.com/agreenspan24), [Andrew Cormick-Dockery](https://github.com/andrew-cormick-dockery), [Anthony Blond](https://github.com/anthonyblond), [Arique Aguilar](https://github.com/Arique1104), [Chuck Morris](https://github.com/percworld), [Cody Gordon](https://github.com/codygordon), [Ilona Brand](https://github.com/ibrand), [John Twyman](https://github.com/johntwyman), [Kathy Nguyen](https://github.com/crayolakat), [Michael Walker](https://github.com/MichaelEWalker87), [Peter Murphy](https://github.com/peterkmurphy), and Harold Travis and Mark Houghton for QA
+
 ## v12.1
 
 _April 2022:_ Version 12.1

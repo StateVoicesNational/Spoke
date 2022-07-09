@@ -14,34 +14,51 @@ import ListItemIcon from "@material-ui/core/ListItemIcon";
 import ListItemText from "@material-ui/core/ListItemText";
 import ListSubheader from "@material-ui/core/ListSubheader";
 
-import { parseCSV, gzip, requiredUploadFields } from "../../../lib";
+import {
+  parseCSV,
+  gzip,
+  requiredUploadFields,
+  topLevelUploadFields
+} from "../../../lib";
 import GSForm from "../../../components/forms/GSForm";
 import CampaignFormSectionHeading from "../../../components/CampaignFormSectionHeading";
 import { dataTest } from "../../../lib/attributes";
 import GSSubmitButton from "../../../components/forms/GSSubmitButton";
 import withMuiTheme from "../../../containers/hoc/withMuiTheme";
 
+const translateHeader = columnHeader => {
+  switch (true) {
+    case topLevelUploadFields.firstName.includes(humps.camelize(columnHeader)):
+      columnHeader = "firstName";
+      break;
+    case topLevelUploadFields.lastName.includes(humps.camelize(columnHeader)):
+      columnHeader = "lastName";
+      break;
+    case topLevelUploadFields.cell.includes(humps.camelize(columnHeader)):
+      columnHeader = "cell";
+      break;
+    case topLevelUploadFields.zip.includes(humps.camelize(columnHeader)):
+      columnHeader = "zip";
+      break;
+    case topLevelUploadFields.external_id.includes(
+      humps.camelize(columnHeader)
+    ):
+      columnHeader = "external_id";
+      break;
+  }
+  return columnHeader;
+};
 export const ensureCamelCaseRequiredHeaders = columnHeader => {
-  /*
-   * This function changes:
-   *  first_name to firstName
-   *  last_name to lastName
-   *  FirstName to firstName
-   *  LastName to lastName
-   *
-   * It changes no other fields.
-   *
-   * If other fields that could be either snake_case or camelCase
-   * are added to `requiredUploadFields` it will do the same for them.
-   * */
+  // translates fields from `topLevelUploadFields` that could be in a different syntax
+  columnHeader = translateHeader(columnHeader);
+  // translates fields from `requiredUploadFields` that could be either snake_case or camelCase
   const camelizedColumnHeader = humps.camelize(columnHeader);
   if (
-    requiredUploadFields.includes(camelizedColumnHeader) &&
+    Object.values(requiredUploadFields).includes(camelizedColumnHeader) &&
     camelizedColumnHeader !== columnHeader
   ) {
     return camelizedColumnHeader;
   }
-
   return columnHeader;
 };
 
@@ -86,10 +103,8 @@ export class CampaignContactsFormBase extends React.Component {
     if (contactsPerPhoneNumber && maxNumbersPerCampaign) {
       maxContacts = contactsPerPhoneNumber * maxNumbersPerCampaign;
     }
-
     event.preventDefault();
     const file = event.target.files[0];
-    console.log("file upload", file);
     this.setState({ uploading: true }, () => {
       parseCSV(
         file,
@@ -97,14 +112,16 @@ export class CampaignContactsFormBase extends React.Component {
           if (error) {
             this.handleUploadError(error);
           } else if (contacts.length === 0) {
-            this.handleUploadError("Upload at least one contact");
+            this.handleUploadError(
+              "Confirm your file's fields include a first name, last name and cell column. "
+            );
           } else if (maxContacts && contacts.length > maxContacts) {
             this.handleUploadError(
               `You can only upload ${Number(
                 maxContacts
               ).toLocaleString()} contacts max – your file contains ${contacts.length.toLocaleString()}.`
             );
-          } else if (contacts.length > 0) {
+          } else {
             this.handleUploadSuccess(
               validationStats,
               contacts,
@@ -142,7 +159,7 @@ export class CampaignContactsFormBase extends React.Component {
       contacts
     };
     const self = this;
-    // uncomment here to make the data uncompresed on-upload
+    // uncomment here to make the data uncompressed on-upload
     // occasionally useful for debugging to see decoded data in-transit
     // return this.props.onChange(JSON.stringify(contactCollection));
     gzip(JSON.stringify(contactCollection)).then(gzippedData => {
@@ -159,19 +176,23 @@ export class CampaignContactsFormBase extends React.Component {
 
     return (
       <List>
-        <ListSubheader>Uploaded</ListSubheader>
+        <ListSubheader>
+          Confirm with
+          <span className={css(this.styles.csvHeader)}>SAVE</span> below.
+        </ListSubheader>
         <ListItem>
           <ListItemIcon>{this.props.icons.check}</ListItemIcon>
           <ListItemText primary={`${contactsCount} contacts`} />
         </ListItem>
         <ListItem>
           <ListItemIcon>{this.props.icons.check}</ListItemIcon>
-          <ListItemText primary={`${customFields.length} custom fields`} />
+          <ListItemText primary={`${customFields.length} custom fields:`} />
         </ListItem>
         <List disablePadding>
           {customFields.map((field, index) => (
             <ListItem key={index}>
-              <ListItemText primary={field} />
+              <ListItemIcon>{this.props.icons.info}</ListItemIcon>
+              <ListItemText primary={`${field}`} />
             </ListItem>
           ))}
         </List>
@@ -255,13 +276,12 @@ export class CampaignContactsFormBase extends React.Component {
           {this.renderUploadButton()}
           {this.renderContactStats()}
           {this.renderValidationStats()}
-          {contactUploadError && (
+          {contactUploadError && this.props.saveDisabled && (
             <List>
-              <ListItem
-                id="uploadError"
-                primaryText={contactUploadError}
-                leftIcon={this.props.icons.error}
-              />
+              <ListItem id="uploadError">
+                <ListItemIcon>{this.props.icons.error}</ListItemIcon>
+                <ListItemText id="fieldError" primary={contactUploadError} />
+              </ListItem>
             </List>
           )}
           <Form.Submit
@@ -292,11 +312,10 @@ export class CampaignContactsFormBase extends React.Component {
     let subtitle = (
       <span>
         Your upload file should be in CSV format with column headings in the
-        first row. You must include{" "}
-        <span className={css(this.styles.csvHeader)}>firstName</span>, (or{" "}
-        <span className={css(this.styles.csvHeader)}>first_name</span>),
-        <span className={css(this.styles.csvHeader)}>lastName</span>
-        (or <span className={css(this.styles.csvHeader)}>last_name</span>), and
+        first row. The built-in header transformer will adapt to most
+        case-sensitivies, transforming to the required headers:{" "}
+        <span className={css(this.styles.csvHeader)}>firstName</span>,{" "}
+        <span className={css(this.styles.csvHeader)}>lastName</span> and
         <span className={css(this.styles.csvHeader)}>cell</span> columns. If you
         include a <span className={css(this.styles.csvHeader)}>zip</span>{" "}
         column, we'll use the zip to guess the contact's timezone for enforcing
