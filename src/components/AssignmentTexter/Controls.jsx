@@ -176,9 +176,13 @@ export class AssignmentTexterContactControls extends React.Component {
   };
 
   onKeyUp = evt => {
-    if (evt.target && evt.target.id === "contact-notes-input") {
-      /* if texter is entering text in contact-notes sidebar input
-         ignore this listener, space/enter will send texts otherwise */
+    /* if the texter is entering text in sidebars that allow input
+       ignore this listener, space/enter will send texts otherwise.
+
+       NOTE: `id` attr on the input(s) must match what is defined here */
+    const texterSideboxesThatAllowInput = ["contact-notes"];
+
+    if (evt.target && texterSideboxesThatAllowInput.includes(evt.target.id)) {
       return;
     }
 

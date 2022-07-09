@@ -3,7 +3,6 @@ import React from "react";
 import { withRouter } from "react-router";
 import gql from "graphql-tag";
 import _ from "lodash";
-// import { compose } from "recompose";
 
 import TextField from "@material-ui/core/TextField";
 import CircularProgress from "@material-ui/core/CircularProgress";
@@ -37,7 +36,6 @@ export class TexterSideboxClass extends React.Component {
   }
 
   componentDidUpdate() {
-    // console.log(this.props.contact.customFields)
     const { notes: contactNotes } = this.props.contact.customFields;
     if (this.state.isSaving && contactNotes === this.state.notes) {
       this.setIsSaving(false);
@@ -78,7 +76,7 @@ export class TexterSideboxClass extends React.Component {
     return (
       <div style={{ marginTop: 15 }}>
         <TextField
-          id="contact-notes-input"
+          id="contact-notes"
           style={{ backgroundColor: "#dfdfdf" }}
           label="Contact Notes"
           multiline
