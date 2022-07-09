@@ -92,6 +92,7 @@ const fetchOrg = async organizationId =>
           profileFields {
             name
             label
+            isRequired
           }
         }
       }
@@ -148,10 +149,10 @@ export class UserEditBase extends React.Component {
   handleSave = async formData => {
     const { router, location } = this.props;
     if (!this.props.authType) {
-      if (formData.extra) {
-        formData.extra = JSON.stringify(formData.extra);
-      }
-      await this.props.mutations.editUser(formData);
+      await this.props.mutations.editUser({
+        ...formData,
+        extra: formData.extra ? JSON.stringify(formData.extra) : "{}"
+      });
       if (this.props.onRequestClose) {
         this.props.onRequestClose();
       }
@@ -244,7 +245,12 @@ export class UserEditBase extends React.Component {
     if (!authType && org && org.profileFields.length) {
       const fields = {};
       org.profileFields.forEach(field => {
-        fields[field.name] = yup.string().required();
+        fields[field.name] = field.isRequired
+          ? yup
+              .string()
+              .nullable()
+              .required(`${field.label} is a required field`)
+          : yup.string().nullable();
       });
       profileFields = {
         extra: yup.object({
@@ -287,9 +293,19 @@ export class UserEditBase extends React.Component {
     } = this.props;
     const onCancel = this.props.onCancel || (router && router.goBack);
     const user = (this.state.editedUser && this.state.editedUser.user) || {};
-    if (user && typeof user.extra === "string") {
-      user.extra = JSON.parse(user.extra);
+
+    if (user.extra && typeof user.extra === "string") {
+      try {
+        user.extra = JSON.parse(user.extra);
+      } catch (err) {
+        // eslint-disable-next-line no-console
+        console.warn(err);
+        user.extra = {};
+      }
+    } else if (!user.extra) {
+      user.extra = {};
     }
+
     const org = this.state.currentOrg && this.state.currentOrg.organization;
     const formSchema = this.buildFormSchema(authType, org);
     const fieldsNeeded = router && !!router.location.query.fieldsNeeded;

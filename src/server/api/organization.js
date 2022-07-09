@@ -22,7 +22,8 @@ export const ownerConfigurable = {
   DEFAULT_BATCHSIZE: 1,
   DEFAULT_RESPONSEWINDOW: 1,
   MAX_CONTACTS_PER_TEXTER: 1,
-  MAX_MESSAGE_LENGTH: 1
+  MAX_MESSAGE_LENGTH: 1,
+  TEXTER_PROFILE_FIELDS: 1
   // MESSAGE_HANDLERS: 1,
   // There is already an endpoint and widget for this:
   // opt_out_message: 1
@@ -113,11 +114,35 @@ export const resolvers = {
         ? batchPolicies.split(",")
         : ["finished-replies", "vetted-texters"];
     },
-    profileFields: organization =>
-      // @todo: standardize on escaped or not once there's an interface.
-      typeof getFeatures(organization).profile_fields === "string"
-        ? JSON.parse(getFeatures(organization).profile_fields)
-        : getFeatures(organization).profile_fields || [],
+    profileFields: organization => {
+      let fields =
+        getConfig("TEXTER_PROFILE_FIELDS", organization) ||
+        getConfig("profile_fields", organization) ||
+        [];
+
+      if (typeof fields === "string") {
+        try {
+          fields = JSON.parse(fields) || [];
+        } catch (err) {
+          console.log("Error parsing TEXTER_PROFILE_FIELDS", err);
+          fields = [];
+        }
+      }
+
+      if (!Array.isArray(fields)) fields = [];
+
+      /*
+        because all user fields were originally required by default,
+        for backwards compatability treat undefined isRequired
+        as if it was intended to be required.
+
+        optional field entries will need to have isRequired: false defined
+      */
+      return fields.map(field => ({
+        ...field,
+        isRequired: field.isRequired === undefined ? true : !!field.isRequired
+      }));
+    },
     availableActions: async (organization, _, { user, loaders }) => {
       await accessRequired(user, organization.id, "SUPERVOLUNTEER");
       const availableHandlers = await getAvailableActionHandlers(

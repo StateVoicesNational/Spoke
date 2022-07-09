@@ -22,7 +22,7 @@ describe("Auto Opt-Out Tests", () => {
       is_from_contact: true,
       contact_number: "+123456",
       campaign_contact_id: 1,
-      text: 'please stop'
+      text: "please stop"
     };
   });
 
@@ -76,4 +76,4 @@ describe("Auto Opt-Out Tests", () => {
 
     expect(sendMessage.sendRawMessage).not.toHaveBeenCalled();
   });
-})
+});

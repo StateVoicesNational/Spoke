@@ -628,23 +628,36 @@ const rootMutations = {
             email: userData.email,
             cell: userData.cell
           };
+
+          let extra = null;
+
           if (member.extra || userData.extra) {
-            newUserData.extra = {
-              ...member.extra,
-              ...JSON.parse(userData.extra || "{}")
-            };
+            if (typeof member.extra === "string") {
+              member.extra = JSON.parse(member.extra || "{}");
+            }
+            if (typeof userData.extra === "string") {
+              // eslint-disable-next-line no-param-reassign
+              userData.extra = JSON.parse(userData.extra || "{}");
+            }
+            extra = { ...member.extra, ...userData.extra };
+            newUserData.extra = JSON.stringify(extra);
           }
 
-          const userRes = await r
+          await r
             .knex("user")
             .where("id", userId)
             .update(newUserData);
+
           await cacheableData.user.clearUser(member.user_id, member.auth0_id);
+
+          if (extra) newUserData.extra = extra;
+          // eslint-disable-next-line no-param-reassign
           userData = {
             id: userId,
             ...newUserData
           };
         } else {
+          // eslint-disable-next-line no-param-reassign
           userData = member;
         }
         return userData;

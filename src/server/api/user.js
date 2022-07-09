@@ -67,7 +67,7 @@ export function buildUsersQuery(
 
   if (role !== "ANY") {
     if (role) {
-      query = query.where({ role: role });
+      query = query.where({ role });
     }
     if (role !== "SUSPENDED") {
       query = query.whereNot({ role: "SUSPENDED" });
@@ -392,13 +392,35 @@ export const resolvers = {
     profileComplete: async (user, { organizationId }, { loaders }) => {
       const org = await loaders.organization.load(organizationId);
       // @todo: standardize on escaped or not once there's an interface.
-      const profileFields = getFeatures(org).profile_fields;
-      const fields =
-        typeof profileFields === "string"
-          ? JSON.parse(profileFields)
-          : getFeatures(org).profile_fields || [];
+      let fields =
+        getConfig("TEXTER_PROFILE_FIELDS", org) ||
+        getConfig("profile_fields", org) ||
+        [];
+
+      if (typeof fields === "string") {
+        try {
+          fields = JSON.parse(fields) || [];
+        } catch (err) {
+          // eslint-disable-next-line no-console
+          console.log("Error parsing TEXTER_PROFILE_FIELDS", err);
+          fields = [];
+        }
+      }
+
+      if (!Array.isArray(fields)) fields = [];
+
       for (const field of fields) {
-        if (!user.extra || !user.extra[field.name]) {
+        /*
+          because all user fields were originally required by default,
+          for backwards compatability treat undefined isRequired
+          as if it was intended to be required.
+
+          optional field entries will need to have isRequired: false defined
+        */
+        if (
+          (field.isRequired || field.isRequired === undefined) &&
+          (!user.extra || !user.extra[field.name])
+        ) {
           return false;
         }
       }

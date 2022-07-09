@@ -118,7 +118,13 @@ const dbLoadUserAuth = async (field, val) => {
     .select("*")
     .first();
   if (userAuth && typeof userAuth.extra === "string") {
-    userAuth.extra = JSON.parse(userAuth.extra);
+    try {
+      userAuth.extra = JSON.parse(userAuth.extra);
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.log(err);
+      userAuth.extra = {};
+    }
   }
   if (r.redis && userAuth) {
     const authKey = userAuthKey(val);

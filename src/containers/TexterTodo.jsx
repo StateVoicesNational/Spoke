@@ -75,6 +75,7 @@ export const campaignQuery = gql`
         firstName
         lastName
         alias
+        extra
       }
       campaign {
         id
@@ -169,6 +170,7 @@ export const dataQuery = gql`
         firstName
         lastName
         alias
+        extra
       }
     }
   }
