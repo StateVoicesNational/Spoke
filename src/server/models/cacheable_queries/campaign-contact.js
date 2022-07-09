@@ -415,16 +415,14 @@ const campaignContactCache = {
         .whereNull("messageservice_sid")
         .where("user_number", userNumber);
     }
-    if (r.redis) {
-      // we get the campaign_id so we can cache errorCount and needsResponseCount
-      messageQuery = messageQuery
-        .join(
-          "campaign_contact",
-          "campaign_contact.id",
-          "message.campaign_contact_id"
-        )
-        .select("campaign_contact_id", "campaign_id");
-    }
+    // we get the campaign_id so we can cache errorCount and needsResponseCount
+    messageQuery = messageQuery
+      .join(
+        "campaign_contact",
+        "campaign_contact.id",
+        "message.campaign_contact_id"
+      )
+      .select("campaign_contact_id", "campaign_id");
     const [lastMessage] = await messageQuery;
     if (lastMessage) {
       return {
