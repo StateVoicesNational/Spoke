@@ -581,7 +581,7 @@ const campaignContactCache = {
       const updatedContact = {
         ...contact,
         updated_at: updatedAt.toString(),
-        custom_fields: JSON.parse(customFields)
+        custom_fields: customFields
       };
 
       if (CONTACT_CACHE_ENABLED) {

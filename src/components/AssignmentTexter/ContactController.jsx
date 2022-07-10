@@ -231,17 +231,7 @@ export class ContactController extends React.Component {
 
   getContact(contacts, index) {
     if (contacts.length > index) {
-      // console.log('getcontact', index, (contacts[index]||{}).id, (contacts.length > index + 1 ? 'next' + (contacts[index+1]||{}).id : 'end'))
-      const contact = contacts[index];
-      if (typeof contact.customFields === "string") {
-        try {
-          contact.customFields = JSON.parse(contact.customFields || "{}");
-        } catch (err) {
-          // eslint-disable-next-line no-console
-          console.error(err);
-        }
-      }
-      return contact;
+      return contacts[index];
     }
     return null;
   }
