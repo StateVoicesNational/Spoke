@@ -78,6 +78,7 @@ describe("CampaignContactCache", () => {
         send_status: "SENT",
         text: "Hey now!",
         service,
+        messageservice_sid: null, // necessary for sqlite tests to pass
         user_number: texter.cell
       };
       await saveMessage({
