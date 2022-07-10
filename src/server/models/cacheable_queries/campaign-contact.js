@@ -377,11 +377,10 @@ const campaignContactCache = {
       );
       // console.log('lookupByCell cache', cell, service, messageServiceSid, cellData)
       if (cellData) {
-        // eslint-disable-next-line camelcase
         const [
-          campaign_contact_id,
-          _,
-          timezone_offset,
+          campaign_contact_id, // eslint-disable-line camelcase
+          _, // eslint-disable-line no-unused-vars
+          timezone_offset, // eslint-disable-line camelcase
           ...rest
         ] = cellData.split(":");
         return {
