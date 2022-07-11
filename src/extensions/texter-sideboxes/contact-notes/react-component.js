@@ -15,21 +15,20 @@ export const showSidebox = () => true;
 
 export class TexterSideboxClass extends React.Component {
   constructor(props) {
-    /* eslint-disable no-param-reassign */
+    let customFields = props.contact.customFields;
     if (typeof props.contact.customFields === "string") {
       try {
-        props.contact.customFields = JSON.parse(props.contact.customFields);
+        customFields = JSON.parse(props.contact.customFields || "{}");
       } catch (err) {
         // eslint-disable-next-line no-console
         console.warn(err);
-        props.contact.customFields = {};
+        customFields = {};
       }
     }
 
-    /* eslint-enable no-param-reassign */
     super(props);
     this.state = {
-      notes: props.contact.customFields.notes || "",
+      notes: customFields.notes || "",
       isSaving: false,
       hasError: false
     };
