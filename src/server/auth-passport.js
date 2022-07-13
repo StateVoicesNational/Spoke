@@ -163,16 +163,21 @@ export function setupTokenPassport(app) {
           if (users.length === 0) {
             const userData = {
               auth0_id: ["token", jwt_payload.sub].join("|"),
-              first_name: jwt_payload.name.split(" ")[0],
-              last_name: jwt_payload.name
-                .split(" ")
-                .slice(1)
-                .join(" "),
-              cell: "",
               email: jwt_payload.email || jwt_payload.sub,
-              cell: jwt_payload.cell || jwt_payload.phone,
+              first_name: "",
+              last_name: "",
+              cell: jwt_payload.cell || jwt_payload.phone || "",
               is_superadmin: false
             };
+
+            if (jwt_payload.name) {
+              const fullNameSplit = jwt_payload.name.split(" ");
+              userData.first_name = fullNameSplit[0];
+              userData.last_name =
+                fullNameSplit.length > 1
+                  ? fullNameSplit.slice(1).join(" ")
+                  : "";
+            }
 
             return User.save(userData);
           }
