@@ -21,7 +21,6 @@ RUN yarn install --ignore-scripts --non-interactive --frozen-lockfile && \
 FROM ${RUNTIME_IMAGE}
 WORKDIR /spoke
 COPY --from=builder /spoke/build build
-COPY --from=builder /spoke/migrations migrations
 COPY --from=builder /spoke/node_modules node_modules
 COPY --from=builder /spoke/package.json /spoke/yarn.lock ./
 ENV NODE_ENV=production \
