@@ -6,12 +6,12 @@
 `TWILIO_MULTI_ORG=1`
 `EXPERIMENTAL_PHONE_INVENTORY=1`
 
-2. Create messaging service in Twilio with org name https://www.twilio.com/console/sms/services 
-3. Go to main console https://www.twilio.com/console and copy Account SID and Auth Token for your “project” in Twilio, and add those values to Twilio Credentials section of the Settings tab for the corresponding organization. 
-4. Go to Messaging Service in Twilio and navigate to the new message service you created, copy the SID next to the service name in the table. Add this value to the “Account SID” in the Settings tab in Spoke. Click Save Twilio Credentials, and select OK again. 
-5. Copy the inbound request URL that pops up when you create a Twilio Credential in Spoke. The link looks like this: https://spoke.nycet.org/twilio/## 
-6. Click into your new messaging service in Twilio, navigate to Integrations in the side panel. In incoming messages, select Send a Webhook. Paste the inbound request URL into the Request URL and the Fallback URL values in Twilio. 
-7. Paste [your spoke url]/twilio-message-report in the Callback URL in twilio. Click SAVE in twilio. 
+2. Create messaging service in Twilio with org name https://www.twilio.com/console/sms/services
+3. Go to main console https://www.twilio.com/console and copy Account SID and Auth Token for your “project” in Twilio, and add those values to Twilio Credentials section of the Settings tab for the corresponding organization.
+4. Go to Messaging Service in Twilio and navigate to the new message service you created, copy the SID next to the service name in the table. Add this value to the “Account SID” in the Settings tab in Spoke. Click Save Twilio Credentials, and select OK again.
+5. Copy the inbound request URL that pops up when you create a Twilio Credential in Spoke. The link looks like this: https://spoke.nycet.org/twilio/##
+6. Click into your new messaging service in Twilio, navigate to Integrations in the side panel. In incoming messages, select Send a Webhook. Paste the inbound request URL into the Request URL and the Fallback URL values in Twilio.
+7. Paste [your spoke url]/twilio-message-report in the Callback URL in twilio. Click SAVE in twilio.
 8. Go to the Phone Numbers section in Spoke, and purchase at least one phone number. Select “add to this organization’s messaging service”
 
 # How to Set Up Per-Campaign Number Buying (with Twilio)
@@ -20,7 +20,7 @@
 `EXPERIMENTAL_PHONE_INVENTORY=1`
 2. Add the following variables either to config / env variables (if you are doing per-campaign set up for all your orgs) or to the “features” json {} in the organization table in your SQL database (if you are setting up per-campaign phone number buying for only some of the orgs in your system)
 `EXPERIMENTAL_CAMPAIGN_PHONE_NUMBERS=1`
-`EXPERIMENTAL_TWILIO_PER_CAMPAIGN_MESSAGING_SERVICE=1` 
+`EXPERIMENTAL_TWILIO_PER_CAMPAIGN_MESSAGING_SERVICE=1`
 3. In the Phone Numbers section in Spoke, purchase phone numbers; then after you create any new campaign in Spoke, you can assign phone numbers to that campaign.
 
 ### How to Buy Numbers Directly in Twilio
@@ -44,3 +44,19 @@ If you are comfortable using the Linux command line, and/or will be buying many 
 7. Search by area code to find numbers
 8. Click the buy button when you're ready to buy the number. - You should see: "The number has been associated with this messaging service" in the modal when you buy a number. That is the indicator that the number is being linked to Spoke.
    ![number purchased](images/twilio_number_buying_guide/blurred_number_purchased.png "Number Purchased")
+
+
+## How to transition between Per-Campaign and Per-Org purchasing of phone numbers in Spoke
+The main difference between the Per-Campaign setup and the Per-Org set is between these four evironment variables.
+
+
+- Using Service Manager
+Settings for PER-CAMPAIGN: We Use these variables:
+  - `TWILIO_MULTI_ORG=1`
+  - `EXPERIMENTAL_PHONE_INVENTORY=1`
+
+PLUS
+
+Per Campaign Services Manager
+- per-campaign-messageservices
+- details instructions here
