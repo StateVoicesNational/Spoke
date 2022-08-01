@@ -68,9 +68,6 @@ const organizationCache = {
     return dbResult;
   },
   setFeatures: async (id, newFeatures) => {
-    console.log("SET FEATURES");
-    console.log(id);
-    console.log(newFeatures);
     if (!id || !newFeatures) {
       return;
     }
