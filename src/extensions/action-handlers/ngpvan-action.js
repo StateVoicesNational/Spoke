@@ -1,4 +1,4 @@
-import { getConfig } from "../../server/api/lib/config";
+import { getConfig, hasConfig } from "../../server/api/lib/config";
 import Van from "../contact-loaders/ngpvan/util";
 import {
   getCountryCode,
@@ -93,7 +93,7 @@ export const postCanvassResponse = async (contact, organization, bodyInput) => {
     retries: 0,
     timeout: Van.getNgpVanTimeout(organization),
     headers: {
-      Authorization: Van.getAuth(organization),
+      Authorization: await Van.getAuth(organization),
       "Content-Type": "application/json"
     },
     body: JSON.stringify(body),
@@ -127,7 +127,7 @@ async function getContactTypeIdAndInputTypeId(organization) {
       method: "GET",
       timeout: Van.getNgpVanTimeout(organization),
       headers: {
-        Authorization: Van.getAuth(organization)
+        Authorization: await Van.getAuth(organization)
       }
     }
   )
@@ -145,7 +145,7 @@ async function getContactTypeIdAndInputTypeId(organization) {
       method: "GET",
       timeout: Van.getNgpVanTimeout(organization),
       headers: {
-        Authorization: Van.getAuth(organization)
+        Authorization: await Van.getAuth(organization)
       }
     }
   )
@@ -228,7 +228,7 @@ export async function getClientChoiceData(organization) {
       method: "GET",
       timeout: Van.getNgpVanTimeout(organization),
       headers: {
-        Authorization: Van.getAuth(organization)
+        Authorization: await Van.getAuth(organization)
       }
     }
   )
@@ -246,7 +246,7 @@ export async function getClientChoiceData(organization) {
       method: "GET",
       timeout: Van.getNgpVanTimeout(organization),
       headers: {
-        Authorization: Van.getAuth(organization)
+        Authorization: await Van.getAuth(organization)
       }
     }
   )
@@ -264,7 +264,7 @@ export async function getClientChoiceData(organization) {
       method: "GET",
       timeout: Van.getNgpVanTimeout(organization),
       headers: {
-        Authorization: Van.getAuth(organization)
+        Authorization: await Van.getAuth(organization)
       }
     }
   )
@@ -371,8 +371,9 @@ export async function getClientChoiceData(organization) {
 // process.env.ACTION_HANDLERS
 export async function available(organization) {
   let result =
-    !!getConfig("NGP_VAN_API_KEY", organization) &&
-    !!getConfig("NGP_VAN_APP_NAME", organization);
+    (hasConfig("NGP_VAN_API_KEY", organization) ||
+      hasConfig("NGP_VAN_API_KEY_ENCRYPTED", organization)) &&
+    hasConfig("NGP_VAN_APP_NAME", organization);
 
   if (!result) {
     // eslint-disable-next-line no-console
