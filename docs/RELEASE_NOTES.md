@@ -8,6 +8,7 @@ _August 2022:_ Version 12.3
 
 ### Bug fixes
 * Fixes views for Demo Texting
+* Fixes auto-optout if Redis is not enabled
 
 ### Improvements
 * Add disabled prop to GSSelectField
@@ -18,7 +19,7 @@ _August 2022:_ Version 12.3
 * Adds a new contact-notes Texter Sidebox
 
 ### Appreciations
-* [Arique Aguilar](https://github.com/Arique1104), [Cody Gordon](https://github.com/codygordon), [Ilona Brand](https://github.com/ibrand), [Kathy Nguyen](https://github.com/crayolakat), [Rey Rodrigues](https://github.com/reyattrestle), [Sky Duveen](https://github.com/schuyler1d), [Sticks Stuff](https://github.com/sticks-stuff) and Harold Travis and Mark Houghton for QA
+* [Arique Aguilar](https://github.com/Arique1104), [Cody Gordon](https://github.com/codygordon), [Ilona Brand](https://github.com/ibrand), [Kathy Nguyen](https://github.com/crayolakat), [Rey Rodrigues](https://github.com/reyattrestle), [Larry Person](https://github.com/lperson), [Sky Duveen](https://github.com/schuyler1d), [Sticks Stuff](https://github.com/sticks-stuff) and Harold Travis and Mark Houghton for QA
 
 
 ## v12.2
