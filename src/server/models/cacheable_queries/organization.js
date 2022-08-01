@@ -2,7 +2,8 @@ import {
   getMessageServiceConfig,
   tryGetFunctionFromService
 } from "../../../extensions/service-vendors/service_map";
-import { getConfig } from "../../api/lib/config";
+import { convertSecret } from "../../../extensions/secret-manager";
+import { getFeatures, getConfig } from "../../api/lib/config";
 import { r } from "../../models";
 
 const cacheKey = orgId => `${process.env.CACHE_PREFIX || ""}org-${orgId}`;
