@@ -11,6 +11,7 @@ _August 2022:_ Version 12.3
 
 ### Improvements
 * Add disabled prop to GSSelectField
+* Updates dependencies
 
 ### New features
 * JWT-powered Delegated Authentication
