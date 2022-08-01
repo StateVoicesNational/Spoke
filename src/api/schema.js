@@ -349,6 +349,10 @@ const rootSchema = gql`
       tags: [ContactTagInput]
       campaignContactId: String!
     ): CampaignContact
+    updateContactCustomFields(
+      customFields: String!
+      campaignContactId: String!
+    ): CampaignContact
     updateQuestionResponses(
       questionResponses: [QuestionResponseInput]
       campaignContactId: String!

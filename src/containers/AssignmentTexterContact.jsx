@@ -425,6 +425,7 @@ export class AssignmentTexterContact extends React.Component {
           refreshData={this.props.refreshData}
           getMessageTextFromScript={this.getMessageTextFromScript}
           updateCurrentContactById={this.props.updateCurrentContactById}
+          updateContactData={this.props.updateContactData}
         />
         {this.props.contact.messageStatus === "needsMessage" &&
         window.NOT_IN_USA &&
@@ -467,7 +468,8 @@ AssignmentTexterContact.propTypes = {
   onExitTexter: PropTypes.func,
   organizationId: PropTypes.string,
   location: PropTypes.object,
-  updateCurrentContactById: PropTypes.func
+  updateCurrentContactById: PropTypes.func,
+  updateContactData: PropTypes.func
 };
 
 const mutations = {

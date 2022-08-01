@@ -66,6 +66,7 @@ import {
   sendMessage,
   startCampaign,
   updateContactTags,
+  updateContactCustomFields,
   updateQuestionResponses,
   releaseCampaignNumbers,
   clearCachedOrgAndExtensionCaches,
@@ -1339,6 +1340,7 @@ const rootMutations = {
       return contact;
     },
     updateContactTags,
+    updateContactCustomFields,
     updateQuestionResponses,
     reassignCampaignContacts: async (
       _,

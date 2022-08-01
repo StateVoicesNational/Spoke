@@ -105,6 +105,16 @@ Must be enabled for Admins to be able to review contacts' replies and give feedb
 variables feedback is given dump valid JSON blob based on this [Working Families Party example](https://github.com/MoveOnOrg/Spoke/blob/stage-main-10-c/src/extensions/texter-sideboxes/texter-feedback/config-wfp-example.json)
 into the custom field. Note that invalid JSON will break Spoke!
 
+### contact-notes
+
+Allows entry of notes in a multiline text input in the sidebox. Notes are saved
+to a campaign contact's `customFields` using `notes` key.
+
+You can persist notes across campaigns for the same contact by simply loading
+the notes data you'd like to persist into a column called `notes` in your
+contacts list. All texters will see any `notes` data loaded in this way in
+the input when viewing the contact if this setting is enabled!
+
 
 ## Texter Sidebox configuration options
 
