@@ -842,7 +842,6 @@ describe("config functions", () => {
             ]);
             expect(configFunctions.getConfig.mock.calls).toEqual([
               ["TWILIO_AUTH_TOKEN_ENCRYPTED", organization, expectedConfigOpts],
-              ["TWILIO_AUTH_TOKEN_ENCRYPTED", organization, expectedConfigOpts],
               ["TWILIO_ACCOUNT_SID", organization, expectedConfigOpts],
               ["TWILIO_ACCOUNT_SID", organization, expectedConfigOpts],
               ["TWILIO_MESSAGE_SERVICE_SID", organization, expectedConfigOpts]
