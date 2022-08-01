@@ -103,7 +103,7 @@ export const postMessageSave = async ({
       cell: message.contact_number,
       campaignContactId: message.campaign_contact_id,
       assignmentId: (contact && contact.assignment_id) || null,
-      campaign: campaign,
+      campaign,
       noReply: true,
       reason: handlerContext.autoOptOutReason,
       // RISKY: we depend on the contactUpdates in preMessageSave
