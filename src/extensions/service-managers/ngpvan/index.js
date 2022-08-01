@@ -27,7 +27,7 @@ export async function getOrganizationData({ organization, user, loaders }) {
     data: {
       NGP_VAN_API_KEY_ENCRYPTED: NGP_VAN_API_KEY_ENCRYPTED && "<Encrypted>",
       NGP_VAN_APP_NAME,
-      NGP_VAN_DATABASE_MODE: String(NGP_VAN_DATABASE_MODE)
+      NGP_VAN_DATABASE_MODE: NGP_VAN_DATABASE_MODE.toString()
     },
     // fullyConfigured: null means (more) configuration is optional -- maybe not required to be enabled
     // fullyConfigured: true means it is fully enabled and configured for operation
@@ -54,7 +54,7 @@ export async function onOrganizationUpdateSignal({
     data: {
       NGP_VAN_API_KEY_ENCRYPTED: NGP_VAN_API_KEY_ENCRYPTED && "<Encrypted>",
       NGP_VAN_APP_NAME,
-      NGP_VAN_DATABASE_MODE: String(NGP_VAN_DATABASE_MODE)
+      NGP_VAN_DATABASE_MODE: NGP_VAN_DATABASE_MODE.toString()
     },
     fullyConfigured: true
   };
