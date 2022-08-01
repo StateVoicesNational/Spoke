@@ -65,6 +65,66 @@ const organizationCache = {
       }
     }
     return dbResult;
+  },
+  setFeatures: async (id, newFeatures) => {
+    if (!id || !newFeatures) {
+      return;
+    }
+    const features = await r.knex.transaction(async trx => {
+      const orgDb = await trx("organization")
+        .where("id", id)
+        .first("features");
+      const features = getFeatures(orgDb);
+      let changes = false;
+      for (const [featureName, featureValue] of Object.entries(newFeatures)) {
+        if (
+          // Don't save default values that aren't already overridden.
+          (features.hasOwnProperty(featureName) ||
+            getConfig(featureName) !== featureValue) &&
+          // Don't save Encrypted placeholder.
+          featureValue !== "<Encrypted>"
+        ) {
+          features[featureName] = featureValue;
+          // Automatically encrypt token values when needed.
+          if (featureName.endsWith("_ENCRYPTED")) {
+            features[featureName] = await convertSecret(
+              featureName,
+              orgDb,
+              featureValue
+            );
+          }
+          changes = true;
+        }
+      }
+      // Remove feature properties that have been unset
+      Object.keys(newFeatures)
+        .filter(f => newFeatures[f] === "")
+        .forEach(f => {
+          delete features[f];
+          changes = true;
+        });
+      if (changes) {
+        const featuresString = JSON.stringify(features);
+        await trx("organization")
+          .where("id", id)
+          .update("features", featuresString);
+        if (r.redis) {
+          const orgCache = await r.redis.getAsync(cacheKey(id));
+          if (orgCache) {
+            const orgObj = JSON.parse(orgCache);
+            orgObj.feature = features;
+            orgObj.features = featuresString;
+            await r.redis
+              .multi()
+              .set(cacheKey(id), JSON.stringify(orgObj))
+              .expire(cacheKey(id), 10000)
+              .execAsync();
+          }
+        }
+      }
+      return features;
+    });
+    return features;
   }
 };
 
