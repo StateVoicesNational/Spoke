@@ -63,7 +63,7 @@ describe("ngpvan/util", () => {
     });
   });
 
-  describe(".getAuth", () => {
+  describe(".getAuth", async () => {
     let oldNgpVanAppName;
     let oldNgpVanApiKey;
     beforeAll(async () => {
@@ -120,12 +120,13 @@ describe("ngpvan/util", () => {
       }
 
       try {
-        auth = Van.getAuth(organization);
+        auth = await Van.getAuth(organization);
       } catch (caughtException) {
         error = caughtException;
       } finally {
         expect(config.getConfig.mock.calls).toEqual([
           ["NGP_VAN_APP_NAME", organization],
+          ["NGP_VAN_API_KEY_ENCRYPTED", organization, {}],
           ["NGP_VAN_API_KEY", organization],
           ["NGP_VAN_DATABASE_MODE", organization]
         ]);
