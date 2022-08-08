@@ -24,8 +24,9 @@ For setting up a development environment with Bandwidth, first read [this sectio
 10. Click the "SAVE CHANGES" button.
 11. Create an application. Fill out the following fields:
     1. Callback URL: `<BASE_URL_ENV_VAR>/bandwidth/<ORGANIZATION_ID>` for example https://your-spoke.herokuapp.com/bandwidth/1
-    2. Enable `Use a username/password for callbacks`
-    3. Callback user ID: `bandwidth.com`
+    2. NOTE: If your Spoke instance doesn't have a BASE_URL environmental variable **you must set it**. The BASE_URL environmental variable should not include the trailing slash (ie. just https://your-spoke.herokuapp.com)
+    3. Enable `Use a username/password for callbacks`
+    4. Callback user ID: `bandwidth.com`
 12. Open a new tab and go to the following website: https://www.tutorialspoint.com/execute_nodejs_online.php
 13. Paste the following code into the code editor. The values can be found in your environmental variables :
     ```
