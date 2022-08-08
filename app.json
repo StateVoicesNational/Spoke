@@ -44,9 +44,8 @@
     },
 
     "DEFAULT_SERVICE": {
-      "description": "specifies using twilio api ",
-      "required": false,
-      "value": "twilio"
+      "description": "specifies using bandwidth or twilio api ",
+      "required": true
     },
 
     "TWILIO_ACCOUNT_SID": {
