@@ -44,7 +44,7 @@
     },
 
     "DEFAULT_SERVICE": {
-      "description": "specifies using bandwidth or twilio api ",
+      "description": "type bandwidth or twilio",
       "required": true
     },
 
