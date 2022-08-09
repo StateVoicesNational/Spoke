@@ -1,16 +1,30 @@
 # Bandwidth Integration
 
-Bandwidth.com is a telephone service API company. To use Bandwidth, set your environment variable DEFAULT_SERVICE to bandwidth: `DEFAULT_SERVICE=bandwidth`
+Bandwidth.com is a telephone service API company.
 
-## Service Manager Instructions
+## Setting Configuration Variables
 - These changes need to occur in your .env file or anywhere your Configuration Variables are set.
+
+
+**DEFAULT_SERVICE**
+- To use Bandwidth, set your environment variable DEFAULT_SERVICE to bandwidth:
+
+
+```
+DEFAULT_SERVICE=bandwidth
+```
+
+
+**SERVICE_MANAGERS**
+
 - The `sticky-sender` and `num-picker` service managers are required for the Bandwidth extension to work. `sticky-sender` must come before `numpicker-basic` in the `SERVICE_MANAGERS` environment variable.
 
-Example:
-```json
+
+```
 SERVICE_MANAGERS=sticky-sender,numpicker-basic
 ```
 
+**RESOURCES**
 - You can find more documentation about additional Service Managers, [here.](HOWTO-use-service-managers.md)
 
 - For setting up a `development environment` with Bandwidth, first read [this section](HOWTO_DEVELOPMENT_LOCAL_SETUP.md#ngrok).
@@ -36,15 +50,15 @@ SERVICE_MANAGERS=sticky-sender,numpicker-basic
 9. Create an application. Fill out the following fields:
 - Set your `BASE_URL` without the trailing `/`
 
-EXAMPLE:
+```
 https://your-spoke.herokuapp.com
-
-
+```
 
 - Callback URL: `<BASE_URL>/bandwidth/<ORGANIZATION_ID>`
 
-EXAMPLE:
+```
 https://your-spoke.herokuapp.com/bandwidth/1
+```
 
 - Enable `Use a username/password for callbacks`
 - Callback user ID: `bandwidth.com`
