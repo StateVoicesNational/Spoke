@@ -174,7 +174,7 @@ export class AssignmentSummaryBase extends Component {
             {(hasPopupSidebox && sideboxList) || null}
 
             <div className={css(styles.buttonRow)}>
-              {(window.NOT_IN_USA && window.ALLOW_SEND_ALL) || hasPopupSidebox
+              {(window.ALLOW_SEND_ALL) || hasPopupSidebox
                 ? null
                 : this.renderBadgedButton({
                     dataTestText: "sendFirstTexts",
@@ -187,7 +187,7 @@ export class AssignmentSummaryBase extends Component {
                     hideIfZero: true,
                     color: "primary"
                   })}
-              {(window.NOT_IN_USA && window.ALLOW_SEND_ALL) || hasPopupSidebox
+              {(window.ALLOW_SEND_ALL) || hasPopupSidebox
                 ? null
                 : this.renderBadgedButton({
                     dataTestText: "Respond",
@@ -226,7 +226,7 @@ export class AssignmentSummaryBase extends Component {
                 color: "secondary",
                 hideBadge: true
               })}
-              {window.NOT_IN_USA && window.ALLOW_SEND_ALL && !hasPopupSidebox
+              {window.ALLOW_SEND_ALL && !hasPopupSidebox
                 ? this.renderBadgedButton({
                     assignment,
                     title: "Send messages",

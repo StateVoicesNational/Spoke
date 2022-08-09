@@ -77,7 +77,7 @@ describe("AssignmentSummary text", function t() {
   );
 });
 
-describe("AssignmentSummary actions inUSA and NOT AllowSendAll", () => {
+describe("AssignmentSummary actions when NOT AllowSendAll", () => {
   function create(
     unmessaged,
     unreplied,
@@ -86,7 +86,6 @@ describe("AssignmentSummary actions inUSA and NOT AllowSendAll", () => {
     skipped,
     isDynamic
   ) {
-    window.NOT_IN_USA = 0;
     window.ALLOW_SEND_ALL = false;
     return mount(
       <ApolloProvider client={ApolloClientSingleton}>
@@ -183,7 +182,7 @@ describe("AssignmentSummary actions inUSA and NOT AllowSendAll", () => {
   });
 });
 
-describe("AssignmentSummary NOT inUSA and AllowSendAll", () => {
+describe("AssignmentSummary when AllowSendAll", () => {
   function create(
     unmessaged,
     unreplied,
@@ -192,7 +191,6 @@ describe("AssignmentSummary NOT inUSA and AllowSendAll", () => {
     skipped,
     isDynamic
   ) {
-    window.NOT_IN_USA = 1;
     window.ALLOW_SEND_ALL = true;
     return mount(
       <AssignmentSummary

@@ -14,8 +14,7 @@ Refer to [REFERENCE-environment_variables.md](REFERENCE-environment_variables.md
 
 1. Set the environment variable `ALLOW_SEND_ALL` to `true`.
 2. Set the environment variable `BULK_SEND_CHUNK_SIZE` to a number greater than 0.
-3. Set the environment variable `NOT_IN_USA` to `true`.
-4. Restart Spoke.
+3. Restart Spoke.
 
 ## Example: `.env` file
 
@@ -24,5 +23,4 @@ If you use a `.env` file to configure Spoke, the changes above would appear as f
 ```
 ALLOW_SEND_ALL=true
 BULK_SEND_CHUNK_SIZE=30
-NOT_IN_USA=true
 ```
