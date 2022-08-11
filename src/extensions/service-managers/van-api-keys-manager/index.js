@@ -38,30 +38,35 @@ export async function onOrganizationUpdateSignal({
   user,
   updateData
 }) {
+  // Encrypt the API key
   const textToStoreInDb = await convertSecret(
     "ngpVanApiKey",
     organization,
     updateData.NGP_VAN_API_KEY
   );
 
+  // set front-facing variable to convey to user key has been
+  // saved without displaying it
   updateData.NGP_VAN_API_KEY = "van api key has been configured";
 
+  // API key is now stored encrypted
   updateData.NGP_VAN_API_KEY_ENC = textToStoreInDb;
 
-  await cacheableData.organization.setFeatures(organization.id, {
-    ngpVanAPIKey: updateData
-  });
-
+  // organization.features is a json object
+  // if you are setting it for the first time, save a new one
   let orgChanges = {
     features: updateData
   };
 
+  // otherwise, if values have previously been set,
+  // add it to the object instead of overwriting it
   if (organization.features) {
     orgChanges = {
       features: { ...getFeatures(organization), ...updateData }
     };
   }
 
+  // Make DB changes
   await cacheableData.organization.clear(organization.id);
   await r
     .knex("organization")
