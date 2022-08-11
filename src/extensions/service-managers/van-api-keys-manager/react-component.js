@@ -1,13 +1,16 @@
 /* eslint no-console: 0 */
 import { css } from "aphrodite";
 import PropTypes from "prop-types";
-import React from "react";
+import React, { useState } from "react";
 import Form from "react-formal";
 import * as yup from "yup";
 import DisplayLink from "../../../components/DisplayLink";
 import GSForm from "../../../components/forms/GSForm";
 import GSTextField from "../../../components/forms/GSTextField";
 import GSSubmitButton from "../../../components/forms/GSSubmitButton";
+
+import Snackbar from "@material-ui/core/Snackbar";
+import Alert from "@material-ui/lab/Alert";
 
 export class OrgConfig extends React.Component {
   constructor(props) {
@@ -30,6 +33,9 @@ export class OrgConfig extends React.Component {
         .nullable()
         .max(64)
     });
+
+    const [saveSuccessful, setSaveSuccessful] = useState(true);
+
     return (
       <div>
         You can set VAN credentials specifically for this Organization by
@@ -40,6 +46,8 @@ export class OrgConfig extends React.Component {
           onSubmit={x => {
             console.log("onSubmit", x);
             this.props.onSubmit(x);
+            setSaveSuccessful(true);
+            console.log("saveSuccessful", saveSuccessful);
           }}
         >
           <Form.Field
@@ -66,6 +74,17 @@ export class OrgConfig extends React.Component {
             style={this.props.inlineStyles.dialogButton}
           />
         </GSForm>
+        <Snackbar
+          open={saveSuccessful}
+          autoHideDuration={2000}
+          onClose={() => {
+            setSaveSuccessful(false);
+          }}
+        >
+          <Alert elevation={6} variant="filled" severity="success">
+            VAN API key update successful!
+          </Alert>
+        </Snackbar>
       </div>
     );
   }
