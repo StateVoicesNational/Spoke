@@ -5,6 +5,36 @@
   "success_url": "/",
   "stack": "container",
   "env": {
+    "ACTION_HANDLERS": {
+      "description": "MISSION CRITICAL: ",
+      "required": false,
+      "value": ""
+    },
+
+    "CONTACT_LOADERS": {
+      "description": "MISSION CRITICAL",
+      "required": false,
+      "value": ""
+    },
+
+    "MESSAGE_HANDLERS": {
+      "description": "MISSION CRITICAL",
+      "required": false,
+      "value": ""
+    },
+
+    "SERVICE_MANAGERS": {
+      "description": "MISSION CRITICAL: ",
+      "required": false,
+      "value": "ngpvan"
+    },
+
+    "TEXTER_SIDEBOXES": {
+      "description": "MISSION CRITICAL: Use to support the experience of your volunteer texters.",
+      "required": false,
+      "value": "celebration-gif,default-dynamicassignment,default-releasecontacts,contact-reference,tag-contact,freshworks-widget,default-editinitial,take-conversations,hide-media,texter-feedback"
+    },
+
     "AUTH0_DOMAIN": {
       "description": "auth0 domain attached to auth0 account (if not using auth0, enter anything)",
       "required": true
@@ -18,6 +48,7 @@
       "description": "auth0 client secret attached to auth0 account (if not using auth0, enter anything)",
       "required": true
     },
+
     "AWS_ACCESS_KEY_ID": {
       "description": "in order to export data to an s3 bucket",
       "required": false,
@@ -110,6 +141,24 @@
       "description": "sets path for migration directory - do not change",
       "required": true,
       "value": "/spoke/build/server/migrations/"
+    },
+
+    "NGP_VAN_API_KEY": {
+      "description": "",
+      "required": false,
+      "value": ""
+    },
+
+    "NGP_VAN_APP_NAME": {
+      "description": "",
+      "required": false,
+      "value": ""
+    },
+
+    "NGP_VAN_DATABASE_MODE": {
+      "description": "typically 0 for MyVoters or 1 for MyCampaign",
+      "required": false,
+      "value": "0"
     },
 
     "NODE_ENV": {
