@@ -6,20 +6,19 @@
   "stack": "container",
   "env": {
     "ACTION_HANDLERS": {
-      "description": "MISSION CRITICAL: Action handlers are a mechanism in Spoke that allow Spoke to take action when a texter indicates that a contact signalled a certain answer to a question in a Spoke interaction script or the contact has received a certain canned response. EXAMPLES: revere-signup, mobilcommons-signup, actionkit-rspv, ngpvan, civicrm-addtag",
-
+      "description": "MISSION CRITICAL: Action handlers are a mechanism in Spoke that allow Spoke to take action when a texter indicates that a contact signalled a certain answer to a question in a Spoke interaction script or the contact has received a certain canned response. EXAMPLES: revere-signup, mobilecommons-signup, actionkit-rspv, ngpvan, civicrm-addtag",
       "required": false,
       "value": ""
     },
 
     "CONTACT_LOADERS": {
-      "description": "MISSION CRITICAL: One of the core tasks in a Spoke campaign is loading in the contacts for texters to target. One default and standard way to do so is upload a CSV with their names, cells, zips, and custom fields. So CSV uploading (csv-upload) is one of many possible (existing or not yet) ways to load contacts for a campaign.  There's a framework in Spoke that allows the System Administrator to enable additional ways to load contacts in, as well as make it straightforward to for developers to integrate into CRMs (Constituent Relationship Management systems) or other software/databases.   EXAMPLES: civicrm, ngpvan",
+      "description": "MISSION CRITICAL: One of the core tasks in a Spoke campaign is loading in the contacts for texters to target. One default and standard way to do so is upload a CSV with their names, cells, zips, and custom fields. EXAMPLES: civicrm, ngpvan, csv-upload",
       "required": false,
-      "value": ""
+      "value": "csv-upload"
     },
 
     "MESSAGE_HANDLERS": {
-      "description": "MISSION CRITICAL When a message is received from a contact or sent from a texter, message handlers can hook in both right before and right after a message is saved to the database. Before save, you can alter a message's content or details. After save, you can trigger additional actions. It's also possible to block a message from saving. EXAMPLES: initialtext-guard, auto-optout, profanity-tagger, to-ascii, outbound-unassign, ngpvan",
+      "description": "MISSION CRITICAL: When a message is received from a contact or sent from a texter, message handlers can hook in both right before and right after a message is saved to the database. Before save, you can alter a message's content or details. After save, you can trigger additional actions. It's also possible to block a message from saving. EXAMPLES: initialtext-guard, auto-optout, profanity-tagger, to-ascii, outbound-unassign, ngpvan",
       "required": false,
       "value": ""
     },
