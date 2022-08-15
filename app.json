@@ -6,33 +6,34 @@
   "stack": "container",
   "env": {
     "ACTION_HANDLERS": {
-      "description": "MISSION CRITICAL: ",
+      "description": "MISSION CRITICAL: Action handlers are a mechanism in Spoke that allow Spoke to take action when a texter indicates that a contact signalled a certain answer to a question in a Spoke interaction script or the contact has received a certain canned response. EXAMPLES: revere-signup, mobilcommons-signup, actionkit-rspv, ngpvan, civicrm-addtag",
+
       "required": false,
       "value": ""
     },
 
     "CONTACT_LOADERS": {
-      "description": "MISSION CRITICAL",
+      "description": "MISSION CRITICAL: One of the core tasks in a Spoke campaign is loading in the contacts for texters to target. One default and standard way to do so is upload a CSV with their names, cells, zips, and custom fields. So CSV uploading (csv-upload) is one of many possible (existing or not yet) ways to load contacts for a campaign.  There's a framework in Spoke that allows the System Administrator to enable additional ways to load contacts in, as well as make it straightforward to for developers to integrate into CRMs (Constituent Relationship Management systems) or other software/databases.   EXAMPLES: civicrm, ngpvan",
       "required": false,
       "value": ""
     },
 
     "MESSAGE_HANDLERS": {
-      "description": "MISSION CRITICAL",
+      "description": "MISSION CRITICAL When a message is received from a contact or sent from a texter, message handlers can hook in both right before and right after a message is saved to the database. Before save, you can alter a message's content or details. After save, you can trigger additional actions. It's also possible to block a message from saving. EXAMPLES: initialtext-guard, auto-optout, profanity-tagger, to-ascii, outbound-unassign, ngpvan",
       "required": false,
       "value": ""
     },
 
     "SERVICE_MANAGERS": {
-      "description": "MISSION CRITICAL: ",
+      "description": "MISSION CRITICAL: Service managers often have consequences for your service-vendor -- i.e. they can incur costs or affect how your system works. It's important to understand what a particular service manager does before enabling it -- that is both the power and the risk of these extensions. EXAMPLES: ngpvan, civicrm-donotsms",
       "required": false,
-      "value": "ngpvan"
+      "value": ""
     },
 
     "TEXTER_SIDEBOXES": {
-      "description": "MISSION CRITICAL: Use to support the experience of your volunteer texters.",
+      "description": "MISSION CRITICAL: Use to support the experience of your volunteer texters. EXAMPLES: celebration-gif,default-dynamicassignment,default-releasecontacts,contact-reference,tag-contact,freshworks-widget,default-editinitial,take-conversations,hide-media,texter-feedback",
       "required": false,
-      "value": "celebration-gif,default-dynamicassignment,default-releasecontacts,contact-reference,tag-contact,freshworks-widget,default-editinitial,take-conversations,hide-media,texter-feedback"
+      "value": ""
     },
 
     "AUTH0_DOMAIN": {
