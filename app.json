@@ -212,12 +212,12 @@
 
     "TWILIO_ACCOUNT_SID": {
       "description": "for twilio integration and connected to twilio account",
-      "required": true
+      "required": false
     },
 
     "TWILIO_AUTH_TOKEN": {
       "description": "for twilio integration and connected to twilio account",
-      "required": true
+      "required": false
     },
 
     "TWILIO_MULTI_ORG": {
@@ -227,8 +227,8 @@
     },
 
     "TWILIO_VALIDATION": {
-      "description": "Validate twilio message report links as well",
-      "value": "1"
+      "description": "Validate twilio message report links.  Add value 1",
+      "value": ""
     }
   },
   "addons": [
