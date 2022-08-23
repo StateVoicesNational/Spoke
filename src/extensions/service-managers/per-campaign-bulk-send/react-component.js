@@ -7,6 +7,7 @@ import GSForm from "../../../components/forms/GSForm";
 import GSSubmitButton from "../../../components/forms/GSSubmitButton";
 import FormControlLabel from "@material-ui/core/FormControlLabel";
 import Switch from "@material-ui/core/Switch";
+import { getConfig } from "../../../server/api/lib/config";
 
 export class CampaignConfig extends React.Component {
   constructor(props) {
@@ -17,51 +18,68 @@ export class CampaignConfig extends React.Component {
   }
 
   render() {
+    const bulkSendChunkSize = parseInt(
+      getConfig("BULK_SEND_CHUNK_SIZE", this.props.organization)
+    );
     const formSchema = yup.object({
       perCampaignBulkSend: yup.boolean()
     });
     return (
       <div>
-        {!this.props.campaign.isStarted ? (
-          <GSForm
-            schema={formSchema}
-            defaultValue={
-              (this.props.serviceManagerInfo &&
-                this.props.serviceManagerInfo.data) ||
-              {}
-            }
-            onSubmit={() => {
-              this.props.onSubmit({
-                perCampaignBulkSend: this.state.perCampaignBulkSend
-              });
-            }}
-          >
-            <Form.Field
-              as={props => (
-                <FormControlLabel
-                  color="primary"
-                  control={
-                    <Switch
-                      checked={this.state.perCampaignBulkSend}
-                      onChange={() => {
-                        this.setState({
-                          perCampaignBulkSend: !this.state.perCampaignBulkSend
-                        });
-                      }}
+        {getConfig("ALLOW_SEND_ALL", this.props.organization) &&
+        Number.isInteger(bulkSendChunkSize) &&
+        bulkSendChunkSize > 0 ? (
+          <div>
+            {!this.props.campaign.isStarted ? (
+              <GSForm
+                schema={formSchema}
+                defaultValue={
+                  (this.props.serviceManagerInfo &&
+                    this.props.serviceManagerInfo.data) ||
+                  {}
+                }
+                onSubmit={() => {
+                  this.props.onSubmit({
+                    perCampaignBulkSend: this.state.perCampaignBulkSend
+                  });
+                }}
+              >
+                <Form.Field
+                  as={props => (
+                    <FormControlLabel
+                      color="primary"
+                      control={
+                        <Switch
+                          checked={this.state.perCampaignBulkSend}
+                          onChange={() => {
+                            this.setState({
+                              perCampaignBulkSend: !this.state
+                                .perCampaignBulkSend
+                            });
+                          }}
+                        />
+                      }
+                      labelPlacement="start"
+                      label="Allow bulk send for this campaign"
                     />
-                  }
-                  labelPlacement="start"
-                  label="Allow bulk send for this campaign"
+                  )}
+                  name="perCampaignBulkSend"
                 />
-              )}
-              name="perCampaignBulkSend"
-            />
-            <br />
-            <Form.Submit as={GSSubmitButton} label="Save" />
-          </GSForm>
+                <br />
+                <Form.Submit as={GSSubmitButton} label="Save" />
+              </GSForm>
+            ) : (
+              <div>
+                Bulk send is {!this.state.perCampaignBulkSend ? "not " : ""}
+                enabled!
+              </div>
+            )}
+          </div>
         ) : (
           <div>
-            Bulk send is {!this.state.perCampaignBulkSend ? "not " : ""}enabled!
+            Valid "ALLOW_SEND_ALL" and "BULK_SEND_CHUNK_SIZE" environment
+            variables are required for the Per Campaign Bulk Send service
+            manager
           </div>
         )}
       </div>
