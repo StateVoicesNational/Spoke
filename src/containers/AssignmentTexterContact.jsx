@@ -427,7 +427,7 @@ export class AssignmentTexterContact extends React.Component {
           updateCurrentContactById={this.props.updateCurrentContactById}
         />
         {this.props.contact.messageStatus === "needsMessage" &&
-        window.ALLOW_SEND_ALL &&
+        this.props.campaign.organization.allowSendAll &&
         window.BULK_SEND_CHUNK_SIZE ? (
           <BulkSendButton
             assignment={this.props.assignment}
