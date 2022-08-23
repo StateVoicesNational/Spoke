@@ -170,7 +170,12 @@ const assignmentQueryData = `
             sideboxChoices
           }
           organization {
+            allowSendAll
             id
+          }
+          serviceManagers {
+            name
+            data
           }
         }
         feedback {

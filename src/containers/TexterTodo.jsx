@@ -125,6 +125,10 @@ export const campaignQuery = gql`
             }
           }
         }
+        serviceManagers {
+          name
+          data
+        }
       }
     }
   }

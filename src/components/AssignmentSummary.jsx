@@ -143,6 +143,12 @@ export class AssignmentSummaryBase extends Component {
     // NOTE: we bring back archived campaigns if they have feedback
     // but want to get rid of them once feedback is acknowledged
     if (campaign.isArchived && !hasPopupSidebox) return null;
+    const perCampaignBulkSend = campaign.serviceManagers.find(
+      serviceManager => serviceManager.name == "per-campaign-bulk-send"
+    );
+    const campaignAllowBulkSend = !perCampaignBulkSend
+      ? true
+      : perCampaignBulkSend.data.perCampaignBulkSend;
     return (
       <div
         className={css(styles.container)}
@@ -174,7 +180,9 @@ export class AssignmentSummaryBase extends Component {
             {(hasPopupSidebox && sideboxList) || null}
 
             <div className={css(styles.buttonRow)}>
-              {window.ALLOW_SEND_ALL || hasPopupSidebox
+              {(this.props.assignment.campaign.organization.allowSendAll &&
+                campaignAllowBulkSend) ||
+              hasPopupSidebox
                 ? null
                 : this.renderBadgedButton({
                     dataTestText: "sendFirstTexts",
@@ -226,7 +234,9 @@ export class AssignmentSummaryBase extends Component {
                 color: "secondary",
                 hideBadge: true
               })}
-              {window.ALLOW_SEND_ALL && !hasPopupSidebox
+              {this.props.assignment.campaign.organization.allowSendAll &&
+              campaignAllowBulkSend &&
+              !hasPopupSidebox
                 ? this.renderBadgedButton({
                     assignment,
                     title: "Send messages",

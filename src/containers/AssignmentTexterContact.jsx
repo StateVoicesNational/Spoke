@@ -393,6 +393,12 @@ export class AssignmentTexterContact extends React.Component {
   };
 
   render() {
+    const perCampaignBulkSend = this.props.campaign.serviceManagers.find(
+      serviceManager => serviceManager.name == "per-campaign-bulk-send"
+    );
+    const campaignAllowBulkSend = !perCampaignBulkSend
+      ? true
+      : perCampaignBulkSend.data.perCampaignBulkSend;
     return (
       <div {...dataTest("assignmentTexterContactFirstDiv")}>
         {this.state.disabled &&
@@ -428,6 +434,7 @@ export class AssignmentTexterContact extends React.Component {
         />
         {this.props.contact.messageStatus === "needsMessage" &&
         this.props.campaign.organization.allowSendAll &&
+        campaignAllowBulkSend &&
         window.BULK_SEND_CHUNK_SIZE ? (
           <BulkSendButton
             assignment={this.props.assignment}
