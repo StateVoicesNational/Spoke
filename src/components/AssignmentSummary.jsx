@@ -174,7 +174,7 @@ export class AssignmentSummaryBase extends Component {
             {(hasPopupSidebox && sideboxList) || null}
 
             <div className={css(styles.buttonRow)}>
-              {(window.ALLOW_SEND_ALL) || hasPopupSidebox
+              {window.ALLOW_SEND_ALL || hasPopupSidebox
                 ? null
                 : this.renderBadgedButton({
                     dataTestText: "sendFirstTexts",
@@ -187,7 +187,7 @@ export class AssignmentSummaryBase extends Component {
                     hideIfZero: true,
                     color: "primary"
                   })}
-              {(window.ALLOW_SEND_ALL) || hasPopupSidebox
+              {hasPopupSidebox
                 ? null
                 : this.renderBadgedButton({
                     dataTestText: "Respond",
@@ -232,7 +232,7 @@ export class AssignmentSummaryBase extends Component {
                     title: "Send messages",
                     primary: true,
                     disabled: false,
-                    contactsFilter: "all",
+                    contactsFilter: "text",
                     count: 0,
                     hideIfZero: false,
                     color: "primary"
