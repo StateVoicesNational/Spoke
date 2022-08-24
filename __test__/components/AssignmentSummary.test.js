@@ -22,6 +22,9 @@ function getAssignment({ isDynamic = false, counts = {} }) {
       id: "1",
       title: "New Campaign",
       description: "asdf",
+      organization: {
+        allowSendAll: window.ALLOW_SEND_ALL
+      },
       useDynamicAssignment: isDynamic,
       hasUnassignedContacts: false,
       introHtml: "yoyo",
@@ -219,14 +222,14 @@ describe("AssignmentSummary when AllowSendAll", () => {
     ).toBe("Send messages");
   });
 
-  it('renders "Send messages" with unreplied', () => {
+  it('renders "Respond" with unreplied', () => {
     const actions = create(0, 1, 0, 0, 0, false);
     expect(
       actions
         .find(Button)
         .at(0)
         .text()
-    ).toBe("Send messages");
+    ).toBe("Respond");
   });
 });
 
@@ -324,17 +327,21 @@ describe("contacts filters", () => {
         })}
       />
     );
-    const sendMessages = mockRender.mock.calls[0][0];
+    const respondMessages = mockRender.mock.calls[0][0];
+    expect(respondMessages.title).toBe("Respond");
+    expect(respondMessages.contactsFilter).toBe("reply");
+
+    const sendMessages = mockRender.mock.calls[1][0];
     expect(sendMessages.title).toBe("Past Messages");
     expect(sendMessages.contactsFilter).toBe("stale");
 
-    const skippedMessages = mockRender.mock.calls[1][0];
+    const skippedMessages = mockRender.mock.calls[2][0];
     expect(skippedMessages.title).toBe("Skipped Messages");
     expect(skippedMessages.contactsFilter).toBe("skipped");
 
-    const sendFirstTexts = mockRender.mock.calls[2][0];
+    const sendFirstTexts = mockRender.mock.calls[3][0];
     expect(sendFirstTexts.title).toBe("Send messages");
-    expect(sendFirstTexts.contactsFilter).toBe("all");
+    expect(sendFirstTexts.contactsFilter).toBe("text");
   });
 });
 
