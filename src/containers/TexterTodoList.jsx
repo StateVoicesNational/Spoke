@@ -173,10 +173,6 @@ const assignmentQueryData = `
             allowSendAll
             id
           }
-          serviceManagers {
-            name
-            data
-          }
         }
         feedback {
           isAcknowledged

@@ -393,12 +393,11 @@ export class AssignmentTexterContact extends React.Component {
   };
 
   render() {
-    const perCampaignBulkSend = this.props.campaign.serviceManagers.find(
-      serviceManager => serviceManager.name == "per-campaign-bulk-send"
+    const texterUIConfig = this.props.campaign.texterUIConfig;
+    const settingsData = JSON.parse(
+      (texterUIConfig && texterUIConfig.options) || "{}"
     );
-    const campaignAllowBulkSend = !perCampaignBulkSend
-      ? true
-      : perCampaignBulkSend.data.perCampaignBulkSend;
+    const campaignAllowBulkSend = texterUIConfig && texterUIConfig.sideboxChoices && texterUIConfig.sideboxChoices.includes("per-campaign-bulk-send") ? settingsData["per-campaign-bulk-send"] : true;
     return (
       <div {...dataTest("assignmentTexterContactFirstDiv")}>
         {this.state.disabled &&

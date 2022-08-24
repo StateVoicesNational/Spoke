@@ -24,10 +24,6 @@ before enabling it -- that is both the power and the risk of these extensions.
 
 ## Included Service Managers
 
-### per-campaign-bulk-send
-
-This service manager allows you to enable or disable bulk send per campaign. To use this service manager, the `ALLOW_SEND_ALL` environment variable must be set to `true` and the `BULK_SEND_CHUNK_SIZE` environment variable must be set to a positive integer.
-
 ### per-campaign-messageservices
 
 This service manager is intended for Twilio -- twilio restricts the numbers available to a

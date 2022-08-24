@@ -143,12 +143,7 @@ export class AssignmentSummaryBase extends Component {
     // NOTE: we bring back archived campaigns if they have feedback
     // but want to get rid of them once feedback is acknowledged
     if (campaign.isArchived && !hasPopupSidebox) return null;
-    const perCampaignBulkSend = campaign.serviceManagers.find(
-      serviceManager => serviceManager.name == "per-campaign-bulk-send"
-    );
-    const campaignAllowBulkSend = !perCampaignBulkSend
-      ? true
-      : perCampaignBulkSend.data.perCampaignBulkSend;
+    const campaignAllowBulkSend = texterUIConfig && texterUIConfig.sideboxChoices && texterUIConfig.sideboxChoices.includes("per-campaign-bulk-send") ? settingsData["per-campaign-bulk-send"] : true;
     return (
       <div
         className={css(styles.container)}
