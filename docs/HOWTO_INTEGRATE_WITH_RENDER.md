@@ -110,5 +110,48 @@ Linking backend and frontend
 
 Well wow!  It's right there ain't it.  I have to add the dbhostname, the port, the database, and the username into the environment variables and then maybe there is a connection between the two.
 
+- Today I have begun to enter some environment variables that we might see in a typical Spoke Build.  [Work on cheatlist for often asked questions]
+- `NODE_ENV` = production
+- `SUPPRESS_SELF_INVITE` = set to 0 [check is that's the right standard] [Explain what this does]
+- `JOBS_SAME_PROCESS` = 1
+- **Locate the following information under your Backend Info, under Connections**
+    - `DB_HOST` = ADD YOUR HOSTNAME
+    - `DB_PORT` = ADD YOUR PORT
+    - `DB_NAME` = ADD YOUR DATABASE
+    - `DB_USER` = ADD YOUR USERNAME
+    - `DB_PASSWORD` = ADD YOUR PASSWORD
+- `DB_TYPE` = pg
+- `PASSPORT_STRATEGY` = auth0
+    - Follow these intructions for adding the following variables
+    - `AUTH0_DOMAIN`
+    - `AUTH0_CLIENT_ID`
+    - `AUTH0_CLIENT_SECRET`
+    - [IF THIS CONFIGURATION FAILS:] I need to go into the Auth0 Documentation and make sure that I have added this Web Service's URL links into the Auth0 authorized urls!!!
+- `BASE_URL` [Find the correct documentation for setting the BASE_URL] gonna skip this one for now!
+
+- Cheat-Sheet for NGP VAN Integration
+    - `CONTACT_LOADERS` = ngpvan
+    - `SERVICE_MANAGERS` = ngpvan
+    - `ACTION_HANDLERS` = ngpvan
+    - `MESSAGE_HANDLERS` = ngpvan
+    - `NGP_VAN_API_KEY`= [Your NGP VAN API Key]
+    - `NGP_VAN_APP_NAME` = [Your NGP VAN App Name]
+    - `NGP_VAN_DATABASE_MODE` = 0 or 1 (find the correct documentation for which mode means what.)
+
+- Cheat-Sheet for Texter Sidebox Add-Ons
+    - `TEXTER_SIDEBOXES` = celebration-gif,default-dynamicassignment,default-releasecontacts,contact-reference,tag-contact,freshworks-widget,default-editinitial,take-conversations,hide-media,texter-feedback
+- Skipping Adding Secret File
+- CLICK SAVE!!!
+
+- Now I went to the top of the WebService
+- Click on `Manual Deploy` and select `Clear build cache & deploy`
+    - So far so good, the frontend is building
+    - It looks like this build will fail
+    - The error on the backend logs is disconnection.
+    - We're at the nodee build/server/erver, and it looks like there was a problem with NPM
+    - And the backend keeps switching through postgress ports and claiming it's disconnected.  Let me check the logs real quick:
+      - user=postgres, db=postgres, app=psql, client=::1, LOG:   disconnection:  session time: 0:00:00.096 user=postgres database=postgres host=::1 port=3564
+      - My DB_HOST looks like a website.
+      - I think we need to add OUTPUT_DIR, ASSETS_MAP_FILE, and that BASE_URL needs to get set.
 
 ## Instructions for upgrading an already existing Render Application
