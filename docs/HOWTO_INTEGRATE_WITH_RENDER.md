@@ -67,9 +67,48 @@ Explain what Render is...
     - As expected this build failed.  Let's go set up the Backend.
 
 
+Make Database
+- click `render` on the top left hand corner.
+- click `New` the purple button.
+- click `New PostgresSQL`
+    - `Name` - anything you want.
+    - `Database` - leave blank (or name if you require multiple databases) (check if it can hold multiple databases!) Allow it to randomly generate the database and then see if you can add a second!
+    - `User` - leaving blank
+    - Region - mine defaulted to Oregon (US West)
+    - `PostgreSQL Version` this was autofilled as 14. Spoke is currently on version 8.0.3
+    - Well shoot, the lowest version on PostgreSQL Version is 11.  Let's see how this goes!  Hopefully fine!
+- `plans`
+    - Free is 256 MB, CPU shared (again, have to check what security means for that) and STORAGE is 1GB.  That's great!
+    - Starter: RAM 256MB, CPU: shared, Storage 1GB = $7/month
+    - Standard: RAM 1 GB, CPU 1, Storage 16 GB, $20/month.
+    - These are very good prices.
+    - Free plan databases will expire in 90 days and will be deleted if not upgraded. Learn more about free plan limits.
+- Folks, it's important to know the Free Plan Limits, and the starters are great if you know it ends in 90 days which is a perfect season for GOTV accounts  [Go here for more information](https://render.com/docs/free)
+- Free Plans are currently not meant for general production, but it does allow for 750 hours of running time per month and the ability to monitor your Billing.
+- I still think it is a very affordable rate.
 
+Linking backend and frontend
+- The database is creating.
+- I named this version spoke-backend
+- It tells me my expiration date of my account
+- And it looks like it is available and it has used 2.05% of it's 1GB storage.  Good information in the UI.
+- There is a Connections sections that I think will be important when trying to link up the frontend and the backend.
+- For now let's just take note of the variables available
+  - Hostname
+  - Port
+  - Database (this is the name)
+  - Username
+  - Password
+  - Internal Database URL
+  - External Database URL
+  - PSQL Command
+- Currently, I believe we'll only need the `Internal Database URL` because this is being built internally within Render.
+- Access Control shows 1 connection is allowed from outside my private network.  Don't know yet if that's significant to our integration documentation.
+- When I scroll up there is a white connect button on the top
+- Whoop Whoop! I'm right! The Internal Connection Database URL is going to be important!
+- There is a link for the documents here, let's check that out:
 
+Well wow!  It's right there ain't it.  I have to add the dbhostname, the port, the database, and the username into the environment variables and then maybe there is a connection between the two.
 
-  - Hook it up to Dockerfile
 
 ## Instructions for upgrading an already existing Render Application
