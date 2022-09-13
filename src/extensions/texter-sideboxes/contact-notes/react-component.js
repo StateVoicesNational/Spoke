@@ -11,7 +11,9 @@ import loadData from "../../../containers/hoc/load-data";
 
 export const displayName = () => "Contact notes";
 
-export const showSidebox = () => true;
+export const showSidebox = ({ contact }) => {
+  return contact;
+};
 
 export class TexterSideboxClass extends React.Component {
   constructor(props) {
