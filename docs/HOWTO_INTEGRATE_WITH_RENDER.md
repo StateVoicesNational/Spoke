@@ -153,5 +153,51 @@ Well wow!  It's right there ain't it.  I have to add the dbhostname, the port, t
       - user=postgres, db=postgres, app=psql, client=::1, LOG:   disconnection:  session time: 0:00:00.096 user=postgres database=postgres host=::1 port=3564
       - My DB_HOST looks like a website.
       - I think we need to add OUTPUT_DIR, ASSETS_MAP_FILE, and that BASE_URL needs to get set.
+- Environment Variables set since last attempt: (I do believe the best path after this integration is successful is to explore the Secret Files path as a quicker way to integrate.)
+     - ACTION_HANDLERS = ""
+     - AUTH0_CLIENT_ID = [your auth0 client id]
+     - AUTH0_CLIENT_SECRET = [your auth0 client secret]
+     - AUTH0_DOMAIN = [your auth0 domain: XXXXX.us.auth0.com]
+     - BASE_URL = ""
+     - CONTACT_LOADERS = ""
+     - DB_HOST = [your render db host]
+     - DB_NAME = [your render db name]
+     - DB_PASSWORD = [your render db password]
+     - DB_PORT = 5432
+     - DB_TYPE = pg
+     - DB_USE_SSL = ""
+     - DB_USER = [your render db user name]
+     - DEFAULT_SERVICE = twilio [can be set to bandwidth]
+     - DEFAULT_TZ = US/Eastern
+     - DST_REFERENCE_TIMEZONE = US/Eastern
+     - EMAIL_FROM = ""
+     - EMAIL_HOST = ""
+     - EMAIL_HOST_PASSWORD = ""
+     - EMAIL_HOST_PORT = ""
+     - EMAIL_HOST_USER = ""
+     - JOBS_SAME_PROCESS = 1
+     - KNEX_MIGRATION_DIRECTORY = "/spoke/build/server/migrations/"
+     - MESSAGE_HANDLERS = ""
+     - NGP_VAN_API_KEY = ""
+     - NGP_VAN_APP_NAME = ""
+     - NGP_VAN_DATABASE_MODE = 0
+     - NODE_ENV = production
+     - OWNER_CONFIGURABLE = ALL
+     - PHONE_INVENTORY = 1
+     - PHONE_NUMBER_COUNTRY = US
+     - PASSPORT_STRATEGY = auth0
+     - SERVICE_MANAGERS = ""
+     - SESSION_SECRET = secret
+     - SUPPRESS_MIGRATIONS = ""
+     - SUPPRESS_SELF_INVITE = 0
+     - TEXTER_SIDEBOXES = ""
+     - TWILIO_ACCOUNT_SID = ""
+     - TWILIO_AUTH_TOKEN = ""
+     - TWILIO_MULTI_ORG = 1
+     - TWILIO_VALIDATION = ""
+
+
+
+## Instructions for how to decomission Render Application
 
 ## Instructions for upgrading an already existing Render Application
