@@ -76,6 +76,7 @@ Make Database
     - `User` - leaving blank
     - Region - mine defaulted to Oregon (US West)
     - `PostgreSQL Version` this was autofilled as 14. Spoke is currently on version 8.0.3
+        - jest test is using Postgress 10 is on the image
     - Well shoot, the lowest version on PostgreSQL Version is 11.  Let's see how this goes!  Hopefully fine!
 - `plans`
     - Free is 256 MB, CPU shared (again, have to check what security means for that) and STORAGE is 1GB.  That's great!
@@ -154,12 +155,13 @@ Well wow!  It's right there ain't it.  I have to add the dbhostname, the port, t
       - My DB_HOST looks like a website.
       - I think we need to add OUTPUT_DIR, ASSETS_MAP_FILE, and that BASE_URL needs to get set.
 - Environment Variables set since last attempt: (I do believe the best path after this integration is successful is to explore the Secret Files path as a quicker way to integrate.)
+
+FINAL LIST OF ENVIRONMENT VARIABLES FOR SUCCESSFUL RENDER DEPLOYMENT OF SPOKE
      - ACTION_HANDLERS = ""
      - AUTH0_CLIENT_ID = [your auth0 client id]
      - AUTH0_CLIENT_SECRET = [your auth0 client secret]
      - AUTH0_DOMAIN = [your auth0 domain: XXXXX.us.auth0.com]
-     - BASE_URL = ""
-     - CONTACT_LOADERS = ""
+     - BASE_URL = [url of your app, in this case https://[your spoke instance name].onrender.com ]
      - DB_HOST = [your render db host]
      - DB_NAME = [your render db name]
      - DB_PASSWORD = [your render db password]
@@ -176,8 +178,7 @@ Well wow!  It's right there ain't it.  I have to add the dbhostname, the port, t
      - EMAIL_HOST_PORT = ""
      - EMAIL_HOST_USER = ""
      - JOBS_SAME_PROCESS = 1
-     - KNEX_MIGRATION_DIRECTORY = "/spoke/build/server/migrations/"
-     - MESSAGE_HANDLERS = ""
+     - KNEX_MIGRATION_DIRECTORY = /spoke/build/server/migrations/
      - NGP_VAN_API_KEY = ""
      - NGP_VAN_APP_NAME = ""
      - NGP_VAN_DATABASE_MODE = 0
@@ -186,17 +187,20 @@ Well wow!  It's right there ain't it.  I have to add the dbhostname, the port, t
      - PHONE_INVENTORY = 1
      - PHONE_NUMBER_COUNTRY = US
      - PASSPORT_STRATEGY = auth0
-     - SERVICE_MANAGERS = ""
      - SESSION_SECRET = secret
      - SUPPRESS_MIGRATIONS = ""
      - SUPPRESS_SELF_INVITE = 0
-     - TEXTER_SIDEBOXES = ""
      - TWILIO_ACCOUNT_SID = ""
      - TWILIO_AUTH_TOKEN = ""
      - TWILIO_MULTI_ORG = 1
      - TWILIO_VALIDATION = ""
 
-
+- Auth0 Cheatsheet (JK, JUST LINK THE DOCUMENTATION)
+Allowed Callback URLs - https://yourspoke.onrender.com/login-callback, https://yourspoke.onrender.com/login
+Allowed Web Origins - https://yourspoke.onrender.com
+Allowed Logout URLs - https://yourspoke.onrender.com/logout-callback
+Allowed Origins (CORS) - https://yourspoke.onrender.com
+- In advanced settings turn off the OIDC Conformant.
 
 ## Instructions for how to decomission Render Application
 
