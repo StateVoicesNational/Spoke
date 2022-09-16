@@ -8,7 +8,7 @@ Find information and stats on Render...
 Explain what Render is...
 
 ## Instructions for initial integration
-- Go to this repository and fork it. [get spoke repository link]
+- Go to this [repository](https://github.com/MoveOnOrg/Spoke) and fork it.
 - Sign into your Render Account [link render account here](https://dashboard.render.com/)
   - you have the option to sign in through your github account, gitlab account, or gmail account.  This integration instructions used Gmail Account.
 - Once logged in, I click on the `Make Webservice`
