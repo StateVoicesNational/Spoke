@@ -15,29 +15,34 @@ export const showSidebox = ({ contact }) => {
   return contact;
 };
 
+const parseCustomFields = customFields => {
+  if (typeof customFields === "string") {
+    try {
+      customFields = JSON.parse(customFields || "{}");
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.warn(err);
+      customFields = {};
+    }
+  }
+  return customFields;
+};
+
 export class TexterSideboxClass extends React.Component {
   constructor(props) {
-    let customFields = props.contact.customFields;
-    if (typeof props.contact.customFields === "string") {
-      try {
-        customFields = JSON.parse(props.contact.customFields || "{}");
-      } catch (err) {
-        // eslint-disable-next-line no-console
-        console.warn(err);
-        customFields = {};
-      }
-    }
-
+    let parsedCustomFields = parseCustomFields(props.contact.customFields);
     super(props);
     this.state = {
-      notes: customFields.notes || "",
+      parsedCustomFields,
+      notes: parsedCustomFields.notes || "",
       isSaving: false,
       hasError: false
     };
   }
 
   componentDidUpdate() {
-    const { notes: contactNotes } = this.props.contact.customFields;
+    const { contact } = this.props;
+    const { notes: contactNotes } = parseCustomFields(contact.customFields);
     if (this.state.isSaving && contactNotes === this.state.notes) {
       this.setIsSaving(false);
     }
@@ -47,10 +52,11 @@ export class TexterSideboxClass extends React.Component {
 
   debouncedUpdate = _.debounce(
     async notes => {
+      const { parsedCustomFields } = this.state;
       const { contact, mutations } = this.props;
       try {
         const customFields = {
-          ...contact.customFields,
+          ...parsedCustomFields,
           notes
         };
         await mutations.updateContactCustomFields(JSON.stringify(customFields));
