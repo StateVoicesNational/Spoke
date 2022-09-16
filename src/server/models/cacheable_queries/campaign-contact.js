@@ -563,9 +563,25 @@ const campaignContactCache = {
   updateCustomFields: async (contact, customFields, campaign, organization) => {
     /* eslint-disable no-param-reassign */
     try {
-      if (typeof customFields !== "string") {
-        customFields = JSON.stringify(customFields || {});
+      if (typeof customFields === "string") {
+        customFields = JSON.parse(customFields || "{}");
       }
+      /* we may not have all the customFields from the client,
+         so we need to fetch from the db and merge all of them */
+      const existingContact = await r
+        .knex("campaign_contact")
+        .select("custom_fields")
+        .where("id", contact.id)
+        .first();
+      const existingCustomFields = JSON.parse(
+        existingContact.custom_fields || "{}"
+      );
+
+      customFields = JSON.stringify({
+        ...existingCustomFields,
+        ...customFields
+      });
+
       const updatedAt = new Date();
       await r
         .knex("campaign_contact")

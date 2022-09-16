@@ -89,7 +89,10 @@ const getScriptFieldValue = (contact, texter, fieldName) => {
   } else if (TOP_LEVEL_UPLOAD_FIELDS.indexOf(fieldName) !== -1) {
     result = contact[fieldName];
   } else {
-    const customFieldNames = JSON.parse(contact.customFields);
+    let customFieldNames = contact.customFields;
+    if (typeof customFieldNames === "string") {
+      customFieldNames = JSON.parse(contact.customFields);
+    }
     result = customFieldNames[fieldName];
   }
 
