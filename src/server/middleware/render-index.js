@@ -123,6 +123,7 @@ export default function renderIndex(html, css, assetMap) {
       window.CAN_GOOGLE_IMPORT=${canGoogleImport}
       window.DOWNTIME="${process.env.DOWNTIME || ""}"
       window.DOWNTIME_TEXTER="${process.env.DOWNTIME_TEXTER || ""}"
+      window.DOWNTIME_NO_INITIAL="${process.env.DOWNTIME_NO_INITIAL || ""}"
       window.EXPERIMENTAL_PER_CAMPAIGN_MESSAGING_LEGACY=${getConfig(
         "EXPERIMENTAL_PER_CAMPAIGN_MESSAGING_LEGACY",
         null,
