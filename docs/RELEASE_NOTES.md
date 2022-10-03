@@ -2,9 +2,9 @@
 
 ## v12.3
 
-_August 2022:_ Version 12.3
+_October 2022:_ Version 12.3
 
-12.3 is a minor release. This release includes [WRITE UP AT THE END].
+12.3 is a minor release. This release includes JWT-powered Delegated Authentication, a new contact-notes section in the texter-sidebox, along with additional improvements and fixes seen below.
 
 ### Bug fixes
 * Fixes views for Demo Texting
