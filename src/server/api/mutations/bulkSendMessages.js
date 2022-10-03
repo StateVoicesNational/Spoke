@@ -67,7 +67,14 @@ export const bulkSendMessages = async (
   const topmostParent = interactionSteps[0];
 
   const texter = camelCaseKeys(await User.get(assignment.user_id));
-  const customFields = Object.keys(JSON.parse(contacts[0].custom_fields));
+  let customFields = Object.keys(JSON.parse(contacts[0].custom_fields));
+
+  const texterSideboxes = getConfig("TEXTER_SIDEBOXES") || "";
+  const shouldHideNotesField = /contact-notes/.test(texterSideboxes);
+
+  if (shouldHideNotesField) {
+    customFields = customFields.filter(f => f !== "notes");
+  }
 
   const promises = contacts.map(async contact => {
     contact.customFields = contact.custom_fields;
