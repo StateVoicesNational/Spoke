@@ -59,7 +59,11 @@ export default class GSScriptField extends GSFormField {
   renderDialog() {
     const { open } = this.state;
     const { customFields, sampleContact } = this.props;
-    const scriptFields = allScriptFields(customFields);
+    let scriptFields = allScriptFields(customFields);
+    const shouldHideNotesField = /contact-notes/.test(window.TEXTER_SIDEBOXES);
+    if (shouldHideNotesField) {
+      scriptFields = scriptFields.filter(field => field !== "notes");
+    }
 
     return (
       <Dialog

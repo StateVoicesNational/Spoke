@@ -699,63 +699,46 @@ export const assignmentSummaryTestProps = {
 
 export function generateDemoTexterContact(testName) {
   const test = tests(testName);
-  const DemoAssignmentTexterContact = function(props) {
-    console.log("DemoAssignmentTexterContact", props);
-    const getMessageTextFromScript = script => {
-      return script
-        ? applyScript({
-            contact: test.contact,
-            texter: test.texter,
-            customFields: test.assignment.campaign.customFields,
-            script
-          })
-        : null;
-    };
-
-    return (
-      <Controls
-        contact={test.contact}
-        campaign={test.assignment.campaign}
-        texter={test.texter}
-        assignment={test.assignment}
-        currentUser={test.currentUser}
-        navigationToolbarChildren={test.navigationToolbarChildren}
-        enabledSideboxes={props.enabledSideboxes}
-        disabled={test.disabled}
-        onMessageFormSubmit={() => async data => {
-          console.log("logging data onMessageFormSubmit", data);
-
-          props.onFinishContact(1);
-        }}
-        onOptOut={logFunction}
-        onQuestionResponseChange={logFunction}
-        onCreateCannedResponse={logFunction}
-        onExitTexter={logFunction}
-        onEditStatus={logFunction}
-        onUpdateTags={async data => logFunction(data)}
-        refreshData={logFunction}
-        getMessageTextFromScript={getMessageTextFromScript}
-      />
-    );
+  const getMessageTextFromScript = script => {
+    return script
+      ? applyScript({
+          contact: test.contact,
+          texter: test.texter,
+          customFields: test.assignment.campaign.customFields,
+          script
+        })
+      : null;
   };
 
   const DemoTexterTest = function(props) {
-    console.log("DemoTexterTest", test);
+    console.log("DemoTexterTest", test, props);
     return (
       <Controls
-        assignment={test.assignment}
+        handleNavigateNext={logFunction}
+        handleNavigatePrevious={logFunction}
+        contact={test.contact ? test.contact : null}
         campaign={test.assignment.campaign}
-        contacts={test.contact ? [{ id: test.contact.id }] : []}
-        allContactsCount={test.navigationToolbarChildren.total}
-        refreshData={logFunction}
-        loadContacts={contactIds => {
-          console.log("loadContacts", contactIds);
-          return { data: { getAssignmentContacts: [test.contact] } };
-        }}
-        onRefreshAssignmentContacts={logFunction}
-        organizationId={"1"}
-        ChildComponent={DemoAssignmentTexterContact}
+        assignment={test.assignment}
         currentUser={test.currentUser}
+        texter={test.texter}
+        organizationId={"1"}
+        disabled={test.disabled}
+        navigationToolbarChildren={test.navigationToolbarChildren}
+        enabledSideboxes={props.enabledSideboxes}
+        review={test.review}
+        onMessageFormSubmit={() => async data => {
+          console.log("logging data onMessageFormSubmit", data);
+        }}
+        onOptOut={logFunction}
+        onUpdateTags={async data => logFunction(data)}
+        onQuestionResponseChange={logFunction}
+        onCreateCannedResponse={logFunction}
+        onFinishContact={logFunction}
+        onExitTexter={logFunction}
+        onEditStatus={logFunction}
+        refreshData={logFunction}
+        getMessageTextFromScript={getMessageTextFromScript}
+        updateCurrentContactById={logFunction}
       />
     );
   };

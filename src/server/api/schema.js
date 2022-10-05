@@ -66,6 +66,7 @@ import {
   sendMessage,
   startCampaign,
   updateContactTags,
+  updateContactCustomFields,
   updateQuestionResponses,
   releaseCampaignNumbers,
   clearCachedOrgAndExtensionCaches,
@@ -1250,6 +1251,11 @@ const rootMutations = {
           (!cannedResponses.length || cannedResponses[0].usedFields)
         ) {
           const usedFields = campaign.usedFields;
+
+          const texterSideboxes = getConfig("TEXTER_SIDEBOXES") || "";
+          const shouldUseNotes = /contact-notes/.test(texterSideboxes);
+          if (shouldUseNotes) usedFields.notes = 1;
+
           if (cannedResponses.length && cannedResponses[0].usedFields) {
             Object.keys(cannedResponses[0].usedFields).forEach(f => {
               usedFields[f] = 1;
@@ -1339,6 +1345,7 @@ const rootMutations = {
       return contact;
     },
     updateContactTags,
+    updateContactCustomFields,
     updateQuestionResponses,
     reassignCampaignContacts: async (
       _,

@@ -18,7 +18,7 @@ export default class GSSelectField extends GSFormField {
   }
 
   render() {
-    const { name, label, onChange, style } = this.props;
+    const { name, label, onChange, style, disabled } = this.props;
     let { value } = this.props;
     const dataTest = { "data-test": this.props["data-test"] };
 
@@ -35,6 +35,7 @@ export default class GSSelectField extends GSFormField {
           {...dataTest}
           name={name}
           value={value}
+          disabled={disabled}
           onChange={event => {
             onChange(event.target.value);
           }}

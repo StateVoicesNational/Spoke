@@ -1,6 +1,6 @@
 {
   "name": "spoke",
-  "version": "12.2.0",
+  "version": "12.3.0",
   "description": "Spoke",
   "main": "src/server",
   "engines": {
@@ -127,11 +127,12 @@
     "isomorphic-fetch": "^2.2.1",
     "jest-each": "^0.3.1",
     "json-loader": "^0.5.4",
+    "jsonwebtoken": "^8.5.1",
     "knex": "^0.20.7",
     "lodash": "^4.13.1",
     "mailgun-js": "^0.20.0",
     "minilog": "^3.0.1",
-    "moment": "2.29.2",
+    "moment": "2.29.4",
     "moment-timezone": "^0.5.14",
     "nexmo": "^2.3.2",
     "node-abort-controller": "^1.0.4",
@@ -141,6 +142,7 @@
     "papaparse": "^5.1.1",
     "passport": "^0.3.2",
     "passport-auth0": "^0.6.1",
+    "passport-jwt": "^4.0.0",
     "passport-local": "^1.0.0",
     "passport-local-authenticate": "^1.2.0",
     "pg": "^8.0.3",
@@ -197,6 +199,7 @@
     "regenerator-runtime": "^0.10.5",
     "selenium-webdriver": "^3.6.0",
     "sqlite3": "^4.1.1",
+    "supertest": "^6.2.3",
     "wait-on": "^2.1.0",
     "webpack-cli": "^4.7.2",
     "webpack-dev-server": "3"

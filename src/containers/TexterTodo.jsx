@@ -160,6 +160,7 @@ export const dataQuery = gql`
         lastName
         messageStatus
         updatedAt
+        customFields
       }
       allContactsCount: contactsCount
       unmessagedCount: contactsCount(contactsFilter: $needsMessageFilter)

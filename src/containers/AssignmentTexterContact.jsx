@@ -397,7 +397,12 @@ export class AssignmentTexterContact extends React.Component {
     const settingsData = JSON.parse(
       (texterUIConfig && texterUIConfig.options) || "{}"
     );
-    const campaignAllowBulkSend = texterUIConfig && texterUIConfig.sideboxChoices && texterUIConfig.sideboxChoices.includes("per-campaign-bulk-send") ? settingsData["per-campaign-bulk-send"] : true;
+    const campaignAllowBulkSend =
+      texterUIConfig &&
+      texterUIConfig.sideboxChoices &&
+      texterUIConfig.sideboxChoices.includes("per-campaign-bulk-send")
+        ? settingsData["per-campaign-bulk-send"]
+        : true;
     return (
       <div {...dataTest("assignmentTexterContactFirstDiv")}>
         {this.state.disabled &&
@@ -430,6 +435,7 @@ export class AssignmentTexterContact extends React.Component {
           refreshData={this.props.refreshData}
           getMessageTextFromScript={this.getMessageTextFromScript}
           updateCurrentContactById={this.props.updateCurrentContactById}
+          updateContactData={this.props.updateContactData}
         />
         {this.props.contact.messageStatus === "needsMessage" &&
         this.props.campaign.organization.allowSendAll &&
@@ -472,7 +478,8 @@ AssignmentTexterContact.propTypes = {
   onExitTexter: PropTypes.func,
   organizationId: PropTypes.string,
   location: PropTypes.object,
-  updateCurrentContactById: PropTypes.func
+  updateCurrentContactById: PropTypes.func,
+  updateContactData: PropTypes.func
 };
 
 const mutations = {

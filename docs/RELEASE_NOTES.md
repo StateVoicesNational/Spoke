@@ -1,5 +1,27 @@
 # Release Notes
 
+## v12.3
+
+_October 2022:_ Version 12.3
+
+12.3 is a minor release. This release includes JWT-powered Delegated Authentication, a new contact-notes section in the texter-sidebox, along with additional improvements and fixes seen below.
+
+### Bug fixes
+* Fixes views for Demo Texting
+* Fixes auto-optout if Redis is not enabled
+
+### Improvements
+* Add disabled prop to GSSelectField
+* Updates dependencies
+
+### New features
+* JWT-powered Delegated Authentication
+* Adds a new contact-notes Texter Sidebox
+
+### Appreciations
+* [Arique Aguilar](https://github.com/Arique1104), [Cody Gordon](https://github.com/codygordon), [Ilona Brand](https://github.com/ibrand), [Kathy Nguyen](https://github.com/crayolakat), [Rey Rodrigues](https://github.com/reyattrestle), [Larry Person](https://github.com/lperson), [Sky Duveen](https://github.com/schuyler1d), [Sticks Stuff](https://github.com/sticks-stuff) and Harold Travis and Mark Houghton for QA
+
+
 ## v12.2
 
 _June 2022:_ Version 12.2
@@ -133,7 +155,7 @@ Based on work from Larry Person, there is a large refactor of "service-vendors" 
 
 * Redis upgrade -- please report any issues -- new Heroku installs support Redis 6 which requires a TLS connection
 * keyboard shortcuts for advancing left/right
-* service-managers: carrier-lookup, scrub-bad-mobilenums, and per-campaign-messageservices (replacing EXPERIMENTAL_TWILIO_PER_CAMPAIGN_MESSAGING_SERVICE) 
+* service-managers: carrier-lookup, scrub-bad-mobilenums, and per-campaign-messageservices (replacing EXPERIMENTAL_TWILIO_PER_CAMPAIGN_MESSAGING_SERVICE)
 * NGPVAN updates and fixes to use their changed/most recent API
 
 ### Migration Steps
@@ -437,7 +459,7 @@ This is a major release and therefore requires a schema change which you can run
 - **Dynamic Assignment is changing**: After a lot of feedback and some great inspiration from the [Warren Spoke](https://github.com/Elizabeth-Warren/Spoke) we're modifying dynamic assign. Texters will now request batch sizes instead of getting an endless stream of texts. The admin can customize the batch size and who is allowed to click request after their first batch. There is more documentation on this feature [here](https://github.com/MoveOnOrg/Spoke/blob/main/docs/HOWTO-use-dynamicassignment-batches.md).This feature is also optionally complemented by the new "release texts" feature which is mentioned under "New Features/Improvements"
 - **Old Texter UI is _no longer supported_**: We removed the `DEPRECATED_TEXTERUI` env variable and the old Texter UI is officially phased out
 - **Texter Sideboxes are now off by default**: You now need to enable options in organization Settings tab (they previously were just automatically enabled from the variable)
-  - If your previously set TEXTER_SIDEBOXES, then you must add `default-dynamicassignment` (and we recommend adding other new ones listed in new features) for dynamic assignment to work. 
+  - If your previously set TEXTER_SIDEBOXES, then you must add `default-dynamicassignment` (and we recommend adding other new ones listed in new features) for dynamic assignment to work.
   - If you are not using additional/experimental sideboxes, we recommend removing this environment variable entirely, so new texter sideboxes in later versions will automatically be available.
   - HOLD_ENTER_KEY no longer exists as an option (it was deprecated in our last major version)
 - For non-US or subscriber-only mode users ONLY -- if you enabled ALLOW_SEND_ALL=1 (if you did not, then DO not do this), then you'll need to check to enable that feature in the Settings panel of your organization (as a is_superadmin user)
@@ -460,7 +482,7 @@ This is a major release and therefore requires a schema change which you can run
 - For phone number purchase interface, entering "800" will buy toll-free numbers (instead of by-areacode)
 - Admins can visit app/:organizationId/todos/other/:userId to look at another user's todos page.
 - Additional organization settings available from the Settings section (If you have an existing instance, enable this with OWNER_CONFIGURABLE=ALL
-- Phone number buying and Twilio multi org enabled by default for new installs -- 
+- Phone number buying and Twilio multi org enabled by default for new installs --
 - Phone number buying can purchase toll-free numbers with "800"
 - Campaign "response window" defaults to 48 hours and can be changed per campaign and then queries in Message Review to find who hasn't responded past the window.  A default can be set in Organization Settings page (overriding defaults)
 

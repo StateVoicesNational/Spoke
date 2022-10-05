@@ -52,6 +52,20 @@ const loginStrategies = {
     logout() {
       document.location.href = `${baseURL}/logout-callback`;
     }
+  },
+
+  token: {
+    login(nextUrl) {
+      let queryParams = "";
+      if (nextUrl) {
+        queryParams = `?nextUrl=${encodeURIComponent(nextUrl)}`;
+      }
+
+      document.location.href = `${baseURL}/login/token-redirect${queryParams}`;
+    },
+    logout() {
+      document.location.href = `${baseURL}/logout-callback`;
+    }
   }
 };
 
