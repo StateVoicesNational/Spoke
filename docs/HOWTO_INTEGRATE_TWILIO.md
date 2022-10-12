@@ -41,15 +41,6 @@ If you follow the instructions above, every organization and campaign in your in
 - When using multiple Twilio accounts you will need to change the Inbound Request URL for your messaging service in the Twilio console [step 7 above]. It should look like `https://<YOUR_APP_URL>/twilio/<ORG_ID>` and `https://<YOUR_APP_URL>/twilio-message-report/<ORG_ID>`. The correct URL to use will be displayed on the settings page after you save the Twilio credentials.
 
 ## Purchasing Numbers w/ Twilio
-- [How to set up Per-Org Number-Buying with Twilio](https://moveonorg.github.io/Spoke/#/HOWTO_BUY_NUMBERS_IN_SPOKE?id=how-to-set-up-per-org-number-buying-with-twilio)
-
-- How to choose area codes:
-    - press the plus button and a pop up menu will arise.
-    - Enter your desired area code
-    - Enter how many numbers you want to purchase
-    - Press submit
-
-- How to delete numbers:
-    - Only if you have clearance to purchase, you will have access to a delete button.
-    - However, this button deletes all numbers associated with a specific area code.
-    - If you want to delete a specific number, it's best done through Twilio.
+- [How to Set up Per Org Number Purchasing](https://moveonorg.github.io/Spoke/#/HOWTO_BUY_NUMBERS_IN_SPOKE?id=how-to-set-up-per-org-number-buying-with-twilio)
+- [How to Set up Per Campaign Number Purchasing](https://moveonorg.github.io/Spoke/#/HOWTO_BUY_NUMBERS_IN_SPOKE?id=how-to-set-up-per-campaign-number-buying-with-twilio)
+- [Twilio Direct Number Purchasing.](https://moveonorg.github.io/Spoke/#/HOWTO_BUY_NUMBERS_IN_SPOKE?id=how-to-buy-numbers-directly-in-twilio)
