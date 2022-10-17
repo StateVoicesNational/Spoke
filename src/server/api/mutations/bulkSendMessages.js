@@ -11,7 +11,7 @@ import { sendMessage, findNewCampaignContact } from "./index";
 
 export const bulkSendMessages = async (
   _,
-  { assignmentId },
+  { assignmentId, numMessagesToSend },
   { user, loaders }
 ) => {
   const assignment = await cacheableData.assignment.load(assignmentId);
@@ -50,7 +50,7 @@ export const bulkSendMessages = async (
       assignment_id: assignmentId
     })
     .orderByRaw("updated_at")
-    .limit(process.env.BULK_SEND_CHUNK_SIZE);
+    .limit(numMessagesToSend);
 
   const interactionSteps = await r
     .knex("interaction_step")
@@ -63,6 +63,11 @@ export const bulkSendMessages = async (
     .where({
       is_deleted: false
     });
+
+  // No contacts to message
+  if (!contacts.length) {
+    return await Promise.all([]);
+  }
 
   const topmostParent = interactionSteps[0];
 

@@ -316,7 +316,10 @@ const rootSchema = gql`
       updateData: JSON!
       fromCampaignStatsPage: Boolean
     ): ServiceManager
-    bulkSendMessages(assignmentId: Int!): [CampaignContact]
+    bulkSendMessages(
+      assignmentId: Int!
+      numMessagesToSend: Int!
+    ): [CampaignContact]
     sendMessage(
       message: MessageInput!
       campaignContactId: String!

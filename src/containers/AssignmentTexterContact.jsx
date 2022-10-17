@@ -387,9 +387,11 @@ export class AssignmentTexterContact extends React.Component {
     setTimeout(this.props.onFinishContact, 1500);
   };
 
-  bulkSendMessages = async assignmentId => {
-    await this.props.mutations.bulkSendMessages(assignmentId);
-    this.props.refreshData();
+  bulkSendMessages = async (assignmentId, numMessagesToSend) => {
+    return await this.props.mutations.bulkSendMessages(
+      assignmentId,
+      numMessagesToSend
+    );
   };
 
   render() {
@@ -445,6 +447,7 @@ export class AssignmentTexterContact extends React.Component {
             assignment={this.props.assignment}
             onFinishContact={this.props.onFinishContact}
             bulkSendMessages={this.bulkSendMessages}
+            refreshData={this.props.refreshData}
             setDisabled={this.setDisabled}
           />
         ) : null}
@@ -629,16 +632,20 @@ const mutations = {
       cannedResponseId
     }
   }),
-  bulkSendMessages: ownProps => assignmentId => ({
+  bulkSendMessages: ownProps => (assignmentId, numMessagesToSend) => ({
     mutation: gql`
-      mutation bulkSendMessages($assignmentId: Int!) {
-        bulkSendMessages(assignmentId: $assignmentId) {
+      mutation bulkSendMessages($assignmentId: Int!, $numMessagesToSend: Int!) {
+        bulkSendMessages(
+          assignmentId: $assignmentId
+          numMessagesToSend: $numMessagesToSend
+        ) {
           id
         }
       }
     `,
     variables: {
-      assignmentId
+      assignmentId,
+      numMessagesToSend
     }
   })
 };
