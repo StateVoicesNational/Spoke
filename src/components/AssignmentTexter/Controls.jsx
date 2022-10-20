@@ -760,6 +760,9 @@ export class AssignmentTexterContactControls extends React.Component {
           <Form.Field
             as={GSTextField}
             className={css(flexStyles.subSectionMessageFieldTextField)}
+            inputProps={{
+              "aria-label": "Message to Send"
+            }}
             name="messageText"
             label="Your message"
             onFocus={() => {
@@ -1005,6 +1008,7 @@ export class AssignmentTexterContactControls extends React.Component {
       >
         <Button
           {...dataTest("send")}
+          aria-label="Send Message"
           onClick={this.handleClickSendMessageButton}
           disabled={this.props.disabled || !!this.props.contact.optOut}
           style={{

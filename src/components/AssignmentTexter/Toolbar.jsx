@@ -104,6 +104,7 @@ const CampaignToolbar = props => (
   <Toolbar style={inlineStyles.toolbar}>
     <Tooltip title="Return Home">
       <IconButton
+        aria-label="Return Home"
         onClick={props.onExit}
         className={css(styles.contactToolbarIconButton)}
       >

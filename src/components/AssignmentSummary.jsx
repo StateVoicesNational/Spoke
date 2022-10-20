@@ -85,6 +85,9 @@ export class AssignmentSummaryBase extends Component {
         >
           <Button
             {...dataTest(dataTestText)}
+            aria-label={`${title} - ${
+              count ? count + " message" + (count == 1 ? "" : "s") : ""
+            }`}
             disabled={disabled}
             onClick={() => this.goToTodos(contactsFilter, assignment.id)}
             variant="outlined"
