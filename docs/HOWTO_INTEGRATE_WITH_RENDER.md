@@ -27,7 +27,7 @@ In order to support our users in accessing low-cost and free tech, figuring out 
     - You will need to purchase at least the Starter Package.
 
 ## Make a Webservice
-- Once logged in, I click on the `Make Webservice`
+- Once logged in, click on `Make Webservice`
   - Connect to your forked Spoke repository (directions below)
     - click `Connect account`, under GitHub
     - A permissions page will open and request for authority to act on your behalf (similar to permissions given through Heroku to pull in a branch from your updated code.)
