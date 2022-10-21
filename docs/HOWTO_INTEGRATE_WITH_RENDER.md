@@ -43,7 +43,7 @@ In order to support our users in accessing low-cost and free tech, figuring out 
     - `Name` - your name, it helps if it's your organization or campaign name with spoke next to it.
     - `Environment` - Docker
     - `Region` - default value
-    - `Branch` : pick the branch from your repository, typically in production, the branchname is main.
+    - `Branch` - pick the branch from your repository, typically in production, the branchname is main.
 
 ## Setting Up Required Environment Variables
 - Under `Advanced`
