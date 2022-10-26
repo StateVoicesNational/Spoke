@@ -27,17 +27,8 @@ export default class BulkSendButton extends Component {
 
     console.log(`Start bulk sending messages ${new Date()}`);
     while (sentMessages < window.BULK_SEND_CHUNK_SIZE) {
-      const numMessagesLeftToSend = window.BULK_SEND_CHUNK_SIZE - sentMessages;
-      const numMessagesToSend =
-        numMessagesLeftToSend < window.BULK_SEND_BATCH_SIZE
-          ? numMessagesLeftToSend
-          : window.BULK_SEND_BATCH_SIZE;
-
-      await this.props.bulkSendMessages(
-        this.props.assignment.id,
-        numMessagesToSend
-      );
-      sentMessages += numMessagesToSend;
+      await this.props.bulkSendMessages(this.props.assignment.id);
+      sentMessages += window.BULK_SEND_BATCH_SIZE;
       console.log(`Bulk sent ${sentMessages} messages ${new Date()}`);
     }
     this.props.refreshData();

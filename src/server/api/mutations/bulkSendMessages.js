@@ -11,7 +11,7 @@ import { sendMessage, findNewCampaignContact } from "./index";
 
 export const bulkSendMessages = async (
   _,
-  { assignmentId, numMessagesToSend },
+  { assignmentId },
   { user, loaders }
 ) => {
   const assignment = await cacheableData.assignment.load(assignmentId);
@@ -50,7 +50,7 @@ export const bulkSendMessages = async (
       assignment_id: assignmentId
     })
     .orderByRaw("updated_at")
-    .limit(numMessagesToSend);
+    .limit(process.env.BULK_SEND_BATCH_SIZE);
 
   const interactionSteps = await r
     .knex("interaction_step")
