@@ -26,6 +26,7 @@ const parsePhoneNumber = (e164Number, country = "US") => {
 };
 
 export const getDisplayPhoneNumber = (e164Number, country = "US") => {
+  const phoneUtil = PhoneNumberUtil.getInstance();
   const parsed = parsePhoneNumber(e164Number, country);
   return phoneUtil.format(parsed, PhoneNumberFormat.NATIONAL);
 };
