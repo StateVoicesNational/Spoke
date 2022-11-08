@@ -36,7 +36,8 @@ console.log("Configuring Webpack with", {
 if (!DEBUG) {
   plugins.push(
     new WebpackManifestPlugin({
-      fileName: assetMapFile
+      fileName: assetMapFile,
+      publicPath: ""
     })
   );
   plugins.push(
