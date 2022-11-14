@@ -34,14 +34,15 @@ describe("#parseCSVAsync", () => {
         "givenName,surName,mobile,postal\r\nJerome,Garcia,14155551212,94970";
     });
 
-    it("throws an exception", async done => {
-      try {
-        await parseCSVAsync(csv);
-      } catch (error) {
-        expect(error).toEqual("Missing fields: firstName, lastName, cell");
-        return done();
-      }
-      return done("didn't raise an error"); // this will cause the test to fail
+    it("throws an exception", done => {
+      parseCSVAsync(csv)
+        .then(() => {
+          return done("didn't raise an error"); // this will cause the test to fail
+        })
+        .catch(error => {
+          expect(error).toEqual("Missing fields: firstName, lastName, cell");
+          return done();
+        });
     });
   });
 });

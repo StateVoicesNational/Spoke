@@ -175,7 +175,7 @@ async function createCampaign(user, title, description, organizationId) {
 
 // graphQL tests
 
-describe("graphql test suite", async () => {
+describe("graphql test suite", () => {
   beforeAll(
     async () => await setupTest(),
     global.DATABASE_SETUP_TEARDOWN_TIMEOUT
@@ -352,7 +352,7 @@ describe("graphql test suite", async () => {
       }).save();
     });
 
-    describe("contacts", async () => {
+    describe("contacts", () => {
       let campaigns;
       let contacts;
       beforeEach(async () => {

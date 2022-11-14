@@ -68,7 +68,7 @@ const dupeContacts = [
   }
 ];
 
-describe("ingest-contact-loader method: csv-upload backend", async () => {
+describe("ingest-contact-loader method: csv-upload backend", () => {
   let testAdminUser;
   let testInvite;
   let testOrganization;
@@ -141,7 +141,7 @@ describe("ingest-contact-loader method: csv-upload backend", async () => {
   });
 });
 
-describe("ingest-contact-loader method: csv-upload frontend", async () => {
+describe("ingest-contact-loader method: csv-upload frontend", () => {
   let didSubmit = false;
   let changeData = null;
   const onSubmit = () => {

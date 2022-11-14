@@ -3,7 +3,7 @@ import nock from "nock";
 
 import requestWithRetry from "../../../src/server/lib/http-request.js";
 
-describe("requestWithRetry", async () => {
+describe("requestWithRetry", () => {
   let url;
   let path;
   let headers;
@@ -51,7 +51,7 @@ describe("requestWithRetry", async () => {
     nocked.done();
   });
 
-  describe("validate status", async () => {
+  describe("validate status", () => {
     let nocked;
     beforeEach(async () => {
       nocked = nock(url, {
@@ -62,7 +62,7 @@ describe("requestWithRetry", async () => {
         .reply(201, "Nevertheless it was persisted.");
     });
 
-    describe("successful status validation", async () => {
+    describe("successful status validation", () => {
       it("validStatuses is provided", async () => {
         const result = await requestWithRetry(`${url}${path}`, {
           method: "POST",
@@ -90,7 +90,7 @@ describe("requestWithRetry", async () => {
       });
     });
 
-    describe("unsuccessful status validation", async () => {
+    describe("unsuccessful status validation", () => {
       it("validStatuses is provided", async () => {
         let error;
 
@@ -137,7 +137,7 @@ describe("requestWithRetry", async () => {
     });
   });
 
-  describe("when the request times out", async () => {
+  describe("when the request times out", () => {
     it("retries", async () => {
       let error;
       const nocked = nock(url)
@@ -199,10 +199,11 @@ describe("requestWithRetry", async () => {
           /Error: Request id .+ failed; timeout after 500ms/
         );
         nocked.done();
+        nock.abortPendingRequests(); // Close open Jest handle due to timeout
       }
     });
 
-    describe("when retries is 0", async () => {
+    describe("when retries is 0", () => {
       let error;
       it("it doesn't retry", async () => {
         const nocked = nock(url)
@@ -241,6 +242,7 @@ describe("requestWithRetry", async () => {
             /Error: Request id .+ failed; timeout after 100ms/
           );
           nocked.done();
+          nock.abortPendingRequests(); // Close open Jest handle due to timeout
         }
       });
     });

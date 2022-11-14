@@ -17,7 +17,7 @@ import {
   runGql
 } from "../../test_helpers";
 
-describe("people", async () => {
+describe("people", () => {
   let testTexterUsers;
   let testAdminUsers;
   let testContacts;
@@ -189,7 +189,7 @@ describe("people", async () => {
     if (r.redis) r.redis.flushdb();
   }, global.DATABASE_SETUP_TEARDOWN_TIMEOUT);
 
-  describe("filtering", async () => {
+  describe("filtering", () => {
     const testFiltering = async (result, expectedUsers) => {
       expect(result.data.people.users.length).toEqual(expectedUsers.length);
 
@@ -356,7 +356,7 @@ describe("people", async () => {
     });
   });
 
-  describe("sorting", async () => {
+  describe("sorting", () => {
     const testSortResults = async (result, expectedUsers) => {
       expect(result.data.people.users.length).toEqual(expectedUsers.length);
 
@@ -422,7 +422,7 @@ describe("people", async () => {
     });
   });
 
-  describe("pagination", async () => {
+  describe("pagination", () => {
     beforeEach(async () => {
       cursor = {
         offset: 0,
@@ -471,7 +471,7 @@ describe("people", async () => {
     });
   });
 
-  describe("permissions", async () => {
+  describe("permissions", () => {
     it("doesn't allow texter users to retrieve people", async () => {
       const result = await runGql(getUsersGql, variables, testTexterUsers[0]);
       expect(result.errors).toEqual([

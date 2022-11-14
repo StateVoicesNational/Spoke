@@ -22,7 +22,7 @@ import * as serviceMap from "../../../src/extensions/service-vendors/service_map
 
 const ActionHandlerFramework = require("../../../src/extensions/action-handlers");
 
-describe("organization", async () => {
+describe("organization", () => {
   let testTexterUser;
   let testAdminUser;
   let testInvite;
@@ -52,7 +52,7 @@ describe("organization", async () => {
     if (r.redis) r.redis.flushdb();
   }, global.DATABASE_SETUP_TEARDOWN_TIMEOUT);
 
-  describe("organization query", async () => {
+  describe("organization query", () => {
     let testCampaign2;
     let testCampaign3;
     let testCampaign4;
@@ -141,7 +141,7 @@ describe("organization", async () => {
       ]);
     });
 
-    describe("sorts", async () => {
+    describe("sorts", () => {
       const runTest = async (sortBy, expectedOrderedIds) => {
         variables.sortBy = sortBy;
         const result = await runGql(

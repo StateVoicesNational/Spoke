@@ -1,7 +1,6 @@
 import PropTypes from "prop-types";
 import React from "react";
 import ContactController from "../components/AssignmentTexter/ContactController";
-import AssignmentTexterContact from "./AssignmentTexterContact";
 import { withRouter } from "react-router";
 import loadData from "./hoc/load-data";
 import gql from "graphql-tag";
@@ -242,7 +241,6 @@ export class TexterTodo extends React.Component {
         loadContacts={this.loadContacts}
         onRefreshAssignmentContacts={this.refreshAssignmentContacts}
         organizationId={this.props.params.organizationId}
-        ChildComponent={AssignmentTexterContact}
         messageStatusFilter={this.props.messageStatus}
         location={this.props.location}
       />
