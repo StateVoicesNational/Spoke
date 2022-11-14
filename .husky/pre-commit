@@ -1,4 +1,9 @@
 #!/usr/bin/env sh
-. "$(dirname -- "$0")/_/husky.sh"
+PATH="/usr/local/bin:$PATH"
+if [ -f $HOME/.nvm/nvm.sh ]
+then
+  . $HOME/.nvm/nvm.sh
+  PATH="$HOME/.nvm/versions/node/v16.18.0/bin:$PATH"
+fi
 
 yarn lint-staged
