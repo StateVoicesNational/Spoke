@@ -162,7 +162,7 @@ export class CampaignContactsFormBase extends React.Component {
     // uncomment here to make the data uncompressed on-upload
     // occasionally useful for debugging to see decoded data in-transit
     // return this.props.onChange(JSON.stringify(contactCollection));
-    gzip(JSON.stringify(contactCollection)).then(gzippedData => {
+    return gzip(JSON.stringify(contactCollection)).then(gzippedData => {
       self.props.onChange(gzippedData.toString("base64"));
     });
   }

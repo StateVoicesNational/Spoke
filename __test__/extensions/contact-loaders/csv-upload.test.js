@@ -180,14 +180,15 @@ describe("ingest-contact-loader method: csv-upload frontend", () => {
     jest.restoreAllMocks();
   });
 
-  it("csv-upload:component updates onChange on upload", async () => {
+  it("csv-upload:component updates onChange on upload", () => {
     didSubmit = false;
     changeData = null;
-    component.handleUploadSuccess({ stats: 1 }, contacts, ["custom1"]);
-    // wait for it to process.....
-    await sleep(15);
-    const unzippedData = await unzipPayload({ payload: changeData });
-    expect(unzippedData.contacts).toEqual(contacts);
+    component
+      .handleUploadSuccess({ stats: 1 }, contacts, ["custom1"])
+      .then(async () => {
+        const unzippedData = await unzipPayload({ payload: changeData });
+        expect(unzippedData.contacts).toEqual(contacts);
+      });
   });
   it("csv-upload:component handles custom fields", async () => {
     didSubmit = false;
