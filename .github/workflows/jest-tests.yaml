@@ -123,3 +123,25 @@ jobs:
           ${{ runner.os }}-yarn-
     - run: yarn
     - run: yarn test-sqlite
+  kathy-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    services:
+      redis:
+        image: redis
+        ports:
+        - 6379:6379
+    steps:
+    - uses: actions/checkout@v3
+    - name: Get yarn cache directory path
+      id: yarn-cache-dir-path
+      run: echo "::set-output name=dir::$(yarn cache dir)"
+    - uses: actions/cache@v1
+      id: yarn-cache
+      with:
+        path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
+        key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-yarn-
+    - run: yarn
+    - run: yarn kathy-test
