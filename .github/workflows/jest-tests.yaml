@@ -126,11 +126,23 @@ jobs:
   kathy-test:
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    strategy:
+      matrix:
+        node-version: [14.x, 15.x, 16.x]
     services:
       redis:
         image: redis
         ports:
         - 6379:6379
+      postgres:
+        image: postgres:10
+        env:
+          POSTGRES_USER: spoke_test
+          POSTGRES_PASSWORD: spoke_test
+          POSTGRES_DB: spoke_test
+        ports:
+        - 5432:5432
+        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
     steps:
     - uses: actions/checkout@v3
     - name: Get yarn cache directory path
@@ -140,8 +152,8 @@ jobs:
       id: yarn-cache
       with:
         path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
-        key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+        key: ${{ runner.os }}-${{ matrix.node-version }}-yarn-${{ hashFiles('**/yarn.lock') }}
         restore-keys: |
-          ${{ runner.os }}-yarn-
+          ${{ runner.os }}-${{ matrix.node-version }}-yarn-
     - run: yarn
     - run: yarn kathy-test
