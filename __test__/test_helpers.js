@@ -787,11 +787,11 @@ export const createJob = async (campaign, overrides) => {
     ...(overrides && overrides)
   };
 
-  const [job_id] = await r
+  const [res] = await r
     .knex("job_request")
     .returning("id")
     .insert(job);
-  job.id = job_id;
+  job.id = res.id;
 
   return job;
 };
