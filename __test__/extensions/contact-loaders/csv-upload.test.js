@@ -196,16 +196,18 @@ describe("ingest-contact-loader method: csv-upload frontend", () => {
     const csvData =
       "firstName,lastName,cell,zip,custom_foo,custom_xxx" +
       "\nDolores,Huerta,2095550100,95201,bar,yyy";
-    component.handleUpload({
-      target: { files: [csvData] },
-      preventDefault: () => null
-    });
-    await sleep(5);
-    const unzippedData = await unzipPayload({ payload: changeData });
-    expect(JSON.parse(unzippedData.contacts[0].custom_fields)).toEqual({
-      custom_foo: "bar",
-      custom_xxx: "yyy"
-    });
+    component
+      .handleUpload({
+        target: { files: [csvData] },
+        preventDefault: () => null
+      })
+      .then(async () => {
+        const unzippedData = await unzipPayload({ payload: changeData });
+        expect(JSON.parse(unzippedData.contacts[0].custom_fields)).toEqual({
+          custom_foo: "bar",
+          custom_xxx: "yyy"
+        });
+      });
   });
   it("csv-upload:component upload error", async () => {
     didSubmit = false;
