@@ -493,15 +493,19 @@ const campaignContactCache = {
   ) => {
     // console.log('updateSTATUS', newStatus, contact)
     try {
-      const assignmentIds = await r
-        .knex("campaign_contact")
-        .where("id", contact.id)
-        .update({
-          message_status: newStatus,
-          updated_at: new Date(),
-          ...(moreUpdates || {})
-        })
-        .returning("assignment_id");
+      const assignmentIds = (
+        await r
+          .knex("campaign_contact")
+          .where("id", contact.id)
+          .update({
+            message_status: newStatus,
+            updated_at: new Date(),
+            ...(moreUpdates || {})
+          })
+          .returning("assignment_id")
+      ).map(row => {
+        return row.assignment_id;
+      });
       // console.log('contact.updateStatus assignmentIds', assignmentIds);
       if (
         r.redis &&
