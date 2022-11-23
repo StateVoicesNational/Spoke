@@ -36,7 +36,9 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-${{ matrix.node-version }}-yarn-
     - run: yarn
-    - run: yarn test
+    - env:
+        NODE_OPTIONS: "--max-old-space-size=4096"
+      run: yarn test
   test-rediscache-contactcache:
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -67,7 +69,9 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-yarn-
     - run: yarn
-    - run: yarn test-rediscache-contactcache
+    - env:
+        NODE_OPTIONS: "--max-old-space-size=4096"
+      run: yarn test-rediscache-contactcache
   test-rediscache:
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -98,7 +102,9 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-yarn-
     - run: yarn
-    - run: yarn test-rediscache
+    - env:
+        NODE_OPTIONS: "--max-old-space-size=4096"
+      run: yarn test-rediscache
   test-sqlite:
     runs-on: ubuntu-latest
     timeout-minutes: 10
