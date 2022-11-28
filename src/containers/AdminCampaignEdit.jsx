@@ -43,6 +43,10 @@ import { styles } from "./AdminCampaignStats";
 import AdminScriptImport from "../containers/AdminScriptImport";
 import { makeTree } from "../lib";
 
+const CAMPAIGN_POLLING_INTERVAL = 60000;
+const JOB_WAITING_POLLING_INTERVAL = 2500;
+const ORG_POLLING_INTERVAL = 20000;
+
 const campaignInfoFragment = `
   id
   title
@@ -160,6 +164,7 @@ export class AdminCampaignEditBase extends React.Component {
     this.state = {
       expandedSection,
       campaignFormValues: props.campaignData.campaign,
+      lastCampaignProps: props.campaignData.campaign,
       startingCampaign: false,
       isPolling: false
     };
@@ -172,7 +177,7 @@ export class AdminCampaignEditBase extends React.Component {
         {
           isPolling: true
         },
-        () => this.props.campaignData.startPolling(2500)
+        () => this.props.campaignData.startPolling(JOB_WAITING_POLLING_INTERVAL)
       );
     }
   };
@@ -185,7 +190,7 @@ export class AdminCampaignEditBase extends React.Component {
           isPolling: false
         },
         () => {
-          this.props.campaignData.stopPolling();
+          this.props.campaignData.startPolling(CAMPAIGN_POLLING_INTERVAL);
         }
       );
     }
@@ -206,17 +211,47 @@ export class AdminCampaignEditBase extends React.Component {
     // 3. Refetch/poll updates data in loadData component wrapper
     //    and triggers *this* method => this.props.campaignData => this.state.campaignFormValues
     // So campaignFormValues should always be the diffs between server and client form data
-    let { expandedSection, isPolling } = this.state;
+    let { expandedSection } = this.state;
     let expandedKeys = [];
     if (expandedSection !== null) {
       expandedSection = this.sections()[expandedSection];
       expandedKeys = expandedSection.keys;
     }
 
+    // look at all the unsaved sections
+    // get all the keys in the unsaved sections
+    const keysInUnsavedSections = [];
+    this.sections().forEach(section => {
+      if (!this.checkSectionSaved(section)) {
+        keysInUnsavedSections.push(...section.keys);
+      }
+    });
+
+    const newCampaignData = newProps.campaignData.campaign;
+
+    // find keys in unsaved sections that were changed by the user
+    // we'll assume a key was changed by the user if its value is
+    // different than the key's value in the last props we received
+    const keysInUnsavedSectionsChangedByTheUser = [];
+    keysInUnsavedSections.forEach(key => {
+      if (
+        this.state.lastCampaignProps[key] !== this.state.campaignFormValues[key]
+      ) {
+        keysInUnsavedSectionsChangedByTheUser.push(key);
+      }
+    });
+
+    // don't update keys in the open section as well as unsaved keys changed
+    // by the user in closed sections
+    const doNotUpdateKeys = [
+      ...new Set([...keysInUnsavedSectionsChangedByTheUser, ...expandedKeys])
+    ];
+
     const campaignDataCopy = {
       ...newProps.campaignData.campaign
     };
-    expandedKeys.forEach(key => {
+
+    doNotUpdateKeys.forEach(key => {
       // contactsCount is in two sections
       // That means it won't get updated if *either* is opened
       // but we want it to update in either
@@ -254,7 +289,8 @@ export class AdminCampaignEditBase extends React.Component {
     }
 
     this.setState({
-      campaignFormValues: pushToFormValues
+      campaignFormValues: pushToFormValues,
+      lastCampaignProps: newCampaignData
     });
   }
 
@@ -1079,7 +1115,7 @@ const queries = {
       variables: {
         campaignId: ownProps.params.campaignId
       },
-      pollInterval: 60000
+      pollInterval: CAMPAIGN_POLLING_INTERVAL
     })
   },
   organizationData: {
@@ -1120,7 +1156,7 @@ const queries = {
       variables: {
         organizationId: ownProps.params.organizationId
       },
-      pollInterval: 20000
+      pollInterval: ORG_POLLING_INTERVAL
     })
   }
 };
