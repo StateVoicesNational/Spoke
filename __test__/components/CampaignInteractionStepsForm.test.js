@@ -20,7 +20,10 @@ import {
 import {
   setupTest,
   cleanupTest,
-  createStartedCampaign,
+  createCampaign,
+  createInvite,
+  createOrganization,
+  createUser,
   makeRunnableMutations,
   runComponentQueries,
   muiTheme
@@ -635,14 +638,13 @@ describe("CampaignInteractionStepsForm", () => {
       beforeEach(async () => {
         await setupTest();
 
-        const startedCampaign = await createStartedCampaign();
-        ({
-          testOrganization: {
-            data: { createOrganization: organization }
-          },
-          testAdminUser: adminUser,
-          testCampaign: campaign
-        } = startedCampaign);
+        adminUser = await createUser();
+        const testOrganization = await createOrganization(
+          adminUser,
+          await createInvite()
+        );
+        campaign = await createCampaign(adminUser, testOrganization);
+        organization = testOrganization.data.createOrganization;
       }, global.DATABASE_SETUP_TEARDOWN_TIMEOUT);
 
       afterEach(async () => {
@@ -843,7 +845,72 @@ describe("CampaignInteractionStepsForm", () => {
               ])
             );
 
-            done();
+            // Delete "Red" interaction step
+            wrappedComponent.setState(
+              {
+                expandedSection: 3
+              },
+              async () => {
+                const newInteractionSteps = [];
+
+                interactionStepsAfter.forEach(step => {
+                  const newStep = JSON.parse(
+                    JSON.stringify(
+                      instance.state.interactionSteps.find(mStep => {
+                        return step.answer_option === mStep.answerOption;
+                      })
+                    )
+                  );
+
+                  newStep.id = step.id;
+                  newStep.parentInteractionId = step.parent_interaction_id;
+
+                  if (step.answer_option === "Red") {
+                    newStep.isDeleted = true;
+                  }
+
+                  newInteractionSteps.push(newStep);
+                });
+
+                instance.state.interactionSteps = newInteractionSteps;
+                await instance.onSave();
+
+                const interactionStepsAfterDelete = await r
+                  .knex("interaction_step")
+                  .where({ campaign_id: campaign.id });
+
+                // Test that the "Red" interaction step and its children are deleted
+                expect(interactionStepsAfterDelete).toEqual(
+                  expect.arrayContaining([
+                    expect.objectContaining({
+                      answer_actions: "",
+                      answer_actions_data: null,
+                      answer_option: "",
+                      campaign_id: Number(campaign.id),
+                      id: expect.any(Number),
+                      is_deleted: false,
+                      parent_interaction_id: null,
+                      question: "What's your favorite color?",
+                      script: "Hi {firstName}!  Let's talk about colors."
+                    }),
+                    expect.objectContaining({
+                      answer_actions: "complex-test-action",
+                      answer_actions_data:
+                        '{"value":"{\\"hex\\":\\"#4B0082\\",\\"rgb\\":{\\"r\\":75,\\"g\\":0,\\"b\\":130}}","label":"indigo"}',
+                      answer_option: "Purple",
+                      campaign_id: Number(campaign.id),
+                      id: expect.any(Number),
+                      is_deleted: false,
+                      parent_interaction_id: expect.any(Number),
+                      question: "",
+                      script: "Purple is a great color, {firstName}!"
+                    })
+                  ])
+                );
+
+                done();
+              }
+            );
           }
         );
       });
