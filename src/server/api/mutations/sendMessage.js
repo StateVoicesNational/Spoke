@@ -135,6 +135,8 @@ export const sendMessage = async (
     contact.assignment_id !== parseInt(message.assignmentId) ||
     campaign.is_archived
   ) {
+    console.log("Kathy Test 1:", contact);
+    console.log("Kathy Test 2:", message);
     console.error("Error: assignment changed");
     throw newError("Your assignment has changed", "SENDERR_ASSIGNMENTCHANGED", {
       message,

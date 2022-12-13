@@ -707,7 +707,7 @@ export function generateDemoTexterContact(testName) {
           customFields: test.assignment.campaign.customFields,
           script
         })
-        : null;
+      : null;
   };
 
   const DemoTexterTest = function(props) {
@@ -716,19 +716,16 @@ export function generateDemoTexterContact(testName) {
       <Controls
         handleNavigateNext={logFunction}
         handleNavigatePrevious={logFunction}
-
         contact={test.contact ? test.contact : null}
         campaign={test.assignment.campaign}
         assignment={test.assignment}
         currentUser={test.currentUser}
         texter={test.texter}
         organizationId={"1"}
-
         disabled={test.disabled}
         navigationToolbarChildren={test.navigationToolbarChildren}
         enabledSideboxes={props.enabledSideboxes}
         review={test.review}
-
         onMessageFormSubmit={() => async data => {
           console.log("logging data onMessageFormSubmit", data);
         }}
