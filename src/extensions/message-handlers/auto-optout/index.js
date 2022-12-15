@@ -114,6 +114,12 @@ export const postMessageSave = async ({
       user: null // If this is auto-optout, there is no user happening.
     });
 
+    console.log(
+      "Kathy Test Auto 1; handlerContext.autoOptOutShouldAutoRespond =",
+      handlerContext.autoOptOutShouldAutoRespond,
+      " getConfig('SEND_AUTO_OPT_OUT_RESPONSE', organization) =",
+      getConfig("SEND_AUTO_OPT_OUT_RESPONSE", organization)
+    );
     if (
       handlerContext.autoOptOutShouldAutoRespond ||
       getConfig("SEND_AUTO_OPT_OUT_RESPONSE", organization)
@@ -127,6 +133,11 @@ export const postMessageSave = async ({
         "END",
         "QUIT"
       ];
+
+      console.log(
+        "Kathy Test Auto 2; getConfig('DEFAULT_SERVICE', organization) =",
+        getConfig("DEFAULT_SERVICE", organization)
+      );
 
       if (
         getConfig("DEFAULT_SERVICE", organization) == "twilio" &&
