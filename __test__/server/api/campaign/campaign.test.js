@@ -863,7 +863,8 @@ describe("Bulk Send", async () => {
   ) => {
     process.env.ALLOW_SEND_ALL = params.allowSendAll;
     process.env.ALLOW_SEND_ALL_ENABLED = params.allowSendAllEnabled;
-    process.env.BULK_SEND_CHUNK_SIZE = params.bulkSendChunkSize;
+    process.env.BULK_SEND_BATCH_SIZE =
+      params.bulkSendBatchSize || params.bulkSendChunkSize;
 
     testCampaign.use_dynamic_assignment = true;
     await createScript(testAdminUser, testCampaign);
@@ -1013,6 +1014,20 @@ describe("Bulk Send", async () => {
       bulkSendChunkSize: NUMBER_OF_CONTACTS
     };
     await testBulkSend(params, 0, expectErrorBulkSending);
+  });
+
+  it("should send initial texts to as many contacts as are in the batch size if batch size is smaller than the chunk size", async () => {
+    const params = {
+      allowSendAll: true,
+      allowSendAllEnabled: true,
+      bulkSendBatchSize: Math.round(NUMBER_OF_CONTACTS / 4),
+      bulkSendChunkSize: NUMBER_OF_CONTACTS
+    };
+    await testBulkSend(
+      params,
+      params.bulkSendBatchSize,
+      expectSuccessBulkSending(params.bulkSendBatchSize)
+    );
   });
 });
 
