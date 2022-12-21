@@ -188,7 +188,7 @@ export async function loadContactS3PullProcessFile(jobEvent, contextVars) {
     }
 
     await r.knex.batchInsert("campaign_contact", insertRows).catch(e => {
-      console.log("Error with S3 pull batch insertion for campaign", campaign_id, e);
+      console.error("Error with S3 pull batch insertion for campaign", campaign_id, e);
     });
   }
 
