@@ -152,6 +152,9 @@ export async function loadContactS3PullProcessFileJob(
   contextVars,
   eventCallback
 ) {
+  console.log("Kathy Test S3 event =", event);
+  console.log("Kathy Test S3 contextVars =", contextVars);
+  console.log("Kathy Test S3 eventCallback =", eventCallback);
   try {
     const rv = await loadContactS3PullProcessFile(event, contextVars);
     if (eventCallback) {
