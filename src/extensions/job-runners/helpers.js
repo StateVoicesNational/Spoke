@@ -10,10 +10,10 @@ export const saveJob = async (jobData, trx) => {
     unsavedJob = { ...jobData, payload: JSON.stringify(jobData.payload || {}) };
   }
 
-  const [id] = await builder("job_request").insert(unsavedJob, "id");
+  const [res] = await builder("job_request").insert(unsavedJob, "id");
 
   return builder("job_request")
     .select("*")
-    .where("id", id)
+    .where("id", res.id)
     .first();
 };
