@@ -777,10 +777,18 @@ describe("CampaignInteractionStepsForm", () => {
                   .knex("interaction_step")
                   .where({ campaign_id: campaign.id });
 
-                interactionStepsAfter.forEach(step => {
-                  // eslint-disable-next-line no-param-reassign
-                  step.is_deleted = !!step.is_deleted;
-                });
+                /**
+                 * Normalize is_deleted field due to various possible truthy values in different databases types
+                 * @param {array} is Interaction steps
+                 */
+                function normalizeIsDeleted(is) {
+                  is.forEach(step => {
+                    // eslint-disable-next-line no-param-reassign
+                    step.is_deleted = !!step.is_deleted;
+                  });
+                }
+
+                normalizeIsDeleted(interactionStepsAfter);
 
                 expect(interactionStepsAfter).toEqual(
                   expect.arrayContaining([
@@ -879,6 +887,7 @@ describe("CampaignInteractionStepsForm", () => {
                       .where({ campaign_id: campaign.id });
 
                     // Test that the "Red" interaction step and its children are deleted
+                    normalizeIsDeleted(interactionStepsAfterDelete);
                     expect(interactionStepsAfterDelete).toEqual(
                       expect.arrayContaining([
                         expect.objectContaining({
