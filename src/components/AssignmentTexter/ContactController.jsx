@@ -1,3 +1,4 @@
+import AssignmentTexterContact from "../../containers/AssignmentTexterContact";
 import PropTypes from "prop-types";
 import theme from "../../styles/theme";
 import React from "react";
@@ -382,7 +383,7 @@ export class ContactController extends React.Component {
   }
 
   renderTexter(enabledSideboxes) {
-    const { assignment, campaign, ChildComponent } = this.props;
+    const { assignment, campaign } = this.props;
     const { texter } = assignment;
     const contact = this.currentContact();
     const navigationToolbarChildren = this.getNavigationToolbarChildren();
@@ -439,9 +440,9 @@ export class ContactController extends React.Component {
       }, self.state.reloadDelay);
       return <LoadingIndicator />;
     }
-    // ChildComponent is AssignmentTexterContact except for demo/testing
+
     return (
-      <ChildComponent
+      <AssignmentTexterContact
         key={contact.id}
         assignment={assignment}
         handleNavigateNext={this.handleNavigateNext}
@@ -556,7 +557,6 @@ ContactController.propTypes = {
   refreshData: PropTypes.func,
   loadContacts: PropTypes.func,
   organizationId: PropTypes.string,
-  ChildComponent: PropTypes.func,
   messageStatusFilter: PropTypes.string,
   location: PropTypes.object
 };

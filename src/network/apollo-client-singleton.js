@@ -8,6 +8,7 @@ import { getMainDefinition } from "apollo-utilities";
 import omitDeep from "omit-deep-lodash";
 
 const httpLink = createHttpLink({
+  fetch: fetch,
   uri:
     (typeof window === "undefined" ? process.env : window).GRAPHQL_URL ||
     "/graphql",

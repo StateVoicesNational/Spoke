@@ -747,140 +747,42 @@ describe("CampaignInteractionStepsForm", () => {
         );
       });
 
-      it("saves the interaction steps with onSave is invoked", async done => {
+      it("saves the interaction steps with onSave is invoked", done => {
         expect(wrappedComponent.exists()).toEqual(true);
-        const interactionStepsBefore = await r
-          .knex("interaction_step")
-          .where({ campaign_id: campaign.id });
+        r.knex("interaction_step")
+          .where({ campaign_id: campaign.id })
+          .then(interactionStepsBefore => {
+            expect(interactionStepsBefore).toHaveLength(0);
 
-        expect(interactionStepsBefore).toHaveLength(0);
-
-        return wrappedComponent.setState(
-          {
-            expandedSection: 3,
-            campaignFormValues: {
-              ...queryResults.campaignData.campaign,
-              interactionSteps
-            }
-          },
-          async () => {
-            const campaignInteractionStepsForm = wrappedComponent.find(
-              CampaignInteractionStepsForm
-            );
-
-            expect(campaignInteractionStepsForm.exists()).toEqual(true);
-
-            const instance = campaignInteractionStepsForm.instance();
-
-            await instance.onSave();
-
-            const interactionStepsAfter = await r
-              .knex("interaction_step")
-              .where({ campaign_id: campaign.id });
-
-            interactionStepsAfter.forEach(step => {
-              // eslint-disable-next-line no-param-reassign
-              step.is_deleted = !!step.is_deleted;
-            });
-
-            expect(interactionStepsAfter).toEqual(
-              expect.arrayContaining([
-                expect.objectContaining({
-                  answer_actions: "",
-                  answer_actions_data: null,
-                  answer_option: "",
-                  campaign_id: Number(campaign.id),
-                  id: expect.any(Number),
-                  is_deleted: false,
-                  parent_interaction_id: null,
-                  question: "What's your favorite color?",
-                  script: "Hi {firstName}!  Let's talk about colors."
-                }),
-                expect.objectContaining({
-                  answer_actions: "complex-test-action",
-                  answer_actions_data:
-                    '{"value":"{\\"hex\\":\\"#B22222\\",\\"rgb\\":{\\"r\\":178,\\"g\\":34,\\"b\\":34}}","label":"firebrick"}',
-                  answer_option: "Red",
-                  id: expect.any(Number),
-                  campaign_id: Number(campaign.id),
-                  is_deleted: false,
-                  parent_interaction_id: expect.any(Number),
-                  question: "What's your favorite shade of red?",
-                  script: "Red is a great color, {firstName}!"
-                }),
-                expect.objectContaining({
-                  answer_actions: "",
-                  answer_actions_data: "",
-                  answer_option: "Crimson",
-                  campaign_id: Number(campaign.id),
-                  id: expect.any(Number),
-                  is_deleted: false,
-                  parent_interaction_id: expect.any(Number),
-                  question: "",
-                  script: "Crimson is a great shade of red, {firstName}!"
-                }),
-                expect.objectContaining({
-                  answer_actions: "",
-                  answer_actions_data: "",
-                  answer_option: "Cherry",
-                  campaign_id: Number(campaign.id),
-                  id: expect.any(Number),
-                  is_deleted: false,
-                  parent_interaction_id: expect.any(Number),
-                  question: "",
-                  script: "Cherry is a great shade of red, {firstName}!"
-                }),
-                expect.objectContaining({
-                  answer_actions: "complex-test-action",
-                  answer_actions_data:
-                    '{"value":"{\\"hex\\":\\"#4B0082\\",\\"rgb\\":{\\"r\\":75,\\"g\\":0,\\"b\\":130}}","label":"indigo"}',
-                  answer_option: "Purple",
-                  campaign_id: Number(campaign.id),
-                  id: expect.any(Number),
-                  is_deleted: false,
-                  parent_interaction_id: expect.any(Number),
-                  question: "",
-                  script: "Purple is a great color, {firstName}!"
-                })
-              ])
-            );
-
-            // Delete "Red" interaction step
-            wrappedComponent.setState(
+            return wrappedComponent.setState(
               {
-                expandedSection: 3
+                expandedSection: 3,
+                campaignFormValues: {
+                  ...queryResults.campaignData.campaign,
+                  interactionSteps
+                }
               },
               async () => {
-                const newInteractionSteps = [];
+                const campaignInteractionStepsForm = wrappedComponent.find(
+                  CampaignInteractionStepsForm
+                );
 
-                interactionStepsAfter.forEach(step => {
-                  const newStep = JSON.parse(
-                    JSON.stringify(
-                      instance.state.interactionSteps.find(mStep => {
-                        return step.answer_option === mStep.answerOption;
-                      })
-                    )
-                  );
+                expect(campaignInteractionStepsForm.exists()).toEqual(true);
 
-                  newStep.id = step.id;
-                  newStep.parentInteractionId = step.parent_interaction_id;
+                const instance = campaignInteractionStepsForm.instance();
 
-                  if (step.answer_option === "Red") {
-                    newStep.isDeleted = true;
-                  }
-
-                  newInteractionSteps.push(newStep);
-                });
-
-                instance.state.interactionSteps = newInteractionSteps;
                 await instance.onSave();
 
-                const interactionStepsAfterDelete = await r
+                const interactionStepsAfter = await r
                   .knex("interaction_step")
                   .where({ campaign_id: campaign.id });
 
-                // Test that the "Red" interaction step and its children are deleted
-                expect(interactionStepsAfterDelete).toEqual(
+                interactionStepsAfter.forEach(step => {
+                  // eslint-disable-next-line no-param-reassign
+                  step.is_deleted = !!step.is_deleted;
+                });
+
+                expect(interactionStepsAfter).toEqual(
                   expect.arrayContaining([
                     expect.objectContaining({
                       answer_actions: "",
@@ -892,6 +794,40 @@ describe("CampaignInteractionStepsForm", () => {
                       parent_interaction_id: null,
                       question: "What's your favorite color?",
                       script: "Hi {firstName}!  Let's talk about colors."
+                    }),
+                    expect.objectContaining({
+                      answer_actions: "complex-test-action",
+                      answer_actions_data:
+                        '{"value":"{\\"hex\\":\\"#B22222\\",\\"rgb\\":{\\"r\\":178,\\"g\\":34,\\"b\\":34}}","label":"firebrick"}',
+                      answer_option: "Red",
+                      id: expect.any(Number),
+                      campaign_id: Number(campaign.id),
+                      is_deleted: false,
+                      parent_interaction_id: expect.any(Number),
+                      question: "What's your favorite shade of red?",
+                      script: "Red is a great color, {firstName}!"
+                    }),
+                    expect.objectContaining({
+                      answer_actions: "",
+                      answer_actions_data: "",
+                      answer_option: "Crimson",
+                      campaign_id: Number(campaign.id),
+                      id: expect.any(Number),
+                      is_deleted: false,
+                      parent_interaction_id: expect.any(Number),
+                      question: "",
+                      script: "Crimson is a great shade of red, {firstName}!"
+                    }),
+                    expect.objectContaining({
+                      answer_actions: "",
+                      answer_actions_data: "",
+                      answer_option: "Cherry",
+                      campaign_id: Number(campaign.id),
+                      id: expect.any(Number),
+                      is_deleted: false,
+                      parent_interaction_id: expect.any(Number),
+                      question: "",
+                      script: "Cherry is a great shade of red, {firstName}!"
                     }),
                     expect.objectContaining({
                       answer_actions: "complex-test-action",
@@ -908,11 +844,75 @@ describe("CampaignInteractionStepsForm", () => {
                   ])
                 );
 
-                done();
+                // Delete "Red" interaction step
+                wrappedComponent.setState(
+                  {
+                    expandedSection: 3
+                  },
+                  async () => {
+                    const newInteractionSteps = [];
+
+                    interactionStepsAfter.forEach(step => {
+                      const newStep = JSON.parse(
+                        JSON.stringify(
+                          instance.state.interactionSteps.find(mStep => {
+                            return step.answer_option === mStep.answerOption;
+                          })
+                        )
+                      );
+
+                      newStep.id = step.id;
+                      newStep.parentInteractionId = step.parent_interaction_id;
+
+                      if (step.answer_option === "Red") {
+                        newStep.isDeleted = true;
+                      }
+
+                      newInteractionSteps.push(newStep);
+                    });
+
+                    instance.state.interactionSteps = newInteractionSteps;
+                    await instance.onSave();
+
+                    const interactionStepsAfterDelete = await r
+                      .knex("interaction_step")
+                      .where({ campaign_id: campaign.id });
+
+                    // Test that the "Red" interaction step and its children are deleted
+                    expect(interactionStepsAfterDelete).toEqual(
+                      expect.arrayContaining([
+                        expect.objectContaining({
+                          answer_actions: "",
+                          answer_actions_data: null,
+                          answer_option: "",
+                          campaign_id: Number(campaign.id),
+                          id: expect.any(Number),
+                          is_deleted: false,
+                          parent_interaction_id: null,
+                          question: "What's your favorite color?",
+                          script: "Hi {firstName}!  Let's talk about colors."
+                        }),
+                        expect.objectContaining({
+                          answer_actions: "complex-test-action",
+                          answer_actions_data:
+                            '{"value":"{\\"hex\\":\\"#4B0082\\",\\"rgb\\":{\\"r\\":75,\\"g\\":0,\\"b\\":130}}","label":"indigo"}',
+                          answer_option: "Purple",
+                          campaign_id: Number(campaign.id),
+                          id: expect.any(Number),
+                          is_deleted: false,
+                          parent_interaction_id: expect.any(Number),
+                          question: "",
+                          script: "Purple is a great color, {firstName}!"
+                        })
+                      ])
+                    );
+
+                    done();
+                  }
+                );
               }
             );
-          }
-        );
+          });
       });
     });
   });

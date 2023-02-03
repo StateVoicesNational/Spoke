@@ -1,12 +1,15 @@
 const path = require("path");
 const webpack = require("webpack");
-const ManifestPlugin = require("webpack-manifest-plugin");
+const { WebpackManifestPlugin } = require("webpack-manifest-plugin");
 const TerserPlugin = require("terser-webpack-plugin");
 
 const DEBUG =
   process.env.NODE_ENV === "development" || !!process.env.WEBPACK_HOT_RELOAD;
 
 const plugins = [
+  new webpack.ProvidePlugin({
+    process: "process/browser"
+  }),
   new webpack.DefinePlugin({
     "process.env.NODE_ENV": `"${process.env.NODE_ENV}"`,
     "process.env.PHONE_NUMBER_COUNTRY": `"${process.env.PHONE_NUMBER_COUNTRY ||
@@ -23,7 +26,7 @@ const plugins = [
 const jsxLoaders = [{ loader: "babel-loader" }];
 const assetsDir = process.env.ASSETS_DIR || "./build/client/assets";
 const assetMapFile = process.env.ASSETS_MAP_FILE || "assets.json";
-const outputFile = DEBUG ? "[name].js" : "[name].[hash].js";
+const outputFile = DEBUG ? "[name].js" : "[name].[fullhash].js";
 console.log("Configuring Webpack with", {
   assetsDir,
   assetMapFile,
@@ -32,8 +35,9 @@ console.log("Configuring Webpack with", {
 
 if (!DEBUG) {
   plugins.push(
-    new ManifestPlugin({
-      fileName: assetMapFile
+    new WebpackManifestPlugin({
+      fileName: assetMapFile,
+      publicPath: ""
     })
   );
   plugins.push(
@@ -46,7 +50,9 @@ if (!DEBUG) {
 }
 
 const config = {
-  mode: DEBUG ? "development" : "production",
+  mode: ["development", "production"].includes(process.env.NODE_ENV)
+    ? process.env.NODE_ENV
+    : "none",
   entry: {
     bundle: ["babel-polyfill", "./src/client/index.jsx"]
   },
@@ -64,6 +70,10 @@ const config = {
     ]
   },
   resolve: {
+    fallback: {
+      stream: require.resolve("stream-browserify"),
+      zlib: require.resolve("browserify-zlib")
+    },
     mainFields: ["browser", "main", "module"],
     extensions: [".js", ".jsx", ".json"]
   },

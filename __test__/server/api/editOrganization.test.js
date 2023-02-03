@@ -12,7 +12,7 @@ import {
   setupTest
 } from "../../test_helpers";
 
-describe("editOrganization", async () => {
+describe("editOrganization", () => {
   let startedCampaign;
 
   beforeEach(async () => {

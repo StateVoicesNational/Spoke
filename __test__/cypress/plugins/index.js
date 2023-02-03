@@ -1,7 +1,7 @@
 // plugins run in the cypress Node process, not the browser. Define tasks
 // operations like seeding the database that can't be run from the browser.
 // See: https://on.cypress.io/plugins-guide
-require("babel-register");
+require("@babel/register");
 require("babel-polyfill");
 
 if (process.env.DEFAULT_SERVICE !== "fakeservice") {
