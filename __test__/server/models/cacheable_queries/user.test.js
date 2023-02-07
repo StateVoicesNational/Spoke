@@ -9,7 +9,7 @@ import {
 
 import { r, cacheableData } from "../../../../src/server/models";
 
-describe("cacheable_queries.user", async () => {
+describe("cacheable_queries.user", () => {
   let queryLog;
   let testAdminUser;
   let testInvite;

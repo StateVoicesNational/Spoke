@@ -29,7 +29,7 @@ exports.up = async function up(knex) {
     t.integer("last_error_code");
     t.text("carrier");
     t.timestamp("created_at").defaultTo(knex.fn.now());
-    t.timestamp("last_lookup").defaultTo();
+    t.timestamp("last_lookup").defaultTo(null);
     t.text("lookup_name");
 
     t.index(
