@@ -184,7 +184,8 @@
     },
 
     "TWILIO_MESSAGE_SERVICE_SID": {
-      "description": "A twilio service message account SID"
+      "description": "A twilio service message account SID",
+      "required": false
 
     }
   },
