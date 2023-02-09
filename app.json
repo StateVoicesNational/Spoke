@@ -181,6 +181,11 @@
     "TWILIO_VALIDATION": {
       "description": "Validate twilio message report links as well",
       "value": "1"
+    },
+
+    "TWILIO_MESSAGE_SERVICE_SID": {
+      "description": "A twilio service message account SID"
+
     }
   },
   "addons": [
