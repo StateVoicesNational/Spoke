@@ -27,7 +27,7 @@ If applicable, add screenshots to help explain your problem.
  - OS: [e.g. iOS]
  - Browser [e.g. chrome, safari]
  - Desktop or Mobile?
- - Version [e.g. 22]
+ - Spoke Version: [e.g. 13.0.0]
 
 **Additional context**
 Add any other context about the problem here.
