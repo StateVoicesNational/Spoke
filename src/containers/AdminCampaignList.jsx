@@ -342,13 +342,13 @@ export class AdminCampaignList extends React.Component {
       );
     }
     return (
-      <Button 
-      style={theme.components.floatingButton}
-      color="primary"
-        variant="contained"
-        {...dataTest("addCampaign")}
-        onClick={this.handleClickNewButton}
-      >Create New Campaign</Button>
+<Button 
+style={theme.components.floatingButton}
+color="primary"
+  variant="contained"
+  {...dataTest("addCampaign")}
+  onClick={this.handleClickNewButton}
+>Create New Campaign</Button>
       
     );
   }
