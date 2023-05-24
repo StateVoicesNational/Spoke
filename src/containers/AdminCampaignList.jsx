@@ -65,7 +65,7 @@ export class AdminCampaignList extends React.Component {
     archiveMultipleMenu: false
   };
 
-  handleClickNewButton = async () => {
+  createNewCampaignButton = async () => {
     const { organizationId } = this.props.params;
     this.setState({ isLoading: true });
     const newCampaign = await this.props.mutations.createCampaign({
@@ -342,13 +342,14 @@ export class AdminCampaignList extends React.Component {
       );
     }
     return (
-<Button 
-style={theme.components.floatingButton}
-color="primary"
-  variant="contained"
-  {...dataTest("addCampaign")}
-  onClick={this.handleClickNewButton}
->Create New Campaign</Button>
+      <Button 
+          style={theme.components.floatingButton}
+          color="primary"
+          variant="contained"
+          {...dataTest("addCampaign")}
+          onClick={this.createNewCampaignButton}
+      >Create New Campaign
+      </Button>
       
     );
   }
