@@ -161,7 +161,7 @@ export const dataQuery = gql`
         updatedAt
         customFields
       }
-      allContactsCount: contactsCount
+      allContactsCount: contactsCount(contactsFilter: { isOptedOut: false })
       unmessagedCount: contactsCount(contactsFilter: $needsMessageFilter)
       unrepliedCount: contactsCount(contactsFilter: $needsResponseFilter)
       texter {
