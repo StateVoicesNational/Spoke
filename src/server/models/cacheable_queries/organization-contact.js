@@ -47,7 +47,7 @@ const organizationContactCache = {
         })
         .update(organizationContact);
     } else {
-      await r.knex("organization_contact").insert(organizationContact);
+      await r.knex("organization_contact").insert(organizationContact).onConflict(["contact_number", "organization_id", "service", "user_number"]).ignore();
     }
 
     if (r.redis) {
