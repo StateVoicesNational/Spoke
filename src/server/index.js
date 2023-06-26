@@ -91,6 +91,10 @@ app.use((req, res, next) => {
 
   if (clientApiKey && clientApiKey === API_KEY) {
     req.isServerRequest = true;
+    req.user = {
+      id: '0B3240D8-007F-4EC0-9D97-8ED9640643CF',
+      is_superadmin: true
+    };
   }
 
   next();
