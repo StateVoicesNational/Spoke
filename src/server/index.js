@@ -84,8 +84,36 @@ app.use(
     secret: process.env.SESSION_SECRET || global.SESSION_SECRET
   })
 );
-app.use(passport.initialize());
-app.use(passport.session());
+
+app.use((req, res, next) => {
+  const clientApiKey = req.get('x-api-key');
+  const API_KEY = process.env.X_API_KEY;
+
+  if (clientApiKey && clientApiKey === API_KEY) {
+    req.isServerRequest = true;
+  }
+
+  next();
+});
+
+app.use((req, res, next) => {
+  if (!req.isServerRequest) {
+    passport.initialize()(req, res, next);
+  } else {
+    next();
+  }
+});
+
+app.use((req, res, next) => {
+  if (!req.isServerRequest) {
+    passport.session()(req, res, next);
+  } else {
+    next();
+  }
+});
+
+// app.use(passport.initialize());
+// app.use(passport.session());
 
 app.use((req, res, next) => {
   const getContext = app.get("awsContextGetter");
@@ -166,8 +194,8 @@ app.use(
       telemetry
         .formatRequestError(error, request)
         // drop if this fails
-        .catch(() => {})
-        .then(() => {});
+        .catch(() => { })
+        .then(() => { });
 
       if (process.env.SHOW_SERVER_ERROR || process.env.DEBUG) {
         if (error instanceof GraphQLError) {
@@ -178,8 +206,8 @@ app.use(
 
       return new GraphQLError(
         error &&
-        error.originalError &&
-        error.originalError.code === "UNAUTHORIZED"
+          error.originalError &&
+          error.originalError.code === "UNAUTHORIZED"
           ? "UNAUTHORIZED"
           : "Internal server error"
       );
