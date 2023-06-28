@@ -88,11 +88,16 @@ app.use(
 app.use((req, res, next) => {
   const clientApiKey = req.get('x-api-key');
   const API_KEY = process.env.X_API_KEY;
+  const userId = req.get('x-user-id');
 
   if (clientApiKey && clientApiKey === API_KEY) {
+    if (!userId) {
+      // If x-user-id header is not provided, return an error.
+      return res.status(400).json({ error: 'x-user-id header is required' });
+    }
     req.isServerRequest = true;
     req.user = {
-      id: 1,
+      id: userId,
       is_superadmin: true
     };
   }
