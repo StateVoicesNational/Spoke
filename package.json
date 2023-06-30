@@ -171,6 +171,7 @@
   },
   "devDependencies": {
     "@babel/eslint-parser": "^7.19.1",
+    "@faker-js/faker": "^8.0.2",
     "babel-jest": "^29.3.1",
     "babel-preset-es2017": "^6.24.1",
     "cypress": "5.6.0",
