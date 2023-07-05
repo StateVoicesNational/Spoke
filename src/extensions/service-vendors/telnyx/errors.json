@@ -1,0 +1,1863 @@
+{
+  "10001": {
+    "tags": [],
+    "title": "Inactive phone number",
+    "detail": "The phone number is inactive.",
+    "public_docs": "The phone number is inactive.\n",
+    "code": "10001"
+  },
+  "10002": {
+    "tags": [],
+    "title": "Invalid phone number",
+    "detail": "The phone number is invalid.",
+    "public_docs": "The phone number is invalid.\n",
+    "code": "10002"
+  },
+  "10003": {
+    "tags": [],
+    "title": "Invalid URL",
+    "detail": "The URL provided was invalid, malformed, or too long. URLs can be a maximum of 2000 characters.",
+    "public_docs": "The URL provided was invalid, malformed, or too long. URLs can be a maximum of 2000 characters.\n",
+    "code": "10003"
+  },
+  "10004": {
+    "tags": [],
+    "title": "Missing required parameter",
+    "detail": "A required parameter was missing.",
+    "public_docs": "A required parameter was missing. Consult the `source` field on the returned\nerror to determine the missing field.\n",
+    "code": "10004"
+  },
+  "10005": {
+    "tags": [],
+    "title": "Resource not found",
+    "http_status": 404,
+    "detail": "The requested resource or URL could not be found.",
+    "public_docs": "The requested resource or URL could not be found.\n",
+    "code": "10005"
+  },
+  "10006": {
+    "tags": [],
+    "title": "Invalid ID",
+    "detail": "The resource ID provided was invalid.",
+    "public_docs": "The resource ID provided was invalid.\n",
+    "code": "10006"
+  },
+  "10007": {
+    "tags": [],
+    "title": "Unexpected error",
+    "http_status": 500,
+    "detail": "An unexpected error occured.",
+    "public_docs": "An unexpected error occured.",
+    "code": "10007"
+  },
+  "10008": {
+    "tags": [],
+    "title": "Request timeout",
+    "http_status": 408,
+    "detail": "The request timed out.",
+    "public_docs": "The request timed out.",
+    "code": "10008"
+  },
+  "10009": {
+    "tags": [],
+    "title": "Authentication failed",
+    "http_status": 401,
+    "detail": "The required authentication headers were either invalid or not included in the request.",
+    "public_docs": "The required authentication headers were either invalid or not included in the request.",
+    "code": "10009"
+  },
+  "10010": {
+    "tags": [],
+    "title": "Authorization failed",
+    "http_status": 403,
+    "detail": "You do not have permission to perform the requested action on the specified resource or resources.",
+    "public_docs": "You do not have permission to perform the requested action on the specified resource or resources.",
+    "code": "10010"
+  },
+  "10011": {
+    "tags": [],
+    "title": "Too many requests",
+    "http_status": 429,
+    "detail": "You have exceeded the maximum number of allowed requests.",
+    "public_docs": "You have exceeded the maximum number of allowed requests.",
+    "code": "10011"
+  },
+  "10012": {
+    "tags": [],
+    "title": "Duplicate resource",
+    "detail": "Resource is a duplicate.",
+    "public_docs": "Resource is a duplicate.\n",
+    "code": "10012"
+  },
+  "10013": {
+    "tags": [],
+    "title": "Missing association",
+    "detail": "One of the associated fields does not exist.",
+    "public_docs": "One of the associated fields does not exist.\n",
+    "code": "10013"
+  },
+  "10014": {
+    "tags": [],
+    "title": "Unsupported Media Type",
+    "http_status": 415,
+    "detail": "The request failed because the server does not support the media type.",
+    "public_docs": "The request failed because the server does not support the media type.",
+    "code": "10014"
+  },
+  "10015": {
+    "tags": [],
+    "title": "Bad Request",
+    "http_status": 400,
+    "detail": "The request failed because it was not well-formed.",
+    "public_docs": "The request failed because it was not well-formed.",
+    "code": "10015"
+  },
+  "10016": {
+    "tags": [],
+    "title": "Phone number must be in +E.164 format",
+    "detail": "The specified phone number parameter must be in +E.164 format.",
+    "public_docs": "The specified phone number parameter must be in +E.164 format.",
+    "code": "10016"
+  },
+  "10017": {
+    "tags": [],
+    "title": "Associated resource does not exist",
+    "detail": "The requested parameter is invalid as the associated resource does not exist.",
+    "public_docs": "The requested parameter is invalid as the associated resource does not exist.\n",
+    "code": "10017"
+  },
+  "10018": {
+    "tags": [],
+    "title": "Invalid sort direction",
+    "detail": "The 'sort_direction' parameter must have a value of either 'asc' or 'desc'.",
+    "public_docs": "The 'sort_direction' parameter must have a value of either 'asc' or 'desc'.\n",
+    "code": "10018"
+  },
+  "10019": {
+    "tags": [],
+    "title": "Invalid email address",
+    "detail": "The 'email' parameter is not a valid email address.",
+    "public_docs": "The 'email' parameter is not a valid email address.\n",
+    "code": "10019"
+  },
+  "10020": {
+    "tags": [],
+    "title": "Invalid resource type",
+    "detail": "The requested parameter must be of type 'string'",
+    "public_docs": "The requested parameter must be of type 'string'\n",
+    "code": "10020"
+  },
+  "10021": {
+    "tags": [],
+    "title": "Resource in use",
+    "detail": "The resource can not be removed as it is still in use.",
+    "http_status": 409,
+    "public_docs": "The resource can not be removed as it is still in use.\n",
+    "code": "10021"
+  },
+  "10022": {
+    "tags": [],
+    "title": "One or more invalid IDs",
+    "detail": "One or more of the IDs provided were invalid.",
+    "public_docs": "One or more of the IDs provided were invalid.\n",
+    "code": "10022"
+  },
+  "10023": {
+    "tags": [],
+    "title": "Invalid JSON",
+    "detail": "The supplied JSON is invalid.",
+    "http_status": 400,
+    "public_docs": "The supplied JSON is invalid.\n",
+    "code": "10023"
+  },
+  "10024": {
+    "tags": [],
+    "title": "Unsupported Content-Type",
+    "detail": "Must encode request as 'application/x-www-form-urlencoded' or 'application/json'",
+    "http_status": 415,
+    "public_docs": "The API endpoint only accepts requests that are form encoded or JSON, i.e. they\nmust have a `Content-Type` header of either `application/x-www-form-urlencoded` or\n`application/json`.\n",
+    "code": "10024"
+  },
+  "10025": {
+    "tags": [],
+    "title": "String length out of range",
+    "detail": "The string length provided for the indicated field was outside the allowed range. The field must be between {min} and {max} characters long, but was {actual}.",
+    "public_docs": "A string provided was either too short or too long. Consult the `source` field\non the returned error to determine the offending field.\n",
+    "code": "10025"
+  },
+  "10026": {
+    "tags": [],
+    "title": "Invalid parameter type",
+    "detail": "The parameter must be of type '{expected_type}', but received type '{received_type}'",
+    "public_docs": "The parameter was of the incorrect type. Consult the error's `detail` and\n`source` fields to determine the offending field.\n",
+    "code": "10026"
+  },
+  "10027": {
+    "tags": [],
+    "title": "Unprocessable Entity",
+    "http_status": 422,
+    "detail": "The server understood the syntax of the request but was unable to process the instructions.",
+    "public_docs": "The server understood the syntax of the request but was unable to process the instructions.",
+    "code": "10027"
+  },
+  "10028": {
+    "tags": [],
+    "title": "Character encoding error",
+    "http_status": 400,
+    "detail": "The request body was not able to be decoded.",
+    "public_docs": "The request body was not able to be decoded.\n\nWhen sending JSON and using a non-Unicode encoding, be sure to set the charset\nparameter on the Content-Type header.\n",
+    "code": "10028"
+  },
+  "10029": {
+    "tags": [],
+    "title": "Expected JSON Content-Type",
+    "detail": "Must encode request as 'application/json'",
+    "http_status": 415,
+    "public_docs": "The API endpoint only accepts requests encoded as JSON with a\n`Content-Type` header of `application/json`.\n",
+    "code": "10029"
+  },
+  "10030": {
+    "tags": [],
+    "title": "Method not allowed",
+    "http_status": 405,
+    "detail": "The URL is valid, but the method is not allowed.",
+    "public_docs": "The URL is valid, but the HTTP method is not allowed. The `Allow` header on the\n405 response lists acceptable methods, and the API documentation will provide\ndetails on how to interact with the endpoint.\n",
+    "code": "10030"
+  },
+  "10031": {
+    "tags": [],
+    "title": "Invalid request filter",
+    "detail": "The request filter filter[{filter}] is invalid.",
+    "public_docs": "There was a problem with the HTTP request `Filter`.\n",
+    "code": "10031"
+  },
+  "10032": {
+    "tags": [],
+    "title": "Invalid enumerated value",
+    "detail": "The value must be one of {enumerated_values}",
+    "public_docs": "Provided value isn't on the list of accepted values.\n",
+    "code": "10032"
+  },
+  "10033": {
+    "tags": [],
+    "title": "Value outside of range",
+    "detail": "The value is outside of allowed range {min_allow} to {max_allow}",
+    "public_docs": "Provided value is outside of the allowed range.\n",
+    "code": "10033"
+  },
+  "10034": {
+    "tags": [],
+    "title": "Expected URL-encoded form Content-Type",
+    "detail": "Must encode request as 'application/x-www-form-urlencoded'",
+    "http_status": 415,
+    "public_docs": "The API endpoint only accepts requests with the data encoded as a URL-encoded form\nwith a `Content-Type` header of `application/x-www-form-urlencoded`.\n",
+    "code": "10034"
+  },
+  "10035": {
+    "tags": [],
+    "title": "Resource locked",
+    "http_status": 403,
+    "detail": "The resource has been locked. Contact Telnyx support.",
+    "public_docs": "These resources have been administratively locked by Telnyx so they cannot be used or modified.",
+    "solutions": "- Contact Telnyx support\n",
+    "code": "10035"
+  },
+  "10036": {
+    "tags": [],
+    "title": "Resource is being processed",
+    "detail": "This resource is in ongoing processing and it can't be interacted with. Please, wait for its operation to finish and retry later.",
+    "public_docs": "This resource is in ongoing processing and it can't be interacted with. Please, wait for its operation to finish and retry later.",
+    "code": "10036"
+  },
+  "10037": {
+    "tags": [],
+    "title": "Service unavailable",
+    "http_status": 503,
+    "detail": "Service is unavailable.",
+    "public_docs": "Service is unavailable.",
+    "code": "10037"
+  },
+  "10700": {
+    "tags": [],
+    "title": "Invalid caller data",
+    "detail": "The CNAM caller data provided is invalid.",
+    "public_docs": "The CNAM caller data provided is invalid.",
+    "code": "10700"
+  },
+  "20000": {
+    "tags": [],
+    "title": "Invalid resource groups",
+    "detail": "The resource groups provided are invalid.",
+    "public_docs": "The resource groups provided are invalid.\n",
+    "code": "20000"
+  },
+  "20001": {
+    "tags": [],
+    "title": "Invalid API Key secret",
+    "detail": "The secret provided is invalid.",
+    "public_docs": "The secret provided is invalid.\n",
+    "code": "20001"
+  },
+  "20002": {
+    "tags": [],
+    "title": "API Key revoked",
+    "detail": "The API Key provided is not active.",
+    "public_docs": "The API Key provided is not active.\n",
+    "code": "20002"
+  },
+  "20003": {
+    "tags": [],
+    "title": "API Key forbidden",
+    "detail": "The API Key provided is forbidden.",
+    "public_docs": "The API Key provided is forbidden.\n",
+    "code": "20003"
+  },
+  "20004": {
+    "tags": [],
+    "title": "Invalid permission groups",
+    "detail": "The permission groups provided are invalid.",
+    "public_docs": "The permission groups provided are invalid.\n",
+    "code": "20004"
+  },
+  "20005": {
+    "tags": [],
+    "title": "Invalid user",
+    "detail": "The user provided is invalid.",
+    "public_docs": "The user provided is invalid.\n",
+    "code": "20005"
+  },
+  "20006": {
+    "tags": [],
+    "title": "Expired access token",
+    "detail": "The access token provided is expired.",
+    "public_docs": "The access token provided is expired.\n",
+    "code": "20006"
+  },
+  "20007": {
+    "tags": [],
+    "title": "Invalid permission groups",
+    "detail": "The permission groups provided must be a subset of the API Key's.",
+    "public_docs": "The permission groups provided must be a subset of the API Key's.\n",
+    "code": "20007"
+  },
+  "20008": {
+    "tags": [],
+    "title": "Invalid API Key",
+    "detail": "The API Key provided is invalid.",
+    "public_docs": "The API Key provided is invalid.\n",
+    "code": "20008"
+  },
+  "20009": {
+    "tags": [],
+    "title": "Invalid user",
+    "detail": "The user provided does not exist.",
+    "public_docs": "The user provided does not exist.\n",
+    "code": "20009"
+  },
+  "20010": {
+    "tags": [],
+    "title": "Invalid invitation",
+    "detail": "The invitation provided does not exist.",
+    "public_docs": "The invitation provided does not exist.\n",
+    "code": "20010"
+  },
+  "20011": {
+    "tags": [],
+    "title": "API Key in use",
+    "detail": "The API Key can not be revoked while assigned to a portal user.",
+    "public_docs": "The API Key can not be revoked while assigned to a portal user.\n",
+    "code": "20011"
+  },
+  "20012": {
+    "tags": [],
+    "title": "Account inactive",
+    "http_status": 403,
+    "detail": "The request cannot be fulfilled because your account has been deactivated. It may be out of funds.",
+    "public_docs": "The request cannot be fulfilled because your account has been deactivated",
+    "causes": "- Negative balance\n",
+    "solutions": "- Restore a positive balance\n",
+    "code": "20012"
+  },
+  "20013": {
+    "tags": [],
+    "title": "Account blocked",
+    "http_status": 403,
+    "detail": "Your account has been blocked. Please contact Telnyx support.",
+    "public_docs": "Your account has been blocked",
+    "solutions": "- Contact Telnyx support\n",
+    "code": "20013"
+  },
+  "20014": {
+    "tags": [],
+    "title": "Account unverified",
+    "http_status": 403,
+    "detail": "You have not completed the verifications required to perform this action. Check the 'verifications' tab under 'account' on the portal for more information.",
+    "public_docs": "You have not completed the verifications required to perform this action.\nPlease check the verifications tab under account settings for more\ninformation.\n",
+    "code": "20014"
+  },
+  "20015": {
+    "tags": [],
+    "title": "Feature not enabled",
+    "http_status": 403,
+    "detail": "The '{feature}' feature is not enabled on your account.",
+    "public_docs": "The requested feature is not enabled for your account. Please contact Telnyx\ncustomer support for more information.\n",
+    "code": "20015"
+  },
+  "20016": {
+    "tags": [],
+    "title": "Account not level 1 verified",
+    "http_status": 403,
+    "detail": "Level 1 account verification is required to perform this action. Check the 'verifications' tab under 'account' on the portal for more information.",
+    "public_docs": "The account has not been level 1 verified, and cannot perform the\nrequested action. Level 1 verification requires verification of a mobile phone\nnumber, and is required to perform certain actions including:\n\n* Purchasing a number\n* Assigning a connection or messaging profile to a number\n* Creating a multi-user organization\n",
+    "solutions": "- Log in to [the portal](https://portal.telnyx.com/) and follow the instructions\n  in the 'verifications' tab under 'account' for level 1 verification.\n",
+    "code": "20016"
+  },
+  "20017": {
+    "tags": [],
+    "title": "Account not level 2 verified",
+    "http_status": 403,
+    "detail": "Level 2 account verification is required to perform this action. Check the 'verifications' tab under 'account' on the portal for more information.",
+    "public_docs": "The account has not been level 2 verified, and cannot perform the\nrequested action. Level 2 verification requires contacting Telnyx, and is\nrequired to perform certain actions including:\n\n* International calling\n* Call forwarding\n* Sending messages from alphanumeric sender IDs\n",
+    "solutions": "- Log in to [the portal](https://portal.telnyx.com/) and follow the instructions\n  in the 'verifications' tab under 'account' for level 2 verification.\n",
+    "code": "20017"
+  },
+  "20100": {
+    "tags": [],
+    "title": "Insufficient Funds",
+    "detail": "You do not have enough funds to perform this action.",
+    "public_docs": "You do not have enough funds to perform this action.",
+    "code": "20100"
+  },
+  "20200": {
+    "tags": [],
+    "title": "Invalid address",
+    "detail": "The address provided is invalid.",
+    "public_docs": "The address provided is invalid.",
+    "code": "20200"
+  },
+  "20201": {
+    "tags": [],
+    "title": "Invalid country code",
+    "detail": "The country code provided is invalid.",
+    "public_docs": "The country code provided is invalid.",
+    "code": "20201"
+  },
+  "20202": {
+    "tags": [],
+    "title": "Invalid locality",
+    "detail": "The locality provided is invalid.",
+    "public_docs": "The locality provided is invalid.",
+    "code": "20202"
+  },
+  "20203": {
+    "tags": [],
+    "title": "Invalid neighborhood",
+    "detail": "The neighborhood provided is invalid.",
+    "public_docs": "The neighborhood provided is invalid.",
+    "code": "20203"
+  },
+  "20204": {
+    "tags": [],
+    "title": "Invalid administrative area",
+    "detail": "The administrative area provided is invalid.",
+    "public_docs": "The administrative area provided is invalid.",
+    "code": "20204"
+  },
+  "20205": {
+    "tags": [],
+    "title": "Invalid postal code",
+    "detail": "The postal code provided is invalid.",
+    "public_docs": "The postal code provided is invalid.",
+    "code": "20205"
+  },
+  "20206": {
+    "tags": [],
+    "title": "Invalid borough",
+    "detail": "The borough provided is invalid.",
+    "public_docs": "The borough provided is invalid.",
+    "code": "20206"
+  },
+  "20207": {
+    "tags": [],
+    "title": "Invalid street address",
+    "detail": "The street address provided is invalid.",
+    "public_docs": "The street address provided is invalid.",
+    "code": "20207"
+  },
+  "20208": {
+    "tags": [],
+    "title": "Invalid street address house number",
+    "detail": "The street address house number provided is invalid.",
+    "public_docs": "The street address house number provided is invalid.",
+    "code": "20208"
+  },
+  "20209": {
+    "tags": [],
+    "title": "Invalid extended address",
+    "detail": "The extended address provided is invalid.",
+    "public_docs": "The extended address provided is invalid.",
+    "code": "20209"
+  },
+  "40001": {
+    "tags": [],
+    "title": "Not routable",
+    "detail": "The destination number is either a landline or a non-routable wireless number.",
+    "public_docs": "The destination number is either a landline or a non-routable wireless number.",
+    "causes": "",
+    "solutions": "- Ensure that the number is capable of receiving messages.\n",
+    "code": "40001"
+  },
+  "40002": {
+    "tags": [],
+    "title": "Blocked as spam - temporary",
+    "detail": "The message was flagged by a SPAM filter and was not delivered. This is a temporary condition.",
+    "public_docs": "The message was flagged by a SPAM filter and was not delivered. This is a\ntemporary condition.\n",
+    "causes": "- Sustaining the maximum rate for a long period of time can cause numbers to be temporarily blocked\n- Content of the messages triggered a SPAM filter\n",
+    "solutions": "- Send messages at a slower rate per number.\n- Use a toll-free number or short code\n- Alter the message content\n",
+    "code": "40002"
+  },
+  "40003": {
+    "tags": [],
+    "title": "Blocked as spam - permanent",
+    "detail": "The message was flagged by a SPAM filter and was not delivered. The originating phone number is permanently blocked.",
+    "public_docs": "The message was flagged by a SPAM filter and was not delivered. The originating\nphone number is permanently blocked.\n",
+    "causes": "- Certain traffic or campaigns deemed objectionable by carriers can cause a phone number to be blacklisted\n",
+    "solutions": "- If you feel the number was incorrectly blocked, provide examples of the messages sent to Telnyx and proof of opt-in by the recipients. After an appeals process with the carriers, the block may be lifted.\n",
+    "code": "40003"
+  },
+  "40004": {
+    "tags": [],
+    "title": "Rejected by destination",
+    "detail": "The recipient server is rejecting the message for an unknown reason.",
+    "public_docs": "The recipient server is rejecting the message for an unknown reason.",
+    "causes": "",
+    "solutions": "",
+    "code": "40004"
+  },
+  "40005": {
+    "tags": [],
+    "title": "Message expired during transmission",
+    "detail": "The message expired before it could be fully delivered to the recipient.",
+    "public_docs": "The message expired before it could be fully delivered to the recipient. This\nerror occured after the message left Telnyx and was en route to the destination.\n",
+    "causes": "- The message was on an outgoing queue for too long due to problems with the destination network.\n- The destination network did not return an acknowledgement within a timeout.\n",
+    "solutions": "",
+    "code": "40005"
+  },
+  "40006": {
+    "tags": [],
+    "title": "Recipient server unavailable",
+    "detail": "The recipient server is unavailable or not responding.",
+    "public_docs": "The recipient server is unavailable or not responding. This may be a temporary\nissue. If the error persists, contact Telnyx support.\n",
+    "causes": "",
+    "solutions": "- Reattempt delivery\n",
+    "code": "40006"
+  },
+  "40007": {
+    "tags": [],
+    "title": "Loop detected",
+    "detail": "Infinite loop detected.",
+    "public_docs": "Infinite loop detected.",
+    "causes": "- Messages are being sent between two phone numbers where each is auto-replying to the other.\n",
+    "solutions": "- Break the loop if you have control over one of the numbers.\n",
+    "code": "40007"
+  },
+  "40008": {
+    "tags": [],
+    "title": "Undeliverable",
+    "detail": "The recipient carrier did not accept the message.",
+    "public_docs": "The recipient carrier did not accept the message. This is a general purpose undeliverable message.",
+    "causes": "- The destination may not have messaging service, or their account may not be in good standing\n- The destination network may be experiencing a temporary problem\n",
+    "solutions": "",
+    "code": "40008"
+  },
+  "40009": {
+    "tags": [],
+    "title": "Invalid message body",
+    "detail": "The message body was invalid.",
+    "public_docs": "The message body was invalid. The rules Telnyx uses to allow messages may not\nalign with all carriers at all times. If the destination carrier uses more\nstringent rules, they may reject messages.\n",
+    "causes": "- A downstream carrier rejected the message based on the body.\n",
+    "solutions": "- Reduce the length of the message\n- Alter the content\n",
+    "code": "40009"
+  },
+  "40011": {
+    "tags": [],
+    "title": "Too many requests",
+    "detail": "Exceeded upstream rate limit. As a result the message was flagged by a SPAM filter and was not delivered. This is a temporary condition.",
+    "public_docs": "Exceeded upstream rate limit. As a result the message was flagged by a SPAM filter and was not delivered. This is a temporary condition.",
+    "causes": "- Sustaining the maximum rate for a long period of time can cause numbers to be temporarily blocked\n",
+    "solutions": "- Send messages at a slower rate per number.\n- Use a toll-free number or short code\n",
+    "code": "40011"
+  },
+  "40012": {
+    "tags": [],
+    "title": "Invalid messaging destination number",
+    "detail": "The destination phone number was deemed invalid by the carrier.",
+    "public_docs": "The destination phone number was deemed invalid by the carrier and was rejected.\n",
+    "causes": "- The number is not owned.\n- The number has been deactivated.\n- The recipient does not have credit to receive messages.\n- The recipient can not receive short codes (short code messaging only).\n",
+    "solutions": "- Verify the number is correct and try again.\n- If desired, perform a slow retry, for instance once a day for a few days.\n  Account problems on the recipient's end may be resolved.\n",
+    "code": "40012"
+  },
+  "40013": {
+    "tags": [],
+    "title": "Invalid messaging source number",
+    "detail": "The source phone number was deemed invalid by the carrier.",
+    "public_docs": "The source phone number was deemed invalid by the carrier.",
+    "causes": "- Your number may not have been correctly provisioned\n",
+    "solutions": "- Contact Telnyx Support\n",
+    "code": "40013"
+  },
+  "40014": {
+    "tags": [],
+    "title": "Message expired in queue",
+    "detail": "The message was not sent by Telnyx because its validity period expired.",
+    "public_docs": "The message expired in the queue. This error occured before Telnyx attempted to relay your message, and you were not billed.",
+    "causes": "- The queue on your account or number took longer to empty than the validity period of your message.\n",
+    "solutions": "- Increase the validity period on the messages you send\n- Send messages more slowly across your account or per-number\n- Contact Telnyx to increase your message rate limit\n",
+    "code": "40014"
+  },
+  "40015": {
+    "tags": [],
+    "title": "Blocked as spam - internal",
+    "detail": "The message was flagged by an internal Telnyx SPAM filter.",
+    "public_docs": "The message was flagged by an internal Telnyx SPAM filter.\n",
+    "code": "40015"
+  },
+  "40100": {
+    "tags": [],
+    "title": "Number not messaging enabled.",
+    "http_status": 409,
+    "detail": "The number is not currently messaging enabled.",
+    "public_docs": "The number is not currently messaging enabled on the Telnyx platform.\n",
+    "solutions": "- Ensure the number is messaging enabled on the Telnyx platform (https://developers.telnyx.com/docs/v1/messaging/features/traffic-type).\n- Enable messaging by assigning the number to a messaging profile.\n",
+    "code": "40100"
+  },
+  "40150": {
+    "tags": [],
+    "title": "Toll free number not in registry",
+    "detail": "Messaging cannot be enabled for this number because the number is not in the voice registry.",
+    "public_docs": "Messaging cannot be enabled for this number because the number is not in the voice registry.",
+    "code": "40150"
+  },
+  "40151": {
+    "tags": [],
+    "title": "Message enablement pending with other provider",
+    "detail": "Messaging is in the process of being enabled with another messaging provider.",
+    "public_docs": "Messaging is in the process of being enabled with another messaging provider.",
+    "code": "40151"
+  },
+  "40152": {
+    "tags": [],
+    "title": "Invalid OSR parameter",
+    "detail": "One of the parameters sent to the OSR was missing or invalid.",
+    "public_docs": "One of the parameters sent to the OSR was missing or invalid.",
+    "code": "40152"
+  },
+  "40153": {
+    "tags": [],
+    "title": "Cannot access OSR",
+    "detail": "Telnyx is not authorized to access the OSR.",
+    "public_docs": "Telnyx is not authorized to access the OSR.",
+    "code": "40153"
+  },
+  "40154": {
+    "tags": [],
+    "title": "Unauthorized NNID",
+    "detail": "Telnyx is not authorized to use this NNID.",
+    "public_docs": "Telnyx is not authorized to use this NNID.",
+    "code": "40154"
+  },
+  "40155": {
+    "tags": [],
+    "title": "LOA required",
+    "detail": "An LOA is required to text message enable this number.",
+    "public_docs": "An LOA is required to text message enable this number.",
+    "code": "40155"
+  },
+  "40156": {
+    "tags": [],
+    "title": "Unauthorized property name/value",
+    "detail": "Telnyx is not authorized to provision this property name or property value.",
+    "public_docs": "Telnyx is not authorized to provision this property name or property value.",
+    "code": "40156"
+  },
+  "40157": {
+    "tags": [],
+    "title": "Temporarily blocked",
+    "detail": "Telnyx is temporarily unable to make changes to the OSR.",
+    "public_docs": "Telnyx is temporarily unable to make changes to the OSR.",
+    "code": "40157"
+  },
+  "40158": {
+    "tags": [],
+    "title": "Delete failed",
+    "http_status": 409,
+    "detail": "The record was not found or the NNID was invalid so it could not be deleted.",
+    "public_docs": "The record was not found or the NNID was invalid so it could not be deleted.",
+    "code": "40158"
+  },
+  "40159": {
+    "tags": [],
+    "title": "Unknown OSR error",
+    "detail": "An error occurred while updating the OSR.",
+    "public_docs": "An error occurred while updating the OSR.",
+    "code": "40159"
+  },
+  "40300": {
+    "tags": [],
+    "title": "Blocked due to STOP message",
+    "http_status": 409,
+    "detail": "Messages cannot be sent from '{src}' to '{dst}' due to an existing block rule.",
+    "public_docs": "Messages cannot be sent from your number to a destination number because the\ndestination has sent your number a stop message. Stop messages are those that\nconsist solely of one of the following words (case and whitespace insensitive):\n\n- CANCEL\n- END\n- QUIT\n- STOP\n- STOPALL\n- STOP ALL\n- UNSUBSCRIBE\n",
+    "causes": "- The recipient has sent a stop message from their number to yours.\n",
+    "solutions": "- Instruct the recipient to send a message containing only the word \"START\"\n  from their number to your blocked number.\n",
+    "code": "40300"
+  },
+  "40301": {
+    "tags": [],
+    "title": "Unsupported message type for the 'to' address",
+    "http_status": 400,
+    "detail": "Sending messages from '{src}' to '{dst}' is currently unsupported.",
+    "public_docs": "The requested destination is currently unsupported for the type of traffic\noriginated by the sender or sending number.\n\nMessages from long codes or toll free numbers, including multimedia\nmessages, can only be sent to US and Canadian destinations. For other\ndestinations, consider using an alphanumeric sender. Extended reach for long\ncodes will be available soon.\n\nPlease contact Telnyx customer support if you have questions.\n",
+    "causes": "- A message from a long code or toll free number is being sent to a non-US,\n  non-Canadian destination.\n",
+    "code": "40301"
+  },
+  "40302": {
+    "tags": [],
+    "title": "Message too large",
+    "http_status": 400,
+    "detail": "The SMS message would be divided into {parts} parts. The maximum is {max_parts}.",
+    "public_docs": "SMS messages over 140 bytes are split into multiple parts. Depending on the\nencoding and characters, anywhere from 34 (emojis) to 153 (ASCII) characters\ncan fit in each part.\n",
+    "code": "40302"
+  },
+  "40303": {
+    "tags": [],
+    "title": "Message not found",
+    "http_status": 404,
+    "detail": "The message with ID {id} was not found.",
+    "public_docs": "The message was not found. It may not exist or you may not have the correct\npermissions to view it.\n",
+    "code": "40303"
+  },
+  "40304": {
+    "tags": [],
+    "title": "Invalid combination of message content arguments",
+    "http_status": 400,
+    "detail": "The message must contain exclusively 'body' for SMS, or 'subject' and/or 'media_urls' for MMS",
+    "public_docs": "To send an SMS, the `body` field must be provided, and it must not be an empty string.\n\nTo send an MMS, the `subject` and/or `media_urls` fields must be provided.\n",
+    "code": "40304"
+  },
+  "40305": {
+    "tags": [],
+    "title": "Invalid 'from' address",
+    "http_status": 400,
+    "detail": "The 'from' address should be string containing a valid phone number or alphanumeric sender ID associated with the sending messaging profile.",
+    "public_docs": "A valid `from` field must be specified. The value must be a string containing\na valid phone number in +E.164 format, a short code, or an alphanumeric sender ID\nassociated with the sending messaging profile.\n\nAlphanumeric sender IDs must be between 1 and 11 characters long, and can only\ncontain ASCII letters, numbers, and spaces. They must contain at least one\nletter.\n",
+    "causes": "- Long codes\n    - Not in +E.164 format\n    - Not a valid long code\n    - Long code is not associated with the messaging profile\n- Alphanumeric sender ID\n    - No matching alphanumeric sender ID is associated with the messaging profile\n- Short codes\n    - Invalid short code\n",
+    "code": "40305"
+  },
+  "40306": {
+    "tags": [],
+    "title": "Alpha sender not configured",
+    "http_status": 409,
+    "detail": "The messaging profile doesn't have an associated alphanumeric sender ID.",
+    "public_docs": "The messaging profile is not configured with an alphanumeric sender ID.\n\nTo send a message from an alphanumeric sender ID, the messaging profile must be configured\nwith the desired sender. Update your messaging profile and try again.\n",
+    "code": "40306"
+  },
+  "40307": {
+    "tags": [],
+    "title": "Alpha sender mismatch",
+    "http_status": 409,
+    "detail": "The specified alphanumeric sender ID '{provided_sender}' does not match the one configured on the profile '{expected_sender}'",
+    "public_docs": "The alphanumeric sender ID specified as the `from` parameter in the request does not match the one\nconfigured on the messaging profile. Please ensure that the desired alphanumeric sender ID is\nassociated with your messaging profile.\n",
+    "code": "40307"
+  },
+  "40308": {
+    "tags": [],
+    "title": "Invalid 'from' address for MMS",
+    "http_status": 400,
+    "detail": "MMS can only be sent from US long code numbers and MMS-configured short codes",
+    "public_docs": "MMS can only be sent from US long code phone numbers, MMS-configured short-codes and most toll-free numbers. \nUse a long code number that is associated with the sending messaging profile.\n",
+    "code": "40308"
+  },
+  "40309": {
+    "tags": [],
+    "title": "Invalid destination region",
+    "http_status": 409,
+    "detail": "The region '{region}' for the destination '{dst}' is not included in the messaging profile's whitelisted destinations.",
+    "public_docs": "The region for destination number is not included in the messaging profile's\nlist of whitelisted destinations.\n",
+    "code": "40309"
+  },
+  "40310": {
+    "tags": [],
+    "title": "Invalid 'to' address",
+    "http_status": 400,
+    "detail": "The 'to' address should be a single valid number.",
+    "public_docs": "The 'to' address must be a valid number provided in +E.164 format or else a\nvalid short code.\n\nIf using the version 2 API, either an array of length one, or a single string\nmust be provided. Multi-destination messages are not currently supported.\n",
+    "code": "40310"
+  },
+  "40311": {
+    "tags": [],
+    "title": "Invalid messaging profile secret",
+    "http_status": 403,
+    "detail": "The provided X-Profile-Secret header was invalid.",
+    "public_docs": "The provided `X-Profile-Secret` header was not recognized as a valid messaging profile secret.\n",
+    "solutions": "- Verify the secret matches the one belonging to the messaging profile that you wish to use. It is\n  possible that the secret was rotated.\n- If an organization or user ID was specified in the request, ensure that it matches the owner of\n  the profile identified by the supplied secret.\n",
+    "code": "40311"
+  },
+  "40312": {
+    "tags": [],
+    "title": "Messaging profile is disabled",
+    "http_status": 409,
+    "detail": "The specified messaging profile '{id}' is disabled.",
+    "public_docs": "The messaging profile is currently disabled.\n",
+    "solutions": "- Toggle the enabled switch in the portal\n- HTTP PATCH the object with `enabled: true`\n",
+    "code": "40312"
+  },
+  "40313": {
+    "tags": [],
+    "title": "Missing messaging profile secret",
+    "http_status": 401,
+    "detail": "The X-Profile-Secret header is missing.",
+    "public_docs": "The `X-Profile-Secret` header is missing. The secret is found on messaging\nprofiles and must be included as an HTTP header on requests to send messages.\n",
+    "code": "40313"
+  },
+  "40314": {
+    "tags": [],
+    "title": "Messaging disabled on account",
+    "http_status": 403,
+    "detail": "Messaging has been disabled on your account. Contact Telnyx support.",
+    "public_docs": "Messaging has been disabled on your account. Contact Telnyx support.\n",
+    "code": "40314"
+  },
+  "40315": {
+    "tags": [],
+    "title": "Unhealthy 'from' address",
+    "http_status": 409,
+    "detail": "Sending number '{src}' (with success rate {success} and spam rejection rate {spam}) did not pass the health check.",
+    "public_docs": "A health check was requested on the sending number, which it failed to pass. Recent traffic data on\nthe number is used to determine its outbound success and spam rejection rates. If there is\nsufficient traffic data, and if the calculated rates do not meet acceptable thresholds, the number\nwill be considered unhealthy.\n",
+    "solutions": "- Wait at least 24 hours before trying to send from the same number again.\n- Try sending from a different number.\n",
+    "code": "40315"
+  },
+  "40316": {
+    "tags": [],
+    "title": "No content provided for message",
+    "http_status": 422,
+    "detail": "The message has no content. Either 'text' and/or 'media_urls' must be provided in the request.",
+    "public_docs": "To send an SMS, the `text` field must be provided, and it must not be an empty string.\n\nTo send an MMS, the `text` and/or `media_urls` fields must be provided.\n",
+    "code": "40316"
+  },
+  "40317": {
+    "tags": [],
+    "title": "Invalid MMS content",
+    "http_status": 422,
+    "detail": "MMS can only contain up to 10 items (URLs provided) and the total size must be less than 1 MB.",
+    "public_docs": "Multimedia messages (MMS) can only contain up to 10 items (URLs listed in\n`media_urls`) and the total size must be less than 1 MB.\n",
+    "code": "40317"
+  },
+  "40318": {
+    "tags": [],
+    "title": "Message queue full",
+    "http_status": 429,
+    "detail": "Message queue is full. Wait before resending.",
+    "public_docs": "Message queue is full.\nThe queue limits the rate messages can be sent per account and per number\n([Rate Limit Docs](/docs/v2/messaging/configuration-and-limitations/character-and-rate-limits \"Rate Limits\"))\n",
+    "causes": "- Message sending rate exceeds your limits (combination of account limit and number limit)\n",
+    "solutions": "- Wait for the message queue to empty before trying to resend\n- Slow down the number of messages per second sent from your account and phone number\n",
+    "code": "40318"
+  },
+  "40319": {
+    "tags": [],
+    "title": "Incompatible message type for the 'to' address",
+    "http_status": 400,
+    "detail": "Sending messages from '{src}' to '{dst}' is not possible.",
+    "public_docs": "It is not possible to send messages to the requested destination using the given\nsender or sending number. For example, messages cannot be sent from an\nalphanumeric sender ID to a short code.\n",
+    "causes": "- An alphanumeric sender ID or short code is being used to send a message to a\n  short code destination.\n",
+    "code": "40319"
+  },
+  "40320": {
+    "tags": [],
+    "title": "Temporarily unusable 'from' address",
+    "http_status": 409,
+    "detail": "The sending number '{src}' is in a temporarily unusable or pending state.",
+    "public_docs": "The specified number is configured for messaging, but it cannot yet be used to send messages. This\nis a temporary condition, which typically occurs because the number was recently purchased and the\nnumber order has not yet completed. Please wait for the purchase to be finalized, at which time the\nnumber will become available for use.\n",
+    "solutions": "- Wait up to 15 minutes for the purchase to complete and try again.\n- Use the Numbers API to check the status of the number. Once the number becomes active, it will be\n  possible to use the number to send messages.\n",
+    "code": "40320"
+  },
+  "40321": {
+    "tags": [],
+    "title": "No usable numbers on messaging profile",
+    "http_status": 409,
+    "detail": "Number Pool is not enabled, or it is unable to select a usable number on the messaging profile.",
+    "public_docs": "Number Pool could not find any usable numbers on the messaging profile.\n",
+    "causes": "- Number Pool is not enabled on the specified messaging profile.\n- The messaging profile does not contain any numbers.\n- Number Pool is configured to check the health status of available numbers (enabled by default),\n  but none of the numbers is in a healthy state.\n",
+    "solutions": "- Enable Number Pool on the messaging profile, if this is not already the case.\n- Add additional numbers to the messaging profile.\n- Disable the Number Pool health check feature.\n- Wait for numbers to return to a healthy state. It can take up to 24 hours for the state to reset.\n",
+    "code": "40321"
+  },
+  "40322": {
+    "tags": [],
+    "title": "Blocked due to content",
+    "http_status": 422,
+    "detail": "Message contains invalid content.",
+    "public_docs": "Certain content can cause a message to be rejected.\n",
+    "causes": "- Use of a public URL shortener service.\n",
+    "solutions": "- Remove or replace links that were generated using a public URL shortener service.\n- Use a custom domain for links, whether full or shortened.\n",
+    "code": "40322"
+  },
+  "40323": {
+    "tags": [],
+    "title": "Messaging activation failed",
+    "http_status": 409,
+    "detail": "Could not enable messaging on the number.",
+    "public_docs": "Messaging could not be enabled on the number on the Telnyx platform.\nIf this number was ported, ensure that the porting was completed successfully and is ready for use on the\nTelnyx platform. If this number was purchased, contact Telnyx support as there could be settings discrepancy.\n",
+    "solutions": "- Confirm that the number has been ported to Telnyx.\n- Confirm that the number is messaging capable.\n",
+    "code": "40323"
+  },
+  "40324": {
+    "tags": [],
+    "title": "Messaging product type change failed",
+    "http_status": 409,
+    "detail": "Could not change product types for the number.",
+    "public_docs": "Error changing product types for the number. This can happen if the number does not fit the traffic profile\nfor the requested product type. This can also happen if the number was recently purchased and there's not enough\ndata to gauge the traffic profile.\n",
+    "solutions": "- Confirm that the requested product type is available for the number.\n",
+    "code": "40324"
+  },
+  "40325": {
+    "tags": [],
+    "title": "Invalid alphanumeric sender ID",
+    "http_status": 422,
+    "detail": "The specified alphanumeric sender ID value is invalid.",
+    "public_docs": "Alphanumeric sender IDs must be between 1 and 11 characters long, and can only\ncontain ASCII letters, numbers, and spaces. They must contain at least one\nletter.\n",
+    "code": "40325"
+  },
+  "40326": {
+    "tags": [],
+    "title": "Cannot assign alphanumeric sender ID",
+    "http_status": 409,
+    "detail": "The alphanumeric sender ID could not be assigned to the messaging profile.",
+    "public_docs": "Currently it is only possible to assign a single alphanumeric sender ID to a messaging profile.\nIf you wish to change the profile's alphanumeric sender ID, please remove the existing one and then\ntry again.\n",
+    "causes": "- An alphanumeric sender ID is already associated with the specified messaging profile.\n",
+    "solutions": "- Delete the current alphanumeric sender ID that is associated with the messaging profile.\n",
+    "code": "40326"
+  },
+  "40327": {
+    "tags": [],
+    "title": "Invalid Domain",
+    "detail": "The domain provided is not listed as a valid domain to be used with URL Shortener",
+    "public_docs": "The domain provided is not listed as a valid domain to be used with URL Shortener.\n",
+    "code": "40327"
+  },
+  "40328": {
+    "tags": [],
+    "title": "SMS exceeds recommended size",
+    "http_status": 400,
+    "detail": "The SMS message would be divided into {parts} parts. Messages over {max_parts} should be sent by MMS or by adding auto_detect=False.",
+    "public_docs": "SMS messages over 140 bytes are split into multiple parts. Depending on the\nencoding and characters, anywhere from 34 (emojis) to 153 (ASCII) characters\ncan fit in each part. Messages over a certain number of parts are better sent\nas MMS messages.\n",
+    "code": "40328"
+  },
+  "40329": {
+    "tags": [],
+    "title": "Tollfree number is not verified",
+    "detail": "Try verifying the number if you haven't already; otherwise double check that verification succeeded.",
+    "public_docs": "Use the tollfree verifications API to try verifying the number if you haven't already; otherwise double check that verification succeeded.\n",
+    "code": "40329"
+  },
+  "40016": {
+    "tags": [],
+    "title": "T-Mobile 10DLC Sending Limit Reached",
+    "detail": "You have exceeded T-Mobile's allotted throughput limits for the campaign associated to this phone number",
+    "public_docs": "You have exceeded T-Mobile's daily allotted throughput for the brand associated to this phone number. The count resets at midnight PST.\n",
+    "code": "40016"
+  },
+  "40017": {
+    "tags": [],
+    "title": "AT\u0026T 10DLC Spam Message Rejected",
+    "detail": "AT\u0026T has rejected your message for spam on the 10DLC route",
+    "public_docs": "AT\u0026T has rejected your message for spam on the 10DLC route. Please check\nthe content of your message and ensure you have obtained opt-ins for your senders.\n",
+    "code": "40017"
+  },
+  "40018": {
+    "tags": [],
+    "title": "AT\u0026T 10DLC Sending Limit Reached",
+    "detail": "You have exceeded AT\u0026T's allotted throughput limits for the campaign associated to this phone number",
+    "public_docs": "You have exceeded AT\u0026T's allotted throughput limits for the campaign associated to this phone number\n",
+    "code": "40018"
+  },
+  "40019": {
+    "tags": [],
+    "title": "AT\u0026T 10DLC Invalid Tag Data",
+    "detail": "AT\u0026T has rejected your message because the tagging information is incorrect",
+    "public_docs": "This occurs when your Campaign has not been verified and approved in the Campaign Registry.\nPlease ensure that the Campaign is verified and approved before sending anymore messages\nto AT\u0026T.\n",
+    "code": "40019"
+  },
+  "41000": {
+    "tags": [],
+    "title": "WhatsApp Error",
+    "detail": "{code} - {title}",
+    "public_docs": "WhatsApp's platform has raised an error with your request.",
+    "solutions": "Cross-reference the error provided with WhatsApp's official documentation: https://developers.facebook.com/docs/whatsapp/api/errors\n",
+    "code": "41000"
+  },
+  "50000": {
+    "tags": [],
+    "title": "VRF still deployed",
+    "detail": "The VRF can not be removed as it is still deployed to one or more sites",
+    "public_docs": "The VRF can not be removed as it is still deployed to one or more sites",
+    "code": "50000"
+  },
+  "50001": {
+    "tags": [],
+    "title": "VRF not deployed",
+    "detail": "The VRF is not deployed at this site",
+    "public_docs": "The VRF is not deployed at this site",
+    "code": "50001"
+  },
+  "50002": {
+    "tags": [],
+    "title": "VRF already deployed",
+    "detail": "The VRF is already deployed at this site",
+    "public_docs": "The VRF is already deployed at this site",
+    "code": "50002"
+  },
+  "50003": {
+    "tags": [],
+    "title": "Invalid IP address",
+    "detail": "This is not a valid IP address",
+    "public_docs": "This is not a valid IP address",
+    "code": "50003"
+  },
+  "50004": {
+    "tags": [],
+    "title": "Private IP address not permitted",
+    "detail": "Private IP addresses are not permitted",
+    "public_docs": "Private IP addresses are not permitted",
+    "code": "50004"
+  },
+  "50005": {
+    "tags": [],
+    "title": "Invalid CIDR block",
+    "detail": "This is not a valid CIDR block",
+    "public_docs": "This is not a valid CIDR block",
+    "code": "50005"
+  },
+  "50006": {
+    "tags": [],
+    "title": "Private CIDR block not permitted",
+    "detail": "Private CIDR blocks are not permitted",
+    "public_docs": "Private CIDR blocks are not permitted",
+    "code": "50006"
+  },
+  "50007": {
+    "tags": [],
+    "title": "CIDR block too large",
+    "detail": "CIDR blocks are limited to /{prefixlen} and higher",
+    "public_docs": "CIDR blocks are limited to a maximum prefix length.",
+    "code": "50007"
+  },
+  "50008": {
+    "tags": [],
+    "title": "Can not delete IP from source",
+    "detail": "Can not delete IP from source {source}",
+    "public_docs": "Can not delete IP from source",
+    "code": "50008"
+  },
+  "65001": {
+    "tags": [],
+    "title": "Invalid Room ID",
+    "detail": "The provided room_id was not valid.",
+    "public_docs": "The provided room_id was not valid.",
+    "code": "65001"
+  },
+  "70000": {
+    "tags": [],
+    "title": "Consumption reached data limit",
+    "detail": "The consumption reached the defined data limit. Please, update the SIM card group data limit.",
+    "public_docs": "The consumption reached the defined data limit. Please, update the SIM card group data limit.",
+    "code": "70000"
+  },
+  "70001": {
+    "tags": [],
+    "title": "There aren't enough available SIM cards",
+    "detail": "Insufficient inventory to satisfy order request.",
+    "public_docs": "Insufficient inventory to satisfy order request.",
+    "code": "70001"
+  },
+  "70002": {
+    "tags": [],
+    "title": "Invalid data format",
+    "detail": "The provided data attribute was invalid.",
+    "public_docs": "The provided data attribute was invalid. Check out the allowed unit and type of data allowed in the API doc for more information.",
+    "code": "70002"
+  },
+  "70003": {
+    "tags": [],
+    "title": "Mobile operators' preferences priorities are out of sequence",
+    "detail": "The mobile operators' preferences priorities should be in an ascending order starting by 0.",
+    "public_docs": "The mobile operators' preferences priorities should be in an ascending order starting by 0.",
+    "code": "70003"
+  },
+  "70004": {
+    "tags": [],
+    "title": "OTA update in progress",
+    "detail": "SIM card network preferences can't be defined when a previous OTA update is still in progress.",
+    "public_docs": "SIM card network preferences can't be defined when a previous OTA update is still in progress. Make sure the SIM network preferences had applied the latest request before requesting new preferences.",
+    "code": "70004"
+  },
+  "70005": {
+    "tags": [],
+    "title": "Could not delete SIM card group",
+    "detail": "The SIM card group associated with the provided ID can not be deleted because there are SIM cards associated with the SIM card group.",
+    "public_docs": "The SIM card group associated with the provided ID can not be deleted because there are SIM cards associated with the SIM card group.",
+    "code": "70005"
+  },
+  "70006": {
+    "tags": [],
+    "title": "Could not delete default SIM card group",
+    "detail": "The SIM card group associated with the provided ID can not be deleted because it is the default SIM card group on your account.",
+    "public_docs": "The SIM card group associated with the provided ID can not be deleted because it is the default SIM card group on your account.",
+    "code": "70006"
+  },
+  "70007": {
+    "tags": [],
+    "title": "SIM card doesn't have a SIM card group",
+    "detail": "A SIM card cannot be enabled unless it's associated with a SIM card group.",
+    "public_docs": "A SIM card cannot be enabled unless it's associated with a SIM card group.",
+    "code": "70007"
+  },
+  "70008": {
+    "tags": [],
+    "title": "Public IPs are unavailable at this time",
+    "detail": "There aren't any public IPs available at this time. Please contact Telnyx support for more information.",
+    "public_docs": "There aren't any public IPs available at this time. Please contact Telnyx support for more information.",
+    "code": "70008"
+  },
+  "80000": {
+    "tags": [],
+    "title": "Wrong account",
+    "detail": "One or more numbers you are attempting to port do not belong to the specified account.",
+    "public_docs": "One or more numbers you are attempting to port do not belong to the specified account.",
+    "code": "80000"
+  },
+  "80001": {
+    "tags": [],
+    "title": "Inactive number",
+    "detail": "One or more numbers you are attempting to port are not active on the account. Only active numbers may be ported.",
+    "public_docs": "One or more numbers you are attempting to port are not active on the account. Only active numbers may be ported.",
+    "code": "80001"
+  },
+  "80002": {
+    "tags": [],
+    "title": "Wrong provider",
+    "detail": "Telnyx is not the service provider for one or more of the numbers you are attempting to port.",
+    "public_docs": "Telnyx is not the service provider for one or more of the numbers you are attempting to port.",
+    "code": "80002"
+  },
+  "80003": {
+    "tags": [],
+    "title": "Pending order",
+    "detail": "One or more numbers are already part of another port request.",
+    "public_docs": "One or more numbers are already part of another port request.",
+    "code": "80003"
+  },
+  "80004": {
+    "tags": [],
+    "title": "Invalid desired due date",
+    "detail": "The desired due date is not within the allowable window. Please review the porting guidelines.",
+    "public_docs": "The desired due date is not within the allowable window. Please review the porting guidelines.",
+    "code": "80004"
+  },
+  "80005": {
+    "tags": [],
+    "title": "Invalid passcode or pin",
+    "detail": "The passcode or PIN provided does not match what has been assigned to the number.",
+    "public_docs": "The passcode or PIN provided does not match what has been assigned to the number.",
+    "code": "80005"
+  },
+  "80006": {
+    "tags": [],
+    "title": "Invalid PON",
+    "detail": "The Purchase Order Number (PON) provided is invalid. It must be between 3 and 20 characters and may not contain special characters.",
+    "public_docs": "The Purchase Order Number (PON) provided is invalid. It must be between 3 and 20 characters and may not contain special characters.",
+    "code": "80006"
+  },
+  "80007": {
+    "tags": [],
+    "title": "FOC expired",
+    "detail": "The firm order committment has expired since the number was not ported on the agreed upon due date.",
+    "public_docs": "The firm order committment has expired since the number was not ported on the agreed upon due date.",
+    "code": "80007"
+  },
+  "80008": {
+    "tags": [],
+    "title": "Missing LOA",
+    "detail": "A valid LOA (Letter of Authorization) is required to port numbers.",
+    "public_docs": "A valid LOA (Letter of Authorization) is required to port numbers.",
+    "code": "80008"
+  },
+  "80009": {
+    "tags": [],
+    "title": "Illegible LOA",
+    "detail": "The LOA (Letter of Authorization) provided was illegible or unable to be viewed.",
+    "public_docs": "The LOA (Letter of Authorization) provided was illegible or unable to be viewed.",
+    "code": "80009"
+  },
+  "80010": {
+    "tags": [],
+    "title": "Expired LOA",
+    "detail": "The LOA (Letter of Authorization) provided has expired and is no longer valid.",
+    "public_docs": "The LOA (Letter of Authorization) provided has expired and is no longer valid.",
+    "code": "80010"
+  },
+  "80011": {
+    "tags": [],
+    "title": "Invalid SPID",
+    "detail": "The service provider ID (SPID) provided was not recognized.",
+    "public_docs": "The service provider ID (SPID) provided was not recognized.",
+    "code": "80011"
+  },
+  "80012": {
+    "tags": [],
+    "title": "Unsuported carrier",
+    "detail": "The functionality requested is not supported with the specified carrier.",
+    "public_docs": "The functionality requested is not supported with the specified carrier.",
+    "code": "80012"
+  },
+  "80013": {
+    "tags": [],
+    "title": "Invalid country",
+    "detail": "Automated porting is only supported in the US and Canada.",
+    "public_docs": "Automated porting is only supported in the US and Canada.",
+    "code": "80013"
+  },
+  "80014": {
+    "tags": [],
+    "title": "Service address mismatch",
+    "detail": "The service address provided does not match the address on the account.",
+    "public_docs": "The service address provided does not match the address on the account.",
+    "code": "80014"
+  },
+  "80015": {
+    "tags": [],
+    "title": "Stranded phone numbers",
+    "detail": "The BTN/ATN on the account is being ported out which would leave stranded any remaining phone numbers.",
+    "public_docs": "The BTN/ATN on the account is being ported out which would leave stranded any remaining phone numbers.",
+    "code": "80015"
+  },
+  "80016": {
+    "tags": [],
+    "title": "No CSR data available",
+    "detail": "A CSR could not be retrieved because the data submitted did not match closely enough with the data on file with the carrier.",
+    "public_docs": "A CSR could not be retrieved because the data submitted did not match closely enough with the data on file with the carrier.",
+    "code": "80016"
+  },
+  "80017": {
+    "tags": [],
+    "title": "Invalid service provider type",
+    "detail": "The 'service_provider_type' parameter must be one of either 'Telnyx' or 'Peerless'.",
+    "public_docs": "The 'service_provider_type' parameter must be one of either 'Telnyx' or 'Peerless'.",
+    "code": "80017"
+  },
+  "80018": {
+    "tags": [],
+    "title": "Invalid FOC date",
+    "detail": "The 'foc_date' parameter must be an ISO8601 datetime selected from the available FOC dates.",
+    "public_docs": "The 'foc_date' parameter must be an ISO8601 datetime selected from the available FOC dates.",
+    "code": "80018"
+  },
+  "80019": {
+    "tags": [],
+    "title": "Invalid service provider ID",
+    "detail": "The 'service_provider_id' parameter must be the ID of an existing service provider.",
+    "public_docs": "The 'service_provider_id' parameter must be the ID of an existing service provider.",
+    "code": "80019"
+  },
+  "80020": {
+    "tags": [],
+    "title": "Invalid subscription status",
+    "detail": "The 'subscription_status' parameter is required and must have a value of 'pending', 'concurred', 'timer_expired', 'conflict', 'activated', 'cancel_pending', 'cancelled', 'disconnect_pending', 'disconnected' or 'failed'",
+    "public_docs": "The 'subscription_status' parameter is required and must have a value of 'pending', 'concurred', 'timer_expired', 'conflict', 'activated', 'cancel_pending', 'cancelled', 'disconnect_pending', 'disconnected' or 'failed'",
+    "code": "80020"
+  },
+  "80021": {
+    "tags": [],
+    "title": "Invalid porting option",
+    "detail": "The 'porting_option' parameter is required and must have a value of 'full' or 'partial'.",
+    "public_docs": "The 'porting_option' parameter is required and must have a value of 'full' or 'partial'.",
+    "code": "80021"
+  },
+  "80022": {
+    "tags": [],
+    "title": "Invalid document type",
+    "detail": "The 'document_type' parameter must have value of 'loa', 'csr', 'invoice' or 'other'.",
+    "public_docs": "The 'document_type' parameter must have value of 'loa', 'csr', 'invoice' or 'other'.",
+    "code": "80022"
+  },
+  "80023": {
+    "tags": [],
+    "title": "Invalid value for rate centers",
+    "detail": "The 'rate_centers' parameter must be a list of valid rate centers.",
+    "public_docs": "The 'rate_centers' parameter must be a list of valid rate centers.",
+    "code": "80023"
+  },
+  "80024": {
+    "tags": [],
+    "title": "Record could not be deleted",
+    "detail": "The sub_request could not be deleted as it has associated phone_numbers.",
+    "public_docs": "The sub_request could not be deleted as it has associated phone_numbers. ",
+    "code": "80024"
+  },
+  "80100": {
+    "tags": [],
+    "title": "Subscription version not created",
+    "detail": "The new service provider did not create an NPAC subscription version.",
+    "public_docs": "The new service provider did not create an NPAC subscription version.",
+    "code": "80100"
+  },
+  "80101": {
+    "tags": [],
+    "title": "Subscription version does not match",
+    "detail": "The new service provider created an NPAC subscription version that does not match the record Telnyx created.",
+    "public_docs": "The new service provider created an NPAC subscription version that does not match the record Telnyx created.",
+    "code": "80101"
+  },
+  "80200": {
+    "tags": [],
+    "title": "Duplicate phone numbers found",
+    "detail": "Duplicate phone numbers were found in the request.",
+    "public_docs": "Duplicate phone numbers were found in the request.",
+    "code": "80200"
+  },
+  "80201": {
+    "tags": [],
+    "title": "Phone number limit exceeded",
+    "detail": "Too many phone numbers were specified for an LSR preorder.",
+    "public_docs": "Too many phone numbers were specified for an LSR preorder.",
+    "code": "80201"
+  },
+  "80400": {
+    "tags": [],
+    "title": "Invalid credentials",
+    "detail": "The Port PS account credentials were invalid.",
+    "public_docs": "The Port PS account credentials were invalid.",
+    "code": "80400"
+  },
+  "80401": {
+    "tags": [],
+    "title": "Too many phone numbers",
+    "detail": "There is a maximum of 1000 lookups per request.",
+    "public_docs": "There is a maximum of 1000 lookups per request.",
+    "code": "80401"
+  },
+  "85000": {
+    "tags": [],
+    "title": "Must search phone number via search API first",
+    "http_status": 422,
+    "detail": "You must search for the number through our API before attempting to purchase.",
+    "code": "85000"
+  },
+  "85001": {
+    "tags": [],
+    "title": "Phone numbers not available",
+    "http_status": 409,
+    "detail": "The numbers you are trying to order are no longer available for purchase.",
+    "code": "85001"
+  },
+  "85002": {
+    "tags": [],
+    "title": "Phone numbers update not allowed on this order",
+    "http_status": 422,
+    "detail": "You are trying to update a number that is not in this order.",
+    "code": "85002"
+  },
+  "85003": {
+    "tags": [],
+    "title": "Regulatory requirements already satisfied",
+    "http_status": 409,
+    "detail": "Regulatory requirements cannot be updated once all have been satisfied.",
+    "code": "85003"
+  },
+  "85004": {
+    "tags": [],
+    "title": "Invalid connection id provided",
+    "http_status": 422,
+    "detail": "The connection id provided is invalid.",
+    "code": "85004"
+  },
+  "85005": {
+    "tags": [],
+    "title": "Invalid messaging profile id provided",
+    "http_status": 422,
+    "detail": "The messaging profile id provided is invalid.",
+    "code": "85005"
+  },
+  "85006": {
+    "tags": [],
+    "title": "The phone number is already reserved",
+    "http_status": 409,
+    "detail": "The phone number {number} is already reserved.",
+    "code": "85006"
+  },
+  "85007": {
+    "tags": [],
+    "title": "Reservation limit exceeded",
+    "http_status": 400,
+    "detail": "You have too many active phone number reservations.",
+    "code": "85007"
+  },
+  "85008": {
+    "tags": [],
+    "title": "Reservation extension limit exceeded",
+    "http_status": 400,
+    "detail": "The reservation has reached its limit of allowed extensions.",
+    "code": "85008"
+  },
+  "90000": {
+    "tags": [],
+    "title": "Invalid value for format",
+    "detail": "Format must be of type 'string' with a value of either 'mp3' or 'wav'.",
+    "public_docs": "Format must be of type 'string' with a value of either 'mp3' or 'wav'.",
+    "code": "90000"
+  },
+  "90001": {
+    "tags": [],
+    "title": "Invalid value for channels",
+    "detail": "Channels must be a 'string' with a value of either 'single' or 'dual'.",
+    "public_docs": "Channels must be a 'string' with a value of either 'single' or 'dual'.",
+    "code": "90001"
+  },
+  "90002": {
+    "tags": [],
+    "title": "Invalid value for timeout",
+    "detail": "The 'timeout' parameter must be an 'integer' with a minimum and a maximum value accepted by command",
+    "public_docs": "The 'timeout' parameter must be an 'integer' with a minimum and a maximum value accepted by command",
+    "code": "90002"
+  },
+  "90003": {
+    "tags": [],
+    "title": "Invalid value for inter_digit_timeout",
+    "detail": "The 'inter_digit_timeout' parameter must be an 'integer' with a minimum value of 1 and a maximum value of 120000.",
+    "public_docs": "The 'inter_digit_timeout' parameter must be an 'integer' with a minimum value of 1 and a maximum value of 120000.",
+    "code": "90003"
+  },
+  "90004": {
+    "tags": [],
+    "title": "Invalid value for min",
+    "detail": "The 'min' parameter must be an 'integer' with a minimum value of 1 and a maximum value of 128.",
+    "public_docs": "The 'min' parameter must be an 'integer' with a minimum value of 1 and a maximum value of 128.",
+    "code": "90004"
+  },
+  "90005": {
+    "tags": [],
+    "title": "Invalid value for max",
+    "detail": "The 'max' parameter must be an 'integer' with a minimum value of 1 and a maximum value of 128.",
+    "public_docs": "The 'max' parameter must be an 'integer' with a minimum value of 1 and a maximum value of 128.",
+    "code": "90005"
+  },
+  "90006": {
+    "tags": [],
+    "title": "Invalid value for tries",
+    "detail": "The 'tries' parameter must be an 'integer' with a minimum value of 1 and a maximum value of 128.",
+    "public_docs": "The 'tries' parameter must be an 'integer' with a minimum value of 1 and a maximum value of 128.",
+    "code": "90006"
+  },
+  "90007": {
+    "tags": [],
+    "title": "Invalid value for terminating_digit",
+    "detail": "The 'terminating_digit' parameter must be a 'string' with a value of 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, *, or #.",
+    "public_docs": "The 'terminating_digit' parameter must be a 'string' with a value of 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, *, or #.",
+    "code": "90007"
+  },
+  "90008": {
+    "tags": [],
+    "title": "Invalid value for valid_digits",
+    "detail": "The 'valid_digits' parameter must be a 'string' with a value of 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, *, or #.",
+    "public_docs": "The 'valid_digits' parameter must be a 'string' with a value of 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, *, or #.",
+    "code": "90008"
+  },
+  "90009": {
+    "tags": [],
+    "title": "Invalid value for loop",
+    "detail": "The 'loop' parameter must either be 'infinity' or an 'integer' with a minimum value of 1 and a maximum value of 100.",
+    "public_docs": "The 'loop' parameter must either be 'infinity' or an 'integer' with a minimum value of 1 and a maximum value of 100.",
+    "code": "90009"
+  },
+  "90010": {
+    "tags": [],
+    "title": "Invalid value for payload",
+    "detail": "The 'payload' parameter should contain between 1 and 5000 characters.",
+    "public_docs": "The 'payload' parameter should contain between 1 and 5000 characters.",
+    "code": "90010"
+  },
+  "90011": {
+    "tags": [],
+    "title": "Invalid value for payload_type",
+    "detail": "The 'payload_type' parameter must be of type 'string' with a value of either text or ssml.",
+    "public_docs": "The 'payload_type' parameter must be of type 'string' with a value of either text or ssml.",
+    "code": "90011"
+  },
+  "90012": {
+    "tags": [],
+    "title": "Invalid value for voice",
+    "detail": "The 'voice' parameter must be 'female' or 'male' when using the en-US language.",
+    "public_docs": "The 'voice' parameter must be 'female' or 'male' when using the en-US language.",
+    "code": "90012"
+  },
+  "90013": {
+    "tags": [],
+    "title": "Invalid value for language",
+    "detail": "The 'language' parameter must be of type 'string' with a value of either de-DE, en-AU, en-GB, en-US, es-ES, fr-CA, fr-FR, it-IT, ja-JP, ko-KR, nl-NL, pt-BR, sv-SE or tr-TR.",
+    "public_docs": "The 'language' parameter must be of type 'string' with a value of either de-DE, en-AU, en-GB, en-US, es-ES, fr-CA, fr-FR, it-IT, ja-JP, ko-KR, nl-NL, pt-BR, sv-SE or tr-TR.",
+    "code": "90013"
+  },
+  "90014": {
+    "tags": [],
+    "title": "Invalid value for digits",
+    "detail": "The 'digits' parameter must be a 'string' made of a combination of either 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, A, B, C, D, w, W, * or #.",
+    "public_docs": "The 'digits' parameter must be a 'string' made of a combination of either 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, A, B, C, D, w, W, * or #.",
+    "code": "90014"
+  },
+  "90015": {
+    "tags": [],
+    "title": "Invalid Call Control ID",
+    "detail": "The provided call_control_id was not valid.",
+    "public_docs": "The provided call_control_id was not valid.",
+    "code": "90015"
+  },
+  "90016": {
+    "tags": [],
+    "title": "Invalid value for stop",
+    "detail": "The 'stop' parameter must be a 'string' with a value of 'all', 'current' or 'overlay'.",
+    "public_docs": "The 'stop' parameter must be a 'string' with a value of 'all', 'current' or 'overlay'.",
+    "code": "90016"
+  },
+  "90017": {
+    "tags": [],
+    "title": "Invalid value for client_state",
+    "detail": "The 'client_state' parameter must be a valid base64 string.",
+    "public_docs": "The 'client_state' parameter must be a valid base64 string.",
+    "code": "90017"
+  },
+  "90018": {
+    "tags": [],
+    "title": "Call has already ended",
+    "detail": "This call is no longer active and can't receive commands.",
+    "public_docs": "This call is no longer active and can't receive commands.",
+    "code": "90018"
+  },
+  "90019": {
+    "tags": [],
+    "title": "Conference has already ended",
+    "detail": "This conference is no longer active and can't receive commands.",
+    "public_docs": "This conference is no longer active and can't receive commands.",
+    "code": "90019"
+  },
+  "90020": {
+    "tags": [],
+    "title": "Call recording triggered before audio started",
+    "detail": "Call recording cannot be started until audio has commenced on the call.",
+    "public_docs": "Call recording cannot be started until audio has commenced on the call.",
+    "code": "90020"
+  },
+  "90021": {
+    "tags": [],
+    "title": "Invalid value for duration",
+    "detail": "The 'duration' parameter must be an 'integer' with a minimum value of 100 and a maximum value of 500.",
+    "public_docs": "The 'duration' parameter must be an 'integer' with a minimum value of 100 and a maximum value of 500.",
+    "code": "90021"
+  },
+  "90022": {
+    "tags": [],
+    "title": "Invalid value for minimum_digits",
+    "detail": "The 'minimum_digits' parameter must be an 'integer' with a minimum value of 1 and a maximum value of 128.",
+    "public_docs": "The 'minimum_digits' parameter must be an 'integer' with a minimum value of 1 and a maximum value of 128.",
+    "code": "90022"
+  },
+  "90023": {
+    "tags": [],
+    "title": "Invalid value for maximum_digits",
+    "detail": "The 'maximum_digits' parameter must be an 'integer' with a minimum value of 1 and a maximum value of 128.",
+    "public_docs": "The 'maximum_digits' parameter must be an 'integer' with a minimum value of 1 and a maximum value of 128.",
+    "code": "90023"
+  },
+  "90024": {
+    "tags": [],
+    "title": "Invalid value for maximum_tries",
+    "detail": "The 'maximum_tries' parameter must be an 'integer' with a minimum value of 1 and a maximum value of 128.",
+    "public_docs": "The 'maximum_tries' parameter must be an 'integer' with a minimum value of 1 and a maximum value of 128.",
+    "code": "90024"
+  },
+  "90025": {
+    "tags": [],
+    "title": "Invalid value for timeout_millis",
+    "detail": "The 'timeout_millis' parameter must be an 'integer' with a minimum and a maximum value accepted by command",
+    "public_docs": "The 'timeout_millis' parameter must be an 'integer' with a minimum and a maximum value accepted by command",
+    "code": "90025"
+  },
+  "90026": {
+    "tags": [],
+    "title": "Invalid value for inter_digit_timeout_millis",
+    "detail": "The 'inter_digit_timeout_millis' parameter must be an 'integer' with a minimum value of 1 and a maximum value of 120000.",
+    "public_docs": "The 'inter_digit_timeout_millis' parameter must be an 'integer' with a minimum value of 1 and a maximum value of 120000.",
+    "code": "90026"
+  },
+  "90027": {
+    "tags": [],
+    "title": "Invalid value for duration_millis",
+    "detail": "The 'duration_millis' parameter must be an 'integer' with a minimum value of 100 and a maximum value of 500.",
+    "public_docs": "The 'duration_millis' parameter must be an 'integer' with a minimum value of 100 and a maximum value of 500.",
+    "code": "90027"
+  },
+  "90028": {
+    "tags": [],
+    "title": "Invalid value for timeout_secs",
+    "detail": "The 'timeout_secs' parameter must be an 'integer' with a minimum and a maximum value accepted by command",
+    "public_docs": "The 'timeout_secs' parameter must be an 'integer' with a minimum and a maximum value accepted by command",
+    "code": "90028"
+  },
+  "90029": {
+    "tags": [],
+    "title": "Invalid value for time_limit_secs",
+    "detail": "The 'time_limit_secs' parameter must be an 'integer' with a minimum value of 60 and a maximum value of 14,000.",
+    "public_docs": "The 'time_limit_secs' parameter must be an 'integer' with a minimum value of 60 and a maximum value of 14,000.",
+    "code": "90029"
+  },
+  "90030": {
+    "tags": [],
+    "title": "Invalid value for service_level",
+    "detail": "The 'service_level' parameter must be of type 'string' with a value of either 'basic' or 'premium'.",
+    "public_docs": "The 'service_level' parameter must be of type 'string' with a value of either 'basic' or 'premium'.",
+    "code": "90030"
+  },
+  "90031": {
+    "tags": [],
+    "title": "Call is not currently forked",
+    "detail": "Can't stop forking, because the call isn't currently forked.",
+    "public_docs": "Can't stop forking, because the call isn't currently forked.",
+    "code": "90031"
+  },
+  "90032": {
+    "tags": [],
+    "title": "Too many conference participants",
+    "detail": "The participant is unable to join because the maximum number of participants ({num}) has been reached.",
+    "public_docs": "The participant is unable to join because the maximum number of participants that was specified at the beginning of the conference has been reached.",
+    "code": "90032"
+  },
+  "90033": {
+    "tags": [],
+    "title": "Conference has no active participants",
+    "detail": "This conference does not have any active participants.",
+    "public_docs": "The action can not be carried out because the conference has no active participants.\nParticipants must be in a conference before being put on hold or muted.",
+    "solutions": "- Use the `hold` or `mute` parameter within the join conference command.\n- If not set as part of the join conference command, ensure the particpant has joined the conference before holding or muting the participant.\n",
+    "code": "90033"
+  },
+  "90034": {
+    "tags": [],
+    "title": "Call has not been answered yet",
+    "detail": "This call can't receive this command because it has not been answered yet.",
+    "public_docs": "This call can't receive this command because it has not been answered yet.",
+    "solutions": "- Ensure the call has been answered before issuing this command.\n",
+    "code": "90034"
+  },
+  "90035": {
+    "tags": [],
+    "title": "Call not in queue",
+    "detail": "This call can't receive this command because it has not been put in any queue yet.",
+    "public_docs": "This call can't receive this command because it has not been put in any queue yet.",
+    "solutions": "- Ensure the call has been enqueued before issuing this command.\n",
+    "code": "90035"
+  },
+  "90036": {
+    "tags": [],
+    "title": "Queue full",
+    "detail": "The queue is full and can't accept more calls.",
+    "public_docs": "The queue is full and can't accept more calls.",
+    "solutions": "- Ensure some calls has been dequeued before issuing this command.\n",
+    "code": "90036"
+  },
+  "90037": {
+    "tags": [],
+    "title": "Queue max_size cannot be modified",
+    "detail": "Queue exists and max_size cannot be modified.",
+    "public_docs": "Queue exists and max_size cannot be modified.",
+    "solutions": "- Ensure the calls are enqueued with same max_size for the given queue.\n",
+    "code": "90037"
+  },
+  "90038": {
+    "tags": [],
+    "title": "Call already in queue",
+    "detail": "Call can't be added to a queue it's already in.",
+    "public_docs": "Call can't be added to a queue it's already in.",
+    "solutions": "- Ensure the call has been dequeued before issuing this command.\n",
+    "code": "90038"
+  },
+  "90040": {
+    "tags": [],
+    "title": "Downloading audio file failed",
+    "detail": "Provided audio file couldn't be downloaded due to a timeout.",
+    "public_docs": "Provided audio file couldn't be downloaded due to a timeout.",
+    "solutions": "- Ensure the file downloads successfully within 5 seconds from the URL used.\n",
+    "code": "90040"
+  },
+  "90041": {
+    "tags": [],
+    "title": "User termination channels limit exceeded",
+    "detail": "The limit of simultaneous termination channels configured to your user has been reached.",
+    "public_docs": "The limit of simultaneous termination channels configured to your user has been reached.",
+    "solutions": "- Finish some in progress outbound calls before starting a new one.\n",
+    "code": "90041"
+  },
+  "90042": {
+    "tags": [],
+    "title": "Outbound voice profile channels limit exceeded",
+    "detail": "The limit of simultaneous channels configured to the outbound voice profile associated to this connection has been reached.",
+    "public_docs": "The limit of simultaneous channels configured to the outbound voice profile associated to this connection has been reached.",
+    "solutions": "- Finish some in progress outbound calls before starting a new one.\n- Either increase or remove the channel limit for this outbound voice profile in the portal.\n",
+    "code": "90042"
+  },
+  "90043": {
+    "tags": [],
+    "title": "Connection outbound channels limit exceeded",
+    "detail": "The limit of simultaneous outbound channels configured to this call control connection has been reached.",
+    "public_docs": "The limit of simultaneous outbound channels configured to this call control connection has been reached.",
+    "solutions": "- Finish some in progress outbound calls before starting a new one.\n- Either increase or remove the outbound channels limit for this call control connection in the portal.\n",
+    "code": "90043"
+  },
+  "90044": {
+    "tags": [],
+    "title": "Conference join not allowed",
+    "detail": "Participant must not join the same conference twice.",
+    "public_docs": "Participant must not join the same conference twice.",
+    "causes": "- User call ID is already an active participant in the conference.\n",
+    "solutions": "- Ensure the participant is not already active in the same conference they attempt to join.\n",
+    "code": "90044"
+  },
+  "90045": {
+    "tags": [],
+    "title": "Media Streaming is used.",
+    "detail": "This command can't be issued when media streaming is used.",
+    "public_docs": "This command can't be issued when media streaming is used.",
+    "code": "90045"
+  },
+  "90046": {
+    "tags": [],
+    "title": "Media Streaming Failed.",
+    "detail": "The media streaming failed to start.",
+    "public_docs": "The media streaming failed to start.",
+    "code": "90046"
+  },
+  "90048": {
+    "tags": [],
+    "title": "Media Streaming is not used.",
+    "detail": "This command can only be issued when media streaming is used.",
+    "public_docs": "This command can only be issued when media streaming is used.",
+    "code": "90048"
+  },
+  "90049": {
+    "tags": [],
+    "title": "Invalid value for record_timeout_secs",
+    "detail": "The 'record_timeout_secs' parameter must be an 'integer' with a minimum value of 0.",
+    "public_docs": "The 'record_timeout_secs' parameter must be an 'integer' with a minimum value of 0.",
+    "code": "90049"
+  },
+  "90050": {
+    "tags": [],
+    "title": "Destination unreacheable",
+    "detail": "The destination is not able to receive verified calls.",
+    "public_docs": "The destination is not able to receive verified calls.",
+    "causes": "- The destination is not valid.\n- The destination does not support Verified Calls.\n",
+    "solutions": "- Ensure the destination is able to receive verified calls.\n",
+    "code": "90050"
+  },
+  "90051": {
+    "tags": [],
+    "title": "Forbidden",
+    "detail": "You are unable to perform this request.",
+    "public_docs": "You are unable to perform this request.",
+    "causes": "- The 'from' number is not registered to your account.\n",
+    "solutions": "- Ensure the 'from' is registered to your account.\n",
+    "code": "90051"
+  },
+  "90052": {
+    "tags": [],
+    "title": "Something went wrong",
+    "detail": "Something went wrong with your request, please try again in a few minutes.",
+    "public_docs": "Something went wrong with your request, please try again in a few minutes.",
+    "causes": "- There might be an issue with the service provider.\n- There might be an instability between our service and the service provider.\n",
+    "solutions": "- Try again in a few minutes.\n",
+    "code": "90052"
+  },
+  "90053": {
+    "tags": [],
+    "title": "Call recording triggered with 'timeout_secs' while transcribing",
+    "detail": "Call recording can not be started with 'timeout_secs' while the call is being transcribed.",
+    "public_docs": "Call recording can not be started with 'timeout_secs' while the call is being transcribed.",
+    "code": "90053"
+  },
+  "90054": {
+    "tags": [],
+    "title": "Call Transcription is already in progress",
+    "detail": "Call Transcription can not be started more than once.",
+    "public_docs": "Call Transcription can not be started more than once.",
+    "code": "90054"
+  },
+  "90055": {
+    "tags": [],
+    "title": "Call transcription can not be stopped",
+    "detail": "Call transcription can not be stopped while there is a recording with 'timeout_secs' in progress.",
+    "public_docs": "Call transcription can not be stopped while there is a recording with 'timeout_secs' in progress.",
+    "code": "90055"
+  },
+  "90056": {
+    "tags": [],
+    "title": "Invalid value for initial_timeout_millis",
+    "detail": "The 'initial_timeout_millis' parameter must be an 'integer' with a minimum value of 1 and a maximum value of 120000.",
+    "public_docs": "The 'initial_timeout_millis' parameter must be an 'integer' with a minimum value of 1 and a maximum value of 120000.",
+    "code": "90056"
+  },
+  "90057": {
+    "tags": [],
+    "title": "Invalid call control event type for webhook_urls",
+    "detail": "The webhook_urls json keys must be valid call control event types.",
+    "public_docs": "The webhook_urls json keys must be valid call control event types.",
+    "code": "90057"
+  },
+  "90080": {
+    "tags": [],
+    "title": "Cannot issue a command on fax in the current state.",
+    "detail": "This command can only be issued when a fax is in either queued, media.processed or sending state.",
+    "public_docs": "This command can only be issued when a fax is in either queued, media.processed or sending state.",
+    "code": "90080"
+  },
+  "90081": {
+    "tags": [],
+    "title": "Cannot issue command for inbound fax.",
+    "detail": "This command can only be issued for outbound fax.",
+    "public_docs": "This command can only be issued for outbound fax.",
+    "code": "90081"
+  },
+  "90100": {
+    "tags": [],
+    "title": "Notification key is invalid",
+    "detail": "The notification key provided is invalid.",
+    "public_docs": "The request cannot be fulfilled because the provided notification key is invalid.",
+    "code": "90100"
+  },
+  "90101": {
+    "tags": [],
+    "title": "Notification context is invalid",
+    "detail": "The required notification context was either invalid or not included in the request.",
+    "public_docs": "The required notification context was either invalid or not included in the request.",
+    "code": "90101"
+  },
+  "90102": {
+    "tags": [],
+    "title": "Command is invalid",
+    "detail": "Call answer command cannot be issued for outbound calls.",
+    "public_docs": "Call answer command cannot be issued for outbound calls.",
+    "code": "90102"
+  },
+  "100001": {
+    "tags": [],
+    "title": "Invalid Dialogflow API",
+    "detail": "The value should be either 'es' or 'cx'",
+    "public_docs": "The value should be either 'es' or 'cx'",
+    "code": "100001"
+  }
+}
