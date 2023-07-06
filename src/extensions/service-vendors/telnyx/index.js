@@ -21,9 +21,15 @@ import { parseMessageText } from "../message-sending";
 
 const ENABLE_DB_LOG = getConfig("ENABLE_DB_LOG");
 const MAX_SEND_ATTEMPTS = 5;
+const TELNYX_SKIP_VALIDATION = getConfig("TELNYX_SKIP_VALIDATION");
+const TELNYX_API_KEY = getConfig('TELNYX_API_KEY')
+const TELNYX_PUB_KEY = getConfig('TELNYX_PUBLIC_KEY')
+// const TELNYX_MESSAGING_PROFILE = getConfig('TELNYX_MESSAGING_PROFILE')
+const JOBS_SAME_PROCESS = getConfig("JOBS_SAME_PROCESS")
+
 let telnyx = null;
-if (process.env.TELNYX_API_KEY) {
-  telnyx = Telnyx(process.env.TELNYX_API_KEY)
+if (TELNYX_API_KEY) {
+  telnyx = Telnyx(TELNYX_API_KEY)
 }
 
 export const getMetadata = () => ({
@@ -31,6 +37,36 @@ export const getMetadata = () => ({
   supportsCampaignConfig: false,
   name: "telnyx"
 });
+
+/**
+ * Validate that the message came from Telnyx before proceeding.
+ *
+ * @param url The external-facing URL; this may be omitted to use the URL from the request.
+ */
+const headerValidator = url => {
+  if (!!TELNYX_SKIP_VALIDATION) return (req, res, next) => next();
+
+  return async (req, res, next) => {
+    try {
+      telnyx.webhooks.constructEvent(
+        // webhook data needs to be passed raw for verification
+        JSON.stringify(req.body, null, 2),
+        req.header('telnyx-signature-ed25519'),
+        req.header('telnyx-timestamp'),
+        TELNYX_PUB_KEY
+      );
+    } catch (e) {
+      // If `constructEvent` throws an error, respond with the message and return.
+      console.log('Error', e.message);
+
+      return res.status(400).send('Webhook Error:' + e.message);
+    }
+  };
+};
+
+//TODO: what's the cost data?
+// export function costData(organization, userNumber) {
+// }
 
 export function errorDescription(errorCode) {
   return {
@@ -40,43 +76,13 @@ export function errorDescription(errorCode) {
   };
 }
 
-/**
- * Validate that the message came from Telnyx before proceeding.
- *
- * @param url The external-facing URL; this may be omitted to use the URL from the request.
- */
-const headerValidator = url => {
-  // if (!!TWILIO_SKIP_VALIDATION) return (req, res, next) => next();
-
-  return async (req, res, next) => {
-    const organization = req.params.orgId
-      ? await cacheableData.organization.load(req.params.orgId)
-      : null;
-    const { authToken } = await getMessageServiceConfig(
-      "telnyx",
-      organization,
-      { obscureSensitiveInformation: false }
-    );
-    const options = {
-      validate: true,
-      protocol: "https",
-      url
-    };
-
-    //TODO: setup telnyx header verification
-    // return Twilio.webhook(authToken, options)(req, res, next);
-  };
-};
 
 export function addServerEndpoints(addPostRoute) {
-  if (process.env.TELNYX_API_KEY) {
+  if (TELNYX_API_KEY) {
     addPostRoute(
-      "/telnyx/:orgId",
+      "/telnyx",
       //TODO: setup these env vars
-      headerValidator(
-        process.env.TELNYX_MESSAGE_CALLBACK_URL ||
-        global.TELNYX_MESSAGE_CALLBACK_URL
-      ),
+      headerValidator(getConfig('TELNYX_MESSAGE_CALLBACK_URL')),
       wrap(async (req, res) => {
         try {
           // telnyx
@@ -92,17 +98,9 @@ export function addServerEndpoints(addPostRoute) {
     )
 
     const messageReportHooks = [];
-    if (
-      getConfig("TELNYX_STATUS_CALLBACK_URL") ||
-      getConfig("TELNYX_VALIDATION")
-    ) {
-      messageReportHooks.push(
-        headerValidator(
-          process.env.TELNYX_STATUS_CALLBACK_URL ||
-          global.TELNYX_STATUS_CALLBACK_URL
-        )
-      );
-    }
+    messageReportHooks.push(
+      headerValidator()
+    )
     messageReportHooks.push(
       wrap(async (req, res) => {
         try {
@@ -119,7 +117,7 @@ export function addServerEndpoints(addPostRoute) {
       })
     );
 
-    addPostRoute("/telnyx-message-report/:orgId?", ...messageReportHooks);
+    addPostRoute("/telnyx-message-report", ...messageReportHooks);
 
   }
 }
@@ -134,11 +132,6 @@ export async function sendMessage({
   campaign,
   serviceManagerData
 }) {
-  const telnyx = await exports.getTwilio(
-    (serviceManagerData && serviceManagerData.twilioAccountSwitching) ||
-    organization,
-    serviceManagerData
-  );
   const changes = {
     service: "telnyx",
     messageservice_sid: "telnyx",
@@ -152,14 +145,12 @@ export async function sendMessage({
     message && message.id,
     contact && contact.id
   );
-  let userNumber =
-    (serviceManagerData && serviceManagerData.user_number) ||
-    message.user_number;
+  // let userNumber =
+  //   (serviceManagerData && serviceManagerData.user_number) ||
+  //   message.user_number;
 
   // Note organization won't always be available, so then contact can trace to it
-  const messagingServiceSid =
-    (serviceManagerData && serviceManagerData.messageservice_sid) ||
-    (await getMessagingServiceSid(organization, contact, message, campaign));
+  const messaging_profile_id = serviceManagerData && serviceManagerData.messaging_profile_id
 
   return new Promise((resolve, reject) => {
 
@@ -167,6 +158,9 @@ export async function sendMessage({
 
     if (message.service !== 'telnyx') {
       log.warn('Message not marked as a telnyx message', message.id)
+    }
+    if (!message_profile_id) {
+      log.error('Telnyx service vendor failed to get messaging_profile_id')
     }
 
     //TODO: set this up
@@ -192,14 +186,15 @@ export async function sendMessage({
     const messageParams = Object.assign({
       to: message.contact_number,
       text: message.text,
+      messaging_profile_id
       //TODO: does this matter & how to get them?
       // 'media_urls': [ 
       //   //     'https://picsum.photos/500.jpg'
       //   //   ]
     },
-      userNumber ? { from: userNumber } : {},
-      messagingServiceSid ? { messaging_profile_id: messagingServiceSid } : {},
-      additionalMessageParams
+      // userNumber ? { from: userNumber } : {},
+      // messagingServiceSid ? { messaging_profile_id: messagingServiceSid } : {},
+      // additionalMessageParams
     )
 
     telnyx.messages.create(messageParams, (err, response) => {
@@ -245,9 +240,12 @@ export function postMessageSend(
   }
   if (response) {
     changesToSave.service_id = response.sid;
-    hasError = !!response.error_code;
+    //TODO: test if this can be an array
+    hasError = response.errors.length
+    // hasError = !!response.error_code;
     if (hasError) {
-      changesToSave.error_code = response.error_code;
+      // changesToSave.error_code = response.error_code;
+      changesToSave.error_code = response.errors;
       changesToSave.send_status = "ERROR";
     }
   }
@@ -259,12 +257,12 @@ export function postMessageSend(
   if (hasError) {
     if (err) {
       // TODO: for some errors we should *not* retry
-      // e.g. 21617 is max character limit
-      if (message.error_code <= -MAX_SEND_ATTEMPTS) {
-        changesToSave.send_status = "ERROR";
-      }
-      // decrement error code starting from zero
-      changesToSave.error_code = Number(message.error_code || 0) - 1;
+      // TODO: this wont work with an array of
+      // if (message.error_code <= -MAX_SEND_ATTEMPTS) {
+      //   changesToSave.send_status = "ERROR";
+      // }
+      // // decrement error code starting from zero
+      // changesToSave.error_code = Number(message.error_code || 0) - 1;
     }
 
     let contactUpdateQuery = Promise.resolve(1);
@@ -293,7 +291,7 @@ export function postMessageSend(
     changesToSave = {
       ...changesToSave,
       send_status: "SENT",
-      service: "twilio",
+      service: "telnyx",
       sent_at: new Date()
     };
     Promise.all([
@@ -301,7 +299,7 @@ export function postMessageSend(
       cacheableData.campaignContact.updateStatus(
         contact,
         undefined,
-        changesToSave.messageservice_sid || changesToSave.user_number
+        // changesToSave.messageservice_sid || changesToSave.user_number
       )
     ])
       .then(() => {
@@ -312,7 +310,7 @@ export function postMessageSend(
       })
       .catch(caught => {
         console.error(
-          "Failed message and contact update on twilio postMessageSend",
+          "Failed message and contact update on telnyx postMessageSend",
           caught
         );
         reject(caught);
@@ -385,7 +383,7 @@ export async function handleIncomingMessage(message) {
     contact_number: contactNumber
   });
 
-  if (process.env.JOBS_SAME_PROCESS || global.JOBS_SAME_PROCESS) {
+  if (JOBS_SAME_PROCESS) {
     // Handle the message directly and skip saving an intermediate part
     const finalMessage = await convertMessagePartsToMessage([
       pendingMessagePart
@@ -457,27 +455,27 @@ export async function deleteNumbersInAreaCode(organization, areaCode) {
 }
 
 // Does a lookup for carrier and optionally the contact name
-export async function getContactInfo({
-  organization,
-  contactNumber,
-  // Boolean: maybe twilio-specific?
-  lookupName
-}) {
-  // if (!contactNumber) {
-  //   return {};
-  // }
-  // const contactInfo = {
-  //   carrier: "FakeCarrier",
-  //   // -1 is a landline, 1 is a mobile number
-  //   // we test against one of the lower digits to randomly
-  //   // but deterministically vary on the landline
-  //   status_code: contactNumber[11] === "2" ? -1 : 1
-  // };
-  // if (lookupName) {
-  //   contactInfo.lookup_name = `Foo ${parseInt(Math.random() * 1000)}`;
-  // }
-  // return contactInfo;
-}
+// export async function getContactInfo({
+// organization,
+// contactNumber,
+// Boolean: maybe twilio-specific?
+// lookupName
+// }) {
+// if (!contactNumber) {
+//   return {};
+// }
+// const contactInfo = {
+//   carrier: "FakeCarrier",
+//   // -1 is a landline, 1 is a mobile number
+//   // we test against one of the lower digits to randomly
+//   // but deterministically vary on the landline
+//   status_code: contactNumber[11] === "2" ? -1 : 1
+// };
+// if (lookupName) {
+//   contactInfo.lookup_name = `Foo ${parseInt(Math.random() * 1000)}`;
+// }
+// return contactInfo;
+// }
 
 export async function createMessagingService(organization, friendlyName) {
   console.log("telnyx.createMessagingService", organization.id, friendlyName);
@@ -501,6 +499,8 @@ export async function createMessagingService(organization, friendlyName) {
   })
   return result
 }
+
+
 
 export default {
   createMessagingService,
