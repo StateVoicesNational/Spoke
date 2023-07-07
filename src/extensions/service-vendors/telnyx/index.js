@@ -40,10 +40,8 @@ export const getMetadata = () => ({
 
 /**
  * Validate that the message came from Telnyx before proceeding.
- *
- * @param url The external-facing URL; this may be omitted to use the URL from the request.
  */
-const headerValidator = url => {
+const headerValidator = () => {
   if (!!TELNYX_SKIP_VALIDATION) return (req, res, next) => next();
 
   return async (req, res, next) => {
@@ -68,10 +66,16 @@ const headerValidator = url => {
 // export function costData(organization, userNumber) {
 // }
 
+/**
+ * Get the error description from the errors json
+ * @param {number} errorCode 
+ * @returns 
+ */
 export function errorDescription(errorCode) {
+  //TODO: add fallback for unknown error here...
   return {
     code: errorCode,
-    description: errors[errorCode].title || "Telnyx error",
+    description: errors[errorCode.toString()].title || "Telnyx error",
     link: `https://developers.telnyx.com/docs/errors/`
   };
 }
@@ -150,7 +154,7 @@ export async function sendMessage({
   //   message.user_number;
 
   // Note organization won't always be available, so then contact can trace to it
-  const messaging_profile_id = serviceManagerData && serviceManagerData.messaging_profile_id
+  const messaging_profile_id = getMessageServiceSid(organization)
 
   return new Promise((resolve, reject) => {
 
@@ -500,6 +504,54 @@ export async function createMessagingService(organization, friendlyName) {
   return result
 }
 
+export async function updateConfig({
+  oldConfig,
+  config,
+  organization,
+  serviceManagerData
+}) {
+  const { messagingProfileId } = config
+
+  if (!messagingProfileId) {
+    throw new Error('messagingProfileId is required')
+  }
+
+  const newConfig = {}
+  newConfig.TELNYX_MESSAGING_PROFILE_ID = messagingProfileId
+
+  return newConfig
+
+}
+
+export const getServiceConfig = async (
+  serviceConfig,
+  organization,
+  options = {}
+) => {
+  let messagingProfileId;
+  if (serviceConfig) {
+    messagingProfileId = serviceConfig.TELNYX_MESSAGING_PROFILE_ID
+  } else {
+    //   // for backward compatibility
+
+  }
+  return messagingProfileId
+}
+
+export const getMessageServiceSid = async (
+  organization,
+  contact,
+  messageText
+) => {
+
+  const configKey = getConfigKey("telnyx");
+  const config = getConfig(configKey, organization);
+  const { messageServiceSid } = await exports.getServiceConfig(
+    config,
+    organization
+  );
+  return messageServiceSid;
+};
 
 
 export default {
@@ -509,5 +561,6 @@ export default {
   deleteNumbersInAreaCode,
   convertMessagePartsToMessage,
   handleIncomingMessage,
-  getMetadata
+  getMetadata,
+  updateConfig
 };
