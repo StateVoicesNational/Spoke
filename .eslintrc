@@ -1,5 +1,17 @@
 {
-  "extends": ["airbnb", "prettier"],
+  "extends": [
+    "airbnb",
+    "prettier"
+  ],
   "parser": "@babel/eslint-parser",
-  "env": { "jest": true, "node": true, "browser": true, "jasmine": true }
+  "env": {
+    "jest": true,
+    "node": true,
+    "browser": true,
+    "jasmine": true
+  },
+  "rules": {
+    "import/prefer-default-export": "off",
+    "max-classes-per-file": "off"
+  }
 }
