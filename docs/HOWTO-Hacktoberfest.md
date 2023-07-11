@@ -23,4 +23,4 @@ To develop and improve upon the free tool called Spoke.
 - [Spoke Community Coalition Project Board](https://github.com/MoveOnOrg/Spoke/projects/20)
 - [Hacktoberfest Participant Requirements](https://hacktoberfest.com/participation/)
 - [Spoke Hacknightz on ProgCode](https://www.progcode.org/)
-- [Need extra support? Sign up to talk to Arique)](https://calendly.com/mama-furia/one-to-onez)
+- [Need extra support? Sign up to talk to Arique, the Community Manager for Spoke)](https://calendly.com/mama-furia/one-to-onez)
