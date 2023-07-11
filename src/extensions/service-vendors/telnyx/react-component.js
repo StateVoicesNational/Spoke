@@ -4,6 +4,7 @@
 /* eslint-disable import/prefer-default-export */
 import { css } from "aphrodite";
 import React from 'react'
+import Form from "react-formal";
 import PropTypes from "prop-types";
 import * as yup from "yup";
 
@@ -25,16 +26,16 @@ import GSTextField from "../../../components/forms/GSTextField";
 export class OrgConfig extends React.Component {
   constructor(props) {
     super(props);
-    const { messagingProfileId } = this.props.config
+    const { messagingProfileId } = this.props.config || {}
     const allSet = messagingProfileId
     this.state = { ...this.props.config, telnyxDialogOpen: false };
     this.props.onAllSetChanged(allSet);
   };
 
   componentDidUpdate(prevProps) {
-    const { messagingProfileId: prevMessagingProfileId } = prevProps.config
+    const { messagingProfileId: prevMessagingProfileId } = prevProps.config || {}
     const prevAllSet = prevMessagingProfileId
-    const { messagingProfileId } = this.props.config
+    const { messagingProfileId } = this.props.config || {}
     const allSet = messagingProfileId
 
     if (!!prevAllSet !== !!allSet) {
@@ -73,12 +74,12 @@ export class OrgConfig extends React.Component {
       }
       this.setState({ telnyxError });
     }
-    this.handleCloseTelnxyDialog();
+    this.handleCloseTelnyxDialog();
   }
 
   render() {
     const { inlineStyles, styles, config } = this.props;
-    const { messagingProfileId } = config;
+    const { messagingProfileId } = config || {};
     const allSet = messagingProfileId
     // let baseUrl = "http://base";
     // if (typeof window !== "undefined") {
@@ -100,9 +101,9 @@ export class OrgConfig extends React.Component {
             /> */}
             Settings for this organization:
             <TableContainer>
-              <Table style={{ "background-color": "red" }}>
+              <Table style={{ "backgroundColor": "red" }}>
                 <TableBody
-                  displayRowCheckbox={false}
+                  // displayRowCheckbox={false}
                   style={inlineStyles.shadeBox}
                 >
                   <TableRow>
@@ -124,8 +125,8 @@ export class OrgConfig extends React.Component {
         <CardContent>
           <div className={css(styles.section)}>
             <span className={css(styles.sectionLabel)}>
-              You can set Twilio API credentials specifically for this
-              Organization by entering them here.
+              You can set up a Telxy Messaging Profile ID specifically for this
+              Organization by entering it here.
             </span>
             <GSForm
               schema={formSchema}
