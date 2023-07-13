@@ -87,12 +87,22 @@ export function addServerEndpoints(addPostRoute) {
       "/telnyx",
       // TODO: setup these env vars
       // headerValidator(getConfig('TELNYX_MESSAGE_CALLBACK_URL')),
+      /**
+       * req: {meta, data} //TODO: what are these objects
+       */
       wrap(async (req, res) => {
         try {
           // telnyx
           // TODO: telnyx handle incoming
           // const messageId = await nexmo.handleIncomingMessage(req.body);
-          await handleIncomingMessage(req.body);
+          //TODO: reconcile two ids: req.body.data.id and req.body.data.payload.id
+          //has {}
+          const eventType = req.body.data.event_type;
+          if (eventType == 'message.received') {
+            await handleIncomingMessage(req.body.data.payload);
+          } else if (eventType) {
+            console.log(`telnyx event type: ${eventType} not configured`)
+          }
           // res.send(messageId);
           res.send('done')
         } catch (ex) {
@@ -137,14 +147,6 @@ export async function sendMessage({
   campaign,
   serviceManagerData
 }) {
-  const changes = {
-    service: "telnyx",
-    messageservice_sid: "telnyx",
-    send_status: "SENT",
-    sent_at: new Date(),
-    // error_code: errorCode ? errorCode[1] : null
-  };
-
   console.log(
     "telnyx sendMessage",
     message && message.id,
@@ -165,6 +167,14 @@ export async function sendMessage({
   if (!messaging_profile_id) {
     log.error('Telnyx service vendor failed to get messaging_profile_id')
   }
+
+  const changes = {
+    service: "telnyx",
+    messageservice_sid: messaging_profile_id,
+    send_status: "SENT",
+    sent_at: new Date(),
+    // error_code: errorCode ? errorCode[1] : null
+  };
 
   // TODO: set this up
   const additionalMessageParams = parseMessageText(message);
@@ -204,7 +214,8 @@ export async function sendMessage({
   let response
   let err
   try {
-    response = await telnyx.messages.create(messageParams)
+    const result = await telnyx.messages.create(messageParams)
+    response = result.data
     //TODO: remove
     console.log(response);
   } catch (err) {
@@ -243,7 +254,9 @@ export async function postMessageSend(
     console.log("Error sending message", err);
   }
   if (response) {
-    changesToSave.service_id = response.sid;
+    // changesToSave.service_id = response.sid;
+    //TODO: is this the id for the incoming message?
+    changesToSave.service_id = response.id;
     // TODO: test if this can be an array
     hasError = response.errors.length
     // hasError = !!response.error_code;
@@ -360,17 +373,28 @@ export async function postMessageSend(
 //   });
 // }
 
+/**
+ * Process a message from Telnyx
+ * @param {*} message 
+ * message.direction string
+ * message.from {carrier: 'Verizon Wireless', line_type: 'Wireless', phone_number: '+15412803322'}
+ * message.to 0:{carrier: 'Telnyx', line_type: 'Wireless', phone_number: '+13642148507', status: 'webhook_delivered'}
+ * message.text: string
+ * message.messaging_profile_id: string
+ */
 export async function handleIncomingMessage(message) {
   if (
-    !message.hasOwnProperty("sms_id") ||
+    !message.hasOwnProperty("id") ||
     !message.hasOwnProperty("direction") ||
-    !message.hasOwnProperty("from") ||
-    !message.hasOwnProperty("to") ||
-    !message.hasOwnProperty("body")
+    !message.hasOwnProperty("from") ||  // {}
+    !message.hasOwnProperty("to") || //this is an array
+    !message.hasOwnProperty("text") //
   ) {
     log.error(`This is not an incoming message: ${JSON.stringify(message)}`);
   }
-  const { sms_id, direction, from, to, body } = message;
+  const { id, direction, from: fromPhone, to: toPhone, text, messaging_profile_id } = message;
+  const from = fromPhone.phone_number
+  const to = toPhone[0].phone_number // not sure why this is an array..?
   const contactNumber = getFormattedPhoneNumber(from);
   const userNumber = to ? getFormattedPhoneNumber(to) : "";
 
@@ -388,11 +412,11 @@ export async function handleIncomingMessage(message) {
     contact_number: contactNumber,
     user_number: userNumber,
     is_from_contact: true,
-    text: body,
+    text,
     // media: //TODO: how to get this?
     error_code: null,
-    service_id: sms_id, // what is this used for?
-    // messageservice_sid: applicationId, //TODO: what key is this?
+    service_id: id, // what is this used for?
+    messageservice_sid: messaging_profile_id,
     service: "telnyx",
     send_status: "DELIVERED",
     user_id: null
@@ -420,7 +444,7 @@ export async function handleIncomingMessage(message) {
   // store mediaurl data in Log, so it can be extracted manually
   if (ENABLE_DB_LOG) {
     await Log.save({
-      message_sid: sms_id,
+      message_sid: id,
       body: JSON.stringify(message),
       error_code: -101,
       from_num: from || null,
@@ -586,7 +610,7 @@ export const fullyConfigured = async (organization, serviceManagerData) => {
 export default {
   // buyNumbersInAreaCode,
   createMessagingService,
-  convertMessagePartsToMessage,
+  // convertMessagePartsToMessage,
   // deleteNumbersInAreaCode,
   getMetadata,
   handleIncomingMessage,
