@@ -158,74 +158,73 @@ export async function sendMessage({
   // eslint-disable-next-line camelcase
   const { messagingProfileId: messaging_profile_id } = await getMessageServiceSid(organization)
 
-  return new Promise((resolve, reject) => {
 
-    if (message.service !== 'telnyx') {
-      log.warn('Message not marked as a telnyx message', message.id)
-    }
-    if (!messaging_profile_id) {
-      log.error('Telnyx service vendor failed to get messaging_profile_id')
-    }
+  if (message.service !== 'telnyx') {
+    log.warn('Message not marked as a telnyx message', message.id)
+  }
+  if (!messaging_profile_id) {
+    log.error('Telnyx service vendor failed to get messaging_profile_id')
+  }
 
-    // TODO: set this up
-    const additionalMessageParams = parseMessageText(message);
-    // TODO: 
-    // additionalMessageParams.auto_detect
-    // additionalMessageParams.media_urls
-    // additionalMessageParams.subject
-    // additionalMessageParams.type
-    // additionalMessageParams.use_profile_webhooks
-    // additionalMessageParams.webhook_failover_url
-    // additionalMessageParams.webhook_url
-    // if (
-    //   serviceManagerData &&
-    //   serviceManagerData.forceMms &&
-    //   !additionalMessageParams.mediaUrl
-    // ) {
-    //   // https://www.twilio.com/docs/sms/api/message-resource#create-a-message-resource
-    //   additionalMessageParams.sendAsMms = true; // currently 'in beta'
-    //   // additionalMessageParams.mediaUrl = [];
-    // }
+  // TODO: set this up
+  const additionalMessageParams = parseMessageText(message);
+  // TODO: 
+  // additionalMessageParams.auto_detect
+  // additionalMessageParams.media_urls
+  // additionalMessageParams.subject
+  // additionalMessageParams.type
+  // additionalMessageParams.use_profile_webhooks
+  // additionalMessageParams.webhook_failover_url
+  // additionalMessageParams.webhook_url
+  // if (
+  //   serviceManagerData &&
+  //   serviceManagerData.forceMms &&
+  //   !additionalMessageParams.mediaUrl
+  // ) {
+  //   // https://www.twilio.com/docs/sms/api/message-resource#create-a-message-resource
+  //   additionalMessageParams.sendAsMms = true; // currently 'in beta'
+  //   // additionalMessageParams.mediaUrl = [];
+  // }
 
-    const messageParams = {
-      to: message.contact_number,
-      text: message.text,
-      messaging_profile_id: messaging_profile_id
-      // TODO: does this matter & how to get them?
-      // 'media_urls': [ 
-      //   //     'https://picsum.photos/500.jpg'
-      //   //   ]
-    }
+  const messageParams = {
+    to: message.contact_number,
+    text: message.text,
+    messaging_profile_id: messaging_profile_id
+    // TODO: does this matter & how to get them?
+    // 'media_urls': [ 
+    //   //     'https://picsum.photos/500.jpg'
+    //   //   ]
+  }
 
-    // userNumber ? { from: userNumber } : {},
-    // messagingServiceSid ? { messaging_profile_id: messagingServiceSid } : {},
-    // additionalMessageParams
-    // )
+  // userNumber ? { from: userNumber } : {},
+  // messagingServiceSid ? { messaging_profile_id: messagingServiceSid } : {},
+  // additionalMessageParams
+  // )
 
-    telnyx.messages.create(messageParams, (err, response) => {
-      // asynchronously called
-      postMessageSend(
-        message,
-        contact,
-        trx,
-        resolve,
-        reject,
-        err,
-        response,
-        organization,
-        changes
-      );
-      console.log(response);
-    })
-  })
+  let response
+  let err
+  try {
+    response = await telnyx.messages.create(messageParams)
+    //TODO: remove
+    console.log(response);
+  } catch (err) {
+    err = err
+  }
+  await postMessageSend(
+    message,
+    contact,
+    trx,
+    err,
+    response,
+    organization,
+    changes
+  );
 }
 
-export function postMessageSend(
+export async function postMessageSend(
   message,
   contact,
   trx,
-  resolve,
-  reject,
   err,
   response,
   organization,
@@ -283,17 +282,17 @@ export function postMessageSend(
       }
     }
 
-    updateQuery = updateQuery.update(changesToSave);
 
-    Promise.all([updateQuery, contactUpdateQuery]).then(() => {
-      console.log("Saved message error status", changesToSave, err);
-      reject(
-        err ||
-        (response
-          ? new Error(JSON.stringify(response))
-          : new Error("Encountered unknown error"))
-      );
-    });
+    //TODO: need to grab & save the carrier information somewhere
+
+    await updateQuery.update(changesToSave);
+    await contactUpdateQuery()
+
+    console.log("Saved message error status", changesToSave, err);
+
+    const status = err || (response ? new Error(JSON.stringify(response)) : new Error("Encountered unknown error"))
+
+    return status
   } else {
     changesToSave = {
       ...changesToSave,
@@ -301,70 +300,65 @@ export function postMessageSend(
       service: "telnyx",
       sent_at: new Date()
     };
-    Promise.all([
-      updateQuery.update(changesToSave),
-      cacheableData.campaignContact.updateStatus(
+    try {
+      await updateQuery.update(changesToSave)
+      await cacheableData.campaignContact.updateStatus(
         contact,
         undefined,
         // changesToSave.messageservice_sid || changesToSave.user_number
       )
-    ])
-      .then(() => {
-        resolve({
-          ...message,
-          ...changesToSave
-        });
-      })
-      .catch(caught => {
-        console.error(
-          "Failed message and contact update on telnyx postMessageSend",
-          caught
-        );
-        reject(caught);
-      });
+      return { ...message, ...changesToSave }
+    } catch (err) {
+
+    }
+    console.error(
+      "Failed message and contact update on telnyx postMessageSend",
+      err
+    );
+    return err
   }
 }
 
 // TODO: test this to see if it works with telnyx
-async function convertMessagePartsToMessage(messageParts) {
-  const firstPart = messageParts[0];
-  const userNumber = firstPart.user_number;
-  const contactNumber = firstPart.contact_number;
-  const serviceMessages = messageParts.map(part =>
-    JSON.parse(part.service_message)
-  );
-  const text = serviceMessages
-    .map(serviceMessage => serviceMessage.Body)
-    .join("")
-    .replace(/\0/g, ""); // strip all UTF-8 null characters (0x00)
-  const media = serviceMessages
-    .map(serviceMessage => {
-      const mediaItems = [];
-      for (let m = 0; m < Number(serviceMessage.NumMedia); m++) {
-        mediaItems.push({
-          type: serviceMessage[`MediaContentType${m}`],
-          url: serviceMessage[`MediaUrl${m}`]
-        });
-      }
-      return mediaItems;
-    })
-    .reduce((acc, val) => acc.concat(val), []); // flatten array
-  return new Message({
-    contact_number: contactNumber,
-    user_number: userNumber,
-    is_from_contact: true,
-    text,
-    media,
-    error_code: null,
-    service_id: firstPart.service_id,
-    // will be set during cacheableData.message.save()
-    // campaign_contact_id: lastMessage.campaign_contact_id,
-    messageservice_sid: serviceMessages[0].MessagingServiceSid,
-    service: "telnyx",
-    send_status: "DELIVERED",
-    user_id: null
-  });
-}
+// async function convertMessagePartsToMessage(messageParts) {
+//   const firstPart = messageParts[0];
+//   const userNumber = firstPart.user_number;
+//   const contactNumber = firstPart.contact_number;
+//   const serviceMessages = messageParts.map(part =>
+//     JSON.parse(part.service_message)
+//   );
+//   const text = serviceMessages
+//     .map(serviceMessage => serviceMessage.Body)
+//     .join("")
+//     .replace(/\0/g, ""); // strip all UTF-8 null characters (0x00)
+//   const media = serviceMessages
+//     .map(serviceMessage => {
+//       const mediaItems = [];
+//       for (let m = 0; m < Number(serviceMessage.NumMedia); m++) {
+//         mediaItems.push({
+//           type: serviceMessage[`MediaContentType${m}`],
+//           url: serviceMessage[`MediaUrl${m}`]
+//         });
+//       }
+//       return mediaItems;
+//     })
+//     .reduce((acc, val) => acc.concat(val), []); // flatten array
+//   return new Message({
+//     contact_number: contactNumber,
+//     user_number: userNumber,
+//     is_from_contact: true,
+//     text,
+//     media,
+//     error_code: null,
+//     service_id: firstPart.service_id,
+//     // will be set during cacheableData.message.save()
+//     // campaign_contact_id: lastMessage.campaign_contact_id,
+//     messageservice_sid: serviceMessages[0].MessagingServiceSid,
+//     service: "telnyx",
+//     send_status: "DELIVERED",
+//     user_id: null
+//   });
+// }
 
 export async function handleIncomingMessage(message) {
   if (
@@ -380,86 +374,102 @@ export async function handleIncomingMessage(message) {
   const contactNumber = getFormattedPhoneNumber(from);
   const userNumber = to ? getFormattedPhoneNumber(to) : "";
 
-  const pendingMessagePart = new PendingMessagePart({
-    service: "telnyx",
-    service_id: sms_id, // what is this used for?
-    parent_id: null, // why is this null? - test to see if telnyx builds the message parts automatically
-    // service_message: body,
-    service_message: JSON.stringify(message),
-    user_number: userNumber,
-    contact_number: contactNumber
-  });
+  // const pendingMessagePart = new PendingMessagePart({
+  //   service: "telnyx",
+  //   service_id: sms_id, // what is this used for?
+  //   parent_id: null, // why is this null? - test to see if telnyx builds the message parts automatically
+  //   // service_message: body,
+  //   service_message: JSON.stringify(message),
+  //   user_number: userNumber,
+  //   contact_number: contactNumber
+  // });
 
-  if (JOBS_SAME_PROCESS) {
-    // Handle the message directly and skip saving an intermediate part
-    const finalMessage = await convertMessagePartsToMessage([
-      pendingMessagePart
-    ]);
-    console.log("Contact reply", finalMessage, pendingMessagePart);
-    if (finalMessage) {
-      if (message.spokeCreatedAt) {
-        finalMessage.created_at = message.spokeCreatedAt;
-      }
-      await saveNewIncomingMessage(finalMessage);
-    }
-  } else {
-    // If multiple processes, just insert the message part and let another job handle it
-    await r.knex("pending_message_part").insert(pendingMessagePart);
-  }
+  const finalMessage = new Message({
+    contact_number: contactNumber,
+    user_number: userNumber,
+    is_from_contact: true,
+    text: body,
+    // media: //TODO: how to get this?
+    error_code: null,
+    service_id: sms_id, // what is this used for?
+    // messageservice_sid: applicationId, //TODO: what key is this?
+    service: "telnyx",
+    send_status: "DELIVERED",
+    user_id: null
+  })
+
+  await saveNewIncomingMessage(finalMessage);
+
+  // if (JOBS_SAME_PROCESS) {
+  //   // Handle the message directly and skip saving an intermediate part
+  //   const finalMessage = await convertMessagePartsToMessage([
+  //     pendingMessagePart
+  //   ]);
+  //   console.log("Contact reply", finalMessage, pendingMessagePart);
+  //   if (finalMessage) {
+  //     if (message.spokeCreatedAt) {
+  //       finalMessage.created_at = message.spokeCreatedAt;
+  //     }
+  //     await saveNewIncomingMessage(finalMessage);
+  //   }
+  // } else {
+  //   // If multiple processes, just insert the message part and let another job handle it
+  //   await r.knex("pending_message_part").insert(pendingMessagePart);
+  // }
 
   // store mediaurl data in Log, so it can be extracted manually
   if (ENABLE_DB_LOG) {
     await Log.save({
-      message_sid: MessageSid,
+      message_sid: sms_id,
       body: JSON.stringify(message),
       error_code: -101,
-      from_num: From || null,
-      to_num: To || null
+      from_num: from || null,
+      to_num: to || null
     });
   }
 }
 
 
-export async function buyNumbersInAreaCode(organization, areaCode, limit) {
-  // const rows = [];
-  // for (let i = 0; i < limit; i++) {
-  //   const last4 = limit.toString().padStart(4, "0");
-  //   rows.push({
-  //     organization_id: organization.id,
-  //     area_code: areaCode,
-  //     phone_number: `+1${areaCode}XYZ${last4}`,
-  //     service: "fakeservice",
-  //     service_id: uuid.v4()
-  //   });
-  // }
+// export async function buyNumbersInAreaCode(organization, areaCode, limit) {
+// const rows = [];
+// for (let i = 0; i < limit; i++) {
+//   const last4 = limit.toString().padStart(4, "0");
+//   rows.push({
+//     organization_id: organization.id,
+//     area_code: areaCode,
+//     phone_number: `+1${areaCode}XYZ${last4}`,
+//     service: "fakeservice",
+//     service_id: uuid.v4()
+//   });
+// }
 
-  // add some latency
-  // await new Promise(resolve => setTimeout(resolve, limit * 25));
-  // await r.knex("owned_phone_number").insert(rows);
-  // return limit;
-}
+// add some latency
+// await new Promise(resolve => setTimeout(resolve, limit * 25));
+// await r.knex("owned_phone_number").insert(rows);
+// return limit;
+// }
 
-export async function deleteNumbersInAreaCode(organization, areaCode) {
-  // const numbersToDelete = (
-  //   await r
-  //     .knex("owned_phone_number")
-  //     .select("service_id")
-  //     .where({
-  //       organization_id: organization.id,
-  //       area_code: areaCode,
-  //       service: "fakeservice",
-  //       allocated_to: null
-  //     })
-  // ).map(row => row.service_id);
-  // const count = numbersToDelete.length;
-  // // add some latency
-  // await new Promise(resolve => setTimeout(resolve, count * 25));
-  // await r
-  //   .knex("owned_phone_number")
-  //   .del()
-  //   .whereIn("service_id", numbersToDelete);
-  // return count;
-}
+// export async function deleteNumbersInAreaCode(organization, areaCode) {
+// const numbersToDelete = (
+//   await r
+//     .knex("owned_phone_number")
+//     .select("service_id")
+//     .where({
+//       organization_id: organization.id,
+//       area_code: areaCode,
+//       service: "fakeservice",
+//       allocated_to: null
+//     })
+// ).map(row => row.service_id);
+// const count = numbersToDelete.length;
+// // add some latency
+// await new Promise(resolve => setTimeout(resolve, count * 25));
+// await r
+//   .knex("owned_phone_number")
+//   .del()
+//   .whereIn("service_id", numbersToDelete);
+// return count;
+// }
 
 // Does a lookup for carrier and optionally the contact name
 // export async function getContactInfo({
@@ -574,10 +584,10 @@ export const fullyConfigured = async (organization, serviceManagerData) => {
 
 
 export default {
-  buyNumbersInAreaCode,
+  // buyNumbersInAreaCode,
   createMessagingService,
   convertMessagePartsToMessage,
-  deleteNumbersInAreaCode,
+  // deleteNumbersInAreaCode,
   getMetadata,
   handleIncomingMessage,
   fullyConfigured,
