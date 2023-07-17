@@ -2,20 +2,16 @@
 /* eslint-disable no-use-before-define */
 /* eslint-disable import/prefer-default-export */
 import Telnyx from "telnyx"
-import urlJoin from "url-join";
-import { getLastMessage } from "../message-sending";
 import {
   Message,
-  PendingMessagePart,
   r,
   cacheableData
 } from "../../../server/models";
-import uuid from "uuid";
 import wrap from "../../../server/wrap";
 import { log } from "../../../lib";
-import { getMessageServiceConfig, getConfigKey } from "../service_map";
+import { getConfigKey } from "../service_map";
 import { saveNewIncomingMessage, parseMessageText } from "../message-sending";
-import { getConfig, hasConfig } from "../../../server/api/lib/config";
+import { getConfig } from "../../../server/api/lib/config";
 import { getFormattedPhoneNumber } from "../../../lib/phone-format";
 import errors from './errors.json'
 
@@ -41,25 +37,15 @@ export const getMetadata = () => ({
 /**
  * Validate that the message came from Telnyx before proceeding.
  */
-const headerValidator = () => {
-  if (!!TELNYX_SKIP_VALIDATION) return (req, res, next) => next();
-
-  return async (req, res, next) => {
-    try {
-      telnyx.webhooks.constructEvent(
-        // webhook data needs to be passed raw for verification
-        JSON.stringify(req.body, null, 2),
-        req.header('telnyx-signature-ed25519'),
-        req.header('telnyx-timestamp'),
-        TELNYX_PUB_KEY
-      );
-    } catch (e) {
-      // If `constructEvent` throws an error, respond with the message and return.
-      console.log('Error', e.message);
-
-      return res.status(400).send('Webhook Error:' + e.message);
-    }
-  };
+const headerValidator = (req) => {
+  if (!!TELNYX_SKIP_VALIDATION) return;
+  telnyx.webhooks.constructEvent(
+    // webhook data needs to be passed raw for verification
+    JSON.stringify(req.body, null, 2),
+    req.header('telnyx-signature-ed25519'),
+    req.header('telnyx-timestamp'),
+    TELNYX_PUB_KEY
+  );
 };
 
 // TODO: what's the cost data?
@@ -80,59 +66,40 @@ export function errorDescription(errorCode) {
   };
 }
 
+const webhooks = {
+  "message.sent": handleDeliveryReport,
+  "message.failed": handleDeliveryReport,
+  "message.received": handleIncomingMessage,
+  "message.finalized": () => Promise.resolve() //TODO: does this need to be implemented?
+};
+
 
 export function addServerEndpoints(addPostRoute) {
   if (TELNYX_API_KEY) {
     addPostRoute(
       "/telnyx",
-      // TODO: setup these env vars
-      // headerValidator(getConfig('TELNYX_MESSAGE_CALLBACK_URL')),
-      /**
-       * req: {meta, data} //TODO: what are these objects
-       */
       wrap(async (req, res) => {
         try {
+          headerValidator(req)
           // telnyx
-          // TODO: telnyx handle incoming
-          // const messageId = await nexmo.handleIncomingMessage(req.body);
           //TODO: reconcile two ids: req.body.data.id and req.body.data.payload.id
           //has {}
           const eventType = req.body.data.event_type;
-          if (eventType == 'message.received') {
-            await handleIncomingMessage(req.body.data.payload);
-          } else if (eventType) {
-            console.log(`telnyx event type: ${eventType} not configured`)
+          const payload = req.body.data.payload
+          if (eventType) {
+            if (webhooks[eventType]) {
+              await webhooks[eventType](payload, req.params);
+            }
           }
-          // res.send(messageId);
-          res.send('done')
+          res.writeHead(200, { "Content-Type": "application/json" });
+          res.end('{"success": true}');
         } catch (ex) {
           log.error(ex);
-          res.send("done");
+          res.writeHead(500, { "Content-Type": "application/json" });
+          res.end()
         }
       })
     )
-
-    const messageReportHooks = [];
-    messageReportHooks.push(
-      headerValidator()
-    )
-    messageReportHooks.push(
-      wrap(async (req, res) => {
-        try {
-          const body = req.body;
-          // TODO: implement this
-          // await handleDeliveryReport(body);
-        } catch (ex) {
-          log.error(ex);
-        }
-        // TODO: how to respond to the webook?
-        // const resp = new twilioLibrary.twiml.MessagingResponse();
-        // res.writeHead(200, { "Content-Type": "text/xml" });
-        // res.end(resp.toString());
-      })
-    );
-
-    addPostRoute("/telnyx-message-report", ...messageReportHooks);
 
   }
 }
@@ -152,11 +119,6 @@ export async function sendMessage({
     message && message.id,
     contact && contact.id
   );
-  // let userNumber =
-  //   (serviceManagerData && serviceManagerData.user_number) ||
-  //   message.user_number;
-
-  // Note organization won't always be available, so then contact can trace to it
   // eslint-disable-next-line camelcase
   const { messagingProfileId: messaging_profile_id } = await getMessageServiceSid(organization)
 
@@ -332,57 +294,26 @@ export async function postMessageSend(
   }
 }
 
-// TODO: test this to see if it works with telnyx
-// async function convertMessagePartsToMessage(messageParts) {
-//   const firstPart = messageParts[0];
-//   const userNumber = firstPart.user_number;
-//   const contactNumber = firstPart.contact_number;
-//   const serviceMessages = messageParts.map(part =>
-//     JSON.parse(part.service_message)
-//   );
-//   const text = serviceMessages
-//     .map(serviceMessage => serviceMessage.Body)
-//     .join("")
-//     .replace(/\0/g, ""); // strip all UTF-8 null characters (0x00)
-//   const media = serviceMessages
-//     .map(serviceMessage => {
-//       const mediaItems = [];
-//       for (let m = 0; m < Number(serviceMessage.NumMedia); m++) {
-//         mediaItems.push({
-//           type: serviceMessage[`MediaContentType${m}`],
-//           url: serviceMessage[`MediaUrl${m}`]
-//         });
-//       }
-//       return mediaItems;
-//     })
-//     .reduce((acc, val) => acc.concat(val), []); // flatten array
-//   return new Message({
-//     contact_number: contactNumber,
-//     user_number: userNumber,
-//     is_from_contact: true,
-//     text,
-//     media,
-//     error_code: null,
-//     service_id: firstPart.service_id,
-//     // will be set during cacheableData.message.save()
-//     // campaign_contact_id: lastMessage.campaign_contact_id,
-//     messageservice_sid: serviceMessages[0].MessagingServiceSid,
-//     service: "telnyx",
-//     send_status: "DELIVERED",
-//     user_id: null
-//   });
-// }
+const parseMessage = (message) => {
+  const { id, from: fromPhone, to: toPhone, text, messaging_profile_id: messageservice_sid } = message;
+  const from = fromPhone.phone_number
+  const to = toPhone[0].phone_number // not sure why this is an array..?
+  const contact_number = getFormattedPhoneNumber(from);
+  const user_number = to ? getFormattedPhoneNumber(to) : "";
+  return { id, contact_number, messageservice_sid, text, user_number }
+}
 
 /**
  * Process a message from Telnyx
  * @param {*} message 
+ * @param params - request params
  * message.direction string
  * message.from {carrier: 'Verizon Wireless', line_type: 'Wireless', phone_number: '+15412803322'}
  * message.to 0:{carrier: 'Telnyx', line_type: 'Wireless', phone_number: '+13642148507', status: 'webhook_delivered'}
  * message.text: string
  * message.messaging_profile_id: string
  */
-export async function handleIncomingMessage(message) {
+export async function handleIncomingMessage(message, { orgId }) {
   if (
     !message.hasOwnProperty("id") ||
     !message.hasOwnProperty("direction") ||
@@ -392,54 +323,23 @@ export async function handleIncomingMessage(message) {
   ) {
     log.error(`This is not an incoming message: ${JSON.stringify(message)}`);
   }
-  const { id, direction, from: fromPhone, to: toPhone, text, messaging_profile_id } = message;
-  const from = fromPhone.phone_number
-  const to = toPhone[0].phone_number // not sure why this is an array..?
-  const contactNumber = getFormattedPhoneNumber(from);
-  const userNumber = to ? getFormattedPhoneNumber(to) : "";
-
-  // const pendingMessagePart = new PendingMessagePart({
-  //   service: "telnyx",
-  //   service_id: sms_id, // what is this used for?
-  //   parent_id: null, // why is this null? - test to see if telnyx builds the message parts automatically
-  //   // service_message: body,
-  //   service_message: JSON.stringify(message),
-  //   user_number: userNumber,
-  //   contact_number: contactNumber
-  // });
+  const { id, contact_number, messageservice_sid, text, user_number } = parseMessage(message)
 
   const finalMessage = new Message({
-    contact_number: contactNumber,
-    user_number: userNumber,
+    contact_number,
+    user_number,
     is_from_contact: true,
     text,
     // media: //TODO: how to get this?
     error_code: null,
     service_id: id, // what is this used for?
-    messageservice_sid: messaging_profile_id,
+    messageservice_sid,
     service: "telnyx",
     send_status: "DELIVERED",
     user_id: null
   })
 
   await saveNewIncomingMessage(finalMessage);
-
-  // if (JOBS_SAME_PROCESS) {
-  //   // Handle the message directly and skip saving an intermediate part
-  //   const finalMessage = await convertMessagePartsToMessage([
-  //     pendingMessagePart
-  //   ]);
-  //   console.log("Contact reply", finalMessage, pendingMessagePart);
-  //   if (finalMessage) {
-  //     if (message.spokeCreatedAt) {
-  //       finalMessage.created_at = message.spokeCreatedAt;
-  //     }
-  //     await saveNewIncomingMessage(finalMessage);
-  //   }
-  // } else {
-  //   // If multiple processes, just insert the message part and let another job handle it
-  //   await r.knex("pending_message_part").insert(pendingMessagePart);
-  // }
 
   // store mediaurl data in Log, so it can be extracted manually
   if (ENABLE_DB_LOG) {
@@ -454,73 +354,34 @@ export async function handleIncomingMessage(message) {
 }
 
 
-// export async function buyNumbersInAreaCode(organization, areaCode, limit) {
-// const rows = [];
-// for (let i = 0; i < limit; i++) {
-//   const last4 = limit.toString().padStart(4, "0");
-//   rows.push({
-//     organization_id: organization.id,
-//     area_code: areaCode,
-//     phone_number: `+1${areaCode}XYZ${last4}`,
-//     service: "fakeservice",
-//     service_id: uuid.v4()
-//   });
-// }
+/**
+ * Parse the result of the message being sent
+ * @param {*} payload 
+ */
+export async function handleDeliveryReport(message, { orgId }) {
+  console.log('telnyx.handleDeliveryReport', { message })
 
-// add some latency
-// await new Promise(resolve => setTimeout(resolve, limit * 25));
-// await r.knex("owned_phone_number").insert(rows);
-// return limit;
-// }
+  const { id, contact_number, messageservice_sid, text, user_number } = parseMessage(message)
+  const deliveryReport = {
+    contactNumber: contact_number,
+    userNumber: user_number,
+    messageSid: id,
+    service: "telnyx",
+    messageServiceSid: messageservice_sid,
+    //TODO: how to trigger error here?
+    newStatus: message.errors.length > 0 ? "ERROR" : "DELIVERED",
+    // newStatus: report.type === "message-failed" ? "ERROR" : "DELIVERED",
+    //TODO: get proper error
+    // errorCode: Number(report.errorCode || 0) || 0
+    // errorCode: message.errors.length > 0 ? messages.errors[0]
+  };
+  await cacheableData.message.deliveryReport(deliveryReport);
+}
 
-// export async function deleteNumbersInAreaCode(organization, areaCode) {
-// const numbersToDelete = (
-//   await r
-//     .knex("owned_phone_number")
-//     .select("service_id")
-//     .where({
-//       organization_id: organization.id,
-//       area_code: areaCode,
-//       service: "fakeservice",
-//       allocated_to: null
-//     })
-// ).map(row => row.service_id);
-// const count = numbersToDelete.length;
-// // add some latency
-// await new Promise(resolve => setTimeout(resolve, count * 25));
-// await r
-//   .knex("owned_phone_number")
-//   .del()
-//   .whereIn("service_id", numbersToDelete);
-// return count;
-// }
-
-// Does a lookup for carrier and optionally the contact name
-// export async function getContactInfo({
-// organization,
-// contactNumber,
-// Boolean: maybe twilio-specific?
-// lookupName
-// }) {
-// if (!contactNumber) {
-//   return {};
-// }
-// const contactInfo = {
-//   carrier: "FakeCarrier",
-//   // -1 is a landline, 1 is a mobile number
-//   // we test against one of the lower digits to randomly
-//   // but deterministically vary on the landline
-//   status_code: contactNumber[11] === "2" ? -1 : 1
-// };
-// if (lookupName) {
-//   contactInfo.lookup_name = `Foo ${parseInt(Math.random() * 1000)}`;
-// }
-// return contactInfo;
-// }
-
+// FUTURE: this has not been implemented
 export async function createMessagingService(organization, friendlyName) {
+  //where does this name come from?
   console.log("telnyx.createMessagingService", organization.id, friendlyName);
-  // TODO: test where does this name come from?
 
   const telnyxBaseUrl =
     getConfig("TELNYX_BASE_CALLBACK_URL", organization) ||
@@ -530,11 +391,11 @@ export async function createMessagingService(organization, friendlyName) {
     name: friendlyName,
     webhook_url: urljoin(telnyxBaseUrl, "telnyx-message-report", organization.id.toString()),
     number_pool_setting: {
-      geomatch: true, // TODO: verify this
-      long_code_weight: 50, // TODO: verify this
-      skip_unhealthy: true, // TODO: verify this
-      sticky_sender: true, // TODO: verify this
-      toll_free_weight: 0 // TODO: verify this
+      geomatch: true, // FUTURE: verify this
+      long_code_weight: 50, // FUTURE: verify this
+      skip_unhealthy: true, // FUTURE: verify this
+      sticky_sender: true, // FUTURE: verify this
+      toll_free_weight: 0 // FUTURE: verify this
     },
     url_shortener_settings: null // TODO: this may improve deliverability
   })
@@ -597,6 +458,8 @@ export const getMessageServiceSid = async (
  * @returns 
  */
 export const fullyConfigured = async (organization, serviceManagerData) => {
+  //TODO: add TELNYX_API_KEY
+  //TODO: add TELNYX_PUBLIC_KEY
   console.log('telnyx::fullConfigured', { organization })
   const result = await getMessageServiceSid(organization)
   if (result.messagingProfileId) {
