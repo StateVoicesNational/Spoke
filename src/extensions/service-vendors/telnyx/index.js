@@ -16,12 +16,9 @@ import { getFormattedPhoneNumber } from "../../../lib/phone-format";
 import errors from './errors.json'
 
 const ENABLE_DB_LOG = getConfig("ENABLE_DB_LOG");
-const MAX_SEND_ATTEMPTS = 5;
 const TELNYX_SKIP_VALIDATION = getConfig("TELNYX_SKIP_VALIDATION");
 const TELNYX_API_KEY = getConfig('TELNYX_API_KEY')
 const TELNYX_PUB_KEY = getConfig('TELNYX_PUBLIC_KEY')
-// const TELNYX_MESSAGING_PROFILE = getConfig('TELNYX_MESSAGING_PROFILE')
-const JOBS_SAME_PROCESS = getConfig("JOBS_SAME_PROCESS")
 
 let telnyx = null;
 if (TELNYX_API_KEY) {
@@ -36,6 +33,7 @@ export const getMetadata = () => ({
 
 /**
  * Validate that the message came from Telnyx before proceeding.
+ * @param {*} req - express request
  */
 const headerValidator = (req) => {
   if (!!TELNYX_SKIP_VALIDATION) return;
@@ -48,9 +46,12 @@ const headerValidator = (req) => {
   );
 };
 
-// TODO: what's the cost data?
-// export function costData(organization, userNumber) {
-// }
+export const costData = (organization, userNumber) => ({
+  source: "https://portal.telnyx.com",
+  lastChecked: "2023-07-18",
+  mmsMessage: 0.012,
+  smsSegment: 0.0009
+});
 
 /**
  * Get the error description from the errors json
@@ -77,13 +78,10 @@ const webhooks = {
 export function addServerEndpoints(addPostRoute) {
   if (TELNYX_API_KEY) {
     addPostRoute(
-      "/telnyx",
+      "/telnyx/:orgId",
       wrap(async (req, res) => {
         try {
           headerValidator(req)
-          // telnyx
-          //TODO: reconcile two ids: req.body.data.id and req.body.data.payload.id
-          //has {}
           const eventType = req.body.data.event_type;
           const payload = req.body.data.payload
           if (eventType) {
@@ -102,6 +100,18 @@ export function addServerEndpoints(addPostRoute) {
     )
 
   }
+}
+
+function extractImageUrls(text) {
+  const urlRegex = /(https?:\/\/[^\s]+?\.(?:jpg|jpeg|png|gif|bmp))/gi;
+  let match;
+  let urls = [];
+
+  while ((match = urlRegex.exec(text)) !== null) {
+    urls.push(match[0]);
+  }
+
+  return urls;
 }
 
 
@@ -135,63 +145,56 @@ export async function sendMessage({
     messageservice_sid: messaging_profile_id,
     send_status: "SENT",
     sent_at: new Date(),
-    // error_code: errorCode ? errorCode[1] : null
   };
 
   // TODO: set this up
   const additionalMessageParams = parseMessageText(message);
-  // TODO: 
+  // TODO: how to flag the type of mms vs sms?
+  // TODO: how to setup subject for mms?
   // additionalMessageParams.auto_detect
   // additionalMessageParams.media_urls
   // additionalMessageParams.subject
   // additionalMessageParams.type
-  // additionalMessageParams.use_profile_webhooks
-  // additionalMessageParams.webhook_failover_url
-  // additionalMessageParams.webhook_url
-  // if (
-  //   serviceManagerData &&
-  //   serviceManagerData.forceMms &&
-  //   !additionalMessageParams.mediaUrl
-  // ) {
-  //   // https://www.twilio.com/docs/sms/api/message-resource#create-a-message-resource
-  //   additionalMessageParams.sendAsMms = true; // currently 'in beta'
-  //   // additionalMessageParams.mediaUrl = [];
-  // }
 
   const messageParams = {
     to: message.contact_number,
     text: message.text,
-    messaging_profile_id: messaging_profile_id
-    // TODO: does this matter & how to get them?
-    // 'media_urls': [ 
-    //   //     'https://picsum.photos/500.jpg'
-    //   //   ]
+    messaging_profile_id: messaging_profile_id,
   }
 
-  // userNumber ? { from: userNumber } : {},
-  // messagingServiceSid ? { messaging_profile_id: messagingServiceSid } : {},
-  // additionalMessageParams
-  // )
+  // TODO: test this
+  const extractedUrls = extractImageUrls(message.text);
+  if (extractedUrls.length > 0) {
+    messageParams.media_urls = extractedUrls;
+  }
 
   let response
   let err
   try {
+    //TODO:  this is erroring with undefined error
     const result = await telnyx.messages.create(messageParams)
     response = result.data
-    //TODO: remove
-    console.log(response);
+    await postMessageSend(
+      message,
+      contact,
+      trx,
+      err,
+      response,
+      organization,
+      changes
+    );
   } catch (err) {
     err = err
+    await postMessageSend(
+      message,
+      contact,
+      trx,
+      err,
+      response,
+      organization,
+      changes
+    );
   }
-  await postMessageSend(
-    message,
-    contact,
-    trx,
-    err,
-    response,
-    organization,
-    changes
-  );
 }
 
 export async function postMessageSend(
@@ -217,10 +220,10 @@ export async function postMessageSend(
   }
   if (response) {
     // changesToSave.service_id = response.sid;
-    //TODO: is this the id for the incoming message?
+    //TEST: is this the id for the incoming message?
     changesToSave.service_id = response.id;
     // TODO: test if this can be an array
-    hasError = response.errors.length
+    hasError = response.errors.length > 0
     // hasError = !!response.error_code;
     if (hasError) {
       // changesToSave.error_code = response.error_code;
@@ -236,16 +239,6 @@ export async function postMessageSend(
   }
 
   if (hasError) {
-    if (err) {
-      // TODO: for some errors we should *not* retry
-      // TODO: this wont work with an array of
-      // if (message.error_code <= -MAX_SEND_ATTEMPTS) {
-      //   changesToSave.send_status = "ERROR";
-      // }
-      // // decrement error code starting from zero
-      // changesToSave.error_code = Number(message.error_code || 0) - 1;
-    }
-
     let contactUpdateQuery = Promise.resolve(1);
     if (message.campaign_contact_id && changesToSave.error_code) {
       contactUpdateQuery = r
@@ -280,7 +273,7 @@ export async function postMessageSend(
       await cacheableData.campaignContact.updateStatus(
         contact,
         undefined,
-        // changesToSave.messageservice_sid || changesToSave.user_number
+        changesToSave.messageservice_sid
       )
       return { ...message, ...changesToSave }
     } catch (err) {
@@ -356,7 +349,7 @@ export async function handleIncomingMessage(message, { orgId }) {
 
 /**
  * Parse the result of the message being sent
- * @param {*} payload 
+ * @param {*} message
  */
 export async function handleDeliveryReport(message, { orgId }) {
   console.log('telnyx.handleDeliveryReport', { message })
@@ -368,7 +361,18 @@ export async function handleDeliveryReport(message, { orgId }) {
     messageSid: id,
     service: "telnyx",
     messageServiceSid: messageservice_sid,
-    //TODO: how to trigger error here?
+    //TODO: landline message didn't get error
+    /* shows as this...
+    to: [
+    {
+      phone_number: '+17177613265',
+      status: 'queued',
+      carrier: 'VERIZON PENNSYLVANIA, INC.',
+      line_type: 'Wireline'
+    }
+  ],
+    */
+    //TEST: with bad messaging service..?
     newStatus: message.errors.length > 0 ? "ERROR" : "DELIVERED",
     // newStatus: report.type === "message-failed" ? "ERROR" : "DELIVERED",
     //TODO: get proper error
@@ -379,6 +383,9 @@ export async function handleDeliveryReport(message, { orgId }) {
 }
 
 // FUTURE: this has not been implemented
+/**
+ * Create a messaging profile id within Telnyx
+ */
 export async function createMessagingService(organization, friendlyName) {
   //where does this name come from?
   console.log("telnyx.createMessagingService", organization.id, friendlyName);
@@ -402,6 +409,9 @@ export async function createMessagingService(organization, friendlyName) {
   return result
 }
 
+/**
+ * This is triggered when the organization configurion changes
+ */
 export async function updateConfig(
   oldConfig,
   config,
@@ -421,6 +431,9 @@ export async function updateConfig(
 
 }
 
+/**
+ * Returned to the react component for the organization config
+ */
 export const getServiceConfig = async (
   serviceConfig,
   organization,
@@ -436,6 +449,9 @@ export const getServiceConfig = async (
   return { messagingProfileId }
 }
 
+/**
+ * Called from various places to get the messaging profile id 
+ */
 export const getMessageServiceSid = async (
   organization,
   contact,
@@ -458,23 +474,27 @@ export const getMessageServiceSid = async (
  * @returns 
  */
 export const fullyConfigured = async (organization, serviceManagerData) => {
-  //TODO: add TELNYX_API_KEY
-  //TODO: add TELNYX_PUBLIC_KEY
   console.log('telnyx::fullConfigured', { organization })
   const result = await getMessageServiceSid(organization)
+  if (!TELNYX_PUB_KEY) {
+    log.error(`org: ${organization} using service Telnyx missing TELNYX_PUB_KEY`)
+    return false
+  }
+  if (!TELNYX_API_KEY) {
+    log.error(`org: ${organization} using service Telnyx missing TELNYX_API_KEY`)
+    return false
+  }
   if (result.messagingProfileId) {
     return true
   }
+  log.error(`org: ${organization} failed to load Telnyx requirements`)
   return false
 
 };
 
 
 export default {
-  // buyNumbersInAreaCode,
   createMessagingService,
-  // convertMessagePartsToMessage,
-  // deleteNumbersInAreaCode,
   getMetadata,
   handleIncomingMessage,
   fullyConfigured,
