@@ -247,6 +247,9 @@ export async function postMessageSend(
         undefined,
         changesToSave.messageservice_sid
       )
+      if (response && response.to && response.to.length > 0) {
+        await handleOrganizationContact({ organizationId: organization.id, contactNumber: message.contact_number, to: response.to[0] })
+      }
       return { ...message, ...changesToSave }
     } catch (err) {
 
@@ -313,6 +316,49 @@ export async function handleIncomingMessage(message, { orgId }) {
       from_num: from || null,
       to_num: to || null
     });
+  }
+}
+
+/**
+ * Write carrier information to organization_contact table
+ * @param {*} to 
+ *  {
+     phone_number: '+17177613265',
+     status: 'queued',
+     carrier: 'VERIZON PENNSYLVANIA, INC.',
+     line_type: 'Wireline'
+   }
+ */
+async function handleOrganizationContact({ organizationId, contactNumber, to }) {
+  try {
+    console.log('handle organization concat called')
+    const organizationContact = await cacheableData.organizationContact.query({
+      organizationId,
+      contactNumber
+    })
+
+    // STATUS_CODE
+    // -1 = landline
+    // 1 = mobile or voip number
+    // positive statuses should mean 'textable' and negative should mean untextable
+    const status_code = to.line_type === 'Wireless' ? 1 : -1
+
+    const orgContact = organizationContact ? organizationContact : {}
+    orgContact.organization_id = organizationId
+    orgContact.contact_number = to.phone_number
+    orgContact.carrier = to.carrier
+    orgContact.status_code = status_code
+    orgContact.service = 'telnyx'
+
+    if (!organizationContact) {
+      await cacheableData.organizationContact.save(orgContact);
+    } else {
+      await cacheableData.organizationContact.save(orgContact, {
+        update: true
+      });
+    }
+  } catch (err) {
+    console.error(err)
   }
 }
 
