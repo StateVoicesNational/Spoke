@@ -71,14 +71,14 @@ const webhooks = {
   "message.sent": handleDeliveryReport,
   "message.failed": handleDeliveryReport,
   "message.received": handleIncomingMessage,
-  "message.finalized": () => Promise.resolve() //TODO: does this need to be implemented?
+  "message.finalized": handleDeliveryReport
 };
 
 
 export function addServerEndpoints(addPostRoute) {
   if (TELNYX_API_KEY) {
     addPostRoute(
-      "/telnyx/:orgId",
+      "/telnyx/:orgId?",
       wrap(async (req, res) => {
         try {
           headerValidator(req)
@@ -102,20 +102,8 @@ export function addServerEndpoints(addPostRoute) {
   }
 }
 
-function extractImageUrls(text) {
-  const urlRegex = /(https?:\/\/[^\s]+?\.(?:jpg|jpeg|png|gif|bmp))/gi;
-  let match;
-  let urls = [];
-
-  while ((match = urlRegex.exec(text)) !== null) {
-    urls.push(match[0]);
-  }
-
-  return urls;
-}
-
-
 // https://developers.telnyx.com/openapi/messaging/tag/Messages/#tag/Messages/operation/createMessage
+// TODO: if this errors there error shows as undefined with no error log
 export async function sendMessage({
   message,
   contact,
@@ -147,14 +135,7 @@ export async function sendMessage({
     sent_at: new Date(),
   };
 
-  // TODO: set this up
   const additionalMessageParams = parseMessageText(message);
-  // TODO: how to flag the type of mms vs sms?
-  // TODO: how to setup subject for mms?
-  // additionalMessageParams.auto_detect
-  // additionalMessageParams.media_urls
-  // additionalMessageParams.subject
-  // additionalMessageParams.type
 
   const messageParams = {
     to: message.contact_number,
@@ -163,15 +144,13 @@ export async function sendMessage({
   }
 
   // TODO: test this
-  const extractedUrls = extractImageUrls(message.text);
-  if (extractedUrls.length > 0) {
-    messageParams.media_urls = extractedUrls;
+  if (additionalMessageParams.mediaUrl) {
+    messageParams.media_urls = [additionalMessageParams.mediaUrl];
   }
 
   let response
   let err
   try {
-    //TODO:  this is erroring with undefined error
     const result = await telnyx.messages.create(messageParams)
     response = result.data
     await postMessageSend(
@@ -213,25 +192,21 @@ export async function postMessageSend(
     : {};
   log.info("postMessageSend", message, changes, response, err);
   let hasError = false;
+
+  const handleError = (err) => {
+    const code = err && err.raw && err.raw.errors[0] && err.raw.errors[0].code
+    changesToSave.error_code = code ? parseInt(code) : 0
+    changesToSave.send_status = "ERROR";
+  }
   if (err) {
     hasError = true;
-    log.error("Error sending message", err);
-    console.log("Error sending message", err);
   }
   if (response) {
-    // changesToSave.service_id = response.sid;
-    //TEST: is this the id for the incoming message?
     changesToSave.service_id = response.id;
-    // TODO: test if this can be an array
     hasError = response.errors.length > 0
-    // hasError = !!response.error_code;
-    if (hasError) {
-      // changesToSave.error_code = response.error_code;
-      const code = err && err.raw && err.raw.errors[0] && err.raw.errors[0].code
-      code ? parseInt(code) : 0
-      changesToSave.error_code = code
-      changesToSave.send_status = "ERROR";
-    }
+  }
+  if (hasError) {
+    handleError(err)
   }
   let updateQuery = r.knex("message").where("id", message.id);
   if (trx) {
@@ -249,9 +224,6 @@ export async function postMessageSend(
         contactUpdateQuery = contactUpdateQuery.transacting(trx);
       }
     }
-
-
-    //TODO: need to grab & save the carrier information somewhere
 
     await updateQuery.update(changesToSave);
     await contactUpdateQuery()
@@ -280,8 +252,7 @@ export async function postMessageSend(
 
     }
     console.error(
-      "Failed message and contact update on telnyx postMessageSend",
-      err
+      `Failed message and contact update on telnyx postMessageSend: ${err}`
     );
     return err
   }
@@ -299,7 +270,6 @@ const parseMessage = (message) => {
 /**
  * Process a message from Telnyx
  * @param {*} message 
- * @param params - request params
  * message.direction string
  * message.from {carrier: 'Verizon Wireless', line_type: 'Wireless', phone_number: '+15412803322'}
  * message.to 0:{carrier: 'Telnyx', line_type: 'Wireless', phone_number: '+13642148507', status: 'webhook_delivered'}
@@ -361,24 +331,12 @@ export async function handleDeliveryReport(message, { orgId }) {
     messageSid: id,
     service: "telnyx",
     messageServiceSid: messageservice_sid,
-    //TODO: landline message didn't get error
-    /* shows as this...
-    to: [
-    {
-      phone_number: '+17177613265',
-      status: 'queued',
-      carrier: 'VERIZON PENNSYLVANIA, INC.',
-      line_type: 'Wireline'
-    }
-  ],
-    */
-    //TEST: with bad messaging service..?
     newStatus: message.errors.length > 0 ? "ERROR" : "DELIVERED",
-    // newStatus: report.type === "message-failed" ? "ERROR" : "DELIVERED",
-    //TODO: get proper error
-    // errorCode: Number(report.errorCode || 0) || 0
-    // errorCode: message.errors.length > 0 ? messages.errors[0]
   };
+
+  if (message.errors.length > 0) {
+    deliveryReport.errorCode = message.errors[0].code
+  }
   await cacheableData.message.deliveryReport(deliveryReport);
 }
 
