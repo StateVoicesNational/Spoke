@@ -9,7 +9,7 @@ import {
 } from "../../../server/models";
 import wrap from "../../../server/wrap";
 import { log } from "../../../lib";
-import { getConfigKey } from "../service_map";
+// import { getConfigKey } from "../service_map";
 import { saveNewIncomingMessage, parseMessageText } from "../message-sending";
 import { getConfig } from "../../../server/api/lib/config";
 import { getFormattedPhoneNumber } from "../../../lib/phone-format";
@@ -26,7 +26,7 @@ if (TELNYX_API_KEY) {
 }
 
 export const getMetadata = () => ({
-  supportsOrgConfig: true,
+  supportsOrgConfig: false,
   supportsCampaignConfig: false,
   name: "telnyx"
 });
@@ -118,7 +118,10 @@ export async function sendMessage({
     contact && contact.id
   );
   // eslint-disable-next-line camelcase
-  const { messagingProfileId: messaging_profile_id } = await getMessageServiceSid(organization)
+  // applicationId will probably come from config, unless serviceManager is doing something fancy
+  const messaging_profile_id = serviceManagerData && serviceManagerData.messageservice_sid
+
+  // const { messagingProfileId: messaging_profile_id } = await getMessageServiceSid(organization)
 
 
   if (message.service !== 'telnyx') {
@@ -456,20 +459,20 @@ export const getServiceConfig = async (
 /**
  * Called from various places to get the messaging profile id 
  */
-export const getMessageServiceSid = async (
-  organization,
-  contact,
-  messageText
-) => {
+// export const getMessageServiceSid = async (
+//   organization,
+//   contact,
+//   messageText
+// ) => {
 
-  const configKey = getConfigKey("telnyx");
-  const config = getConfig(configKey, organization);
-  const messageServiceSid = await getServiceConfig(
-    config,
-    organization
-  );
-  return messageServiceSid;
-};
+//   const configKey = getConfigKey("telnyx");
+//   const config = getConfig(configKey, organization);
+//   const messageServiceSid = await getServiceConfig(
+//     config,
+//     organization
+//   );
+//   return messageServiceSid;
+// };
 
 /**
  * Used to verify the organization is fully setup before a campaign can start
@@ -479,7 +482,7 @@ export const getMessageServiceSid = async (
  */
 export const fullyConfigured = async (organization, serviceManagerData) => {
   console.log('telnyx::fullConfigured', { organization })
-  const result = await getMessageServiceSid(organization)
+  // const result = await getMessageServiceSid(organization)
   if (!TELNYX_PUB_KEY) {
     log.error(`org: ${organization} using service Telnyx missing TELNYX_PUB_KEY`)
     return false
@@ -495,7 +498,6 @@ export const fullyConfigured = async (organization, serviceManagerData) => {
   return false
 
 };
-
 
 export default {
   createMessagingService,
