@@ -1,24 +1,24 @@
 # Service Vendors Handlers
 
 For Spoke to send and receive text messages we need to connect to a vendor that has an API
-to send/receive SMS/MMS!  Historically, Spoke has worked with Twilio.com. Service Vendors
-abstract this to support other vendors.  There is an experimental Bandwidth.com implementation,
+to send/receive SMS/MMS! Historically, Spoke has worked with Twilio.com. Service Vendors
+abstract this to support other vendors. There is an experimental Bandwidth.com implementation,
 and we hope/expect others to follow.
 
 Implementations should set DEFAULT_SERVICE=twilio or the vendor service being used.
-This can also be set in a Spoke organization's `features` column as JSON (e.g. `{"DEFAULT_SERVICE": "twilio"}`).
+This can also be set in a Spoke organization's `features` column as JSON (e.g. `{"service": "twilio"}`).
 
 ## Service Vendor configuration options
 
 Service Vendor implementations should and do accept global environment variable (or organization features settings) values.
 However, there is also an implementation in each one where account settings can be configured in the
-*Settings* tab in the organization admin panel (organization OWNER permissions are required).
+_Settings_ tab in the organization admin panel (organization OWNER permissions are required).
 
 ## Included Service Vendors
 
 ### twilio
 
-The default production service-vendor.  Set DEFAULT_SERVICE=twilio -- configuration can be done in
+The default production service-vendor. Set DEFAULT_SERVICE=twilio -- configuration can be done in
 Settings organization tab if TWILIO_MULTI_ORG=1.
 
 Alternatively, if you want the same creds for all organizations, then set
@@ -56,7 +56,6 @@ cp -rp fakeservice <NEW_NAME>
 
 Then edit index.js in that directory.
 
-
 ### API properties for message handlers
 
 Export methods/constants with these names from your index.js
@@ -79,7 +78,7 @@ Export methods/constants with these names from your index.js
 - `fullyConfigured(organization, serviceManagerData)` - should return a boolean on whether the
   service is ready to support texting. serviceManagerData is the result of service managers that are
   enabled and have implemented onOrganizationServiceVendorSetup()
-  
+
 #### functions for PHONE_INVENTORY support
 
 - `buyNumbersInAreaCode(organization, areaCode, limit)`
@@ -102,16 +101,14 @@ If your vendor has a concept of a 'messaging service' then implement these:
 - `getMessageServiceSid(organization, contact, messageText)` -- can return a message service
   value based on organization and contact
 
-
 #### Contact lookup methods
 
 For both of these they should return values that must include `contact_number`, `organization_id`, and `service` (name, e.g. "twilio"). Other values should only be included in the result if they should override any existing data in organization_contact table.
 
 The key `status_code` should be 0 or positive if the number is textable. It should be negative if it is not
-textable. Specifically, -1 for landlines, -2 for a non-existent/unserviced number, -3 for a bad country code match from PHONE_NUMBER_COUNTRY if that is set.  Add other negative (or positive) values if useful to distinguish them.
+textable. Specifically, -1 for landlines, -2 for a non-existent/unserviced number, -3 for a bad country code match from PHONE_NUMBER_COUNTRY if that is set. Add other negative (or positive) values if useful to distinguish them.
 
 - `getContactInfo({ organization, contactNumber, lookupName })` - if the vendor service has
   a way to reverse lookup phone number data like carrier and name, then this is how to do it.
 - `getFreeContactInfo()` - same args as above -- this indicates that info can be looked up for
   free and will be preferred when possible and available over the former method.
-

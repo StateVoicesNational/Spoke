@@ -56,7 +56,8 @@
     "jest-test": "jest __test__/backend.test.js",
     "dev": "nf start -w --procfile ./dev-tools/Procfile.dev",
     "debug-server": "nf start -w --procfile ./dev-tools/Procfile-debug-server.dev",
-    "buy-numbers": "./dev-tools/babel-run-with-env.js ./dev-tools/buy-numbers.js"
+    "buy-numbers": "./dev-tools/babel-run-with-env.js ./dev-tools/buy-numbers.js",
+    "cloud-sql": "cloud-sql-proxy keen-electron-367615:us-central1:mlabs-staging"
   },
   "repository": {
     "type": "git",
@@ -157,6 +158,7 @@
     "request": "^2.81.0",
     "rethink-knex-adapter": "0.4.20",
     "rollbar": "^2.4.4",
+    "telnyx": "^1.23.0",
     "terser-webpack-plugin": "4",
     "thinky": "^2.3.3",
     "timezonecomplete": "^5.5.0",
