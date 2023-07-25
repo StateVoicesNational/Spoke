@@ -4,6 +4,7 @@ import { StyleSheet, css } from "aphrodite";
 import { withRouter } from "react-router";
 import gql from "graphql-tag";
 
+import Button from "@material-ui/core/Button"
 import Fab from "@material-ui/core/Fab";
 import AddIcon from "@material-ui/icons/Add";
 import ArchiveIcon from "@material-ui/icons/Archive";
@@ -64,7 +65,7 @@ export class AdminCampaignList extends React.Component {
     archiveMultipleMenu: false
   };
 
-  handleClickNewButton = async () => {
+  createNewCampaignButton = async () => {
     const { organizationId } = this.props.params;
     this.setState({ isLoading: true });
     const newCampaign = await this.props.mutations.createCampaign({
@@ -342,14 +343,15 @@ export class AdminCampaignList extends React.Component {
     }
     // add campaign button
     return (
-      <Fab
-        color="primary"
-        {...dataTest("addCampaign")}
-        style={theme.components.floatingButton}
-        onClick={this.handleClickNewButton}
-      >
-        <AddIcon />
-      </Fab>
+      <Button 
+          style={theme.components.floatingButton}
+          color="primary"
+          variant="contained"
+          {...dataTest("addCampaign")}
+          onClick={this.createNewCampaignButton}
+      >Create New Campaign
+      </Button>
+      
     );
   }
 

@@ -5,8 +5,9 @@
 - Do not start any of the processes/dynos besides `web` (see below for non-Twilio uses)
 - The default setup is a free tier for processing and the database. See below for scaling and production requirements
 
-## Important Note for First Time Deployers:
+## Important Notes for First Time Deployers:
 
+- Due to the deprecation on this vendor's hobby/free resources, we wanted to inform folks that these instructions will guide you towards having successfully deploying through Heroku, but the monthly fee will be about ~$19 a month.
 - There is a variable named `SUPPRESS_SELF_INVITE` in your configuration variables in Heroku. When this is set to nothing, anyone can visit your app and create an organization. When it is set to `true`, this changes login/signup behavior - when a person signs up and visits your app, they will not create an organization. On first deployment, it should be set to nothing to ensure that you have the ability to create an organization and view the full functionality of the application.
 
 ## Instructions for Auth0 configuration variable setup
