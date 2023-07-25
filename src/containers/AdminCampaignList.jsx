@@ -340,6 +340,7 @@ export class AdminCampaignList extends React.Component {
         </Fab>
       );
     }
+    // add campaign button
     return (
       <Fab
         color="primary"
