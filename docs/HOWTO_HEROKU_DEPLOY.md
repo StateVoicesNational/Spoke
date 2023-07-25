@@ -3,7 +3,8 @@
 - Create a Heroku account (if you don't have an account). For more questions on Heroku and what it does, please visit [here](https://www.heroku.com/what)
 - The form you fill out in Heroku has a lot of values. These are configuration values (also known as environment variables). Each value is essentially a setting. Some are necessary for deployment and others customize the experience in your instance of Spoke. For more questions about configuration values in this application visit [our documentation on environment variables and what they do](REFERENCE-environment_variables.md). For more questions in general about configuration variables in Heroku, visit [Heroku's config variable explanation page](https://devcenter.heroku.com/articles/config-vars)
 - Do not start any of the processes/dynos besides `web` (see below for non-Twilio uses)
-- The default setup is a free tier for processing and the database. See below for scaling and production requirements
+- As of late 2022 Heroku has removed free-tier hosting and database offerings. They now offer `eco` dynos ($5/month) and `mini` PostgreSQL ($5/month) and Redis ($3/month) plans. All together, the minimum cost to get started with Heroku is going to be $13/mo. See [this post for more info](https://blog.heroku.com/new-low-cost-plans).
+- See below for scaling and production requirements
 
 ## Important Notes for First Time Deployers:
 
@@ -25,7 +26,7 @@ To simulate receiving a reply from a contact you can use the Send Replies utilit
 
 **Twilio**
 
-Twilio provides [test credentials](https://www.twilio.com/docs/iam/test-credentials) that will not charge your account as described in their documentation. 
+Twilio provides [test credentials](https://www.twilio.com/docs/iam/test-credentials) that will not charge your account as described in their documentation.
 
 If you need to use Twilio in development but with live keys, click [here](HOWTO_INTEGRATE_TWILIO.md) for instructions.
 When using instructions, please remember that references to NGROK urls should change to your Heroku app url.
@@ -34,9 +35,9 @@ Visit [here](https://www.twilio.com/docs/api/messaging/services-and-copilot) to 
 
 ## Setting up for production scale (Database, etc)
 
-The default deployment from the Heroku button is free, but has a processing and database limit of 10,000 messages total.
-This may be sufficient for a single small campaign, but if you intend multiple/regular campaigns, we recommend upgrading
-the database and possibly the `web` 'dyno' instance (to [Hobby or Standard](https://devcenter.heroku.com/articles/dynos)). At the time of this writing a ['hobby basic' level for the database is ~\$9.00/month](https://devcenter.heroku.com/articles/heroku-postgres-plans#plan-tiers).
+The default `mini` deployment from the Heroku button has a processing and database limit of about 10,000 messages total.
+
+This may be sufficient for a single small campaign, but if you intend multiple/regular campaigns, we recommend upgrading the database and possibly the `web` 'dyno' instance (to [Hobby or Standard](https://devcenter.heroku.com/articles/dynos)). At the time of this writing a ['basic' level for the database is ~\$9.00/month for 10m rows](https://devcenter.heroku.com/articles/heroku-postgres-plans#plan-tiers).
 
 For production scale, the best time to upgrade the database is after you have completed basic setup at the Hobby database level (created a first user account, the Owner role, and logged in through the admin UI, then created the Organization, set SUPPRESS_SELF_INVITE to `true` after creating the Organization, and perhaps created and ran a small first live test Campaign) and before you start using the app for live real Campaigns, because the easiest path erases all
 previous data. If you have existing data, please refer to Heroku docs on [how to upgrade a database](https://devcenter.heroku.com/articles/upgrading-heroku-postgres-databases) (it's complicated). After you have upgraded a Heroku Postgres database plan from the Hobby level to, say, a Standard level Heroku Postgres database, you _must_ enable the `PGSSLMODE=require` config var/env variable. Please be sure to read [our documentation on environment variables and what they do](REFERENCE-environment_variables.md) now :) .
