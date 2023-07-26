@@ -5,23 +5,40 @@
   "success_url": "/",
   "stack": "container",
   "env": {
-    "SUPPRESS_SELF_INVITE": {
-      "description": "Should anonymous visitors be able to create new organizations from the home page? You will probably want to start the app with this off, and then after creating your own organization, come back here and set it to 1",
+    "ACTION_HANDLERS": {
+      "description": "MISSION CRITICAL: Action handlers are a mechanism in Spoke that allow Spoke to take action when a texter indicates that a contact signalled a certain answer to a question in a Spoke interaction script or the contact has received a certain canned response. EXAMPLES: revere-signup, mobilecommons-signup, actionkit-rspv, ngpvan, civicrm-addtag",
       "required": false,
       "value": ""
     },
 
-    "PASSPORT_STRATEGY": {
-      "description": "Either 'auth0' or 'local' -- We recommend auth0 for production systems",
-      "required": true,
-      "value": "local"
+    "CONTACT_LOADERS": {
+      "description": "MISSION CRITICAL: One of the core tasks in a Spoke campaign is loading in the contacts for texters to target. One default and standard way to do so is upload a CSV with their names, cells, zips, and custom fields. EXAMPLES: civicrm, ngpvan, csv-upload",
+      "required": false,
+      "value": "csv-upload"
+    },
+
+    "MESSAGE_HANDLERS": {
+      "description": "MISSION CRITICAL: When a message is received from a contact or sent from a texter, message handlers can hook in both right before and right after a message is saved to the database. Before save, you can alter a message's content or details. After save, you can trigger additional actions. It's also possible to block a message from saving. EXAMPLES: initialtext-guard, auto-optout, profanity-tagger, to-ascii, outbound-unassign, ngpvan",
+      "required": false,
+      "value": ""
+    },
+
+    "SERVICE_MANAGERS": {
+      "description": "MISSION CRITICAL: Service managers often have consequences for your service-vendor -- i.e. they can incur costs or affect how your system works. It's important to understand what a particular service manager does before enabling it -- that is both the power and the risk of these extensions. EXAMPLES: ngpvan, civicrm-donotsms",
+      "required": false,
+      "value": ""
+    },
+
+    "TEXTER_SIDEBOXES": {
+      "description": "MISSION CRITICAL: Use to support the experience of your volunteer texters. EXAMPLES: celebration-gif,default-dynamicassignment,default-releasecontacts,contact-reference,tag-contact,freshworks-widget,default-editinitial,take-conversations,hide-media,texter-feedback",
+      "required": false,
+      "value": ""
     },
 
     "AUTH0_DOMAIN": {
       "description": "auth0 domain attached to auth0 account (if not using auth0, enter anything)",
       "required": true
     },
-
     "AUTH0_CLIENT_ID": {
       "description": "auth0 client id attached to auth0 account (if not using auth0, enter anything)",
       "required": true
@@ -32,15 +49,33 @@
       "required": true
     },
 
+    "AWS_ACCESS_KEY_ID": {
+      "description": "in order to export data to an s3 bucket",
+      "required": false,
+      "value": ""
+    },
+
+    "AWS_SECRET_ACCESS_KEY": {
+      "description": "in order to export data to an s3 bucket",
+      "required": false,
+      "value": ""
+    },
+
+    "AWS_S3_BUCKET_NAME": {
+      "description": "in order to export data to an s3 bucket",
+      "required": false,
+      "value": ""
+    },
+
     "BASE_URL": {
       "description": "Set this if you are using a custom domain",
       "required": false
     },
 
-    "SESSION_SECRET": {
-      "description": "session secret",
+    "DB_USE_SSL": {
+      "description": "ensures that the DB is connecting over SSL which is a requirement for Heroku DBs",
       "required": true,
-      "generator": "secret"
+      "value": "true"
     },
 
     "DEFAULT_SERVICE": {
@@ -49,26 +84,16 @@
       "value": "twilio"
     },
 
-    "TWILIO_ACCOUNT_SID": {
-      "description": "for twilio integration and connected to twilio account",
-      "required": true
-    },
-
-    "TWILIO_AUTH_TOKEN": {
-      "description": "for twilio integration and connected to twilio account",
-      "required": true
-    },
-
-    "TWILIO_MULTI_ORG": {
-      "description": "Allows each organization in the Spoke instance to set Twilio variables within the app",
+    "DEFAULT_TZ": {
+      "description": "Default timezone region for determining timezone when a contact timezone is unavailable. If this is not set, then texting hours will fallback to 12pm Eastern to 9pm Eastern which is the most conservative value for texting hours in the continental US and probably the right default. Only set this if your entire audience is in a single timezone. Example: 'US/Eastern'",
       "required": false,
-      "value": "1"
+      "value": ""
     },
 
-    "PHONE_INVENTORY": {
-      "description": "Enables organization owners to be able to buy Twilio phone numbers within the app",
-      "required": false,
-      "value": "1"
+    "DST_REFERENCE_TIMEZONE": {
+      "description": "Timezone to use to determine whether DST is in effect for a date",
+      "required": true,
+      "value": "US/Eastern"
     },
 
     "EMAIL_HOST": {
@@ -101,40 +126,9 @@
       "value": ""
     },
 
-    "PHONE_NUMBER_COUNTRY": {
-      "description": "for international integration (when not us)",
-      "required": true,
-      "value": "US"
-    },
-
-    "AWS_ACCESS_KEY_ID": {
-      "description": "in order to export data to an s3 bucket",
-      "required": false,
-      "value": ""
-    },
-
-    "AWS_SECRET_ACCESS_KEY": {
-      "description": "in order to export data to an s3 bucket",
-      "required": false,
-      "value": ""
-    },
-
-    "AWS_S3_BUCKET_NAME": {
-      "description": "in order to export data to an s3 bucket",
-      "required": false,
-      "value": ""
-    },
-
-    "OWNER_CONFIGURABLE": {
-      "description": "Allows organization owners to edit variables",
-      "required": false,
-      "value": "ALL"
-    },
-
-    "NODE_ENV": {
-      "description": "node environment determines the application start process",
-      "required": true,
-      "value": "production"
+    "HEROKU_APP_NAME": {
+      "description": "Name of your Heroku app (not used if BASE_URL is set)",
+      "required": false
     },
 
     "JOBS_SAME_PROCESS": {
@@ -143,44 +137,103 @@
       "value": "1"
     },
 
-    "SUPPRESS_MIGRATIONS": {
-      "description": "When updating code, do you want to disable auto-database migrations?",
-      "required": false,
-      "value": ""
-    },
-
-    "DST_REFERENCE_TIMEZONE": {
-      "description": "Timezone to use to determine whether DST is in effect for a date",
-      "required": true,
-      "value": "US/Eastern"
-    },
-
-    "DEFAULT_TZ": {
-      "description": "Default timezone region for determining timezone when a contact timezone is unavailable. If this is not set, then texting hours will fallback to 12pm Eastern to 9pm Eastern which is the most conservative value for texting hours in the continental US and probably the right default. Only set this if your entire audience is in a single timezone. Example: 'US/Eastern'",
-      "required": false,
-      "value": ""
-    },
-
-    "HEROKU_APP_NAME": {
-      "description": "Name of your Heroku app (not used if BASE_URL is set)",
-      "required": false
-    },
-
     "KNEX_MIGRATION_DIR": {
       "description": "sets path for migration directory - do not change",
       "required": true,
       "value": "/spoke/build/server/migrations/"
     },
 
-    "DB_USE_SSL": {
-      "description": "ensures that the DB is connecting over SSL which is a requirement for Heroku DBs",
+    "NGP_VAN_API_KEY": {
+      "description": "",
+      "required": false,
+      "value": ""
+    },
+
+    "NGP_VAN_APP_NAME": {
+      "description": "",
+      "required": false,
+      "value": ""
+    },
+
+    "NGP_VAN_DATABASE_MODE": {
+      "description": "typically 0 for MyVoters or 1 for MyCampaign",
+      "required": false,
+      "value": "0"
+    },
+
+    "NODE_ENV": {
+      "description": "node environment determines the application start process",
       "required": true,
-      "value": "true"
+      "value": "production"
+    },
+
+    "OWNER_CONFIGURABLE": {
+      "description": "Allows organization owners to edit variables",
+      "required": false,
+      "value": "ALL"
+    },
+
+    "PASSPORT_STRATEGY": {
+      "description": "Either 'auth0' or 'local' -- We recommend auth0 for production systems",
+      "required": true,
+      "value": "local"
+    },
+
+    "PHONE_INVENTORY": {
+      "description": "Enables organization owners to be able to buy Twilio phone numbers within the app",
+      "required": false,
+      "value": "1"
+    },
+
+    "PHONE_NUMBER_COUNTRY": {
+      "description": "for international integration (when not us)",
+      "required": true,
+      "value": "US"
+    },
+
+    "SESSION_SECRET": {
+      "description": "session secret",
+      "required": true,
+      "generator": "secret"
+    },
+
+    "SUPPRESS_MIGRATIONS": {
+      "description": "When updating code, do you want to disable auto-database migrations?",
+      "required": false,
+      "value": ""
+    },
+
+    "SUPPRESS_SELF_INVITE": {
+      "description": "Should anonymous visitors be able to create new organizations from the home page? You will probably want to start the app with this off, and then after creating your own organization, come back here and set it to 1",
+      "required": false,
+      "value": ""
+    },
+
+    "TWILIO_ACCOUNT_SID": {
+      "description": "for twilio integration and connected to twilio account",
+      "required": false
+    },
+
+    "TWILIO_AUTH_TOKEN": {
+      "description": "for twilio integration and connected to twilio account",
+      "required": false
+    },
+
+    "TWILIO_MULTI_ORG": {
+      "description": "Allows each organization in the Spoke instance to set Twilio variables within the app",
+      "required": false,
+      "value": "1"
     },
 
     "TWILIO_VALIDATION": {
-      "description": "Validate twilio message report links as well",
-      "value": "1"
+      "description": "Validate twilio message report links.  Add value 1",
+      "value": ""
+    },
+    
+    "TWILIO_MESSAGE_SERVICE_SID": {
+      "description": "A twilio service message account SID",
+      "required": false
+
     }
   },
   "addons": [

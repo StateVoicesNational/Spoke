@@ -1,5 +1,14 @@
 # Release Notes
 
+## v13.0
+_February 2023:_ Version 13.0
+
+13.0 is a major release.  This release is a node upgrade from Node 12 to Node 16.
+
+### Appreciations
+* [Arique Aguilar](https://github.com/Arique1104), [Ilona Brand](https://github.com/ibrand), [Kathy Nguyen](https://github.com/crayolakat), [Mark Kinsella](https://github.com/lastminutediorama) (our new Tech Lead -- welcome!), and Harold Travis and Mark Houghton for QA
+
+
 ## v12.3
 
 _October 2022:_ Version 12.3

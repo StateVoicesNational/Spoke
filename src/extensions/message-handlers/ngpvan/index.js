@@ -1,4 +1,4 @@
-import { getConfig } from "../../../server/api/lib/config";
+import { getConfig, hasConfig } from "../../../server/api/lib/config";
 const Van = require("../../../extensions/action-handlers/ngpvan-action");
 
 import { getActionChoiceData } from "../../../extensions/action-handlers";
@@ -21,8 +21,9 @@ export const serverAdministratorInstructions = () => {
 };
 
 export const available = organization =>
-  !!getConfig("NGP_VAN_API_KEY", organization) &&
-  !!getConfig("NGP_VAN_APP_NAME", organization);
+  (hasConfig("NGP_VAN_API_KEY", organization) ||
+    hasConfig("NGP_VAN_API_KEY_ENCRYPTED", organization)) &&
+  hasConfig("NGP_VAN_APP_NAME", organization);
 
 // export const preMessageSave = async () => {};
 
