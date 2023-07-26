@@ -24,7 +24,7 @@ import {
   createStartedCampaign
 } from "../../test_helpers";
 
-describe.skip("ConversationPreviewModal", async () => {
+describe.skip("ConversationPreviewModal", () => {
   let startedCampaign;
   let optOutContact;
   let optOut;
@@ -80,7 +80,7 @@ describe.skip("ConversationPreviewModal", async () => {
     if (r.redis) r.redis.flushdb();
   }, global.DATABASE_SETUP_TEARDOWN_TIMEOUT);
 
-  describe("when a message review user opts out a user", async () => {
+  describe("when a message review user opts out a user", () => {
     beforeAll(async () => {
       const root = document.createElement("div");
       document.body.appendChild(root);

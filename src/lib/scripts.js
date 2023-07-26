@@ -44,7 +44,7 @@ export const coreFields = {
   contactIdBase62: 1
 };
 
-// TODO: This will include zipCode even if you ddin't upload it
+// TODO: This will include zipCode even if you didn't upload it
 export const allScriptFields = (customFields, includeDeprecated) =>
   TOP_LEVEL_UPLOAD_FIELDS.concat(TEXTER_SCRIPT_FIELDS)
     .concat(customFields)
@@ -54,7 +54,7 @@ export const allScriptFields = (customFields, includeDeprecated) =>
 const capitalize = str => {
   const strTrimmed = str.trim();
   if (
-    strTrimmed.charAt(0).toUpperCase() == strTrimmed.charAt(0) &&
+    strTrimmed.charAt(0).toUpperCase() === strTrimmed.charAt(0) &&
     /[a-z]/.test(strTrimmed)
   ) {
     // first letter is upper-cased and some lowercase
@@ -89,7 +89,10 @@ const getScriptFieldValue = (contact, texter, fieldName) => {
   } else if (TOP_LEVEL_UPLOAD_FIELDS.indexOf(fieldName) !== -1) {
     result = contact[fieldName];
   } else {
-    const customFieldNames = JSON.parse(contact.customFields);
+    let customFieldNames = contact.customFields;
+    if (typeof customFieldNames === "string") {
+      customFieldNames = JSON.parse(contact.customFields);
+    }
     result = customFieldNames[fieldName];
   }
 
@@ -105,11 +108,16 @@ export const applyScript = ({ script, contact, customFields, texter }) => {
   let appliedScript = script;
 
   for (const field of scriptFields) {
-    const re = new RegExp(`${delimit(field)}`, "g");
-    appliedScript = appliedScript.replace(
-      re,
-      getScriptFieldValue(contact, texter, field)
-    );
+    try {
+      const re = new RegExp(`${delimit(field)}`, "g");
+      appliedScript = appliedScript.replace(
+        re,
+        getScriptFieldValue(contact, texter, field)
+      );
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.error(err);
+    }
   }
   return appliedScript;
 };

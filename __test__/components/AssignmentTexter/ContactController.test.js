@@ -62,7 +62,7 @@ function genComponent(assignment, propertyOverrides = {}) {
   return wrapper;
 }
 
-describe("ContactController process flows", async () => {
+describe("ContactController process flows", () => {
   it("Normal nondynamic assignment queue", async () => {
     const assignment = genAssignment(
       false,

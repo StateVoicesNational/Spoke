@@ -377,11 +377,10 @@ const campaignContactCache = {
       );
       // console.log('lookupByCell cache', cell, service, messageServiceSid, cellData)
       if (cellData) {
-        // eslint-disable-next-line camelcase
         const [
-          campaign_contact_id,
-          _,
-          timezone_offset,
+          campaign_contact_id, // eslint-disable-line camelcase
+          _, // eslint-disable-line no-unused-vars
+          timezone_offset, // eslint-disable-line camelcase
           ...rest
         ] = cellData.split(":");
         return {
@@ -415,16 +414,14 @@ const campaignContactCache = {
         .whereNull("messageservice_sid")
         .where("user_number", userNumber);
     }
-    if (r.redis) {
-      // we get the campaign_id so we can cache errorCount and needsResponseCount
-      messageQuery = messageQuery
-        .join(
-          "campaign_contact",
-          "campaign_contact.id",
-          "message.campaign_contact_id"
-        )
-        .select("campaign_contact_id", "campaign_id");
-    }
+    // we get the campaign_id so we can cache errorCount and needsResponseCount
+    messageQuery = messageQuery
+      .join(
+        "campaign_contact",
+        "campaign_contact.id",
+        "message.campaign_contact_id"
+      )
+      .select("campaign_contact_id", "campaign_id");
     const [lastMessage] = await messageQuery;
     if (lastMessage) {
       return {
@@ -496,15 +493,19 @@ const campaignContactCache = {
   ) => {
     // console.log('updateSTATUS', newStatus, contact)
     try {
-      const assignmentIds = await r
-        .knex("campaign_contact")
-        .where("id", contact.id)
-        .update({
-          message_status: newStatus,
-          updated_at: new Date(),
-          ...(moreUpdates || {})
-        })
-        .returning("assignment_id");
+      const assignmentIds = (
+        await r
+          .knex("campaign_contact")
+          .where("id", contact.id)
+          .update({
+            message_status: newStatus,
+            updated_at: new Date(),
+            ...(moreUpdates || {})
+          })
+          .returning("assignment_id")
+      ).map(row => {
+        return row.assignment_id;
+      });
       // console.log('contact.updateStatus assignmentIds', assignmentIds);
       if (
         r.redis &&
@@ -562,6 +563,74 @@ const campaignContactCache = {
     } catch (err) {
       console.log("contact updateStatus Error", newStatus, contact, err);
     }
+  },
+  updateCustomFields: async (contact, customFields, campaign, organization) => {
+    /* eslint-disable no-param-reassign */
+    try {
+      if (typeof customFields === "string") {
+        customFields = JSON.parse(customFields || "{}");
+      }
+      /* we may not have all the customFields from the client,
+         so we need to fetch from the db and merge all of them */
+      const existingContact = await r
+        .knex("campaign_contact")
+        .select("custom_fields")
+        .where("id", contact.id)
+        .first();
+      const existingCustomFields = JSON.parse(
+        existingContact.custom_fields || "{}"
+      );
+
+      customFields = JSON.stringify({
+        ...existingCustomFields,
+        ...customFields
+      });
+
+      const updatedAt = new Date();
+      await r
+        .knex("campaign_contact")
+        .where("id", contact.id)
+        .update({
+          updated_at: updatedAt,
+          custom_fields: customFields
+        });
+
+      const updatedContact = {
+        ...contact,
+        updated_at: updatedAt.toString(),
+        custom_fields: customFields
+      };
+
+      if (CONTACT_CACHE_ENABLED) {
+        if (!campaign || !campaign.id) {
+          campaign = await campaignCache.load(contact.campaign_id);
+        }
+        if (!organization || !organization.id) {
+          organization = await organizationCache.load(campaign.organization_id);
+        }
+        const messageServiceSid = await organizationCache.getMessageServiceSid(
+          organization.id
+        );
+
+        await saveCacheRecord(
+          updatedContact,
+          organization,
+          messageServiceSid,
+          campaign
+        );
+      }
+
+      return updatedContact;
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      return console.log(
+        "contact updateCustomFields Error",
+        customFields,
+        contact,
+        err
+      );
+    }
+    /* eslint-enable no-param-reassign */
   }
 };
 

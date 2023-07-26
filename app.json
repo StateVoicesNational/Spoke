@@ -228,12 +228,18 @@
     "TWILIO_VALIDATION": {
       "description": "Validate twilio message report links.  Add value 1",
       "value": ""
+    },
+    
+    "TWILIO_MESSAGE_SERVICE_SID": {
+      "description": "A twilio service message account SID",
+      "required": false
+
     }
   },
   "addons": [
-    "heroku-postgresql:hobby-dev",
+    "heroku-postgresql:mini",
     {
-      "plan": "heroku-redis:hobby-dev",
+      "plan": "heroku-redis:mini",
       "options": {
         "maxmemory-policy": "volatile-lru"
       }

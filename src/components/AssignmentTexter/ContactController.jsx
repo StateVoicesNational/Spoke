@@ -1,3 +1,4 @@
+import AssignmentTexterContact from "../../containers/AssignmentTexterContact";
 import PropTypes from "prop-types";
 import theme from "../../styles/theme";
 import React from "react";
@@ -231,7 +232,6 @@ export class ContactController extends React.Component {
 
   getContact(contacts, index) {
     if (contacts.length > index) {
-      // console.log('getcontact', index, (contacts[index]||{}).id, (contacts.length > index + 1 ? 'next' + (contacts[index+1]||{}).id : 'end'))
       return contacts[index];
     }
     return null;
@@ -259,6 +259,19 @@ export class ContactController extends React.Component {
     this.updateCurrentContactIndex(
       this.props.contacts.findIndex(c => c.id == newId)
     );
+  };
+
+  updateContactData = (contactId, newData) => {
+    const { contactCache } = this.state;
+    this.setState({
+      contactCache: {
+        ...contactCache,
+        [contactId]: {
+          ...contactCache[contactId],
+          ...newData
+        }
+      }
+    });
   };
 
   hasPrevious() {
@@ -370,7 +383,7 @@ export class ContactController extends React.Component {
   }
 
   renderTexter(enabledSideboxes) {
-    const { assignment, campaign, ChildComponent } = this.props;
+    const { assignment, campaign } = this.props;
     const { texter } = assignment;
     const contact = this.currentContact();
     const navigationToolbarChildren = this.getNavigationToolbarChildren();
@@ -427,9 +440,9 @@ export class ContactController extends React.Component {
       }, self.state.reloadDelay);
       return <LoadingIndicator />;
     }
-    // ChildComponent is AssignmentTexterContact except for demo/testing
+
     return (
-      <ChildComponent
+      <AssignmentTexterContact
         key={contact.id}
         assignment={assignment}
         handleNavigateNext={this.handleNavigateNext}
@@ -448,6 +461,7 @@ export class ContactController extends React.Component {
         organizationId={this.props.organizationId}
         location={this.props.location}
         updateCurrentContactById={this.updateCurrentContactById}
+        updateContactData={this.updateContactData}
       />
     );
   }
@@ -543,7 +557,6 @@ ContactController.propTypes = {
   refreshData: PropTypes.func,
   loadContacts: PropTypes.func,
   organizationId: PropTypes.string,
-  ChildComponent: PropTypes.func,
   messageStatusFilter: PropTypes.string,
   location: PropTypes.object
 };

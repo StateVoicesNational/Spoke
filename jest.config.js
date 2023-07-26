@@ -46,7 +46,7 @@ module.exports = {
     "!**/deploy/**",
     "!**/coverage/**"
   ],
-  setupTestFrameworkScriptFile: "<rootDir>/__test__/setup.js",
+  setupFilesAfterEnv: ["<rootDir>/__test__/setup.js"],
   testPathIgnorePatterns: [
     "<rootDir>/node_modules/",
     "<rootDir>/__test__/cypress/"

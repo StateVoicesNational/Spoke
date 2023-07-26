@@ -8,7 +8,7 @@ jobs:
     timeout-minutes: 10
     strategy:
       matrix:
-        node-version: [10.x, 11.x, 12.x]
+        node-version: [14.x, 15.x, 16.x]
     services:
       redis:
         image: redis
@@ -24,7 +24,7 @@ jobs:
         - 5432:5432
         options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - name: Get yarn cache directory path
       id: yarn-cache-dir-path
       run: echo "::set-output name=dir::$(yarn cache dir)"
@@ -36,7 +36,9 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-${{ matrix.node-version }}-yarn-
     - run: yarn
-    - run: yarn test
+    - env:
+        NODE_OPTIONS: "--max-old-space-size=4096"
+      run: yarn test
   test-rediscache-contactcache:
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -55,7 +57,7 @@ jobs:
         - 5432:5432
         options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - name: Get yarn cache directory path
       id: yarn-cache-dir-path
       run: echo "::set-output name=dir::$(yarn cache dir)"
@@ -67,7 +69,9 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-yarn-
     - run: yarn
-    - run: yarn test-rediscache-contactcache
+    - env:
+        NODE_OPTIONS: "--max-old-space-size=4096"
+      run: yarn test-rediscache-contactcache
   test-rediscache:
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -86,7 +90,7 @@ jobs:
         - 5432:5432
         options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - name: Get yarn cache directory path
       id: yarn-cache-dir-path
       run: echo "::set-output name=dir::$(yarn cache dir)"
@@ -98,7 +102,9 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-yarn-
     - run: yarn
-    - run: yarn test-rediscache
+    - env:
+        NODE_OPTIONS: "--max-old-space-size=4096"
+      run: yarn test-rediscache
   test-sqlite:
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -108,7 +114,7 @@ jobs:
         ports:
         - 6379:6379
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - name: Get yarn cache directory path
       id: yarn-cache-dir-path
       run: echo "::set-output name=dir::$(yarn cache dir)"
@@ -120,4 +126,6 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-yarn-
     - run: yarn
-    - run: yarn test-sqlite
+    - env:
+        NODE_OPTIONS: "--max-old-space-size=4096"
+      run: yarn test-sqlite

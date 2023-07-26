@@ -27,7 +27,7 @@ describe("User", () => {
     }).save();
   });
 
-  describe("getUsers", async () => {
+  describe("getUsers", () => {
     it("returns pageInfo.total == user.length when there's a cursor", async () => {
       const users = [
         await new User({

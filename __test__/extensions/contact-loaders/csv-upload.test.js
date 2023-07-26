@@ -68,7 +68,7 @@ const dupeContacts = [
   }
 ];
 
-describe("ingest-contact-loader method: csv-upload backend", async () => {
+describe("ingest-contact-loader method: csv-upload backend", () => {
   let testAdminUser;
   let testInvite;
   let testOrganization;
@@ -141,7 +141,7 @@ describe("ingest-contact-loader method: csv-upload backend", async () => {
   });
 });
 
-describe("ingest-contact-loader method: csv-upload frontend", async () => {
+describe("ingest-contact-loader method: csv-upload frontend", () => {
   let didSubmit = false;
   let changeData = null;
   const onSubmit = () => {
@@ -180,14 +180,15 @@ describe("ingest-contact-loader method: csv-upload frontend", async () => {
     jest.restoreAllMocks();
   });
 
-  it("csv-upload:component updates onChange on upload", async () => {
+  it("csv-upload:component updates onChange on upload", () => {
     didSubmit = false;
     changeData = null;
-    component.handleUploadSuccess({ stats: 1 }, contacts, ["custom1"]);
-    // wait for it to process.....
-    await sleep(15);
-    const unzippedData = await unzipPayload({ payload: changeData });
-    expect(unzippedData.contacts).toEqual(contacts);
+    component
+      .handleUploadSuccess({ stats: 1 }, contacts, ["custom1"])
+      .then(async () => {
+        const unzippedData = await unzipPayload({ payload: changeData });
+        expect(unzippedData.contacts).toEqual(contacts);
+      });
   });
   it("csv-upload:component handles custom fields", async () => {
     didSubmit = false;
@@ -195,16 +196,18 @@ describe("ingest-contact-loader method: csv-upload frontend", async () => {
     const csvData =
       "firstName,lastName,cell,zip,custom_foo,custom_xxx" +
       "\nDolores,Huerta,2095550100,95201,bar,yyy";
-    component.handleUpload({
-      target: { files: [csvData] },
-      preventDefault: () => null
-    });
-    await sleep(5);
-    const unzippedData = await unzipPayload({ payload: changeData });
-    expect(JSON.parse(unzippedData.contacts[0].custom_fields)).toEqual({
-      custom_foo: "bar",
-      custom_xxx: "yyy"
-    });
+    component
+      .handleUpload({
+        target: { files: [csvData] },
+        preventDefault: () => null
+      })
+      .then(async () => {
+        const unzippedData = await unzipPayload({ payload: changeData });
+        expect(JSON.parse(unzippedData.contacts[0].custom_fields)).toEqual({
+          custom_foo: "bar",
+          custom_xxx: "yyy"
+        });
+      });
   });
   it("csv-upload:component upload error", async () => {
     didSubmit = false;
