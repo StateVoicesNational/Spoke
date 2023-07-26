@@ -491,11 +491,12 @@ export const fullyConfigured = async (organization, serviceManagerData) => {
     log.error(`org: ${organization} using service Telnyx missing TELNYX_API_KEY`)
     return false
   }
-  if (result.messagingProfileId) {
-    return true
-  }
-  log.error(`org: ${organization} failed to load Telnyx requirements`)
-  return false
+  return true
+  // if (result.messagingProfileId) {
+  //   return true
+  // }
+  // log.error(`org: ${organization} failed to load Telnyx requirements`)
+  // return false
 
 };
 
