@@ -1,6 +1,7 @@
 [![Build Status](https://travis-ci.org/MoveOnOrg/Spoke.svg?branch=main)](https://travis-ci.org/MoveOnOrg/Spoke)
 [![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-v1.4%20adopted-ff69b4.svg)](CODE_OF_CONDUCT.md)
 
+
 # Spoke
 
 Spoke is an open source text-distribution tool for organizations to mobilize supporters and members into action. Spoke allows you to upload phone numbers, customize scripts and assign volunteers to communicate with supporters while allowing organizations to manage the process.
@@ -9,6 +10,10 @@ Spoke was created by Saikat Chakrabarti and Sheena Pakanati, and is now maintain
 
 The latest version is [13.0](https://github.com/MoveOnOrg/Spoke/tree/13.0.0) (see [release notes](https://github.com/MoveOnOrg/Spoke/blob/main/docs/RELEASE_NOTES.md#v130))
 
+## Welcome to spoke-community-beta
+This branch was established by the Community Coalition as a way to stay synched during Election Code Freeze on our main branch.
+
+We hope to provide a version update through this branch after elections 2022.
 
 ## Setting up Spoke
 
@@ -24,7 +29,9 @@ Want to know more?
 ### Quick Start with Heroku
 This version of Spoke suitable for testing and, potentially, for small campaigns. This won't cost any money and will not support production(aka large-scale) usage. It's a great way to practice deploying Spoke or see it in action.  
 
+
 <a href="https://heroku.com/deploy?template=https://github.com/MoveOnOrg/Spoke/tree/13.0.0">
+
 
   <img src="https://www.herokucdn.com/deploy/button.svg" alt="Deploy">
 </a>
