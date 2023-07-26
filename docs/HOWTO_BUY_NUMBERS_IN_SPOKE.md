@@ -44,3 +44,14 @@ If you are comfortable using the Linux command line, and/or will be buying many 
 7. Search by area code to find numbers
 8. Click the buy button when you're ready to buy the number. - You should see: "The number has been associated with this messaging service" in the modal when you buy a number. That is the indicator that the number is being linked to Spoke.
    ![number purchased](images/twilio_number_buying_guide/blurred_number_purchased.png "Number Purchased")
+
+- How to choose area codes:
+    - press the plus button and a pop up menu will arise.
+    - Enter your desired area code
+    - Enter how many numbers you want to purchase
+    - Press submit
+
+- How to delete numbers:
+    - Only if you have clearance to purchase, you will have access to a delete button.
+    - However, this button deletes all numbers associated with a specific area code.
+    - If you want to delete a specific number, it's best done through Twilio.
