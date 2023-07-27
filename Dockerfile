@@ -25,6 +25,8 @@ COPY --from=builder /spoke/node_modules node_modules
 COPY --from=builder /spoke/package.json /spoke/yarn.lock ./
 COPY --from=builder /spoke/migrations migrations
 COPY start.sh ./
+RUN chmod +x start.sh
+
 ENV NODE_ENV=production \
     PORT=3000 \
     ASSETS_DIR=./build/client/assets \
