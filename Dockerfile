@@ -24,7 +24,6 @@ COPY --from=builder /spoke/build build
 COPY --from=builder /spoke/node_modules node_modules
 COPY --from=builder /spoke/package.json /spoke/yarn.lock ./
 COPY --from=builder /spoke/migrations migrations
-COPY --from=builder /spoke/dev-tools dev-tools
 COPY start.sh ./
 RUN chmod +x start.sh
 

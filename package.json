@@ -59,8 +59,8 @@
     "buy-numbers": "./dev-tools/babel-run-with-env.js ./dev-tools/buy-numbers.js",
     "cloud-sql": "cloud-sql-proxy keen-electron-367615:us-central1:mlabs-staging",
     "dev-bull-debug": "nodemon --signal SIGTERM -e js,jsx,md,mustache -w ./src --exec ./dev-tools/babel-run-with-env-debug -- src/extensions/job-runners/experimental-bull/processor.js",
-    "prod-bull": "./dev-tools/babel-run-with-env.js src/extensions/job-runners/experimental-bull/processor.js",
-    "prod-bull-ui": "./dev-tools/babel-run-with-env.js src/extensions/job-runners/experimental-bull/admin.js"
+    "prod-bull": "node ./build/server/extensions/job-runners/experimental-bull/processor.js",
+    "prod-bull-ui": "node ./build/server/extensions/job-runners/experimental-bull/admin.js"
   },
   "repository": {
     "type": "git",
