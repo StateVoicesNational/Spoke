@@ -57,7 +57,9 @@
     "dev": "nf start -w --procfile ./dev-tools/Procfile.dev",
     "debug-server": "nf start -w --procfile ./dev-tools/Procfile-debug-server.dev",
     "buy-numbers": "./dev-tools/babel-run-with-env.js ./dev-tools/buy-numbers.js",
-    "cloud-sql": "cloud-sql-proxy keen-electron-367615:us-central1:mlabs-staging"
+    "cloud-sql": "cloud-sql-proxy keen-electron-367615:us-central1:mlabs-staging",
+    "dev-bull-debug": "nodemon --signal SIGTERM -e js,jsx,md,mustache -w ./src --exec ./dev-tools/babel-run-with-env-debug -- src/extensions/job-runners/experimental-bull/processor.js",
+    "prod-bull": "./dev-tools/babel-run-with-env.js src/extensions/job-runners/experimental-bull/processor.js"
   },
   "repository": {
     "type": "git",
@@ -110,6 +112,7 @@
     "babel-runtime": "^6.26.0",
     "body-parser": "^1.15.2",
     "browserify": "^17.0.0",
+    "bull": "^4.10.4",
     "camelcase-keys": "^4.1.0",
     "color-difference": "^0.3.4",
     "cookie-session": "^2.0.0-alpha.1",
