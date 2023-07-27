@@ -24,6 +24,7 @@ COPY --from=builder /spoke/build build
 COPY --from=builder /spoke/node_modules node_modules
 COPY --from=builder /spoke/package.json /spoke/yarn.lock ./
 COPY --from=builder /spoke/migrations migrations
+COPY start.sh ./
 ENV NODE_ENV=production \
     PORT=3000 \
     ASSETS_DIR=./build/client/assets \
