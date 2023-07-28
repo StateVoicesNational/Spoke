@@ -229,7 +229,7 @@ export async function postMessageSend(
     }
 
     await updateQuery.update(changesToSave);
-    await contactUpdateQuery()
+    await contactUpdateQuery
 
     console.log("Saved message error status", changesToSave, err);
 
