@@ -77,7 +77,7 @@ const dbContactTimezones = async id =>
 
 const clear = async (id, campaign) => {
   if (r.redis) {
-    console.log('clearing campaign cache')
+    // console.log('clearing campaign cache')
     await r.redis.delAsync(cacheKey(id));
   }
 };
@@ -160,17 +160,17 @@ const currentEditors = async (campaign, user) => {
 };
 
 const load = async (id, opts) => {
-  console.log('campaign cache load', id)
+  // console.log('campaign cache load', id)
   if (r.redis) {
     let campaignData = await r.redis.getAsync(cacheKey(id));
     let campaignObj = campaignData ? JSON.parse(campaignData) : null;
-    console.log('pre campaign cache', campaignObj)
+    // console.log('pre campaign cache', campaignObj)
     if (
       (opts && opts.forceLoad) ||
       !campaignObj ||
       !campaignObj.interactionSteps
     ) {
-      console.log('no campaigndata', id, campaignObj)
+      // console.log('no campaigndata', id, campaignObj)
       const campaignNoCache = await loadDeep(id);
       if (campaignNoCache) {
         // archived or not found in db either
@@ -178,7 +178,7 @@ const load = async (id, opts) => {
       }
       campaignData = await r.redis.getAsync(cacheKey(id));
       campaignObj = campaignData ? JSON.parse(campaignData) : null;
-      console.log('new campaign data', id, campaignData)
+      // console.log('new campaign data', id, campaignData)
     }
     if (campaignObj) {
       const counts = [
@@ -193,7 +193,7 @@ const load = async (id, opts) => {
         campaignObj[countName] = await r.redis.hgetAsync(countKey, countName);
       }
       campaignObj.feature = getFeatures(campaignObj);
-      console.log('campaign cache', cacheKey(id), campaignObj, campaignData)
+      // console.log('campaign cache', cacheKey(id), campaignObj, campaignData)
       const campaign = modelWithExtraProps(campaignObj, Campaign, [
         "customFields",
         "feature",
