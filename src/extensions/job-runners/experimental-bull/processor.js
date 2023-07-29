@@ -6,7 +6,8 @@ import { jobQueue, taskQueue } from "./queues";
 
 const taskConcurrency = process.env.BULL_TASK_CONCURRENCY ? parseInt(process.env.BULL_TASK_CONCURRENCY) : 1;
 
-taskQueue.process(taskConcurrency, async bullJob => {
+taskQueue.process(async bullJob => {
+// taskQueue.process(taskConcurrency, async bullJob => {
   console.debug("Processing bull job:", { ...bullJob, queue: null });
   const { taskName, payload } = bullJob.data;
   await invokeTaskFunction(taskName, payload);
