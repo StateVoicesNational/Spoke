@@ -112,11 +112,12 @@ export async function sendMessage({
   campaign,
   serviceManagerData
 }) {
-  console.log(
-    "telnyx sendMessage",
-    message && message.id,
-    contact && contact.id
-  );
+  log.debug({
+    message: "telnyx sendMessage",
+    campaign,
+    content: message,
+    contact, 
+  });
   // eslint-disable-next-line camelcase
   // applicationId will probably come from config, unless serviceManager is doing something fancy
   const messaging_profile_id = serviceManagerData && serviceManagerData.messageservice_sid
@@ -193,7 +194,7 @@ export async function postMessageSend(
       ...changes
     }
     : {};
-  log.info("postMessageSend", message, changes, response, err);
+  log.debug("postMessageSend", message, changes, response, err);
   let hasError = false;
 
   const handleError = (err) => {
@@ -231,7 +232,7 @@ export async function postMessageSend(
     await updateQuery.update(changesToSave);
     await contactUpdateQuery
 
-    console.log("Saved message error status", changesToSave, err);
+    log.debug("Saved message error status", changesToSave, err);
 
     const status = err || (response ? new Error(JSON.stringify(response)) : new Error("Encountered unknown error"))
 
@@ -257,8 +258,8 @@ export async function postMessageSend(
     } catch (err) {
 
     }
-    console.error(
-      `Failed message and contact update on telnyx postMessageSend: ${err}`
+    log.error(
+      `Failed message and contact update on telnyx postMessageSend`, err
     );
     return err
   }
@@ -334,7 +335,7 @@ export async function handleIncomingMessage(message, { orgId }) {
  */
 async function handleOrganizationContact({ organizationId, contactNumber, to }) {
   try {
-    console.log('handle organization concat called')
+    log.debug('handle organization concat called')
     const organizationContact = await cacheableData.organizationContact.query({
       organizationId,
       contactNumber
@@ -371,7 +372,7 @@ async function handleOrganizationContact({ organizationId, contactNumber, to }) 
  * @param {*} message
  */
 export async function handleDeliveryReport(message, { orgId }) {
-  console.log('telnyx.handleDeliveryReport', { message })
+  log.debug('telnyx.handleDeliveryReport', { message })
 
   const { id, contact_number, messageservice_sid, text, user_number } = parseMessage(message)
   const deliveryReport = {
@@ -395,7 +396,7 @@ export async function handleDeliveryReport(message, { orgId }) {
  */
 export async function createMessagingService(organization, friendlyName) {
   //where does this name come from?
-  console.log("telnyx.createMessagingService", organization.id, friendlyName);
+  log.debug({ message: "telnyx.createMessagingService", organization: organization, friendlyName });
 
   const telnyxBaseUrl =
     getConfig("TELNYX_BASE_CALLBACK_URL", organization) ||
@@ -481,7 +482,7 @@ export const getServiceConfig = async (
  * @returns 
  */
 export const fullyConfigured = async (organization, serviceManagerData) => {
-  console.log('telnyx::fullConfigured', { organization })
+  log.debug('telnyx::fullConfigured', { organization })
   // const result = await getMessageServiceSid(organization)
   if (!TELNYX_PUB_KEY) {
     log.error(`org: ${organization} using service Telnyx missing TELNYX_PUB_KEY`)

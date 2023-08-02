@@ -1,6 +1,7 @@
 import minilog from "minilog";
 import { isClient } from "./is-client";
 const rollbar = require("rollbar");
+
 let logInstance = null;
 
 if (isClient()) {
@@ -24,15 +25,24 @@ if (isClient()) {
     rollbar.init(process.env.ROLLBAR_ACCESS_TOKEN);
   }
 
-  minilog.suggest.deny(
-    /.*/,
-    process.env.NODE_ENV === "development" ? "debug" : "debug"
-  );
+  minilog.suggest.clear();  // Clear any existing suggestions
+  minilog.suggest.deny(/.*/, process.env.LOG_LEVEL || 'info');  // Deny everything below the LOG_LEVEL
 
-  minilog
-    .enable()
-    .pipe(minilog.backends.console.formatWithStack)
-    .pipe(minilog.backends.console);
+
+
+  if (process.env.NODE_ENV === "production" && process.env.GOOGLE_APPLICATION_CREDENTIALS) {
+    import('./gcp-logger').then(({ gcpLogger }) => {
+      minilog.enable().pipe(gcpLogger);
+      console.log('loaded GCP logger')
+    }).catch(err => {
+      console.error('Error loading GCP logger:', err);
+    });
+  } else {
+    minilog
+      .enable()
+      .pipe(minilog.backends.console.formatWithStack)
+      .pipe(minilog.backends.console);
+  }
 
   logInstance = minilog("backend");
   const existingErrorLogger = logInstance.error;
