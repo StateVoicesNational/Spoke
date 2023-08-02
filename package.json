@@ -60,6 +60,7 @@
     "cloud-sql": "cloud-sql-proxy keen-electron-367615:us-central1:mlabs-staging",
     "dev-bull": "nodemon --signal SIGTERM -e js,jsx,md,mustache -w ./src --exec ./dev-tools/babel-run-with-env.js src/extensions/job-runners/experimental-bull/processor.js",
     "dev-bull-debug": "nodemon --signal SIGTERM -e js,jsx,md,mustache -w ./src --exec ./dev-tools/babel-run-with-env-debug -- src/extensions/job-runners/experimental-bull/processor.js",
+    "dev-bull-ui": "nodemon --signal SIGTERM -e js,jsx,md,mustache -w ./src --exec ./dev-tools/babel-run-with-env.js src/extensions/job-runners/experimental-bull/admin.js",
     "prod-bull": "node ./build/server/extensions/job-runners/experimental-bull/processor.js",
     "prod-bull-ui": "node ./build/server/extensions/job-runners/experimental-bull/admin.js"
   },
