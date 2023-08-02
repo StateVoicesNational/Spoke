@@ -143,13 +143,14 @@ export async function sendMessage({
 
   const messageParams = {
     to: message.contact_number,
-    text: message.text,
+    text: additionalMessageParams.body,
     messaging_profile_id: messaging_profile_id,
+    type: 'SMS'
   }
 
-  // TODO: test this
   if (additionalMessageParams.mediaUrl) {
     messageParams.media_urls = [additionalMessageParams.mediaUrl];
+    messageParams.type = 'MMS'
   }
 
   let response
