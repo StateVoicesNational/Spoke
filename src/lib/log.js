@@ -32,7 +32,7 @@ if (isClient()) {
 
   if (process.env.GCP_LOG) {
     import('./gcp-logger').then(({ gcpLogger }) => {
-      minilog.enable().pipe(gcpLogger);
+      minilog.enable().pipe(gcpLogger); // Use GCP logging as a transport for minilog
       console.log('loaded GCP logger')
     }).catch(err => {
       console.error('Error loading GCP logger:', err);
