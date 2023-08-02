@@ -1,8 +1,11 @@
-import { LoggingWinston } from '@google-cloud/logging-winston';
+import winston from 'winston';
 
-const loggingWinston = new LoggingWinston({
-  logName: 'spoke', // The name of the log in Google Cloud Logging
-  resource: { type: 'global' },
+const logger = winston.createLogger({
+  level: process.env.LOG_LEVEL || 'info',
+  format: winston.format.json(), // Use JSON format
+  transports: [
+    new winston.transports.Console()
+  ],
 });
 
-export { loggingWinston as gcpLogger };
+export { logger as gcpLogger };

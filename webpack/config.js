@@ -88,7 +88,7 @@ const config = {
     ]
   },
   externals: {
-    '@google-cloud/logging-winston': 'commonjs @google-cloud/logging-winston'
+    'winston': 'commonjs winston'
   }
 };
 
