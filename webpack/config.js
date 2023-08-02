@@ -86,6 +86,9 @@ const config = {
         }
       })
     ]
+  },
+  externals: {
+    '@google-cloud/logging': 'commonjs @google-cloud/logging'
   }
 };
 
