@@ -30,7 +30,7 @@ if (isClient()) {
 
 
 
-  if (process.env.NODE_ENV === "production" && process.env.GOOGLE_APPLICATION_CREDENTIALS) {
+  if (process.env.GCP_LOG) {
     import('./gcp-logger').then(({ gcpLogger }) => {
       minilog.enable().pipe(gcpLogger);
       console.log('loaded GCP logger')
