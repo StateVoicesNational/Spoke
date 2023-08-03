@@ -236,6 +236,7 @@ export async function postMessageSend(
 
     const status = err || (response ? new Error(JSON.stringify(response)) : new Error("Encountered unknown error"))
 
+    console.error(err)
     log.error('postMessage error', { status, err})
     return status
   } else {
