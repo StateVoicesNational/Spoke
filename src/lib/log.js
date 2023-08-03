@@ -58,23 +58,29 @@ if (isClient()) {
         return;
       }
       if (enableGcpLog) {
-        const messages = objs.map(obj => {
-          if (obj instanceof Error) {
-            return obj.stack || obj.message;
+        let message = '';
+        let content = [];
+        objs.forEach(obj => {
+          if (typeof obj === 'string') {
+            message += obj + ' ';
+          } else if (obj instanceof Error) {
+            content.push({error: obj.stack || obj.message});
           } else {
-            return obj;
+            content.push(obj);
           }
         });
         const entry = {
           severity: severity,
-          message: messages
+          message: message.trim(),
+          content: content
         };
         console.log(JSON.stringify(entry));
       } else {
         const logger = existingLoggerFunctions[severity];
         logger(...objs);
       }
-    }; 
+    };
+    
   
     logInstance = {
       error: createLogFunction('ERROR'),
