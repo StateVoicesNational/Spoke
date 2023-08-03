@@ -46,26 +46,30 @@ if (isClient()) {
       DEBUG: logInstance ? logInstance.debug : console.debug,
       WARNING: logInstance ? logInstance.warn : console.warn,
     };
-  
+
     const LOG_LEVELS = {
       'error': 4,
       'warning': 3,
       'info': 2,
       'debug': 1
     };
- 
+
     const createLogFunction = severity => (...objs) => {
       if (LOG_LEVELS[severity.toLowerCase()] < LOG_LEVELS[(process.env.LOG_LEVEL || 'info').toLowerCase()]) {
         return;
       }
       if (enableGcpLog) {
         let message = '';
-        let content = [];
+        const content = [];
         objs.forEach(obj => {
-          if (typeof obj === 'string') {
+          if (typeof obj === "string") {
             message += obj + ' ';
           } else if (obj instanceof Error) {
-            content.push({error: obj.stack || obj.message});
+            const errorObj = {};
+            if (obj.message) errorObj.message = obj.message;
+            if (obj.stack) errorObj.stack = obj.stack;
+            if (obj.name) errorObj.name = obj.name;
+            content.push(errorObj);
           } else {
             content.push(obj);
           }
@@ -81,8 +85,8 @@ if (isClient()) {
         logger(...objs);
       }
     };
-    
-  
+
+
     logInstance = {
       error: createLogFunction('ERROR'),
       info: createLogFunction('INFO'),
@@ -90,20 +94,22 @@ if (isClient()) {
       warn: createLogFunction('WARNING'),
     };
   }
-  
+
   const existingErrorLogger = logInstance.error;
-  logInstance.error = err => {
+  logInstance.error = (...err) => {
     if (enableRollbar) {
-      if (typeof err === "object") {
-        rollbar.handleError(err);
-      } else if (typeof err === "string") {
-        rollbar.reportMessage(err);
-      } else {
-        rollbar.reportMessage("Got backend error with no error message");
-      }
+      err.forEach((e) => {
+        if (typeof e === "object") {
+          rollbar.handleError(e);
+        } else if (typeof e === "string") {
+          rollbar.reportMessage(e);
+        } else {
+          rollbar.reportMessage("Got backend error with no error message");
+        }
+      });
     }
 
-    existingErrorLogger(err && err.stack ? err.stack : err);
+    existingErrorLogger(...err);
   };
 }
 
