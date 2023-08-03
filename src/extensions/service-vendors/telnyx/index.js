@@ -236,6 +236,7 @@ export async function postMessageSend(
 
     const status = err || (response ? new Error(JSON.stringify(response)) : new Error("Encountered unknown error"))
 
+    log.error('postMessage error', { status, err})
     return status
   } else {
     changesToSave = {
@@ -256,12 +257,11 @@ export async function postMessageSend(
       }
       return { ...message, ...changesToSave }
     } catch (err) {
-
+      log.error(
+        `Failed message and contact update on telnyx postMessageSend`,  err 
+      );
+      return err
     }
-    log.error(
-      `Failed message and contact update on telnyx postMessageSend`, err
-    );
-    return err
   }
 }
 
