@@ -58,22 +58,23 @@ if (isClient()) {
         return;
       }
       if (enableGcpLog) {
-        objs.forEach(obj => {
+        const messages = objs.map(obj => {
           if (obj instanceof Error) {
-            console.error(obj);
+            return obj.stack || obj.message;
           } else {
-            const entry = {
-              severity: severity,
-              message: typeof obj === "object" ? JSON.stringify(obj) : obj,
-            };
-            console.log(JSON.stringify(entry));
+            return obj;
           }
         });
+        const entry = {
+          severity: severity,
+          message: messages
+        };
+        console.log(JSON.stringify(entry));
       } else {
         const logger = existingLoggerFunctions[severity];
         logger(...objs);
       }
-    };
+    }; 
   
     logInstance = {
       error: createLogFunction('ERROR'),
