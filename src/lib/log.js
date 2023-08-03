@@ -1,4 +1,5 @@
 import minilog from "minilog";
+import stringify from 'json-stringify-safe'
 import { isClient } from "./is-client";
 const rollbar = require("rollbar");
 let logInstance = null;
@@ -74,7 +75,7 @@ if (isClient()) {
           message: message.trim(),
           content: content
         };
-        console.log(JSON.stringify(entry));
+        console.log(stringify(entry));
       } else {
         const logger = existingLoggerFunctions[severity];
         logger(...objs);
