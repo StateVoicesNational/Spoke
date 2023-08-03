@@ -28,7 +28,7 @@ if (isClient()) {
   if (!enableGcpLog) {
     minilog.suggest.deny(
       /.*/,
-      process.env.LOG_LEVEL || 'info'
+      process.env.NODE_ENV === "development" ? "debug" : "debug"
     );
 
     minilog
