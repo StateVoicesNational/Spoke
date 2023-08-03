@@ -112,10 +112,9 @@ export async function sendMessage({
   campaign,
   serviceManagerData
 }) {
-  log.debug({
-    message: "telnyx sendMessage",
+  log.debug('telnyx sendMessage', {
     campaign,
-    content: message,
+    message,
     contact, 
   });
   // eslint-disable-next-line camelcase
@@ -195,7 +194,7 @@ export async function postMessageSend(
       ...changes
     }
     : {};
-  log.debug("postMessageSend", message, changes, response, err);
+  log.debug("postMessageSend", { message, changes, response, err });
   let hasError = false;
 
   const handleError = (err) => {
@@ -233,7 +232,7 @@ export async function postMessageSend(
     await updateQuery.update(changesToSave);
     await contactUpdateQuery
 
-    log.debug("Saved message error status", changesToSave, err);
+    log.debug("Saved message error status", { changesToSave, err });
 
     const status = err || (response ? new Error(JSON.stringify(response)) : new Error("Encountered unknown error"))
 
@@ -397,7 +396,7 @@ export async function handleDeliveryReport(message, { orgId }) {
  */
 export async function createMessagingService(organization, friendlyName) {
   //where does this name come from?
-  log.debug({ message: "telnyx.createMessagingService", organization: organization, friendlyName });
+  log.debug("telnyx.createMessagingService", {organization, friendlyName });
 
   const telnyxBaseUrl =
     getConfig("TELNYX_BASE_CALLBACK_URL", organization) ||
