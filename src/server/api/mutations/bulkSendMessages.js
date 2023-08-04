@@ -76,27 +76,52 @@ export const bulkSendMessages = async (
     customFields = customFields.filter(f => f !== "notes");
   }
 
-  const promises = contacts.map(async contact => {
-    contact.customFields = contact.custom_fields;
-    const text = applyScript({
-      contact: camelCaseKeys(contact),
-      texter,
-      script: topmostParent.script,
-      customFields
+  // Chunk size
+  const chunkSize = process.env.BULK_SEND_CHUNK_PROMISES ? parseInt(process.env.BULK_SEND_CHUNK_PROMISES) : 10;
+
+  // Process promises in chunks
+  log.info(`started processing bulk send: total contacts ${contacts.length}`)
+  for (let i = 0; i < contacts.length; i += chunkSize) {
+    const chunk = contacts.slice(i, i + chunkSize);
+    log.info(`Processing contacts from ${i} to ${i + chunkSize}`);
+  
+    const promises = chunk.map(async contact => {
+      try {
+        contact.customFields = contact.custom_fields;
+        const text = applyScript({
+          contact: camelCaseKeys(contact),
+          texter,
+          script: topmostParent.script,
+          customFields
+        });
+  
+        const contactMessage = {
+          contactNumber: contact.cell,
+          userId: assignment.user_id,
+          text,
+          assignmentId
+        };
+  
+        return await sendMessage(
+          undefined,
+          { message: contactMessage, campaignContactId: contact.id },
+          { user, loaders }
+        );
+  
+      } catch (error) {
+        log.error(`Error processing contact ${contact.id}: ${error.message}`);
+        throw error;
+      }
     });
-
-    const contactMessage = {
-      contactNumber: contact.cell,
-      userId: assignment.user_id,
-      text,
-      assignmentId
-    };
-    return sendMessage(
-      undefined,
-      { message: contactMessage, campaignContactId: contact.id },
-      { user, loaders }
-    );
-  });
-
-  return await Promise.all(promises);
+  
+    try {
+      await Promise.all(promises);
+      log.info(`Successfully processed contacts from ${i} to ${i + chunkSize}`);
+    } catch (error) {
+      log.error(`Error in chunk from ${i} to ${i + chunkSize}: ${error.message}`);
+      throw error;
+    }
+  }
+  log.info('completed bulk send')
+  
 };
