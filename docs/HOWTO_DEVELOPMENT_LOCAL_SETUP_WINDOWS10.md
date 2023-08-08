@@ -1,11 +1,6 @@
 ## Getting Started
 
 ---
-### Quick Note
-To get Spoke to run locally within Windows, it will be easier to have Visual Studio (VS) installed. 
-Other IDE's should work as well, but I have found VS to be the simplest, as it has a feature to show that our Spoke repository has been locally hosted correctly. [Download VS here](https://code.visualstudio.com/)
-
----
 ### Download Windows Subsytem for Linex
 Windows Subsystem for Linex (WSL) allows users to run Linux enviroments and applications within Windows. 
 Further information can be found [here](https://learn.microsoft.com/en-us/windows/wsl/about).
@@ -49,8 +44,8 @@ git remote add upstream https://github.com/MoveOnOrg/Spoke.git
 ### Ubuntu and Visual Studio Code
 
 A good majority of steps can be completed in Ubuntu while in the Spoke directory, 
-but will be easier to operated in [Visual Studio Code](https://code.visualstudio.com/). 
-VS has an extension for WSL, allowing for seemless use.
+but it will be easier to operate in [Visual Studio Code](https://code.visualstudio.com/)(VS). 
+VS has an extension for WSL, allowing for near seemless use. This article [Developing in WSL](https://code.visualstudio.com/docs/remote/wsl) explains this further.
 
 After installing VS, and adding the WSL extension, type:
    ```
