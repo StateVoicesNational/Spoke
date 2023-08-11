@@ -22,7 +22,7 @@ const TagList = props => (
     {props.tags.map((tag, index) => {
       const tagStyle = {
         marginRight: "60px",
-        backgroundColor: this.props.muiTheme.palette.error.main,
+        backgroundColor: props.muiTheme.palette.error.main, // this broke seeing messages with tags on message review
         display: "flex",
         maxHeight: "25px",
         alignItems: "center"
@@ -37,9 +37,9 @@ const TagList = props => (
       return (
         <p key={index} className={css(styles.conversationRow)} style={tagStyle}>
           <Avatar
-            style={{ backgroundColor: this.props.muiTheme.palette.error.main }}
+            style={{ backgroundColor: props.muiTheme.palette.error.main }} // this broke seeing messages with tags on message review
           >
-            <FlagIcon color="default" />
+            <FlagIcon color="default" /> 
           </Avatar>
           <p style={textStyle}>{props.organizationTags[tag.id]}</p>
         </p>
