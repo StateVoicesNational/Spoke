@@ -30,6 +30,7 @@ const styles = StyleSheet.create({
 });
 
 class MessageList extends Component {
+  // renders a list of messages
   componentDidMount() {
     if (typeof this.refs.messageWindow.scrollTo !== "function") {
       return;
@@ -78,6 +79,7 @@ MessageList.propTypes = {
 };
 
 class ConversationPreviewBody extends Component {
+  // receives props for `conversation` and `organizationTags` and manages its own state for `messages`
   constructor(props) {
     super(props);
 
@@ -93,6 +95,7 @@ class ConversationPreviewBody extends Component {
   }
 
   render() {
+    // renders the tag list, message list, and message response components.
     return (
       <div>
         <TagList
@@ -115,6 +118,7 @@ ConversationPreviewBody.propTypes = {
 };
 
 export class InnerConversationPreviewModal extends Component {
+  // handles events such as copying the conversation link to the clipboard and opting out of a conversation.
   constructor(props) {
     super(props);
 
@@ -126,6 +130,7 @@ export class InnerConversationPreviewModal extends Component {
   }
 
   handleClickOptOut = async () => {
+    // asynchronous function that performs an API call to create an opt-out and updates the state accordingly.
     const { assignmentId, cell, campaignContactId } = this.props.conversation;
 
     const optOut = {
@@ -154,6 +159,7 @@ export class InnerConversationPreviewModal extends Component {
   };
 
   handleCopyToClipboard = () => {
+    // copies the conversation link to the clipboard when the copy button is clicked.
     this.refs.convoLink.focus();
     document.execCommand("copy");
     this.setState({ justCopied: true });
@@ -163,6 +169,8 @@ export class InnerConversationPreviewModal extends Component {
   };
 
   render() {
+    // renders the dialog box, including the conversation body, primary actions, and error dialog if an opt-out error occurs.
+
     const { conversation, organizationId } = this.props;
     const isOpen = conversation !== undefined;
 
