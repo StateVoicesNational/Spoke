@@ -1,5 +1,7 @@
 import { hasConfig, getConfig } from "../api/lib/config";
 import { getProcessEnvTz, getProcessEnvDstReferenceTimezone } from "../../lib";
+import {FaviconLogo} from "../../assets/logo.jsx"
+
 
 const canGoogleImport = hasConfig("GOOGLE_SECRET");
 
@@ -39,7 +41,7 @@ export default function renderIndex(html, css, assetMap) {
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0"/>
-    <title>Spoke</title>
+    <title>Dispatch</title>
     ${externalLinks}
     <style>
       /* CSS declarations go here */
@@ -61,7 +63,9 @@ export default function renderIndex(html, css, assetMap) {
     </style>
     <style data-aphrodite>${css.content}</style>
     ${rollbarScript}
-    <link rel="icon" href="https://s3-us-west-1.amazonaws.com/spoke-public/spoke_logo.svg">
+      <!Favicon: >
+    <!link rel="icon" href='https://datastorespokevvn.blob.core.windows.net/assets/dispatch_logo.svg'/>
+    <${FaviconLogo}/>
   </head>
   <body>
     <div id="mount">${html}</div>
