@@ -63,8 +63,6 @@ export default function renderIndex(html, css, assetMap) {
     </style>
     <style data-aphrodite>${css.content}</style>
     ${rollbarScript}
-      <!Favicon: >
-    <!link rel="icon" href='https://datastorespokevvn.blob.core.windows.net/assets/dispatch_logo.svg'/>
     <${FaviconLogo}/>
   </head>
   <body>
