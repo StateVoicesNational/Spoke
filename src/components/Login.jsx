@@ -36,7 +36,8 @@ class Login extends React.Component {
     header: {
       ...theme.text.header,
       "text-align": "center",
-      "margin-bottom": 0
+      "margin-bottom": 0,
+      "color": "#0100b6"
     }
   });
 
