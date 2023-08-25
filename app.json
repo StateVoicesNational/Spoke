@@ -60,7 +60,7 @@
     },
 
     "TWILIO_MULTI_ORG": {
-      "description": "Allows each organization in the Spoke instance to set Twilio variables within the app",
+      "description": "Allows each organization in the Dispatch instance to set Twilio variables within the app",
       "required": false,
       "value": "1"
     },

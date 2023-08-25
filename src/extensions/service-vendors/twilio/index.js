@@ -777,7 +777,7 @@ async function buyNumber(
 ) {
   const response = await twilioInstance.incomingPhoneNumbers.create({
     phoneNumber,
-    friendlyName: `Managed by Spoke [${process.env.BASE_URL}]: ${phoneNumber}`,
+    friendlyName: `Managed by Dispatch [${process.env.BASE_URL}]: ${phoneNumber}`,
     voiceUrl: getConfig("TWILIO_VOICE_URL", organization) // will use default twilio recording if undefined
   });
 

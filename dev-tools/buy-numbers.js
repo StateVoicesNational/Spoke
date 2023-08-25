@@ -30,7 +30,7 @@ async function searchForAvailableNumbers(areaCode, limit) {
 async function buyNumber(phoneNumber) {
   const response = await twilio.incomingPhoneNumbers.create({
     phoneNumber,
-    friendlyName: `Managed by Spoke: ${phoneNumber}`
+    friendlyName: `Managed by Dispatch: ${phoneNumber}`
   });
   if (response.error) {
     throw new Error(`Error buying twilio number: ${response.error}`);

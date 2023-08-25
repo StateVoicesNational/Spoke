@@ -141,7 +141,7 @@ export async function updateConfig(oldConfig, config, organization) {
     if (!config.applicationId) {
       finalConfig.applicationId = await createMessagingService(
         organization,
-        `Spoke app, org${organization.id}`,
+        `Dispatch app, org${organization.id}`,
         finalConfig
       );
     }
@@ -178,7 +178,7 @@ export async function buyNumbersInAreaCode(
   if (areaCode === "800") {
     // tollFree
     const order = await BandwidthNumbers.Order.createAsync(client, {
-      name: `Spoke ${limit} order for org ${organization.id}`,
+      name: `Dispatch ${limit} order for org ${organization.id}`,
       quantity: limit || 1,
       siteId: config.siteId,
       peerId: config.sipPeerId,
@@ -272,7 +272,7 @@ export async function createAccountBaseline(organization, options) {
   if (!config.siteId || (options && options.newEverything)) {
     const site = await BandwidthNumbers.Site.createAsync(client, {
       // subaccount names max=50 characters
-      name: `Spoke org${organization.id} ${organization.name.substr(0, 38)}`,
+      name: `Dispatch org${organization.id} ${organization.name.substr(0, 38)}`,
       address: {
         houseNumber: config.houseNumber,
         streetName: config.streetName,
@@ -292,7 +292,7 @@ export async function createAccountBaseline(organization, options) {
     location = await BandwidthNumbers.SipPeer.createAsync(client, {
       siteId,
       // Peer Names can only contain alphanumerics
-      peerName: `Spoke org${organization.id} ${organization.name.replace(
+      peerName: `Dispatch org${organization.id} ${organization.name.replace(
         /\W/g,
         ""
       )}`,
@@ -352,7 +352,7 @@ export async function createMessagingService(
   const application = await BandwidthNumbers.Application.createMessagingApplicationAsync(
     client,
     {
-      appName: friendlyName || "Spoke app",
+      appName: friendlyName || "Dispatch app",
       callbackUrl,
       msgCallbackUrl: callbackUrl,
       inboundCallbackUrl: callbackUrl,

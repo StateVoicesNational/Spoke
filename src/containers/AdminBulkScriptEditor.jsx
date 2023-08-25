@@ -274,7 +274,7 @@ class AdminBulkScriptEditor extends Component {
           <DialogTitle>Error</DialogTitle>
           <DialogContent>
             <DialogContentText>
-              Spoke ran into the following error when trying to update scripts:
+              Dispatch ran into the following error when trying to update scripts:
             </DialogContentText>
             <DialogContentText style={{ fontFamily: "monospace" }}>
               {this.state.error}

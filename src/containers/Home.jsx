@@ -98,7 +98,7 @@ class Home extends React.Component {
     return (
       <div>
         <div className={css(styles.header)}>
-          Spoke is a new way to run campaigns using text messaging.
+          Dispatch is a new way to run campaigns using text messaging.
         </div>
         <div>
           <Link id="login" href="/login" onClick={this.handleOrgInviteClick}>

@@ -79,11 +79,11 @@ export const getMessageServiceConfig = async (
 };
 
 export const internalErrors = {
-  "-1": "Spoke failed to send the message (1st attempt).",
-  "-2": "Spoke failed to send the message (2nd attempt).",
-  "-3": "Spoke failed to send the message (3rd attempt).",
-  "-4": "Spoke failed to send the message (4th attempt).",
-  "-5": "Spoke failed to send the message and will NOT try again.",
+  "-1": "Dispatch failed to send the message (1st attempt).",
+  "-2": "Dispatch failed to send the message (2nd attempt).",
+  "-3": "Dispatch failed to send the message (3rd attempt).",
+  "-4": "Dispatch failed to send the message (4th attempt).",
+  "-5": "Dispatch failed to send the message and will NOT try again.",
   "-133": "Auto-optout (no error)",
   "-166":
     "Internal: Message blocked due to text match trigger (profanity-tagger)",

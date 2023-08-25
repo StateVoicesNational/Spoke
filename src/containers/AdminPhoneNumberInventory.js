@@ -408,7 +408,7 @@ class AdminPhoneNumberInventory extends React.Component {
             Do you want to delete availale numbers for the&nbsp;
             <b>{this.state.deleteNumbersAreaCode}</b> area code? This will
             permanently remove numbers not allocated to a campaign/messaging
-            service from both Spoke and your Twilio account.
+            service from both Dispatch and your Twilio account.
           </DialogContent>
           <DialogActions>
             <Button

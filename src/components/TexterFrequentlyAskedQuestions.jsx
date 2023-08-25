@@ -39,10 +39,10 @@ const TexterFaqs = ({ faqs }) => {
         </Card>
       ))}
       <Card>
-        <CardHeader title={`${faqs.length}. Who built Spoke?`} />
+        <CardHeader title={`${faqs.length}. Who built Dispatch?`} />
         <CardContent>
           <p>
-            Spoke is developed and maintained by people committed to fighting
+            Dispatch is developed and maintained by people committed to fighting
             oppressive systems and structures, including economic injustice,
             racism, patriarchy, and militarism.
           </p>

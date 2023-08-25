@@ -114,7 +114,7 @@ class CampaignDynamicAssignmentForm extends React.Component {
           {window.TEXTER_SIDEBOXES &&
           !/dynamicassign/.test(window.TEXTER_SIDEBOXES) ? (
             <div>
-              Warning: Spoke may be misconfigured: dynamic assignment depends on
+              Warning: Dispatch may be misconfigured: dynamic assignment depends on
               TEXTER_SIDEBOXES= to include "default-dynamicassignment" or a
               replacement dynamicassignment sidebox.
             </div>

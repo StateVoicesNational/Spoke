@@ -123,7 +123,7 @@ class Login extends React.Component {
             </ButtonGroup>
           )}
           <Paper className={css(this.styles.fieldContainer)}>
-            <h2 className={css(this.styles.header)}>Welcome to Spoke</h2>
+            <h2 className={css(this.styles.header)}>Welcome to Dispatch</h2>
             <UserEdit
               authType={this.state.active}
               saveLabel={saveLabels[this.state.active]}

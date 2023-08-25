@@ -88,13 +88,13 @@ const configurableFields = {
           {props.parent.state.ALLOW_SEND_ALL_ENABLED ? (
             <div style={{ padding: "8px" }}>
               <p>
-                You are turning on ALLOW_SEND_ALL mode, which means Spoke will
+                You are turning on ALLOW_SEND_ALL mode, which means Dispatch will
                 be substantially altered from its default configuration.
               </p>
               <p>
                 <b>
                   PLEASE CONSULT WITH LEGAL COUNSEL BEFORE YOU ALTER THIS
-                  VARIABLE TO ENSURE THAT YOUR USE OF SPOKE IS COMPLIANT WITH
+                  VARIABLE TO ENSURE THAT YOUR USE OF DISPATCH IS COMPLIANT WITH
                   APPLICABLE LAW IN YOUR JURISDICTION FOR PERSON-TO-PERSON
                   TEXTING.
                 </b>

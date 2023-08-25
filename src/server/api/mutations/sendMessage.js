@@ -21,7 +21,7 @@ const newError = (message, code, details = {}) => {
   if (process.env.DEBUGGING_EMAILS) {
     sendEmail({
       to: process.env.DEBUGGING_EMAILS.split(","),
-      subject: `Spoke Send Message Error`,
+      subject: `Dispatch Send Message Error`,
       html: `
         <body>
           <div><b>ERROR CODE: ${code}</b></div>
