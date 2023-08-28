@@ -38,6 +38,12 @@ class Login extends React.Component {
       "text-align": "center",
       "margin-bottom": 0,
       "color": "#0100b6"
+    },
+    footer: {
+      display: "block",
+      "text-align": "center",
+      "bottom": "0px",
+      "font-family": "Poppins"
     }
   });
 
@@ -133,6 +139,9 @@ class Login extends React.Component {
               style={css(this.styles.authFields)}
             />
           </Paper>
+          <div className={css(this.styles.footer)}>
+            <a href="https://www.statevoices.org/privacy-policy/">Privacy Policy</a>
+          </div>
         </div>
       </div>
     );
