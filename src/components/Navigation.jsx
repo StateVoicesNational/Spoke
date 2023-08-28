@@ -15,6 +15,7 @@ import { withRouter } from "react-router";
 import _ from "lodash";
 import { dataTest, camelCase } from "../lib/attributes";
 import { StyleSheet, css } from "aphrodite";
+import Logo from "../assets/logo"
 
 const styles = StyleSheet.create({
   sideBarWithMenu: {
@@ -24,6 +25,20 @@ const styles = StyleSheet.create({
   sideBarWithoutMenu: {
     padding: "5px",
     paddingTop: "20px"
+  },
+  logoAndPrivacyLink : {
+    display: "block",
+    position: "absolute",
+    width: "120px",
+    margin: "auto",
+    bottom: "5%",
+    left: "68px"
+  },
+  privacyPoloicy: {
+    position: "absolute",
+    margin: "atuo",
+    bottom: "3%",
+    left: "83px"
   }
 });
 
@@ -59,6 +74,10 @@ const Navigation = function Navigation(props) {
             <Divider />
             {switchListItem}
           </List>
+          <div>
+              <img src={Logo} className={css(styles.logoAndPrivacyLink)}/>
+              <a className={css(styles.privacyPoloicy)} href="https://www.statevoices.org/privacy-policy/">Privacy Policy</a>
+          </div>
         </Paper>
       </div>
     );
