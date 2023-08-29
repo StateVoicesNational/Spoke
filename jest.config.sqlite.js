@@ -5,4 +5,3 @@ module.exports.globals.DB_JSON = JSON.stringify({
   defaultsUnsupported: true,
   useNullAsDefault: true
 });
-module.exports = config;

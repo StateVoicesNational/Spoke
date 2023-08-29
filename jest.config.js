@@ -1,7 +1,8 @@
 module.exports = {
   verbose: true,
+  testURL: ,
   testEnvironmentOptions: {
-    url: "http://localhost/"
+    url:
   },
   testEnvironment: "node",
   globals: {

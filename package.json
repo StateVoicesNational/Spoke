@@ -31,7 +31,7 @@
     "notify-slack": "if [ \"$SLACK_NOTIFY_URL\" != \"\" ] ; then echo notifying slack && curl -XPOST -d '{\"channel\": \"#spoke\", \"text\":\"'\"$(whoami) building spoke $(git log -1 --pretty=%h) for $AWS_S3_BUCKET_NAME\"'\"}' $SLACK_NOTIFY_URL; fi",
     "install-config-file": "if [ \"$CONFIG_FILE\" != \"\" ] ; then cp $CONFIG_FILE ./CONFIG_FILE.json; fi",
     "install-prebuilt-assets": "if [ \"$ASSETS_DIR_PREBUILT\" != \"\" ] ; then cp -rp $ASSETS_DIR_PREBUILT ./build/; fi",
-    "start": "node ./build/server/server",
+    "start": "node ./build/server/",
     "start:heroku": "BASE_URL=$(node ./build/server/heroku/print-base-url) npm start",
     "start:test": "nf start -w --env ./dev-tools/.env.test --procfile ./dev-tools/Procfile.test",
     "start:test-babel": "nodemon --signal SIGTERM -e js,jsx,md,mustache -w ./src --exec ./dev-tools/babel-run -- ./src/server",
