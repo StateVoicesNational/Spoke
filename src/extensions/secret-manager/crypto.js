@@ -6,7 +6,7 @@ Used to encrypt/decrypt values (like auth tokens) before storing them in the
 database, using the SESSION_SECRET environment variable as the encryption key.
 */
 
-const crypto = require("crypto");
+const crypto = require("./crypto");
 
 const secret = process.env.SESSION_SECRET || global.SESSION_SECRET;
 const algorithm = "aes-256-cbc";
@@ -49,7 +49,6 @@ if (secret && secret.length < 32) {
     
     module.exports = {
       symmetricEncrypt,
-      symmetricDecrypt
+      symmetricDecrypt     
     };
     
-    resolve.fallback = { "crypto": require.resolve("crypto-browserify") };
