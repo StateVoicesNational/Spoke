@@ -72,7 +72,8 @@ const config = {
   resolve: {
     fallback: {
       stream: require.resolve("stream-browserify"),
-      zlib: require.resolve("browserify-zlib")
+      zlib: require.resolve("browserify-zlib"),
+      crypto: require.resolve("browserify")
     },
     mainFields: ["browser", "main", "module"],
     extensions: [".js", ".jsx", ".json"]
