@@ -1,6 +1,9 @@
 module.exports = {
   verbose: true,
-  testURL: "http://localhost/",
+  testURL: ,
+  testEnvironmentOptions: {
+    url:
+  },
   testEnvironment: "node",
   globals: {
     SUPPRESS_DATABASE_AUTOCREATE: "1",

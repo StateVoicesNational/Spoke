@@ -14,7 +14,7 @@ cd spoke
 
 3. You may use this opportunity to set the remote upstream to spoke's repo for future fetches.
 ```
-git remote add upstream https://github.com/MoveOnOrg/Spoke.git
+git remote add upstream https://github.com/<YOUR-FORKED-REPO>/Spoke.git
 ``` 
    -  you can check that this is configured correctly to push to the origin and fetch from spoke's repo. 
    ```

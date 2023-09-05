@@ -56,7 +56,7 @@ module.exports = {
     // First application
     {
       name      : 'spoke-server',
-      script    : './build/server/server',
+      script    : './build/server/',
       env_production : env_production
     },
     {

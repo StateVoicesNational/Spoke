@@ -18,6 +18,7 @@ import {
   Organization,
   Tag,
   UserOrganization,
+  isSqlite,
   r,
   cacheableData
 } from "../models";
@@ -419,6 +420,11 @@ async function updateInteractionSteps(
   origCampaignRecord,
   idMap = {}
 ) {
+  // Allows cascade delete for SQLite
+  if (isSqlite) {
+    await r.knex.raw("PRAGMA foreign_keys = ON");
+  }
+
   for (let i = 0; i < interactionSteps.length; i++) {
     const is = interactionSteps[i];
     // map the interaction step ids for new ones

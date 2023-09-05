@@ -8,7 +8,7 @@ jobs:
     timeout-minutes: 10
     strategy:
       matrix:
-        node-version: [16.x]
+        node-version: [16.18.0]
     services:
       redis:
         image: redis

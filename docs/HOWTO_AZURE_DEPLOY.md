@@ -125,11 +125,6 @@ YARN VERSION IS:
 - Usually there is an IP White List for the different access for things
 - It’s probably doing something wrong with the environment variables.
 
-
-## Heroku Deployment
-- Documentation update coming soon.
-
-
 ## AZURE AUTOMATED CONFIGURATION FILE
 - Coming Soonish!
 - Spotcheck

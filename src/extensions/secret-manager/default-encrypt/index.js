@@ -1,7 +1,12 @@
 import { symmetricDecrypt, symmetricEncrypt } from "../crypto";
 
 export async function getSecret(name, token, organization) {
-  return symmetricDecrypt(token);
+  try {
+    return symmetricDecrypt(token);
+  } catch (e) {
+    // Can't decrypt, return value as-is.
+    return token;
+  }
 }
 
 export async function convertSecret(name, organization, secretValue) {

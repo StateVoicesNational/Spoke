@@ -1,5 +1,4 @@
 /* eslint-disable no-empty-function */
-import { r } from "../../server/models";
 import { available as loaderAvailable } from "../contact-loaders/civicrm";
 import {
   sendEmailToContact,
@@ -73,17 +72,12 @@ export async function available(organizationId) {
 
 // What happens when a texter saves the answer that triggers the action
 // This is presumably the meat of the action
-export async function processAction({
-  interactionStep,
-  campaignContactId,
-  contact
-}) {
+export async function processAction({ actionObject, contact }) {
   // This is a meta action that updates a variable in the contact record itself.
   // Generally, you want to send action data to the outside world, so you
   // might want the request library loaded above
-
   const civiContactId = contact.external_id;
-  const destinationTemplateId = JSON.parse(interactionStep.answer_actions_data)
+  const destinationTemplateId = JSON.parse(actionObject.answer_actions_data)
     .value;
 
   await sendEmailToContact(civiContactId, destinationTemplateId);
