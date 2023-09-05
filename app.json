@@ -142,6 +142,10 @@
       "required": true,
       "value": "/spoke/build/server/migrations/"
     },
+    "NGP_VAN_API_KEY_ENCRYPTED": {
+        "description": "encrypted NGP VAN API Key",
+        "required": false
+    },
 
     "NGP_VAN_API_KEY": {
       "description": "",
@@ -218,7 +222,6 @@
       "description": "for twilio integration and connected to twilio account",
       "required": false
     },
-
     "TWILIO_MULTI_ORG": {
       "description": "Allows each organization in the Spoke instance to set Twilio variables within the app",
       "required": false,
