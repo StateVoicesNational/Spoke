@@ -3,14 +3,14 @@ import React from "react";
 import theme from "../styles/theme";
 import { css } from "aphrodite";
 import { styles } from "../containers/Home";
-import Logo from "../assets/logo.jsx"
+import Logo from "../assets/logo.js";
 
 class Downtime extends React.Component {
   render() {
     return (
       <div className={css(styles.container)}>
         <div className={css(styles.logoDiv)}>
-          <img src={Logo} width="120px" alt="Logo"/>
+          <img src={Logo} width="120px" alt="Logo" />
         </div>
         <div className={css(styles.content)}>
           {window.DOWNTIME || window.DOWNTIME_TEXTER ? (

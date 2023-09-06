@@ -1,7 +1,6 @@
 import { hasConfig, getConfig } from "../api/lib/config";
 import { getProcessEnvTz, getProcessEnvDstReferenceTimezone } from "../../lib";
-import {FaviconLogo} from "../../assets/logo.jsx"
-
+import { FaviconLogo } from "../../assets/logo.js";
 
 const canGoogleImport = hasConfig("GOOGLE_SECRET");
 
