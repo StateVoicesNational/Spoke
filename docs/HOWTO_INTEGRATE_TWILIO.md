@@ -39,3 +39,8 @@ If you follow the instructions above, every organization and campaign in your in
 - You can still set instance-wide credentials in the .env file (as described above). If you do, those credentials will be used as fallback if credentials aren't configured for an organization.
 - It is not required to configure all settings for all organizations. For example, to use a single site-wide Twilio account but with separate phone number pools for some organizations, follow the instuctions above and then set the Default Message Service SID (leaving the other fields blank) in the organizations settings for the orgs you want to override.
 - When using multiple Twilio accounts you will need to change the Inbound Request URL for your messaging service in the Twilio console [step 7 above]. It should look like `https://<YOUR_APP_URL>/twilio/<ORG_ID>` and `https://<YOUR_APP_URL>/twilio-message-report/<ORG_ID>`. The correct URL to use will be displayed on the settings page after you save the Twilio credentials.
+
+## Purchasing Numbers w/ Twilio
+- [How to Set up Per Org Number Purchasing](https://moveonorg.github.io/Spoke/#/HOWTO_BUY_NUMBERS_IN_SPOKE?id=how-to-set-up-per-org-number-buying-with-twilio)
+- [How to Set up Per Campaign Number Purchasing](https://moveonorg.github.io/Spoke/#/HOWTO_BUY_NUMBERS_IN_SPOKE?id=how-to-set-up-per-campaign-number-buying-with-twilio)
+- [Twilio Direct Number Purchasing.](https://moveonorg.github.io/Spoke/#/HOWTO_BUY_NUMBERS_IN_SPOKE?id=how-to-buy-numbers-directly-in-twilio)

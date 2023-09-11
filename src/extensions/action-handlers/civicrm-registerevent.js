@@ -63,7 +63,7 @@ export async function available(organizationId) {
 // What happens when a texter saves the answer that triggers the action
 // This is presumably the meat of the action
 export async function processAction({
-  interactionStep,
+  actionObject,
   campaignContactId,
   contact
 }) {
@@ -72,17 +72,15 @@ export async function processAction({
   // might want the request library loaded above
 
   const civiContactId = contact.external_id;
-  const answerData = JSON.parse(interactionStep.answer_actions_data);
+  const answerData = JSON.parse(actionObject.answer_actions_data);
   const civiEventId = JSON.parse(answerData.value).id;
   const civiRoleId = JSON.parse(answerData.value).role_id;
 
   await registerContactForEvent(civiContactId, civiEventId, civiRoleId);
 
   const customFields = JSON.parse(contact.custom_fields || "{}");
-  customFields.processed_test_action = (interactionStep || {}).answer_actions;
-  customFields.test_action_details = (
-    interactionStep || {}
-  ).answer_actions_data;
+  customFields.processed_test_action = (actionObject || {}).answer_actions;
+  customFields.test_action_details = (actionObject || {}).answer_actions_data;
 
   await r
     .knex("campaign_contact")
@@ -97,6 +95,7 @@ export async function processDeletedQuestionResponse(options) {}
 // eslint-disable-next-line no-unused-vars
 export async function getClientChoiceData(organization, user) {
   const getEventData = await searchEvents();
+
   const items = getEventData.map(item => {
     return {
       name: `${item.title} (${item.start_date.substring(
