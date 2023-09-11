@@ -70,7 +70,7 @@ export async function processAction({ campaignContactId }) {
       payload: {
         cell: `${contactCell}`,
         mobile_flow_id: `${mobileFlowId}`,
-        source: "Dispatch"
+        source: "spoke"
       }
     };
 
