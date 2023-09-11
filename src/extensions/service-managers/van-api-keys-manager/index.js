@@ -58,6 +58,7 @@ export async function onOrganizationUpdateSignal({
     };
   }
 
+  await cacheableData.organization.clear(organization.id);
   await r
     .knex("organization")
     .where("id", organization.id)
