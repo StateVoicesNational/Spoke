@@ -70,7 +70,7 @@ jobs:
           ${{ runner.os }}-yarn-
     - run: yarn
     - env:
-        NODE_OPTIONS: "--max-old-space-size=4096"
+        NODE_OPTIONS: "--max-old-space-size=8192"
       run: yarn test-rediscache-contactcache
   test-rediscache:
     runs-on: ubuntu-latest
@@ -103,7 +103,7 @@ jobs:
           ${{ runner.os }}-yarn-
     - run: yarn
     - env:
-        NODE_OPTIONS: "--max-old-space-size=4096"
+        NODE_OPTIONS: "--max-old-space-size=8192"
       run: yarn test-rediscache
   test-sqlite:
     runs-on: ubuntu-latest
@@ -127,5 +127,5 @@ jobs:
           ${{ runner.os }}-yarn-
     - run: yarn
     - env:
-        NODE_OPTIONS: "--max-old-space-size=4096"
+        NODE_OPTIONS: "--max-old-space-size=8192"
       run: yarn test-sqlite
