@@ -37,7 +37,7 @@ jobs:
           ${{ runner.os }}-${{ matrix.node-version }}-yarn-
     - run: yarn
     - env:
-        NODE_OPTIONS: "--max-old-space-size=4096"
+        NODE_OPTIONS: "--max-old-space-size=8192"
       run: yarn test
   test-rediscache-contactcache:
     runs-on: ubuntu-latest
