@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - 'main'
+      - 'docker-file-update'
   release:
     types:
       - created
