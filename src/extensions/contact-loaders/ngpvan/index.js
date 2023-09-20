@@ -1,5 +1,5 @@
 import { finalizeContactLoad } from "../helpers";
-import { getConfig } from "../../../server/api/lib/config";
+import { getConfig, hasConfig } from "../../../server/api/lib/config";
 import { parseCSVAsync } from "../../../workers/parse_csv";
 import { failedContactLoad } from "../../../workers/jobs";
 import HttpRequest from "../../../server/lib/http-request.js";
@@ -58,9 +58,10 @@ export async function available(organization, user) {
   // / then it's better to allow the result to be cached
 
   const result =
-    !!getConfig("NGP_VAN_API_KEY", organization) &&
-    !!getConfig("NGP_VAN_APP_NAME", organization) &&
-    !!getConfig("NGP_VAN_WEBHOOK_BASE_URL", organization);
+    (hasConfig("NGP_VAN_API_KEY", organization) ||
+      hasConfig("NGP_VAN_API_KEY_ENCRYPTED", organization)) &&
+    hasConfig("NGP_VAN_APP_NAME", organization) &&
+    hasConfig("NGP_VAN_WEBHOOK_BASE_URL", organization);
 
   if (!result) {
     console.log(
@@ -115,7 +116,7 @@ async function requestVanSavedLists(organization, skip) {
   const response = await HttpRequest(url, {
     method: "GET",
     headers: {
-      Authorization: Van.getAuth(organization)
+      Authorization: await Van.getAuth(organization)
     },
     retries: 0,
     timeout: Van.getNgpVanTimeout(organization)
@@ -296,7 +297,7 @@ export async function processContactLoad(job, maxContacts, organization) {
       retries: 0,
       timeout: Van.getNgpVanTimeout(organization),
       headers: {
-        Authorization: Van.getAuth(organization),
+        Authorization: await Van.getAuth(organization),
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
