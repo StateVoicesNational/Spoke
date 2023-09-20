@@ -1,5 +1,13 @@
 # Release Notes
 
+## v13.0.1
+_September 2023_ Version 13.0.1
+
+This is a patch release that has passing tests and updates docker file to node16.
+
+### Appreciations
+[Arique Aguilar](https://github.com/Arique1104), [Kathy Nguyen](https://github.com/crayolakat)
+
 ## v13.0
 _February 2023:_ Version 13.0
 
