@@ -31,7 +31,7 @@ if (secret && secret.length < 32) {
     };
     
     const symmetricEncrypt = value => {
-      const iv = crypto.randomBytes(16);
+      const iv = crypto.randomBytes(16, [callback]);
       const cipher = crypto.createCipheriv(algorithm, getKey(), iv);
       let encrypted = cipher.update(value, "utf8", "buffer");
       encrypted = Buffer.concat([encrypted, cipher.final("buffer")]);
