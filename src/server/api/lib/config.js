@@ -1,4 +1,5 @@
 import fs from "fs";
+import { getSecret } from "../../../extensions/secret-manager";
 
 // This is for centrally loading config from different environment sources
 // Especially for large config values (or many) some environments (like AWS Lambda) limit
@@ -58,6 +59,17 @@ export function getConfig(key, organization, opts) {
     return false;
   }
   return opts && opts.default;
+}
+
+// Ideally, decryption would happen automatically in getConfig(), but because
+// the secret manager is async, getConfig would need to be async as well and a
+// lot of code would need to be updated.
+export async function getConfigDecrypt(key, organization, opts) {
+  let value = getConfig(key, organization, opts);
+  if (key.endsWith("_ENCRYPTED")) {
+    value = await getSecret(key, value, organization);
+  }
+  return value;
 }
 
 export function hasConfig(key, organization, options = {}) {
