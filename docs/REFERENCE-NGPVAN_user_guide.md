@@ -15,9 +15,7 @@ This is a user guide for integrating with VAN. Though the integration is referre
 
 To request an API Key, go to the API integrations page from the sidebar menu, and click request API key. Request a 'Spoke Main Branch' API key.
 
-You can use this integration with one API key for your whole Spoke build, or with different API keys for each organization in a multi-organization setup. Either way, you will likely want to set NGP_VAN_WEBHOOK_BASE_URL globally to the base URL for wherever you host spoke (i.e. the same value as BASE_URL).
-
-Regardless of whether you are using one key for your whole build or per-org keys, if you would like to use data from MyCampaign (as opposed to my voters), append |1 to the end of the API key you are given when saving it to your database or as an environment variable.
+You can use this integration with one API key for your whole Spoke build, or with different API keys for each organization in a multi-organization setup. Either way, you will likely want to set `NGP_VAN_WEBHOOK_BASE_URL` globally to the base URL for wherever you host spoke (i.e. the same value as `BASE_URL`).
 
 ### Setting a single API key for your whole build
 
