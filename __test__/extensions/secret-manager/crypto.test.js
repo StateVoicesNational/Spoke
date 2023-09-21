@@ -1,4 +1,4 @@
-import crypto from "../../../src/extensions/secret-manager/crypto";
+import crypto from "../../../src/extensions/secret-manager/crypto.js";
 
 beforeEach(() => {
   jest.resetModules();
