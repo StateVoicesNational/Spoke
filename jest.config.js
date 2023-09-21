@@ -27,7 +27,9 @@ module.exports = {
     TWILIO_MESSAGE_SERVICE_SID: "TEST_MESSAGE_SID",
     TEST_ENVIRONMENT: "1",
     TEST_ENVIRONMENT_FAKE: "0",
-    TEST_ENVIRONMENT_FAKE2: "false"
+    TEST_ENVIRONMENT_FAKE2: "false",
+    NGP_VAN_API_KEY:"000000000-0000-0000-0000-000000000000",
+    NGP_VAN_APP_NAME:"VANUS.000001.app" 
   },
   moduleFileExtensions: ["js", "jsx"],
   transform: {
