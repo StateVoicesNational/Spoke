@@ -63,7 +63,7 @@ describe("ngpvan/util", () => {
     });
   });
 
-  describe(".getAuth", async () => {
+  describe(".getAuth", () => {
     let oldNgpVanAppName;
     let oldNgpVanApiKey;
     beforeAll(async () => {
