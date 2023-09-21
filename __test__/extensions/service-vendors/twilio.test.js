@@ -845,7 +845,6 @@ describe("config functions", () => {
               authToken: fakeAuthToken
             });
             expect(configFunctions.hasConfig.mock.calls).toEqual([
-              ["TWILIO_AUTH_TOKEN_ENCRYPTED", organization, expectedConfigOpts],
               ["TWILIO_ACCOUNT_SID", organization, expectedConfigOpts]
             ]);
             expect(configFunctions.getConfig.mock.calls).toEqual([
