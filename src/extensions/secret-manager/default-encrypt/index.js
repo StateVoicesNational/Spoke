@@ -1,4 +1,4 @@
-import { symmetricDecrypt, symmetricEncrypt } from "./crypto";
+import { symmetricDecrypt, symmetricEncrypt } from "../crypto";
 
 export async function getSecret(name, token, organization) {
   try {
