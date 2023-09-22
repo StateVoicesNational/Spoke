@@ -407,7 +407,7 @@ it("should save campaign canned responses across copies and match saved data", a
   }
 });
 
-describe("Caching", async () => {
+describe("Caching", () => {
   if (r.redis && getConfig("REDIS_CONTACT_CACHE")) {
     it("should not have any selects on a cached campaign when message sending", async () => {
       await createScript(testAdminUser, testCampaign);
@@ -433,7 +433,7 @@ describe("Caching", async () => {
   }
 });
 
-describe("Reassignments", async () => {
+describe("Reassignments", () => {
   it("should allow reassignments before campaign start", async () => {
     // - user gets assignment todos
     // - assignments are changed in different ways (with different mutations)
@@ -843,7 +843,7 @@ describe("Reassignments", async () => {
   }, 10000); // long test can exceed default 5seconds
 });
 
-describe("Bulk Send", async () => {
+describe("Bulk Send", () => {
   const OLD_ENV = process.env;
 
   beforeEach(async () => {
@@ -1031,7 +1031,7 @@ describe("Bulk Send", async () => {
   });
 });
 
-describe("campaigns query", async () => {
+describe("campaigns query", () => {
   let testCampaign2;
 
   const cursor = {
@@ -1227,7 +1227,7 @@ describe("all interaction steps fields travel round trip", () => {
   });
 });
 
-describe("useOwnMessagingService", async () => {
+describe("useOwnMessagingService", () => {
   const oldEnv = process.env;
   beforeEach(async () => {
     await ensureOrganizationTwilioWithMessagingService(
@@ -1305,7 +1305,7 @@ describe("useOwnMessagingService", async () => {
   });
 });
 
-describe("per-campaign phone numbers", async () => {
+describe("per-campaign phone numbers", () => {
   const oldEnv = process.env;
   beforeAll(() => {
     process.env = {
@@ -1321,7 +1321,7 @@ describe("per-campaign phone numbers", async () => {
   });
 
   it("allocates numbers to a campaign and creates a messaging service on start", async () => {
-    const [phoneId] = await r.knex("owned_phone_number").insert(
+    const [res] = await r.knex("owned_phone_number").insert(
       {
         organization_id: organizationId,
         service: "fakeservice",
@@ -1342,7 +1342,7 @@ describe("per-campaign phone numbers", async () => {
 
     const phoneNumber = await r
       .knex("owned_phone_number")
-      .where("id", phoneId)
+      .where("id", res.id)
       .first();
     expect(phoneNumber.allocated_to).toEqual("campaign");
     expect(phoneNumber.allocated_to_id).toEqual(testCampaign.id.toString());

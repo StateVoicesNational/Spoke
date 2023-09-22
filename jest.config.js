@@ -1,6 +1,6 @@
 module.exports = {
   verbose: true,
-  testURL: "http://localhost/",
+  testURL: "http://localhost:3000",
   testEnvironment: "node",
   globals: {
     SUPPRESS_DATABASE_AUTOCREATE: "1",
@@ -46,7 +46,7 @@ module.exports = {
     "!**/deploy/**",
     "!**/coverage/**"
   ],
-  setupTestFrameworkScriptFile: "<rootDir>/__test__/setup.js",
+  setupFilesAfterEnv: ["<rootDir>/__test__/setup.js"],
   testPathIgnorePatterns: [
     "<rootDir>/node_modules/",
     "<rootDir>/__test__/cypress/"

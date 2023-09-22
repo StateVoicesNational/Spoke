@@ -54,7 +54,7 @@ describe("zapier-action", () => {
     expect(ret2.result).toBe(true);
   });
 
-  describe("#onTagUpdate", async () => {
+  describe("#onTagUpdate", () => {
     it("should bail if ZAPIER_WEBHOOK_URL is undefined", async () => {
       process.env.ZAPIER_WEBHOOK_URL = undefined;
       const ret = await ZapierAction.onTagUpdate(null, null, null, null, null);
@@ -375,7 +375,7 @@ describe("zapier-action", () => {
     });
   });
 
-  describe("#processAction", async () => {
+  describe("#processAction", () => {
     let questionResponse;
     let interactionStep;
     let campaignContactId;

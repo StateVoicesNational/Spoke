@@ -40,8 +40,10 @@ function getAssignment({ isDynamic = false, counts = {} }) {
 }
 
 describe("AssignmentSummary text", function t() {
+  let summary;
+
   beforeEach(() => {
-    this.summary = mount(
+    summary = mount(
       <AssignmentSummary
         muiTheme={muiTheme}
         assignment={getAssignment({
@@ -67,10 +69,10 @@ describe("AssignmentSummary text", function t() {
     (notInUSA, allowSendAll) => {
       window.NOT_IN_USA = notInUSA;
       window.ALLOW_SEND_ALL = allowSendAll;
-      const title = this.summary.find(CardHeader);
+      const title = summary.find(CardHeader);
       expect(title.prop("title")).toBe("New Campaign");
 
-      const htmlWrapper = this.summary.findWhere(
+      const htmlWrapper = summary.findWhere(
         d => d.length && d.type() === "div" && d.prop("dangerouslySetInnerHTML")
       );
       expect(htmlWrapper.prop("dangerouslySetInnerHTML")).toEqual({

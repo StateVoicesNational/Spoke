@@ -1,3 +1,4 @@
+import { isSqlite } from "../src/server/models/";
 import { resolvers } from "../src/server/api/schema";
 import { schema } from "../src/api/schema";
 import { assignmentRequiredOrAdminRole } from "../src/server/api/errors";
@@ -175,7 +176,7 @@ async function createCampaign(user, title, description, organizationId) {
 
 // graphQL tests
 
-describe("graphql test suite", async () => {
+describe("graphql test suite", () => {
   beforeAll(
     async () => await setupTest(),
     global.DATABASE_SETUP_TEARDOWN_TIMEOUT
@@ -352,7 +353,7 @@ describe("graphql test suite", async () => {
       }).save();
     });
 
-    describe("contacts", async () => {
+    describe("contacts", () => {
       let campaigns;
       let contacts;
       beforeEach(async () => {
@@ -621,7 +622,15 @@ describe("graphql test suite", async () => {
           let parsedDate = new Date(copiedCampaign.due_by);
           expect(parsedDate).toEqual(campaign.due_by);
         } else {
-          expect(copiedCampaign.due_by).toEqual(campaign.due_by);
+          if (isSqlite) {
+            // Currently an open issue w/ datetime being stored as a string in SQLite3 for Jest tests: https://github.com/TryGhost/node-sqlite3/issues/1355. This results in milliseconds being truncated when getting campaign due_by
+            const campaignDueBy = campaign.due_by;
+
+            campaignDueBy.setMilliseconds(0);
+            expect(copiedCampaign.due_by).toEqual(campaignDueBy);
+          } else {
+            expect(copiedCampaign.due_by).toEqual(campaign.due_by);
+          }
         }
         if (
           typeof copiedCampaign.features === "object" &&

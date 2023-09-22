@@ -105,33 +105,37 @@ export class CampaignContactsFormBase extends React.Component {
     }
     event.preventDefault();
     const file = event.target.files[0];
-    this.setState({ uploading: true }, () => {
-      parseCSV(
-        file,
-        ({ contacts, customFields, validationStats, error }) => {
-          if (error) {
-            this.handleUploadError(error);
-          } else if (contacts.length === 0) {
-            this.handleUploadError(
-              "Confirm your file's fields include a first name, last name and cell column. "
-            );
-          } else if (maxContacts && contacts.length > maxContacts) {
-            this.handleUploadError(
-              `You can only upload ${Number(
-                maxContacts
-              ).toLocaleString()} contacts max – your file contains ${contacts.length.toLocaleString()}.`
-            );
-          } else {
-            this.handleUploadSuccess(
-              validationStats,
-              contacts,
-              customFields,
-              file
-            );
-          }
-        },
-        { headerTransformer: ensureCamelCaseRequiredHeaders }
-      );
+    return new Promise(resolve => {
+      this.setState({ uploading: true }, () => {
+        parseCSV(
+          file,
+          ({ contacts, customFields, validationStats, error }) => {
+            if (error) {
+              this.handleUploadError(error);
+            } else if (contacts.length === 0) {
+              this.handleUploadError(
+                "Confirm your file's fields include a first name, last name and cell column. "
+              );
+            } else if (maxContacts && contacts.length > maxContacts) {
+              this.handleUploadError(
+                `You can only upload ${Number(
+                  maxContacts
+                ).toLocaleString()} contacts max – your file contains ${contacts.length.toLocaleString()}.`
+              );
+            } else {
+              this.handleUploadSuccess(
+                validationStats,
+                contacts,
+                customFields,
+                file
+              ).then(() => {
+                resolve();
+              });
+            }
+          },
+          { headerTransformer: ensureCamelCaseRequiredHeaders }
+        );
+      });
     });
   };
 
@@ -162,7 +166,7 @@ export class CampaignContactsFormBase extends React.Component {
     // uncomment here to make the data uncompressed on-upload
     // occasionally useful for debugging to see decoded data in-transit
     // return this.props.onChange(JSON.stringify(contactCollection));
-    gzip(JSON.stringify(contactCollection)).then(gzippedData => {
+    return gzip(JSON.stringify(contactCollection)).then(gzippedData => {
       self.props.onChange(gzippedData.toString("base64"));
     });
   }

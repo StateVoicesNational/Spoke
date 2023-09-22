@@ -581,10 +581,13 @@ describe("action-handlers/index", () => {
         [organization, user]
       ]);
 
-      expect(ComplexTestAction.getClientChoiceData.mock.calls).toEqual([
-        [organization, user],
-        ...(!r.redis && [[organization, user]])
-      ]);
+      const clientChoiceData = [[organization, user]];
+      if (!r.redis) {
+        clientChoiceData.push([organization, user]);
+      }
+      expect(ComplexTestAction.getClientChoiceData.mock.calls).toEqual(
+        clientChoiceData
+      );
     });
 
     describe("when the handler doesn't export getClientChoiceData", () => {
