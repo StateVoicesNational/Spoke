@@ -641,7 +641,7 @@ describe("mutations.updateQuestionResponses", () => {
       });
     });
 
-    describe("when some of the steps have an action handler", async () => {
+    describe("when some of the steps have an action handler", () => {
       beforeEach(async () => {
         expect.extend({
           objectWithId: (received, expectedObject) => {
@@ -703,7 +703,7 @@ describe("mutations.updateQuestionResponses", () => {
         expect(ActionHandlers.rawAllActionHandlers).toHaveBeenCalledTimes(1);
         expect(ActionHandlers.rawAllActionHandlers.mock.results).toEqual([
           {
-            isThrow: false,
+            type: "return",
             value: {
               "complex-test-action": expect.objectContaining({
                 name: "complex-test-action"
@@ -958,7 +958,7 @@ describe("mutations.updateQuestionResponses", () => {
         });
       });
 
-      describe("when no action handlers are configured", async () => {
+      describe("when no action handlers are configured", () => {
         beforeEach(async () => {
           ({
             interactionSteps,

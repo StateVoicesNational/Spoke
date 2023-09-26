@@ -95,10 +95,11 @@ function dropTables() {
   });
 }
 
+const isSqlite = /sqlite/.test(thinky.k.client.config.client);
+
 const truncateTables = async () => {
   // FUTURE: maybe this would speed up tests?
   // Tentative experiments suggest it might shave a minute off
-  const isSqlite = /sqlite/.test(thinky.k.client.config.client);
   if (isSqlite) {
     await Promise.all(tableList.map(t => thinky.k(t).truncate()));
   } else {
@@ -145,6 +146,7 @@ if (process.env.ENABLE_KNEX_TRACING === "true") {
 
 export {
   createLoaders,
+  isSqlite,
   r,
   cacheableData,
   createTables,

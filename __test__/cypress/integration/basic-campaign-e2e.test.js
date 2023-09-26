@@ -154,7 +154,7 @@ describe("End-to-end campaign flow", () => {
       });
       cy.get("button[data-test=send]")
         .eq(0)
-        .click();
+        .click({ waitForAnimations: false }); // Turn off animation wait to prevent false positive error
 
       // Shows we're done and click back to /todos
       cy.get("body").contains("You've messaged all your assigned contacts.");

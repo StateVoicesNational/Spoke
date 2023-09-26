@@ -34,7 +34,7 @@ describe("ngpvn-action", () => {
     ).not.toThrowError();
   });
 
-  describe("#getClientChoiceData", async () => {
+  describe("#getClientChoiceData", () => {
     let makeGetSurveyQuestionsNock;
     let makeGetActivistCodesNock;
     let makeGetCanvassResponsesResultCodesNock;

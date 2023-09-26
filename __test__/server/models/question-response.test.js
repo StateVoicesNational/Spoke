@@ -7,7 +7,7 @@ import {
 } from "../../test_helpers";
 import { r, cacheableData } from "../../../src/server/models";
 
-describe("questionResponse cacheableData methods", async () => {
+describe("questionResponse cacheableData methods", () => {
   let initData;
   beforeEach(async () => {
     await setupTest();

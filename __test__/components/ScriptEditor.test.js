@@ -5,7 +5,7 @@ import { Editor } from "draft-js";
 import ScriptEditor from "../../src/components/ScriptEditor";
 import { sleep } from "../test_helpers";
 
-describe("ScriptEditor component", async () => {
+describe("ScriptEditor component", () => {
   test("re-encodes unicode easy-wins for GSM", () => {
     const wrapper = shallow(
       <ScriptEditor

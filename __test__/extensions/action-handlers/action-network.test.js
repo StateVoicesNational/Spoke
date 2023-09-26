@@ -36,7 +36,7 @@ describe("action-network", () => {
     };
   });
 
-  describe("#getClientChoiceData", async () => {
+  describe("#getClientChoiceData", () => {
     let makeGetEventsNock;
     let makeGetTagsNock;
     let getEventsNock;

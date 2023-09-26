@@ -5,7 +5,12 @@ import * as twilio from "../../../src/extensions/service-vendors/twilio";
 import { getConfig } from "../../../src/server/api/lib/config"; // eslint-disable-line no-duplicate-imports, import/no-duplicates
 import * as configFunctions from "../../../src/server/api/lib/config"; // eslint-disable-line no-duplicate-imports, import/no-duplicates
 import crypto from "../../../src/extensions/secret-manager/crypto";
-import { cacheableData, Message, r } from "../../../src/server/models/";
+import {
+  cacheableData,
+  isSqlite,
+  Message,
+  r
+} from "../../../src/server/models/";
 import { erroredMessageSender } from "../../../src/workers/job-processes";
 import {
   assignTexter,
@@ -359,7 +364,10 @@ describe("twilio", () => {
         maxCount: 2
       });
       if (i < 6) {
-        expect(errorSendResult).toBe(1);
+        // Currently an open issue w/ datetime being stored as a string in SQLite3 for Jest tests: https://github.com/TryGhost/node-sqlite3/issues/1355. This inaccurately affects the result of the below test
+        if (!isSqlite) {
+          expect(errorSendResult).toBe(1);
+        }
       } else {
         expect(errorSendResult).toBe(0);
       }
