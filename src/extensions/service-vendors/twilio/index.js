@@ -4,7 +4,11 @@ import Twilio, { twiml } from "twilio";
 import urlJoin from "url-join";
 import { log } from "../../../lib";
 import { getFormattedPhoneNumber } from "../../../lib/phone-format";
-import { getConfig, hasConfig } from "../../../server/api/lib/config";
+import {
+  getConfig,
+  getConfigDecrypt,
+  hasConfig
+} from "../../../server/api/lib/config";
 import {
   cacheableData,
   Log,
@@ -1040,14 +1044,10 @@ export const getServiceConfig = async (
     if (hasEncryptedToken) {
       authToken = obscureSensitiveInformation
         ? "<Encrypted>"
-        : await getSecret(
+        : await getConfigDecrypt(
             "TWILIO_AUTH_TOKEN_ENCRYPTED",
-            getConfig(
-              "TWILIO_AUTH_TOKEN_ENCRYPTED",
-              organization,
-              getConfigOptions
-            ),
-            organization
+            organization,
+            getConfigOptions
           );
     } else {
       const hasUnencryptedToken = hasConfig(
