@@ -62,7 +62,13 @@ export const flexStyles = StyleSheet.create({
     right: 0,
     display: "flex",
     flexDirection: "column",
-    height: "100%"
+    //messages can be scrolled through and height/width is responsive 
+    height: "100%",
+    "@media(max-width: 420px)": {
+      fontFamily: "Poppins",
+      overflowY: "scroll !important",
+      width: "100%"
+    }
   },
   popoverSideboxesInner: {
     // expand to fill the whole popover
@@ -114,7 +120,7 @@ export const flexStyles = StyleSheet.create({
     height: "100%"
   },
   superSectionMessageBox: {
-    flex: "1 2 auto",
+    height: "100%",
     overflowY: "scroll",
     overflow: "-moz-scrollbars-vertical",
     overflowX: "hidden",
@@ -124,6 +130,9 @@ export const flexStyles = StyleSheet.create({
   },
   /// * Section Scrolling Message Thread
   sectionMessageThread: {
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "flex-start",
     flex: "1 1 auto",
     overflowY: "scroll"
   },
@@ -169,19 +178,19 @@ export const flexStyles = StyleSheet.create({
     marginBottom: "8px"
   },
   subSectionMessageFieldTextField: {
-    "@media(max-width: 350px)": {
+    "@media(max-width: 420px)": {
       overflowY: "scroll !important"
     }
   },
   /// * Section Reply/Exit Buttons
   sectionButtons: {
     // TODO: maybe make this contingent on whether there are answer buttons
-    "@media(max-height: 600px)": {
-      flexBasis: "96px" // TODO
-    },
-    "@media(min-height: 600px)": {
-      flexBasis: "144px" // TODO
-    },
+    // "@media(max-height: 600px)": {
+    //   flexBasis: "96px" // TODO
+    // },
+    // "@media(min-height: 600px)": {
+    //   flexBasis: "144px" // TODO
+    // },
     flexGrow: "0",
     flexShrink: "0",
     // flexBasis: ${130px|190px}", // stretches and shrinks more quickly than message
@@ -197,7 +206,7 @@ export const flexStyles = StyleSheet.create({
     // height:105: webkit needs constraint on height sometimes
     //   during the inflection point of showing the shortcut-buttons
     //   without the height, the exit buttons get pushed down oddly
-    height: "15px", //TODO
+    // height: "15px", //TODO
     // internal:
     margin: "9px 0px 0px 9px",
     width: "100%"
@@ -244,6 +253,7 @@ export const flexStyles = StyleSheet.create({
   /// * Section Send Button
   sectionSend: {
     //sendButtonWrapper
+    height: "72px",
     flex: `0 0 auto`,
     display: "flex",
     flexDirection: "column",
