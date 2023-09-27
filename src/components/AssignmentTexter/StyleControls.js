@@ -120,7 +120,12 @@ export const flexStyles = StyleSheet.create({
     height: "100%"
   },
   superSectionMessageBox: {
-    height: "100%",
+    "@media(min-height: 300px) and (max-Height: 700px)": {
+      height: "100%",
+    },
+    "@media(min-height: 701px) and (max-Height: 1000px)": {
+      height: "53%",
+    },
     overflowY: "scroll",
     overflow: "-moz-scrollbars-vertical",
     overflowX: "hidden",
