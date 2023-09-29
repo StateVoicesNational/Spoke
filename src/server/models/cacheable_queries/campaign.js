@@ -206,7 +206,9 @@ const load = async (id, opts) => {
     }
   }
 
-  return await Campaign.get(id);
+  const campaign = await Campaign.get(id)
+  campaign.contactTimezones = await dbContactTimezones(id);
+  return campaign;
 };
 
 const campaignCache = {
