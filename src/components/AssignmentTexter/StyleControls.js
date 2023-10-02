@@ -204,7 +204,6 @@ export const flexStyles = StyleSheet.create({
     // height:105: webkit needs constraint on height sometimes
     //   during the inflection point of showing the shortcut-buttons
     //   without the height, the exit buttons get pushed down oddly
-    // height: "15px", //TODO
     // internal:
     margin: "9px 0px 0px 9px",
     width: "100%"
