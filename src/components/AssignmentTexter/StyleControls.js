@@ -189,13 +189,6 @@ export const flexStyles = StyleSheet.create({
   },
   /// * Section Reply/Exit Buttons
   sectionButtons: {
-    // TODO: maybe make this contingent on whether there are answer buttons
-    // "@media(max-height: 600px)": {
-    //   flexBasis: "96px" // TODO
-    // },
-    // "@media(min-height: 600px)": {
-    //   flexBasis: "144px" // TODO
-    // },
     flexGrow: "0",
     flexShrink: "0",
     // flexBasis: ${130px|190px}", // stretches and shrinks more quickly than message
