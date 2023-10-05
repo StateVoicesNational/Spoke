@@ -186,7 +186,7 @@
   "addons": [
     "heroku-postgresql:basic",
     {
-      "plan": "heroku-redis:basic",
+      "plan": "heroku-redis:mini",
       "options": {
         "maxmemory-policy": "volatile-lru"
       }
