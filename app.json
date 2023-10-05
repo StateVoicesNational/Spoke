@@ -184,9 +184,9 @@
     }
   },
   "addons": [
-    "heroku-postgresql:hobby-dev",
+    "heroku-postgresql:basic",
     {
-      "plan": "heroku-redis:hobby-dev",
+      "plan": "heroku-redis:basic",
       "options": {
         "maxmemory-policy": "volatile-lru"
       }
