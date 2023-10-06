@@ -5,6 +5,9 @@ _October 2023_ Version 13.1.0
 
 13.1.0 is a minor release.
 
+### Bug Fixes
+* Upgrade Auth0 Lock
+
 ### New Features
 * Per-campaign bulk send
 
