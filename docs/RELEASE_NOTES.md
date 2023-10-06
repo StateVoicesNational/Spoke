@@ -9,11 +9,12 @@ _October 2023_ Version 13.1.0
 * Upgrade Auth0 Lock
 * Fix Auth0 password reset issue
 
+### Improvements
+* Remove required Twilio fields
+* Bump dependencies
+
 ### New Features
 * Per-campaign bulk send
-
-### Changes
-* Remove required Twilio fields.
 
 ### Appreciations
 * [Arique Aguilar](https://github.com/Arique1104), [Ilona Brand](https://github.com/ibrand),[Kathy Nguyen](https://github.com/crayolakat), [Shibam Debnath](https://github.com/SshibamDebnathh), and Harold Travis for QA.
