@@ -75,6 +75,10 @@ Mobilize (America) event scheduling. User clicks the button and the MOBILIZE_EVE
 
 Note: as of 3/1/21 you will need to reach out to Mobilize support to have them enable embedding for your dashboard(s), otherwise you'll probably get the error `Refused to display '{MOBILIZE_EVENT_SHIFTER_URL}' in a frame because it set 'X-Frame-Options' to 'sameorigin'.`
 
+### per-campaign-bulk-send
+
+This texter sidebox allows you to enable or disable bulk send per campaign. To use this texter sidebox, bulk send must be enabled in your Spoke instance.
+
 ### tag-contact
 
 If you create tags related to 'escalation' or something you want texters to be able to mark
