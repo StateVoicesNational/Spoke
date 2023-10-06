@@ -5,6 +5,9 @@ _October 2023_ Version 13.1.0
 
 13.1.0 is a minor release.
 
+### New Features
+* Per-campaign bulk send
+
 ### Changes
 * Remove required Twilio fields.
 
