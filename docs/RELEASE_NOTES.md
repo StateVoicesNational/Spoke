@@ -1,5 +1,16 @@
 # Release Notes
 
+## v13.1.0
+_October 2023_ Version 13.1.0
+
+13.1.0 is a minor release.
+
+### Changes
+* Remove required Twilio fields.
+
+### Appreciations
+* [Arique Aguilar](https://github.com/Arique1104), [Ilona Brand](https://github.com/ibrand), and Harold Travis for QA.
+
 ## v13.0.1
 _September 2023_ Version 13.0.1
 
