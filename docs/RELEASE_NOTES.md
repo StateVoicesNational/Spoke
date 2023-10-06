@@ -16,7 +16,7 @@ _October 2023_ Version 13.1.0
 * Remove required Twilio fields.
 
 ### Appreciations
-* [Arique Aguilar](https://github.com/Arique1104), [Ilona Brand](https://github.com/ibrand), and Harold Travis for QA.
+* [Arique Aguilar](https://github.com/Arique1104), [Ilona Brand](https://github.com/ibrand),[Kathy Nguyen](https://github.com/crayolakat), [Shibam Debnath](https://github.com/SshibamDebnathh), and Harold Travis for QA.
 
 ## v13.0.1
 _September 2023_ Version 13.0.1
