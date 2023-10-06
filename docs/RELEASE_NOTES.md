@@ -7,6 +7,7 @@ _October 2023_ Version 13.1.0
 
 ### Bug Fixes
 * Upgrade Auth0 Lock
+* Fix Auth0 password reset issue
 
 ### New Features
 * Per-campaign bulk send
