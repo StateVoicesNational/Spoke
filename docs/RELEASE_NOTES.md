@@ -12,13 +12,14 @@ _October 2023_ Version 13.1.0
 ### Improvements
 * Remove required Twilio fields
 * Bump dependencies
+* Mobile-compatible texter UI
 
 ### New Features
 * Per-campaign bulk send
 * NGP VAN service manager
 
 ### Appreciations
-* [Arique Aguilar](https://github.com/Arique1104), [Ilona Brand](https://github.com/ibrand), [Jeff Mann](https://github.com/jeffm2001), [Kathy Nguyen](https://github.com/crayolakat), [Shibam Debnath](https://github.com/SshibamDebnathh), and Harold Travis for QA.
+* [Arique Aguilar](https://github.com/Arique1104), [Ilona Brand](https://github.com/ibrand), [Jeff Mann](https://github.com/jeffm2001), [Karim Al-Rashdan](https://github.com/KarimAl-Rashdan), [Kathy Nguyen](https://github.com/crayolakat), [Shibam Debnath](https://github.com/SshibamDebnathh), and Harold Travis for QA.
 
 ## v13.0.1
 _September 2023_ Version 13.0.1
