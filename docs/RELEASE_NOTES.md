@@ -8,6 +8,7 @@ _October 2023_ Version 13.1.0
 ### Bug Fixes
 * Upgrade Auth0 Lock
 * Fix Auth0 password reset issue
+* Update Heroku deployment
 
 ### Improvements
 * Remove required Twilio fields
