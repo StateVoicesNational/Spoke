@@ -1,5 +1,11 @@
 {
   "extends": ["airbnb", "prettier"],
   "parser": "@babel/eslint-parser",
-  "env": { "jest": true, "node": true, "browser": true, "jasmine": true }
+  "env": { "jest": true, "node": true, "browser": true, "jasmine": true },
+  "rules": {
+    "no-console": [
+      "warn", 
+      { "allow": ["warn", "error", "info", "time", "timeEnd"] }
+    ] 
+  }
 }
