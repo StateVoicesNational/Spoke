@@ -21,14 +21,25 @@ variables.
     + **Allowed Logout URLs** - `https://yourspoke.example.com/logout-callback`
     + **Allowed Origins (CORS)** - `https://yourspoke.example.com`
 5. In Advanced Settings, under the OAuth section, turn off 'OIDC Conformant'.
-6. Add a [new empty rule](https://manage.auth0.com/#/rules/create) in Auth0:
+6. Navigate to [Actions Library](https://manage.auth0.com/#/actions/library).
+7. Click "Build Custom".
+8. Enter the following fields:
+    * Name: `Spoke Action`
+    * Trigger: `Login / Post Login`
+    * Runtime: `<DEFAULT>`
+9. Click "Create".
+10. In the code block of the Actions Code Editor, update the `exports.onExecutePostLogin` code as follows:
 ```javascript
-function (user, context, callback) {
-context.idToken["https://spoke/user_metadata"] = user.user_metadata;
-callback(null, user, context);
-}
+exports.onExecutePostLogin = async (event, api) => {
+    api.idToken.setCustomClaim("https://spoke/user_metadata", event.user.user_metadata);
+};
 ```
-7. Update the Auth0 [Universal Landing page](https://manage.auth0.com/#/login_page), click on the `Customize Login Page` toggle, and copy and paste following code in the drop down into the `Default Templates` space:
+11. Click `Deploy`.
+12. Navigate to [Actions Flows](https://manage.auth0.com/#/actions/flows).
+13. Click "Login".
+14. Add "Spoke Action" to the Login flow.
+15. Click "Apply".
+16. Update the Auth0 [Universal Landing page](https://manage.auth0.com/#/login_page), click on the `Customize Login Page` toggle, and copy and paste following code in the drop down into the `Default Templates` space:
 
     <details>
     <summary>Code to paste into Auth0</summary>
@@ -125,4 +136,4 @@ callback(null, user, context);
     ```
 
     </details>
-8. Replace `YOUR_TOS_LINK_HERE` with the link to your Terms of Service and replace `YOUR_PRIVACY_POLICY_LINK_HERE` with the link to your Privacy Policy
+17. Replace `YOUR_TOS_LINK_HERE` with the link to your Terms of Service and replace `YOUR_PRIVACY_POLICY_LINK_HERE` with the link to your Privacy Policy
