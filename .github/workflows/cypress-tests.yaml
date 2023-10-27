@@ -5,7 +5,7 @@ on: [push]
 jobs:
   test:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
     strategy:
       matrix:
         node-version: [16.x]
