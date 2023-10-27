@@ -665,7 +665,7 @@ const rootMutations = {
 
       const organization = await loaders.organization.load(organizationId);
 
-      const passportStrategy = getConfig("PASSPORT_STRATEGY", organization);
+      const passportStrategy = getConfig("PASSPORT_STRATEGY", organization) || "auth0";
       if (passportStrategy === "auth0") {
         const { email } = await r
           .knex("user")

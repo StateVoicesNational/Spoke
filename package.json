@@ -1,6 +1,6 @@
 {
   "name": "spoke",
-  "version": "13.0.0",
+  "version": "13.1.0",
   "description": "Spoke",
   "main": "src/server",
   "engines": {
@@ -129,7 +129,7 @@
     "isomorphic-fetch": "^2.2.1",
     "jest-each": "^0.3.1",
     "json-loader": "^0.5.4",
-    "jsonwebtoken": "^8.5.1",
+    "jsonwebtoken": "^9.0.0",
     "knex": "^2.3.0",
     "lodash": "^4.13.1",
     "mailgun-js": "^0.20.0",
@@ -163,7 +163,7 @@
     "twilio": "^3.40.0",
     "url-join": "^4.0.1",
     "us-area-codes": "^1.0.0",
-    "uuid": "^3.1.0",
+    "uuid": "^9.0.0",
     "wait-for-expect": "^1.1.1",
     "webpack": "^5.74.0",
     "webpack-manifest-plugin": "^5.0.0",

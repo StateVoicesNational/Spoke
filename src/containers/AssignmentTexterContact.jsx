@@ -388,11 +388,20 @@ export class AssignmentTexterContact extends React.Component {
   };
 
   bulkSendMessages = async assignmentId => {
-    await this.props.mutations.bulkSendMessages(assignmentId);
-    this.props.refreshData();
+    return await this.props.mutations.bulkSendMessages(assignmentId);
   };
 
   render() {
+    const texterUIConfig = this.props.campaign.texterUIConfig;
+    const settingsData = JSON.parse(
+      (texterUIConfig && texterUIConfig.options) || "{}"
+    );
+    const campaignAllowBulkSend =
+      texterUIConfig &&
+      texterUIConfig.sideboxChoices &&
+      texterUIConfig.sideboxChoices.includes("per-campaign-bulk-send")
+        ? settingsData["per-campaign-bulk-send"]
+        : true;
     return (
       <div {...dataTest("assignmentTexterContactFirstDiv")}>
         {this.state.disabled &&
@@ -428,13 +437,14 @@ export class AssignmentTexterContact extends React.Component {
           updateContactData={this.props.updateContactData}
         />
         {this.props.contact.messageStatus === "needsMessage" &&
-        window.NOT_IN_USA &&
-        window.ALLOW_SEND_ALL &&
+        this.props.campaign.organization.allowSendAll &&
+        campaignAllowBulkSend &&
         window.BULK_SEND_CHUNK_SIZE ? (
           <BulkSendButton
             assignment={this.props.assignment}
             onFinishContact={this.props.onFinishContact}
             bulkSendMessages={this.bulkSendMessages}
+            refreshData={this.props.refreshData}
             setDisabled={this.setDisabled}
           />
         ) : null}
