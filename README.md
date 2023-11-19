@@ -1,6 +1,12 @@
 [![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-v1.4%20adopted-ff69b4.svg)](CODE_OF_CONDUCT.md)
 
-# Spoke
+# StateVoices is the new community steward for Spoke!
+
+On November 19th, the repo Spoke was transfered from MoveOn to StateVoices.
+
+[Join us for the Merge Party for more information.](https://www.mobilize.us/statevoices/event/592881/)
+
+## Spoke History
 
 Spoke is an open source text-distribution tool for organizations to mobilize supporters and members into action. Spoke allows you to upload phone numbers, customize scripts and assign volunteers to communicate with supporters while allowing organizations to manage the process.
 
