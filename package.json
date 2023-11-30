@@ -4,8 +4,8 @@
   "description": "Spoke",
   "main": "src/server",
   "engines": {
-    "node": ">=21.2.0",
-    "npm": "10.2.3"
+    "node": ">=20.0.0",
+    "npm": "9.6.4"
   },
   "scripts": {
     "test": "jest --forceExit --runInBand --detectOpenHandles --verbose=false",
