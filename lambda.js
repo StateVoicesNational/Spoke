@@ -1,4 +1,4 @@
-"use strict";;
+"use strict";
 const awsServerlessExpress = require("aws-serverless-express");
 let app, server, jobs, dispatcher;
 
