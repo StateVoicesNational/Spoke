@@ -3,7 +3,8 @@ import { unzipPayload } from "../../../workers/jobs";
 import { getConfig, hasConfig } from "../../../server/api/lib/config";
 import { gunzip } from "../../../lib";
 
-import AWS from "aws-sdk";
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+import { PutObjectCommand, S3 } from "@aws-sdk/client-s3";
 
 export const name = "csv-s3-upload";
 
@@ -67,8 +68,11 @@ export async function getClientChoiceData(
   /// The react-component will be sent this data as a property
   /// return a json object which will be cached for expiresSeconds long
   /// `data` should be a single string -- it can be JSON which you can parse in the client component
-  const s3 = new AWS.S3({
+  const s3 = new S3({
+    // The key signatureVersion is no longer supported in v3, and can be removed.
+    // @deprecated SDK v3 only supports signature v4.
     signatureVersion: "v4",
+
     region: getConfig("AWS_REGION")
   });
   const key = `contacts-upload/${campaign.id}/contacts.json.gz`;
@@ -80,7 +84,9 @@ export async function getClientChoiceData(
     Expires: 1800 // 30 minutes
   };
 
-  const result = await s3.getSignedUrl("putObject", params);
+  const result = await getSignedUrl(s3, new PutObjectCommand(params), {
+    expiresIn: "/* add value from 'Expires' from v2 call if present, else remove */"
+  });
 
   return {
     data: JSON.stringify({ s3Url: result, s3key: key }),
@@ -116,8 +122,11 @@ export async function processContactLoad(job, maxContacts, organization) {
   /// * Batching
   /// * Error handling
   /// * "Request of Doom" scenarios -- queries or jobs too big to complete
-  const s3 = new AWS.S3({
+  const s3 = new S3({
+    // The key signatureVersion is no longer supported in v3, and can be removed.
+    // @deprecated SDK v3 only supports signature v4.
     signatureVersion: "v4",
+
     region: getConfig("AWS_REGION")
   });
   var params = {
@@ -125,7 +134,7 @@ export async function processContactLoad(job, maxContacts, organization) {
     Key: job.payload
   };
 
-  const contactsData = (await s3.getObject(params).promise()).Body.toString(
+  const contactsData = (await s3.getObject(params)).Body.toString(
     "utf-8"
   );
   const parsedData = JSON.parse(
