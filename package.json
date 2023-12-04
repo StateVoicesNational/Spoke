@@ -181,6 +181,7 @@
     "wait-for-expect": "^1.1.1",
     "webpack": "^5.74.0",
     "webpack-manifest-plugin": "^5.0.0",
+    "workbox-background-sync": "^6.6.0",
     "yup": "0.32.3"
   },
   "devDependencies": {
