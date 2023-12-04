@@ -13837,10 +13837,10 @@ node-releases@^2.0.6:
   resolved "https://registry.npmjs.org/node-releases/-/node-releases-2.0.6.tgz"
   integrity sha512-PiVXnNuFm5+iYkLBNeq5211hvO38y63T0i2KKh2KnUs3RpzJ+JtODFjkD8yjLwnDkTYF1eKXheUwdssR+NRZdg==
 
-node@20.0.0:
-  version "20.0.0"
-  resolved "https://registry.npmjs.org/node/-/node-20.0.0.tgz"
-  integrity sha512-4R1vw5hKUjQw3x65x9g/ape/XlY/ZFHaQWB+jQLFJIJkVKJPDSY4oj3O6qgXOvv2wwgEpK9J2SvJUjuL6zu0uA==
+node@^20.10.0:
+  version "20.10.0"
+  resolved "https://registry.npmjs.org/node/-/node-20.10.0.tgz"
+  integrity sha512-mIXfsYLNrafDq9es40WduIcwcGJLHVIa+itiKGcydM3qKx1HxymPWCKrG12PwG4oxsv4Jdke3uq2o4UiRgLYdQ==
   dependencies:
     node-bin-setup "^1.0.0"
 
