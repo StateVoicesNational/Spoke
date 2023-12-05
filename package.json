@@ -60,7 +60,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/MoveOnOrg/spoke.git"
+    "url": "git+https://github.com/StateVoicesNational/spoke.git"
   },
   "keywords": [
     "spoke",
@@ -76,9 +76,9 @@
   "author": "Axle Factory",
   "license": "GPL-3.0-only",
   "bugs": {
-    "url": "https://github.com/MoveOnOrg/Spoke/issues"
+    "url": "https://github.com/StateVoicesNational/Spoke/issues"
   },
-  "homepage": "https://github.com/MoveOnOrg/Spoke/#readme",
+  "homepage": "https://github.com/StateVoicesNational/Spoke/#readme",
   "dependencies": {
     "@aoberoi/passport-slack": "^1.0.5",
     "@babel/cli": "^7.19.3",
