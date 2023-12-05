@@ -444,7 +444,7 @@ But because of the timing it was ambiguous whether we 'just' hit scaling issues 
   - **Canned response tagging:** you can apply 1 or more tags to a canned response which will automatically apply that tags when a texter uses that canned response.
 - **Addressable message review queries:** message review now has "addressable urls" meaning that the url is changed whenever you make a query. This now allows you to directly link to a specific query. Because of this, there are now links in the texter stats section of the campaign page that link to a filter for that specific texter and a new "convos" button that takes you directly to a view that filters down to only messages within the campaign.
 - **Allow search terms to be _excluded_ from the campaign search:**  If a search starts with "-", it filters out campaigns that match the rest of the search term.
-- **Documentation microsite:** our docs now exist on an [external microsite](https://moveonorg.github.io/Spoke) to help our docs
+- **Documentation microsite:** our docs now exist on an [external microsite](https://statevoicesnational.github.io/Spoke) to help our docs
 - [Documentation now exists for all of the extensions!](HOWTO-extend-spoke.md)
 
 ### Appreciations
