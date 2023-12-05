@@ -35,10 +35,10 @@ messages initially, and then handling replies and knowing when there are new rep
 
 ### Client-side optimization
 
-Currently in [containers/AssignmentTexterContact.jsx](https://github.com/MoveOnOrg/Spoke/blob/main/src/containers/AssignmentTexterContact.jsx),
+Currently in [containers/AssignmentTexterContact.jsx](https://github.com/StateVoicesNational/Spoke/blob/main/src/containers/AssignmentTexterContact.jsx),
 each contact screen loads an individual contact's information and then calls an api again for the next screen.  This is
 incredibly inefficient and instead an asynchronous process in the 
-[containers/TexterTodo.jsx](https://github.com/MoveOnOrg/Spoke/blob/main/src/containers/TexterTodo.jsx) component should gather
+[containers/TexterTodo.jsx](https://github.com/StateVoicesNational/Spoke/blob/main/src/containers/TexterTodo.jsx) component should gather
 X contacts in sufficient quantity to feed it to the `AssignmentTexterContact.jsx` component as fast as it processes the data.
 
 ### Server-side optimization
@@ -140,12 +140,12 @@ Here is the (proposed) structure of data in Redis to support the above data need
   2. For each contact, load `contactinfo-<contact_cell>-<message_service_id>`
 
 * Code points:
-  * Backend code is in [server/api/assignment.js](https://github.com/MoveOnOrg/Spoke/blob/main/src/server/api/assignment.js#L107)
+  * Backend code is in [server/api/assignment.js](https://github.com/StateVoicesNational/Spoke/blob/main/src/server/api/assignment.js#L107)
   * Frontend calls currently live in two places
-    * [containers/TexterTodo.jsx](https://github.com/MoveOnOrg/Spoke/blob/main/src/containers/TexterTodo.jsx#L67)
+    * [containers/TexterTodo.jsx](https://github.com/StateVoicesNational/Spoke/blob/main/src/containers/TexterTodo.jsx#L67)
       where it all _should_ live, so we don't need to make an API call per-contact -- and can load many at once
-    * [containers/AssignmentTexterContact.jsx](https://github.com/MoveOnOrg/Spoke/blob/main/src/containers/AssignmentTexterContact.jsx#L893-L933)
-    * There is a [toy/WIP branch to move this](https://github.com/MoveOnOrg/Spoke/pull/783)
+    * [containers/AssignmentTexterContact.jsx](https://github.com/StateVoicesNational/Spoke/blob/main/src/containers/AssignmentTexterContact.jsx#L893-L933)
+    * There is a [toy/WIP branch to move this](https://github.com/StateVoicesNational/Spoke/pull/783)
 
 ##### incomingMessage
 
@@ -155,21 +155,21 @@ Here is the (proposed) structure of data in Redis to support the above data need
   4. HSET `replies-<texter_id>` (using lookup)
 
 * Code points:
-  * [twilio backend codepoint](https://github.com/MoveOnOrg/Spoke/blob/main/src/server/extensions/service-vendors/twilio.js#L203)
+  * [twilio backend codepoint](https://github.com/StateVoicesNational/Spoke/blob/main/src/server/extensions/service-vendors/twilio.js#L203)
   * note that is called both from server/index.js and workers/jobs.js
   * In theory we can/should do this generically over services, but pending_message_part complicates this a bit much.  A 'middle road' approach would also implement this in server/api/lib/fakeservice.js
 
-##### sendMessage - [backend code](https://github.com/MoveOnOrg/Spoke/blob/main/src/server/api/schema.js#L855) - [frontend code](https://github.com/MoveOnOrg/Spoke/blob/main/src/containers/AssignmentTexterContact.jsx#L993)
+##### sendMessage - [backend code](https://github.com/StateVoicesNational/Spoke/blob/main/src/server/api/schema.js#L855) - [frontend code](https://github.com/StateVoicesNational/Spoke/blob/main/src/containers/AssignmentTexterContact.jsx#L993)
 
   1. If status is needsMessage then confirm that it's the first item in `conversation-<contact_cell>-<message_service_id>`, otherwise, do not (re)send message.
   2. LPUSH `conversation-<contact_cell>-<message_service_id>`
   3. LPUSH `message-write-queue`
 
-##### updateQuestionResponses - [backend code](https://github.com/MoveOnOrg/Spoke/blob/main/src/server/api/schema.js#L971) - [frontend code](https://github.com/MoveOnOrg/Spoke/blob/main/src/containers/AssignmentTexterContact.jsx#L980)
+##### updateQuestionResponses - [backend code](https://github.com/StateVoicesNational/Spoke/blob/main/src/server/api/schema.js#L971) - [frontend code](https://github.com/StateVoicesNational/Spoke/blob/main/src/containers/AssignmentTexterContact.jsx#L980)
 
   1. HSET `contactinfo-<contact_cell>-<message_service_id>`
 
-##### updateAssignments - backend code: [1](https://github.com/MoveOnOrg/Spoke/blob/main/src/server/api/schema.js#L155-L187), [2](https://github.com/MoveOnOrg/Spoke/blob/main/src/workers/jobs.js#L364) - [frontend code](https://github.com/MoveOnOrg/Spoke/blob/main/src/components/CampaignTextersForm.jsx#L122)
+##### updateAssignments - backend code: [1](https://github.com/StateVoicesNational/Spoke/blob/main/src/server/api/schema.js#L155-L187), [2](https://github.com/StateVoicesNational/Spoke/blob/main/src/workers/jobs.js#L364) - [frontend code](https://github.com/StateVoicesNational/Spoke/blob/main/src/components/CampaignTextersForm.jsx#L122)
 
   1. Either LPUSH `newassignments-<texter_id>-<campaign_id>` OR `dynamicassignments-<campaign_id>`
 

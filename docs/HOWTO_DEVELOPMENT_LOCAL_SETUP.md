@@ -1,7 +1,7 @@
 ## Getting started
 
 ---
-### [Repository](https://github.com/MoveOnOrg/Spoke)
+### [Repository](https://github.com/StateVoicesNational/Spoke)
 1. If you have not already, Fork this repo then clone your forked copy. Then future pull requests can be made from your repo to Spoke. 
 ```
 git clone <url of your forked repo>
@@ -14,7 +14,7 @@ cd spoke
 
 3. You may use this opportunity to set the remote upstream to spoke's repo for future fetches.
 ```
-git remote add upstream https://github.com/MoveOnOrg/Spoke.git
+git remote add upstream https://github.com/StateVoicesNational/Spoke.git
 ``` 
    -  you can check that this is configured correctly to push to the origin and fetch from spoke's repo. 
    ```
@@ -26,7 +26,7 @@ git remote add upstream https://github.com/MoveOnOrg/Spoke.git
 ---
 ### Downloading
 
-1. Install the Node version listed in `.nvmrc`. This can also be found here:[.nvmrc](https://github.com/MoveOnOrg/Spoke/blob/main/.nvmrc). 
+1. Install the Node version listed in `.nvmrc`. This can also be found here:[.nvmrc](https://github.com/StateVoicesNational/Spoke/blob/main/.nvmrc). 
 From the spoke directory:
    ```
    nvm install

@@ -187,7 +187,7 @@ An example payload for questionResponse updates is below.
     "id": 60,
     "organization_id": 1,
     "title": "Test Campaign for PR 1995",
-    "description": "https://github.com/MoveOnOrg/Spoke/pull/1995",
+    "description": "https://github.com/StateVoicesNational/Spoke/pull/1995",
     "is_started": true,
     "due_by": "2021-08-17T00:00:00.000Z",
     "created_at": "2021-08-14T00:34:57.590Z",

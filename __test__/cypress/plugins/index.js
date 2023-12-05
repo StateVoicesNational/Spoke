@@ -9,7 +9,7 @@ if (process.env.DEFAULT_SERVICE !== "fakeservice") {
 }
 
 // PostgreSQL required because of a conflict between the sqlite and electron binaries
-// See: https://github.com/MoveOnOrg/Spoke/issues/1529#issuecomment-623680962
+// See: https://github.com/StateVoicesNational/Spoke/issues/1529#issuecomment-623680962
 if (process.env.DB_TYPE !== "pg") {
   throw "Running Cypress tests against Sqlite is not currently supported";
 }

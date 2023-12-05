@@ -1,7 +1,7 @@
 {
   "name": "spoke",
   "description": "Mass peer to peer texting tool",
-  "repository": "https://github.com/moveonorg/spoke",
+  "repository": "https://github.com/StateVoicesNational/spoke",
   "success_url": "/",
   "stack": "container",
   "env": {

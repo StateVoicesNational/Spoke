@@ -27,7 +27,7 @@
 
 This guide assumes you already have twilio set up with Spoke. If you don't, check out our guide on [integrating Twilio](HOWTO_INTEGRATE_TWILIO.md).
 
-If you are comfortable using the Linux command line, and/or will be buying many numbers across many area codes, you should take a look at the [switchboard-twilio tool](https://github.com/MoveOnOrg/switchboard-twilio) which is here to help you buy in higher quantities.
+If you are comfortable using the Linux command line, and/or will be buying many numbers across many area codes, you should take a look at the [switchboard-twilio tool](https://github.com/StateVoicesNational/switchboard-twilio) which is here to help you buy in higher quantities.
 
 1. Go to the “Programmable SMS Dashboard” in Twilio
    ![programmable sms menu](images/twilio_number_buying_guide/programmable_sms_menu.png "Programmable SMS Menu")
