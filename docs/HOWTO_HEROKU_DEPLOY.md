@@ -66,7 +66,7 @@ In order to export data from campaigns (such as contacts' responses to questions
 ## Upgrading an existing Heroku app
 
 There are two ways to do this, the first way will use the Heroku web dashboard and the second will use the terminal.
-**Regardless of which method you choose, you should not deploy a version of Spoke without reading the [release notes](https://github.com/MoveOnOrg/Spoke/blob/main/docs/RELEASE_NOTES.md) in case there are any steps listed in "Deploy Steps" for that release**
+**Regardless of which method you choose, you should not deploy a version of Spoke without reading the [release notes](https://github.com/StateVoicesNational/Spoke/blob/main/docs/RELEASE_NOTES.md) in case there are any steps listed in "Deploy Steps" for that release**
 Some releases require database maintenance in order to work properly.
 
 **Method 1: The Dashboard Deploy Menu**
