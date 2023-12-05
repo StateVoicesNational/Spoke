@@ -3,7 +3,7 @@
 This document describes tips and current gotchas in our code base and explains the context
 for parts that are evolving in a certain direction (or we *want* to evolve in a certain direction).
 
-See [ENVIRONMENT](https://github.com/MoveOnOrg/Spoke/blob/main/docs/HOWTO_DEVELOPMENT_LOCAL_SETUP.md) to calibrate your development environment, [DEVELOPMENT TIPS](https://github.com/MoveOnOrg/Spoke/blob/main/docs/EXPLANATION-development-guidelines.md), [CONTRIBUTING](../CONTRIBUTING.md) instructions and an overview about how to help and join in development.
+See [ENVIRONMENT](https://github.com/StateVoicesNational/Spoke/blob/main/docs/HOWTO_DEVELOPMENT_LOCAL_SETUP.md) to calibrate your development environment, [DEVELOPMENT TIPS](https://github.com/StateVoicesNational/Spoke/blob/main/docs/EXPLANATION-development-guidelines.md), [CONTRIBUTING](../CONTRIBUTING.md) instructions and an overview about how to help and join in development.
 The [README](../README.md) is available for deployment when you are working in production with an organization. 
 
 ## Documentation Organization
@@ -56,7 +56,7 @@ environment variable:
 Spoke was originally implemented with a noSQL-style RethinkDB backend.
 For scaling, lack of support, and an easier development environment, MoveOn moved the backend to
 use Knex.js. However, instead of trying to reimplement all backend calls which would have been
-an immense challenge, we implemented a [rethink-knex-adapter](https://github.com/MoveOnOrg/rethink-knex-adapter)
+an immense challenge, we implemented a [rethink-knex-adapter](https://github.com/StateVoicesNational/rethink-knex-adapter)
 
 This legacy leaves us with many remnants from the original rethink connector. Some are nice and leverage
 some good parts of having an ORM, but some are prone to bugs and can be confusing.
@@ -98,10 +98,10 @@ await r.knex('job_request').where({ assigned: true }).where('updated_at', '<', t
   There are two specific gotchas:
   * Do NOT use knex.insert and instead use `<Model>.save(...)`
     * The reasoning is because sqlite does not support `returning()` as such and
-      [knex has inconsistent behavior for returning id values](https://github.com/MoveOnOrg/rethink-knex-adapter/blob/master/models.js#L206-L214).
+      [knex has inconsistent behavior for returning id values](https://github.com/StateVoicesNational/rethink-knex-adapter/blob/master/models.js#L206-L214).
 Sqlite does not support knex's `returning()` method.  This affects running `r.knex.insert(....)`
   * Sqlite does not convert datefields in knex.
-    See for example: https://github.com/MoveOnOrg/Spoke/issues/817
+    See for example: https://github.com/StateVoicesNational/Spoke/issues/817
     One solution is to use r.table(...).getAll which WILL convert them.
     Otherwise, make sure your code does the conversion when necessary.
 * Knex also has different behavior between database backends for `knex.raw()` queries.
@@ -156,10 +156,10 @@ we want to add a value to campaign info for that edit page. We might need to edi
 
 * Roles are assigned per-organization. Users can be assigned a cross-organizational property called 'superadmin' which is limited for
   actions that could undermine the security of the system or access system-level data.
-* Security for top-level graphQL queries are in rootResolvers.RootQuery object in [server/api/schema.js](https://github.com/MoveOnOrg/Spoke/blob/dec93521d54ea46476d2a5c7eb9deeedbd69d53f/src/server/api/schema.js#L1122)
+* Security for top-level graphQL queries are in rootResolvers.RootQuery object in [server/api/schema.js](https://github.com/StateVoicesNational/Spoke/blob/dec93521d54ea46476d2a5c7eb9deeedbd69d53f/src/server/api/schema.js#L1122)
   * These correspond to e.g. getContact or getOrganization, etc
 * Mutations and custom queries are inside the method
-* Helper functions are in [server/api/errors.js](https://github.com/MoveOnOrg/Spoke/blob/main/src/server/api/errors.js) which should/will be optimized to use cached info, etc.  Each of them will throw an error and therefore cancel the request if the user doesn't have the appropriate access.
+* Helper functions are in [server/api/errors.js](https://github.com/StateVoicesNational/Spoke/blob/main/src/server/api/errors.js) which should/will be optimized to use cached info, etc.  Each of them will throw an error and therefore cancel the request if the user doesn't have the appropriate access.
   * `authRequired(user)` establishes that the user is not anonymous
   * `accessRequired(user, orgId, role, allowSuperadmin = false)` will require the user to have a certain role or higher.  Pass in `true` to allowSuperadmin if superadmins should be allowed.  Generally they should be allowed to do things, but might as well be explicit.
   * `assignmentRequiredOrAdminRole(user, organizationId, assignmentId)` makes sure that the user has the assignment in question and is a TEXTER or is an ADMIN.  (optional arguments after assignmentId are `contact, assignment` which if already available in the context can speed checking -- those arguments should be loaded manually, and never passed from the client, of course.
