@@ -302,7 +302,7 @@ it("save campaign interaction steps, edit it, make sure the last value is set", 
 
   // COPIED CAMPAIGN
   const copiedCampaign1 = await copyCampaign(testCampaign.id, testAdminUser);
-  // 2nd campaign to test against https://github.com/MoveOnOrg/Spoke/issues/854
+  // 2nd campaign to test against https://github.com/StateVoicesNational/Spoke/issues/854
   const copiedCampaign2 = await copyCampaign(testCampaign.id, testAdminUser);
   expect(copiedCampaign1.data.copyCampaign.id).not.toEqual(testCampaign.id);
 
