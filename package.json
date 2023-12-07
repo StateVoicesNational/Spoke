@@ -178,7 +178,7 @@
     "twilio": "^3.40.0",
     "url-join": "^4.0.1",
     "us-area-codes": "^1.0.0",
-    "uuid": "^9.0.0",
+    "uuid": "^9.0.1",
     "wait-for-expect": "^1.1.1",
     "webpack": "^5.74.0",
     "webpack-manifest-plugin": "^5.0.0",
