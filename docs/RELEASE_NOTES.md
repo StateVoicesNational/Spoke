@@ -6,13 +6,14 @@ _December 2023_ Version 13.2.0
 13.2.0 is a minor release.
 
 ### Bug Fixes
-* Set contactTimeszones for campaign when Redis is disabled
+* Set contactTimezones for campaign when Redis is disabled
 
 ### Improvements
 * Additional error catching
 * Update bug report template
 * Indicate progress in UI for bulk send
 * Support for PostgreSQL 15
+* Update Auth0 instructions
 
 ### Appreciations
 * [Arique Aguilar](https://github.com/Arique1104), [Cody Gordon](https://github.com/codygordon), [Kathy Nguyen](https://github.com/crayolakat), and Harold Travis for QA.
