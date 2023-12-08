@@ -131,7 +131,7 @@
     "fs": "^0.0.2",
     "google-libphonenumber": "^3.0.0",
     "googleapis": "^39.2.0",
-    "graphql": "^0.13.2",
+    "graphql": "^14.0.0",
     "graphql-date": "^1.0.3",
     "graphql-tag": "^2.10.3",
     "graphql-tools": "^2.8.0",
