@@ -7,6 +7,7 @@ _December 2023_ Version 13.2.0
 
 ### Improvements
 * Additional error catching
+* Update bug report template
 
 ### Appreciations
 * [Arique Aguilar](https://github.com/Arique1104), [Cody Gordon](https://github.com/codygordon), [Kathy Nguyen](https://github.com/crayolakat), and Harold Travis for QA.
