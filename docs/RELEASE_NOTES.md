@@ -5,6 +5,9 @@ _December 2023_ Version 13.2.0
 
 13.2.0 is a minor release.
 
+### Bug Fixes
+* Set contactTimeszones for campaign when Redis is disabled
+
 ### Improvements
 * Additional error catching
 * Update bug report template
