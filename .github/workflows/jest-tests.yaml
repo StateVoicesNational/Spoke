@@ -5,7 +5,7 @@ on: [push, pull_request]
 jobs:
   test:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
     strategy:
       matrix:
         node-version: [14.x, 15.x, 16.x]
@@ -41,7 +41,7 @@ jobs:
       run: yarn test
   test-rediscache-contactcache:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
     services:
       redis:
         image: redis
@@ -74,7 +74,7 @@ jobs:
       run: yarn test-rediscache-contactcache
   test-rediscache:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
     services:
       redis:
         image: redis
@@ -107,7 +107,7 @@ jobs:
       run: yarn test-rediscache
   test-sqlite:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
     services:
       redis:
         image: redis
