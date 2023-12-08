@@ -1,5 +1,16 @@
 # Release Notes
 
+## v13.2.0
+_December 2023_ Version 13.2.0
+
+13.2.0 is a minor release.
+
+### Improvements
+* Additional error catching
+
+### Appreciations
+* [Arique Aguilar](https://github.com/Arique1104), [Cody Gordon](https://github.com/codygordon), [Kathy Nguyen](https://github.com/crayolakat), and Harold Travis for QA.
+
 ## v13.1.0
 _October 2023_ Version 13.1.0
 

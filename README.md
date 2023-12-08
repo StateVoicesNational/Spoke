@@ -12,7 +12,7 @@ Spoke is an open source text-distribution tool for organizations to mobilize sup
 
 Spoke was created by Saikat Chakrabarti and Sheena Pakanati, and is now maintained by MoveOn.org.
 
-The latest version is [13.1.0](https://github.com/StateVoicesNational/Spoke/tree/13.1.0) (see [release notes](https://github.com/StateVoicesNational/Spoke/blob/main/docs/RELEASE_NOTES.md#v1310))
+The latest version is [13.2.0](https://github.com/StateVoicesNational/Spoke/tree/13.2.0) (see [release notes](https://github.com/StateVoicesNational/Spoke/blob/main/docs/RELEASE_NOTES.md#v1320))
 
 
 ## Setting up Spoke
@@ -29,7 +29,7 @@ Want to know more?
 ### Quick Start with Heroku
 This version of Spoke suitable for testing and, potentially, for small campaigns. This won't cost any money and will not support production(aka large-scale) usage. It's a great way to practice deploying Spoke or see it in action.  
 
-<a href="https://heroku.com/deploy?template=https://github.com/StateVoicesNational/Spoke/tree/13.1.0">
+<a href="https://heroku.com/deploy?template=https://github.com/StateVoicesNational/Spoke/tree/13.2.0">
 
   <img src="https://www.herokucdn.com/deploy/button.svg" alt="Deploy">
 </a>
