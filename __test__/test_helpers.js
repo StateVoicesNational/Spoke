@@ -83,7 +83,8 @@ export async function createContacts(campaign, count = 1) {
   return contacts;
 }
 
-import { makeExecutableSchema } from "graphql-tools";
+import { makeExecutableSchema } from "@graphql-tools/schema";
+
 import { resolvers } from "../src/server/api/schema";
 import { schema } from "../src/api/schema";
 
