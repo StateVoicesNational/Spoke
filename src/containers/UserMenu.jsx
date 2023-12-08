@@ -122,6 +122,7 @@ export class UserMenuBase extends Component {
       <div>
         <IconButton
           {...dataTest("userMenuButton")}
+          aria-label="User Menu Button"
           onClick={this.handleTouchTap}
         >
           {this.renderAvatar(currentUser)}
@@ -136,6 +137,7 @@ export class UserMenuBase extends Component {
           <MenuList onChange={this.handleMenuChange}>
             <MenuItem
               {...dataTest("userMenuDisplayName")}
+              aria-label="Edit Profile"
               disabled={!this.props.orgId}
               onClick={event => {
                 this.handleMenuChange(event, "account");
