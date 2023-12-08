@@ -168,6 +168,8 @@
     "query-string": "^4.1.0",
     "react": "16.14.0",
     "react-dnd": "^7.7.0",
+    "react-hooks-compose": "^2.0.20",
+    "react-router": "^6.20.1",
     "redis": "3",
     "request": "^2.81.0",
     "rethink-knex-adapter": "0.4.20",
@@ -247,7 +249,6 @@
     "react-color": "^2.19.3",
     "react-dom": "16.14.0",
     "react-formal": "^2.7.1",
-    "react-router": "^3.2.0",
     "react-tooltip": "^4.2.13",
     "recompose": "^0.30.0"
   }
