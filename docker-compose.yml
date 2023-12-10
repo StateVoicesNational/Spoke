@@ -4,20 +4,20 @@ services:
     image: postgres:alpine
     restart: always
     environment:
-      POSTGRES_DB: spokedev
-      POSTGRES_PASSWORD: spoke
-      POSTGRES_USER: spoke
+      POSTGRES_DB: ${DB_NAME:-spokedev}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-spoke}
+      POSTGRES_USER: ${DB_USER:-spoke}
     volumes:
       - postgres:/var/lib/postgresql/data
     ports:
-      - 5432:5432
+      - ${DB_PORT:-5432}:5432
   redis:
     image: redis:alpine
     restart: always
     volumes:
       - redis:/data
     ports:
-      - 6379:6379
+      - ${REDIS_PORT:-6379}:6379
 volumes:
   postgres:
     external: false
