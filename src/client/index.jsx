@@ -4,7 +4,7 @@ import { Router, browserHistory } from "react-router";
 import { StyleSheet } from "aphrodite";
 import errorCatcher from "./error-catcher";
 import makeRoutes from "../routes";
-import { ApolloProvider } from "react-apollo";
+import { ApolloProvider } from '@apollo/client'
 import ApolloClientSingleton from "../network/apollo-client-singleton";
 import { login, logout } from "./auth-service";
 
