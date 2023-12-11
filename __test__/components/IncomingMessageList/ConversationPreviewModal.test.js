@@ -11,7 +11,7 @@ import { prepareDataTableData } from "../../../src/components/IncomingMessageLis
 import ReactTestUtils from "react-dom/test-utils";
 import { createMemoryHistory } from "react-router";
 import ApolloClientSingleton from "../../../src/network/apollo-client-singleton";
-import { ApolloProvider } from "react-apollo";
+import { ApolloProvider } from '@apollo/client'
 import Dialog from "@material-ui/core/Dialog";
 
 import { r } from "../../../src/server/models";
