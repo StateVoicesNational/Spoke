@@ -5,7 +5,7 @@ import React from "react";
 import { mount } from "enzyme";
 import { StyleSheetTestUtils } from "aphrodite";
 import each from "jest-each";
-import { ApolloProvider } from "react-apollo";
+import { ApolloProvider } from '@apollo/client'
 import ApolloClientSingleton from "../../src/network/apollo-client-singleton";
 import { AssignmentSummaryBase as AssignmentSummary } from "../../src/components/AssignmentSummary";
 import Badge from "@material-ui/core/Badge";
