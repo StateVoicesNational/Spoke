@@ -1,6 +1,6 @@
 import type from "prop-types";
 import React from "react";
-import { compose } from "react-apollo";
+import {flowRight as compose} from 'lodash';
 import withMuiTheme from "./../containers/hoc/withMuiTheme";
 
 const Slider = ({ maxValue, value, color, direction, muiTheme }) => {

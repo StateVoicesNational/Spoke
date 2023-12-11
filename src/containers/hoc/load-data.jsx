@@ -1,5 +1,6 @@
 import React from "react";
-import { graphql, compose } from "react-apollo";
+import {flowRight as compose} from 'lodash';
+import { graphql } from '@apollo/client/react/hoc';
 import { withProps, branch, renderComponent } from "recompose";
 
 import Card from "@material-ui/core/Card";

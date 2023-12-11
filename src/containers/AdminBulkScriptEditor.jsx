@@ -1,7 +1,7 @@
 import gql from "graphql-tag";
 import pick from "lodash/pick";
 import React, { Component } from "react";
-import { compose } from "react-apollo";
+import {flowRight as compose} from 'lodash';
 
 import Paper from "@material-ui/core/Paper";
 import Dialog from "@material-ui/core/Dialog";

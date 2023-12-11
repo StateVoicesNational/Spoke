@@ -1,7 +1,7 @@
 import PropTypes from "prop-types";
 import React, { Component } from "react";
 import _ from "lodash";
-import { compose } from "react-apollo";
+import {flowRight as compose} from 'lodash';
 
 import IncomingMessageActions from "../components/IncomingMessageActions";
 import IncomingMessageFilter, {
