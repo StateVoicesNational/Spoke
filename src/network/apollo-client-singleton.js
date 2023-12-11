@@ -1,13 +1,11 @@
 import fetch from "isomorphic-fetch";
-import { ApolloClient } from "apollo-client";
-import { ApolloLink } from "apollo-link";
-import { createHttpLink } from "apollo-link-http";
-import { onError } from "apollo-link-error";
-import { InMemoryCache } from "apollo-cache-inmemory";
-import { getMainDefinition } from "apollo-utilities";
+import { ApolloClient, ApolloLink, HttpLink } from "@apollo/client";
+import { onError } from "@apollo/client/link/error";
+import { InMemoryCache } from '@apollo/client/cache';
+import { getMainDefinition } from "@apollo/client/utilities";
 import omitDeep from "omit-deep-lodash";
 
-const httpLink = createHttpLink({
+const httpLink = HttpLink({
   fetch: fetch,
   uri:
     (typeof window === "undefined" ? process.env : window).GRAPHQL_URL ||
