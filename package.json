@@ -81,6 +81,7 @@
   "homepage": "https://github.com/MoveOnOrg/Spoke/#readme",
   "dependencies": {
     "@aoberoi/passport-slack": "^1.0.5",
+    "@apollo/client": "^3.8.8",
     "@aws-sdk/client-cloudwatch": "^3.465.0",
     "@aws-sdk/client-cloudwatch-events": "^3.465.0",
     "@aws-sdk/client-lambda": "^3.465.0",
@@ -167,7 +168,7 @@
     "prop-types": "^15.6.0",
     "query-string": "^4.1.0",
     "react": "16.14.0",
-    "react-apollo": "^3.1.5",
+    "react-apollo": "^2.5.8",
     "react-dnd": "^7.7.0",
     "react-hooks-compose": "^2.0.20",
     "react-router": "^6.20.1",
