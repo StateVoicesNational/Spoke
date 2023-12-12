@@ -26,7 +26,10 @@ import {
 import importScriptFromDocument from "../server/api/lib/import-script";
 import { rawIngestMethod } from "../extensions/contact-loaders";
 
-import AWS from "aws-sdk";
+import { Lambda } from "@aws-sdk/client-lambda";
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+import { GetObjectCommand, S3 } from "@aws-sdk/client-s3";
+import { SQS } from "@aws-sdk/client-sqs";
 import Papa from "papaparse";
 import moment from "moment";
 import { sendEmail } from "../server/mail";
@@ -131,7 +134,7 @@ export async function sendJobToAWSLambda(job) {
     console.log("LAMBDA INVOCATION FAILED: JOB NOT INVOKABLE", job);
     return Promise.reject("Job type not available in job-processes");
   }
-  const lambda = new AWS.Lambda();
+  const lambda = new Lambda();
   const lambdaPayload = JSON.stringify(job);
   if (lambdaPayload.length > 128000) {
     console.log("LAMBDA INVOCATION FAILED PAYLOAD TOO LARGE");
@@ -169,7 +172,7 @@ export async function processSqsMessages(TWILIO_SQS_QUEUE_URL) {
     return Promise.reject("TWILIO_SQS_QUEUE_URL not set");
   }
 
-  const sqs = new AWS.SQS();
+  const sqs = new SQS();
 
   const params = {
     QueueUrl: TWILIO_SQS_QUEUE_URL,
@@ -206,7 +209,6 @@ export async function processSqsMessages(TWILIO_SQS_QUEUE_URL) {
                 QueueUrl: TWILIO_SQS_QUEUE_URL,
                 ReceiptHandle: message.ReceiptHandle
               })
-              .promise()
               .catch(reject);
             if (process.env.DEBUG) {
               console.log("processSqsMessages deleteresult", delMessageData);
@@ -859,7 +861,10 @@ export async function exportCampaign(job) {
     (process.env.AWS_ACCESS_KEY_ID && process.env.AWS_SECRET_ACCESS_KEY)
   ) {
     try {
-      const s3bucket = new AWS.S3({
+      const s3bucket = new S3({
+        // The transformation for params is not implemented.
+        // Refer to UPGRADING.md on aws-sdk-js-v3 for changes needed.
+        // Please create/upvote feature request on aws-sdk-js-codemod for params.
         params: { Bucket: process.env.AWS_S3_BUCKET_NAME }
       });
       const campaignTitle = campaign.title
@@ -870,19 +875,17 @@ export async function exportCampaign(job) {
       )}.csv`;
       const messageKey = `${key}-messages.csv`;
       let params = { Key: key, Body: campaignCsv };
-      await s3bucket.putObject(params).promise();
+      await s3bucket.putObject(params);
       params = { Key: key, Expires: 86400 };
-      const campaignExportUrl = await s3bucket.getSignedUrl(
-        "getObject",
-        params
-      );
+      const campaignExportUrl = await getSignedUrl(s3bucket, new GetObjectCommand(params), {
+        expiresIn: "/* add value from 'Expires' from v2 call if present, else remove */"
+      });
       params = { Key: messageKey, Body: messageCsv };
-      await s3bucket.putObject(params).promise();
+      await s3bucket.putObject(params);
       params = { Key: messageKey, Expires: 86400 };
-      const campaignMessagesExportUrl = await s3bucket.getSignedUrl(
-        "getObject",
-        params
-      );
+      const campaignMessagesExportUrl = await getSignedUrl(s3bucket, new GetObjectCommand(params), {
+        expiresIn: "/* add value from 'Expires' from v2 call if present, else remove */"
+      });
       exportResults.campaignExportUrl = campaignExportUrl;
       exportResults.campaignMessagesExportUrl = campaignMessagesExportUrl;
 

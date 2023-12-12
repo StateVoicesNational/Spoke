@@ -1,5 +1,4 @@
 import request from "request";
-import aws from "aws-sdk";
 import { r } from "../../server/models";
 import { actionKitSignup } from "./helper-ak-sync.js";
 import { getConfig } from "../../server/api/lib/config";

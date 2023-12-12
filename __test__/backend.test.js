@@ -28,7 +28,8 @@ import {
   createInvite as helperCreateInvite,
   runGql
 } from "./test_helpers";
-import { makeExecutableSchema } from "graphql-tools";
+import { makeExecutableSchema } from "@graphql-tools/schema";
+
 
 import { editUserMutation } from "../src/containers/UserEdit.jsx";
 

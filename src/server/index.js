@@ -3,7 +3,7 @@ import bodyParser from "body-parser";
 import express from "express";
 import appRenderer from "./middleware/app-renderer";
 import { graphqlExpress, graphiqlExpress } from "apollo-server-express";
-import { makeExecutableSchema } from "graphql-tools";
+import { makeExecutableSchema } from "@graphql-tools/schema";
 // ORDERING: ./models import must be imported above ./api to help circular imports
 import { replaceEasyGsmWins } from "../lib/gsm";
 import { createLoaders, createTablesIfNecessary, r } from "./models";
