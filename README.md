@@ -2,9 +2,7 @@
 
 # StateVoices is the new community steward for Spoke!
 
-On November 19th, the repo Spoke was transfered from MoveOn to StateVoices.
-
-[Join us for the Merge Party for more information.](https://www.mobilize.us/statevoices/event/592881/)
+On November 19th, the repo Spoke was transfered from MoveOn to StateVoices. If you're looking for the most up-to-date Spoke to fork from, start [at the StateVoices repo](https://github.com/StateVoicesNational/Spoke)
 
 ## Spoke History
 
@@ -12,7 +10,7 @@ Spoke is an open source text-distribution tool for organizations to mobilize sup
 
 Spoke was created by Saikat Chakrabarti and Sheena Pakanati, and is now maintained by MoveOn.org.
 
-The latest version is [13.1.0](https://github.com/StateVoicesNational/Spoke/tree/13.1.0) (see [release notes](https://github.com/StateVoicesNational/Spoke/blob/main/docs/RELEASE_NOTES.md#v1310))
+The latest version can be found on the [State Voices repo page](https://github.com/StateVoicesNational/Spoke) (see [release notes](https://github.com/StateVoicesNational/Spoke/blob/main/docs/RELEASE_NOTES.md))
 
 
 ## Setting up Spoke
