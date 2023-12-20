@@ -12,6 +12,13 @@ Spoke was created by Saikat Chakrabarti and Sheena Pakanati, and is now maintain
 
 The latest version can be found on the [State Voices repo page](https://github.com/StateVoicesNational/Spoke) (see [release notes](https://github.com/StateVoicesNational/Spoke/blob/main/docs/RELEASE_NOTES.md))
 
+If you're a developer switching over from the MoveOn fork to the new StateVoices base, you can run:
+```
+git remote set-url upstream https://github.com/StateVoicesNational/Spoke
+git remote set-url origin  https://github.com/StateVoicesNational/Spoke
+```
+to reset where your repo is pointing and ensure you're pulling the correct code.
+
 
 ## Setting up Spoke
 
