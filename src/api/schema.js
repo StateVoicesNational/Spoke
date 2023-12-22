@@ -176,6 +176,12 @@ const rootSchema = gql`
     value: String
   }
 
+  type Action {
+    name: String
+    displayName: String
+    instructions: String
+  }
+
   type FoundContact {
     found: Boolean
     assignment: Assignment
@@ -410,7 +416,7 @@ const rootSchema = gql`
   }
 `;
 
-export const schema = [
+export default [
   rootSchema,
   userSchema,
   "scalar Date",

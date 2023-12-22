@@ -1,4 +1,6 @@
-export const schema = `
+import gql from "graphql-tag";
+
+export const schema = gql`
   type User {
     id: ID
     firstName: String
