@@ -1,4 +1,4 @@
-import gql from "graphql-tag";
+import { gql } from "@apollo/client";
 import pick from "lodash/pick";
 import React, { Component } from "react";
 import { compose } from "react-apollo";

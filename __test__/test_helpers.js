@@ -9,7 +9,7 @@ import {
   r
 } from "../src/server/models/";
 import { graphql } from "graphql";
-import gql from "graphql-tag";
+import { gql } from "@apollo/client";
 
 // Cypress integration tests do not use jest but do use these helpers
 // They would benefit from mocking mail services, though, so something to look in to.
