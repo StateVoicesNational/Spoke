@@ -1,6 +1,6 @@
 import React from "react";
-import { graphql, compose } from "react-apollo";
-import { withProps, branch, renderComponent } from "recompose";
+import { graphql } from "@apollo/client/react/hoc";
+import { compose, withProps, branch, renderComponent } from "recompose";
 
 import Card from "@material-ui/core/Card";
 import CardHeader from "@material-ui/core/CardHeader";

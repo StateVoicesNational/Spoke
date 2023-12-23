@@ -1,7 +1,7 @@
 import { gql } from "@apollo/client";
 import pick from "lodash/pick";
 import React, { Component } from "react";
-import { compose } from "react-apollo";
+import { compose } from "recompose";
 
 import Paper from "@material-ui/core/Paper";
 import Dialog from "@material-ui/core/Dialog";
