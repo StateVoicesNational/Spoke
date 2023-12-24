@@ -40,10 +40,8 @@ describe("errors.js", () => {
       }
 
       expect(error).toBeDefined();
-      expect(error.message).toEqual({
-        message: "You must login to access that resource.",
-        status: 401
-      });
+      expect(error.message).toEqual("You must login to access that resource.");
+      expect(error.extensions).toMatchObject({ status: 401 });
     });
   });
 
