@@ -52,6 +52,9 @@ export const allScriptFields = (customFields, includeDeprecated) =>
     .concat(includeDeprecated ? DEPRECATED_SCRIPT_FIELDS : []);
 
 const capitalize = str => {
+  if (!str) {
+    return str;
+  }
   const strTrimmed = str.trim();
   if (
     strTrimmed.charAt(0).toUpperCase() === strTrimmed.charAt(0) &&

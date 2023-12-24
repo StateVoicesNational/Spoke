@@ -1,15 +1,16 @@
-import _ from "lodash";
+import { makeExecutableSchema } from "@graphql-tools/schema";
+import { graphql } from "graphql";
+import apiSchema from "../src/api/schema";
+import { resolvers } from "../src/server/api/schema";
 import {
+  CampaignContact,
+  User,
   cacheableData,
   createLoaders,
   createTables,
   dropTables,
-  User,
-  CampaignContact,
   r
-} from "../src/server/models/";
-import { graphql } from "graphql";
-import { gql } from "@apollo/client";
+} from "../src/server/models";
 
 // Cypress integration tests do not use jest but do use these helpers
 // They would benefit from mocking mail services, though, so something to look in to.
@@ -69,7 +70,8 @@ export async function createContacts(campaign, count = 1) {
   const campaignId = campaign.id;
   const contacts = [];
   const startNum = "+15155500000";
-  for (let i = 0; i < count; i++) {
+  const waitFor = [];
+  for (let i = 0; i < count; i += 1) {
     const contact = new CampaignContact({
       first_name: `Ann${i}`,
       last_name: `Lewis${i}`,
@@ -77,18 +79,15 @@ export async function createContacts(campaign, count = 1) {
       zip: "12345",
       campaign_id: campaignId
     });
-    await contact.save();
+    waitFor.push(contact.save());
     contacts.push(contact);
   }
+  Promise.all(waitFor);
   return contacts;
 }
 
-import { makeExecutableSchema } from "@graphql-tools/schema";
-import { resolvers } from "../src/server/api/schema";
-import schema from "../src/api/schema";
-
-const mySchema = makeExecutableSchema({
-  typeDefs: schema,
+const schema = makeExecutableSchema({
+  typeDefs: apiSchema,
   resolvers,
   allowUndefinedInResolve: true
 });
@@ -101,18 +100,18 @@ function getGqlOperationText(op) {
 }
 
 export async function runGql(operation, vars, user) {
-  const operationText = getGqlOperationText(operation) || operation;
+  const source = getGqlOperationText(operation) || operation;
   const rootValue = {};
-  const context = getContext({ user });
-  const result = await graphql(
-    mySchema,
-    operationText,
+  const contextValue = getContext({ user });
+  const result = await graphql({
+    schema,
+    source,
     rootValue,
-    context,
-    vars
-  );
+    contextValue,
+    variableValues: vars
+  });
   if (result && result.errors) {
-    console.log("runGql failed " + JSON.stringify(result));
+    console.log(`runGql failed ${JSON.stringify(result)}`);
   }
   return result;
 }
@@ -123,15 +122,21 @@ export const updateUserRoles = async (
   userId,
   roles
 ) => {
-  const query = `mutation editOrganizationRoles(
-      $organizationId: String!,
-      $userId: String!,
-      $roles: [String]) {
-    editOrganizationRoles(userId: $userId, organizationId: $organizationId, roles: $roles) {
-      id
+  const query = `
+    mutation editOrganizationRoles(
+      $organizationId: String!
+      $userId: String!
+      $roles: [String]
+    ) {
+      editOrganizationRoles(
+        userId: $userId
+        organizationId: $organizationId
+        roles: $roles
+      ) {
+        id
+      }
     }
-  }`;
-
+  `;
   const variables = {
     organizationId,
     userId,
@@ -139,51 +144,67 @@ export const updateUserRoles = async (
   };
   const result = await runGql(query, variables, adminUser);
   if (result && result.errors) {
-    throw new Error("editOrganizationRoles failed " + JSON.stringify(result));
+    throw new Error(`editOrganizationRoles failed ${JSON.stringify(result)}`);
   }
   return result;
 };
 
 export async function createInvite() {
   const rootValue = {};
-  const inviteQuery = `mutation {
-    createInvite(invite: {is_valid: true}) {
-      id
+  const source = `
+    mutation {
+      createInvite(invite: { is_valid: true }) {
+        id
+      }
     }
-  }`;
-  const context = getContext();
-  return await graphql(mySchema, inviteQuery, rootValue, context);
+  `;
+  const contextValue = getContext();
+  return graphql({
+    schema,
+    source,
+    rootValue,
+    contextValue
+  });
 }
 
 export async function createOrganization(user, invite) {
   const rootValue = {};
   const name = "Testy test organization";
   const userId = user.id;
+
   const inviteId = invite.data.createInvite.id;
 
-  const context = getContext({ user });
+  const contextValue = getContext({ user });
 
-  const orgQuery = `mutation createOrganization($name: String!, $userId: String!, $inviteId: String!) {
-    createOrganization(name: $name, userId: $userId, inviteId: $inviteId) {
-      id
-      uuid
+  const source = `
+    mutation createOrganization(
+      $name: String!
+      $userId: String!
+      $inviteId: String!
+    ) {
+      createOrganization(name: $name, userId: $userId, inviteId: $inviteId) {
+        id
+        uuid
+      }
     }
-  }`;
+  `;
 
-  const variables = {
-    userId,
+  const variableValues = {
+    userId: userId.toString(),
     name,
     inviteId
   };
-  const result = await graphql(
-    mySchema,
-    orgQuery,
+
+  const result = await graphql({
+    schema,
+    source,
     rootValue,
-    context,
-    variables
-  );
+    contextValue,
+    variableValues
+  });
+
   if (result && result.errors) {
-    throw new Error("createOrganization failed " + JSON.stringify(result));
+    throw new Error(`createOrganization failed ${JSON.stringify(result)}`);
   }
   return result;
 }
@@ -238,9 +259,9 @@ export async function setTwilioAuth(user, organization) {
   const twilioMessageServiceSid = "test_message_service";
   const orgId = organization.data.createOrganization.id;
 
-  const context = getContext({ user });
+  const contextValue = getContext({ user });
 
-  const query = `
+  const source = `
     mutation updateServiceVendorConfig(
       $organizationId: String!
       $serviceName: String!
@@ -263,15 +284,21 @@ export async function setTwilioAuth(user, organization) {
     twilioMessageServiceSid
   };
 
-  const variables = {
+  const variableValues = {
     organizationId: orgId,
     serviceName: "twilio",
     config: JSON.stringify(twilioConfig)
   };
 
-  const result = await graphql(mySchema, query, rootValue, context, variables);
+  const result = await graphql({
+    schema,
+    source,
+    rootValue,
+    contextValue,
+    variableValues
+  });
   if (result && result.errors) {
-    console.log("updateServiceVendorConfig failed " + JSON.stringify(result));
+    console.log(`updateServiceVendorConfig failed ${JSON.stringify(result)}`);
   }
   return result;
 }
@@ -285,14 +312,16 @@ export async function createCampaign(
   const rootValue = {};
   const description = "test description";
   const organizationId = organization.data.createOrganization.id;
-  const context = getContext({ user });
+  const contextValue = getContext({ user });
 
-  const campaignQuery = `mutation createCampaign($input: CampaignInput!) {
-    createCampaign(campaign: $input) {
-      id
+  const source = `
+    mutation createCampaign($input: CampaignInput!) {
+      createCampaign(campaign: $input) {
+        id
+      }
     }
-  }`;
-  const variables = {
+  `;
+  const variableValues = {
     input: {
       title,
       description,
@@ -300,15 +329,15 @@ export async function createCampaign(
       ...args
     }
   };
-  const result = await graphql(
-    mySchema,
-    campaignQuery,
+  const result = await graphql({
+    schema,
+    source,
     rootValue,
-    context,
-    variables
-  );
+    contextValue,
+    variableValues
+  });
   if (result.errors) {
-    throw new Error("Create campaign failed " + JSON.stringify(result));
+    throw new Error(`Create campaign failed ${JSON.stringify(result)}`);
   }
   return result.data.createCampaign;
 }
@@ -322,19 +351,20 @@ export async function saveCampaign(
 ) {
   const rootValue = {};
   const description = "test description";
-  const organizationId = campaign.organizationId;
+  const { organizationId } = campaign;
   const campaignId = campaign.id;
-  const context = getContext({ user });
+  const contextValue = getContext({ user });
 
-  const campaignQuery = `mutation editCampaign($campaignId: String!, $campaign: CampaignInput!) {
-    editCampaign(id: $campaignId, campaign: $campaign) {
-      id
-      title
-      useOwnMessagingService
+  const source = `
+    mutation editCampaign($campaignId: String!, $campaign: CampaignInput!) {
+      editCampaign(id: $campaignId, campaign: $campaign) {
+        id
+        title
+        useOwnMessagingService
+      }
     }
-  }`;
-
-  const variables = {
+  `;
+  const variableValues = {
     campaign: {
       title,
       description,
@@ -342,18 +372,19 @@ export async function saveCampaign(
     },
     campaignId
   };
-  const result = await graphql(
-    mySchema,
-    campaignQuery,
+  const result = await graphql({
+    schema,
+    source,
     rootValue,
-    context,
-    variables
-  );
+    contextValue,
+    variableValues
+  });
   if (result.errors) {
-    throw new Error("Create campaign failed " + JSON.stringify(result));
+    throw new Error(`Create campaign failed ${JSON.stringify(result)}`);
   }
   if (useOwnMessagingService !== "false" || inventoryPhoneNumberCounts) {
-    const serviceManagerQuery = `mutation updateServiceManager(
+    const serviceManagerQuery = `
+      mutation updateServiceManager(
         $organizationId: String!
         $campaignId: String!
         $serviceManagerName: String!
@@ -365,28 +396,31 @@ export async function saveCampaign(
           serviceManagerName: $serviceManagerName
           updateData: $updateData
         ) {
-        id
-        name
-        data
-        fullyConfigured
+          id
+          name
+          data
+          fullyConfigured
+        }
       }
-    }`;
-    const managerResult = await graphql(
-      mySchema,
-      serviceManagerQuery,
+    `;
+
+    const serviceManagerVariableValues = {
+      organizationId,
+      serviceManagerName: "per-campaign-messageservices",
+      updateData: {
+        useOwnMessagingService,
+        inventoryPhoneNumberCounts
+      },
+      campaignId
+    };
+    const managerResult = await graphql({
+      schema,
+      source: serviceManagerQuery,
       rootValue,
-      context,
-      {
-        organizationId,
-        serviceManagerName: "per-campaign-messageservices",
-        updateData: {
-          useOwnMessagingService,
-          inventoryPhoneNumberCounts
-        },
-        campaignId
-      }
-    );
-    console.log("managerResult", JSON.stringify(managerResult));
+      contextValue,
+      variableValues: serviceManagerVariableValues
+    });
+    console.log(`managerResult ${JSON.stringify(managerResult)}`);
   }
 
   return result.data.editCampaign;
@@ -394,13 +428,21 @@ export async function saveCampaign(
 
 export async function copyCampaign(campaignId, user) {
   const rootValue = {};
-  const query = `mutation copyCampaign($campaignId: String!) {
-    copyCampaign(id: $campaignId) {
-      id
+  const source = `
+    mutation copyCampaign($campaignId: String!) {
+      copyCampaign(id: $campaignId) {
+        id
+      }
     }
-  }`;
-  const context = getContext({ user });
-  return await graphql(mySchema, query, rootValue, context, { campaignId });
+  `;
+  const contextValue = getContext({ user });
+  return graphql({
+    schema,
+    source,
+    rootValue,
+    contextValue,
+    variableValues: { campaignId }
+  });
 }
 
 export async function createTexter(organization, userInfo = {}) {
@@ -418,27 +460,28 @@ export async function createTexter(organization, userInfo = {}) {
     "TEXTER"
   );
   if (user.errors) {
-    throw new Error("createUsers failed " + JSON.stringify(user));
+    throw new Error(`createUsers failed ${JSON.stringify(user)}`);
   }
-  const joinQuery = `
-  mutation joinOrganization($organizationUuid: String!) {
-    joinOrganization(organizationUuid: $organizationUuid) {
-      id
+  const source = `
+    mutation joinOrganization($organizationUuid: String!) {
+      joinOrganization(organizationUuid: $organizationUuid) {
+        id
+      }
     }
-  }`;
-  const variables = {
+  `;
+  const variableValues = {
     organizationUuid: organization.data.createOrganization.uuid
   };
-  const context = getContext({ user });
-  const result = await graphql(
-    mySchema,
-    joinQuery,
+  const contextValue = getContext({ user });
+  const result = await graphql({
+    schema,
+    source,
     rootValue,
-    context,
-    variables
-  );
+    contextValue,
+    variableValues
+  });
   if (result.errors) {
-    throw new Error("joinOrganization failed " + JSON.stringify(result));
+    throw new Error(`joinOrganization failed ${JSON.stringify(result)}`);
   }
   return user;
 }
@@ -450,65 +493,73 @@ export async function assignTexter(admin, user, campaign, assignments) {
   // contactsCount: (messagedCount from texter) + needsMessageCount (above)
   // If a userId has an existing assignment, then, also include `contactsCount: <current>`
   const rootValue = {};
-  const campaignEditQuery = `
-  mutation editCampaign($campaignId: String!, $campaign: CampaignInput!) {
-    editCampaign(id: $campaignId, campaign: $campaign) {
-      id
-      assignments {
+  const source = `
+    mutation editCampaign($campaignId: String!, $campaign: CampaignInput!) {
+      editCampaign(id: $campaignId, campaign: $campaign) {
         id
+        assignments {
+          id
+        }
       }
     }
-  }`;
-  const context = getContext({ user: admin });
+  `;
+  const contextValue = getContext({ user: admin });
   const updateCampaign = Object.assign({}, campaign);
   const campaignId = updateCampaign.id;
   updateCampaign.texters = assignments || [
     {
-      id: user.id
+      id: user.id.toString()
     }
   ];
   delete updateCampaign.id;
   delete updateCampaign.contacts;
-  const variables = {
+  const variableValues = {
     campaignId,
     campaign: updateCampaign
   };
-  const result = await graphql(
-    mySchema,
-    campaignEditQuery,
+  const result = await graphql({
+    schema,
+    source,
     rootValue,
-    context,
-    variables
-  );
+    contextValue,
+    variableValues
+  });
   if (result.errors) {
-    throw new Error("assignTexter failed " + JSON.stringify(result));
+    throw new Error(`assignTexter failed ${JSON.stringify(result)}`);
   }
   return result;
 }
 
 export async function sendMessage(campaignContactId, user, message) {
   const rootValue = {};
-  const query = `
+  const source = `
     mutation sendMessage($message: MessageInput!, $campaignContactId: String!) {
-        sendMessage(message: $message, campaignContactId: $campaignContactId) {
+      sendMessage(message: $message, campaignContactId: $campaignContactId) {
+        id
+        messageStatus
+        messages {
           id
-          messageStatus
-          messages {
-            id
-            createdAt
-            text
-            isFromContact
-          }
+          createdAt
+          text
+          isFromContact
         }
-      }`;
-  const context = getContext({ user });
-  const variables = {
+      }
+    }
+  `;
+  const contextValue = getContext({ user });
+  const variableValues = {
     message,
     campaignContactId
   };
-  const result = await graphql(mySchema, query, rootValue, context, variables);
+  const result = await graphql({
+    schema,
+    source,
+    rootValue,
+    contextValue,
+    variableValues
+  });
   if (result.errors) {
-    console.log("sendMessage errors", result);
+    console.log(`sendMessage errors ${JSON.stringify(result)}`);
   }
   return result;
 }
@@ -547,7 +598,7 @@ export function buildScript(steps = 2, choices = 1) {
       return [];
     }
     const rv = [makeStep(step, max)];
-    for (let i = 1; i < choices; i++) {
+    for (let i = 1; i < choices; i += 1) {
       rv.push(makeStep(step, max, i));
     }
     return rv;
@@ -561,7 +612,7 @@ export async function createScript(
   { interactionSteps, steps = 2, choices = 1, campaignGqlFragment } = {}
 ) {
   const rootValue = {};
-  const campaignEditQuery = `
+  const source = `
   mutation editCampaign($campaignId: String!, $campaign: CampaignInput!) {
     editCampaign(id: $campaignId, campaign: $campaign) {
       ${campaignGqlFragment || "id"}
@@ -574,76 +625,68 @@ export async function createScript(
     builtInteractionSteps = buildScript(steps, choices);
   }
 
-  const context = getContext({ user: admin });
-  const campaignId = campaign.id;
-  const variables = {
+  const contextValue = getContext({ user: admin });
+  const campaignId = campaign.id.toString();
+  const variableValues = {
     campaignId,
     campaign: {
       interactionSteps: interactionSteps || builtInteractionSteps[0]
     }
   };
-  return await graphql(
-    mySchema,
-    campaignEditQuery,
+
+  return graphql({
+    schema,
+    source,
     rootValue,
-    context,
-    variables
-  );
+    contextValue,
+    variableValues
+  });
 }
 
 export async function createCannedResponses(admin, campaign, cannedResponses) {
   // cannedResponses: {title, text}
   const rootValue = {};
-  const campaignEditQuery = `
-  mutation editCampaign($campaignId: String!, $campaign: CampaignInput!) {
-    editCampaign(id: $campaignId, campaign: $campaign) {
-      id
+  const source = `
+    mutation editCampaign($campaignId: String!, $campaign: CampaignInput!) {
+      editCampaign(id: $campaignId, campaign: $campaign) {
+        id
+      }
     }
-  }`;
-  const context = getContext({ user: admin });
+  `;
+  const contextValue = getContext({ user: admin });
   const campaignId = campaign.id;
-  const variables = {
+  const variableValues = {
     campaignId,
     campaign: {
       cannedResponses
     }
   };
-  return await graphql(
-    mySchema,
-    campaignEditQuery,
-    rootValue,
-    context,
-    variables
-  );
+  return graphql({ schema, source, rootValue, contextValue, variableValues });
 }
 
 export async function startCampaign(admin, campaign) {
   const rootValue = {};
-  const startCampaignQuery = `mutation startCampaign($campaignId: String!) {
-    startCampaign(id: $campaignId) {
-      id
+  const source = `
+    mutation startCampaign($campaignId: String!) {
+      startCampaign(id: $campaignId) {
+        id
+      }
     }
-  }`;
-  const context = getContext({ user: admin });
-  const variables = { campaignId: campaign.id };
-  return await graphql(
-    mySchema,
-    startCampaignQuery,
-    rootValue,
-    context,
-    variables
-  );
+  `;
+  const contextValue = getContext({ user: admin });
+  const variableValues = { campaignId: campaign.id };
+  return graphql({ schema, source, rootValue, contextValue, variableValues });
 }
 
 export async function getCampaignContact(id) {
-  return await r
+  return r
     .knex("campaign_contact")
     .where({ id })
     .first();
 }
 
 export async function getOptOut(assignmentId, cell) {
-  return await r
+  return r
     .knex("opt_out")
     .where({
       cell,
@@ -819,7 +862,7 @@ export const runComponentQueries = async (queries, user, ownProps) => {
   const resolvedPromises = await Promise.all(promises);
 
   const queryResults = {};
-  for (let i = 0; i < keys.length; i++) {
+  for (let i = 0; i < keys.length; i += 1) {
     const dataKey = Object.keys(resolvedPromises[i].data)[0];
     const key = keys[i];
     queryResults[key] = {

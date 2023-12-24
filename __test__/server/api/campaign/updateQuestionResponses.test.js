@@ -94,7 +94,8 @@ describe("mutations.updateQuestionResponses", () => {
     // these are the answers to the question "what's your favorite color?"
     const toReturnColorInteractionSteps = returnedInteractionSteps.filter(
       interactionStep =>
-        interactionStep.parentInteractionId === returnedInteractionSteps[0].id
+        interactionStep.parentInteractionId ===
+        returnedInteractionSteps[0].id.toString()
     );
 
     // this is the interaction step representing the answer "Red"
@@ -105,15 +106,16 @@ describe("mutations.updateQuestionResponses", () => {
     // these are the answers to the question "what's your favorite shade of red"
     const toReturnShadesOfRedInteractionSteps = returnedInteractionSteps.filter(
       interactionStep =>
-        interactionStep.parentInteractionId === toReturnRedInteractionStep.id
+        interactionStep.parentInteractionId ===
+        toReturnRedInteractionStep.id.toString()
     );
 
     // send initial messages to 2 contacts
     const promises = contacts.slice(0, numberOfContacts).map(contact => {
-      return sendMessage(contact.id, texterUser, {
+      return sendMessage(contact.id.toString(), texterUser, {
         text: returnedInteractionSteps[0].script,
         contactNumber: contact.cell,
-        assignmentId: assignment.id,
+        assignmentId: assignment.id.toString(),
         userId: texterUser.id.toString()
       });
     });
@@ -238,13 +240,13 @@ describe("mutations.updateQuestionResponses", () => {
 
       questionResponses = [
         {
-          campaignContactId: contacts[0].id,
-          interactionStepId: interactionSteps[0].id,
+          campaignContactId: contacts[0].id.toString(),
+          interactionStepId: interactionSteps[0].id.toString(),
           value: colorInteractionSteps[0].answerOption
         },
         {
-          campaignContactId: contacts[0].id,
-          interactionStepId: redInteractionStep.id,
+          campaignContactId: contacts[0].id.toString(),
+          interactionStepId: redInteractionStep.id.toString(),
           value: shadesOfRedInteractionSteps[0].answerOption
         }
       ];
@@ -276,7 +278,7 @@ describe("mutations.updateQuestionResponses", () => {
     `;
 
       const variables = {
-        ccid: contacts[0].id,
+        ccid: contacts[0].id.toString(),
         qr: questionResponses
       };
 
@@ -357,8 +359,8 @@ describe("mutations.updateQuestionResponses", () => {
       `;
 
         const getAssignmentVariables = {
-          assignmentId: assignment.id,
-          contactIds: contacts[0].id,
+          assignmentId: assignment.id.toString(),
+          contactIds: contacts[0].id.toString(),
           findNew: false
         };
 

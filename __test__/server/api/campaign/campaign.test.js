@@ -237,7 +237,7 @@ it("save campaign interaction steps, edit it, make sure the last value is set", 
   let texterCampaignDataResults = await runGql(
     campaignQuery,
     {
-      assignmentId
+      assignmentId: assignmentId.toString()
     },
     testTexterUser
   );
@@ -282,7 +282,7 @@ it("save campaign interaction steps, edit it, make sure the last value is set", 
   texterCampaignDataResults = await runGql(
     campaignQuery,
     {
-      assignmentId
+      assignmentId: assignmentId.toString()
     },
     testTexterUser
   );
@@ -363,7 +363,7 @@ it("should save campaign canned responses across copies and match saved data", a
     testAdminUser
   );
   expect(campaignDataResults.data.campaign.cannedResponses.length).toEqual(6);
-  for (let i = 0; i < 6; i++) {
+  for (let i = 0; i < 6; i += 1) {
     expect(campaignDataResults.data.campaign.cannedResponses[i].title).toEqual(
       `canned ${i + 1}`
     );
@@ -382,7 +382,7 @@ it("should save campaign canned responses across copies and match saved data", a
     testAdminUser
   );
   expect(campaignDataResults.data.campaign.cannedResponses.length).toEqual(6);
-  for (let i = 0; i < 6; i++) {
+  for (let i = 0; i < 6; i += 1) {
     expect(campaignDataResults.data.campaign.cannedResponses[i].title).toEqual(
       `canned ${i + 1}`
     );
@@ -397,7 +397,7 @@ it("should save campaign canned responses across copies and match saved data", a
   );
 
   expect(campaignDataResults.data.campaign.cannedResponses.length).toEqual(6);
-  for (let i = 0; i < 6; i++) {
+  for (let i = 0; i < 6; i += 1) {
     expect(campaignDataResults.data.campaign.cannedResponses[i].title).toEqual(
       `canned ${i + 1}`
     );
@@ -415,14 +415,20 @@ describe("Caching", () => {
 
       queryLog = [];
       console.log("STARTING TEXTING"); // eslint-disable-line no-console
-      for (let i = 0; i < 5; i++) {
-        await sendMessage(testContacts[i].id, testTexterUser, {
-          userId: testTexterUser.id,
-          contactNumber: testContacts[i].cell,
-          text: "test text",
-          assignmentId
-        });
+
+      const waitFor = [];
+      for (let i = 0; i < 5; i += 1) {
+        waitFor.push(
+          sendMessage(testContacts[i].id, testTexterUser, {
+            userId: testTexterUser.id,
+            contactNumber: testContacts[i].cell,
+            text: "test text",
+            assignmentId: assignmentId.toString()
+          })
+        );
       }
+      Promise.all(waitFor);
+
       // should only have done updates and inserts
       expect(
         queryLog
@@ -465,7 +471,7 @@ describe("Reassignments", () => {
           isOptedOut: false,
           validTimezone: true
         },
-        assignmentId,
+        assignmentId: assignmentId.toString(),
         organizationId
       },
       testTexterUser
@@ -479,14 +485,21 @@ describe("Reassignments", () => {
       NUMBER_OF_CONTACTS
     );
     // send some texts
-    for (let i = 0; i < 5; i++) {
-      await sendMessage(testContacts[i].id, testTexterUser, {
-        userId: testTexterUser.id,
-        contactNumber: testContacts[i].cell,
-        text: "test text",
-        assignmentId
-      });
+    const waitFor = [];
+    for (let i = 0; i < 5; i += 1) {
+      waitFor.push(
+        sendMessage(testContacts[i].id.toString(), testTexterUser, {
+          userId: testTexterUser.id.toString(),
+          contactNumber: testContacts[i].cell,
+          text: "test text",
+          assignmentId: assignmentId.toString()
+        })
+      );
     }
+    Promise.all(waitFor);
+
+    await sleep(50);
+
     // TEXTER 1 (95 needsMessage, 5 needsResponse)
     texterCampaignDataResults = await runGql(
       TexterTodoQuery,
@@ -496,7 +509,7 @@ describe("Reassignments", () => {
           isOptedOut: false,
           validTimezone: true
         },
-        assignmentId,
+        assignmentId: assignmentId.toString(),
         organizationId
       },
       testTexterUser
@@ -512,11 +525,11 @@ describe("Reassignments", () => {
     // using editCampaign
     await assignTexter(testAdminUser, testTexterUser, testCampaign, [
       {
-        id: testTexterUser.id,
+        id: testTexterUser.id.toString(),
         needsMessageCount: 70,
         contactsCount: NUMBER_OF_CONTACTS
       },
-      { id: testTexterUser2.id, needsMessageCount: 20 }
+      { id: testTexterUser2.id.toString(), needsMessageCount: 20 }
     ]);
     // TEXTER 1 (70 needsMessage, 5 messaged)
     // TEXTER 2 (20 needsMessage)
@@ -528,7 +541,7 @@ describe("Reassignments", () => {
           isOptedOut: false,
           validTimezone: true
         },
-        assignmentId,
+        assignmentId: assignmentId.toString(),
         organizationId
       },
       testTexterUser
@@ -555,7 +568,7 @@ describe("Reassignments", () => {
           validTimezone: true
         },
         organizationId,
-        assignmentId: assignmentId2
+        assignmentId: assignmentId2.toString()
       },
       testTexterUser2
     );
@@ -567,19 +580,25 @@ describe("Reassignments", () => {
     );
     const assignmentContacts2 =
       texterCampaignDataResults.data.assignment.contacts;
-    for (let i = 0; i < 5; i++) {
+
+    waitFor.splice(0, Infinity);
+    for (let i = 0; i < 5; i += 1) {
       const contact = testContacts.filter(
         c => assignmentContacts2[i].id === c.id.toString()
       )[0];
-      const messageRes = await sendMessage(contact.id, testTexterUser2, {
-        userId: testTexterUser2.id,
-        contactNumber: contact.cell,
-        text: "test text autorespond",
-        assignmentId: assignmentId2
-      });
+      waitFor.push(
+        sendMessage(contact.id.toString(), testTexterUser2, {
+          userId: testTexterUser2.id.toString(),
+          contactNumber: contact.cell,
+          text: "test text autorespond",
+          assignmentId: assignmentId2.toString()
+        })
+      );
     }
+    Promise.all(waitFor);
+
     // does this sleep fix the "sometimes 4 instead of 5" below?
-    await sleep(5);
+    await sleep(50);
     // TEXTER 1 (70 needsMessage, 5 messaged)
     // TEXTER 2 (15 needsMessage, 5 needsResponse)
     texterCampaignDataResults = await runGql(
@@ -591,7 +610,7 @@ describe("Reassignments", () => {
           validTimezone: true
         },
         organizationId,
-        assignmentId: assignmentId2
+        assignmentId: assignmentId2.toString()
       },
       testTexterUser2
     );
@@ -610,7 +629,7 @@ describe("Reassignments", () => {
           validTimezone: true
         },
         organizationId,
-        assignmentId: assignmentId2
+        assignmentId: assignmentId2.toString()
       },
       testTexterUser2
     );
@@ -623,19 +642,28 @@ describe("Reassignments", () => {
     );
     const makeFilterFunction = contactToMatch => contactToTest =>
       contactToMatch.id === contactToTest.id.toString();
-    for (let i = 0; i < 3; i++) {
+
+    waitFor.splice(0, Infinity);
+    for (let i = 0; i < 3; i += 1) {
       const contact = testContacts.filter(
         makeFilterFunction(
           texterCampaignDataResults.data.assignment.contacts[i]
         )
       )[0];
-      await sendMessage(contact.id, testTexterUser2, {
-        userId: testTexterUser2.id,
-        contactNumber: contact.cell,
-        text: "keep talking",
-        assignmentId: assignmentId2
-      });
+
+      waitFor.push(
+        sendMessage(contact.id.toString(), testTexterUser2, {
+          userId: testTexterUser2.id.toString(),
+          contactNumber: contact.cell,
+          text: "keep talking",
+          assignmentId: assignmentId2.toString()
+        })
+      );
     }
+    Promise.all(waitFor);
+
+    await sleep(30);
+
     // TEXTER 1 (70 needsMessage, 5 messaged)
     // TEXTER 2 (15 needsMessage, 2 needsResponse, 3 convo)
     texterCampaignDataResults = await runGql(
@@ -647,7 +675,7 @@ describe("Reassignments", () => {
           validTimezone: true
         },
         organizationId,
-        assignmentId: assignmentId2
+        assignmentId: assignmentId2.toString()
       },
       testTexterUser2
     );
@@ -666,7 +694,7 @@ describe("Reassignments", () => {
           validTimezone: true
         },
         organizationId,
-        assignmentId: assignmentId2
+        assignmentId: assignmentId2.toString()
       },
       testTexterUser2
     );
@@ -677,10 +705,21 @@ describe("Reassignments", () => {
       20
     );
     await assignTexter(testAdminUser, testTexterUser, testCampaign, [
-      { id: testTexterUser.id, needsMessageCount: 60, contactsCount: 75 },
+      {
+        id: testTexterUser.id.toString(),
+        needsMessageCount: 60,
+        contactsCount: 75
+      },
       // contactsCount: 30 = 25 (desired needsMessage) + 5 (messaged)
-      { id: testTexterUser2.id, needsMessageCount: 25, contactsCount: 30 }
+      {
+        id: testTexterUser2.id.toString(),
+        needsMessageCount: 25,
+        contactsCount: 30
+      }
     ]);
+
+    await sleep(20);
+
     // TEXTER 1 (60 needsMessage, 5 messaged)
     // TEXTER 2 (25 needsMessage, 2 needsResponse, 3 convo)
     texterCampaignDataResults = await runGql(
@@ -691,7 +730,7 @@ describe("Reassignments", () => {
           isOptedOut: false,
           validTimezone: true
         },
-        assignmentId,
+        assignmentId: assignmentId.toString(),
         organizationId
       },
       testTexterUser
@@ -705,7 +744,7 @@ describe("Reassignments", () => {
           validTimezone: true
         },
         organizationId,
-        assignmentId: assignmentId2
+        assignmentId: assignmentId2.toString()
       },
       testTexterUser2
     );
@@ -728,7 +767,7 @@ describe("Reassignments", () => {
       reassignCampaignContactsMutation,
       {
         organizationId,
-        newTexterUserId: testTexterUser2.id,
+        newTexterUserId: testTexterUser2.id.toString(),
         campaignIdsContactIds: [
           {
             campaignId: testCampaign.id,
@@ -741,6 +780,7 @@ describe("Reassignments", () => {
       },
       testAdminUser
     );
+
     // TEXTER 1 (60 needsMessage, 4 messaged)
     // TEXTER 2 (25 needsMessage, 2 needsResponse, 3 convo, 1 messaged)
     texterCampaignDataResults = await runGql(
@@ -751,7 +791,7 @@ describe("Reassignments", () => {
           isOptedOut: false,
           validTimezone: true
         },
-        assignmentId,
+        assignmentId: assignmentId.toString(),
         organizationId
       },
       testTexterUser
@@ -765,7 +805,7 @@ describe("Reassignments", () => {
           validTimezone: true
         },
         organizationId,
-        assignmentId: assignmentId2
+        assignmentId: assignmentId2.toString()
       },
       testTexterUser2
     );
@@ -787,13 +827,13 @@ describe("Reassignments", () => {
       bulkReassignCampaignContactsMutation,
       {
         organizationId,
-        newTexterUserId: testTexterUser.id,
+        newTexterUserId: testTexterUser.id.toString(),
         contactsFilter: {
           messageStatus: "needsResponse",
           isOptedOut: false,
           validTimezone: true
         },
-        campaignsFilter: { campaignId: testCampaign.id },
+        campaignsFilter: { campaignId: parseInt(testCampaign.id, 10) },
         assignmentsFilter: { texterId: testTexterUser2.id },
         messageTextFilter: ""
       },
@@ -809,7 +849,7 @@ describe("Reassignments", () => {
           isOptedOut: false,
           validTimezone: true
         },
-        assignmentId,
+        assignmentId: assignmentId.toString(),
         organizationId
       },
       testTexterUser
@@ -823,7 +863,7 @@ describe("Reassignments", () => {
           isOptedOut: false,
           validTimezone: true
         },
-        assignmentId: assignmentId2,
+        assignmentId: assignmentId2.toString(),
         organizationId
       },
       testTexterUser2
@@ -877,7 +917,7 @@ describe("Bulk Send", () => {
           isOptedOut: false,
           validTimezone: true
         },
-        assignmentId,
+        assignmentId: assignmentId.toString(),
         organizationId
       },
       testTexterUser
@@ -904,7 +944,7 @@ describe("Bulk Send", () => {
           isOptedOut: false,
           validTimezone: true
         },
-        assignmentId,
+        assignmentId: assignmentId.toString(),
         organizationId
       },
       testTexterUser
@@ -1046,11 +1086,11 @@ describe("campaigns query", () => {
 
   it("correctly filters by a single campaign id", async () => {
     const campaignsFilter = {
-      campaignId: testCampaign.id
+      campaignId: parseInt(testCampaign.id, 10)
     };
     const variables = {
       cursor,
-      organizationId,
+      organizationId: organizationId.toString(),
       campaignsFilter
     };
 
@@ -1061,11 +1101,14 @@ describe("campaigns query", () => {
 
   it("correctly filter by more than one campaign id", async () => {
     const campaignsFilter = {
-      campaignIds: [testCampaign.id, testCampaign2.id]
+      campaignIds: [
+        parseInt(testCampaign.id, 10),
+        parseInt(testCampaign2.id, 10)
+      ]
     };
     const variables = {
       cursor,
-      organizationId,
+      organizationId: organizationId.toString(),
       campaignsFilter
     };
 
@@ -1176,7 +1219,7 @@ describe("all interaction steps fields travel round trip", () => {
       `;
 
       variables = {
-        assignmentId
+        assignmentId: assignmentId.toString()
       };
     });
 
