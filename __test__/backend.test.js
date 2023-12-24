@@ -1,6 +1,6 @@
 import { isSqlite } from "../src/server/models/";
 import { resolvers } from "../src/server/api/schema";
-import { schema } from "../src/api/schema";
+import schema from "../src/api/schema";
 import { assignmentRequiredOrAdminRole } from "../src/server/api/errors";
 import { graphql } from "graphql";
 
@@ -99,7 +99,12 @@ async function createInvite() {
   }`;
   const context = getContext();
   try {
-    const invite = await graphql(mySchema, inviteQuery, rootValue, context);
+    const invite = await graphql({
+      schema: mySchema,
+      source: inviteQuery,
+      rootValue,
+      contextValue: context
+    });
     return invite;
   } catch (err) {
     console.error("Error creating invite");
@@ -121,20 +126,20 @@ async function createOrganization(user, name, userId, inviteId) {
     }
   }`;
 
-  const variables = {
+  const variableValues = {
     userId,
     name,
     inviteId
   };
 
   try {
-    const org = await graphql(
-      mySchema,
-      orgQuery,
+    const org = await graphql({
+      schema: mySchema,
+      source: orgQuery,
       rootValue,
-      context,
-      variables
-    );
+      contextValue: context,
+      variableValues
+    });
     return org;
   } catch (err) {
     console.error("Error creating organization");
@@ -151,7 +156,7 @@ async function createCampaign(user, title, description, organizationId) {
       title
     }
   }`;
-  const variables = {
+  const variableValues = {
     input: {
       title,
       description,
@@ -160,13 +165,13 @@ async function createCampaign(user, title, description, organizationId) {
   };
 
   try {
-    const campaign = await graphql(
-      mySchema,
-      campaignQuery,
+    const campaign = await graphql({
+      schema: mySchema,
+      source: campaignQuery,
       rootValue,
-      context,
-      variables
-    );
+      contextValue: context,
+      variableValues
+    });
     return campaign;
   } catch (err) {
     console.error("Error creating campaign");
@@ -177,14 +182,8 @@ async function createCampaign(user, title, description, organizationId) {
 // graphQL tests
 
 describe("graphql test suite", () => {
-  beforeAll(
-    async () => await setupTest(),
-    global.DATABASE_SETUP_TEARDOWN_TIMEOUT
-  );
-  afterAll(
-    async () => await cleanupTest(),
-    global.DATABASE_SETUP_TEARDOWN_TIMEOUT
-  );
+  beforeAll(async () => setupTest(), global.DATABASE_SETUP_TEARDOWN_TIMEOUT);
+  afterAll(async () => cleanupTest(), global.DATABASE_SETUP_TEARDOWN_TIMEOUT);
 
   it("should be undefined when user not logged in", async () => {
     const query = `{
@@ -193,7 +192,12 @@ describe("graphql test suite", () => {
       }
     }`;
     const context = getContext();
-    const result = await graphql(mySchema, query, rootValue, context);
+    const result = await graphql({
+      schema: mySchema,
+      source: query,
+      rootValue,
+      contextValue: context
+    });
     const data = result;
 
     expect(typeof data.currentUser).toEqual("undefined");
@@ -207,7 +211,12 @@ describe("graphql test suite", () => {
       }
     }`;
     const context = getContext({ user: testAdminUser });
-    const result = await graphql(mySchema, query, rootValue, context);
+    const result = await graphql({
+      schema: mySchema,
+      source: query,
+      rootValue,
+      contextValue: context
+    });
     const { data } = result;
 
     expect(data.currentUser.email).toBe("testuser@example.com");
@@ -236,10 +245,10 @@ describe("graphql test suite", () => {
       expect(testOrganization.data.createOrganization.name).toBe(
         "Testy test organization"
       );
-    } else {
-      console.log("Failed to create invite and/or user for organization test");
-      return false;
+      return true;
     }
+    console.log("Failed to create invite and/or user for organization test");
+    return false;
   });
 
   it("should create a test campaign", async () => {
@@ -257,7 +266,7 @@ describe("graphql test suite", () => {
   it("should create campaign contacts", async () => {
     const contact = await createContact(testCampaign.data.createCampaign.id);
     expect(contact.campaign_id).toBe(
-      parseInt(testCampaign.data.createCampaign.id)
+      parseInt(testCampaign.data.createCampaign.id, 10)
     );
   });
 
@@ -282,7 +291,7 @@ describe("graphql test suite", () => {
           firstName
           assignment(campaignId:$campaignId) {
             contactsCount
-            needsMessageCount: contactsCount(contactsFilter:{messageStatus:\"needsMessage\"})
+            needsMessageCount: contactsCount(contactsFilter:{messageStatus:"needsMessage"})
           }
         }
         interactionSteps {
@@ -302,13 +311,13 @@ describe("graphql test suite", () => {
       }
     }`;
     const context = getContext({ user: testAdminUser });
-    const updateCampaign = Object.assign({}, testCampaign.data.createCampaign);
+    const updateCampaign = { ...testCampaign.data.createCampaign };
     const campaignId = updateCampaign.id;
     testTexterUser = await helperCreateTexter(testOrganization);
 
     updateCampaign.texters = [
       {
-        id: testTexterUser.id
+        id: testTexterUser.id.toString()
       }
     ];
     delete updateCampaign.id;
@@ -317,13 +326,13 @@ describe("graphql test suite", () => {
       campaignId,
       campaign: updateCampaign
     };
-    const result = await graphql(
-      mySchema,
-      campaignEditQuery,
+    const result = await graphql({
+      schema: mySchema,
+      source: campaignEditQuery,
       rootValue,
-      context,
-      variables
-    );
+      contextValue: context,
+      variableValues: variables
+    });
 
     expect(result.data.editCampaign.texters.length).toBe(1);
     expect(result.data.editCampaign.texters[0].assignment.contactsCount).toBe(
@@ -355,7 +364,6 @@ describe("graphql test suite", () => {
 
     describe("contacts", () => {
       let campaigns;
-      let contacts;
       beforeEach(async () => {
         campaigns = await Promise.all(
           [
@@ -374,7 +382,7 @@ describe("graphql test suite", () => {
           ].map(async each => each.save())
         );
 
-        contacts = await Promise.all(
+        await Promise.all(
           [
             new CampaignContact({
               campaign_id: campaigns[0].id,
@@ -439,7 +447,7 @@ describe("graphql test suite", () => {
       });
 
       test("resolves unassigned contacts when true", async () => {
-        const contact = await new CampaignContact({
+        await new CampaignContact({
           campaign_id: campaign.id,
           message_status: "needsMessage",
           cell: ""
@@ -473,7 +481,7 @@ describe("graphql test suite", () => {
           campaign_id: campaign.id
         }).save();
 
-        const contact = await new CampaignContact({
+        await new CampaignContact({
           campaign_id: campaign.id,
           assignment_id: assignment.id,
           message_status: "closed",
@@ -619,24 +627,23 @@ describe("graphql test suite", () => {
           typeof copiedCampaign.due_by === "number" ||
           typeof copiedCampaign.due_by === "string"
         ) {
-          let parsedDate = new Date(copiedCampaign.due_by);
+          const parsedDate = new Date(copiedCampaign.due_by);
           expect(parsedDate).toEqual(campaign.due_by);
-        } else {
-          if (isSqlite) {
-            // Currently an open issue w/ datetime being stored as a string in SQLite3 for Jest tests: https://github.com/TryGhost/node-sqlite3/issues/1355. This results in milliseconds being truncated when getting campaign due_by
-            const campaignDueBy = campaign.due_by;
+        } else if (isSqlite) {
+          // Currently an open issue w/ datetime being stored as a string in SQLite3 for Jest tests: https://github.com/TryGhost/node-sqlite3/issues/1355. This results in milliseconds being truncated when getting campaign due_by
+          const campaignDueBy = campaign.due_by;
 
-            campaignDueBy.setMilliseconds(0);
-            expect(copiedCampaign.due_by).toEqual(campaignDueBy);
-          } else {
-            expect(copiedCampaign.due_by).toEqual(campaign.due_by);
-          }
+          campaignDueBy.setMilliseconds(0);
+          expect(copiedCampaign.due_by).toEqual(campaignDueBy);
+        } else {
+          expect(copiedCampaign.due_by).toEqual(campaign.due_by);
         }
+
         if (
           typeof copiedCampaign.features === "object" &&
           copiedCampaign.features
         ) {
-          let jsonString = JSON.stringify(copiedCampaign.features);
+          const jsonString = JSON.stringify(copiedCampaign.features);
           expect(jsonString).toEqual(campaign.features);
         } else {
           expect(copiedCampaign.features).toEqual(campaign.features);
