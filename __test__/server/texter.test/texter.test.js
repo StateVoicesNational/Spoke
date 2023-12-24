@@ -31,6 +31,19 @@ const getContactsQuery = texterTodoOps.queries.contactData.query;
 const getContactsVars = props =>
   texterTodoOps.queries.contactData.options(props).variables;
 
+function getIndexOfMinId(returnValue) {
+  const { index: indexOfMinId } = returnValue.data.getAssignmentContacts.reduce(
+    ({ index, id }, currentValue, currentIndex) => {
+      if (parseInt(id, 10) > parseInt(currentValue.id, 10)) {
+        return { index: currentIndex, id: currentValue.id };
+      }
+      return { index, id };
+    },
+    { index: Number.MAX_SAFE_INTEGER, id: Number.MAX_SAFE_INTEGER }
+  );
+  return indexOfMinId;
+}
+
 /*
 * NOTE:
 * beforeEach and afterEach are defined in ./common and are run before the tests in the
@@ -42,7 +55,7 @@ it("should send an initial message to test contacts", async () => {
   const organizationId = testOrganization.data.createOrganization.id;
   const texterTodoProps = {
     messageStatus: "needsMessage",
-    params: { assignmentId, organizationId },
+    params: { assignmentId: assignmentId.toString(), organizationId },
     location: { query: {} }
   };
 
@@ -59,13 +72,13 @@ it("should send an initial message to test contacts", async () => {
   );
 
   const ret2 = await runGql(getAssignmentContacts, assignVars, testTexterUser);
-  const contact = ret2.data.getAssignmentContacts[0];
+  const contact = ret2.data.getAssignmentContacts[getIndexOfMinId(ret2)];
 
   const message = {
     contactNumber: contact.cell,
-    userId: testTexterUser.id,
+    userId: testTexterUser.id.toString(),
     text: "test text",
-    assignmentId
+    assignmentId: assignmentId.toString()
   };
 
   const [messageMutation, messageVars] = sendMessageMutAndVars(
@@ -108,14 +121,16 @@ it("should send an initial message to test contacts", async () => {
 
   // Refetch the contacts via gql to check the caching
   const ret3 = await runGql(getAssignmentContacts, assignVars, testTexterUser);
-  expect(ret3.data.getAssignmentContacts[0].messageStatus).toEqual("messaged");
+  expect(
+    ret3.data.getAssignmentContacts[getIndexOfMinId(ret3)].messageStatus
+  ).toEqual("messaged");
 });
 
 it("should be able to receive a response and reply (using fakeService)", async () => {
   const organizationId = testOrganization.data.createOrganization.id;
   const texterTodoProps = {
     messageStatus: "needsMessage",
-    params: { assignmentId, organizationId },
+    params: { assignmentId: assignmentId.toString(), organizationId },
     location: { query: {} }
   };
 
@@ -132,13 +147,13 @@ it("should be able to receive a response and reply (using fakeService)", async (
   );
 
   const ret2 = await runGql(getAssignmentContacts, assignVars, testTexterUser);
-  const contact = ret2.data.getAssignmentContacts[0];
+  const contact = ret2.data.getAssignmentContacts[getIndexOfMinId(ret2)];
 
   const message = {
     contactNumber: contact.cell,
-    userId: testTexterUser.id,
+    userId: testTexterUser.id.toString(),
     text: "test text autorespond",
-    assignmentId
+    assignmentId: assignmentId.toString()
   };
 
   const [messageMutation, messageVars] = sendMessageMutAndVars(
@@ -171,16 +186,16 @@ it("should be able to receive a response and reply (using fakeService)", async (
 
   // Refetch the contacts via gql to check the caching
   const ret3 = await runGql(getAssignmentContacts, assignVars, testTexterUser);
-  expect(ret3.data.getAssignmentContacts[0].messageStatus).toEqual(
-    "needsResponse"
-  );
+  expect(
+    ret3.data.getAssignmentContacts[getIndexOfMinId(ret3)].messageStatus
+  ).toEqual("needsResponse");
 
   // Then we reply
   const message2 = {
     contactNumber: contact.cell,
-    userId: testTexterUser.id,
+    userId: testTexterUser.id.toString(),
     text: "reply",
-    assignmentId
+    assignmentId: assignmentId.toString()
   };
 
   const [replyMutation, replyVars] = sendMessageMutAndVars(
@@ -205,5 +220,7 @@ it("should be able to receive a response and reply (using fakeService)", async (
 
   // Refetch the contacts via gql to check the caching
   const ret4 = await runGql(getAssignmentContacts, assignVars, testTexterUser);
-  expect(ret4.data.getAssignmentContacts[0].messageStatus).toEqual("convo");
+  expect(
+    ret4.data.getAssignmentContacts[getIndexOfMinId(ret4)].messageStatus
+  ).toEqual("convo");
 });
