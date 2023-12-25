@@ -427,7 +427,7 @@ describe("Caching", () => {
           })
         );
       }
-      Promise.all(waitFor);
+      await Promise.all(waitFor);
 
       // should only have done updates and inserts
       expect(
@@ -496,9 +496,7 @@ describe("Reassignments", () => {
         })
       );
     }
-    Promise.all(waitFor);
-
-    await sleep(50);
+    await Promise.all(waitFor);
 
     // TEXTER 1 (95 needsMessage, 5 needsResponse)
     texterCampaignDataResults = await runGql(
@@ -595,7 +593,7 @@ describe("Reassignments", () => {
         })
       );
     }
-    Promise.all(waitFor);
+    await Promise.all(waitFor);
 
     // does this sleep fix the "sometimes 4 instead of 5" below?
     await sleep(50);
@@ -660,9 +658,7 @@ describe("Reassignments", () => {
         })
       );
     }
-    Promise.all(waitFor);
-
-    await sleep(30);
+    await Promise.all(waitFor);
 
     // TEXTER 1 (70 needsMessage, 5 messaged)
     // TEXTER 2 (15 needsMessage, 2 needsResponse, 3 convo)

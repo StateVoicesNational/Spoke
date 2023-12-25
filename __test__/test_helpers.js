@@ -82,7 +82,7 @@ export async function createContacts(campaign, count = 1) {
     waitFor.push(contact.save());
     contacts.push(contact);
   }
-  Promise.all(waitFor);
+  await Promise.all(waitFor);
   return contacts;
 }
 
