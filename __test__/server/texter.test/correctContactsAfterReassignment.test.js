@@ -41,7 +41,7 @@ it("should return contacts after they are reassigned", async () => {
         messageIds: []
       };
     }),
-    testTexterUser2.id
+    testTexterUser2.id.toString()
   );
 
   const [
@@ -51,10 +51,10 @@ it("should return contacts after they are reassigned", async () => {
     {
       messageStatus: "needsMessage",
       params: {
-        assignmentId
+        assignmentId: assignmentId.toString()
       }
     },
-    testContacts.map(e => e.id),
+    testContacts.map(e => e.id.toString()),
     false
   );
 
@@ -78,10 +78,10 @@ it("should return contacts after they are reassigned", async () => {
     {
       messageStatus: "needsMessage",
       params: {
-        assignmentId: newAssignmentId
+        assignmentId: newAssignmentId.toString()
       }
     },
-    testContacts.map(e => e.id),
+    testContacts.map(e => e.id.toString()),
     false
   );
 
