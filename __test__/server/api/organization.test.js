@@ -92,7 +92,7 @@ describe("organization", () => {
 
     it("filters by a single campaign id", async () => {
       variables.campaignsFilter = {
-        campaignId: testCampaign.id
+        campaignId: parseInt(testCampaign.id, 10)
       };
 
       const result = await runGql(getCampaignsQuery, variables, testAdminUser);
@@ -104,7 +104,10 @@ describe("organization", () => {
 
     it("filter by more than one campaign id", async () => {
       const campaignsFilter = {
-        campaignIds: [testCampaign.id, testCampaign2.id]
+        campaignIds: [
+          parseInt(testCampaign.id, 10),
+          parseInt(testCampaign2.id, 10)
+        ]
       };
       variables.campaignsFilter = campaignsFilter;
 
@@ -235,7 +238,7 @@ describe("organization", () => {
       organizationQuery = `
         query q($organizationId: String!) {
           organization(id: $organizationId) {
-            id 
+            id
             name
             availableActions {
               name
@@ -314,7 +317,7 @@ describe("organization", () => {
         }
       `;
 
-      variables = { organizationId: 1 };
+      variables = { organizationId: "1" };
 
       jest.spyOn(messagingServices, "fullyConfigured").mockResolvedValue(false);
     });
