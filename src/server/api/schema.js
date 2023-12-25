@@ -518,12 +518,10 @@ const rootMutations = {
         .limit(1);
 
       if (!lastMessage) {
-        const errorStatusAndMessage = {
-          status: 400,
-          message:
-            "Cannot fake a reply to a contact that has no existing thread yet"
-        };
-        throw new GraphQLError(errorStatusAndMessage);
+        throw new GraphQLError(
+          "Cannot fake a reply to a contact that has no existing thread yet",
+          { extensions: { status: 400 } }
+        );
       }
 
       const userNumber = lastMessage.user_number;
@@ -665,7 +663,8 @@ const rootMutations = {
 
       const organization = await loaders.organization.load(organizationId);
 
-      const passportStrategy = getConfig("PASSPORT_STRATEGY", organization) || "auth0";
+      const passportStrategy =
+        getConfig("PASSPORT_STRATEGY", organization) || "auth0";
       if (passportStrategy === "auth0") {
         const { email } = await r
           .knex("user")
@@ -1052,10 +1051,10 @@ const rootMutations = {
         campaign.hasOwnProperty("contacts") &&
         campaign.contacts
       ) {
-        throw new GraphQLError({
-          status: 400,
-          message: "Not allowed to add contacts after the campaign starts"
-        });
+        throw new GraphQLError(
+          "Not allowed to add contacts after the campaign starts",
+          { extensions: { status: 400 } }
+        );
       }
       return editCampaign(id, campaign, loaders, user, origCampaign);
     },
@@ -1109,9 +1108,8 @@ const rootMutations = {
       authRequired(user);
       const invite = await Invite.get(inviteId);
       if (!invite || !invite.is_valid) {
-        throw new GraphQLError({
-          status: 400,
-          message: "That invitation is no longer valid"
+        throw new GraphQLError("That invitation is no longer valid", {
+          extensions: { status: 400 }
         });
       }
 

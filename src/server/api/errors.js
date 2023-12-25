@@ -28,9 +28,13 @@ export async function accessRequired(
   const hasRole = await cacheableData.user.userHasRole(user, orgId, role);
   if (!hasRole) {
     const error = new GraphQLError(
-      "You are not authorized to access that resource."
+      "You are not authorized to access that resource.",
+      {
+        extensions: {
+          code: "UNAUTHORIZED"
+        }
+      }
     );
-    error.code = "UNAUTHORIZED";
     throw error;
   }
 }
@@ -74,9 +78,13 @@ export async function assignmentRequiredOrAdminRole(
   );
   if (!hasPermission) {
     const error = new GraphQLError(
-      "You are not authorized to access that resource."
+      "You are not authorized to access that resource.",
+      {
+        extensions: {
+          code: "UNAUTHORIZED"
+        }
+      }
     );
-    error.code = "UNAUTHORIZED";
     throw error;
   }
   return userHasAssignment || true;

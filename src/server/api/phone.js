@@ -16,12 +16,14 @@ export const GraphQLPhone = new GraphQLScalarType({
     if (ast.kind !== Kind.STRING) {
       throw new GraphQLError(
         `Query error: Can only parse strings got a: ${ast.kind}`,
-        [ast]
+        { nodes: [ast] }
       );
     }
 
     if (!pattern.test(ast.value)) {
-      throw new GraphQLError("Query error: Not a valid Phone", [ast]);
+      throw new GraphQLError("Query error: Not a valid Phone", {
+        nodes: [ast]
+      });
     }
 
     return ast.value;
