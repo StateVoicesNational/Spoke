@@ -83,6 +83,7 @@ export async function createContacts(campaign, count = 1) {
     contacts.push(contact);
   }
   await Promise.all(waitFor);
+  contacts.sort((a, b) => a.id - b.id);
   return contacts;
 }
 
