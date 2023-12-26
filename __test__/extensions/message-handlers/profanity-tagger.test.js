@@ -142,8 +142,10 @@ describe("Message Hanlder: profanity-tagger", () => {
     const text1 = await r
       .knex("tag_campaign_contact")
       .select("tag_id", "campaign_contact_id")
-      .where("campaign_contact_id", 1);
-    expect(text1).toEqual([{ tag_id: 2, campaign_contact_id: 1 }]);
+      .where("campaign_contact_id", c.testContacts[0].id);
+    expect(text1).toEqual([
+      { tag_id: 2, campaign_contact_id: c.testContacts[0].id }
+    ]);
 
     let user = await cacheableData.user.userHasRole(
       c.testTexterUser,
@@ -165,7 +167,7 @@ describe("Message Hanlder: profanity-tagger", () => {
     const text2 = await r
       .knex("tag_campaign_contact")
       .select("tag_id", "campaign_contact_id")
-      .where("campaign_contact_id", 2);
+      .where("campaign_contact_id", c.testContacts[1].id);
     expect(text2).toEqual([]);
 
     user = await cacheableData.user.userHasRole(
@@ -234,8 +236,10 @@ describe("Message Hanlder: profanity-tagger", () => {
     const text1 = await r
       .knex("tag_campaign_contact")
       .select("tag_id", "campaign_contact_id")
-      .where("campaign_contact_id", 1);
-    expect(text1).toEqual([{ tag_id: 2, campaign_contact_id: 1 }]);
+      .where("campaign_contact_id", c.testContacts[0].id);
+    expect(text1).toEqual([
+      { tag_id: 2, campaign_contact_id: c.testContacts[0].id }
+    ]);
 
     const messages = await r.knex("message").select();
     expect(messages.length).toBe(1);

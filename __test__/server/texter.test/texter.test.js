@@ -165,7 +165,7 @@ it("should be able to receive a response and reply (using fakeService)", async (
 
   // wait for fakeservice to autorespond
   await waitForExpect(async () => {
-    const dbMessage = await r.knex("message");
+    const dbMessage = await r.knex("message").orderBy("created_at");
     expect(dbMessage.length).toEqual(2);
     expect(dbMessage[1]).toEqual(
       expect.objectContaining({
@@ -207,7 +207,7 @@ it("should be able to receive a response and reply (using fakeService)", async (
 
   // wait for fakeservice to mark the message as sent
   await waitForExpect(async () => {
-    const dbMessage = await r.knex("message");
+    const dbMessage = await r.knex("message").orderBy("created_at");
     expect(dbMessage.length).toEqual(3);
     expect(dbMessage[2]).toEqual(
       expect.objectContaining({
