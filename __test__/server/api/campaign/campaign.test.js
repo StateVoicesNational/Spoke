@@ -485,7 +485,7 @@ describe("Reassignments", () => {
       NUMBER_OF_CONTACTS
     );
     // send some texts
-    const waitFor = [];
+    let waitFor = [];
     for (let i = 0; i < 5; i += 1) {
       waitFor.push(
         sendMessage(testContacts[i].id.toString(), testTexterUser, {
@@ -579,7 +579,7 @@ describe("Reassignments", () => {
     const assignmentContacts2 =
       texterCampaignDataResults.data.assignment.contacts;
 
-    waitFor.splice(0, Infinity);
+    waitFor = [];
     for (let i = 0; i < 5; i += 1) {
       const contact = testContacts.filter(
         c => assignmentContacts2[i].id === c.id.toString()
@@ -641,7 +641,7 @@ describe("Reassignments", () => {
     const makeFilterFunction = contactToMatch => contactToTest =>
       contactToMatch.id === contactToTest.id.toString();
 
-    waitFor.splice(0, Infinity);
+    waitFor = [];
     for (let i = 0; i < 3; i += 1) {
       const contact = testContacts.filter(
         makeFilterFunction(
