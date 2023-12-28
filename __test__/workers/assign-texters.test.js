@@ -65,7 +65,7 @@ describe("test texter assignment in dynamic mode", () => {
     const organization = await Organization.save(testOrg);
     const campaign = await Campaign.save(testCampaign);
     contactInfo.map(contact => {
-      CampaignContact.save({ cell: contact, campaign_id: campaign.id });
+      await CampaignContact.save({ cell: contact, campaign_id: campaign.id });
     });
     texterInfo.map(async texter => {
       await User.save({
