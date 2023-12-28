@@ -5,20 +5,13 @@ import {
   CampaignContact,
   JobRequest,
   Organization,
-  User,
-  ZipCode
+  User
 } from "../../src/server/models";
 import { setupTest, cleanupTest } from "../test_helpers";
 
 describe("test texter assignment in dynamic mode", () => {
-  beforeAll(
-    async () => await setupTest(),
-    global.DATABASE_SETUP_TEARDOWN_TIMEOUT
-  );
-  afterAll(
-    async () => await cleanupTest(),
-    global.DATABASE_SETUP_TEARDOWN_TIMEOUT
-  );
+  beforeAll(async () => setupTest(), global.DATABASE_SETUP_TEARDOWN_TIMEOUT);
+  afterAll(async () => cleanupTest(), global.DATABASE_SETUP_TEARDOWN_TIMEOUT);
 
   const testOrg = new Organization({
     id: "7777777",
@@ -62,9 +55,9 @@ describe("test texter assignment in dynamic mode", () => {
   ];
 
   it("assigns no contacts to texters in dynamic assignment mode", async () => {
-    const organization = await Organization.save(testOrg);
+    await Organization.save(testOrg);
     const campaign = await Campaign.save(testCampaign);
-    contactInfo.map(contact => {
+    contactInfo.map(async contact => {
       await CampaignContact.save({ cell: contact, campaign_id: campaign.id });
     });
     texterInfo.map(async texter => {
@@ -81,7 +74,7 @@ describe("test texter assignment in dynamic mode", () => {
       '{"id": "3","texters":[{"id":"1","needsMessageCount":5,"maxContacts":"","contactsCount":0},{"id":"2","needsMessageCount":5,"maxContacts":"0","contactsCount":0}]}';
     const job = new JobRequest({
       campaign_id: testCampaign.id,
-      payload: payload,
+      payload,
       queue_name: "3:edit_campaign",
       job_type: "assign_texters"
     });
@@ -104,8 +97,8 @@ describe("test texter assignment in dynamic mode", () => {
       .knex("assignment")
       .where({ campaign_id: testCampaign.id, user_id: 1 })
       .select("max_contacts");
-    const maxContactsZero = zero[0]["max_contacts"];
-    const maxContactsBlank = blank[0]["max_contacts"];
+    const maxContactsZero = zero[0].max_contacts;
+    const maxContactsBlank = blank[0].max_contacts;
     expect(maxContactsZero).toEqual(0);
     expect(maxContactsBlank).toEqual(null);
   });
@@ -115,7 +108,7 @@ describe("test texter assignment in dynamic mode", () => {
       '{"id": "3","texters":[{"id":"1","needsMessageCount":0,"maxContacts":"10","contactsCount":0},{"id":"2","needsMessageCount":5,"maxContacts":"15","contactsCount":0}]}';
     const job = new JobRequest({
       campaign_id: testCampaign.id,
-      payload: payload,
+      payload,
       queue_name: "4:edit_campaign",
       job_type: "assign_texters"
     });
@@ -128,8 +121,8 @@ describe("test texter assignment in dynamic mode", () => {
       .knex("assignment")
       .where({ campaign_id: testCampaign.id, user_id: "2" })
       .select("max_contacts");
-    const maxContactsTen = ten[0]["max_contacts"];
-    const maxContactsFifteen = fifteen[0]["max_contacts"];
+    const maxContactsTen = ten[0].max_contacts;
+    const maxContactsFifteen = fifteen[0].max_contacts;
     expect(maxContactsTen).toEqual(10);
     expect(maxContactsFifteen).toEqual(15);
   });
