@@ -14,7 +14,7 @@ import herokuSslRedirect from "heroku-ssl-redirect";
 import { GraphQLError } from "graphql/error";
 import appRenderer from "./middleware/app-renderer";
 import { ApolloServerPluginLandingPageLocalDefault } from "@apollo/server/plugin/landingPage/default";
-import { ApolloServerPluginLandingPageDisabled } from "apollo-server-core";
+import { ApolloServerPluginLandingPageDisabled } from "@apollo/server/plugin/disabled";
 
 // ORDERING: ./models import must be imported above ./api to help circular imports
 import { createLoaders, createTablesIfNecessary, r } from "./models";
