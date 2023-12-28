@@ -70,7 +70,6 @@ export async function createContacts(campaign, count = 1) {
   const campaignId = campaign.id;
   const contacts = [];
   const startNum = "+15155500000";
-  const waitFor = [];
   for (let i = 0; i < count; i += 1) {
     const contact = new CampaignContact({
       first_name: `Ann${i}`,
@@ -79,11 +78,13 @@ export async function createContacts(campaign, count = 1) {
       zip: "12345",
       campaign_id: campaignId
     });
-    waitFor.push(contact.save());
+
+    // await in loop to avoid making too many database connections
+    // eslint-disable-next-line no-await-in-loop
+    await contact.save();
+
     contacts.push(contact);
   }
-  await Promise.all(waitFor);
-  contacts.sort((a, b) => a.id - b.id);
   return contacts;
 }
 
@@ -160,7 +161,7 @@ export async function createInvite() {
     }
   `;
   const contextValue = getContext();
-  return graphql({
+  return await graphql({
     schema,
     source,
     rootValue,
@@ -437,7 +438,7 @@ export async function copyCampaign(campaignId, user) {
     }
   `;
   const contextValue = getContext({ user });
-  return graphql({
+  return await graphql({
     schema,
     source,
     rootValue,
@@ -635,7 +636,7 @@ export async function createScript(
     }
   };
 
-  return graphql({
+  return await graphql({
     schema,
     source,
     rootValue,
@@ -662,7 +663,13 @@ export async function createCannedResponses(admin, campaign, cannedResponses) {
       cannedResponses
     }
   };
-  return graphql({ schema, source, rootValue, contextValue, variableValues });
+  return await graphql({
+    schema,
+    source,
+    rootValue,
+    contextValue,
+    variableValues
+  });
 }
 
 export async function startCampaign(admin, campaign) {
@@ -676,7 +683,13 @@ export async function startCampaign(admin, campaign) {
   `;
   const contextValue = getContext({ user: admin });
   const variableValues = { campaignId: campaign.id };
-  return graphql({ schema, source, rootValue, contextValue, variableValues });
+  return await graphql({
+    schema,
+    source,
+    rootValue,
+    contextValue,
+    variableValues
+  });
 }
 
 export async function getCampaignContact(id) {
