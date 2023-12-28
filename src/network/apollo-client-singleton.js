@@ -43,25 +43,24 @@ const link = cleanTypenameLink.concat(errorLink).concat(httpLink);
 const cache = new InMemoryCache({
   addTypename: true,
   dataIdFromObject: result => {
+    let toReturn = null;
     if (result.__typename === "ContactTag") {
       // This is all a hacky way to resolve the issue of using ContactTag.id for the tagId
       if (result.campaignContactId && result.id) {
         return (
           result.__typename + ":" + result.campaignContactId + ":" + result.id
         );
-      } else {
-        return null; // can't cache
       }
     }
     if (result.__typename) {
       if (result.id !== undefined) {
-        return result.__typename + ":" + result.id;
+        toReturn = result.__typename + ":" + result.id;
       }
       if (result._id !== undefined) {
-        return result.__typename + ":" + result._id;
+        toReturn = result.__typename + ":" + result._id;
       }
     }
-    return null;
+    return toReturn;
   },
   // FUTURE: Apollo Client 3.0 allows this much more easily:
   typePolicies: {
@@ -76,7 +75,19 @@ const ApolloClientSingleton = new ApolloClient({
   link,
   cache,
   connectToDevTools: true,
-  queryDeduplication: true
+  queryDeduplication: true,
+  // make the cache work like it did in apollo v2
+  // https://www.apollographql.com/docs/react/migrating/apollo-client-3-migration/#breaking-cache-changes
+  defaultOptions: {
+    watchQuery: {
+      fetchPolicy: "cache-and-network",
+      nextFetchPolicy: "cache-first"
+    },
+    query: {
+      fetchPolicy: "cache-and-network",
+      nextFetchPolicy: "cache-first"
+    }
+  }
 });
 
 export default ApolloClientSingleton;
