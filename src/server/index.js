@@ -13,6 +13,8 @@ import { existsSync } from "fs";
 import herokuSslRedirect from "heroku-ssl-redirect";
 import { GraphQLError } from "graphql/error";
 import appRenderer from "./middleware/app-renderer";
+import { ApolloServerPluginLandingPageLocalDefault } from "@apollo/server/plugin/landingPage/default";
+import { ApolloServerPluginLandingPageDisabled } from "apollo-server-core";
 
 // ORDERING: ./models import must be imported above ./api to help circular imports
 import { createLoaders, createTablesIfNecessary, r } from "./models";
@@ -71,7 +73,13 @@ const server = new ApolloServer({
   introspection: true,
   plugins: [
     ApolloServerPluginDrainHttpServer({ httpServer }),
-    ApolloServerPluginLandingPageLocalDefault({ embed: true })
+
+    // display the graphql IDE on the /graphql endpoint
+    // when invoked with no query and when not in production
+    process.env.NODE_ENV !== "production"
+      ? ApolloServerPluginLandingPageLocalDefault({ embed: true })
+      : // no default landing page in production
+        ApolloServerPluginLandingPageDisabled()
   ]
 });
 
