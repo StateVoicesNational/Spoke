@@ -416,18 +416,16 @@ describe("Caching", () => {
       queryLog = [];
       console.log("STARTING TEXTING"); // eslint-disable-line no-console
 
-      const waitFor = [];
-      for (let i = 0; i < 5; i += 1) {
-        waitFor.push(
-          sendMessage(testContacts[i].id, testTexterUser, {
+      await Promise.all(
+        testContacts.slice(0, 5).map(contact =>
+          sendMessage(contact.id, testTexterUser, {
             userId: testTexterUser.id,
-            contactNumber: testContacts[i].cell,
+            contactNumber: contact.cell,
             text: "test text",
             assignmentId: assignmentId.toString()
           })
-        );
-      }
-      await Promise.all(waitFor);
+        )
+      );
 
       // should only have done updates and inserts
       expect(
@@ -485,18 +483,16 @@ describe("Reassignments", () => {
       NUMBER_OF_CONTACTS
     );
     // send some texts
-    let waitFor = [];
-    for (let i = 0; i < 5; i += 1) {
-      waitFor.push(
-        sendMessage(testContacts[i].id.toString(), testTexterUser, {
+    await Promise.all(
+      testContacts.slice(0, 5).map(contact =>
+        sendMessage(contact.id.toString(), testTexterUser, {
           userId: testTexterUser.id.toString(),
-          contactNumber: testContacts[i].cell,
+          contactNumber: contact.cell,
           text: "test text",
           assignmentId: assignmentId.toString()
         })
-      );
-    }
-    await Promise.all(waitFor);
+      )
+    );
 
     // TEXTER 1 (95 needsMessage, 5 needsResponse)
     texterCampaignDataResults = await runGql(
@@ -579,21 +575,19 @@ describe("Reassignments", () => {
     const assignmentContacts2 =
       texterCampaignDataResults.data.assignment.contacts;
 
-    waitFor = [];
-    for (let i = 0; i < 5; i += 1) {
-      const contact = testContacts.filter(
-        c => assignmentContacts2[i].id === c.id.toString()
-      )[0];
-      waitFor.push(
-        sendMessage(contact.id.toString(), testTexterUser2, {
+    await Promise.all(
+      assignmentContacts2.slice(0, 5).map(assignmentContact => {
+        const contact = testContacts.filter(
+          c => assignmentContact.id === c.id.toString()
+        )[0];
+        return sendMessage(contact.id.toString(), testTexterUser2, {
           userId: testTexterUser2.id.toString(),
           contactNumber: contact.cell,
           text: "test text autorespond",
           assignmentId: assignmentId2.toString()
-        })
-      );
-    }
-    await Promise.all(waitFor);
+        });
+      })
+    );
 
     // does this sleep fix the "sometimes 4 instead of 5" below?
     await sleep(50);
@@ -641,24 +635,20 @@ describe("Reassignments", () => {
     const makeFilterFunction = contactToMatch => contactToTest =>
       contactToMatch.id === contactToTest.id.toString();
 
-    waitFor = [];
-    for (let i = 0; i < 3; i += 1) {
-      const contact = testContacts.filter(
-        makeFilterFunction(
-          texterCampaignDataResults.data.assignment.contacts[i]
-        )
-      )[0];
+    texterCampaignDataResults.data.assignment.contacts
+      .slice(0, 3)
+      .map(assignmentContact => {
+        const contact = testContacts.filter(
+          makeFilterFunction(assignmentContact)
+        )[0];
 
-      waitFor.push(
-        sendMessage(contact.id.toString(), testTexterUser2, {
+        return sendMessage(contact.id.toString(), testTexterUser2, {
           userId: testTexterUser2.id.toString(),
           contactNumber: contact.cell,
           text: "keep talking",
           assignmentId: assignmentId2.toString()
-        })
-      );
-    }
-    await Promise.all(waitFor);
+        });
+      });
 
     // TEXTER 1 (70 needsMessage, 5 messaged)
     // TEXTER 2 (15 needsMessage, 2 needsResponse, 3 convo)
