@@ -635,20 +635,22 @@ describe("Reassignments", () => {
     const makeFilterFunction = contactToMatch => contactToTest =>
       contactToMatch.id === contactToTest.id.toString();
 
-    texterCampaignDataResults.data.assignment.contacts
-      .slice(0, 3)
-      .map(assignmentContact => {
-        const contact = testContacts.filter(
-          makeFilterFunction(assignmentContact)
-        )[0];
+    await Promise.all(
+      texterCampaignDataResults.data.assignment.contacts
+        .slice(0, 3)
+        .map(assignmentContact => {
+          const contact = testContacts.filter(
+            makeFilterFunction(assignmentContact)
+          )[0];
 
-        return sendMessage(contact.id.toString(), testTexterUser2, {
-          userId: testTexterUser2.id.toString(),
-          contactNumber: contact.cell,
-          text: "keep talking",
-          assignmentId: assignmentId2.toString()
-        });
-      });
+          return sendMessage(contact.id.toString(), testTexterUser2, {
+            userId: testTexterUser2.id.toString(),
+            contactNumber: contact.cell,
+            text: "keep talking",
+            assignmentId: assignmentId2.toString()
+          });
+        })
+    );
 
     // TEXTER 1 (70 needsMessage, 5 messaged)
     // TEXTER 2 (15 needsMessage, 2 needsResponse, 3 convo)
