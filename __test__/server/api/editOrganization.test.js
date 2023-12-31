@@ -1,9 +1,7 @@
 /* eslint-disable no-unused-expressions, consistent-return */
 import { r } from "../../../src/server/models/";
 import { getFeatures } from "../../../src/server/api/lib/config";
-import { getCampaignsQuery } from "../../../src/containers/AdminCampaignList";
 import { editOrganizationGql } from "../../../src/containers/Settings";
-import { GraphQLError } from "graphql/error";
 
 import {
   cleanupTest,
