@@ -67,6 +67,28 @@ const executableSchema = makeExecutableSchema({
   allowUndefinedInResolve: false
 });
 
+const errorReportingPlugin = {
+  async requestDidStart() {
+    return {
+      async didEncounterErrors(requestContext) {
+        requestContext.errors.forEach(error => {
+          log.error({
+            userId: requestContext?.contextValue?.user?.id,
+            code: (error && error?.extensions?.code) || "INTERNAL_SERVER_ERROR",
+            error,
+            msg: "GraphQL error"
+          });
+          telemetry
+            .formatRequestError(error, requestContext.contextValue)
+            // drop if this fails
+            .catch(() => {})
+            .then(() => {});
+        });
+      }
+    };
+  }
+};
+
 const server = new ApolloServer({
   resolvers,
   schema: executableSchema,
@@ -74,65 +96,32 @@ const server = new ApolloServer({
   plugins: [
     ApolloServerPluginDrainHttpServer({ httpServer }),
 
+    errorReportingPlugin,
+
     // display the graphql IDE on the /graphql endpoint
     // when invoked with no query and when not in production
     process.env.NODE_ENV !== "production"
       ? ApolloServerPluginLandingPageLocalDefault({ embed: true })
       : // no default landing page in production
         ApolloServerPluginLandingPageDisabled()
-  ]
+  ],
+  formatError: (error, originalError) => {
+    if (process.env.SHOW_SERVER_ERROR || process.env.DEBUG) {
+      if (error instanceof GraphQLError) {
+        return error;
+      }
+      return new GraphQLError(error.message);
+    }
+
+    return new GraphQLError(
+      error && error?.extensions?.code === "UNAUTHORIZED"
+        ? "UNAUTHORIZED"
+        : "Internal server error"
+    );
+  }
 });
 
 server.start().then(() => {
-  app.use(
-    "/graphql",
-    cors(),
-    express.json(),
-    expressMiddleware(server, {
-      schema: executableSchema,
-      context: async ({ request }) => ({
-        loaders: createLoaders(),
-        user: request.user,
-        awsContext: request.awsContext || null,
-        awsEvent: request.awsEvent || null,
-        remainingMilliseconds: () =>
-          request.awsContext && request.awsContext.getRemainingTimeInMillis
-            ? request.awsContext.getRemainingTimeInMillis()
-            : 5 * 60 * 1000 // default saying 5 min, no matter what
-      })
-      // formatError: error => {
-      //   log.error({
-      //     userId: request.user && request.user.id,
-      //     code:
-      //       (error && error.originalError && error.originalError.code) ||
-      //       "INTERNAL_SERVER_ERROR",
-      //     error,
-      //     msg: "GraphQL error"
-      //   });
-      //   telemetry
-      //     .formatRequestError(error, request)
-      //     // drop if this fails
-      //     .catch(() => {})
-      //     .then(() => {});
-
-      //   if (process.env.SHOW_SERVER_ERROR || process.env.DEBUG) {
-      //     if (error instanceof GraphQLError) {
-      //       return error;
-      //     }
-      //     return new GraphQLError(error.message);
-      //   }
-
-      //   return new GraphQLError(
-      //     error &&
-      //     error.originalError &&
-      //     error.originalError.code === "UNAUTHORIZED"
-      //       ? "UNAUTHORIZED"
-      //       : "Internal server error"
-      //   );
-      // }
-    })
-  );
-
   // Don't rate limit heroku
   app.enable("trust proxy");
 
@@ -213,6 +202,26 @@ server.start().then(() => {
     app.get("/login-callback", ...loginCallbacks.loginCallback);
     app.post("/login-callback", ...loginCallbacks.loginCallback);
   }
+
+  app.use(
+    "/graphql",
+    cors(),
+    expressMiddleware(server, {
+      schema: executableSchema,
+      context: async request => {
+        return {
+          loaders: createLoaders(),
+          user: request.req.user,
+          awsContext: request.awsContext || null,
+          awsEvent: request.awsEvent || null,
+          remainingMilliseconds: () =>
+            request.awsContext && request.awsContext.getRemainingTimeInMillis
+              ? request.awsContext.getRemainingTimeInMillis()
+              : 5 * 60 * 1000 // default saying 5 min, no matter what
+        };
+      }
+    })
+  );
 
   // This middleware should be last. Return the React app only if no other route is hit.
   app.use(appRenderer);

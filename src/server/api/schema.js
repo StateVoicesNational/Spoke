@@ -520,7 +520,7 @@ const rootMutations = {
       if (!lastMessage) {
         throw new GraphQLError(
           "Cannot fake a reply to a contact that has no existing thread yet",
-          { extensions: { status: 400 } }
+          { extensions: { http: { status: 400 } } }
         );
       }
 
@@ -1053,7 +1053,7 @@ const rootMutations = {
       ) {
         throw new GraphQLError(
           "Not allowed to add contacts after the campaign starts",
-          { extensions: { status: 400 } }
+          { extensions: { http: { status: 400 } } }
         );
       }
       return editCampaign(id, campaign, loaders, user, origCampaign);
@@ -1109,7 +1109,7 @@ const rootMutations = {
       const invite = await Invite.get(inviteId);
       if (!invite || !invite.is_valid) {
         throw new GraphQLError("That invitation is no longer valid", {
-          extensions: { status: 400 }
+          extensions: { http: { status: 400 } }
         });
       }
 

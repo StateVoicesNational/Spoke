@@ -172,8 +172,8 @@ async function reportError(err, details) {
 
 async function formatRequestError(err, req) {
   let code = "UNKNOWN";
-  if (err.originalError) {
-    code = err.originalError.code || "INTERNAL_SERVER_ERROR";
+  if (err) {
+    code = err?.extensions?.code || "INTERNAL_SERVER_ERROR";
   }
   err.code = code;
   await Promise.all(formatRequestErrorCallbacks.map(cb => cb(err, req)));
