@@ -2,6 +2,7 @@ import PropTypes from "prop-types";
 import React from "react";
 import { css } from "aphrodite";
 import { compose } from "recompose";
+import cloneDeep from "lodash/cloneDeep";
 import Toolbar from "./Toolbar";
 import MessageList from "./MessageList";
 import Survey from "./Survey";
@@ -125,7 +126,7 @@ export class AssignmentTexterContactControls extends React.Component {
     let currentInteractionStep = null;
 
     if (availableSteps.length > 0) {
-      currentInteractionStep = structuredClone(
+      currentInteractionStep = cloneDeep(
         availableSteps[availableSteps.length - 1]
       );
       currentInteractionStep.question.filteredAnswerOptions =
