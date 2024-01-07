@@ -1,7 +1,7 @@
 import PropTypes from "prop-types";
 import React, { useState } from "react";
 import { ThemeProvider } from "@material-ui/core/styles";
-import { createMuiTheme } from "@material-ui/core/styles";
+import { createTheme } from "@material-ui/core/styles";
 import CssBaseline from "@material-ui/core/CssBaseline";
 
 import { defaultTheme } from "../styles/mui-theme";
@@ -21,10 +21,10 @@ const formatTheme = newTheme => {
 
 const App = ({ children }) => {
   const [theme, setTheme] = useState(defaultTheme);
-  let muiTheme = createMuiTheme(defaultTheme);
+  let muiTheme = createTheme(defaultTheme);
   try {
     // if a bad value is saved this will fail.
-    muiTheme = createMuiTheme(theme);
+    muiTheme = createTheme(theme);
   } catch (e) {
     console.error("failed to create theme", theme);
   }

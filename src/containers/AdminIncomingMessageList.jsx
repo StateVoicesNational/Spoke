@@ -1,7 +1,7 @@
 import PropTypes from "prop-types";
 import React, { Component } from "react";
 import _ from "lodash";
-import { compose } from "react-apollo";
+import { compose } from "recompose";
 
 import IncomingMessageActions from "../components/IncomingMessageActions";
 import IncomingMessageFilter, {
@@ -9,7 +9,7 @@ import IncomingMessageFilter, {
 } from "../components/IncomingMessageFilter";
 import IncomingMessageList from "../components/IncomingMessageList";
 import PaginatedCampaignsRetriever from "./PaginatedCampaignsRetriever";
-import gql from "graphql-tag";
+import { gql } from "@apollo/client";
 import loadData from "./hoc/load-data";
 import { withRouter } from "react-router";
 import PaginatedUsersRetriever from "./PaginatedUsersRetriever";

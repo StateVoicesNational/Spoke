@@ -106,7 +106,7 @@ describe("mutations.updateContactTags", () => {
 
     const result = await wrappedMutations.updateContactTags(
       contactTags,
-      contacts[0].id
+      contacts[0].id.toString()
     );
 
     expect(result.data.updateContactTags).toEqual({
@@ -154,7 +154,7 @@ describe("mutations.updateContactTags", () => {
           id: tag.id,
           value: tag.value
         })),
-        999999 // this will cause cacheableData.campaignContact.load to throw an exception
+        "999999" // this will cause cacheableData.campaignContact.load to throw an exception
       );
 
       expect(result.errors[0].message).toEqual(

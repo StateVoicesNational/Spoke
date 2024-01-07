@@ -1,4 +1,4 @@
-import gql from "graphql-tag";
+import { gql } from "@apollo/client";
 
 // TODO: rename phoneNumbers to messagingServiceNumbers or something like that
 export const schema = gql`

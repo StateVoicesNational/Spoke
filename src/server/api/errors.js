@@ -3,9 +3,10 @@ import { r, cacheableData } from "../models";
 
 export function authRequired(user) {
   if (!user) {
-    throw new GraphQLError({
-      status: 401,
-      message: "You must login to access that resource."
+    throw new GraphQLError("You must login to access that resource.", {
+      extensions: {
+        status: 401
+      }
     });
   }
 }
@@ -27,9 +28,13 @@ export async function accessRequired(
   const hasRole = await cacheableData.user.userHasRole(user, orgId, role);
   if (!hasRole) {
     const error = new GraphQLError(
-      "You are not authorized to access that resource."
+      "You are not authorized to access that resource.",
+      {
+        extensions: {
+          code: "UNAUTHORIZED"
+        }
+      }
     );
-    error.code = "UNAUTHORIZED";
     throw error;
   }
 }
@@ -73,9 +78,13 @@ export async function assignmentRequiredOrAdminRole(
   );
   if (!hasPermission) {
     const error = new GraphQLError(
-      "You are not authorized to access that resource."
+      "You are not authorized to access that resource.",
+      {
+        extensions: {
+          code: "UNAUTHORIZED"
+        }
+      }
     );
-    error.code = "UNAUTHORIZED";
     throw error;
   }
   return userHasAssignment || true;

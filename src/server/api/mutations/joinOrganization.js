@@ -6,9 +6,9 @@ import { getConfig } from "../lib/config";
 import telemetry from "../../telemetry";
 
 const INVALID_JOIN = () => {
-  const error = new GraphQLError("Invalid join request");
-  error.code = "INVALID_JOIN";
-  return error;
+  return new GraphQLError("Invalid join request", {
+    extensions: { code: "INVALID_JOIN" }
+  });
 };
 
 export const joinOrganization = async (
@@ -43,9 +43,10 @@ export const joinOrganization = async (
         );
         if (campaignTexterCount >= maxTextersPerCampaign) {
           const error = new GraphQLError(
-            "Sorry, this campaign has too many texters already"
+            "Sorry, this campaign has too many texters already",
+            { extensions: { code: "FAILEDJOIN_TOOMANYTEXTERS" } }
           );
-          error.code = "FAILEDJOIN_TOOMANYTEXTERS";
+
           throw error;
         }
       }

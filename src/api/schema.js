@@ -1,4 +1,4 @@
-import gql from "graphql-tag";
+import { gql } from "@apollo/client";
 
 import { schema as userSchema } from "./user";
 import { schema as conversationSchema } from "./conversations";
@@ -174,6 +174,12 @@ const rootSchema = gql`
     id: String
     name: String
     value: String
+  }
+
+  type Action {
+    name: String
+    displayName: String
+    instructions: String
   }
 
   type FoundContact {
@@ -410,7 +416,7 @@ const rootSchema = gql`
   }
 `;
 
-export const schema = [
+export default [
   rootSchema,
   userSchema,
   "scalar Date",

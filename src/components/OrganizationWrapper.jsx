@@ -1,6 +1,6 @@
 import React from "react";
 import { withRouter } from "react-router";
-import gql from "graphql-tag";
+import { gql } from "@apollo/client";
 import { compose, lifecycle } from "recompose";
 
 import loadData from "../containers/hoc/load-data";

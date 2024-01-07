@@ -2,7 +2,7 @@ import React, { Component } from "react";
 import type from "prop-types";
 import moment from "moment";
 import { Link as RouterLink, withRouter } from "react-router";
-import gql from "graphql-tag";
+import { gql } from "@apollo/client";
 import { compose } from "recompose";
 
 import MUIDataTable from "mui-datatables";

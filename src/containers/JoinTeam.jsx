@@ -1,7 +1,7 @@
 import PropTypes from "prop-types";
 import React from "react";
 import loadData from "./hoc/load-data";
-import gql from "graphql-tag";
+import { gql } from "@apollo/client";
 import { withRouter } from "react-router";
 import { StyleSheet, css } from "aphrodite";
 import theme from "../styles/theme";

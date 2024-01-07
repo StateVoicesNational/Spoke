@@ -1,5 +1,4 @@
-import { createNetworkInterface } from "apollo-client";
-import fetch from "isomorphic-fetch";
+import { createNetworkInterface } from "@apollo/client";
 
 class ResponseMiddlewareNetworkInterface {
   constructor(endpoint = "/graphql", options = {}) {

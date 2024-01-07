@@ -9,7 +9,8 @@ import {
   setupTest,
   cleanupTest,
   createStartedCampaign,
-  sendMessage
+  sendMessage,
+  sleep
 } from "../../test_helpers";
 
 beforeEach(async () => {
@@ -62,12 +63,15 @@ describe("Message Hanlder: profanity-tagger", () => {
     await cacheableData.organization.clear(c.organizationId);
 
     // SEND
-    await sendMessage(c.testContacts[1].id, c.testTexterUser, {
-      userId: c.testTexterUser.id,
+    await sendMessage(c.testContacts[1].id.toString(), c.testTexterUser, {
+      userId: c.testTexterUser.id.toString(),
       contactNumber: c.testContacts[1].cell,
       text: "brass shoe eddie homonym",
-      assignmentId: c.assignmentId
+      assignmentId: c.assignmentId.toString()
     });
+
+    await sleep(5);
+
     // a little stupidly updating messageservice_sid is necessary
     // because it's not await'd
     await r
@@ -126,17 +130,22 @@ describe("Message Hanlder: profanity-tagger", () => {
     expect(available(org)).toBeTruthy();
 
     // Confirm texter catch
-    await sendMessage(c.testContacts[0].id, c.testTexterUser, {
-      userId: c.testTexterUser.id,
+    await sendMessage(c.testContacts[0].id.toString(), c.testTexterUser, {
+      userId: c.testTexterUser.id.toString(),
       contactNumber: c.testContacts[0].cell,
       text: "Some fakeslur message",
-      assignmentId: c.assignmentId
+      assignmentId: c.assignmentId.toString()
     });
+
+    await sleep(10);
+
     const text1 = await r
       .knex("tag_campaign_contact")
       .select("tag_id", "campaign_contact_id")
-      .where("campaign_contact_id", 1);
-    expect(text1).toEqual([{ tag_id: 2, campaign_contact_id: 1 }]);
+      .where("campaign_contact_id", c.testContacts[0].id);
+    expect(text1).toEqual([
+      { tag_id: 2, campaign_contact_id: c.testContacts[0].id }
+    ]);
 
     let user = await cacheableData.user.userHasRole(
       c.testTexterUser,
@@ -146,16 +155,19 @@ describe("Message Hanlder: profanity-tagger", () => {
     expect(user).toBe(true);
 
     // Confirm texter no-match
-    await sendMessage(c.testContacts[1].id, c.testTexterUser, {
-      userId: c.testTexterUser.id,
+    await sendMessage(c.testContacts[1].id.toString(), c.testTexterUser, {
+      userId: c.testTexterUser.id.toString(),
       contactNumber: c.testContacts[1].cell,
       text: "brass shoe eddie homonym",
-      assignmentId: c.assignmentId
+      assignmentId: c.assignmentId.toString()
     });
+
+    await sleep(5);
+
     const text2 = await r
       .knex("tag_campaign_contact")
       .select("tag_id", "campaign_contact_id")
-      .where("campaign_contact_id", 2);
+      .where("campaign_contact_id", c.testContacts[1].id);
     expect(text2).toEqual([]);
 
     user = await cacheableData.user.userHasRole(
@@ -166,12 +178,15 @@ describe("Message Hanlder: profanity-tagger", () => {
     expect(user).toBe(true);
 
     // Confirm texter no-match
-    await sendMessage(c.testContacts[1].id, c.testTexterUser, {
-      userId: c.testTexterUser.id,
+    await sendMessage(c.testContacts[1].id.toString(), c.testTexterUser, {
+      userId: c.testTexterUser.id.toString(),
       contactNumber: c.testContacts[1].cell,
       text: "fakeslur is one too many slurs",
-      assignmentId: c.assignmentId
+      assignmentId: c.assignmentId.toString()
     });
+
+    await sleep(5);
+
     user = await cacheableData.user.userHasRole(
       c.testTexterUser,
       c.organizationId,
@@ -209,17 +224,22 @@ describe("Message Hanlder: profanity-tagger", () => {
     expect(available(org)).toBeTruthy();
 
     // Confirm texter catch
-    await sendMessage(c.testContacts[0].id, c.testTexterUser, {
-      userId: c.testTexterUser.id,
+    await sendMessage(c.testContacts[0].id.toString(), c.testTexterUser, {
+      userId: c.testTexterUser.id.toString(),
       contactNumber: c.testContacts[0].cell,
       text: "Some fakeslur message",
-      assignmentId: c.assignmentId
+      assignmentId: c.assignmentId.toString()
     });
+
+    await sleep(5);
+
     const text1 = await r
       .knex("tag_campaign_contact")
       .select("tag_id", "campaign_contact_id")
-      .where("campaign_contact_id", 1);
-    expect(text1).toEqual([{ tag_id: 2, campaign_contact_id: 1 }]);
+      .where("campaign_contact_id", c.testContacts[0].id);
+    expect(text1).toEqual([
+      { tag_id: 2, campaign_contact_id: c.testContacts[0].id }
+    ]);
 
     const messages = await r.knex("message").select();
     expect(messages.length).toBe(1);

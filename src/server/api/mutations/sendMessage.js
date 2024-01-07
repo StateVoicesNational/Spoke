@@ -16,8 +16,7 @@ const JOBS_SAME_PROCESS = !!(
 );
 
 const newError = (message, code, details = {}) => {
-  const err = new GraphQLError(message);
-  err.code = code;
+  const err = new GraphQLError(message, { extensions: { code } });
   if (process.env.DEBUGGING_EMAILS) {
     sendEmail({
       to: process.env.DEBUGGING_EMAILS.split(","),
@@ -176,7 +175,7 @@ export const sendMessage = async (
   // const offsetData = zipData ? { offset: zipData.timezone_offset, hasDST: zipData.has_dst } : null
   // if (!isBetweenTextingHours(offsetData, config)) {
   //   throw new GraphQLError({
-  //     status: 400,
+  //     extensions: { http: { { status: 400 } },
   //     message: "Skipped sending because it's now outside texting hours for this contact"
   //   })
   // }

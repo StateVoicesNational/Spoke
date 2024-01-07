@@ -1,5 +1,4 @@
-import { log } from "../../../lib";
-import { Assignment, r, cacheableData } from "../../models";
+import { r, cacheableData } from "../../models";
 import { assignmentRequiredOrAdminRole } from "../errors";
 
 export const releaseContacts = async (
