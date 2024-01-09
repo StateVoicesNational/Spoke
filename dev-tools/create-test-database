@@ -6,3 +6,7 @@ docker-compose exec -T postgres psql -h localhost -p 5432 -U spoke spokedev <<EO
        CREATE USER spoke_test WITH PASSWORD 'spoke_test';
        GRANT ALL PRIVILEGES ON DATABASE spoke_test TO spoke_test;
 EOF
+
+docker-compose exec -T postgres psql -h localhost -p 5432 -U spoke spoke_test <<EOF
+       GRANT ALL ON SCHEMA public TO spoke_test;
+EOF
