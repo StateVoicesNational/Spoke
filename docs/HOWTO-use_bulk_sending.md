@@ -1,7 +1,5 @@
 # How to configure Spoke for bulk sending outside the USA
 
-#### We assume that bulk sending -- sending a text to more than one contact with a single click -- is not legal in the USA. Please consult with an attorney before you do that.
-
 ## About bulk sending
 
 If Spoke is configured to do bulk sending, a `Send Bulk` button will appear on the texter's view for the first contact. When the texter clicks that button, the next chunk of contacts will receive the initial message. After Spoke queues up messages for those contacts, if there are any contacts left in the texter's assignment, the next chunk of contacts will receive messages the next time the texter clicks `Send Bulk`.
