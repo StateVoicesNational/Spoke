@@ -60,6 +60,7 @@ import {
   buyPhoneNumbers,
   deletePhoneNumbers,
   findNewCampaignContact,
+  getOptOutMessage,
   joinOrganization,
   editOrganization,
   releaseContacts,
@@ -758,6 +759,7 @@ const rootMutations = {
 
       return await cacheableData.organization.load(organizationId);
     },
+    getOptOutMessage,
     updateOptOutMessage: async (
       _,
       { organizationId, optOutMessage },

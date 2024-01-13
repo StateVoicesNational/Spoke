@@ -299,6 +299,10 @@ export class AssignmentTexterContact extends React.Component {
   handleOptOut = async ({ optOutMessageText }) => {
     const { contact } = this.props;
     const { assignment } = this.props;
+    // TODO: Get correct message
+    if(optOutMessageText && window.OPT_OUT_PER_STATE) {
+      await this.props.mutations.getOptOutMessage(contact.zip);
+    }
     const message = this.createMessageToContact(optOutMessageText);
     if (this.state.disabled) {
       return; // stops from multi-send
@@ -562,6 +566,20 @@ const mutations = {
     variables: {
       interactionStepIds,
       campaignContactId
+    }
+  }),
+  getOptOutMessage: ownProps => (zip) => ({
+    mutation: gql`
+      mutation getOptOutMessage(
+        $zip: String
+      ) {
+        getOptOutMessage(
+          zip: $zip
+        )
+      }
+    `,
+    variables: {
+      zip
     }
   }),
   updateContactTags: ownProps => (tags, campaignContactId) => ({
