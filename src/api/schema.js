@@ -291,9 +291,7 @@ const rootSchema = gql`
       organizationId: String!
       textingHoursEnforced: Boolean!
     ): Organization
-    getOptOutMessage(
-      zip: String
-    ): String
+    getOptOutMessage(zip: String, defaultMessage: String): String
     updateOptOutMessage(
       organizationId: String!
       optOutMessage: String!

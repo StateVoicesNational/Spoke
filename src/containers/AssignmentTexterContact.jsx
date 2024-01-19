@@ -300,9 +300,12 @@ export class AssignmentTexterContact extends React.Component {
     const { contact } = this.props;
     const { assignment } = this.props;
     // TODO: Get correct message
-    if(optOutMessageText && window.OPT_OUT_PER_STATE) {
-      const res = await this.props.mutations.getOptOutMessage(contact.zip);
-      optOutMessageText = res.data.getOptOutMessage
+    if (optOutMessageText && window.OPT_OUT_PER_STATE) {
+      const res = await this.props.mutations.getOptOutMessage(
+        contact.zip,
+        optOutMessageText
+      );
+      optOutMessageText = res.data.getOptOutMessage;
     }
     const message = this.createMessageToContact(optOutMessageText);
     if (this.state.disabled) {
@@ -569,18 +572,21 @@ const mutations = {
       campaignContactId
     }
   }),
-  getOptOutMessage: ownProps => (zip) => ({
+  getOptOutMessage: ownProps => (zip, defaultMessage) => ({
     mutation: gql`
       mutation getOptOutMessage(
         $zip: String
+        $defaultMessage: String
       ) {
         getOptOutMessage(
           zip: $zip
+          defaultMessage: $defaultMessage
         )
       }
     `,
     variables: {
-      zip
+      zip,
+      defaultMessage
     }
   }),
   updateContactTags: ownProps => (tags, campaignContactId) => ({
