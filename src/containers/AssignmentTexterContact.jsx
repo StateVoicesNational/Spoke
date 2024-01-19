@@ -301,7 +301,8 @@ export class AssignmentTexterContact extends React.Component {
     const { assignment } = this.props;
     // TODO: Get correct message
     if(optOutMessageText && window.OPT_OUT_PER_STATE) {
-      await this.props.mutations.getOptOutMessage(contact.zip);
+      const res = await this.props.mutations.getOptOutMessage(contact.zip);
+      optOutMessageText = res.data.getOptOutMessage
     }
     const message = this.createMessageToContact(optOutMessageText);
     if (this.state.disabled) {
