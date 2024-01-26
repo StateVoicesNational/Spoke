@@ -64,9 +64,10 @@ export class AssignmentTexterContactControls extends React.Component {
     }
 
     this.state = {
+      contactOptOutMessage: "",
       questionResponses,
       filteredCannedResponses: props.campaign.cannedResponses,
-      optOutMessageText: props.campaign.organization.optOutMessage,
+      optOutMessageText: "",
       responsePopoverOpen: false,
       answerPopoverOpen: false,
       sideboxCloses: {},
@@ -341,10 +342,12 @@ export class AssignmentTexterContactControls extends React.Component {
     }
   };
 
-  handleOpenDialog = () => {
+  handleOpenDialog = async () => {
     // delay to avoid accidental tap pass-through with focusing on
     // the text field -- this is annoying on mobile where the keyboard
     // pops up, inadvertantly
+    const optOutMessage = (await this.props.getOptOutMessage(this.props.contact.zip, this.props.campaign.organization.optOutMessage)).data.getOptOutMessage;
+    this.setState({contactOptOutMessage: optOutMessage, optOutMessageText: optOutMessage});
     const update = { optOutDialogOpen: true };
     if (this.refs.answerButtons) {
       // store this, because on-close, we lose this
@@ -662,19 +665,18 @@ export class AssignmentTexterContactControls extends React.Component {
                   margin: "9px",
                   color:
                     this.state.optOutMessageText ===
-                      this.props.campaign.organization.optOutMessage
+                      this.state.contactOptOutMessage
                       ? "white"
                       : "#494949",
                   backgroundColor:
                     this.state.optOutMessageText ===
-                      this.props.campaign.organization.optOutMessage
+                      this.state.contactOptOutMessage
                       ? "#727272"
                       : "white"
                 }}
                 onClick={() => {
                   this.setState({
-                    optOutMessageText: this.props.campaign.organization
-                      .optOutMessage
+                    optOutMessageText: this.state.contactOptOutMessage
                   });
                 }}
                 variant="contained"

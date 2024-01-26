@@ -1,5 +1,6 @@
 import { getConfig } from "../lib/config";
 import SmartyStreetsSDK from "smartystreets-javascript-sdk";
+import optOutMessageCache from "../../models/cacheable_queries/opt-out-message";
 
 const SmartyStreetsCore = SmartyStreetsSDK.core;
 const Lookup = SmartyStreetsSDK.usZipcode.Lookup;
@@ -22,7 +23,10 @@ export const getOptOutMessage = async (_, { zip, defaultMessage }) => {
     const lookupRes = res.lookups[0].result[0];
 
     if (lookupRes.valid) {
-      console.log("state =", lookupRes.zipcodes[0].stateAbbreviation);
+      const queryResult = await optOutMessageCache.query({organizationId: 1, state: lookupRes.zipcodes[0].stateAbbreviation});
+      if(queryResult.length) {
+        return queryResult[0]["message"];
+      }
       return defaultMessage;
     }
 

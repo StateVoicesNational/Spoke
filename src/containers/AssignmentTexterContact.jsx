@@ -420,6 +420,7 @@ export class AssignmentTexterContact extends React.Component {
           </div>
         ) : null}
         <Controls
+          getOptOutMessage={this.props.mutations.getOptOutMessage}
           handleNavigateNext={this.props.handleNavigateNext}
           handleNavigatePrevious={this.props.handleNavigatePrevious}
           contact={this.props.contact}
