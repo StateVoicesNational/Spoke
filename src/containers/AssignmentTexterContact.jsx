@@ -299,14 +299,6 @@ export class AssignmentTexterContact extends React.Component {
   handleOptOut = async ({ optOutMessageText }) => {
     const { contact } = this.props;
     const { assignment } = this.props;
-    // TODO: Get correct message
-    if (optOutMessageText && window.OPT_OUT_PER_STATE) {
-      const res = await this.props.mutations.getOptOutMessage(
-        contact.zip,
-        optOutMessageText
-      );
-      optOutMessageText = res.data.getOptOutMessage;
-    }
     const message = this.createMessageToContact(optOutMessageText);
     if (this.state.disabled) {
       return; // stops from multi-send
