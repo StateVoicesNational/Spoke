@@ -916,8 +916,7 @@ export class AssignmentTexterContactControls extends React.Component {
                   : opt.answer.value,
                 nextScript:
                   (!isCurrentAnswer(opt) &&
-                    opt.answer.nextInteractionStep &&
-                    opt.answer.nextInteractionStep.script) ||
+                    opt.answer.nextInteractionStep?.script) ||
                   null
               });
             }}
@@ -1268,6 +1267,7 @@ AssignmentTexterContactControls.propTypes = {
   review: PropTypes.string,
 
   // parent config/callbacks
+  getOptOutMessage: PropTypes.func,
   startingMessage: PropTypes.string,
   onMessageFormSubmit: PropTypes.func,
   onOptOut: PropTypes.func,

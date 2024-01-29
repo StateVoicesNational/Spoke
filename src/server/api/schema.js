@@ -394,11 +394,7 @@ async function editCampaign(id, campaign, loaders, user, origCampaignRecord) {
   });
 
   // hacky easter egg to force reload campaign contacts
-  if (
-    r.redis &&
-    campaignUpdates.description &&
-    campaignUpdates.description.endsWith("..")
-  ) {
+  if (r.redis && campaignUpdates.description?.endsWith("..")) {
     // some asynchronous cache-priming
     console.log(
       "force-loading loadCampaignCache",
@@ -1263,11 +1259,15 @@ const rootMutations = {
               usedFields[f] = 1;
             });
           }
-          
-          if(getConfig("OPT_OUT_PER_STATE") && getConfig("SMARTY_AUTH_ID") && getConfig("SMARTY_AUTH_TOKEN")) {
-            usedFields.zip = 1
+
+          if (
+            getConfig("OPT_OUT_PER_STATE") &&
+            getConfig("SMARTY_AUTH_ID") &&
+            getConfig("SMARTY_AUTH_TOKEN")
+          ) {
+            usedFields.zip = 1;
           }
-          
+
           return finalContacts.map(c => (c && { ...c, usedFields }) || c);
         }
       }
