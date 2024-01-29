@@ -1,31 +1,44 @@
 import { r } from "../../models";
 
-const orgCacheKey = orgId =>
-  `${process.env.CACHE_PREFIX || ""}optoutmessages-${orgId}`;
+const cacheKey = (orgId, state) =>
+  `${process.env.CACHE_PREFIX || ""}optoutmessages-${orgId}-${state}`;
 
 const optOutMessageCache = {
-  clearQuery: async ({ organizationId }) => {
+  clearQuery: async ({ organizationId, state }) => {
     if (r.redis) {
-      await r.redis.delAsync(orgCacheKey(organizationId));
+      await r.redis.delAsync(cacheKey(organizationId, state));
     }
   },
-  query: async ({ state, organizationId }) => {
-    if (r.redis) {
-      const hashKey = orgCacheKey(organizationId);
-      const [exists, isMember] = await r.redis
-        .multi()
-        .exists(hashKey)
-        .sismember(hashKey, message)
-        .execAsync();
-      if (exists) {
-        return isMember;
-      }
+  query: async ({ organizationId, state }) => {
+    async function getMessage() {
+      const res = await r
+        .knex("opt_out_message")
+        .select("message")
+        .where({ state: state })
+        .limit(1);
+
+      return res.length ? res[0].message : "";
     }
-    return await r
-      .knex("opt_out_message")
-      .select("message")
-      .where({ state: state })
-      .limit(1);
+    if (r.redis) {
+      const key = cacheKey(organizationId, state);
+      let message = await r.redis.getAsync(key);
+
+      if (message !== null) {
+        return message;
+      }
+
+      message = await getMessage();
+
+      await r.redis
+        .multi()
+        .set(key, message)
+        .expire(key, 15780000) // 6 months
+        .execAsync();
+
+      return message;
+    }
+
+    return await getMessage();
   }
 };
 

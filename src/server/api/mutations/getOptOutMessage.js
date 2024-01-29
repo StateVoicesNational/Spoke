@@ -24,10 +24,8 @@ export const getOptOutMessage = async (_, { zip, defaultMessage }) => {
 
     if (lookupRes.valid) {
       const queryResult = await optOutMessageCache.query({organizationId: 1, state: lookupRes.zipcodes[0].stateAbbreviation});
-      if(queryResult.length) {
-        return queryResult[0]["message"];
-      }
-      return defaultMessage;
+      
+      return queryResult || defaultMessage;
     }
 
     return defaultMessage;

@@ -1263,6 +1263,11 @@ const rootMutations = {
               usedFields[f] = 1;
             });
           }
+          
+          if(getConfig("OPT_OUT_PER_STATE") && getConfig("SMARTY_AUTH_ID") && getConfig("SMARTY_AUTH_TOKEN")) {
+            usedFields.zip = 1
+          }
+          
           return finalContacts.map(c => (c && { ...c, usedFields }) || c);
         }
       }
