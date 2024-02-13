@@ -2,18 +2,18 @@ import "babel-polyfill";
 import bodyParser from "body-parser";
 import express from "express";
 import appRenderer from "./middleware/app-renderer";
-import { graphqlExpress, graphiqlExpress } from "apollo-server-express";
-import { makeExecutableSchema } from "graphql-tools";
+// import { graphqlExpress, graphiqlExpress } from "apollo-server-express";
+// import { makeExecutableSchema } from "graphql-tools";
 // ORDERING: ./models import must be imported above ./api to help circular imports
-import { replaceEasyGsmWins } from "../lib/gsm";
-import { createLoaders, createTablesIfNecessary, r } from "./models";
+// import { replaceEasyGsmWins } from "../lib/gsm";
+import { /* createLoaders, */ createTablesIfNecessary, r } from "./models";
 import { resolvers } from "./api/schema";
 import { schema } from "../api/schema";
 import passport from "passport";
 import cookieSession from "cookie-session";
 import passportSetup from "./auth-passport";
 import { log } from "../lib";
-import telemetry from "./telemetry";
+// import telemetry from "./telemetry";
 import { addServerEndpoints as messagingServicesAddServerEndpoints } from "../extensions/service-vendors/service_map";
 import { getConfig } from "./api/lib/config";
 import { seedZipCodes } from "./seeds/seed-zip-codes";
@@ -21,7 +21,13 @@ import { setupUserNotificationObservers } from "./notifications";
 import { existsSync } from "fs";
 import { rawAllMethods } from "../extensions/contact-loaders";
 import herokuSslRedirect from "heroku-ssl-redirect";
-import { GraphQLError } from "graphql/error";
+// import { GraphQLError } from "graphql/error";
+
+import { ApolloServer } from "@apollo/server";
+import { expressMiddleware } from "@apollo/server/express4";
+import { ApolloServerPluginDrainHttpServer } from "@apollo/server/plugin/drainHttpServer";
+import http from "http";
+import cors from "cors";
 
 process.on("uncaughtException", ex => {
   log.error(ex);
@@ -134,72 +140,78 @@ if (loginCallbacks) {
   app.post("/login-callback", ...loginCallbacks.loginCallback);
 }
 
-const executableSchema = makeExecutableSchema({
+// app.use(
+//   "/graphql",
+//   graphqlExpress(request => ({
+//     schema: executableSchema,
+//     context: {
+//       loaders: createLoaders(),
+//       user: request.user,
+//       awsContext: request.awsContext || null,
+//       awsEvent: request.awsEvent || null,
+//       remainingMilliseconds: () =>
+//         request.awsContext && request.awsContext.getRemainingTimeInMillis
+//           ? request.awsContext.getRemainingTimeInMillis()
+//           : 5 * 60 * 1000 // default saying 5 min, no matter what
+//     },
+//     formatError: error => {
+//       log.error({
+//         userId: request.user && request.user.id,
+//         code:
+//           (error && error.originalError && error.originalError.code) ||
+//           "INTERNAL_SERVER_ERROR",
+//         error,
+//         msg: "GraphQL error"
+//       });
+//       telemetry
+//         .formatRequestError(error, request)
+//         // drop if this fails
+//         .catch(() => {})
+//         .then(() => {});
+
+//       if (process.env.SHOW_SERVER_ERROR || process.env.DEBUG) {
+//         if (error instanceof GraphQLError) {
+//           return error;
+//         }
+//         return new GraphQLError(error.message);
+//       }
+
+//       return new GraphQLError(
+//         error &&
+//         error.originalError &&
+//         error.originalError.code === "UNAUTHORIZED"
+//           ? "UNAUTHORIZED"
+//           : "Internal server error"
+//       );
+//     }
+//   }))
+// );
+
+const httpServer = http.createServer(app);
+const server = new ApolloServer({
   typeDefs: schema,
   resolvers,
-  allowUndefinedInResolve: false
+  plugins: [ApolloServerPluginDrainHttpServer({ httpServer })]
 });
 
-app.use(
-  "/graphql",
-  graphqlExpress(request => ({
-    schema: executableSchema,
-    context: {
-      loaders: createLoaders(),
-      user: request.user,
-      awsContext: request.awsContext || null,
-      awsEvent: request.awsEvent || null,
-      remainingMilliseconds: () =>
-        request.awsContext && request.awsContext.getRemainingTimeInMillis
-          ? request.awsContext.getRemainingTimeInMillis()
-          : 5 * 60 * 1000 // default saying 5 min, no matter what
-    },
-    formatError: error => {
-      log.error({
-        userId: request.user && request.user.id,
-        code:
-          (error && error.originalError && error.originalError.code) ||
-          "INTERNAL_SERVER_ERROR",
-        error,
-        msg: "GraphQL error"
-      });
-      telemetry
-        .formatRequestError(error, request)
-        // drop if this fails
-        .catch(() => {})
-        .then(() => {});
+server.start().then(() => {
+  app.use(
+    "/graphql",
+    cors(),
+    express.json(),
+    expressMiddleware(server, {
+      context: async ({ req }) => ({ token: req.headers.token })
+    })
+  );
+  app.get("/graphql");
+  // This middleware should be last. Return the React app only if no other route is hit.
+  app.use(appRenderer);
 
-      if (process.env.SHOW_SERVER_ERROR || process.env.DEBUG) {
-        if (error instanceof GraphQLError) {
-          return error;
-        }
-        return new GraphQLError(error.message);
-      }
-
-      return new GraphQLError(
-        error &&
-        error.originalError &&
-        error.originalError.code === "UNAUTHORIZED"
-          ? "UNAUTHORIZED"
-          : "Internal server error"
-      );
-    }
-  }))
-);
-app.get(
-  "/graphiql",
-  graphiqlExpress({
-    endpointURL: "/graphql"
-  })
-);
-
-// This middleware should be last. Return the React app only if no other route is hit.
-app.use(appRenderer);
-
-if (port) {
-  app.listen(port, () => {
-    log.info(`Node app is running on port ${port}`);
-  });
-}
+  if (port) {
+    httpServer.listen(port, () => {
+      log.info(`Node app is running on port ${port}`);
+    });
+  }
+});
 
 export default app;
