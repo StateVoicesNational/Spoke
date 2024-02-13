@@ -3,7 +3,7 @@ import { ApolloClient } from "apollo-client";
 import { ApolloLink } from "apollo-link";
 import { createHttpLink } from "apollo-link-http";
 import { onError } from "apollo-link-error";
-import { InMemoryCache } from "apollo-cache-inmemory";
+import { InMemoryCache } from "@apollo/client/cache";
 import { getMainDefinition } from "apollo-utilities";
 import omitDeep from "omit-deep-lodash";
 

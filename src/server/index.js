@@ -204,6 +204,7 @@ server.start().then(() => {
     })
   );
   app.get("/graphql");
+
   // This middleware should be last. Return the React app only if no other route is hit.
   app.use(appRenderer);
 

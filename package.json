@@ -81,6 +81,7 @@
   "homepage": "https://github.com/MoveOnOrg/Spoke/#readme",
   "dependencies": {
     "@aoberoi/passport-slack": "^1.0.5",
+    "@apollo/client": "^3.9.4",
     "@apollo/server": "^4.10.0",
     "@aws-sdk/client-cloudwatch": "^3.462.0",
     "@aws-sdk/client-cloudwatch-events": "^3.462.0",
@@ -102,7 +103,6 @@
     "@trt2/gsm-charset-utils": "^1.0.13",
     "ajv": "^8.12.0",
     "aphrodite": "^2.4.0",
-    "apollo-cache-inmemory": "^1.6.6",
     "apollo-client": "^2.6.10",
     "apollo-link": "^1.2.14",
     "apollo-link-error": "^1.1.13",
