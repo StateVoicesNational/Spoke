@@ -4,7 +4,6 @@ import React from "react";
 import Card from "@material-ui/core/Card";
 import CardHeader from "@material-ui/core/CardHeader";
 import CardContent from "@material-ui/core/CardContent";
-import { compose } from "recompose";
 import { getServiceManagerComponent } from "../extensions/service-managers/components";
 import withMuiTheme from "../containers/hoc/withMuiTheme";
 
