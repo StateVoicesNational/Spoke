@@ -1,6 +1,6 @@
 import fetch from "isomorphic-fetch";
 import { ApolloClient } from "@apollo/client";
-import { ApolloLink } from "@apollo/client/link";
+import { ApolloLink } from "@apollo/client";
 import { createHttpLink } from "@apollo/client/link/http";
 import { onError } from "@apollo/client/link/error";
 import { InMemoryCache } from "@apollo/client/cache";
