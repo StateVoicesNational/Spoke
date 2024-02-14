@@ -565,19 +565,22 @@ const mutations = {
       campaignContactId
     }
   }),
-  getOptOutMessage: ownProps => (zip, defaultMessage) => ({
+  getOptOutMessage: ownProps => (organizationId, zip, defaultMessage) => ({
     mutation: gql`
       mutation getOptOutMessage(
+        $organizationId: String
         $zip: String
         $defaultMessage: String
       ) {
         getOptOutMessage(
+          organizationId: $organizationId
           zip: $zip
           defaultMessage: $defaultMessage
         )
       }
     `,
     variables: {
+      organizationId,
       zip,
       defaultMessage
     }

@@ -346,7 +346,13 @@ export class AssignmentTexterContactControls extends React.Component {
     // delay to avoid accidental tap pass-through with focusing on
     // the text field -- this is annoying on mobile where the keyboard
     // pops up, inadvertantly
-    const optOutMessage = (await this.props.getOptOutMessage(this.props.contact.zip, this.props.campaign.organization.optOutMessage)).data.getOptOutMessage;
+    const optOutMessage = (
+      await this.props.getOptOutMessage(
+        this.props.organizationId,
+        this.props.contact.zip,
+        this.props.campaign.organization.optOutMessage
+      )
+    ).data.getOptOutMessage;
     this.setState({contactOptOutMessage: optOutMessage, optOutMessageText: optOutMessage});
     const update = { optOutDialogOpen: true };
     if (this.refs.answerButtons) {

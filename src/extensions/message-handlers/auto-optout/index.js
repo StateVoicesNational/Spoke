@@ -141,6 +141,7 @@ export const postMessageSave = async ({
         (await cacheableData.campaignContact.load(message.campaign_contact_id));
 
       const optOutMessage = await getOptOutMessage(null, {
+        organizationId: organization.id,
         zip: contact.zip,
         defaultMessage:
           getFeatures(organization).opt_out_message ||

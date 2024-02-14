@@ -13,7 +13,10 @@ const clientBuilder = new SmartyStreetsCore.ClientBuilder(
 );
 const client = clientBuilder.buildUsZipcodeClient();
 
-export const getOptOutMessage = async (_, { zip, defaultMessage }) => {
+export const getOptOutMessage = async (
+  _,
+  { organizationId, zip, defaultMessage }
+) => {
   const lookup = new Lookup();
 
   lookup.zipCode = zip;
@@ -23,8 +26,11 @@ export const getOptOutMessage = async (_, { zip, defaultMessage }) => {
     const lookupRes = res.lookups[0].result[0];
 
     if (lookupRes.valid) {
-      const queryResult = await optOutMessageCache.query({organizationId: 1, state: lookupRes.zipcodes[0].stateAbbreviation});
-      
+      const queryResult = await optOutMessageCache.query({
+        organizationId: organizationId,
+        state: lookupRes.zipcodes[0].stateAbbreviation
+      });
+
       return queryResult || defaultMessage;
     }
 
