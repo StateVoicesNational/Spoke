@@ -75,4 +75,4 @@ export class CampaignServiceManagers extends React.Component {
   }
 }
 
-export default compose(withMuiTheme)(CampaignServiceManagers);
+export default withMuiTheme(CampaignServiceManagers);
