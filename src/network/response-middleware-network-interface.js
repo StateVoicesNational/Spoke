@@ -1,4 +1,4 @@
-import { HttpLink } from "apollo-link-http";
+import { HttpLink } from "@apollo/client/link/http";
 
 class ResponseMiddlewareNetworkInterface {
   constructor(endpoint = "/graphql", options = {}) {
