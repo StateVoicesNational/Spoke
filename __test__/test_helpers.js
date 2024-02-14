@@ -10,6 +10,9 @@ import {
 } from "../src/server/models/";
 import { graphql } from "graphql";
 import gql from "graphql-tag";
+import { makeExecutableSchema } from "@graphql-tools/schema";
+import { resolvers } from "../src/server/api/schema";
+import { schema } from "../src/api/schema";
 
 // Cypress integration tests do not use jest but do use these helpers
 // They would benefit from mocking mail services, though, so something to look in to.
@@ -82,10 +85,6 @@ export async function createContacts(campaign, count = 1) {
   }
   return contacts;
 }
-
-import { makeExecutableSchema } from "graphql-tools";
-import { resolvers } from "../src/server/api/schema";
-import { schema } from "../src/api/schema";
 
 const mySchema = makeExecutableSchema({
   typeDefs: schema,

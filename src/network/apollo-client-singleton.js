@@ -4,7 +4,7 @@ import { ApolloLink } from "@apollo/client/link";
 import { createHttpLink } from "@apollo/client/link/http";
 import { onError } from "@apollo/client/link/error";
 import { InMemoryCache } from "@apollo/client/cache";
-import { getMainDefinition } from "apollo-utilities";
+import { getMainDefinition } from "@apollo/client/utilities";
 import omitDeep from "omit-deep-lodash";
 
 const httpLink = createHttpLink({
