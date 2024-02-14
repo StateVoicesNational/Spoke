@@ -19,7 +19,6 @@ import { existsSync } from "fs";
 import { rawAllMethods } from "../extensions/contact-loaders";
 import herokuSslRedirect from "heroku-ssl-redirect";
 import { GraphQLError } from "graphql/error";
-
 import { ApolloServer } from "@apollo/server";
 import { expressMiddleware } from "@apollo/server/express4";
 import { ApolloServerPluginDrainHttpServer } from "@apollo/server/plugin/drainHttpServer";
@@ -141,6 +140,7 @@ const httpServer = http.createServer(app);
 const server = new ApolloServer({
   typeDefs: schema,
   resolvers,
+  allowUndefinedInResolve: false,
   plugins: [ApolloServerPluginDrainHttpServer({ httpServer })]
 });
 
