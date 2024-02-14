@@ -1,5 +1,5 @@
 import fetch from "isomorphic-fetch";
-import { ApolloClient } from "apollo-client";
+import { ApolloClient } from "@apollo/client";
 import { ApolloLink } from "apollo-link";
 import { createHttpLink } from "apollo-link-http";
 import { onError } from "apollo-link-error";
