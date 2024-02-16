@@ -1,6 +1,7 @@
 import PropTypes from "prop-types";
 import React, { Component } from "react";
 import { StyleSheet, css } from "aphrodite";
+import { compose } form "recompose";
 import gql from "graphql-tag";
 
 import Stepper from "@material-ui/core/Stepper";
@@ -312,5 +313,7 @@ export const mutations = {
   })
 };
 
-
-export default withMuiTheme(loadedData(({ mutations }), AssignmentTexterFeedback));
+export default compose(
+  withMuiTheme,
+  loadData({ mutations })
+)(AssignmentTexterFeedback);
