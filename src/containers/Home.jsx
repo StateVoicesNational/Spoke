@@ -6,7 +6,6 @@ import { StyleSheet, css } from "aphrodite";
 import theme from "../styles/theme";
 import { withRouter } from "react-router";
 import Link from "@material-ui/core/Link";
-import { compose } from "recompose";
 
 export const styles = StyleSheet.create({
   container: {
@@ -169,4 +168,4 @@ const mutations = {
   })
 };
 
-export default compose(withRouter, loadData({ queries, mutations }))(Home);
+export default withRouter(loadData(({ queries, mutations}), Home));
