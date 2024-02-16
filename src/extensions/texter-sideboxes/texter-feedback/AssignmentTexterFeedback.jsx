@@ -1,7 +1,7 @@
 import PropTypes from "prop-types";
 import React, { Component } from "react";
 import { StyleSheet, css } from "aphrodite";
-import { compose } form "recompose";
+import { compose } from "recompose";
 import gql from "graphql-tag";
 
 import Stepper from "@material-ui/core/Stepper";
