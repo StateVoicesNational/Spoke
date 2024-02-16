@@ -770,7 +770,7 @@ export class AssignmentTexterContactControls extends React.Component {
             }}
             multiline
             fullWidth
-            rowsMax={6}
+            maxRows={6}
           />
         </GSForm>
       </div>
