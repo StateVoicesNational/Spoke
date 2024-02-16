@@ -2,7 +2,6 @@ import PropTypes from "prop-types";
 import React from "react";
 import gql from "graphql-tag";
 import { Link } from "react-router";
-import { compose } from "recompose";
 
 import Button from "@material-ui/core/Button";
 import ButtonGroup from "@material-ui/core/ButtonGroup";
@@ -1225,9 +1224,9 @@ const mutations = {
 
 export const operations = { queries, mutations };
 
-const enhancedAdminCampaignEditBase = withMuiTheme(
-  loadData(operations)(AdminCampaignEditBase)
+const EnhancedAdminCampaignEditBase = loadData(operations)(
+  withMuiTheme(AdminCampaignEditBase)
 );
 
-export default enhancedAdminCampaignEditBase;
+export default EnhancedAdminCampaignEditBase;
 
