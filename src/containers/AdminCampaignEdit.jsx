@@ -1225,7 +1225,9 @@ const mutations = {
 
 export const operations = { queries, mutations };
 
-export default compose(
-  loadData(operations),
-  withMuiTheme
-)(AdminCampaignEditBase);
+const enhancedAdminCampaignEditBase = withMuiTheme(
+  loadData(operations)(AdminCampaignEditBase)
+);
+
+export default enhancedAdminCampaignEditBase;
+
