@@ -313,7 +313,4 @@ export const mutations = {
   })
 };
 
-export default compose(
-  withMuiTheme,
-  loadData({ mutations })
-)(AssignmentTexterFeedback);
+export default loadData({ mutations })(withMuiTheme(AssignmentTexterFeedback));
