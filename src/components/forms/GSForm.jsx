@@ -1,7 +1,6 @@
 import PropTypes from "prop-types";
 import React from "react";
 import Form from "react-formal";
-import { compose } from "recompose";
 import { StyleSheet, css } from "aphrodite";
 import { GraphQLRequestError } from "../../network/errors";
 import { log } from "../../lib";
@@ -155,4 +154,4 @@ GSForm.propTypes = {
   onSubmit: PropTypes.func
 };
 
-export default compose(withMuiTheme)(GSForm);
+export default withMuiTheme(GSForm);
