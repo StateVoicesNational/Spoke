@@ -710,8 +710,8 @@ const mutations = {
   })
 };
 
-const EnhancedSettings = withSetTheme(
-  loadData({ queries, mutations })(Settings)
+const EnhancedSettings = loadData({ queries, mutations })(
+  (withSetTheme)(Settings)
 );
 
 export default EnhancedSettings;

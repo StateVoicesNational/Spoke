@@ -168,4 +168,8 @@ const mutations = {
   })
 };
 
-export default withRouter(loadData(({ queries, mutations}), Home));
+const EnhancedHome = withRouter(
+  loadData({ queries, mutations })(Home)
+);
+
+export default EnhancedHome;

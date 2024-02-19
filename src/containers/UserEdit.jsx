@@ -506,10 +506,10 @@ const mutations = {
   })
 };
 
-const EnhancedUserEditBase = loadData({ queries, mutations })(
+const UserEdit = loadData({ queries, mutations })(
   withRouter(
     withMuiTheme(UserEditBase)
   )
 );
 
-export default EnhancedUserEditBase;
+export default UserEdit;
