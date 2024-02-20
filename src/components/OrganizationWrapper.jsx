@@ -1,7 +1,7 @@
 import React from "react";
 import { withRouter } from "react-router";
 import gql from "graphql-tag";
-import { compose, lifecycle } from "recompose";
+import { lifecycle } from "recompose";
 
 import loadData from "../containers/hoc/load-data";
 import withSetTheme from "../containers/hoc/withSetTheme";
@@ -37,16 +37,20 @@ const queries = {
 
 export const operations = { queries };
 
-export default compose(
-  withSetTheme,
-  loadData(operations),
-  withRouter,
-  lifecycle({
-    componentDidMount() {
-      this.props.setTheme(this.props.organization.organization.theme);
-    },
-    componentWillUnmount() {
-      this.props.setTheme(undefined);
-    }
-  })
-)(OrganizationWrapper);
+const EnhancedOrganizationWrapper =  withRouter(
+  loadData(operations)(
+    withSetTheme(
+      lifecycle({
+        componentDidMount() {
+          this.props.setTheme(this.props.organization.organization.theme);
+        },
+        componentWillUnmount() {
+          this.props.setTheme(undefined);
+        }
+      })(OrganizationWrapper)
+    )
+  )
+);
+
+export default EnhancedOrganizationWrapper;
+
