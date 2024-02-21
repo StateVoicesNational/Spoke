@@ -105,6 +105,9 @@ describe("CampaignInteractionStepsForm", () => {
     let interactionSteps;
 
     describe("when there are no action handlers", () => {
+      function emptyFunction() {
+        return {};
+      }
       beforeEach(async () => {
         interactionSteps = [
           {
@@ -156,9 +159,6 @@ describe("CampaignInteractionStepsForm", () => {
         ];
 
         StyleSheetTestUtils.suppressStyleInjection();
-        function emptyFunction() {
-          return {};
-        }
         wrappedComponent = mount(
           <ThemeContext.Provider value={{ muiTheme }}>
             <CampaignInteractionStepsForm
