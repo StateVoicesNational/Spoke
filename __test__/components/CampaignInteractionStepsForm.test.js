@@ -104,23 +104,25 @@ describe("CampaignInteractionStepsForm", () => {
     let wrappedComponent;
     let interactionSteps;
 
+    function cmpProp(prop, val) {
+      /**
+       * @returns True if the node prop and val are equal. False otherwise.
+       */
+      return function(node) {
+        return node.props()[prop] === val;
+      };
+    }
+
     describe("when there are no action handlers", () => {
-      function cmpProp(prop, val) {
-        /**
-         * @returns True if the node prop and val are equal. False otherwise.
-         */
-        return function(node) {
-          return node.props()[prop] === val;
-        };
-      }
       function dummyFunction() {
         /**
          * Empty function that does nothing
-         * 
+         *
          * @returns Empty object
          */
         return {};
       }
+
       beforeEach(async () => {
         interactionSteps = [
           {
