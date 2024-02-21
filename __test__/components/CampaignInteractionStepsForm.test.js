@@ -113,16 +113,16 @@ describe("CampaignInteractionStepsForm", () => {
       };
     }
 
-    describe("when there are no action handlers", () => {
-      function dummyFunction() {
-        /**
-         * Empty function that does nothing
-         *
-         * @returns Empty object
-         */
-        return {};
-      }
+    function dummyFunction() {
+      /**
+       * Empty function that does nothing
+       *
+       * @returns Empty object
+       */
+      return {};
+    }
 
+    describe("when there are no action handlers", () => {
       beforeEach(async () => {
         interactionSteps = [
           {
@@ -254,8 +254,8 @@ describe("CampaignInteractionStepsForm", () => {
               formValues={{
                 interactionSteps
               }}
-              onChange={() => {}}
-              onSubmit={() => {}}
+              onChange={dummyFunction}
+              onSubmit={dummyFunction}
               ensureComplete
               customFields={[]}
               saveLabel="save"
