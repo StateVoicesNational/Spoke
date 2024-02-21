@@ -29,6 +29,7 @@ import {
   muiTheme
 } from "../test_helpers";
 import ThemeContext from "../../src/containers/context/ThemeContext";
+import { wrap } from "lodash";
 
 describe("CampaignInteractionStepsForm", () => {
   describe("basic instantiation", function t() {
@@ -105,7 +106,7 @@ describe("CampaignInteractionStepsForm", () => {
     let interactionSteps;
 
     describe("when there are no action handlers", () => {
-      function emptyFunction() {
+      function dummyFunction() {
         return {};
       }
       beforeEach(async () => {
@@ -166,8 +167,8 @@ describe("CampaignInteractionStepsForm", () => {
               formValues={{
                 interactionSteps
               }}
-              onChange={emptyFunction}
-              onSubmit={emptyFunction}
+              onChange={dummyFunction}
+              onSubmit={dummyFunction}
               ensureComplete
               customFields={[]}
               saveLabel="save"
@@ -179,8 +180,13 @@ describe("CampaignInteractionStepsForm", () => {
       });
 
       it("doesn't render the answer actions", async () => {
+        function cmpProp(prop, val) {
+          return function(node) {
+            return node.props()[prop] === val;
+          };
+        }
         const answerActionsComponents = wrappedComponent.findWhere(
-          node => node.props()["data-test"] === "actionSelect"
+          cmpProp("data-test", "actionSelect")
         );
         expect(answerActionsComponents.exists()).toEqual(false);
       });
