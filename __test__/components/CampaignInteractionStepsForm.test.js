@@ -104,11 +104,20 @@ describe("CampaignInteractionStepsForm", () => {
     let wrappedComponent;
     let interactionSteps;
 
+    function cmpAnswerOptions(step) {
+      return function(mStep) {
+        /**
+         * @returns True if the answer options are equal. False otherwise.
+         */
+        return step.answer_option === mStep.answerOption;
+      }
+    }
+
     function cmpProp(prop, val) {
-      /**
-       * @returns True if the node prop and val are equal. False otherwise.
-       */
       return function(node) {
+        /**
+         * @returns True if the node prop and val are equal. False otherwise.
+         */
         return node.props()[prop] === val;
       };
     }
@@ -257,9 +266,7 @@ describe("CampaignInteractionStepsForm", () => {
       function deleteRedInteractionSteps(step) {
         const newStep = JSON.parse(
           JSON.stringify(
-            instance.state.interactionSteps.find(mStep => {
-              return step.answer_option === mStep.answerOption;
-            })
+            instance.state.interactionSteps.find(cmpAnswerOptions(step))
           )
         );
 
