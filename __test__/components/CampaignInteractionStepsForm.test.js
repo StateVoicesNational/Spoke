@@ -123,6 +123,7 @@ describe("CampaignInteractionStepsForm", () => {
     }
 
     function saveInteractionSteps(campaign, done, interactionSteps, queryResults, wrappedComponent) {
+      const newInteractionSteps = [];
       let instance, interactionStepsAfter;
 
       async function callback1() {
@@ -140,7 +141,7 @@ describe("CampaignInteractionStepsForm", () => {
           .knex("interaction_step")
           .where({ campaign_id: campaign.id });
 
-        normalizeIsDeleted(interactionStepsAfter);
+        interactionStepsAfter.map(normalizeIsDeleted);
 
         expect(interactionStepsAfter).toEqual(
           expect.arrayContaining([
@@ -211,26 +212,7 @@ describe("CampaignInteractionStepsForm", () => {
       }
 
       async function callback2() {
-        const newInteractionSteps = [];
-
-        interactionStepsAfter.forEach(step => {
-          const newStep = JSON.parse(
-            JSON.stringify(
-              instance.state.interactionSteps.find(mStep => {
-                return step.answer_option === mStep.answerOption;
-              })
-            )
-          );
-
-          newStep.id = step.id;
-          newStep.parentInteractionId = step.parent_interaction_id;
-
-          if (step.answer_option === "Red") {
-            newStep.isDeleted = true;
-          }
-
-          newInteractionSteps.push(newStep);
-        });
+        interactionStepsAfter.forEach(deleteRedInteractionSteps);
 
         instance.state.interactionSteps = newInteractionSteps;
         await instance.onSave();
@@ -240,7 +222,7 @@ describe("CampaignInteractionStepsForm", () => {
           .where({ campaign_id: campaign.id });
 
         // Test that the "Red" interaction step and its children are deleted
-        normalizeIsDeleted(interactionStepsAfterDelete);
+        interactionStepsAfterDelete.map(normalizeIsDeleted);
         expect(interactionStepsAfterDelete).toEqual(
           expect.arrayContaining([
             expect.objectContaining({
@@ -272,15 +254,32 @@ describe("CampaignInteractionStepsForm", () => {
         done();
       }
 
+      function deleteRedInteractionSteps(step) {
+        const newStep = JSON.parse(
+          JSON.stringify(
+            instance.state.interactionSteps.find(mStep => {
+              return step.answer_option === mStep.answerOption;
+            })
+          )
+        );
+
+        newStep.id = step.id;
+        newStep.parentInteractionId = step.parent_interaction_id;
+
+        if (step.answer_option === "Red") {
+          newStep.isDeleted = true;
+        }
+
+        newInteractionSteps.push(newStep);
+      }
+
       /**
        * Normalize is_deleted field due to various possible truthy values in different databases types
        * @param {array} is Interaction steps
        */
-      function normalizeIsDeleted(is) {
-        is.forEach(step => {
-          // eslint-disable-next-line no-param-reassign
-          step.is_deleted = !!step.is_deleted;
-        });
+      function normalizeIsDeleted(step) {
+        // eslint-disable-next-line no-param-reassign
+        step.is_deleted = !!step.is_deleted;
       }
 
       return function(interactionStepsBefore) {
