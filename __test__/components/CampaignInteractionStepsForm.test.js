@@ -156,6 +156,9 @@ describe("CampaignInteractionStepsForm", () => {
         ];
 
         StyleSheetTestUtils.suppressStyleInjection();
+        function emptyFunction() {
+          return {};
+        }
         wrappedComponent = mount(
           <ThemeContext.Provider value={{ muiTheme }}>
             <CampaignInteractionStepsForm
@@ -163,8 +166,8 @@ describe("CampaignInteractionStepsForm", () => {
               formValues={{
                 interactionSteps
               }}
-              onChange={() => {}}
-              onSubmit={() => {}}
+              onChange={emptyFunction}
+              onSubmit={emptyFunction}
               ensureComplete
               customFields={[]}
               saveLabel="save"
