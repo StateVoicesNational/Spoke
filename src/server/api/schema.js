@@ -394,11 +394,7 @@ async function editCampaign(id, campaign, loaders, user, origCampaignRecord) {
   });
 
   // hacky easter egg to force reload campaign contacts
-  if (
-    r.redis &&
-    campaignUpdates.description &&
-    campaignUpdates.description.endsWith("..")
-  ) {
+  if (r.redis && campaignUpdates.description?.endsWith("..")) {
     // some asynchronous cache-priming
     console.log(
       "force-loading loadCampaignCache",
