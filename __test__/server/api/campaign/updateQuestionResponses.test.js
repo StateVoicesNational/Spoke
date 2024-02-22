@@ -5,6 +5,7 @@ import {
   cleanupTest,
   createScript,
   createStartedCampaign,
+  mockInteractionSteps,
   runGql,
   sendMessage,
   setupTest,
@@ -166,65 +167,7 @@ describe("mutations.updateQuestionResponses", () => {
 
   describe("when called through the mutation", () => {
     beforeEach(async () => {
-      const inputInteractionSteps = [
-        {
-          id: "new_1",
-          questionText: "What is your favorite color",
-          script: "Hello {firstName}. Let's talk about your favorite color.",
-          answerOption: "",
-          answerActions: "",
-          answerActionsData: "",
-          parentInteractionId: null,
-          isDeleted: false,
-          interactionSteps: [
-            {
-              id: "new_2",
-              questionText: "What is your favorite shade of red?",
-              script: "Red is an awesome color, {firstName}!",
-              answerOption: "Red",
-              answerActions: "",
-              answerActionsData: "",
-              parentInteractionId: "new_1",
-              isDeleted: false,
-              interactionSteps: [
-                {
-                  id: "new_21",
-                  questionText: "",
-                  script: "Crimson is a rad shade of red, {firstName}",
-                  answerOption: "Crimson",
-                  answerActions: "",
-                  answerActionsData: "",
-                  parentInteractionId: "new_2",
-                  isDeleted: false,
-                  interactionSteps: []
-                },
-                {
-                  id: "new_22",
-                  questionText: "",
-                  script: "Firebrick is a rad shade of red, {firstName}",
-                  answerOption: "Firebrick",
-                  answerActions: "",
-                  answerActionsData: "",
-                  parentInteractionId: "new_2",
-                  isDeleted: false,
-                  interactionSteps: []
-                }
-              ]
-            },
-            {
-              id: "new_3",
-              questionText: "",
-              script: "Purple is an awesome color, {firstName}!",
-              answerOption: "Purple",
-              answerActions: "",
-              answerActionsData: "",
-              parentInteractionId: "new_1",
-              isDeleted: false,
-              interactionSteps: []
-            }
-          ]
-        }
-      ];
+      const inputInteractionSteps = [mockInteractionSteps];
 
       ({
         interactionSteps,
@@ -310,7 +253,7 @@ describe("mutations.updateQuestionResponses", () => {
           campaign_id: Number(campaign.id),
           question: "What is your favorite color",
           script: "Hello {firstName}. Let's talk about your favorite color.",
-          answer_actions: "",
+          answer_actions: "complex-test-action",
           value: "Red"
         },
         {
@@ -320,7 +263,7 @@ describe("mutations.updateQuestionResponses", () => {
           campaign_id: Number(campaign.id),
           question: "What is your favorite shade of red?",
           script: "Red is an awesome color, {firstName}!",
-          answer_actions: "",
+          answer_actions: "complex-test-action",
           value: "Crimson"
         }
       ]);
@@ -430,7 +373,7 @@ describe("mutations.updateQuestionResponses", () => {
 
         expect(databaseQueryResults.rows || databaseQueryResults).toEqual([
           {
-            answer_actions: "",
+            answer_actions: "complex-test-action",
             answer_option: "Red",
             campaign_id: 1,
             child_id: 2,
@@ -449,136 +392,8 @@ describe("mutations.updateQuestionResponses", () => {
     let inputInteractionStepsWithoutActionHandlers;
 
     beforeEach(async () => {
-      inputInteractionStepsWithoutActionHandlers = [
-        {
-          id: "new_1",
-          questionText: "What is your favorite color",
-          script: "Hello {firstName}. Let's talk about your favorite color.",
-          answerOption: "",
-          answerActions: "",
-          answerActionsData: "",
-          parentInteractionId: null,
-          isDeleted: false,
-          interactionSteps: [
-            {
-              id: "new_2",
-              questionText: "What is your favorite shade of red?",
-              script: "Red is an awesome color, {firstName}!",
-              answerOption: "Red",
-              answerActions: "",
-              answerActionsData: "",
-              parentInteractionId: "new_1",
-              isDeleted: false,
-              interactionSteps: [
-                {
-                  id: "new_21",
-                  questionText: "",
-                  script: "Crimson is a rad shade of red, {firstName}",
-                  answerOption: "Crimson",
-                  answerActions: "",
-                  answerActionsData: "",
-                  parentInteractionId: "new_2",
-                  isDeleted: false,
-                  interactionSteps: []
-                },
-                {
-                  id: "new_22",
-                  questionText: "",
-                  script: "Firebrick is a rad shade of red, {firstName}",
-                  answerOption: "Firebrick",
-                  answerActions: "",
-                  answerActionsData: "",
-                  parentInteractionId: "new_2",
-                  isDeleted: false,
-                  interactionSteps: []
-                }
-              ]
-            },
-            {
-              id: "new_3",
-              questionText: "",
-              script: "Purple is an awesome color, {firstName}!",
-              answerOption: "Purple",
-              answerActions: "",
-              answerActionsData: "",
-              parentInteractionId: "new_1",
-              isDeleted: false,
-              interactionSteps: []
-            }
-          ]
-        }
-      ];
-
-      inputInteractionStepsWithActionHandlers = [
-        {
-          id: "new_1",
-          questionText: "What is your favorite color",
-          script: "Hello {firstName}. Let's talk about your favorite color.",
-          answerOption: "",
-          answerActions: "",
-          answerActionsData: "",
-          parentInteractionId: null,
-          isDeleted: false,
-          interactionSteps: [
-            {
-              id: "new_2",
-              questionText: "What is your favorite shade of red?",
-              script: "Red is an awesome color, {firstName}!",
-              answerOption: "Red",
-              answerActions: "complex-test-action",
-              answerActionsData: "red answer actions data",
-              parentInteractionId: "new_1",
-              isDeleted: false,
-              interactionSteps: [
-                {
-                  id: "new_21",
-                  questionText: "",
-                  script: "Crimson is a rad shade of red, {firstName}",
-                  answerOption: "Crimson",
-                  answerActions: "complex-test-action",
-                  answerActionsData: "crimson answer actions data",
-                  parentInteractionId: "new_2",
-                  isDeleted: false,
-                  interactionSteps: []
-                },
-                {
-                  id: "new_22",
-                  questionText: "",
-                  script: "Firebrick is a rad shade of red, {firstName}",
-                  answerOption: "Firebrick",
-                  answerActions: "",
-                  answerActionsData: "",
-                  parentInteractionId: "new_2",
-                  isDeleted: false,
-                  interactionSteps: []
-                }
-              ]
-            },
-            {
-              id: "new_3",
-              questionText: "",
-              script: "Purple is an awesome color, {firstName}!",
-              answerOption: "Purple",
-              answerActions: "",
-              answerActionsData: "",
-              parentInteractionId: "new_1",
-              isDeleted: false,
-              interactionSteps: []
-            },
-            {
-              id: "new_4",
-              questionText: "",
-              script: "Blue is an awesome color, {firstName}!",
-              answerOption: "Blue",
-              answerActions: "complex-test-action",
-              answerActionsData: "blue answer actions data",
-              parentInteractionId: "new_1",
-              isDeleted: false,
-              interactionSteps: []
-            }
-          ]
-        }
-      ];
+      inputInteractionStepsWithoutActionHandlers = [mockInteractionSteps];
+      inputInteractionStepsWithActionHandlers = [mockInteractionSteps];
     });
 
     describe("happy path", () => {

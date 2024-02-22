@@ -18,6 +18,7 @@ import {
   operations as adminCampaignEditOps
 } from "../../src/containers/AdminCampaignEdit";
 import {
+  mockInteractionSteps,
   setupTest,
   cleanupTest,
   createCampaign,
@@ -110,7 +111,7 @@ describe("CampaignInteractionStepsForm", () => {
          * @returns True if the answer options are equal. False otherwise.
          */
         return step.answer_option === mStep.answerOption;
-      }
+      };
     }
 
     function cmpProp(prop, val) {
@@ -131,7 +132,13 @@ describe("CampaignInteractionStepsForm", () => {
       return {};
     }
 
-    function saveInteractionSteps(campaign, done, interactionSteps, queryResults, wrappedComponent) {
+    function saveInteractionSteps(
+      campaign,
+      done,
+      interactionSteps,
+      queryResults,
+      wrappedComponent
+    ) {
       const newInteractionSteps = [];
       let instance, interactionStepsAfter;
 
@@ -215,9 +222,12 @@ describe("CampaignInteractionStepsForm", () => {
         );
 
         // Delete "Red" interaction step
-        wrappedComponent.setState({
-          expandedSection: 3
-        }, callback2);
+        wrappedComponent.setState(
+          {
+            expandedSection: 3
+          },
+          callback2
+        );
       }
 
       async function callback2() {
@@ -292,66 +302,22 @@ describe("CampaignInteractionStepsForm", () => {
       return function(interactionStepsBefore) {
         expect(interactionStepsBefore).toHaveLength(0);
 
-        return wrappedComponent.setState({
-          expandedSection: 3,
-          campaignFormValues: {
-            ...queryResults.campaignData.campaign,
-            interactionSteps
-          }
-        }, callback1);
+        return wrappedComponent.setState(
+          {
+            expandedSection: 3,
+            campaignFormValues: {
+              ...queryResults.campaignData.campaign,
+              interactionSteps
+            }
+          },
+          callback1
+        );
       };
     }
 
     describe("when there are no action handlers", () => {
       beforeEach(async () => {
-        interactionSteps = [
-          {
-            id: "new_1",
-            questionText: "What is your favorite color",
-            script: "Hello {firstName}. Let's talk about your favorite color.",
-            answerOption: "",
-            answerActions: "",
-            answerActionsData: "",
-            parentInteractionId: null,
-            isDeleted: false,
-            interactionSteps: [
-              {
-                id: "new_2",
-                questionText: "What is your favorite shade of red?",
-                script: "Red is an awesome color, {firstName}!",
-                answerOption: "Red",
-                answerActions: "",
-                answerActionsData: "",
-                parentInteractionId: "new_1",
-                isDeleted: false,
-                interactionSteps: [
-                  {
-                    id: "new_21",
-                    questionText: "",
-                    script: "Crimson is a rad shade of red, {firstName}",
-                    answerOption: "Crimson",
-                    answerActions: "",
-                    answerActionsData: "",
-                    parentInteractionId: "new_2",
-                    isDeleted: false,
-                    interactionSteps: []
-                  }
-                ]
-              },
-              {
-                id: "new_3",
-                questionText: "",
-                script: "Purple is an awesome color, {firstName}!",
-                answerOption: "Purple",
-                answerActions: "",
-                answerActionsData: "",
-                parentInteractionId: "new_1",
-                isDeleted: false,
-                interactionSteps: []
-              }
-            ]
-          }
-        ];
+        interactionSteps = [mockInteractionSteps];
 
         StyleSheetTestUtils.suppressStyleInjection();
         wrappedComponent = mount(
@@ -949,7 +915,15 @@ describe("CampaignInteractionStepsForm", () => {
         expect(wrappedComponent.exists()).toEqual(true);
         r.knex("interaction_step")
           .where({ campaign_id: campaign.id })
-          .then(saveInteractionSteps(campaign, done, interactionSteps, queryResults, wrappedComponent));
+          .then(
+            saveInteractionSteps(
+              campaign,
+              done,
+              interactionSteps,
+              queryResults,
+              wrappedComponent
+            )
+          );
       });
     });
   });
