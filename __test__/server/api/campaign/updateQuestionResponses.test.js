@@ -6,6 +6,7 @@ import {
   createScript,
   createStartedCampaign,
   mockInteractionSteps,
+  muiTheme,
   runGql,
   sendMessage,
   setupTest,
@@ -34,7 +35,6 @@ import {
   contactDataFragment
 } from "../../../../src/containers/TexterTodo";
 
-import { muiTheme } from "../../../test_helpers";
 import ThemeContext from "../../../../src/containers/context/ThemeContext";
 
 describe("mutations.updateQuestionResponses", () => {
@@ -457,24 +457,21 @@ describe("mutations.updateQuestionResponses", () => {
     });
 
     describe("when some of the steps have an action handler", () => {
+      function getMessagePass(received, expectedObject) {
+        let pass = false;
+        if (received?.id && expectedObject?.id) {
+          pass = Number(received.id) === Number(expectedObject.id);
+        }
+        const message = pass ? "ok" : "fail";
+        return {
+          message,
+          pass
+        };
+      }
+
       beforeEach(async () => {
         expect.extend({
-          objectWithId: (received, expectedObject) => {
-            let pass = false;
-            if (
-              received &&
-              received.id &&
-              expectedObject &&
-              expectedObject.id
-            ) {
-              pass = Number(received.id) === Number(expectedObject.id);
-            }
-            const message = pass ? "ok" : "fail";
-            return {
-              message,
-              pass
-            };
-          }
+          objectWithId: getMessagePass
         });
 
         ({
@@ -563,8 +560,8 @@ describe("mutations.updateQuestionResponses", () => {
         );
       });
 
-      describe("when a response is added", () => {
-        beforeEach(async () => {
+      const responseAdded = {
+        beforeEach: async () => {
           questionResponses = [
             {
               campaignContactId: contacts[0].id,
@@ -592,7 +589,11 @@ describe("mutations.updateQuestionResponses", () => {
             ComplexTestActionHandler,
             "processDeletedQuestionResponse"
           );
-        });
+        }
+      }
+
+      describe("when a response is added", () => {
+        beforeEach(responseAdded.beforeEach);
 
         it("calls the action handler for the new response", async () => {
           await Mutations.updateQuestionResponses(
