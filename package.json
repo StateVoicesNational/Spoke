@@ -81,7 +81,7 @@
   "homepage": "https://github.com/MoveOnOrg/Spoke/#readme",
   "dependencies": {
     "@aoberoi/passport-slack": "^1.0.5",
-    "@apollo/client": "^3.9.4",
+    "@apollo/client": "^3.9.5",
     "@apollo/server": "^4.10.0",
     "@aws-sdk/client-cloudwatch": "^3.462.0",
     "@aws-sdk/client-cloudwatch-events": "^3.462.0",
