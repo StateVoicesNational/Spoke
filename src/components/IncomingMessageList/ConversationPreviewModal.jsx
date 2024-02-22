@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 import PropTypes from "prop-types";
-import gql from "graphql-tag";
+import { gql } from "@apollo/client";
 import { compose } from "recompose";
 import { StyleSheet, css } from "aphrodite";
 

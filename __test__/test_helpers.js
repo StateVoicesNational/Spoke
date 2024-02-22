@@ -9,7 +9,6 @@ import {
   r
 } from "../src/server/models/";
 import { graphql } from "graphql";
-import gql from "graphql-tag";
 import { makeExecutableSchema } from "@graphql-tools/schema";
 import { resolvers } from "../src/server/api/schema";
 import { schema } from "../src/api/schema";

@@ -122,7 +122,6 @@
     "googleapis": "^39.2.0",
     "graphql": "^16.8.1",
     "graphql-date": "^1.0.3",
-    "graphql-tag": "^2.12.6",
     "graphql-type-json": "^0.3.2",
     "heroku-ssl-redirect": "^0.1.1",
     "humps": "^1.1.0",
