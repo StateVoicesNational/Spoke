@@ -161,7 +161,8 @@ export async function createInvite() {
 export async function createOrganization(user, invite) {
   const rootValue = {};
   const name = "Testy test organization";
-  const userId = user.id;
+  const userId = user.id.toString();
+
   const inviteId = invite.data.createInvite.id;
 
   const contextValue = getContext({ user });
