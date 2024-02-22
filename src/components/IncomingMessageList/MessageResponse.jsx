@@ -130,7 +130,7 @@ class MessageResponse extends Component {
                 multiline
                 fullWidth
                 disabled={isSending}
-                rowsMax={6}
+                maxRows={6}
               />
             </div>
           </div>
