@@ -391,7 +391,7 @@ describe("CampaignInteractionStepsForm", () => {
             parentInteractionId: 1,
             isDeleted: false
           },
-          { ...pinkInteractionStep }
+          pinkInteractionStep
         ];
 
         StyleSheetTestUtils.suppressStyleInjection();
