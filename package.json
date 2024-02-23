@@ -155,7 +155,7 @@
     "passport-local-authenticate": "^1.2.0",
     "pg": "^8.11.3",
     "pg-connection-string": "^2.6.2",
-    "pg-query-stream": "^1.1.2",
+    "pg-query-stream": "^4.5.3",
     "prop-types": "^15.8.1",
     "punycode": "^2.3.1",
     "query-string": "^4.3.4",
