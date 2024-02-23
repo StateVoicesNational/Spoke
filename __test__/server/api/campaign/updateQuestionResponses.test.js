@@ -589,13 +589,8 @@ describe("mutations.updateQuestionResponses", () => {
             ComplexTestActionHandler,
             "processDeletedQuestionResponse"
           );
-        }
-      }
-
-      describe("when a response is added", () => {
-        beforeEach(responseAdded.beforeEach);
-
-        it("calls the action handler for the new response", async () => {
+        },
+        it1: async () => {
           await Mutations.updateQuestionResponses(
             undefined,
             { questionResponses, campaignContactId: contacts[0].id },
@@ -635,11 +630,17 @@ describe("mutations.updateQuestionResponses", () => {
             ComplexTestActionHandler.processAction.mock.calls[0][0]
               .previousValue
           ).toBeNull();
-        });
+        }
+      }
+
+      describe("when a response is added", () => {
+        beforeEach(responseAdded.beforeEach);
+
+        it("calls the action handler for the new response", responseAdded.it1);
       });
 
-      describe("when responses are added, resubmitted with no change, updated, and deleted", () => {
-        beforeEach(async () => {
+      const responseResubmitted = {
+        beforeEach: async () => {
           questionResponses = [
             {
               campaignContactId: contacts[0].id,
@@ -667,9 +668,8 @@ describe("mutations.updateQuestionResponses", () => {
             ComplexTestActionHandler,
             "processDeletedQuestionResponse"
           );
-        });
-
-        describe("when one of the question responses has already been saved with the same value", () => {
+        },
+        saved: () => {
           it("calls processAction for the new question response", async () => {
             await Mutations.updateQuestionResponses(
               undefined,
@@ -686,9 +686,8 @@ describe("mutations.updateQuestionResponses", () => {
               ComplexTestActionHandler.processDeletedQuestionResponse
             ).not.toHaveBeenCalled();
           });
-        });
-
-        describe("when one of the question responses was updated", () => {
+        },
+        updated: () => {
           beforeEach(async () => {
             questionResponses[0].value = "Blue";
           });
@@ -718,9 +717,8 @@ describe("mutations.updateQuestionResponses", () => {
               ])
             );
           });
-        });
-
-        describe("when one of the question responses is deleted", () => {
+        },
+        deleted: () => {
           it("calls processDeletedQuestionResponse", async () => {
             await Mutations.updateQuestionResponses(
               undefined,
@@ -771,11 +769,21 @@ describe("mutations.updateQuestionResponses", () => {
                 .calls[0][0].previousValue
             ).toEqual("Crimson");
           });
-        });
+        }
+      }
+
+      describe("when responses are added, resubmitted with no change, updated, and deleted", () => {
+        beforeEach(responseResubmitted.beforeEach);
+
+        describe("when one of the question responses has already been saved with the same value", responseResubmitted.saved);
+
+        describe("when one of the question responses was updated", responseResubmitted.updated);
+
+        describe("when one of the question responses is deleted", responseResubmitted.deleted);
       });
 
-      describe("when no action handlers are configured", () => {
-        beforeEach(async () => {
+      const noActionHandlersConfigured = {
+        beforeEach: async () => {
           ({
             interactionSteps,
             redInteractionStep,
@@ -785,9 +793,8 @@ describe("mutations.updateQuestionResponses", () => {
             inputInteractionStepsWithActionHandlers,
             2
           ));
-        });
-
-        it("exits early and logs an error", async () => {
+        },
+        earlyExit: async () => {
           jest
             .spyOn(ActionHandlers, "rawAllActionHandlers")
             .mockReturnValue({});
@@ -800,11 +807,17 @@ describe("mutations.updateQuestionResponses", () => {
           );
 
           expect(cacheableData.organization.load).not.toHaveBeenCalled();
-        });
+        }
+      }
+
+      describe("when no action handlers are configured", () => {
+        beforeEach(noActionHandlersConfigured.beforeEach);
+
+        it("exits early and logs an error", noActionHandlersConfigured.earlyExit);
       });
 
-      describe("when task dispatch fails", () => {
-        beforeEach(async () => {
+      const taskDispatchFails = {
+        beforeEach: async () => {
           ({
             interactionSteps,
             redInteractionStep,
@@ -814,9 +827,8 @@ describe("mutations.updateQuestionResponses", () => {
             inputInteractionStepsWithActionHandlers,
             2
           ));
-        });
-
-        it("dispatches other actions", async () => {
+        },
+        dispatchOtherActions: async () => {
           jest.spyOn(ComplexTestActionHandler, "processAction");
           jest.spyOn(jobRunner, "dispatchTask").mockImplementationOnce(() => {
             throw new Error("foo");
@@ -846,11 +858,17 @@ describe("mutations.updateQuestionResponses", () => {
               }
             ]
           ]);
-        });
+        }
+      }
+
+      describe("when task dispatch fails", () => {
+        beforeEach(taskDispatchFails.beforeEach);
+
+        it("dispatches other actions", taskDispatchFails.dispatchOtherActions);
       });
 
-      describe("when the action handler throws an exception", () => {
-        beforeEach(async () => {
+      const actionHandlerThrowsException = {
+        beforeEach: async () => {
           ({
             interactionSteps,
             redInteractionStep,
@@ -860,9 +878,8 @@ describe("mutations.updateQuestionResponses", () => {
             inputInteractionStepsWithActionHandlers,
             2
           ));
-        });
-
-        it("processes the other actions", async () => {
+        },
+        processOtherActions: async () => {
           jest
             .spyOn(ComplexTestActionHandler, "processAction")
             .mockRejectedValueOnce(new Error("oh no"));
@@ -906,7 +923,13 @@ describe("mutations.updateQuestionResponses", () => {
               ]
             ])
           );
-        });
+        }
+      }
+
+      describe("when the action handler throws an exception", () => {
+        beforeEach(actionHandlerThrowsException.beforeEach);
+
+        it("processes the other actions", actionHandlerThrowsException.processOtherActions);
       });
     });
   });
