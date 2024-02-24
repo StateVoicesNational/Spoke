@@ -109,7 +109,7 @@ manually referencing a key inline.  All root keys are prefixed by the environmen
   * SET `optouts${-orgId|}`
     * if OPTOUTS_SHARE_ALL_ORGS is set, then orgId=''
 * optOutMessage
-  * SET `optoutmessages-${orgId}`
+  * KEY `optoutmessages-${orgId}`
 * campaign-contact (only when `REDIS_CONTACT_CACHE=1`)
   * KEY `contact-${contactId}`
     * Besides contact data, also includes `organization_id`, `messageservice_sid`, `zip.city`, `zip.state`
@@ -130,3 +130,5 @@ manually referencing a key inline.  All root keys are prefixed by the environmen
 * message (only when `REDIS_CONTACT_CACHE=1`)
   * LIST `messages-${contactId}`
     * Includes all message data
+* zip
+  * KEY `state-of-${zip}`

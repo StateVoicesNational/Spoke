@@ -1,40 +1,17 @@
-import { getConfig } from "../lib/config";
-import SmartyStreetsSDK from "smartystreets-javascript-sdk";
 import optOutMessageCache from "../../models/cacheable_queries/opt-out-message";
-
-const SmartyStreetsCore = SmartyStreetsSDK.core;
-const Lookup = SmartyStreetsSDK.usZipcode.Lookup;
-
-const clientBuilder = new SmartyStreetsCore.ClientBuilder(
-  new SmartyStreetsCore.StaticCredentials(
-    getConfig("SMARTY_AUTH_ID"),
-    getConfig("SMARTY_AUTH_TOKEN")
-  )
-);
-const client = clientBuilder.buildUsZipcodeClient();
+import zipStateCache from "../../models/cacheable_queries/zip";
 
 export const getOptOutMessage = async (
   _,
   { organizationId, zip, defaultMessage }
 ) => {
-  const lookup = new Lookup();
-
-  lookup.zipCode = zip;
-
   try {
-    const res = await client.send(lookup);
-    const lookupRes = res.lookups[0].result[0];
+    const queryResult = await optOutMessageCache.query({
+      organizationId: organizationId,
+      state: await zipStateCache.query({ zip: zip })
+    });
 
-    if (lookupRes.valid) {
-      const queryResult = await optOutMessageCache.query({
-        organizationId: organizationId,
-        state: lookupRes.zipcodes[0].stateAbbreviation
-      });
-
-      return queryResult || defaultMessage;
-    }
-
-    return defaultMessage;
+    return queryResult || defaultMessage;
   } catch (e) {
     console.error(e);
     return defaultMessage;
