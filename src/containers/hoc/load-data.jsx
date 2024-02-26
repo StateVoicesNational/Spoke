@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { graphql, compose } from "react-apollo";
 import { withProps, branch, renderComponent } from "recompose";
 
@@ -94,9 +94,56 @@ const PrettyErrors = ({ errors }) => (
  * @param {Object} options
  * @see withOperations
  */
+
+export default function Options({ props }) {
+  const [loading, setLoading] = useState(null)
+  const [data, setData] = useState(null)
+  const [errors, setErrors] = useState(null)
+  const { options } = props;
+  console.log("before useEffect")
+
+  useEffect(() => {
+    console.log("In useEffect")
+    async function fetchData(options) {
+      setLoading(true);
+      console.log("in async function")
+      try {
+        const response = withOperations(options);
+        console.log("tring to get data")
+        if (response.errors.graphQLErrors &&
+            response.errors.graphQLErrors > 0) {
+          setErrors(response.errors.graphQLErrors)
+        } else {
+          setData(response)
+        }
+      } catch (error) { 
+          console.log("error in load-data.jsx", error);
+      } finally {
+          setLoading(false)
+      }
+    }
+  console.log("before fetchData function call")
+  fetchData(options);
+  }, [options]);
+  console.log("after useEffect has been called")
+  return (
+    <>
+      {loading && <LoadingIndicator />}
+      {errors && errors.length > 0 && <PrettyErrors errors={errors} />}
+      {!loading && !errors && data}
+    </>
+  );
+};
+
+// export default Options;
+
+/* Original export
 export default options =>
   compose(
     withOperations(options),
     branch(({ loading }) => loading, renderComponent(LoadingIndicator)),
     branch(({ errors }) => errors.length > 0, renderComponent(PrettyErrors))
   );
+*/
+
+
