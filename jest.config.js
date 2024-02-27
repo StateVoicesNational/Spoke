@@ -1,3 +1,10 @@
+const esModules = [
+  "query-string",
+  "decode-uri-component", // query-string dependency
+  "split-on-first", // query-string dependency
+  "filter-obj" // query-string dependency
+];
+
 module.exports = {
   verbose: true,
   testURL: "http://localhost:3000",
@@ -50,5 +57,8 @@ module.exports = {
   testPathIgnorePatterns: [
     "<rootDir>/node_modules/",
     "<rootDir>/__test__/cypress/"
-  ]
+  ],
+  transformIgnorePatterns: esModules.length
+    ? [`/node_modules/(?!${esModules.join("|")})`]
+    : []
 };
