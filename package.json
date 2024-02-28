@@ -122,7 +122,7 @@
     "dotenv": "^2.0.0",
     "express": "^4.18.2",
     "fs": "^0.0.2",
-    "google-libphonenumber": "^3.2.33",
+    "google-libphonenumber": "^3.2.34",
     "googleapis": "^39.2.0",
     "graphql": "^0.13.2",
     "graphql-date": "^1.0.3",
