@@ -143,7 +143,6 @@
     "moment": "2.29.4",
     "moment-timezone": "^0.5.43",
     "nexmo": "^2.9.1",
-    "node-abort-controller": "^1.2.1",
     "node-fetch": "^2.7.0",
     "nodemailer": "^6.9.7",
     "omit-deep-lodash": "^1.1.7",

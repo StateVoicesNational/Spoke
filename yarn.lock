@@ -13743,11 +13743,6 @@ nock@11.9.1:
     mkdirp "^0.5.0"
     propagate "^2.0.0"
 
-node-abort-controller@^1.2.1:
-  version "1.2.1"
-  resolved "https://registry.npmjs.org/node-abort-controller/-/node-abort-controller-1.2.1.tgz"
-  integrity sha512-79PYeJuj6S9+yOHirR0JBLFOgjB6sQCir10uN6xRx25iD+ZD4ULqgRn3MwWBRaQGB0vEgReJzWwJo42T1R6YbQ==
-
 node-addon-api@^4.2.0:
   version "4.3.0"
   resolved "https://registry.npmjs.org/node-addon-api/-/node-addon-api-4.3.0.tgz"
