@@ -138,7 +138,7 @@
     "jsonwebtoken": "^9.0.2",
     "knex": "^2.5.1",
     "lodash": "^4.17.21",
-    "mailgun-js": "^0.20.0",
+    "mailgun.js": "^10.2.1",
     "minilog": "^3.1.0",
     "moment": "2.29.4",
     "moment-timezone": "^0.5.43",
