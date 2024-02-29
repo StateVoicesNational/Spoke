@@ -198,7 +198,6 @@
     "react-scripts": "^5.0.1",
     "react-test-renderer": "^16.14.0",
     "regenerator-runtime": "^0.10.5",
-    "selenium-webdriver": "^3.6.0",
     "sqlite3": "^5.1.6",
     "supertest": "^6.3.3",
     "wait-on": "^2.1.2",
