@@ -61,6 +61,7 @@ import {
   buyPhoneNumbers,
   deletePhoneNumbers,
   findNewCampaignContact,
+  getOptOutMessage,
   joinOrganization,
   editOrganization,
   releaseContacts,
@@ -760,6 +761,7 @@ const rootMutations = {
 
       return await cacheableData.organization.load(organizationId);
     },
+    getOptOutMessage,
     updateOptOutMessage: async (
       _,
       { organizationId, optOutMessage },
@@ -1263,6 +1265,15 @@ const rootMutations = {
               usedFields[f] = 1;
             });
           }
+
+          if (
+            getConfig("OPT_OUT_PER_STATE") &&
+            getConfig("SMARTY_AUTH_ID") &&
+            getConfig("SMARTY_AUTH_TOKEN")
+          ) {
+            usedFields.zip = 1;
+          }
+
           return finalContacts.map(c => (c && { ...c, usedFields }) || c);
         }
       }
