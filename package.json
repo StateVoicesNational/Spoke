@@ -156,7 +156,7 @@
     "request": "^2.88.2",
     "rethink-knex-adapter": "0.4.20",
     "rollbar": "^2.26.2",
-    "terser-webpack-plugin": "^4.2.3",
+    "terser-webpack-plugin": "^5.3.10",
     "thinky": "^2.3.9",
     "timezonecomplete": "^5.12.4",
     "twilio": "^4.23.0",
