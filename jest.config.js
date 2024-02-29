@@ -4,7 +4,8 @@ const esModules = [
   "query-string",
   "decode-uri-component", // query-string dependency
   "split-on-first", // query-string dependency
-  "filter-obj" // query-string dependency
+  "filter-obj", // query-string dependency
+  "url-join"
 ];
 
 module.exports = {
