@@ -2,7 +2,7 @@
 import { isSqlite, r } from "../../../src/server/models/";
 import { getCampaignsQuery } from "../../../src/containers/AdminCampaignList";
 import { GraphQLError } from "graphql/error";
-import gql from "graphql-tag";
+import { gql } from "@apollo/client";
 import * as messagingServices from "../../../src/extensions/service-vendors";
 
 import {

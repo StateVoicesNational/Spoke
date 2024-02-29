@@ -1,6 +1,6 @@
 import PropTypes from "prop-types";
 import React from "react";
-import gql from "graphql-tag";
+import { gql } from "@apollo/client";
 import Form from "react-formal";
 import * as yup from "yup";
 import { StyleSheet, css } from "aphrodite";

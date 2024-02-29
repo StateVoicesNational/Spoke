@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 import PropTypes from "prop-types";
-import gql from "graphql-tag";
+import { gql } from "@apollo/client";
 import { StyleSheet, css } from "aphrodite";
 
 import Button from "@material-ui/core/Button";
@@ -269,4 +269,3 @@ const mutations = {
 export default withMuiTheme(
   loadData({ mutations })(InnerConversationPreviewModal)
 );
-

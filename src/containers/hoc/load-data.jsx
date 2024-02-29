@@ -1,5 +1,7 @@
 import React from "react";
-import { graphql, compose } from "react-apollo";
+import { graphql } from "@apollo/client/react/hoc";
+import { flowRight as compose } from "lodash";
+
 import Card from "@material-ui/core/Card";
 import CardHeader from "@material-ui/core/CardHeader";
 import CardActions from "@material-ui/core/CardActions";
