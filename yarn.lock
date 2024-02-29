@@ -1230,10 +1230,10 @@
   dependencies:
     tslib "^2.5.0"
 
-"@babel/cli@^7.23.4":
-  version "7.23.4"
-  resolved "https://registry.npmjs.org/@babel/cli/-/cli-7.23.4.tgz"
-  integrity sha512-j3luA9xGKCXVyCa5R7lJvOMM+Kc2JEnAEIgz2ggtjQ/j5YUVgfsg/WsG95bbsgq7YLHuiCOzMnoSasuY16qiCw==
+"@babel/cli@^7.23.9":
+  version "7.23.9"
+  resolved "https://registry.yarnpkg.com/@babel/cli/-/cli-7.23.9.tgz#06b3e76376ee53f14ac8ac422c884950c69e1b9e"
+  integrity sha512-vB1UXmGDNEhcf1jNAHKT9IlYk1R+hehVTLFlCLHBi8gfuHQGP6uRjgXVYU0EVlI/qwAWpstqkBdf2aez3/z/5Q==
   dependencies:
     "@jridgewell/trace-mapping" "^0.3.17"
     commander "^4.0.1"
@@ -13839,10 +13839,10 @@ node-releases@^2.0.13, node-releases@^2.0.14:
   resolved "https://registry.npmjs.org/node-releases/-/node-releases-2.0.14.tgz"
   integrity sha512-y10wOWt8yZpqXmOgRo77WaHEmhYQYGNA6y421PKsKYWEK8aW+cqAphborZDhqfyKrbZEN92CN1X2KbafY2s7Yw==
 
-nodemailer@^6.9.7:
-  version "6.9.7"
-  resolved "https://registry.npmjs.org/nodemailer/-/nodemailer-6.9.7.tgz"
-  integrity sha512-rUtR77ksqex/eZRLmQ21LKVH5nAAsVicAtAYudK7JgwenEDZ0UIQ1adUGqErz7sMkWYxWTTU1aeP2Jga6WQyJw==
+nodemailer@^6.9.9:
+  version "6.9.11"
+  resolved "https://registry.yarnpkg.com/nodemailer/-/nodemailer-6.9.11.tgz#900703bd6dc62855d9cea962acf261926841f825"
+  integrity sha512-UiAkgiERuG94kl/3bKfE8o10epvDnl0vokNEtZDPTq9BWzIl6EFT9336SbIT4oaTBD8NmmUTLsQyXHV82eXSWg==
 
 nodemon@^2.0.22:
   version "2.0.22"

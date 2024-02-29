@@ -87,7 +87,7 @@
     "@aws-sdk/client-s3": "^3.462.0",
     "@aws-sdk/client-sqs": "^3.462.0",
     "@aws-sdk/s3-request-presigner": "^3.462.0",
-    "@babel/cli": "^7.23.4",
+    "@babel/cli": "^7.23.9",
     "@babel/plugin-proposal-export-default-from": "^7.23.3",
     "@babel/plugin-transform-runtime": "^7.23.4",
     "@babel/preset-env": "^7.23.3",
