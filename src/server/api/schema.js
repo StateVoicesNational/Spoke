@@ -18,6 +18,7 @@ import {
   Organization,
   Tag,
   UserOrganization,
+  isSqlite,
   r,
   cacheableData
 } from "../models";
@@ -393,11 +394,7 @@ async function editCampaign(id, campaign, loaders, user, origCampaignRecord) {
   });
 
   // hacky easter egg to force reload campaign contacts
-  if (
-    r.redis &&
-    campaignUpdates.description &&
-    campaignUpdates.description.endsWith("..")
-  ) {
+  if (r.redis && campaignUpdates.description?.endsWith("..")) {
     // some asynchronous cache-priming
     console.log(
       "force-loading loadCampaignCache",
@@ -419,6 +416,11 @@ async function updateInteractionSteps(
   origCampaignRecord,
   idMap = {}
 ) {
+  // Allows cascade delete for SQLite
+  if (isSqlite) {
+    await r.knex.raw("PRAGMA foreign_keys = ON");
+  }
+
   for (let i = 0; i < interactionSteps.length; i++) {
     const is = interactionSteps[i];
     // map the interaction step ids for new ones
