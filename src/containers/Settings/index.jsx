@@ -6,7 +6,6 @@ import Form from "react-formal";
 import moment from "moment";
 import * as yup from "yup";
 import { StyleSheet, css } from "aphrodite";
-import { compose } from "recompose";
 
 import Dialog from "@material-ui/core/Dialog";
 import DialogContent from "@material-ui/core/DialogContent";
@@ -711,7 +710,8 @@ const mutations = {
   })
 };
 
-export default compose(
-  withSetTheme,
-  loadData({ queries, mutations })
-)(Settings);
+const EnhancedSettings = loadData({ queries, mutations })(
+  (withSetTheme)(Settings)
+);
+
+export default EnhancedSettings;

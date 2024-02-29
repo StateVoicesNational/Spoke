@@ -1,6 +1,5 @@
 import PropTypes from "prop-types";
 import React from "react";
-import { compose } from "recompose";
 import { gql } from "@apollo/client";
 import Form from "react-formal";
 import * as yup from "yup";
@@ -171,7 +170,8 @@ const mutations = {
   })
 };
 
-export default compose(
-  withMuiTheme,
-  loadData({ queries, mutations })
-)(AdminReplySender);
+const enhancedAdminReplySender = withMuiTheme(
+  loadData({ queries, mutations })(AdminReplySender)
+);
+
+export default enhancedAdminReplySender;

@@ -1,8 +1,6 @@
 import React from "react";
 import { withRouter } from "react-router";
 import { gql } from "@apollo/client";
-import { compose, lifecycle } from "recompose";
-
 import loadData from "../containers/hoc/load-data";
 import withSetTheme from "../containers/hoc/withSetTheme";
 
@@ -37,16 +35,20 @@ const queries = {
 
 export const operations = { queries };
 
-export default compose(
-  withSetTheme,
-  loadData(operations),
-  withRouter,
-  lifecycle({
-    componentDidMount() {
-      this.props.setTheme(this.props.organization.organization.theme);
-    },
-    componentWillUnmount() {
-      this.props.setTheme(undefined);
-    }
-  })
-)(OrganizationWrapper);
+class EnhancedOrganizationWrapper extends React.Component {
+  componentDidMount() {
+    this.props.setTheme(this.props.organization.organization.theme);
+  }
+
+  componentWillUnmount() {
+    this.props.setTheme(undefined);
+  }
+
+  render() {
+    return <OrganizationWrapper {...this.props} />;
+  }
+}
+
+export default loadData(operations)(
+  withSetTheme(withRouter(EnhancedOrganizationWrapper))
+);

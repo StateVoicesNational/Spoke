@@ -130,7 +130,7 @@
     "jest-each": "^0.3.1",
     "json-loader": "^0.5.7",
     "jsonwebtoken": "^9.0.2",
-    "knex": "^2.5.1",
+    "knex": "^3.1.0",
     "lodash": "^4.17.21",
     "mailgun-js": "^0.20.0",
     "minilog": "^3.1.0",
@@ -149,12 +149,12 @@
     "passport-local-authenticate": "^1.2.0",
     "pg": "^8.11.3",
     "pg-connection-string": "^2.6.2",
-    "pg-query-stream": "^1.1.2",
+    "pg-query-stream": "^4.5.3",
     "prop-types": "^15.8.1",
     "punycode": "^2.3.1",
-    "query-string": "^4.3.4",
+    "query-string": "^9.0.0",
     "react": "^16.14.0",
-    "redis": "^3.1.2",
+    "redis": "^4.6.13",
     "request": "^2.88.2",
     "rethink-knex-adapter": "0.4.20",
     "rollbar": "^2.26.2",
@@ -231,7 +231,6 @@
     "react-formal": "2.2.2",
     "react-router": "^3.2.6",
     "react-tooltip": "^4.5.1",
-    "recompose": "^0.30.0",
     "webpack-cli": "^4.10.0"
   }
 }

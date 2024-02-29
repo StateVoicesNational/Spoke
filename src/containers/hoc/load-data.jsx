@@ -1,18 +1,13 @@
 import React from "react";
 import { graphql } from "@apollo/client/react/hoc";
 import { flowRight as compose } from "lodash";
-import { withProps, branch, renderComponent } from "recompose";
 
 import Card from "@material-ui/core/Card";
 import CardHeader from "@material-ui/core/CardHeader";
 import CardActions from "@material-ui/core/CardActions";
 import CardContent from "@material-ui/core/CardContent";
 import Button from "@material-ui/core/Button";
-
 import ApolloClientSingleton from "../../network/apollo-client-singleton";
-
-// https://www.apollographql.com/docs/react/v2.5/recipes/recompose/
-
 import LoadingIndicator from "../../components/LoadingIndicator";
 
 /**
@@ -20,20 +15,25 @@ import LoadingIndicator from "../../components/LoadingIndicator";
  * queries are loading.
  * @param {string[]} queryNames The names of the queries to check loading state
  */
-const isLoading = queryNames =>
-  withProps(parentProps => {
-    const loadingReducer = (loadingAcc, queryName) =>
-      loadingAcc || (parentProps[queryName] && parentProps[queryName].loading);
-    const loading = queryNames.reduce(loadingReducer, false);
 
-    const errorReducer = (errorAcc, queryName) => {
-      const error = parentProps[queryName] && parentProps[queryName].error;
-      return error ? errorAcc.concat([error]) : errorAcc;
-    };
-    const errors = queryNames.reduce(errorReducer, []);
+// The isLoading function below utilizes currying, a technique where a function
+// returns another function with specific parameters. The purpose is to create a
+// sequence of functions, making it flexible and reusable. In this case,
+// isLoading is curried to take queryNames, then the Component, and finally
+// parentProps. ie: isLoading(queryNames)(Component)(parentProps)
 
-    return { loading, errors };
-  });
+const isLoading = queryNames => Component => parentProps => {
+  const loadingReducer = (loadingAcc, queryName) =>
+    loadingAcc || (parentProps[queryName] && parentProps[queryName].loading);
+  const loading = queryNames.reduce(loadingReducer, false);
+
+  const errorReducer = (errorAcc, queryName) => {
+    const error = parentProps[queryName] && parentProps[queryName].error;
+    return error ? errorAcc.concat([error]) : errorAcc;
+  };
+  const errors = queryNames.reduce(errorReducer, []);
+  return <Component {...parentProps} loading={loading} errors={errors} />;
+};
 
 export const withQueries = (queries = {}) => {
   const enhancers = Object.entries(
@@ -46,23 +46,20 @@ export const withQueries = (queries = {}) => {
 };
 
 const withMutations = (mutations = {}) =>
-  compose(
-    withProps(parentProps => {
-      return { client: ApolloClientSingleton };
-    }),
-    withProps(parentProps => {
-      const reducer = (propsAcc, [name, constructor]) => {
-        propsAcc[name] = async (...args) => {
-          const options = constructor(parentProps)(...args);
-          return await parentProps.client.mutate(options);
-        };
-        return propsAcc;
-      };
+  compose(Component => {
+    const client = ApolloClientSingleton;
 
-      const mutationFuncs = Object.entries(mutations).reduce(reducer, {});
-      return { mutations: mutationFuncs };
-    })
-  );
+    const reducer = (propsAcc, [name, constructor]) => {
+      propsAcc[name] = async (...args) => {
+        const options = constructor({ client, ...propsAcc })(...args);
+        return await client.mutate(options);
+      };
+      return propsAcc;
+    };
+
+    const mutationFuncs = Object.entries(mutations).reduce(reducer, {});
+    return props => <Component {...props} mutations={mutationFuncs} />;
+  });
 
 /**
  * Takes multiple GraphQL queries and/or mutation definitions and wraps Component in appropriate
@@ -95,9 +92,17 @@ const PrettyErrors = ({ errors }) => (
  * @param {Object} options
  * @see withOperations
  */
+
 export default options =>
   compose(
     withOperations(options),
-    branch(({ loading }) => loading, renderComponent(LoadingIndicator)),
-    branch(({ errors }) => errors.length > 0, renderComponent(PrettyErrors))
+    Component => ({ loading, errors, ...props }) => {
+      if (loading) {
+        return <LoadingIndicator />;
+      } else if (errors.length > 0) {
+        return <PrettyErrors errors={errors} />;
+      } else {
+        return <Component {...props} />;
+      }
+    }
   );

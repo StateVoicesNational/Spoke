@@ -3,7 +3,6 @@ import type from "prop-types";
 import { StyleSheet, css } from "aphrodite";
 import _ from "lodash";
 import * as yup from "yup";
-import { compose } from "recompose";
 import Form from "react-formal";
 
 import Button from "@material-ui/core/Button";
@@ -966,7 +965,7 @@ export class CampaignConfigBase extends React.Component {
   }
 }
 
-export const CampaignConfig = compose(withMuiTheme)(CampaignConfigBase);
+export const CampaignConfig = withMuiTheme(CampaignConfigBase);
 
 export class CampaignStats extends React.Component {
   static propTypes = {
