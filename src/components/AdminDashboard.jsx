@@ -4,7 +4,7 @@ import { StyleSheet, css } from "aphrodite";
 import theme from "../styles/theme";
 import { hasRole } from "../lib";
 import TopNav from "./TopNav";
-import gql from "graphql-tag";
+import { gql } from "@apollo/client";
 import { withRouter } from "react-router";
 import loadData from "../containers/hoc/load-data";
 import AdminNavigation from "../containers/AdminNavigation";

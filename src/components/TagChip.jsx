@@ -1,5 +1,4 @@
 import React from "react";
-import { compose } from "recompose";
 import Chip from "@material-ui/core/Chip";
 import type from "prop-types";
 import Avatar from "@material-ui/core/Avatar";
@@ -67,4 +66,4 @@ TagChip.propTypes = {
   backgroundColor: type.string
 };
 
-export default compose(withMuiTheme)(TagChip);
+export default withMuiTheme(TagChip);

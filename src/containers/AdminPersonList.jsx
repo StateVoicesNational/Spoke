@@ -16,7 +16,7 @@ import MenuItem from "@material-ui/core/MenuItem";
 
 import theme from "../styles/theme";
 import loadData from "./hoc/load-data";
-import gql from "graphql-tag";
+import { gql } from "@apollo/client";
 import { dataTest } from "../lib/attributes";
 import PeopleList from "../containers/PeopleList";
 import { StyleSheet, css } from "aphrodite";

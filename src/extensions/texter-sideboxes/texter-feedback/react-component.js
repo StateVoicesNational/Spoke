@@ -4,9 +4,8 @@ import { withRouter } from "react-router";
 import ReactTooltip from "react-tooltip";
 import * as yup from "yup";
 import Form from "react-formal";
-import gql from "graphql-tag";
+import { gql } from "@apollo/client";
 import _ from "lodash";
-import { compose } from "recompose";
 
 import AddIcon from "@material-ui/icons/Add";
 import RemoveIcon from "@material-ui/icons/Remove";
@@ -355,7 +354,7 @@ TexterSideboxClassBase.propTypes = {
   mutations: PropTypes.object
 };
 
-const TexterSideboxClass = compose(withMuiTheme)(TexterSideboxClassBase);
+const TexterSideboxClass = withMuiTheme(TexterSideboxClassBase);
 
 export { TexterSideboxClass };
 
@@ -380,10 +379,9 @@ export const mutations = {
   })
 };
 
-export const TexterSidebox = compose(
-  loadData({ mutations }),
-  withRouter
-)(TexterSideboxClass);
+export const TexterSidebox = loadData({ mutations })(
+  withRouter(TexterSideboxClass)
+);
 
 export const showSummary = ({ assignment }) =>
   // has feedback to acknowledge
