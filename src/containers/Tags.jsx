@@ -2,7 +2,7 @@ import React from "react";
 import * as yup from "yup";
 import Form from "react-formal";
 import { StyleSheet, css } from "aphrodite";
-import gql from "graphql-tag";
+import { gql } from "@apollo/client";
 import { withRouter } from "react-router";
 import PropTypes from "prop-types";
 

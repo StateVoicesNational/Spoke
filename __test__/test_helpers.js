@@ -9,7 +9,9 @@ import {
   r
 } from "../src/server/models/";
 import { graphql } from "graphql";
-import gql from "graphql-tag";
+import { makeExecutableSchema } from "@graphql-tools/schema";
+import { resolvers } from "../src/server/api/schema";
+import { schema as apiSchema } from "../src/api/schema";
 
 // Cypress integration tests do not use jest but do use these helpers
 // They would benefit from mocking mail services, though, so something to look in to.
@@ -83,12 +85,8 @@ export async function createContacts(campaign, count = 1) {
   return contacts;
 }
 
-import { makeExecutableSchema } from "graphql-tools";
-import { resolvers } from "../src/server/api/schema";
-import { schema } from "../src/api/schema";
-
-const mySchema = makeExecutableSchema({
-  typeDefs: schema,
+const schema = makeExecutableSchema({
+  typeDefs: apiSchema,
   resolvers,
   allowUndefinedInResolve: true
 });
@@ -100,17 +98,17 @@ function getGqlOperationText(op) {
   return op.loc && op.loc.source.body;
 }
 
-export async function runGql(operation, vars, user) {
+export async function runGql(operation, variableValues, user) {
   const operationText = getGqlOperationText(operation) || operation;
   const rootValue = {};
-  const context = getContext({ user });
-  const result = await graphql(
-    mySchema,
-    operationText,
+  const contextValue = getContext({ user });
+  const result = await graphql({
+    schema,
+    source: operationText,
     rootValue,
-    context,
-    vars
-  );
+    contextValue,
+    variableValues
+  });
   if (result && result.errors) {
     console.log("runGql failed " + JSON.stringify(result));
   }
@@ -151,17 +149,23 @@ export async function createInvite() {
       id
     }
   }`;
-  const context = getContext();
-  return await graphql(mySchema, inviteQuery, rootValue, context);
+  const contextValue = getContext();
+  return await graphql({
+    schema,
+    source: inviteQuery,
+    rootValue,
+    contextValue
+  });
 }
 
 export async function createOrganization(user, invite) {
   const rootValue = {};
   const name = "Testy test organization";
-  const userId = user.id;
+  const userId = user.id.toString();
+
   const inviteId = invite.data.createInvite.id;
 
-  const context = getContext({ user });
+  const contextValue = getContext({ user });
 
   const orgQuery = `mutation createOrganization($name: String!, $userId: String!, $inviteId: String!) {
     createOrganization(name: $name, userId: $userId, inviteId: $inviteId) {
@@ -170,18 +174,18 @@ export async function createOrganization(user, invite) {
     }
   }`;
 
-  const variables = {
+  const variableValues = {
     userId,
     name,
     inviteId
   };
-  const result = await graphql(
-    mySchema,
-    orgQuery,
+  const result = await graphql({
+    schema,
+    source: orgQuery,
     rootValue,
-    context,
-    variables
-  );
+    contextValue,
+    variableValues
+  });
   if (result && result.errors) {
     throw new Error("createOrganization failed " + JSON.stringify(result));
   }
@@ -238,7 +242,7 @@ export async function setTwilioAuth(user, organization) {
   const twilioMessageServiceSid = "test_message_service";
   const orgId = organization.data.createOrganization.id;
 
-  const context = getContext({ user });
+  const contextValue = getContext({ user });
 
   const query = `
     mutation updateServiceVendorConfig(
@@ -263,13 +267,19 @@ export async function setTwilioAuth(user, organization) {
     twilioMessageServiceSid
   };
 
-  const variables = {
+  const variableValues = {
     organizationId: orgId,
     serviceName: "twilio",
     config: JSON.stringify(twilioConfig)
   };
 
-  const result = await graphql(mySchema, query, rootValue, context, variables);
+  const result = await graphql({
+    schema,
+    source: query,
+    rootValue,
+    contextValue,
+    variableValues
+  });
   if (result && result.errors) {
     console.log("updateServiceVendorConfig failed " + JSON.stringify(result));
   }
@@ -285,14 +295,14 @@ export async function createCampaign(
   const rootValue = {};
   const description = "test description";
   const organizationId = organization.data.createOrganization.id;
-  const context = getContext({ user });
+  const contextValue = getContext({ user });
 
   const campaignQuery = `mutation createCampaign($input: CampaignInput!) {
     createCampaign(campaign: $input) {
       id
     }
   }`;
-  const variables = {
+  const variableValues = {
     input: {
       title,
       description,
@@ -300,13 +310,13 @@ export async function createCampaign(
       ...args
     }
   };
-  const result = await graphql(
-    mySchema,
-    campaignQuery,
+  const result = await graphql({
+    schema,
+    source: campaignQuery,
     rootValue,
-    context,
-    variables
-  );
+    contextValue,
+    variableValues
+  });
   if (result.errors) {
     throw new Error("Create campaign failed " + JSON.stringify(result));
   }
@@ -324,7 +334,7 @@ export async function saveCampaign(
   const description = "test description";
   const organizationId = campaign.organizationId;
   const campaignId = campaign.id;
-  const context = getContext({ user });
+  const contextValue = getContext({ user });
 
   const campaignQuery = `mutation editCampaign($campaignId: String!, $campaign: CampaignInput!) {
     editCampaign(id: $campaignId, campaign: $campaign) {
@@ -334,7 +344,7 @@ export async function saveCampaign(
     }
   }`;
 
-  const variables = {
+  const variableValues = {
     campaign: {
       title,
       description,
@@ -342,13 +352,13 @@ export async function saveCampaign(
     },
     campaignId
   };
-  const result = await graphql(
-    mySchema,
-    campaignQuery,
+  const result = await graphql({
+    schema,
+    source: campaignQuery,
     rootValue,
-    context,
-    variables
-  );
+    contextValue,
+    variableValues
+  });
   if (result.errors) {
     throw new Error("Create campaign failed " + JSON.stringify(result));
   }
@@ -371,12 +381,12 @@ export async function saveCampaign(
         fullyConfigured
       }
     }`;
-    const managerResult = await graphql(
-      mySchema,
-      serviceManagerQuery,
+    const managerResult = await graphql({
+      schema,
+      source: serviceManagerQuery,
       rootValue,
-      context,
-      {
+      contextValue,
+      variableValues: {
         organizationId,
         serviceManagerName: "per-campaign-messageservices",
         updateData: {
@@ -385,7 +395,7 @@ export async function saveCampaign(
         },
         campaignId
       }
-    );
+    });
     console.log("managerResult", JSON.stringify(managerResult));
   }
 
@@ -399,8 +409,14 @@ export async function copyCampaign(campaignId, user) {
       id
     }
   }`;
-  const context = getContext({ user });
-  return await graphql(mySchema, query, rootValue, context, { campaignId });
+  const contextValue = getContext({ user });
+  return await graphql({
+    schema,
+    source: query,
+    rootValue,
+    contextValue,
+    variableValues: { campaignId }
+  });
 }
 
 export async function createTexter(organization, userInfo = {}) {
@@ -426,17 +442,17 @@ export async function createTexter(organization, userInfo = {}) {
       id
     }
   }`;
-  const variables = {
+  const variableValues = {
     organizationUuid: organization.data.createOrganization.uuid
   };
-  const context = getContext({ user });
-  const result = await graphql(
-    mySchema,
-    joinQuery,
+  const contextValue = getContext({ user });
+  const result = await graphql({
+    schema,
+    source: joinQuery,
     rootValue,
-    context,
-    variables
-  );
+    contextValue,
+    variableValues
+  });
   if (result.errors) {
     throw new Error("joinOrganization failed " + JSON.stringify(result));
   }
@@ -459,7 +475,7 @@ export async function assignTexter(admin, user, campaign, assignments) {
       }
     }
   }`;
-  const context = getContext({ user: admin });
+  const contextValue = getContext({ user: admin });
   const updateCampaign = Object.assign({}, campaign);
   const campaignId = updateCampaign.id;
   updateCampaign.texters = assignments || [
@@ -469,17 +485,17 @@ export async function assignTexter(admin, user, campaign, assignments) {
   ];
   delete updateCampaign.id;
   delete updateCampaign.contacts;
-  const variables = {
+  const variableValues = {
     campaignId,
     campaign: updateCampaign
   };
-  const result = await graphql(
-    mySchema,
-    campaignEditQuery,
+  const result = await graphql({
+    schema,
+    source: campaignEditQuery,
     rootValue,
-    context,
-    variables
-  );
+    contextValue,
+    variableValues
+  });
   if (result.errors) {
     throw new Error("assignTexter failed " + JSON.stringify(result));
   }
@@ -501,12 +517,18 @@ export async function sendMessage(campaignContactId, user, message) {
           }
         }
       }`;
-  const context = getContext({ user });
-  const variables = {
+  const contextValue = getContext({ user });
+  const variableValues = {
     message,
     campaignContactId
   };
-  const result = await graphql(mySchema, query, rootValue, context, variables);
+  const result = await graphql({
+    schema,
+    source: query,
+    rootValue,
+    contextValue,
+    variableValues
+  });
   if (result.errors) {
     console.log("sendMessage errors", result);
   }
@@ -574,21 +596,21 @@ export async function createScript(
     builtInteractionSteps = buildScript(steps, choices);
   }
 
-  const context = getContext({ user: admin });
+  const contextValue = getContext({ user: admin });
   const campaignId = campaign.id;
-  const variables = {
+  const variableValues = {
     campaignId,
     campaign: {
       interactionSteps: interactionSteps || builtInteractionSteps[0]
     }
   };
-  return await graphql(
-    mySchema,
-    campaignEditQuery,
+  return await graphql({
+    schema,
+    source: campaignEditQuery,
     rootValue,
-    context,
-    variables
-  );
+    contextValue,
+    variableValues
+  });
 }
 
 export async function createCannedResponses(admin, campaign, cannedResponses) {
@@ -600,21 +622,21 @@ export async function createCannedResponses(admin, campaign, cannedResponses) {
       id
     }
   }`;
-  const context = getContext({ user: admin });
+  const contextValue = getContext({ user: admin });
   const campaignId = campaign.id;
-  const variables = {
+  const variableValues = {
     campaignId,
     campaign: {
       cannedResponses
     }
   };
-  return await graphql(
-    mySchema,
-    campaignEditQuery,
+  return await graphql({
+    schema,
+    source: campaignEditQuery,
     rootValue,
-    context,
-    variables
-  );
+    contextValue,
+    variableValues
+  });
 }
 
 export async function startCampaign(admin, campaign) {
@@ -624,15 +646,15 @@ export async function startCampaign(admin, campaign) {
       id
     }
   }`;
-  const context = getContext({ user: admin });
-  const variables = { campaignId: campaign.id };
-  return await graphql(
-    mySchema,
-    startCampaignQuery,
+  const contextValue = getContext({ user: admin });
+  const variableValues = { campaignId: campaign.id };
+  return await graphql({
+    schema,
+    source: startCampaignQuery,
     rootValue,
-    context,
-    variables
-  );
+    contextValue,
+    variableValues
+  });
 }
 
 export async function getCampaignContact(id) {

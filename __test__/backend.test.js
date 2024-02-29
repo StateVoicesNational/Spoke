@@ -1,7 +1,6 @@
 import { isSqlite } from "../src/server/models/";
 import { resolvers } from "../src/server/api/schema";
-import { schema } from "../src/api/schema";
-import { assignmentRequiredOrAdminRole } from "../src/server/api/errors";
+import { schema as apiSchema } from "../src/api/schema";
 import { graphql } from "graphql";
 
 console.log("This is an intentional error");
@@ -28,12 +27,11 @@ import {
   createInvite as helperCreateInvite,
   runGql
 } from "./test_helpers";
-import { makeExecutableSchema } from "graphql-tools";
-
+import { makeExecutableSchema } from "@graphql-tools/schema";
 import { editUserMutation } from "../src/containers/UserEdit.jsx";
 
-const mySchema = makeExecutableSchema({
-  typeDefs: schema,
+const schema = makeExecutableSchema({
+  typeDefs: apiSchema,
   resolvers,
   allowUndefinedInResolve: true
 });
@@ -97,9 +95,14 @@ async function createInvite() {
       id
     }
   }`;
-  const context = getContext();
+  const contextValue = getContext();
   try {
-    const invite = await graphql(mySchema, inviteQuery, rootValue, context);
+    const invite = await graphql({
+      schema,
+      source: inviteQuery,
+      rootValue,
+      contextValue
+    });
     return invite;
   } catch (err) {
     console.error("Error creating invite");
@@ -108,7 +111,7 @@ async function createInvite() {
 }
 
 async function createOrganization(user, name, userId, inviteId) {
-  const context = getContext({ user });
+  const contextValue = getContext({ user });
 
   const orgQuery = `mutation createOrganization($name: String!, $userId: String!, $inviteId: String!) {
     createOrganization(name: $name, userId: $userId, inviteId: $inviteId) {
@@ -121,20 +124,20 @@ async function createOrganization(user, name, userId, inviteId) {
     }
   }`;
 
-  const variables = {
+  const variableValues = {
     userId,
     name,
     inviteId
   };
 
   try {
-    const org = await graphql(
-      mySchema,
-      orgQuery,
+    const org = await graphql({
+      schema,
+      source: orgQuery,
       rootValue,
-      context,
-      variables
-    );
+      contextValue,
+      variableValues
+    });
     return org;
   } catch (err) {
     console.error("Error creating organization");
@@ -143,7 +146,7 @@ async function createOrganization(user, name, userId, inviteId) {
 }
 
 async function createCampaign(user, title, description, organizationId) {
-  const context = getContext({ user });
+  const contextValue = getContext({ user });
 
   const campaignQuery = `mutation createCampaign($input: CampaignInput!) {
     createCampaign(campaign: $input) {
@@ -151,7 +154,7 @@ async function createCampaign(user, title, description, organizationId) {
       title
     }
   }`;
-  const variables = {
+  const variableValues = {
     input: {
       title,
       description,
@@ -160,13 +163,13 @@ async function createCampaign(user, title, description, organizationId) {
   };
 
   try {
-    const campaign = await graphql(
-      mySchema,
-      campaignQuery,
+    const campaign = await graphql({
+      schema,
+      source: campaignQuery,
       rootValue,
-      context,
-      variables
-    );
+      contextValue,
+      variableValues
+    });
     return campaign;
   } catch (err) {
     console.error("Error creating campaign");
@@ -192,8 +195,13 @@ describe("graphql test suite", () => {
         id
       }
     }`;
-    const context = getContext();
-    const result = await graphql(mySchema, query, rootValue, context);
+    const contextValue = getContext();
+    const result = await graphql({
+      schema,
+      source: query,
+      rootValue,
+      contextValue
+    });
     const data = result;
 
     expect(typeof data.currentUser).toEqual("undefined");
@@ -206,8 +214,13 @@ describe("graphql test suite", () => {
         email
       }
     }`;
-    const context = getContext({ user: testAdminUser });
-    const result = await graphql(mySchema, query, rootValue, context);
+    const contextValue = getContext({ user: testAdminUser });
+    const result = await graphql({
+      schema,
+      source: query,
+      rootValue,
+      contextValue
+    });
     const { data } = result;
 
     expect(data.currentUser.email).toBe("testuser@example.com");
@@ -301,7 +314,7 @@ describe("graphql test suite", () => {
         }
       }
     }`;
-    const context = getContext({ user: testAdminUser });
+    const contextValue = getContext({ user: testAdminUser });
     const updateCampaign = Object.assign({}, testCampaign.data.createCampaign);
     const campaignId = updateCampaign.id;
     testTexterUser = await helperCreateTexter(testOrganization);
@@ -313,17 +326,17 @@ describe("graphql test suite", () => {
     ];
     delete updateCampaign.id;
     delete updateCampaign.contacts;
-    const variables = {
+    const variableValues = {
       campaignId,
       campaign: updateCampaign
     };
-    const result = await graphql(
-      mySchema,
+    const result = await graphql({
+      schema,
       campaignEditQuery,
       rootValue,
-      context,
-      variables
-    );
+      contextValue,
+      variableValues
+    });
 
     expect(result.data.editCampaign.texters.length).toBe(1);
     expect(result.data.editCampaign.texters[0].assignment.contactsCount).toBe(

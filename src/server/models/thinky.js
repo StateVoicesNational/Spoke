@@ -1,11 +1,7 @@
 import dumbThinky from "rethink-knex-adapter";
 import redis from "redis";
-import bluebird from "bluebird";
 import knex from "knex";
 import config from "../knex-connect";
-
-bluebird.promisifyAll(redis.RedisClient.prototype);
-bluebird.promisifyAll(redis.Multi.prototype);
 
 // Instantiate the rethink-knex-adapter using the config defined in
 // /src/server/knex.js.
@@ -68,8 +64,6 @@ if (redisUrl) {
   thinkyConn.r.redis = redis.createClient(redisSettings);
 } else if (process.env.REDIS_FAKE) {
   const fakeredis = require("fakeredis");
-  bluebird.promisifyAll(fakeredis.RedisClient.prototype);
-  bluebird.promisifyAll(fakeredis.Multi.prototype);
 
   thinkyConn.r.redis = fakeredis.createClient();
 }
