@@ -224,7 +224,7 @@
     "@material-ui/icons": "^4.11.3",
     "@material-ui/lab": "^4.0.0-alpha.57",
     "@material-ui/pickers": "^3.3.11",
-    "aws-sdk": "^2.1504.0",
+    "aws-sdk": "^2.1559.0",
     "chart.js": "^2.9.4",
     "date-fns": "^2.30.0",
     "draft-js": "^0.11.7",
