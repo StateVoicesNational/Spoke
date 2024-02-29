@@ -1,6 +1,5 @@
 import type from "prop-types";
 import React from "react";
-import { compose } from "recompose";
 import GSForm from "../components/forms/GSForm";
 import GSSubmitButton from "../components/forms/GSSubmitButton";
 import GSTextField from "../components/forms/GSTextField";
@@ -214,4 +213,4 @@ CampaignDynamicAssignmentForm.propTypes = {
   batchSize: type.string
 };
 
-export default compose(withMuiTheme)(CampaignDynamicAssignmentForm);
+export default withMuiTheme(CampaignDynamicAssignmentForm);
