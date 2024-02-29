@@ -1,6 +1,5 @@
 import type from "prop-types";
 import React from "react";
-import { compose } from "recompose";
 import withMuiTheme from "./../containers/hoc/withMuiTheme";
 import GSForm from "../components/forms/GSForm";
 import CampaignFormSectionHeading from "./CampaignFormSectionHeading";
@@ -236,7 +235,4 @@ CampaignContactsChoiceFormBase.propTypes = {
   contactsPerPhoneNumber: type.number
 };
 
-export default compose(
-  withMuiTheme,
-  withRouter
-)(CampaignContactsChoiceFormBase);
+export default withMuiTheme(withRouter(CampaignContactsChoiceFormBase));

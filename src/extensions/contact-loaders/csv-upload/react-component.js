@@ -4,7 +4,6 @@ import * as yup from "yup";
 import humps from "humps";
 import { StyleSheet, css } from "aphrodite";
 import Form from "react-formal";
-import { compose } from "recompose";
 
 import Divider from "@material-ui/core/Divider";
 import Button from "@material-ui/core/Button";
@@ -357,7 +356,7 @@ CampaignContactsFormBase.propTypes = {
   contactsPerPhoneNumber: type.number
 };
 
-const CampaignContactsForm = compose(withMuiTheme)(CampaignContactsFormBase);
+const CampaignContactsForm = withMuiTheme(CampaignContactsFormBase);
 
 CampaignContactsForm.prototype.renderAfterStart = true;
 

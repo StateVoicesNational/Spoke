@@ -238,7 +238,6 @@
     "react-formal": "2.2.2",
     "react-router": "^3.2.6",
     "react-tooltip": "^4.5.1",
-    "recompose": "^0.30.0",
     "webpack-cli": "^4.10.0"
   }
 }

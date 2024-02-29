@@ -1,6 +1,5 @@
 import type from "prop-types";
 import React from "react";
-import { compose } from "react-apollo";
 import withMuiTheme from "./../containers/hoc/withMuiTheme";
 
 const Slider = ({ maxValue, value, color, direction, muiTheme }) => {
@@ -34,4 +33,4 @@ Slider.propTypes = {
   direction: type.number
 };
 
-export default compose(withMuiTheme)(Slider);
+export default withMuiTheme(Slider);
