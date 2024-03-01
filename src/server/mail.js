@@ -1,7 +1,8 @@
 import { log } from "../lib";
 import { getConfig } from "./api/lib/config";
 import nodemailer from "nodemailer";
-import mailgunConstructor from "mailgun-js";
+
+const mailgunConstructor = require( "mailgun.js" );
 
 const mailgun =
   getConfig("MAILGUN_API_KEY") &&
