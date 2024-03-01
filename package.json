@@ -4,7 +4,7 @@
   "description": "Spoke",
   "main": "src/server",
   "engines": {
-    "node": ">=20.0.0",
+    "node": ">=20.11.1",
     "npm": "9.6.4"
   },
   "scripts": {
@@ -83,12 +83,12 @@
     "@aoberoi/passport-slack": "^1.0.5",
     "@apollo/client": "^3.9.5",
     "@apollo/server": "^4.10.0",
-    "@aws-sdk/client-cloudwatch": "^3.462.0",
-    "@aws-sdk/client-cloudwatch-events": "^3.462.0",
-    "@aws-sdk/client-lambda": "^3.462.0",
-    "@aws-sdk/client-s3": "^3.462.0",
-    "@aws-sdk/client-sqs": "^3.462.0",
-    "@aws-sdk/s3-request-presigner": "^3.462.0",
+    "@aws-sdk/client-cloudwatch": "^3.525.0",
+    "@aws-sdk/client-cloudwatch-events": "^3.525.0",
+    "@aws-sdk/client-lambda": "^3.525.0",
+    "@aws-sdk/client-s3": "^3.525.0",
+    "@aws-sdk/client-sqs": "^3.525.0",
+    "@aws-sdk/s3-request-presigner": "^3.525.0",
     "@babel/cli": "^7.23.9",
     "@babel/plugin-proposal-export-default-from": "^7.23.3",
     "@babel/plugin-transform-runtime": "^7.23.9",
@@ -198,7 +198,7 @@
     "react-test-renderer": "^16.14.0",
     "regenerator-runtime": "^0.10.5",
     "sqlite3": "^5.1.7",
-    "supertest": "^6.3.3",
+    "supertest": "^6.3.4",
     "wait-on": "^2.1.2",
     "webpack-cli": "^4.10.0",
     "webpack-dev-server": "^3.11.3"
