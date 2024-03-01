@@ -4,7 +4,6 @@ import { Link } from "react-router";
 import * as yup from "yup";
 import Form from "react-formal";
 import { css } from "aphrodite";
-import { compose } from "recompose";
 
 import CheckIcon from "@material-ui/icons/Check";
 import DoneIcon from "@material-ui/icons/Done";
@@ -152,7 +151,7 @@ TexterSideboxBase.propTypes = {
   onUpdateTags: type.func
 };
 
-const TexterSidebox = compose(withMuiTheme)(TexterSideboxBase);
+const TexterSidebox = withMuiTheme(TexterSideboxBase);
 
 export { TexterSidebox };
 

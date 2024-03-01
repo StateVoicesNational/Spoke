@@ -1,7 +1,6 @@
 import PropTypes from "prop-types";
 import React from "react";
 import { css } from "aphrodite";
-import { compose } from "recompose";
 import Toolbar from "./Toolbar";
 import MessageList from "./MessageList";
 import Survey from "./Survey";
@@ -770,7 +769,7 @@ export class AssignmentTexterContactControls extends React.Component {
             }}
             multiline
             fullWidth
-            rowsMax={6}
+            maxRows={6}
           />
         </GSForm>
       </div>
@@ -1279,4 +1278,4 @@ AssignmentTexterContactControls.propTypes = {
   updateCurrentContactById: PropTypes.func
 };
 
-export default compose(withMuiTheme)(AssignmentTexterContactControls);
+export default withMuiTheme(AssignmentTexterContactControls);

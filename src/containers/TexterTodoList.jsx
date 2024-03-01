@@ -6,7 +6,7 @@ import LoadingIndicator from "../components/LoadingIndicator";
 import AssignmentSummary from "../components/AssignmentSummary";
 import Snackbar from "@material-ui/core/Snackbar";
 import loadData from "./hoc/load-data";
-import gql from "graphql-tag";
+import { gql } from "@apollo/client";
 import { withRouter } from "react-router";
 
 let refreshOnReturn = false;
