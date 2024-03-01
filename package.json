@@ -198,7 +198,7 @@
     "react-test-renderer": "^16.14.0",
     "regenerator-runtime": "^0.10.5",
     "sqlite3": "^5.1.7",
-    "supertest": "^6.3.3",
+    "supertest": "^6.3.4",
     "wait-on": "^2.1.2",
     "webpack-cli": "^4.10.0",
     "webpack-dev-server": "^3.11.3"
