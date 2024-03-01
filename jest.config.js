@@ -1,4 +1,6 @@
 const esModules = [
+  "bandwidth-sdk",
+  "axios", // bandwidth-sdk dependency
   "query-string",
   "decode-uri-component", // query-string dependency
   "split-on-first", // query-string dependency

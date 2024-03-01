@@ -1,16 +1,13 @@
 import { createHmac } from "crypto";
 
 import BandwidthNumbers from "@bandwidth/numbers";
-import BandwidthMessaging from "@bandwidth/messaging";
-
-import { log } from "../../../lib";
 import { getFormattedPhoneNumber } from "../../../lib/phone-format";
 import { sleep } from "../../../workers/lib";
 import { r } from "../../../server/models";
 
 import { getConfig } from "../../../server/api/lib/config";
 import { getSecret, convertSecret } from "../../secret-manager";
-import { getMessageServiceConfig, getConfigKey } from "../service_map";
+import { getMessageServiceConfig } from "../service_map";
 
 export async function getNumbersClient(organization, options) {
   let config;
