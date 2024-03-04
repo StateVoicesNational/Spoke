@@ -120,6 +120,7 @@ describe("when contact is not within texting hours...", () => {
     let component = mount(
       <ThemeContext.Provider value={{ muiTheme }}>
         <AssignmentTexterContact
+          mutations={{}}
           texter={propsWithEnforcedTextingHoursCampaign.texter}
           campaign={campaign}
           assignment={propsWithEnforcedTextingHoursCampaign.assignment}
@@ -152,6 +153,7 @@ describe("when contact is within texting hours...", () => {
     component = mount(
       <ThemeContext.Provider value={{ muiTheme }}>
         <AssignmentTexterContact
+          mutations={{}}
           texter={propsWithEnforcedTextingHoursCampaign.texter}
           campaign={campaign}
           assignment={propsWithEnforcedTextingHoursCampaign.assignment}

@@ -1,5 +1,6 @@
 import { getConfig, getFeatures } from "../../../server/api/lib/config";
 import { cacheableData } from "../../../server/models";
+import { getOptOutMessage } from "../../../server/api/mutations";
 import { sendRawMessage } from "../../../server/api/mutations/sendMessage";
 
 const DEFAULT_AUTO_OPTOUT_REGEX_LIST_BASE64 =
@@ -139,10 +140,14 @@ export const postMessageSave = async ({
         contact ||
         (await cacheableData.campaignContact.load(message.campaign_contact_id));
 
-      const optOutMessage =
-        getFeatures(organization).opt_out_message ||
-        getConfig("OPT_OUT_MESSAGE", organization) ||
-        "I'm opting you out of texts immediately. Have a great day.";
+      const optOutMessage = await getOptOutMessage(null, {
+        organizationId: organization.id,
+        zip: contact.zip,
+        defaultMessage:
+          getFeatures(organization).opt_out_message ||
+          getConfig("OPT_OUT_MESSAGE", organization) ||
+          "I'm opting you out of texts immediately. Have a great day."
+      });
 
       await sendRawMessage({
         finalText: optOutMessage,

@@ -29,6 +29,7 @@
   - [How to configure Auth0 for authentication](HOWTO-configure-auth0.md)
   - [Instructions for using Redis in Development and Production](HOWTO_CONNECT_WITH_REDIS.md)
   - [How to configure Slack Authentication](HOWTO_INTEGRATE_SLACK_AUTH.md)
+  - [How to integrate Bandwidth](HOWTO_INTEGRATE_BANDWIDTH.md)
   - [How to integrate Twilio](HOWTO_INTEGRATE_TWILIO.md)
   - [How to handle high volume using Twilio Functions & Amazon SQS](HOWTO_setup_twilio_amazon_SQS.md)
   - [How to Integrate with Action Kit](HOWTO_INTEGRATE_WITH_ACTIONKIT.md)

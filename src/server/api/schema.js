@@ -18,6 +18,7 @@ import {
   Organization,
   Tag,
   UserOrganization,
+  isSqlite,
   r,
   cacheableData
 } from "../models";
@@ -60,6 +61,7 @@ import {
   buyPhoneNumbers,
   deletePhoneNumbers,
   findNewCampaignContact,
+  getOptOutMessage,
   joinOrganization,
   editOrganization,
   releaseContacts,
@@ -393,11 +395,7 @@ async function editCampaign(id, campaign, loaders, user, origCampaignRecord) {
   });
 
   // hacky easter egg to force reload campaign contacts
-  if (
-    r.redis &&
-    campaignUpdates.description &&
-    campaignUpdates.description.endsWith("..")
-  ) {
+  if (r.redis && campaignUpdates.description?.endsWith("..")) {
     // some asynchronous cache-priming
     console.log(
       "force-loading loadCampaignCache",
@@ -419,6 +417,11 @@ async function updateInteractionSteps(
   origCampaignRecord,
   idMap = {}
 ) {
+  // Allows cascade delete for SQLite
+  if (isSqlite) {
+    await r.knex.raw("PRAGMA foreign_keys = ON");
+  }
+
   for (let i = 0; i < interactionSteps.length; i++) {
     const is = interactionSteps[i];
     // map the interaction step ids for new ones
@@ -758,6 +761,7 @@ const rootMutations = {
 
       return await cacheableData.organization.load(organizationId);
     },
+    getOptOutMessage,
     updateOptOutMessage: async (
       _,
       { organizationId, optOutMessage },
@@ -1261,6 +1265,15 @@ const rootMutations = {
               usedFields[f] = 1;
             });
           }
+
+          if (
+            getConfig("OPT_OUT_PER_STATE") &&
+            getConfig("SMARTY_AUTH_ID") &&
+            getConfig("SMARTY_AUTH_TOKEN")
+          ) {
+            usedFields.zip = 1;
+          }
+
           return finalContacts.map(c => (c && { ...c, usedFields }) || c);
         }
       }
