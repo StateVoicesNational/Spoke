@@ -219,4 +219,29 @@ describe("test getContacts timezone stuff only", () => {
       /^select \* from .campaign_contact. where .assignment_id. = 1.*/
     );
   }); // it
+
+  it("returns the correct query -- assignment load limit not set", () => {
+    let query = getContacts(
+      assignment,
+      { validTimezone: null },
+      organization,
+      campaign
+    );
+    expect(query.toString()).not.toMatch(
+      /^select \* from .campaign_contact. where .assignment_id. = 1.* limit 1/
+    );
+  }); // it
+
+  it("returns the correct query -- assignment load limit set", () => {
+    global["ASSIGNMENT_LOAD_LIMIT"] = 1;
+    let query = getContacts(
+      assignment,
+      { validTimezone: null },
+      organization,
+      campaign
+    );
+    expect(query.toString()).toMatch(
+      /^select \* from .campaign_contact. where .assignment_id. = 1.* limit 1/
+    );
+  }); // it
 }); // describe
