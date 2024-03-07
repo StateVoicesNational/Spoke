@@ -44,7 +44,6 @@ export const TagChip = props => {
       onClick={props.onClick}
       onDelete={props.onDelete}
       label={props.text}
-      onClick={props.onClick}
       avatar={
         <Avatar
           style={{
