@@ -603,9 +603,9 @@ export class AssignmentTexterContactControls extends React.Component {
             onClick={onClick("needsResponse")}
             style={{
               color: this.props.muiTheme.palette.text.primary,
-              backgroundColor: this.props.muiTheme.palette.background.default
+              backgroundColor: this.props.muiTheme.palette.background.default,
+              flex: "1 1 auto"
             }}
-            style={{ flex: "1 1 auto" }}
             disabled={!!this.props.contact.optOut}
             color="default"
             variant="contained"
