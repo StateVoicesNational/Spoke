@@ -1047,7 +1047,6 @@ export class AdminCampaignEditBase extends React.Component {
                   <Button
                     variant="contained"
                     color="secondary"
-                    variant="outlined"
                     startIcon={<CancelIcon />}
                     onClick={() => this.handleDeleteJob(jobId)}
                   >
