@@ -1278,4 +1278,4 @@ AssignmentTexterContactControls.propTypes = {
   updateCurrentContactById: PropTypes.func
 };
 
-export default compose(withMuiTheme)(AssignmentTexterContactControls);
+export default withMuiTheme(AssignmentTexterContactControls);
