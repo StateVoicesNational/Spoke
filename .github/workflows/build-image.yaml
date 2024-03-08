@@ -3,7 +3,7 @@ name: Build
 on:
   push:
     branches:
-      - 'main'
+      - 'kathy-ghcr'
   release:
     types:
       - created
