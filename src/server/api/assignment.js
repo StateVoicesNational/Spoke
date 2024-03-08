@@ -114,6 +114,14 @@ export function getContacts(
     query = query.where({
       assignment_id: assignment.id
     });
+
+    let assignmentLoadLimit = getConfig("ASSIGNMENT_LOAD_LIMIT");
+    if (assignmentLoadLimit) {
+      assignmentLoadLimit = parseInt(assignmentLoadLimit);
+      if (!isNaN(assignmentLoadLimit)) {
+        query.limit(assignmentLoadLimit);
+      }
+    }
   }
 
   if (contactsFilter) {
