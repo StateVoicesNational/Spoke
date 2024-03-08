@@ -137,6 +137,9 @@ export default function renderIndex(html, css, assetMap) {
       window.ASSIGNMENT_CONTACTS_SIDEBAR=${getConfig(
         "ASSIGNMENT_CONTACTS_SIDEBAR"
       )}
+      window.OPT_OUT_PER_STATE=${getConfig("OPT_OUT_PER_STATE", null, {
+        truthy: true
+      })}
     </script>
     <script src="${assetMap["bundle.js"]}"></script>
   </body>

@@ -1,6 +1,6 @@
 const path = require("path");
 const webpack = require("webpack");
-const { WebpackManifestPlugin } = require('webpack-manifest-plugin');
+const { WebpackManifestPlugin } = require("webpack-manifest-plugin");
 const TerserPlugin = require("terser-webpack-plugin");
 
 const DEBUG =
@@ -8,7 +8,7 @@ const DEBUG =
 
 const plugins = [
   new webpack.ProvidePlugin({
-    process: 'process/browser'
+    process: "process/browser"
   }),
   new webpack.DefinePlugin({
     "process.env.NODE_ENV": `"${process.env.NODE_ENV}"`,
@@ -50,7 +50,9 @@ if (!DEBUG) {
 }
 
 const config = {
-  mode: ["development", "production"].includes(process.env.NODE_ENV) ? process.env.NODE_ENV : "none",
+  mode: ["development", "production"].includes(process.env.NODE_ENV)
+    ? process.env.NODE_ENV
+    : "none",
   entry: {
     bundle: ["babel-polyfill", "./src/client/index.jsx"]
   },
@@ -68,7 +70,10 @@ const config = {
     ]
   },
   resolve: {
-    fallback: { stream: require.resolve("stream-browserify"), zlib: require.resolve("browserify-zlib") },
+    fallback: {
+      stream: require.resolve("stream-browserify"),
+      zlib: require.resolve("browserify-zlib")
+    },
     mainFields: ["browser", "main", "module"],
     extensions: [".js", ".jsx", ".json"]
   },

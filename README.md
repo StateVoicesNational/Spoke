@@ -2,9 +2,7 @@
 
 # StateVoices is the new community steward for Spoke!
 
-On November 19th, the repo Spoke was transfered from MoveOn to StateVoices.
-
-[Join us for the Merge Party for more information.](https://www.mobilize.us/statevoices/event/592881/)
+On November 19th, the repo Spoke was transfered from MoveOn to StateVoices. If you're looking for the most up-to-date Spoke to fork from, start [at the StateVoices repo](https://github.com/StateVoicesNational/Spoke)
 
 ## Spoke History
 
@@ -12,7 +10,14 @@ Spoke is an open source text-distribution tool for organizations to mobilize sup
 
 Spoke was created by Saikat Chakrabarti and Sheena Pakanati, and is now maintained by MoveOn.org.
 
-The latest version is [13.1.0](https://github.com/StateVoicesNational/Spoke/tree/13.1.0) (see [release notes](https://github.com/StateVoicesNational/Spoke/blob/main/docs/RELEASE_NOTES.md#v1310))
+The latest version can be found on the [State Voices repo page](https://github.com/StateVoicesNational/Spoke) (see [release notes](https://github.com/StateVoicesNational/Spoke/blob/main/docs/RELEASE_NOTES.md))
+
+If you're a developer switching over from the MoveOn fork to the new StateVoices base, you can run:
+```
+git remote set-url upstream https://github.com/StateVoicesNational/Spoke
+git remote set-url origin  https://github.com/StateVoicesNational/Spoke
+```
+to reset where your repo is pointing and ensure you're pulling the correct code.
 
 
 ## Setting up Spoke
@@ -29,7 +34,7 @@ Want to know more?
 ### Quick Start with Heroku
 This version of Spoke suitable for testing and, potentially, for small campaigns. This won't cost any money and will not support production(aka large-scale) usage. It's a great way to practice deploying Spoke or see it in action.  
 
-<a href="https://heroku.com/deploy?template=https://github.com/StateVoicesNational/Spoke/tree/13.1.0">
+<a href="https://heroku.com/deploy?template=https://github.com/StateVoicesNational/Spoke/tree/13.2.0">
 
   <img src="https://www.herokucdn.com/deploy/button.svg" alt="Deploy">
 </a>
