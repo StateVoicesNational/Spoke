@@ -5,7 +5,7 @@ import { withRouter } from "react-router";
 import gql from "graphql-tag";
 
 import Fab from "@material-ui/core/Fab";
-import AddIcon from "@material-ui/icons/Add";
+import Button from "@material-ui/core/Button";
 import ArchiveIcon from "@material-ui/icons/Archive";
 import MoreVertIcon from "@material-ui/icons/MoreVert";
 import Paper from "@material-ui/core/Paper";
@@ -341,14 +341,15 @@ export class AdminCampaignList extends React.Component {
       );
     }
     return (
-      <Fab
+      <Button
+        variant='contained'
         color="primary"
         {...dataTest("addCampaign")}
         style={theme.components.floatingButton}
         onClick={this.handleClickNewButton}
       >
-        <AddIcon />
-      </Fab>
+        Create New Campaign
+      </Button>
     );
   }
 
