@@ -18,6 +18,7 @@ import CardHeader from "@material-ui/core/CardHeader";
 import loadData from "../../../containers/hoc/load-data";
 import { defaults } from "./config";
 import withMuiTheme from "../../../containers/hoc/withMuiTheme";
+import { Assignment } from "@material-ui/icons";
 
 const Alert = ({ type, message, alertIcon, alert }) => {
   console.log("Alert", type);
@@ -312,6 +313,12 @@ export const mutations = {
   })
 };
 
+export default withMuiTheme(
+  loadData({ mutations })(AssignmentTexterFeedback)
+);
+
+/*
 export default loadData({ mutations })(
   withMuiTheme(AssignmentTexterFeedback)
 );
+*/
