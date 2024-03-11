@@ -1,5 +1,6 @@
 import React from "react";
-import { graphql, compose } from "react-apollo";
+import { graphql } from "react-apollo";
+import { flowRight as compose } from "lodash";
 
 import Card from "@material-ui/core/Card";
 import CardHeader from "@material-ui/core/CardHeader";
@@ -50,18 +51,19 @@ export const withQueries = (queries = {}) => {
 
 const withMutations = (mutations = {}) =>
   compose(Component => {
-  const client = ApolloClientSingleton;
+    const client = ApolloClientSingleton;
 
-  const reducer = (propsAcc, [name, constructor]) => {
-    propsAcc[name] = async (...args) => {
-      const options = constructor({ client, ...propsAcc })(...args);
-      return await client.mutate(options);
+    const reducer = (propsAcc, [name, constructor]) => {
+      propsAcc[name] = async (...args) => {
+        const options = constructor({ client, ...propsAcc })(...args);
+        return await client.mutate(options);
       };
-    return propsAcc;
-  };
-  const mutationFuncs = Object.entries(mutations).reduce(reducer, {});
-  return props => <Component {...props} mutations={mutationFuncs} />;
-});
+      return propsAcc;
+    };
+
+    const mutationFuncs = Object.entries(mutations).reduce(reducer, {});
+    return props => <Component {...props} mutations={mutationFuncs} />;
+  });
 
 /**
  * Takes multiple GraphQL queries and/or mutation definitions and wraps Component in appropriate
@@ -94,6 +96,7 @@ const PrettyErrors = ({ errors }) => (
  * @param {Object} options
  * @see withOperations
  */
+
 export default options =>
   compose(
     withOperations(options),
