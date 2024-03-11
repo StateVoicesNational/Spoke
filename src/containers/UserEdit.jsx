@@ -506,9 +506,9 @@ const mutations = {
   })
 };
 
-const UserEdit = loadData({ queries, mutations })(
+const UserEdit = withMuiTheme(
   withRouter(
-    withMuiTheme(UserEditBase)
+    loadData({ queries, mutations})(UserEditBase)
   )
 );
 
