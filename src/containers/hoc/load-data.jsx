@@ -1,6 +1,5 @@
 import React from "react";
-import { graphql } from "react-apollo";
-import { flowRight as compose } from "lodash";
+import { graphql, compose } from "react-apollo";
 
 import Card from "@material-ui/core/Card";
 import CardHeader from "@material-ui/core/CardHeader";
@@ -49,21 +48,28 @@ export const withQueries = (queries = {}) => {
   return compose(...enhancers, isLoading(Object.keys(queries)));
 };
 
-const withMutations = (mutations = {}) =>
-  compose(Component => {
-    const client = ApolloClientSingleton;
+const withMutations = (mutations = {}) => {
+  const withClient = Component => props => (
+    <Component {...props} client={ApolloClientSingleton} />
+  );
 
-    const reducer = (propsAcc, [name, constructor]) => {
-      propsAcc[name] = async (...args) => {
-        const options = constructor({ client, ...propsAcc })(...args);
-        return await client.mutate(options);
-      };
-      return propsAcc;
-    };
+  const withMutationFuncs = Component => props => {
+    const mutationFuncs = Object.entries(mutations).reduce(
+      (propsAcc, [name, constructor]) => {
+        propsAcc[name] = async (...args) => {
+          const options = constructor(props)(...args);
+          return await props.client.mutate(options);
+        };
+        return propsAcc;
+      },
+      {}
+    );
 
-    const mutationFuncs = Object.entries(mutations).reduce(reducer, {});
-    return props => <Component {...props} mutations={mutationFuncs} />;
-  });
+    return <Component {...props} mutations={mutationFuncs} />;
+  };
+
+  return compose(withClient, withMutationFuncs);
+};
 
 /**
  * Takes multiple GraphQL queries and/or mutation definitions and wraps Component in appropriate
