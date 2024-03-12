@@ -230,6 +230,6 @@
     "react-formal": "2.2.2",
     "react-router": "^3.2.0",
     "react-tooltip": "^4.2.13",
-    "webpack-cli": "^4.7.2"
+    "webpack-cli": "^4.10.0"
   }
 }
