@@ -321,7 +321,7 @@ export class TexterSideboxClassBase extends React.Component {
             fullWidth
             multiline
             rows={4}
-            rowsMax={6}
+            maxRows={6}
           />
 
           <Form.Submit
