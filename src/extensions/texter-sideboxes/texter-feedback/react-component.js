@@ -354,7 +354,7 @@ TexterSideboxClassBase.propTypes = {
   mutations: PropTypes.object
 };
 
-const TexterSideboxClass = compose(withMuiTheme)(TexterSideboxClassBase);
+const TexterSideboxClass = withMuiTheme(TexterSideboxClassBase);
 
 export { TexterSideboxClass };
 
@@ -379,8 +379,8 @@ export const mutations = {
   })
 };
 
-export const TexterSidebox = loadData({ mutations })(
-  withRouter(TexterSideboxClass)
+export const TexterSidebox = withRouter(
+  loadData({ mutations })(TexterSideboxClass)
 );
 
 export const showSummary = ({ assignment }) =>
