@@ -1,6 +1,5 @@
 import PropTypes from "prop-types";
 import React from "react";
-import { compose } from "recompose";
 
 import IconButton from "@material-ui/core/IconButton";
 import ArrowBackIcon from "@material-ui/icons/ArrowBack";
