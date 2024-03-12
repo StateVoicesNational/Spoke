@@ -1,3 +1,5 @@
+import humps from "humps";
+
 export const delimiters = {
   startDelimiter: "{",
   endDelimiter: "}"
@@ -87,13 +89,33 @@ const getScriptFieldValue = (contact, texter, fieldName) => {
       n = parseInt(n / digits.length, 10);
     }
   } else if (TOP_LEVEL_UPLOAD_FIELDS.indexOf(fieldName) !== -1) {
-    result = contact[fieldName];
-  } else {
-    let customFieldNames = contact.customFields;
-    if (typeof customFieldNames === "string") {
-      customFieldNames = JSON.parse(contact.customFields);
+    // Defensive code in case CSV is not formatted correctly
+    const contactKeysArray = Object.keys(contact);
+    
+    // Check the syntax of the strings in the contactKeysArray
+    let isSnakeCase = true;
+    let snake_field_name;
+    for (const key of contactKeysArray) {
+      if (!key.match(/^[a-z0-9_]+$/i)) {
+        isSnakeCase = false;
+        break;
+      }
     }
-    result = customFieldNames[fieldName];
+    
+    if (isSnakeCase) {
+      snake_field_name = humps.decamelize(fieldName);
+      result = contact[snake_field_name];
+    } else {
+      result = contact[fieldName];
+    }
+  } else {
+    // Custom field logic
+    let customFieldObj = {};
+    
+    if (typeof contact["custom_fields"] === "string") {
+      customFieldObj = JSON.parse(contact["custom_fields"]);
+    }
+    result = customFieldObj[fieldName];
   }
 
   if (CAPITALIZE_FIELDS.indexOf(fieldName) >= 0) {
@@ -105,8 +127,8 @@ const getScriptFieldValue = (contact, texter, fieldName) => {
 
 export const applyScript = ({ script, contact, customFields, texter }) => {
   const scriptFields = allScriptFields(customFields, true);
+  
   let appliedScript = script;
-
   for (const field of scriptFields) {
     try {
       const re = new RegExp(`${delimit(field)}`, "g");

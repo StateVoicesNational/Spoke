@@ -927,6 +927,8 @@ export class AdminCampaignEditBase extends React.Component {
                   // check to see if the startCampaign job completed
                   this.startPollingIfNecessary();
                 }
+                
+                localStorage.clear();
               }}
             >
               Start This Campaign!

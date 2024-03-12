@@ -9,6 +9,7 @@ import { allScriptFields } from "../../lib/scripts";
 import ScriptEditor from "../ScriptEditor";
 import { dataTest } from "../../lib/attributes";
 import theme from "../../styles/mui-theme";
+import { applyScript } from "../../lib/scripts";
 
 const styles = {
   dialog: {
@@ -55,6 +56,24 @@ export default class GSScriptField extends GSFormField {
     this.props.onChange(value);
     this.handleCloseDialog();
   };
+  
+  // Upon the successful upload of the CSV file, the file data will be persisted in localStorage, from which is can be retrieved here to generate the preview message.
+  previewScript = () => {
+    // Get contactCollection from localStorage
+    const contactCollection = JSON.parse(localStorage.getItem("contactCollection"));
+    
+    const { contacts, customFields } = contactCollection
+    
+    const currentScipt = this.state.script;
+    
+    let previewText = applyScript({
+      script: currentScipt,
+      contact: contacts[0],
+      customFields,
+      texter: {}
+    })
+    alert(`Script: \n${previewText}`)
+  };
 
   renderDialog() {
     const { open } = this.state;
@@ -97,6 +116,15 @@ export default class GSScriptField extends GSFormField {
             onClick={this.handleSaveScript}
           >
             Done
+          </Button>
+          
+          <Button
+            variant="contained"
+            color="primary"
+            {...dataTest("scriptPreview")}
+            onClick={this.previewScript}
+          >
+            Preview
           </Button>
         </DialogActions>
       </Dialog>

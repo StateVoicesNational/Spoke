@@ -76,7 +76,8 @@ export class CampaignContactsFormBase extends React.Component {
   state = {
     uploading: false,
     validationStats: null,
-    contactUploadError: null
+    contactUploadError: null,
+    contacts: null
   };
 
   styles = StyleSheet.create({
@@ -154,7 +155,8 @@ export class CampaignContactsFormBase extends React.Component {
       customFields,
       uploading: false,
       contactUploadError: null,
-      contactsCount: contacts.length
+      contactsCount: contacts.length,
+      contacts
     });
     const contactCollection = {
       name: (file && file.name) || null,
@@ -162,6 +164,10 @@ export class CampaignContactsFormBase extends React.Component {
       customFields,
       contacts
     };
+    
+    // Write to local storage
+    localStorage.setItem("contactCollection", JSON.stringify(contactCollection));
+    
     const self = this;
     // uncomment here to make the data uncompressed on-upload
     // occasionally useful for debugging to see decoded data in-transit
