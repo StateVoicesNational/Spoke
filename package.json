@@ -156,6 +156,7 @@
     "prop-types": "^15.6.0",
     "query-string": "^4.1.0",
     "react": "16.14.0",
+    "react-dnd": "^7.3.0",
     "redis": "3",
     "request": "^2.81.0",
     "rethink-knex-adapter": "0.4.20",
