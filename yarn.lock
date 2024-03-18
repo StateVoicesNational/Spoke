@@ -15744,10 +15744,10 @@ typedarray@^0.0.6:
   resolved "https://registry.npmjs.org/typedarray/-/typedarray-0.0.6.tgz"
   integrity sha512-/aCDEGatGvZ2BIk+HmLf4ifCJFwvKFNb9/JeZPMulfgFracn9QFcAf5GO8B/mweUjSoblS5In0cWhqpfs/5PQA==
 
-typescript@=2.8:
-  version "2.8.4"
-  resolved "https://registry.npmjs.org/typescript/-/typescript-2.8.4.tgz"
-  integrity sha512-IIU5cN1mR5J3z9jjdESJbnxikTrEz3lzAw/D0Tf45jHpBp55nY31UkUvmVHoffCfKHTqJs3fCLPDxknQTTFegQ==
+typescript@^2.8:
+  version "2.9.2"
+  resolved "https://registry.yarnpkg.com/typescript/-/typescript-2.9.2.tgz#1cbf61d05d6b96269244eb6a3bce4bd914e0f00c"
+  integrity sha512-Gr4p6nFNaoufRIY4NMdpQRNmgxVIGMs4Fcu/ujdYk3nAZqk7supzBE9idmvfZIlH/Cuj//dvi+019qEue9lV0w==
 
 tzdata@^1.0.25:
   version "1.0.35"
