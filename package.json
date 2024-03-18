@@ -81,6 +81,7 @@
   "homepage": "https://github.com/MoveOnOrg/Spoke/#readme",
   "dependencies": {
     "@aoberoi/passport-slack": "^1.0.5",
+    "@aws-sdk/client-sqs": "^3.535.0",
     "@babel/cli": "^7.23.9",
     "@babel/core": "^7.24.0",
     "@babel/plugin-proposal-export-default-from": "^7.18.10",
