@@ -874,12 +874,12 @@
     "@smithy/types" "^2.12.0"
     tslib "^2.6.2"
 
-"@babel/cli@^7.23.9":
-  version "7.23.9"
-  resolved "https://registry.npmjs.org/@babel/cli/-/cli-7.23.9.tgz"
-  integrity sha512-vB1UXmGDNEhcf1jNAHKT9IlYk1R+hehVTLFlCLHBi8gfuHQGP6uRjgXVYU0EVlI/qwAWpstqkBdf2aez3/z/5Q==
+"@babel/cli@^7.24.1":
+  version "7.24.1"
+  resolved "https://registry.yarnpkg.com/@babel/cli/-/cli-7.24.1.tgz#2e11e071e32fe82850b4fe514f56b9c9e1c44911"
+  integrity sha512-HbmrtxyFUr34LwAlV9jS+sSIjUp4FpdtIMGwgufY3AsxrIfsh/HxlMTywsONAZsU0RMYbZtbZFpUCrSGs7o0EA==
   dependencies:
-    "@jridgewell/trace-mapping" "^0.3.17"
+    "@jridgewell/trace-mapping" "^0.3.25"
     commander "^4.0.1"
     convert-source-map "^2.0.0"
     fs-readdir-recursive "^1.1.0"
