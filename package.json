@@ -192,7 +192,7 @@
     "cypress-file-upload": "^4.0.6",
     "cypress-wait-until": "^1.7.1",
     "enzyme": "^3.11.0",
-    "enzyme-adapter-react-16": "^1.15.6",
+    "enzyme-adapter-react-16": "^1.15.8",
     "eslint": "^8.26.0",
     "eslint-config-airbnb": "^19.0.4",
     "eslint-config-prettier": "^6.10.0",
