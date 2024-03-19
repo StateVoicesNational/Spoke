@@ -1,5 +1,5 @@
 import camelCaseKeys from "camelcase-keys";
-import { GraphQLError } from "graphql/error";
+import { GraphQLError } from "graphql";
 
 import { getConfig } from "../lib/config";
 import { applyScript } from "../../../lib/scripts";
@@ -24,10 +24,7 @@ export const bulkSendMessages = async (
     !getConfig("ALLOW_SEND_ALL_ENABLED", organization)
   ) {
     log.error("Not allowed to send all messages at once");
-    throw new GraphQLError({
-      status: 403,
-      message: "Not allowed to send all messages at once"
-    });
+    throw new GraphQLError("Not allowed to send all messages at once");
   }
 
   // Assign some contacts

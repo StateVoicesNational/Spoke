@@ -63,10 +63,10 @@ describe("Message Hanlder: profanity-tagger", () => {
 
     // SEND
     await sendMessage(c.testContacts[1].id, c.testTexterUser, {
-      userId: c.testTexterUser.id,
+      userId: c.testTexterUser.id.toString(),
       contactNumber: c.testContacts[1].cell,
       text: "brass shoe eddie homonym",
-      assignmentId: c.assignmentId
+      assignmentId: c.assignmentId.toString()
     });
     // a little stupidly updating messageservice_sid is necessary
     // because it's not await'd
@@ -127,10 +127,10 @@ describe("Message Hanlder: profanity-tagger", () => {
 
     // Confirm texter catch
     await sendMessage(c.testContacts[0].id, c.testTexterUser, {
-      userId: c.testTexterUser.id,
+      userId: c.testTexterUser.id.toString(),
       contactNumber: c.testContacts[0].cell,
       text: "Some fakeslur message",
-      assignmentId: c.assignmentId
+      assignmentId: c.assignmentId.toString()
     });
     const text1 = await r
       .knex("tag_campaign_contact")
@@ -147,10 +147,10 @@ describe("Message Hanlder: profanity-tagger", () => {
 
     // Confirm texter no-match
     await sendMessage(c.testContacts[1].id, c.testTexterUser, {
-      userId: c.testTexterUser.id,
+      userId: c.testTexterUser.id.toString(),
       contactNumber: c.testContacts[1].cell,
       text: "brass shoe eddie homonym",
-      assignmentId: c.assignmentId
+      assignmentId: c.assignmentId.toString()
     });
     const text2 = await r
       .knex("tag_campaign_contact")
@@ -167,10 +167,10 @@ describe("Message Hanlder: profanity-tagger", () => {
 
     // Confirm texter no-match
     await sendMessage(c.testContacts[1].id, c.testTexterUser, {
-      userId: c.testTexterUser.id,
+      userId: c.testTexterUser.id.toString(),
       contactNumber: c.testContacts[1].cell,
       text: "fakeslur is one too many slurs",
-      assignmentId: c.assignmentId
+      assignmentId: c.assignmentId.toString()
     });
     user = await cacheableData.user.userHasRole(
       c.testTexterUser,
@@ -210,10 +210,10 @@ describe("Message Hanlder: profanity-tagger", () => {
 
     // Confirm texter catch
     await sendMessage(c.testContacts[0].id, c.testTexterUser, {
-      userId: c.testTexterUser.id,
+      userId: c.testTexterUser.id.toString(),
       contactNumber: c.testContacts[0].cell,
       text: "Some fakeslur message",
-      assignmentId: c.assignmentId
+      assignmentId: c.assignmentId.toString()
     });
     const text1 = await r
       .knex("tag_campaign_contact")

@@ -1,4 +1,4 @@
-import { GraphQLError } from "graphql/error";
+import { GraphQLError } from "graphql";
 
 import { r, cacheableData } from "../../models";
 import { hasRole } from "../../../lib";

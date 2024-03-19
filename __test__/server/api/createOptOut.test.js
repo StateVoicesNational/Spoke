@@ -26,13 +26,13 @@ describe("createOptOut", () => {
     optOutContact = startedCampaign.testContacts[20];
     optOut = {
       cell: optOutContact.cell,
-      assignmentId: startedCampaign.assignmentId,
+      assignmentId: startedCampaign.assignmentId.toString(),
       reason: "they were snotty"
     };
 
     variables = {
       optOut,
-      campaignContactId: optOutContact.id
+      campaignContactId: optOutContact.id.toString()
     };
   }, global.DATABASE_SETUP_TEARDOWN_TIMEOUT);
 

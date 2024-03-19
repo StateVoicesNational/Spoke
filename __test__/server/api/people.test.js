@@ -1,7 +1,7 @@
 /* eslint-disable no-unused-expressions, consistent-return */
 import { r } from "../../../src/server/models/";
 import { getUsersGql } from "../../../src/containers/PeopleList";
-import { GraphQLError } from "graphql/error";
+import { GraphQLError } from "graphql";
 
 import {
   setupTest,
@@ -153,23 +153,23 @@ describe("people", () => {
 
     // assign contacts
     await assignTexter(testAdminUsers[0], null, testCampaigns[0], [
-      { id: testTexterUsers[0].id, needsMessageCount: 3 },
-      { id: testTexterUsers[1].id, needsMessageCount: 3 }
+      { id: testTexterUsers[0].id.toString(), needsMessageCount: 3 },
+      { id: testTexterUsers[1].id.toString(), needsMessageCount: 3 }
     ]);
 
     await assignTexter(testAdminUsers[0], null, testCampaigns[1], [
-      { id: testTexterUsers[2].id, needsMessageCount: 3 },
-      { id: testTexterUsers[3].id, needsMessageCount: 3 }
+      { id: testTexterUsers[2].id.toString(), needsMessageCount: 3 },
+      { id: testTexterUsers[3].id.toString(), needsMessageCount: 3 }
     ]);
 
     await assignTexter(testAdminUsers[0], null, testCampaigns[2], [
-      { id: testTexterUsers[0].id, needsMessageCount: 3 },
-      { id: testTexterUsers[4].id, needsMessageCount: 3 }
+      { id: testTexterUsers[0].id.toString(), needsMessageCount: 3 },
+      { id: testTexterUsers[4].id.toString(), needsMessageCount: 3 }
     ]);
 
     await assignTexter(testAdminUsers[0], null, testCampaigns[3], [
-      { id: testTexterUsers[1].id, needsMessageCount: 3 },
-      { id: testTexterUsers[3].id, needsMessageCount: 3 }
+      { id: testTexterUsers[1].id.toString(), needsMessageCount: 3 },
+      { id: testTexterUsers[3].id.toString(), needsMessageCount: 3 }
     ]);
 
     // other stuff
@@ -203,16 +203,20 @@ describe("people", () => {
 
     it("filters users to those assigned to a single campaign", async () => {
       const campaignsFilter = {
-        campaignId: testCampaigns[0].id
+        campaignId: parseInt(testCampaigns[0].id)
       };
       variables.campaignsFilter = campaignsFilter;
       const result = await runGql(getUsersGql, variables, testAdminUsers[0]);
+
       await testFiltering(result, [testTexterUsers[0], testTexterUsers[1]]);
     });
 
     it("filters users to those assigned to multiple campaigns", async () => {
       const campaignsFilter = {
-        campaignIds: [testCampaigns[0].id, testCampaigns[3].id]
+        campaignIds: [
+          parseInt(testCampaigns[0].id),
+          parseInt(testCampaigns[3].id)
+        ]
       };
       variables.campaignsFilter = campaignsFilter;
       const result = await runGql(getUsersGql, variables, testAdminUsers[0]);
@@ -329,7 +333,7 @@ describe("people", () => {
       expect(result.data).toBeUndefined();
       expect(result.errors).toEqual([
         new GraphQLError(
-          'Variable "$filterBy" got invalid value "any"; Expected type FilterPeopleBy; did you mean ANY?'
+          'Variable "$filterBy" got invalid value "any"; Value "any" does not exist in "FilterPeopleBy" enum. Did you mean the enum value "ANY"?'
         )
       ]);
     });
