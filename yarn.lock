@@ -11490,10 +11490,10 @@ jest-watcher@^28.0.0:
     jest-util "^28.1.3"
     string-length "^4.0.1"
 
-jest-when@^3.4.1:
-  version "3.5.2"
-  resolved "https://registry.npmjs.org/jest-when/-/jest-when-3.5.2.tgz"
-  integrity sha512-4rDvnhaWh08RcPsoEVXgxRnUIE9wVIbZtGqZ5x2Wm9Ziz9aQs89PipQFmOK0ycbEhVAgiV3MUeTXp3Ar4s2FcQ==
+jest-when@^3.6.0:
+  version "3.6.0"
+  resolved "https://registry.yarnpkg.com/jest-when/-/jest-when-3.6.0.tgz#b46ee408d68f671447b218f2ae6bd93fb5028acf"
+  integrity sha512-+cZWTy0ekAJo7M9Om0Scdor1jm3wDiYJWmXE8U22UVnkH54YCXAuaqz3P+up/FdtOg8g4wHOxV7Thd7nKhT6Dg==
 
 jest-worker@^26.2.1, jest-worker@^26.5.0:
   version "26.6.2"

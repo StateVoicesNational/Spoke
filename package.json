@@ -202,7 +202,7 @@
     "fakeredis": "^2.0.0",
     "foreman": "^3.0.1",
     "husky": "4",
-    "jest-when": "^3.4.1",
+    "jest-when": "^3.6.0",
     "json2csv": "^3.6.2",
     "lint-staged": "^9.2.0",
     "mockdate": "^2.0.2",
