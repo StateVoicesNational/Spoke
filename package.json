@@ -121,7 +121,6 @@
     "bandwidth-sdk": "1.0.0",
     "body-parser": "^1.15.2",
     "browserify": "^17.0.0",
-    "camelcase-keys": "^4.1.0",
     "color-difference": "^0.3.4",
     "cookie-session": "^2.0.0-alpha.1",
     "dataloader": "^1.2.0",
