@@ -123,7 +123,7 @@
     "browserify": "^17.0.0",
     "color-difference": "^0.3.4",
     "cookie-session": "^2.0.0-alpha.1",
-    "dataloader": "^1.2.0",
+    "dataloader": "^2.2.2",
     "dotenv": "^2.0.0",
     "eslint-plugin-react-hooks": "^4.3.0",
     "express": "^4.14.0",
