@@ -2,7 +2,10 @@ const esModules = [
   "bandwidth-sdk",
   "axios", // bandwidth-sdk dependency
   "filter-obj", // query-string dependency
-  "url-join"
+  "url-join",
+  "query-string",
+  "decode-uri-component",
+  "split-on-first"
 ];
 
 module.exports = {
