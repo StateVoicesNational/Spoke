@@ -12084,10 +12084,10 @@ knex@^0.17.5:
     uuid "^3.3.2"
     v8flags "^3.1.3"
 
-knex@^2.3.0:
-  version "2.5.1"
-  resolved "https://registry.npmjs.org/knex/-/knex-2.5.1.tgz"
-  integrity sha512-z78DgGKUr4SE/6cm7ku+jHvFT0X97aERh/f0MUKAKgFnwCYBEW4TFBqtHWFYiJFid7fMrtpZ/gxJthvz5mEByA==
+knex@^3.1.0:
+  version "3.1.0"
+  resolved "https://registry.yarnpkg.com/knex/-/knex-3.1.0.tgz#b6ddd5b5ad26a6315234a5b09ec38dc4a370bd8c"
+  integrity sha512-GLoII6hR0c4ti243gMs5/1Rb3B+AjwMOfjYm97pu0FOQa7JH56hgBxYf5WK2525ceSbBY1cjeZ9yk99GPMB6Kw==
   dependencies:
     colorette "2.0.19"
     commander "^10.0.0"
@@ -12098,7 +12098,7 @@ knex@^2.3.0:
     getopts "2.3.0"
     interpret "^2.2.0"
     lodash "^4.17.21"
-    pg-connection-string "2.6.1"
+    pg-connection-string "2.6.2"
     rechoir "^0.8.0"
     resolve-from "^5.0.0"
     tarn "^3.0.2"
@@ -14062,7 +14062,12 @@ pg-connection-string@2.0.0:
   resolved "https://registry.npmjs.org/pg-connection-string/-/pg-connection-string-2.0.0.tgz"
   integrity sha512-m+asSR3iBH2DBi2RkcChUhEykcRiZGLbga6UU1nHTvsVlvzWd619uNY3KyUsuHgS6Qz7GsRPMYri0VInb3D52A==
 
-pg-connection-string@2.6.1, pg-connection-string@^2.4.0, pg-connection-string@^2.5.0:
+pg-connection-string@2.6.2:
+  version "2.6.2"
+  resolved "https://registry.yarnpkg.com/pg-connection-string/-/pg-connection-string-2.6.2.tgz#713d82053de4e2bd166fab70cd4f26ad36aab475"
+  integrity sha512-ch6OwaeaPYcova4kKZ15sbJ2hKb/VP48ZD2gE7i1J+L4MspCtBMAx8nMgz7bksc7IojCIIWuEhHibSMFH8m8oA==
+
+pg-connection-string@^2.4.0, pg-connection-string@^2.5.0:
   version "2.6.1"
   resolved "https://registry.npmjs.org/pg-connection-string/-/pg-connection-string-2.6.1.tgz"
   integrity sha512-w6ZzNu6oMmIzEAYVw+RLK0+nqHPt8K3ZnknKi+g48Ak2pr3dtljJW3o+D/n2zzCG07Zoe9VOX3aiKpj+BN0pjg==
