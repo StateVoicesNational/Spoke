@@ -160,7 +160,7 @@
     "passport-local-authenticate": "^1.2.0",
     "pg": "^8.0.3",
     "pg-connection-string": "^2.4.0",
-    "pg-query-stream": "^1.1.1",
+    "pg-query-stream": "^4.5.3",
     "prop-types": "^15.6.0",
     "query-string": "^4.1.0",
     "react": "16.14.0",
