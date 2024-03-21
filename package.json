@@ -162,7 +162,7 @@
     "pg-connection-string": "^2.4.0",
     "pg-query-stream": "^4.5.3",
     "prop-types": "^15.6.0",
-    "query-string": "^4.1.0",
+    "query-string": "^9.0.0",
     "react": "16.14.0",
     "react-dnd": "7.7.0",
     "redis": "^4.6.13",
