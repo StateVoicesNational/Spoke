@@ -147,7 +147,7 @@
     "mailgun-js": "^0.20.0",
     "minilog": "^3.0.1",
     "moment": "2.29.4",
-    "moment-timezone": "^0.5.14",
+    "moment-timezone": "^0.5.45 ",
     "nexmo": "^2.3.2",
     "node-fetch": "^2.6.7",
     "nodemailer": "^6.4.16",
