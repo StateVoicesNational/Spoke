@@ -3,7 +3,6 @@ import type from "prop-types";
 import moment from "moment";
 import { Link as RouterLink, withRouter } from "react-router";
 import { gql } from "@apollo/client";
-import { compose } from "recompose";
 
 import MUIDataTable from "mui-datatables";
 import OpenInNewIcon from "@material-ui/icons/OpenInNew";
@@ -556,8 +555,6 @@ const mutations = {
   })
 };
 
-export default compose(
-  withMuiTheme,
-  loadData({ queries, mutations }),
-  withRouter
-)(IncomingMessageList);
+export default withMuiTheme(
+  loadData({ queries, mutations })(withRouter(IncomingMessageList))
+);
