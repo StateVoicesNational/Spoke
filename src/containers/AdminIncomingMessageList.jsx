@@ -13,7 +13,7 @@ import gql from "graphql-tag";
 import loadData from "./hoc/load-data";
 import { withRouter } from "react-router";
 import PaginatedUsersRetriever from "./PaginatedUsersRetriever";
-import * as queryString from "query-string";
+import queryString from "query-string";
 import {
   getConversationFiltersFromQuery,
   tagsFilterStateFromTagsFilter,
