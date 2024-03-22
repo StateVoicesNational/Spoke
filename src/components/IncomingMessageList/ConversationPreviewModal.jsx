@@ -1,7 +1,6 @@
 import React, { Component } from "react";
 import PropTypes from "prop-types";
 import gql from "graphql-tag";
-import { compose } from "recompose";
 import { StyleSheet, css } from "aphrodite";
 
 import Button from "@material-ui/core/Button";
@@ -267,7 +266,6 @@ const mutations = {
   })
 };
 
-export default compose(
-  withMuiTheme,
-  loadData({ mutations })
-)(InnerConversationPreviewModal);
+export default withMuiTheme(
+  loadData({ mutations })(InnerConversationPreviewModal)
+);

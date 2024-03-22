@@ -1,7 +1,6 @@
 import PropTypes from "prop-types";
 import React from "react";
 import { css } from "aphrodite";
-import { compose } from "recompose";
 import Toolbar from "./Toolbar";
 import MessageList from "./MessageList";
 import Survey from "./Survey";
@@ -603,9 +602,9 @@ export class AssignmentTexterContactControls extends React.Component {
             onClick={onClick("needsResponse")}
             style={{
               color: this.props.muiTheme.palette.text.primary,
-              backgroundColor: this.props.muiTheme.palette.background.default
+              backgroundColor: this.props.muiTheme.palette.background.default,
+              flex: "1 1 auto"
             }}
-            style={{ flex: "1 1 auto" }}
             disabled={!!this.props.contact.optOut}
             color="default"
             variant="contained"
@@ -770,7 +769,7 @@ export class AssignmentTexterContactControls extends React.Component {
             }}
             multiline
             fullWidth
-            rowsMax={6}
+            maxRows={6}
           />
         </GSForm>
       </div>
@@ -1278,4 +1277,4 @@ AssignmentTexterContactControls.propTypes = {
   updateCurrentContactById: PropTypes.func
 };
 
-export default compose(withMuiTheme)(AssignmentTexterContactControls);
+export default withMuiTheme(AssignmentTexterContactControls);

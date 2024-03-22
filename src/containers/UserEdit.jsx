@@ -24,7 +24,6 @@ import React from "react";
 import loadData from "./hoc/load-data";
 import gql from "graphql-tag";
 import { withRouter } from "react-router";
-import { compose } from "recompose";
 import GSForm from "../components/forms/GSForm";
 import GSTextField from "../components/forms/GSTextField";
 import GSSubmitButton from "../components/forms/GSSubmitButton";
@@ -507,10 +506,10 @@ const mutations = {
   })
 };
 
-const UserEdit = compose(
-  withMuiTheme,
-  withRouter,
-  loadData({ queries, mutations })
-)(UserEditBase);
+const UserEdit = withMuiTheme(
+  withRouter(
+    loadData({ queries, mutations})(UserEditBase)
+  )
+);
 
 export default UserEdit;

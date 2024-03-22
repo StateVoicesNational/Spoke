@@ -4,7 +4,6 @@ import PropTypes from "prop-types";
 import React from "react";
 import Form from "react-formal";
 import * as yup from "yup";
-import { compose } from "recompose";
 
 import Button from "@material-ui/core/Button";
 import Dialog from "@material-ui/core/Dialog";
@@ -432,4 +431,4 @@ OrgConfigBase.propTypes = {
   requestRefetch: PropTypes.func
 };
 
-export const OrgConfig = compose(withMuiTheme)(OrgConfigBase);
+export const OrgConfig = withMuiTheme(OrgConfigBase);

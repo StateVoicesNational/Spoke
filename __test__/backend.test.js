@@ -623,7 +623,13 @@ describe("graphql test suite", () => {
           expect(parsedDate).toEqual(campaign.due_by);
         } else {
           if (isSqlite) {
-            // Currently an open issue w/ datetime being stored as a string in SQLite3 for Jest tests: https://github.com/TryGhost/node-sqlite3/issues/1355. This results in milliseconds being truncated when getting campaign due_by
+            // Currently an open issue w/ datetime being stored as a string in SQLite3 
+            // for Jest tests: https://github.com/TryGhost/node-sqlite3/issues/1355. 
+            // This results in milliseconds being truncated when getting campaign due_by
+
+            // 3.15.2024 => Fails in SQLite testing now, but passes in PG.
+            // copiedCampaign.due_by is an Invalid Date, and at some point
+            // uses Date.parse()
             const campaignDueBy = campaign.due_by;
 
             campaignDueBy.setMilliseconds(0);

@@ -1,11 +1,11 @@
-import { ApiController, Client } from "@bandwidth/messaging";
+import { Configuration, MessagesApiFp } from "bandwidth-sdk";
 
 import { log } from "../../../lib";
 import { getFormattedPhoneNumber } from "../../../lib/phone-format";
-import { getConfig, hasConfig } from "../../../server/api/lib/config";
+import { getConfig } from "../../../server/api/lib/config";
 import { r, cacheableData, Log, Message } from "../../../server/models";
 import { saveNewIncomingMessage, parseMessageText } from "../message-sending";
-import { getMessageServiceConfig, getConfigKey } from "../service_map";
+import { getMessageServiceConfig } from "../service_map";
 
 const ENABLE_DB_LOG = getConfig("ENABLE_DB_LOG");
 
@@ -40,7 +40,7 @@ export async function getBandwidthController(organization, config) {
     basicAuthUserName: config.userName,
     basicAuthPassword: config.password
   });
-  return new ApiController(client);
+  return new MessagesApiFp(client);
 }
 
 export async function sendMessage({
@@ -300,12 +300,12 @@ export async function getFreeContactInfo({
 
   let messageData;
   if (messageSid) {
-    messageData = await messagingController.getMessages(
+    messageData = await messagingController.listMessages(
       config.accountId,
       messageSid
     );
   } else if (contactNumber) {
-    messageData = await messagingController.getMessages(
+    messageData = await messagingController.listMessages(
       config.accountId,
       null,
       null,

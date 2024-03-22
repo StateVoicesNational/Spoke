@@ -24,6 +24,7 @@ import {
   createStartedCampaign
 } from "../../test_helpers";
 
+// Skipped because muiTheme is not set when called
 describe.skip("ConversationPreviewModal", () => {
   let startedCampaign;
   let optOutContact;
