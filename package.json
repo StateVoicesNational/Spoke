@@ -150,7 +150,7 @@
     "moment-timezone": "^0.5.45 ",
     "nexmo": "^2.3.2",
     "node-fetch": "^2.6.7",
-    "nodemailer": "^6.4.16",
+    "nodemailer": "^6.9.9",
     "omit-deep-lodash": "^1.1.4",
     "papaparse": "^5.1.1",
     "passport": "^0.3.2",
