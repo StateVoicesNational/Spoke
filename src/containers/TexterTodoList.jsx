@@ -170,6 +170,7 @@ const assignmentQueryData = `
             sideboxChoices
           }
           organization {
+            allowSendAll
             id
           }
         }

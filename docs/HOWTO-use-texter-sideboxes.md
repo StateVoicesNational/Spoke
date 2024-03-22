@@ -71,9 +71,13 @@ Enabled this hides contact images and video sent back to texters in replies whic
 
 ### mobilize-event-shifter
 
-Mobilize (America) event scheduling. User clicks the button and the MOBILIZE_EVENT_SHIFTER_URL opens up in a Dialog as an iframe, which is meant to be an organization's main event list. If contact has a zip, it is included to filter the mobilize events. If the campaign contacts include an event_id column in the CSV, or provides a default event id for the campaign/organization, it adds a tab for the mobilize event in an iframe and prefills the first name, last name, cell, email, and zip into the fields via the query string. Texter can then switch between tabs of the specific event or the general event list. [Pull request with screenshots](https://github.com/MoveOnOrg/Spoke/pull/1812)
+Mobilize (America) event scheduling. User clicks the button and the MOBILIZE_EVENT_SHIFTER_URL opens up in a Dialog as an iframe, which is meant to be an organization's main event list. If contact has a zip, it is included to filter the mobilize events. If the campaign contacts include an event_id column in the CSV, or provides a default event id for the campaign/organization, it adds a tab for the mobilize event in an iframe and prefills the first name, last name, cell, email, and zip into the fields via the query string. Texter can then switch between tabs of the specific event or the general event list. [Pull request with screenshots](https://github.com/StateVoicesNational/Spoke/pull/1812)
 
 Note: as of 3/1/21 you will need to reach out to Mobilize support to have them enable embedding for your dashboard(s), otherwise you'll probably get the error `Refused to display '{MOBILIZE_EVENT_SHIFTER_URL}' in a frame because it set 'X-Frame-Options' to 'sameorigin'.`
+
+### per-campaign-bulk-send
+
+This texter sidebox allows you to enable or disable bulk send per campaign. To use this texter sidebox, bulk send must be enabled in your Spoke instance.
 
 ### tag-contact
 
@@ -102,7 +106,7 @@ handle replies.
 ### texter-feedback
 
 Must be enabled for Admins to be able to review contacts' replies and give feedback.  To customize the
-variables feedback is given dump valid JSON blob based on this [Working Families Party example](https://github.com/MoveOnOrg/Spoke/blob/stage-main-10-c/src/extensions/texter-sideboxes/texter-feedback/config-wfp-example.json)
+variables feedback is given dump valid JSON blob based on this [Working Families Party example](https://github.com/StateVoicesNational/Spoke/blob/stage-main-10-c/src/extensions/texter-sideboxes/texter-feedback/config-wfp-example.json)
 into the custom field. Note that invalid JSON will break Spoke!
 
 ### contact-notes

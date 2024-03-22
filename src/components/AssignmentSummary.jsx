@@ -142,6 +142,7 @@ export class AssignmentSummaryBase extends Component {
     // NOTE: we bring back archived campaigns if they have feedback
     // but want to get rid of them once feedback is acknowledged
     if (campaign.isArchived && !hasPopupSidebox) return null;
+    const campaignAllowBulkSend = texterUIConfig && texterUIConfig.sideboxChoices && texterUIConfig.sideboxChoices.includes("per-campaign-bulk-send") ? settingsData["per-campaign-bulk-send"] : true;
     return (
       <div
         className={css(styles.container)}
@@ -173,7 +174,9 @@ export class AssignmentSummaryBase extends Component {
             {(hasPopupSidebox && sideboxList) || null}
 
             <div className={css(styles.buttonRow)}>
-              {(window.NOT_IN_USA && window.ALLOW_SEND_ALL) || hasPopupSidebox
+              {(this.props.assignment.campaign.organization.allowSendAll &&
+                campaignAllowBulkSend) ||
+              hasPopupSidebox
                 ? null
                 : this.renderBadgedButton({
                     dataTestText: "sendFirstTexts",
@@ -186,7 +189,7 @@ export class AssignmentSummaryBase extends Component {
                     hideIfZero: true,
                     color: "primary"
                   })}
-              {(window.NOT_IN_USA && window.ALLOW_SEND_ALL) || hasPopupSidebox
+              {hasPopupSidebox
                 ? null
                 : this.renderBadgedButton({
                     dataTestText: "Respond",
@@ -225,13 +228,15 @@ export class AssignmentSummaryBase extends Component {
                 color: "secondary",
                 hideBadge: true
               })}
-              {window.NOT_IN_USA && window.ALLOW_SEND_ALL && !hasPopupSidebox
+              {this.props.assignment.campaign.organization.allowSendAll &&
+              campaignAllowBulkSend &&
+              !hasPopupSidebox
                 ? this.renderBadgedButton({
                     assignment,
                     title: "Send messages",
                     primary: true,
                     disabled: false,
-                    contactsFilter: "all",
+                    contactsFilter: "text",
                     count: 0,
                     hideIfZero: false,
                     color: "primary"

@@ -302,7 +302,7 @@ it("save campaign interaction steps, edit it, make sure the last value is set", 
 
   // COPIED CAMPAIGN
   const copiedCampaign1 = await copyCampaign(testCampaign.id, testAdminUser);
-  // 2nd campaign to test against https://github.com/MoveOnOrg/Spoke/issues/854
+  // 2nd campaign to test against https://github.com/StateVoicesNational/Spoke/issues/854
   const copiedCampaign2 = await copyCampaign(testCampaign.id, testAdminUser);
   expect(copiedCampaign1.data.copyCampaign.id).not.toEqual(testCampaign.id);
 
@@ -873,7 +873,8 @@ describe("Bulk Send", () => {
   ) => {
     process.env.ALLOW_SEND_ALL = params.allowSendAll;
     process.env.ALLOW_SEND_ALL_ENABLED = params.allowSendAllEnabled;
-    process.env.BULK_SEND_CHUNK_SIZE = params.bulkSendChunkSize;
+    process.env.BULK_SEND_BATCH_SIZE =
+      params.bulkSendBatchSize || params.bulkSendChunkSize;
 
     testCampaign.use_dynamic_assignment = true;
     await createScript(testAdminUser, testCampaign);
@@ -1026,6 +1027,20 @@ describe("Bulk Send", () => {
       bulkSendChunkSize: NUMBER_OF_CONTACTS
     };
     await testBulkSend(params, 0, expectErrorBulkSending);
+  });
+
+  it("should send initial texts to as many contacts as are in the batch size if batch size is smaller than the chunk size", async () => {
+    const params = {
+      allowSendAll: true,
+      allowSendAllEnabled: true,
+      bulkSendBatchSize: Math.round(NUMBER_OF_CONTACTS / 4),
+      bulkSendChunkSize: NUMBER_OF_CONTACTS
+    };
+    await testBulkSend(
+      params,
+      params.bulkSendBatchSize,
+      expectSuccessBulkSending(params.bulkSendBatchSize)
+    );
   });
 });
 

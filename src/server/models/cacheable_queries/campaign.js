@@ -275,7 +275,7 @@ const campaignCache = {
       const campaignDb = await trx("campaign")
         .where("id", id)
         .select("features");
-      const features = getFeatures(campaignDb);
+      const features = getFeatures(campaignDb[0]);
       let changes = false;
       for (const [featureName, featureValue] of Object.entries(newFeatures)) {
         if (features[featureName] !== featureValue) {

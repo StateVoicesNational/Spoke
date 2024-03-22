@@ -1,5 +1,6 @@
 import { GraphQLError } from "graphql";
 import { camelizeKeys } from "humps";
+import { getContacts } from "../assignment";
 
 import { getConfig } from "../lib/config";
 import { applyScript } from "../../../lib/scripts";
@@ -38,16 +39,20 @@ export const bulkSendMessages = async (
     { user, loaders }
   );
 
-  const contacts = await r
-    .knex("campaign_contact")
-    .where({
-      message_status: "needsMessage"
-    })
-    .where({
-      assignment_id: assignmentId
-    })
+  const contacts = await getContacts(
+    assignment,
+    {
+      messageStatus: "needsMessage",
+      validTimezone: true,
+      isOptedOut: false
+    },
+    organization,
+    await loaders.campaign.load(assignment.campaign_id),
+    true
+  )
+    .select("*")
     .orderByRaw("updated_at")
-    .limit(process.env.BULK_SEND_CHUNK_SIZE);
+    .limit(process.env.BULK_SEND_BATCH_SIZE);
 
   const interactionSteps = await r
     .knex("interaction_step")
@@ -60,6 +65,11 @@ export const bulkSendMessages = async (
     .where({
       is_deleted: false
     });
+
+  // No contacts to message
+  if (!contacts.length) {
+    return await Promise.all([]);
+  }
 
   const topmostParent = interactionSteps[0];
 

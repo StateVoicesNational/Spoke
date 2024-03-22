@@ -6,7 +6,7 @@ If your Spoke application is down/not-responding, then Spoke doesn't lose messag
 In this scenario, we do NOT automate it, but when service is restored, we can manually run the trigger and load in the sqs messages from Twilio without having lost any incoming messages.
 * Due to an existing bug, we DO NOT recommend scheduling the following job yet:
 - recurring Lambda (technically CloudWatch) trigger enabled to reguarly look for incoming messages:
-https://github.com/MoveOnOrg/Spoke/blob/main/docs/HOWTO_DEPLOYING_AWS_LAMBDA.md#setting-up-scheduled-jobs
+https://github.com/StateVoicesNational/Spoke/blob/main/docs/HOWTO_DEPLOYING_AWS_LAMBDA.md#setting-up-scheduled-jobs
 
 ### Instructions Below for Set Up
 * Follow the instructions in this link [Instructions for Set Up on Twilio.com] (https://www.twilio.com/blog/2017/07/handling-high-volume-inbound-sms-and-webhooks-with-twilio-functions-and-amazon-sqs.html)
