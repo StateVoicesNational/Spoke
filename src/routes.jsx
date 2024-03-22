@@ -9,6 +9,7 @@ import AdminCampaignEdit from "./containers/AdminCampaignEdit";
 import AdminReplySender from "./containers/AdminReplySender";
 import AdminCampaignMessagingService from "./containers/AdminCampaignMessagingService";
 import AdminBulkScriptEditor from "./containers/AdminBulkScriptEditor";
+import AdminScriptPreview  from "./containers/AdminScriptPreview";
 import TexterDashboard from "./components/TexterDashboard";
 import OrganizationWrapper from "./components/OrganizationWrapper";
 import TopNav from "./components/TopNav";
@@ -84,6 +85,10 @@ export default function makeRoutes(requireAuth = () => {}) {
           <Route path="tags" component={Tags} />
           <Route path="settings" component={Settings} />
           <Route path="phone-numbers" component={AdminPhoneNumberInventory} />
+          <Route 
+            path="script-preview" 
+            component={props => {return (<AdminScriptPreview {...props}/>)}} 
+          />
         </Route>
       </Route>
       <Route path="app" onEnter={checkTexterDowntime(requireAuth)}>
