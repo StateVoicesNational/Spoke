@@ -1,6 +1,6 @@
 import React from "react";
 import { withRouter } from "react-router";
-import gql from "graphql-tag";
+import { gql } from "@apollo/client";
 
 import loadData from "../containers/hoc/load-data";
 import withSetTheme from "../containers/hoc/withSetTheme";
@@ -51,7 +51,5 @@ class EnhancedOrganizationWrapper extends React.Component {
 }
 
 export default loadData(operations)(
-  withSetTheme(
-    withRouter(EnhancedOrganizationWrapper)
-  )
+  withSetTheme(withRouter(EnhancedOrganizationWrapper))
 );

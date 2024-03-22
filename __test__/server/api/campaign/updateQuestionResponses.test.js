@@ -113,7 +113,7 @@ describe("mutations.updateQuestionResponses", () => {
       return sendMessage(contact.id, texterUser, {
         text: returnedInteractionSteps[0].script,
         contactNumber: contact.cell,
-        assignmentId: assignment.id,
+        assignmentId: assignment.id.toString(),
         userId: texterUser.id.toString()
       });
     });
@@ -238,12 +238,12 @@ describe("mutations.updateQuestionResponses", () => {
 
       questionResponses = [
         {
-          campaignContactId: contacts[0].id,
+          campaignContactId: contacts[0].id.toString(),
           interactionStepId: interactionSteps[0].id,
           value: colorInteractionSteps[0].answerOption
         },
         {
-          campaignContactId: contacts[0].id,
+          campaignContactId: contacts[0].id.toString(),
           interactionStepId: redInteractionStep.id,
           value: shadesOfRedInteractionSteps[0].answerOption
         }
@@ -276,7 +276,7 @@ describe("mutations.updateQuestionResponses", () => {
     `;
 
       const variables = {
-        ccid: contacts[0].id,
+        ccid: contacts[0].id.toString(),
         qr: questionResponses
       };
 
@@ -357,8 +357,8 @@ describe("mutations.updateQuestionResponses", () => {
       `;
 
         const getAssignmentVariables = {
-          assignmentId: assignment.id,
-          contactIds: contacts[0].id,
+          assignmentId: assignment.id.toString(),
+          contactIds: contacts[0].id.toString(),
           findNew: false
         };
 

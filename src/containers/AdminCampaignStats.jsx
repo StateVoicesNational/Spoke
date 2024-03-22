@@ -18,7 +18,7 @@ import AdminCampaignCopy from "./AdminCampaignCopy";
 import { withRouter, Link as RouterLink } from "react-router";
 import { StyleSheet, css } from "aphrodite";
 import loadData from "./hoc/load-data";
-import gql from "graphql-tag";
+import { gql } from "@apollo/client";
 import theme from "../styles/theme";
 import { dataTest } from "../lib/attributes";
 

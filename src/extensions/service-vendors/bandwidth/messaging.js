@@ -1,5 +1,4 @@
 import { Configuration, MessagesApiFp } from "bandwidth-sdk";
-
 import { log } from "../../../lib";
 import { getFormattedPhoneNumber } from "../../../lib/phone-format";
 import { getConfig } from "../../../server/api/lib/config";
@@ -35,10 +34,9 @@ export function errorDescription(errorCode) {
 }
 
 export async function getBandwidthController(organization, config) {
-  const client = new Client({
-    timeout: 0,
-    basicAuthUserName: config.userName,
-    basicAuthPassword: config.password
+  const client = new Configuration({
+    username: config.userName,
+    password: config.password
   });
   return new MessagesApiFp(client);
 }

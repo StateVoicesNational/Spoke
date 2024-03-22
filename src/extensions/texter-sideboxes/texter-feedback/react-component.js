@@ -4,7 +4,7 @@ import { withRouter } from "react-router";
 import ReactTooltip from "react-tooltip";
 import * as yup from "yup";
 import Form from "react-formal";
-import gql from "graphql-tag";
+import { gql } from "@apollo/client";
 import _ from "lodash";
 
 import AddIcon from "@material-ui/icons/Add";
