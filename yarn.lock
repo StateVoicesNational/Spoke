@@ -16208,10 +16208,10 @@ ripemd160@^2.0.0, ripemd160@^2.0.1:
     hash-base "^3.0.0"
     inherits "^2.0.1"
 
-rollbar@^2.4.4:
-  version "2.26.3"
-  resolved "https://registry.npmjs.org/rollbar/-/rollbar-2.26.3.tgz"
-  integrity sha512-Pf6PVH0zFi0dK4Yhj4MBEZX0QwIiHPZRgBHNHkhiujarhT5xunkJZ1T1QaJD0g8ML22f3zA7kKsly1tZZE7cdg==
+rollbar@^2.26.4:
+  version "2.26.4"
+  resolved "https://registry.yarnpkg.com/rollbar/-/rollbar-2.26.4.tgz#05e47d3b1f52ab6da9f88710ec66371a76cdc3c9"
+  integrity sha512-JKmrj6riYm9ZPJisgxljgH4uCsvjMHDHXrinDF7aAFaP+eoF51HomVPtLcDTYLsrJ568aKVNLUhedFajONBwSg==
   dependencies:
     async "~3.2.3"
     console-polyfill "0.3.0"
