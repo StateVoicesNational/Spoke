@@ -535,6 +535,10 @@ describe("graphql test suite", () => {
           organization_id: organization.id,
           role: "OWNER"
         }).save();
+
+        const now = new Date();
+        const dueBy = isSqlite ? now.getTime() : now;
+
         // creating campaign, interactions (two levels down), and canned responses
         campaign = await new Campaign({
           organization_id: organization.id,
@@ -542,7 +546,7 @@ describe("graphql test suite", () => {
           description: "This is my new campaign",
           is_started: false,
           is_archived: false,
-          due_by: new Date(),
+          due_by: dueBy,
           features: JSON.stringify({ MY_FEATURE: "value 1" }),
           intro_html: "<p>This is my intro HTML.</p>",
           primary_color: "#112233",
@@ -632,30 +636,19 @@ describe("graphql test suite", () => {
           typeof copiedCampaign.due_by === "number" ||
           typeof copiedCampaign.due_by === "string"
         ) {
-          let parsedDate = new Date(copiedCampaign.due_by);
+          const parsedDate = new Date(copiedCampaign.due_by);
           expect(parsedDate).toEqual(campaign.due_by);
+        } else if (isSqlite) {
+          expect(copiedCampaign.due_by.getTime()).toEqual(campaign.due_by);
         } else {
-          if (isSqlite) {
-            // Currently an open issue w/ datetime being stored as a string in SQLite3 
-            // for Jest tests: https://github.com/TryGhost/node-sqlite3/issues/1355. 
-            // This results in milliseconds being truncated when getting campaign due_by
-
-            // 3.15.2024 => Fails in SQLite testing now, but passes in PG.
-            // copiedCampaign.due_by is an Invalid Date, and at some point
-            // uses Date.parse()
-            const campaignDueBy = campaign.due_by;
-
-            campaignDueBy.setMilliseconds(0);
-            expect(copiedCampaign.due_by).toEqual(campaignDueBy);
-          } else {
-            expect(copiedCampaign.due_by).toEqual(campaign.due_by);
-          }
+          expect(copiedCampaign.due_by).toEqual(campaign.due_by);
         }
+
         if (
           typeof copiedCampaign.features === "object" &&
           copiedCampaign.features
         ) {
-          let jsonString = JSON.stringify(copiedCampaign.features);
+          const jsonString = JSON.stringify(copiedCampaign.features);
           expect(jsonString).toEqual(campaign.features);
         } else {
           expect(copiedCampaign.features).toEqual(campaign.features);
