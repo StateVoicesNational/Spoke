@@ -1,7 +1,7 @@
+import { graphql } from "graphql";
 import { isSqlite } from "../src/server/models/";
 import { resolvers } from "../src/server/api/schema";
 import { schema as apiSchema } from "../src/api/schema";
-import { graphql } from "graphql";
 
 console.log("This is an intentional error");
 
