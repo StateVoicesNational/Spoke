@@ -166,7 +166,6 @@
     "request": "^2.81.0",
     "rethink-knex-adapter": "0.4.20",
     "rollbar": "^2.26.4",
-    "strip-ansi": "^7.1.0",
     "terser-webpack-plugin": "^5.3.10",
     "thinky": "^2.3.3",
     "timezonecomplete": "^5.5.0",
