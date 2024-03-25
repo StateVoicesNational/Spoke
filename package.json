@@ -239,6 +239,7 @@
     "react-tooltip": "^4.2.13"
   },
   "resolutions": {
-    "strip-ansi": "6.0.1"
+    "strip-ansi": "6.0.1",
+    "axios": "0.28.0"
   }
 }
