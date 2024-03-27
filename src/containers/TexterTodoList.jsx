@@ -58,7 +58,8 @@ class TexterTodoList extends React.Component {
   }
 
   renderTodoList(assignments) {
-    return assignments
+    const sortedAssignments = [...assignments];
+    return sortedAssignments
       .sort((x, y) => {
         // Sort with feedback at the top, and then based on Text assignment size
         const xHasFeedback =
