@@ -139,6 +139,15 @@ const campaignInfoFragment = `
     state
     count
   }
+  contacts {
+    id
+    firstName
+    lastName
+    cell
+    customFields
+    zip
+    external_id
+  }
 `;
 
 export const campaignDataQuery = gql`query getCampaign($campaignId: String!) {
@@ -488,7 +497,9 @@ export class AdminCampaignEditBase extends React.Component {
         extraProps: {
           customFields: this.props.campaignData.campaign.customFields,
           availableActions: this.props.organizationData.organization
-            .availableActions
+            .availableActions,
+          contacts: this.props.campaignData.campaign.contacts,
+          texters: this.props.organizationData.organization.texters
         }
       },
       {

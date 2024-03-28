@@ -14,6 +14,7 @@ import Card from "@material-ui/core/Card";
 import CardContent from "@material-ui/core/CardContent";
 import CardHeader from "@material-ui/core/CardHeader";
 import { Typography } from "@material-ui/core";
+import PreviewScript from "./PreviewScript";
 
 import CampaignFormSectionHeading from "./CampaignFormSectionHeading";
 import GSForm from "./forms/GSForm";
@@ -413,6 +414,12 @@ export class CampaignInteractionStepsFormBase extends React.Component {
               )}
             </GSForm>
           </CardContent>
+          <PreviewScript
+            interactionStep={interactionStep}
+            texters={this.props.texters}
+            contacts={this.props.contacts}
+            customFields={this.props.customFields}
+          />
         </Card>
         <div style={this.styles.answerContainer}>
           {interactionStep.questionText &&
