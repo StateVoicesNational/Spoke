@@ -26,6 +26,8 @@ class CampaignDynamicAssignmentForm extends React.Component {
   }
 
   onChange = formValues => {
+    formValues.batchSize = Number(formValues.batchSize)
+    formValues.responseWindow = Number(formValues.responseWindow)
     this.setState(formValues);
     this.props.onChange({
       ...this.state,
