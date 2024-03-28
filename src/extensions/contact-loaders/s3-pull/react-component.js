@@ -1,7 +1,6 @@
 import type from "prop-types";
 import React from "react";
 import Form from "react-formal";
-import { compose } from "recompose";
 import * as yup from "yup";
 
 import List from "@material-ui/core/List";
@@ -130,7 +129,7 @@ CampaignContactsFormBase.propTypes = {
   jobResultMessage: type.string
 };
 
-const CampaignContactsForm = compose(withMuiTheme)(CampaignContactsFormBase);
+const CampaignContactsForm = withMuiTheme(CampaignContactsFormBase);
 
 CampaignContactsForm.prototype.renderAfterStart = true;
 

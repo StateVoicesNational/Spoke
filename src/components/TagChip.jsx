@@ -1,5 +1,4 @@
 import React from "react";
-import { compose } from "recompose";
 import Chip from "@material-ui/core/Chip";
 import type from "prop-types";
 import Avatar from "@material-ui/core/Avatar";
@@ -45,7 +44,6 @@ export const TagChip = props => {
       onClick={props.onClick}
       onDelete={props.onDelete}
       label={props.text}
-      onClick={props.onClick}
       avatar={
         <Avatar
           style={{
@@ -67,4 +65,4 @@ TagChip.propTypes = {
   backgroundColor: type.string
 };
 
-export default compose(withMuiTheme)(TagChip);
+export default withMuiTheme(TagChip);

@@ -1,4 +1,4 @@
-import gql from "graphql-tag";
+import { gql } from "@apollo/client";
 
 import { schema as userSchema } from "./user";
 import { schema as conversationSchema } from "./conversations";

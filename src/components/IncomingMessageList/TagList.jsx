@@ -1,7 +1,6 @@
 import React from "react";
 import { StyleSheet, css } from "aphrodite";
 import PropTypes from "prop-types";
-import { compose } from "recompose";
 
 import Avatar from "@material-ui/core/Avatar";
 import FlagIcon from "@material-ui/icons/Flag";
@@ -53,4 +52,4 @@ TagList.propTypes = {
   organizationTags: PropTypes.object
 };
 
-export default compose(withMuiTheme)(TagList);
+export default withMuiTheme(TagList);

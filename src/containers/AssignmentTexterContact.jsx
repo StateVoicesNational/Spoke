@@ -3,7 +3,7 @@ import React from "react";
 import { StyleSheet, css } from "aphrodite";
 import Controls from "../components/AssignmentTexter/Controls";
 import { applyScript } from "../lib/scripts";
-import gql from "graphql-tag";
+import { gql } from "@apollo/client";
 import loadData from "./hoc/load-data";
 import * as yup from "yup";
 import BulkSendButton from "../components/AssignmentTexter/BulkSendButton";

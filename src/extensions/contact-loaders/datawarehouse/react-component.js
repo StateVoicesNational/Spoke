@@ -3,7 +3,6 @@ import React from "react";
 import Form from "react-formal";
 import { StyleSheet, css } from "aphrodite";
 import * as yup from "yup";
-import { compose } from "recompose";
 
 import List from "@material-ui/core/List";
 import ListItem from "@material-ui/core/ListItem";
@@ -225,6 +224,6 @@ CampaignContactsFormBase.propTypes = {
   jobResultMessage: type.string
 };
 
-const CampaignContactsForm = compose(withMuiTheme)(CampaignContactsFormBase);
+const CampaignContactsForm = withMuiTheme(CampaignContactsFormBase);
 
 export { CampaignContactsForm };

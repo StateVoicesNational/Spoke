@@ -5,7 +5,7 @@ import Form from "react-formal";
 import Badge from "@material-ui/core/Badge";
 import Button from "@material-ui/core/Button";
 import { withRouter } from "react-router";
-import gql from "graphql-tag";
+import { gql } from "@apollo/client";
 import GSTextField from "../../../components/forms/GSTextField";
 import { dataTest } from "../../../lib/attributes";
 

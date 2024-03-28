@@ -3,7 +3,7 @@ import React from "react";
 import ContactController from "../components/AssignmentTexter/ContactController";
 import { withRouter } from "react-router";
 import loadData from "./hoc/load-data";
-import gql from "graphql-tag";
+import { gql } from "@apollo/client";
 
 export const contactDataFragment = `
         id

@@ -24,7 +24,7 @@ import theme from "../styles/theme";
 import { StyleSheet, css } from "aphrodite";
 import { dataTest } from "../lib/attributes";
 import loadData from "../containers/hoc/load-data";
-import gql from "graphql-tag";
+import { gql } from "@apollo/client";
 import TagChips from "./TagChips";
 import { parseCannedResponseCsv } from "../lib/parse_csv";
 

@@ -1,7 +1,6 @@
 import PropTypes from "prop-types";
 import React, { Component } from "react";
 import { StyleSheet, css } from "aphrodite";
-import { compose } from "recompose";
 
 import Button from "@material-ui/core/Button";
 import Badge from "@material-ui/core/Badge";
@@ -281,4 +280,4 @@ AssignmentSummaryBase.propTypes = {
   todoLink: PropTypes.func
 };
 
-export default compose(withMuiTheme, withRouter)(AssignmentSummaryBase);
+export default withMuiTheme(withRouter(AssignmentSummaryBase));

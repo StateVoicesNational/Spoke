@@ -1,6 +1,6 @@
 import GraphQLDate from "graphql-date";
 import GraphQLJSON from "graphql-type-json";
-import { GraphQLError } from "graphql/error";
+import { GraphQLError } from "graphql";
 import isUrl from "is-url";
 import _ from "lodash";
 import { gzip, makeTree, getHighestRole } from "../../lib";
@@ -1052,10 +1052,9 @@ const rootMutations = {
         campaign.hasOwnProperty("contacts") &&
         campaign.contacts
       ) {
-        throw new GraphQLError({
-          status: 400,
-          message: "Not allowed to add contacts after the campaign starts"
-        });
+        throw new GraphQLError(
+          "Not allowed to add contacts after the campaign starts"
+        );
       }
       return editCampaign(id, campaign, loaders, user, origCampaign);
     },
@@ -1109,10 +1108,7 @@ const rootMutations = {
       authRequired(user);
       const invite = await Invite.get(inviteId);
       if (!invite || !invite.is_valid) {
-        throw new GraphQLError({
-          status: 400,
-          message: "That invitation is no longer valid"
-        });
+        throw new GraphQLError("That invitation is no longer valid");
       }
 
       const newOrganization = await Organization.save({

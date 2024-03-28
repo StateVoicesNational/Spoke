@@ -1,5 +1,8 @@
 import { configure } from "enzyme";
 import Adapter from "enzyme-adapter-react-16";
+import { TextEncoder, TextDecoder } from "util";
+
+Object.assign(global, { TextDecoder, TextEncoder });
 
 configure({ adapter: new Adapter() });
 

@@ -2,7 +2,7 @@ import React, { Component } from "react";
 import { Link } from "react-router";
 import type from "prop-types";
 import loadData from "./hoc/load-data";
-import gql from "graphql-tag";
+import { gql } from "@apollo/client";
 import LoadingIndicator from "../components/LoadingIndicator";
 
 import OpenInNewIcon from "@material-ui/icons/OpenInNew";

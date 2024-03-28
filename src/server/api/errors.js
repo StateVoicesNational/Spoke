@@ -1,12 +1,9 @@
-import { GraphQLError } from "graphql/error";
+import { GraphQLError } from "graphql";
 import { r, cacheableData } from "../models";
 
 export function authRequired(user) {
   if (!user) {
-    throw new GraphQLError({
-      status: 401,
-      message: "You must login to access that resource."
-    });
+    throw new GraphQLError("You must login to access that resource.");
   }
 }
 

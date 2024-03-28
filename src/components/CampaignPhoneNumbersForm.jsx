@@ -4,7 +4,6 @@ import { StyleSheet, css } from "aphrodite";
 import _ from "lodash";
 import * as yup from "yup";
 import Form from "react-formal";
-import { compose } from "recompose";
 
 import Button from "@material-ui/core/Button";
 import IconButton from "@material-ui/core/IconButton";
@@ -968,4 +967,4 @@ class CampaignPhoneNumbersForm extends React.Component {
   }
 }
 
-export default compose(withMuiTheme)(CampaignPhoneNumbersForm);
+export default withMuiTheme(CampaignPhoneNumbersForm);

@@ -1,3 +1,13 @@
+const esModules = [
+  "bandwidth-sdk",
+  "axios", // bandwidth-sdk dependency
+  "filter-obj", // query-string dependency
+  "url-join",
+  "query-string",
+  "decode-uri-component",
+  "split-on-first"
+];
+
 module.exports = {
   verbose: true,
   testURL: "http://localhost:3000",
@@ -50,5 +60,8 @@ module.exports = {
   testPathIgnorePatterns: [
     "<rootDir>/node_modules/",
     "<rootDir>/__test__/cypress/"
-  ]
+  ],
+  transformIgnorePatterns: esModules.length
+    ? [`/node_modules/(?!${esModules.join("|")})`]
+    : []
 };

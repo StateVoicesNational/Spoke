@@ -1,6 +1,5 @@
 import type from "prop-types";
 import React from "react";
-import { compose } from "recompose";
 import GSForm from "../components/forms/GSForm";
 import GSSubmitButton from "../components/forms/GSSubmitButton";
 import GSTextField from "../components/forms/GSTextField";
@@ -27,6 +26,8 @@ class CampaignDynamicAssignmentForm extends React.Component {
   }
 
   onChange = formValues => {
+    formValues.batchSize = Number(formValues.batchSize)
+    formValues.responseWindow = Number(formValues.responseWindow)
     this.setState(formValues);
     this.props.onChange({
       ...this.state,
@@ -214,4 +215,4 @@ CampaignDynamicAssignmentForm.propTypes = {
   batchSize: type.string
 };
 
-export default compose(withMuiTheme)(CampaignDynamicAssignmentForm);
+export default withMuiTheme(CampaignDynamicAssignmentForm);

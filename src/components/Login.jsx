@@ -1,7 +1,6 @@
 import PropTypes from "prop-types";
 import React from "react";
 import { withRouter } from "react-router";
-import { compose } from "recompose";
 import Paper from "@material-ui/core/Paper";
 import Button from "@material-ui/core/Button";
 import ButtonGroup from "@material-ui/core/ButtonGroup";
@@ -143,4 +142,4 @@ Login.propTypes = {
   router: PropTypes.object
 };
 
-export default compose(withMuiTheme, withRouter)(Login);
+export default withMuiTheme(withRouter(Login));

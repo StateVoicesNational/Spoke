@@ -3,7 +3,7 @@ import React from "react";
 import * as yup from "yup";
 import Form from "react-formal";
 import { withRouter } from "react-router";
-import gql from "graphql-tag";
+import { gql } from "@apollo/client";
 
 import Button from "@material-ui/core/Button";
 import FormControlLabel from "@material-ui/core/FormControlLabel";

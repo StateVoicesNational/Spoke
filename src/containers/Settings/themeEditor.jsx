@@ -1,7 +1,6 @@
 import PropTypes from "prop-types";
 import React, { useState } from "react";
-import { compose } from "recompose";
-import gql from "graphql-tag";
+import { gql } from "@apollo/client";
 import * as yup from "yup";
 import Form from "react-formal";
 import colorDifference from "color-difference";
@@ -198,9 +197,6 @@ const mutations = {
   })
 };
 
-export default compose(
-  withSetTheme,
-  loadData({
-    mutations
-  })
-)(ThemeEditor);
+const enhancedThemeEditor = withSetTheme(loadData({ mutations })(ThemeEditor));
+
+export default enhancedThemeEditor;

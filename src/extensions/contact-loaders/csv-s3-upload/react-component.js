@@ -5,7 +5,6 @@ import axios from "axios";
 import * as yup from "yup";
 import humps from "humps";
 import { StyleSheet, css } from "aphrodite";
-import { compose } from "recompose";
 
 import Button from "@material-ui/core/Button";
 import Divider from "@material-ui/core/Divider";
@@ -354,7 +353,7 @@ CampaignContactsFormBase.propTypes = {
   jobResultMessage: type.string
 };
 
-const CampaignContactsForm = compose(withMuiTheme)(CampaignContactsFormBase);
+const CampaignContactsForm = withMuiTheme(CampaignContactsFormBase);
 
 CampaignContactsForm.prototype.renderAfterStart = true;
 
