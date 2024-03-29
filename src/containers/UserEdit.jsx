@@ -62,23 +62,29 @@ const styles = StyleSheet.create({
   }
 });
 
-const fetchUser = async (organizationId, userId) =>
-  apolloClient.query({
-    query: gql`
-      query getEditedUser($organizationId: String!, $userId: Int!) {
-        user(organizationId: $organizationId, userId: $userId) {
-          id
-          firstName
-          email
-          lastName
-          alias
-          cell
-          extra
+const fetchUser = async (organizationId, userId) => {
+  try {
+    const response = await apolloClient.query({
+      query: gql`
+        query getEditedUser($organizationId: String!, $userId: Int!) {
+          user(organizationId: $organizationId, userId: $userId) {
+            id
+            firstName
+            email
+            lastName
+            alias
+            cell
+            extra
+          }
         }
-      }
-    `,
-    variables: { organizationId, userId }
-  });
+      `,
+      variables: { organizationId, userId }
+    });
+    return response;
+  } catch (error) {
+    console.error("Error fetching user:", error);
+  }
+};
 
 const fetchOrg = async organizationId =>
   apolloClient.query({
@@ -130,7 +136,7 @@ export class UserEditBase extends React.Component {
     if (!this.props.authType && this.props.userId) {
       const response = await fetchUser(
         this.props.organizationId,
-        this.props.userId
+        parseInt(this.props.userId)
       );
       this.setState({
         editedUser: response.data
@@ -483,7 +489,7 @@ const mutations = {
   editUser: ownProps => userData => ({
     mutation: editUserMutation,
     variables: {
-      userId: ownProps.userId,
+      userId: parseInt(ownProps.userId),
       organizationId: ownProps.organizationId,
       userData
     }
