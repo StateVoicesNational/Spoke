@@ -492,7 +492,7 @@ const mutations = {
     variables: {
       organizationId: ownProps.params.organizationId,
       areaCode,
-      limit
+      limit: parseInt(limit)
     },
     refetchQueries: () => ["getOrganizationData"]
   }),
