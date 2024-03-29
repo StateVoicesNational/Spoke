@@ -24,7 +24,6 @@ export class AdminIncomingMessageList extends Component {
   constructor(props) {
     super(props);
 
-    // const query = props.location.query;
     const filters = getConversationFiltersFromQuery(
       props.location.query,
       props.organization.organization.tags
