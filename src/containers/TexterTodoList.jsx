@@ -267,7 +267,7 @@ const queries = {
     query: dataQuery,
     options: ownProps => ({
       variables: {
-        userId: ownProps.params.userId || null,
+        userId: parseInt(ownProps.params.userId) || null,
         organizationId: ownProps.params.organizationId,
         todosOrg:
           ownProps.location.query["org"] == "all" ||
@@ -302,7 +302,7 @@ const queries = {
         );
       return {
         variables: {
-          userId: ownProps.params.userId || null,
+          userId: parseInt(ownProps.params.userId) || null,
           organizationId: ownProps.params.organizationId
         },
         fetchPolicy: "network-only",
