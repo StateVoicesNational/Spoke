@@ -91,16 +91,25 @@ export class PaginatedUsersRetriever extends Component {
     let offset = 0;
     let total = undefined;
     let users = [];
+    let results;
     do {
-      const results = await fetchPeople(
-        offset,
-        pageSize,
-        organizationId,
-        campaignsFilter,
-        sortBy || "FIRST_NAME",
-        roleFilter
-      );
-      const { pageInfo, users: newUsers } = results.data.people;
+      try {
+        results = await fetchPeople(
+          offset,
+          pageSize,
+          organizationId,
+          campaignsFilter,
+          sortBy || "FIRST_NAME",
+          roleFilter
+        );
+      } catch (error) {
+        console.error("Error fetching people:", error);
+      }
+
+      const { pageInfo, users: newUsers } = results?.data?.people || {
+        pageInfo: {},
+        users: []
+      };
       users = users.concat(newUsers);
       offset += pageSize;
       total = pageInfo.total;
