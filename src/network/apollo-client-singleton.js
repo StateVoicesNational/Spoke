@@ -60,11 +60,32 @@ const cache = new InMemoryCache({
     }
     return null;
   },
-  // FUTURE: Apollo Client 3.0 allows this much more easily:
   typePolicies: {
     ContactTag: {
       // key is just the tag id and the value is contact-specific
       keyFields: false
+    },
+    // Define custom merge functions for multiple fields
+    // https://go.apollo.dev/c/merging-non-normalized-objects
+    // https://www.apollographql.com/docs/react/caching/cache-field-behavior/#merging-arrays
+    Query: {
+      fields: {
+        organization: {
+          merge: true
+        }
+      }
+    },
+    Campaign: {
+      fields: {
+        ingestMethod: {
+          merge: true
+        },
+        pendingJobs: {
+          merge(existing = [], incoming) {
+            return incoming;
+          }
+        }
+      }
     }
   }
 });

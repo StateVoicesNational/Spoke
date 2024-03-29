@@ -58,7 +58,8 @@ class TexterTodoList extends React.Component {
   }
 
   renderTodoList(assignments) {
-    return assignments
+    const sortedAssignments = [...assignments];
+    return sortedAssignments
       .sort((x, y) => {
         // Sort with feedback at the top, and then based on Text assignment size
         const xHasFeedback =
@@ -266,7 +267,7 @@ const queries = {
     query: dataQuery,
     options: ownProps => ({
       variables: {
-        userId: ownProps.params.userId || null,
+        userId: parseInt(ownProps.params.userId) || null,
         organizationId: ownProps.params.organizationId,
         todosOrg:
           ownProps.location.query["org"] == "all" ||
@@ -301,7 +302,7 @@ const queries = {
         );
       return {
         variables: {
-          userId: ownProps.params.userId || null,
+          userId: parseInt(ownProps.params.userId) || null,
           organizationId: ownProps.params.organizationId
         },
         fetchPolicy: "network-only",
