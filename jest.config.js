@@ -18,7 +18,7 @@ module.exports = {
       client: "pg",
       connection: {
         host: "127.0.0.1",
-        port: "5432",
+        port: "15432",
         database: "spoke_test",
         password: "spoke_test",
         user: "spoke_test"
