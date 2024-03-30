@@ -48,7 +48,7 @@ describe("A tag model", () => {
 
   afterEach(async () => {
     await cleanupTest();
-    if (r.redis) r.redis.flushdb();
+    if (r.redis) r.redis.FLUSHDB();
   }, global.DATABASE_SETUP_TEARDOWN_TIMEOUT);
 
   it("holds all tags with name, description, andr group, and tags belong to organizations", async () => {
@@ -120,7 +120,7 @@ describe("A tag model", () => {
 
     afterEach(async () => {
       await cleanupTest();
-      if (r.redis) r.redis.flushdb();
+      if (r.redis) r.redis.FLUSHDB();
     }, global.DATABASE_SETUP_TEARDOWN_TIMEOUT);
 
     it("is applied to a contact, and associated to a campaign, and can hold a value that explains why that tag was applied to that message", async () => {

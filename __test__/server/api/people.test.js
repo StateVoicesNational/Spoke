@@ -6,7 +6,7 @@ import { r } from "../../../src/server/models/";
 import { getUsersGql } from "../../../src/containers/PeopleList";
 import { GraphQLError } from "graphql";
 import { resolvers } from "../../../src/server/api/schema";
-import { validate as uuidValidate } from 'uuid';
+import { validate as uuidValidate } from "uuid";
 
 import {
   setupTest,
@@ -191,7 +191,7 @@ describe("people", () => {
 
   afterEach(async () => {
     await cleanupTest();
-    if (r.redis) r.redis.flushdb();
+    if (r.redis) r.redis.FLUSHDB();
   }, global.DATABASE_SETUP_TEARDOWN_TIMEOUT);
 
   describe("filtering", () => {
@@ -492,29 +492,37 @@ describe("people", () => {
   describe("reset password", () => {
     /**
      * Run the resetUserPassword mutation
-     * @param {number} organizationId 
-     * @param {number} texterId 
-     * @param {number} userId 
+     * @param {number} organizationId
+     * @param {number} texterId
+     * @param {number} userId
      * @returns Promise
      */
     function resetUserPassword(admin, organizationId, texterId) {
-      return resolvers.RootMutation.resetUserPassword(null, {
-        organizationId: organizationId,
-        userId: texterId
-      }, {
-        loaders: {
-          organization: {
-            load: async id => {
-              return (await r.knex("organization").where({ id }))[0];
-            }
-          }
+      return resolvers.RootMutation.resetUserPassword(
+        null,
+        {
+          organizationId: organizationId,
+          userId: texterId
         },
-        user: admin
-      });
+        {
+          loaders: {
+            organization: {
+              load: async id => {
+                return (await r.knex("organization").where({ id }))[0];
+              }
+            }
+          },
+          user: admin
+        }
+      );
     }
 
     it("reset local password", () => {
-      resetUserPassword(testAdminUsers[0], organizationId, testTexterUsers[0].id).then(uuid => {
+      resetUserPassword(
+        testAdminUsers[0],
+        organizationId,
+        testTexterUsers[0].id
+      ).then(uuid => {
         // Non-Auth0 password reset will return verion 4 UUID
         expect(uuidValidate(uuid)).toBeTruthy();
       });
@@ -524,9 +532,15 @@ describe("people", () => {
       // Remove PASSPORT_STRATEGY env var. PASSPORT_STRATEGY will default to "auth0" if there's nothing explicitly set
       delete window.PASSPORT_STRATEGY;
 
-      resetUserPassword(testAdminUsers[0], organizationId, testTexterUsers[0].id).catch(e => {
+      resetUserPassword(
+        testAdminUsers[0],
+        organizationId,
+        testTexterUsers[0].id
+      ).catch(e => {
         // Auth0 password reset will attempt to make HTTP request, which will fail in Jest test
-        const match = e.message.match(/Error: Request id (.*) failed; all 2 retries exhausted/);
+        const match = e.message.match(
+          /Error: Request id (.*) failed; all 2 retries exhausted/
+        );
 
         expect(match).toHaveLength(2);
         expect(uuidValidate(match[1])).toBeTruthy();

@@ -37,7 +37,7 @@ describe("cacheable_queries.user", () => {
     organizationId = testOrganization.data.createOrganization.id;
 
     if (r.redis) {
-      await r.redis.flushdb();
+      await r.redis.FLUSHDB();
     }
     queryLog = [];
     r.knex.on("query", spokeDbListener);

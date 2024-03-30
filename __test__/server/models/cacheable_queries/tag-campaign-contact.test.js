@@ -72,7 +72,7 @@ describe("cacheable_queries.tagCampaignContactCache", () => {
     jest.restoreAllMocks();
     await cleanupTest();
     if (r.redis) {
-      r.redis.flushdb();
+      r.redis.FLUSHDB();
     }
   });
 

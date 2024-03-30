@@ -4,7 +4,7 @@ const cacheKey = id => `${process.env.CACHE_PREFIX || ""}a-${id}`;
 
 const load = async id => {
   if (r.redis) {
-    const cachedData = await r.redis.getAsync(cacheKey(id));
+    const cachedData = await r.redis.get(cacheKey(id));
     if (cachedData) {
       return JSON.parse(cachedData);
     }
@@ -15,10 +15,10 @@ const load = async id => {
     .first();
   if (r.redis) {
     await r.redis
-      .multi()
-      .set(cacheKey(id), JSON.stringify(dbResult))
-      .expire(cacheKey(id), 14400) // 4 hours
-      .execAsync();
+      .MULTI()
+      .SET(cacheKey(id), JSON.stringify(dbResult))
+      .EXPIRE(cacheKey(id), 14400) // 4 hours
+      .exec();
   }
   return dbResult;
 };
@@ -26,7 +26,7 @@ const load = async id => {
 const assignmentCache = {
   clear: async id => {
     if (r.redis) {
-      await r.redis.delAsync(cacheKey(id));
+      await r.redis.DEL(cacheKey(id));
     }
   },
   hasAssignment: async (userId, assignmentId) => {

@@ -49,7 +49,7 @@ describe("organization", () => {
   afterEach(async () => {
     await cleanupTest();
     jest.restoreAllMocks();
-    if (r.redis) r.redis.flushdb();
+    if (r.redis) r.redis.FLUSHDB();
   }, global.DATABASE_SETUP_TEARDOWN_TIMEOUT);
 
   describe("organization query", () => {
@@ -235,7 +235,7 @@ describe("organization", () => {
       organizationQuery = `
         query q($organizationId: String!) {
           organization(id: $organizationId) {
-            id 
+            id
             name
             availableActions {
               name

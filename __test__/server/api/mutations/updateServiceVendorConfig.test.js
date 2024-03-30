@@ -20,7 +20,7 @@ describe("updateServiceVendorConfig", () => {
   }, global.DATABASE_SETUP_TEARDOWN_TIMEOUT);
   afterEach(async () => {
     await cleanupTest();
-    if (r.redis) r.redis.flushdb();
+    if (r.redis) r.redis.FLUSHDB();
     jest.restoreAllMocks();
   });
 
@@ -85,7 +85,7 @@ describe("updateServiceVendorConfig", () => {
       const dbOrganization = await Organization.get(organization.id);
       dbOrganization.features = null;
       await dbOrganization.save();
-      if (r.redis) r.redis.flushdb();
+      if (r.redis) r.redis.FLUSHDB();
     });
     it("returns an error", async () => {
       const gqlResult = await runGql(updateServiceVendorConfigGql, vars, user);
@@ -161,7 +161,7 @@ describe("updateServiceVendorConfig", () => {
       dbOrganization = await Organization.get(organization.id);
       dbOrganization.features = JSON.stringify({ service: "twilio" });
       await dbOrganization.save();
-      if (r.redis) r.redis.flushdb();
+      if (r.redis) r.redis.FLUSHDB();
 
       expectedFeatures = {
         service,
@@ -219,7 +219,7 @@ describe("updateServiceVendorConfig", () => {
           [configKey]: "it doesn't matter"
         });
         await dbOrganization.save();
-        if (r.redis) r.redis.flushdb();
+        if (r.redis) r.redis.FLUSHDB();
       });
       it("writes message service config in features.configKey", async () => {
         const gqlResult = await runGql(
@@ -249,7 +249,7 @@ describe("updateServiceVendorConfig", () => {
           TWILIO_MESSAGE_SERVICE_SID: "the_former_fake_message_service_sid"
         });
         await dbOrganization.save();
-        if (r.redis) r.redis.flushdb();
+        if (r.redis) r.redis.FLUSHDB();
       });
       it("writes individual config components to the top level of features", async () => {
         const gqlResult = await runGql(
@@ -281,7 +281,7 @@ describe("updateServiceVendorConfig", () => {
           TWILIO_MESSAGE_SERVICE_SID: "the_former_fake_message_service_sid"
         });
         await dbOrganization.save();
-        if (r.redis) r.redis.flushdb();
+        if (r.redis) r.redis.FLUSHDB();
 
         extremelyFakeService = {
           updateConfig: jest.fn().mockImplementation(() => {
