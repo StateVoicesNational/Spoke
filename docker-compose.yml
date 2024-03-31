@@ -11,14 +11,14 @@ services:
     volumes:
       - postgres:/var/lib/postgresql/data
     ports:
-      - ${DB_PORT:-5432}:15432
+      - ${DB_PORT:-5432}:5432
   redis:
     image: redis:alpine
     restart: always
     volumes:
       - redis:/data
     ports:
-      - ${REDIS_PORT:-6379}:16379
+      - ${REDIS_PORT:-6379}:6379
 volumes:
   postgres:
     external: false

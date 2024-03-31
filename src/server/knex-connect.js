@@ -6,7 +6,7 @@ const {
   DB_USE_SSL = "false",
   DB_JSON = global.DB_JSON,
   DB_HOST = "127.0.0.1",
-  DB_PORT = "15432",
+  DB_PORT = "5432",
   DB_MIN_POOL = 2,
   DB_MAX_POOL = 10,
   DB_TYPE,
