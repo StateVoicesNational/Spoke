@@ -69,7 +69,7 @@ const dbLoadUserRoles = async userId => {
   const highestRolesPerOrg = getHighestRolesPerOrg(userOrgs);
   if (r.redis) {
     // delete keys first
-    // pass all values to HGET instead of looping
+    // pass all values to HSET instead of looping
     const key = userRoleKey(userId);
     const mappedHighestRoles = Object.values(highestRolesPerOrg).reduce(
       (acc, orgRole) => {
@@ -82,7 +82,7 @@ const dbLoadUserRoles = async userId => {
       await r.redis
         .MULTI()
         .DEL(key)
-        .HMSET(key, ...mappedHighestRoles)
+        .HSET(key, ...mappedHighestRoles)
         .exec();
     } else {
       await r.redis.DEL(key);
@@ -240,7 +240,7 @@ const addNotification = async (userId, assignmentId) => {
   if (r.redis) {
     await r.redis
       .MULTI()
-      .HGET(key, assignmentId, 1)
+      .HSET(key, assignmentId, 1)
       .EXPIRE(key, 7200) // two hours
       .exec();
   }

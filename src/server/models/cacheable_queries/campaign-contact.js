@@ -94,7 +94,7 @@ export const setCacheContactAssignment = async (id, campaignId, contactObj) => {
     ].join(":");
     await r.redis
       .MULTI()
-      .HGET(assignmentKey, id, value)
+      .HSET(assignmentKey, id, value)
       .EXPIRE(assignmentKey, 43200)
       .exec();
     return value;

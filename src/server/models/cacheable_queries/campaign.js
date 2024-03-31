@@ -125,7 +125,7 @@ const loadDeep = async id => {
     await r.redis
       .MULTI()
       .SET(cacheKey(id), JSON.stringify(campaign))
-      .HGET(infoCacheKey(id), "contactsCount", campaign.contactsCount)
+      .HSET(infoCacheKey(id), "contactsCount", campaign.contactsCount)
       .EXPIRE(cacheKey(id), 43200)
       .EXPIRE(infoCacheKey(id), 43200)
       .exec();
@@ -318,7 +318,7 @@ const campaignCache = {
         const infoKey = infoCacheKey(id);
         await r.redis
           .MULTI()
-          .HGET(infoKey, "assignedCount", assignCount)
+          .HSET(infoKey, "assignedCount", assignCount)
           .EXPIRE(infoKey, 432000) // counts stay 5 days for easier review
           .exec();
       } catch (err) {
