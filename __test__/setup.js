@@ -3,8 +3,6 @@ import Adapter from "enzyme-adapter-react-16";
 import { TextEncoder, TextDecoder } from "util";
 import { r } from "../src/server/models";
 
-Object.assign(global, { TextDecoder, TextEncoder });
-
 configure({ adapter: new Adapter() });
 
 // server/api/campaign.test.js has some long tests so we increase from 5sec default
@@ -22,3 +20,5 @@ afterAll(async () => {
     // eat the exception yum yum
   }
 });
+
+Object.assign(global, { TextDecoder, TextEncoder });
