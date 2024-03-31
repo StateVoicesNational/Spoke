@@ -1,5 +1,5 @@
 /**
- * @jest-environment jsdom
+ * @jest-environment node
  */
 /* eslint-disable no-unused-expressions, consistent-return */
 import { r } from "../../../src/server/models/";
@@ -530,7 +530,7 @@ describe("people", () => {
 
     it("reset Auth0 password", () => {
       // Remove PASSPORT_STRATEGY env var. PASSPORT_STRATEGY will default to "auth0" if there's nothing explicitly set
-      delete window.PASSPORT_STRATEGY;
+      delete process.env.PASSPORT_STRATEGY;
 
       resetUserPassword(
         testAdminUsers[0],
