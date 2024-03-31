@@ -59,7 +59,6 @@ module.exports = {
     "!**/coverage/**"
   ],
   setupFilesAfterEnv: ["<rootDir>/__test__/setup.js"],
-  setupFiles: ["<rootDir>/node_modules/core-js"],
   testPathIgnorePatterns: [
     "<rootDir>/node_modules/",
     "<rootDir>/__test__/cypress/"
