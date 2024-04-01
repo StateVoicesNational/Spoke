@@ -21,6 +21,11 @@ const {
 const min = parseInt(DB_MIN_POOL, 10);
 const max = parseInt(DB_MAX_POOL, 10);
 
+const util = require("util");
+
+global.TextEncoder = util.TextEncoder;
+global.TextDecoder = util.TextDecoder;
+
 const pg = require("pg");
 const { parse: pgDbUrlParser } = require("pg-connection-string");
 
