@@ -1,5 +1,4 @@
 import dumbThinky from "rethink-knex-adapter";
-import { createClient } from "redis";
 import bluebird from "bluebird";
 import knex from "knex";
 import config from "../knex-connect";
@@ -62,7 +61,8 @@ if (redisUrl) {
     Object.assign(redisSettings, JSON.parse(process.env.REDIS_JSON));
   }
 
-  thinkyConn.r.redis = createClient(redisSettings);
+  redis = require("redis");
+  thinkyConn.r.redis = redis.createClient(redisSettings);
   (async () => {
     await thinkyConn.r.redis.connect();
   })();

@@ -16,5 +16,5 @@ afterAll(async () => {
   }
 
   // eslint-disable-next-line no-unused-vars
-  r.redis.quit().catch(error => {});
+  await r.redis.quit();
 });
