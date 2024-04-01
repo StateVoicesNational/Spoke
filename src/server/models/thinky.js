@@ -61,7 +61,7 @@ if (redisUrl) {
     Object.assign(redisSettings, JSON.parse(process.env.REDIS_JSON));
   }
 
-  redis = require("redis");
+  const redis = require("redis");
   thinkyConn.r.redis = redis.createClient(redisSettings);
   (async () => {
     await thinkyConn.r.redis.connect();
