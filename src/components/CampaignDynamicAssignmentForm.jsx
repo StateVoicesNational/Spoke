@@ -140,6 +140,9 @@ class CampaignDynamicAssignmentForm extends React.Component {
                   Batch strategies determine the rule for how texters are able
                   to get new batches.
                 </p>
+                <small>
+                  <b>ctrl+click</b> to add multiple strategies.<br></br>
+                </small>
                 <b>Current Selected:</b>
                 <TagChips
                   tags={organization.batchPolicies.map(p => ({
