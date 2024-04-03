@@ -37,6 +37,5 @@ export const getDynamicAssignmentBatchPolicies = ({
       );
     }
   });
-  console.log(handlers)
   return handlers;
 };
