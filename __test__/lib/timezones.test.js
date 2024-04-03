@@ -14,7 +14,7 @@ import {
   getSendBeforeTimeUtc
 } from "../../src/lib/index";
 
-import { getProcessEnvDstReferenceTimezone } from "../../src/lib/tz-helpers";
+import * as tzHelpers from "../../src/lib/tz-helpers";
 
 const makeCampignTextingHoursConfig = (
   textingHoursEnforced,
@@ -107,9 +107,6 @@ const buildIsBetweenTextingHoursExpectWithNoOffset = (start, end) => {
   );
 };
 
-jest.unmock("../../src/lib/timezones");
-jest.mock("../../src/lib/tz-helpers");
-
 describe("test getLocalTime winter (standard time)", () => {
   beforeAll(() => {
     MockDate.set("2018-02-01T15:00:00Z");
@@ -120,7 +117,11 @@ describe("test getLocalTime winter (standard time)", () => {
   });
 
   it("returns correct local time UTC-5 standard time", () => {
-    let localTime = getLocalTime(-5, true, getProcessEnvDstReferenceTimezone());
+    let localTime = getLocalTime(
+      -5,
+      true,
+      tzHelpers.getProcessEnvDstReferenceTimezone()
+    );
     expect(localTime.hours()).toEqual(10);
     expect(new Date(localTime)).toEqual(
       new Date("2018-02-01T10:00:00.000-05:00")
@@ -138,7 +139,11 @@ describe("test getLocalTime summer (DST)", () => {
   });
 
   it("returns correct local time UTC-5 DST", () => {
-    let localTime = getLocalTime(-5, true, getProcessEnvDstReferenceTimezone());
+    let localTime = getLocalTime(
+      -5,
+      true,
+      tzHelpers.getProcessEnvDstReferenceTimezone()
+    );
     expect(localTime.hours()).toEqual(11);
     expect(new Date(localTime)).toEqual(
       new Date("2018-07-21T10:00:00.000-05:00")
@@ -147,9 +152,10 @@ describe("test getLocalTime summer (DST)", () => {
 });
 
 describe("testing isBetweenTextingHours with env.TZ set", () => {
-  var tzHelpers = require("../../src/lib/tz-helpers");
   beforeAll(() => {
-    tzHelpers.getProcessEnvTz.mockImplementation(() => "America/Los_Angeles");
+    jest
+      .spyOn(tzHelpers, "getProcessEnvTz")
+      .mockImplementation(() => "America/Los_Angeles");
     MockDate.set("2018-02-01T15:00:00.000-05:00");
   });
 
@@ -360,10 +366,8 @@ describe("test isBetweenTextingHours with campaign overrides", () => {
 
 describe("test isBetweenTextingHours with offset data supplied", () => {
   var offsetData = { offset: -8, hasDST: true };
-  var tzHelpers = require("../../src/lib/tz-helpers");
   beforeAll(() => {
-    jest.doMock("../../src/lib/tz-helpers");
-    tzHelpers.getProcessEnvTz.mockImplementation(() => null);
+    jest.spyOn(tzHelpers, "getProcessEnvTz").mockImplementation(() => null);
     MockDate.set("2018-02-01T12:00:00.000-08:00");
   });
 
@@ -417,9 +421,8 @@ describe("test isBetweenTextingHours with offset data supplied", () => {
 
 describe("test isBetweenTextingHours with offset data empty", () => {
   var offsetData = { offset: null, hasDST: null };
-  var tzHelpers = require("../../src/lib/tz-helpers");
   beforeAll(() => {
-    tzHelpers.getProcessEnvTz.mockImplementation(() => null);
+    jest.spyOn(tzHelpers, "getProcessEnvTz").mockImplementation(() => null);
   });
 
   afterEach(() => {
@@ -466,9 +469,8 @@ describe("test isBetweenTextingHours with offset data empty", () => {
 });
 
 describe("test isBetweenTextingHours with offset data NOT supplied", () => {
-  var tzHelpers = require("../../src/lib/tz-helpers");
   beforeAll(() => {
-    tzHelpers.getProcessEnvTz.mockImplementation(() => null);
+    jest.spyOn(tzHelpers, "getProcessEnvTz").mockImplementation(() => null);
   });
 
   afterEach(() => {
@@ -515,10 +517,8 @@ describe("test isBetweenTextingHours with offset data NOT supplied", () => {
 });
 
 describe("test defaultTimezoneIsBetweenTextingHours", () => {
-  var tzHelpers = require("../../src/lib/tz-helpers");
   beforeAll(() => {
-    tzHelpers.getProcessEnvTz.mockImplementation(() => null);
-    jest.doMock("../../src/lib/tz-helpers");
+    jest.spyOn(tzHelpers, "getProcessEnvTz").mockImplementation(() => null);
   });
 
   afterEach(() => {
@@ -646,8 +646,6 @@ describe("test getOffsets", () => {
 });
 
 describe("test getContactTimezone", () => {
-  var tzHelpers = require("../../src/lib/tz-helpers");
-
   afterEach(() => {
     jest.resetAllMocks();
   });
@@ -683,10 +681,8 @@ describe("test getContactTimezone", () => {
 
 describe("test isBetweenTextingHours with offset data supplied", () => {
   var offsetData = { offset: -8, hasDST: true };
-  var tzHelpers = require("../../src/lib/tz-helpers");
   beforeAll(() => {
-    jest.doMock("../../src/lib/tz-helpers");
-    tzHelpers.getProcessEnvTz.mockImplementation(() => null);
+    jest.spyOn(tzHelpers, "getProcessEnvTz").mockImplementation(() => null);
     MockDate.set("2018-02-01T12:00:00.000-08:00");
   });
 
@@ -740,9 +736,8 @@ describe("test isBetweenTextingHours with offset data supplied", () => {
 
 describe("test isBetweenTextingHours with offset data empty", () => {
   var offsetData = { offset: null, hasDST: null };
-  var tzHelpers = require("../../src/lib/tz-helpers");
   beforeAll(() => {
-    tzHelpers.getProcessEnvTz.mockImplementation(() => null);
+    jest.spyOn(tzHelpers, "getProcessEnvTz").mockImplementation(() => null);
   });
 
   afterEach(() => {
@@ -789,9 +784,8 @@ describe("test isBetweenTextingHours with offset data empty", () => {
 });
 
 describe("test isBetweenTextingHours with offset data NOT supplied", () => {
-  var tzHelpers = require("../../src/lib/tz-helpers");
   beforeAll(() => {
-    tzHelpers.getProcessEnvTz.mockImplementation(() => null);
+    jest.spyOn(tzHelpers, "getProcessEnvTz").mockImplementation(() => null);
   });
 
   afterEach(() => {
@@ -838,10 +832,8 @@ describe("test isBetweenTextingHours with offset data NOT supplied", () => {
 });
 
 describe("test defaultTimezoneIsBetweenTextingHours", () => {
-  var tzHelpers = require("../../src/lib/tz-helpers");
   beforeAll(() => {
-    tzHelpers.getProcessEnvTz.mockImplementation(() => null);
-    jest.doMock("../../src/lib/tz-helpers");
+    jest.spyOn(tzHelpers, "getProcessEnvTz").mockImplementation(() => null);
   });
 
   afterEach(() => {
@@ -1004,8 +996,6 @@ describe("test getOffsets", () => {
 });
 
 describe("test getContactTimezone", () => {
-  var tzHelpers = require("../../src/lib/tz-helpers");
-
   afterEach(() => {
     jest.resetAllMocks();
   });
@@ -1039,7 +1029,9 @@ describe("test getContactTimezone", () => {
   });
 
   it("uses TZ if no location is supplied, and the campaign doesn't override, and TZ exists in the environment", () => {
-    tzHelpers.getProcessEnvTz.mockImplementation(() => "America/Boise");
+    jest
+      .spyOn(tzHelpers, "getProcessEnvTz")
+      .mockImplementation(() => "America/Boise");
     expect(
       getContactTimezone(
         makeCampaignOnlyWithTextingHoursConfigFields(
@@ -1163,8 +1155,6 @@ describe("test getUtcFromTimezoneAndHour", () => {
 });
 
 describe("test getSendBeforeTimewUtc", () => {
-  const tzHelpers = require("../../src/lib/tz-helpers");
-
   beforeAll(() => {
     MockDate.set("2018-09-03T11:00:00.000-05:00");
   });
@@ -1240,7 +1230,9 @@ describe("test getSendBeforeTimewUtc", () => {
   });
 
   it("returns correct time if campaign does not override and TZ is set", () => {
-    tzHelpers.getProcessEnvTz.mockImplementation(() => "US/Eastern");
+    jest
+      .spyOn(tzHelpers, "getProcessEnvTz")
+      .mockImplementation(() => "US/Eastern");
     expect(
       getSendBeforeTimeUtc(
         {},
