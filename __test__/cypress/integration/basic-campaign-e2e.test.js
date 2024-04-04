@@ -101,7 +101,7 @@ describe("End-to-end campaign flow", () => {
     cy.get("[data-test=editorInteraction] textarea[name=script]").click();
     cy.wait(400);
     cy.get(".DraftEditor-root").type(
-      "Hi {{}firstName{}} this is {{}texterFirstName{}}, how are you?"
+      "Hi {{}firstName{}} this is {{}texterAliasOrFirstName{}}, how are you?"
     );
     cy.get("button[data-test=scriptDone]").click();
     cy.get("[data-test=questionText] input").type("How are you?");
