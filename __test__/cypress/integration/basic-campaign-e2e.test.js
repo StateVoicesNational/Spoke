@@ -127,6 +127,7 @@ describe("End-to-end campaign flow", () => {
       cy.visit("/app");
       const cardSelector = `div[data-test=assignmentSummary-${campaignId}]`;
       cy.get(cardSelector)
+      // Checking to see if the campaign title saved as "Integration Test Campaign"
         .contains(campaignTitle)
         .should("exist");
       cy.get(cardSelector)
