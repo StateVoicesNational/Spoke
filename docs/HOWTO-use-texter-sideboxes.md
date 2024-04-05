@@ -103,6 +103,8 @@ non-initial contact (needsMessage), you can also use that one by setting that ba
 Combined, these extensions allow 'split' assignment -- a different group to send initial texts than to
 handle replies.
 
+Please note the `vetted-takeconversations` is still an experimental batch strategy, and should NOT be used on its own. The default `.env.example` includes `DYNAMICASSIGNMENT_BATCHES=finished-replies-tz,vetted-texters,finished-replies`, of which `vetted-takeconversations` should be in addition to these batch strategies.
+
 ### texter-feedback
 
 Must be enabled for Admins to be able to review contacts' replies and give feedback.  To customize the

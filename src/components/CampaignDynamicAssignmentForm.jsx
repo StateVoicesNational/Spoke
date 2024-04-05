@@ -2,6 +2,7 @@ import type from "prop-types";
 import React from "react";
 import GSForm from "../components/forms/GSForm";
 import GSSubmitButton from "../components/forms/GSSubmitButton";
+import GSIntegerField from "../components/forms/GSIntegerField"
 import GSTextField from "../components/forms/GSTextField";
 import * as yup from "yup";
 import Form from "react-formal";
@@ -26,8 +27,6 @@ class CampaignDynamicAssignmentForm extends React.Component {
   }
 
   onChange = formValues => {
-    formValues.batchSize = Number(formValues.batchSize)
-    formValues.responseWindow = Number(formValues.responseWindow)
     this.setState(formValues);
     this.props.onChange({
       ...this.state,
@@ -103,7 +102,7 @@ class CampaignDynamicAssignmentForm extends React.Component {
                 switch to replying.
               </p>
               <Form.Field
-                as={GSTextField}
+                as={GSIntegerField}
                 fullWidth
                 name="batchSize"
                 type="number"
@@ -122,7 +121,7 @@ class CampaignDynamicAssignmentForm extends React.Component {
           ) : null}
           <div>
             <Form.Field
-              as={GSTextField}
+              as={GSIntegerField}
               fullWidth
               name="responseWindow"
               type="number"
@@ -141,6 +140,9 @@ class CampaignDynamicAssignmentForm extends React.Component {
                   Batch strategies determine the rule for how texters are able
                   to get new batches.
                 </p>
+                <small>
+                  <b>ctrl+click</b> to add multiple strategies.<br></br>
+                </small>
                 <b>Current Selected:</b>
                 <TagChips
                   tags={organization.batchPolicies.map(p => ({
