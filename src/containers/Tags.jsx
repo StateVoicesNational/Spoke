@@ -124,7 +124,7 @@ export class Tags extends React.Component {
   }
 
   render() {
-    const tags = this.props.data.organization.tags.sort((a, b) => a.id - b.id);
+    const tags = this.props.data.organization.tags
     const {
       openTagDialog,
       dialogSubmitHandler,
