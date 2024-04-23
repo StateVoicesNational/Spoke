@@ -186,21 +186,33 @@ export async function getConversations(
       .limit(cursor.limit)
       .offset(cursor.offset);
   }
+  console.log(awsContext && awsContext.awsRequestId)
+  console.log(cursor)
+  console.log(assignmentsFilter)
+  console.log(offsetLimitQuery.toString(), "here")
   console.log(
-    "getConversations sql",
+    "---\ngetConversations sql",
+    "\nawsContext && awsContext.awsRequestID: ",
     awsContext && awsContext.awsRequestId,
+    "\ncursor: ",
     cursor,
+    "\nassignmentsFilter: ",
     assignmentsFilter,
-    offsetLimitQuery.toString()
+    "\noffsetLimitQuery: ",
+    offsetLimitQuery.toString(),
+    "\n---"
   );
-
   const ccIdRows = await offsetLimitQuery;
 
   console.log(
     "getConversations contact ids",
+    "\nawsContext && awsContext.awsRequestID: ",
     awsContext && awsContext.awsRequestId,
-    Number(new Date()) - Number(starttime),
-    ccIdRows.length
+    "\ntime completed: ",
+    Number(new Date()) - Number(starttime), "ms",
+    "\nccIdRows Length: ",
+    ccIdRows.length,
+    "\n---"
   );
   const ccIds = ccIdRows.map(ccIdRow => {
     return ccIdRow.cc_id;
@@ -255,9 +267,13 @@ export async function getConversations(
   const conversationRows = await query;
   console.log(
     "getConversations query2 result",
+    "\nawsContext && awsContext.awsRequestID: ",
     awsContext && awsContext.awsRequestId,
-    Number(new Date()) - Number(starttime),
-    conversationRows.length
+    "\ntime completed: ",
+    Number(new Date()) - Number(starttime), "ms",
+    "\nconversationRows Length: ",
+    conversationRows.length,
+    "\n---"
   );
   /* collapse the rows to produce an array of objects, with each object
    * containing the fields for one conversation, each having an array of
@@ -336,7 +352,7 @@ export async function getConversations(
   let conversationCount;
   try {
     conversationCount = await r.getCount(
-      conversationsCountQuery.timeout(4000, { cancel: true })
+      conversationsCountQuery.timeout(8000, { cancel: true })
     );
   } catch (err) {
     // default fake value that means 'a lot'
