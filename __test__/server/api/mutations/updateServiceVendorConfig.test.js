@@ -10,6 +10,7 @@ import {
   createOrganization,
   createUser,
   ensureOrganizationTwilioWithMessagingService,
+  flushRedis,
   runGql,
   setupTest
 } from "../../../test_helpers";
@@ -84,7 +85,7 @@ describe("updateServiceVendorConfig", () => {
       const dbOrganization = await Organization.get(organization.id);
       dbOrganization.features = null;
       await dbOrganization.save();
-      if (r.redis) r.redis.FLUSHDB();
+      await flushRedis();
     });
     it("returns an error", async () => {
       const gqlResult = await runGql(updateServiceVendorConfigGql, vars, user);
@@ -160,7 +161,7 @@ describe("updateServiceVendorConfig", () => {
       dbOrganization = await Organization.get(organization.id);
       dbOrganization.features = JSON.stringify({ service: "twilio" });
       await dbOrganization.save();
-      if (r.redis) r.redis.FLUSHDB();
+      await flushRedis();
 
       expectedFeatures = {
         service,
@@ -218,7 +219,7 @@ describe("updateServiceVendorConfig", () => {
           [configKey]: "it doesn't matter"
         });
         await dbOrganization.save();
-        if (r.redis) r.redis.FLUSHDB();
+        await flushRedis();
       });
       it("writes message service config in features.configKey", async () => {
         const gqlResult = await runGql(
@@ -248,7 +249,7 @@ describe("updateServiceVendorConfig", () => {
           TWILIO_MESSAGE_SERVICE_SID: "the_former_fake_message_service_sid"
         });
         await dbOrganization.save();
-        if (r.redis) r.redis.FLUSHDB();
+        await flushRedis();
       });
       it("writes individual config components to the top level of features", async () => {
         const gqlResult = await runGql(
@@ -280,7 +281,7 @@ describe("updateServiceVendorConfig", () => {
           TWILIO_MESSAGE_SERVICE_SID: "the_former_fake_message_service_sid"
         });
         await dbOrganization.save();
-        if (r.redis) r.redis.FLUSHDB();
+        await flushRedis();
 
         extremelyFakeService = {
           updateConfig: jest.fn().mockImplementation(() => {

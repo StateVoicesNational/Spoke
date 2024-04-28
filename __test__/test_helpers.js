@@ -24,16 +24,18 @@ export async function setupTest() {
   await createTables();
 }
 
-export async function cleanupTest() {
-  await dropTables();
+export async function flushRedis() {
   if (r.redis) {
-    let needFlush = false;
-    for await (const key of r.redis.scanIterator({ COUNT: 1 })) {
-      needFlush = true;
+    for await (const key of r.redis.scanIterator({ MATCH: "*", COUNT: 1 })) {
+      r.redis.FLUSHDB();
     }
-    if (needFlush) {
-      await r.redis.FLUSHDB();
-    }
+  }
+}
+
+export async function cleanupTest(doFlushRedis = true) {
+  await dropTables();
+  if (doFlushRedis) {
+    await flushRedis();
   }
 }
 

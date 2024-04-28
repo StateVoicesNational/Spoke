@@ -197,8 +197,8 @@ export async function getActionChoiceData(actionHandler, organization, user) {
     parsedData = {};
   }
 
-  let items = parsedData.items;
-  if (items && !(items instanceof Array)) {
+  let { items } = parsedData;
+  if (items && !Array.isArray(items)) {
     log.error(
       `Data received from ${actionHandler.name}.getClientChoiceData is not an array`
     );
