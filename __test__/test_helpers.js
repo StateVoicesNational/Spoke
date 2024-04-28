@@ -26,6 +26,15 @@ export async function setupTest() {
 
 export async function cleanupTest() {
   await dropTables();
+  if (r.redis) {
+    let needFlush = false;
+    for await (const key of r.redis.scanIterator({ COUNT: 1 })) {
+      needFlush = true;
+    }
+    if (needFlush) {
+      await r.redis.FLUSHDB();
+    }
+  }
 }
 
 export function sleep(ms) {

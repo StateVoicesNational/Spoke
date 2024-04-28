@@ -38,7 +38,6 @@ describe("createOptOut", () => {
 
   afterEach(async () => {
     await cleanupTest();
-    if (r.redis) r.redis.FLUSHDB();
   }, global.DATABASE_SETUP_TEARDOWN_TIMEOUT);
 
   it("creates an opt out when the contact is assigned to the current user", async () => {

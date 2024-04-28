@@ -781,7 +781,6 @@ describe("editUser mutation", () => {
 
   afterEach(async () => {
     await cleanupTest();
-    if (r.redis) r.redis.FLUSHDB();
   }, global.DATABASE_SETUP_TEARDOWN_TIMEOUT);
 
   it("returns the user if it is called with a userId by no userData", async () => {

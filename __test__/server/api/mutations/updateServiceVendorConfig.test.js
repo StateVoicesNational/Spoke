@@ -20,7 +20,6 @@ describe("updateServiceVendorConfig", () => {
   }, global.DATABASE_SETUP_TEARDOWN_TIMEOUT);
   afterEach(async () => {
     await cleanupTest();
-    if (r.redis) r.redis.FLUSHDB();
     jest.restoreAllMocks();
   });
 

@@ -71,9 +71,6 @@ describe("cacheable_queries.tagCampaignContactCache", () => {
   afterEach(async () => {
     jest.restoreAllMocks();
     await cleanupTest();
-    if (r.redis) {
-      r.redis.FLUSHDB();
-    }
   });
 
   describe(".save", () => {

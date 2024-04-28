@@ -49,7 +49,6 @@ describe("organization", () => {
   afterEach(async () => {
     await cleanupTest();
     jest.restoreAllMocks();
-    if (r.redis) r.redis.FLUSHDB();
   }, global.DATABASE_SETUP_TEARDOWN_TIMEOUT);
 
   describe("organization query", () => {

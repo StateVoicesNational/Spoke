@@ -32,7 +32,6 @@ describe("mutations.updateContactTags", () => {
 
   afterEach(async () => {
     await cleanupTest();
-    if (r.redis) r.redis.FLUSHDB();
   }, global.DATABASE_SETUP_TEARDOWN_TIMEOUT);
 
   beforeEach(async () => {

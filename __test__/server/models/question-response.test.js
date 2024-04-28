@@ -16,7 +16,6 @@ describe("questionResponse cacheableData methods", () => {
 
   afterEach(async () => {
     await cleanupTest();
-    if (r.redis) r.redis.FLUSHDB();
   }, global.DATABASE_SETUP_TEARDOWN_TIMEOUT);
 
   it("save and load", async () => {

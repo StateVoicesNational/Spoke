@@ -36,9 +36,6 @@ describe("action-handlers/index", () => {
 
   beforeEach(async () => {
     jest.restoreAllMocks();
-    if (r.redis) {
-      r.redis.FLUSHDB();
-    }
   });
 
   afterEach(async () => {
