@@ -25,7 +25,7 @@ describe("questionResponse cacheableData methods", () => {
       steps: 3,
       choices: 2
     });
-    const interactionSteps = await r.knex("interaction_step").select();
+    await r.knex("interaction_step").select();
 
     let saveResult = await cacheableData.questionResponse.save(cid, [
       { interactionStepId: "1", value: "hmm1" }
@@ -41,7 +41,7 @@ describe("questionResponse cacheableData methods", () => {
     expect(questionResponses.length).toBe(1);
     expect(questionResponses[0].value).toBe("hmm1");
     expect(questionResponses[0].interaction_step_id).toBe(1);
-    let firstCreatedAt = questionResponses[0].created_at;
+    const firstCreatedAt = questionResponses[0].created_at;
     // cached
     questionResponses = await cacheableData.questionResponse.query(cid, true);
     expect(questionResponses.length).toBe(1);

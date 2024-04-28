@@ -94,8 +94,8 @@ const dbLoadUserRoles = async userId => {
 
 const loadUserRoles = async userId => {
   if (r.redis) {
-    const roles = await r.redis.hgetall(userRoleKey(userId));
-    if (roles) {
+    const roles = await r.redis.HGETALL(userRoleKey(userId));
+    if (Object.keys(roles).length > 0) {
       const userRoles = {};
       Object.keys(roles).forEach(orgId => {
         const [highestRole, orgName] = roles[orgId].split(":");

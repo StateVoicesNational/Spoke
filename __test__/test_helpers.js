@@ -468,15 +468,15 @@ export async function assignTexter(admin, user, campaign, assignments) {
   const rootValue = {};
   const campaignEditQuery = `
   mutation editCampaign($campaignId: String!, $campaign: CampaignInput!) {
-    editCampaign(id: $campaignId, campaign: $campaign) {
+    editCampaign(
+        id: $campaignId,
+        campaign: $campaign) {
       id
-      assignments {
-        id
-      }
+      assignments { id }
     }
   }`;
   const contextValue = getContext({ user: admin });
-  const updateCampaign = Object.assign({}, campaign);
+  const updateCampaign = { ...campaign };
   const campaignId = updateCampaign.id;
   updateCampaign.texters = assignments || [
     {

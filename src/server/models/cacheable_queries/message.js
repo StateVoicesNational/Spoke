@@ -39,7 +39,7 @@ const saveMessageCache = async (contactId, contactMessages, overwriteFull) => {
     }
 
     await redisQ
-      .lpush(
+      .LPUSH(
         key,
         contactMessages.map(m =>
           JSON.stringify({

@@ -144,7 +144,7 @@ const currentEditors = async (campaign, user) => {
   );
   await r.redis.EXPIRE(`campaign_editors_${campaign.id}`, 120);
 
-  let editors = await r.redis.hgetall(`campaign_editors_${campaign.id}`);
+  let editors = await r.redis.HGETALL(`campaign_editors_${campaign.id}`);
 
   // Only get editors that were active in the last 2 mins, and exclude the
   // current user
@@ -162,7 +162,7 @@ const currentEditors = async (campaign, user) => {
 const load = async (id, opts) => {
   // console.log('campaign cache load', id)
   if (r.redis) {
-    let campaignData = await r.redis.get(cacheKey(id));
+    let campaignData = await r.redis.get(cacheKey(id.toString()));
     let campaignObj = campaignData ? JSON.parse(campaignData) : null;
     // console.log('pre campaign cache', campaignObj)
     if (
@@ -202,6 +202,7 @@ const load = async (id, opts) => {
         "contactsCount",
         ...counts
       ]);
+      campaign.id = campaign.id.toString();
       return campaign;
     }
   }
@@ -242,8 +243,8 @@ const campaignCache = {
   dbInteractionSteps,
   completionStats: async id => {
     if (r.redis) {
-      const data = await r.redis.hgetall(infoCacheKey(id));
-      return data || {};
+      const data = await r.redis.HGETALL(infoCacheKey(id));
+      return Object.keys(data).length > 0 ? data : {};
     }
     return {};
   },

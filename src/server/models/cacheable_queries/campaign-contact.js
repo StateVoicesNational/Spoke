@@ -111,7 +111,7 @@ export const getCacheContactAssignment = async (id, campaignId, contactObj) => {
   if (r.redis) {
     const contactAssignment = await r.redis.HGET(
       contactAssignmentKey(campaignId),
-      id
+      id.toString()
     );
     if (contactAssignment) {
       // eslint-disable-next-line camelcase
