@@ -313,7 +313,7 @@ async function editCampaign(id, campaign, loaders, user, origCampaignRecord) {
     changed = true;
     await accessRequired(
       user,
-      organizationId.toString(),
+      organizationId,
       "SUPERVOLUNTEER",
       /* superadmin*/ true
     );

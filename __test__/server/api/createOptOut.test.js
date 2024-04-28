@@ -1,5 +1,5 @@
 /* eslint-disable no-unused-expressions, consistent-return */
-import { r } from "../../../src/server/models/";
+import { r } from "../../../src/server/models";
 
 import {
   setupTest,
