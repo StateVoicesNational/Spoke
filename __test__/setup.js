@@ -7,14 +7,3 @@ configure({ adapter: new Adapter() });
 
 // server/api/campaign.test.js has some long tests so we increase from 5sec default
 jest.setTimeout(15000);
-
-afterAll(async () => {
-  if (!r.redis) {
-    return;
-  }
-
-  // eslint-disable-next-line no-unused-vars
-  console.log("before r.redis.quit()");
-  await r.redis.quit();
-  console.log("after r.redis.quit()");
-}, 60000);
