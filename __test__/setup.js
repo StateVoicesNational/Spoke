@@ -17,4 +17,4 @@ afterAll(async () => {
   console.log("before r.redis.quit()");
   await r.redis.quit();
   console.log("after r.redis.quit()");
-});
+}, 60000);

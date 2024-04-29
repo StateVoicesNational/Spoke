@@ -44,7 +44,7 @@ jobs:
       run: yarn test
   test-rediscache-contactcache:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 10
     services:
       redis:
         image: redis
@@ -80,7 +80,7 @@ jobs:
       run: yarn test-rediscache-contactcache
   test-rediscache:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 10
     services:
       redis:
         image: redis
