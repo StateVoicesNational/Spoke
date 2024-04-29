@@ -201,7 +201,7 @@
     "json2csv": "^3.6.2",
     "lint-staged": "^9.2.0",
     "mockdate": "^2.0.2",
-    "nock": "11.9.1",
+    "nock": "13.5.4",
     "nodemon": "^2.0.2",
     "prettier": "^1.18.2",
     "react-hot-loader": "4.13.0",
