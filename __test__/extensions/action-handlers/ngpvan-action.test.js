@@ -9,6 +9,7 @@ require("../../test_helpers");
 
 afterEach(async () => {
   jest.restoreAllMocks();
+  await nock.cleanAll();
 });
 
 describe("ngpvn-action", () => {

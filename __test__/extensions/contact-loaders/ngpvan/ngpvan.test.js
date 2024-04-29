@@ -27,6 +27,10 @@ import React from "react";
 import { shallow } from "enzyme";
 import { StyleSheetTestUtils } from "aphrodite";
 
+afterEach(async () => {
+  await nock.cleanAll();
+});
+
 describe("ngpvan", () => {
   let fakeNgpVanBaseApiUrl;
   beforeEach(async () => {
