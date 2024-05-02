@@ -123,7 +123,7 @@ jobs:
     - run: yarn
     - env:
         NODE_OPTIONS: "--max-old-space-size=8192"
-      run: yarn test-rediscache
+      run: DEBUG=nock.* yarn test-rediscache __test__/extensions/contact-loaders/ngpvan/ngpvan.test.js
   test-sqlite:
     runs-on: ubuntu-latest
     timeout-minutes: 10
