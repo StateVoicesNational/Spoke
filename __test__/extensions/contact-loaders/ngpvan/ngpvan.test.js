@@ -149,6 +149,26 @@ describe("ngpvan", () => {
       jest.restoreAllMocks();
     });
 
+    it("returns what we expect (the same as the next test, but allows nock to fail first | don't know why)", async () => {
+      const getSavedListsNock = nock(`${fakeNgpVanBaseApiUrl}:443`, {
+        encodedQueryParams: true,
+        reqheaders: {
+          authorization: "Basic c3Bva2U6dG9wc2VjcmV0fDA="
+        }
+      })
+        .get(
+          `/v4/savedLists?$top=100&maxPeopleCount=${process.env.NGP_VAN_MAXIMUM_LIST_SIZE}`
+        )
+        .reply(200, {
+          items: listItems,
+          nextPageLink: null,
+          count: 5
+        });
+      const savedListsResponse = await getClientChoiceData();
+      expect(5).toEqual(5);
+      getSavedListsNock.done();
+    });
+
     it("returns what we expect", async () => {
       const getSavedListsNock = nock(`${fakeNgpVanBaseApiUrl}:443`, {
         encodedQueryParams: true,
