@@ -1468,8 +1468,7 @@ const rootMutations = {
       if (!organization) {
         throw INVALID_REASSIGN();
       }      
-
-      const maxContacts = getConfig("MAX_REPLIES_PER_TEXTER", organization);
+      const maxContacts = getConfig("MAX_REPLIES_PER_TEXTER", organization) ?? 200;
       let d = new Date();
       d.setHours(d.getHours() - 1);
       const contactsFilter = { messageStatus: 'needsResponse', isOptedOut: false, listSize: maxContacts, orderByRaw: "updated_at DESC", updatedAtLt: d}

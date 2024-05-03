@@ -101,6 +101,7 @@ const rootSchema = gql`
     inventoryPhoneNumberCounts: [CampaignPhoneNumberInput!]
     useDynamicReplies: Boolean
     replyBatchSize: Int
+    joinToken: String
   }
 
   input OrganizationInput {
