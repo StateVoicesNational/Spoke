@@ -99,6 +99,8 @@ const rootSchema = gql`
     texterUIConfig: TexterUIConfigInput
     timezone: String
     inventoryPhoneNumberCounts: [CampaignPhoneNumberInput!]
+    useDynamicReplies: Boolean
+    replyBatchSize: Int
   }
 
   input OrganizationInput {
@@ -395,6 +397,10 @@ const rootSchema = gql`
       messageTextFilter: String
       newTexterUserId: String!
     ): [CampaignIdAssignmentId]
+    dynamicReassign(
+      organizationUuid: String!
+      campaignId: String!
+    ): String
     importCampaignScript(campaignId: String!, url: String!): Int
     createTag(organizationId: String!, tagData: TagInput!): Tag
     editTag(organizationId: String!, id: String!, tagData: TagInput!): Tag
