@@ -11,3 +11,11 @@ exports.redefineSqliteTable = async (knex, tableName, newTableFn) => {
   await knex.schema.dropTable(tableName);
   await knex.schema.createTable(tableName, newTableFn);
 };
+
+
+exports.onUpdateTrigger = table => `
+CREATE TRIGGER ${table}_updated_at
+BEFORE UPDATE ON ${table}
+FOR EACH ROW
+EXECUTE PROCEDURE on_update_timestamp();
+`
