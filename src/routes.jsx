@@ -277,7 +277,7 @@ export default function makeRoutes(requireAuth = () => {}) {
         onEnter={requireAuth}
       />
       <Route
-        path=":organizationUuid/replies/:campaignId"
+        path=":joinToken/replies/:campaignId"
         component={AssignReplies}
         onEnter={requireAuth}
       />

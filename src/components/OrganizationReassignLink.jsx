@@ -2,20 +2,20 @@ import PropTypes from "prop-types";
 import React from "react";
 import DisplayLink from "./DisplayLink";
 
-const OrganizationReassignLink = ({ organizationUuid, campaignId }) => {
+const OrganizationReassignLink = ({ joinToken, campaignId }) => {
   let baseUrl = "http://base";
   if (typeof window !== "undefined") {
     baseUrl = window.location.origin;
   }
 
-  const replyUrl = `${baseUrl}/${organizationUuid}/replies/${campaignId}`;
+  const replyUrl = `${baseUrl}/${joinToken}/replies/${campaignId}`;
   const textContent = `Send your texting volunteers this link! Once they sign up, they\'ll be automatically assigned replies for this campaign.`;
 
   return <DisplayLink url={replyUrl} textContent={textContent} />;
 };
 
 OrganizationReassignLink.propTypes = {
-  organizationUuid: PropTypes.string,
+  joinToken: PropTypes.string,
   campaignId: PropTypes.string
 };
 

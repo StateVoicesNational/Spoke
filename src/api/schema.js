@@ -399,7 +399,7 @@ const rootSchema = gql`
       newTexterUserId: String!
     ): [CampaignIdAssignmentId]
     dynamicReassign(
-      organizationUuid: String!
+      joinToken: String!
       campaignId: String!
     ): String
     importCampaignScript(campaignId: String!, url: String!): Int

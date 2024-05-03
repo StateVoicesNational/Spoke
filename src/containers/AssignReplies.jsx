@@ -22,7 +22,7 @@ class AssignReplies extends React.Component {
     try {
       
       const organizationId = (await this.props.mutations.dynamicReassign(
-        this.props.params.organizationUuid,
+        this.props.params.joinToken,
         this.props.params.campaignId
       )).data.dynamicReassign;
       console.log("ID:", organizationId);
@@ -62,11 +62,11 @@ AssignReplies.propTypes = {
 
 export const dynamicReassignMutation = gql`
   mutation dynamicReassign(
-    $organizationUuid: String!
+    $joinToken: String!
     $campaignId: String!
   ) {
     dynamicReassign(
-      organizationUuid: $organizationUuid
+      joinToken: $joinToken
       campaignId: $campaignId
     )
   }
@@ -74,12 +74,12 @@ export const dynamicReassignMutation = gql`
 
 const mutations = {
   dynamicReassign: ownProps => (
-    organizationUuid,
+    joinToken,
     campaignId
   ) => ({
     mutation: dynamicReassignMutation,
     variables: {
-      organizationUuid,
+      joinToken,
       campaignId
     }
   })

@@ -846,13 +846,11 @@ describe("Reassignments", () => {
     await runGql(
       dynamicReassignMutation,
       {
-        organizationUuid: testCampaign.joinToken,
+        joinToken: testCampaign.joinToken,
         campaignId: testCampaign.id,
       },
       testTexterUser2
     );
-     // TEXTER 1 (60 needsMessage, 4 messaged)
-    // TEXTER 2 (25 needsMessage, 2 needsResponse, 3 convo, 1 messaged)
     texterCampaignDataResults = await runGql(
       TexterTodoQuery,
       {
@@ -897,7 +895,7 @@ describe("Reassignments", () => {
     await runGql(
       dynamicReassignMutation,
       {
-        organizationUuid: testCampaign.joinToken,
+        joinToken: testCampaign.joinToken,
         campaignId: testCampaign.id,
       },
       testTexterUser2
@@ -930,6 +928,8 @@ describe("Reassignments", () => {
       },
       testTexterUser2
     );
+    // TEXTER 1 (60 needsMessage, 4 messaged)
+    // TEXTER 2 (25 needsMessage, 2 needsResponse, 3 convo, 1 messaged)
     expect(texterCampaignDataResults.data.assignment.contacts.length).toEqual(
       0
     );

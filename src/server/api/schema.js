@@ -2,7 +2,7 @@ import GraphQLDate from "graphql-date";
 import GraphQLJSON from "graphql-type-json";
 import { GraphQLError } from "graphql/error";
 import isUrl from "is-url";
-import _, { orderBy } from "lodash";
+import _ from "lodash";
 import { gzip, makeTree, getHighestRole } from "../../lib";
 import { capitalizeWord, groupCannedResponses } from "./lib/utils";
 import httpRequest from "../lib/http-request";
@@ -1441,7 +1441,7 @@ const rootMutations = {
     dynamicReassign: async (
       _,
       {
-        organizationUuid,
+        joinToken,
         campaignId
       },
       { user }
@@ -1451,7 +1451,7 @@ const rootMutations = {
       .knex("campaign")
       .where({
         id: campaignId,
-        join_token: organizationUuid,
+        join_token: joinToken,
       })
       .first();
       const INVALID_REASSIGN = () => {

@@ -156,7 +156,7 @@ class CampaignDynamicAssignmentForm extends React.Component {
                 <li>
                   {joinToken ? (
                     <OrganizationReassignLink
-                      organizationUuid={joinToken}
+                      joinToken={joinToken}
                       campaignId={campaignId}
                     />
                   ) : (
