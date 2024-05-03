@@ -1,9 +1,4 @@
 
-/**
- * @param { import("knex").Knex } knex
- * @returns { Promise<void> }
- */
-
 const { onUpdateTrigger } = require('./helpers/index')
 const ON_UPDATE_TIMESTAMP_FUNCTION = `
   CREATE OR REPLACE FUNCTION on_update_timestamp()
@@ -17,6 +12,9 @@ $$ language 'plpgsql';
 
 const DROP_ON_UPDATE_TIMESTAMP_FUNCTION = `DROP FUNCTION on_update_timestamp`
 
+/**
+ * @param { import("knex").Knex } knex
+ */
 exports.up = async function(knex) {
     const isSqlite = /sqlite/.test(knex.client.config.client);
     if (!isSqlite) {
@@ -27,7 +25,6 @@ exports.up = async function(knex) {
 
 /**
  * @param { import("knex").Knex } knex
- * @returns { Promise<void> }
  */
 exports.down = async function(knex) {
     const isSqlite = /sqlite/.test(knex.client.config.client);
