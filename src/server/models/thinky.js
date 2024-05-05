@@ -46,7 +46,7 @@ if (redisUrl) {
   // new redis client doesn't respect username placeholders so replace it
   // this is especially true for legacy Heroku instances which had redis://h:<password>...
   const redisSettings = {
-    url: redisUrl.replace(/redis:\/\/\w+:/, "redis://:")
+    url: redisUrl // redisUrl.replace(/redis:\/\/\w+:/, "redis://:")
   };
   if (/rediss/.test(redisSettings.url)) {
     // secure redis protocol for Redis 6.0+
