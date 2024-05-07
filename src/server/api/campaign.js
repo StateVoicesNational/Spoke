@@ -343,6 +343,15 @@ export const resolvers = {
         ? features.DYNAMICASSIGNMENT_BATCHES.split(",")
         : [];
     },
+
+    replyBatchSize: campaign => {
+      const features = getFeatures(campaign);
+      return features.REPLY_BATCH_SIZE || 200;
+    },
+    useDynamicReplies: campaign => {
+      const features = getFeatures(campaign);
+      return features.USE_DYNAMIC_REPLIES ? features.USE_DYNAMIC_REPLIES : false;
+    },
     responseWindow: campaign => campaign.response_window || 48,
     organization: async (campaign, _, { loaders }) =>
       campaign.organization ||

@@ -23,6 +23,7 @@ import CreateOrganization from "./containers/CreateOrganization";
 import CreateAdditionalOrganization from "./containers/CreateAdditionalOrganization";
 import AdminOrganizationsDashboard from "./containers/AdminOrganizationsDashboard";
 import JoinTeam from "./containers/JoinTeam";
+import AssignReplies from "./containers/AssignReplies";
 import Home from "./containers/Home";
 import Settings from "./containers/Settings";
 import Tags from "./containers/Tags";
@@ -273,6 +274,11 @@ export default function makeRoutes(requireAuth = () => {}) {
       <Route
         path="addOrganization/:inviteId"
         component={CreateAdditionalOrganization}
+        onEnter={requireAuth}
+      />
+      <Route
+        path=":joinToken/replies/:campaignId"
+        component={AssignReplies}
         onEnter={requireAuth}
       />
       <Route

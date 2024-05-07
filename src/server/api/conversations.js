@@ -74,6 +74,13 @@ function getConversationsJoinsAndWhereClause(
     contactsFilter && contactsFilter.messageStatus
   );
 
+  if (contactsFilter.updatedAtGt) {
+    query = query.andWhere(function() {this.where('updated_at', '>', contactsFilter.updatedAtGt)})
+  }
+  if (contactsFilter.updatedAtLt) {
+    query = query.andWhere(function() {this.where('updated_at', '<', contactsFilter.updatedAtLt)})
+  }
+
   if (contactsFilter) {
     if ("isOptedOut" in contactsFilter) {
       query.where("is_opted_out", contactsFilter.isOptedOut);
@@ -125,6 +132,10 @@ function getConversationsJoinsAndWhereClause(
             .whereIn("tag_id", tags)
         );
       }
+    }
+
+    if (contactsFilter.orderByRaw) {
+      query = query.orderByRaw(contactsFilter.orderByRaw);
     }
   }
 

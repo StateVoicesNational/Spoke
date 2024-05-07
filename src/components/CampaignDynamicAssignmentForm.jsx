@@ -7,6 +7,7 @@ import GSTextField from "../components/forms/GSTextField";
 import * as yup from "yup";
 import Form from "react-formal";
 import OrganizationJoinLink from "./OrganizationJoinLink";
+import OrganizationReassignLink from "./OrganizationReassignLink";
 import { dataTest } from "../lib/attributes";
 import cloneDeep from "lodash/cloneDeep";
 import TagChips from "./TagChips";
@@ -53,7 +54,7 @@ class CampaignDynamicAssignmentForm extends React.Component {
 
   render() {
     const { joinToken, campaignId, organization } = this.props;
-    const { useDynamicAssignment, batchPolicies } = this.state;
+    const { useDynamicAssignment, batchPolicies, useDynamicReplies } = this.state;
     const unselectedPolicies = organization.batchPolicies
       .filter(p => !batchPolicies.find(cur => cur === p))
       .map(p => ({ id: p, name: p }));
@@ -73,6 +74,7 @@ class CampaignDynamicAssignmentForm extends React.Component {
           label="Allow texters with a link to join and start texting when the campaign is started?"
           labelPlacement="start"
         />
+        <br/>
         <GSForm
           schema={this.formSchema}
           value={this.state}
@@ -133,6 +135,52 @@ class CampaignDynamicAssignmentForm extends React.Component {
               message status filter in Message Review. You might set this to 48
               hours for slower campaigns or 2 hours or less for GOTV campaigns.
             </p>
+            <FormControlLabel
+          control={
+            <Switch
+              color="primary"
+              checked={useDynamicReplies || false}
+              onChange={(toggler, val) => {
+                console.log(toggler, val);
+                this.toggleChange("useDynamicReplies", val);
+              }}
+            />
+          }
+          label="Allow texters with a link to dynamically get assigned replies?"
+          labelPlacement="start"
+        />
+
+          {!useDynamicReplies ? null : (
+            <div>
+              <ul>
+                <li>
+                  {joinToken ? (
+                    <OrganizationReassignLink
+                      joinToken={joinToken}
+                      campaignId={campaignId}
+                    />
+                  ) : (
+                    "Please save the campaign and reload the page to get the reply link to share with texters."
+                  )}
+                </li>
+                <li>
+                  You can turn off dynamic assignment after starting a campaign
+                  to disallow more new texters to receive replies.
+                </li>
+              </ul>
+
+              <Form.Field
+                as={GSTextField}
+                fullWidth
+                name="replyBatchSize"
+                type="number"
+                label="How large should a batch of replies be?"
+                initialValue={200}
+              />  
+            </div>
+          )
+
+          }
             {organization.batchPolicies.length > 1 ? (
               <div>
                 <h3>Batch Strategy</h3>
@@ -211,7 +259,8 @@ CampaignDynamicAssignmentForm.propTypes = {
   saveDisabled: type.bool,
   joinToken: type.string,
   responseWindow: type.number,
-  batchSize: type.string
+  batchSize: type.string,
+  replyBatchSize: type.string
 };
 
 export default compose(withMuiTheme)(CampaignDynamicAssignmentForm);

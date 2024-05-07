@@ -193,7 +193,9 @@ async function editCampaign(id, campaign, loaders, user, origCampaignRecord) {
     textingHoursStart,
     textingHoursEnd,
     timezone,
-    serviceManagers
+    serviceManagers,
+    useDynamicReplies,
+    replyBatchSize
   } = campaign;
   // some changes require ADMIN and we recheck below
   const organizationId =
@@ -259,6 +261,17 @@ async function editCampaign(id, campaign, loaders, user, origCampaignRecord) {
     });
     campaignUpdates.features = JSON.stringify(features);
   }
+  if (useDynamicReplies) {
+    Object.assign(features, {
+      "USE_DYNAMIC_REPLIES": true,
+      "REPLY_BATCH_SIZE": replyBatchSize
+    })
+  } else {
+    Object.assign(features, {
+      "USE_DYNAMIC_REPLIES": false
+    })
+  }
+  campaignUpdates.features = JSON.stringify(features);
 
   let changed = Boolean(Object.keys(campaignUpdates).length);
   if (changed) {
@@ -1424,6 +1437,63 @@ const rootMutations = {
         campaignIdContactIdsMap,
         newTexterUserId
       );
+    },
+    dynamicReassign: async (
+      _,
+      {
+        joinToken,
+        campaignId
+      },
+      { user }
+    ) => {
+      // verify permissions
+      const campaign = await r
+      .knex("campaign")
+      .where({
+        id: campaignId,
+        join_token: joinToken,
+      })
+      .first();
+      const INVALID_REASSIGN = () => {
+        const error = new GraphQLError("Invalid reassign request - organization not found");
+        error.code = "INVALID_REASSIGN";
+        return error;
+      };
+      if (!campaign) {
+        throw INVALID_REASSIGN();
+      }
+      const organization = await cacheableData.organization.load(
+        campaign.organization_id
+      );
+      if (!organization) {
+        throw INVALID_REASSIGN();
+      }      
+      const maxContacts = getConfig("MAX_REPLIES_PER_TEXTER", organization) ?? 200;
+      let d = new Date();
+      d.setHours(d.getHours() - 1);
+      const contactsFilter = { messageStatus: 'needsResponse', isOptedOut: false, listSize: maxContacts, orderByRaw: "updated_at DESC", updatedAtLt: d}
+      const campaignsFilter = {
+        campaignId: campaignId
+      };
+
+      await accessRequired(
+        user,
+        organization.id,
+        "TEXTER",
+        /* superadmin*/ true
+      );
+      const { campaignIdContactIdsMap } = await getCampaignIdContactIdsMaps(
+        organization.id,
+        {
+          campaignsFilter,
+          contactsFilter,
+        }
+      );
+      await reassignConversations(
+        campaignIdContactIdsMap,
+        user.id
+      );
+      return organization.id;
     },
     importCampaignScript: async (_, { campaignId, url }, { user }) => {
       const campaign = await cacheableData.campaign.load(campaignId);

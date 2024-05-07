@@ -359,6 +359,7 @@ export async function createCampaign(
   const campaignQuery = `mutation createCampaign($input: CampaignInput!) {
     createCampaign(campaign: $input) {
       id
+      joinToken
     }
   }`;
   const variables = {
