@@ -62,11 +62,11 @@ if (redisUrl) {
   }
 
   const redis = require("redis");
-  thinkyConn.r.redis = redis.createClient(redisSettings);
   (async () => {
-    console.log("🐰 before", redisSettings.url);
-    await thinkyConn.r.redis.connect();
-    console.log("🐇 after");
+    thinkyConn.r.redis = await redis
+      .createClient(redisSettings)
+      .on("error", err => console.log("Redis Client Error", err))
+      .connect();
   })();
 } else if (process.env.REDIS_FAKE) {
   const fakeredis = require("fakeredis");
