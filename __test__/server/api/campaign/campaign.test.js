@@ -93,7 +93,6 @@ afterEach(async () => {
   r.knex.removeListener("query", spokeDbListener);
   await cleanupTest();
   jest.restoreAllMocks();
-  if (r.redis) r.redis.flushdb();
 }, global.DATABASE_SETUP_TEARDOWN_TIMEOUT);
 
 it("allow supervolunteer to retrieve campaign data", async () => {

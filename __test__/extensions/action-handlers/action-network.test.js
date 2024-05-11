@@ -2,6 +2,10 @@ import nock from "nock";
 import moment from "moment";
 const ActionNetwork = require("../../../src/extensions/action-handlers/action-network");
 
+afterEach(async () => {
+  await nock.cleanAll();
+});
+
 expect.extend({
   stringifiedObjectEqualObject(receivedString, expectedObject) {
     let pass = true;

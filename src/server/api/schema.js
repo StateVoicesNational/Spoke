@@ -198,7 +198,7 @@ async function editCampaign(id, campaign, loaders, user, origCampaignRecord) {
     campaign.organizationId || origCampaignRecord.organization_id;
   await accessRequired(
     user,
-    organizationId,
+    organizationId.toString(),
     "SUPERVOLUNTEER",
     /* superadmin*/ true
   );
@@ -410,7 +410,10 @@ async function editCampaign(id, campaign, loaders, user, origCampaignRecord) {
     });
   }
 
-  return Campaign.get(id);
+  const toReturn = await Campaign.get(id.toString());
+  toReturn.id = toReturn.id.toString();
+  toReturn.organization_id = toReturn.organization_id.toString();
+  return toReturn;
 }
 
 async function updateInteractionSteps(
@@ -665,7 +668,8 @@ const rootMutations = {
 
       const organization = await loaders.organization.load(organizationId);
 
-      const passportStrategy = getConfig("PASSPORT_STRATEGY", organization) || "auth0";
+      const passportStrategy =
+        getConfig("PASSPORT_STRATEGY", organization) || "auth0";
       if (passportStrategy === "auth0") {
         const { email } = await r
           .knex("user")
@@ -1043,7 +1047,7 @@ const rootMutations = {
       } else {
         await accessRequired(
           user,
-          origCampaign.organization_id,
+          origCampaign.organization_id.toString(),
           "SUPERVOLUNTEER"
         );
       }
@@ -1129,6 +1133,7 @@ const rootMutations = {
         { conflict: "update" }
       );
 
+      newOrganization.id = newOrganization.id.toString();
       return newOrganization;
     },
     resetOrganizationJoinLink: async (_, { organizationId }, { user }) => {

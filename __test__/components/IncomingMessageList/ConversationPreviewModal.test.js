@@ -75,7 +75,6 @@ describe.skip("ConversationPreviewModal", () => {
 
   afterAll(async () => {
     await cleanupTest();
-    if (r.redis) r.redis.flushdb();
   }, global.DATABASE_SETUP_TEARDOWN_TIMEOUT);
 
   describe("when a message review user opts out a user", () => {

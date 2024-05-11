@@ -1,5 +1,5 @@
 /* eslint-disable no-unused-expressions, consistent-return */
-import { r } from "../../../src/server/models/";
+import { r } from "../../../src/server/models";
 
 import {
   setupTest,
@@ -38,7 +38,6 @@ describe("createOptOut", () => {
 
   afterEach(async () => {
     await cleanupTest();
-    if (r.redis) r.redis.flushdb();
   }, global.DATABASE_SETUP_TEARDOWN_TIMEOUT);
 
   it("creates an opt out when the contact is assigned to the current user", async () => {

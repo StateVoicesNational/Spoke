@@ -24,8 +24,19 @@ export async function setupTest() {
   await createTables();
 }
 
-export async function cleanupTest() {
+export async function flushRedis() {
+  if (r.redis) {
+    for await (const key of r.redis.scanIterator({ MATCH: "*", COUNT: 1 })) {
+      r.redis.FLUSHDB();
+    }
+  }
+}
+
+export async function cleanupTest(doFlushRedis = true) {
   await dropTables();
+  if (doFlushRedis) {
+    await flushRedis();
+  }
 }
 
 export function sleep(ms) {
@@ -468,15 +479,15 @@ export async function assignTexter(admin, user, campaign, assignments) {
   const rootValue = {};
   const campaignEditQuery = `
   mutation editCampaign($campaignId: String!, $campaign: CampaignInput!) {
-    editCampaign(id: $campaignId, campaign: $campaign) {
+    editCampaign(
+        id: $campaignId,
+        campaign: $campaign) {
       id
-      assignments {
-        id
-      }
+      assignments { id }
     }
   }`;
   const contextValue = getContext({ user: admin });
-  const updateCampaign = Object.assign({}, campaign);
+  const updateCampaign = { ...campaign };
   const campaignId = updateCampaign.id;
   updateCampaign.texters = assignments || [
     {

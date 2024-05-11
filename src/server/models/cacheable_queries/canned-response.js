@@ -14,12 +14,12 @@ const cacheKey = (campaignId, userId) =>
 const cannedResponseCache = {
   clearQuery: async ({ campaignId, userId }) => {
     if (r.redis) {
-      await r.redis.delAsync(cacheKey(campaignId, userId));
+      await r.redis.DEL(cacheKey(campaignId, userId));
     }
   },
   query: async ({ campaignId, userId, cannedResponseId }) => {
     if (r.redis) {
-      const cannedData = await r.redis.getAsync(cacheKey(campaignId, userId));
+      const cannedData = await r.redis.GET(cacheKey(campaignId, userId));
       if (cannedData) {
         return JSON.parse(cannedData);
       }
@@ -56,10 +56,10 @@ const cannedResponseCache = {
         cacheData[0].usedFields = getUsedScriptFields(cacheData, "text");
       }
       await r.redis
-        .multi()
-        .set(cacheKey(campaignId, userId), JSON.stringify(cacheData))
-        .expire(cacheKey(campaignId, userId), 43200) // 12 hours
-        .execAsync();
+        .MULTI()
+        .SET(cacheKey(campaignId, userId), JSON.stringify(cacheData))
+        .EXPIRE(cacheKey(campaignId, userId), 43200) // 12 hours
+        .exec();
     }
     return grouped;
   }

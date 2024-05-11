@@ -20,7 +20,6 @@ beforeEach(async () => {
 
 afterEach(async () => {
   await cleanupTest();
-  if (r.redis) r.redis.flushdb();
   global.MESSAGE_HANDLERS = undefined;
 }, global.DATABASE_SETUP_TEARDOWN_TIMEOUT);
 

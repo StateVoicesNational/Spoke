@@ -35,11 +35,11 @@ const saveMessageCache = async (contactId, contactMessages, overwriteFull) => {
     const key = cacheKey(contactId);
     let redisQ = r.redis.multi();
     if (overwriteFull) {
-      redisQ = redisQ.del(key);
+      redisQ = redisQ.DEL(key);
     }
 
     await redisQ
-      .lpush(
+      .LPUSH(
         key,
         contactMessages.map(m =>
           JSON.stringify({
@@ -49,7 +49,7 @@ const saveMessageCache = async (contactId, contactMessages, overwriteFull) => {
         )
       )
       .expire(key, 43200)
-      .execAsync();
+      .exec();
   }
 };
 
@@ -77,13 +77,13 @@ const query = async ({ campaignContactId, justCache }) => {
   if (r.redis && CONTACT_CACHE_ENABLED) {
     if (campaignContactId) {
       const [exists, messages] = await r.redis
-        .multi()
-        .exists(cacheKey(campaignContactId))
-        .lrange(cacheKey(campaignContactId), 0, -1)
-        .execAsync();
+        .MULTI()
+        .EXISTS(cacheKey(campaignContactId))
+        .LRANGE(cacheKey(campaignContactId), 0, -1)
+        .exec();
       // console.log("messageCache exist?", exists, messages);
       if (exists) {
-        // note: lrange returns messages in reverse order
+        // note: LRANGE returns messages in reverse order
         return messages.reverse().map(m => JSON.parse(m));
       }
     }
