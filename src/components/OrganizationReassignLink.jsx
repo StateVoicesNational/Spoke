@@ -3,7 +3,7 @@ import React from "react";
 import DisplayLink from "./DisplayLink";
 
 const OrganizationReassignLink = ({ joinToken, campaignId }) => {
-  let baseUrl = "http://base";
+  let baseUrl = "https://base";
   if (typeof window !== "undefined") {
     baseUrl = window.location.origin;
   }
