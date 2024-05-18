@@ -25,3 +25,4 @@ CONFIG_FILE.json
 scratch/
 cypress/screenshots
 cypress/videos
+.tool-versions
