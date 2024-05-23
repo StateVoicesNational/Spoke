@@ -80,6 +80,7 @@ Docker is optional, but can help with a consistent development environment using
 
 2. Make sure Docker is running on your machine and then build and run Spoke with `docker compose up -d` to run redis and postgres in the background
    - You can stop docker compose at any time with `docker compose down`, and data will persist next time you run `docker compose up`.
+   - **Note!** - `docker-compose` should in theory work with ComposeV2 as Docker considers it an alias for `docker compose`. [Read more about the migration of Compose](https://docs.docker.com/compose/migrate/#what-does-this-mean-for-my-projects-that-use-compose-v1)
 
 3. Run `./dev-tools/create-test-database` to populate the test database
 
