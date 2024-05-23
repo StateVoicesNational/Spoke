@@ -1,8 +1,12 @@
-# HOWTO import interaction steps and canned responses from a Google Doc into Spoke
+# HOWTO import interaction steps and canned responses from a Google Doc into Spoke **EXPERIMENTAL**
 
 Note that in order to make the examples realistic, this document includes real IDs and secrets in the examples. The credentials and accounts connected with these examples will have been deleted before this file was pushed to Github.
 
 It's a horrible idea to publish live secrets to Github. You should never do that. Please be sure to take adequate steps to protect your secrets.
+
+## Current Work in Progress (May 2024)
+
+This doc and associated feature is under construction/maintenence. Please consider the Google Docs Integration **experimental** for the time being and open an issue if you run into any issues. 
 
 ## Setup
 
