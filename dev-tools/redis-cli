@@ -8,4 +8,4 @@ set -euo pipefail
 #   * To open a shell:    ./dev-tools/redis-cli
 #   * To clear the cache: ./dev-tools/redis-cli FLUSHDB
 
-docker-compose exec redis redis-cli "$@"
+docker compose exec redis redis-cli "$@"
