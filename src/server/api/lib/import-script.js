@@ -286,7 +286,7 @@ const saveInteractionsHierarchyNode = async (
     .returning("id");
 
   for (const child of interactionsHierarchyNode.children) {
-    await saveInteractionsHierarchyNode(trx, campaignId, child, nodeId[0].id);
+    await saveInteractionsHierarchyNode(trx, campaignId, child, nodeId[0]);
   }
 };
 
