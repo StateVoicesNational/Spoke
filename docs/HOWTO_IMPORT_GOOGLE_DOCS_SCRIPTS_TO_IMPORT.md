@@ -11,41 +11,21 @@ This doc and associated feature is under construction/maintenence. Please consid
 ## Setup
 
 1. You must be logged in to Google.
-1. Visit [this page](https://developers.google.com/docs/api/quickstart/nodejs) to start creating Google API credentials.
-1. Click `Enable the Google Docs API`.
-1. A dialog will appear.
-1. Click `DOWNLOAD CLIENT CONFIGURATION`.
-1. Open the downloaded file. The file will have a name like `credentials.json` or `credentials-2.json`.
-1. The contents of the file will look like this:
-
-```
-{
-  "installed": {
-    "client_id": "971230067213-ochdc8fe93akq3ss04a3sqj3r2needvf.apps.googleusercontent.com",
-    "project_id": "quickstart-1552345943126",
-    "auth_uri": "https://accounts.google.com/o/oauth2/auth",
-    "token_uri": "https://oauth2.googleapis.com/token",
-    "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
-    "client_secret": "8gRezNEdmjh1CmobG8hS1Ljx",
-    "redirect_uris": ["urn:ietf:wg:oauth:2.0:oob", "http://localhost"]
-  }
-}
-```
-
-8. Grab the value of the `project_id` key in the JSON in step 6. In this case it's `quickstart-1552345943126`. Note that we discard the quotes that surround it.
-9. Go to [your Google API dashboard](https://console.developers.google.com/apis/credentials).
-10. At the very top of that page, use the drop down at the top left to select the project whose name you grabbed in step 8. You will be shown a list of project names and IDs. Find your project by its ID and select it.
-11. On that page, click `Create credentials` and then choose `Service account key`.
-12. You'll be redirected to a page to create a service account.
+2. Visit [this page](https://developers.google.com/docs/api/quickstart/nodejs) to start creating Google API credentials.
+3. Scroll down and click `Enable the Google Docs API`.
+4. Follow the steps to endable Google Docs API.
+5. On the top left of the page, click on "GoogleCloud", which will redirect you to the home page. Then, click `APIs & Services`.
+6. Scroll down until you find `Google Docs API` and click it.
+7. You'll be redirected to a page. On the top of the page, it will ask you to create a `New Service Account`, click it.
     - Select `New service account` from the dropdown
     - In `Servie account name` enter an arbirary name (`test` is fine, for example)
     - In the `Role` Select `Project > Owner`
-    - Make sure the `JSON` radio button is selected (it should be selected by default)
-    - Click `Create`
-    - Wait.
-13. Another file will be downloaded. The name of the file (which will have the extension `json`) will be displayed when the download is complete.
-14. Open the file.
-15. The contents will look like this:
+    - You may skip the opition "Grand Users access to this service account"
+6. Return to the `Google Docs API` page, and on the left, click `Credentials` and then click `ADD KEY`.
+    - Set type to JSON and continue.
+8. Another file will be downloaded. The name of the file (which will have the extension `json`) will be displayed when the download is complete.
+9. Open the file.
+10. The contents will look like this:
 
 ```
 {
