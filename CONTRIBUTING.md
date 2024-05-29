@@ -10,7 +10,6 @@ many important organizations!
   - ProgCode has community guidelines
 - We have a weekly(ish) working group at [Progressive HackNight](https://progressivehacknight.org) that organizes in the #wg-spoke_p2p_sms_tool channel in the slack
 - Feel free to [create an issue or comment on an existing issue](https://github.com/StateVoicesNational/Spoke/issues) -- Every time we hear from the outside progressive developer community, we do a little dance.
-- We also welcome reaching out on our [MoveOn Spoke interest form](https://act.moveon.org/survey/spoke-project/) with questions, etc.
 
 In all forums we affirm the [Progressive Coder Community Guidelines](https://docs.google.com/document/d/1coMHvuGf6x6Qn_73SEhOXi_QaoRBM__3Zj6_5TyrmWs/edit#heading=h.ab96v3qhdgk9)
 
