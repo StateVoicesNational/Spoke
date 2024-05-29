@@ -56,7 +56,7 @@ Welcome to the project! Once you've completed that first contribution, there are
 - We use our [Area labels](docs/EXPLANATION-labels.md) to categorize issues into which code feature areas they belong in. Feel free to sort by an area you're interested in.
 - We use our [Organization labels](docs/EXPLANATION-labels.md) to categorize issues by which organizations are prioritizing them. You can sort by your favorite org and help out there.
 - More broadly, there are all sort of different [labels](https://github.com/StateVoicesNational/Spoke/labels) we use to filter the issues down and you can leverage that to help you find work.
-- Lastly, you can always ping a project maintainer (@ibrand, and @schuyler1d) to get a read on what's on our radar right now.
+- Lastly, you can always ping a project maintainer (@mau11 and @engelhartrueben) to get a read on what's on our radar right now.
 
 ### Claiming issues
 - Like for your first issue, comment on the issue and tell us that you're working on it. Feel free to ask any clarifying questions that you have.
