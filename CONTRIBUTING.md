@@ -82,7 +82,7 @@ The actual process:
 - We create a new stage-main branch at least twice a month:
   - The stage-main branch includes the latest approved pull requests in one merged branch
     - This ensures that PRs will not contain anything that breaks deployment and also will allow us to see if any PRs negatively interact with each other before they end up merged to main. Why bother with this step? It's helpful to have a separate "release candidate" on the stage-main branch because in earlier testing rounds people weren't sure what had been deployed to staging and having a separate branch makes this explicit and clear.
-  - After stage-main is created, we deploy it to MoveOn's staging instance. We have a small set of QA volunteers who then run through a list of [QA steps](https://github.com/StateVoicesNational/Spoke/blob/main/docs/HOWTO_QA_GUIDE.md) in order to find bugs and test new features.
+  - After stage-main is created, we deploy it to StateVoices staging instance. We have a small set of QA volunteers who then run through a list of [QA steps](https://github.com/StateVoicesNational/Spoke/blob/main/docs/HOWTO_QA_GUIDE.md) in order to find bugs and test new features.
   - After QA is completed, and volunteers haven't identified any bugs, we deploy stage-main to production.
   - We let stage-main run in production for at least a day, before merging stage-main into the main branch.
   - We never roll code directly to prod without first testing on staging.
