@@ -65,7 +65,7 @@ export async function available(organization, user) {
 
   if (!result) {
     console.log(
-      "ngpvan contact loader unavailable. Missing one or more required environment variables."
+      `${organization} | ngpvan contact loader unavailable. Missing one or more required environment variables.`
     );
   }
 
