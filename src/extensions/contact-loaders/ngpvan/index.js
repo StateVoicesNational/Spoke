@@ -56,16 +56,23 @@ export async function available(organization, user) {
   // / If this is instantaneous, you can have it be 0 (i.e. always), but if it takes time
   // / to e.g. verify credentials or test server availability,
   // / then it's better to allow the result to be cached
+ 
+  const hasRawKey = hasConfig("NGP_VAN_API_KEY", organization);
+  const hasEncryptedKey = hasConfig("NGP_VAN_API_KEY_ENCRYPTED", organization)
+  const hasAppName = hasConfig("NGP_VAN_APP_NAME", organization);
+  const hasWebhook = hasConfig("NGP_VAN_WEBHOOK_BASE_URL", organization)
 
-  const result =
-    (hasConfig("NGP_VAN_API_KEY", organization) ||
-      hasConfig("NGP_VAN_API_KEY_ENCRYPTED", organization)) &&
-    hasConfig("NGP_VAN_APP_NAME", organization) &&
-    hasConfig("NGP_VAN_WEBHOOK_BASE_URL", organization);
+  const result = (hasRawKey || hasEncryptedKey) && hasAppName && hasWebhook;
 
   if (!result) {
     console.log(
-      `${organization} | ngpvan contact loader unavailable. Missing one or more required environment variables.`
+      `${organization.name} :: ngpvan contact loader unavailable. Status:\n
+      Needs one:\n
+      \tNGP_VAN_API_KEY: ${hasRawKey}\n
+      \tNGP_VAN_API_KEY_ENCRYPTED: ${hasEncryptedKey}\n
+      Needs both:\n
+      \tNGP_VAN_APP_NAME: ${hasAppName}\n
+      \tNGP_VAN_WEBHOOK_BASE_URL: ${hasWebhook}`
     );
   }
 
