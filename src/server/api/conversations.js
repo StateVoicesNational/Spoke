@@ -188,9 +188,9 @@ export async function getConversations(
   }
   console.log(
     `Org Id: ${organizationId} :: getConversations sql -- \n`,
-    `\tawsContext: ${awsContext && awsContext.awsRequestId === undefined ? true : false}\n`,
-    `\tcursor: limit=${cursor.limit},  offset=${cursor.offset}\n`,
-    `\tassignmentsFilter: ${assignmentsFilter}\n`,
+    `\tawsContext: ${awsContext && awsContext.awsRequestId ? true : false}\n`,
+    `\tcursor: limit=${cursor.limit}, offset=${cursor.offset}\n`,
+    `\tassignmentsFilter: ${Object.keys(assignmentsFilter).length > 0 ? assignmentsFilter : "no filter"}\n`,
     `\toffsetLimitQuery: ${offsetLimitQuery.toString()}`
   );
 
