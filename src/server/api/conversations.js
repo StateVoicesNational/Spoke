@@ -254,10 +254,10 @@ export async function getConversations(
   query = query.orderBy("cc_id", "desc").orderBy("message.id");
   const conversationRows = await query;
   console.log(
-    "getConversations query2 result",
-    awsContext && awsContext.awsRequestId,
-    Number(new Date()) - Number(starttime),
-    conversationRows.length
+    `Org Id: ${organizationId} :: getConversations query2 conversations -- \n`,
+    `\tawsContext: ${awsContext && awsContext.awsRequestId === undefined ? true : false}\n`,
+    `\ttime: ${Number(new Date()) - Number(starttime)}ms\n`,
+    `\tconversationRows lenght: ${conversationRows.length}`
   );
   /* collapse the rows to produce an array of objects, with each object
    * containing the fields for one conversation, each having an array of
