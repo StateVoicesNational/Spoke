@@ -370,10 +370,11 @@ export async function getClientChoiceData(organization) {
 // Besides this returning true, "test-action" will also need to be added to
 // process.env.ACTION_HANDLERS
 export async function available(organization) {
-  let result =
-    (hasConfig("NGP_VAN_API_KEY", organization) ||
-      hasConfig("NGP_VAN_API_KEY_ENCRYPTED", organization)) &&
-    hasConfig("NGP_VAN_APP_NAME", organization);
+  const hasVanApiKey = hasConfig("NGP_VAN_API_KEY", organization);
+  const hasVanApiKeyEncrypted = hasConfig("NGP_VAN_API_KEY_ENCRYPTED", organization);
+  const hasVanAppName = hasConfig("NGP_VAN_APP_NAME", organization);
+
+  let result = (hasVanApiKey || hasVanApiKeyEncrypted) && hasVanAppName;
 
   if (!result) {
     // eslint-disable-next-line no-console
