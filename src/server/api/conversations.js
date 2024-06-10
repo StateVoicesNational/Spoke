@@ -320,8 +320,9 @@ export async function getConversations(
   /* Query #3 -- get the count of all conversations matching the criteria.
    * We need this to show total number of conversations to support paging */
   console.log(
-    "getConversations query3",
-    Number(new Date()) - Number(starttime)
+    "getConversations query3 total count + time for total completion of queries\n",
+    `\ttime: ${Number(new Date()) - Number(starttime)}ms\n`,
+    `\ttotal conversations: ${conversations.length}`
   );
   const conversationsCountQuery = getConversationsJoinsAndWhereClause(
     r.knexReadOnly,
