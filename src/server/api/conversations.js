@@ -197,7 +197,7 @@ export async function getConversations(
   const ccIdRows = await offsetLimitQuery;
 
   console.log(
-    `Org Id: ${organizationId} :: getConversations contact ids -- \n`,
+    `Org Id: ${organizationId} :: getConversations query1 contact ids -- \n`,
     `\tawsContext: ${awsContext && awsContext.awsRequestId === undefined ? true : false}\n`,
     `\ttime: ${Number(new Date()) - Number(starttime)}ms\n`,
     `\tccIdRows length: ${ccIdRows.length}`
