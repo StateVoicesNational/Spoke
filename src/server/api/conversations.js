@@ -197,10 +197,10 @@ export async function getConversations(
   const ccIdRows = await offsetLimitQuery;
 
   console.log(
-    "getConversations contact ids",
-    awsContext && awsContext.awsRequestId,
-    Number(new Date()) - Number(starttime),
-    ccIdRows.length
+    `Org Id: ${organizationId} :: getConversations contact ids -- \n`,
+    `\tawsContext: ${awsContext && awsContext.awsRequestId === undefined ? true : false}\n`,
+    `\ttime: ${Number(new Date()) - Number(starttime)}ms\n`,
+    `\tccIdRows length: ${ccIdRows.length}`
   );
   const ccIds = ccIdRows.map(ccIdRow => {
     return ccIdRow.cc_id;
