@@ -187,11 +187,11 @@ export async function getConversations(
       .offset(cursor.offset);
   }
   console.log(
-    "getConversations sql",
-    awsContext && awsContext.awsRequestId,
-    cursor,
-    assignmentsFilter,
-    offsetLimitQuery.toString()
+    `Org Id: ${organizationId} :: getConversations sql -- \n`,
+    `\tawsContext: ${awsContext && awsContext.awsRequestId === undefined ? true : false}\n`,
+    `\tcursor: limit=${cursor.limit},  offset=${cursor.offset}\n`,
+    `\tassignmentsFilter: ${assignmentsFilter}\n`,
+    `\toffsetLimitQuery: ${offsetLimitQuery.toString()}`
   );
 
   const ccIdRows = await offsetLimitQuery;
