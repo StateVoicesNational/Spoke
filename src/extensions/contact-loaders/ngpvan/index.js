@@ -152,7 +152,7 @@ export async function getClientChoiceData(organization, campaign, user) {
       }
     }
   } catch (error) {
-    const message = `Error retrieving saved list metadata from VAN ${error}`;
+    const message = `${organization.name} :: Error retrieving saved list metadata from VAN :: ${error}`;
     // eslint-disable-next-line no-console
     console.log(message);
     return { data: `${JSON.stringify({ error: message })}` };
