@@ -379,7 +379,13 @@ export async function available(organization) {
   if (!result) {
     // eslint-disable-next-line no-console
     console.info(
-      "ngpvan-action unavailable. Missing one or more required environment variables"
+      `${organization.name} :: ngpvan-action unavailable. Status:
+        Needs either:\n
+        \tNGP_VAN_API_KEY: ${hasVanApiKey}\n
+        \tNGP_VAN_API_KEY_ENCRYPTED: ${hasVanApiKeyEncrypted}\n
+        Needs:\n
+        \tNGP_VAN_APP_NAME: ${hasVanAppName}
+      `
     );
   }
 
