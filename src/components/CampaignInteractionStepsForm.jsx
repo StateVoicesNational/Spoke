@@ -397,6 +397,7 @@ export class CampaignInteractionStepsFormBase extends React.Component {
                 label="Script"
                 multiline
                 hintText="This is what your texters will send to your contacts. E.g. Hi, {firstName}. It's {texterFirstName} here."
+                serviceManagerContext={this.props.serviceManagerContext}
               />
               {!global.HIDE_BRANCHED_SCRIPTS ? (
                 <Form.Field
@@ -495,6 +496,7 @@ CampaignInteractionStepsFormBase.propTypes = {
   customFields: type.array,
   saveLabel: type.string,
   errors: type.array,
+  serviceManagerContext: type.object,
   availableActions: type.array
 };
 

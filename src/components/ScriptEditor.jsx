@@ -12,6 +12,7 @@ import { delimit } from "../lib/scripts";
 import { replaceEasyGsmWins } from "../lib/gsm";
 import Chip from "./Chip";
 import { getCharCount } from "@trt2/gsm-charset-utils";
+import CampaignServiceManagers from "./CampaignServiceManagers";
 
 const styles = {
   editor: {
@@ -166,11 +167,15 @@ class ScriptEditor extends React.Component {
   }
 
   addCustomField(field) {
+    const textToInsert = delimit(field);
+    this.insertText(textToInsert);
+  }
+
+  insertText = (textToInsert) => {
     const { editorState, readyToAdd } = this.state;
     if (!readyToAdd) {
       return;
     }
-    const textToInsert = delimit(field);
     const selection = editorState.getSelection();
     const contentState = editorState.getCurrentContent();
     const newContentState = Modifier.insertText(
@@ -203,7 +208,7 @@ class ScriptEditor extends React.Component {
   }
 
   render() {
-    const { name } = this.props;
+    const { name, serviceManagers } = this.props;
     const text = this.getValue();
     const segmentInfo = getCharCount(text);
     return (
@@ -238,6 +243,14 @@ class ScriptEditor extends React.Component {
           {segmentInfo.msgCount * segmentInfo.charsPerSegment -
             segmentInfo.charCount}
           <br />
+          <CampaignServiceManagers
+            serviceManagerComponentName={"CampaignScriptEditor"}
+            formValues={this}
+            onChange={this.onChange}
+            onSubmit={this.props.serviceManagerContext.onSubmit}
+            campaign={this.props.serviceManagerContext.campaign}
+            organization={this.props.serviceManagerContext.organization}
+          />
         </div>
       </div>
     );
@@ -247,6 +260,7 @@ class ScriptEditor extends React.Component {
 ScriptEditor.propTypes = {
   scriptFields: PropTypes.array,
   scriptText: PropTypes.string,
+  serviceManagerContext: PropTypes.object,
   onChange: PropTypes.func,
   name: PropTypes.string
 };
