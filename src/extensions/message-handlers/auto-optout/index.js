@@ -5,6 +5,13 @@ import { sendRawMessage } from "../../../server/api/mutations/sendMessage";
 const DEFAULT_AUTO_OPTOUT_REGEX_LIST_BASE64 =
   "W3sicmVnZXgiOiAiXlxccypzdG9wXFxifFxcYnJlbW92ZSBtZVxccyokfHJlbW92ZSBteSBuYW1lfFxcYnRha2UgbWUgb2ZmIHRoXFx3KyBsaXN0fFxcYmxvc2UgbXkgbnVtYmVyfGRvblxcVz90IGNvbnRhY3QgbWV8ZGVsZXRlIG15IG51bWJlcnxJIG9wdCBvdXR8c3RvcDJxdWl0fHN0b3BhbGx8Xlxccyp1bnN1YnNjcmliZVxccyokfF5cXHMqY2FuY2VsXFxzKiR8XlxccyplbmRcXHMqJHxeXFxzKnF1aXRcXHMqJCIsICJyZWFzb24iOiAic3RvcCJ9XQ==";
 
+// DEFAULT_AUTO_OPTOUT_REGEX_LIST_BASE64 converts to:
+
+// [{"regex": "^\\s*stop\\b|\\bremove me\\s*$|remove my name|\\btake me off th\\w+ list|
+// \\blose my number|don\\W?t contact me|delete my number|I opt out|stop2quit|stopall|
+// ^\\s*unsubscribe\\s*$|^\\s*cancel\\s*$|^\\s*end\\s*$|^\\s*quit\\s*$", 
+// "reason": "stop"}]
+
 export const serverAdministratorInstructions = () => {
   return {
     description: `
