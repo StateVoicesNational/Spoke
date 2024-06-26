@@ -99,8 +99,8 @@ export const postMessageSave = async ({
   if (message.is_from_contact && handlerContext.autoOptOutReason) {
     console.log(
       "auto-optout.postMessageSave",
-      message.campaign_contact_id,
-      handlerContext.autoOptOutReason
+      `| campaign_contact_id: ${message.campaign_contact_id}`,
+      `| opt-out reason: ${handlerContext.autoOptOutReason}`
     );
     let contact = await cacheableData.campaignContact.load(
       message.campaign_contact_id,
