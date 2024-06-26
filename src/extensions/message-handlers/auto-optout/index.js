@@ -59,8 +59,8 @@ export const preMessageSave = async ({ messageToSave, organization }) => {
     if (matches.length) {
       console.log(
         "auto-optout MATCH",
-        messageToSave.campaign_contact_id,
-        matches
+        `| campaign_contact_id: ${messageToSave.campaign_contact_id}`,
+        `| reason: "${matches[0].reason}"`
       );
       const reason = matches[0].reason || "auto_optout";
       messageToSave.error_code = -133;
@@ -154,3 +154,5 @@ export const postMessageSave = async ({
     }
   }
 };
+
+console.log("works w/ node")
