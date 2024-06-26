@@ -164,5 +164,3 @@ export const postMessageSave = async ({
     }
   }
 };
-
-console.log("works w/ node")
