@@ -43,26 +43,29 @@ export const available = organization => {
   }
 };
 
+// Part of the auto-opt out process. 
+// checks if message recieved states something like "stop", "quit", or "stop2quit"
 export const preMessageSave = async ({ messageToSave, organization }) => {
-  if (messageToSave.is_from_contact) {
+  if (messageToSave.is_from_contact) {  // checks if message is from the contact
     const config = Buffer.from(
       getConfig("AUTO_OPTOUT_REGEX_LIST_BASE64", organization) ||
         DEFAULT_AUTO_OPTOUT_REGEX_LIST_BASE64,
       "base64"
-    ).toString();
+    ).toString();  // converts DEFAULT_AUTO_OPTOUT_REGEX_LIST_BASE64 to regex
+                   // can be custom set in .env w/ AUTO_OPTOUT_REGEX_LIST_BASE64
     const regexList = JSON.parse(config || "[]");
-    const matches = regexList.filter(matcher => {
+    const matches = regexList.filter(matcher => { // checks if message contains opt-out langauge
       const re = new RegExp(matcher.regex, "i");
       return String(messageToSave.text).match(re);
     });
-    // console.log("auto-optout", matches, messageToSave.text, regexList);
-    if (matches.length) {
+    if (matches.length) {  // if more than one match, opt-out
       console.log(
         "auto-optout MATCH",
         `| campaign_contact_id: ${messageToSave.campaign_contact_id}`,
         `| reason: "${matches[0].reason}"`
       );
-      const reason = matches[0].reason || "auto_optout";
+      const reason = matches[0].reason || "auto_optout"; // with default opt-out regex,
+                                                         // reason will always be "stop"
       messageToSave.error_code = -133;
       return {
         contactUpdates: {
