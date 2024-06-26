@@ -43,6 +43,7 @@ describe("ngpvan", () => {
     let oldNgpVanWebhookUrl;
     let oldNgpVanAppName;
     let oldNgpVanApiKey;
+    let organization;
 
     beforeEach(async () => {
       oldNgpVanWebhookUrl = process.env.NGP_VAN_WEBHOOK_BASE_URL;
@@ -51,6 +52,7 @@ describe("ngpvan", () => {
       process.env.NGP_VAN_WEBHOOK_BASE_URL = "https://www.example.com";
       process.env.NGP_VAN_APP_NAME = "spoke";
       process.env.NGP_VAN_API_KEY = "topsecret";
+      organization = { name: "TESTING" }
     });
 
     afterEach(async () => {
@@ -61,7 +63,7 @@ describe("ngpvan", () => {
     });
 
     it("returns true when all required environment variables are present", async () => {
-      expect(await available()).toEqual({
+      expect(await available(organization)).toEqual({
         result: true,
         expiresSeconds: 86400
       });
@@ -73,7 +75,7 @@ describe("ngpvan", () => {
       });
 
       it("returns false", async () => {
-        expect(await available()).toEqual({
+        expect(await available(organization)).toEqual({
           result: false,
           expiresSeconds: 86400
         });
