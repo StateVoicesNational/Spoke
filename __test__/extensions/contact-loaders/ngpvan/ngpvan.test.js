@@ -88,6 +88,7 @@ describe("ngpvan", () => {
     let oldNgpVanCacheTtl;
     let oldNgpVanApiBaseUrl;
     let listItems;
+    let organization;
 
     beforeEach(async () => {
       oldMaximumListSize = process.env.NGP_VAN_MAXIMUM_LIST_SIZE;
@@ -100,6 +101,7 @@ describe("ngpvan", () => {
       process.env.NGP_VAN_API_KEY = "topsecret";
       process.env.NGP_VAN_CACHE_TTL = 30;
       process.env.NGP_VAN_API_BASE_URL = fakeNgpVanBaseApiUrl;
+      organization = {name: "TESTING"};
     });
 
     beforeEach(async () => {
@@ -222,11 +224,11 @@ describe("ngpvan", () => {
           )
           .reply(404);
 
-        const savedListsResponse = await getClientChoiceData();
-
+        const savedListsResponse = await getClientChoiceData(organization);
+        console.log("HERE", JSON.parse(savedListsResponse.data))
         expect(JSON.parse(savedListsResponse.data)).toEqual({
           error: expect.stringMatching(
-            /Error retrieving saved list metadata from VAN Error: Request id .+ failed; received status 404/
+            /TESTING :: Error retrieving saved list metadata from VAN Error: Request id .+ failed; received status 404/
           )
         });
         getSavedListsNock.done();

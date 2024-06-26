@@ -134,6 +134,7 @@ async function requestVanSavedLists(organization, skip) {
 
 export async function getClientChoiceData(organization, campaign, user) {
   let responseJson;
+  console.log("HERE", organization)
 
   try {
     responseJson = await requestVanSavedLists(organization);
@@ -152,7 +153,7 @@ export async function getClientChoiceData(organization, campaign, user) {
       }
     }
   } catch (error) {
-    const message = `${organization.name} :: Error retrieving saved list metadata from VAN :: ${error}`;
+    const message = `${organization.name} :: Error retrieving saved list metadata from VAN ${error}`;
     // eslint-disable-next-line no-console
     console.log(message);
     return { data: `${JSON.stringify({ error: message })}` };
