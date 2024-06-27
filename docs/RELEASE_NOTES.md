@@ -1,5 +1,104 @@
 # Release Notes
 
+## v14.0
+_June 2024:_ Version 14.0
+
+14.0 is a major release. This release upgrades Node 16 to Node 20. By upgrading to Node 20, Spoke is now stable and secure until Q1 of 2026.
+
+As this is StateVoices's first major release, we would like to express our gratitude to all contributors, MoveOn and its previous Community Managers, and the Progressive Coders Network for their continued support and belief in open-source software and Movement Technology.
+
+### Appreciations
+[Maureen Zitouni](https://github.com/mau11), [Ruby Engelhart](https://github.com/engelhartrueben), [Arique Aguilar](https://github.com/Arique1104), [Larry Person](https://github.com/lperson), [Schuyler Duveen](https://github.com/schuyler1d), [Megan Brown](https://github.com/mabrownnyu), [Daniel Bond](https://github.com/dwbond), [Ilona Brand](https://github.com/ibrand), [Kathy Nguyen](https://github.com/crayolakat)
+
+### New Features
+
+There are no new features to this update. This update is purely for stability and security.
+
+### Highlights
+- Upgraded Node 16 to Node 20
+- Updated apollo to use Apollo Client v3 and Apollo Server v4
+- Upgraded 48 and removed 15 packages
+- Created GSIntegerField for integer form validation
+- Fixed Google Docs integration for script imports
+
+### Packages:
+| Package | Prev. Version | New Version | Notes |
+| --- | --- | --- | --- |
+| @apollo/client | ** | ^3.9.8 | Apollo Client v3; replaced older Apollo packages |
+| @apolo/server | ** | ^4.10.1 | Apollo Server V4; replaced older Apollo packages |
+| @aws-* | ** | ^3.535.0 | All packages were upgraded/implemented via AWS codemod. These changes were in response to upgrading aws-sdk to V4. |
+| @babel/cli | ^7.19.3 | ^7.24.1 | *** |
+| @babel/core | ^7.19.6 | ^7.24.1 | *** |
+| @babel/plugin-syntax-flow | ** | ^7.14.5 | for unmet peer dependency :: react-scripts > eslint-config-react-app > eslint-plugin-flowtype@8.0.3 |
+| @babel/plugin-transform-class-properties | ** | ^7.23.3 | *** |
+| @babel/plugin-transform-nullish-coalescing-operator | ** | ^7.23.4 | *** |
+| @babel/plugin-transform-optional-chaining | ** | ^7.23.4 | *** |
+| @babel/plugin-transform-react-jsx | ** | ^7.14.9 | for unmet peer dependency :: react-scripts > eslint-config-react-app > eslint-plugin-flowtype@8.0.3 |
+| @babel/plugin-transform-runtime | ^7.19.6 | ^7.24.3 | *** |
+| @babel/preset-env | ^7.20.2 | ^7.23.9 | *** |
+| @babel/register | ^7.18.9 | ^7.23.7 | *** |
+| @babel/traverse | ** | 7.23.2 | *** |
+| @graphql-tools/graphql-file-loader | ** | ^8.0.1 | *** |
+| @graphql-tools/load | ** | ^8.0.2 | *** |
+| @graphql-tools/schema | ** | ^10.0.3 | *** |
+| auth0-js | ^9.14.3 | ^9.24.1 | *** |
+| babel-loader | ^9.1.0 | ^9.1.3 | *** |
+| bandwidth-sdk | ** | ^1.0.1 | Replaces @bandwidth/messaging |
+| cookie-session | ^2.0.0-alpha.1 | ^2.1.0 | *** |
+| dataloader | ^1.2.0 | ^2.2.2 | *** |
+| eslint-plugin-react-hooks | ** | ^4.3.0 | *** |
+| google-libphonenumber | ^3.0.0 | ^3.2.34 | *** |
+| graphql | ^0.13.2 | ^16.8.1 | *** |
+| graphql-type-json | ^0.1.4 | ^0.3.2 | *** |
+| isomorphic-fetch | ^2.2.1 | ^3.0.0 | *** |
+| knex | ^2.3.0 | ^3.1.0 | *** |
+| moment-timezone | ^0.5.14 | ^0.5.45 | *** |
+| nodemailer | ^6.4.16 | ^6.9.9 | *** |
+| pg | ^8.0.3 | ^8.11.3 | *** |
+| pg-query-stream | ^1.1.1 | ^4.5.3 | *** |
+| redis | 3 | ^4.6.13 | *** |
+| react-dnd | ** | 7.7.0 | *** |
+| rollbar | ^2.4.4 | ^2.26.4 | *** |
+| terser-webpack-plugin | 4 | ^5.3.10 | *** |
+| twilio | ^3.40.0 | ^4.23.0 | *** |
+| typescript | ** | ^3.2.1 | *** |
+| webpack | ^5.74.0 | ^5.90.2 | *** |
+
+### Developer Packages
+| Package | Prev. Version | New Version | Notes |
+| --- | --- | --- | --- |
+| @babel/eslint-parser | ^7.19.1 | ^7.24.1 | *** |
+| enzyme-adapter-react-16 | ^1.15.6 | ^1.15.8 | *** |
+| eslint | ^8.26.0 | ^8.56.0 | *** |
+| eslint-plugin-import | ^2.26.0 | ^2.29.1 | *** |
+| jest-when | ^3.4.1 | ^3.6.0 | *** |
+| jest-environment-jsdom | ** | ^29.7.0 | *** |
+| nock | 11.9.1 | 13.5.4 | *** |
+| supertest | ^6.2.3 | ^6.3.4 | *** |
+| webpack-cli | ^4.7.2 | ^4.10.0 | *** |
+
+_** New package_</br>
+_*** Packages that were either upgraded due to a peer dependency conflict or because there was minimal to no changes to the code._
+
+### Removed Packages
+| Package | Reason |
+| --- | --- |
+| @bandwidth/messaging | Deprecated. Replaced by bandwidth-sdk  |
+| apollo-cache-inmemory | Removed to use Apollo Client v3 and Apollo Server v4 packages, @apollo/client and apollo/server in their place |
+| apollo-client | Removed to use Apollo Client v3 and Apollo Server v4 packages, @apollo/client and apollo/server in their place |
+| apollo-link | Removed to use Apollo Client v3 and Apollo Server v4 packages, @apollo/client and apollo/server in their place |
+| apollo-link-error | Removed to use Apollo Client v3 and Apollo Server v4 packages, @apollo/client and apollo/server in their place |
+| apollo-link-http | Removed to use Apollo Client v3 and Apollo Server v4 packages, @apollo/client and apollo/server in their place |
+| apollo-server-express | Removed to use Apollo Client v3 and Apollo Server v4 packages, @apollo/client and apollo/server in their place |
+| apollo-utilities | Removed to use Apollo Client v3 and Apollo Server v4 packages, @apollo/client and apollo/server in their place |
+| camelcase-keys | Deprecated. Replaced with already used package humps  |
+| graphql-tools | Replaced by @graphql-tools/schema |
+| node-abort-controller | Removed due to native support |
+| url-join | Removed due to native support |
+| react-apollo | Deprecated. Replaced with Apollo Client and flowRight from lodash |
+| recompose | Deprecated. Required major refactor of many exports. |
+| selenium-webdriver | Not used in the code base. |
+
 ## v13.1.0
 _October 2023_ Version 13.1.0
 
