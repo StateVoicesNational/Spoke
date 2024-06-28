@@ -168,7 +168,7 @@
     "rollbar": "^2.26.4",
     "terser-webpack-plugin": "^5.3.10",
     "thinky": "^2.3.3",
-    "timezonecomplete": "^5.5.0",
+    "timezonecomplete": "^5.13.1",
     "twilio": "^4.23.0",
     "typescript": "^3.2.1",
     "us-area-codes": "^1.0.0",
