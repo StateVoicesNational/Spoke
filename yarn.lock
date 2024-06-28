@@ -9793,10 +9793,10 @@ google-auth-library@^3.0.0:
     lru-cache "^5.0.0"
     semver "^5.5.0"
 
-google-libphonenumber@^3.2.34:
-  version "3.2.34"
-  resolved "https://registry.yarnpkg.com/google-libphonenumber/-/google-libphonenumber-3.2.34.tgz#ef29b53be0f9fb517aaa53d26a541150f86ec921"
-  integrity sha512-CLwkp0lZvMywh6dCh0T3Fm8XsfJhLAupc8AECwYkJNQBPW8wQPrv/tV0oFKCs8FMw+pTQyNPZoycgBzYjqtTZQ==
+google-libphonenumber@^3.2.35:
+  version "3.2.35"
+  resolved "https://registry.yarnpkg.com/google-libphonenumber/-/google-libphonenumber-3.2.35.tgz#887bbac68b0e13c6a3a52e3971129b320ceb1759"
+  integrity sha512-en9hgw54urlwBT0F+IULsJmdpeLpq5aQoTONIdp5jVIRviONPMfplUKdaCPBrHBlZNm49iVuZGR/V05IWqlvLQ==
 
 google-p12-pem@^1.0.0:
   version "1.0.5"

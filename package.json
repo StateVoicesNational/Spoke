@@ -126,7 +126,7 @@
     "eslint-plugin-react-hooks": "^4.3.0",
     "express": "^4.14.0",
     "fs": "^0.0.2",
-    "google-libphonenumber": "^3.2.34",
+    "google-libphonenumber": "^3.2.35",
     "googleapis": "^39.2.0",
     "graphql": "^16.8.1",
     "graphql-date": "^1.0.3",
