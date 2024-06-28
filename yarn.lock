@@ -17650,12 +17650,12 @@ timers-browserify@^1.0.1:
   dependencies:
     process "~0.11.0"
 
-timezonecomplete@^5.5.0:
-  version "5.12.4"
-  resolved "https://registry.yarnpkg.com/timezonecomplete/-/timezonecomplete-5.12.4.tgz#5508107540ccfe32c7cbed97d7d0433a9d241e71"
-  integrity sha512-K+ocagBAl5wu9Ifh5oHKhRRLb0wP7j0VjAzjboZsT6bnVmtJNRe3Wnk2IPp0C4Uc8HpLly3gbfUrTlJ3M7vCPA==
+timezonecomplete@^5.13.1:
+  version "5.13.1"
+  resolved "https://registry.yarnpkg.com/timezonecomplete/-/timezonecomplete-5.13.1.tgz#72c05e82b33013bacc7a38e5d554eafc7914b31f"
+  integrity sha512-41o3TTExXQ03jQML12Tk64b5TYeEy968Umq5vya+08sFWCcYw5fNqrHubD1vj/JGN1NYhFFBCS09rOL3b7nM2w==
   dependencies:
-    tzdata "^1.0.25"
+    tzdata "1.0.25"
 
 tiny-case@^1.0.3:
   version "1.0.3"
@@ -17993,10 +17993,10 @@ typescript@^3.2.1:
   resolved "https://registry.yarnpkg.com/typescript/-/typescript-3.9.10.tgz#70f3910ac7a51ed6bef79da7800690b19bf778b8"
   integrity sha512-w6fIxVE/H1PkLKcCPsFqKE7Kv7QUwhU8qQY2MueZXWx5cPZdwFupLgKK3vntcK98BtNHZtAF4LA/yl2a7k8R6Q==
 
-tzdata@^1.0.25:
-  version "1.0.40"
-  resolved "https://registry.yarnpkg.com/tzdata/-/tzdata-1.0.40.tgz#10f7343f283f7ee3bef877b5cd1ccdb0aaa6b077"
-  integrity sha512-IsWNGfC5GrVPG4ejYJtf3tOlBdJYs0uNzv1a+vkdANHDq2kPg4oAN2UlCfpqrCwErPZVhI6MLA2gkeuXAVnpLg==
+tzdata@1.0.25:
+  version "1.0.25"
+  resolved "https://registry.yarnpkg.com/tzdata/-/tzdata-1.0.25.tgz#e8839033c05761e04ef552242e779777becb13d0"
+  integrity sha512-yAZ/Tv/tBFIPHJGYrOexxW8Swyjszt7rDhIjnIPSqLaP8mzrr3T7D0w4cxQBtToXnQrlFqkEU0stGC/auz0JcQ==
 
 ua-parser-js@^0.7.18:
   version "0.7.37"
