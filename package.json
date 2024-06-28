@@ -192,7 +192,7 @@
     "eslint-config-prettier": "^6.10.0",
     "eslint-plugin-import": "^2.29.1",
     "eslint-plugin-jsx-a11y": "^6.9.0",
-    "eslint-plugin-react": "^7.31.10",
+    "eslint-plugin-react": "^7.34.3",
     "fakeredis": "^2.0.0",
     "foreman": "^3.0.1",
     "husky": "4",
