@@ -123,7 +123,7 @@
     "cookie-session": "^2.1.0",
     "dataloader": "^2.2.2",
     "dotenv": "^2.0.0",
-    "eslint-plugin-react-hooks": "^4.3.0",
+    "eslint-plugin-react-hooks": "^4.6.2",
     "express": "^4.19.2",
     "fs": "^0.0.2",
     "google-libphonenumber": "^3.2.35",
