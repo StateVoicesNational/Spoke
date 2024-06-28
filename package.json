@@ -162,7 +162,7 @@
     "query-string": "^9.0.0",
     "react": "16.14.0",
     "react-dnd": "7.7.0",
-    "redis": "^4.6.13",
+    "redis": "^4.6.14",
     "request": "^2.81.0",
     "rethink-knex-adapter": "0.4.20",
     "rollbar": "^2.26.4",
