@@ -174,7 +174,7 @@
     "us-area-codes": "^1.0.0",
     "uuid": "^9.0.0",
     "wait-for-expect": "^1.1.1",
-    "webpack": "^5.90.2",
+    "webpack": "^5.92.1",
     "webpack-manifest-plugin": "^5.0.0",
     "yup": "0.32.3"
   },
