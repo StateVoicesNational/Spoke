@@ -128,7 +128,7 @@
     "fs": "^0.0.2",
     "google-libphonenumber": "^3.2.35",
     "googleapis": "^39.2.0",
-    "graphql": "^16.8.1",
+    "graphql": "^16.9.0",
     "graphql-date": "^1.0.3",
     "graphql-tag": "^2.10.3",
     "graphql-type-json": "^0.3.2",
