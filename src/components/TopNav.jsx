@@ -1,6 +1,5 @@
 import PropTypes from "prop-types";
 import React from "react";
-import { compose } from "recompose";
 
 import IconButton from "@material-ui/core/IconButton";
 import ArrowBackIcon from "@material-ui/icons/ArrowBack";
@@ -13,15 +12,16 @@ import { Link as RouterLink } from "react-router";
 import UserMenu from "../containers/UserMenu";
 import withMuiTheme from "./../containers/hoc/withMuiTheme";
 
+const useStyles = makeStyles(() => ({
+  toolBar: {
+    flexGrow: 1
+  },
+  title: {
+    flexGrow: 1
+  }
+}));
+
 export function TopNavBase(props) {
-  const useStyles = makeStyles(() => ({
-    toolBar: {
-      flexGrow: 1
-    },
-    title: {
-      flexGrow: 1
-    }
-  }));
   const classes = useStyles();
   const { backToURL, orgId, title, muiTheme } = props;
   return (
@@ -51,4 +51,4 @@ TopNavBase.propTypes = {
   orgId: PropTypes.string
 };
 
-export default compose(withMuiTheme)(TopNavBase);
+export default withMuiTheme(TopNavBase);

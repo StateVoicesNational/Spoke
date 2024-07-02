@@ -1,7 +1,7 @@
 ## Getting started
 
 ---
-### [Repository](https://github.com/MoveOnOrg/Spoke)
+### [Repository](https://github.com/StateVoicesNational/Spoke)
 1. If you have not already, Fork this repo then clone your forked copy. Then future pull requests can be made from your repo to Spoke. 
 ```
 git clone <url of your forked repo>
@@ -14,7 +14,7 @@ cd spoke
 
 3. You may use this opportunity to set the remote upstream to spoke's repo for future fetches.
 ```
-git remote add upstream https://github.com/MoveOnOrg/Spoke.git
+git remote add upstream https://github.com/StateVoicesNational/Spoke.git
 ``` 
    -  you can check that this is configured correctly to push to the origin and fetch from spoke's repo. 
    ```
@@ -26,7 +26,7 @@ git remote add upstream https://github.com/MoveOnOrg/Spoke.git
 ---
 ### Downloading
 
-1. Install the Node version listed in `.nvmrc`. This can also be found here:[.nvmrc](https://github.com/MoveOnOrg/Spoke/blob/main/.nvmrc). 
+1. Install the Node version listed in `.nvmrc`. This can also be found here:[.nvmrc](https://github.com/StateVoicesNational/Spoke/blob/main/.nvmrc). 
 From the spoke directory:
    ```
    nvm install
@@ -78,12 +78,13 @@ Docker is optional, but can help with a consistent development environment using
 - Docker allows you to run apps in containers and can be installed [here with Docker's instructions](https://docs.docker.com/desktop/)
 - Docker Compose is the tool used to create and run docker configurations. If you installed Docker on Mac, you already have Docker Compose, if you're using Linux or Windows you can install Docker Compose [with these instructions](https://docs.docker.com/compose/install/)
 
-2. Make sure Docker is running on your machine and then build and run Spoke with `docker-compose up -d` to run redis and postgres in the background
-   - You can stop docker compose at any time with `docker-compose down`, and data will persist next time you run `docker-compose up`.
+2. Make sure Docker is running on your machine and then build and run Spoke with `docker compose up -d` to run redis and postgres in the background
+   - You can stop docker compose at any time with `docker compose down`, and data will persist next time you run `docker compose up`.
+   - **Note!** - `docker-compose` should in theory work with ComposeV2 as Docker considers it an alias for `docker compose`. [Read more about the migration of Compose](https://docs.docker.com/compose/migrate/#what-does-this-mean-for-my-projects-that-use-compose-v1)
 
 3. Run `./dev-tools/create-test-database` to populate the test database
 
-4. When done testing, clean up resources with `docker-compose down`, or `docker-compose down -v` to **_completely destroy_** your Postgres database & Redis datastore volumes.
+4. When done testing, clean up resources with `docker compose down`, or `docker compose down -v` to **_completely destroy_** your Postgres database & Redis datastore volumes.
 
 ### Getting the app running
 

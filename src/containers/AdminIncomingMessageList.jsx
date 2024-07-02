@@ -1,19 +1,18 @@
 import PropTypes from "prop-types";
 import React, { Component } from "react";
 import _ from "lodash";
-import { compose } from "react-apollo";
-
+import { flowRight as compose } from "lodash";
 import IncomingMessageActions from "../components/IncomingMessageActions";
 import IncomingMessageFilter, {
   ALL_CAMPAIGNS
 } from "../components/IncomingMessageFilter";
 import IncomingMessageList from "../components/IncomingMessageList";
 import PaginatedCampaignsRetriever from "./PaginatedCampaignsRetriever";
-import gql from "graphql-tag";
+import { gql } from "@apollo/client";
 import loadData from "./hoc/load-data";
 import { withRouter } from "react-router";
 import PaginatedUsersRetriever from "./PaginatedUsersRetriever";
-import * as queryString from "query-string";
+import queryString from "query-string";
 import {
   getConversationFiltersFromQuery,
   tagsFilterStateFromTagsFilter,
@@ -25,7 +24,6 @@ export class AdminIncomingMessageList extends Component {
   constructor(props) {
     super(props);
 
-    const query = props.location.query;
     const filters = getConversationFiltersFromQuery(
       props.location.query,
       props.organization.organization.tags

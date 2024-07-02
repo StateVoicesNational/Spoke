@@ -1,5 +1,5 @@
 # How to Code Review
-Thank you for stepping up to code review changes for Spoke! Check out [our developer docs](https://moveonorg.github.io/Spoke/#/EXPLANATION-development-guidelines) for more information about how we write code.
+Thank you for stepping up to code review changes for Spoke! Check out [our developer docs](https://statevoicesnational.github.io/Spoke/#/EXPLANATION-development-guidelines) for more information about how we write code.
 ## Pre-Review
 - Put your mentor hat on — be respectful and gentle — the Spoke project encourages contributions from beginner-developers, and we want to make their early experiences with open-source contributions as positive as possible. We have a [Code of Conduct](../CODE_OF_CONDUCT.md) that we expect all members of the community to follow, and is especially important in the position of being a reviewer.
 
@@ -25,7 +25,7 @@ Thank you for stepping up to code review changes for Spoke! Check out [our devel
 
 ## Review Completion
 
-<i><b>This section only applies to [core contributors](https://github.com/MoveOnOrg/Spoke/wiki/Spoke-Access-Groups#spoke-core-contributors).</b> At this time, only core contributors can approve or request changes on a PR and only members of [Spoke access groups](https://github.com/MoveOnOrg/Spoke/wiki/Spoke-Access-Groups) can label issues and PRs.</i>
+<i><b>This section only applies to [core contributors](https://github.com/StateVoicesNational/Spoke/wiki/Spoke-Access-Groups#spoke-core-contributors).</b> At this time, only core contributors can approve or request changes on a PR and only members of [Spoke access groups](https://github.com/StateVoicesNational/Spoke/wiki/Spoke-Access-Groups) can label issues and PRs.</i>
 
 - Mark the review as either “Approved” or “Request Changes” based on whether you found characteristics that should block it or not. /All comments of type #1 in this section are blocking, and all comments of type #2 are not blocking.
 

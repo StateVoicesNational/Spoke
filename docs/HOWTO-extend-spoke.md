@@ -28,13 +28,13 @@ can be enabled for only particular organizations.  Some examples help:
 ```
 
 The first enables two action handlers: `ngpvan-action`, `zapier-action` which are in
-the [src/extensions/action-handlers](https://github.com/MoveOnOrg/Spoke/tree/main/src/extensions/action-handlers)
+the [src/extensions/action-handlers](https://github.com/StateVoicesNational/Spoke/tree/main/src/extensions/action-handlers)
 directory.  Both of these require additional environment variables to function, so make sure
 to read the code or documentation on particular extensions.
 
 The second enables *and restricts* the system to three texter sideboxes.  Texter sideboxes, by default,
 have all system-included sideboxes on (though they are configurable in the Organization's settings and
-per-campaign).  They are each in the  [src/extensions/texter-sideboxes](https://github.com/MoveOnOrg/Spoke/tree/main/src/extensions/texter-sideboxes) directory.
+per-campaign).  They are each in the  [src/extensions/texter-sideboxes](https://github.com/StateVoicesNational/Spoke/tree/main/src/extensions/texter-sideboxes) directory.
 
 Here are supported extension types with brief descriptions:
 
@@ -112,8 +112,8 @@ We recommend production instances use Auth0 for login by default.  Additionally 
 "local login" is configurable so Auth0 doesn't need to be setup.  There is also a way to enable
 login through Slack.  All of these implementations are *mostly* implemented in two files:
 
-* [src/server/auth-passport.js](https://github.com/MoveOnOrg/Spoke/tree/main/src/server/auth-passport.js)
-* [src/components/Login.jsx](https://github.com/MoveOnOrg/Spoke/tree/main/src/components/Login.jsx)
+* [src/server/auth-passport.js](https://github.com/StateVoicesNational/Spoke/tree/main/src/server/auth-passport.js)
+* [src/components/Login.jsx](https://github.com/StateVoicesNational/Spoke/tree/main/src/components/Login.jsx)
 
 However there are a couple places here or there that have hooks -- at least for more sophisticated
 integrations.  Ideally we will consolidate these hooks into a src/extensions/login/ in the future.

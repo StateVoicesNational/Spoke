@@ -1,9 +1,10 @@
-import camelCaseKeys from "camelcase-keys";
-import { GraphQLError } from "graphql/error";
+import { GraphQLError } from "graphql";
+import { camelizeKeys } from "humps";
+import { getContacts } from "../assignment";
 
 import { getConfig } from "../lib/config";
 import { applyScript } from "../../../lib/scripts";
-import { Assignment, User, r, cacheableData } from "../../models";
+import { User, r, cacheableData } from "../../models";
 
 import { log } from "../../../lib";
 
@@ -24,10 +25,7 @@ export const bulkSendMessages = async (
     !getConfig("ALLOW_SEND_ALL_ENABLED", organization)
   ) {
     log.error("Not allowed to send all messages at once");
-    throw new GraphQLError({
-      status: 403,
-      message: "Not allowed to send all messages at once"
-    });
+    throw new GraphQLError("Not allowed to send all messages at once");
   }
 
   // Assign some contacts
@@ -41,16 +39,20 @@ export const bulkSendMessages = async (
     { user, loaders }
   );
 
-  const contacts = await r
-    .knex("campaign_contact")
-    .where({
-      message_status: "needsMessage"
-    })
-    .where({
-      assignment_id: assignmentId
-    })
+  const contacts = await getContacts(
+    assignment,
+    {
+      messageStatus: "needsMessage",
+      validTimezone: true,
+      isOptedOut: false
+    },
+    organization,
+    await loaders.campaign.load(assignment.campaign_id),
+    true
+  )
+    .select("*")
     .orderByRaw("updated_at")
-    .limit(process.env.BULK_SEND_CHUNK_SIZE);
+    .limit(process.env.BULK_SEND_BATCH_SIZE);
 
   const interactionSteps = await r
     .knex("interaction_step")
@@ -64,9 +66,14 @@ export const bulkSendMessages = async (
       is_deleted: false
     });
 
+  // No contacts to message
+  if (!contacts.length) {
+    return await Promise.all([]);
+  }
+
   const topmostParent = interactionSteps[0];
 
-  const texter = camelCaseKeys(await User.get(assignment.user_id));
+  const texter = camelizeKeys(await User.get(assignment.user_id));
   let customFields = Object.keys(JSON.parse(contacts[0].custom_fields));
 
   const texterSideboxes = getConfig("TEXTER_SIDEBOXES") || "";
@@ -79,7 +86,7 @@ export const bulkSendMessages = async (
   const promises = contacts.map(async contact => {
     contact.customFields = contact.custom_fields;
     const text = applyScript({
-      contact: camelCaseKeys(contact),
+      contact: camelizeKeys(contact),
       texter,
       script: topmostParent.script,
       customFields

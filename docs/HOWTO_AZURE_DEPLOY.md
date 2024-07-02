@@ -47,28 +47,28 @@
 
 ## NODE.JS SETUP
 
-It turns out we need those instructions for a different portion of the setup, but initially we should use the [development documentation from Spoke(https://github.com/MoveOnOrg/Spoke/blob/fc267eafbbc07d6d383ddab4bbc17810d7c75883/docs/HOWTO_DEVELOPMENT_LOCAL_SETUP.md) 
+It turns out we need those instructions for a different portion of the setup, but initially we should use the [development documentation from Spoke(https://github.com/StateVoicesNational/Spoke/blob/fc267eafbbc07d6d383ddab4bbc17810d7c75883/docs/HOWTO_DEVELOPMENT_LOCAL_SETUP.md) 
 - Start at Step 1 for installing Node.js
 - Install Node: `sudo apt install -y nodejs`
 - DON’T DO THIS LINE: Install Yarn: sudo apt-get update && sudo apt-get install yarn
 - INSTEAD USE THE NPM PACKAGE MANAGER `sudo npm install -g yarn`
 - IF YOU ACCIDENTALLY USED THE LINE WE TOLD YOU NOT TO, HERE’S HOW TO REMOVE IT: `sudo apt remove yarn cmdtest`
-- Clone down Spoke `git clone https://github.com/MoveOnOrg/Spoke.git`
+- Clone down Spoke `git clone https://github.com/StateVoicesNational/Spoke.git`
 
 ## PACKAGE
 ### Spoke installation and package setup
 - CD into Spoke and 
 - Run `yarn install`
-- Begin the [Spoke Minimalist Deploy](https://github.com/MoveOnOrg/Spoke/blob/main/docs/HOWTO_MINIMALIST_DEPLOY.md) 
+- Begin the [Spoke Minimalist Deploy](https://github.com/StateVoicesNational/Spoke/blob/main/docs/HOWTO_MINIMALIST_DEPLOY.md) 
 
 ### If you run `yarn run prod-build-client` GAVE AN ERROR OF FAILING TO LOAD ‘/home/{username}/Spoke/webpack/config.js’
 - Install Docker for preliminary database and cache setup, [linked here](https://docs.docker.com/engine/install/ubuntu/)
 - Verify your docker is set up correctly: $ sudo docker run hello-world
 - Install docker compose (click on the Linux tab) [Link to Docker Documentation](https://docs.docker.com/compose/install/)
-- Turn on docker `sudo docker-compose up -d`
+- Turn on docker `sudo docker compose up -d`
 - Permission Denied Sad Path: `sudo usermod -aG docker $USER` (theoretically making it so you don’t have to use sudo, but let’s come back to this)
 Yarn bug: `wget -qO- https://raw.githubusercontent.com/nvm-sh/nvm/v0.38.0/install.sh | bash
-https://github.com/MoveOnOrg/Spoke/blob/main/docker-compose.yml`
+https://github.com/StateVoicesNational/Spoke/blob/main/docker-compose.yml`
 - INITIAL YARN VERSION 1.22.17
 - `export NVM_DIR="$HOME/.nvm"`
 - command `-v nvm`
@@ -98,12 +98,12 @@ YARN VERSION IS:
 - Something set up by default within the Docker container.  It sets up a Redis instance.
 - We’re going to deploy redis separately within the server.
 - Since we’ve already broken the database option out of the Docker File.
-- But need to look for [Azure Cache for Redis instructions] (https://github.com/MoveOnOrg/Spoke/blob/main/docs/HOWTO_CONNECT_WITH_REDIS.md)
+- But need to look for [Azure Cache for Redis instructions] (https://github.com/StateVoicesNational/Spoke/blob/main/docs/HOWTO_CONNECT_WITH_REDIS.md)
 
 ## Install Postgres
 - In our documentation there is some information for setting this up.
 - The way we set it up is that we have a different database set in Azure and then connected within the container of your Azure project.
-- More [expanded Docker descriptions](https://github.com/MoveOnOrg/Spoke/blob/main/docs/HOWTO_USE_POSTGRESQL.md) if people who are doing this wanted to go that route
+- More [expanded Docker descriptions](https://github.com/StateVoicesNational/Spoke/blob/main/docs/HOWTO_USE_POSTGRESQL.md) if people who are doing this wanted to go that route
 - Configure environment variables
 - Start sticking in the variables you actually want in the environment variable file.
     - SUPRESS_SELF_INVITE=1

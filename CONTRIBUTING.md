@@ -9,8 +9,7 @@ many important organizations!
   - Please fill out the Join form there, and once you are on-boarded, we can chat live!
   - ProgCode has community guidelines
 - We have a weekly(ish) working group at [Progressive HackNight](https://progressivehacknight.org) that organizes in the #wg-spoke_p2p_sms_tool channel in the slack
-- Feel free to [create an issue or comment on an existing issue](https://github.com/MoveOnOrg/Spoke/issues) -- Every time we hear from the outside progressive developer community, we do a little dance.
-- We also welcome reaching out on our [MoveOn Spoke interest form](https://act.moveon.org/survey/spoke-project/) with questions, etc.
+- Feel free to [create an issue or comment on an existing issue](https://github.com/StateVoicesNational/Spoke/issues) -- Every time we hear from the outside progressive developer community, we do a little dance.
 
 In all forums we affirm the [Progressive Coder Community Guidelines](https://docs.google.com/document/d/1coMHvuGf6x6Qn_73SEhOXi_QaoRBM__3Zj6_5TyrmWs/edit#heading=h.ab96v3qhdgk9)
 
@@ -26,19 +25,19 @@ gratitude and appreciation of everyone's time and work.
 Generally, the first steps are:
 
 - Fork this repository and clone it on your local. Our main branch is called `main`.
-- Get a working development environment (see the [ENVIRONMENT](https://github.com/MoveOnOrg/Spoke/blob/main/docs/HOWTO_DEVELOPMENT_LOCAL_SETUP.md) to onboard and [DEVELOPMENT TIPS](https://github.com/MoveOnOrg/Spoke/blob/main/docs/EXPLANATION-development-guidelines.md) which is included in the explanation section [docs/](https://github.com/MoveOnOrg/Spoke/tree/main/docs))-- reach out through our communication channels (above) if you have issues.
+- Get a working development environment (see the [ENVIRONMENT](https://github.com/StateVoicesNational/Spoke/blob/main/docs/HOWTO_DEVELOPMENT_LOCAL_SETUP.md) to onboard and [DEVELOPMENT TIPS](https://github.com/StateVoicesNational/Spoke/blob/main/docs/EXPLANATION-development-guidelines.md) which is included in the explanation section [docs/](https://github.com/StateVoicesNational/Spoke/tree/main/docs))-- reach out through our communication channels (above) if you have issues.
 
 ### Picking an issue
 
-- We mark issues that are good first issues with the [`good first issue` tag](https://github.com/MoveOnOrg/Spoke/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22). We have these set aside for first contributions to make it more accessible to get started.
+- We mark issues that are good first issues with the [`good first issue` tag](https://github.com/StateVoicesNational/Spoke/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22). We have these set aside for first contributions to make it more accessible to get started.
 - Comment on the issue and tell us that you're working on it. Feel free to ask any clarifying questions that you have.
-- If you have an idea, then create an issue and if possible discuss with us on slack (see communication channels). If it's a big project, please use the [project proposal template](https://github.com/MoveOnOrg/Spoke/issues/new?assignees=&labels=idea+%28underspec%27d%29&template=architecture-proposal.md&title=RFC%3A+%3Cyour-proposal-title%3E). We might follow up to try to arrange a call or video chat to make sure we're all on the same page.
+- If you have an idea, then create an issue and if possible discuss with us on slack (see communication channels). If it's a big project, please use the [project proposal template](https://github.com/StateVoicesNational/Spoke/issues/new?assignees=&labels=idea+%28underspec%27d%29&template=architecture-proposal.md&title=RFC%3A+%3Cyour-proposal-title%3E). We might follow up to try to arrange a call or video chat to make sure we're all on the same page.
 - If you reach out to us, on github or slack we'll generally try to respond within 1 business day. If you haven't heard from us, please ping us again.
 
 ### Working on an issue
 
 - Depending on the part of the codebase you are working on read relevant parts of [EXPLANATION-development-guidelines.md](./docs/EXPLANATION-development-guidelines.md) for some context and common gotchas.
-- While working on an issue, run existing tests to make sure they still work (see [How To Run Tests](https://github.com/MoveOnOrg/Spoke/blob/main/docs/HOWTO-run_tests.md) documentation).
+- While working on an issue, run existing tests to make sure they still work (see [How To Run Tests](https://github.com/StateVoicesNational/Spoke/blob/main/docs/HOWTO-run_tests.md) documentation).
 - Please try adding a test
 
 ### Submitting your Pull Request
@@ -53,11 +52,11 @@ Generally, the first steps are:
 Welcome to the project! Once you've completed that first contribution, there are so many different areas of Spoke that you can jump in to work on and it can be  overwhelming to know how to continue your journey.
 
 ### Finding issues
-- All issues that are up for grabs and mostly (if not fully) planned are listed under the [help wanted](https://github.com/MoveOnOrg/Spoke/issues?q=is%3Aopen+is%3Aissue+label%3A%22help+wanted%22) label. This is a great place to start if you don't feel attached to any particular issue and just want to keep helping out.
+- All issues that are up for grabs and mostly (if not fully) planned are listed under the [help wanted](https://github.com/StateVoicesNational/Spoke/issues?q=is%3Aopen+is%3Aissue+label%3A%22help+wanted%22) label. This is a great place to start if you don't feel attached to any particular issue and just want to keep helping out.
 - We use our [Area labels](docs/EXPLANATION-labels.md) to categorize issues into which code feature areas they belong in. Feel free to sort by an area you're interested in.
 - We use our [Organization labels](docs/EXPLANATION-labels.md) to categorize issues by which organizations are prioritizing them. You can sort by your favorite org and help out there.
-- More broadly, there are all sort of different [labels](https://github.com/MoveOnOrg/Spoke/labels) we use to filter the issues down and you can leverage that to help you find work.
-- Lastly, you can always ping a project maintainer (@ibrand, and @schuyler1d) to get a read on what's on our radar right now.
+- More broadly, there are all sort of different [labels](https://github.com/StateVoicesNational/Spoke/labels) we use to filter the issues down and you can leverage that to help you find work.
+- Lastly, you can always ping a project maintainer (@mau11 and @engelhartrueben) to get a read on what's on our radar right now.
 
 ### Claiming issues
 - Like for your first issue, comment on the issue and tell us that you're working on it. Feel free to ask any clarifying questions that you have.
@@ -70,7 +69,7 @@ Welcome to the project! Once you've completed that first contribution, there are
 - Remember to write tests with your contribution!
 
 ### Becoming a regular
-Spoke has a concept of [Access Groups](https://github.com/MoveOnOrg/Spoke/wiki/Spoke-Access-Groups) meant to give extra repo privileges to recurring contributors. Access Groups honor community members who are contributing through their issue authorship and also those who contribute code. If you continue to contribute to Spoke, there are pathways towards larger projects and community involvement.
+Spoke has a concept of [Access Groups](https://github.com/StateVoicesNational/Spoke/wiki/Spoke-Access-Groups) meant to give extra repo privileges to recurring contributors. Access Groups honor community members who are contributing through their issue authorship and also those who contribute code. If you continue to contribute to Spoke, there are pathways towards larger projects and community involvement.
 
 ### Release Process
 
@@ -83,7 +82,7 @@ The actual process:
 - We create a new stage-main branch at least twice a month:
   - The stage-main branch includes the latest approved pull requests in one merged branch
     - This ensures that PRs will not contain anything that breaks deployment and also will allow us to see if any PRs negatively interact with each other before they end up merged to main. Why bother with this step? It's helpful to have a separate "release candidate" on the stage-main branch because in earlier testing rounds people weren't sure what had been deployed to staging and having a separate branch makes this explicit and clear.
-  - After stage-main is created, we deploy it to MoveOn's staging instance. We have a small set of QA volunteers who then run through a list of [QA steps](https://github.com/MoveOnOrg/Spoke/blob/main/docs/HOWTO_QA_GUIDE.md) in order to find bugs and test new features.
+  - After stage-main is created, we deploy it to StateVoices staging instance. We have a small set of QA volunteers who then run through a list of [QA steps](https://github.com/StateVoicesNational/Spoke/blob/main/docs/HOWTO_QA_GUIDE.md) in order to find bugs and test new features.
   - After QA is completed, and volunteers haven't identified any bugs, we deploy stage-main to production.
   - We let stage-main run in production for at least a day, before merging stage-main into the main branch.
   - We never roll code directly to prod without first testing on staging.

@@ -81,6 +81,9 @@ export default function renderIndex(html, css, assetMap) {
         truthy: 1
       }) || false}
       window.BULK_SEND_CHUNK_SIZE=${process.env.BULK_SEND_CHUNK_SIZE || 0}
+      window.BULK_SEND_BATCH_SIZE=${process.env.BULK_SEND_BATCH_SIZE ||
+        process.env.BULK_SEND_CHUNK_SIZE ||
+        0}
       window.MAX_MESSAGE_LENGTH=${process.env.MAX_MESSAGE_LENGTH || 99999}
       window.TERMS_REQUIRE=${getConfig("TERMS_REQUIRE", null, {
         truthy: 1

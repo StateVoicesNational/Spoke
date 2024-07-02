@@ -15,7 +15,7 @@ const getOrganizationMessageService = organization =>
 const organizationCache = {
   clear: async id => {
     if (r.redis) {
-      await r.redis.delAsync(cacheKey(id));
+      await r.redis.DEL(cacheKey(id));
     }
   },
   getMessageService: getOrganizationMessageService,
@@ -41,7 +41,7 @@ const organizationCache = {
   },
   load: async id => {
     if (r.redis) {
-      const orgData = await r.redis.getAsync(cacheKey(id));
+      const orgData = await r.redis.GET(cacheKey(id));
       if (orgData) {
         return JSON.parse(orgData);
       }
@@ -59,10 +59,10 @@ const organizationCache = {
       }
       if (r.redis) {
         await r.redis
-          .multi()
-          .set(cacheKey(id), JSON.stringify(dbResult))
-          .expire(cacheKey(id), 43200)
-          .execAsync();
+          .MULTI()
+          .SET(cacheKey(id), JSON.stringify(dbResult))
+          .EXPIRE(cacheKey(id), 43200)
+          .exec();
       }
     }
     return dbResult;
@@ -110,16 +110,16 @@ const organizationCache = {
           .where("id", id)
           .update("features", featuresString);
         if (r.redis) {
-          const orgCache = await r.redis.getAsync(cacheKey(id));
+          const orgCache = await r.redis.get(cacheKey(id));
           if (orgCache) {
             const orgObj = JSON.parse(orgCache);
             orgObj.feature = features;
             orgObj.features = featuresString;
             await r.redis
-              .multi()
-              .set(cacheKey(id), JSON.stringify(orgObj))
-              .expire(cacheKey(id), 10000)
-              .execAsync();
+              .MULTI()
+              .SET(cacheKey(id), JSON.stringify(orgObj))
+              .EXPIRE(cacheKey(id), 10000)
+              .exec();
           }
         }
       }

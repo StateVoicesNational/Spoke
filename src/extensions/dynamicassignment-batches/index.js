@@ -1,5 +1,10 @@
 import { getConfig } from "../../server/api/lib/config";
 
+// Checks the gloabl var DYNAMICASSIGNMENT_BATCHES and
+// whether the handler loads, similar to how texter-sideboxes works
+
+// https://github.com/StateVoicesNational/Spoke/blob/main/docs/HOWTO-use-dynamicassignment-batches.md
+
 export const getDynamicAssignmentBatchPolicies = ({
   organization,
   campaign
@@ -9,7 +14,7 @@ export const getDynamicAssignmentBatchPolicies = ({
   const configuredHandlers =
     campaignEnabled ||
     getConfig(handlerKey, organization) ||
-    "finished-replies-tz,vetted-texters,finished-replies";
+      "finished-replies-tz,vetted-texters,finished-replies";
   const enabledHandlers =
     (configuredHandlers && configuredHandlers.split(",")) || [];
   if (!campaignEnabled) {

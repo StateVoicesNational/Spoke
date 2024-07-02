@@ -59,7 +59,7 @@ export default class AdminScriptImport extends Component {
 
   render() {
     const url =
-      "https://github.com/MoveOnOrg/Spoke/blob/main/docs/HOWTO_IMPORT_GOOGLE_DOCS_SCRIPTS_TO_IMPORT.md";
+      "https://github.com/StateVoicesNational/Spoke/blob/main/docs/HOWTO_IMPORT_GOOGLE_DOCS_SCRIPTS_TO_IMPORT.md";
     return (
       <div>
         <CampaignFormSectionHeading

@@ -5,7 +5,7 @@ import {
   r,
   cacheableData
 } from "../../../server/models";
-import uuid from "uuid";
+import { v4 as uuidv4 } from 'uuid';
 
 // This 'fakeservice' allows for fake-sending messages
 // that end up just in the db appropriately and then using sendReply() graphql
@@ -141,7 +141,7 @@ export async function buyNumbersInAreaCode(organization, areaCode, limit) {
       area_code: areaCode,
       phone_number: `+1${areaCode}XYZ${last4}`,
       service: "fakeservice",
-      service_id: uuid.v4()
+      service_id: uuidv4()
     });
   }
 

@@ -2,7 +2,7 @@ import React, { Component } from "react";
 import PropTypes from "prop-types";
 import Form from "react-formal";
 import * as yup from "yup";
-import gql from "graphql-tag";
+import { gql } from "@apollo/client";
 import { StyleSheet, css } from "aphrodite";
 
 import Button from "@material-ui/core/Button";
@@ -130,7 +130,7 @@ class MessageResponse extends Component {
                 multiline
                 fullWidth
                 disabled={isSending}
-                rowsMax={6}
+                maxRows={6}
               />
             </div>
           </div>

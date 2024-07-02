@@ -1,7 +1,6 @@
 import PropTypes from "prop-types";
 import React from "react";
 import { css } from "aphrodite";
-import { compose } from "recompose";
 import Toolbar from "./Toolbar";
 import MessageList from "./MessageList";
 import Survey from "./Survey";
@@ -36,6 +35,7 @@ import {
 import { dataTest } from "../../lib/attributes";
 import ContactToolbar from "./ContactToolbar";
 import { getCookie, setCookie } from "../../lib/cookie";
+import { deepCopy } from "../utils";
 
 export class AssignmentTexterContactControls extends React.Component {
   constructor(props) {
@@ -125,7 +125,10 @@ export class AssignmentTexterContactControls extends React.Component {
     let currentInteractionStep = null;
 
     if (availableSteps.length > 0) {
-      currentInteractionStep = availableSteps[availableSteps.length - 1];
+      const currentInteractionStep = deepCopy(
+        availableSteps[availableSteps.length - 1]
+      );
+
       currentInteractionStep.question.filteredAnswerOptions =
         currentInteractionStep.question.answerOptions;
     }
@@ -603,9 +606,9 @@ export class AssignmentTexterContactControls extends React.Component {
             onClick={onClick("needsResponse")}
             style={{
               color: this.props.muiTheme.palette.text.primary,
-              backgroundColor: this.props.muiTheme.palette.background.default
+              backgroundColor: this.props.muiTheme.palette.background.default,
+              flex: "1 1 auto"
             }}
-            style={{ flex: "1 1 auto" }}
             disabled={!!this.props.contact.optOut}
             color="default"
             variant="contained"
@@ -770,7 +773,7 @@ export class AssignmentTexterContactControls extends React.Component {
             }}
             multiline
             fullWidth
-            rowsMax={6}
+            maxRows={6}
           />
         </GSForm>
       </div>
@@ -1043,6 +1046,7 @@ export class AssignmentTexterContactControls extends React.Component {
       <div key="sectionButtons" className={css(flexStyles.sectionButtons)}>
         <div
           className={css(flexStyles.subButtonsAnswerButtons)}
+          style={{ height: "10%" }}
           ref="answerButtons"
         >
           {currentQuestion &&
@@ -1278,4 +1282,4 @@ AssignmentTexterContactControls.propTypes = {
   updateCurrentContactById: PropTypes.func
 };
 
-export default compose(withMuiTheme)(AssignmentTexterContactControls);
+export default withMuiTheme(AssignmentTexterContactControls);

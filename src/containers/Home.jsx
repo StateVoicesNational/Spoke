@@ -1,12 +1,11 @@
 import PropTypes from "prop-types";
 import React from "react";
 import loadData from "./hoc/load-data";
-import gql from "graphql-tag";
+import { gql } from "@apollo/client";
 import { StyleSheet, css } from "aphrodite";
 import theme from "../styles/theme";
 import { withRouter } from "react-router";
 import Link from "@material-ui/core/Link";
-import { compose } from "recompose";
 import Logo from "../assets/logo.js";
 
 export const styles = StyleSheet.create({
@@ -167,4 +166,8 @@ const mutations = {
   })
 };
 
-export default compose(withRouter, loadData({ queries, mutations }))(Home);
+const EnhancedHome = withRouter(
+  loadData({ queries, mutations })(Home)
+);
+
+export default EnhancedHome;

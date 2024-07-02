@@ -1,6 +1,6 @@
 import GraphQLDate from "graphql-date";
 import GraphQLJSON from "graphql-type-json";
-import { GraphQLError } from "graphql/error";
+import { GraphQLError } from "graphql";
 import isUrl from "is-url";
 import _ from "lodash";
 import { gzip, makeTree, getHighestRole } from "../../lib";
@@ -198,7 +198,7 @@ async function editCampaign(id, campaign, loaders, user, origCampaignRecord) {
     campaign.organizationId || origCampaignRecord.organization_id;
   await accessRequired(
     user,
-    organizationId,
+    organizationId.toString(),
     "SUPERVOLUNTEER",
     /* superadmin*/ true
   );
@@ -410,7 +410,10 @@ async function editCampaign(id, campaign, loaders, user, origCampaignRecord) {
     });
   }
 
-  return Campaign.get(id);
+  const toReturn = await Campaign.get(id.toString());
+  toReturn.id = toReturn.id.toString();
+  toReturn.organization_id = toReturn.organization_id.toString();
+  return toReturn;
 }
 
 async function updateInteractionSteps(
@@ -665,7 +668,8 @@ const rootMutations = {
 
       const organization = await loaders.organization.load(organizationId);
 
-      const passportStrategy = getConfig("PASSPORT_STRATEGY", organization);
+      const passportStrategy =
+        getConfig("PASSPORT_STRATEGY", organization) || "auth0";
       if (passportStrategy === "auth0") {
         const { email } = await r
           .knex("user")
@@ -1043,7 +1047,7 @@ const rootMutations = {
       } else {
         await accessRequired(
           user,
-          origCampaign.organization_id,
+          origCampaign.organization_id.toString(),
           "SUPERVOLUNTEER"
         );
       }
@@ -1052,10 +1056,9 @@ const rootMutations = {
         campaign.hasOwnProperty("contacts") &&
         campaign.contacts
       ) {
-        throw new GraphQLError({
-          status: 400,
-          message: "Not allowed to add contacts after the campaign starts"
-        });
+        throw new GraphQLError(
+          "Not allowed to add contacts after the campaign starts"
+        );
       }
       return editCampaign(id, campaign, loaders, user, origCampaign);
     },
@@ -1109,10 +1112,7 @@ const rootMutations = {
       authRequired(user);
       const invite = await Invite.get(inviteId);
       if (!invite || !invite.is_valid) {
-        throw new GraphQLError({
-          status: 400,
-          message: "That invitation is no longer valid"
-        });
+        throw new GraphQLError("That invitation is no longer valid");
       }
 
       const newOrganization = await Organization.save({
@@ -1133,6 +1133,7 @@ const rootMutations = {
         { conflict: "update" }
       );
 
+      newOrganization.id = newOrganization.id.toString();
       return newOrganization;
     },
     resetOrganizationJoinLink: async (_, { organizationId }, { user }) => {

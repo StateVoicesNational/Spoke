@@ -1,8 +1,9 @@
 import React from "react";
 import TextField from "@material-ui/core/TextField";
 import GSFormField from "./GSFormField";
+import theme from "../../styles/mui-theme";
 
-export default class GSPasswordField extends GSFormField {
+export default class GSIntegerField extends GSFormField {
   render() {
     const {
       autoComplete,
@@ -12,7 +13,6 @@ export default class GSPasswordField extends GSFormField {
       defaultValue,
       disabled,
       error,
-      FormHelperTextProps,
       fullWidth,
       helperText,
       id,
@@ -20,10 +20,13 @@ export default class GSPasswordField extends GSFormField {
       inputProps,
       InputProps,
       inputRef,
+      label,
       margin,
       multiline,
       name,
       onChange,
+      onFocus,
+      onBlur,
       placeholder,
       required,
       rows,
@@ -31,9 +34,10 @@ export default class GSPasswordField extends GSFormField {
       select,
       SelectProps,
       size,
+      type,
       value,
       variant,
-      style
+      style = {}
     } = this.props;
     const textFieldProps = {
       autoComplete,
@@ -43,7 +47,6 @@ export default class GSPasswordField extends GSFormField {
       defaultValue,
       disabled,
       error,
-      FormHelperTextProps,
       fullWidth,
       helperText,
       id,
@@ -51,9 +54,11 @@ export default class GSPasswordField extends GSFormField {
       inputProps,
       InputProps,
       inputRef,
+      label,
       margin,
       multiline,
       name,
+      onBlur,
       placeholder,
       required,
       rows,
@@ -61,6 +66,7 @@ export default class GSPasswordField extends GSFormField {
       select,
       SelectProps,
       size,
+      type,
       value,
       variant,
       style
@@ -69,15 +75,28 @@ export default class GSPasswordField extends GSFormField {
     if (!textFieldProps.value) {
       textFieldProps.value = "";
     }
+    textFieldProps.style = Object.assign(
+      {},
+      { marginBottom: theme.spacing(2) },
+      textFieldProps.style
+    );
+
+    const dataTest = { "data-test": this.props["data-test"] };
     return (
       <TextField
+        {...dataTest}
         label={this.floatingLabelText()}
-        onFocus={event => event.target.select()}
+        onFocus={event => {
+          event.target.select();
+          if (onFocus) {
+            onFocus(event);
+          }
+        }}
         {...textFieldProps}
         onChange={event => {
-          onChange(event.target.value);
+          onChange(Number(event.target.value));
         }}
-        type="password"
+        type="number"
       />
     );
   }

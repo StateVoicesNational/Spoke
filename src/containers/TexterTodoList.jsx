@@ -6,7 +6,7 @@ import LoadingIndicator from "../components/LoadingIndicator";
 import AssignmentSummary from "../components/AssignmentSummary";
 import Snackbar from "@material-ui/core/Snackbar";
 import loadData from "./hoc/load-data";
-import gql from "graphql-tag";
+import { gql } from "@apollo/client";
 import { withRouter } from "react-router";
 
 let refreshOnReturn = false;
@@ -58,7 +58,8 @@ class TexterTodoList extends React.Component {
   }
 
   renderTodoList(assignments) {
-    return assignments
+    const sortedAssignments = [...assignments];
+    return sortedAssignments
       .sort((x, y) => {
         // Sort with feedback at the top, and then based on Text assignment size
         const xHasFeedback =
@@ -170,6 +171,7 @@ const assignmentQueryData = `
             sideboxChoices
           }
           organization {
+            allowSendAll
             id
           }
         }
@@ -265,7 +267,7 @@ const queries = {
     query: dataQuery,
     options: ownProps => ({
       variables: {
-        userId: ownProps.params.userId || null,
+        userId: parseInt(ownProps.params.userId) || null,
         organizationId: ownProps.params.organizationId,
         todosOrg:
           ownProps.location.query["org"] == "all" ||
@@ -300,7 +302,7 @@ const queries = {
         );
       return {
         variables: {
-          userId: ownProps.params.userId || null,
+          userId: parseInt(ownProps.params.userId) || null,
           organizationId: ownProps.params.organizationId
         },
         fetchPolicy: "network-only",

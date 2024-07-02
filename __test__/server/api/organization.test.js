@@ -1,8 +1,8 @@
 /* eslint-disable no-unused-expressions, consistent-return */
 import { isSqlite, r } from "../../../src/server/models/";
 import { getCampaignsQuery } from "../../../src/containers/AdminCampaignList";
-import { GraphQLError } from "graphql/error";
-import gql from "graphql-tag";
+import { GraphQLError } from "graphql";
+import { gql } from "@apollo/client";
 import * as messagingServices from "../../../src/extensions/service-vendors";
 
 import {
@@ -49,7 +49,6 @@ describe("organization", () => {
   afterEach(async () => {
     await cleanupTest();
     jest.restoreAllMocks();
-    if (r.redis) r.redis.flushdb();
   }, global.DATABASE_SETUP_TEARDOWN_TIMEOUT);
 
   describe("organization query", () => {
@@ -92,7 +91,7 @@ describe("organization", () => {
 
     it("filters by a single campaign id", async () => {
       variables.campaignsFilter = {
-        campaignId: testCampaign.id
+        campaignId: parseInt(testCampaign.id)
       };
 
       const result = await runGql(getCampaignsQuery, variables, testAdminUser);
@@ -104,7 +103,7 @@ describe("organization", () => {
 
     it("filter by more than one campaign id", async () => {
       const campaignsFilter = {
-        campaignIds: [testCampaign.id, testCampaign2.id]
+        campaignIds: [parseInt(testCampaign.id), parseInt(testCampaign2.id)]
       };
       variables.campaignsFilter = campaignsFilter;
 
@@ -235,7 +234,7 @@ describe("organization", () => {
       organizationQuery = `
         query q($organizationId: String!) {
           organization(id: $organizationId) {
-            id 
+            id
             name
             availableActions {
               name
@@ -314,7 +313,7 @@ describe("organization", () => {
         }
       `;
 
-      variables = { organizationId: 1 };
+      variables = { organizationId: "1" };
 
       jest.spyOn(messagingServices, "fullyConfigured").mockResolvedValue(false);
     });

@@ -1,4 +1,4 @@
-import { GraphQLError } from "graphql/error";
+import { GraphQLError } from "graphql";
 import {
   getConfigKey,
   getService,

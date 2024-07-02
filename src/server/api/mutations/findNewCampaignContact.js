@@ -1,4 +1,5 @@
 import { log } from "../../../lib";
+import { resolvers } from "../campaign";
 import telemetry from "../../telemetry";
 import { r, cacheableData } from "../../models";
 import { assignmentRequiredOrAdminRole } from "../errors";
@@ -131,10 +132,27 @@ export const findNewCampaignContact = async (
       .whereNull("assignment_id");
   }
 
-  // Don't add more if they already have that many
-  const hasCurrent = await r.getCount(hasCurrentQuery);
-  if (hasCurrent >= numberContacts) {
-    return falseRetVal;
+  const texterUIConfig = await resolvers.Campaign.texterUIConfig(
+    campaign,
+    undefined,
+    { user, loaders }
+  );
+  const settingsData = JSON.parse(
+    (texterUIConfig && texterUIConfig.options) || "{}"
+  );
+  const campaignAllowBulkSend =
+    texterUIConfig &&
+    texterUIConfig.sideboxChoices &&
+    texterUIConfig.sideboxChoices.includes("per-campaign-bulk-send")
+      ? settingsData["per-campaign-bulk-send"]
+      : true;
+
+  // Don't add more if they already have that many and bulk send isn't enabled for the campaign
+  if (!campaignAllowBulkSend) {
+    const hasCurrent = await r.getCount(hasCurrentQuery);
+    if (hasCurrent >= numberContacts) {
+      return falseRetVal;
+    }
   }
 
   if (batchQuery.skipLocked && /pg|mysql/.test(r.knex.client.config.client)) {

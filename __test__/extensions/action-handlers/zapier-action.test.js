@@ -10,6 +10,7 @@ const log = require("../../../src/lib").log;
 
 afterEach(async () => {
   jest.restoreAllMocks();
+  await nock.cleanAll();
 });
 
 describe("zapier-action", () => {
@@ -103,7 +104,7 @@ describe("zapier-action", () => {
         id: 62,
         organization_id: 1,
         title: "COPY - COPY - Test Campaign for PR 1995",
-        description: "https://github.com/MoveOnOrg/Spoke/pull/1995",
+        description: "https://github.com/StateVoicesNational/Spoke/pull/1995",
         is_started: true,
         due_by: "2021-08-17T00:00:00.000Z",
         created_at: "2021-08-14T02:00:08.065Z",
@@ -430,7 +431,7 @@ describe("zapier-action", () => {
         id: 60,
         organization_id: 1,
         title: "Test Campaign for PR 1995",
-        description: "https://github.com/MoveOnOrg/Spoke/pull/1995",
+        description: "https://github.com/StateVoicesNational/Spoke/pull/1995",
         is_started: true,
         due_by: "2021-08-17T00:00:00.000Z",
         created_at: "2021-08-14T00:34:57.590Z",

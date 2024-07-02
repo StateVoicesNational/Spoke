@@ -102,9 +102,9 @@ export class CampaignConfig extends React.Component {
           <p>
             {scrubMobileOptional
               ? ""
-              : "This is a required step to lookup numbers you&rsquo;ve uploaded, but"}
-            FIRST you need to upload your contacts -- go to the Contacts section
-            and upload your list -- then check back here to look them up.
+              : "This is a required step to lookup numbers you have uploaded. "}
+            <br></br>But first, please go to the Contacts section
+            and upload your list, then check back here to look them up!
           </p>
         )}
         {scrubState === states.C_NEEDS_RUN && (

@@ -1,5 +1,126 @@
 # Release Notes
 
+## v14.0
+_July 2024:_ Version 14.0
+
+14.0 is a major release. This release upgrades Node 16 to Node 20. By upgrading to Node 20, Spoke is now stable and secure until Q1 of 2026.
+
+As this is StateVoices's first major release, we would like to express our gratitude to all contributors, MoveOn and its previous Community Managers, and the Progressive Coders Network for their continued support and belief in open-source software and Movement Technology.
+
+### Appreciations
+[Maureen Zitouni](https://github.com/mau11), [Ruby Engelhart](https://github.com/engelhartrueben), [Arique Aguilar](https://github.com/Arique1104), [Larry Person](https://github.com/lperson), [Schuyler Duveen](https://github.com/schuyler1d), [Megan Brown](https://github.com/mabrownnyu), [Daniel Bond](https://github.com/dwbond), [Ilona Brand](https://github.com/ibrand), [Kathy Nguyen](https://github.com/crayolakat)
+
+### New Features
+
+There are no new features to this update. This update is purely for stability and security.
+
+### Highlights
+- Upgraded Node 16 to Node 20
+- Updated apollo to use Apollo Client v3 and Apollo Server v4
+- Upgraded 48 and removed 15 packages
+- Created GSIntegerField for integer form validation
+- Fixed Google Docs integration for script imports
+
+### Packages:
+| Package | Prev. Version | New Version | Notes |
+| --- | --- | --- | --- |
+| @apollo/client | ** | ^3.9.8 | Apollo Client v3; replaced older Apollo packages |
+| @apolo/server | ** | ^4.10.1 | Apollo Server V4; replaced older Apollo packages |
+| @aws-* | ** | ^3.535.0 | All packages were upgraded/implemented via AWS codemod. These changes were in response to upgrading aws-sdk to V4. |
+| @babel/cli | ^7.19.3 | ^7.24.1 | *** |
+| @babel/core | ^7.19.6 | ^7.24.1 | *** |
+| @babel/plugin-syntax-flow | ** | ^7.14.5 | for unmet peer dependency :: react-scripts > eslint-config-react-app > eslint-plugin-flowtype@8.0.3 |
+| @babel/plugin-transform-class-properties | ** | ^7.23.3 | *** |
+| @babel/plugin-transform-nullish-coalescing-operator | ** | ^7.23.4 | *** |
+| @babel/plugin-transform-optional-chaining | ** | ^7.23.4 | *** |
+| @babel/plugin-transform-react-jsx | ** | ^7.14.9 | for unmet peer dependency :: react-scripts > eslint-config-react-app > eslint-plugin-flowtype@8.0.3 |
+| @babel/plugin-transform-runtime | ^7.19.6 | ^7.24.3 | *** |
+| @babel/preset-env | ^7.20.2 | ^7.23.9 | *** |
+| @babel/register | ^7.18.9 | ^7.23.7 | *** |
+| @babel/traverse | ** | 7.23.2 | *** |
+| @graphql-tools/graphql-file-loader | ** | ^8.0.1 | *** |
+| @graphql-tools/load | ** | ^8.0.2 | *** |
+| @graphql-tools/schema | ** | ^10.0.3 | *** |
+| auth0-js | ^9.14.3 | ^9.24.1 | *** |
+| babel-loader | ^9.1.0 | ^9.1.3 | *** |
+| bandwidth-sdk | ** | ^1.0.1 | Replaces @bandwidth/messaging |
+| cookie-session | ^2.0.0-alpha.1 | ^2.1.0 | *** |
+| dataloader | ^1.2.0 | ^2.2.2 | *** |
+| eslint-plugin-react-hooks | ** | ^4.3.0 | *** |
+| google-libphonenumber | ^3.0.0 | ^3.2.34 | *** |
+| graphql | ^0.13.2 | ^16.8.1 | *** |
+| graphql-type-json | ^0.1.4 | ^0.3.2 | *** |
+| isomorphic-fetch | ^2.2.1 | ^3.0.0 | *** |
+| knex | ^2.3.0 | ^3.1.0 | *** |
+| moment-timezone | ^0.5.14 | ^0.5.45 | *** |
+| nodemailer | ^6.4.16 | ^6.9.9 | *** |
+| pg | ^8.0.3 | ^8.11.3 | *** |
+| pg-query-stream | ^1.1.1 | ^4.5.3 | *** |
+| redis | 3 | ^4.6.13 | *** |
+| react-dnd | ** | 7.7.0 | *** |
+| rollbar | ^2.4.4 | ^2.26.4 | *** |
+| terser-webpack-plugin | 4 | ^5.3.10 | *** |
+| twilio | ^3.40.0 | ^4.23.0 | *** |
+| typescript | ** | ^3.2.1 | *** |
+| webpack | ^5.74.0 | ^5.90.2 | *** |
+
+### Developer Packages
+| Package | Prev. Version | New Version | Notes |
+| --- | --- | --- | --- |
+| @babel/eslint-parser | ^7.19.1 | ^7.24.1 | *** |
+| enzyme-adapter-react-16 | ^1.15.6 | ^1.15.8 | *** |
+| eslint | ^8.26.0 | ^8.56.0 | *** |
+| eslint-plugin-import | ^2.26.0 | ^2.29.1 | *** |
+| jest-when | ^3.4.1 | ^3.6.0 | *** |
+| jest-environment-jsdom | ** | ^29.7.0 | *** |
+| nock | 11.9.1 | 13.5.4 | *** |
+| supertest | ^6.2.3 | ^6.3.4 | *** |
+| webpack-cli | ^4.7.2 | ^4.10.0 | *** |
+
+_** New package_</br>
+_*** Packages that were either upgraded due to a peer dependency conflict or because there was minimal to no changes to the code._
+
+### Removed Packages
+| Package | Reason |
+| --- | --- |
+| @bandwidth/messaging | Deprecated. Replaced by bandwidth-sdk  |
+| apollo-cache-inmemory | Removed to use Apollo Client v3 and Apollo Server v4 packages, @apollo/client and apollo/server in their place |
+| apollo-client | Removed to use Apollo Client v3 and Apollo Server v4 packages, @apollo/client and apollo/server in their place |
+| apollo-link | Removed to use Apollo Client v3 and Apollo Server v4 packages, @apollo/client and apollo/server in their place |
+| apollo-link-error | Removed to use Apollo Client v3 and Apollo Server v4 packages, @apollo/client and apollo/server in their place |
+| apollo-link-http | Removed to use Apollo Client v3 and Apollo Server v4 packages, @apollo/client and apollo/server in their place |
+| apollo-server-express | Removed to use Apollo Client v3 and Apollo Server v4 packages, @apollo/client and apollo/server in their place |
+| apollo-utilities | Removed to use Apollo Client v3 and Apollo Server v4 packages, @apollo/client and apollo/server in their place |
+| camelcase-keys | Deprecated. Replaced with already used package humps  |
+| graphql-tools | Replaced by @graphql-tools/schema |
+| node-abort-controller | Removed due to native support |
+| url-join | Removed due to native support |
+| react-apollo | Deprecated. Replaced with Apollo Client and flowRight from lodash |
+| recompose | Deprecated. Required major refactor of many exports. |
+| selenium-webdriver | Not used in the code base. |
+
+## v13.1.0
+_October 2023_ Version 13.1.0
+
+13.1.0 is a minor release.
+
+### Bug Fixes
+* Upgrade Auth0 Lock
+* Fix Auth0 password reset issue
+* Update Heroku deployment
+
+### Improvements
+* Remove required Twilio fields
+* Bump dependencies
+* Mobile-compatible texter UI
+
+### New Features
+* Per-campaign bulk send
+* NGP VAN service manager
+
+### Appreciations
+* [Arique Aguilar](https://github.com/Arique1104), [Ilona Brand](https://github.com/ibrand), [Jeff Mann](https://github.com/jeffm2001), [Karim Al-Rashdan](https://github.com/KarimAl-Rashdan), [Kathy Nguyen](https://github.com/crayolakat), [Shibam Debnath](https://github.com/SshibamDebnathh), and Harold Travis for QA.
+
 ## v13.0.1
 _September 2023_ Version 13.0.1
 
@@ -179,7 +300,7 @@ Based on work from Larry Person, there is a large refactor of "service-vendors" 
 
 #### Database upgrades
 * This is a major release and includes a schema change.
-* For small instances simply leave/set SUPPRESS_MIGRATIONS="" or for [AWS Lambda, see the db migration instructions](https://moveonorg.github.io/Spoke/#/HOWTO_DEPLOYING_AWS_LAMBDA?id=migrating-the-database).
+* For small instances simply leave/set SUPPRESS_MIGRATIONS="" or for [AWS Lambda, see the db migration instructions](https://statevoicesnational.github.io/Spoke/#/HOWTO_DEPLOYING_AWS_LAMBDA?id=migrating-the-database).
 * If you are running Spoke on Heroku and updating to version 11 or later, either remove SUPPRESS_MIGRATIONS="" if it is set in config, *or* set SUPPRESS_MIGRATIONS=false
 * For instances with a large `message` table, we recommend setting NO_INDEX_CHANGES=1 before running the migration, and then manually running two commands:
   * `CREATE INDEX CONCURRENTLY cell_msgsvc_user_number_idx ON message (contact_number, messageservice_sid, user_number);`
@@ -196,7 +317,7 @@ Instead of running a single 'claudia' command, You will need to tweak two things
   1. `ASSETS_DIR=./build/client/assets ASSETS_MAP_FILE=assets.json NODE_ENV=production yarn prod-build-client`
   2. and then for your `claudia update` command you need to include your usual command line parameters and ADD `--no-optional-dependencies`
 
-These steps remove the client-side libraries from the server-side build, which is necessary now that the client-side libraries are too large to 'fit' into an AWS Lambda server deploy file.  This is documented in the [AWS setup/deploy steps](https://github.com/MoveOnOrg/Spoke/compare/main...stage-main-11-0#diff-548e8f704ad84645a42f2efaf1332490f6844d0a0dd50e9ac6b931c198d213f3)
+These steps remove the client-side libraries from the server-side build, which is necessary now that the client-side libraries are too large to 'fit' into an AWS Lambda server deploy file.  This is documented in the [AWS setup/deploy steps](https://github.com/StateVoicesNational/Spoke/compare/main...stage-main-11-0#diff-548e8f704ad84645a42f2efaf1332490f6844d0a0dd50e9ac6b931c198d213f3)
 
 #### Changes for Experimental Per-campaign phone numbers/message services
 
@@ -251,7 +372,7 @@ This is a minor point release, and so has no database migrations or other requir
 * Allow passing of custom fields to mobilecommons-signup action handler (config w/ UMC_FIELDS)
 * UI: show contact loader load-info in campaign edit page after campaign starts (e.g. to see name of csv uploaded)
 
-See links and notes from the [10.1 pull request](https://github.com/MoveOnOrg/Spoke/pull/1942) for a list of all changes that were included.
+See links and notes from the [10.1 pull request](https://github.com/StateVoicesNational/Spoke/pull/1942) for a list of all changes that were included.
 
 ### Appreciations
 * [codygordon](https://github.com/codygordon), [Frydafly](https://github.com/Frydafly), [lperson](https://github.com/lperson), [marzvrover](https://github.com/marzvrover), [schuyler1d](https://github.com/schuyler1d), [stefanhayden](https://github.com/stefanhayden)
@@ -298,7 +419,7 @@ As the first release post-election, this mostly gathered together fixes and impr
 
 ## Bugfixes and Minor featuers
 
-See links and notes from the [10.0 pull request](https://github.com/MoveOnOrg/Spoke/pull/1900) for a list of all changes that were included.
+See links and notes from the [10.0 pull request](https://github.com/StateVoicesNational/Spoke/pull/1900) for a list of all changes that were included.
 
 ### Appreciations
 
@@ -326,8 +447,8 @@ during QA and review and to evaluate the release 'at scale'.  Without this final
 to release readiness.
 
 However, we want to track these improvements, so we will be maintaining two 'experimental' PRs -- one more conservative
-with small changes and mostly bug fixes: [stage-main-postelection2020-stable](https://github.com/MoveOnOrg/Spoke/pull/1830).
-The other with larger changes but riskier to deploy before the election: [stage-main-postelection2020-unstable](https://github.com/MoveOnOrg/Spoke/pull/1831).  If a hosting partner steps up to
+with small changes and mostly bug fixes: [stage-main-postelection2020-stable](https://github.com/StateVoicesNational/Spoke/pull/1830).
+The other with larger changes but riskier to deploy before the election: [stage-main-postelection2020-unstable](https://github.com/StateVoicesNational/Spoke/pull/1831).  If a hosting partner steps up to
 run one of these at any time and affirms its stability, we will mark that.  Additionally, in the conservative PR,
 we will link to specific PRs that if you run into a particular bug in production you can cherry-pick that PR to fix that issue.
 
@@ -372,7 +493,7 @@ Thanks to [jeffm2001](https://github.com/jeffm2001) and [schuyler1d](https://git
 _September 2020:_ Version 9.1
 
 * Regression notice: When TWILIO_MULTI_ORG=1 is set but TWILIO_MESSAGE_CALLBACK_URL is not, /twilio-message-report
-  fails.  There is a [fix](https://github.com/MoveOnOrg/Spoke/pull/1826) that is also available in 9.2 (above).
+  fails.  There is a [fix](https://github.com/StateVoicesNational/Spoke/pull/1826) that is also available in 9.2 (above).
 
 ### New Features/Improvements
 - **New UI for adding organizations to your instance:** There is now a page only accessible for users with `is_superadmin` set for adding orgs in a Spoke instance. You can access this screen through the user menu under "superadmin tools." We've gated this feature to only users with that privilege to keep any roles you already have on your instances from suddenly gaining the ability to add orgs. You can only change a user's `is_superadmin` status with a direct DB query at this time. *The first user on new instances will be a superadmin by default now*
@@ -422,7 +543,7 @@ But because of the timing it was ambiguous whether we 'just' hit scaling issues 
   - **Canned response tagging:** you can apply 1 or more tags to a canned response which will automatically apply that tags when a texter uses that canned response.
 - **Addressable message review queries:** message review now has "addressable urls" meaning that the url is changed whenever you make a query. This now allows you to directly link to a specific query. Because of this, there are now links in the texter stats section of the campaign page that link to a filter for that specific texter and a new "convos" button that takes you directly to a view that filters down to only messages within the campaign.
 - **Allow search terms to be _excluded_ from the campaign search:**  If a search starts with "-", it filters out campaigns that match the rest of the search term.
-- **Documentation microsite:** our docs now exist on an [external microsite](https://moveonorg.github.io/Spoke) to help our docs
+- **Documentation microsite:** our docs now exist on an [external microsite](https://statevoicesnational.github.io/Spoke) to help our docs
 - [Documentation now exists for all of the extensions!](HOWTO-extend-spoke.md)
 
 ### Appreciations
@@ -473,7 +594,7 @@ _August 2020:_ Version 8.0
 This is a major release and therefore requires a schema change which you can run before/during migration (either by leaving/disabling SUPPRESS_MIGRATIONS="" or for [AWS Lambda, see the db migration instructions](DEPLOYING_AWS_LAMBDA.md#migrating-the-database). Anything marked as experimental has not yet been tested on a production texting campaign. We're marking this as a major version update 8.0 because there are several backwards-incompatible changes that we believe are important and valuable.
 
 ### Backwards incompatible Changes
-- **Dynamic Assignment is changing**: After a lot of feedback and some great inspiration from the [Warren Spoke](https://github.com/Elizabeth-Warren/Spoke) we're modifying dynamic assign. Texters will now request batch sizes instead of getting an endless stream of texts. The admin can customize the batch size and who is allowed to click request after their first batch. There is more documentation on this feature [here](https://github.com/MoveOnOrg/Spoke/blob/main/docs/HOWTO-use-dynamicassignment-batches.md).This feature is also optionally complemented by the new "release texts" feature which is mentioned under "New Features/Improvements"
+- **Dynamic Assignment is changing**: After a lot of feedback and some great inspiration from the [Warren Spoke](https://github.com/Elizabeth-Warren/Spoke) we're modifying dynamic assign. Texters will now request batch sizes instead of getting an endless stream of texts. The admin can customize the batch size and who is allowed to click request after their first batch. There is more documentation on this feature [here](https://github.com/StateVoicesNational/Spoke/blob/main/docs/HOWTO-use-dynamicassignment-batches.md).This feature is also optionally complemented by the new "release texts" feature which is mentioned under "New Features/Improvements"
 - **Old Texter UI is _no longer supported_**: We removed the `DEPRECATED_TEXTERUI` env variable and the old Texter UI is officially phased out
 - **Texter Sideboxes are now off by default**: You now need to enable options in organization Settings tab (they previously were just automatically enabled from the variable)
   - If your previously set TEXTER_SIDEBOXES, then you must add `default-dynamicassignment` (and we recommend adding other new ones listed in new features) for dynamic assignment to work.
@@ -482,10 +603,10 @@ This is a major release and therefore requires a schema change which you can run
 - For non-US or subscriber-only mode users ONLY -- if you enabled ALLOW_SEND_ALL=1 (if you did not, then DO not do this), then you'll need to check to enable that feature in the Settings panel of your organization (as a is_superadmin user)
 - Initial text messages are editable -- we recommend allowing the (default) TEXTER_SIDEBOXES= to include `default-editinitial` to make this option more muted.
 - the src/integrations/ directory is renamed src/extensions/ to indicate that it's not just integrations with 3rd parties but also components that extend the system itself (message-handlers, texter-sideboxes, dynamicassignment-batches, job-runners). If you added your own src/integrations/ items make sure they are moved, and relevant imports are changed.
-- There is a small migration to the `campaign` table which needs to be run before/during migration (either by leaving/disabling SUPPRESS_MIGRATIONS="" or for [AWS Lambda, see the db migration instructions](https://github.com/MoveOnOrg/Spoke/blob/main/docs/DEPLOYING_AWS_LAMBDA.md#migrating-the-database)
+- There is a small migration to the `campaign` table which needs to be run before/during migration (either by leaving/disabling SUPPRESS_MIGRATIONS="" or for [AWS Lambda, see the db migration instructions](https://github.com/StateVoicesNational/Spoke/blob/main/docs/DEPLOYING_AWS_LAMBDA.md#migrating-the-database)
 
 ### New Features/Improvements
-- Use of Spoke is subject to legal restrictions which each organization should review and understand, including recent guidance from an FCC ruling. We recommend system administrators review the settings outlined [here](https://github.com/MoveOnOrg/Spoke/blob/main/docs/REFERENCE-best-practices-conformance-messaging.md) along with consulting your own legal advice.
+- Use of Spoke is subject to legal restrictions which each organization should review and understand, including recent guidance from an FCC ruling. We recommend system administrators review the settings outlined [here](https://github.com/StateVoicesNational/Spoke/blob/main/docs/REFERENCE-best-practices-conformance-messaging.md) along with consulting your own legal advice.
 - **_Experimental_ Phone number management for campaigns**: A much requested feature for scaling past the 400 phone numbers limit.
   - turn this on with `EXPERIMENTAL_CAMPAIGN_NUMBERS`
 - **_Experimental_ Release Texts**: Dynamic Assignment will also include a way for texters to release texts! That way when a texter is done for the day they can release texts without admin needing to go in and reassign them.
@@ -520,7 +641,7 @@ _July 2020:_ Release 7.1 is a testament to the community working together -- sev
 ### Significant for deployments:
 
 * After changing the texter send keyboard shortcut to Ctrl-X we have moved it (again) to Ctrl-Enter (to avoid conflict with OS 'cut' shortcuts)
-* There is a small migration to the user table which needs to be run before/during migration (either by leaving/disabling SUPPRESS_MIGRATIONS="" or for [AWS Lambda, see the db migration instructions](https://github.com/MoveOnOrg/Spoke/blob/main/docs/DEPLOYING_AWS_LAMBDA.md#migrating-the-database)
+* There is a small migration to the user table which needs to be run before/during migration (either by leaving/disabling SUPPRESS_MIGRATIONS="" or for [AWS Lambda, see the db migration instructions](https://github.com/StateVoicesNational/Spoke/blob/main/docs/DEPLOYING_AWS_LAMBDA.md#migrating-the-database)
 * If you are running on lambda, you might consider setting JOB_RUNNER="lambda-async" for better scaling/performance
 
 ### New Features
@@ -570,7 +691,7 @@ We're marking this as a major version update: 7.0 because there are several back
 ### Improvements
 
 * There is now further support for VAN -- a robust action handler that can be enabled by adding `ACTION_HANDLERS=ngpvan-action` to your environment variables will enable this.
-* We have a new framework for extending the Texter UI interface called ["sideboxes"](https://github.com/MoveOnOrg/Spoke/issues/1533).  Enabled with environment variable TEXTER_SIDEBOXES which works similarly to action handlers, where it should be a comma separated list of enabled sideboxes. Developers can add sidebox functionality, and admins can set defaults in the organization Settings section and changes per-campaign -- enabling/disabling sideboxes.  Two so-far are:
+* We have a new framework for extending the Texter UI interface called ["sideboxes"](https://github.com/StateVoicesNational/Spoke/issues/1533).  Enabled with environment variable TEXTER_SIDEBOXES which works similarly to action handlers, where it should be a comma separated list of enabled sideboxes. Developers can add sidebox functionality, and admins can set defaults in the organization Settings section and changes per-campaign -- enabling/disabling sideboxes.  Two so-far are:
   * `contact-reference` which is a link the texter can click and/or share with an admin for direct access to that conversation later
   * `tag-contact` which if you have EXPERIMENTAL_TAGS=1 enabled and create tags, a texter will have an interface to mark them.  They can then be filtered for in Message Review.
 
@@ -585,13 +706,13 @@ We're marking this as a major version update: 7.0 because there are several back
 
 ### Bug fixes
 
-There are too many bug fixes to mention -- [please see the full list of linked changes](https://github.com/MoveOnOrg/Spoke/pull/1623)
+There are too many bug fixes to mention -- [please see the full list of linked changes](https://github.com/StateVoicesNational/Spoke/pull/1623)
 
 ### Deploy Steps:
 Instructions for migrating you database
 
 * Make sure SUPPRESS_MIGRATIONS="" (not 0!) in your environment
-* If you're using AWS Lambda, check out the [deploy instructions here](https://github.com/MoveOnOrg/Spoke/blob/main/docs/DEPLOYING_AWS_LAMBDA.md#migrating-the-database)
+* If you're using AWS Lambda, check out the [deploy instructions here](https://github.com/StateVoicesNational/Spoke/blob/main/docs/DEPLOYING_AWS_LAMBDA.md#migrating-the-database)
 
 ### Appreciations!
 
@@ -666,12 +787,12 @@ Thanks to all the contributors part of this release including:
 ## v5.5
 _May 2020:_ Version 5.5
 - Campaign List Admin changes (@lperson, @schuyler1d)
-- Twilio Auth per organization (@jeffm2001 ) -- Now if you enable TWILIO_MULTI_ORG environment variable, each organization can use a different Twilio account that they can setup in the Settings Admin tab. This also allows per-organization message services. There is more work coming to allow [message services per-campaign](https://github.com/MoveOnOrg/Spoke/issues/1495) and [in-app phone number management](https://github.com/MoveOnOrg/Spoke/issues/1518)
+- Twilio Auth per organization (@jeffm2001 ) -- Now if you enable TWILIO_MULTI_ORG environment variable, each organization can use a different Twilio account that they can setup in the Settings Admin tab. This also allows per-organization message services. There is more work coming to allow [message services per-campaign](https://github.com/StateVoicesNational/Spoke/issues/1495) and [in-app phone number management](https://github.com/StateVoicesNational/Spoke/issues/1518)
 - This release has several developing features -- you might say it's a 'preview' release of things to come. You can turn on these features with environment variables
   - EXPERIMENTAL_TEXTERUI: After some amazing design work by @arena with multiple iterations and two user testing rounds by @ibrand, We are planning to make this the DEFAULT texter interface in the next Spoke release. We know that this has some challenges for current deployments -- updating documentation and training materials for texters. Just like you switch ON this new version in this release, for one release (and no more), we intend that you will be able to set a different environment variable in order to keep the old interface. That should allow you to control the switch to the new interface gracefully.
     - We put a lot of work into this interface to accomodate upcoming features, radically improve the mobile (and generally cross-screen support) and address some issues that regularly come up for texters.
     - Please send your experience reports in testing
-    - More context can be seen at [RFC: New Texter UI](https://github.com/MoveOnOrg/Spoke/pull/1522)
+    - More context can be seen at [RFC: New Texter UI](https://github.com/StateVoicesNational/Spoke/pull/1522)
   - EXPERIMENTAL_TAGS: Tagging users instead of just saving question responses is a very common request, and we have a great volunteer team developing these features. This first step is creating an admin interface to create the tags. There will be more to come, but you can preview and test this development by enabling the environment variable. Thanks to @aschneit and @filafb!
 
 (a cypress stub was also merged into main for e2e tests recently)
@@ -774,7 +895,7 @@ Deploy Steps:
 **Instructions for migrating large database instances (>1million messages/contacts)**
 
 1. Make sure SUPPRESS_MIGRATIONS=1 in your environment
-2. Before deploying the code, you will want to do most of these changes (manually) beforehand, ideally while the system is down. If you are planning to do these migrations before deploying the new code, we strongly recommend merging [this PR separate from the schema changes](https://github.com/MoveOnOrg/Spoke/pull/1346) BEFORE these steps to your production instance. It removes a few bugs which caused postgres to deadlock on message table updates. Instructions below assume Postgres.
+2. Before deploying the code, you will want to do most of these changes (manually) beforehand, ideally while the system is down. If you are planning to do these migrations before deploying the new code, we strongly recommend merging [this PR separate from the schema changes](https://github.com/StateVoicesNational/Spoke/pull/1346) BEFORE these steps to your production instance. It removes a few bugs which caused postgres to deadlock on message table updates. Instructions below assume Postgres.
 
 2.1 Create the additional columns:
 
@@ -950,7 +1071,7 @@ This release includes the following improvements:
 
 Note on Knex Migration:
 Anyone that is upgrading from a version released earlier than March 2018 should see this issue comment:
-https://github.com/MoveOnOrg/Spoke/pull/1154#issuecomment-510163604
+https://github.com/StateVoicesNational/Spoke/pull/1154#issuecomment-510163604
 
 Thanks to all the contributors part of this release including:
 [AnuradhaNaik](https://github.com/AnuradhaNaik),
@@ -979,7 +1100,7 @@ Migrations:
 
 Heroku:
 
-The Heroku deployment method has been migrated to the container runtime. When upgrading an existing Heroku app, these [migration steps](https://github.com/MoveOnOrg/Spoke/blob/33e2edcc455836f36eafd56d585430ac1ceda515/docs/HOWTO_HEROKU_DEPLOY.md#upgrading-an-existing-heroku-app) will need to be performed.
+The Heroku deployment method has been migrated to the container runtime. When upgrading an existing Heroku app, these [migration steps](https://github.com/StateVoicesNational/Spoke/blob/33e2edcc455836f36eafd56d585430ac1ceda515/docs/HOWTO_HEROKU_DEPLOY.md#upgrading-an-existing-heroku-app) will need to be performed.
 
 Lambda:
 
@@ -1059,7 +1180,7 @@ _April 2018:_ Version 1.3
   This feature helps cases where someone accidentally clicked a button or wants to follow-up with requested information.
 - Texters can update their name, email and other information from the menu.
   Admins can update texter info from the console
-- A new SuperVolunteer role, which allows a non-admin to update assignments, and [some other tasks](https://github.com/MoveOnOrg/Spoke/issues/455)
+- A new SuperVolunteer role, which allows a non-admin to update assignments, and [some other tasks](https://github.com/StateVoicesNational/Spoke/issues/455)
 - Added [MailGun support](HOWTO_HEROKU_DEPLOY.md#setting-up-mailgun)
 - Frontend React tests!
 - Added an action handler to automatically subscribe to a [Revere](https://reverehq.com/)
@@ -1088,7 +1209,7 @@ Thanks go to all our contributors for this release including:
 
 ## v1.2
 
-_January 2018:_ Version 1.2 is our second release since MoveOn has adopted Spoke. We are committed to fixing bugs, adding new features and making this project as nimble as possible. For this release, we've included changes from [GetUp](https://www.getup.org.au/), updated certain dependencies, updated Auth0 integration, added user editing capabilities for texters and admins and continued to add outside integration points with outside CRMs. Please continue to add and work on our growing [issues list](https://github.com/MoveOnOrg/Spoke/issues). We have also switched from `master` => `main` as a new naming convention for the most stable/default branch.
+_January 2018:_ Version 1.2 is our second release since MoveOn has adopted Spoke. We are committed to fixing bugs, adding new features and making this project as nimble as possible. For this release, we've included changes from [GetUp](https://www.getup.org.au/), updated certain dependencies, updated Auth0 integration, added user editing capabilities for texters and admins and continued to add outside integration points with outside CRMs. Please continue to add and work on our growing [issues list](https://github.com/StateVoicesNational/Spoke/issues). We have also switched from `master` => `main` as a new naming convention for the most stable/default branch.
 
 We've worked on a lot, but some critical developments to highlight include:
 
@@ -1111,7 +1232,7 @@ Thanks go to to all our contributors for this release including: [jmcarp](https:
 _October 2017:_ Version 1.1 is our first release since MoveOn has been using Spoke successfully in production. We are committed to
 making this an open-source project used and developed by the wider progressive tech community to advance our
 political goals. Part of our work has been to make that transparent. Besides this public repository, please help
-with our growing [issues list](https://github.com/MoveOnOrg/Spoke/issues), including those marked `easy`.
+with our growing [issues list](https://github.com/StateVoicesNational/Spoke/issues), including those marked `easy`.
 
 But of course, we've also done some actual development work! We've fixed a ton of bugs, but here are some
 highlights for this release:
@@ -1119,7 +1240,7 @@ highlights for this release:
 - Adds a passing test framework
 - Resolves many bugs related to saving and updating a Campaign for admins
 - Improves the Texter interface (better reply visibility, especially on mobile) along with sending on `<Enter>`
-- Adds a [Deploy to Heroku](https://github.com/MoveOnOrg/Spoke#deploy-to-heroku) button for easier first-time deployments
+- Adds a [Deploy to Heroku](https://github.com/StateVoicesNational/Spoke#deploy-to-heroku) button for easier first-time deployments
 - Documented [how to deploy on Amazon AWS Lambda](DEPLOYING_AWS_LAMBDA.md)
 - Migrated from a RethinkDB backend to a Knex.js backend (we recommend use with postgresql database)
 - Improved Spoke's security

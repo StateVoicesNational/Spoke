@@ -11,7 +11,7 @@ import { log, gunzip } from "../../../lib";
 
 import path from "path";
 import Papa from "papaparse";
-import AWS from "aws-sdk";
+import { S3 } from "@aws-sdk/client-s3";
 
 export const name = "s3-pull";
 
@@ -89,8 +89,11 @@ export async function loadContactS3PullProcessFile(jobEvent, contextVars) {
     customIndexes,
     region
   } = jobEvent;
-  const s3 = new AWS.S3({
+  const s3 = new S3({
     region,
+
+    // The key signatureVersion is no longer supported in v3, and can be removed.
+    // @deprecated SDK v3 only supports signature v4.
     signatureVersion: "v4"
   });
 
@@ -111,8 +114,7 @@ export async function loadContactS3PullProcessFile(jobEvent, contextVars) {
         .split("/")
         .slice(3)
         .join("/")
-    })
-    .promise();
+    });
   const fileString = await gunzip(fileData.Body);
   const { data, errors } = await new Promise((resolve, reject) => {
     Papa.parse(fileString.toString(), {
@@ -256,8 +258,11 @@ export async function processContactLoad(job, maxContacts, organization) {
   const s3Path = JSON.parse(job.payload).s3Path;
   const s3Bucket = getConfig("AWS_S3_BUCKET_NAME", organization);
   const region = getConfig("AWS_REGION", organization);
-  const s3 = new AWS.S3({
+  const s3 = new S3({
     region,
+
+    // The key signatureVersion is no longer supported in v3, and can be removed.
+    // @deprecated SDK v3 only supports signature v4.
     signatureVersion: "v4"
   });
 
@@ -271,8 +276,7 @@ export async function processContactLoad(job, maxContacts, organization) {
       .getObject({
         Bucket: s3Bucket,
         Key: manifestPath.replace(/^\//, "")
-      })
-      .promise();
+      });
     manifestData = JSON.parse(manifestFile.Body.toString("utf-8"));
   } catch (err) {
     await failedContactLoad(

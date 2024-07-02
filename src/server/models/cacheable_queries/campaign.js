@@ -78,7 +78,7 @@ const dbContactTimezones = async id =>
 const clear = async (id, campaign) => {
   if (r.redis) {
     // console.log('clearing campaign cache')
-    await r.redis.delAsync(cacheKey(id));
+    await r.redis.DEL(cacheKey(id));
   }
 };
 
@@ -123,12 +123,12 @@ const loadDeep = async id => {
     // campaign.organization = await organizationCache.load(campaign.organization_id)
     // console.log('campaign loaddeep', campaign, JSON.stringify(campaign))
     await r.redis
-      .multi()
-      .set(cacheKey(id), JSON.stringify(campaign))
-      .hset(infoCacheKey(id), "contactsCount", campaign.contactsCount)
-      .expire(cacheKey(id), 43200)
-      .expire(infoCacheKey(id), 43200)
-      .execAsync();
+      .MULTI()
+      .SET(cacheKey(id), JSON.stringify(campaign))
+      .HSET(infoCacheKey(id), "contactsCount", campaign.contactsCount)
+      .EXPIRE(cacheKey(id), 43200)
+      .EXPIRE(infoCacheKey(id), 43200)
+      .exec();
   }
   return null;
 };
@@ -137,14 +137,14 @@ const currentEditors = async (campaign, user) => {
   // Add user ID in case of duplicate admin names
   const displayName = `${user.id}~${user.first_name} ${user.last_name}`;
 
-  await r.redis.hsetAsync(
+  await r.redis.HGET(
     `campaign_editors_${campaign.id}`,
     displayName,
     new Date()
   );
-  await r.redis.expire(`campaign_editors_${campaign.id}`, 120);
+  await r.redis.EXPIRE(`campaign_editors_${campaign.id}`, 120);
 
-  let editors = await r.redis.hgetallAsync(`campaign_editors_${campaign.id}`);
+  let editors = await r.redis.HGETALL(`campaign_editors_${campaign.id}`);
 
   // Only get editors that were active in the last 2 mins, and exclude the
   // current user
@@ -162,7 +162,7 @@ const currentEditors = async (campaign, user) => {
 const load = async (id, opts) => {
   // console.log('campaign cache load', id)
   if (r.redis) {
-    let campaignData = await r.redis.getAsync(cacheKey(id));
+    let campaignData = await r.redis.get(cacheKey(id.toString()));
     let campaignObj = campaignData ? JSON.parse(campaignData) : null;
     // console.log('pre campaign cache', campaignObj)
     if (
@@ -176,7 +176,7 @@ const load = async (id, opts) => {
         // archived or not found in db either
         return campaignNoCache;
       }
-      campaignData = await r.redis.getAsync(cacheKey(id));
+      campaignData = await r.redis.get(cacheKey(id));
       campaignObj = campaignData ? JSON.parse(campaignData) : null;
       // console.log('new campaign data', id, campaignData)
     }
@@ -190,7 +190,7 @@ const load = async (id, opts) => {
       const countKey = infoCacheKey(id);
       for (let i = 0, l = counts.length; i < l; i++) {
         const countName = counts[i];
-        campaignObj[countName] = await r.redis.hgetAsync(countKey, countName);
+        campaignObj[countName] = await r.redis.HGET(countKey, countName);
       }
       campaignObj.feature = getFeatures(campaignObj);
       // console.log('campaign cache', cacheKey(id), campaignObj, campaignData)
@@ -202,6 +202,7 @@ const load = async (id, opts) => {
         "contactsCount",
         ...counts
       ]);
+      campaign.id = campaign.id.toString();
       return campaign;
     }
   }
@@ -242,8 +243,8 @@ const campaignCache = {
   dbInteractionSteps,
   completionStats: async id => {
     if (r.redis) {
-      const data = await r.redis.hgetallAsync(infoCacheKey(id));
-      return data || {};
+      const data = await r.redis.HGETALL(infoCacheKey(id));
+      return Object.keys(data).length > 0 ? data : {};
     }
     return {};
   },
@@ -251,16 +252,16 @@ const campaignCache = {
     if (r.redis) {
       const exportCacheKey = exportCampaignCacheKey(id);
       await r.redis
-        .multi()
-        .set(exportCacheKey, JSON.stringify(data))
-        .expire(exportCacheKey, 43200)
-        .execAsync();
+        .MULTI()
+        .SET(exportCacheKey, JSON.stringify(data))
+        .EXPIRE(exportCacheKey, 43200)
+        .exec();
     }
   },
   getExportData: async id => {
     if (r.redis) {
       const exportCacheKey = exportCampaignCacheKey(id);
-      const data = await r.redis.getAsync(exportCacheKey);
+      const data = await r.redis.get(exportCacheKey);
       if (data) {
         return JSON.parse(data);
       }
@@ -275,7 +276,7 @@ const campaignCache = {
       const campaignDb = await trx("campaign")
         .where("id", id)
         .select("features");
-      const features = getFeatures(campaignDb);
+      const features = getFeatures(campaignDb[0]);
       let changes = false;
       for (const [featureName, featureValue] of Object.entries(newFeatures)) {
         if (features[featureName] !== featureValue) {
@@ -289,16 +290,16 @@ const campaignCache = {
           .where("id", id)
           .update("features", featuresString);
         if (r.redis) {
-          const campaignCache = await r.redis.getAsync(cacheKey(id));
+          const campaignCache = await r.redis.get(cacheKey(id));
           if (campaignCache) {
             const campaignObj = JSON.parse(campaignCache);
             campaignObj.feature = features;
             campaignObj.features = featuresString;
             await r.redis
-              .multi()
-              .set(cacheKey(id), JSON.stringify(campaignObj))
-              .expire(cacheKey(id), 10000)
-              .execAsync();
+              .MULTI()
+              .SET(cacheKey(id), JSON.stringify(campaignObj))
+              .EXPIRE(cacheKey(id), 10000)
+              .exec();
           }
         }
       }
@@ -317,10 +318,10 @@ const campaignCache = {
         );
         const infoKey = infoCacheKey(id);
         await r.redis
-          .multi()
-          .hset(infoKey, "assignedCount", assignCount)
-          .expire(infoKey, 432000) // counts stay 5 days for easier review
-          .execAsync();
+          .MULTI()
+          .HSET(infoKey, "assignedCount", assignCount)
+          .EXPIRE(infoKey, 432000) // counts stay 5 days for easier review
+          .exec();
       } catch (err) {
         console.log("campaign.updateAssignedCount Error", id, err);
       }
@@ -333,14 +334,14 @@ const campaignCache = {
       try {
         const infoKey = infoCacheKey(id);
         await r.redis
-          .multi()
-          .hincrby(
+          .MULTI()
+          .HINCRBY(
             infoKey,
             countType,
             typeof countAmount === "number" ? countAmount : 1
           )
-          .expire(infoKey, 432000) // counts stay 5 days for easier review
-          .execAsync();
+          .EXPIRE(infoKey, 432000) // counts stay 5 days for easier review
+          .exec();
       } catch (err) {
         console.log("campaign.incrMessaged Error", id, err);
       }

@@ -20,10 +20,10 @@ export const loadToCache = async campaignContactId => {
   if (r.redis && CONTACT_CACHE_ENABLED) {
     const cacheKey = tagCacheKey(campaignContactId);
     await r.redis
-      .multi()
-      .set(cacheKey, JSON.stringify(tagValues))
-      .expire(cacheKey, 43200)
-      .execAsync();
+      .MULTI()
+      .SET(cacheKey, JSON.stringify(tagValues))
+      .EXPIRE(cacheKey, 43200)
+      .exec();
   }
   return tagValues;
 };
@@ -35,7 +35,7 @@ export const tagCampaignContactCache = {
     // server/api/campaign-contact
     if (r.redis && CONTACT_CACHE_ENABLED && minimalObj) {
       const cacheKey = tagCacheKey(campaignContactId);
-      const cachedResponse = await r.redis.getAsync(cacheKey);
+      const cachedResponse = await r.redis.GET(cacheKey);
       if (cachedResponse) {
         return JSON.parse(cachedResponse)
           .filter(t => includeResolved || t.value !== "RESOLVED")
@@ -51,7 +51,7 @@ export const tagCampaignContactCache = {
   },
   clearQuery: async campaignContactId => {
     if (r.redis) {
-      await r.redis.delAsync(tagCacheKey(campaignContactId));
+      await r.redis.DEL(tagCacheKey(campaignContactId));
     }
   },
   save: async (campaignContactId, tags) => {
@@ -117,8 +117,8 @@ export const tagCampaignContactCache = {
     if (r.redis && CONTACT_CACHE_ENABLED) {
       const cacheKey = tagCacheKey(campaignContactId);
       await r.redis
-        .multi()
-        .set(
+        .MULTI()
+        .SET(
           cacheKey,
           JSON.stringify(
             allTags.map(t => ({
@@ -127,8 +127,8 @@ export const tagCampaignContactCache = {
             }))
           )
         )
-        .expire(cacheKey, 43200)
-        .execAsync();
+        .EXPIRE(cacheKey, 43200)
+        .exec();
     }
   },
   reloadQuery: async campaignContactId => {

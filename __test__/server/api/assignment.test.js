@@ -1,17 +1,16 @@
 import { getContacts } from "../../../src/server/api/assignment";
 import { Organization, Assignment, Campaign } from "../../../src/server/models";
 
-jest.mock("../../../src/lib/timezones.js");
-var timezones = require("../../../src/lib/timezones.js");
+import * as timezones from "../../../src/lib/timezones";
 
 describe("test getContacts builds queries correctly", () => {
-  var organization = new Organization({
+  const organization = new Organization({
     texting_hours_enforced: false,
     texting_hours_start: 9,
     texting_hours_end: 14
   });
 
-  var campaign = new Campaign({
+  const campaign = new Campaign({
     due_by: new Date()
   });
 
@@ -19,12 +18,14 @@ describe("test getContacts builds queries correctly", () => {
     due_by: new Date().setFullYear(new Date().getFullYear() - 1)
   });
 
-  var assignment = new Assignment({
+  const assignment = new Assignment({
     id: 1
   });
 
   beforeEach(() => {
-    timezones.getOffsets.mockReturnValueOnce([["-5_1"], ["-4_1"]]);
+    jest
+      .spyOn(timezones, "getOffsets")
+      .mockReturnValueOnce([["-5_1"], ["-4_1"]]);
   });
 
   afterAll(() => {
@@ -120,22 +121,24 @@ describe("test getContacts builds queries correctly", () => {
 }); // describe
 
 describe("test getContacts timezone stuff only", () => {
-  var organization = new Organization({
+  const organization = new Organization({
     texting_hours_enforced: true,
     texting_hours_start: 9,
     texting_hours_end: 14
   });
 
-  var campaign = new Campaign({
+  const campaign = new Campaign({
     due_by: new Date()
   });
 
-  var assignment = new Assignment({
+  const assignment = new Assignment({
     id: 1
   });
 
   beforeEach(() => {
-    timezones.getOffsets.mockReturnValueOnce([["-5_1"], ["-4_1"]]);
+    jest
+      .spyOn(timezones, "getOffsets")
+      .mockReturnValueOnce([["-5_1"], ["-4_1"]]);
   });
 
   afterAll(() => {
@@ -143,8 +146,11 @@ describe("test getContacts timezone stuff only", () => {
   });
 
   it("returns the correct query -- in default texting hours, with valid_timezone == true", () => {
-    timezones.defaultTimezoneIsBetweenTextingHours.mockReturnValueOnce(true);
-    var query = getContacts(
+    jest
+      .spyOn(timezones, "defaultTimezoneIsBetweenTextingHours")
+      .mockReturnValueOnce(true);
+
+    const query = getContacts(
       assignment,
       { validTimezone: true },
       organization,
@@ -156,8 +162,11 @@ describe("test getContacts timezone stuff only", () => {
   }); // it
 
   it("returns the correct query -- in default texting hours, with valid_timezone == false", () => {
-    timezones.defaultTimezoneIsBetweenTextingHours.mockReturnValueOnce(true);
-    var query = getContacts(
+    jest
+      .spyOn(timezones, "defaultTimezoneIsBetweenTextingHours")
+      .mockReturnValueOnce(true);
+
+    const query = getContacts(
       assignment,
       { validTimezone: false },
       organization,
@@ -169,8 +178,11 @@ describe("test getContacts timezone stuff only", () => {
   }); // it
 
   it("returns the correct query -- NOT in default texting hours, with valid_timezone == true", () => {
-    timezones.defaultTimezoneIsBetweenTextingHours.mockReturnValueOnce(false);
-    var query = getContacts(
+    jest
+      .spyOn(timezones, "defaultTimezoneIsBetweenTextingHours")
+      .mockReturnValueOnce(false);
+
+    const query = getContacts(
       assignment,
       { validTimezone: true },
       organization,
@@ -182,8 +194,11 @@ describe("test getContacts timezone stuff only", () => {
   }); // it
 
   it("returns the correct query -- NOT in default texting hours, with valid_timezone == false", () => {
-    timezones.defaultTimezoneIsBetweenTextingHours.mockReturnValueOnce(false);
-    var query = getContacts(
+    jest
+      .spyOn(timezones, "defaultTimezoneIsBetweenTextingHours")
+      .mockReturnValueOnce(false);
+
+    const query = getContacts(
       assignment,
       { validTimezone: false },
       organization,
@@ -195,21 +210,21 @@ describe("test getContacts timezone stuff only", () => {
   }); // it
 
   it("returns the correct query -- no contacts filter", () => {
-    var query = getContacts(assignment, null, organization, campaign);
+    const query = getContacts(assignment, null, organization, campaign);
     expect(query.toString()).toMatch(
       /^select \* from .campaign_contact. where .assignment_id. = 1.*/
     );
   }); // it
 
   it("returns the correct query -- no validTimezone property in contacts filter", () => {
-    var query = getContacts(assignment, {}, organization, campaign);
+    const query = getContacts(assignment, {}, organization, campaign);
     expect(query.toString()).toMatch(
       /^select \* from .campaign_contact. where .assignment_id. = 1.*/
     );
   }); // it
 
   it("returns the correct query -- validTimezone property is null", () => {
-    var query = getContacts(
+    const query = getContacts(
       assignment,
       { validTimezone: null },
       organization,
