@@ -35,8 +35,6 @@ Follow up instructions located [here](/docs/HOWTO_HEROKU_DEPLOY.md).
 
 **NOTE:** You can upgrade this deployment later for use in a production setting, but keep in mind you will need to migrate data from any prior campaigns.  Thus it is best to upgrade before you start any live campaigns.  This will cost ~$75 ($25 dyno + $50 postgres) a month and should be suitable for production level usage for most organizations. We recommend that if you plan to use Spoke at scale that you use [this link to deploy with a production infrastructure from the start!](https://heroku.com/deploy?template=https://github.com/StateVoicesNational/Spoke/tree/heroku-button-paid)
 
-Please let us know if you deployed by filling out this form [here](https://act.moveon.org/survey/tech/)
-
 
 ### Other Options for Production Use
 
