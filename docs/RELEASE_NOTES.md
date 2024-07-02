@@ -1,7 +1,7 @@
 # Release Notes
 
 ## v14.0
-_June 2024:_ Version 14.0
+_July 2024:_ Version 14.0
 
 14.0 is a major release. This release upgrades Node 16 to Node 20. By upgrading to Node 20, Spoke is now stable and secure until Q1 of 2026.
 
