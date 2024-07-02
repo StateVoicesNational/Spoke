@@ -1,5 +1,5 @@
 /* eslint-disable no-unused-expressions, consistent-return */
-import { r } from "../../../src/server/models/";
+import { r } from "../../../src/server/models";
 
 import {
   setupTest,
@@ -26,19 +26,18 @@ describe("createOptOut", () => {
     optOutContact = startedCampaign.testContacts[20];
     optOut = {
       cell: optOutContact.cell,
-      assignmentId: startedCampaign.assignmentId,
+      assignmentId: startedCampaign.assignmentId.toString(),
       reason: "they were snotty"
     };
 
     variables = {
       optOut,
-      campaignContactId: optOutContact.id
+      campaignContactId: optOutContact.id.toString()
     };
   }, global.DATABASE_SETUP_TEARDOWN_TIMEOUT);
 
   afterEach(async () => {
     await cleanupTest();
-    if (r.redis) r.redis.flushdb();
   }, global.DATABASE_SETUP_TEARDOWN_TIMEOUT);
 
   it("creates an opt out when the contact is assigned to the current user", async () => {

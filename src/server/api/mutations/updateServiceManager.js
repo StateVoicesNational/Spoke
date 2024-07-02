@@ -1,5 +1,3 @@
-import { GraphQLError } from "graphql/error";
-import { getConfig } from "../../../server/api/lib/config";
 import { cacheableData } from "../../../server/models";
 import { processServiceManagers } from "../../../extensions/service-managers";
 import { accessRequired } from "../errors";

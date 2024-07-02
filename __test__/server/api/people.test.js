@@ -1,12 +1,12 @@
 /**
- * @jest-environment jsdom
+ * @jest-environment node
  */
 /* eslint-disable no-unused-expressions, consistent-return */
 import { r } from "../../../src/server/models/";
 import { getUsersGql } from "../../../src/containers/PeopleList";
-import { GraphQLError } from "graphql/error";
+import { GraphQLError } from "graphql";
 import { resolvers } from "../../../src/server/api/schema";
-import { validate as uuidValidate } from 'uuid';
+import { validate as uuidValidate } from "uuid";
 
 import {
   setupTest,
@@ -158,23 +158,23 @@ describe("people", () => {
 
     // assign contacts
     await assignTexter(testAdminUsers[0], null, testCampaigns[0], [
-      { id: testTexterUsers[0].id, needsMessageCount: 3 },
-      { id: testTexterUsers[1].id, needsMessageCount: 3 }
+      { id: testTexterUsers[0].id.toString(), needsMessageCount: 3 },
+      { id: testTexterUsers[1].id.toString(), needsMessageCount: 3 }
     ]);
 
     await assignTexter(testAdminUsers[0], null, testCampaigns[1], [
-      { id: testTexterUsers[2].id, needsMessageCount: 3 },
-      { id: testTexterUsers[3].id, needsMessageCount: 3 }
+      { id: testTexterUsers[2].id.toString(), needsMessageCount: 3 },
+      { id: testTexterUsers[3].id.toString(), needsMessageCount: 3 }
     ]);
 
     await assignTexter(testAdminUsers[0], null, testCampaigns[2], [
-      { id: testTexterUsers[0].id, needsMessageCount: 3 },
-      { id: testTexterUsers[4].id, needsMessageCount: 3 }
+      { id: testTexterUsers[0].id.toString(), needsMessageCount: 3 },
+      { id: testTexterUsers[4].id.toString(), needsMessageCount: 3 }
     ]);
 
     await assignTexter(testAdminUsers[0], null, testCampaigns[3], [
-      { id: testTexterUsers[1].id, needsMessageCount: 3 },
-      { id: testTexterUsers[3].id, needsMessageCount: 3 }
+      { id: testTexterUsers[1].id.toString(), needsMessageCount: 3 },
+      { id: testTexterUsers[3].id.toString(), needsMessageCount: 3 }
     ]);
 
     // other stuff
@@ -191,7 +191,6 @@ describe("people", () => {
 
   afterEach(async () => {
     await cleanupTest();
-    if (r.redis) r.redis.flushdb();
   }, global.DATABASE_SETUP_TEARDOWN_TIMEOUT);
 
   describe("filtering", () => {
@@ -208,16 +207,20 @@ describe("people", () => {
 
     it("filters users to those assigned to a single campaign", async () => {
       const campaignsFilter = {
-        campaignId: testCampaigns[0].id
+        campaignId: parseInt(testCampaigns[0].id)
       };
       variables.campaignsFilter = campaignsFilter;
       const result = await runGql(getUsersGql, variables, testAdminUsers[0]);
+
       await testFiltering(result, [testTexterUsers[0], testTexterUsers[1]]);
     });
 
     it("filters users to those assigned to multiple campaigns", async () => {
       const campaignsFilter = {
-        campaignIds: [testCampaigns[0].id, testCampaigns[3].id]
+        campaignIds: [
+          parseInt(testCampaigns[0].id),
+          parseInt(testCampaigns[3].id)
+        ]
       };
       variables.campaignsFilter = campaignsFilter;
       const result = await runGql(getUsersGql, variables, testAdminUsers[0]);
@@ -334,7 +337,7 @@ describe("people", () => {
       expect(result.data).toBeUndefined();
       expect(result.errors).toEqual([
         new GraphQLError(
-          'Variable "$filterBy" got invalid value "any"; Expected type FilterPeopleBy; did you mean ANY?'
+          'Variable "$filterBy" got invalid value "any"; Value "any" does not exist in "FilterPeopleBy" enum. Did you mean the enum value "ANY"?'
         )
       ]);
     });
@@ -488,29 +491,37 @@ describe("people", () => {
   describe("reset password", () => {
     /**
      * Run the resetUserPassword mutation
-     * @param {number} organizationId 
-     * @param {number} texterId 
-     * @param {number} userId 
+     * @param {number} organizationId
+     * @param {number} texterId
+     * @param {number} userId
      * @returns Promise
      */
     function resetUserPassword(admin, organizationId, texterId) {
-      return resolvers.RootMutation.resetUserPassword(null, {
-        organizationId: organizationId,
-        userId: texterId
-      }, {
-        loaders: {
-          organization: {
-            load: async id => {
-              return (await r.knex("organization").where({ id }))[0];
-            }
-          }
+      return resolvers.RootMutation.resetUserPassword(
+        null,
+        {
+          organizationId: organizationId,
+          userId: texterId
         },
-        user: admin
-      });
+        {
+          loaders: {
+            organization: {
+              load: async id => {
+                return (await r.knex("organization").where({ id }))[0];
+              }
+            }
+          },
+          user: admin
+        }
+      );
     }
 
     it("reset local password", () => {
-      resetUserPassword(testAdminUsers[0], organizationId, testTexterUsers[0].id).then(uuid => {
+      resetUserPassword(
+        testAdminUsers[0],
+        organizationId,
+        testTexterUsers[0].id
+      ).then(uuid => {
         // Non-Auth0 password reset will return verion 4 UUID
         expect(uuidValidate(uuid)).toBeTruthy();
       });
@@ -518,11 +529,17 @@ describe("people", () => {
 
     it("reset Auth0 password", () => {
       // Remove PASSPORT_STRATEGY env var. PASSPORT_STRATEGY will default to "auth0" if there's nothing explicitly set
-      delete window.PASSPORT_STRATEGY;
+      delete process.env.PASSPORT_STRATEGY;
 
-      resetUserPassword(testAdminUsers[0], organizationId, testTexterUsers[0].id).catch(e => {
+      resetUserPassword(
+        testAdminUsers[0],
+        organizationId,
+        testTexterUsers[0].id
+      ).catch(e => {
         // Auth0 password reset will attempt to make HTTP request, which will fail in Jest test
-        const match = e.message.match(/Error: Request id (.*) failed; all 2 retries exhausted/);
+        const match = e.message.match(
+          /Error: Request id (.*) failed; all 2 retries exhausted/
+        );
 
         expect(match).toHaveLength(2);
         expect(uuidValidate(match[1])).toBeTruthy();

@@ -23,7 +23,6 @@ describe("errors.js", () => {
 
   afterEach(async () => {
     await cleanupTest();
-    if (r.redis) r.redis.flushdb();
   }, global.DATABASE_SETUP_TEARDOWN_TIMEOUT);
 
   describe("#authRequired", () => {
@@ -40,10 +39,7 @@ describe("errors.js", () => {
       }
 
       expect(error).toBeDefined();
-      expect(error.message).toEqual({
-        message: "You must login to access that resource.",
-        status: 401
-      });
+      expect(error.message).toEqual("You must login to access that resource.");
     });
   });
 

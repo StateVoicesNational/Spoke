@@ -93,10 +93,10 @@ export const setCacheContactAssignment = async (id, campaignId, contactObj) => {
       contactObj.user_id || ""
     ].join(":");
     await r.redis
-      .multi()
-      .hset(assignmentKey, id, value)
-      .expire(assignmentKey, 43200)
-      .execAsync();
+      .MULTI()
+      .HSET(assignmentKey, id, value)
+      .EXPIRE(assignmentKey, 43200)
+      .exec();
     return value;
   }
 };
@@ -109,9 +109,9 @@ export const getCacheContactAssignment = async (id, campaignId, contactObj) => {
     };
   }
   if (r.redis) {
-    const contactAssignment = await r.redis.hgetAsync(
+    const contactAssignment = await r.redis.HGET(
       contactAssignmentKey(campaignId),
-      id
+      id.toString()
     );
     if (contactAssignment) {
       // eslint-disable-next-line camelcase
@@ -157,20 +157,20 @@ const saveCacheRecord = async (
     );
     const contactKey = cacheKey(dbRecord.id);
     await r.redis
-      .multi()
-      .set(contactKey, JSON.stringify(contactCacheObj))
-      .expire(contactKey, 43200)
-      .execAsync();
+      .MULTI()
+      .SET(contactKey, JSON.stringify(contactCacheObj))
+      .EXPIRE(contactKey, 43200)
+      .exec();
     if (dbRecord.message_status) {
       // FUTURE: To avoid a write-syncing risk, before updating the status
       // we should check to see it doesn't exist before overwrite
       // This could also cause a problem, if the cache, itself, somehow gets out-of-sync
       const statusKey = messageStatusKey(dbRecord.id);
       await r.redis
-        .multi()
-        .set(statusKey, dbRecord.message_status)
-        .expire(statusKey, 43200)
-        .execAsync();
+        .MULTI()
+        .SET(statusKey, dbRecord.message_status)
+        .EXPIRE(statusKey, 43200)
+        .exec();
       // await updateAssignmentContact(dbRecord, dbRecord.message_status);
     }
     await setCacheContactAssignment(
@@ -190,7 +190,7 @@ const getMessageStatus = async (id, contactObj) => {
     return contactObj.message_status;
   }
   if (r.redis) {
-    const msgStatus = await r.redis.getAsync(messageStatusKey(id));
+    const msgStatus = await r.redis.get(messageStatusKey(id));
     if (msgStatus) {
       return msgStatus;
     }
@@ -205,15 +205,15 @@ const getMessageStatus = async (id, contactObj) => {
 const campaignContactCache = {
   clear: async (id, campaignId) => {
     if (r.redis) {
-      await r.redis.delAsync(cacheKey(id), messageStatusKey(id));
+      await r.redis.DEL(cacheKey(id), messageStatusKey(id));
       if (campaignId) {
-        await r.redis.hdelAsync(contactAssignmentKey(id), id);
+        await r.redis.hdel(contactAssignmentKey(id), id);
       }
     }
   },
   load: async (id, opts) => {
     if (r.redis && CONTACT_CACHE_ENABLED) {
-      const cacheRecord = await r.redis.getAsync(cacheKey(id));
+      const cacheRecord = await r.redis.get(cacheKey(id));
       if (cacheRecord) {
         // console.log('contact cacheRecord', cacheRecord)
         const cacheData = JSON.parse(cacheRecord);
@@ -372,7 +372,7 @@ const campaignContactCache = {
     // The cached version uses the info added in the updateStatus (of a contact) method below
     // which is called for incoming AND outgoing messages.
     if (r.redis && CONTACT_CACHE_ENABLED) {
-      const cellData = await r.redis.getAsync(
+      const cellData = await r.redis.get(
         cellTargetKey(cell, messageServiceSid || userNumber)
       );
       // console.log('lookupByCell cache', cell, service, messageServiceSid, cellData)
@@ -441,10 +441,10 @@ const campaignContactCache = {
     if (r.redis && CONTACT_CACHE_ENABLED) {
       const contactKey = cacheKey(contact.id);
       await r.redis
-        .multi()
-        .set(contactKey, JSON.stringify(newContact))
-        .expire(contactKey, 43200)
-        .execAsync();
+        .MULTI()
+        .SET(contactKey, JSON.stringify(newContact))
+        .EXPIRE(contactKey, 43200)
+        .exec();
     }
     return newContact;
   },
@@ -467,7 +467,7 @@ const campaignContactCache = {
       // console.log("updateCampaignAssignmentCache", campaignId, contactIds);
       // We do NOT delete current cache as mostly people are re-assigned.
       // When people are zero-d out, then the assignments themselves are deleted
-      // await r.redis.delAsync(assignmentKey);
+      // await r.redis.DEL(assignmentKey);
       // Now refill it, streaming for efficiency
       const assignmentKey = contactAssignmentKey(campaignId);
       let query = r
@@ -524,10 +524,10 @@ const campaignContactCache = {
         const statusKey = messageStatusKey(contact.id);
 
         let redisQuery = r.redis
-          .multi()
+          .MULTI()
           // delay expiration for contacts we continue to update
-          .expire(contactKey, 43200)
-          .expire(statusKey, 43200);
+          .EXPIRE(contactKey, 43200)
+          .EXPIRE(statusKey, 43200);
 
         if (messageServiceOrUserNumber) {
           // Other contexts don't really need to update the cell key -- just the status
@@ -557,7 +557,7 @@ const campaignContactCache = {
           redisQuery = redisQuery.set(statusKey, newStatus);
         }
 
-        await redisQuery.execAsync();
+        await redisQuery.exec();
         // await updateAssignmentContact(contact, newStatus);
       }
     } catch (err) {

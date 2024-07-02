@@ -78,12 +78,13 @@ Docker is optional, but can help with a consistent development environment using
 - Docker allows you to run apps in containers and can be installed [here with Docker's instructions](https://docs.docker.com/desktop/)
 - Docker Compose is the tool used to create and run docker configurations. If you installed Docker on Mac, a good way to install Docker Compose is to use [homebrew](https://brew.sh/). Once you have homebrew set up, you can run `brew install docker-compose`. if you're using Linux or Windows you can install Docker Compose [with these instructions](https://docs.docker.com/compose/install/)
 
-2. Make sure Docker is running on your machine and then build and run Spoke with `docker-compose up -d` to run redis and postgres in the background
-   - You can stop docker compose at any time with `docker-compose down`, and data will persist next time you run `docker-compose up`.
+2. Make sure Docker is running on your machine and then build and run Spoke with `docker compose up -d` to run redis and postgres in the background
+   - You can stop docker compose at any time with `docker compose down`, and data will persist next time you run `docker compose up`.
+   - **Note!** - `docker-compose` should in theory work with ComposeV2 as Docker considers it an alias for `docker compose`. [Read more about the migration of Compose](https://docs.docker.com/compose/migrate/#what-does-this-mean-for-my-projects-that-use-compose-v1)
 
 3. Run `./dev-tools/create-test-database` to populate the test database
 
-4. When done testing, clean up resources with `docker-compose down`, or `docker-compose down -v` to **_completely destroy_** your Postgres database & Redis datastore volumes.
+4. When done testing, clean up resources with `docker compose down`, or `docker compose down -v` to **_completely destroy_** your Postgres database & Redis datastore volumes.
 
 ### Getting the app running
 

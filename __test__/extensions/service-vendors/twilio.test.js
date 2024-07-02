@@ -129,7 +129,6 @@ describe("twilio", () => {
     r.knex.removeListener("query", spokeDbListener);
     jest.restoreAllMocks();
     await cleanupTest();
-    if (r.redis) r.redis.flushdb();
   }, global.DATABASE_SETUP_TEARDOWN_TIMEOUT);
 
   it("should send messages", async () => {

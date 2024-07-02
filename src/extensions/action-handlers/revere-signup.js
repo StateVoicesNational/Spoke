@@ -1,9 +1,9 @@
 import request from "request";
-import aws from "aws-sdk";
+import { SQS } from "@aws-sdk/client-sqs";
 import { r } from "../../server/models";
 import { actionKitSignup } from "./helper-ak-sync.js";
 
-const sqs = new aws.SQS();
+const sqs = new SQS();
 
 export const name = "revere-signup";
 

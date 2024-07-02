@@ -3,12 +3,13 @@ import React from "react";
 import * as yup from "yup";
 import Form from "react-formal";
 import { withRouter } from "react-router";
-import gql from "graphql-tag";
+import { gql } from "@apollo/client";
 
 import Button from "@material-ui/core/Button";
 import FormControlLabel from "@material-ui/core/FormControlLabel";
 import Switch from "@material-ui/core/Switch";
 
+import GSIntegerField from "../../../components/forms/GSIntegerField"
 import GSTextField from "../../../components/forms/GSTextField";
 import loadData from "../../../containers/hoc/load-data";
 
@@ -196,7 +197,7 @@ export class AdminConfig extends React.Component {
         />
         <p>If batchsize is set to 0 it will stop showing this side panel</p>
         <Form.Field
-          as={GSTextField}
+          as={GSIntegerField}
           name="takeConversationsBatchSize"
           label="Batch size (number) to take conversations button"
           fullWidth
