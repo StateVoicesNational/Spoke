@@ -5703,10 +5703,10 @@ balanced-match@^1.0.0:
   resolved "https://registry.yarnpkg.com/balanced-match/-/balanced-match-1.0.2.tgz#e83e3a7e3f300b34cb9d87f615fa0cbf357690ee"
   integrity sha512-3oSeUO0TMV67hN1AmbXsK4yaqU7tjiHlbxRDZOpH0KW9+CeX4bRAaX0Anxt0tx2MrpRpWwQaPwIlISEJhYU5Pw==
 
-bandwidth-sdk@^1.0.1:
-  version "1.0.1"
-  resolved "https://registry.yarnpkg.com/bandwidth-sdk/-/bandwidth-sdk-1.0.1.tgz#f8552a65e7b5f87a53ab39def01a871b6c62b272"
-  integrity sha512-NzVmLLrL+ru6WF0b2pAUYWJk5+3HuhKVMfDTiK+DHeJ62jAaWHPvEqTgArI/rJDm7amxOiVx9p4EPEAtoB+GYA==
+bandwidth-sdk@^1.0.2:
+  version "1.0.2"
+  resolved "https://registry.yarnpkg.com/bandwidth-sdk/-/bandwidth-sdk-1.0.2.tgz#b8df9254c106cc52abd7a7eb06bd61f5e1b14a60"
+  integrity sha512-UILe9/PNzDy18Uf4E+FLtQjkK3RRT4gVA5j3LThjdeKkv1j//b1zD9vU5B86tuyv0/zC77cRwog5D8hkhGXlXA==
   dependencies:
     axios "^1.6.7"
     xmlbuilder2 "^3.1.1"
