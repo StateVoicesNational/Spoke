@@ -133,7 +133,7 @@
     "graphql-tag": "^2.10.3",
     "graphql-type-json": "^0.3.2",
     "heroku-ssl-redirect": "^0.1.1",
-    "humps": "^1.1.0",
+    "humps": "2.0.1",
     "is-url": "^1.2.2",
     "isomorphic-fetch": "^3.0.0",
     "jest-each": "^0.3.1",
