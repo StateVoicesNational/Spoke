@@ -6,7 +6,7 @@ Spoke is an open source text-distribution tool for organizations to mobilize sup
 
 Spoke was created by Saikat Chakrabarti and Sheena Pakanati.
 
-On November 19th, 2023, the repo Spoke was transfered from MoveOn to StateVoices.
+On November 19th, 2023, the repo Spoke was transfered from MoveOn to State Voices.
 
 The latest version is [14.0.0](https://github.com/StateVoicesNational/Spoke/tree/v14.0) (see [release notes](https://github.com/StateVoicesNational/Spoke/blob/main/docs/RELEASE_NOTES.md#v140))
 
