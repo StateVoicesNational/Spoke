@@ -134,7 +134,6 @@ async function requestVanSavedLists(organization, skip) {
 
 export async function getClientChoiceData(organization, campaign, user) {
   let responseJson;
-  console.log("HERE", organization)
 
   try {
     responseJson = await requestVanSavedLists(organization);
