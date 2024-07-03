@@ -227,7 +227,6 @@ describe("ngpvan", () => {
           .reply(404);
 
         const savedListsResponse = await getClientChoiceData(organization);
-        console.log("HERE", JSON.parse(savedListsResponse.data))
         expect(JSON.parse(savedListsResponse.data)).toEqual({
           error: expect.stringMatching(
             /TESTING :: Error retrieving saved list metadata from VAN Error: Request id .+ failed; received status 404/
