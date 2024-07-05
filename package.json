@@ -81,7 +81,7 @@
   "homepage": "https://github.com/StateVoicesNational/Spoke/#readme",
   "dependencies": {
     "@aoberoi/passport-slack": "^1.0.5",
-    "@apollo/client": "^3.9.8",
+    "@apollo/client": "^3.10.8",
     "@apollo/server": "^4.10.1",
     "@aws-sdk/client-cloudwatch": "^3.609.0",
     "@aws-sdk/client-cloudwatch-events": "^3.609.0",
