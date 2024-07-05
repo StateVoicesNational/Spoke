@@ -187,20 +187,20 @@ export async function getConversations(
       .offset(cursor.offset);
   }
   console.log(
-    "getConversations sql",
-    awsContext && awsContext.awsRequestId,
-    cursor,
-    assignmentsFilter,
-    offsetLimitQuery.toString()
+    `Org Id: ${organizationId} :: getConversations sql -- \n`,
+    `\tawsContext: ${awsContext && awsContext.awsRequestId ? true : false}\n`,
+    `\tcursor: limit=${cursor.limit}, offset=${cursor.offset}\n`,
+    `\tassignmentsFilter: ${Object.keys(assignmentsFilter).length > 0 ? assignmentsFilter : "no filter"}\n`,
+    `\toffsetLimitQuery: ${offsetLimitQuery.toString()}`
   );
 
   const ccIdRows = await offsetLimitQuery;
 
   console.log(
-    "getConversations contact ids",
-    awsContext && awsContext.awsRequestId,
-    Number(new Date()) - Number(starttime),
-    ccIdRows.length
+    `Org Id: ${organizationId} :: getConversations query1 contact ids -- \n`,
+    `\tawsContext: ${awsContext && awsContext.awsRequestId === undefined ? true : false}\n`,
+    `\ttime: ${Number(new Date()) - Number(starttime)}ms\n`,
+    `\tccIdRows length: ${ccIdRows.length}`
   );
   const ccIds = ccIdRows.map(ccIdRow => {
     return ccIdRow.cc_id;
@@ -254,10 +254,10 @@ export async function getConversations(
   query = query.orderBy("cc_id", "desc").orderBy("message.id");
   const conversationRows = await query;
   console.log(
-    "getConversations query2 result",
-    awsContext && awsContext.awsRequestId,
-    Number(new Date()) - Number(starttime),
-    conversationRows.length
+    `Org Id: ${organizationId} :: getConversations query2 conversations -- \n`,
+    `\tawsContext: ${awsContext && awsContext.awsRequestId === undefined ? true : false}\n`,
+    `\ttime: ${Number(new Date()) - Number(starttime)}ms\n`,
+    `\tconversationRows lenght: ${conversationRows.length}`
   );
   /* collapse the rows to produce an array of objects, with each object
    * containing the fields for one conversation, each having an array of
@@ -320,8 +320,9 @@ export async function getConversations(
   /* Query #3 -- get the count of all conversations matching the criteria.
    * We need this to show total number of conversations to support paging */
   console.log(
-    "getConversations query3",
-    Number(new Date()) - Number(starttime)
+    "getConversations query3 total count + time for total completion of queries\n",
+    `\ttime: ${Number(new Date()) - Number(starttime)}ms\n`,
+    `\ttotal conversations: ${conversations.length}`
   );
   const conversationsCountQuery = getConversationsJoinsAndWhereClause(
     r.knexReadOnly,

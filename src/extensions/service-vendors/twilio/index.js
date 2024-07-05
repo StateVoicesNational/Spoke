@@ -582,7 +582,21 @@ export async function handleIncomingMessage(message) {
     const finalMessage = await convertMessagePartsToMessage([
       pendingMessagePart
     ]);
-    console.log("Contact reply", finalMessage, pendingMessagePart);
+    console.log(
+      "Contact Reply\n", 
+      `\t| Message Status:      ${finalMessage.send_status}\n`,
+      `\t| From Contact? :      ${finalMessage.is_from_contact}\n`,
+      `\t| Contact Number:      ${finalMessage.contact_number}\n`, 
+      `\t| User Number:         ${finalMessage.user_number}\n`,
+      `\t| Text:                ${finalMessage.text.replace(/(\r\n|\n|\r)/gm, " ").substring(0, 45)}\n`,
+      `\t| Error Code:          ${finalMessage.error_code}\n`,
+      `\t| Service:             ${finalMessage.service || pendingMessagePart.service}\n`,
+      `\t| Media:               ${finalMessage.media.length === 0 ? "No media" : finalMessage.media}\n`,
+      `\t| Message Service SID: ${finalMessage.messageservice_sid}\n`,
+      `\t| Service ID:          ${finalMessage.service_id}\n`,
+      `\t| Parent ID:           ${pendingMessagePart.parent_id}\n`,
+      `\t| User ID:             ${finalMessage.user_id}`,
+    );
     if (finalMessage) {
       if (message.spokeCreatedAt) {
         finalMessage.created_at = message.spokeCreatedAt;
