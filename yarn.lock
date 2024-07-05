@@ -3139,10 +3139,10 @@
     "@babel/helper-validator-identifier" "^7.24.7"
     to-fast-properties "^2.0.0"
 
-"@bandwidth/numbers@^1.7.0":
-  version "1.9.2"
-  resolved "https://registry.yarnpkg.com/@bandwidth/numbers/-/numbers-1.9.2.tgz#732a52d163ac186e45c44c6326980639efc21eed"
-  integrity sha512-CiO6f6JxhtCBR56ATg546Q67OZ1DgIny07TazM1VrEvLxTDprWrEVIW4/JaEqEt0FxxjhuO/0CbQXSkAtodH6Q==
+"@bandwidth/numbers@^1.10.0":
+  version "1.10.0"
+  resolved "https://registry.yarnpkg.com/@bandwidth/numbers/-/numbers-1.10.0.tgz#6be525cabd3637e1de60bab3de7d9e9ef6edd8b6"
+  integrity sha512-g3TP38wKn04L6pRHSrnffzYPHS4SsI+xxG0hPY1kiOo5Nr28XmchRYa8pPf9NX2GrHrytJpkMi8yRXNbt0pVwg==
   dependencies:
     bluebird "^3.7.2"
     streamifier "^0.1.1"
