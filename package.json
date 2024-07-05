@@ -179,7 +179,7 @@
     "yup": "0.32.3"
   },
   "devDependencies": {
-    "@babel/eslint-parser": "^7.24.1",
+    "@babel/eslint-parser": "^7.24.7",
     "babel-jest": "^29.3.1",
     "babel-preset-es2017": "^6.24.1",
     "cypress": "5.6.0",
