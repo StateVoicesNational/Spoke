@@ -11,42 +11,41 @@ import {
   createOrganization
 } from "../test_helpers";
 
-jest.mock("../../src/lib/zip-format");
-var zipFormat = require("../../src/lib/zip-format");
+import * as zipFormat from "../../src/lib/zip-format";
 
 describe("test getTimezoneByZip", () => {
   beforeAll(
     async () => await setupTest(),
     global.DATABASE_SETUP_TEARDOWN_TIMEOUT
   );
-  afterAll(
-    async () => await cleanupTest(),
-    global.DATABASE_SETUP_TEARDOWN_TIMEOUT
-  );
+  afterAll(async () => {
+    jest.resetAllMocks();
+    await cleanupTest();
+  }, global.DATABASE_SETUP_TEARDOWN_TIMEOUT);
 
   it("returns timezone data from the common zipcode/timezone mappings", async () => {
-    zipFormat.zipToTimeZone.mockReturnValueOnce([0, 0, 3, 1]);
+    jest.spyOn(zipFormat, "zipToTimeZone").mockReturnValueOnce([0, 0, 3, 1]);
 
     var good_things_come_to_those_who_wait = await getTimezoneByZip("11790");
     expect(good_things_come_to_those_who_wait).toEqual("3_1");
   });
 
   it("does not memoize common zipcode/timezone mappings", async () => {
-    zipFormat.zipToTimeZone.mockReturnValueOnce([0, 0, 4, 1]);
+    jest.spyOn(zipFormat, "zipToTimeZone").mockReturnValueOnce([0, 0, 4, 1]);
 
     var future = await getTimezoneByZip("11790");
     expect(future).toEqual("4_1");
   });
 
   it("does not find a zipcode in the database!", async () => {
-    zipFormat.zipToTimeZone.mockReturnValueOnce(undefined);
+    jest.spyOn(zipFormat, "zipToTimeZone").mockReturnValueOnce(undefined);
 
     var future = await getTimezoneByZip("11790");
     expect(future).toEqual("");
   });
 
   it("finds a zipcode in the database and memoizes it", async () => {
-    zipFormat.zipToTimeZone.mockReturnValueOnce(undefined);
+    jest.spyOn(zipFormat, "zipToTimeZone").mockReturnValueOnce(undefined);
 
     try {
       var zipCode = new ZipCode({

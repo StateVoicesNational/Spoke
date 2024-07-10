@@ -9,6 +9,7 @@ require("../../test_helpers");
 
 afterEach(async () => {
   jest.restoreAllMocks();
+  await nock.cleanAll();
 });
 
 describe("ngpvn-action", () => {
@@ -1071,7 +1072,7 @@ describe("ngpvn-action", () => {
         }
 
         expect(error.message).toEqual(
-          expect.stringMatching(/^unexpected token*/i)
+          expect.stringMatching(/^.*is not valid json.*$/i)
         );
 
         expect(postPeopleCanvassResponsesNock.isDone()).toEqual(false);

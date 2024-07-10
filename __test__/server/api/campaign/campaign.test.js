@@ -1,4 +1,4 @@
-import gql from "graphql-tag";
+import { gql } from "@apollo/client";
 import { campaignDataQuery as AdminCampaignEditQuery } from "../../../../src/containers/AdminCampaignEdit";
 import {
   bulkReassignCampaignContactsMutation,
@@ -64,7 +64,7 @@ beforeEach(async () => {
   testAdminUser = await createUser();
   testInvite = await createInvite();
   testOrganization = await createOrganization(testAdminUser, testInvite);
-  organizationId = testOrganization.data.createOrganization.id;
+  organizationId = testOrganization.data.createOrganization.id.toString();
   testCampaign = await createCampaign(testAdminUser, testOrganization);
   testContacts = await createContacts(testCampaign, NUMBER_OF_CONTACTS);
   testTexterUser = await createTexter(testOrganization);
@@ -82,7 +82,7 @@ beforeEach(async () => {
   );
   await assignTexter(testAdminUser, testTexterUser, testCampaign);
   const dbCampaignContact = await getCampaignContact(testContacts[0].id);
-  assignmentId = dbCampaignContact.assignment_id;
+  assignmentId = dbCampaignContact.assignment_id.toString();
   // await createScript(testAdminUser, testCampaign)
   // await startCampaign(testAdminUser, testCampaign)
   r.knex.on("query", spokeDbListener);
@@ -93,7 +93,6 @@ afterEach(async () => {
   r.knex.removeListener("query", spokeDbListener);
   await cleanupTest();
   jest.restoreAllMocks();
-  if (r.redis) r.redis.flushdb();
 }, global.DATABASE_SETUP_TEARDOWN_TIMEOUT);
 
 it("allow supervolunteer to retrieve campaign data", async () => {
@@ -177,7 +176,7 @@ it("save campaign interaction steps, edit it, make sure the last value is set", 
   await createScript(testAdminUser, testCampaign);
   let campaignDataResults = await runGql(
     AdminCampaignEditQuery,
-    { campaignId: testCampaign.id },
+    { campaignId: testCampaign.id.toString() },
     testAdminUser
   );
   expect(campaignDataResults.data.campaign.interactionSteps.length).toEqual(2);
@@ -481,7 +480,7 @@ describe("Reassignments", () => {
     // send some texts
     for (let i = 0; i < 5; i++) {
       await sendMessage(testContacts[i].id, testTexterUser, {
-        userId: testTexterUser.id,
+        userId: testTexterUser.id.toString(),
         contactNumber: testContacts[i].cell,
         text: "test text",
         assignmentId
@@ -512,11 +511,11 @@ describe("Reassignments", () => {
     // using editCampaign
     await assignTexter(testAdminUser, testTexterUser, testCampaign, [
       {
-        id: testTexterUser.id,
+        id: testTexterUser.id.toString(),
         needsMessageCount: 70,
         contactsCount: NUMBER_OF_CONTACTS
       },
-      { id: testTexterUser2.id, needsMessageCount: 20 }
+      { id: testTexterUser2.id.toString(), needsMessageCount: 20 }
     ]);
     // TEXTER 1 (70 needsMessage, 5 messaged)
     // TEXTER 2 (20 needsMessage)
@@ -572,7 +571,7 @@ describe("Reassignments", () => {
         c => assignmentContacts2[i].id === c.id.toString()
       )[0];
       const messageRes = await sendMessage(contact.id, testTexterUser2, {
-        userId: testTexterUser2.id,
+        userId: testTexterUser2.id.toString(),
         contactNumber: contact.cell,
         text: "test text autorespond",
         assignmentId: assignmentId2
@@ -630,7 +629,7 @@ describe("Reassignments", () => {
         )
       )[0];
       await sendMessage(contact.id, testTexterUser2, {
-        userId: testTexterUser2.id,
+        userId: testTexterUser2.id.toString(),
         contactNumber: contact.cell,
         text: "keep talking",
         assignmentId: assignmentId2
@@ -677,9 +676,17 @@ describe("Reassignments", () => {
       20
     );
     await assignTexter(testAdminUser, testTexterUser, testCampaign, [
-      { id: testTexterUser.id, needsMessageCount: 60, contactsCount: 75 },
+      {
+        id: testTexterUser.id.toString(),
+        needsMessageCount: 60,
+        contactsCount: 75
+      },
       // contactsCount: 30 = 25 (desired needsMessage) + 5 (messaged)
-      { id: testTexterUser2.id, needsMessageCount: 25, contactsCount: 30 }
+      {
+        id: testTexterUser2.id.toString(),
+        needsMessageCount: 25,
+        contactsCount: 30
+      }
     ]);
     // TEXTER 1 (60 needsMessage, 5 messaged)
     // TEXTER 2 (25 needsMessage, 2 needsResponse, 3 convo)
@@ -728,7 +735,7 @@ describe("Reassignments", () => {
       reassignCampaignContactsMutation,
       {
         organizationId,
-        newTexterUserId: testTexterUser2.id,
+        newTexterUserId: testTexterUser2.id.toString(),
         campaignIdsContactIds: [
           {
             campaignId: testCampaign.id,
@@ -782,23 +789,25 @@ describe("Reassignments", () => {
     expect(texterCampaignDataResults2.data.assignment.allContactsCount).toEqual(
       31
     );
+
     //   bulkReassignCampaignContactsMutation
     await runGql(
       bulkReassignCampaignContactsMutation,
       {
         organizationId,
-        newTexterUserId: testTexterUser.id,
+        newTexterUserId: testTexterUser.id.toString(),
         contactsFilter: {
           messageStatus: "needsResponse",
           isOptedOut: false,
           validTimezone: true
         },
-        campaignsFilter: { campaignId: testCampaign.id },
-        assignmentsFilter: { texterId: testTexterUser2.id },
+        campaignsFilter: { campaignId: parseInt(testCampaign.id) },
+        assignmentsFilter: { texterId: parseInt(testTexterUser2.id) },
         messageTextFilter: ""
       },
       testAdminUser
     );
+
     // TEXTER 1 (60 needsMessage, 2 needsResponse, 4 messaged)
     // TEXTER 2 (25 needsMessage, 3 convo, 1 messaged)
     texterCampaignDataResults = await runGql(
@@ -892,7 +901,10 @@ describe("Bulk Send", () => {
     );
 
     // send some texts
-    const bulkSendResult = await bulkSendMessages(assignmentId, testTexterUser);
+    const bulkSendResult = await bulkSendMessages(
+      parseInt(assignmentId),
+      testTexterUser
+    );
     resultTestFunction(bulkSendResult);
 
     // TEXTER 1 (95 needsMessage, 5 needsResponse)
@@ -1046,7 +1058,7 @@ describe("campaigns query", () => {
 
   it("correctly filters by a single campaign id", async () => {
     const campaignsFilter = {
-      campaignId: testCampaign.id
+      campaignId: parseInt(testCampaign.id)
     };
     const variables = {
       cursor,
@@ -1061,7 +1073,7 @@ describe("campaigns query", () => {
 
   it("correctly filter by more than one campaign id", async () => {
     const campaignsFilter = {
-      campaignIds: [testCampaign.id, testCampaign2.id]
+      campaignIds: [parseInt(testCampaign.id), parseInt(testCampaign2.id)]
     };
     const variables = {
       cursor,

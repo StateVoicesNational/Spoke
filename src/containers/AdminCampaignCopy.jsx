@@ -5,7 +5,7 @@ import Snackbar from "@material-ui/core/Snackbar";
 
 import { withRouter, Link } from "react-router";
 import loadData from "./hoc/load-data";
-import gql from "graphql-tag";
+import { gql } from "@apollo/client";
 import { dataTest } from "../lib/attributes";
 import { getButtonProps } from "../components/utils";
 

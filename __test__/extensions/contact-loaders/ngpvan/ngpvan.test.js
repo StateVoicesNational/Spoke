@@ -1,5 +1,16 @@
+// client-testing libs
+import React from "react";
+import { StyleSheetTestUtils } from "aphrodite";
+import { shallow } from "enzyme";
+
 import each from "jest-each";
 import nock from "nock";
+
+import Autocomplete from "@material-ui/lab/Autocomplete";
+import List from "@material-ui/core/List";
+import ListItem from "@material-ui/core/ListItem";
+import ListItemText from "@material-ui/core/ListItemText";
+
 import {
   getCellFromRow,
   getZipFromRow,
@@ -9,10 +20,6 @@ import {
   getClientChoiceData,
   available
 } from "../../../../src/extensions/contact-loaders/ngpvan";
-import Autocomplete from "@material-ui/lab/Autocomplete";
-import List from "@material-ui/core/List";
-import ListItem from "@material-ui/core/ListItem";
-import ListItemText from "@material-ui/core/ListItemText";
 
 import { CampaignContactsForm } from "../../../../src/extensions/contact-loaders/ngpvan/react-component";
 
@@ -22,10 +29,9 @@ const ngpvan = require("../../../../src/extensions/contact-loaders/ngpvan");
 const helpers = require("../../../../src/extensions/contact-loaders/helpers");
 const jobs = require("../../../../src/workers/jobs");
 
-// client-testing libs
-import React from "react";
-import { shallow } from "enzyme";
-import { StyleSheetTestUtils } from "aphrodite";
+afterEach(async () => {
+  await nock.cleanAll();
+});
 
 describe("ngpvan", () => {
   let fakeNgpVanBaseApiUrl;
@@ -37,6 +43,7 @@ describe("ngpvan", () => {
     let oldNgpVanWebhookUrl;
     let oldNgpVanAppName;
     let oldNgpVanApiKey;
+    let organization;
 
     beforeEach(async () => {
       oldNgpVanWebhookUrl = process.env.NGP_VAN_WEBHOOK_BASE_URL;
@@ -45,6 +52,7 @@ describe("ngpvan", () => {
       process.env.NGP_VAN_WEBHOOK_BASE_URL = "https://www.example.com";
       process.env.NGP_VAN_APP_NAME = "spoke";
       process.env.NGP_VAN_API_KEY = "topsecret";
+      organization = { name: "TESTING" }
     });
 
     afterEach(async () => {
@@ -55,7 +63,7 @@ describe("ngpvan", () => {
     });
 
     it("returns true when all required environment variables are present", async () => {
-      expect(await available()).toEqual({
+      expect(await available(organization)).toEqual({
         result: true,
         expiresSeconds: 86400
       });
@@ -67,7 +75,7 @@ describe("ngpvan", () => {
       });
 
       it("returns false", async () => {
-        expect(await available()).toEqual({
+        expect(await available(organization)).toEqual({
           result: false,
           expiresSeconds: 86400
         });
@@ -82,6 +90,7 @@ describe("ngpvan", () => {
     let oldNgpVanCacheTtl;
     let oldNgpVanApiBaseUrl;
     let listItems;
+    let organization;
 
     beforeEach(async () => {
       oldMaximumListSize = process.env.NGP_VAN_MAXIMUM_LIST_SIZE;
@@ -94,6 +103,7 @@ describe("ngpvan", () => {
       process.env.NGP_VAN_API_KEY = "topsecret";
       process.env.NGP_VAN_CACHE_TTL = 30;
       process.env.NGP_VAN_API_BASE_URL = fakeNgpVanBaseApiUrl;
+      organization = {name: "TESTING"};
     });
 
     beforeEach(async () => {
@@ -216,11 +226,10 @@ describe("ngpvan", () => {
           )
           .reply(404);
 
-        const savedListsResponse = await getClientChoiceData();
-
+        const savedListsResponse = await getClientChoiceData(organization);
         expect(JSON.parse(savedListsResponse.data)).toEqual({
           error: expect.stringMatching(
-            /Error retrieving saved list metadata from VAN Error: Request id .+ failed; received status 404/
+            /TESTING :: Error retrieving saved list metadata from VAN Error: Request id .+ failed; received status 404/
           )
         });
         getSavedListsNock.done();

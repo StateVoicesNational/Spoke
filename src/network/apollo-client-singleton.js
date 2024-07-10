@@ -1,10 +1,9 @@
 import fetch from "isomorphic-fetch";
-import { ApolloClient } from "apollo-client";
-import { ApolloLink } from "apollo-link";
-import { createHttpLink } from "apollo-link-http";
-import { onError } from "apollo-link-error";
-import { InMemoryCache } from "apollo-cache-inmemory";
-import { getMainDefinition } from "apollo-utilities";
+import { ApolloClient, ApolloLink } from "@apollo/client";
+import { createHttpLink } from "@apollo/client/link/http";
+import { onError } from "@apollo/client/link/error";
+import { InMemoryCache } from "@apollo/client/cache";
+import { getMainDefinition } from "@apollo/client/utilities";
 import omitDeep from "omit-deep-lodash";
 
 const httpLink = createHttpLink({
@@ -61,11 +60,32 @@ const cache = new InMemoryCache({
     }
     return null;
   },
-  // FUTURE: Apollo Client 3.0 allows this much more easily:
   typePolicies: {
     ContactTag: {
       // key is just the tag id and the value is contact-specific
       keyFields: false
+    },
+    // Define custom merge functions for multiple fields
+    // https://go.apollo.dev/c/merging-non-normalized-objects
+    // https://www.apollographql.com/docs/react/caching/cache-field-behavior/#merging-arrays
+    Query: {
+      fields: {
+        organization: {
+          merge: true
+        }
+      }
+    },
+    Campaign: {
+      fields: {
+        ingestMethod: {
+          merge: true
+        },
+        pendingJobs: {
+          merge(existing = [], incoming) {
+            return incoming;
+          }
+        }
+      }
     }
   }
 });

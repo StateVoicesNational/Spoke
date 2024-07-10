@@ -65,7 +65,7 @@ It turns out we need those instructions for a different portion of the setup, bu
 - Install Docker for preliminary database and cache setup, [linked here](https://docs.docker.com/engine/install/ubuntu/)
 - Verify your docker is set up correctly: $ sudo docker run hello-world
 - Install docker compose (click on the Linux tab) [Link to Docker Documentation](https://docs.docker.com/compose/install/)
-- Turn on docker `sudo docker-compose up -d`
+- Turn on docker `sudo docker compose up -d`
 - Permission Denied Sad Path: `sudo usermod -aG docker $USER` (theoretically making it so you don’t have to use sudo, but let’s come back to this)
 Yarn bug: `wget -qO- https://raw.githubusercontent.com/nvm-sh/nvm/v0.38.0/install.sh | bash
 https://github.com/StateVoicesNational/Spoke/blob/main/docker-compose.yml`

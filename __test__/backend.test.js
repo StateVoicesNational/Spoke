@@ -1,8 +1,7 @@
+import { graphql } from "graphql";
 import { isSqlite } from "../src/server/models/";
 import { resolvers } from "../src/server/api/schema";
-import { schema } from "../src/api/schema";
-import { assignmentRequiredOrAdminRole } from "../src/server/api/errors";
-import { graphql } from "graphql";
+import { schema as apiSchema } from "../src/api/schema";
 
 console.log("This is an intentional error");
 
@@ -28,12 +27,11 @@ import {
   createInvite as helperCreateInvite,
   runGql
 } from "./test_helpers";
-import { makeExecutableSchema } from "graphql-tools";
-
+import { makeExecutableSchema } from "@graphql-tools/schema";
 import { editUserMutation } from "../src/containers/UserEdit.jsx";
 
-const mySchema = makeExecutableSchema({
-  typeDefs: schema,
+const schema = makeExecutableSchema({
+  typeDefs: apiSchema,
   resolvers,
   allowUndefinedInResolve: true
 });
@@ -97,9 +95,14 @@ async function createInvite() {
       id
     }
   }`;
-  const context = getContext();
+  const contextValue = getContext();
   try {
-    const invite = await graphql(mySchema, inviteQuery, rootValue, context);
+    const invite = await graphql({
+      schema,
+      source: inviteQuery,
+      rootValue,
+      contextValue
+    });
     return invite;
   } catch (err) {
     console.error("Error creating invite");
@@ -108,7 +111,7 @@ async function createInvite() {
 }
 
 async function createOrganization(user, name, userId, inviteId) {
-  const context = getContext({ user });
+  const contextValue = getContext({ user });
 
   const orgQuery = `mutation createOrganization($name: String!, $userId: String!, $inviteId: String!) {
     createOrganization(name: $name, userId: $userId, inviteId: $inviteId) {
@@ -121,20 +124,20 @@ async function createOrganization(user, name, userId, inviteId) {
     }
   }`;
 
-  const variables = {
+  const variableValues = {
     userId,
     name,
     inviteId
   };
 
   try {
-    const org = await graphql(
-      mySchema,
-      orgQuery,
+    const org = await graphql({
+      schema,
+      source: orgQuery,
       rootValue,
-      context,
-      variables
-    );
+      contextValue,
+      variableValues
+    });
     return org;
   } catch (err) {
     console.error("Error creating organization");
@@ -143,7 +146,7 @@ async function createOrganization(user, name, userId, inviteId) {
 }
 
 async function createCampaign(user, title, description, organizationId) {
-  const context = getContext({ user });
+  const contextValue = getContext({ user });
 
   const campaignQuery = `mutation createCampaign($input: CampaignInput!) {
     createCampaign(campaign: $input) {
@@ -151,7 +154,7 @@ async function createCampaign(user, title, description, organizationId) {
       title
     }
   }`;
-  const variables = {
+  const variableValues = {
     input: {
       title,
       description,
@@ -160,13 +163,13 @@ async function createCampaign(user, title, description, organizationId) {
   };
 
   try {
-    const campaign = await graphql(
-      mySchema,
-      campaignQuery,
+    const campaign = await graphql({
+      schema,
+      source: campaignQuery,
       rootValue,
-      context,
-      variables
-    );
+      contextValue,
+      variableValues
+    });
     return campaign;
   } catch (err) {
     console.error("Error creating campaign");
@@ -192,8 +195,13 @@ describe("graphql test suite", () => {
         id
       }
     }`;
-    const context = getContext();
-    const result = await graphql(mySchema, query, rootValue, context);
+    const contextValue = getContext();
+    const result = await graphql({
+      schema,
+      source: query,
+      rootValue,
+      contextValue
+    });
     const data = result;
 
     expect(typeof data.currentUser).toEqual("undefined");
@@ -206,8 +214,13 @@ describe("graphql test suite", () => {
         email
       }
     }`;
-    const context = getContext({ user: testAdminUser });
-    const result = await graphql(mySchema, query, rootValue, context);
+    const contextValue = getContext({ user: testAdminUser });
+    const result = await graphql({
+      schema,
+      source: query,
+      rootValue,
+      contextValue
+    });
     const { data } = result;
 
     expect(data.currentUser.email).toBe("testuser@example.com");
@@ -301,29 +314,29 @@ describe("graphql test suite", () => {
         }
       }
     }`;
-    const context = getContext({ user: testAdminUser });
+    const contextValue = getContext({ user: testAdminUser });
     const updateCampaign = Object.assign({}, testCampaign.data.createCampaign);
     const campaignId = updateCampaign.id;
     testTexterUser = await helperCreateTexter(testOrganization);
 
     updateCampaign.texters = [
       {
-        id: testTexterUser.id
+        id: testTexterUser.id.toString()
       }
     ];
     delete updateCampaign.id;
     delete updateCampaign.contacts;
-    const variables = {
+    const variableValues = {
       campaignId,
       campaign: updateCampaign
     };
-    const result = await graphql(
-      mySchema,
-      campaignEditQuery,
+    const result = await graphql({
+      schema,
+      source: campaignEditQuery,
       rootValue,
-      context,
-      variables
-    );
+      contextValue,
+      variableValues
+    });
 
     expect(result.data.editCampaign.texters.length).toBe(1);
     expect(result.data.editCampaign.texters[0].assignment.contactsCount).toBe(
@@ -522,6 +535,10 @@ describe("graphql test suite", () => {
           organization_id: organization.id,
           role: "OWNER"
         }).save();
+
+        const now = new Date();
+        const dueBy = isSqlite ? now.getTime() : now;
+
         // creating campaign, interactions (two levels down), and canned responses
         campaign = await new Campaign({
           organization_id: organization.id,
@@ -529,7 +546,7 @@ describe("graphql test suite", () => {
           description: "This is my new campaign",
           is_started: false,
           is_archived: false,
-          due_by: new Date(),
+          due_by: dueBy,
           features: JSON.stringify({ MY_FEATURE: "value 1" }),
           intro_html: "<p>This is my intro HTML.</p>",
           primary_color: "#112233",
@@ -619,24 +636,19 @@ describe("graphql test suite", () => {
           typeof copiedCampaign.due_by === "number" ||
           typeof copiedCampaign.due_by === "string"
         ) {
-          let parsedDate = new Date(copiedCampaign.due_by);
+          const parsedDate = new Date(copiedCampaign.due_by);
           expect(parsedDate).toEqual(campaign.due_by);
+        } else if (isSqlite) {
+          expect(copiedCampaign.due_by.getTime()).toEqual(campaign.due_by);
         } else {
-          if (isSqlite) {
-            // Currently an open issue w/ datetime being stored as a string in SQLite3 for Jest tests: https://github.com/TryGhost/node-sqlite3/issues/1355. This results in milliseconds being truncated when getting campaign due_by
-            const campaignDueBy = campaign.due_by;
-
-            campaignDueBy.setMilliseconds(0);
-            expect(copiedCampaign.due_by).toEqual(campaignDueBy);
-          } else {
-            expect(copiedCampaign.due_by).toEqual(campaign.due_by);
-          }
+          expect(copiedCampaign.due_by).toEqual(campaign.due_by);
         }
+
         if (
           typeof copiedCampaign.features === "object" &&
           copiedCampaign.features
         ) {
-          let jsonString = JSON.stringify(copiedCampaign.features);
+          const jsonString = JSON.stringify(copiedCampaign.features);
           expect(jsonString).toEqual(campaign.features);
         } else {
           expect(copiedCampaign.features).toEqual(campaign.features);
@@ -769,7 +781,6 @@ describe("editUser mutation", () => {
 
   afterEach(async () => {
     await cleanupTest();
-    if (r.redis) r.redis.flushdb();
   }, global.DATABASE_SETUP_TEARDOWN_TIMEOUT);
 
   it("returns the user if it is called with a userId by no userData", async () => {
