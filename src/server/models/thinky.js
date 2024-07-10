@@ -57,6 +57,9 @@ if (redisUrl) {
       agent: false
     };
   }
+  if (process.env.CACHE_PREFIX) {
+    redisSettings.prefix = process.env.CACHE_PREFIX;
+  }
   if (process.env.REDIS_JSON) {
     Object.assign(redisSettings, JSON.parse(process.env.REDIS_JSON));
   }
