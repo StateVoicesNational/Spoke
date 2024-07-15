@@ -69,7 +69,7 @@ const getFileList = async (organization) => {
       Prefix: `image-upload/${organization.id}/`,
     });
     // TODO: iterate paginated results
-    fileList = dirList['Contents'].map(o => o.Key);
+    fileList = (dirList['Contents'] || []).map(o => o.Key);
     if (r.redis) {
       await r.redis
         .MULTI()
