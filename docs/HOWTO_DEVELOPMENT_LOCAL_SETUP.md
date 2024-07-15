@@ -1,7 +1,9 @@
 ## Getting started
 ---
-### Download Windows Subsytem for Linux
-Windows Subsystem for Linux (WSL) allows users to run Linux enviroments and applications within Windows. 
+### Operating System
+If your machine is using a Windows operating system, you will have to use Windows Subsystem for Linux (WSL). Otherwise, if you are using Linux based operating system, please conintue to the next steps!
+
+WSL allows users to run Linux enviroments and applications within Windows. 
 Further information can be found [here](https://learn.microsoft.com/en-us/windows/wsl/about).
 1. Download WLS in the CMD as Administrator
 - WSL comes in two flavors, WSL1 and WSL2. This will install WSL2, and is needed to run the application correctly. Look into this [document](https://learn.microsoft.com/en-us/windows/wsl/install) from Microsoft if you need to upgrade from WSL1.
