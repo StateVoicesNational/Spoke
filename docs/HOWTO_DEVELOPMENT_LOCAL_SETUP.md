@@ -1,9 +1,11 @@
 ## Getting started
 ---
 ### Operating System
-If your machine is using a Windows operating system, you will have to use Windows Subsystem for Linux (WSL). Otherwise, if you are using Linux based operating system, please conintue to the next steps!
+If you are already using a Linux based operating system, please conintue to the next steps!
 
-WSL allows users to run Linux enviroments and applications within Windows. 
+Supporting the development of Spoke can be unnecessarily difficult in Windows, so we strongly recommend you use Windows Subsystem for Linux (WSL). 
+
+WSL allows users to run Linux virtual enviroments and applications within Windows. 
 Further information can be found [here](https://learn.microsoft.com/en-us/windows/wsl/about).
 1. Download WLS in the CMD as Administrator
 - WSL comes in two flavors, WSL1 and WSL2. This will install WSL2, and is needed to run the application correctly. Look into this [document](https://learn.microsoft.com/en-us/windows/wsl/install) from Microsoft if you need to upgrade from WSL1.
@@ -18,6 +20,7 @@ wsl --install
   - Ubuntu will ask you to make a username and password. Please use a password vault or other password manager to store these details. You do not want to lose these.
 
 **Note** In the event that WSL needs _Virtualization_ enabled, please follow [these steps](https://www.geeksforgeeks.org/how-to-enable-virtualization-vt-x-in-windows-10-bios/) to enable _Virtualization_ in your bios.
+
 ---
 ### [Repository](https://github.com/StateVoicesNational/Spoke)
 1. If you have not already, Fork this repo then clone your forked copy. Then future pull requests can be made from your repo to Spoke. 
