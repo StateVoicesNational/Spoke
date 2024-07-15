@@ -19,7 +19,7 @@ wsl --install
 3. Allow your computer to reboot, and Ubuntu will finish installation. Ubuntu will be an application on you PC that you can search for. Please run all future commands found in this document in Ubuntu.
   - Ubuntu will ask you to make a username and password. Please use a password vault or other password manager to store these details. You do not want to lose these.
 
-**Note** In the event that WSL needs _Virtualization_ enabled, please follow [these steps](https://www.geeksforgeeks.org/how-to-enable-virtualization-vt-x-in-windows-10-bios/) to enable _Virtualization_ in your bios.
+**NOTE**: In the event that WSL needs _Virtualization_ enabled, please follow [these steps](https://www.geeksforgeeks.org/how-to-enable-virtualization-vt-x-in-windows-10-bios/) to enable _Virtualization_ in your bios.
 
 ---
 ### [Repository](https://github.com/StateVoicesNational/Spoke)
