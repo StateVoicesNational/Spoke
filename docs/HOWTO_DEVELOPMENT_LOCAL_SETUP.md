@@ -1,15 +1,15 @@
 ## Getting started
 ---
 ### Operating System
-If you are already using a Linux based operating system, please conintue to the next steps!
+If you are already using a Linux based operating system, please continue to the next steps!
 
 Supporting the development of Spoke can be unnecessarily difficult in Windows, so we strongly recommend you use Windows Subsystem for Linux (WSL). 
 
-WSL allows users to run Linux virtual enviroments and applications within Windows. 
+WSL allows users to run Linux virtual environments and applications within Windows. 
 Further information can be found [here](https://learn.microsoft.com/en-us/windows/wsl/about).
 1. Download WLS in the CMD as Administrator
 - WSL comes in two flavors, WSL1 and WSL2. This will install WSL2, and is needed to run the application correctly. Look into this [document](https://learn.microsoft.com/en-us/windows/wsl/install) from Microsoft if you need to upgrade from WSL1.
-- Installing WSL2 will default to **Ubuntu**, which is a flavor of Linux and is recomended. 
+- Installing WSL2 will default to **Ubuntu**, which is a flavor of Linux and is recommended. 
 ```
 wsl --install
 ```
