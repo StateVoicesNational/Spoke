@@ -5,7 +5,7 @@ updates:
     target-branch: "stage-main-14.1"
     schedule:
       interval: "weekly"
-      dat: "monday"
+      day: "monday"
       time: "12:00"
     rebase-strategy: auto
     open-pull-requests-limit: 10
