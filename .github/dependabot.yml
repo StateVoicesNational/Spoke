@@ -1,0 +1,13 @@
+version: 2
+updates:
+  - package-ecosystem: "npm"
+    directory: "/"
+    target-branch: "stage-main-14.1"
+    schedule:
+      interval: "weekly"
+      dat: "monday"
+      time: "12:00"
+    rebase-strategy: auto
+    open-pull-requests-limit: 10
+    labels:
+      - "A-dependencies"
