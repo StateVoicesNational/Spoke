@@ -36,6 +36,12 @@ export const metadata = () => ({
 
 const cacheKey = id => `${process.env.CACHE_PREFIX || ""}imageupload-${id}`;
 
+const uploadPath = (organization, filePath) => (
+  (getConfig("IMAGE_UPLOAD_S3_PATH", organization)
+   || "image-upload/org<orgId>/").replace("<orgId>", organization.id)
+  + (filePath || "")
+);
+
 const clearFileList = async (organization) => {
   if (r.redis) {
     await r.redis.DEL(cacheKey(organization.id));
@@ -66,7 +72,7 @@ const getFileList = async (organization) => {
   if (!fileList) {
     const dirList = await s3.listObjectsV2({
       Bucket: bucket,
-      Prefix: `image-upload/${organization.id}/`,
+      Prefix: uploadPath(organization)
     });
     // TODO: iterate paginated results
     fileList = (dirList['Contents'] || []).map(o => o.Key);
@@ -123,7 +129,7 @@ export async function onCampaignUpdateSignal({
     console.log("uploading a file!!!");
     const { s3, region, bucket, baseUrl, fileList } = await getFileList(organization);
     const unique_key = uuid();
-    const s3key = `image-upload/${organization.id}/${unique_key}_${updateData.fileName}`;
+    const s3key = uploadPath(organization, `${unique_key}_${updateData.fileName}`);
 
     const params = {
       Bucket: bucket,

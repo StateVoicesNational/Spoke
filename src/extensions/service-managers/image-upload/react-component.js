@@ -3,6 +3,7 @@ import PropTypes from "prop-types";
 import React from "react";
 import Form from "react-formal";
 import * as yup from "yup";
+import Error from "../../../components/Error";
 import GSForm from "../../../components/forms/GSForm";
 import GSTextField from "../../../components/forms/GSTextField";
 import GSSubmitButton from "../../../components/forms/GSSubmitButton";
@@ -77,35 +78,53 @@ export class CampaignScriptEditor extends React.Component {
     console.log('UPLOADING', file.name, file.type, file);
     if (!/^image\//.test(file.type)) {
       return this.handleUploadError(`File of type ${file.type} is not an image`);
-    }
-    const signalRes = await self.props.onSubmit({ fileName: file.name, fileType: file.type });
-    console.log('image upload updateSignalRes', signalRes);
-    if (!signalRes || signalRes.errors || !signalRes.data.updateServiceManager.data.s3Url) {
-      const errorMessage = (signalRes && signalRes.errors && signalRes.errors[0].message) || "Upload token unavailable";
-      return this.handleUploadError(`Server error: ${errorMessage}`);
-    } else if (signalRes && signalRes.data.updateServiceManager && signalRes.data.updateServiceManager.data.s3Url) {
-      const { s3key, s3Url } = signalRes.data.updateServiceManager.data;
-      console.log("uploading", s3key, s3Url);
-      axios.put(
-        s3Url, 
-        file,
-        { headers: {'Content-Type': file.type } }
-      ).then(
-        res => {
-          console.log('uploaded', res);
-          const name = self.getNameFromPath(s3key);
-          self.setState({
-            uploading: false,
-            uploadError: null,
-            //fileOptions: [...this.state.fileOptions, {id: s3key, name }]
-          });
-          self.insertURL(s3key);
-        },
-        err => {
-          console.log('ERROR', err);
-          self.handleUploadError(`Upload error: ${err}`);
+    } else if (file.size > 900000) {
+      return this.handleUploadError("Files greater than 900kb will fail during texting");
+    } else {
+      const img = new Image();
+      const objectUrl = URL.createObjectURL(file);
+      img.onload = function () {
+        console.log('IMAGE DIMS', this.width + " " + this.height);
+        if (this.width > 450 || this.height > 450) {
+          self.handleUploadError("Images must be between 450x450 (or MMS fails)");
+        } else {
+          // Can now proceed to first register the URL and then upload the file to S3
+
+          self.props.onSubmit({ fileName: file.name, fileType: file.type })
+            .then(signalRes => {
+              console.log('image upload updateSignalRes', signalRes);
+              if (!signalRes || signalRes.errors || !signalRes.data.updateServiceManager.data.s3Url) {
+                const errorMessage = (signalRes && signalRes.errors && signalRes.errors[0].message) || "Upload token unavailable";
+                return self.handleUploadError(`Server error: ${errorMessage}`);
+              } else if (signalRes && signalRes.data.updateServiceManager && signalRes.data.updateServiceManager.data.s3Url) {
+                const { s3key, s3Url } = signalRes.data.updateServiceManager.data;
+                console.log("uploading", s3key, s3Url);
+                axios.put(
+                  s3Url, 
+                  file,
+                  { headers: {'Content-Type': file.type } }
+                ).then(
+                  res => {
+                    console.log('uploaded', res);
+                    const name = self.getNameFromPath(s3key);
+                    self.setState({
+                      uploading: false,
+                      uploadError: null,
+                      //fileOptions: [...this.state.fileOptions, {id: s3key, name }]
+                    });
+                    self.insertURL(s3key);
+                  },
+                  err => {
+                    console.log('ERROR', err);
+                    self.handleUploadError(`Upload error: ${err}`);
+                  }
+                );
+              }
+            });
         }
-      );
+        URL.revokeObjectURL(objectUrl);
+      };
+      img.src = objectUrl;
     }
   }
 
@@ -120,11 +139,12 @@ export class CampaignScriptEditor extends React.Component {
         >
           {uploading ? "Uploading..." : "Upload Image"}
         </Button>
-        <div>{uploadError}</div>
+        <Error text={uploadError} />
         <input
           id="image-s3-upload"
           ref={input => input && (this.uploadButton = input)}
           type="file"
+          accept="image/*"
           onChange={this.handleUpload}
           style={{ display: "none" }}
         />

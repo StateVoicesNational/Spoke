@@ -243,14 +243,15 @@ class ScriptEditor extends React.Component {
           {segmentInfo.msgCount * segmentInfo.charsPerSegment -
             segmentInfo.charCount}
           <br />
-          <CampaignServiceManagers
-            serviceManagerComponentName={"CampaignScriptEditor"}
-            formValues={this}
-            onChange={this.onChange}
-            onSubmit={this.props.serviceManagerContext.onSubmit}
-            campaign={this.props.serviceManagerContext.campaign}
-            organization={this.props.serviceManagerContext.organization}
-          />
+          {this.props.serviceManagerContext ?
+            <CampaignServiceManagers
+              serviceManagerComponentName={"CampaignScriptEditor"}
+              formValues={this}
+              onChange={this.onChange}
+              onSubmit={this.props.serviceManagerContext.onSubmit}
+              campaign={this.props.serviceManagerContext.campaign}
+              organization={this.props.serviceManagerContext.organization}
+            /> : null}
         </div>
       </div>
     );
