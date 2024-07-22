@@ -10,8 +10,35 @@ import GSSubmitButton from "../../../components/forms/GSSubmitButton";
 import Autocomplete from "@material-ui/lab/Autocomplete";
 import Button from "@material-ui/core/Button";
 import TextField from "@material-ui/core/TextField";
+import { parseMessageText } from "../../../lib/scripts";
+
+import { css, StyleSheet } from "aphrodite";
+import theme from "../../../styles/theme";
 
 import axios from "axios";
+
+const styles = StyleSheet.create({
+  container: {
+    ...theme.layouts.multiColumn.container,
+    alignContent: "flex-start",
+    justifyContent: "flex-start",
+    flexWrap: "wrap",
+    alignItems: "center"
+  },
+  flexColumn: {
+    flex: 0,
+    flexBasis: "30%",
+    display: "flex"
+  },
+  spacer: {
+    marginRight: "10px"
+  },
+  thumbnail: {
+    maxWidth: "100px",
+    maxHeight: "100px",
+  }
+});
+
 
 export class CampaignConfig extends React.Component {
   constructor(props) {
@@ -132,6 +159,7 @@ export class CampaignScriptEditor extends React.Component {
     const { uploading, uploadError } = this.state;
     return (
       <div>
+        <Error text={uploadError} />
         <Button
           variant="contained"
           disabled={uploading}
@@ -139,7 +167,6 @@ export class CampaignScriptEditor extends React.Component {
         >
           {uploading ? "Uploading..." : "Upload Image"}
         </Button>
-        <Error text={uploadError} />
         <input
           id="image-s3-upload"
           ref={input => input && (this.uploadButton = input)}
@@ -188,12 +215,36 @@ export class CampaignScriptEditor extends React.Component {
     }
   }
 
+  renderCurrent() {
+    const parsedMessage = parseMessageText({text: this.props.formValues.getValue()});
+    return (parsedMessage.mediaUrl ? (
+      <div>
+        Current image:
+        <img
+          className={css(styles.thumbnail)}
+          src={parsedMessage.mediaUrl}
+          title="{this.getNameFromPath(parsedMessage.mediaUrl)}"
+        />
+      </div>
+    ) : null);
+  }
+
   render() {
-    console.log("image-upload", this.props);
+    // console.log("image-upload", this.props);
     return (
       <div>
-        {this.renderUploadButton()}
-        {this.renderFileList()}
+        <div className={css(styles.container)}>
+          <div className={css(styles.flexColumn)}>
+            {this.renderUploadButton()}
+          </div>
+          <div className={css(styles.spacer)} />
+          <div className={css(styles.flexColumn)}>        
+            {this.renderFileList()}
+          </div>
+          <div className={css(styles.flexColumn)}>
+            {this.renderCurrent()}
+          </div>
+        </div>
       </div>
     );
   }
