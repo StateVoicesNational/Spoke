@@ -39,7 +39,8 @@ export class CampaignTable extends React.Component {
   };
 
   state = {
-    dataTableKey: "initial"
+    dataTableKey: "initial",
+    campaigns: [...this.props.data.organization.campaigns.campaigns]
   };
 
   statusIsChanging = campaign => {
@@ -346,9 +347,9 @@ export class CampaignTable extends React.Component {
             break;
           case "sort":
             this.clearCampaignSelection();
-            campaigns.sort(this.sortFunc(tableState.sortOrder.name));
+            this.state.campaigns.sort(this.sortFunc(tableState.sortOrder.name));
             if (tableState.sortOrder.direction === "desc") {
-              campaigns.reverse();
+              this.state.campaigns.reverse()
             }
             break;
           case "rowSelectionChange":
@@ -372,7 +373,7 @@ export class CampaignTable extends React.Component {
         <br />
         <br />
         <MUIDataTable
-          data={campaigns}
+          data={this.state.campaigns}
           columns={this.prepareTableColumns(
             this.props.data.organization,
             campaigns
