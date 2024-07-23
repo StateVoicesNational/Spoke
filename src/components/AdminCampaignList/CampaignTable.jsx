@@ -120,7 +120,8 @@ export class CampaignTable extends React.Component {
           customBodyRender: (value, tableMeta) => {
             const campaign = campaigns.find(c => c.id === tableMeta.rowData[0]);
             return this.renderArchiveIcon(campaign);
-          }
+          },
+          sort: false
         },
         style: {
           width: "5em"
