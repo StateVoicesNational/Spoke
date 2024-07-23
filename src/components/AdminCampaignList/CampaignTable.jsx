@@ -307,8 +307,7 @@ export class CampaignTable extends React.Component {
   };
 
   render() {
-    const { campaigns, pageInfo } = this.props.data.organization.campaigns;
-    const { limit, offset, total } = pageInfo;
+    const { limit, offset, total } = this.props.data.organization.campaigns.pageInfo;
     const displayPage = Math.floor(offset / limit) + 1;
     let rowSizeList = [10, 20, 50, 100];
 
@@ -355,7 +354,7 @@ export class CampaignTable extends React.Component {
             break;
           case "rowSelectionChange":
             const ids = tableState.selectedRows.data.map(({ index }) => {
-              return campaigns[index].id;
+              return this.state.campaigns[index].id;
             });
             this.props.handleChecked(ids);
             break;
@@ -367,7 +366,7 @@ export class CampaignTable extends React.Component {
       }
     };
 
-    return campaigns.length === 0 ? (
+    return this.state.campaigns.length === 0 ? (
       <Empty title="No campaigns" icon={<SpeakerNotesIcon />} />
     ) : (
       <div>
@@ -377,7 +376,7 @@ export class CampaignTable extends React.Component {
           data={this.state.campaigns}
           columns={this.prepareTableColumns(
             this.props.data.organization,
-            campaigns
+            this.state.campaigns
           )}
           options={options}
         />
