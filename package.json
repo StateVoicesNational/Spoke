@@ -177,7 +177,7 @@
     "webpack": "^5.92.1",
     "webpack-cli": "^4.10.0",
     "webpack-manifest-plugin": "^5.0.0",
-    "yup": "0.32.3"
+    "yup": "1.4.0"
   },
   "devDependencies": {
     "@babel/eslint-parser": "^7.24.7",
