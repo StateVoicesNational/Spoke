@@ -38,7 +38,7 @@ not in needsMessage but have replies/conversations.  This is useful for 'split' 
 one group of texters sends initial texts and then another group does the second.
 
 Also needed for organizing split assignments would be the `outbound-unassign` message handler which
-unassigned messages upon initial send (so they can be 'taken' by the vetted texters.
+unassigns messages upon initial send (so they can be 'taken' by the vetted texters.
 
 
 ## Developing strategies

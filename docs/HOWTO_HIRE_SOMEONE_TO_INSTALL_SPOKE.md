@@ -34,7 +34,7 @@ You're also not likely to encounter many people with prior experience specifical
 There are lots of tech industry people interested in politics. They really want to work with you. 
 But tech skills and tech costs vary wildly. You can easily spend $0, $100, $1000, $10,000 for the same work and functionality. Make candidates compete for your business so you can drive down the cost of your project, and make sure the person you bring on is the right fit for your org.
 
-Please, please, please don't just hire your friends, or someone who looks like a tech person who happens to be sitting 100 ft from you in your work space when you realize you need a website. Most software contracting projects experience a 50% failure rate due to lack of skill fit and contractor capacity. Publish your job publicly and run a competitive process to find a person to ensure that you're getting the right person with the right skills and right availability for your job.
+Please, please, please don't just hire your friends, or someone who looks like a tech person who happens to be sitting 100 ft from you in your coworking space when you realize you need a website. Most software contracting projects experience a 50% failure rate due to lack of skill fit and contractor capacity. Publish your job publicly and run a competitive process to find a person to ensure that you're getting the right person with the right skills and right availability for your job.
 
 
 *Decide on the terms of your job.*
