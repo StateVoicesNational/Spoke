@@ -3,7 +3,7 @@
 - We advise you to get some language/workflow approved with your legal team and Upland Mobile Commons before using this feature.
 
 ## Step One - Understanding the workflow (for developers and non developers)
-- An admin will create a campaign, and in the interaction steps setup, after sending the first message (with approved script from your legal team), will then 'ADD A RESPONSE'. The admin will add 'yes' under 'Answer', click on the drop down and select 'Mobile Commons Signup', and then fill in a script. When a texter then receives an affirmative response for signup, they will click on the drop down menu for 'Current Question' and mark 'yes'. That yes then will create a post request to UMC (and then UMC if you follow those steps below).
+- An admin will create a campaign, and in the interaction steps setup, after sending the first message (with approved script from your legal team), will then 'ADD A RESPONSE'. The admin will add 'yes' under 'Answer', click on the drop down and select 'Mobile Commons Sign-up', and then fill in a script. When a texter then receives an affirmative response for sign-up, they will click on the drop down menu for 'Current Question' and mark 'yes'. That yes then will create a post request to UMC (and then UMC if you follow those steps below).
 
 ### V2: Custom Flows
 - To add a custom flow, add the following column to your csv `umc_opt_in_path`

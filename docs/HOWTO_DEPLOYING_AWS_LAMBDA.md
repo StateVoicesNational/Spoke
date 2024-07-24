@@ -27,11 +27,11 @@ Walking through all the different AWS resources and configuration that must be i
 
 Spoke needs a domain to run on. In order to configure the API Gateway with this domain we first need to create a certificate.
 
-Waiting for verification for a certificate may take a while so we will start that now. Go to the Certificate Manager service. Request a certificate. Select "public." Add a domain name `spoke.campaign.com`. Choose a validation method (generally the DNS method). Add the verification DNS records to your domain. Wait for the DNS update to propogate and continue with the setup.
+Waiting for verification for a certificate may take a while so we will start that now. Go to the Certificate Manager service. Request a certificate. Select "public." Add a domain name `spoke.campaign.com`. Choose a validation method (generally the DNS method). Add the verification DNS records to your domain. Wait for the DNS update to propagate and continue with the setup.
 
 ## S3
 
-Create a private S3 bucket by choosing all the default values as you go throuh the setup wizard. We will call this `textforcampaign`.
+Create a private S3 bucket by choosing all the default values as you go through the setup wizard. We will call this `textforcampaign`.
 
 ## VPC
 
@@ -207,7 +207,7 @@ After Claudia.js does an 'npm install' essentially of your directory (which will
 
 ### Seed Database
 
-Because seed calls are supressed, you will need to seed the database manually. The current best way to do this is to run Spoke locally using the RDS database credentials. In your `.env` file the relevant lines will look like:
+Because seed calls are suppressed, you will need to seed the database manually. The current best way to do this is to run Spoke locally using the RDS database credentials. In your `.env` file the relevant lines will look like:
 
 ```
 DB_HOST=spokeprod.xxxxxxxxxxxx.us-east-1.rds.amazonaws.com

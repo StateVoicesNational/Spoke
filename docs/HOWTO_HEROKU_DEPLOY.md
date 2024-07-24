@@ -70,7 +70,7 @@ There are two ways to do this, the first way will use the Heroku web dashboard a
 Some releases require database maintenance in order to work properly.
 
 **Method 1: The Dashboard Deploy Menu**
-Visit your [Heroku App Dashboard](https://dashboard.heroku.com/apps) and click on Spoke. Once there, select the "Deploy" menu near "Overview." This is the section of your Heroku dasboard that controls how and when you deploy your app.
+Visit your [Heroku App Dashboard](https://dashboard.heroku.com/apps) and click on Spoke. Once there, select the "Deploy" menu near "Overview." This is the section of your Heroku dashboard that controls how and when you deploy your app.
 
 In the "Deploy" screen you should see a section titled "Deployment method" if you scroll down a bit. Inside of that there is an option to connect to github. You'll want to search for the repo there and connect it.
 
