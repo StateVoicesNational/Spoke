@@ -45,7 +45,7 @@ environment variable `ACTION_HANDLERS`. Unset, the default includes `test-action
 `complex-test-action`. The value should be the list of enabled contact loaders
 available to any organization using the Spoke installation. Separate the names of
 action handlers with `,` (commas), without any spaces before or after the comma.
-E.g., to enable ActionKit RSVPs and Mobile Commons signup: `actionkit-rsvp,mobilecommons-signup`
+E.g., to enable ActionKit RSVPs and Mobile Commons sign-up: `actionkit-rsvp,mobilecommons-signup`
 (The name listed in `ACTION_HANDLERS` must correspond to the name of a file
 in `../src/extensions/action-handlers` with the `.js` extension removed.)
 
@@ -84,7 +84,7 @@ There are three main "points" where a contact loader can hook into the applicati
 2. When a texter selects an answer linked to the action handler, the framework will invoke the action handler's
    `processAction` method.
 3. For sophisticated applications, the action handler can add endpoints or otherwise change the
-   express app on-load of the function. This can allow asynchoronous server-to-server APIs if necessary.
+   express app on-load of the function. This can allow asynchronous server-to-server APIs if necessary.
    This is how an action handler would expose webhooks to which external systems can make requests.
 
 In addition, you can apply actions to canned responses in the "Canned Responses" section while editing any action. When a texter selects a canned response and sends a message with it, the framework will invoke the action handler's `processAction` method.
@@ -101,7 +101,7 @@ The name of the file (minus the `.js` extension) is what must appear in `ACTION_
 All action handlers ***must*** export the following:
 - `displayName` -- what campaign administrators see to choose this action handler.
 - `instructions` -- information system administrators need when they configure the action handler.
-- `available` -- whether the action handler is avaiable in the context of an organization. Implementers can use this
+- `available` -- whether the action handler is available in the context of an organization. Implementers can use this
   method to check handler-specific configuration.
 - `processAction` -- called when a texter selects an answer or response that is linked to this action handler. This method can
   be used to send information in an external system, update the database, or enqueue a job.
@@ -135,7 +135,7 @@ security -- it's a powerful option, but also a dangerous one.
 * Start campaign links triggered from a different web site
 * A side-channel for very interactive steps in the react component with an api.
 
-Start your paths with either `/int*` (for integration) or `/sign*` (for signup) --
+Start your paths with either `/int*` (for integration) or `/sign*` (for sign-up) --
 using these starting points will ensure that your endpoints will not (nor in the future)
 conflict with application endpoints.  Also try to include your contact-loader's name
 somewhere in the endpoints so different contact loaders are unlikely to collide.

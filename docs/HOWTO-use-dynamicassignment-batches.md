@@ -13,7 +13,7 @@ Dynamic assignment allows admin to use a link that once clicked gives texters ac
 
 You can configure which strategies are active by assigning a comma separated list to the `DYNAMICASSIGNMENT_BATCHES` environment variable.
 
-## Included Dynamic assignment strategiesf
+## Included Dynamic assignment strategies
 
 ### finished-replies (default)
 
@@ -38,7 +38,7 @@ not in needsMessage but have replies/conversations.  This is useful for 'split' 
 one group of texters sends initial texts and then another group does the second.
 
 Also needed for organizing split assignments would be the `outbound-unassign` message handler which
-unassigns messages upon initial send (so they can be 'taken' by the vetted texters.
+unassigned messages upon initial send (so they can be 'taken' by the vetted texters.
 
 
 ## Developing strategies

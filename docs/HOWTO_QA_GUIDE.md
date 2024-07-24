@@ -39,7 +39,7 @@ Suggested steps for testing Spoke. These steps allow us to see if Spoke's 'basic
 5. As a texter, click on the corner menu (should be a circle with the first letter of the first name of a user). Click on the name/email and edit.
 
 ### Creating New Users:
-1. As an admin, visit the people tab and click on the `+` button in the lower right hand corner. A modal titled `Invite new texters` should pop up. Copy the join link and then open it in a different browser (if using chrome, you can use an incognito window). Paste the link and try to signup a new user (from list of fake emails). Return to admin account (in the other browser or login again) and visit the people tab. Make sure the new user shows up with their role as texter.
+1. As an admin, visit the people tab and click on the `+` button in the lower right hand corner. A modal titled `Invite new texters` should pop up. Copy the join link and then open it in a different browser (if using chrome, you can use an incognito window). Paste the link and try to sign-up a new user (from list of fake emails). Return to admin account (in the other browser or login again) and visit the people tab. Make sure the new user shows up with their role as texter.
 
 ### Copying Campaigns:
 1. Click on a live campaign by visiting the `Campaigns` tab.

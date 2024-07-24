@@ -31,11 +31,11 @@ You can set individual API keys for some or all of your organizations by enablin
 
 When organizations do not have these variables individually set, if these variables are globally set, Spoke will fall back to using those credentials.
 
-To enable per-organiziation VAN keys, add `ngpvan` to the list in your `SERVICE_MANAGERS` environment variable.
+To enable per-organization VAN keys, add `ngpvan` to the list in your `SERVICE_MANAGERS` environment variable.
 
 ## The Contact Loader
 
-The contact loader allows you to choose a saved list (but not a saved search) in VAN as your contact source. All the fields that are available for your contacts in VAN will be available for personalization in Spoke, including handy things like polling location and district (though those fields will of course only be as accurate as they were in VAN). To use the contact loader, `ngpvan` must appear in the list in your `CONTACT_LOADERS` envirornment variable.
+The contact loader allows you to choose a saved list (but not a saved search) in VAN as your contact source. All the fields that are available for your contacts in VAN will be available for personalization in Spoke, including handy things like polling location and district (though those fields will of course only be as accurate as they were in VAN). To use the contact loader, `ngpvan` must appear in the list in your `CONTACT_LOADERS` environment variable.
 
 Loading lists from VAN in Spoke does <b>not</b> involve the SMS button in VAN. Instead, make a folder or folders in VAN where you plan to save the lists you would like to use. Edit that folder, and give the API User for the key you requested access to that folder as you would any other user. Going forward, any list you save to that folder will show up in Spoke--select NGPVAN as the Contact Load Method and start typing the list name, then select it from the typeahead when it appears.
 
@@ -50,7 +50,7 @@ Can't find your list? These are common reasons folks run into issues:
 
 ## The Action Handler
 
-The action handler allows you to sync data back to VAN as part of your script. Data saves to VAN are triggered in the same way answers to questions you incorporate in your script are saved in Spoke, i.e. when the texter selects an answer to a question you have constructed, and then sends a subsequent message, clicks Skip, or opts the contact out. To use the action handler, `ngpvan` must appear in the list in your `ACTION_HANDLERS` envirornment variable.
+The action handler allows you to sync data back to VAN as part of your script. Data saves to VAN are triggered in the same way answers to questions you incorporate in your script are saved in Spoke, i.e. when the texter selects an answer to a question you have constructed, and then sends a subsequent message, clicks Skip, or opts the contact out. To use the action handler, `ngpvan` must appear in the list in your `ACTION_HANDLERS` environment variable.
 
 For each question answer, you can select an appropriate action by selecting NGPVAN from the dropdown and starting to type. Your options will be drawn from Canvass Response Codes, Activist Codes, and Survey Question answers you have set up in VAN.
 
