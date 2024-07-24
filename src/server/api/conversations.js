@@ -337,7 +337,9 @@ export async function getConversations(
   let conversationCount;
   try {
     conversationCount = await r.getCount(
-      conversationsCountQuery.timeout(4000, { cancel: true })
+      getConfig("DB_TYPE") === "pg" ?
+      conversationsCountQuery.timeout(4000, { cancel: true }) :
+      conversationsCountQuery
     );
   } catch (err) {
     // default fake value that means 'a lot'
