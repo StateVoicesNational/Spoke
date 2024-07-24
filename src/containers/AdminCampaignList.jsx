@@ -19,7 +19,7 @@ import { dataTest } from "../lib/attributes";
 import loadData from "./hoc/load-data";
 import theme from "../styles/theme";
 import SortBy, {
-  DUE_DATE_DESC_SORT
+  ID_DESC_SORT
 } from "../components/AdminCampaignList/SortBy";
 import Search from "../components/Search";
 import CampaignTable from "../components/AdminCampaignList/CampaignTable";
@@ -38,7 +38,7 @@ const INITIAL_FILTER = {
   isArchived: false,
   searchString: ""
 };
-const INITIAL_SORT_BY = DUE_DATE_DESC_SORT.value;
+const INITIAL_SORT_BY = ID_DESC_SORT.value;
 
 export class AdminCampaignList extends React.Component {
   static propTypes = {
