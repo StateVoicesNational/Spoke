@@ -39,7 +39,8 @@ export class CampaignTable extends React.Component {
   };
 
   state = {
-    dataTableKey: "initial"
+    dataTableKey: "initial",
+    campaigns: [...this.props.data.organization.campaigns.campaigns]
   };
 
   statusIsChanging = campaign => {
@@ -119,7 +120,8 @@ export class CampaignTable extends React.Component {
           customBodyRender: (value, tableMeta) => {
             const campaign = campaigns.find(c => c.id === tableMeta.rowData[0]);
             return this.renderArchiveIcon(campaign);
-          }
+          },
+          sort: false
         },
         style: {
           width: "5em"
@@ -305,8 +307,7 @@ export class CampaignTable extends React.Component {
   };
 
   render() {
-    const { campaigns, pageInfo } = this.props.data.organization.campaigns;
-    const { limit, offset, total } = pageInfo;
+    const { limit, offset, total } = this.props.data.organization.campaigns.pageInfo;
     const displayPage = Math.floor(offset / limit) + 1;
     let rowSizeList = [10, 20, 50, 100];
 
@@ -346,14 +347,14 @@ export class CampaignTable extends React.Component {
             break;
           case "sort":
             this.clearCampaignSelection();
-            campaigns.sort(this.sortFunc(tableState.sortOrder.name));
+            this.state.campaigns.sort(this.sortFunc(tableState.sortOrder.name));
             if (tableState.sortOrder.direction === "desc") {
-              campaigns.reverse();
+              this.state.campaigns.reverse()
             }
             break;
           case "rowSelectionChange":
             const ids = tableState.selectedRows.data.map(({ index }) => {
-              return campaigns[index].id;
+              return this.state.campaigns[index].id;
             });
             this.props.handleChecked(ids);
             break;
@@ -365,17 +366,17 @@ export class CampaignTable extends React.Component {
       }
     };
 
-    return campaigns.length === 0 ? (
+    return this.state.campaigns.length === 0 ? (
       <Empty title="No campaigns" icon={<SpeakerNotesIcon />} />
     ) : (
       <div>
         <br />
         <br />
         <MUIDataTable
-          data={campaigns}
+          data={this.state.campaigns}
           columns={this.prepareTableColumns(
             this.props.data.organization,
-            campaigns
+            this.state.campaigns
           )}
           options={options}
         />
