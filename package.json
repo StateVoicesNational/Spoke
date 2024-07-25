@@ -173,7 +173,7 @@
     "typescript": "^3.2.1",
     "us-area-codes": "^1.0.0",
     "uuid": "^9.0.0",
-    "wait-for-expect": "^1.1.1",
+    "wait-for-expect": "^3.0.2",
     "webpack": "^5.92.1",
     "webpack-cli": "^4.10.0",
     "webpack-manifest-plugin": "^5.0.0",
