@@ -4,6 +4,7 @@ import { addWhereClauseForContactsFilterMessageStatusIrrespectiveOfPastDue } fro
 import { addCampaignsFilterToQuery } from "./campaign";
 import { log } from "../../lib";
 import { getConfig } from "../api/lib/config";
+import { isSqlite } from "../models/index";
 
 function getConversationsJoinsAndWhereClause(
   queryParam,
@@ -337,7 +338,7 @@ export async function getConversations(
   let conversationCount;
   try {
     conversationCount = await r.getCount(
-      getConfig("DB_TYPE") === "pg" ?
+      !isSqlite ?
       conversationsCountQuery.timeout(4000, { cancel: true }) :
       conversationsCountQuery
     );
