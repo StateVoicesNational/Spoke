@@ -147,6 +147,12 @@ function mapQueryFieldsToResolverFields(queryResult, fieldsMap) {
     }
     return key;
   });
+  if (typeof data.updated_at != "undefined") {
+    data.updated_at = (
+      data.updated_at instanceof Date || !data.updated_at
+      ? data.updated_at || null
+      : new Date(data.updated_at))
+  }
   return data;
 }
 
