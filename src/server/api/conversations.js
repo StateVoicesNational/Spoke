@@ -4,6 +4,7 @@ import { addWhereClauseForContactsFilterMessageStatusIrrespectiveOfPastDue } fro
 import { addCampaignsFilterToQuery } from "./campaign";
 import { log } from "../../lib";
 import { getConfig } from "../api/lib/config";
+import { isSqlite } from "../models/index";
 
 function getConversationsJoinsAndWhereClause(
   queryParam,
@@ -146,6 +147,12 @@ function mapQueryFieldsToResolverFields(queryResult, fieldsMap) {
     }
     return key;
   });
+  if (typeof data.updated_at != "undefined") {
+    data.updated_at = (
+      data.updated_at instanceof Date || !data.updated_at
+      ? data.updated_at || null
+      : new Date(data.updated_at))
+  }
   return data;
 }
 
@@ -337,7 +344,9 @@ export async function getConversations(
   let conversationCount;
   try {
     conversationCount = await r.getCount(
-      conversationsCountQuery.timeout(4000, { cancel: true })
+      !isSqlite ?
+      conversationsCountQuery.timeout(4000, { cancel: true }) :
+      conversationsCountQuery
     );
   } catch (err) {
     // default fake value that means 'a lot'
