@@ -3271,7 +3271,7 @@
     core-js-pure "^3.30.2"
     regenerator-runtime "^0.14.0"
 
-"@babel/runtime@^7.10.5", "@babel/runtime@^7.11.2", "@babel/runtime@^7.12.5", "@babel/runtime@^7.16.3", "@babel/runtime@^7.21.0", "@babel/runtime@^7.23.2", "@babel/runtime@^7.3.1", "@babel/runtime@^7.4.4", "@babel/runtime@^7.5.5", "@babel/runtime@^7.6.0", "@babel/runtime@^7.6.3", "@babel/runtime@^7.7.2", "@babel/runtime@^7.8.3", "@babel/runtime@^7.8.4", "@babel/runtime@^7.8.7", "@babel/runtime@^7.9.2":
+"@babel/runtime@^7.11.2", "@babel/runtime@^7.12.5", "@babel/runtime@^7.16.3", "@babel/runtime@^7.21.0", "@babel/runtime@^7.23.2", "@babel/runtime@^7.3.1", "@babel/runtime@^7.4.4", "@babel/runtime@^7.5.5", "@babel/runtime@^7.6.0", "@babel/runtime@^7.6.3", "@babel/runtime@^7.7.2", "@babel/runtime@^7.8.3", "@babel/runtime@^7.8.4", "@babel/runtime@^7.8.7", "@babel/runtime@^7.9.2":
   version "7.24.1"
   resolved "https://registry.yarnpkg.com/@babel/runtime/-/runtime-7.24.1.tgz#431f9a794d173b53720e69a6464abc6f0e2a5c57"
   integrity sha512-+BIznRzyqBf+2wCTxcKE3wDjfGeCoVE61KSHGpkzqrLi8qxqFwBeUFyId2cxkTmm55fzDGnm0+yCxaxygrLUnQ==
@@ -13848,7 +13848,7 @@ locate-path@^7.1.0:
   dependencies:
     p-locate "^6.0.0"
 
-lodash-es@^4.17.11, lodash-es@^4.17.15:
+lodash-es@^4.17.15:
   version "4.17.21"
   resolved "https://registry.yarnpkg.com/lodash-es/-/lodash-es-4.17.21.tgz#43e626c46e6591b7750beb2b50117390c609e3ee"
   integrity sha512-mKnC+QJ9pWVzv+C4/U3rRsHapFfHvQFoFB92e52xeyGMcX6/OlIl78je1u8vePzYZSkkogMPJ2yjxxsb89cxyw==
@@ -14623,11 +14623,6 @@ nan@^2.12.1:
   version "2.19.0"
   resolved "https://registry.yarnpkg.com/nan/-/nan-2.19.0.tgz#bb58122ad55a6c5bc973303908d5b16cfdd5a8c0"
   integrity sha512-nO1xXxfh/RWNxfd/XPfbIfFk5vgLsAxUR9y5O0cHMJu/AW9U95JLXqthYHjEp+8gQ5p96K9jUp8nbVOxCdRbtw==
-
-nanoclone@^0.2.1:
-  version "0.2.1"
-  resolved "https://registry.yarnpkg.com/nanoclone/-/nanoclone-0.2.1.tgz#dd4090f8f1a110d26bb32c49ed2f5b9235209ed4"
-  integrity sha512-wynEP02LmIbLpcYw8uBKpcfF6dmg2vcpKqxeH5UcoKEYdExslsdUA4ugFauuaeYdTB76ez6gJW8XAZ6CgkXYxA==
 
 nanoid@^3.3.7:
   version "3.3.7"
@@ -20621,20 +20616,7 @@ yocto-queue@^1.0.0:
   resolved "https://registry.yarnpkg.com/yocto-queue/-/yocto-queue-1.0.0.tgz#7f816433fb2cbc511ec8bf7d263c3b58a1a3c251"
   integrity sha512-9bnSc/HEW2uRy67wc+T8UwauLuPJVn28jb+GtJY16iiKWyvmYJRXVT4UamsAEGQfPohgr2q4Tq0sQbQlxTfi1g==
 
-yup@0.32.3:
-  version "0.32.3"
-  resolved "https://registry.yarnpkg.com/yup/-/yup-0.32.3.tgz#34d665bd24230596294faf3a1cdd96ad544c389a"
-  integrity sha512-Xpm5W0sPX+bUEqPO6MAHlBwWdY6B2PlZa0rwdljOcvOepQfrBx46bb6arq9YZr4esl+/9iRjNDo7XM1nzCzbJQ==
-  dependencies:
-    "@babel/runtime" "^7.10.5"
-    "@types/lodash" "^4.14.165"
-    lodash "^4.17.20"
-    lodash-es "^4.17.11"
-    nanoclone "^0.2.1"
-    property-expr "^2.0.4"
-    toposort "^2.0.2"
-
-yup@>=0.32.3:
+yup@1.4.0, yup@>=0.32.3:
   version "1.4.0"
   resolved "https://registry.yarnpkg.com/yup/-/yup-1.4.0.tgz#898dcd660f9fb97c41f181839d3d65c3ee15a43e"
   integrity sha512-wPbgkJRCqIf+OHyiTBQoJiP5PFuAXaWiJK6AmYkzQAh5/c2K9hzSApBZG5wV9KoKSePF7sAxmNSvh/13YHkFDg==
