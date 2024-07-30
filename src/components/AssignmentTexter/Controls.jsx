@@ -825,8 +825,8 @@ export class AssignmentTexterContactControls extends React.Component {
       currentQuestionAnswered = questionResponses[currentInteractionStep.id];
       const dupeTester = {};
       const shortener = answerValue => {
-        // label is for one-word values or e.g. "Yes: ...."
-        const label = answerValue.match(/^(\w+)([^\s\w]|$)/);
+        // label is for one-word values or e.g. "Yes: ...." or "[Yes] ..."
+        const label = answerValue.match(/^\W?(\w+)([^\s\w]|$)/);
         return label ? label[1] : answerValue;
       };
       currentQuestionOptions = currentQuestion.answerOptions
