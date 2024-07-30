@@ -18,18 +18,15 @@ class AssignReplies extends React.Component {
   };
 
   async componentWillMount() {
-    console.log("Props",this.props);
     try {
       
       const organizationId = (await this.props.mutations.dynamicReassign(
         this.props.params.joinToken,
         this.props.params.campaignId
       )).data.dynamicReassign;
-      console.log("ID:", organizationId);
 
     this.props.router.push(`/app/${organizationId}`);
     } catch (err) {
-      console.log("error assigning replies", err);
       const texterMessage = (err &&
         err.message &&
         err.message.match(/(Sorry,.+)$/)) || [
