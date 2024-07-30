@@ -28,7 +28,7 @@ import { rawIngestMethod } from "../extensions/contact-loaders";
 
 import { Lambda } from "@aws-sdk/client-lambda";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
-import { CreateBucketCommand, GetObjectCommand, waitUntilBucketExists, S3Client } from "@aws-sdk/client-s3";
+import { CreateBucketCommand, GetObjectCommand, waitUntilBucketExists, S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 import { SQS } from "@aws-sdk/client-sqs";
 import Papa from "papaparse";
 import moment from "moment";
@@ -862,17 +862,17 @@ export async function exportCampaign(job) {
   ) {
     try {
       const client = new S3Client({
-        // S3 endpoint: US East (Ohio)
         region: process.env.AWS_REGION
       });
+      const bucketName = process.env.AWS_S3_BUCKET_NAME;
+      const command = new CreateBucketCommand({ Bucket : bucketName });
 
-      const command = new CreateBucketCommand({ Bucket : process.env.AWS_S3_BUCKET_NAME });
-
-      const Location = await client.send(command);
-      console.log(`Bucket created with location ${location}`);
+      // this can return Location and $metadata, we just don't need that info
+      await client.send(command);
 
       // verifies that the bucket exists before moving forward
-      await waitUntilBucketExists({ client, maxWaitTime: 60 }, { Bucket });
+      // if for some reason this fails, Spoke defensively deletes the job
+      await waitUntilBucketExists({ client, maxWaitTime: 60 }, { Bucket : bucketName });
 
       const campaignTitle = campaign.title
         .replace(/ /g, "_")
@@ -881,16 +881,21 @@ export async function exportCampaign(job) {
         "YYYY-MM-DD-HH-mm-ss"
       )}.csv`;
       const messageKey = `${key}-messages.csv`;
-      let params = { Key: key, Body: campaignCsv };
-      await client.putObject(params);
-      params = { Key: key, Expires: 86400 };
+      let params = { Key: key, Body: campaignCsv, Bucket: bucketName };
+      await client.send(new PutObjectCommand(params));
+      params = { Key: key, Expires: 86400, Bucket: bucketName };
       const campaignExportUrl = await getSignedUrl(client, new GetObjectCommand(params));
-      params = { Key: messageKey, Body: messageCsv };
-      await client.putObject(params);
-      params = { Key: messageKey, Expires: 86400 };
+      params = { Key: messageKey, Body: messageCsv, Bucket: bucketName };
+      await client.send(new PutObjectCommand(params));
+      params = { Key: messageKey, Expires: 86400,Bucket: bucketName };
       const campaignMessagesExportUrl = await getSignedUrl(client, new GetObjectCommand(params));
       exportResults.campaignExportUrl = campaignExportUrl;
       exportResults.campaignMessagesExportUrl = campaignMessagesExportUrl;
+
+      console.log(`
+        campaignExportUrl: ${campaignExportUrl}\n
+        campaignMessageExportUrl: ${campaignMessagesExportUrl}
+        `)
 
       await sendEmail({
         to: user.email,
