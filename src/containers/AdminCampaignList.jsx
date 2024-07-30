@@ -2,7 +2,7 @@ import PropTypes from "prop-types";
 import React from "react";
 import { StyleSheet, css } from "aphrodite";
 import { withRouter } from "react-router";
-import gql from "graphql-tag";
+import { gql } from "@apollo/client";
 
 import Fab from "@material-ui/core/Fab";
 import AddIcon from "@material-ui/icons/Add";

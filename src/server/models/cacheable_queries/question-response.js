@@ -19,10 +19,10 @@ const loadToCache = async campaignContactId => {
   if (r.redis && CONTACT_CACHE_ENABLED) {
     const cacheKey = responseCacheKey(campaignContactId);
     await r.redis
-      .multi()
-      .set(cacheKey, JSON.stringify(questionResponseValues))
-      .expire(cacheKey, 43200)
-      .execAsync();
+      .MULTI()
+      .SET(cacheKey, JSON.stringify(questionResponseValues))
+      .EXPIRE(cacheKey, 43200)
+      .exec();
   }
   return questionResponseValues;
 };
@@ -34,7 +34,7 @@ const questionResponseCache = {
     // server/api/campaign-contact
     if (r.redis && CONTACT_CACHE_ENABLED && minimalObj) {
       const cacheKey = responseCacheKey(campaignContactId);
-      const cachedResponse = await r.redis.getAsync(cacheKey);
+      const cachedResponse = await r.redis.GET(cacheKey);
       if (cachedResponse) {
         return JSON.parse(cachedResponse);
       }
@@ -44,7 +44,7 @@ const questionResponseCache = {
   clearQuery: async campaignContactId => {
     // console.log('clearing questionresponse cache', campaignContactId)
     if (r.redis) {
-      await r.redis.delAsync(responseCacheKey(campaignContactId));
+      await r.redis.DEL(responseCacheKey(campaignContactId));
     }
   },
   save: async (campaignContactId, questionResponses) => {
@@ -128,8 +128,8 @@ const questionResponseCache = {
     if (r.redis && CONTACT_CACHE_ENABLED) {
       const cacheKey = responseCacheKey(campaignContactId);
       await r.redis
-        .multi()
-        .set(
+        .MULTI()
+        .SET(
           cacheKey,
           JSON.stringify(
             questionResponses.map(qr => ({
@@ -138,8 +138,8 @@ const questionResponseCache = {
             }))
           )
         )
-        .expire(cacheKey, 43200)
-        .execAsync();
+        .EXPIRE(cacheKey, 43200)
+        .exec();
     }
 
     return toReturn;

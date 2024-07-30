@@ -7,7 +7,7 @@ There are current two ways to run tests, using either PostgreSQL or SQLite.
 ### Running Postgres with Docker (recommended)
 
 1. Install [Docker](https://docs.docker.com/desktop/)
-2. Run redis and postgres using docker-compose: `docker-compose up`
+2. Run redis and postgres using docker compose: `docker compose up`
 3. Create the test database: `./dev-tools/create-test-database`
 4. Run `yarn test`
  

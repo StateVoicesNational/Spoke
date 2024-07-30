@@ -34,7 +34,9 @@ describe("Phone number management screen in the Admin interface", () => {
     // Waits until job run completes
     cy.waitUntil(
       () =>
-        cy.get(`tr:contains(${testAreaCode}) td:nth-child(4)`).contains("1"),
+        cy
+          .get(`tr:contains(${testAreaCode}) td:nth-child(4) div`)
+          .contains("1"),
       { timeout: 1000 }
     );
   });

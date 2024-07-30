@@ -8,7 +8,7 @@ import Button from "@material-ui/core/Button";
 import Switch from "@material-ui/core/Switch";
 import FormControlLabel from "@material-ui/core/FormControlLabel";
 
-import gql from "graphql-tag";
+import { gql } from "@apollo/client";
 import GSTextField from "../../../components/forms/GSTextField";
 import loadData from "../../../containers/hoc/load-data";
 import theme from "../../../styles/mui-theme";

@@ -55,7 +55,7 @@ export const tests = testName => {
             {
               id: "13",
               script:
-                "Hi {firstName}, it's {texterAliasOrFirstName} a volunteer with MoveOn. There is an election in Arizona coming Tuesday. Will you vote progressive? STOP2quit",
+                "Hi {firstName}, it's {texterAliasOrFirstName} a volunteer with StateVoices. There is an election in Arizona coming Tuesday. Will you vote progressive? STOP2quit",
               question: { text: "", answerOptions: [] }
             }
           ],
@@ -119,7 +119,7 @@ export const tests = testName => {
             {
               id: "13",
               script:
-                "Hi {firstName}, it's {texterAliasOrFirstName}, a volunteer with MoveOn. There is an election in Ohio this coming Tuesday. Will you vote progressive?",
+                "Hi {firstName}, it's {texterAliasOrFirstName}, a volunteer with StateVoices. There is an election in Ohio this coming Tuesday. Will you vote progressive?",
               question: {
                 text: "Will you vote progressive?",
                 answerOptions: [
@@ -210,7 +210,7 @@ export const tests = testName => {
           {
             id: "fake1",
             text:
-              "Hi Earl, it's Christine, a volunteer with MoveOn. There is an election in Ohio this coming Tuesday. Will you vote progressive?",
+              "Hi Earl, it's Christine, a volunteer with StateVoices. There is an election in Ohio this coming Tuesday. Will you vote progressive?",
             isFromContact: false,
             createdAt: new Date(Number(new Date()) - 314 * 60 * 1000)
           },
@@ -262,7 +262,7 @@ export const tests = testName => {
             {
               id: "13",
               script:
-                "Hi {firstName}, it's {texterAliasOrFirstName}, a volunteer with MoveOn. There is an election in Ohio this coming Tuesday. Will you vote progressive?",
+                "Hi {firstName}, it's {texterAliasOrFirstName}, a volunteer with StateVoices. There is an election in Ohio this coming Tuesday. Will you vote progressive?",
               question: {
                 text: "Will you vote progressive?",
                 answerOptions: [
@@ -468,7 +468,7 @@ export const tests = testName => {
           {
             id: "fake1",
             text:
-              "Hi Earl, it's Christine, a volunteer with MoveOn. There is an election in Ohio this coming Tuesday. Will you vote progressive?",
+              "Hi Earl, it's Christine, a volunteer with StateVoices. There is an election in Ohio this coming Tuesday. Will you vote progressive?",
             isFromContact: false,
             createdAt: new Date(Number(new Date()) - 314 * 60 * 1000)
           },
@@ -550,7 +550,7 @@ export const tests = testName => {
             {
               id: "13",
               script:
-                "Hi {firstName}, it's {texterAliasOrFirstName} a volunteer with MoveOn. There is an election in Arizona coming Tuesday. Will you vote progressive?",
+                "Hi {firstName}, it's {texterAliasOrFirstName} a volunteer with StateVoices. There is an election in Arizona coming Tuesday. Will you vote progressive?",
               question: { text: "", answerOptions: [] }
             }
           ],

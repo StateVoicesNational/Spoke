@@ -1,7 +1,6 @@
 import type from "prop-types";
 import React from "react";
 import orderBy from "lodash/orderBy";
-import { compose } from "recompose";
 import Slider from "./Slider";
 
 import Autocomplete from "@material-ui/lab/Autocomplete";
@@ -644,4 +643,4 @@ CampaignTextersForm.propTypes = {
   saveDisabled: type.bool
 };
 
-export default compose(withMuiTheme)(CampaignTextersForm);
+export default withMuiTheme(CampaignTextersForm);

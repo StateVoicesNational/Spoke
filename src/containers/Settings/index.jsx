@@ -1,12 +1,11 @@
 /* eslint no-console: 0 */
 import PropTypes from "prop-types";
 import React from "react";
-import gql from "graphql-tag";
+import { gql } from "@apollo/client";
 import Form from "react-formal";
 import moment from "moment";
 import * as yup from "yup";
 import { StyleSheet, css } from "aphrodite";
-import { compose } from "recompose";
 
 import Dialog from "@material-ui/core/Dialog";
 import DialogContent from "@material-ui/core/DialogContent";
@@ -711,7 +710,8 @@ const mutations = {
   })
 };
 
-export default compose(
-  withSetTheme,
-  loadData({ queries, mutations })
-)(Settings);
+const EnhancedSettings = withSetTheme(
+  loadData({ queries, mutations})(Settings)
+);
+
+export default EnhancedSettings;

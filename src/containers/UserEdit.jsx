@@ -22,9 +22,8 @@
 import PropTypes from "prop-types";
 import React from "react";
 import loadData from "./hoc/load-data";
-import gql from "graphql-tag";
+import { gql } from "@apollo/client";
 import { withRouter } from "react-router";
-import { compose } from "recompose";
 import GSForm from "../components/forms/GSForm";
 import GSTextField from "../components/forms/GSTextField";
 import GSSubmitButton from "../components/forms/GSSubmitButton";
@@ -63,23 +62,29 @@ const styles = StyleSheet.create({
   }
 });
 
-const fetchUser = async (organizationId, userId) =>
-  apolloClient.query({
-    query: gql`
-      query getEditedUser($organizationId: String!, $userId: Int!) {
-        user(organizationId: $organizationId, userId: $userId) {
-          id
-          firstName
-          email
-          lastName
-          alias
-          cell
-          extra
+const fetchUser = async (organizationId, userId) => {
+  try {
+    const response = await apolloClient.query({
+      query: gql`
+        query getEditedUser($organizationId: String!, $userId: Int!) {
+          user(organizationId: $organizationId, userId: $userId) {
+            id
+            firstName
+            email
+            lastName
+            alias
+            cell
+            extra
+          }
         }
-      }
-    `,
-    variables: { organizationId, userId }
-  });
+      `,
+      variables: { organizationId, userId }
+    });
+    return response;
+  } catch (error) {
+    console.error("Error fetching user:", error);
+  }
+};
 
 const fetchOrg = async organizationId =>
   apolloClient.query({
@@ -131,7 +136,7 @@ export class UserEditBase extends React.Component {
     if (!this.props.authType && this.props.userId) {
       const response = await fetchUser(
         this.props.organizationId,
-        this.props.userId
+        parseInt(this.props.userId)
       );
       this.setState({
         editedUser: response.data
@@ -484,7 +489,7 @@ const mutations = {
   editUser: ownProps => userData => ({
     mutation: editUserMutation,
     variables: {
-      userId: ownProps.userId,
+      userId: parseInt(ownProps.userId),
       organizationId: ownProps.organizationId,
       userData
     }
@@ -507,10 +512,8 @@ const mutations = {
   })
 };
 
-const UserEdit = compose(
-  withMuiTheme,
-  withRouter,
-  loadData({ queries, mutations })
-)(UserEditBase);
+const UserEdit = withMuiTheme(
+  withRouter(loadData({ queries, mutations })(UserEditBase))
+);
 
 export default UserEdit;

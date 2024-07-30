@@ -1,5 +1,16 @@
+// client-testing libs
+import React from "react";
+import { StyleSheetTestUtils } from "aphrodite";
+import { shallow } from "enzyme";
+
 import each from "jest-each";
 import nock from "nock";
+
+import Autocomplete from "@material-ui/lab/Autocomplete";
+import List from "@material-ui/core/List";
+import ListItem from "@material-ui/core/ListItem";
+import ListItemText from "@material-ui/core/ListItemText";
+
 import {
   getCellFromRow,
   getZipFromRow,
@@ -9,10 +20,6 @@ import {
   getClientChoiceData,
   available
 } from "../../../../src/extensions/contact-loaders/ngpvan";
-import Autocomplete from "@material-ui/lab/Autocomplete";
-import List from "@material-ui/core/List";
-import ListItem from "@material-ui/core/ListItem";
-import ListItemText from "@material-ui/core/ListItemText";
 
 import { CampaignContactsForm } from "../../../../src/extensions/contact-loaders/ngpvan/react-component";
 
@@ -22,10 +29,9 @@ const ngpvan = require("../../../../src/extensions/contact-loaders/ngpvan");
 const helpers = require("../../../../src/extensions/contact-loaders/helpers");
 const jobs = require("../../../../src/workers/jobs");
 
-// client-testing libs
-import React from "react";
-import { shallow } from "enzyme";
-import { StyleSheetTestUtils } from "aphrodite";
+afterEach(async () => {
+  await nock.cleanAll();
+});
 
 describe("ngpvan", () => {
   let fakeNgpVanBaseApiUrl;

@@ -2,7 +2,6 @@ import PropTypes from "prop-types";
 import React from "react";
 import { Link as RouterLink } from "react-router";
 import moment from "moment";
-import { compose } from "recompose";
 
 import HeadsetIcon from "@material-ui/icons/Headset";
 import ImageIcon from "@material-ui/icons/Image";
@@ -218,4 +217,4 @@ MessageList.propTypes = {
   hideMedia: PropTypes.bool
 };
 
-export default compose(withMuiTheme)(MessageList);
+export default withMuiTheme(MessageList);

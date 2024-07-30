@@ -1,8 +1,7 @@
 import PropTypes from "prop-types";
 import React from "react";
-import gql from "graphql-tag";
+import { gql } from "@apollo/client";
 import { Link } from "react-router";
-import { compose } from "recompose";
 
 import Button from "@material-ui/core/Button";
 import ButtonGroup from "@material-ui/core/ButtonGroup";
@@ -1052,7 +1051,6 @@ export class AdminCampaignEditBase extends React.Component {
                   <Button
                     variant="contained"
                     color="secondary"
-                    variant="outlined"
                     startIcon={<CancelIcon />}
                     onClick={() => this.handleDeleteJob(jobId)}
                   >
@@ -1229,7 +1227,8 @@ const mutations = {
 
 export const operations = { queries, mutations };
 
-export default compose(
-  loadData(operations),
-  withMuiTheme
-)(AdminCampaignEditBase);
+const EnhancedAdminCampaignEditBase = loadData(operations)(
+  withMuiTheme(AdminCampaignEditBase)
+);
+
+export default EnhancedAdminCampaignEditBase;

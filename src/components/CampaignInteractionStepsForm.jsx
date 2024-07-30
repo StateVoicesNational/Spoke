@@ -2,7 +2,6 @@ import type from "prop-types";
 import React from "react";
 import Form from "react-formal";
 import * as yup from "yup";
-import { compose } from "recompose";
 
 import Button from "@material-ui/core/Button";
 import ButtonGroup from "@material-ui/core/ButtonGroup";
@@ -499,4 +498,4 @@ CampaignInteractionStepsFormBase.propTypes = {
   availableActions: type.array
 };
 
-export default compose(withMuiTheme)(CampaignInteractionStepsFormBase);
+export default withMuiTheme(CampaignInteractionStepsFormBase);

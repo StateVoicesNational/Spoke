@@ -42,7 +42,7 @@ it("should send an initial message to test contacts", async () => {
   const organizationId = testOrganization.data.createOrganization.id;
   const texterTodoProps = {
     messageStatus: "needsMessage",
-    params: { assignmentId, organizationId },
+    params: { assignmentId: assignmentId.toString(), organizationId },
     location: { query: {} }
   };
 
@@ -63,9 +63,9 @@ it("should send an initial message to test contacts", async () => {
 
   const message = {
     contactNumber: contact.cell,
-    userId: testTexterUser.id,
+    userId: testTexterUser.id.toString(),
     text: "test text",
-    assignmentId
+    assignmentId: assignmentId.toString()
   };
 
   const [messageMutation, messageVars] = sendMessageMutAndVars(
@@ -115,7 +115,7 @@ it("should be able to receive a response and reply (using fakeService)", async (
   const organizationId = testOrganization.data.createOrganization.id;
   const texterTodoProps = {
     messageStatus: "needsMessage",
-    params: { assignmentId, organizationId },
+    params: { assignmentId: assignmentId.toString(), organizationId },
     location: { query: {} }
   };
 
@@ -136,9 +136,9 @@ it("should be able to receive a response and reply (using fakeService)", async (
 
   const message = {
     contactNumber: contact.cell,
-    userId: testTexterUser.id,
+    userId: testTexterUser.id.toString(),
     text: "test text autorespond",
-    assignmentId
+    assignmentId: assignmentId.toString()
   };
 
   const [messageMutation, messageVars] = sendMessageMutAndVars(
@@ -178,9 +178,9 @@ it("should be able to receive a response and reply (using fakeService)", async (
   // Then we reply
   const message2 = {
     contactNumber: contact.cell,
-    userId: testTexterUser.id,
+    userId: testTexterUser.id.toString(),
     text: "reply",
-    assignmentId
+    assignmentId: assignmentId.toString()
   };
 
   const [replyMutation, replyVars] = sendMessageMutAndVars(

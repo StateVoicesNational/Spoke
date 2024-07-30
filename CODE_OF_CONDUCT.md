@@ -58,7 +58,7 @@ If you see someone who is making an extra effort to ensure our community is welc
 
 Unacceptable behavior from any community member, including sponsors and those with decision-making authority, will not be tolerated.
 
-Any community member asked to stop unacceptable behavior is expected to comply immediately. If the member fails to comply immediately, the community organizers may take any action they deem appropriate, up to and including [blocking users from collaboration with MoveOn Github repositories](https://help.github.com/en/articles/blocking-a-user-from-your-organization) and/or temporarily banning or permanently expelling the non-complying member from the community without warning (and without refund in the case of a paid event).
+Any community member asked to stop unacceptable behavior is expected to comply immediately. If the member fails to comply immediately, the community organizers may take any action they deem appropriate, up to and including [blocking users from collaboration with StateVoices Github repositories](https://help.github.com/en/articles/blocking-a-user-from-your-organization) and/or temporarily banning or permanently expelling the non-complying member from the community without warning (and without refund in the case of a paid event).
 
 ## Our Responsibilities
 

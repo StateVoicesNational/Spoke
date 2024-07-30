@@ -10,7 +10,6 @@ many important organizations!
   - ProgCode has community guidelines
 - We have a weekly(ish) working group at [Progressive HackNight](https://progressivehacknight.org) that organizes in the #wg-spoke_p2p_sms_tool channel in the slack
 - Feel free to [create an issue or comment on an existing issue](https://github.com/StateVoicesNational/Spoke/issues) -- Every time we hear from the outside progressive developer community, we do a little dance.
-- We also welcome reaching out on our [MoveOn Spoke interest form](https://act.moveon.org/survey/spoke-project/) with questions, etc.
 
 In all forums we affirm the [Progressive Coder Community Guidelines](https://docs.google.com/document/d/1coMHvuGf6x6Qn_73SEhOXi_QaoRBM__3Zj6_5TyrmWs/edit#heading=h.ab96v3qhdgk9)
 
@@ -57,7 +56,7 @@ Welcome to the project! Once you've completed that first contribution, there are
 - We use our [Area labels](docs/EXPLANATION-labels.md) to categorize issues into which code feature areas they belong in. Feel free to sort by an area you're interested in.
 - We use our [Organization labels](docs/EXPLANATION-labels.md) to categorize issues by which organizations are prioritizing them. You can sort by your favorite org and help out there.
 - More broadly, there are all sort of different [labels](https://github.com/StateVoicesNational/Spoke/labels) we use to filter the issues down and you can leverage that to help you find work.
-- Lastly, you can always ping a project maintainer (@ibrand, and @schuyler1d) to get a read on what's on our radar right now.
+- Lastly, you can always ping a project maintainer (@mau11 and @engelhartrueben) to get a read on what's on our radar right now.
 
 ### Claiming issues
 - Like for your first issue, comment on the issue and tell us that you're working on it. Feel free to ask any clarifying questions that you have.
@@ -83,7 +82,7 @@ The actual process:
 - We create a new stage-main branch at least twice a month:
   - The stage-main branch includes the latest approved pull requests in one merged branch
     - This ensures that PRs will not contain anything that breaks deployment and also will allow us to see if any PRs negatively interact with each other before they end up merged to main. Why bother with this step? It's helpful to have a separate "release candidate" on the stage-main branch because in earlier testing rounds people weren't sure what had been deployed to staging and having a separate branch makes this explicit and clear.
-  - After stage-main is created, we deploy it to MoveOn's staging instance. We have a small set of QA volunteers who then run through a list of [QA steps](https://github.com/StateVoicesNational/Spoke/blob/main/docs/HOWTO_QA_GUIDE.md) in order to find bugs and test new features.
+  - After stage-main is created, we deploy it to StateVoices staging instance. We have a small set of QA volunteers who then run through a list of [QA steps](https://github.com/StateVoicesNational/Spoke/blob/main/docs/HOWTO_QA_GUIDE.md) in order to find bugs and test new features.
   - After QA is completed, and volunteers haven't identified any bugs, we deploy stage-main to production.
   - We let stage-main run in production for at least a day, before merging stage-main into the main branch.
   - We never roll code directly to prod without first testing on staging.

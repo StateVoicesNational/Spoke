@@ -1,23 +1,14 @@
 [![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-v1.4%20adopted-ff69b4.svg)](CODE_OF_CONDUCT.md)
 
-# StateVoices is the new community steward for Spoke!
-
-On November 19th, the repo Spoke was transfered from MoveOn to StateVoices. If you're looking for the most up-to-date Spoke to fork from, start [at the StateVoices repo](https://github.com/StateVoicesNational/Spoke)
-
 ## Spoke History
 
 Spoke is an open source text-distribution tool for organizations to mobilize supporters and members into action. Spoke allows you to upload phone numbers, customize scripts and assign volunteers to communicate with supporters while allowing organizations to manage the process.
 
-Spoke was created by Saikat Chakrabarti and Sheena Pakanati, and is now maintained by MoveOn.org.
+Spoke was created by Saikat Chakrabarti and Sheena Pakanati.
 
-The latest version can be found on the [State Voices repo page](https://github.com/StateVoicesNational/Spoke) (see [release notes](https://github.com/StateVoicesNational/Spoke/blob/main/docs/RELEASE_NOTES.md))
+On November 19th, 2023, the repo Spoke was transfered from MoveOn to StateVoices.
 
-If you're a developer switching over from the MoveOn fork to the new StateVoices base, you can run:
-```
-git remote set-url upstream https://github.com/StateVoicesNational/Spoke
-git remote set-url origin  https://github.com/StateVoicesNational/Spoke
-```
-to reset where your repo is pointing and ensure you're pulling the correct code.
+The latest version is [14.0.0](https://github.com/StateVoicesNational/Spoke/tree/v14.0) (see [release notes](https://github.com/StateVoicesNational/Spoke/blob/main/docs/RELEASE_NOTES.md#v140))
 
 
 ## Setting up Spoke
@@ -34,7 +25,7 @@ Want to know more?
 ### Quick Start with Heroku
 This version of Spoke suitable for testing and, potentially, for small campaigns. This won't cost any money and will not support production(aka large-scale) usage. It's a great way to practice deploying Spoke or see it in action.  
 
-<a href="https://heroku.com/deploy?template=https://github.com/StateVoicesNational/Spoke/tree/14.0.1">
+<a href="https://heroku.com/deploy?template=https://github.com/StateVoicesNational/Spoke/tree/v14.0">
 
   <img src="https://www.herokucdn.com/deploy/button.svg" alt="Deploy">
 </a>
@@ -43,8 +34,6 @@ Follow up instructions located [here](/docs/HOWTO_HEROKU_DEPLOY.md).
 
 
 **NOTE:** You can upgrade this deployment later for use in a production setting, but keep in mind you will need to migrate data from any prior campaigns.  Thus it is best to upgrade before you start any live campaigns.  This will cost ~$75 ($25 dyno + $50 postgres) a month and should be suitable for production level usage for most organizations. We recommend that if you plan to use Spoke at scale that you use [this link to deploy with a production infrastructure from the start!](https://heroku.com/deploy?template=https://github.com/StateVoicesNational/Spoke/tree/heroku-button-paid)
-
-Please let us know if you deployed by filling out this form [here](https://act.moveon.org/survey/tech/)
 
 
 ### Other Options for Production Use

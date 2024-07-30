@@ -43,7 +43,7 @@ describe("CampaignList", () => {
         campaigns: {
           campaigns: [campaignWithoutCreator],
           pageInfo: {
-            limit: 1000,
+            limit: 100,
             offset: 0,
             total: 1
           }
@@ -86,7 +86,7 @@ describe("CampaignList", () => {
         campaigns: {
           campaigns: [campaignWithCreator],
           pageInfo: {
-            limit: 1000,
+            limit: 100,
             offset: 0,
             total: 1
           }
@@ -127,7 +127,7 @@ describe("CampaignList", () => {
         campaigns: {
           campaigns: [campaignWithCreator],
           pageInfo: {
-            limit: 1000,
+            limit: 100,
             offset: 0,
             total: 1
           }

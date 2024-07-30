@@ -69,7 +69,7 @@ const dbLoadUserRoles = async userId => {
   const highestRolesPerOrg = getHighestRolesPerOrg(userOrgs);
   if (r.redis) {
     // delete keys first
-    // pass all values to hset instead of looping
+    // pass all values to HSET instead of looping
     const key = userRoleKey(userId);
     const mappedHighestRoles = Object.values(highestRolesPerOrg).reduce(
       (acc, orgRole) => {
@@ -80,12 +80,12 @@ const dbLoadUserRoles = async userId => {
     );
     if (mappedHighestRoles.length) {
       await r.redis
-        .multi()
-        .del(key)
-        .hmset(key, ...mappedHighestRoles)
-        .execAsync();
+        .MULTI()
+        .DEL(key)
+        .HSET(key, ...mappedHighestRoles)
+        .exec();
     } else {
-      await r.redis.delAsync(key);
+      await r.redis.DEL(key);
     }
   }
 
@@ -94,8 +94,8 @@ const dbLoadUserRoles = async userId => {
 
 const loadUserRoles = async userId => {
   if (r.redis) {
-    const roles = await r.redis.hgetallAsync(userRoleKey(userId));
-    if (roles) {
+    const roles = await r.redis.HGETALL(userRoleKey(userId));
+    if (Object.keys(roles).length > 0) {
       const userRoles = {};
       Object.keys(roles).forEach(orgId => {
         const [highestRole, orgName] = roles[orgId].split(":");
@@ -123,10 +123,10 @@ const dbLoadUserAuth = async (field, val) => {
   if (r.redis && userAuth) {
     const authKey = userAuthKey(val);
     await r.redis
-      .multi()
-      .set(authKey, JSON.stringify(userAuth))
-      .expire(authKey, 43200)
-      .execAsync();
+      .MULTI()
+      .SET(authKey, JSON.stringify(userAuth))
+      .EXPIRE(authKey, 43200)
+      .exec();
     await dbLoadUserRoles(userAuth.id);
   }
   return userAuth;
@@ -156,7 +156,7 @@ const userOrgHighestRole = async (userId, orgId) => {
   if (r.redis) {
     // cached approach
     const userKey = userRoleKey(userId);
-    const cacheRoleResult = await r.redis.hgetAsync(userKey, orgId);
+    const cacheRoleResult = await r.redis.HGET(userKey, orgId);
     if (cacheRoleResult) {
       highestRole = cacheRoleResult.split(":")[0];
     } else {
@@ -197,7 +197,7 @@ const userLoggedIn = async (field, val) => {
   let user = null;
 
   if (r.redis) {
-    const cachedAuth = await r.redis.getAsync(authKey);
+    const cachedAuth = await r.redis.get(authKey);
     if (cachedAuth) {
       user = JSON.parse(cachedAuth);
     }
@@ -223,10 +223,10 @@ const getAndClearNotifications = async userId => {
   const key = notificationsKey(userId);
   if (r.redis) {
     const notifData = await r.redis
-      .multi()
-      .hkeys(key)
-      .del(key)
-      .execAsync();
+      .MULTI()
+      .HKEYS(key)
+      .DEL(key)
+      .exec();
     // console.log('getAndClearNotifications', notifData);
     if (notifData && notifData[0] && notifData[0].length) {
       notifications = notifData[0];
@@ -239,10 +239,10 @@ const addNotification = async (userId, assignmentId) => {
   const key = notificationsKey(userId);
   if (r.redis) {
     await r.redis
-      .multi()
-      .hset(key, assignmentId, 1)
-      .expire(key, 7200) // two hours
-      .execAsync();
+      .MULTI()
+      .HSET(key, assignmentId, 1)
+      .EXPIRE(key, 7200) // two hours
+      .exec();
   }
 };
 
@@ -255,10 +255,10 @@ const userCache = {
   addNotification,
   clearUser: async (userId, authId) => {
     if (r.redis) {
-      await r.redis.delAsync(userRoleKey(userId));
-      await r.redis.delAsync(userAuthKey(userId));
+      await r.redis.DEL(userRoleKey(userId));
+      await r.redis.DEL(userAuthKey(userId));
       if (authId) {
-        await r.redis.delAsync(userAuthKey(authId));
+        await r.redis.DEL(userAuthKey(authId));
       }
     }
   }

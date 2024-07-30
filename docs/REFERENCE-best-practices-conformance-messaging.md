@@ -12,7 +12,7 @@ Spoke is a software application that facilitates individual texters sending indi
 
 Use of Spoke is subject to legal restrictions which each organization should review and understand, including recent guidance from an [FCC ruling](https://docs.fcc.gov/public/attachments/DA-20-670A1.pdf). Carriers and messaging services also take positions both on what is legally allowed and how they interpret messages sent through their services.  Twilio documents [how carrier filtering works](https://support.twilio.com/hc/en-us/articles/223181848-How-Does-Carrier-Filtering-Work-), and a carrier industry group has published [CTIA guidelines](https://www.ctia.org/the-wireless-industry/industry-commitments/messaging-interoperability-sms-mms) that describe carrier perspectives.
 
-MoveOn aggressively works to follow best practices to be legally compliant as well as a good citizen for texters and contact recipients.
+StateVoices aggressively works to follow best practices to be legally compliant as well as a good citizen for texters and contact recipients.
 
 <b><i><u>Please consult your own legal advice on how to deploy Spoke.</u></i></b> Because Spoke is used by different organizations, in different countries, with different compliance laws and interpretations, Spoke allows for adjustment of the configuration options.  Please consult with legal counsel as to how your organization should configure Spoke.
 
@@ -57,7 +57,7 @@ You can modify what triggers an auto-optout by preparing JSON in the following s
     [{"regex": "^\\s*stop\\b|\\bremove me\\s*$|remove my name|\\btake me off th\\w+ list|\\blose my number|don\\W?t contact me|delete my number|I opt out|stop2quit|stopall|^\\s*unsubscribe\\s*$|^\\s*cancel\\s*$|^\\s*end\\s*$|^\\s*quit\\s*$", "reason": "stop"}]
     ```
 
-You can add multiple objects in the array to match different reasons. The default Spoke install does not include all the phrases MoveOn uses to trigger an auto-optout -- we also include offensive/hostile phrases, for example.
+You can add multiple objects in the array to match different reasons. The default Spoke install does not include all the phrases StateVoices uses to trigger an auto-optout -- we also include offensive/hostile phrases, for example.
 
 
 ## Modifying the initial text message

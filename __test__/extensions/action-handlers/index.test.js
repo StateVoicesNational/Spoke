@@ -3,13 +3,14 @@ import each from "jest-each";
 import {
   setupTest,
   cleanupTest,
-  createStartedCampaign
+  createStartedCampaign,
+  flushRedis
 } from "../../test_helpers";
 const ActionHandlers = require("../../../src/extensions/action-handlers");
 const uuidv4 = require("uuid").v4;
 const TestAction = require("../../../src/extensions/action-handlers/test-action");
 const ComplexTestAction = require("../../../src/extensions/action-handlers/complex-test-action");
-const log = require("../../../src/lib").log;
+const { log } = require("../../../src/lib");
 
 describe("action-handlers/index", () => {
   let organization;
@@ -36,12 +37,11 @@ describe("action-handlers/index", () => {
 
   beforeEach(async () => {
     jest.restoreAllMocks();
-    if (r.redis) {
-      r.redis.flushdb();
-    }
   });
 
   afterEach(async () => {
+    jest.restoreAllMocks();
+    await flushRedis();
     const toReset = ["CACHE_PREFIX", "ACTION_HANDLERS"];
 
     toReset.forEach(thingToReset => {
@@ -696,7 +696,7 @@ describe("action-handlers/index", () => {
 
       describe("when the items property is not an array", () => {
         beforeEach(async () => {
-          fakeAction.getClientChoiceData = () => ({
+          fakeAction.getClientChoiceData = async () => ({
             data: JSON.stringify({ items: {} }),
             expiresSeconds: 77
           });

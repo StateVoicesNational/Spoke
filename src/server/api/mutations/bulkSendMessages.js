@@ -1,10 +1,10 @@
-import camelCaseKeys from "camelcase-keys";
+import { GraphQLError } from "graphql";
+import { camelizeKeys } from "humps";
 import { getContacts } from "../assignment";
-import { GraphQLError } from "graphql/error";
 
 import { getConfig } from "../lib/config";
 import { applyScript } from "../../../lib/scripts";
-import { Assignment, User, r, cacheableData } from "../../models";
+import { User, r, cacheableData } from "../../models";
 
 import { log } from "../../../lib";
 
@@ -25,10 +25,7 @@ export const bulkSendMessages = async (
     !getConfig("ALLOW_SEND_ALL_ENABLED", organization)
   ) {
     log.error("Not allowed to send all messages at once");
-    throw new GraphQLError({
-      status: 403,
-      message: "Not allowed to send all messages at once"
-    });
+    throw new GraphQLError("Not allowed to send all messages at once");
   }
 
   // Assign some contacts
@@ -76,7 +73,7 @@ export const bulkSendMessages = async (
 
   const topmostParent = interactionSteps[0];
 
-  const texter = camelCaseKeys(await User.get(assignment.user_id));
+  const texter = camelizeKeys(await User.get(assignment.user_id));
   let customFields = Object.keys(JSON.parse(contacts[0].custom_fields));
 
   const texterSideboxes = getConfig("TEXTER_SIDEBOXES") || "";
@@ -89,7 +86,7 @@ export const bulkSendMessages = async (
   const promises = contacts.map(async contact => {
     contact.customFields = contact.custom_fields;
     const text = applyScript({
-      contact: camelCaseKeys(contact),
+      contact: camelizeKeys(contact),
       texter,
       script: topmostParent.script,
       customFields

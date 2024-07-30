@@ -1,7 +1,7 @@
 import PropTypes from "prop-types";
 import React from "react";
 import TopNav from "../components/TopNav";
-import gql from "graphql-tag";
+import { gql } from "@apollo/client";
 import loadData from "./hoc/load-data";
 import { withRouter, Link as RouterLink } from "react-router";
 

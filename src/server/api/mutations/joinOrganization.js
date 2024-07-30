@@ -1,4 +1,4 @@
-import { GraphQLError } from "graphql/error";
+import { GraphQLError } from "graphql";
 
 import { r, cacheableData } from "../../models";
 import { hasRole } from "../../../lib";
@@ -11,6 +11,7 @@ const INVALID_JOIN = () => {
   return error;
 };
 
+// eslint-disable-next-line import/prefer-default-export
 export const joinOrganization = async (
   _,
   { organizationUuid, campaignId, queryParams },
@@ -64,8 +65,8 @@ export const joinOrganization = async (
   userOrg = await r
     .knex("user_organization")
     .where({
-      user_id: user.id,
-      organization_id: organization.id
+      user_id: user.id.toString(),
+      organization_id: organization.id.toString()
     })
     .select("role")
     .first();

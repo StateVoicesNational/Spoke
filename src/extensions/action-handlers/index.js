@@ -43,7 +43,7 @@ const CONFIGURED_TAG_HANDLERS = _.pickBy(
 
 export async function getSetCacheableResult(cacheKey, fallbackFunc) {
   if (r.redis && cacheKey) {
-    const cacheRes = await r.redis.getAsync(String(cacheKey));
+    const cacheRes = await r.redis.GET(String(cacheKey));
     if (cacheRes) {
       return JSON.parse(cacheRes);
     }
@@ -51,10 +51,10 @@ export async function getSetCacheableResult(cacheKey, fallbackFunc) {
   const slowRes = await fallbackFunc();
   if (r.redis && cacheKey && slowRes && slowRes.expiresSeconds) {
     await r.redis
-      .multi()
-      .set(String(cacheKey), JSON.stringify(slowRes))
-      .expire(String(cacheKey), slowRes.expiresSeconds)
-      .execAsync();
+      .MULTI()
+      .SET(String(cacheKey), JSON.stringify(slowRes))
+      .EXPIRE(String(cacheKey), slowRes.expiresSeconds)
+      .exec();
   }
   return slowRes;
 }
@@ -197,8 +197,8 @@ export async function getActionChoiceData(actionHandler, organization, user) {
     parsedData = {};
   }
 
-  let items = parsedData.items;
-  if (items && !(items instanceof Array)) {
+  let { items } = parsedData;
+  if (items && !Array.isArray(items)) {
     log.error(
       `Data received from ${actionHandler.name}.getClientChoiceData is not an array`
     );
@@ -214,7 +214,7 @@ export const clearCacheForOrganization = async organizationId => {
 
   const handlerNames = Object.keys(CONFIGURED_ACTION_HANDLERS);
   const promiseArray = handlerNames.map(handlerName => [
-    r.redis.keysAsync(
+    r.redis.KEYS(
       `${choiceDataCacheKey(
         handlerName,
         {
@@ -223,7 +223,7 @@ export const clearCacheForOrganization = async organizationId => {
         "*"
       )}`
     ),
-    r.redis.keysAsync(
+    r.redis.KEYS(
       `${availabilityCacheKey(
         handlerName,
         {
@@ -245,6 +245,6 @@ export const clearCacheForOrganization = async organizationId => {
     keys.push(...keysResult);
   });
 
-  const delPromises = keys.map(key => r.redis.delAsync(key));
+  const delPromises = keys.map(key => r.redis.DEL(key));
   await Promise.all(delPromises);
 };

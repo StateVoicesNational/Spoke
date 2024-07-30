@@ -12,7 +12,7 @@ const CONFIGURED_INGEST_METHODS = getIngestMethods();
 
 async function getSetCacheableResult(cacheKey, fallbackFunc) {
   if (r.redis) {
-    const cacheRes = await r.redis.getAsync(cacheKey);
+    const cacheRes = await r.redis.GET(cacheKey);
     if (cacheRes) {
       return JSON.parse(cacheRes);
     }
@@ -20,10 +20,10 @@ async function getSetCacheableResult(cacheKey, fallbackFunc) {
   const slowRes = await fallbackFunc();
   if (r.redis && slowRes && slowRes.expiresSeconds) {
     await r.redis
-      .multi()
-      .set(cacheKey, JSON.stringify(slowRes))
-      .expire(cacheKey, slowRes.expiresSeconds)
-      .execAsync();
+      .MULTI()
+      .SET(cacheKey, JSON.stringify(slowRes))
+      .EXPIRE(cacheKey, slowRes.expiresSeconds)
+      .exec();
   }
   return slowRes;
 }
@@ -101,12 +101,8 @@ export const clearCacheForOrganization = async organizationId => {
 
   const handlerNames = Object.keys(CONFIGURED_INGEST_METHODS);
   const promiseArray = handlerNames.map(handlerName => [
-    r.redis.keysAsync(
-      `${choiceDataCacheKey(handlerName, organizationId, "*")}`
-    ),
-    r.redis.keysAsync(
-      `${availabilityCacheKey(handlerName, organizationId, "*")}`
-    )
+    r.redis.KEYS(`${choiceDataCacheKey(handlerName, organizationId, "*")}`),
+    r.redis.KEYS(`${availabilityCacheKey(handlerName, organizationId, "*")}`)
   ]);
 
   const flattenedPromises = [];
@@ -120,7 +116,7 @@ export const clearCacheForOrganization = async organizationId => {
     keys.push(...keysResult);
   });
 
-  const delPromises = keys.map(key => r.redis.delAsync(key));
+  const delPromises = keys.map(key => r.redis.DEL(key));
   await Promise.all(delPromises);
 };
 

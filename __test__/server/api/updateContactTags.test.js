@@ -32,7 +32,6 @@ describe("mutations.updateContactTags", () => {
 
   afterEach(async () => {
     await cleanupTest();
-    if (r.redis) r.redis.flushdb();
   }, global.DATABASE_SETUP_TEARDOWN_TIMEOUT);
 
   beforeEach(async () => {
@@ -106,7 +105,7 @@ describe("mutations.updateContactTags", () => {
 
     const result = await wrappedMutations.updateContactTags(
       contactTags,
-      contacts[0].id
+      contacts[0].id.toString()
     );
 
     expect(result.data.updateContactTags).toEqual({
@@ -154,12 +153,11 @@ describe("mutations.updateContactTags", () => {
           id: tag.id,
           value: tag.value
         })),
-        999999 // this will cause cacheableData.campaignContact.load to throw an exception
+        "999999" // this will cause cacheableData.campaignContact.load to throw an exception
       );
-
       expect(result.errors[0].message).toEqual(
         expect.stringMatching(
-          /^The loader.load\(\) function must be called with a value,but got: undefined.*/
+          /^The loader.load\(\) function must be called with a value, but got: undefined.*/
         )
       );
 

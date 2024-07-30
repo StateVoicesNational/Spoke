@@ -3,6 +3,10 @@ import nock from "nock";
 
 import requestWithRetry from "../../../src/server/lib/http-request.js";
 
+afterEach(async () => {
+  await nock.cleanAll();
+});
+
 describe("requestWithRetry", () => {
   let url;
   let path;

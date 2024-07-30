@@ -1,8 +1,8 @@
 import PropTypes from "prop-types";
 import React, { Component } from "react";
-import { compose } from "react-apollo";
+import { flowRight as compose } from "lodash";
 import { withRouter } from "react-router";
-import gql from "graphql-tag";
+import { gql } from "@apollo/client";
 
 import MenuItem from "@material-ui/core/MenuItem";
 import MenuList from "@material-ui/core/MenuList";

@@ -2,7 +2,7 @@ import PropTypes from "prop-types";
 import React from "react";
 import loadData from "./hoc/load-data";
 import { withRouter } from "react-router";
-import gql from "graphql-tag";
+import { gql } from "@apollo/client";
 import theme from "../styles/theme";
 import DisplayLink from "../components/DisplayLink";
 import { StyleSheet, css } from "aphrodite";

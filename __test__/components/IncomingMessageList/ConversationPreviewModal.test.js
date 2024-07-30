@@ -3,15 +3,12 @@
  */
 import React from "react";
 import { mount } from "enzyme";
-import ConversationPreviewModal, {
-  InnerConversationPreviewModal
-} from "../../../src/components/IncomingMessageList/ConversationPreviewModal";
+import { InnerConversationPreviewModal } from "../../../src/components/IncomingMessageList/ConversationPreviewModal";
 import { prepareDataTableData } from "../../../src/components/IncomingMessageList";
 
 import ReactTestUtils from "react-dom/test-utils";
-import { createMemoryHistory } from "react-router";
 import ApolloClientSingleton from "../../../src/network/apollo-client-singleton";
-import { ApolloProvider } from "react-apollo";
+import { ApolloProvider } from "@apollo/client";
 import Dialog from "@material-ui/core/Dialog";
 
 import { r } from "../../../src/server/models";
@@ -24,6 +21,7 @@ import {
   createStartedCampaign
 } from "../../test_helpers";
 
+// Skipped because muiTheme is not set when called
 describe.skip("ConversationPreviewModal", () => {
   let startedCampaign;
   let optOutContact;
@@ -77,7 +75,6 @@ describe.skip("ConversationPreviewModal", () => {
 
   afterAll(async () => {
     await cleanupTest();
-    if (r.redis) r.redis.flushdb();
   }, global.DATABASE_SETUP_TEARDOWN_TIMEOUT);
 
   describe("when a message review user opts out a user", () => {

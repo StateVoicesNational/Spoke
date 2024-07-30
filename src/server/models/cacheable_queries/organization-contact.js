@@ -9,7 +9,7 @@ const organizationContactCache = {
     const cacheKey = getCacheKey(organizationId, contactNumber);
 
     if (r.redis) {
-      const organizationContact = await r.redis.getAsync(cacheKey);
+      const organizationContact = await r.redis.GET(cacheKey);
 
       if (organizationContact) {
         return JSON.parse(organizationContact);
@@ -26,10 +26,10 @@ const organizationContactCache = {
 
     if (r.redis && organizationContact) {
       await r.redis
-        .multi()
-        .set(cacheKey, JSON.stringify(organizationContact))
-        .expire(cacheKey, 43200) // 12 hours
-        .execAsync();
+        .MULTI()
+        .SET(cachekey, json.stringify(organizationcontact))
+        .EXPIRE(cacheKey, 43200) // 12 hours
+        .exec();
     }
 
     return organizationContact;
@@ -52,20 +52,18 @@ const organizationContactCache = {
 
     if (r.redis) {
       const cacheKey = getCacheKey(organizationId, contactNumber);
-      const cachedContact = JSON.parse(
-        (await r.redis.getAsync(cacheKey)) || "{}"
-      );
+      const cachedContact = JSON.parse((await r.redis.get(cacheKey)) || "{}");
       await r.redis
-        .multi()
-        .set(
+        .MULTI()
+        .SET(
           cacheKey,
           JSON.stringify({
             ...cachedContact,
             ...organizationContact
           })
         )
-        .expire(cacheKey, 43200) // 12 hours
-        .execAsync();
+        .EXPIRE(cacheKey, 43200) // 12 hours
+        .exec();
     }
   }
 };

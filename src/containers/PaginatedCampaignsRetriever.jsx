@@ -1,6 +1,6 @@
 import { Component } from "react";
 import PropTypes from "prop-types";
-import gql from "graphql-tag";
+import { gql } from "@apollo/client";
 import isEqual from "lodash/isEqual";
 
 import apolloClient from "../network/apollo-client-singleton";

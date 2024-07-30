@@ -1,5 +1,6 @@
 import moment from "moment";
-import AWS from "aws-sdk";
+import { CloudWatch } from "@aws-sdk/client-cloudwatch";
+import { CloudWatchEvents } from "@aws-sdk/client-cloudwatch-events";
 import { log } from "../lib";
 import { getConfig } from "./api/lib/config";
 import _ from "lodash";
@@ -55,13 +56,13 @@ const makeCloudwatchErrorEvent = (err, details) => {
 
 // Specific to the Warren AWS deploy: report a cloudwatch event to "Mission Control"
 if (getConfig("ENABLE_CLOUDWATCH_REPORTING", null, { truthy: 1 })) {
-  const cloudwatchEventsClient = new AWS.CloudWatchEvents();
-  const cloudwatchMetricsClient = new AWS.CloudWatch();
+  const cloudwatchEventsClient = new CloudWatchEvents();
+  const cloudwatchMetricsClient = new CloudWatch();
 
   reportErrorCallbacks.push(async (err, details) => {
     const payload = makeCloudwatchErrorEvent(err, details);
     try {
-      await cloudwatchEventsClient.putEvents(payload).promise();
+      await cloudwatchEventsClient.putEvents(payload);
     } catch (e) {
       log.error({
         msg: "Error posting exception to Cloudwatch:",
@@ -74,7 +75,7 @@ if (getConfig("ENABLE_CLOUDWATCH_REPORTING", null, { truthy: 1 })) {
   reportEventCallbacks.push(async (detailType, details) => {
     const payload = makeCloudwatchEvent(detailType, details);
     try {
-      await cloudwatchEventsClient.putEvents(payload).promise();
+      await cloudwatchEventsClient.putEvents(payload);
       if (details.count) {
         const metricData = {
           MetricData: [
@@ -87,7 +88,7 @@ if (getConfig("ENABLE_CLOUDWATCH_REPORTING", null, { truthy: 1 })) {
           ],
           Namespace: `Spoke/${stage}/Data`
         };
-        await cloudwatchMetricsClient.putMetricData(metricData).promise();
+        await cloudwatchMetricsClient.putMetricData(metricData);
       }
     } catch (e) {
       log.error({
@@ -124,7 +125,7 @@ if (getConfig("ENABLE_CLOUDWATCH_REPORTING", null, { truthy: 1 })) {
             awsEvent: req.awsEvent,
             path: JSON.stringify(err.path)
           });
-          await cloudwatchEventsClient.putEvents(payload).promise();
+          await cloudwatchEventsClient.putEvents(payload);
         }
         const metricData = {
           MetricData: [
@@ -137,7 +138,7 @@ if (getConfig("ENABLE_CLOUDWATCH_REPORTING", null, { truthy: 1 })) {
           ],
           Namespace: `Spoke/${stage}/Error`
         };
-        await cloudwatchMetricsClient.putMetricData(metricData).promise();
+        await cloudwatchMetricsClient.putMetricData(metricData);
       }
     } catch (e) {
       log.error({

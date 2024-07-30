@@ -10,6 +10,7 @@ const log = require("../../../src/lib").log;
 
 afterEach(async () => {
   jest.restoreAllMocks();
+  await nock.cleanAll();
 });
 
 describe("zapier-action", () => {

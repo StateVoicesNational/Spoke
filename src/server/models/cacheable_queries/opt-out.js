@@ -35,7 +35,7 @@ const loadMany = async organizationId => {
     const hashKey = orgCacheKey(organizationId);
 
     // if no optouts, the key should still exist for true negative lookups:
-    await r.redis.saddAsync(hashKey, ["0"]);
+    await r.redis.SADD(hashKey, ["0"]);
     await r.redis.expire(hashKey, 43200);
 
     // save 100 at a time
@@ -44,7 +44,7 @@ const loadMany = async organizationId => {
       i100 < l100;
       i100++
     ) {
-      await r.redis.saddAsync(
+      await r.redis.SADD(
         hashKey,
         cellOptOuts.slice(100 * i100, 100 * i100 + 100)
       );
@@ -79,9 +79,9 @@ const optOutCache = {
     // (if no cell is present, then clear whole query of organization)
     if (r.redis) {
       if (cell) {
-        await r.redis.sdelAsync(orgCacheKey(organizationId), cell);
+        await r.redis.sdel(orgCacheKey(organizationId), cell);
       } else {
-        await r.redis.delAsync(orgCacheKey(organizationId));
+        await r.redis.DEL(orgCacheKey(organizationId));
       }
     }
   },
@@ -97,10 +97,10 @@ const optOutCache = {
     if (r.redis) {
       const hashKey = orgCacheKey(organizationId);
       const [exists, isMember] = await r.redis
-        .multi()
-        .exists(hashKey)
-        .sismember(hashKey, cell)
-        .execAsync();
+        .MULTI()
+        .EXISTS(hashKey)
+        .SISMEMBER(hashKey, cell)
+        .exec();
       if (exists) {
         return isMember;
       }
@@ -146,9 +146,9 @@ const optOutCache = {
     const organizationId = campaign.organization_id;
     if (r.redis) {
       const hashKey = orgCacheKey(organizationId);
-      const exists = await r.redis.existsAsync(hashKey);
+      const exists = await r.redis.exists(hashKey);
       if (exists) {
-        await r.redis.saddAsync(hashKey, cell);
+        await r.redis.SADD(hashKey, cell);
       }
     }
     // database

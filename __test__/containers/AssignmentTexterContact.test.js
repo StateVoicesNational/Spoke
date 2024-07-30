@@ -9,13 +9,11 @@ import { AssignmentTexterContact } from "../../src/containers/AssignmentTexterCo
 import { muiTheme } from "../test_helpers";
 import ThemeContext from "../../src/containers/context/ThemeContext";
 
-var MockDate = require("mockdate");
+import * as timezones from "../../src/lib/timezones";
 
-jest.mock("../../src/lib/timezones");
-jest.unmock("../../src/lib/tz-helpers");
+const MockDate = require("mockdate");
+
 jest.useFakeTimers();
-
-var timezones = require("../../src/lib/timezones");
 
 const campaign = {
   id: 9,
@@ -110,8 +108,8 @@ describe("when contact is not within texting hours...", () => {
   });
 
   it("it refreshes data in componentDidMount", () => {
-    timezones.isBetweenTextingHours.mockReturnValue(false);
-    timezones.getLocalTime.mockReturnValue(
+    jest.spyOn(timezones, "isBetweenTextingHours").mockReturnValue(false);
+    jest.spyOn(timezones, "getLocalTime").mockReturnValue(
       moment()
         .utc()
         .utcOffset(-5)
@@ -141,16 +139,17 @@ describe("when contact is not within texting hours...", () => {
 });
 
 describe("when contact is within texting hours...", () => {
-  var component;
   beforeEach(() => {
-    timezones.isBetweenTextingHours.mockReturnValue(true);
-    timezones.getLocalTime.mockReturnValue(
+    jest.spyOn(timezones, "isBetweenTextingHours").mockReturnValue(true);
+
+    jest.spyOn(timezones, "getLocalTime").mockReturnValue(
       moment()
         .utc()
         .utcOffset(-5)
     );
+
     StyleSheetTestUtils.suppressStyleInjection();
-    component = mount(
+    mount(
       <ThemeContext.Provider value={{ muiTheme }}>
         <AssignmentTexterContact
           mutations={{}}
@@ -180,8 +179,8 @@ describe("when contact is within texting hours...", () => {
 
 describe("AssignmentTextContact has the proper enabled/disabled state when created", () => {
   it("is enabled if the contact is inside texting hours", () => {
-    timezones.isBetweenTextingHours.mockReturnValueOnce(true);
-    var assignmentTexterContact = new AssignmentTexterContact(
+    jest.spyOn(timezones, "isBetweenTextingHours").mockReturnValue(true);
+    const assignmentTexterContact = new AssignmentTexterContact(
       propsWithEnforcedTextingHoursCampaign
     );
     expect(assignmentTexterContact.state.disabled).toBeFalsy();
@@ -189,8 +188,8 @@ describe("AssignmentTextContact has the proper enabled/disabled state when creat
   });
 
   it("is disabled if the contact is inside texting hours", () => {
-    timezones.isBetweenTextingHours.mockReturnValueOnce(false);
-    var assignmentTexterContact = new AssignmentTexterContact(
+    jest.spyOn(timezones, "isBetweenTextingHours").mockReturnValue(false);
+    const assignmentTexterContact = new AssignmentTexterContact(
       propsWithEnforcedTextingHoursCampaign
     );
     expect(assignmentTexterContact.state.disabled).toBeTruthy();
@@ -201,15 +200,19 @@ describe("AssignmentTextContact has the proper enabled/disabled state when creat
 });
 
 describe("test isContactBetweenTextingHours", () => {
-  var assignmentTexterContact;
-
+  let assignmentTexterContact;
   beforeAll(() => {
     assignmentTexterContact = new AssignmentTexterContact(
       propsWithEnforcedTextingHoursCampaign
     );
-    timezones.isBetweenTextingHours.mockImplementation((o, c) => false);
+
+    jest
+      .spyOn(timezones, "isBetweenTextingHours")
+      .mockImplementation((o, c) => false);
+
     MockDate.set("2018-02-01T15:00:00.000Z");
-    timezones.getLocalTime.mockReturnValue(
+
+    jest.spyOn(timezones, "getLocalTime").mockReturnValue(
       moment()
         .utc()
         .utcOffset(-5)
@@ -225,7 +228,7 @@ describe("test isContactBetweenTextingHours", () => {
   });
 
   it("works when the contact has location data with empty timezone", () => {
-    let contact = {
+    const contact = {
       location: {
         city: "New York",
         state: "NY",
@@ -241,8 +244,8 @@ describe("test isContactBetweenTextingHours", () => {
     ).toBeFalsy();
     expect(timezones.isBetweenTextingHours.mock.calls).toHaveLength(1);
 
-    let theCall = timezones.isBetweenTextingHours.mock.calls[0];
-    expect(theCall[0]).toBeFalsy();
+    const theCall = timezones.isBetweenTextingHours.mock.calls[0];
+    expect(theCall[0]).toEqual({ offset: -5, hasDST: true });
     expect(theCall[1]).toEqual({
       textingHoursStart: 8,
       textingHoursEnd: 21,
@@ -251,7 +254,7 @@ describe("test isContactBetweenTextingHours", () => {
   });
 
   it("works when the contact has location data", () => {
-    let contact = {
+    const contact = {
       location: {
         city: "New York",
         state: "NY",
@@ -267,7 +270,7 @@ describe("test isContactBetweenTextingHours", () => {
     ).toBeFalsy();
     expect(timezones.isBetweenTextingHours.mock.calls).toHaveLength(1);
 
-    let theCall = timezones.isBetweenTextingHours.mock.calls[0];
+    const theCall = timezones.isBetweenTextingHours.mock.calls[0];
     expect(theCall[0]).toEqual({ hasDST: true, offset: -5 });
     expect(theCall[1]).toEqual({
       textingHoursStart: 8,
@@ -277,14 +280,14 @@ describe("test isContactBetweenTextingHours", () => {
   });
 
   it("works when the contact does not have location data", () => {
-    let contact = {};
+    const contact = {};
 
     expect(
       assignmentTexterContact.isContactBetweenTextingHours(contact)
     ).toBeFalsy();
     expect(timezones.isBetweenTextingHours.mock.calls).toHaveLength(1);
 
-    let theCall = timezones.isBetweenTextingHours.mock.calls[0];
+    const theCall = timezones.isBetweenTextingHours.mock.calls[0];
     expect(theCall[0]).toBeNull();
     expect(theCall[1]).toEqual({
       textingHoursStart: 8,

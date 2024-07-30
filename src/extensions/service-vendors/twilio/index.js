@@ -1,7 +1,8 @@
 /* eslint-disable no-use-before-define, no-console */
 import _ from "lodash";
 import Twilio, { twiml } from "twilio";
-import urlJoin from "url-join";
+import { format as formatUrl } from "url";
+import { join as joinPath } from "path";
 import { log } from "../../../lib";
 import { getFormattedPhoneNumber } from "../../../lib/phone-format";
 import {
@@ -695,6 +696,7 @@ export async function getContactInfo({
  */
 export async function createMessagingService(organization, friendlyName) {
   console.log("twilio.createMessagingService", organization.id, friendlyName);
+  const urlJoin = (...parts) => formatUrl({ pathname: joinPath(...parts) });
   const twilio = await exports.getTwilio(organization);
   const twilioBaseUrl =
     getConfig("TWILIO_BASE_CALLBACK_URL", organization) ||

@@ -3,7 +3,6 @@ import { r } from "../../../src/server/models/";
 import { getFeatures } from "../../../src/server/api/lib/config";
 import { getCampaignsQuery } from "../../../src/containers/AdminCampaignList";
 import { editOrganizationGql } from "../../../src/containers/Settings";
-import { GraphQLError } from "graphql/error";
 
 import {
   cleanupTest,
@@ -23,7 +22,6 @@ describe("editOrganization", () => {
 
   afterEach(async () => {
     await cleanupTest();
-    if (r.redis) r.redis.flushdb();
   }, global.DATABASE_SETUP_TEARDOWN_TIMEOUT);
 
   describe("features", () => {
