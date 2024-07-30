@@ -28,7 +28,7 @@ import { rawIngestMethod } from "../extensions/contact-loaders";
 
 import { Lambda } from "@aws-sdk/client-lambda";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
-import { GetObjectCommand, S3 } from "@aws-sdk/client-s3";
+import { CreateBucketCommand, GetObjectCommand, S3, waitUntilBucketExists, S3Client } from "@aws-sdk/client-s3";
 import { SQS } from "@aws-sdk/client-sqs";
 import Papa from "papaparse";
 import moment from "moment";
@@ -861,12 +861,17 @@ export async function exportCampaign(job) {
     (process.env.AWS_ACCESS_KEY_ID && process.env.AWS_SECRET_ACCESS_KEY)
   ) {
     try {
-      const s3bucket = new S3({
-        // The transformation for params is not implemented.
-        // Refer to UPGRADING.md on aws-sdk-js-v3 for changes needed.
-        // Please create/upvote feature request on aws-sdk-js-codemod for params.
-        params: { Bucket: process.env.AWS_S3_BUCKET_NAME }
+      const s3bucket = new S3Client({
+        // S3 endpoint: US East (Ohio)
+        region: "us-east-2"
       });
+
+      const Bucket = process.env.AWS_S3_BUCKET_NAME;
+      const command = new CreateBucketCommand({ Bucket });
+
+      await s3bucket.send(command);
+      await waitUntilBucketExists({ s3bucket, maxWaitTime: 60 }, { Bucket });
+
       const campaignTitle = campaign.title
         .replace(/ /g, "_")
         .replace(/\//g, "_");
@@ -877,7 +882,7 @@ export async function exportCampaign(job) {
       let params = { Key: key, Body: campaignCsv };
       await s3bucket.putObject(params);
       params = { Key: key, Expires: 86400 };
-      const campaignExportUrl = await await getSignedUrl(s3bucket, new GetObjectCommand(params), {
+      const campaignExportUrl = await getSignedUrl(s3bucket, new GetObjectCommand(params), {
         expiresIn: "/* add value from 'Expires' from v2 call if present, else remove */"
       });
       params = { Key: messageKey, Body: messageCsv };
