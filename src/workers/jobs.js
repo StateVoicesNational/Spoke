@@ -28,7 +28,7 @@ import { rawIngestMethod } from "../extensions/contact-loaders";
 
 import { Lambda } from "@aws-sdk/client-lambda";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
-import { CreateBucketCommand, GetObjectCommand, S3, waitUntilBucketExists, S3Client } from "@aws-sdk/client-s3";
+import { CreateBucketCommand, GetObjectCommand, waitUntilBucketExists, S3Client } from "@aws-sdk/client-s3";
 import { SQS } from "@aws-sdk/client-sqs";
 import Papa from "papaparse";
 import moment from "moment";
