@@ -863,7 +863,7 @@ export async function exportCampaign(job) {
     try {
       const client = new S3Client({
         // S3 endpoint: US East (Ohio)
-        region: "us-east-2"
+        region: process.env.AWS_REGION
       });
 
       const Bucket = process.env.AWS_S3_BUCKET_NAME;
