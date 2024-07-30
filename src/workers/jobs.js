@@ -881,13 +881,21 @@ export async function exportCampaign(job) {
         "YYYY-MM-DD-HH-mm-ss"
       )}.csv`;
       const messageKey = `${key}-messages.csv`;
-      let params = { Key: key, Body: campaignCsv, Bucket: bucketName };
+      let params = { Key: key, 
+                     Body: campaignCsv, 
+                     Bucket: bucketName };
       await client.send(new PutObjectCommand(params));
-      params = { Key: key, Expires: 86400, Bucket: bucketName };
+      params = { Key: key, 
+                 Expires: 86400, 
+                 Bucket: bucketName };
       const campaignExportUrl = await getSignedUrl(client, new GetObjectCommand(params));
-      params = { Key: messageKey, Body: messageCsv, Bucket: bucketName };
+      params = { Key: messageKey, 
+                 Body: messageCsv, 
+                 Bucket: bucketName };
       await client.send(new PutObjectCommand(params));
-      params = { Key: messageKey, Expires: 86400,Bucket: bucketName };
+      params = { Key: messageKey, 
+                 Expires: 86400,
+                 Bucket: bucketName };
       const campaignMessagesExportUrl = await getSignedUrl(client, new GetObjectCommand(params));
       exportResults.campaignExportUrl = campaignExportUrl;
       exportResults.campaignMessagesExportUrl = campaignMessagesExportUrl;
