@@ -103,6 +103,33 @@ class AdminCampaignStats extends React.Component {
     disableExportButton: false
   };
 
+  renderPieChart(id, text, count, options) {
+    return (
+      <div key={id}>
+        <Typography variant="h5">{text}</Typography>
+        {count > 0 ? (
+          <div className={css(styles.container)}>
+            <div className={css(styles.flexColumn)}>
+              <Stat title="responses" count={count} />
+            </div>
+            <div className={css(styles.flexColumn)}>
+              <div className={css(styles.rightAlign)}>
+                <Chart
+                  data={options.map(answer => [
+                    answer.value,
+                    answer.responderCount
+                  ])}
+                />
+              </div>
+            </div>
+          </div>
+        ) : (
+          "No responses yet"
+        )}
+      </div>
+    );
+  }
+
   renderSurveyStats() {
     const { interactionSteps } = this.props.data.campaign;
 
@@ -112,36 +139,91 @@ class AdminCampaignStats extends React.Component {
       if (step.question === "") {
         return <div key={step.id}></div>;
       }
-
       const totalResponseCount = step.question.answerOptions.reduce(
         (prev, answer) => prev + answer.responderCount,
         0
       );
-      return (
-        <div key={step.id}>
-          <Typography variant="h5">{step.question.text}</Typography>
-          {totalResponseCount > 0 ? (
-            <div className={css(styles.container)}>
-              <div className={css(styles.flexColumn)}>
-                <Stat title="responses" count={totalResponseCount} />
-              </div>
-              <div className={css(styles.flexColumn)}>
-                <div className={css(styles.rightAlign)}>
-                  <Chart
-                    data={step.question.answerOptions.map(answer => [
-                      answer.value,
-                      answer.responderCount
-                    ])}
-                  />
-                </div>
-              </div>
-            </div>
-          ) : (
-            "No responses yet"
-          )}
-        </div>
+      return this.renderPieChart(
+        step.id, step.question.text, totalResponseCount, step.question.answerOptions
       );
     });
+  }
+
+  renderGroupedAnswerStats() {
+    let totalGroupedResponsesCount = 0;
+    const groupedSurveyResponses = {};
+    const { interactionSteps } = this.props.data.campaign;
+    interactionSteps.forEach(step => {
+      step.question.answerOptions.forEach(answer => {
+        answer.value.replace(/\[(.*?)\]/g, (match) => {
+          if (!groupedSurveyResponses[match]) {
+            groupedSurveyResponses[match] = {
+              total: 0,
+              questionAnswers: []
+            };
+          }
+          groupedSurveyResponses[match].total += answer.responderCount;
+          totalGroupedResponsesCount += answer.responderCount;
+          groupedSurveyResponses[match].questionAnswers.push({
+            qid: step.id,
+            answer: answer.value,
+            count: answer.responderCount
+          });
+        });
+      });
+    });
+    const keys = Object.keys(groupedSurveyResponses);
+    return (
+      keys.length
+        ? this.renderPieChart(
+          "groupedResponses",
+          "Responses Grouped by Answers (with []'s)",
+          totalGroupedResponsesCount,
+          keys.map(k => ({
+            value: k,
+            responderCount: groupedSurveyResponses[k].total
+          }))
+        )
+        : null
+    );
+  }
+
+  renderGroupedQuestionStats() {
+    let totalGroupedResponsesCount = 0;
+    const groupedSurveyResponses = {};
+    const { interactionSteps } = this.props.data.campaign;
+    interactionSteps.forEach(step => {
+      step.question.answerOptions.forEach(answer => {
+        step.question.text.replace(/\[(.*?)\]/g, (match) => {
+          if (!groupedSurveyResponses[match]) {
+            groupedSurveyResponses[match] = {
+              total: 0,
+              questionAnswers: {}
+            };
+          }
+          groupedSurveyResponses[match].total += answer.responderCount;
+          const qA = groupedSurveyResponses[match].questionAnswers;
+          if (!qA[answer.value]) {
+            qA[answer.value] = {
+              value: answer.value,
+              responderCount: 0
+            };
+          }
+          qA[answer.value].responderCount += answer.responderCount;
+        });
+      });
+    });
+    const keys = Object.keys(groupedSurveyResponses);
+    return keys.map(k =>
+      this.renderPieChart(
+        `grouped${k}`,
+        `Grouped Questions with ${k}`,
+        groupedSurveyResponses[k].total,
+        Object.keys(groupedSurveyResponses[k].questionAnswers).map(qkey => (
+          groupedSurveyResponses[k].questionAnswers[qkey]
+        ))
+      )
+    );
   }
 
   renderErrorCounts() {
@@ -409,6 +491,8 @@ class AdminCampaignStats extends React.Component {
         ) : (
           <Typography variant="h5">Survey Questions</Typography>
         )}
+        <div>{this.renderGroupedAnswerStats()}</div>
+        <div>{this.renderGroupedQuestionStats()}</div>
         {this.renderSurveyStats()}
         {campaign.stats.errorCounts.length > 0 && (
           <div>
