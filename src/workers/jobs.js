@@ -900,11 +900,6 @@ export async function exportCampaign(job) {
       exportResults.campaignExportUrl = campaignExportUrl;
       exportResults.campaignMessagesExportUrl = campaignMessagesExportUrl;
 
-      console.log(`
-        campaignExportUrl: ${campaignExportUrl}\n
-        campaignMessageExportUrl: ${campaignMessagesExportUrl}
-        `)
-
       await sendEmail({
         to: user.email,
         subject: `Export ready for ${campaign.title}`,
