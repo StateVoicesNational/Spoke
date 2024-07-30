@@ -861,7 +861,7 @@ export async function exportCampaign(job) {
     (process.env.AWS_ACCESS_KEY_ID && process.env.AWS_SECRET_ACCESS_KEY)
   ) {
     try {
-      const s3bucket = new S3Client({
+      const client = new S3Client({
         // S3 endpoint: US East (Ohio)
         region: "us-east-2"
       });
@@ -869,8 +869,9 @@ export async function exportCampaign(job) {
       const Bucket = process.env.AWS_S3_BUCKET_NAME;
       const command = new CreateBucketCommand({ Bucket });
 
-      await s3bucket.send(command);
-      await waitUntilBucketExists({ s3bucket, maxWaitTime: 60 }, { Bucket });
+      await client.send(command);
+      // verifies that the bucket exists before moving forward
+      await waitUntilBucketExists({ client, maxWaitTime: 60 }, { Bucket });
 
       const campaignTitle = campaign.title
         .replace(/ /g, "_")
@@ -880,13 +881,13 @@ export async function exportCampaign(job) {
       )}.csv`;
       const messageKey = `${key}-messages.csv`;
       let params = { Key: key, Body: campaignCsv };
-      await s3bucket.putObject(params);
+      await client.putObject(params);
       params = { Key: key, Expires: 86400 };
-      const campaignExportUrl = await getSignedUrl(s3bucket, new GetObjectCommand(params));
+      const campaignExportUrl = await getSignedUrl(client, new GetObjectCommand(params));
       params = { Key: messageKey, Body: messageCsv };
-      await s3bucket.putObject(params);
+      await client.putObject(params);
       params = { Key: messageKey, Expires: 86400 };
-      const campaignMessagesExportUrl = await getSignedUrl(s3bucket, new GetObjectCommand(params));
+      const campaignMessagesExportUrl = await getSignedUrl(client, new GetObjectCommand(params));
       exportResults.campaignExportUrl = campaignExportUrl;
       exportResults.campaignMessagesExportUrl = campaignMessagesExportUrl;
 
