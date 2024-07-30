@@ -866,10 +866,11 @@ export async function exportCampaign(job) {
         region: process.env.AWS_REGION
       });
 
-      const Bucket = process.env.AWS_S3_BUCKET_NAME;
-      const command = new CreateBucketCommand({ Bucket });
+      const command = new CreateBucketCommand({ Bucket : process.env.AWS_S3_BUCKET_NAME });
 
-      await client.send(command);
+      const Location = await client.send(command);
+      console.log(`Bucket created with location ${location}`);
+
       // verifies that the bucket exists before moving forward
       await waitUntilBucketExists({ client, maxWaitTime: 60 }, { Bucket });
 
