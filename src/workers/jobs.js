@@ -882,15 +882,11 @@ export async function exportCampaign(job) {
       let params = { Key: key, Body: campaignCsv };
       await s3bucket.putObject(params);
       params = { Key: key, Expires: 86400 };
-      const campaignExportUrl = await getSignedUrl(s3bucket, new GetObjectCommand(params), {
-        expiresIn: "/* add value from 'Expires' from v2 call if present, else remove */"
-      });
+      const campaignExportUrl = await getSignedUrl(s3bucket, new GetObjectCommand(params));
       params = { Key: messageKey, Body: messageCsv };
       await s3bucket.putObject(params);
       params = { Key: messageKey, Expires: 86400 };
-      const campaignMessagesExportUrl = await getSignedUrl(s3bucket, new GetObjectCommand(params), {
-        expiresIn: "/* add value from 'Expires' from v2 call if present, else remove */"
-      });
+      const campaignMessagesExportUrl = await getSignedUrl(s3bucket, new GetObjectCommand(params));
       exportResults.campaignExportUrl = campaignExportUrl;
       exportResults.campaignMessagesExportUrl = campaignMessagesExportUrl;
 
