@@ -424,9 +424,10 @@ class AdminCampaignStats extends React.Component {
           message={
             <span>
               Export started -
-              {this.props.organizationData &&
-                this.props.organizationData.emailEnabled &&
-                " we'll e-mail you when it's done. "}
+              {(this.props.organizationData &&
+                this.props.organizationData.emailEnabled) ?
+                " we'll e-mail you when it's done. " :
+                " check your Spoke directory. "}
               {campaign.cacheable && (
                 <span>
                   <Link
