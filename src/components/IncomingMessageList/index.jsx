@@ -324,6 +324,12 @@ export class IncomingMessageList extends Component {
     );
   };
 
+
+  clearMessageSelection = () => {
+    this.handleRowsSelected([]);
+    this.state.selectedRows = [];
+  };
+
   render() {
     if (this.props.conversations.loading) {
       return <LoadingIndicator />;
@@ -375,6 +381,7 @@ export class IncomingMessageList extends Component {
       onTableChange: (action, tableState) => {
         switch (action) {
           case "sort":
+            this.clearMessageSelection()
             break;
           case "changePage":
             if (tableState.page > displayPage - 1) {
