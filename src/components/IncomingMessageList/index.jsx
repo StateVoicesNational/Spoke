@@ -328,9 +328,9 @@ export class IncomingMessageList extends Component {
 
   sortFunc(key) {
     const sort = {
-      campaignTitle: () => {},
+      campaignTitle: (a, b) => (b.campaignTitle > a.campaignTitle ? 1 : -1),
       texter: () => {},
-      to: () => {},
+      to: (a, b) => a.to - b.to,
       latestMessage: () => {}
     };
     return sort[key];
@@ -393,7 +393,9 @@ export class IncomingMessageList extends Component {
       onTableChange: (action, tableState) => {
         switch (action) {
           case "sort":
-            this.clearMessageSelection()
+            this.clearMessageSelection();
+            this.state.conversations.sort(this.sortFunc(tableState.sortOrder.name));
+            console.log(this.state.conversations);
             break;
           case "changePage":
             this.clearMessageSelection()
