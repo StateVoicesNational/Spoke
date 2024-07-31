@@ -70,7 +70,7 @@ export class IncomingMessageList extends Component {
       selectedRows: [],
       activeConversation: undefined,
       tags,
-      tableData: []
+      conversations: []
     };
   }
 
@@ -114,7 +114,7 @@ export class IncomingMessageList extends Component {
     }
   };
 
-  prepareTableColumns = tableData => [
+  prepareTableColumns = conversations => [
     {
       name: "campaignTitle",
       label: "Campaign"
@@ -162,7 +162,7 @@ export class IncomingMessageList extends Component {
       label: "Conversation Status",
       options: {
         customBodyRender: (value, tableMeta) => {
-          const row = tableData[tableMeta.rowIndex];
+          const row = conversations[tableMeta.rowIndex];
           return (
             <div>
               {MESSAGE_STATUSES[row.status].name}
@@ -179,7 +179,7 @@ export class IncomingMessageList extends Component {
       label: "Latest Message",
       options: {
         customBodyRender: (value, tableMeta) => {
-          const row = tableData[tableMeta.rowIndex];
+          const row = conversations[tableMeta.rowIndex];
           let lastMessage = null;
           let lastMessageEl = (
             <p>
@@ -227,7 +227,7 @@ export class IncomingMessageList extends Component {
       label: "View Conversation",
       options: {
         customBodyRender: (value, tableMeta) => {
-          const row = tableData[tableMeta.rowIndex];
+          const row = conversations[tableMeta.rowIndex];
           return (
             <div>
               {row.messages && row.messages.length > 1 && (
@@ -340,15 +340,15 @@ export class IncomingMessageList extends Component {
     const { limit, offset, total } = pageInfo;
     const { clearSelectedMessages } = this.props;
     const displayPage = Math.floor(offset / limit) + 1;
-    this.state.tableData = prepareDataTableData(conversations);
+    this.state.conversations = prepareDataTableData(conversations);
 
     let firstAssignmentid = null;
     let firstAssignmentTexter = null;
     let firstAssignmentCampaignTitle = null;
-    if (this.state.tableData.length) {
-      firstAssignmentid = this.state.tableData[0].assignmentId;
-      firstAssignmentTexter = this.state.tableData[0].texter.displayName;
-      firstAssignmentCampaignTitle = this.state.tableData[0].campaignTitle;
+    if (this.state.conversations.length) {
+      firstAssignmentid = this.state.conversations[0].assignmentId;
+      firstAssignmentTexter = this.state.conversations[0].texter.displayName;
+      firstAssignmentCampaignTitle = this.state.conversations[0].campaignTitle;
     }
 
     let rowSizeList = [10, 20, 50, 100];
@@ -424,8 +424,8 @@ export class IncomingMessageList extends Component {
         )}
 
         <MUIDataTable
-          data={this.state.tableData}
-          columns={this.prepareTableColumns(this.state.tableData)}
+          data={this.state.conversations}
+          columns={this.prepareTableColumns(this.state.conversations)}
           options={options}
         />
         <ConversationPreviewModal
