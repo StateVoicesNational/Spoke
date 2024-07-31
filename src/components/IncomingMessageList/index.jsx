@@ -243,7 +243,8 @@ export class IncomingMessageList extends Component {
               {this.renderTags(row.tags, row)}
             </div>
           );
-        }
+        },
+        sort: false
       }
     }
   ];
