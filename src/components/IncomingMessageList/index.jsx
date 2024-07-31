@@ -69,9 +69,12 @@ export class IncomingMessageList extends Component {
     this.state = {
       selectedRows: [],
       activeConversation: undefined,
-      tags,
-      conversations: []
+      tags
     };
+  }
+
+  state = {
+    conversations: []
   }
 
   componentDidMount() {
@@ -328,7 +331,11 @@ export class IncomingMessageList extends Component {
 
   sortFunc(key) {
     const sort = {
-      campaignTitle: (a, b) => (b.campaignTitle > a.campaignTitle ? 1 : -1),
+      campaignTitle: (a, b) => {
+        if (a.campaignTitle < b.campaignTitle) return -1;
+        if (a.campaignTitle > b.campaignTitle) return 1;
+        return 0
+      },
       texter: () => {},
       to: (a, b) => a.to - b.to,
       latestMessage: () => {}
