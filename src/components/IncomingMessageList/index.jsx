@@ -325,6 +325,16 @@ export class IncomingMessageList extends Component {
     );
   };
 
+  sortFunc(key) {
+    const sort = {
+      campaignTitle: () => {},
+      texter: () => {},
+      to: () => {},
+      latestMessage: () => {}
+    };
+    return sort[key];
+  }
+
 
   clearMessageSelection = () => {
     this.handleRowsSelected([]);
