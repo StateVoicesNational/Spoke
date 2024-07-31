@@ -385,6 +385,7 @@ export class IncomingMessageList extends Component {
             this.clearMessageSelection()
             break;
           case "changePage":
+            this.clearMessageSelection()
             if (tableState.page > displayPage - 1) {
               this.handleNextPageClick();
             } else {
@@ -392,6 +393,7 @@ export class IncomingMessageList extends Component {
             }
             break;
           case "changeRowsPerPage":
+            this.clearMessageSelection()
             const _ = undefined;
             this.handleRowSizeChanged(_, tableState.rowsPerPage);
             break;
