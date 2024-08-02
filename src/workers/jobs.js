@@ -900,18 +900,35 @@ export async function exportCampaign(job) {
       exportResults.campaignExportUrl = campaignExportUrl;
       exportResults.campaignMessagesExportUrl = campaignMessagesExportUrl;
 
-      await sendEmail({
-        to: user.email,
-        subject: `Export ready for ${campaign.title}`,
-        text: `Your Spoke exports are ready! These URLs will be valid for 24 hours.
-        Campaign export: ${campaignExportUrl}
-        Message export: ${campaignMessagesExportUrl}`
-      }).catch(err => {
-        log.error(err);
-        log.info(`Campaign Export URL - ${campaignExportUrl}`);
-        log.info(`Campaign Messages Export URL - ${campaignMessagesExportUrl}`);
-      });
-      log.info(`Successfully exported ${id}`);
+      // extreme check on email set-up
+      if ((
+        process.env.EMAIL_FROM &&
+        process.env.EMAIL_HOST &&
+        process.env.EMAIL_HOST_PASSOWRD &&
+        process.env.EMAIL_HOST_PORT &&
+        process.env.EMAIL_HOST_USER) ||
+        (
+        process.env.MAILGUN_DOMIAN &&
+        process.env.MAILGUN_SMTP_LOGN &&
+        process.env.MAILGUN_SMTP_PASSWORD &&
+        process.env.MAILGUN_SMTP_PORT &&
+        process.env.MAILGUN_SMTP_SERVER &&
+        process.env.MAILGUN_PUBLIC_KEY
+        )
+      ) {
+        await sendEmail({
+          to: user.email,
+          subject: `Export ready for ${campaign.title}`,
+          text: `Your Spoke exports are ready! These URLs will be valid for 24 hours.
+          Campaign export: ${campaignExportUrl}
+          Message export: ${campaignMessagesExportUrl}`
+        }).catch(err => {
+          log.error(err);
+          log.info(`Campaign Export URL - ${campaignExportUrl}`);
+          log.info(`Campaign Messages Export URL - ${campaignMessagesExportUrl}`);
+        });
+        log.info(`Successfully exported ${id}`);
+      }
     } catch (err) {
       log.error(err);
       exportResults.error = err.message;
