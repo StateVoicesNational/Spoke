@@ -84,7 +84,8 @@ export default class CannedResponseForm extends React.Component {
       handleCloseAddForm,
       formButtonText,
       tags,
-      availableActions
+      availableActions,
+      serviceManagerContext
     } = this.props;
 
     const answerActions =
@@ -128,6 +129,7 @@ export default class CannedResponseForm extends React.Component {
             label="Script"
             multiline
             fullWidth
+            serviceManagerContext={serviceManagerContext}
           />
           {availableActions && availableActions.length ? (
             <div>
@@ -224,5 +226,6 @@ CannedResponseForm.propTypes = {
   formButtonText: type.string,
   defaultValue: type.object,
   tags: type.array,
+  serviceManagerContext: type.object,
   availableActions: type.array
 };

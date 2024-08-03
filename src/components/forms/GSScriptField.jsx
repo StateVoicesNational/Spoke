@@ -58,7 +58,7 @@ export default class GSScriptField extends GSFormField {
 
   renderDialog() {
     const { open } = this.state;
-    const { customFields, sampleContact } = this.props;
+    const { customFields, sampleContact, serviceManagerContext } = this.props;
     let scriptFields = allScriptFields(customFields);
     const shouldHideNotesField = /contact-notes/.test(window.TEXTER_SIDEBOXES);
     if (shouldHideNotesField) {
@@ -79,6 +79,7 @@ export default class GSScriptField extends GSFormField {
             sampleContact={sampleContact}
             scriptFields={scriptFields}
             onChange={val => this.setState({ script: val })}
+            serviceManagerContext={serviceManagerContext}
           />
         </DialogContent>
         <DialogActions>

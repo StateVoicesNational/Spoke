@@ -60,6 +60,8 @@ export class CampaignServiceManagers extends React.Component {
                   serviceManagerInfo={sm}
                   campaign={campaign}
                   organization={organization}
+                  formValues={this.props.formValues}
+                  onChange={this.props.onChange}
                   saveLabel={this.props.saveLabel}
                   onSubmit={updateData =>
                     this.props.onSubmit(serviceManagerName, updateData)
