@@ -10,8 +10,16 @@ import { defaultTheme } from "../styles/mui-theme";
 import ThemeContext from "../containers/context/ThemeContext";
 
 function App({ children }) {
-  const [darkMode, setDarkMode] = React.useState(false);
   const [theme, setTheme] = useState(defaultTheme);
+  const [darkMode, setDarkMode] = React.useState(()=>{
+    const useDarkMode = localStorage.getItem("useDarkMode");
+    try {
+      return JSON.parse(useDarkMode) || false;
+    }
+    catch (e) {
+      return false;
+    }
+  });
 
   const defaultThemeWithMode = {
     ...defaultTheme,
@@ -44,6 +52,7 @@ const formatTheme = (newTheme) => {
 
   const handleToggleDark = () => setDarkMode(!darkMode);
   useEffect(() => {
+    localStorage.setItem("useDarkMode", JSON.stringify(darkMode));
     setTheme(formatTheme(theme));
   }, [darkMode]);
 
