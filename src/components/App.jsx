@@ -1,33 +1,22 @@
 import PropTypes from "prop-types";
-import React, { useEffect, useState } from "react";
-import { ThemeProvider } from "@material-ui/core/styles";
-import { createTheme } from "@material-ui/core/styles";
+import React, { useCallback, useEffect, useState } from "react";
+import { ThemeProvider , createTheme } from "@material-ui/core/styles";
 import CssBaseline from "@material-ui/core/CssBaseline";
+import Sun from "@material-ui/icons/Flare";
+import Moon from "@material-ui/icons/NightsStay";
 
+import Switch from "@material-ui/core/Switch";
 import { defaultTheme } from "../styles/mui-theme";
 import ThemeContext from "../containers/context/ThemeContext";
 
-/**
- * We will let users customize the colors but not other
- * parts of the theme object. Here we will take the string,
- * parse it, and merge it with other app theme defaults
- */
-const formatTheme = (newTheme, darkMode) => {
-  console.log('nt', newTheme, darkMode);
-  return {
-    ...defaultTheme,
-    palette: {...defaultTheme.palette,
-      ...newTheme.palette,
-    'type': darkMode ? 'dark': 'light'}
-  };
-};
-
-const App = ({ children }) => {
+function App({ children }) {
   const [darkMode, setDarkMode] = React.useState(false);
   const [theme, setTheme] = useState(defaultTheme);
 
- let defaultThemeWithMode = {...defaultTheme,
-    palette: {...defaultTheme.palette, 'type': darkMode ? 'dark': 'light'}};
+  const defaultThemeWithMode = {
+    ...defaultTheme,
+    palette: { ...defaultTheme.palette, "type": darkMode ? "dark" : "light" }
+  };
 
 
   let muiTheme = createTheme(defaultThemeWithMode);
@@ -37,39 +26,57 @@ const App = ({ children }) => {
   } catch (e) {
     console.error("failed to create theme", theme);
   }
-  const handleToggleDark = () => {
-    setDarkMode(!darkMode)
-  }
-  const handleSetTheme = newPalette => {
+
+  /**
+ * We will let users customize the colors but not other
+ * parts of the theme object. Here we will take the string,
+ * parse it, and merge it with other app theme defaults
+ */
+const formatTheme = (newTheme) => {
+  return {
+    ...defaultTheme,
+    palette: {
+      ...newTheme.palette,
+      "type": darkMode ? "dark" : "light"
+    }
+  };
+};
+
+  const handleToggleDark = () => setDarkMode(!darkMode);
+  useEffect(() => {
+    setTheme(formatTheme(theme));
+  }, [darkMode]);
+
+  const handleSetTheme = useCallback((newPalette) => {
     if (newPalette === undefined) {
       // happpens when OrganizationWrapper unmounts
       setTheme(defaultThemeWithMode);
     } else {
       try {
-        const newTheme = formatTheme(newPalette, darkMode);
-        setTheme(newTheme);
+        setTheme(formatTheme(newPalette));
       } catch (e) {
         console.error("Failed to parse theme: ", newPalette);
       }
     }
-  };
+  },[defaultThemeWithMode])
 
-  useEffect(()=>{
-    const newTheme = formatTheme(theme, darkMode);
-    console.log('dark effect', darkMode)
-    setTheme(newTheme)
 
-  }, [darkMode])
   return (
     <ThemeContext.Provider value={{ muiTheme, setTheme: handleSetTheme }}>
       <ThemeProvider theme={muiTheme}>
         <CssBaseline />
-        <button onClick={handleToggleDark}>toggle dark</button>
-        <div styles={{ height: "100%" }}>{children}</div>
+        <div style={{ float: "right", marginRight: '1.5rem' }}>
+          <div style={{ display: "flex", alignItems: "center" }}>
+            <Sun />
+            <Switch checked={darkMode} onChange={handleToggleDark} name="darkToggle" />
+            <Moon />
+          </div>
+        </div>
+        <div style={{ height: "100%" }}>{children}</div>
       </ThemeProvider>
     </ThemeContext.Provider>
   );
-};
+}
 
 App.propTypes = {
   children: PropTypes.object
