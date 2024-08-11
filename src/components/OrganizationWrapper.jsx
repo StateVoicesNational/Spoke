@@ -46,7 +46,6 @@ export const operations = { queries };
 
 class EnhancedOrganizationWrapper extends React.Component {
   componentDidMount() {
-    console.log('props', this.props)
     const organizationTheme = this.props.user?.currentUser?.dark ?
       {...this.props.organization.organization.theme,
         palette: {...this.props.organization.organization.theme.palette, type: "dark" }}
