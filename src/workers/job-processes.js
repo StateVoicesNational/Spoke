@@ -16,6 +16,7 @@ import {
   clearOldJobs,
   importScript,
   buyPhoneNumbers,
+  getShortCodes,
   deletePhoneNumbers,
   startCampaign,
   extensionJob
@@ -44,7 +45,8 @@ export const Jobs = Object.freeze({
   BUY_PHONE_NUMBERS: "buy_phone_numbers",
   DELETE_PHONE_NUMBERS: "delete_phone_numbers",
   START_CAMPAIGN: "start_campaign",
-  EXTENSION_JOB: "extension_job"
+  EXTENSION_JOB: "extension_job",
+  GET_SHORT_CODES: "get_short_codes"
 });
 
 const jobMap = Object.freeze({
@@ -52,6 +54,7 @@ const jobMap = Object.freeze({
   [Jobs.ASSIGN_TEXTERS]: assignTexters,
   [Jobs.IMPORT_SCRIPT]: importScript,
   [Jobs.BUY_PHONE_NUMBERS]: buyPhoneNumbers,
+  [Jobs.GET_SHORT_CODES]: getShortCodes,
   [Jobs.DELETE_PHONE_NUMBERS]: deletePhoneNumbers,
   [Jobs.START_CAMPAIGN]: startCampaign,
   [Jobs.EXTENSION_JOB]: extensionJob

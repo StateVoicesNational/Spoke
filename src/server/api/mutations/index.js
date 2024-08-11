@@ -1,6 +1,7 @@
 export { bulkSendMessages } from "./bulkSendMessages";
 export { bulkUpdateScript } from "./bulkUpdateScript";
 export { buyPhoneNumbers, deletePhoneNumbers } from "./buyPhoneNumbers";
+export { getShortCodes} from "./getShortCodes";
 export { editOrganization } from "./editOrganization";
 export { findNewCampaignContact } from "./findNewCampaignContact";
 export { joinOrganization } from "./joinOrganization";

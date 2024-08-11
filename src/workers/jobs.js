@@ -1324,6 +1324,40 @@ export async function clearOldJobs(event) {
     .delete();
 }
 
+/* 
+ * This function grabs shortcodes from the serviceVendor
+ * by hitting the relevant Shortcodes endpoint and adds them to the 
+ * database. It logs to the user how many short codes were identified
+ * given the credentials provided.
+*/
+export async function getShortCodes(job) {
+  try {
+    if (!job.organization_id) {
+      throw Error("organization_id is required");
+    }
+    const payload = JSON.parse(job.payload);
+    const { opts } = payload;
+    const organization = await cacheableData.organization.load(
+      job.organization_id
+    );
+    const serviceClient = getServiceFromOrganization(organization);
+    const totalPurchased = await serviceClient.getShortCode(
+      organization,
+      opts
+    );
+    log.info(`Collected ${totalPurchased} shortcode(s)`, {
+      status: "COMPLETE",
+      totalPurchased,
+      organization_id: job.organization_id
+    });
+  } catch (err) {
+    log.error(`JOB ${job.id} FAILED: ${err.message}`, err);
+    console.log("full job error", err);
+  } finally {
+    await defensivelyDeleteJob(job);
+  }
+}
+
 export async function buyPhoneNumbers(job) {
   try {
     if (!job.organization_id) {
