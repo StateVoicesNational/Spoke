@@ -32,7 +32,6 @@ import Card from "@material-ui/core/Card";
 import CardContent from "@material-ui/core/CardContent";
 
 import { StyleSheet, css } from "aphrodite";
-import Switch from "@material-ui/core/Switch";
 import apolloClient from "../network/apollo-client-singleton";
 import { dataTest } from "../lib/attributes";
 import withMuiTheme from "./hoc/withMuiTheme";
@@ -154,7 +153,6 @@ export class UserEditBase extends React.Component {
 
   handleSave = async formData => {
     const { router, location } = this.props;
-    console.log('saving')
     if (!this.props.authType) {
       if (formData.extra) {
         formData.extra = JSON.stringify(formData.extra);
@@ -305,12 +303,7 @@ export class UserEditBase extends React.Component {
 
     return (
       <div style={{ padding: 20 }}>
-        {userId ? (
-          <div style={{}}>
-            User Id:
-            {userId}
-          </div>
-) : null}
+        {userId ? (<div style={{}}>User Id: {userId}</div>) : null}
         <GSForm
           style={{}}
           schema={formSchema}
@@ -359,8 +352,6 @@ export class UserEditBase extends React.Component {
                 name="dark"
                 {...dataTest("dark")}
               />
-
-              <Switch />
             </span>
           )}
           {fieldsNeeded && <h3>Please complete your profile</h3>}
