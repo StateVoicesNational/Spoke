@@ -21,13 +21,8 @@
 
 import PropTypes from "prop-types";
 import React from "react";
-import loadData from "./hoc/load-data";
 import { gql } from "@apollo/client";
 import { withRouter } from "react-router";
-import GSForm from "../components/forms/GSForm";
-import GSTextField from "../components/forms/GSTextField";
-import GSSubmitButton from "../components/forms/GSSubmitButton";
-import GSPasswordField from "../components/forms/GSPasswordField";
 import Form from "react-formal";
 import * as yup from "yup";
 
@@ -37,9 +32,15 @@ import Card from "@material-ui/core/Card";
 import CardContent from "@material-ui/core/CardContent";
 
 import { StyleSheet, css } from "aphrodite";
+import Switch from "@material-ui/core/Switch";
 import apolloClient from "../network/apollo-client-singleton";
 import { dataTest } from "../lib/attributes";
-import withMuiTheme from "./../containers/hoc/withMuiTheme";
+import withMuiTheme from "./hoc/withMuiTheme";
+import GSPasswordField from "../components/forms/GSPasswordField";
+import GSSubmitButton from "../components/forms/GSSubmitButton";
+import GSTextField from "../components/forms/GSTextField";
+import GSForm from "../components/forms/GSForm";
+import loadData from "./hoc/load-data";
 
 const styles = StyleSheet.create({
   container: {
@@ -74,6 +75,7 @@ const fetchUser = async (organizationId, userId) => {
             lastName
             alias
             cell
+            dark
             extra
           }
         }
@@ -152,6 +154,7 @@ export class UserEditBase extends React.Component {
 
   handleSave = async formData => {
     const { router, location } = this.props;
+    console.log('saving')
     if (!this.props.authType) {
       if (formData.extra) {
         formData.extra = JSON.stringify(formData.extra);
@@ -241,7 +244,8 @@ export class UserEditBase extends React.Component {
         firstName: yup.string().required(),
         lastName: yup.string().required(),
         alias: yup.string().nullable(),
-        cell: yup.string().required()
+        cell: yup.string().required(),
+        dark: yup.boolean().nullable()
       };
     }
 
@@ -301,7 +305,12 @@ export class UserEditBase extends React.Component {
 
     return (
       <div style={{ padding: 20 }}>
-        {userId ? <div style={{}}>User Id: {userId}</div> : null}
+        {userId ? (
+          <div style={{}}>
+            User Id:
+            {userId}
+          </div>
+) : null}
         <GSForm
           style={{}}
           schema={formSchema}
@@ -344,6 +353,14 @@ export class UserEditBase extends React.Component {
                 name="cell"
                 {...dataTest("cell")}
               />
+              <Form.Field
+                as={GSTextField}
+                label="Use Dark Mode"
+                name="dark"
+                {...dataTest("dark")}
+              />
+
+              <Switch />
             </span>
           )}
           {fieldsNeeded && <h3>Please complete your profile</h3>}
@@ -456,6 +473,7 @@ const queries = {
           lastName
           alias
           cell
+          dark
         }
       }
     `
@@ -479,6 +497,7 @@ export const editUserMutation = gql`
       alias
       cell
       email
+      dark
       extra
       profileComplete(organizationId: $organizationId)
     }

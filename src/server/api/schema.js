@@ -623,6 +623,7 @@ const rootMutations = {
       } else {
         const member = userRes[0];
         if (userData) {
+          console.log(userData);
           const newUserData = {
             first_name: capitalizeWord(userData.firstName).trim(),
             last_name: capitalizeWord(userData.lastName).trim(),
@@ -630,7 +631,8 @@ const rootMutations = {
               ? capitalizeWord(userData.alias).trim()
               : null,
             email: userData.email,
-            cell: userData.cell
+            cell: userData.cell,
+            dark: userData.dark
           };
           if (member.extra || userData.extra) {
             newUserData.extra = {

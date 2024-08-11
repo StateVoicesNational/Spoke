@@ -1,29 +1,19 @@
 import PropTypes from "prop-types";
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useState } from "react";
 import { ThemeProvider , createTheme } from "@material-ui/core/styles";
 import CssBaseline from "@material-ui/core/CssBaseline";
-import Sun from "@material-ui/icons/Flare";
-import Moon from "@material-ui/icons/NightsStay";
-
-import Switch from "@material-ui/core/Switch";
 import { defaultTheme } from "../styles/mui-theme";
 import ThemeContext from "../containers/context/ThemeContext";
+import { gql } from "@apollo/client";
+import { withRouter } from "react-router";
+import loadData from "../containers/hoc/load-data";
 
-function App({ children }) {
+function App({children, data}) {
+  const dark = data?.currentUser?.dark
   const [theme, setTheme] = useState(defaultTheme);
-  const [darkMode, setDarkMode] = React.useState(()=>{
-    const useDarkMode = localStorage.getItem("useDarkMode");
-    try {
-      return JSON.parse(useDarkMode) || false;
-    }
-    catch (e) {
-      return false;
-    }
-  });
-
   const defaultThemeWithMode = {
     ...defaultTheme,
-    palette: { ...defaultTheme.palette, "type": darkMode ? "dark" : "light" }
+    palette: { ...defaultTheme.palette, "type": dark ? "dark" : "light" }
   };
 
 
@@ -45,20 +35,14 @@ const formatTheme = (newTheme) => {
     ...defaultTheme,
     palette: {
       ...newTheme.palette,
-      "type": darkMode ? "dark" : "light"
+      "type": dark ? "dark" : "light"
     }
   };
 };
 
-  const handleToggleDark = () => setDarkMode(!darkMode);
-  useEffect(() => {
-    localStorage.setItem("useDarkMode", JSON.stringify(darkMode));
-    setTheme(formatTheme(theme));
-  }, [darkMode]);
-
   const handleSetTheme = useCallback((newPalette) => {
     if (newPalette === undefined) {
-      // happpens when OrganizationWrapper unmounts
+      // happens when OrganizationWrapper unmounts
       setTheme(defaultThemeWithMode);
     } else {
       try {
@@ -74,13 +58,6 @@ const formatTheme = (newTheme) => {
     <ThemeContext.Provider value={{ muiTheme, setTheme: handleSetTheme }}>
       <ThemeProvider theme={muiTheme}>
         <CssBaseline />
-        <div style={{ float: "right", marginRight: '1.5rem' }}>
-          <div style={{ display: "flex", alignItems: "center" }}>
-            <Sun />
-            <Switch checked={darkMode} onChange={handleToggleDark} name="darkToggle" />
-            <Moon />
-          </div>
-        </div>
         <div style={{ height: "100%" }}>{children}</div>
       </ThemeProvider>
     </ThemeContext.Provider>
@@ -88,7 +65,24 @@ const formatTheme = (newTheme) => {
 }
 
 App.propTypes = {
-  children: PropTypes.object
+  children: PropTypes.object,
+  data: PropTypes.object
 };
 
-export default App;
+
+const queries = {
+  data: {
+    query: gql`
+      query getCurrentUser {
+        currentUser {
+          dark
+        }
+     }`
+  }
+}
+
+const EnhancedApp = withRouter(
+  loadData({queries})(App)
+)
+export default EnhancedApp;
+

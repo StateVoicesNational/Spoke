@@ -15,6 +15,7 @@ const httpLink = createHttpLink({
 });
 
 const errorLink = onError(({ networkError = {}, graphQLErrors }) => {
+  console.log('apollo errors')
   if (networkError.statusCode === 401) {
     window.location = `/login?nextUrl=${window.location.pathname}`;
   } else if (networkError.statusCode === 403) {
