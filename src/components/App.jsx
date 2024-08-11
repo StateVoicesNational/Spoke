@@ -8,23 +8,6 @@ import { gql } from "@apollo/client";
 import { withRouter } from "react-router";
 import loadData from "../containers/hoc/load-data";
 
-function App({children, data}) {
-  const dark = data?.currentUser?.dark
-  const [theme, setTheme] = useState(defaultTheme);
-  const defaultThemeWithMode = {
-    ...defaultTheme,
-    palette: { ...defaultTheme.palette, "type": dark ? "dark" : "light" }
-  };
-
-
-  let muiTheme = createTheme(defaultThemeWithMode);
-  try {
-    // if a bad value is saved this will fail.
-    muiTheme = createTheme(theme);
-  } catch (e) {
-    console.error("failed to create theme", theme);
-  }
-
   /**
  * We will let users customize the colors but not other
  * parts of the theme object. Here we will take the string,
@@ -33,17 +16,26 @@ function App({children, data}) {
 const formatTheme = (newTheme) => {
   return {
     ...defaultTheme,
-    palette: {
-      ...newTheme.palette,
-      "type": dark ? "dark" : "light"
-    }
+    palette: newTheme.palette
   };
 };
 
-  const handleSetTheme = useCallback((newPalette) => {
+function App({children}) {
+  const [theme, setTheme] = useState(defaultTheme);
+
+  let muiTheme = createTheme(defaultTheme);
+  try {
+    // if a bad value is saved this will fail.
+    muiTheme = createTheme(theme);
+  } catch (e) {
+    console.error("failed to create theme", theme);
+  }
+
+
+  const handleSetTheme = (newPalette) => {
     if (newPalette === undefined) {
       // happens when OrganizationWrapper unmounts
-      setTheme(defaultThemeWithMode);
+      setTheme(defaultTheme);
     } else {
       try {
         setTheme(formatTheme(newPalette));
@@ -51,8 +43,7 @@ const formatTheme = (newTheme) => {
         console.error("Failed to parse theme: ", newPalette);
       }
     }
-  },[defaultThemeWithMode])
-
+  }
 
   return (
     <ThemeContext.Provider value={{ muiTheme, setTheme: handleSetTheme }}>
@@ -65,24 +56,8 @@ const formatTheme = (newTheme) => {
 }
 
 App.propTypes = {
-  children: PropTypes.object,
-  data: PropTypes.object
+  children: PropTypes.object
 };
 
-
-const queries = {
-  data: {
-    query: gql`
-      query getCurrentUser {
-        currentUser {
-          dark
-        }
-     }`
-  }
-}
-
-const EnhancedApp = withRouter(
-  loadData({queries})(App)
-)
-export default EnhancedApp;
+export default App;
 
