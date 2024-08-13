@@ -38,6 +38,7 @@ import withMuiTheme from "./hoc/withMuiTheme";
 import GSPasswordField from "../components/forms/GSPasswordField";
 import GSSubmitButton from "../components/forms/GSSubmitButton";
 import GSTextField from "../components/forms/GSTextField";
+import GSCheckbox from "../components/forms/GSCheckbox";
 import GSForm from "../components/forms/GSForm";
 import loadData from "./hoc/load-data";
 
@@ -152,7 +153,8 @@ export class UserEditBase extends React.Component {
   }
 
   handleSave = async formData => {
-    const { router, location } = this.props;
+    const { router, location, currentUser } = this.props;
+    console.log('handle save', this.props, this.props.currentUser, this.props.currentUser?.dark, formData.dark)
     if (!this.props.authType) {
       if (formData.extra) {
         formData.extra = JSON.stringify(formData.extra);
@@ -163,6 +165,9 @@ export class UserEditBase extends React.Component {
       }
       if (location.query.next) {
         router.push(location.query.next);
+      } else {
+         router.push({ pathname: "" });
+        router.replace({ pathname: location.pathname });
       }
     } else if (this.props.authType === "change") {
       // change password
@@ -184,6 +189,7 @@ export class UserEditBase extends React.Component {
         headers: { "Content-Type": "application/json" }
       });
       const { redirected, headers, status, url } = res;
+      console.log('url', url)
       if (redirected && status === 200) {
         this.props.router.replace(url);
       } else if (status === 401) {
@@ -301,6 +307,7 @@ export class UserEditBase extends React.Component {
     const formSchema = this.buildFormSchema(authType, org);
     const fieldsNeeded = router && !!router.location.query.fieldsNeeded;
 
+    console.log('current', currentUser)
     return (
       <div style={{ padding: 20 }}>
         {userId ? (<div style={{}}>User Id: {userId}</div>) : null}
@@ -347,7 +354,7 @@ export class UserEditBase extends React.Component {
                 {...dataTest("cell")}
               />
               <Form.Field
-                as={GSTextField}
+                as={GSCheckbox}
                 label="Use Dark Mode"
                 name="dark"
                 {...dataTest("dark")}

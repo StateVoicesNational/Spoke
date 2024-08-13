@@ -28,6 +28,7 @@ const App = ({ children }) => {
     console.error("failed to create theme", theme);
   }
   const handleSetTheme = newPalette => {
+    console.log('handle set theme')
     if (newPalette === undefined) {
       // happens when OrganizationWrapper unmounts
       setTheme(defaultTheme);
