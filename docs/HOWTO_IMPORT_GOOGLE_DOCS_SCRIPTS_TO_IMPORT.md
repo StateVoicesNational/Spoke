@@ -6,21 +6,21 @@ It's a horrible idea to publish live secrets to Github. You should never do that
 
 ## Current Work in Progress (May 2024)
 
-This doc and associated feature is under construction/maintenence. Please consider the Google Docs Integration **experimental** for the time being and open an issue if you run into any issues. 
+This doc and associated feature is under construction/maintenance. Please consider the Google Docs Integration **experimental** for the time being and open an issue if you run into any issues. 
 
 ## Setup
 
 1. You must be logged in to Google.
 2. Visit [this page](https://developers.google.com/docs/api/quickstart/nodejs) to start creating Google API credentials.
 3. Scroll down and click `Enable the Google Docs API`.
-4. Follow the steps to endable Google Docs API.
+4. Follow the steps to enable Google Docs API.
 5. On the top left of the page, click on "GoogleCloud", which will redirect you to the home page. Then, click `APIs & Services`.
 6. Scroll down until you find `Google Docs API` and click it.
 7. You'll be redirected to a page. On the top of the page, it will ask you to create a `New Service Account`, click it.
     - Select `New service account` from the dropdown
-    - In `Servie account name` enter an arbirary name (`test` is fine, for example)
+    - In `Service account name` enter an arbitrary name (`test` is fine, for example)
     - In the `Role` Select `Project > Owner`
-    - You may skip the opition "Grand Users access to this service account"
+    - You may skip the option "Grand Users access to this service account"
 6. Return to the `Google Docs API` page, and on the left, click `Credentials` and then click `ADD KEY`.
     - Set type to JSON and continue.
 8. Another file will be downloaded. The name of the file (which will have the extension `json`) will be displayed when the download is complete.

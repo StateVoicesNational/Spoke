@@ -582,7 +582,21 @@ export async function handleIncomingMessage(message) {
     const finalMessage = await convertMessagePartsToMessage([
       pendingMessagePart
     ]);
-    console.log("Contact reply", finalMessage, pendingMessagePart);
+    console.log(
+      "Contact Reply\n", 
+      `\t| Message Status:      ${finalMessage.send_status}\n`,
+      `\t| From Contact? :      ${finalMessage.is_from_contact}\n`,
+      `\t| Contact Number:      ${finalMessage.contact_number}\n`, 
+      `\t| User Number:         ${finalMessage.user_number}\n`,
+      `\t| Text:                ${finalMessage.text.replace(/(\r\n|\n|\r)/gm, " ").substring(0, 45)}\n`,
+      `\t| Error Code:          ${finalMessage.error_code}\n`,
+      `\t| Service:             ${finalMessage.service || pendingMessagePart.service}\n`,
+      `\t| Media:               ${finalMessage.media.length === 0 ? "No media" : finalMessage.media}\n`,
+      `\t| Message Service SID: ${finalMessage.messageservice_sid}\n`,
+      `\t| Service ID:          ${finalMessage.service_id}\n`,
+      `\t| Parent ID:           ${pendingMessagePart.parent_id}\n`,
+      `\t| User ID:             ${finalMessage.user_id}`,
+    );
     if (finalMessage) {
       if (message.spokeCreatedAt) {
         finalMessage.created_at = message.spokeCreatedAt;
@@ -756,6 +770,54 @@ async function getPhoneNumbersForService(organization, messagingServiceSid) {
   return await twilio.messaging
     .services(messagingServiceSid)
     .phoneNumbers.list({ limit: 400 });
+}
+
+/**
+ * Figure out if Twilio account has a shortcode and if so, add it
+ * to the owned_phone_numbers table
+ * 
+ * TO DO: what happens if you've already added that phone number to the table?
+ * TO DO: what should we do with allocation fields 
+ */
+export async function getShortCode(
+  organization,
+  opts = {},
+) {
+
+  // var for count of short codes
+  let shortCodeCount = 0;
+
+  // getting the shortcode list from twilio
+  const twilioInstance = await exports.getTwilio(organization);
+  const response = await twilioInstance.shortCodes.list();
+
+  // throw error if we get a bad response
+  if (response.error) {
+    throw new Error(`Error collecting ShortCode: ${response.error}`);
+  }
+
+  // add each shortcode to the table
+  async function addShortCodeToPhoneNumberTable(shortcode){
+    return await r.knex("owned_phone_number").insert({
+      organization_id: organization.id,
+      phone_number: shortcode.shortCode,
+      service: "twilio",
+      service_id: shortcode.sid,
+      area_code: "Shortcode"
+      //...allocationFields
+    });
+
+  }
+
+  // for each response, add it to the table
+  const shortcodeResponse = response.map(shortcode => {
+    addShortCodeToPhoneNumberTable(shortcode);
+    shortCodeCount++;
+  });
+
+  // return the count of short codes
+  return shortCodeCount;
+
 }
 
 /**
@@ -1207,6 +1269,7 @@ export default {
   getTwilio,
   getServiceConfig,
   getMessageServiceSid,
+  getShortCode,
   messageServiceLink,
   updateConfig,
   getMetadata,

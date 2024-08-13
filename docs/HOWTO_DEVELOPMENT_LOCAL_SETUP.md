@@ -1,4 +1,25 @@
 ## Getting started
+---
+### Operating System
+If you are already using a Linux based operating system, please continue to the next steps!
+
+Supporting the development of Spoke can be unnecessarily difficult in Windows, so we strongly recommend you use Windows Subsystem for Linux (WSL). 
+
+WSL allows users to run Linux virtual environments and applications within Windows. 
+Further information can be found [here](https://learn.microsoft.com/en-us/windows/wsl/about).
+1. Download WLS in the CMD as Administrator
+- WSL comes in two flavors, WSL1 and WSL2. This will install WSL2, and is needed to run the application correctly. Look into this [document](https://learn.microsoft.com/en-us/windows/wsl/install) from Microsoft if you need to upgrade from WSL1.
+- Installing WSL2 will default to **Ubuntu**, which is a flavor of Linux and is recommended. 
+```
+wsl --install
+```
+
+2. Restart your PC.
+   
+3. Allow your computer to reboot, and Ubuntu will finish installation. Ubuntu will be an application on you PC that you can search for. Please run all future commands found in this document in Ubuntu.
+  - Ubuntu will ask you to make a username and password. Please use a password vault or other password manager to store these details. You do not want to lose these.
+
+**NOTE**: In the event that WSL needs _Virtualization_ enabled, please follow [these steps](https://www.geeksforgeeks.org/how-to-enable-virtualization-vt-x-in-windows-10-bios/) to enable _Virtualization_ in your bios.
 
 ---
 ### [Repository](https://github.com/StateVoicesNational/Spoke)
@@ -41,9 +62,10 @@ From the spoke directory:
    - at this time of this writing, nvm install will install a version above 17 but we want to run 12.  Yarn will have to be installed again, even if you have yarn installed already, as it will need to be compatible with this version of nvm. 
     
 2. Install yarn.
-
-- Yarn is a package manager that will download all required packages to run Spoke.
-- Install using the [directions provided by Yarn](https://yarnpkg.com/en/docs/install).
+   ```
+   npm install --global yarn
+   ```
+   - Yarn is a package manager that will download all required packages to run Spoke.
 
 3. Install the packages.
    ```

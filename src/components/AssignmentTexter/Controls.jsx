@@ -126,10 +126,9 @@ export class AssignmentTexterContactControls extends React.Component {
     let currentInteractionStep = null;
 
     if (availableSteps.length > 0) {
-      const currentInteractionStep = deepCopy(
+      currentInteractionStep = deepCopy(
         availableSteps[availableSteps.length - 1]
       );
-
       currentInteractionStep.question.filteredAnswerOptions =
         currentInteractionStep.question.answerOptions;
     }
@@ -513,7 +512,6 @@ export class AssignmentTexterContactControls extends React.Component {
       filteredCannedResponses
     } = this.state;
     const { messages } = contact;
-
     const availableInteractionSteps = getAvailableInteractionSteps(
       questionResponses,
       campaign.interactionSteps

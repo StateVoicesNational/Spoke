@@ -411,6 +411,9 @@ const rootSchema = gql`
       areaCode: String!
       limit: Int!
     ): JobRequest
+    getShortCodes(
+      organizationId: ID!
+    ): JobRequest
     deletePhoneNumbers(organizationId: ID!, areaCode: String!): JobRequest
     releaseCampaignNumbers(campaignId: ID!): Campaign!
     clearCachedOrgAndExtensionCaches(organizationId: String!): String

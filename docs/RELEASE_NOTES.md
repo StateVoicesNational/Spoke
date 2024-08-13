@@ -1,5 +1,18 @@
 # Release Notes
 
+## v14.0.1
+_July 2024:_ Version 14.0.1
+
+14.0.1 is a patch release.
+
+### Bug Fixes
+- [#2384](https://github.com/StateVoicesNational/Spoke/pull/2384) - Fix white-screen-of-death when trying to sort the Admin Campaign List
+- [#2383](https://github.com/StateVoicesNational/Spoke/pull/2383) - Fix white-screen-of-death when trying to click "All Responses
+- [#2379](https://github.com/StateVoicesNational/Spoke/pull/2379) - Create `dependabot.yml` 
+
+### Appreciations
+[Maureen Zitouni](https://github.com/mau11), [Ruby Engelhart](https://github.com/engelhartrueben), [Schuyler Duveen](https://github.com/schuyler1d)
+
 ## v14.0
 _July 2024:_ Version 14.0
 

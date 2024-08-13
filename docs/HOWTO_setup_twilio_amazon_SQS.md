@@ -11,7 +11,7 @@ https://github.com/StateVoicesNational/Spoke/blob/main/docs/HOWTO_DEPLOYING_AWS_
 ### Instructions Below for Set Up
 * Follow the instructions in this link [Instructions for Set Up on Twilio.com] (https://www.twilio.com/blog/2017/07/handling-high-volume-inbound-sms-and-webhooks-with-twilio-functions-and-amazon-sqs.html)
 * TWILIO_SQS_QUEUE_URL should be the 'https://sqs.CHANGEME.amazonaws.com/CHANGEME` url (not the twilio function)
-* Set up AWS creds in the app
+* Set up AWS credentials in the app
 
 
 Twilio function source here (must change the line `const INCOMING_SMS_URL = 'https://sqs.CHANGEME.amazonaws.com/CHANGEME` and maybe `region: 'us-west-1' `):
@@ -20,7 +20,7 @@ Twilio function source here (must change the line `const INCOMING_SMS_URL = 'htt
 'use strict'
  
 // Some Node.js modules are preinstalled in the system environment.
-// As of this writing, the third party modules are not configureable, but
+// As of this writing, the third party modules are not configurable, but
 // they should be soon. For now, though, you can take advantage of
 // the AWS SDK being preinstalled. Require and initialize it here with the
 // IAM credentials in your system environment.
