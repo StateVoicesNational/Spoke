@@ -168,6 +168,9 @@ export class UserEditBase extends React.Component {
         /* force reload if darkMode is flipped */
         router.push({ pathname: "" });
         router.replace({ pathname: location.pathname });
+        /* this isn't working */
+        // const newTheme =  {palette:{...this.props.muiTheme.palette, type: formData.dark ? 'dark' : 'light'}}
+        // this.props.setTheme(newTheme)
       }
     } else if (this.props.authType === "change") {
       // change password

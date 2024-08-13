@@ -45,7 +45,7 @@ const App = ({ children }) => {
     <ThemeContext.Provider value={{ muiTheme, setTheme: handleSetTheme }}>
       <ThemeProvider theme={muiTheme}>
         <CssBaseline />
-        <div styles={{ height: "100%" }}>{children}</div>
+        <div style={{ height: "100%" }}>{children}</div>
       </ThemeProvider>
     </ThemeContext.Provider>
   );
