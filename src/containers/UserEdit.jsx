@@ -165,7 +165,7 @@ export class UserEditBase extends React.Component {
       if (location.query.next) {
         router.push(location.query.next);
       } else {
-        /* force reload if darkMode is flipped */
+        /* force reload in case darkMode is flipped */
         router.push({ pathname: "" });
         router.replace({ pathname: location.pathname });
         /* this isn't working */

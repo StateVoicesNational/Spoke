@@ -805,7 +805,8 @@ describe("editUser mutation", () => {
       alias: "JG",
       email: "jerry@heaven.org",
       cell: "4151111111",
-      extra: null
+      extra: null,
+      dark: null
     };
 
     variables.userData = userData;
