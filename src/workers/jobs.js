@@ -943,12 +943,12 @@ export async function exportCampaign(job) {
       if ((
         process.env.EMAIL_FROM &&
         process.env.EMAIL_HOST &&
-        process.env.EMAIL_HOST_PASSOWRD &&
+        process.env.EMAIL_HOST_PASSWORD &&
         process.env.EMAIL_HOST_PORT &&
         process.env.EMAIL_HOST_USER) ||
         (
-        process.env.MAILGUN_DOMIAN &&
-        process.env.MAILGUN_SMTP_LOGN &&
+        process.env.MAILGUN_DOMAIN &&
+        process.env.MAILGUN_SMTP_LOGIN &&
         process.env.MAILGUN_SMTP_PASSWORD &&
         process.env.MAILGUN_SMTP_PORT &&
         process.env.MAILGUN_SMTP_SERVER &&
