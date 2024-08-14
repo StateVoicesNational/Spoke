@@ -28,7 +28,14 @@ import { rawIngestMethod } from "../extensions/contact-loaders";
 
 import { Lambda } from "@aws-sdk/client-lambda";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
-import { CreateBucketCommand, GetObjectCommand, waitUntilBucketExists, S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
+import {
+  CreateBucketCommand,
+  HeadBucketCommand,
+  GetObjectCommand,
+  waitUntilBucketExists,
+  S3Client,
+  PutObjectCommand
+} from "@aws-sdk/client-s3";
 import { SQS } from "@aws-sdk/client-sqs";
 import Papa from "papaparse";
 import moment from "moment";
@@ -865,14 +872,46 @@ export async function exportCampaign(job) {
         region: process.env.AWS_REGION
       });
       const bucketName = process.env.AWS_S3_BUCKET_NAME;
-      const command = new CreateBucketCommand({ Bucket : bucketName });
 
-      // this can return Location and $metadata, we just don't need that info
-      await client.send(command);
+      try {
+        // Check if the S3 bucket already exists
+        const verifyBucketCommand = new HeadBucketCommand({
+          Bucket: bucketName
+        });
+        await client.send(verifyBucketCommand);
+
+        console.log(`S3 bucket "${bucketName}" already exists.`);
+      } catch (error) {
+        if (error.name === "NotFound") {
+          console.log(
+            `S3 bucket "${bucketName}" not found. Creating a new bucket.`
+          );
+
+          try {
+            // Create the S3 bucket
+            const createBucketCommand = new CreateBucketCommand({
+              Bucket: bucketName
+            });
+            await client.send(createBucketCommand);
+
+            console.log(`S3 bucket "${bucketName}" created successfully.`);
+          } catch (createError) {
+            console.error(
+              `Error creating bucket "${bucketName}":`,
+              createError
+            );
+          }
+        } else {
+          console.error("Error checking bucket existence:", error);
+        }
+      }
 
       // verifies that the bucket exists before moving forward
       // if for some reason this fails, Spoke defensively deletes the job
-      await waitUntilBucketExists({ client, maxWaitTime: 60 }, { Bucket : bucketName });
+      await waitUntilBucketExists(
+        { client, maxWaitTime: 60 },
+        { Bucket: bucketName }
+      );
 
       const campaignTitle = campaign.title
         .replace(/ /g, "_")
