@@ -4,7 +4,7 @@
  */
 exports.up = function(knex) {
   return knex.schema.table("user", table => {
-    table.boolean("dark").defaultTo(false);
+    table.boolean("darkMode").defaultTo(false);
   });
 };
 
@@ -14,6 +14,6 @@ exports.up = function(knex) {
  */
 exports.down = function(knex) {
   return knex.schema.table("user", table => {
-    table.dropColumn("dark");
+    table.dropColumn("darkMode");
   });
 };

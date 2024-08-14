@@ -75,7 +75,7 @@ const fetchUser = async (organizationId, userId) => {
             lastName
             alias
             cell
-            dark
+            darkMode
             extra
           }
         }
@@ -168,9 +168,6 @@ export class UserEditBase extends React.Component {
         /* force reload in case darkMode is flipped */
         router.push({ pathname: "" });
         router.replace({ pathname: location.pathname });
-        /* this isn't working */
-        // const newTheme =  {palette:{...this.props.muiTheme.palette, type: formData.dark ? 'dark' : 'light'}}
-        // this.props.setTheme(newTheme)
       }
     } else if (this.props.authType === "change") {
       // change password
@@ -251,7 +248,7 @@ export class UserEditBase extends React.Component {
         lastName: yup.string().required(),
         alias: yup.string().nullable(),
         cell: yup.string().required(),
-        dark: yup.boolean().nullable()
+        darkMode: yup.boolean().nullable()
       };
     }
 
@@ -357,8 +354,8 @@ export class UserEditBase extends React.Component {
               <Form.Field
                 as={GSCheckbox}
                 label="Use Dark Mode"
-                name="dark"
-                {...dataTest("dark")}
+                name="darkMode"
+                {...dataTest("darkMode")}
               />
             </span>
           )}
@@ -472,7 +469,7 @@ const queries = {
           lastName
           alias
           cell
-          dark
+          darkMode
         }
       }
     `
@@ -496,7 +493,7 @@ export const editUserMutation = gql`
       alias
       cell
       email
-      dark
+      darkMode
       extra
       profileComplete(organizationId: $organizationId)
     }

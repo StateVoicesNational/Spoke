@@ -631,7 +631,7 @@ const rootMutations = {
               : null,
             email: userData.email,
             cell: userData.cell,
-            dark: userData.dark
+            darkMode: userData.darkMode
           };
           if (member.extra || userData.extra) {
             newUserData.extra = {

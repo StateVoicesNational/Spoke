@@ -18,7 +18,7 @@ export const schema = `
     profileComplete(organizationId: String): Boolean
     notifications(organizationId: String): [Assignment]
     notifiable: Boolean
-    dark: Boolean
+    darkMode: Boolean
   }
 
 type UsersList {

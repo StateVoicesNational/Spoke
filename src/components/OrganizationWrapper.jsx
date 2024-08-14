@@ -14,7 +14,7 @@ const queries = {
     query: gql`
       query getCurrentUser {
         currentUser {
-          dark
+          darkMode
         }
      }`
   },
@@ -46,7 +46,7 @@ export const operations = { queries };
 
 class EnhancedOrganizationWrapper extends React.Component {
   componentDidMount() {
-    const organizationTheme = this.props.user?.currentUser?.dark ?
+    const organizationTheme = this.props.user?.currentUser?.darkMode ?
       {...this.props.organization.organization.theme,
         palette: {...this.props.organization.organization.theme.palette, type: "dark" }}
       : this.props.organization.organization.theme
