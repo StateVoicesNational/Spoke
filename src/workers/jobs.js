@@ -909,7 +909,7 @@ export async function exportCampaign(job) {
       // verifies that the bucket exists before moving forward
       // if for some reason this fails, Spoke defensively deletes the job
       await waitUntilBucketExists(
-        { client, maxWaitTime: 60 },
+        { client, maxWaitTime: 15 },
         { Bucket: bucketName }
       );
 
