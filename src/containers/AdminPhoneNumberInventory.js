@@ -407,7 +407,7 @@ class AdminPhoneNumberInventory extends React.Component {
 
           {this.props.params.ownerPerms ? (
             <Button
-              {...dataTest("buyPhoneNumbers")}
+              {...dataTest("getShortcodes")}
               color="primary"
               variant="contained"
               type="button"
