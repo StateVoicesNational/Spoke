@@ -92,10 +92,26 @@ export class ContactController extends React.Component {
     // In fact, without the code below, we will 'double-jump' each message
     // we send or change the status in some way.
     // Below, we update our index with the contact that matches our current index.
+    if (nextState.currentContactIndex != this.state.currentContactIndex) {
+      console.log(
+        "updateindex <cur> <next>",
+        this.state.currentContactIndex,
+        nextState.currentContactIndex
+      );
+    }
     const diffContactList =
       (nextProps.contacts[nextState.currentContactIndex] || {}).id !==
         (this.props.contacts[nextState.currentContactIndex] || {}).id ||
       nextProps.contacts.length !== this.props.contacts.length;
+    if (diffContactList) {
+      console.log(
+        "update contacts <cur> <next>",
+        this.state.currentContactIndex,
+        nextState.currentContactIndex,
+        this.props.contacts,
+        nextProps.contacts
+      );
+    }
     if (
       typeof nextState.currentContactIndex !== "undefined" &&
       nextState.currentContactIndex === this.state.currentContactIndex &&
@@ -372,11 +388,19 @@ export class ContactController extends React.Component {
     const contact = this.currentContact();
     const navigationToolbarChildren = this.getNavigationToolbarChildren();
     if (!contact || !contact.id) {
+      console.log("NO CONTACT", contact, this.props);
       return <LoadingIndicator />;
     }
     const contactData = this.state.contactCache[contact.id];
     if (!contactData) {
       const self = this;
+      console.log(
+        "NO CONTACT DATA <curInd><ctct><reloadDelay><curcontacts>",
+        self.state.currentContactIndex,
+        contact,
+        self.state.reloadDelay,
+        this.props.contacts
+      );
       setTimeout(() => {
         if (self.state.contactCache[contact.id]) {
           // reset delay back to baseline
@@ -401,6 +425,7 @@ export class ContactController extends React.Component {
             self.props.contacts.length > self.state.currentContactIndex + 1
           ) {
             // The current index was loaded and set as null to be invalid
+            console.log("GOT A NULL SKIPPING", self.state.currentContactIndex);
             self.updateCurrentContactIndex(self.state.currentContactIndex + 1);
           } else {
             // Case 2: Maybe loading it was a problem or it's time to load it
