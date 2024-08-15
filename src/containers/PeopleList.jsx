@@ -267,7 +267,7 @@ export class PeopleList extends Component {
     const { currentUser } = this.props;
     return (
       <Button
-        disabled={currentUser.id === texterId}
+        disabled={currentUser.id == texterId}
         onClick={() => {
           this.resetPassword(texterId);
         }}
