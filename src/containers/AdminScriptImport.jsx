@@ -73,6 +73,10 @@ export default class AdminScriptImport extends Component {
                 this document
               </a>{" "}
               for more details.
+              <br/>
+              <br/>
+              Please share your Google Doc with <b>{window.GOOGLE_CLIENT_EMAIL}</b>
+              {" "}before importing to Spoke.
             </span>
           }
         />
