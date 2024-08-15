@@ -426,7 +426,7 @@ class AdminCampaignStats extends React.Component {
             <span>
               Export started -
               {(this.props.organizationData &&
-                process.env.EMAIL_HOST) ?
+                this.props.organizationData.organization.emailEnabled) ?
                 " we'll e-mail you when it's done. " :
               (campaign.cacheable && (
                 <span>
