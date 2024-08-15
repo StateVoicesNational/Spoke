@@ -10,14 +10,6 @@ const OrganizationWrapper = ({ children, ...props }) => {
 };
 
 const queries = {
-  user: {
-    query: gql`
-      query getCurrentUser {
-        currentUser {
-          darkMode
-        }
-     }`
-  },
   organization: {
     query: gql`
       query getOrganization($id: String!) {
@@ -46,11 +38,7 @@ export const operations = { queries };
 
 class EnhancedOrganizationWrapper extends React.Component {
   componentDidMount() {
-    const organizationTheme = this.props.user?.currentUser?.darkMode ?
-      {...this.props.organization.organization.theme,
-        palette: {...this.props.organization.organization.theme.palette, type: "dark" }}
-      : this.props.organization.organization.theme
-    this.props.setTheme(organizationTheme);
+    this.props.setTheme(this.props.organization.organization.theme);
   }
 
   componentWillUnmount() {
