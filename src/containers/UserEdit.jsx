@@ -166,8 +166,11 @@ export class UserEditBase extends React.Component {
         router.push(location.query.next);
       } else {
         /* force reload in case darkMode is flipped */
-        router.push({ pathname: "" });
-        router.replace({ pathname: location.pathname });
+        const originalMode = this.state.editedUser?.user?.darkMode;
+        if (originalMode !== undefined && originalMode !== formData.darkMode) {
+          router.push({ pathname: "" });
+          router.replace({ pathname: location.pathname });
+        }
       }
     } else if (this.props.authType === "change") {
       // change password
