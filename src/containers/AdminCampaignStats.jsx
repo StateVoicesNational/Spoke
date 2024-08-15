@@ -346,8 +346,8 @@ class AdminCampaignStats extends React.Component {
             {campaign.exportResults.error && (
               <div>Export failed: {campaign.exportResults.error}</div>
             )}
-            {campaign.exportResults.campaignExportUrl &&
-            campaign.exportResults.campaignExportUrl.startsWith("http") ? (
+            {campaign.exportResults.campaignExportUrl && (
+            (campaign.exportResults.campaignExportUrl.startsWith("http")) ? (
               <div>
                 Most recent export:
                 <a href={campaign.exportResults.campaignExportUrl} download>
@@ -360,15 +360,16 @@ class AdminCampaignStats extends React.Component {
                   Messages Export CSV
                 </a>
               </div>
-            ) : (
-              <div>
-                Local export was successful, saved on the server at:
-                <br />
-                {campaign.exportResults.campaignExportUrl}
-                <br />
-                {campaign.exportResults.campaignMessagesExportUrl}
-              </div>
-            )}
+            ) : (campaign.exportResults.campaignExportUrl.startsWith("file://") && (
+                <div>
+                  Local export was successful, saved on the server at:
+                  <br />
+                  {campaign.exportResults.campaignExportUrl}
+                  <br />
+                  {campaign.exportResults.campaignMessagesExportUrl}
+                </div>
+              )
+            ))}
           </div>
         )}
         {campaign.joinToken && campaign.useDynamicAssignment && (
