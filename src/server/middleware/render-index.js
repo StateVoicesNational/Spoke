@@ -136,7 +136,12 @@ export default function renderIndex(html, css, assetMap) {
       )}';
       window.ASSIGNMENT_CONTACTS_SIDEBAR=${getConfig(
         "ASSIGNMENT_CONTACTS_SIDEBAR"
-      )}
+      )};
+      window.GOOGLE_CLIENT_EMAIL='${
+        (canGoogleImport &&
+        JSON.parse(getConfig("GOOGLE_SECRET")).client_email) ||
+        ""
+      }';
     </script>
     <script src="${assetMap["bundle.js"]}"></script>
   </body>
