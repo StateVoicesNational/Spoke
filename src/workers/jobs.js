@@ -994,7 +994,7 @@ export async function exportCampaign(job) {
     log.debug(campaignCsv);
     log.debug(messageCsv);
   }
-  if (exportResults.campaignExportUrl) {
+  if (exportResults.campaignExportUrl || exportResults.error) {
     exportResults.createdAt = String(new Date());
     await cacheableData.campaign.saveExportData(campaign.id, exportResults);
   }
