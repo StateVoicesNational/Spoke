@@ -1,5 +1,5 @@
 import PropTypes from "prop-types";
-import React from "react";
+import React, { useState } from "react";
 import { Link as RouterLink } from "react-router";
 import moment from "moment";
 
@@ -21,33 +21,31 @@ const inlineStyles = {
   }
 };
 
-export class CampaignTable extends React.Component {
-  static propTypes = {
-    adminPerms: PropTypes.bool,
-    selectMultiple: PropTypes.bool,
-    organizationId: PropTypes.string,
-    data: PropTypes.object,
-    handleChecked: PropTypes.func,
-    archiveCampaign: PropTypes.func,
-    unarchiveCampaign: PropTypes.func,
-    onNextPageClick: PropTypes.func,
-    onPreviousPageClick: PropTypes.func,
-    onRowSizeChange: PropTypes.func,
-    campaignsToArchive: PropTypes.array,
-    campaignsWithChangingStatus: PropTypes.array,
-    currentSortBy: PropTypes.oneOf(SORTS.map(s => s.value))
+export function CampaignTable({
+  data,
+  campaignsToArchive,
+  campaignsWithChangingStatus,
+  currentSortBy,
+  onNextPageClick,
+  onPreviousPageClick,
+  onRowSizeChange,
+  adminPerms,
+  selectMultiple,
+  organizationId,
+  handleChecked,
+  archiveCampaign,
+  unarchiveCampaign
+}) {
+
+  const state = {
+    dataTableKey: "initial"
   };
 
-  state = {
-    dataTableKey: "initial",
-    campaigns: [...this.props.data.organization.campaigns.campaigns]
+  const statusIsChanging = campaign => {
+    return campaignsWithChangingStatus.includes(campaign.id);
   };
 
-  statusIsChanging = campaign => {
-    return this.props.campaignsWithChangingStatus.includes(campaign.id);
-  };
-
-  renderArchiveIcon(campaign) {
+  const  renderArchiveIcon = campaign => {
     if (this.statusIsChanging(campaign)) {
       return <CircularProgress size={25} />;
     }
@@ -58,7 +56,7 @@ export class CampaignTable extends React.Component {
       return (
         <IconButton
           tooltip="Unarchive"
-          onClick={async () => await this.props.unarchiveCampaign(campaign.id)}
+          onClick={async () => await unarchiveCampaign(campaign.id)}
         >
           <UnarchiveIcon />
         </IconButton>
@@ -67,14 +65,14 @@ export class CampaignTable extends React.Component {
     return (
       <IconButton
         tooltip="Archive"
-        onClick={async () => await this.props.archiveCampaign(campaign.id)}
+        onClick={async () => await archiveCampaign(campaign.id)}
       >
         <ArchiveIcon />
       </IconButton>
     );
   }
 
-  sortFunc(key) {
+  const sortFunc = key => {
     const sorts = {
       id: (a, b) => b.id - a.id,
       title: (a, b) => (b.title > a.title ? 1 : -1),
@@ -92,7 +90,7 @@ export class CampaignTable extends React.Component {
     return sorts[key];
   }
 
-  prepareTableColumns(organization, campaigns) {
+  const prepareTableColumns = (organization, campaigns) => {
     const extraRows = [];
     const needsResponseCol = campaigns.some(
       c => c.completionStats.needsResponseCount
@@ -112,7 +110,7 @@ export class CampaignTable extends React.Component {
         }
       });
     }
-    if (this.props.adminPerms) {
+    if (adminPerms) {
       extraRows.push({
         label: "Archive",
         name: "archive",
@@ -131,7 +129,7 @@ export class CampaignTable extends React.Component {
 
     const timezoneColumn = [];
     // only show the timezone column when we're currently sorting by timezone
-    if (this.props.currentSortBy === TIMEZONE_SORT.value) {
+    if (currentSortBy === TIMEZONE_SORT.value) {
       timezoneColumn.push({
         key: "timezone",
         name: "timezone",
@@ -157,7 +155,7 @@ export class CampaignTable extends React.Component {
           customBodyRender: (value, tableMeta) => {
             const campaign = campaigns.find(c => c.id === tableMeta.rowData[0]);
             let org = "";
-            if (this.props.organizationId != campaign.organization.id) {
+            if (organizationId != campaign.organization.id) {
               org = ` (${campaign.organization.id})`;
             }
             return `${campaign.id}${org}`;
@@ -280,11 +278,11 @@ export class CampaignTable extends React.Component {
     ];
   }
 
-  getSelectedRowIndexes = () => {
-    const campaignIds = this.props.data.organization.campaigns.campaigns.map(
+  const getSelectedRowIndexes = () => {
+    const campaignIds = data.organization.campaigns.campaigns.map(
       c => c.id
     );
-    const indexes = this.props.campaignsToArchive.map(campaignId =>
+    const indexes = campaignsToArchive.map(campaignId =>
       campaignIds.indexOf(campaignId)
     );
     if (indexes.includes(-1)) {
@@ -297,8 +295,8 @@ export class CampaignTable extends React.Component {
     return indexes;
   };
 
-  clearCampaignSelection = () => {
-    this.props.handleChecked([]);
+  const clearCampaignSelection = () => {
+    handleChecked([]);
     // Terrible hack around buggy DataTables: we have to force the component
     // to remount if we want clear the "select all" status
     this.setState({
@@ -306,88 +304,108 @@ export class CampaignTable extends React.Component {
     });
   };
 
-  render() {
-    const { limit, offset, total } = this.props.data.organization.campaigns.pageInfo;
-    const { campaigns } = this.props.data.organization.campaigns;
-    const displayPage = Math.floor(offset / limit) + 1;
-    let rowSizeList = [10, 20, 50, 100];
+  const { limit, offset, total } = data.organization.campaigns.pageInfo;
+  const campaigns = data.organization.campaigns.campaigns.map((campaign) => ({...campaign}));
+  const displayPage = Math.floor(offset / limit) + 1;
+  let rowSizeList = [10, 20, 50, 100];
 
-    const options = {
-      filterType: "checkbox",
-      selectableRows: "multiple", // this.props.selectMultiple ? "multiple" : "none",
-      elevation: 0,
-      download: false,
-      print: false,
-      searchable: false,
-      filter: false,
-      sort: true,
-      search: false,
-      viewColumns: false,
-      page: displayPage - 1,
-      count: total,
-      rowsPerPage: limit,
-      rowsPerPageOptions: rowSizeList,
-      serverSide: true,
-      rowsSelected: this.getSelectedRowIndexes(),
-      customToolbarSelect: () => null,
-      onTableChange: (action, tableState) => {
-        switch (action) {
-          case "changePage":
-            if (tableState.page > displayPage - 1) {
-              this.clearCampaignSelection();
-              this.props.onNextPageClick();
-            } else {
-              this.clearCampaignSelection();
-              this.props.onPreviousPageClick();
-            }
-            break;
-          case "changeRowsPerPage":
+  const options = {
+    filterType: "checkbox",
+    selectableRows: "multiple", // selectMultiple ? "multiple" : "none",
+    elevation: 0,
+    download: false,
+    print: false,
+    searchable: false,
+    filter: false,
+    sort: true,
+    search: false,
+    viewColumns: false,
+    page: displayPage - 1,
+    count: total,
+    rowsPerPage: limit,
+    rowsPerPageOptions: rowSizeList,
+    serverSide: true,
+    rowsSelected: this.getSelectedRowIndexes(),
+    customToolbarSelect: () => null,
+    onColumnSortChange: (changedColumn, direction) => {
+      //console.log("HERE", changedColumn, direction);
+    },
+    onTableChange: (action, tableState) => {
+      console.log(action);
+      switch (action) {
+        case "changePage":
+          if (tableState.page > displayPage - 1) {
             this.clearCampaignSelection();
-            const _ = undefined;
-            this.props.onRowSizeChange(_, tableState.rowsPerPage);
-            break;
-          case "sort":
+            onNextPageClick();
+          } else {
             this.clearCampaignSelection();
-            campaigns.sort((this.sortFunc(tableState.sortOrder.name)));
-            if (tableState.sortOrder.direction === "desc") {
-              campaigns.reverse()
-            }
-            break;
-          case "rowSelectionChange":
-            const ids = tableState.selectedRows.data.map(({ index }) => {
-              return campaigns[index].id;
-            });
-            this.props.handleChecked(ids);
-            break;
-          case "propsUpdate":
-            break;
-          default:
-            break;
-        }
+            onPreviousPageClick();
+          }
+          break;
+        case "changeRowsPerPage":
+          this.clearCampaignSelection();
+          const _ = undefined;
+          onRowSizeChange(_, tableState.rowsPerPage);
+          break;
+        case "sort":
+          this.clearCampaignSelection();
+          campaigns.sort((sortFunc(tableState.sortOrder.name)));
+          if (tableState.sortOrder.direction === "desc") {
+            campaigns.reverse()
+          }
+          console.log(campaigns)
+          break;
+        case "rowSelectionChange":
+          const ids = tableState.selectedRows.data.map(({ index }) => {
+            return campaigns[index].id;
+          });
+          handleChecked(ids);
+          break;
+        case "propsUpdate":
+          break;
+        default:
+          break;
       }
-    };
+    }
+  };
 
-    return campaigns.length === 0 ? (
-      <Empty title="No campaigns" icon={<SpeakerNotesIcon />} />
-    ) : (
-      <div>
-        <br />
-        <br />
-        <MUIDataTable
-          data={campaigns}
-          columns={this.prepareTableColumns(
-            this.props.data.organization,
-            campaigns
-          )}
-          options={options}
-        />
-        {/* make space for Floating Action Button */}
-        <br />
-        <br />
-        <br />
-      </div>
-    );
-  }
+  return campaigns.length === 0 ? (
+    <Empty title="No campaigns" icon={<SpeakerNotesIcon />} />
+  ) : (
+    <div>
+      <br />
+      <br />
+      <MUIDataTable
+        data={campaigns}
+        columns={this.prepareTableColumns(
+          data.organization,
+          campaigns
+        )}
+        options={options}
+      />
+      {/* make space for Floating Action Button */}
+      <br />
+      <br />
+      <br />
+    </div>
+  );
 }
+
+
+CampaignTable.propTypes = {
+  adminPerms: PropTypes.bool,
+  selectMultiple: PropTypes.bool,
+  organizationId: PropTypes.string,
+  data: PropTypes.object,
+  handleChecked: PropTypes.func,
+  archiveCampaign: PropTypes.func,
+  unarchiveCampaign: PropTypes.func,
+  onNextPageClick: PropTypes.func,
+  onPreviousPageClick: PropTypes.func,
+  onRowSizeChange: PropTypes.func,
+  campaignsToArchive: PropTypes.array,
+  campaignsWithChangingStatus: PropTypes.array,
+  currentSortBy: PropTypes.oneOf(SORTS.map(s => s.value))
+};
 
 export default CampaignTable;
