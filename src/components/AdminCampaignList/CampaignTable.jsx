@@ -285,7 +285,7 @@ export function CampaignTable({
   }
 
   const getSelectedRowIndexes = () => {
-    const campaignIds = data.organization.campaigns.campaigns.map(
+    const campaignIds = campaigns.map(
       c => c.id
     );
     const indexes = campaignsToArchive.map(campaignId =>
