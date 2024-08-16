@@ -37,9 +37,14 @@ export function CampaignTable({
   unarchiveCampaign
 }) {
 
+  const [campaigns, setCampaigns] = useState(data.organization.campaigns.campaigns.map((campaign) => ({...campaign})));
   const [state, setState] = useState({
     dataTableKey: "initial"
   });
+
+  const { limit, offset, total } = data.organization.campaigns.pageInfo;
+  const displayPage = Math.floor(offset / limit) + 1;
+  let rowSizeList = [10, 20, 50, 100];
 
   const statusIsChanging = campaign => {
     return campaignsWithChangingStatus.includes(campaign.id);
@@ -303,11 +308,6 @@ export function CampaignTable({
       dataTableKey: new Date().getTime()
     });
   };
-
-  const { limit, offset, total } = data.organization.campaigns.pageInfo;
-  const [campaigns, setCampaigns] = useState(data.organization.campaigns.campaigns.map((campaign) => ({...campaign})));
-  const displayPage = Math.floor(offset / limit) + 1;
-  let rowSizeList = [10, 20, 50, 100];
 
   const options = {
     filterType: "checkbox",
