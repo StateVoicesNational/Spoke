@@ -138,9 +138,20 @@ export default function renderIndex(html, css, assetMap) {
         "ASSIGNMENT_CONTACTS_SIDEBAR"
       )};
       window.GOOGLE_CLIENT_EMAIL='${
-        (canGoogleImport &&
-        JSON.parse(getConfig("GOOGLE_SECRET")).client_email) ||
-        ""
+        () => {
+          if (canGoogleImport) {
+            try {
+              JSON.parse(process.env.GOOGLE_SECRET).client_email
+            } catch (err) {
+              console.error((`
+                Google API failed to load client email.
+                Please check your GOOGLE_SECRET environment variable is intact: `),
+                err);
+            } finally {
+              return ""
+            }
+          }
+        }
       }';
     </script>
     <script src="${assetMap["bundle.js"]}"></script>
