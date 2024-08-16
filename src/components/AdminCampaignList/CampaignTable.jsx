@@ -328,9 +328,6 @@ export function CampaignTable({
     serverSide: true,
     rowsSelected: getSelectedRowIndexes(),
     customToolbarSelect: () => null,
-    onColumnSortChange: (changedColumn, direction) => {
-      //console.log("HERE", changedColumn, direction);
-    },
     onTableChange: (action, tableState) => {
       console.log(action);
       switch (action) {
