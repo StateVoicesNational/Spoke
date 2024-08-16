@@ -37,16 +37,16 @@ export function CampaignTable({
   unarchiveCampaign
 }) {
 
-  const state = {
+  const [state, setState] = useState({
     dataTableKey: "initial"
-  };
+  });
 
   const statusIsChanging = campaign => {
     return campaignsWithChangingStatus.includes(campaign.id);
   };
 
   const  renderArchiveIcon = campaign => {
-    if (this.statusIsChanging(campaign)) {
+    if (statusIsChanging(campaign)) {
       return <CircularProgress size={25} />;
     }
     if (campaign.isArchived) {
@@ -117,7 +117,7 @@ export function CampaignTable({
         options: {
           customBodyRender: (value, tableMeta) => {
             const campaign = campaigns.find(c => c.id === tableMeta.rowData[0]);
-            return this.renderArchiveIcon(campaign);
+            return renderArchiveIcon(campaign);
           },
           sort: false
         },
@@ -299,13 +299,13 @@ export function CampaignTable({
     handleChecked([]);
     // Terrible hack around buggy DataTables: we have to force the component
     // to remount if we want clear the "select all" status
-    this.setState({
+    setState({
       dataTableKey: new Date().getTime()
     });
   };
 
   const { limit, offset, total } = data.organization.campaigns.pageInfo;
-  const campaigns = data.organization.campaigns.campaigns.map((campaign) => ({...campaign}));
+  const [campaigns, setCampaigns] = useState(data.organization.campaigns.campaigns.map((campaign) => ({...campaign})));
   const displayPage = Math.floor(offset / limit) + 1;
   let rowSizeList = [10, 20, 50, 100];
 
@@ -325,7 +325,7 @@ export function CampaignTable({
     rowsPerPage: limit,
     rowsPerPageOptions: rowSizeList,
     serverSide: true,
-    rowsSelected: this.getSelectedRowIndexes(),
+    rowsSelected: getSelectedRowIndexes(),
     customToolbarSelect: () => null,
     onColumnSortChange: (changedColumn, direction) => {
       //console.log("HERE", changedColumn, direction);
@@ -335,23 +335,23 @@ export function CampaignTable({
       switch (action) {
         case "changePage":
           if (tableState.page > displayPage - 1) {
-            this.clearCampaignSelection();
+            clearCampaignSelection();
             onNextPageClick();
           } else {
-            this.clearCampaignSelection();
+            clearCampaignSelection();
             onPreviousPageClick();
           }
           break;
         case "changeRowsPerPage":
-          this.clearCampaignSelection();
+          clearCampaignSelection();
           const _ = undefined;
           onRowSizeChange(_, tableState.rowsPerPage);
           break;
         case "sort":
-          this.clearCampaignSelection();
-          campaigns.sort((sortFunc(tableState.sortOrder.name)));
+          clearCampaignSelection();
+          setCampaigns(campaigns.sort((sortFunc(tableState.sortOrder.name))));
           if (tableState.sortOrder.direction === "desc") {
-            campaigns.reverse()
+            setCampaigns(campaigns.reverse())
           }
           console.log(campaigns)
           break;
@@ -377,7 +377,7 @@ export function CampaignTable({
       <br />
       <MUIDataTable
         data={campaigns}
-        columns={this.prepareTableColumns(
+        columns={prepareTableColumns(
           data.organization,
           campaigns
         )}
