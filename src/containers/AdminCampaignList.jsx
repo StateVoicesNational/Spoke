@@ -1,5 +1,5 @@
 import PropTypes from "prop-types";
-import React from "react";
+import React, { useState } from "react";
 import { StyleSheet, css } from "aphrodite";
 import { withRouter } from "react-router";
 import { gql } from "@apollo/client";
@@ -46,7 +46,8 @@ export function AdminCampaignList({
   router,
   data
   }) {
-  const state = {
+    
+  const [state, setState] = useState({
     pageSize: INITIAL_ROW_SIZE,
     page: 0,
     isLoading: false,
@@ -56,7 +57,7 @@ export function AdminCampaignList({
     campaignsWithChangingStatus: [],
     sortBy: INITIAL_SORT_BY,
     archiveMultipleMenu: false
-  };
+  });
 
   const { adminPerms } = params;
 
