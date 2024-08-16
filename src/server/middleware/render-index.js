@@ -147,9 +147,8 @@ export default function renderIndex(html, css, assetMap) {
                 Google API failed to load client email.
                 Please check your GOOGLE_SECRET environment variable is intact: `),
                 err);
-            } finally {
-              return ""
-            }
+            } 
+          return "";
           }
         }
       }';
