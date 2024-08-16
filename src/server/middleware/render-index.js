@@ -141,7 +141,7 @@ export default function renderIndex(html, css, assetMap) {
         () => {
           if (canGoogleImport) {
             try {
-              JSON.parse(process.env.GOOGLE_SECRET).client_email
+              return JSON.parse(process.env.GOOGLE_SECRET).client_email
             } catch (err) {
               console.error((`
                 Google API failed to load client email.
