@@ -308,6 +308,7 @@ export class CampaignTable extends React.Component {
 
   render() {
     const { limit, offset, total } = this.props.data.organization.campaigns.pageInfo;
+    const { campaigns } = this.props.data.organization.campaigns;
     const displayPage = Math.floor(offset / limit) + 1;
     let rowSizeList = [10, 20, 50, 100];
 
@@ -347,14 +348,14 @@ export class CampaignTable extends React.Component {
             break;
           case "sort":
             this.clearCampaignSelection();
-            this.state.campaigns.sort(this.sortFunc(tableState.sortOrder.name));
+            campaigns.sort((this.sortFunc(tableState.sortOrder.name)));
             if (tableState.sortOrder.direction === "desc") {
-              this.state.campaigns.reverse()
+              campaigns.reverse()
             }
             break;
           case "rowSelectionChange":
             const ids = tableState.selectedRows.data.map(({ index }) => {
-              return this.state.campaigns[index].id;
+              return campaigns[index].id;
             });
             this.props.handleChecked(ids);
             break;
@@ -366,17 +367,17 @@ export class CampaignTable extends React.Component {
       }
     };
 
-    return this.state.campaigns.length === 0 ? (
+    return campaigns.length === 0 ? (
       <Empty title="No campaigns" icon={<SpeakerNotesIcon />} />
     ) : (
       <div>
         <br />
         <br />
         <MUIDataTable
-          data={this.state.campaigns}
+          data={campaigns}
           columns={this.prepareTableColumns(
             this.props.data.organization,
-            this.state.campaigns
+            campaigns
           )}
           options={options}
         />
