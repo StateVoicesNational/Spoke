@@ -38,6 +38,7 @@ export function CampaignTable({
 }) {
 
   const [campaigns, setCampaigns] = useState(data.organization.campaigns.campaigns.map((campaign) => ({...campaign})));
+  // Needed to refresh datatable
   const [state, setState] = useState({
     dataTableKey: "initial"
   });
