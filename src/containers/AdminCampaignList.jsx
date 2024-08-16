@@ -40,19 +40,13 @@ const INITIAL_FILTER = {
 };
 const INITIAL_SORT_BY = ID_DESC_SORT.value;
 
-export class AdminCampaignList extends React.Component {
-  static propTypes = {
-    params: PropTypes.object,
-    mutations: PropTypes.exact({
-      createCampaign: PropTypes.func,
-      archiveCampaigns: PropTypes.func,
-      unarchiveCampaign: PropTypes.func
-    }),
-    data: PropTypes.object,
-    router: PropTypes.object
-  };
-
-  state = {
+export function AdminCampaignList({
+  params,
+  mutations,
+  router,
+  data
+  }) {
+  const state = {
     pageSize: INITIAL_ROW_SIZE,
     page: 0,
     isLoading: false,
@@ -64,10 +58,12 @@ export class AdminCampaignList extends React.Component {
     archiveMultipleMenu: false
   };
 
-  handleClickNewButton = async () => {
-    const { organizationId } = this.props.params;
-    this.setState({ isLoading: true });
-    const newCampaign = await this.props.mutations.createCampaign({
+  const { adminPerms } = params;
+
+  const handleClickNewButton = async () => {
+    const { organizationId } = params;
+    setState({ isLoading: true });
+    const newCampaign = await mutations.createCampaign({
       title: "New Campaign",
       description: "",
       dueBy: null,
@@ -83,17 +79,17 @@ export class AdminCampaignList extends React.Component {
       throw new Error(newCampaign.errors);
     }
 
-    await this.props.router.push(
+    await router.push(
       `/admin/${organizationId}/campaigns/${newCampaign.data.createCampaign.id}/edit?new=true`
     );
   };
 
-  handleClickArchiveMultipleButton = async keys => {
+  const handleClickArchiveMultipleButton = async keys => {
     if (keys.length) {
-      this.setState({ isLoading: true });
-      await this.props.mutations.archiveCampaigns(keys);
-      await this.props.data.refetch();
-      this.setState({
+      setState({ isLoading: true });
+      await mutations.archiveCampaigns(keys);
+      await data.refetch();
+      setState({
         archiveMultiple: false,
         isLoading: false,
         campaignsToArchive: []
@@ -101,90 +97,90 @@ export class AdminCampaignList extends React.Component {
     }
   };
 
-  handleArchiveFilterChange = async event => {
-    this.changeFilter({ isArchived: event.target.value });
+  const handleArchiveFilterChange = async event => {
+    changeFilter({ isArchived: event.target.value });
   };
 
-  handleChecked = campaignIds => {
-    this.setState({
+  const handleChecked = campaignIds => {
+    setState({
       campaignsToArchive: [...campaignIds]
     });
   };
 
-  handleSearchRequested = searchString => {
+  const handleSearchRequested = searchString => {
     const campaignsFilter = {
-      ...this.state.campaignsFilter,
+      ...state.campaignsFilter,
       searchString
     };
-    this.changeFilter(campaignsFilter);
+    changeFilter(campaignsFilter);
   };
 
-  handleCancelSearch = () => {
+  const handleCancelSearch = () => {
     const campaignsFilter = {
-      ...this.state.campaignsFilter,
+      ...state.campaignsFilter,
       searchString: ""
     };
-    this.changeFilter(campaignsFilter);
+    changeFilter(campaignsFilter);
   };
 
-  renderArchivedAndSortBy = () => {
+  const renderArchivedAndSortBy = () => {
     return (
-      !this.state.archiveMultiple && (
+      !state.archiveMultiple && (
         <React.Fragment>
           <Select
-            value={this.state.campaignsFilter.isArchived}
-            onChange={this.handleArchiveFilterChange}
+            value={state.campaignsFilter.isArchived}
+            onChange={handleArchiveFilterChange}
             style={{ marginRight: "20px" }}
           >
             <MenuItem value={false}>Current</MenuItem>
             <MenuItem value>Archived</MenuItem>
           </Select>
-          <SortBy onChange={this.changeSortBy} sortBy={this.state.sortBy} />
+          <SortBy onChange={changeSortBy} sortBy={state.sortBy} />
         </React.Fragment>
       )
     );
   };
 
-  renderSearch = () => {
+  const renderSearch = () => {
     return (
-      !this.state.archiveMultiple && (
+      !state.archiveMultiple && (
         <div style={{ width: "100%" }}>
           <Search
-            onSearchRequested={this.handleSearchRequested}
-            searchString={this.state.campaignsFilter.searchString}
-            onCancelSearch={this.handleCancelSearch}
+            onSearchRequested={handleSearchRequested}
+            searchString={state.campaignsFilter.searchString}
+            onCancelSearch={handleCancelSearch}
           />
         </div>
       )
     );
   };
 
-  renderFilters = () => (
+  const renderFilters = () => (
     <Paper className={css(styles.settings)} elevation={3}>
       <div style={{ display: "flex", alignItems: "center", width: "100%" }}>
-        {this.props.params.adminPerms && this.renderArchiveMultiple()}
-        {this.renderArchivedAndSortBy()}
+        {params.adminPerms && renderArchiveMultiple()}
+        {renderArchivedAndSortBy()}
       </div>
-      {this.renderSearch()}
+      {renderSearch()}
     </Paper>
   );
 
-  handleMenuClick = event => {
+  const handleMenuClick = event => {
     console.log("event.target", event.target);
-    this.setState({ menuAnchorEl: event.target });
+    setState({ menuAnchorEl: event.target });
   };
 
-  handleMenuClose = () => {
-    this.setState({ menuAnchorEl: null });
+  const handleMenuClose = () => {
+    setState({ menuAnchorEl: null });
   };
 
-  renderArchiveMultiple() {
+  const renderArchiveMultiple = () => {
     const iconButton = (
       <IconButton
         onClick={event => {
-          this.handleMenuClick(event);
-          this.setState({
-            archiveMultipleMenu: !this.state.archiveMultipleMenu
+          handleMenuClick(event);
+          setState({
+            archiveMultipleMenu: !state.archiveMultipleMenu
           });
         }}
       >
@@ -192,7 +188,7 @@ export class AdminCampaignList extends React.Component {
       </IconButton>
     );
 
-    if (this.state.campaignsFilter.isArchived) {
+    if (state.campaignsFilter.isArchived) {
       return iconButton;
     }
 
@@ -200,15 +196,15 @@ export class AdminCampaignList extends React.Component {
       <React.Fragment>
         {iconButton}
         <Menu
-          open={this.state.archiveMultipleMenu}
-          anchorEl={this.state.menuAnchorEl}
+          open={state.archiveMultipleMenu}
+          anchorEl={state.menuAnchorEl}
         >
-          {this.state.archiveMultiple ? (
+          {state.archiveMultiple ? (
             <MenuItem
               onClick={() => {
-                this.setState({
-                  archiveMultipleMenu: !this.state.archiveMultipleMenu,
-                  archiveMultiple: !this.state.archiveMultiple
+                setState({
+                  archiveMultipleMenu: !state.archiveMultipleMenu,
+                  archiveMultiple: !state.archiveMultiple
                 });
               }}
             >
@@ -217,9 +213,9 @@ export class AdminCampaignList extends React.Component {
           ) : (
             <MenuItem
               onClick={() => {
-                this.setState({
-                  archiveMultipleMenu: !this.state.archiveMultipleMenu,
-                  archiveMultiple: !this.state.archiveMultiple
+                setState({
+                  archiveMultipleMenu: !state.archiveMultipleMenu,
+                  archiveMultiple: !state.archiveMultiple
                 });
               }}
             >
@@ -231,19 +227,19 @@ export class AdminCampaignList extends React.Component {
     );
   }
 
-  changePage = (pageDelta, pageSize) => {
+  const changePage = (pageDelta, pageSize) => {
     const {
       limit,
       offset,
       total
-    } = this.props.data.organization.campaigns.pageInfo;
+    } = data.organization.campaigns.pageInfo;
     const currentPage = Math.floor(offset / limit);
     const pageSizeAdjustedCurrentPage = Math.floor(
       (currentPage * limit) / pageSize
     );
     const maxPage = Math.floor(total / pageSize);
     const newPage = Math.min(maxPage, pageSizeAdjustedCurrentPage + pageDelta);
-    this.props.data.fetchMore({
+    data.fetchMore({
       variables: {
         cursor: {
           offset: newPage * pageSize,
@@ -259,81 +255,81 @@ export class AdminCampaignList extends React.Component {
     });
   };
 
-  changeFilter = async newFilter => {
-    this.setState({
+  const changeFilter = async newFilter => {
+    setState({
       isLoading: true,
       campaignsFilter: newFilter
     });
-    await this.props.data.refetch({
+    await data.refetch({
       campaignsFilter: newFilter
     });
-    this.setState({ isLoading: false });
+    setState({ isLoading: false });
   };
 
-  changeSortBy = async newSort => {
-    this.setState({
+  const changeSortBy = async newSort => {
+    setState({
       isLoading: true,
       sortBy: newSort
     });
-    await this.props.data.refetch({
+    await data.refetch({
       sortBy: newSort
     });
-    this.setState({ isLoading: false });
+    setState({ isLoading: false });
   };
 
-  handleNextPageClick = () => {
-    this.changePage(1, this.state.pageSize);
+  const handleNextPageClick = () => {
+    changePage(1, state.pageSize);
   };
 
-  handlePreviousPageClick = () => {
-    this.changePage(-1, this.state.pageSize);
+  const handlePreviousPageClick = () => {
+    changePage(-1, state.pageSize);
   };
 
-  handleRowSizeChanged = (index, value) => {
+  const handleRowSizeChanged = (index, value) => {
     console.log("rowsizechanged", index, value); // eslint-disable-line no-console
-    this.changePage(0, value);
-    this.setState({
+    changePage(0, value);
+    setState({
       pageSize: value
     });
   };
 
-  changeCampaignStatus = async (campaignId, changeFn) => {
-    this.setState({
-      campaignsWithChangingStatus: this.state.campaignsWithChangingStatus.concat(
+  const changeCampaignStatus = async (campaignId, changeFn) => {
+    setState({
+      campaignsWithChangingStatus: state.campaignsWithChangingStatus.concat(
         [campaignId]
       )
     });
     await changeFn(campaignId);
-    await this.props.data.refetch();
-    this.setState({
-      campaignsWithChangingStatus: this.state.campaignsWithChangingStatus.filter(
+    await data.refetch();
+    setState({
+      campaignsWithChangingStatus: state.campaignsWithChangingStatus.filter(
         id => id !== campaignId
       )
     });
   };
 
-  handleArchiveCampaign = async campaignId => {
-    await this.changeCampaignStatus(campaignId, async id => {
-      await this.props.mutations.archiveCampaigns([id]);
+  const handleArchiveCampaign = async campaignId => {
+    await changeCampaignStatus(campaignId, async id => {
+      await mutations.archiveCampaigns([id]);
     });
   };
 
-  handleUnarchiveCampaign = async campaignId => {
-    await this.changeCampaignStatus(
+  const handleUnarchiveCampaign = async campaignId => {
+    await changeCampaignStatus(
       campaignId,
-      this.props.mutations.unarchiveCampaign
+      mutations.unarchiveCampaign
     );
   };
 
-  renderActionButton() {
-    if (this.state.archiveMultiple) {
-      const keys = this.state.campaignsToArchive;
+  const renderActionButton = () => {
+    if (state.archiveMultiple) {
+      const keys = state.campaignsToArchive;
       return (
         <Fab
           color="primary"
           {...dataTest("archiveCampaigns")}
           style={theme.components.floatingButton}
-          onClick={() => this.handleClickArchiveMultipleButton(keys)}
+          onClick={() => handleClickArchiveMultipleButton(keys)}
           disabled={!keys.length}
         >
           <ArchiveIcon />
@@ -345,42 +341,39 @@ export class AdminCampaignList extends React.Component {
         color="primary"
         {...dataTest("addCampaign")}
         style={theme.components.floatingButton}
-        onClick={this.handleClickNewButton}
+        onClick={handleClickNewButton}
       >
         <AddIcon />
       </Fab>
     );
   }
 
-  render() {
-    const { adminPerms } = this.props.params;
-    return (
-      <div>
-        {this.renderFilters()}
-        {this.state.isLoading ? (
-          <LoadingIndicator />
-        ) : (
-          <CampaignTable
-            data={this.props.data}
-            campaignsToArchive={this.state.campaignsToArchive}
-            campaignsWithChangingStatus={this.state.campaignsWithChangingStatus}
-            currentSortBy={this.state.sortBy}
-            onNextPageClick={this.handleNextPageClick}
-            onPreviousPageClick={this.handlePreviousPageClick}
-            onRowSizeChange={this.handleRowSizeChanged}
-            adminPerms={this.props.params.adminPerms}
-            selectMultiple={this.state.archiveMultiple}
-            organizationId={this.props.params.organizationId}
-            handleChecked={this.handleChecked}
-            archiveCampaign={this.handleArchiveCampaign}
-            unarchiveCampaign={this.handleUnarchiveCampaign}
-          />
-        )}
+  return (
+    <div>
+      {renderFilters()}
+      {state.isLoading ? (
+        <LoadingIndicator />
+      ) : (
+        <CampaignTable
+          data={data}
+          campaignsToArchive={state.campaignsToArchive}
+          campaignsWithChangingStatus={state.campaignsWithChangingStatus}
+          currentSortBy={state.sortBy}
+          onNextPageClick={handleNextPageClick}
+          onPreviousPageClick={handlePreviousPageClick}
+          onRowSizeChange={handleRowSizeChanged}
+          adminPerms={params.adminPerms}
+          selectMultiple={state.archiveMultiple}
+          organizationId={params.organizationId}
+          handleChecked={handleChecked}
+          archiveCampaign={handleArchiveCampaign}
+          unarchiveCampaign={handleUnarchiveCampaign}
+        />
+      )}
 
-        {adminPerms && this.renderActionButton()}
-      </div>
-    );
-  }
+      {adminPerms && renderActionButton()}
+    </div>
+  );
 }
 
 const campaignInfoFragment = `
@@ -515,6 +508,17 @@ const mutations = {
       }`,
     variables: { campaignId }
   })
+};
+
+AdminCampaignList.propTypes = {
+  params: PropTypes.object,
+  mutations: PropTypes.exact({
+    createCampaign: PropTypes.func,
+    archiveCampaigns: PropTypes.func,
+    unarchiveCampaign: PropTypes.func
+  }),
+  data: PropTypes.object,
+  router: PropTypes.object
 };
 
 export default loadData({ queries, mutations })(withRouter(AdminCampaignList));
