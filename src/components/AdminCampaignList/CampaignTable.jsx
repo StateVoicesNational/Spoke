@@ -62,7 +62,11 @@ export function CampaignTable({
       return (
         <IconButton
           tooltip="Unarchive"
-          onClick={async () => await unarchiveCampaign(campaign.id)}
+          onClick={async () => {
+            await unarchiveCampaign(campaign.id);
+            updateAfterArchiveOrUnarchive(campaign.id);
+            }
+          }
         >
           <UnarchiveIcon />
         </IconButton>
@@ -71,11 +75,21 @@ export function CampaignTable({
     return (
       <IconButton
         tooltip="Archive"
-        onClick={async () => await archiveCampaign(campaign.id)}
+        onClick={async () => {
+          await archiveCampaign(campaign.id);
+          updateAfterArchiveOrUnarchive(campaign.id);
+          }
+        }
       >
         <ArchiveIcon />
       </IconButton>
     );
+  }
+
+  // This is hacky. I don't think mui-datatables is working correctly,
+  // hence this implementation
+  const updateAfterArchiveOrUnarchive = (campaignId) => {
+    setCampaigns(campaigns.filter(c => c.id != campaignId));
   }
 
   const sortFunc = key => {
