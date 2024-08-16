@@ -347,6 +347,7 @@ export function CampaignTable({
           break;
         case "sort":
           clearCampaignSelection();
+          // TODO: use option onColumnSortChange instead
           setCampaigns(campaigns.sort((sortFunc(tableState.sortOrder.name))));
           if (tableState.sortOrder.direction === "desc") {
             setCampaigns(campaigns.reverse())
