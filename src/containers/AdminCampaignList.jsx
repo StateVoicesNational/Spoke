@@ -63,7 +63,10 @@ export function AdminCampaignList({
 
   const handleClickNewButton = async () => {
     const { organizationId } = params;
-    setState({ isLoading: true });
+    setState({ 
+      ...state,
+      isLoading: true 
+    });
     const newCampaign = await mutations.createCampaign({
       title: "New Campaign",
       description: "",
@@ -87,10 +90,14 @@ export function AdminCampaignList({
 
   const handleClickArchiveMultipleButton = async keys => {
     if (keys.length) {
-      setState({ isLoading: true });
+      setState({ 
+        ...state,
+        isLoading: true 
+      });
       await mutations.archiveCampaigns(keys);
       await data.refetch();
       setState({
+        ...state,
         archiveMultiple: false,
         isLoading: false,
         campaignsToArchive: []
@@ -104,6 +111,7 @@ export function AdminCampaignList({
 
   const handleChecked = campaignIds => {
     setState({
+      ...state,
       campaignsToArchive: [...campaignIds]
     });
   };
@@ -168,11 +176,16 @@ export function AdminCampaignList({
 
   const handleMenuClick = event => {
     console.log("event.target", event.target);
-    setState({ menuAnchorEl: event.target });
+    setState({ 
+      ...state,
+      menuAnchorEl: event.target });
   };
 
   const handleMenuClose = () => {
-    setState({ menuAnchorEl: null });
+    setState({ 
+      ...state,
+      menuAnchorEl: null 
+    });
   };
 
   const renderArchiveMultiple = () => {
@@ -181,6 +194,7 @@ export function AdminCampaignList({
         onClick={event => {
           handleMenuClick(event);
           setState({
+            ...state,
             archiveMultipleMenu: !state.archiveMultipleMenu
           });
         }}
@@ -204,6 +218,7 @@ export function AdminCampaignList({
             <MenuItem
               onClick={() => {
                 setState({
+                  ...state,
                   archiveMultipleMenu: !state.archiveMultipleMenu,
                   archiveMultiple: !state.archiveMultiple
                 });
@@ -215,6 +230,7 @@ export function AdminCampaignList({
             <MenuItem
               onClick={() => {
                 setState({
+                  ...state,
                   archiveMultipleMenu: !state.archiveMultipleMenu,
                   archiveMultiple: !state.archiveMultiple
                 });
@@ -258,24 +274,32 @@ export function AdminCampaignList({
 
   const changeFilter = async newFilter => {
     setState({
+      ...state,
       isLoading: true,
       campaignsFilter: newFilter
     });
     await data.refetch({
       campaignsFilter: newFilter
     });
-    setState({ isLoading: false });
+    setState({ 
+      ...state, 
+      isLoading: false 
+    });
   };
 
   const changeSortBy = async newSort => {
     setState({
+      ...state,
       isLoading: true,
       sortBy: newSort
     });
     await data.refetch({
       sortBy: newSort
     });
-    setState({ isLoading: false });
+    setState({ 
+      ...state,
+      isLoading: false 
+    });
   };
 
   const handleNextPageClick = () => {
@@ -290,12 +314,14 @@ export function AdminCampaignList({
     console.log("rowsizechanged", index, value); // eslint-disable-line no-console
     changePage(0, value);
     setState({
+      ...state,
       pageSize: value
     });
   };
 
   const changeCampaignStatus = async (campaignId, changeFn) => {
     setState({
+      ...state,
       campaignsWithChangingStatus: state.campaignsWithChangingStatus.concat(
         [campaignId]
       )
@@ -303,6 +329,7 @@ export function AdminCampaignList({
     await changeFn(campaignId);
     await data.refetch();
     setState({
+      ...state,
       campaignsWithChangingStatus: state.campaignsWithChangingStatus.filter(
         id => id !== campaignId
       )
