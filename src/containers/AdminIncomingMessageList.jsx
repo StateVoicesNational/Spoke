@@ -215,7 +215,7 @@ export class AdminIncomingMessageList extends Component {
     const updatedCampaignIdsContactIds = this.state.campaignIdsContactIds.map(
       campaign => {
         campaign.campaignContactId = Number(campaign.campaignContactId);
-        campaign.messageIds = campaign.messageIds.map(x => Number(x));
+        campaign.messageIds = campaign.messageIds.map(id => Number(id));
         return campaign;
       }
     );
