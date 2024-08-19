@@ -11,7 +11,7 @@ const googleClientEmail = () => {
         process.env.GOOGLE_SECRET
         .replace(/(\r\n|\n|\r)/gm, ""))) // new lines gum up parsing
         .client_email)
-        .replace(" ", ""); // production can sometimes contain an unwanted space in the email
+	.replaceAll(" ", "");
     } catch (err) {
       console.error(`
         Google API failed to load client email.
