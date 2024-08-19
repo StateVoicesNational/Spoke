@@ -3,24 +3,24 @@ import { getProcessEnvTz, getProcessEnvDstReferenceTimezone } from "../../lib";
 
 const canGoogleImport = hasConfig("GOOGLE_SECRET");
 
-const getGoogleClientEmail = () => {
+const googleClientEmail = () => {
   let output;
   if (canGoogleImport) {
     try {
-      output = JSON.parse((process.env.GOOGLE_SECRET.replace(/(\r\n|\n|\r)/gm, ""))).client_email
+      output = (JSON.parse((
+        process.env.GOOGLE_SECRET
+        .replace(/(\r\n|\n|\r)/gm, ""))) // new lines gum up parsing
+        .client_email)
+        .replace(" ", ""); // production can sometimes contain an unwanted space in the email
     } catch (err) {
       console.error(`
         Google API failed to load client email.
         Please check your GOOGLE_SECRET environment variable is intact: `,
         err);
     } 
-  return (output || "");
   }
-}
-
-// can't put functions in the export function ??
-const googleClientEmail = getGoogleClientEmail();
-// console.log(googleClientEmail);
+  return (output || "");
+};
 
 const rollbarScript = process.env.ROLLBAR_CLIENT_TOKEN
   ? `<script>
@@ -156,7 +156,7 @@ export default function renderIndex(html, css, assetMap) {
       window.ASSIGNMENT_CONTACTS_SIDEBAR=${getConfig(
         "ASSIGNMENT_CONTACTS_SIDEBAR"
       )};
-      window.GOOGLE_CLIENT_EMAIL='${googleClientEmail}';
+      window.GOOGLE_CLIENT_EMAIL='${googleClientEmail()}';
     </script>
     <script src="${assetMap["bundle.js"]}"></script>
   </body>
