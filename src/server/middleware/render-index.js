@@ -3,6 +3,23 @@ import { getProcessEnvTz, getProcessEnvDstReferenceTimezone } from "../../lib";
 
 const canGoogleImport = hasConfig("GOOGLE_SECRET");
 
+const getGoogleClientEmail = () => {
+  if (canGoogleImport) {
+    try {
+      return JSON.parse(process.env.GOOGLE_SECRET).client_email
+    } catch (err) {
+      console.error((`
+        Google API failed to load client email.
+        Please check your GOOGLE_SECRET environment variable is intact: `),
+        err);
+    } 
+  return "";
+  }
+}
+
+// can't put functions in the export function ??
+const googleClientEmail = getGoogleClientEmail();
+
 const rollbarScript = process.env.ROLLBAR_CLIENT_TOKEN
   ? `<script>
     var _rollbarConfig = {
@@ -137,21 +154,7 @@ export default function renderIndex(html, css, assetMap) {
       window.ASSIGNMENT_CONTACTS_SIDEBAR=${getConfig(
         "ASSIGNMENT_CONTACTS_SIDEBAR"
       )};
-      window.GOOGLE_CLIENT_EMAIL='${
-        () => {
-          if (canGoogleImport) {
-            try {
-              return JSON.parse(process.env.GOOGLE_SECRET).client_email
-            } catch (err) {
-              console.error((`
-                Google API failed to load client email.
-                Please check your GOOGLE_SECRET environment variable is intact: `),
-                err);
-            } 
-          return "";
-          }
-        }
-      }';
+      window.GOOGLE_CLIENT_EMAIL='${googleClientEmail}';
     </script>
     <script src="${assetMap["bundle.js"]}"></script>
   </body>
