@@ -57,6 +57,18 @@ export default class AdminScriptImport extends Component {
       </List>
     );
 
+  renderGoogleClientEmail = () => 
+    window.GOOGLE_CLIENT_EMAIL ? (
+      <span>
+        Please share your Google Doc with <b>{window.GOOGLE_CLIENT_EMAIL}</b> before importing to Spoke
+      </span>
+    ) : (
+      <span>
+        <b>ERROR</b>: Bad GOOGLE_SECRET<br/> Please contact your Administrator.
+      </span>
+    )
+  
+
   render() {
     const url =
       "https://github.com/StateVoicesNational/Spoke/blob/main/docs/HOWTO_IMPORT_GOOGLE_DOCS_SCRIPTS_TO_IMPORT.md";
@@ -73,10 +85,8 @@ export default class AdminScriptImport extends Component {
                 this document
               </a>{" "}
               for more details.
-              <br/>
-              <br/>
-              Please share your Google Doc with <b>{window.GOOGLE_CLIENT_EMAIL}</b>
-              {" "}before importing to Spoke.
+              <br/><br/>
+              {this.renderGoogleClientEmail()}
             </span>
           }
         />
