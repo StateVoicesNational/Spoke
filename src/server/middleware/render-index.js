@@ -4,21 +4,23 @@ import { getProcessEnvTz, getProcessEnvDstReferenceTimezone } from "../../lib";
 const canGoogleImport = hasConfig("GOOGLE_SECRET");
 
 const getGoogleClientEmail = () => {
+  let output;
   if (canGoogleImport) {
     try {
-      return JSON.parse(process.env.GOOGLE_SECRET).client_email
+      output = JSON.parse((process.env.GOOGLE_SECRET.replace(/(\r\n|\n|\r)/gm, ""))).client_email
     } catch (err) {
-      console.error((`
+      console.error(`
         Google API failed to load client email.
-        Please check your GOOGLE_SECRET environment variable is intact: `),
+        Please check your GOOGLE_SECRET environment variable is intact: `,
         err);
     } 
-  return "";
+  return (output || "");
   }
 }
 
 // can't put functions in the export function ??
 const googleClientEmail = getGoogleClientEmail();
+// console.log(googleClientEmail);
 
 const rollbarScript = process.env.ROLLBAR_CLIENT_TOKEN
   ? `<script>
