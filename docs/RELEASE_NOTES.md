@@ -6,9 +6,9 @@ _August 2024:_ Version 14.0.2
 14.0.2 is a patch release.
 
 ### Bug Fixes
-[#2410](https://github.com/StateVoicesNational/Spoke/pull/2410) - Data exports bug 
-[#2424](https://github.com/StateVoicesNational/Spoke/pull/2424) - Reset Password Bug 
-[#2425](https://github.com/StateVoicesNational/Spoke/pull/2425) - Message Review Reassignment Bug 
+- [#2410](https://github.com/StateVoicesNational/Spoke/pull/2410) - Data exports bug 
+- [#2424](https://github.com/StateVoicesNational/Spoke/pull/2424) - Reset Password Bug 
+- [#2425](https://github.com/StateVoicesNational/Spoke/pull/2425) - Message Review Reassignment Bug 
 
 ### Appreciations
 [Maureen Zitouni](https://github.com/mau11), [Ruby Engelhart](https://github.com/engelhartrueben)
