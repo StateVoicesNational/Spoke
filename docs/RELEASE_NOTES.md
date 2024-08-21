@@ -13,6 +13,7 @@ _August 2024:_ Version 14.0.2
 ### Appreciations
 [Maureen Zitouni](https://github.com/mau11), [Ruby Engelhart](https://github.com/engelhartrueben)
 
+
 ## v14.0.1
 _July 2024:_ Version 14.0.1
 
@@ -25,6 +26,7 @@ _July 2024:_ Version 14.0.1
 
 ### Appreciations
 [Maureen Zitouni](https://github.com/mau11), [Ruby Engelhart](https://github.com/engelhartrueben), [Schuyler Duveen](https://github.com/schuyler1d)
+
 
 ## v14.0
 _July 2024:_ Version 14.0
