@@ -346,8 +346,8 @@ class AdminCampaignStats extends React.Component {
             {campaign.exportResults.error && (
               <div>Export failed: {campaign.exportResults.error}</div>
             )}
-            {campaign.exportResults.campaignExportUrl &&
-            campaign.exportResults.campaignExportUrl.startsWith("http") ? (
+            {campaign.exportResults.campaignExportUrl && (
+            (campaign.exportResults.campaignExportUrl.startsWith("http")) ? (
               <div>
                 Most recent export:
                 <a href={campaign.exportResults.campaignExportUrl} download>
@@ -360,15 +360,16 @@ class AdminCampaignStats extends React.Component {
                   Messages Export CSV
                 </a>
               </div>
-            ) : (
-              <div>
-                Local export was successful, saved on the server at:
-                <br />
-                {campaign.exportResults.campaignExportUrl}
-                <br />
-                {campaign.exportResults.campaignMessagesExportUrl}
-              </div>
-            )}
+            ) : (campaign.exportResults.campaignExportUrl.startsWith("file://") && (
+                <div>
+                  Local export was successful, saved on the server at:
+                  <br />
+                  {campaign.exportResults.campaignExportUrl}
+                  <br />
+                  {campaign.exportResults.campaignMessagesExportUrl}
+                </div>
+              )
+            ))}
           </div>
         )}
         {campaign.joinToken && campaign.useDynamicAssignment && (
@@ -424,21 +425,21 @@ class AdminCampaignStats extends React.Component {
           message={
             <span>
               Export started -
-              {this.props.organizationData &&
-                this.props.organizationData.emailEnabled &&
-                " we'll e-mail you when it's done. "}
-              {campaign.cacheable && (
+              {(this.props.organizationData &&
+                this.props.organizationData.organization.emailEnabled) ?
+                " we'll e-mail you when it's done. " :
+              (campaign.cacheable && (
                 <span>
                   <Link
                     onClick={() => {
                       this.props.data.refetch();
                     }}
                   >
-                    Reload the page
+                    {" Reload the page"} {/*Hacky way to add a space at the beginning */}
                   </Link>{" "}
                   to see a download link when its ready.
                 </span>
-              )}
+              ))}
             </span>
           }
           autoHideDuration={campaign.cacheable ? null : 5000}
