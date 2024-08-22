@@ -630,7 +630,8 @@ const rootMutations = {
               ? capitalizeWord(userData.alias).trim()
               : null,
             email: userData.email,
-            cell: userData.cell
+            cell: userData.cell,
+            darkMode: userData.darkMode
           };
           if (member.extra || userData.extra) {
             newUserData.extra = {

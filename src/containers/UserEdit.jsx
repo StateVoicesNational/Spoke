@@ -21,13 +21,8 @@
 
 import PropTypes from "prop-types";
 import React from "react";
-import loadData from "./hoc/load-data";
 import { gql } from "@apollo/client";
 import { withRouter } from "react-router";
-import GSForm from "../components/forms/GSForm";
-import GSTextField from "../components/forms/GSTextField";
-import GSSubmitButton from "../components/forms/GSSubmitButton";
-import GSPasswordField from "../components/forms/GSPasswordField";
 import Form from "react-formal";
 import * as yup from "yup";
 
@@ -39,7 +34,13 @@ import CardContent from "@material-ui/core/CardContent";
 import { StyleSheet, css } from "aphrodite";
 import apolloClient from "../network/apollo-client-singleton";
 import { dataTest } from "../lib/attributes";
-import withMuiTheme from "./../containers/hoc/withMuiTheme";
+import withMuiTheme from "./hoc/withMuiTheme";
+import GSPasswordField from "../components/forms/GSPasswordField";
+import GSSubmitButton from "../components/forms/GSSubmitButton";
+import GSTextField from "../components/forms/GSTextField";
+import GSCheckbox from "../components/forms/GSCheckbox";
+import GSForm from "../components/forms/GSForm";
+import loadData from "./hoc/load-data";
 
 const styles = StyleSheet.create({
   container: {
@@ -74,6 +75,7 @@ const fetchUser = async (organizationId, userId) => {
             lastName
             alias
             cell
+            darkMode
             extra
           }
         }
@@ -162,6 +164,13 @@ export class UserEditBase extends React.Component {
       }
       if (location.query.next) {
         router.push(location.query.next);
+      } else {
+        /* force reload in case darkMode is flipped */
+        const originalMode = this.state.editedUser?.user?.darkMode;
+        if (originalMode !== undefined && originalMode !== formData.darkMode) {
+          router.push({ pathname: "" });
+          router.replace({ pathname: location.pathname });
+        }
       }
     } else if (this.props.authType === "change") {
       // change password
@@ -241,7 +250,8 @@ export class UserEditBase extends React.Component {
         firstName: yup.string().required(),
         lastName: yup.string().required(),
         alias: yup.string().nullable(),
-        cell: yup.string().required()
+        cell: yup.string().required(),
+        darkMode: yup.boolean().nullable()
       };
     }
 
@@ -301,7 +311,7 @@ export class UserEditBase extends React.Component {
 
     return (
       <div style={{ padding: 20 }}>
-        {userId ? <div style={{}}>User Id: {userId}</div> : null}
+        {userId ? (<div style={{}}>User Id: {userId}</div>) : null}
         <GSForm
           style={{}}
           schema={formSchema}
@@ -343,6 +353,12 @@ export class UserEditBase extends React.Component {
                 label="Cell Number"
                 name="cell"
                 {...dataTest("cell")}
+              />
+              <Form.Field
+                as={GSCheckbox}
+                label="Use Dark Mode"
+                name="darkMode"
+                {...dataTest("darkMode")}
               />
             </span>
           )}
@@ -456,6 +472,7 @@ const queries = {
           lastName
           alias
           cell
+          darkMode
         }
       }
     `
@@ -479,6 +496,7 @@ export const editUserMutation = gql`
       alias
       cell
       email
+      darkMode
       extra
       profileComplete(organizationId: $organizationId)
     }

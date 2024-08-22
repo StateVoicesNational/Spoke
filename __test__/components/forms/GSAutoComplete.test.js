@@ -13,6 +13,10 @@ import TextField from "@material-ui/core/TextField";
 import { GSAutoComplete, GSForm } from "../../../src/components/forms";
 import App from "../../../src/components/App";
 
+jest.mock("../../../src/containers/hoc/load-data", () =>() =>
+      Component => props => <Component {...props} />
+)
+
 describe("GSAutoComplete", () => {
   let colors;
   let options;
