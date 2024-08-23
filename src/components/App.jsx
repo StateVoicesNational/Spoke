@@ -69,6 +69,7 @@ const queries = {
     query: gql`
       query getCurrentUser {
         currentUser {
+          id
           darkMode
         }
      }`
