@@ -926,8 +926,11 @@ export async function exportCampaign(job) {
     console.log("Would have saved the following to S3:");
     log.debug(campaignCsv);
     log.debug(messageCsv);
+    const herokuAWSerror = "You must configure Heroku with your AWS_ACCESS_KEY_ID, AWS_S3_BUCKET_NAME, and AWS_SECRET_ACCESS_KEY to save your data to AWS";
+    exportResults.error = herokuAWSerror;
+
   }
-  if (exportResults.campaignExportUrl) {
+  if (exportResults.campaignExportUrl || exportResults.error) {
     exportResults.createdAt = String(new Date());
     await cacheableData.campaign.saveExportData(campaign.id, exportResults);
   }
