@@ -113,7 +113,7 @@ class AdminCampaignStats extends React.Component {
             <div className={css(styles.flexColumn)}>
               <Stat title="responses" count={count} />
             </div>
-            <div className={css(styles.flexColumn)}>
+            <div className={css(styles.flexColumn)} style={{maxWidth: "50%"}}>
               <div className={css(styles.rightAlign)}>
                 <Chart
                   data={options.map(answer => [

@@ -45,7 +45,6 @@ export class CollapsibleCard extends React.Component {
             </IconButton>
           )}
           onClick={newExpandedState => {
-            console.log("click", newExpandedState);
             this.setState({ open: !open });
           }}
         />
@@ -64,7 +63,6 @@ export class CollapsibleCard extends React.Component {
 }
 
 CollapsibleCard.propTypes = {
-  children: PropTypes.array,
   title: PropTypes.string,
   startCollapsed: PropTypes.bool,
   colorTheme: PropTypes.string
