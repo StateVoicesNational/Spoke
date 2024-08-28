@@ -109,6 +109,7 @@
     "@graphql-tools/graphql-file-loader": "^8.0.1",
     "@graphql-tools/load": "^8.0.2",
     "@graphql-tools/schema": "^10.0.3",
+    "@testing-library/jest-dom": "^6.5.0",
     "@trt2/gsm-charset-utils": "^1.0.13",
     "aphrodite": "^2.3.1",
     "auth0-js": "^9.24.1",
