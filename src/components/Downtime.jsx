@@ -24,7 +24,7 @@ class Downtime extends React.Component {
               window.DOWNTIME != "true" ? (
                 <div>{window.DOWNTIME}</div>
               ) : (
-                "Please talk to your campaign manager or system administrator."
+                " Please talk to your campaign manager or system administrator."
               )}
               {window.DOWNTIME_TEXTER &&
               window.DOWNTIME_TEXTER != "1" &&
