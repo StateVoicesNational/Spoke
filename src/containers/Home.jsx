@@ -114,6 +114,7 @@ class Home extends React.Component {
           <img
             src="https://s3-us-west-1.amazonaws.com/spoke-public/spoke_logo.svg"
             className={css(styles.logoImg)}
+            alt="Spoke Logo"
           />
         </div>
         <div className={css(styles.content)}>{this.renderContent()}</div>
