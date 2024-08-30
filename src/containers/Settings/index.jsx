@@ -30,6 +30,8 @@ import { getServiceVendorComponent } from "../../extensions/service-vendors/comp
 import { getServiceManagerComponent } from "../../extensions/service-managers/components";
 import GSTextField from "../../components/forms/GSTextField";
 import ThemeEditor from "./themeEditor";
+import ListItem from "@material-ui/core/ListItem";
+import List from "@material-ui/core/List";
 
 const styles = StyleSheet.create({
   section: {
@@ -51,6 +53,7 @@ const styles = StyleSheet.create({
 });
 
 const formatTextingHours = hour => moment(hour, "H").format("h a");
+
 class Settings extends React.Component {
   state = {
     formIsSubmitting: false
@@ -81,9 +84,9 @@ class Settings extends React.Component {
   }
 
   handleSubmitTextingHoursForm = async ({
-    textingHoursStart,
-    textingHoursEnd
-  }) => {
+                                          textingHoursStart,
+                                          textingHoursEnd
+                                        }) => {
     await this.props.mutations.updateTextingHours(
       textingHoursStart,
       textingHoursEnd
@@ -199,8 +202,8 @@ class Settings extends React.Component {
                       sm.fullyConfigured === true
                         ? this.props.muiTheme.palette.success.main
                         : sm.fullyConfigured === false
-                        ? this.props.muiTheme.palette.warning.main
-                        : this.props.muiTheme.palette.grey[300]
+                          ? this.props.muiTheme.palette.warning.main
+                          : this.props.muiTheme.palette.grey[300]
                   }}
                 />
                 <CardContent>
@@ -474,16 +477,32 @@ class Settings extends React.Component {
                 <p>
                   Only take actions here if you know what you&rsquo;re doing
                 </p>
-                <Button
-                  color="secondary"
-                  variant="outlined"
-                  style={this.inlineStyles.dialogButton}
-                  onClick={
-                    this.props.mutations.clearCachedOrgAndExtensionCaches
-                  }
-                >
-                  Clear Cached Organization And Extension Caches
-                </Button>
+                <List>
+                  <ListItem>
+                    <Button
+                      color="secondary"
+                      variant="outlined"
+                      style={this.inlineStyles.dialogButton}
+                      onClick={
+                        this.props.mutations.clearCachedOrgAndExtensionCaches
+                      }
+                    >
+                      Clear Cached Organization And Extension Caches
+                    </Button>
+                  </ListItem>
+                  <ListItem>
+                    <Button
+                      color="secondary"
+                      variant="outlined"
+                      style={this.inlineStyles.dialogButton}
+                      onClick={
+                        this.props.mutations.clearEntireRedisCache
+                      }
+                    >
+                      Clear Entire Redis Cache
+                    </Button>
+                  </ListItem>
+                </List>
               </CardContent>
             </Collapse>
           </Card>
@@ -698,6 +717,19 @@ const mutations = {
       }
     };
   },
+  clearEntireRedisCache: ownProps => () => {
+    console.log('op prams', ownProps.params, ownProps.params.adminPerms)
+    return ({
+      mutation: gql`
+      mutation clearEntireRedisCache($adminPerms: Boolean!) {
+        clearEntireRedisCache(adminPerms: $adminPerms)
+      }
+    `,
+      variables: {
+        adminPerms:  ownProps.params.adminPerms
+      }
+    });
+  },
   clearCachedOrgAndExtensionCaches: ownProps => () => ({
     mutation: gql`
       mutation clearCachedOrgAndExtensionCaches($organizationId: String!) {
@@ -711,7 +743,7 @@ const mutations = {
 };
 
 const EnhancedSettings = withSetTheme(
-  loadData({ queries, mutations})(Settings)
+  loadData({ queries, mutations })(Settings)
 );
 
 export default EnhancedSettings;

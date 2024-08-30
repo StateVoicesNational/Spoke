@@ -70,6 +70,7 @@ import {
   updateQuestionResponses,
   releaseCampaignNumbers,
   clearCachedOrgAndExtensionCaches,
+  clearEntireRedisCache,
   updateFeedback,
   updateServiceManager,
   updateServiceVendorConfig
@@ -490,6 +491,7 @@ const rootMutations = {
     startCampaign,
     releaseCampaignNumbers,
     clearCachedOrgAndExtensionCaches,
+    clearEntireRedisCache,
     updateServiceManager,
     updateServiceVendorConfig,
     userAgreeTerms: async (_, { userId }, { user }) => {
