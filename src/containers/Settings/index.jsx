@@ -84,9 +84,9 @@ class Settings extends React.Component {
   }
 
   handleSubmitTextingHoursForm = async ({
-                                          textingHoursStart,
-                                          textingHoursEnd
-                                        }) => {
+    textingHoursStart,
+    textingHoursEnd
+  }) => {
     await this.props.mutations.updateTextingHours(
       textingHoursStart,
       textingHoursEnd
@@ -202,8 +202,8 @@ class Settings extends React.Component {
                       sm.fullyConfigured === true
                         ? this.props.muiTheme.palette.success.main
                         : sm.fullyConfigured === false
-                          ? this.props.muiTheme.palette.warning.main
-                          : this.props.muiTheme.palette.grey[300]
+                        ? this.props.muiTheme.palette.warning.main
+                        : this.props.muiTheme.palette.grey[300]
                   }}
                 />
                 <CardContent>
@@ -743,7 +743,7 @@ const mutations = {
 };
 
 const EnhancedSettings = withSetTheme(
-  loadData({ queries, mutations })(Settings)
+  loadData({ queries, mutations})(Settings)
 );
 
 export default EnhancedSettings;

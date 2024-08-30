@@ -17,4 +17,5 @@ export const clearEntireRedisCache = async (
     // eslint-disable-next-line no-console
     console.error(`Error while clearing Redis cache. ${caught}`);
   }
+  return "Cleared entire Redis cache";
 }
