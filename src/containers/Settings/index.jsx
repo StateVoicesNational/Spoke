@@ -718,7 +718,6 @@ const mutations = {
     };
   },
   clearEntireRedisCache: ownProps => () => {
-    console.log('op prams', ownProps.params, ownProps.params.adminPerms)
     return ({
       mutation: gql`
       mutation clearEntireRedisCache($adminPerms: Boolean!) {
