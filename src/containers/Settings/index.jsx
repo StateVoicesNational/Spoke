@@ -725,7 +725,7 @@ const mutations = {
       }
     `,
       variables: {
-        adminPerms:  ownProps.params.adminPerms
+        adminPerms: ownProps.params.adminPerms
       }
     });
   },
