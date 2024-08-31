@@ -402,7 +402,7 @@ const rootSchema = gql`
     deletePhoneNumbers(organizationId: ID!, areaCode: String!): JobRequest
     releaseCampaignNumbers(campaignId: ID!): Campaign!
     clearCachedOrgAndExtensionCaches(organizationId: String!): String
-    clearEntireRedisCache(adminPerms: Boolean): String
+    clearEntireRedisCache(adminPerms: Boolean!): String
   }
 
   schema {
