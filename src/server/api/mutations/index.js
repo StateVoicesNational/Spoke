@@ -12,6 +12,7 @@ export { updateContactCustomFields } from "./updateContactCustomFields";
 export { updateQuestionResponses } from "./updateQuestionResponses";
 export { releaseCampaignNumbers } from "./releaseCampaignNumbers";
 export { clearCachedOrgAndExtensionCaches } from "./clearCachedOrgAndExtensionCaches";
+export { clearEntireRedisCache } from "./clearEntireRedisCache"
 export { updateFeedback } from "./updateFeedback";
 export { updateServiceManager } from "./updateServiceManager";
 export { updateServiceVendorConfig } from "./updateServiceVendorConfig";
