@@ -253,6 +253,14 @@ export async function onGetShortcodes({ organization, serviceName, opts }) {
   };
 }
 
+export async function onGetTollFreeNumbers({ organization, serviceName, opts }) {
+  return {
+    opts: {
+      skipOrgMessageService: true
+    }
+  };
+}
+
 export async function onVendorServiceFullyConfigured({
   organization,
   serviceName

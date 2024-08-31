@@ -1358,6 +1358,34 @@ export async function getShortCodes(job) {
   }
 }
 
+export async function getTollFreeNumbers(job) {
+  try {
+    if (!job.organization_id) {
+      throw Error("organization_id is required");
+    }
+    const payload = JSON.parse(job.payload);
+    const { opts } = payload;
+    const organization = await cacheableData.organization.load(
+      job.organization_id
+    );
+    const serviceClient = getServiceFromOrganization(organization);
+    const totalPurchased = await serviceClient.getTollFreeNumbers(
+      organization,
+      opts
+    );
+    log.info(`Collected ${totalPurchased} toll free number(s)`, {
+      status: "COMPLETE",
+      totalPurchased,
+      organization_id: job.organization_id
+    });
+  } catch (err) {
+    log.error(`JOB ${job.id} FAILED: ${err.message}`, err);
+    console.log("full job error", err);
+  } finally {
+    await defensivelyDeleteJob(job);
+  }
+}
+
 export async function buyPhoneNumbers(job) {
   try {
     if (!job.organization_id) {

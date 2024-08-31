@@ -137,6 +137,13 @@ export async function onGetShortcodes({
   opts
 }) {}
 
+export async function onGetTollFreeNumbers({
+  organization,
+  user,
+  serviceName,
+  opts
+}) {}
+
 export async function onOrganizationServiceVendorSetup({
   organization,
   user,

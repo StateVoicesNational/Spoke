@@ -820,6 +820,49 @@ export async function getShortCode(
 
 }
 
+export async function getTollFreeNumbers(
+  organization,
+  opts = {},
+) {
+
+  // var for count of short codes
+  let tollfreeNumberCount = 0;
+
+  // getting the shortcode list from twilio
+  const twilioInstance = await exports.getTwilio(organization);
+  const response = await twilioInstance.shortCodes.list();
+
+  // throw error if we get a bad response
+  if (response.error) {
+    throw new Error(`Error collecting Toll Free Numbers: ${response.error}`);
+  }
+
+  // add each shortcode to the table
+  //TO DO: filter results to just toll free
+  async function addTollFreeNumberToPhoneNumberTable(tollfree){
+    return await r.knex("owned_phone_number").insert({
+      organization_id: organization.id,
+      phone_number: tollfree.phoneNumber,
+      service: "twilio",
+      service_id: tollfree.sid,
+      area_code: "Tollfree"
+      //...allocationFields
+    });
+
+  }
+
+  // for each response, add it to the table
+  const tollfreeResponse = response.map(tollfree => {
+    addTollFreeNumberToPhoneNumberTable(tollfree);
+    tollfreeNumberCount++;
+  });
+
+  // return the count of short codes
+  return tollfreeNumberCount;
+
+}
+
+
 /**
  * Add bought phone number to a Messaging Service
  */
@@ -1270,6 +1313,7 @@ export default {
   getServiceConfig,
   getMessageServiceSid,
   getShortCode,
+  getTollFreeNumbers,
   messageServiceLink,
   updateConfig,
   getMetadata,

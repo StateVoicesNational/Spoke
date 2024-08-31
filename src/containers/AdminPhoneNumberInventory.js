@@ -68,7 +68,8 @@ class AdminPhoneNumberInventory extends React.Component {
       sortOrder: "asc",
       filters: {},
       deleteNumbersDialogOpen: false,
-      queriedShortcodes: false
+      queriedShortcodes: false,
+      queriedTollfree: false
     };
   }
 
@@ -132,6 +133,13 @@ class AdminPhoneNumberInventory extends React.Component {
       queriedShortcodes: true
     });
     await this.props.mutations.getShortCodes();
+  };
+
+  handleGetTollFreeNumbers = async() => {
+    this.setState({
+      queriedTollfree: true
+    });
+    await this.props.mutations.getTollFreeNumbers();
   };
 
   handleDeleteNumbersOpen = ([areaCode, , , availableCount]) => {
@@ -343,6 +351,10 @@ class AdminPhoneNumberInventory extends React.Component {
       this.numShortcodes = ownedAreaCodes().filter(j => ownedAreaCodes.indexOf('Shortcode') === -1).length
     }
 
+    if (this.state.queriedTollfree){
+      this.numTollfreeNumbers = ownedAreaCodes().filter(j => ownedAreaCodes.indexOf('Tollfree') === -1).length
+    }
+
     this.sortTable(tableData, this.state.sortCol, this.state.sortOrder);
     const handleSortOrderChange = (key, order) => {
       this.setState({
@@ -417,12 +429,31 @@ class AdminPhoneNumberInventory extends React.Component {
               Check for Short Codes
             </Button>
           ) : null}
+
+          {this.props.params.ownerPerms ? (
+            <Button
+              {...dataTest("getTollfreeNumbers")}
+              color="primary"
+              variant="contained"
+              type="button"
+              style={theme.components.getTollFreeNumbersButton}
+              onClick={this.handleGetTollFreeNumbers}
+            >
+              Check for Short Codes
+            </Button>
+          ) : null}
         </div>
         <p>
           {this.state.queriedShortcodes ? (
                `This service has ${this.numShortcodes} shortcodes.`
           ) : null}
         </p>
+        <p>
+          {this.state.queriedTollfree ? (
+               `This service has ${this.numTollfreeNumbers} toll free numbers.`
+          ) : null}
+        </p>
+
 
         <Dialog
           open={this.state.buyNumbersDialogOpen}
@@ -509,6 +540,24 @@ const queries = {
 };
 
 const mutations = {
+  getTollFreeNumbers: ownProps => () => ({
+    mutation: gql`
+      mutation getTollFreeNumbers(
+        $organizationId: ID!
+      ) {
+        getTollFreeNumbers(
+          organizationId: $organizationId
+        ) {
+          id
+        }
+      }
+    `,
+    variables: {
+      organizationId: ownProps.params.organizationId,
+    },
+    refetchQueries: () => ["getOrganizationData"]
+  }),
+  
   getShortCodes: ownProps => () => ({
     mutation: gql`
       mutation getShortCodes(
