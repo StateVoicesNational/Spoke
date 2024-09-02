@@ -487,7 +487,13 @@ export class AdminCampaignEditBase extends React.Component {
         extraProps: {
           customFields: this.props.campaignData.campaign.customFields,
           availableActions: this.props.organizationData.organization
-            .availableActions
+            .availableActions,
+          serviceManagerContext: {
+            serviceManagers: this.props.campaignData.campaign.serviceManagers,
+            onSubmit: this.props.mutations.updateServiceManager,
+            campaign: this.props.campaignData.campaign,
+            organization: this.props.organizationData.organization
+          }
         }
       },
       {
@@ -503,7 +509,13 @@ export class AdminCampaignEditBase extends React.Component {
           organizationId: this.props.organizationData.organization.id,
           availableActions: this.props.organizationData.organization
             .availableActions,
-          muiTheme: this.props.muiTheme
+          muiTheme: this.props.muiTheme,
+          serviceManagerContext: {
+            serviceManagers: this.props.campaignData.campaign.serviceManagers,
+            onSubmit: this.props.mutations.updateServiceManager,
+            campaign: this.props.campaignData.campaign,
+            organization: this.props.organizationData.organization
+          }
         }
       },
       {
