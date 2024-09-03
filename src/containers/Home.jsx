@@ -1,5 +1,5 @@
 import PropTypes from "prop-types";
-import React from "react";
+import React, { useState, useEffect } from "react";
 import loadData from "./hoc/load-data";
 import { gql } from "@apollo/client";
 import { StyleSheet, css } from "aphrodite";
@@ -32,49 +32,55 @@ export const styles = StyleSheet.create({
   }
 });
 
-class Home extends React.Component {
-  state = {
-    orgLessUser: false
-  };
+const Home = ({ data, router, mutations}) => {
+  const [mounted, setMounted] = useState(false);
 
-  componentWillMount() {
-    const user = this.props.data.currentUser;
+  const [state, setState] = useState({
+    orgLessUser: false
+  });
+
+  if(!mounted) {
+    const user = data.currentUser;
     if (user) {
       if (user.organizations.length > 0) {
-        this.props.router.push(`/admin/${user.organizations[0].id}`);
+        router.push(`/admin/${user.organizations[0].id}`);
       } else if (user.ownerOrganizations.length > 0) {
-        this.props.router.push(`/admin/${user.ownerOrganizations[0].id}`);
+        router.push(`/admin/${user.ownerOrganizations[0].id}`);
       } else if (user.texterOrganizations.length > 0) {
-        this.props.router.push(`/app/${user.texterOrganizations[0].id}`);
+        router.push(`/app/${user.texterOrganizations[0].id}`);
       } else {
-        this.setState({ orgLessUser: true });
+        setState({ orgLessUser: true });
       }
     }
-  }
+  };
+
+  useEffect(() => {
+    setMounted(true)
+  },[]);
 
   // not sure if we need this anymore -- only for new organizations
-  handleOrgInviteClick = async e => {
+  const handleOrgInviteClick = async e => {
     if (
       !window.SUPPRESS_SELF_INVITE ||
       window.SUPPRESS_SELF_INVITE === "undefined"
     ) {
       e.preventDefault();
-      const newInvite = await this.props.mutations.createInvite({
+      const newInvite = await mutations.createInvite({
         is_valid: true
       });
       if (newInvite.errors) {
         alert("There was an error creating your invite");
         throw new Error(newInvite.errors);
       } else {
-        this.props.router.push(
+        router.push(
           `/login?nextUrl=/invite/${newInvite.data.createInvite.hash}`
         );
       }
     }
   };
 
-  renderContent() {
-    if (this.state.orgLessUser) {
+  const renderContent = () => {
+    if (state.orgLessUser) {
       return (
         <div>
           <div className={css(styles.header)}>
@@ -99,7 +105,7 @@ class Home extends React.Component {
           Spoke is a new way to run campaigns using text messaging.
         </div>
         <div>
-          <Link id="login" href="/login" onClick={this.handleOrgInviteClick}>
+          <Link id="login" href="/login" onClick={handleOrgInviteClick}>
             Login and get started
           </Link>
         </div>
@@ -107,20 +113,18 @@ class Home extends React.Component {
     );
   }
 
-  render() {
-    return (
-      <div className={css(styles.container)}>
-        <div className={css(styles.logoDiv)}>
-          <img
-            src="https://s3-us-west-1.amazonaws.com/spoke-public/spoke_logo.svg"
-            className={css(styles.logoImg)}
-            alt="Spoke Logo"
-          />
-        </div>
-        <div className={css(styles.content)}>{this.renderContent()}</div>
+  return (
+    <div className={css(styles.container)}>
+      <div className={css(styles.logoDiv)}>
+        <img
+          src="https://s3-us-west-1.amazonaws.com/spoke-public/spoke_logo.svg"
+          className={css(styles.logoImg)}
+          alt="Spoke Logo"
+        />
       </div>
-    );
-  }
+      <div className={css(styles.content)}>{renderContent()}</div>
+    </div>
+  );
 }
 
 Home.propTypes = {
