@@ -24,15 +24,17 @@ afterEach(() => {
 
 describe('Home', () => {
     // REMOVE SKIP
-    it.skip('contains logo', () => {
+    it('contains logo', () => {
+        // need router, data, mutations
         render(
-            <ApolloClientSingleton client={ApolloClientSingleton}>
+            <ApolloProvider client={ApolloClientSingleton}>
                 <Home
                     data=""
-                    router=""
                     mutations=""
                 />
-            </ApolloClientSingleton>
+            </ApolloProvider>
+            
+                
         );
         const image = screen.getByRole('img');
         expect(image.src).toBe(
