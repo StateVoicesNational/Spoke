@@ -3,6 +3,8 @@
  */
 
 import * as React from 'react';
+import { act } from 'react-dom/test-utils';
+import ReactDOM from 'react-dom/client';
 import "@testing-library/jest-dom";
 import { render, screen } from "@testing-library/react";
 
@@ -10,7 +12,6 @@ import { ApolloProvider } from "@apollo/client";
 import ApolloClientSingleton from "../../src/network/apollo-client-singleton";
 
 import { StyleSheetTestUtils } from "aphrodite";
-import { muiTheme } from "../test_helpers";
 
 import Home from "../../src/containers/Home";
 
@@ -24,19 +25,23 @@ afterEach(() => {
 
 describe('Home', () => {
     // REMOVE SKIP
+    const data = {
+        currentUser: 1
+    }
+
     it('contains logo', () => {
         // need router, data, mutations
-        render(
-            <ApolloProvider client={ApolloClientSingleton}>
-                <Home
-                    data=""
-                    mutations=""
-                />
-            </ApolloProvider>
-            
-                
-        );
-        const image = screen.getByRole('img');
+        act(() => {
+            ReactDOM.createRoot(container).render(
+                <ApolloProvider client={ApolloClientSingleton}>
+                    <Home
+                        data = {data}
+                        mutations=""
+                    />
+                </ApolloProvider>     
+            );            
+        })
+        const image = container.getByRole('img');
         expect(image.src).toBe(
             `https://s3-us-west-1.amazonaws.com/spoke-public/spoke_logo.svg`
         )
