@@ -439,7 +439,7 @@ class AdminPhoneNumberInventory extends React.Component {
               style={theme.components.getTollFreeNumbersButton}
               onClick={this.handleGetTollFreeNumbers}
             >
-              Check for Short Codes
+              Check for Toll Free Numbers
             </Button>
           ) : null}
         </div>
