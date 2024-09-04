@@ -254,7 +254,7 @@ const campaignCache = {
       await r.redis
         .MULTI()
         .SET(exportCacheKey, JSON.stringify(data))
-        .EXPIRE(exportCacheKey, 43200)
+        .EXPIRE(exportCacheKey, 86400)
         .exec();
     }
   },
