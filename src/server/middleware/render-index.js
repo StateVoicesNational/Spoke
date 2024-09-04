@@ -157,6 +157,9 @@ export default function renderIndex(html, css, assetMap) {
         "ASSIGNMENT_CONTACTS_SIDEBAR"
       )};
       window.GOOGLE_CLIENT_EMAIL='${googleClientEmail()}';
+      window.OPT_OUT_PER_STATE=${getConfig("OPT_OUT_PER_STATE", null, {
+        truthy: true
+      })}
     </script>
     <script src="${assetMap["bundle.js"]}"></script>
   </body>

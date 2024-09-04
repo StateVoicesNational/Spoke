@@ -1,6 +1,6 @@
 {
   "name": "spoke",
-  "version": "14.0.1",
+  "version": "14.0.2",
   "description": "Spoke",
   "main": "src/server",
   "engines": {
@@ -166,6 +166,7 @@
     "request": "^2.81.0",
     "rethink-knex-adapter": "0.4.20",
     "rollbar": "^2.26.4",
+    "smartystreets-javascript-sdk": "^5.0.0",
     "terser-webpack-plugin": "^5.3.10",
     "thinky": "^2.3.3",
     "timezonecomplete": "^5.13.1",
@@ -193,7 +194,7 @@
     "eslint-config-prettier": "^6.10.0",
     "eslint-plugin-import": "^2.29.1",
     "eslint-plugin-jsx-a11y": "^6.9.0",
-    "eslint-plugin-react": "^7.34.3",
+    "eslint-plugin-react": "^7.35.0",
     "fakeredis": "^2.0.0",
     "foreman": "^3.0.1",
     "husky": "4",

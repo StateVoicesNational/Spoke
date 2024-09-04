@@ -4,6 +4,7 @@ export { buyPhoneNumbers, deletePhoneNumbers } from "./buyPhoneNumbers";
 export { getShortCodes} from "./getShortCodes";
 export { editOrganization } from "./editOrganization";
 export { findNewCampaignContact } from "./findNewCampaignContact";
+export { getOptOutMessage } from "./getOptOutMessage";
 export { joinOrganization } from "./joinOrganization";
 export { releaseContacts } from "./releaseContacts";
 export { sendMessage } from "./sendMessage";

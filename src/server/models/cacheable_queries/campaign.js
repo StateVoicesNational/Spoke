@@ -207,7 +207,9 @@ const load = async (id, opts) => {
     }
   }
 
-  return await Campaign.get(id);
+  const campaign = await Campaign.get(id)
+  campaign.contactTimezones = await dbContactTimezones(id);
+  return campaign;
 };
 
 const campaignCache = {
@@ -254,7 +256,7 @@ const campaignCache = {
       await r.redis
         .MULTI()
         .SET(exportCacheKey, JSON.stringify(data))
-        .EXPIRE(exportCacheKey, 43200)
+        .EXPIRE(exportCacheKey, 86400)
         .exec();
     }
   },
