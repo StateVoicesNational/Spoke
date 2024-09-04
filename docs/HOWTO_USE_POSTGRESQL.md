@@ -9,7 +9,7 @@ To use Postgresql, follow these steps:
      * Grant permissions to the new Spoke user:
        * `psql -d spokedev -c "GRANT ALL PRIVILEGES ON DATABASE spokedev TO spoke;"`
        * `psql -d spokedev -c "GRANT ALL PRIVILEGES ON schema public TO spoke;"`
-     * Also run the commands from `./dev-tools/create-test-database`:
+     * Create a test database by running the following commands:
        ```
        psql -d spokedev
        CREATE DATABASE spoke_test;
