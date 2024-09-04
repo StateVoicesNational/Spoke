@@ -577,6 +577,7 @@ describe("Reassignments", () => {
         text: "test text autorespond",
         assignmentId: assignmentId2
       });
+      return messageRes;
     }
     // does this sleep fix the "sometimes 4 instead of 5" below?
     await sleep(5);
@@ -856,7 +857,7 @@ describe("Reassignments", () => {
       dynamicReassignMutation,
       {
         joinToken: testCampaign.joinToken,
-        campaignId: testCampaign.id,
+        campaignId: testCampaign.id
       },
       testTexterUser2
     );
@@ -899,17 +900,17 @@ describe("Reassignments", () => {
     expect(texterCampaignDataResults2.data.assignment.allContactsCount).toEqual(
       29
     );
-    jest.useFakeTimers()
-    jest.advanceTimersByTime(4000000)
+    jest.useFakeTimers();
+    jest.advanceTimersByTime(4000000);
     await runGql(
       dynamicReassignMutation,
       {
         joinToken: testCampaign.joinToken,
-        campaignId: testCampaign.id,
+        campaignId: testCampaign.id
       },
       testTexterUser2
     );
-    jest.useRealTimers()
+    jest.useRealTimers();
     texterCampaignDataResults = await runGql(
       TexterTodoQuery,
       {
