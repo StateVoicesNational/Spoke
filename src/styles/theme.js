@@ -90,6 +90,14 @@ const components = {
     left: "auto",
     position: "inherit"
   },
+  checkTollFreeNumbersButton: {
+    marginLeft: 0,
+    top: "auto",
+    right: 20,
+    bottom: 20,
+    left: "auto",
+    position: "inherit"
+  },
   logoDiv: {
     margin: "50 auto",
     overflow: "hidden"
