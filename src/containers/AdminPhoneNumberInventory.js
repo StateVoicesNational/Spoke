@@ -348,11 +348,11 @@ class AdminPhoneNumberInventory extends React.Component {
     }
 
     if (this.state.queriedShortcodes){
-      this.numShortcodes = ownedAreaCodes().filter(j => ownedAreaCodes.indexOf('Shortcode') === -1).length
+      this.numShortcodes = ownedAreaCodes.filter(j => ownedAreaCodes.indexOf('Shortcode') === -1).length
     }
 
     if (this.state.queriedTollfree){
-      this.numTollfreeNumbers = ownedAreaCodes().filter(j => ownedAreaCodes.indexOf('Tollfree') === -1).length
+      this.numTollfreeNumbers = ownedAreaCodes.filter(j => ownedAreaCodes.indexOf('Tollfree') === -1).length
     }
 
     this.sortTable(tableData, this.state.sortCol, this.state.sortOrder);
