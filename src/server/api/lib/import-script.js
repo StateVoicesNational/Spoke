@@ -10,7 +10,7 @@ const textRegex = RegExp(".*[A-Za-z0-9]+.*");
 
 const getDocument = async documentId => {
   const auth = google.auth.fromJSON(JSON.parse(getConfig("GOOGLE_SECRET")));
-  auth.scopes = ["https://www.googleapis.com/auth/documents"];
+  auth.scopes = ["https://www.googleapis.com/auth/documents.readonly"];
 
   const docs = google.docs({
     version: "v1",
