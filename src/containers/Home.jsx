@@ -161,6 +161,7 @@ export const queries = {
   }
 };
 
+// used in testing, otherwise unused
 export const mutations = {
   createInvite: ownProps => invite => ({
     mutation: gql`
