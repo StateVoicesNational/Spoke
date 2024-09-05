@@ -161,7 +161,7 @@ export const queries = {
   }
 };
 
-const mutations = {
+export const mutations = {
   createInvite: ownProps => invite => ({
     mutation: gql`
       mutation createInvite($invite: InviteInput!) {
