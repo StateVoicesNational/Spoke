@@ -133,7 +133,8 @@ Home.propTypes = {
   data: PropTypes.object
 };
 
-const queries = {
+// used in testing, otherwise unused
+export const queries = {
   data: {
     query: gql`
       query getCurrentUser {
