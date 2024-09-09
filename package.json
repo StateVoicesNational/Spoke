@@ -86,7 +86,7 @@
     "@aws-sdk/client-cloudwatch": "^3.609.0",
     "@aws-sdk/client-cloudwatch-events": "^3.620.0",
     "@aws-sdk/client-lambda": "^3.609.0",
-    "@aws-sdk/client-s3": "^3.609.0",
+    "@aws-sdk/client-s3": "^3.645.0",
     "@aws-sdk/client-sqs": "^3.609.0",
     "@aws-sdk/s3-request-presigner": "^3.609.0",
     "@babel/cli": "^7.24.7",
