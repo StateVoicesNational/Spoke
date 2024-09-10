@@ -825,12 +825,21 @@ export async function getTollFreeNumbers(
   opts = {},
 ) {
 
-  // var for count of short codes
+  const messageServiceSid = await getMessageServiceSid(organization);
+
+  // var for count of toll free numbers
   let tollfreeNumberCount = 0;
+
+  // defensively delete toll free numbers
+  await r.knex("owned_phone_number").where('area_code', 'Tollfree').del()
+
+  console.log("Trying to get toll free numbers");
 
   // getting the shortcode list from twilio
   const twilioInstance = await exports.getTwilio(organization);
-  const response = await twilioInstance.shortCodes.list();
+  const response = await twilioInstance.messaging.v1.services(messageServiceSid).phoneNumbers.list({limit: 20});
+  
+  console.log(response);
 
   // throw error if we get a bad response
   if (response.error) {
@@ -852,7 +861,7 @@ export async function getTollFreeNumbers(
   }
 
   // for each response, add it to the table
-  const tollfreeResponse = response.map(tollfree => {
+  const tollfreeResponse = response.map(response => {
     addTollFreeNumberToPhoneNumberTable(tollfree);
     tollfreeNumberCount++;
   });
