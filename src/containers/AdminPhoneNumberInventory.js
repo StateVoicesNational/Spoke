@@ -443,7 +443,7 @@ class AdminPhoneNumberInventory extends React.Component {
             </Button>
           ) : null}
         </div>
-        <p>
+        {/* <p>
           {this.state.queriedShortcodes ? (
                `This service has ${this.numShortcodes} shortcodes.`
           ) : null}
@@ -452,7 +452,7 @@ class AdminPhoneNumberInventory extends React.Component {
           {this.state.queriedTollfree ? (
                `This service has ${this.numTollfreeNumbers} toll free numbers.`
           ) : null}
-        </p>
+        </p> */}
 
 
         <Dialog

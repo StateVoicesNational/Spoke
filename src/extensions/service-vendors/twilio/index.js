@@ -824,49 +824,52 @@ export async function getTollFreeNumbers(
   organization,
   opts = {},
 ) {
-
   const messageServiceSid = await getMessageServiceSid(organization);
 
-  // var for count of toll free numbers
-  let tollfreeNumberCount = 0;
-
   // defensively delete toll free numbers
-  await r.knex("owned_phone_number").where('area_code', 'Tollfree').del()
-
-  console.log("Trying to get toll free numbers");
+  const currentTollFreeNumbers = await r.knex("owned_phone_number").where('area_code', 'Tollfree').pluck('service_id');
+  let tollFreeAreaCodes = ['800', '888', '877', '866', '855', '844', '833'];
 
   // getting the shortcode list from twilio
   const twilioInstance = await exports.getTwilio(organization);
-  const response = await twilioInstance.messaging.v1.services(messageServiceSid).phoneNumbers.list({limit: 20});
+  const response = await twilioInstance.messaging.v1.services(messageServiceSid).phoneNumbers.list({limit: 400});
   
-  console.log(response);
-
   // throw error if we get a bad response
   if (response.error) {
     throw new Error(`Error collecting Toll Free Numbers: ${response.error}`);
   }
 
-  // add each shortcode to the table
+  // add each toll free to the table
   //TO DO: filter results to just toll free
   async function addTollFreeNumberToPhoneNumberTable(tollfree){
-    return await r.knex("owned_phone_number").insert({
-      organization_id: organization.id,
-      phone_number: tollfree.phoneNumber,
-      service: "twilio",
-      service_id: tollfree.sid,
-      area_code: "Tollfree"
-      //...allocationFields
-    });
-
+    
+    const areaCode = tollfree.phoneNumber.slice(2, 5);
+    // check that it is a toll free number and not another number type
+    if (tollFreeAreaCodes.includes(areaCode)){
+      // check if toll free number is already in the application and only add it 
+      // if it is not in the application
+      if (!currentTollFreeNumbers.includes(tollfree.sid)){
+        return await r.knex("owned_phone_number").insert({
+          organization_id: organization.id,
+          phone_number: tollfree.phoneNumber,
+          service: "twilio",
+          service_id: tollfree.sid,
+          area_code: "Tollfree"
+          //...allocationFields
+        });
+      }
+    }
   }
 
   // for each response, add it to the table
-  const tollfreeResponse = response.map(response => {
+  const tollfreeResponse = response.map(tollfree => {
     addTollFreeNumberToPhoneNumberTable(tollfree);
-    tollfreeNumberCount++;
   });
 
-  // return the count of short codes
+  const countResult = await r.knex("owned_phone_number").where('area_code', 'Tollfree').count({count: '*'});
+  const tollfreeNumberCount = countResult[0].count;
+
+  // return the count of toll free numbers
   return tollfreeNumberCount;
 
 }
@@ -1020,21 +1023,29 @@ export async function addNumbersToMessagingService(
  * Release a phone number and delete it from the owned_phone_number table
  */
 async function deleteNumber(twilioInstance, phoneSid, phoneNumber) {
-  await twilioInstance
-    .incomingPhoneNumbers(phoneSid)
-    .remove()
-    .catch(err => {
-      // Error 20404 means the number does not exist in Twilio. Should be
-      // safe to delete from Spoke inventory. Otherwise, throw error and
-      // don't delete from Spoke.
-      if (err.code === 20404) {
-        log.error(
-          `Number not found in Twilio, may have already been released: ${phoneNumber} [${phoneSid}]`
-        );
-      } else {
-        throw new Error(`Error deleting twilio number: ${err}`);
-      }
-    });
+
+
+  let tollFreeAreaCodes = ['800', '888', '877', '866', '855', '844', '833'];
+  const areaCode = phoneNumber.slice(2, 5);
+
+  if (!tollFreeAreaCodes.includes(areaCode)){
+    console.log('Removing phone number from Twilio service');
+    await twilioInstance
+      .incomingPhoneNumbers(phoneSid)
+      .remove()
+      .catch(err => {
+        // Error 20404 means the number does not exist in Twilio. Should be
+        // safe to delete from Spoke inventory. Otherwise, throw error and
+        // don't delete from Spoke.
+        if (err.code === 20404) {
+          log.error(
+            `Number not found in Twilio, may have already been released: ${phoneNumber} [${phoneSid}]`
+          );
+        } else {
+          throw new Error(`Error deleting twilio number: ${err}`);
+        }
+      });
+  }
   log.debug(`Deleted number ${phoneNumber} [${phoneSid}]`);
   return await r
     .knex("owned_phone_number")
