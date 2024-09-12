@@ -9,7 +9,25 @@ import { getConfig } from "./config";
 const textRegex = RegExp(".*[A-Za-z0-9]+.*");
 
 const getDocument = async documentId => {
-  const auth = google.auth.fromJSON(JSON.parse(getConfig("GOOGLE_SECRET")));
+  let result = null;
+
+  const keysEnvVar = getConfig("BASE64_GOOGLE_SECRET");
+  if (!keysEnvVar) {
+    throw new Error('The BASE64_GOOGLE_SECRET enviroment variable was not found!');
+  }
+
+  // decodes and cleans
+  const cleanKeysEnvVar = atob(keysEnvVar)
+	.replace(/[\u0000-\u001F]+/g,"")
+	.replace(/\\n/g, "\n");
+  try {
+    const keys = JSON.parse(cleanKeysEnvVar);
+  } catch(err) {
+    throw new Error('BASE64_GOOGLE_SECRET failed to parse', err);
+    return result;
+  };
+
+  const auth = google.auth.fromJSON(keys);
   auth.scopes = ["https://www.googleapis.com/auth/documents.readonly"];
 
   const docs = google.docs({
@@ -17,7 +35,6 @@ const getDocument = async documentId => {
     auth
   });
 
-  let result = null;
   try {
     result = await docs.documents.get({
       documentId
