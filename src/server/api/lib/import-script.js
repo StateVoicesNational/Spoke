@@ -10,6 +10,7 @@ const textRegex = RegExp(".*[A-Za-z0-9]+.*");
 
 const getDocument = async documentId => {
   let result = null;
+  let key;
 
   const keysEnvVar = getConfig("BASE64_GOOGLE_SECRET");
   if (!keysEnvVar) {
@@ -18,16 +19,16 @@ const getDocument = async documentId => {
 
   // decodes and cleans
   const cleanKeysEnvVar = atob(keysEnvVar)
-	.replace(/[\u0000-\u001F]+/g,"")
-	.replace(/\\n/g, "\n");
+    .replace(/[\u0000-\u001F]+/g,"")
+    .replace(/\\n/g, "\n");
+
   try {
-    const keys = JSON.parse(cleanKeysEnvVar);
+    key = JSON.parse(cleanKeysEnvVar);
   } catch(err) {
     throw new Error('BASE64_GOOGLE_SECRET failed to parse', err);
-    return result;
   };
 
-  const auth = google.auth.fromJSON(keys);
+  const auth = google.auth.fromJSON(key);
   auth.scopes = ["https://www.googleapis.com/auth/documents.readonly"];
 
   const docs = google.docs({
