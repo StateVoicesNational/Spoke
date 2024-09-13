@@ -48,9 +48,26 @@ This doc and associated feature is under construction/maintenance. Please consid
 { "type": "service_account", "project_id": "quickstart-1552345943126", "private_key_id": "1f029699545c3a00039b7ed0894f60d8bccfb970", "private_key": "-----BEGIN PRIVATE KEY-----\naVeryLongPrivateKey\n-----END PRIVATE KEY-----\n", "client_email": "test-252@quickstart-1552345943126.iam.gserviceaccount.com", "client_id": "103778937997709997381", "auth_uri": "https://accounts.google.com/o/oauth2/auth", "token_uri": "https://oauth2.googleapis.com/token", "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs", "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/test-252%40quickstart-1552345943126.iam.gserviceaccount.com" }
 ```
 
-17. In the Spoke `.env` file, or the environment variables section in Heroku settings, or in whatever your platform uses for configuration, create a key called `GOOGLE_SECRET` and set its value to the single line of text you created in step 16. (If you're using a `.env` file you must surround it by single quotes. If you're using Heroku you don't need to add quotes.) For AWS Lambda, there are [special deployment instructions](HOWTO_DEPLOYING_AWS_LAMBDA.md#environment-variable-maximum-4k)
-18. Restart Spoke after changing the configuration.
-19. Grab the value of the `client_email` key in the `JSON` in step 16, without the quotes (in our example, it's `test-252@quickstart-1552345943126.iam.gserviceaccount.com`). This is the email address with which you must share documents you want to import.
+17. In version 14.1, GOOGLE_SECRET was converted to BASE64_GOOGLE_SECRET for easier handling. You can accomplish this with this simple script:
+```
+const readline = require('node:readline');
+
+const rl = readline.createInterface({
+  input:  process.stdin,
+  output: process.stdin
+});
+
+rl.question("Convert to base64: ", b64 => {
+  const o = Buffer.from(b64).toString('base64');
+  console.log(`\nOUTPUT: ${o}`);
+  rl.close();
+});
+```
+
+Run this via Node. 
+
+18. In the Spoke `.env` file, or the environment variables section in Heroku settings, or in whatever your platform uses for configuration, create a key called `BASE64_GOOGLE_SECRET` and set its value to the single line of text you created in step 16. (If you're using a `.env` file you must surround it by single quotes. If you're using Heroku you don't need to add quotes.) For AWS Lambda, there are [special deployment instructions](HOWTO_DEPLOYING_AWS_LAMBDA.md#environment-variable-maximum-4k)
+19. Restart Spoke after changing the configuration.
 
 ## Create script documents
 
@@ -59,7 +76,7 @@ This doc and associated feature is under construction/maintenance. Please consid
 3. Share the script document with your API user.
    - Go to the document in Google Docs.
    - Click `Share` in the upper right corner of the browser window. The `Share with others` dialog will appear.
-   - Paste the email address from step 19 above (in this example, `test-252@quickstart-1552345943126.iam.gserviceaccount.com`) in the `People` field in the lower section of the `Share with others` dialog.
+   - Paste the email address found in the text of the Import Scripts dropdown found in the Campaign Edit page. This email address should look something like this:`test-252@quickstart-1552345943126.iam.gserviceaccount.com`
    - Clear the `Notify people` checkbox.
    - Click `OK`.
 
