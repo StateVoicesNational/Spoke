@@ -1027,8 +1027,9 @@ async function deleteNumber(twilioInstance, phoneSid, phoneNumber) {
 
   let tollFreeAreaCodes = ['800', '888', '877', '866', '855', '844', '833'];
   const areaCode = phoneNumber.slice(2, 5);
+  const numLength = phoneNumber.length;
 
-  if (!tollFreeAreaCodes.includes(areaCode)){
+  if (!tollFreeAreaCodes.includes(areaCode) && numLength > 6){
     console.log('Removing phone number from Twilio service');
     await twilioInstance
       .incomingPhoneNumbers(phoneSid)
