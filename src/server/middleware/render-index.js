@@ -7,11 +7,14 @@ const googleClientEmail = () => {
   let output;
   if (canGoogleImport) {
     try {
+      const buff = Buffer.from(process.env.BASE64_GOOGLE_SECRET, 'base64');
+      const s_GOOGLE_SECRET = buff.toString('utf-8');
+      // console.log(s_GOOGLE_SECRET);
       output = (JSON.parse((
-        process.env.BASE64_GOOGLE_SECRET
+        s_GOOGLE_SECRET
         .replace(/(\r\n|\n|\r)/gm, ""))) // new lines gum up parsing
         .client_email)
-	.replaceAll(" ", "");
+	      .replaceAll(" ", "");
     } catch (err) {
       console.error(`
         Google API failed to load client email.
