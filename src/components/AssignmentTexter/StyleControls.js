@@ -7,20 +7,25 @@ export const messageListStyles = {
   messageList: {
     overflow: "hidden",
     overflow: "-moz-scrollbars-vertical",
-    padding: 8
+    padding: 8,
+    display: "flex",
+    flexDirection: "column",
+    width: "100%"
   },
   messageSent: {
     textAlign: "left",
+    alignSelf: "flex-end",
     marginLeft: "20%",
     marginRight: "10px",
     backgroundColor: "white",
     borderRadius: "16px",
     marginBottom: "10px",
     fontSize: "95%",
-    width: "auto",
+    width: "fit-content",
     maxWidth: "500px"
   },
   messageReceived: {
+    alignSelf: "flex-start",
     marginRight: "20%",
     marginLeft: "10px",
     color: "white",
@@ -29,7 +34,7 @@ export const messageListStyles = {
     fontSize: "110%",
     lineHeight: "120%",
     marginBottom: "10px",
-    width: "auto",
+    width: "fit-content",
     maxWidth: "500px"
   }
 };
@@ -62,12 +67,10 @@ export const flexStyles = StyleSheet.create({
     right: 0,
     display: "flex",
     flexDirection: "column",
-    //messages can be scrolled through and height/width is responsive 
+    //messages can be scrolled through and height/width is responsive
     height: "100%",
     "@media(max-width: 420px)": {
-      fontFamily: "Poppins",
-      overflowY: "scroll !important",
-      width: "100%"
+      fontFamily: "Poppins"
     }
   },
   popoverSideboxesInner: {
@@ -116,15 +119,15 @@ export const flexStyles = StyleSheet.create({
   },
   sectionSideBoxContent: {
     padding: 24,
-    borderLeft: "1px solid #C1C3CC",
-    height: "100%"
+    borderLeft: "1px solid #C1C3CC"
   },
   superSectionMessageBox: {
+    height: "100%",
     "@media(min-height: 300px) and (max-Height: 700px)": {
-      height: "100%",
+      height: "100%"
     },
     "@media(min-height: 701px) and (max-Height: 1000px)": {
-      height: "53%",
+      height: "53%"
     },
     overflowY: "scroll",
     overflow: "-moz-scrollbars-vertical",
