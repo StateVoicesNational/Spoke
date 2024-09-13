@@ -75,7 +75,7 @@ export class CampaignCannedResponsesForm extends React.Component {
         WebkitBoxOrient: "vertical",
         WebkitLineClamp: 2,
         overflow: "hidden",
-        height: 32,
+        minHeight: 32,
         width: "90%"
       },
       redText: {
