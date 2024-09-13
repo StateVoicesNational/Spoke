@@ -64,7 +64,7 @@ export default class AdminScriptImport extends Component {
       </span>
     ) : (
       <span>
-        <b>ERROR</b>: Bad GOOGLE_SECRET<br/> Please contact your Administrator.
+        <b>ERROR</b>: Bad BASE64_GOOGLE_SECRET<br/> Please contact your Administrator.
       </span>
     )
   
