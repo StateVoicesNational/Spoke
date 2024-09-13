@@ -27,6 +27,7 @@ import loadData from "../containers/hoc/load-data";
 import { gql } from "@apollo/client";
 import TagChips from "./TagChips";
 import { parseCannedResponseCsv } from "../lib/parse_csv";
+import { convertToInt } from "./utils";
 
 const Span = ({ children }) => <span>{children}</span>;
 
@@ -106,6 +107,16 @@ export class CampaignCannedResponsesForm extends React.Component {
       .replace(/[^a-zA-Z1-9]+/g, "");
   }
 
+  updateTagIdsToInt(cannedResponses) {
+    return cannedResponses.map(resp => {
+      let tagIds = resp.tagIds;
+      return {
+        ...resp,
+        tagIds: convertToInt(tagIds)
+      };
+    });
+  }
+
   showAddButton(cannedResponses) {
     this.uploadCsvInputRef = React.createRef();
 
@@ -170,7 +181,7 @@ export class CampaignCannedResponsesForm extends React.Component {
     }
   }
 
-  showAddForm() {
+  showAddForm(cannedResponses) {
     const handleCloseAddForm = () => {
       this.setState({ showForm: false });
     };
@@ -181,17 +192,19 @@ export class CampaignCannedResponsesForm extends React.Component {
           <div className={css(this.styles.form)}>
             <CampaignCannedResponseForm
               defaultValue={
-                this.props.formValues.cannedResponses.find(
+                cannedResponses.find(
                   res => res.id === this.state.responseId
                 ) || { text: "", title: "" }
               }
               formButtonText={this.state.formButtonText}
               handleCloseAddForm={handleCloseAddForm}
               onSaveCannedResponse={ele => {
-                const newVals = this.props.formValues.cannedResponses.slice(0);
+                const newVals = cannedResponses.slice(0);
+
                 const newEle = {
                   ...ele
                 };
+                newEle.tagIds = convertToInt(newEle.tagIds);
                 if (!this.state.responseId) {
                   newEle.id = this.getCannedResponseId();
                   newVals.push(newEle);
@@ -280,15 +293,17 @@ export class CampaignCannedResponsesForm extends React.Component {
           </IconButton>
           <IconButton
             onClick={() => {
-              const newVals = this.props.formValues.cannedResponses
+              const newVals = cannedResponses
                 .map(responseToDelete => {
                   if (responseToDelete.id === response.id) {
                     return null;
                   }
-                  return responseToDelete;
+                  return {
+                    ...responseToDelete,
+                    tagIds: convertToInt(responseToDelete.tagIds)
+                  };
                 })
                 .filter(ele => ele !== null);
-
               this.props.onChange({
                 cannedResponses: newVals
               });
@@ -323,13 +338,17 @@ export class CampaignCannedResponsesForm extends React.Component {
           });
 
           if (error) return;
+          const formCannedResponses = this.updateTagIdsToInt(
+            this.props.formValues.cannedResponses
+          );
 
           this.props.onChange({
             cannedResponses: [
-              ...this.props.formValues.cannedResponses,
+              ...formCannedResponses,
               ...cannedResponses.map(r => ({
                 ...r,
-                id: this.getCannedResponseId()
+                id: this.getCannedResponseId(),
+                tagIds: convertToInt(r.tagIds)
               }))
             ]
           });
@@ -340,7 +359,7 @@ export class CampaignCannedResponsesForm extends React.Component {
 
   render() {
     const { formValues } = this.props;
-    const cannedResponses = formValues.cannedResponses;
+    const cannedResponses = this.updateTagIdsToInt(formValues.cannedResponses);
     const list =
       cannedResponses.length === 0 ? null : (
         <List>
@@ -374,7 +393,7 @@ export class CampaignCannedResponsesForm extends React.Component {
             label={this.props.saveLabel}
           />
         </GSForm>
-        {this.showAddForm()}
+        {this.showAddForm(cannedResponses)}
       </React.Fragment>
     );
   }
