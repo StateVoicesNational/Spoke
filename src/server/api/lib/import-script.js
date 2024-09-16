@@ -6,6 +6,7 @@ import { compose, map, reduce, getOr, find, filter, has } from "lodash/fp";
 import { r, cacheableData } from "../../models";
 import { getConfig } from "./config";
 import { log } from "../../../lib";
+import { base64ToString } from "./utils";
 
 const textRegex = RegExp(".*[A-Za-z0-9]+.*");
 
@@ -18,12 +19,7 @@ const getDocument = async documentId => {
   }
 
   // decodes
-  let key = (
-    new Buffer.from(base64Key, 'base64')
-  ).toString('utf8');
-
-  // debugging
-  log.info(key);
+  let key = base64ToString(base64Key);
 
   try {
     key = JSON.parse(key);
