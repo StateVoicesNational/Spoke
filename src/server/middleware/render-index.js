@@ -1,5 +1,6 @@
 import { hasConfig, getConfig } from "../api/lib/config";
 import { getProcessEnvTz, getProcessEnvDstReferenceTimezone } from "../../lib";
+import { base64ToString } from "../api/lib/utils";
 
 const canGoogleImport = hasConfig("BASE64_GOOGLE_SECRET");
 
@@ -7,9 +8,7 @@ const googleClientEmail = () => {
   let output;
   if (canGoogleImport) {
     try {
-      const buff = Buffer.from(process.env.BASE64_GOOGLE_SECRET, 'base64');
-      const s_GOOGLE_SECRET = buff.toString('utf-8');
-      // console.log(s_GOOGLE_SECRET);
+      const s_GOOGLE_SECRET = base64ToString(process.env.BASE64_GOOGLE_SECRET);
       output = (JSON.parse((
         s_GOOGLE_SECRET
         .replace(/(\r\n|\n|\r)/gm, ""))) // new lines gum up parsing
