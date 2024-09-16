@@ -111,7 +111,12 @@ const ThemeEditor = props => {
           name="secondary"
           fullWidth
         />
-        <Form.Field as={GSColorPicker} label="Info" name="info" fullWidth />
+        <Form.Field 
+          as={GSColorPicker} 
+          label="Info" 
+          name="info" 
+          fullWidth 
+        />
         <Form.Field
           as={GSColorPicker}
           label="Success"
@@ -124,8 +129,12 @@ const ThemeEditor = props => {
           name="warning"
           fullWidth
         />
-        <Form.Field as={GSColorPicker} label="Error" name="error" fullWidth />
-
+        <Form.Field 
+          as={GSColorPicker} 
+          label="Error" 
+          name="error" 
+          fullWidth 
+        />
         <Form.Submit
           as={GSSubmitButton}
           label="Save Theme"
