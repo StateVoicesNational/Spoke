@@ -11,21 +11,22 @@ const textRegex = RegExp(".*[A-Za-z0-9]+.*");
 
 const getDocument = async documentId => {
   let result = null;
-  let key;
+  let base64Key = getConfig("BASE64_GOOGLE_SECRET");
 
-  const keysEnvVar = getConfig("BASE64_GOOGLE_SECRET");
-  if (!keysEnvVar) {
+  if (!base64Key) {
     throw new Error('The BASE64_GOOGLE_SECRET enviroment variable was not found!');
   }
 
   // decodes
-  const keyBuff = new Buffer.from(keysEnvVar, 'base64');
+  let key = (
+    new Buffer.from(base64Key, 'base64')
+  ).toString('utf8');
 
   // debugging
-  log.info(keyBuff);
+  log.info(key);
 
   try {
-    key = JSON.parse(keyBuff);
+    key = JSON.parse(key);
   } catch(err) {
     throw new Error('BASE64_GOOGLE_SECRET failed to parse', err);
   };
