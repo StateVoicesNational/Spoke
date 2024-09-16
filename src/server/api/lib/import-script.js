@@ -18,9 +18,11 @@ const getDocument = async documentId => {
   }
 
   // decodes and cleans
-  const cleanKeysEnvVar = atob(keysEnvVar)
-    .replace(/[\u0000-\u001F]+/g,"")
-    .replace(/\\n/g, "\n");
+  // const cleanKeysEnvVar = atob(keysEnvVar)
+  //   .replace(/[\u0000-\u001F]+/g,"")
+  //   .replace(/\\n/g, "\n");
+
+  console.log(cleanKeysEnvVar);
 
   try {
     key = JSON.parse(cleanKeysEnvVar);
