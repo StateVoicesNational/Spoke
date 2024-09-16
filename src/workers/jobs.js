@@ -1398,6 +1398,7 @@ export async function clearOldJobs(event) {
  * given the credentials provided.
 */
 export async function getShortCodes(job) {
+  const response = {};
   try {
     if (!job.organization_id) {
       throw Error("organization_id is required");
@@ -1408,7 +1409,7 @@ export async function getShortCodes(job) {
       job.organization_id
     );
     const serviceClient = getServiceFromOrganization(organization);
-    const totalPurchased = await serviceClient.getShortCode(
+    response.totalPurchased = await serviceClient.getShortCode(
       organization,
       opts
     );
@@ -1420,9 +1421,16 @@ export async function getShortCodes(job) {
   } catch (err) {
     log.error(`JOB ${job.id} FAILED: ${err.message}`, err);
     console.log("full job error", err);
+    response.err = err;
   } finally {
-    await defensivelyDeleteJob(job);
+    // if job is not deleted, its reported to the user
+    try {
+      await defensivelyDeleteJob(job);
+    } catch (err) {
+      response.jobErr = err;
+    }
   }
+  return response;
 }
 
 export async function getTollFreeNumbers(job) {
