@@ -37,6 +37,7 @@ import {
   sleep,
   startCampaign
 } from "../../../test_helpers";
+import { dynamicReassignMutation } from "../../../../src/containers/AssignReplies";
 
 let testAdminUser;
 let testInvite;
@@ -576,6 +577,7 @@ describe("Reassignments", () => {
         text: "test text autorespond",
         assignmentId: assignmentId2
       });
+      return messageRes;
     }
     // does this sleep fix the "sometimes 4 instead of 5" below?
     await sleep(5);
@@ -837,6 +839,8 @@ describe("Reassignments", () => {
       },
       testTexterUser2
     );
+    // TEXTER 1 (60 needsMessage, 2 needsResponse, 4 messaged)
+    // TEXTER 2 (25 needsMessage, 3 convo, 1 messaged)
     expect(texterCampaignDataResults.data.assignment.contacts.length).toEqual(
       2
     );
@@ -848,6 +852,105 @@ describe("Reassignments", () => {
     );
     expect(texterCampaignDataResults2.data.assignment.allContactsCount).toEqual(
       29
+    );
+    await runGql(
+      dynamicReassignMutation,
+      {
+        joinToken: testCampaign.joinToken,
+        campaignId: testCampaign.id
+      },
+      testTexterUser2
+    );
+    texterCampaignDataResults = await runGql(
+      TexterTodoQuery,
+      {
+        contactsFilter: {
+          messageStatus: "needsResponse",
+          isOptedOut: false,
+          validTimezone: true
+        },
+        assignmentId,
+        organizationId
+      },
+      testTexterUser
+    );
+
+    texterCampaignDataResults2 = await runGql(
+      TexterTodoQuery,
+      {
+        contactsFilter: {
+          messageStatus: "needsResponse",
+          isOptedOut: false,
+          validTimezone: true
+        },
+        assignmentId: assignmentId2,
+        organizationId
+      },
+      testTexterUser2
+    );
+    expect(texterCampaignDataResults.data.assignment.contacts.length).toEqual(
+      2
+    );
+    expect(texterCampaignDataResults.data.assignment.allContactsCount).toEqual(
+      66
+    );
+    expect(texterCampaignDataResults2.data.assignment.contacts.length).toEqual(
+      0
+    );
+    expect(texterCampaignDataResults2.data.assignment.allContactsCount).toEqual(
+      29
+    );
+    jest.useFakeTimers();
+    jest.advanceTimersByTime(4000000);
+    await runGql(
+      dynamicReassignMutation,
+      {
+        joinToken: testCampaign.joinToken,
+        campaignId: testCampaign.id
+      },
+      testTexterUser2
+    );
+    jest.useRealTimers();
+    texterCampaignDataResults = await runGql(
+      TexterTodoQuery,
+      {
+        contactsFilter: {
+          messageStatus: "needsResponse",
+          isOptedOut: false,
+          validTimezone: true
+        },
+        assignmentId,
+        organizationId
+      },
+      testTexterUser
+    );
+
+    texterCampaignDataResults2 = await runGql(
+      TexterTodoQuery,
+      {
+        contactsFilter: {
+          messageStatus: "needsResponse",
+          isOptedOut: false,
+          validTimezone: true
+        },
+        assignmentId: assignmentId2,
+        organizationId
+      },
+      testTexterUser2
+    );
+    // TEXTER 1 (60 needsMessage, 4 messaged)
+    // TEXTER 2 (25 needsMessage, 2 needsResponse, 3 convo, 1 messaged)
+    expect(texterCampaignDataResults.data.assignment.contacts.length).toEqual(
+      0
+    );
+    expect(texterCampaignDataResults.data.assignment.allContactsCount).toEqual(
+      64
+    );
+    expect(texterCampaignDataResults2.data.assignment.contacts.length).toEqual(
+      2
+    );
+    expect(texterCampaignDataResults2.data.assignment.allContactsCount).toEqual(
+      31
     );
   }, 10000); // long test can exceed default 5seconds
 });
