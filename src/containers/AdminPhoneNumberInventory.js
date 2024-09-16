@@ -22,6 +22,8 @@ import MenuItem from "@material-ui/core/MenuItem";
 import Select from "@material-ui/core/Select";
 import FormControl from "@material-ui/core/FormControl";
 import InputLabel from "@material-ui/core/InputLabel";
+import Snackbar from "@material-ui/core/Snackbar";
+import Alert from "@material-ui/lab/Alert";
 
 import GSForm from "../components/forms/GSForm";
 import GSSubmitButton from "../components/forms/GSSubmitButton";
@@ -69,7 +71,9 @@ class AdminPhoneNumberInventory extends React.Component {
       filters: {},
       deleteNumbersDialogOpen: false,
       queriedShortcodes: false,
-      queriedTollfree: false
+      responseShortCodes: {},
+      queriedTollfree: false,
+      responseTollFree: {}
     };
   }
 
@@ -129,10 +133,12 @@ class AdminPhoneNumberInventory extends React.Component {
   };
 
   handleGetShortcodes = async() => {
+    const response = await this.props.mutations.getShortCodes();
     this.setState({
-      queriedShortcodes: true
+      queriedShortcodes: true,
+      responseShortCodes: response
     });
-    await this.props.mutations.getShortCodes();
+    console.log(response);
   };
 
   handleGetTollFreeNumbers = async() => {
