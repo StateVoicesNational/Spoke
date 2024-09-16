@@ -5,6 +5,7 @@ import { compose, map, reduce, getOr, find, filter, has } from "lodash/fp";
 
 import { r, cacheableData } from "../../models";
 import { getConfig } from "./config";
+import { log } from "../../../lib";
 
 const textRegex = RegExp(".*[A-Za-z0-9]+.*");
 
@@ -17,15 +18,14 @@ const getDocument = async documentId => {
     throw new Error('The BASE64_GOOGLE_SECRET enviroment variable was not found!');
   }
 
-  // decodes and cleans
-  // const cleanKeysEnvVar = atob(keysEnvVar)
-  //   .replace(/[\u0000-\u001F]+/g,"")
-  //   .replace(/\\n/g, "\n");
+  // decodes
+  const keyBuff = new Buffer.from(keysEnvVar, 'base64');
 
-  console.log(cleanKeysEnvVar);
+  // debugging
+  log.info(keyBuff);
 
   try {
-    key = JSON.parse(cleanKeysEnvVar);
+    key = JSON.parse(keyBuff);
   } catch(err) {
     throw new Error('BASE64_GOOGLE_SECRET failed to parse', err);
   };
