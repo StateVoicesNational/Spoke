@@ -48,7 +48,7 @@ This doc and associated feature is under construction/maintenance. Please consid
 { "type": "service_account", "project_id": "quickstart-1552345943126", "private_key_id": "1f029699545c3a00039b7ed0894f60d8bccfb970", "private_key": "-----BEGIN PRIVATE KEY-----\naVeryLongPrivateKey\n-----END PRIVATE KEY-----\n", "client_email": "test-252@quickstart-1552345943126.iam.gserviceaccount.com", "client_id": "103778937997709997381", "auth_uri": "https://accounts.google.com/o/oauth2/auth", "token_uri": "https://oauth2.googleapis.com/token", "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs", "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/test-252%40quickstart-1552345943126.iam.gserviceaccount.com" }
 ```
 
-17. In version 14.1, GOOGLE_SECRET was converted to BASE64_GOOGLE_SECRET for easier handling. We reccomend you convert your Google Secret JSON to Base64 using this simple script:
+17. In version 14.1, GOOGLE_SECRET was converted to BASE64_GOOGLE_SECRET for easier handling. We recommend you convert your Google Secret JSON to Base64 using this simple script:
 ```
 // Import your Google Secret JSON here
 const json = require('pathToGoogleSecret.json');

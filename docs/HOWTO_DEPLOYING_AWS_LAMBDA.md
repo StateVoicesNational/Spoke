@@ -180,6 +180,9 @@ with BASE64_GOOGLE_SECRET as a top-level JSON key (currently, no other variables
 Then set the variable in production-env.json `CONFIG_FILE`: "/absolute/path/to/configfile.json" -- during deployment (below),
 this file will be copied into the lambda function zip file and get deployed with the rest of the code.
 
+DEVELOPER NOTE: Now that GOOGLE_SECRET is set in Base64, this may no longer be an issue. Please open a ticket
+if a problem occurs. 
+
 ## Deploy
 
 To create the AWS Lambda function and the API Gateway to access it, run the following being sure to substitute in the correct values:

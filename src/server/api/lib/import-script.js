@@ -5,7 +5,6 @@ import { compose, map, reduce, getOr, find, filter, has } from "lodash/fp";
 
 import { r, cacheableData } from "../../models";
 import { getConfig } from "./config";
-import { log } from "../../../lib";
 import { base64ToString } from "./utils";
 
 const textRegex = RegExp(".*[A-Za-z0-9]+.*");
