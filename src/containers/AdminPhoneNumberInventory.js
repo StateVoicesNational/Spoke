@@ -48,6 +48,9 @@ const inlineStyles = {
   cancelButton: {
     marginTop: 15,
     marginRight: 5
+  },
+  deleteButton: {
+    marginTop: 15
   }
 };
 
@@ -417,8 +420,8 @@ class AdminPhoneNumberInventory extends React.Component {
             </Button>
             <Button
               variant="contained"
-              color="secondary"
-              variant="outlined"
+              color="primary"
+              style={inlineStyles.deleteButton}
               onClick={this.handleDeletePhoneNumbersSubmit}
             >
               Delete {this.state.deleteNumbersCount} Numbers
