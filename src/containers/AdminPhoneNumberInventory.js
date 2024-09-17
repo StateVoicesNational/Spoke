@@ -128,14 +128,14 @@ class AdminPhoneNumberInventory extends React.Component {
     });
   };
 
-  handleGetShortcodes = async() => {
+  handleGetShortcodes = async () => {
     this.setState({
       queriedShortcodes: true
     });
     await this.props.mutations.getShortCodes();
   };
 
-  handleGetTollFreeNumbers = async() => {
+  handleGetTollFreeNumbers = async () => {
     this.setState({
       queriedTollfree: true
     });
@@ -347,12 +347,16 @@ class AdminPhoneNumberInventory extends React.Component {
       tableData = tableData.filter(data => data.state === filters.state);
     }
 
-    if (this.state.queriedShortcodes){
-      this.numShortcodes = ownedAreaCodes.filter(j => ownedAreaCodes.indexOf('Shortcode') === -1).length
+    if (this.state.queriedShortcodes) {
+      this.numShortcodes = ownedAreaCodes.filter(
+        j => ownedAreaCodes.indexOf("Shortcode") === -1
+      ).length;
     }
 
-    if (this.state.queriedTollfree){
-      this.numTollfreeNumbers = ownedAreaCodes.filter(j => ownedAreaCodes.indexOf('Tollfree') === -1).length
+    if (this.state.queriedTollfree) {
+      this.numTollfreeNumbers = ownedAreaCodes.filter(
+        j => ownedAreaCodes.indexOf("Tollfree") === -1
+      ).length;
     }
 
     this.sortTable(tableData, this.state.sortCol, this.state.sortOrder);
@@ -400,9 +404,7 @@ class AdminPhoneNumberInventory extends React.Component {
           columns={this.tableColumns()}
           options={options}
         />
-        <div
-          style={theme.layouts.buttons}
-        >
+        <div style={theme.layouts.buttons}>
           {this.props.params.ownerPerms ? (
             // <Fab
             <Button
@@ -453,7 +455,6 @@ class AdminPhoneNumberInventory extends React.Component {
                `This service has ${this.numTollfreeNumbers} toll free numbers.`
           ) : null}
         </p> */}
-
 
         <Dialog
           open={this.state.buyNumbersDialogOpen}
@@ -542,36 +543,28 @@ const queries = {
 const mutations = {
   getTollFreeNumbers: ownProps => () => ({
     mutation: gql`
-      mutation getTollFreeNumbers(
-        $organizationId: ID!
-      ) {
-        getTollFreeNumbers(
-          organizationId: $organizationId
-        ) {
+      mutation getTollFreeNumbers($organizationId: ID!) {
+        getTollFreeNumbers(organizationId: $organizationId) {
           id
         }
       }
     `,
     variables: {
-      organizationId: ownProps.params.organizationId,
+      organizationId: ownProps.params.organizationId
     },
     refetchQueries: () => ["getOrganizationData"]
   }),
-  
+
   getShortCodes: ownProps => () => ({
     mutation: gql`
-      mutation getShortCodes(
-        $organizationId: ID!
-      ) {
-        getShortCodes(
-          organizationId: $organizationId
-        ) {
+      mutation getShortCodes($organizationId: ID!) {
+        getShortCodes(organizationId: $organizationId) {
           id
         }
       }
     `,
     variables: {
-      organizationId: ownProps.params.organizationId,
+      organizationId: ownProps.params.organizationId
     },
     refetchQueries: () => ["getOrganizationData"]
   }),

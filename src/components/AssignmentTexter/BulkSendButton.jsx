@@ -1,73 +1,141 @@
 import PropTypes from "prop-types";
-import React, { Component } from "react";
+import React, { useState, useEffect } from "react";
 import { StyleSheet, css } from "aphrodite";
 import Button from "@material-ui/core/Button";
-
+import LinearProgress from "@material-ui/core/LinearProgress";
+import Typography from '@material-ui/core/Typography';
+import Snackbar from '@material-ui/core/Snackbar';
+import Alert from '@material-ui/lab/Alert';
+ 
 // This is because the Toolbar from material-ui seems to only apply the correct margins if the
 // immediate child is a Button or other type it recognizes. Can get rid of this if we remove material-ui
 const styles = StyleSheet.create({
   container: {
-    display: "block",
-    width: "25ex",
-    marginLeft: "auto",
-    marginRight: "auto"
+    display: "flex",
+    flexFlow: "column",
+    alignItems: "center",
+    width: "30%",
+    maxWidth: 300,
+    height: "100%",
+    marginTop: 10,
+    marginRight: "auto",
+    marginLeft: "auto"
+  },
+  progressContainer: {
+    width: "100%"
+  },
+  progressText: {
+    position: "relative", 
+    textAlign: "center",
+    color: "white"
+  },
+  progressBarRoot: {
+    height: 10,
+    borderRadius: 5
   }
 });
 
-export default class BulkSendButton extends Component {
-  state = {
-    isSending: false
-  };
+function BulkSendButton({
+  assignment, setDisabled, bulkSendMessages, refreshData, onFinishContact
+}) {
+  const totalChunkSize = window.BULK_SEND_CHUNK_SIZE;
+  const [isSending, setIsSending] = useState(false);
+  const [totalSentMessages, setTotalSentMessages] = useState(0);
+  const [progress, setProgress] = useState(0);
+  const [errorMessage, setErrorMessage] = useState('');
 
-  sendMessages = async () => {
-    let sentMessages = 0;
+  const sendMessages = async () => {
+    try {
+      const { data } = await bulkSendMessages(assignment.id);
+      const sentMessages = data.bulkSendMessages.length;
+      const updatedTotalSent = totalSentMessages + sentMessages;
 
-    this.setState({ isSending: true });
-    this.props.setDisabled(true);
-
-    console.log(`Start bulk sending messages ${new Date()}`);
-    while (sentMessages < window.BULK_SEND_CHUNK_SIZE) {
-      const res = await this.props.bulkSendMessages(this.props.assignment.id);
-
-      // Check if all messages have been sent
-      if (!res.data.bulkSendMessages.length) {
-        break;
+      if (!sentMessages) {
+        /* end sending if no messages were left to send */
+        setProgress(100);
+      } else {
+        setTotalSentMessages(updatedTotalSent);
+        setProgress((updatedTotalSent / totalChunkSize) * 100);
       }
-
-      // Print progress to console
-      sentMessages += res.data.bulkSendMessages.length;
-      console.log(`Bulk sent ${sentMessages} messages ${new Date()}`);
+    } catch (err) {
+      console.error(err);
+      setErrorMessage(err.message);
     }
-    this.props.refreshData();
-    console.log(`Finish bulk sending messages ${new Date()}`);
+  }
 
-    this.setState({ isSending: false });
-    this.props.setDisabled(false);
-    this.props.onFinishContact();
-  };
+  const handleEndSend = () => {
+    refreshData();
+    setErrorMessage('');
+    setIsSending(false);
+    setProgress(0);
+    setTotalSentMessages(0);
+    setDisabled(false);
+    onFinishContact();
+  }
 
-  render() {
-    return (
-      <div className={css(styles.container)}>
+  useEffect(() => {
+    if (isSending) {
+      /* sendMessages will be called the first time when isSending is set to true
+         and only called again when the progress state is updated and not complete */
+      if (progress < 100) {
+        sendMessages();
+      } else {
+        /* display "sent all" message for half a sec */
+        setTimeout(handleEndSend, 500);
+      }
+    }
+  }, [isSending, progress]);
+
+  return (
+    <div className={css(styles.container)}>
+      {isSending ? (
+        <div className={css(styles.progressContainer)}>
+          <div className={css(styles.progressText)}>
+            <Typography variant="subtitle1">
+              {progress === 100 
+                ? 'Sent all messages!'
+                : `Sent ${totalSentMessages} of ${totalChunkSize} messages...`}
+            </Typography>
+          </div>
+          <LinearProgress 
+            variant="determinate"
+            value={progress}
+            classes={{ root: css(styles.progressBarRoot) }}
+          />
+        </div>
+      ) : (
         <Button
-          onClick={this.sendMessages}
-          disabled={this.state.isSending}
+          onClick={() => setIsSending(true)}
+          disabled={isSending}
           color="primary"
           variant="contained"
         >
-          {this.state.isSending
-            ? "Sending..."
-            : `Send Bulk (${window.BULK_SEND_CHUNK_SIZE})`}
+          {`Send Bulk (${totalChunkSize})`}
         </Button>
-      </div>
-    );
-  }
+      )}
+      <Snackbar 
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+        open={!!errorMessage} 
+        autoHideDuration={6000} 
+        onClose={handleEndSend}
+      >
+        <Alert 
+          onClose={handleEndSend} 
+          severity="error"
+        >
+          {errorMessage}
+        </Alert>
+      </Snackbar>
+    </div>
+  );
 }
 
 BulkSendButton.propTypes = {
-  assignment: PropTypes.object,
-  onFinishContact: PropTypes.func,
-  bulkSendMessages: PropTypes.func,
-  refreshData: PropTypes.func,
-  setDisabled: PropTypes.func
+  assignment: PropTypes.shape({ id: PropTypes.number }).isRequired,
+  onFinishContact: PropTypes.func.isRequired,
+  bulkSendMessages: PropTypes.func.isRequired,
+  refreshData: PropTypes.func.isRequired,
+  setDisabled: PropTypes.func.isRequired
 };
+
+export default BulkSendButton;

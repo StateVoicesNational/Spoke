@@ -4,6 +4,7 @@ import { addWhereClauseForContactsFilterMessageStatusIrrespectiveOfPastDue } fro
 import { addCampaignsFilterToQuery } from "./campaign";
 import { log } from "../../lib";
 import { getConfig } from "../api/lib/config";
+import { isSqlite } from "../models/index";
 
 function getConversationsJoinsAndWhereClause(
   queryParam,
@@ -74,6 +75,13 @@ function getConversationsJoinsAndWhereClause(
     contactsFilter && contactsFilter.messageStatus
   );
 
+  if (contactsFilter.updatedAtGt) {
+    query = query.andWhere(function() {this.where('updated_at', '>', contactsFilter.updatedAtGt)})
+  }
+  if (contactsFilter.updatedAtLt) {
+    query = query.andWhere(function() {this.where('updated_at', '<', contactsFilter.updatedAtLt)})
+  }
+
   if (contactsFilter) {
     if ("isOptedOut" in contactsFilter) {
       query.where("is_opted_out", contactsFilter.isOptedOut);
@@ -126,6 +134,10 @@ function getConversationsJoinsAndWhereClause(
         );
       }
     }
+
+    if (contactsFilter.orderByRaw) {
+      query = query.orderByRaw(contactsFilter.orderByRaw);
+    }
   }
 
   return query;
@@ -146,6 +158,12 @@ function mapQueryFieldsToResolverFields(queryResult, fieldsMap) {
     }
     return key;
   });
+  if (typeof data.updated_at != "undefined") {
+    data.updated_at = (
+      data.updated_at instanceof Date || !data.updated_at
+      ? data.updated_at || null
+      : new Date(data.updated_at))
+  }
   return data;
 }
 
@@ -337,7 +355,9 @@ export async function getConversations(
   let conversationCount;
   try {
     conversationCount = await r.getCount(
-      conversationsCountQuery.timeout(4000, { cancel: true })
+      !isSqlite ?
+      conversationsCountQuery.timeout(4000, { cancel: true }) :
+      conversationsCountQuery
     );
   } catch (err) {
     // default fake value that means 'a lot'

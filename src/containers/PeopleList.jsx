@@ -263,11 +263,11 @@ export class PeopleList extends Component {
   };
 
   renderChangePasswordButton = (value, tableMeta) => {
-    const texterId = tableMeta.rowData[0];
+    const texterId = Number(tableMeta.rowData[0]);
     const { currentUser } = this.props;
     return (
       <Button
-        disabled={currentUser.id === texterId}
+        disabled={currentUser.id == texterId}
         onClick={() => {
           this.resetPassword(texterId);
         }}

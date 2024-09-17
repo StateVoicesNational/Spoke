@@ -5,6 +5,8 @@ import {
   cleanupTest,
   createScript,
   createStartedCampaign,
+  mockInteractionSteps,
+  muiTheme,
   runGql,
   sendMessage,
   setupTest,
@@ -33,7 +35,6 @@ import {
   contactDataFragment
 } from "../../../../src/containers/TexterTodo";
 
-import { muiTheme } from "../../../test_helpers";
 import ThemeContext from "../../../../src/containers/context/ThemeContext";
 
 describe("mutations.updateQuestionResponses", () => {
@@ -165,65 +166,7 @@ describe("mutations.updateQuestionResponses", () => {
 
   describe("when called through the mutation", () => {
     beforeEach(async () => {
-      const inputInteractionSteps = [
-        {
-          id: "new_1",
-          questionText: "What is your favorite color",
-          script: "Hello {firstName}. Let's talk about your favorite color.",
-          answerOption: "",
-          answerActions: "",
-          answerActionsData: "",
-          parentInteractionId: null,
-          isDeleted: false,
-          interactionSteps: [
-            {
-              id: "new_2",
-              questionText: "What is your favorite shade of red?",
-              script: "Red is an awesome color, {firstName}!",
-              answerOption: "Red",
-              answerActions: "",
-              answerActionsData: "",
-              parentInteractionId: "new_1",
-              isDeleted: false,
-              interactionSteps: [
-                {
-                  id: "new_21",
-                  questionText: "",
-                  script: "Crimson is a rad shade of red, {firstName}",
-                  answerOption: "Crimson",
-                  answerActions: "",
-                  answerActionsData: "",
-                  parentInteractionId: "new_2",
-                  isDeleted: false,
-                  interactionSteps: []
-                },
-                {
-                  id: "new_22",
-                  questionText: "",
-                  script: "Firebrick is a rad shade of red, {firstName}",
-                  answerOption: "Firebrick",
-                  answerActions: "",
-                  answerActionsData: "",
-                  parentInteractionId: "new_2",
-                  isDeleted: false,
-                  interactionSteps: []
-                }
-              ]
-            },
-            {
-              id: "new_3",
-              questionText: "",
-              script: "Purple is an awesome color, {firstName}!",
-              answerOption: "Purple",
-              answerActions: "",
-              answerActionsData: "",
-              parentInteractionId: "new_1",
-              isDeleted: false,
-              interactionSteps: []
-            }
-          ]
-        }
-      ];
+      const inputInteractionSteps = [mockInteractionSteps];
 
       ({
         interactionSteps,
@@ -309,7 +252,7 @@ describe("mutations.updateQuestionResponses", () => {
           campaign_id: Number(campaign.id),
           question: "What is your favorite color",
           script: "Hello {firstName}. Let's talk about your favorite color.",
-          answer_actions: "",
+          answer_actions: "complex-test-action",
           value: "Red"
         },
         {
@@ -319,7 +262,7 @@ describe("mutations.updateQuestionResponses", () => {
           campaign_id: Number(campaign.id),
           question: "What is your favorite shade of red?",
           script: "Red is an awesome color, {firstName}!",
-          answer_actions: "",
+          answer_actions: "complex-test-action",
           value: "Crimson"
         }
       ]);
@@ -429,7 +372,7 @@ describe("mutations.updateQuestionResponses", () => {
 
         expect(databaseQueryResults.rows || databaseQueryResults).toEqual([
           {
-            answer_actions: "",
+            answer_actions: "complex-test-action",
             answer_option: "Red",
             campaign_id: 1,
             child_id: 2,
@@ -448,136 +391,8 @@ describe("mutations.updateQuestionResponses", () => {
     let inputInteractionStepsWithoutActionHandlers;
 
     beforeEach(async () => {
-      inputInteractionStepsWithoutActionHandlers = [
-        {
-          id: "new_1",
-          questionText: "What is your favorite color",
-          script: "Hello {firstName}. Let's talk about your favorite color.",
-          answerOption: "",
-          answerActions: "",
-          answerActionsData: "",
-          parentInteractionId: null,
-          isDeleted: false,
-          interactionSteps: [
-            {
-              id: "new_2",
-              questionText: "What is your favorite shade of red?",
-              script: "Red is an awesome color, {firstName}!",
-              answerOption: "Red",
-              answerActions: "",
-              answerActionsData: "",
-              parentInteractionId: "new_1",
-              isDeleted: false,
-              interactionSteps: [
-                {
-                  id: "new_21",
-                  questionText: "",
-                  script: "Crimson is a rad shade of red, {firstName}",
-                  answerOption: "Crimson",
-                  answerActions: "",
-                  answerActionsData: "",
-                  parentInteractionId: "new_2",
-                  isDeleted: false,
-                  interactionSteps: []
-                },
-                {
-                  id: "new_22",
-                  questionText: "",
-                  script: "Firebrick is a rad shade of red, {firstName}",
-                  answerOption: "Firebrick",
-                  answerActions: "",
-                  answerActionsData: "",
-                  parentInteractionId: "new_2",
-                  isDeleted: false,
-                  interactionSteps: []
-                }
-              ]
-            },
-            {
-              id: "new_3",
-              questionText: "",
-              script: "Purple is an awesome color, {firstName}!",
-              answerOption: "Purple",
-              answerActions: "",
-              answerActionsData: "",
-              parentInteractionId: "new_1",
-              isDeleted: false,
-              interactionSteps: []
-            }
-          ]
-        }
-      ];
-
-      inputInteractionStepsWithActionHandlers = [
-        {
-          id: "new_1",
-          questionText: "What is your favorite color",
-          script: "Hello {firstName}. Let's talk about your favorite color.",
-          answerOption: "",
-          answerActions: "",
-          answerActionsData: "",
-          parentInteractionId: null,
-          isDeleted: false,
-          interactionSteps: [
-            {
-              id: "new_2",
-              questionText: "What is your favorite shade of red?",
-              script: "Red is an awesome color, {firstName}!",
-              answerOption: "Red",
-              answerActions: "complex-test-action",
-              answerActionsData: "red answer actions data",
-              parentInteractionId: "new_1",
-              isDeleted: false,
-              interactionSteps: [
-                {
-                  id: "new_21",
-                  questionText: "",
-                  script: "Crimson is a rad shade of red, {firstName}",
-                  answerOption: "Crimson",
-                  answerActions: "complex-test-action",
-                  answerActionsData: "crimson answer actions data",
-                  parentInteractionId: "new_2",
-                  isDeleted: false,
-                  interactionSteps: []
-                },
-                {
-                  id: "new_22",
-                  questionText: "",
-                  script: "Firebrick is a rad shade of red, {firstName}",
-                  answerOption: "Firebrick",
-                  answerActions: "",
-                  answerActionsData: "",
-                  parentInteractionId: "new_2",
-                  isDeleted: false,
-                  interactionSteps: []
-                }
-              ]
-            },
-            {
-              id: "new_3",
-              questionText: "",
-              script: "Purple is an awesome color, {firstName}!",
-              answerOption: "Purple",
-              answerActions: "",
-              answerActionsData: "",
-              parentInteractionId: "new_1",
-              isDeleted: false,
-              interactionSteps: []
-            },
-            {
-              id: "new_4",
-              questionText: "",
-              script: "Blue is an awesome color, {firstName}!",
-              answerOption: "Blue",
-              answerActions: "complex-test-action",
-              answerActionsData: "blue answer actions data",
-              parentInteractionId: "new_1",
-              isDeleted: false,
-              interactionSteps: []
-            }
-          ]
-        }
-      ];
+      inputInteractionStepsWithoutActionHandlers = [mockInteractionSteps];
+      inputInteractionStepsWithActionHandlers = [mockInteractionSteps];
     });
 
     describe("happy path", () => {
@@ -641,24 +456,21 @@ describe("mutations.updateQuestionResponses", () => {
     });
 
     describe("when some of the steps have an action handler", () => {
+      function getMessagePass(received, expectedObject) {
+        let pass = false;
+        if (received?.id && expectedObject?.id) {
+          pass = Number(received.id) === Number(expectedObject.id);
+        }
+        const message = pass ? "ok" : "fail";
+        return {
+          message,
+          pass
+        };
+      }
+
       beforeEach(async () => {
         expect.extend({
-          objectWithId: (received, expectedObject) => {
-            let pass = false;
-            if (
-              received &&
-              received.id &&
-              expectedObject &&
-              expectedObject.id
-            ) {
-              pass = Number(received.id) === Number(expectedObject.id);
-            }
-            const message = pass ? "ok" : "fail";
-            return {
-              message,
-              pass
-            };
-          }
+          objectWithId: getMessagePass
         });
 
         ({
@@ -747,8 +559,8 @@ describe("mutations.updateQuestionResponses", () => {
         );
       });
 
-      describe("when a response is added", () => {
-        beforeEach(async () => {
+      const responseAdded = {
+        beforeEach: async () => {
           questionResponses = [
             {
               campaignContactId: contacts[0].id,
@@ -776,9 +588,8 @@ describe("mutations.updateQuestionResponses", () => {
             ComplexTestActionHandler,
             "processDeletedQuestionResponse"
           );
-        });
-
-        it("calls the action handler for the new response", async () => {
+        },
+        it1: async () => {
           await Mutations.updateQuestionResponses(
             undefined,
             { questionResponses, campaignContactId: contacts[0].id },
@@ -818,11 +629,115 @@ describe("mutations.updateQuestionResponses", () => {
             ComplexTestActionHandler.processAction.mock.calls[0][0]
               .previousValue
           ).toBeNull();
-        });
+        }
+      }
+
+      describe("when a response is added", () => {
+        beforeEach(responseAdded.beforeEach);
+
+        it("calls the action handler for the new response", responseAdded.it1);
       });
 
-      describe("when responses are added, resubmitted with no change, updated, and deleted", () => {
-        beforeEach(async () => {
+      async function deletedResponse () {
+        await Mutations.updateQuestionResponses(
+          undefined,
+          {
+            questionResponses: [questionResponses[0]],
+            campaignContactId: contacts[0].id
+          },
+          { loaders, user: texterUser }
+        );
+
+        expect(
+          ComplexTestActionHandler.processAction
+        ).not.toHaveBeenCalled();
+
+        expect(
+          ComplexTestActionHandler.processDeletedQuestionResponse
+        ).toHaveBeenCalled();
+
+        expect(
+          ComplexTestActionHandler.processDeletedQuestionResponse.mock
+            .calls[0][0].questionResponse
+        ).toEqual(questionResponses[1]);
+
+        expect(
+          ComplexTestActionHandler.processDeletedQuestionResponse.mock.calls[0][0].interactionStep.id.toString()
+        ).toEqual(shadesOfRedInteractionSteps[0].id);
+
+        expect(
+          ComplexTestActionHandler.processDeletedQuestionResponse.mock
+            .calls[0][0].campaignContactId
+        ).toEqual(contacts[0].id);
+
+        expect(
+          ComplexTestActionHandler.processDeletedQuestionResponse.mock
+            .calls[0][0].contact.id
+        ).toEqual(contacts[0].id);
+
+        expect(
+          ComplexTestActionHandler.processDeletedQuestionResponse.mock.calls[0][0].campaign.id.toString()
+        ).toEqual(campaign.id);
+
+        expect(
+          ComplexTestActionHandler.processDeletedQuestionResponse.mock.calls[0][0].organization.id.toString()
+        ).toEqual(organization.id);
+
+        expect(
+          ComplexTestActionHandler.processDeletedQuestionResponse.mock
+            .calls[0][0].previousValue
+        ).toEqual("Crimson");
+      }
+
+      async function newResponse() {
+        await Mutations.updateQuestionResponses(
+          undefined,
+          { questionResponses, campaignContactId: contacts[0].id },
+          { loaders, user: texterUser }
+        );
+
+        await sleep(100);
+
+        expect(
+          ComplexTestActionHandler.processAction
+        ).not.toHaveBeenCalled();
+        expect(
+          ComplexTestActionHandler.processDeletedQuestionResponse
+        ).not.toHaveBeenCalled();
+      }
+
+      async function setQuestionResponseValue() {
+        questionResponses[0].value = "Blue";
+      }
+
+      async function updatedResponse() {
+        await Mutations.updateQuestionResponses(
+          undefined,
+          { questionResponses, campaignContactId: contacts[0].id },
+          { loaders, user: texterUser }
+        );
+
+        expect(
+          ComplexTestActionHandler.processDeletedQuestionResponse
+        ).not.toHaveBeenCalled();
+        expect(ComplexTestActionHandler.processAction.mock.calls).toEqual(
+          expect.arrayContaining([
+            [
+              expect.objectContaining({
+                actionObject: expect.objectWithId(colorInteractionSteps[2]),
+                campaignContactId: Number(contacts[0].id),
+                contact: expect.objectWithId(contacts[0]),
+                campaign: expect.objectWithId(campaign),
+                organization: expect.objectWithId(organization),
+                previousValue: "Red"
+              })
+            ]
+          ])
+        );
+      }
+
+      const responseResubmitted = {
+        beforeEach: async () => {
           questionResponses = [
             {
               campaignContactId: contacts[0].id,
@@ -850,115 +765,32 @@ describe("mutations.updateQuestionResponses", () => {
             ComplexTestActionHandler,
             "processDeletedQuestionResponse"
           );
-        });
+        },
+        saved: () => {
+          it("calls processAction for the new question response", newResponse);
+        },
+        updated: () => {
+          beforeEach(setQuestionResponseValue);
 
-        describe("when one of the question responses has already been saved with the same value", () => {
-          it("calls processAction for the new question response", async () => {
-            await Mutations.updateQuestionResponses(
-              undefined,
-              { questionResponses, campaignContactId: contacts[0].id },
-              { loaders, user: texterUser }
-            );
+          it("calls processAction for for the updated response, and it passes in previousValue", updatedResponse);
+        },
+        deleted: () => {
+          it("calls processDeletedQuestionResponse", deletedResponse);
+        }
+      }
 
-            await sleep(100);
+      describe("when responses are added, resubmitted with no change, updated, and deleted", () => {
+        beforeEach(responseResubmitted.beforeEach);
 
-            expect(
-              ComplexTestActionHandler.processAction
-            ).not.toHaveBeenCalled();
-            expect(
-              ComplexTestActionHandler.processDeletedQuestionResponse
-            ).not.toHaveBeenCalled();
-          });
-        });
+        describe("when one of the question responses has already been saved with the same value", responseResubmitted.saved);
 
-        describe("when one of the question responses was updated", () => {
-          beforeEach(async () => {
-            questionResponses[0].value = "Blue";
-          });
+        describe("when one of the question responses was updated", responseResubmitted.updated);
 
-          it("calls processAction for for the updated response, and it passes in previousValue", async () => {
-            await Mutations.updateQuestionResponses(
-              undefined,
-              { questionResponses, campaignContactId: contacts[0].id },
-              { loaders, user: texterUser }
-            );
-
-            expect(
-              ComplexTestActionHandler.processDeletedQuestionResponse
-            ).not.toHaveBeenCalled();
-            expect(ComplexTestActionHandler.processAction.mock.calls).toEqual(
-              expect.arrayContaining([
-                [
-                  expect.objectContaining({
-                    actionObject: expect.objectWithId(colorInteractionSteps[2]),
-                    campaignContactId: Number(contacts[0].id),
-                    contact: expect.objectWithId(contacts[0]),
-                    campaign: expect.objectWithId(campaign),
-                    organization: expect.objectWithId(organization),
-                    previousValue: "Red"
-                  })
-                ]
-              ])
-            );
-          });
-        });
-
-        describe("when one of the question responses is deleted", () => {
-          it("calls processDeletedQuestionResponse", async () => {
-            await Mutations.updateQuestionResponses(
-              undefined,
-              {
-                questionResponses: [questionResponses[0]],
-                campaignContactId: contacts[0].id
-              },
-              { loaders, user: texterUser }
-            );
-
-            expect(
-              ComplexTestActionHandler.processAction
-            ).not.toHaveBeenCalled();
-
-            expect(
-              ComplexTestActionHandler.processDeletedQuestionResponse
-            ).toHaveBeenCalled();
-
-            expect(
-              ComplexTestActionHandler.processDeletedQuestionResponse.mock
-                .calls[0][0].questionResponse
-            ).toEqual(questionResponses[1]);
-
-            expect(
-              ComplexTestActionHandler.processDeletedQuestionResponse.mock.calls[0][0].interactionStep.id.toString()
-            ).toEqual(shadesOfRedInteractionSteps[0].id);
-
-            expect(
-              ComplexTestActionHandler.processDeletedQuestionResponse.mock
-                .calls[0][0].campaignContactId
-            ).toEqual(contacts[0].id);
-
-            expect(
-              ComplexTestActionHandler.processDeletedQuestionResponse.mock
-                .calls[0][0].contact.id
-            ).toEqual(contacts[0].id);
-
-            expect(
-              ComplexTestActionHandler.processDeletedQuestionResponse.mock.calls[0][0].campaign.id.toString()
-            ).toEqual(campaign.id);
-
-            expect(
-              ComplexTestActionHandler.processDeletedQuestionResponse.mock.calls[0][0].organization.id.toString()
-            ).toEqual(organization.id);
-
-            expect(
-              ComplexTestActionHandler.processDeletedQuestionResponse.mock
-                .calls[0][0].previousValue
-            ).toEqual("Crimson");
-          });
-        });
+        describe("when one of the question responses is deleted", responseResubmitted.deleted);
       });
 
-      describe("when no action handlers are configured", () => {
-        beforeEach(async () => {
+      const noActionHandlersConfigured = {
+        beforeEach: async () => {
           ({
             interactionSteps,
             redInteractionStep,
@@ -968,9 +800,8 @@ describe("mutations.updateQuestionResponses", () => {
             inputInteractionStepsWithActionHandlers,
             2
           ));
-        });
-
-        it("exits early and logs an error", async () => {
+        },
+        earlyExit: async () => {
           jest
             .spyOn(ActionHandlers, "rawAllActionHandlers")
             .mockReturnValue({});
@@ -983,11 +814,21 @@ describe("mutations.updateQuestionResponses", () => {
           );
 
           expect(cacheableData.organization.load).not.toHaveBeenCalled();
-        });
+        }
+      }
+
+      describe("when no action handlers are configured", () => {
+        beforeEach(noActionHandlersConfigured.beforeEach);
+
+        it("exits early and logs an error", noActionHandlersConfigured.earlyExit);
       });
 
-      describe("when task dispatch fails", () => {
-        beforeEach(async () => {
+      function throwError() {
+        throw new Error("foo");
+      }
+
+      const taskDispatchFails = {
+        beforeEach: async () => {
           ({
             interactionSteps,
             redInteractionStep,
@@ -997,13 +838,10 @@ describe("mutations.updateQuestionResponses", () => {
             inputInteractionStepsWithActionHandlers,
             2
           ));
-        });
-
-        it("dispatches other actions", async () => {
+        },
+        dispatchOtherActions: async () => {
           jest.spyOn(ComplexTestActionHandler, "processAction");
-          jest.spyOn(jobRunner, "dispatchTask").mockImplementationOnce(() => {
-            throw new Error("foo");
-          });
+          jest.spyOn(jobRunner, "dispatchTask").mockImplementationOnce(throwError);
           await Mutations.updateQuestionResponses(
             {},
             { questionResponses, campaignContactId: contacts[0].id },
@@ -1029,11 +867,17 @@ describe("mutations.updateQuestionResponses", () => {
               }
             ]
           ]);
-        });
+        }
+      }
+
+      describe("when task dispatch fails", () => {
+        beforeEach(taskDispatchFails.beforeEach);
+
+        it("dispatches other actions", taskDispatchFails.dispatchOtherActions);
       });
 
-      describe("when the action handler throws an exception", () => {
-        beforeEach(async () => {
+      const actionHandlerThrowsException = {
+        beforeEach: async () => {
           ({
             interactionSteps,
             redInteractionStep,
@@ -1043,9 +887,8 @@ describe("mutations.updateQuestionResponses", () => {
             inputInteractionStepsWithActionHandlers,
             2
           ));
-        });
-
-        it("processes the other actions", async () => {
+        },
+        processOtherActions: async () => {
           jest
             .spyOn(ComplexTestActionHandler, "processAction")
             .mockRejectedValueOnce(new Error("oh no"));
@@ -1089,7 +932,13 @@ describe("mutations.updateQuestionResponses", () => {
               ]
             ])
           );
-        });
+        }
+      }
+
+      describe("when the action handler throws an exception", () => {
+        beforeEach(actionHandlerThrowsException.beforeEach);
+
+        it("processes the other actions", actionHandlerThrowsException.processOtherActions);
       });
     });
   });
