@@ -486,7 +486,6 @@ class AdminPhoneNumberInventory extends React.Component {
               Cancel
             </Button>
             <Button
-              variant="contained"
               color="secondary"
               variant="outlined"
               onClick={this.handleDeletePhoneNumbersSubmit}
