@@ -509,18 +509,11 @@ class AdminPhoneNumberInventory extends React.Component {
           );
         }}
         >
-          {(this.state.responseShortCodes 
-            // && this.state.responseShortCodes.success
-            ) ?
-                <Alert elevation={6} variant="filled" severity="success">
-                  You checked for short codes. Yay!
-                </Alert>
-              :
-                <Alert elevation={6} variant="filled" severity="error">
-                  Something went wrong!
-                </Alert>
+          {!this.numShortcodes &&
+            <Alert elevation={6} variant="filled" severity="error">
+              No Short Codes Found!
+            </Alert>
           }
-          
       </Snackbar>
       <Snackbar
         open={this.state.queriedTollfree}
