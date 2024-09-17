@@ -500,6 +500,49 @@ class AdminPhoneNumberInventory extends React.Component {
             </Button>
           </DialogActions>
         </Dialog>
+        <Snackbar
+        open={this.state.queriedShortcodes}
+        autoHideDuration={2000}
+        onClose={() => {
+          this.setState({
+            queriedShortCodes: false}
+          );
+        }}
+        >
+          {(this.state.responseShortCodes 
+            // && this.state.responseShortCodes.success
+            ) ?
+                <Alert elevation={6} variant="filled" severity="success">
+                  You checked for short codes. Yay!
+                </Alert>
+              :
+                <Alert elevation={6} variant="filled" severity="error">
+                  Something went wrong!
+                </Alert>
+          }
+          
+      </Snackbar>
+      <Snackbar
+        open={this.state.queriedTollfree}
+        autoHideDuration={2000}
+        onClose={() => {
+          this.setState({
+            queriedTollfree: false}
+          );
+        }}
+        >
+          {(this.state.responseTollFree 
+            // && this.state.responseTollFree.success
+            ) ?
+                <Alert elevation={6} variant="filled" severity="success">
+                  You checked for toll free. Yay!
+                </Alert>
+              :
+                <Alert elevation={6} variant="filled" severity="error">
+                  Something went wrong!
+                </Alert>
+          }
+      </Snackbar>
       </div>
     );
   }
