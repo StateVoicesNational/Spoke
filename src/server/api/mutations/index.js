@@ -5,6 +5,7 @@ export { getShortCodes} from "./getShortCodes";
 export { getTollFreeNumbers} from "./getTollFreeNumbers";
 export { editOrganization } from "./editOrganization";
 export { findNewCampaignContact } from "./findNewCampaignContact";
+export { getOptOutMessage } from "./getOptOutMessage";
 export { joinOrganization } from "./joinOrganization";
 export { releaseContacts } from "./releaseContacts";
 export { sendMessage } from "./sendMessage";
