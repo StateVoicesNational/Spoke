@@ -29,6 +29,8 @@ import GSTextField from "../components/forms/GSTextField";
 import theme from "../styles/theme";
 import { dataTest } from "../lib/attributes";
 import loadData from "./hoc/load-data";
+import { Snackbar } from "@material-ui/core";
+import { Alert } from "@material-ui/lab";
 
 const inlineStyles = {
   column: {
@@ -69,8 +71,26 @@ class AdminPhoneNumberInventory extends React.Component {
       filters: {},
       deleteNumbersDialogOpen: false,
       queriedShortcodes: false,
-      queriedTollfree: false
+      totalShortcodes: 0,
+      queriedTollfree: false,
+      totalTollfree: 0
     };
+  }
+
+  getTotalTollfree() {
+    const check = this.props.data.organization.phoneNumberCounts.filter(j => {
+      return j.areaCode == "Tollfree"
+    })
+    console.log(check);
+     return check.length ? check[0].availableCount : 0
+  }
+
+  getTotalShortcodes() {
+    const check = this.props.data.organization.phoneNumberCounts.filter(j => {
+      return j.areaCode == "Shortcode" // Might be Shortcodes
+    })
+    console.log(check);
+     return check.length ? check[0].availableCount : 0
   }
 
   buyNumbersFormSchema() {
@@ -129,17 +149,19 @@ class AdminPhoneNumberInventory extends React.Component {
   };
 
   handleGetShortcodes = async() => {
-    this.setState({
-      queriedShortcodes: true
-    });
     await this.props.mutations.getShortCodes();
+    this.setState({
+      queriedShortcodes: true,
+      totalShortcodes: this.getTotalShortcodes()
+    });
   };
 
   handleGetTollFreeNumbers = async() => {
-    this.setState({
-      queriedTollfree: true
-    });
     await this.props.mutations.getTollFreeNumbers();
+    this.setState({
+      queriedTollfree: true,
+      totalTollfree: this.getTotalTollfree()
+    });
   };
 
   handleDeleteNumbersOpen = ([areaCode, , , availableCount]) => {
@@ -347,14 +369,6 @@ class AdminPhoneNumberInventory extends React.Component {
       tableData = tableData.filter(data => data.state === filters.state);
     }
 
-    if (this.state.queriedShortcodes){
-      this.numShortcodes = ownedAreaCodes.filter(j => ownedAreaCodes.indexOf('Shortcode') === -1).length
-    }
-
-    if (this.state.queriedTollfree){
-      this.numTollfreeNumbers = ownedAreaCodes.filter(j => ownedAreaCodes.indexOf('Tollfree') === -1).length
-    }
-
     this.sortTable(tableData, this.state.sortCol, this.state.sortOrder);
     const handleSortOrderChange = (key, order) => {
       this.setState({
@@ -494,6 +508,46 @@ class AdminPhoneNumberInventory extends React.Component {
             </Button>
           </DialogActions>
         </Dialog>
+        <Snackbar
+          open={this.state.queriedTollfree}
+          autoHideDuration={2000}
+          onClose={() => {
+            this.setState({
+              queriedTollfree: false
+            })
+          }}
+          >
+          {this.state.totalTollfree ?
+            <Alert elevation={6} variant="filled" severity="success">
+                {this.state.totalTollfree} Toll Free numbers found!
+            </Alert>
+            :
+            <Alert elevation={6} variant="filled" severity="info">
+                No Toll Free numbers were found.
+            </Alert>
+            
+          }
+        </Snackbar>
+        <Snackbar
+          open={this.state.queriedShortcodes}
+          autoHideDuration={2000}
+          onClose={() => {
+            this.setState({
+              queriedShortcodes: false
+            })
+          }}
+          >
+          {this.state.totalShortcodes ?
+            <Alert elevation={6} variant="filled" severity="success">
+                {this.state.totalShortcodes} Short Code numbers found!
+            </Alert>
+            :
+            <Alert elevation={6} variant="filled" severity="info">
+                No Short Code numbers were found.
+            </Alert>
+            
+          }
+        </Snackbar>
       </div>
     );
   }
