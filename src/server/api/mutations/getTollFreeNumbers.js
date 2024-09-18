@@ -49,7 +49,8 @@ export const getTollFreeNumbers = async (
     job_type: Jobs.GET_TOLL_FREE_NUMBERS,
     locks_queue: false,
     payload: JSON.stringify({
-      opts: serviceManagerResult.opts || opts
+      opts: serviceManagerResult.opts || opts,
+      areaCode: "Tollfree"
     })
   });
 };
