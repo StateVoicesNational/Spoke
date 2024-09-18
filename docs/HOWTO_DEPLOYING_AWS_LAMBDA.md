@@ -173,12 +173,15 @@ you can manually run the migration (see below) rather than it accidentally trigg
 #### Environment variable maximum: 4K
 
 AWS Lambda has a maximum size limit for all environment variable data of 4K -- this should generally be harmless.
-However, some environment variables like GOOGLE_SECRET for script import can be quite large. In this case, create
+However, some environment variables like BASE64_GOOGLE_SECRET for script import can be quite large. In this case, create
 another file (does not have to be located in your Spoke project directory) in the same format as production-env.json
-with GOOGLE_SECRET as a top-level JSON key (currently, no other variables are supported from this file).
+with BASE64_GOOGLE_SECRET as a top-level JSON key (currently, no other variables are supported from this file).
 
 Then set the variable in production-env.json `CONFIG_FILE`: "/absolute/path/to/configfile.json" -- during deployment (below),
 this file will be copied into the lambda function zip file and get deployed with the rest of the code.
+
+DEVELOPER NOTE: Now that GOOGLE_SECRET is set in Base64, this may no longer be an issue. Please open a ticket
+if a problem occurs. 
 
 ## Deploy
 

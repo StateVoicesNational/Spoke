@@ -1,21 +1,23 @@
 import { hasConfig, getConfig } from "../api/lib/config";
 import { getProcessEnvTz, getProcessEnvDstReferenceTimezone } from "../../lib";
+import { base64ToString } from "../api/lib/utils";
 
-const canGoogleImport = hasConfig("GOOGLE_SECRET");
+const canGoogleImport = hasConfig("BASE64_GOOGLE_SECRET");
 
 const googleClientEmail = () => {
   let output;
   if (canGoogleImport) {
     try {
+      const s_GOOGLE_SECRET = base64ToString(process.env.BASE64_GOOGLE_SECRET);
       output = (JSON.parse((
-        process.env.GOOGLE_SECRET
+        s_GOOGLE_SECRET
         .replace(/(\r\n|\n|\r)/gm, ""))) // new lines gum up parsing
         .client_email)
-	.replaceAll(" ", "");
+	      .replaceAll(" ", "");
     } catch (err) {
       console.error(`
         Google API failed to load client email.
-        Please check your GOOGLE_SECRET environment variable is intact: `,
+        Please check your BASE64_GOOGLE_SECRET environment variable is intact: `,
         err);
     } 
   }
