@@ -325,7 +325,12 @@ export const resolvers = {
       await accessRequired(user, organization.id, "ADMIN", true);
       const jobs = await r
         .knex("job_request")
-        .whereIn("job_type", ["buy_phone_numbers", "delete_phone_numbers"])
+        .whereIn("job_type", [
+          "buy_phone_numbers", 
+          "delete_phone_numbers", 
+          "get_toll_free_numbers",
+          "get_short_codes"
+        ])
         .andWhere("organization_id", organization.id)
         .orderBy("updated_at", "desc");
       return jobs.map(j => {
