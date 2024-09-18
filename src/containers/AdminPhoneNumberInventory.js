@@ -71,41 +71,55 @@ class AdminPhoneNumberInventory extends React.Component {
       filters: {},
       deleteNumbersDialogOpen: false,
       queriedShortcodes: false,
-      totalShortcodes: 0,
+      totalShortcodes: this.getAvailablePhoneNumbersByAreaCode(this.props, "Shortcode"),
       queriedTollfree: false,
-      totalTollfree: 0,
-      queried: false
+      totalTollfree: this.getAvailablePhoneNumbersByAreaCode(this.props, "Tollfree")
     };
   }
 
-  getTotalTollfree(props) {
+  // Including props because at one point previous props was queried
+  getAvailablePhoneNumbersByAreaCode(props, areaCode) {
     const check = props.data.organization.phoneNumberCounts.filter(j => {
-      return j.areaCode == "Tollfree"
+      return j.areaCode == areaCode
     })
-    console.log(check);
-     return check.length ? check[0].availableCount : 0
-  }
-
-  getTotalShortcodes() {
-    const check = this.props.data.organization.phoneNumberCounts.filter(j => {
-      return j.areaCode == "Shortcode" // Might be Shortcodes
-    })
-    console.log(check);
-     return check.length ? check[0].availableCount : 0
+     return check?.length ? check[0].availableCount : 0
   }
 
   componentDidUpdate(prevProps) {
-    if (this.getTotalTollfree(this.props) !== this.getTotalTollfree(prevProps)) {
+    const { pendingPhoneNumberJobs } = this.props.data.organization;
+    const prevPendingPHoneNumberJobs = prevProps.data.organization.pendingPhoneNumberJobs;
+    let completedShortCodeJobs;
+    let completedTollFreeJobs;
+
+    // If a job has completed
+    if (pendingPhoneNumberJobs.length < prevPendingPHoneNumberJobs.length) {
+
+      // Checks if one of the previous jobs is for Short codes/Toll free
+      // AND that this job is not pending
+      completedShortCodeJobs = prevPendingPHoneNumberJobs.filter(j => {
+        return j.areaCode === "Shortcode" && !pendingPhoneNumberJobs.map(p => p.id).includes(j.id);
+      });
+
+      completedTollFreeJobs = prevPendingPHoneNumberJobs.filter(j => {
+        return j.areaCode === "Tollfree" && !pendingPhoneNumberJobs.map(p => p.id).includes(j.id);
+      });
+    }
+
+    // if a Short Code job completes, update the total short codes
+    // and alert the user
+    if (completedShortCodeJobs && completedShortCodeJobs.length) {
       this.setState({
-        queried: true,
-        totalTollfree: this.getTotalTollfree(this.props)
+        totalShortCodes: this.getAvailablePhoneNumbersByAreaCode(this.props, "Shortcode"),
+        queriedShortcodes: true
       })
     }
 
-    if (this.getTotalShortcodes(this.props) !== this.getTotalShortcodes(prevProps)) {
+    // if a Toll Free job complets, update the total toll free numbers
+    // and alert the user
+    if (completedTollFreeJobs && completedTollFreeJobs.length) {
       this.setState({
-        queried: true,
-        totalTollfree: this.getTotalShortcodes(this.props)
+        totalTollfree: this.getAvailablePhoneNumbersByAreaCode(this.props, "Tollfree"),
+        queriedTollfree: true
       })
     }
   }
@@ -167,16 +181,10 @@ class AdminPhoneNumberInventory extends React.Component {
 
   handleGetShortcodes = async() => {
     await this.props.mutations.getShortCodes();
-    this.setState({
-      queriedShortcodes: true,
-    });
   };
 
   handleGetTollFreeNumbers = async() => {
     await this.props.mutations.getTollFreeNumbers();
-    this.setState({
-      queriedTollfree: true,
-    });
   }
 
   handleDeleteNumbersOpen = ([areaCode, , , availableCount]) => {
@@ -524,16 +532,15 @@ class AdminPhoneNumberInventory extends React.Component {
           </DialogActions>
         </Dialog>
         <Snackbar
-          open={this.state.queriedTollfree && this.state.queried}
+          open={this.state.queriedTollfree}
           autoHideDuration={2000}
           onClose={() => {
             this.setState({
-              queriedTollfree: false,
-              queried: false
+              queriedTollfree: false
             })
           }}
           >
-          {this.state.totalTollfree ?
+          {this.state.totalTollfree > 0 ?
             <Alert elevation={6} variant="filled" severity="success">
                 {this.state.totalTollfree} Toll Free numbers found!
             </Alert>
@@ -541,7 +548,6 @@ class AdminPhoneNumberInventory extends React.Component {
             <Alert elevation={6} variant="filled" severity="info">
                 No Toll Free numbers were found.
             </Alert>
-            
           }
         </Snackbar>
         <Snackbar
@@ -553,7 +559,7 @@ class AdminPhoneNumberInventory extends React.Component {
             })
           }}
           >
-          {this.state.totalShortcodes ?
+          {this.state.totalShortcodes > 0 ?
             <Alert elevation={6} variant="filled" severity="success">
                 {this.state.totalShortcodes} Short Code numbers found!
             </Alert>
@@ -561,7 +567,6 @@ class AdminPhoneNumberInventory extends React.Component {
             <Alert elevation={6} variant="filled" severity="info">
                 No Short Code numbers were found.
             </Alert>
-            
           }
         </Snackbar>
       </div>
