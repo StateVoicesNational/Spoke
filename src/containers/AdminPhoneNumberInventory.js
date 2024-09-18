@@ -73,12 +73,13 @@ class AdminPhoneNumberInventory extends React.Component {
       queriedShortcodes: false,
       totalShortcodes: 0,
       queriedTollfree: false,
-      totalTollfree: 0
+      totalTollfree: 0,
+      queried: false
     };
   }
 
-  getTotalTollfree() {
-    const check = this.props.data.organization.phoneNumberCounts.filter(j => {
+  getTotalTollfree(props) {
+    const check = props.data.organization.phoneNumberCounts.filter(j => {
       return j.areaCode == "Tollfree"
     })
     console.log(check);
@@ -91,6 +92,22 @@ class AdminPhoneNumberInventory extends React.Component {
     })
     console.log(check);
      return check.length ? check[0].availableCount : 0
+  }
+
+  componentDidUpdate(prevProps) {
+    if (this.getTotalTollfree(this.props) !== this.getTotalTollfree(prevProps)) {
+      this.setState({
+        queried: true,
+        totalTollfree: this.getTotalTollfree(this.props)
+      })
+    }
+
+    if (this.getTotalShortcodes(this.props) !== this.getTotalShortcodes(prevProps)) {
+      this.setState({
+        queried: true,
+        totalTollfree: this.getTotalShortcodes(this.props)
+      })
+    }
   }
 
   buyNumbersFormSchema() {
@@ -152,7 +169,6 @@ class AdminPhoneNumberInventory extends React.Component {
     await this.props.mutations.getShortCodes();
     this.setState({
       queriedShortcodes: true,
-      totalShortcodes: this.getTotalShortcodes()
     });
   };
 
@@ -160,9 +176,8 @@ class AdminPhoneNumberInventory extends React.Component {
     await this.props.mutations.getTollFreeNumbers();
     this.setState({
       queriedTollfree: true,
-      totalTollfree: this.getTotalTollfree()
     });
-  };
+  }
 
   handleDeleteNumbersOpen = ([areaCode, , , availableCount]) => {
     this.setState({
@@ -509,11 +524,12 @@ class AdminPhoneNumberInventory extends React.Component {
           </DialogActions>
         </Dialog>
         <Snackbar
-          open={this.state.queriedTollfree}
+          open={this.state.queriedTollfree && this.state.queried}
           autoHideDuration={2000}
           onClose={() => {
             this.setState({
-              queriedTollfree: false
+              queriedTollfree: false,
+              queried: false
             })
           }}
           >
