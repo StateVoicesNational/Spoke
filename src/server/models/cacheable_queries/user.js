@@ -82,7 +82,7 @@ const dbLoadUserRoles = async userId => {
       await r.redis
         .MULTI()
         .DEL(key)
-        .HSET(key, ...mappedHighestRoles)
+        .HSET(key, mappedHighestRoles)
         .exec();
     } else {
       await r.redis.DEL(key);

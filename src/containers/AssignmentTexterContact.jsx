@@ -412,6 +412,7 @@ export class AssignmentTexterContact extends React.Component {
           </div>
         ) : null}
         <Controls
+          getOptOutMessage={this.props.mutations.getOptOutMessage}
           handleNavigateNext={this.props.handleNavigateNext}
           handleNavigatePrevious={this.props.handleNavigatePrevious}
           contact={this.props.contact}
@@ -562,6 +563,26 @@ const mutations = {
     variables: {
       interactionStepIds,
       campaignContactId
+    }
+  }),
+  getOptOutMessage: ownProps => (organizationId, zip, defaultMessage) => ({
+    mutation: gql`
+      mutation getOptOutMessage(
+        $organizationId: String
+        $zip: String
+        $defaultMessage: String
+      ) {
+        getOptOutMessage(
+          organizationId: $organizationId
+          zip: $zip
+          defaultMessage: $defaultMessage
+        )
+      }
+    `,
+    variables: {
+      organizationId,
+      zip,
+      defaultMessage
     }
   }),
   updateContactTags: ownProps => (tags, campaignContactId) => ({

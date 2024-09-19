@@ -28,6 +28,11 @@ export class AdminIncomingMessageList extends Component {
       props.location.query,
       props.organization.organization.tags
     );
+    // Make sure campaignIds is an array of numbers
+    filters.campaignsFilter = {
+      campaignIds: filters.campaignsFilter.campaignIds?.map(id => Number(id))
+    };
+
     this.state = {
       page: 0,
       pageSize: 10,
@@ -207,10 +212,17 @@ export class AdminIncomingMessageList extends Component {
   };
 
   handleReassignRequested = async newTexterUserId => {
+    const updatedCampaignIdsContactIds = this.state.campaignIdsContactIds.map(
+      campaign => {
+        campaign.campaignContactId = Number(campaign.campaignContactId);
+        campaign.messageIds = campaign.messageIds.map(id => Number(id));
+        return campaign;
+      }
+    );
     await this.props.mutations.reassignCampaignContacts(
       this.props.params.organizationId,
-      this.state.campaignIdsContactIds,
-      newTexterUserId
+      updatedCampaignIdsContactIds,
+      newTexterUserId.toString()
     );
     this.setState({
       utc: Date.now().toString(),

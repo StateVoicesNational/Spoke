@@ -103,7 +103,15 @@ const components = {
     overflow: "hidden"
   },
   logoImg: {},
-  popup: {}
+  popup: {},
+  floatingButton: {
+    margin: 0,
+    top: "auto",
+    right: 20,
+    bottom: 20,
+    left: "auto",
+    position: "fixed"
+  }
 };
 
 const theme = {

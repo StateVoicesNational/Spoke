@@ -1,7 +1,7 @@
 import { completeContactLoad, failedContactLoad } from "../../../workers/jobs";
 import { r, cacheableData } from "../../../server/models";
 import { getConfig, hasConfig } from "../../../server/api/lib/config";
-import queryString from "query-string";
+import queryString from "node:querystring";
 import { getConversationFiltersFromQuery } from "../../../lib";
 import { getConversations } from "../../../server/api/conversations";
 import { getTags } from "../../../server/api/tag";

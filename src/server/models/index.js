@@ -48,6 +48,7 @@ function createLoader(model, opts) {
 // This is in dependency order, so tables are after their dependencies
 const tableList = [
   "organization", // good candidate?
+  "opt_out_message",
   "user", // good candidate
   "campaign", // good candidate
   "campaign_admin",

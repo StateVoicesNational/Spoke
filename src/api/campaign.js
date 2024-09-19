@@ -137,6 +137,8 @@ export const schema = gql`
     messageServiceLink: String
     phoneNumbers: [String]
     inventoryPhoneNumberCounts: [CampaignPhoneNumberCount]
+    useDynamicReplies: Boolean
+    replyBatchSize: Int
   }
 
   type CampaignsList {

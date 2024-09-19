@@ -18,9 +18,13 @@ import {
   operations as adminCampaignEditOps
 } from "../../src/containers/AdminCampaignEdit";
 import {
+  mockInteractionSteps,
   setupTest,
   cleanupTest,
-  createStartedCampaign,
+  createCampaign,
+  createInvite,
+  createOrganization,
+  createUser,
   makeRunnableMutations,
   runComponentQueries,
   muiTheme
@@ -98,59 +102,233 @@ describe("CampaignInteractionStepsForm", () => {
   });
 
   describe("action handlers", () => {
+    const pinkInteractionStep = {
+      id: 4,
+      questionText: "",
+      script: "Deep Pink is an awesome color, {firstName}!",
+      answerOption: "Deep Pink",
+      answerActions: "",
+      answerActionsData: null,
+      parentInteractionId: 1,
+      isDeleted: false
+    };
+
     let wrappedComponent;
     let interactionSteps;
 
+    function cmpAnswerOptions(step) {
+      return function(mStep) {
+        /**
+         * @returns True if the answer options are equal. False otherwise.
+         */
+        return step.answer_option === mStep.answerOption;
+      };
+    }
+
+    function cmpProp(prop, val) {
+      return function(node) {
+        /**
+         * @returns True if the node prop and val are equal. False otherwise.
+         */
+        return node.props()[prop] === val;
+      };
+    }
+
+    function dummyFunction() {
+      /**
+       * Empty function that does nothing
+       *
+       * @returns Empty object
+       */
+      return {};
+    }
+
+    function saveInteractionSteps(
+      campaign,
+      done,
+      interactionSteps,
+      queryResults,
+      wrappedComponent
+    ) {
+      const newInteractionSteps = [];
+      let instance, interactionStepsAfter;
+
+      async function callback1() {
+        const campaignInteractionStepsForm = wrappedComponent.find(
+          CampaignInteractionStepsForm
+        );
+
+        expect(campaignInteractionStepsForm.exists()).toEqual(true);
+
+        instance = campaignInteractionStepsForm.instance();
+
+        await instance.onSave();
+
+        interactionStepsAfter = await r
+          .knex("interaction_step")
+          .where({ campaign_id: campaign.id });
+
+        interactionStepsAfter.map(normalizeIsDeleted);
+
+        expect(interactionStepsAfter).toEqual(
+          expect.arrayContaining([
+            expect.objectContaining({
+              answer_actions: "",
+              answer_actions_data: null,
+              answer_option: "",
+              campaign_id: Number(campaign.id),
+              id: expect.any(Number),
+              is_deleted: false,
+              parent_interaction_id: null,
+              question: "What's your favorite color?",
+              script: "Hi {firstName}!  Let's talk about colors."
+            }),
+            expect.objectContaining({
+              answer_actions: "complex-test-action",
+              answer_actions_data:
+                '{"value":"{\\"hex\\":\\"#B22222\\",\\"rgb\\":{\\"r\\":178,\\"g\\":34,\\"b\\":34}}","label":"firebrick"}',
+              answer_option: "Red",
+              id: expect.any(Number),
+              campaign_id: Number(campaign.id),
+              is_deleted: false,
+              parent_interaction_id: expect.any(Number),
+              question: "What's your favorite shade of red?",
+              script: "Red is a great color, {firstName}!"
+            }),
+            expect.objectContaining({
+              answer_actions: "",
+              answer_actions_data: "",
+              answer_option: "Crimson",
+              campaign_id: Number(campaign.id),
+              id: expect.any(Number),
+              is_deleted: false,
+              parent_interaction_id: expect.any(Number),
+              question: "",
+              script: "Crimson is a great shade of red, {firstName}!"
+            }),
+            expect.objectContaining({
+              answer_actions: "",
+              answer_actions_data: "",
+              answer_option: "Cherry",
+              campaign_id: Number(campaign.id),
+              id: expect.any(Number),
+              is_deleted: false,
+              parent_interaction_id: expect.any(Number),
+              question: "",
+              script: "Cherry is a great shade of red, {firstName}!"
+            }),
+            expect.objectContaining({
+              answer_actions: "complex-test-action",
+              answer_actions_data:
+                '{"value":"{\\"hex\\":\\"#4B0082\\",\\"rgb\\":{\\"r\\":75,\\"g\\":0,\\"b\\":130}}","label":"indigo"}',
+              answer_option: "Purple",
+              campaign_id: Number(campaign.id),
+              id: expect.any(Number),
+              is_deleted: false,
+              parent_interaction_id: expect.any(Number),
+              question: "",
+              script: "Purple is a great color, {firstName}!"
+            })
+          ])
+        );
+
+        // Delete "Red" interaction step
+        wrappedComponent.setState(
+          {
+            expandedSection: 3
+          },
+          callback2
+        );
+      }
+
+      async function callback2() {
+        interactionStepsAfter.forEach(deleteRedInteractionSteps);
+
+        instance.state.interactionSteps = newInteractionSteps;
+        await instance.onSave();
+
+        const interactionStepsAfterDelete = await r
+          .knex("interaction_step")
+          .where({ campaign_id: campaign.id });
+
+        // Test that the "Red" interaction step and its children are deleted
+        interactionStepsAfterDelete.map(normalizeIsDeleted);
+        expect(interactionStepsAfterDelete).toEqual(
+          expect.arrayContaining([
+            expect.objectContaining({
+              answer_actions: "",
+              answer_actions_data: null,
+              answer_option: "",
+              campaign_id: Number(campaign.id),
+              id: expect.any(Number),
+              is_deleted: false,
+              parent_interaction_id: null,
+              question: "What's your favorite color?",
+              script: "Hi {firstName}!  Let's talk about colors."
+            }),
+            expect.objectContaining({
+              answer_actions: "complex-test-action",
+              answer_actions_data:
+                '{"value":"{\\"hex\\":\\"#4B0082\\",\\"rgb\\":{\\"r\\":75,\\"g\\":0,\\"b\\":130}}","label":"indigo"}',
+              answer_option: "Purple",
+              campaign_id: Number(campaign.id),
+              id: expect.any(Number),
+              is_deleted: false,
+              parent_interaction_id: expect.any(Number),
+              question: "",
+              script: "Purple is a great color, {firstName}!"
+            })
+          ])
+        );
+
+        done();
+      }
+
+      function deleteRedInteractionSteps(step) {
+        const newStep = JSON.parse(
+          JSON.stringify(
+            instance.state.interactionSteps.find(cmpAnswerOptions(step))
+          )
+        );
+
+        newStep.id = step.id;
+        newStep.parentInteractionId = step.parent_interaction_id;
+
+        if (step.answer_option === "Red") {
+          newStep.isDeleted = true;
+        }
+
+        newInteractionSteps.push(newStep);
+      }
+
+      /**
+       * Normalize is_deleted field due to various possible truthy values in different databases types
+       * @param {array} is Interaction steps
+       */
+      function normalizeIsDeleted(step) {
+        // eslint-disable-next-line no-param-reassign
+        step.is_deleted = !!step.is_deleted;
+      }
+
+      return function(interactionStepsBefore) {
+        expect(interactionStepsBefore).toHaveLength(0);
+
+        return wrappedComponent.setState(
+          {
+            expandedSection: 3,
+            campaignFormValues: {
+              ...queryResults.campaignData.campaign,
+              interactionSteps
+            }
+          },
+          callback1
+        );
+      };
+    }
+
     describe("when there are no action handlers", () => {
       beforeEach(async () => {
-        interactionSteps = [
-          {
-            id: "new_1",
-            questionText: "What is your favorite color",
-            script: "Hello {firstName}. Let's talk about your favorite color.",
-            answerOption: "",
-            answerActions: "",
-            answerActionsData: "",
-            parentInteractionId: null,
-            isDeleted: false,
-            interactionSteps: [
-              {
-                id: "new_2",
-                questionText: "What is your favorite shade of red?",
-                script: "Red is an awesome color, {firstName}!",
-                answerOption: "Red",
-                answerActions: "",
-                answerActionsData: "",
-                parentInteractionId: "new_1",
-                isDeleted: false,
-                interactionSteps: [
-                  {
-                    id: "new_21",
-                    questionText: "",
-                    script: "Crimson is a rad shade of red, {firstName}",
-                    answerOption: "Crimson",
-                    answerActions: "",
-                    answerActionsData: "",
-                    parentInteractionId: "new_2",
-                    isDeleted: false,
-                    interactionSteps: []
-                  }
-                ]
-              },
-              {
-                id: "new_3",
-                questionText: "",
-                script: "Purple is an awesome color, {firstName}!",
-                answerOption: "Purple",
-                answerActions: "",
-                answerActionsData: "",
-                parentInteractionId: "new_1",
-                isDeleted: false,
-                interactionSteps: []
-              }
-            ]
-          }
-        ];
+        interactionSteps = [mockInteractionSteps];
 
         StyleSheetTestUtils.suppressStyleInjection();
         wrappedComponent = mount(
@@ -160,8 +338,8 @@ describe("CampaignInteractionStepsForm", () => {
               formValues={{
                 interactionSteps
               }}
-              onChange={() => {}}
-              onSubmit={() => {}}
+              onChange={dummyFunction}
+              onSubmit={dummyFunction}
               ensureComplete
               customFields={[]}
               saveLabel="save"
@@ -174,7 +352,7 @@ describe("CampaignInteractionStepsForm", () => {
 
       it("doesn't render the answer actions", async () => {
         const answerActionsComponents = wrappedComponent.findWhere(
-          node => node.props()["data-test"] === "actionSelect"
+          cmpProp("data-test", "actionSelect")
         );
         expect(answerActionsComponents.exists()).toEqual(false);
       });
@@ -213,16 +391,7 @@ describe("CampaignInteractionStepsForm", () => {
             parentInteractionId: 1,
             isDeleted: false
           },
-          {
-            id: 4,
-            questionText: "",
-            script: "Deep Pink is an awesome color, {firstName}!",
-            answerOption: "Deep Pink",
-            answerActions: "",
-            answerActionsData: null,
-            parentInteractionId: 1,
-            isDeleted: false
-          }
+          { ...pinkInteractionStep }
         ];
 
         StyleSheetTestUtils.suppressStyleInjection();
@@ -233,8 +402,8 @@ describe("CampaignInteractionStepsForm", () => {
               formValues={{
                 interactionSteps
               }}
-              onChange={() => {}}
-              onSubmit={() => {}}
+              onChange={dummyFunction}
+              onSubmit={dummyFunction}
               ensureComplete
               customFields={[]}
               saveLabel="save"
@@ -264,7 +433,7 @@ describe("CampaignInteractionStepsForm", () => {
         const step1 = cards.at(1);
         const selectField1 = step1.find(GSSelectField);
         const step1AnswerActionNodes = step1.findWhere(
-          node => node.props()["data-test"] === "actionSelect"
+          cmpProp("data-test", "actionSelect")
         );
         expect(step1AnswerActionNodes.first().props().value).toEqual(
           "red-handler"
@@ -286,7 +455,7 @@ describe("CampaignInteractionStepsForm", () => {
         ]);
 
         const step1ClientChoiceNodes = step1.findWhere(
-          node => node.props()["data-test"] === "actionDataAutoComplete"
+          cmpProp("data-test", "actionDataAutoComplete")
         );
 
         expect(step1ClientChoiceNodes.exists()).toEqual(false);
@@ -295,7 +464,7 @@ describe("CampaignInteractionStepsForm", () => {
         const step2 = cards.at(2);
         const selectField2 = step2.find(GSSelectField);
         const step2AnswerActionNodes = step2.findWhere(
-          node => node.props()["data-test"] === "actionSelect"
+          cmpProp("data-test", "actionSelect")
         );
 
         expect(step2AnswerActionNodes.first().props().value).toEqual(
@@ -318,7 +487,7 @@ describe("CampaignInteractionStepsForm", () => {
         ]);
 
         const step2ClientChoiceNodes = step2.findWhere(
-          node => node.props()["data-test"] === "actionDataAutoComplete"
+          cmpProp("data-test", "actionDataAutoComplete")
         );
 
         expect(step2ClientChoiceNodes.exists()).toEqual(false);
@@ -327,7 +496,7 @@ describe("CampaignInteractionStepsForm", () => {
         const step3 = cards.at(3);
         const selectField3 = step3.find(GSSelectField);
         const step3AnswerActionNodes = step3.findWhere(
-          node => node.props()["data-test"] === "actionSelect"
+          cmpProp("data-test", "actionSelect")
         );
 
         expect(step3AnswerActionNodes.first().props().value).toEqual("");
@@ -348,7 +517,7 @@ describe("CampaignInteractionStepsForm", () => {
         ]);
 
         const step3ClientChoiceNodes = step3.findWhere(
-          node => node.props()["data-test"] === "actionDataAutoComplete"
+          cmpProp("data-test", "actionDataAutoComplete")
         );
 
         expect(step3ClientChoiceNodes.exists()).toEqual(false);
@@ -394,16 +563,7 @@ describe("CampaignInteractionStepsForm", () => {
             parentInteractionId: 1,
             isDeleted: false
           },
-          {
-            id: 4,
-            questionText: "",
-            script: "Deep Pink is an awesome color, {firstName}!",
-            answerOption: "Deep Pink",
-            answerActions: "pink-handler",
-            answerActionsData: null,
-            parentInteractionId: 1,
-            isDeleted: false
-          },
+          { ...pinkInteractionStep, answerActions: "pink-handler" },
           {
             id: 5,
             questionText: "",
@@ -424,8 +584,8 @@ describe("CampaignInteractionStepsForm", () => {
               formValues={{
                 interactionSteps
               }}
-              onChange={() => {}}
-              onSubmit={() => {}}
+              onChange={dummyFunction}
+              onSubmit={dummyFunction}
               ensureComplete
               customFields={[]}
               saveLabel="save"
@@ -469,7 +629,7 @@ describe("CampaignInteractionStepsForm", () => {
         const step1 = cards.at(1);
         const selectField1 = step1.find(GSSelectField);
         const step1AnswerActionNodes = step1.findWhere(
-          node => node.props()["data-test"] === "actionSelect"
+          cmpProp("data-test", "actionSelect")
         );
 
         expect(step1AnswerActionNodes.first().props().value).toEqual(
@@ -492,7 +652,7 @@ describe("CampaignInteractionStepsForm", () => {
         ]);
 
         const step1ClientChoiceNodes = step1.findWhere(
-          node => node.props()["data-test"] === "actionDataAutoComplete"
+          cmpProp("data-test", "actionDataAutoComplete")
         );
 
         expect(step1ClientChoiceNodes.at(2).props().options).toEqual([
@@ -514,7 +674,7 @@ describe("CampaignInteractionStepsForm", () => {
         const step2 = cards.at(2);
         const selectField2 = step2.find(GSSelectField);
         const step2AnswerActionNodes = step2.findWhere(
-          node => node.props()["data-test"] === "actionSelect"
+          cmpProp("data-test", "actionSelect")
         );
 
         expect(step2AnswerActionNodes.first().props().value).toEqual(
@@ -537,7 +697,7 @@ describe("CampaignInteractionStepsForm", () => {
         ]);
 
         const step2ClientChoiceNodes = step2.findWhere(
-          node => node.props()["data-test"] === "actionDataAutoComplete"
+          cmpProp("data-test", "actionDataAutoComplete")
         );
 
         expect(step2ClientChoiceNodes.first().props().value).toEqual({
@@ -564,7 +724,7 @@ describe("CampaignInteractionStepsForm", () => {
         const step3 = cards.at(3);
         const selectField3 = step3.find(GSSelectField);
         const step3AnswerActionNodes = step3.findWhere(
-          node => node.props()["data-test"] === "actionSelect"
+          cmpProp("data-test", "actionSelect")
         );
 
         expect(step3AnswerActionNodes.first().props().value).toEqual(
@@ -587,7 +747,7 @@ describe("CampaignInteractionStepsForm", () => {
         ]);
 
         const step3ClientChoiceNodes = step3.findWhere(
-          node => node.props()["data-test"] === "actionDataAutoComplete"
+          cmpProp("data-test", "actionDataAutoComplete")
         );
 
         expect(step3ClientChoiceNodes.exists()).toEqual(false);
@@ -596,7 +756,7 @@ describe("CampaignInteractionStepsForm", () => {
         const step4 = cards.at(4);
         const selectField4 = step4.find(GSSelectField);
         const step4AnswerActionNodes = step4.findWhere(
-          node => node.props()["data-test"] === "actionSelect"
+          cmpProp("data-test", "actionSelect")
         );
 
         expect(step4AnswerActionNodes.first().props().value).toEqual("");
@@ -617,7 +777,7 @@ describe("CampaignInteractionStepsForm", () => {
         ]);
 
         const step4ClientChoiceNodes = step4.findWhere(
-          node => node.props()["data-test"] === "actionDataAutoComplete"
+          cmpProp("data-test", "actionDataAutoComplete")
         );
 
         expect(step4ClientChoiceNodes.exists()).toEqual(false);
@@ -635,14 +795,13 @@ describe("CampaignInteractionStepsForm", () => {
       beforeEach(async () => {
         await setupTest();
 
-        const startedCampaign = await createStartedCampaign();
-        ({
-          testOrganization: {
-            data: { createOrganization: organization }
-          },
-          testAdminUser: adminUser,
-          testCampaign: campaign
-        } = startedCampaign);
+        adminUser = await createUser();
+        const testOrganization = await createOrganization(
+          adminUser,
+          await createInvite()
+        );
+        campaign = await createCampaign(adminUser, testOrganization);
+        organization = testOrganization.data.createOrganization;
       }, global.DATABASE_SETUP_TEARDOWN_TIMEOUT);
 
       afterEach(async () => {
@@ -749,103 +908,15 @@ describe("CampaignInteractionStepsForm", () => {
         expect(wrappedComponent.exists()).toEqual(true);
         r.knex("interaction_step")
           .where({ campaign_id: campaign.id })
-          .then(interactionStepsBefore => {
-            expect(interactionStepsBefore).toHaveLength(0);
-
-            return wrappedComponent.setState(
-              {
-                expandedSection: 3,
-                campaignFormValues: {
-                  ...queryResults.campaignData.campaign,
-                  interactionSteps
-                }
-              },
-              async () => {
-                const campaignInteractionStepsForm = wrappedComponent.find(
-                  CampaignInteractionStepsForm
-                );
-
-                expect(campaignInteractionStepsForm.exists()).toEqual(true);
-
-                const instance = campaignInteractionStepsForm.instance();
-
-                await instance.onSave();
-
-                const interactionStepsAfter = await r
-                  .knex("interaction_step")
-                  .where({ campaign_id: campaign.id });
-
-                interactionStepsAfter.forEach(step => {
-                  // eslint-disable-next-line no-param-reassign
-                  step.is_deleted = !!step.is_deleted;
-                });
-
-                expect(interactionStepsAfter).toEqual(
-                  expect.arrayContaining([
-                    expect.objectContaining({
-                      answer_actions: "",
-                      answer_actions_data: null,
-                      answer_option: "",
-                      campaign_id: Number(campaign.id),
-                      id: expect.any(Number),
-                      is_deleted: false,
-                      parent_interaction_id: null,
-                      question: "What's your favorite color?",
-                      script: "Hi {firstName}!  Let's talk about colors."
-                    }),
-                    expect.objectContaining({
-                      answer_actions: "complex-test-action",
-                      answer_actions_data:
-                        '{"value":"{\\"hex\\":\\"#B22222\\",\\"rgb\\":{\\"r\\":178,\\"g\\":34,\\"b\\":34}}","label":"firebrick"}',
-                      answer_option: "Red",
-                      id: expect.any(Number),
-                      campaign_id: Number(campaign.id),
-                      is_deleted: false,
-                      parent_interaction_id: expect.any(Number),
-                      question: "What's your favorite shade of red?",
-                      script: "Red is a great color, {firstName}!"
-                    }),
-                    expect.objectContaining({
-                      answer_actions: "",
-                      answer_actions_data: "",
-                      answer_option: "Crimson",
-                      campaign_id: Number(campaign.id),
-                      id: expect.any(Number),
-                      is_deleted: false,
-                      parent_interaction_id: expect.any(Number),
-                      question: "",
-                      script: "Crimson is a great shade of red, {firstName}!"
-                    }),
-                    expect.objectContaining({
-                      answer_actions: "",
-                      answer_actions_data: "",
-                      answer_option: "Cherry",
-                      campaign_id: Number(campaign.id),
-                      id: expect.any(Number),
-                      is_deleted: false,
-                      parent_interaction_id: expect.any(Number),
-                      question: "",
-                      script: "Cherry is a great shade of red, {firstName}!"
-                    }),
-                    expect.objectContaining({
-                      answer_actions: "complex-test-action",
-                      answer_actions_data:
-                        '{"value":"{\\"hex\\":\\"#4B0082\\",\\"rgb\\":{\\"r\\":75,\\"g\\":0,\\"b\\":130}}","label":"indigo"}',
-                      answer_option: "Purple",
-                      campaign_id: Number(campaign.id),
-                      id: expect.any(Number),
-                      is_deleted: false,
-                      parent_interaction_id: expect.any(Number),
-                      question: "",
-                      script: "Purple is a great color, {firstName}!"
-                    })
-                  ])
-                );
-
-                done();
-              }
-            );
-          });
+          .then(
+            saveInteractionSteps(
+              campaign,
+              done,
+              interactionSteps,
+              queryResults,
+              wrappedComponent
+            )
+          );
       });
     });
   });
