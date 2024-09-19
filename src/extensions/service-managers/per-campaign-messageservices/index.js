@@ -245,14 +245,6 @@ export async function onBuyPhoneNumbers({ organization, serviceName, opts }) {
   };
 }
 
-export async function onGetShortcodes({ organization, serviceName, opts }) {
-  return {
-    opts: {
-      skipOrgMessageService: true
-    }
-  };
-}
-
 export async function onVendorServiceFullyConfigured({
   organization,
   serviceName

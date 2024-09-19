@@ -130,13 +130,6 @@ export async function onBuyPhoneNumbers({
   opts
 }) {}
 
-export async function onGetShortcodes({
-  organization,
-  user,
-  serviceName,
-  opts
-}) {}
-
 export async function onOrganizationServiceVendorSetup({
   organization,
   user,

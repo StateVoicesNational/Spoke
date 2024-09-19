@@ -67,8 +67,7 @@ class AdminPhoneNumberInventory extends React.Component {
       sortCol: "state",
       sortOrder: "asc",
       filters: {},
-      deleteNumbersDialogOpen: false,
-      queriedShortcodes: false
+      deleteNumbersDialogOpen: false
     };
   }
 
@@ -125,13 +124,6 @@ class AdminPhoneNumberInventory extends React.Component {
         limit: null
       }
     });
-  };
-
-  handleGetShortcodes = async() => {
-    this.setState({
-      queriedShortcodes: true
-    });
-    await this.props.mutations.getShortCodes();
   };
 
   handleDeleteNumbersOpen = ([areaCode, , , availableCount]) => {
@@ -339,10 +331,6 @@ class AdminPhoneNumberInventory extends React.Component {
       tableData = tableData.filter(data => data.state === filters.state);
     }
 
-    if (this.state.queriedShortcodes){
-      this.numShortcodes = ownedAreaCodes.filter(j => ownedAreaCodes.indexOf('Shortcode') === -1).length
-    }
-
     this.sortTable(tableData, this.state.sortCol, this.state.sortOrder);
     const handleSortOrderChange = (key, order) => {
       this.setState({
@@ -388,41 +376,17 @@ class AdminPhoneNumberInventory extends React.Component {
           columns={this.tableColumns()}
           options={options}
         />
-        <div
-          style={theme.layouts.buttons}
-        >
-          {this.props.params.ownerPerms ? (
-            // <Fab
-            <Button
-              {...dataTest("buyPhoneNumbers")}
-              color="primary"
-              variant="contained"
-              type="button"
-              style={theme.components.buyPhoneNumbersButton}
-              onClick={this.handleBuyNumbersOpen}
-            >
-              Buy Phone Numbers
-            </Button>
-          ) : null}
 
-          {this.props.params.ownerPerms ? (
-            <Button
-              {...dataTest("buyPhoneNumbers")}
-              color="primary"
-              variant="contained"
-              type="button"
-              style={theme.components.checkShortCodesButton}
-              onClick={this.handleGetShortcodes}
-            >
-              Check for Short Codes
-            </Button>
-          ) : null}
-        </div>
-        <p>
-          {this.state.queriedShortcodes ? (
-               `This service has ${this.numShortcodes} shortcodes.`
-          ) : null}
-        </p>
+        {this.props.params.ownerPerms ? (
+          <Fab
+            {...dataTest("buyPhoneNumbers")}
+            color="primary"
+            style={theme.components.floatingButton}
+            onClick={this.handleBuyNumbersOpen}
+          >
+            <AddIcon />
+          </Fab>
+        ) : null}
 
         <Dialog
           open={this.state.buyNumbersDialogOpen}
@@ -509,23 +473,6 @@ const queries = {
 };
 
 const mutations = {
-  getShortCodes: ownProps => () => ({
-    mutation: gql`
-      mutation getShortCodes(
-        $organizationId: ID!
-      ) {
-        getShortCodes(
-          organizationId: $organizationId
-        ) {
-          id
-        }
-      }
-    `,
-    variables: {
-      organizationId: ownProps.params.organizationId,
-    },
-    refetchQueries: () => ["getOrganizationData"]
-  }),
   buyPhoneNumbers: ownProps => (areaCode, limit) => ({
     mutation: gql`
       mutation buyPhoneNumbers(

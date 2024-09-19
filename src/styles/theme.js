@@ -65,30 +65,17 @@ const layouts = {
     marginLeft: "auto",
     marginRight: "auto",
     textAlign: "center"
-  },
-  buttons: {
-    display: "flex",
-    justifyContent: "space-evenly",
-    marginTop: 20
   }
 };
 
 const components = {
-  buyPhoneNumberButton: {
+  floatingButton: {
     margin: 0,
     top: "auto",
     right: 20,
     bottom: 20,
     left: "auto",
-    position: "inherit"
-  },
-  checkShortCodesButton: {
-    marginLeft: 0,
-    top: "auto",
-    right: 20,
-    bottom: 20,
-    left: "auto",
-    position: "inherit"
+    position: "fixed"
   },
   logoDiv: {
     margin: "50 auto",
