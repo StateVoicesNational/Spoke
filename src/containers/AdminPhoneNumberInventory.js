@@ -497,18 +497,6 @@ class AdminPhoneNumberInventory extends React.Component {
             </Button>
           ) : null}
         </div>
-        {/* <p>
-          {this.state.queriedShortcodes ? (
-               `This service has ${this.numShortcodes} shortcodes.`
-          ) : null}
-        </p>
-        <p>
-          {this.state.queriedTollfree ? (
-               `This service has ${this.numTollfreeNumbers} toll free numbers.`
-          ) : null}
-        </p> */}
-
-
         <Dialog
           open={this.state.buyNumbersDialogOpen}
           onClose={this.handleBuyNumbersCancel}
