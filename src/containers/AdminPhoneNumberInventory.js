@@ -97,11 +97,16 @@ class AdminPhoneNumberInventory extends React.Component {
       // Checks if one of the previous jobs is for Short codes/Toll free
       // AND that this job is not pending
       completedShortCodeJobs = prevPendingPHoneNumberJobs.filter(j => {
-        return j.areaCode === "Shortcode" && !pendingPhoneNumberJobs.map(p => p.id).includes(j.id);
+        return (
+          j.areaCode === "Shortcode" && 
+          !pendingPhoneNumberJobs.map(p => p.id).includes(j.id)
+        );
       });
 
       completedTollFreeJobs = prevPendingPHoneNumberJobs.filter(j => {
-        return j.areaCode === "Tollfree" && !pendingPhoneNumberJobs.map(p => p.id).includes(j.id);
+        return (
+          j.areaCode === "Tollfree" && 
+          !pendingPhoneNumberJobs.map(p => p.id).includes(j.id));
       });
     }
 
