@@ -33,17 +33,6 @@ import { Snackbar } from "@material-ui/core";
 import { Alert } from "@material-ui/lab";
 import { getConfig } from "../server/api/lib/config";
 
-// fake service is allowed for easier testing
-const isTwilio = (
-  getConfig("DEFAULT_SERVICE") === "twilio" 
-);
-
-const isFakeservice = (
-  getConfig("DEFAULT_SERVICE") === "fakeservice"
-);
-
-const isTwilioOrFakeservice = isTwilio || isFakeservice;
-
 const inlineStyles = {
   column: {
     textOverflow: "ellipsis",
@@ -384,10 +373,15 @@ class AdminPhoneNumberInventory extends React.Component {
   render() {
     const {
       phoneNumberCounts,
-      pendingPhoneNumberJobs
+      pendingPhoneNumberJobs,
+      serviceVendor: { name }
     } = this.props.data.organization;
 
     const { filters } = this.state;
+
+    const isTwilio = name == "twilio";
+    const isFakeservice = name == "fakeservice";
+    const isTwilioOrFakeservice = isTwilio || isFakeservice;
 
     // Push rows for pending jobs as a simple visual indication that counts are
     // being updated.
