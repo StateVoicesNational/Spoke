@@ -49,7 +49,8 @@ export const getShortCodes = async (
     job_type: Jobs.GET_SHORT_CODES,
     locks_queue: false,
     payload: JSON.stringify({
-      opts: serviceManagerResult.opts || opts
+      opts: serviceManagerResult.opts || opts,
+      areaCode: "Shortcode"
     })
   });
 };

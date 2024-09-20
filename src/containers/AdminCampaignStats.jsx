@@ -15,6 +15,7 @@ import TexterStats from "../components/TexterStats";
 import OrganizationJoinLink from "../components/OrganizationJoinLink";
 import CampaignServiceManagers from "../components/CampaignServiceManagers";
 import AdminCampaignCopy from "./AdminCampaignCopy";
+import CollapsibleCard from "../components/CollapsibleCard";
 import { withRouter, Link as RouterLink } from "react-router";
 import { StyleSheet, css } from "aphrodite";
 import loadData from "./hoc/load-data";
@@ -103,6 +104,33 @@ class AdminCampaignStats extends React.Component {
     disableExportButton: false
   };
 
+  renderPieChart(id, text, count, options) {
+    return (
+      <div key={id}>
+        <Typography variant="h5">{text}</Typography>
+        {count > 0 ? (
+          <div className={css(styles.container)}>
+            <div className={css(styles.flexColumn)}>
+              <Stat title="responses" count={count} />
+            </div>
+            <div className={css(styles.flexColumn)} style={{maxWidth: "50%"}}>
+              <div className={css(styles.rightAlign)}>
+                <Chart
+                  data={options.map(answer => [
+                    answer.value,
+                    answer.responderCount
+                  ])}
+                />
+              </div>
+            </div>
+          </div>
+        ) : (
+          "No responses yet"
+        )}
+      </div>
+    );
+  }
+
   renderSurveyStats() {
     const { interactionSteps } = this.props.data.campaign;
 
@@ -112,36 +140,104 @@ class AdminCampaignStats extends React.Component {
       if (step.question === "") {
         return <div key={step.id}></div>;
       }
-
       const totalResponseCount = step.question.answerOptions.reduce(
         (prev, answer) => prev + answer.responderCount,
         0
       );
-      return (
-        <div key={step.id}>
-          <Typography variant="h5">{step.question.text}</Typography>
-          {totalResponseCount > 0 ? (
-            <div className={css(styles.container)}>
-              <div className={css(styles.flexColumn)}>
-                <Stat title="responses" count={totalResponseCount} />
-              </div>
-              <div className={css(styles.flexColumn)}>
-                <div className={css(styles.rightAlign)}>
-                  <Chart
-                    data={step.question.answerOptions.map(answer => [
-                      answer.value,
-                      answer.responderCount
-                    ])}
-                  />
-                </div>
-              </div>
-            </div>
-          ) : (
-            "No responses yet"
-          )}
-        </div>
+      return this.renderPieChart(
+        step.id, step.question.text, totalResponseCount, step.question.answerOptions
       );
     });
+  }
+
+  findGroupedAnswerData() {
+    const groupedAnswerResponses = {};
+    const groupedQuestionResponses = {};
+    let totalGroupedResponsesCount = 0;
+    let hasGroupedResponses = false;
+    const { interactionSteps } = this.props.data.campaign;
+    interactionSteps.forEach(step => {
+      step.question.answerOptions.forEach(answer => {
+        // Grouped Answer Responses
+        answer.value.replace(/\[(.*?)\]/g, (match) => {
+          hasGroupedResponses = true;
+          if (!groupedAnswerResponses[match]) {
+            groupedAnswerResponses[match] = {
+              total: 0,
+              questionAnswers: []
+            };
+          }
+          groupedAnswerResponses[match].total += answer.responderCount;
+          totalGroupedResponsesCount += answer.responderCount;
+          groupedAnswerResponses[match].questionAnswers.push({
+            qid: step.id,
+            answer: answer.value,
+            count: answer.responderCount
+          });
+        });
+        // Grouped Question Responses
+        step.question.text.replace(/\[(.*?)\]/g, (match) => {
+          hasGroupedResponses = true;
+          if (!groupedQuestionResponses[match]) {
+            groupedQuestionResponses[match] = {
+              total: 0,
+              questionAnswers: {}
+            };
+          }
+          groupedQuestionResponses[match].total += answer.responderCount;
+          const qA = groupedQuestionResponses[match].questionAnswers;
+          if (!qA[answer.value]) {
+            qA[answer.value] = {
+              value: answer.value,
+              responderCount: 0
+            };
+          }
+          qA[answer.value].responderCount += answer.responderCount;
+        });
+
+      });
+    });
+
+    return {
+      groupedAnswerResponses,
+      groupedQuestionResponses,
+      totalGroupedResponsesCount,
+      hasGroupedResponses,
+      totalQuestions: interactionSteps.length
+    };
+  }
+
+  renderGroupedAnswerStats(groupedResponses) {
+    const { groupedAnswerResponses, totalGroupedResponsesCount } = groupedResponses;
+    const keys = Object.keys(groupedAnswerResponses);
+    return (
+      keys.length
+        ? this.renderPieChart(
+          "groupedResponses",
+          "Responses Grouped by Answers (with []'s)",
+          totalGroupedResponsesCount,
+          keys.map(k => ({
+            value: k,
+            responderCount: groupedAnswerResponses[k].total
+          }))
+        )
+        : null
+    );
+  }
+
+  renderGroupedQuestionStats(groupedResponses) {
+    const { groupedQuestionResponses } = groupedResponses;
+    const keys = Object.keys(groupedQuestionResponses);
+    return keys.map(k =>
+      this.renderPieChart(
+        `grouped${k}`,
+        `Grouped Questions with ${k}`,
+        groupedQuestionResponses[k].total,
+        Object.keys(groupedQuestionResponses[k].questionAnswers).map(qkey => (
+          groupedQuestionResponses[k].questionAnswers[qkey]
+        ))
+      )
+    );
   }
 
   renderErrorCounts() {
@@ -199,6 +295,7 @@ class AdminCampaignStats extends React.Component {
     } = this.props.organizationData.organization;
     const showReleaseNumbers =
       campaign.isArchived && campaignPhoneNumbersEnabled;
+    const groupedResponses = this.findGroupedAnswerData();
     return (
       <div>
         <div className={css(styles.container)}>
@@ -346,8 +443,8 @@ class AdminCampaignStats extends React.Component {
             {campaign.exportResults.error && (
               <div>Export failed: {campaign.exportResults.error}</div>
             )}
-            {campaign.exportResults.campaignExportUrl &&
-            campaign.exportResults.campaignExportUrl.startsWith("http") ? (
+            {campaign.exportResults.campaignExportUrl && (
+            (campaign.exportResults.campaignExportUrl.startsWith("http")) ? (
               <div>
                 Most recent export:
                 <a href={campaign.exportResults.campaignExportUrl} download>
@@ -360,15 +457,16 @@ class AdminCampaignStats extends React.Component {
                   Messages Export CSV
                 </a>
               </div>
-            ) : (
-              <div>
-                Local export was successful, saved on the server at:
-                <br />
-                {campaign.exportResults.campaignExportUrl}
-                <br />
-                {campaign.exportResults.campaignMessagesExportUrl}
-              </div>
-            )}
+            ) : (campaign.exportResults.campaignExportUrl.startsWith("file://") && (
+                <div>
+                  Local export was successful, saved on the server at:
+                  <br />
+                  {campaign.exportResults.campaignExportUrl}
+                  <br />
+                  {campaign.exportResults.campaignMessagesExportUrl}
+                </div>
+              )
+            ))}
           </div>
         )}
         {campaign.joinToken && campaign.useDynamicAssignment && (
@@ -404,41 +502,54 @@ class AdminCampaignStats extends React.Component {
           </div>
         </div>
 
+        {groupedResponses.hasGroupedResponses ? (
+          <CollapsibleCard title={"Grouped Responses"}>
+            <div>{this.renderGroupedAnswerStats(groupedResponses)}</div>
+            <div>{this.renderGroupedQuestionStats(groupedResponses)}</div>
+          </CollapsibleCard>
+        ) : null}
         {global.HIDE_BRANCHED_SCRIPTS ? (
           ""
         ) : (
-          <Typography variant="h5">Survey Questions</Typography>
+          <CollapsibleCard
+            title={`Survey Responses (${groupedResponses.totalQuestions} questions)`}
+            startCollapsed={groupedResponses.hasGroupedResponses || groupedResponses.totalQuestions > 15 /* to avoid default large renders */}
+          >
+            {this.renderSurveyStats()}
+          </CollapsibleCard>
         )}
-        {this.renderSurveyStats()}
+
         {campaign.stats.errorCounts.length > 0 && (
-          <div>
-            <Typography variant="h5">Sending Errors</Typography>
+          <CollapsibleCard title={"Sending Errors"} colorTheme={"warning"}>
             {this.renderErrorCounts()}{" "}
-          </div>
+          </CollapsibleCard>
         )}
-        <Typography variant="h5">Texter stats</Typography>
-        <Typography variant="h6">% of first texts sent</Typography>
-        <TexterStats campaign={campaign} organizationId={organizationId} />
+        <CollapsibleCard
+          title={"Texter stats (% of first texts sent)"}
+          startCollapsed={campaign.assignments.length > 30 /* to avoid default large renders */}
+        >
+          <TexterStats campaign={campaign} organizationId={organizationId} />
+        </CollapsibleCard>
         <Snackbar
           open={this.state.exportMessageOpen}
           message={
             <span>
               Export started -
-              {this.props.organizationData &&
-                this.props.organizationData.emailEnabled &&
-                " we'll e-mail you when it's done. "}
-              {campaign.cacheable && (
+              {(this.props.organizationData &&
+                this.props.organizationData.organization.emailEnabled) ?
+                " we'll e-mail you when it's done. " :
+              (campaign.cacheable && (
                 <span>
                   <Link
                     onClick={() => {
                       this.props.data.refetch();
                     }}
                   >
-                    Reload the page
+                    {" Reload the page"} {/*Hacky way to add a space at the beginning */}
                   </Link>{" "}
                   to see a download link when its ready.
                 </span>
-              )}
+              ))}
             </span>
           }
           autoHideDuration={campaign.cacheable ? null : 5000}

@@ -86,6 +86,15 @@ const cache = new InMemoryCache({
           }
         }
       }
+    },
+    Organization: {
+      fields: {
+        pendingPhoneNumberJobs: {
+          merge(existing = [], incoming) {
+            return incoming;
+          }
+        }
+      }
     }
   }
 });

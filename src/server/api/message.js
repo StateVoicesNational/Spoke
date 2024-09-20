@@ -4,8 +4,13 @@ import { Message } from "../models";
 export const resolvers = {
   Message: {
     ...mapFieldsToModel(
-      ["text", "userNumber", "contactNumber", "createdAt", "isFromContact"],
+      ["text", "userNumber", "contactNumber", "isFromContact"],
       Message
+    ),
+    createdAt: msg => (
+      msg.created_at instanceof Date || !msg.created_at
+        ? msg.created_at || null
+        : new Date(msg.created_at)
     ),
     media: msg =>
       // Sometimes it's array, sometimes string. Maybe db vs. cache?

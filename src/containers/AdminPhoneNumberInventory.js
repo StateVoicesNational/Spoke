@@ -29,6 +29,9 @@ import GSTextField from "../components/forms/GSTextField";
 import theme from "../styles/theme";
 import { dataTest } from "../lib/attributes";
 import loadData from "./hoc/load-data";
+import { Snackbar } from "@material-ui/core";
+import { Alert } from "@material-ui/lab";
+import { getConfig } from "../server/api/lib/config";
 
 const inlineStyles = {
   column: {
@@ -69,8 +72,62 @@ class AdminPhoneNumberInventory extends React.Component {
       filters: {},
       deleteNumbersDialogOpen: false,
       queriedShortcodes: false,
-      queriedTollfree: false
+      totalShortcodes: this.getAvailablePhoneNumbersByAreaCode(this.props, "Shortcode"),
+      queriedTollfree: false,
+      totalTollfree: this.getAvailablePhoneNumbersByAreaCode(this.props, "Tollfree")
     };
+  }
+
+  // Including props because at one point previous props was queried
+  getAvailablePhoneNumbersByAreaCode(props, areaCode) {
+    const check = props.data.organization.phoneNumberCounts.filter(j => {
+      return j.areaCode == areaCode
+    })
+     return check?.length ? check[0].availableCount : 0
+  }
+
+  componentDidUpdate(prevProps) {
+    const { pendingPhoneNumberJobs } = this.props.data.organization;
+    const prevPendingPHoneNumberJobs = prevProps.data.organization.pendingPhoneNumberJobs;
+    let completedShortCodeJobs;
+    let completedTollFreeJobs;
+
+    // If a job has completed
+    if (pendingPhoneNumberJobs.length < prevPendingPHoneNumberJobs.length) {
+
+      // Checks if one of the previous jobs is for Short codes/Toll free
+      // AND that this job is not pending
+      completedShortCodeJobs = prevPendingPHoneNumberJobs.filter(j => {
+        return (
+          j.areaCode === "Shortcode" && 
+          !pendingPhoneNumberJobs.map(p => p.id).includes(j.id)
+        );
+      });
+
+      completedTollFreeJobs = prevPendingPHoneNumberJobs.filter(j => {
+        return (
+          j.areaCode === "Tollfree" && 
+          !pendingPhoneNumberJobs.map(p => p.id).includes(j.id));
+      });
+    }
+
+    // if a Short Code job completes, update the total short codes
+    // and alert the user
+    if (completedShortCodeJobs && completedShortCodeJobs.length) {
+      this.setState({
+        totalShortCodes: this.getAvailablePhoneNumbersByAreaCode(this.props, "Shortcode"),
+        queriedShortcodes: true
+      })
+    }
+
+    // if a Toll Free job complets, update the total toll free numbers
+    // and alert the user
+    if (completedTollFreeJobs && completedTollFreeJobs.length) {
+      this.setState({
+        totalTollfree: this.getAvailablePhoneNumbersByAreaCode(this.props, "Tollfree"),
+        queriedTollfree: true
+      })
+    }
   }
 
   buyNumbersFormSchema() {
@@ -129,18 +186,12 @@ class AdminPhoneNumberInventory extends React.Component {
   };
 
   handleGetShortcodes = async() => {
-    this.setState({
-      queriedShortcodes: true
-    });
     await this.props.mutations.getShortCodes();
   };
 
   handleGetTollFreeNumbers = async() => {
-    this.setState({
-      queriedTollfree: true
-    });
     await this.props.mutations.getTollFreeNumbers();
-  };
+  }
 
   handleDeleteNumbersOpen = ([areaCode, , , availableCount]) => {
     this.setState({
@@ -322,10 +373,15 @@ class AdminPhoneNumberInventory extends React.Component {
   render() {
     const {
       phoneNumberCounts,
-      pendingPhoneNumberJobs
+      pendingPhoneNumberJobs,
+      serviceVendor: { name }
     } = this.props.data.organization;
 
     const { filters } = this.state;
+
+    const isTwilio = name == "twilio";
+    const isFakeservice = name == "fakeservice";
+    const isTwilioOrFakeservice = isTwilio || isFakeservice;
 
     // Push rows for pending jobs as a simple visual indication that counts are
     // being updated.
@@ -345,14 +401,6 @@ class AdminPhoneNumberInventory extends React.Component {
 
     if (filters.state) {
       tableData = tableData.filter(data => data.state === filters.state);
-    }
-
-    if (this.state.queriedShortcodes){
-      this.numShortcodes = ownedAreaCodes.filter(j => ownedAreaCodes.indexOf('Shortcode') === -1).length
-    }
-
-    if (this.state.queriedTollfree){
-      this.numTollfreeNumbers = ownedAreaCodes.filter(j => ownedAreaCodes.indexOf('Tollfree') === -1).length
     }
 
     this.sortTable(tableData, this.state.sortCol, this.state.sortOrder);
@@ -417,7 +465,7 @@ class AdminPhoneNumberInventory extends React.Component {
             </Button>
           ) : null}
 
-          {this.props.params.ownerPerms ? (
+          {(isTwilioOrFakeservice && this.props.params.ownerPerms) ? (
             <Button
               {...dataTest("getShortcodes")}
               color="primary"
@@ -430,7 +478,7 @@ class AdminPhoneNumberInventory extends React.Component {
             </Button>
           ) : null}
 
-          {this.props.params.ownerPerms ? (
+          {(isTwilioOrFakeservice && this.props.params.ownerPerms) ? (
             <Button
               {...dataTest("getTollfreeNumbers")}
               color="primary"
@@ -443,18 +491,6 @@ class AdminPhoneNumberInventory extends React.Component {
             </Button>
           ) : null}
         </div>
-        {/* <p>
-          {this.state.queriedShortcodes ? (
-               `This service has ${this.numShortcodes} shortcodes.`
-          ) : null}
-        </p>
-        <p>
-          {this.state.queriedTollfree ? (
-               `This service has ${this.numTollfreeNumbers} toll free numbers.`
-          ) : null}
-        </p> */}
-
-
         <Dialog
           open={this.state.buyNumbersDialogOpen}
           onClose={this.handleBuyNumbersCancel}
@@ -486,7 +522,6 @@ class AdminPhoneNumberInventory extends React.Component {
               Cancel
             </Button>
             <Button
-              variant="contained"
               color="secondary"
               variant="outlined"
               onClick={this.handleDeletePhoneNumbersSubmit}
@@ -495,6 +530,48 @@ class AdminPhoneNumberInventory extends React.Component {
             </Button>
           </DialogActions>
         </Dialog>
+        <Snackbar
+          open={this.state.queriedTollfree}
+          autoHideDuration={2000}
+          onClose={() => {
+            this.setState({
+              queriedTollfree: false
+            })
+          }}
+          >
+          {this.state.totalTollfree > 0 ?
+            <Alert elevation={6} variant="filled" severity="success">
+                {this.state.totalTollfree} Toll Free numbers found!
+            </Alert>
+            :
+            <Alert elevation={6} variant="filled" severity="info">
+                {isFakeservice ?
+                "No Toll Free numbers were found." :
+                "fakeservice is enabled"}
+            </Alert>
+          }
+        </Snackbar>
+        <Snackbar
+          open={this.state.queriedShortcodes}
+          autoHideDuration={2000}
+          onClose={() => {
+            this.setState({
+              queriedShortcodes: false
+            })
+          }}
+          >
+          {this.state.totalShortcodes > 0 ?
+            <Alert elevation={6} variant="filled" severity="success">
+                {this.state.totalShortcodes} Short Code numbers found!
+            </Alert>
+            :
+            <Alert elevation={6} variant="filled" severity="info">
+                {isFakeservice ?
+                "No Short Code numbers were found." :
+                "fakeservice is enabled"}
+            </Alert>
+          }
+        </Snackbar>
       </div>
     );
   }
