@@ -136,7 +136,8 @@ class TexterTodoList extends React.Component {
         <Snackbar
           open={Boolean(this.state.notifications)}
           message={"Some campaigns have replies for you to respond to!"}
-          onClose={() => {
+          autoHideDuration={4000}
+	        onClose={() => {
             this.setState({ notifications: false });
           }}
         />
