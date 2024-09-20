@@ -38,7 +38,6 @@ class TexterTodoList extends React.Component {
       this.props.notifications.stopPolling();
       this.props.notifications.startPolling(notificationPollDelay);
       // move the result to state
-      nextProps.notifications.user.notifications = [];
       // FUTURE: maybe append for a set of assignmentIds to display them
       nextState.notifications = notifications;
     }
@@ -137,7 +136,8 @@ class TexterTodoList extends React.Component {
         <Snackbar
           open={Boolean(this.state.notifications)}
           message={"Some campaigns have replies for you to respond to!"}
-          onClose={() => {
+          autoHideDuration={4000}
+	        onClose={() => {
             this.setState({ notifications: false });
           }}
         />
