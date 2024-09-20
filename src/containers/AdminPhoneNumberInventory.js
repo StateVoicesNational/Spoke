@@ -31,6 +31,18 @@ import { dataTest } from "../lib/attributes";
 import loadData from "./hoc/load-data";
 import { Snackbar } from "@material-ui/core";
 import { Alert } from "@material-ui/lab";
+import { getConfig } from "../server/api/lib/config";
+
+// fake service is allowed for easier testing
+const isTwilio = (
+  getConfig("DEFAULT_SERVICE") === "twilio" 
+);
+
+const isFakeservice = (
+  getConfig("DEFAULT_SERVICE") === "fakeservice"
+);
+
+const isTwilioOrFakeservice = isTwilio || isFakeservice;
 
 const inlineStyles = {
   column: {
@@ -459,7 +471,7 @@ class AdminPhoneNumberInventory extends React.Component {
             </Button>
           ) : null}
 
-          {this.props.params.ownerPerms ? (
+          {(isTwilioOrFakeservice && this.props.params.ownerPerms) ? (
             <Button
               {...dataTest("getShortcodes")}
               color="primary"
@@ -472,7 +484,7 @@ class AdminPhoneNumberInventory extends React.Component {
             </Button>
           ) : null}
 
-          {this.props.params.ownerPerms ? (
+          {(isTwilioOrFakeservice && this.props.params.ownerPerms) ? (
             <Button
               {...dataTest("getTollfreeNumbers")}
               color="primary"
@@ -551,7 +563,9 @@ class AdminPhoneNumberInventory extends React.Component {
             </Alert>
             :
             <Alert elevation={6} variant="filled" severity="info">
-                No Toll Free numbers were found.
+                {isFakeservice ?
+                "No Toll Free numbers were found." :
+                "fakeservice is enabled"}
             </Alert>
           }
         </Snackbar>
@@ -570,7 +584,9 @@ class AdminPhoneNumberInventory extends React.Component {
             </Alert>
             :
             <Alert elevation={6} variant="filled" severity="info">
-                No Short Code numbers were found.
+                {isFakeservice ?
+                "No Short Code numbers were found." :
+                "fakeservice is enabled"}
             </Alert>
           }
         </Snackbar>
