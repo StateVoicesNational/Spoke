@@ -38,7 +38,6 @@ class TexterTodoList extends React.Component {
       this.props.notifications.stopPolling();
       this.props.notifications.startPolling(notificationPollDelay);
       // move the result to state
-      nextProps.notifications.user.notifications = [];
       // FUTURE: maybe append for a set of assignmentIds to display them
       nextState.notifications = notifications;
     }
