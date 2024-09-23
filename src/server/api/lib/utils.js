@@ -60,3 +60,11 @@ export const groupCannedResponses = cannedResponses => {
 
 export const replaceAll = (str, find, replace) =>
   str.replace(new RegExp(escapeRegExp(find), "g"), replace);
+
+export const base64ToString = (str) => {
+  if(str && typeof(str) === "string") {
+    const buff = new Buffer.from(str, 'base64');
+    return buff.toString('utf-8');
+  }
+  return "";
+}

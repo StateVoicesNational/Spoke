@@ -138,6 +138,8 @@ const campaignInfoFragment = `
     state
     count
   }
+  useDynamicReplies
+  replyBatchSize
 `;
 
 export const campaignDataQuery = gql`query getCampaign($campaignId: String!) {
@@ -513,7 +515,9 @@ export class AdminCampaignEditBase extends React.Component {
           "batchSize",
           "useDynamicAssignment",
           "responseWindow",
-          "batchPolicies"
+          "batchPolicies",
+          "useDynamicReplies",
+          "replyBatchSize"
         ],
         checkCompleted: () => true,
         blocksStarting: false,

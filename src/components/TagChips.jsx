@@ -13,7 +13,7 @@ const styles = StyleSheet.create({
 const TagChips = ({ tags, tagIds, onRequestDelete, extraProps }) => (
   <div className={css(styles.tagChips)}>
     {tagIds.map((id, i) => {
-      const listedTag = tags.find(t => t.id === id);
+      const listedTag = tags.find(t => t.id == id);
       return (
         listedTag && (
           <TagChip

@@ -37,7 +37,7 @@ applicable; see step four).
 
 Zapier is a swiss army knife of middleware that accepts a litany of inputs
 ("Triggers" in Zapier parlance), can perform a dizzying array of transforms,
-and push the results to a conucorpia of outputs. As an example, the Austin DSA
+and push the results to a cornucopia of outputs. As an example, the Austin DSA
 used this integration, in concert with Zapier, to record every positive ID for
 GOTV efforts and:
 

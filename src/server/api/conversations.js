@@ -4,6 +4,7 @@ import { addWhereClauseForContactsFilterMessageStatusIrrespectiveOfPastDue } fro
 import { addCampaignsFilterToQuery } from "./campaign";
 import { log } from "../../lib";
 import { getConfig } from "../api/lib/config";
+import { isSqlite } from "../models/index";
 
 function getConversationsJoinsAndWhereClause(
   queryParam,
@@ -74,6 +75,13 @@ function getConversationsJoinsAndWhereClause(
     contactsFilter && contactsFilter.messageStatus
   );
 
+  if (contactsFilter.updatedAtGt) {
+    query = query.andWhere(function() {this.where('updated_at', '>', contactsFilter.updatedAtGt)})
+  }
+  if (contactsFilter.updatedAtLt) {
+    query = query.andWhere(function() {this.where('updated_at', '<', contactsFilter.updatedAtLt)})
+  }
+
   if (contactsFilter) {
     if ("isOptedOut" in contactsFilter) {
       query.where("is_opted_out", contactsFilter.isOptedOut);
@@ -126,6 +134,10 @@ function getConversationsJoinsAndWhereClause(
         );
       }
     }
+
+    if (contactsFilter.orderByRaw) {
+      query = query.orderByRaw(contactsFilter.orderByRaw);
+    }
   }
 
   return query;
@@ -146,6 +158,12 @@ function mapQueryFieldsToResolverFields(queryResult, fieldsMap) {
     }
     return key;
   });
+  if (typeof data.updated_at != "undefined") {
+    data.updated_at = (
+      data.updated_at instanceof Date || !data.updated_at
+      ? data.updated_at || null
+      : new Date(data.updated_at))
+  }
   return data;
 }
 
@@ -187,20 +205,20 @@ export async function getConversations(
       .offset(cursor.offset);
   }
   console.log(
-    "getConversations sql",
-    awsContext && awsContext.awsRequestId,
-    cursor,
-    assignmentsFilter,
-    offsetLimitQuery.toString()
+    `Org Id: ${organizationId} :: getConversations sql -- \n`,
+    `\tawsContext: ${awsContext && awsContext.awsRequestId ? true : false}\n`,
+    `\tcursor: limit=${cursor.limit}, offset=${cursor.offset}\n`,
+    `\tassignmentsFilter: ${Object.keys(assignmentsFilter).length > 0 ? assignmentsFilter : "no filter"}\n`,
+    `\toffsetLimitQuery: ${offsetLimitQuery.toString()}`
   );
 
   const ccIdRows = await offsetLimitQuery;
 
   console.log(
-    "getConversations contact ids",
-    awsContext && awsContext.awsRequestId,
-    Number(new Date()) - Number(starttime),
-    ccIdRows.length
+    `Org Id: ${organizationId} :: getConversations query1 contact ids -- \n`,
+    `\tawsContext: ${awsContext && awsContext.awsRequestId === undefined ? true : false}\n`,
+    `\ttime: ${Number(new Date()) - Number(starttime)}ms\n`,
+    `\tccIdRows length: ${ccIdRows.length}`
   );
   const ccIds = ccIdRows.map(ccIdRow => {
     return ccIdRow.cc_id;
@@ -254,10 +272,10 @@ export async function getConversations(
   query = query.orderBy("cc_id", "desc").orderBy("message.id");
   const conversationRows = await query;
   console.log(
-    "getConversations query2 result",
-    awsContext && awsContext.awsRequestId,
-    Number(new Date()) - Number(starttime),
-    conversationRows.length
+    `Org Id: ${organizationId} :: getConversations query2 conversations -- \n`,
+    `\tawsContext: ${awsContext && awsContext.awsRequestId === undefined ? true : false}\n`,
+    `\ttime: ${Number(new Date()) - Number(starttime)}ms\n`,
+    `\tconversationRows lenght: ${conversationRows.length}`
   );
   /* collapse the rows to produce an array of objects, with each object
    * containing the fields for one conversation, each having an array of
@@ -320,8 +338,9 @@ export async function getConversations(
   /* Query #3 -- get the count of all conversations matching the criteria.
    * We need this to show total number of conversations to support paging */
   console.log(
-    "getConversations query3",
-    Number(new Date()) - Number(starttime)
+    "getConversations query3 total count + time for total completion of queries\n",
+    `\ttime: ${Number(new Date()) - Number(starttime)}ms\n`,
+    `\ttotal conversations: ${conversations.length}`
   );
   const conversationsCountQuery = getConversationsJoinsAndWhereClause(
     r.knexReadOnly,
@@ -336,7 +355,9 @@ export async function getConversations(
   let conversationCount;
   try {
     conversationCount = await r.getCount(
-      conversationsCountQuery.timeout(4000, { cancel: true })
+      !isSqlite ?
+      conversationsCountQuery.timeout(4000, { cancel: true }) :
+      conversationsCountQuery
     );
   } catch (err) {
     // default fake value that means 'a lot'

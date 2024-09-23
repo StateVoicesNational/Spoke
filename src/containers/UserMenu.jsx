@@ -116,7 +116,8 @@ export class UserMenuBase extends Component {
     if (!currentUser) {
       return <div />;
     }
-    const organizations = currentUser.texterOrganizations;
+    const organizations = [...currentUser.texterOrganizations]
+      .sort((a,b)=> a.name.toLowerCase()>b.name.toLowerCase() ? 1 : -1)
     const isSuperAdmin = currentUser.is_superadmin;
     return (
       <div>

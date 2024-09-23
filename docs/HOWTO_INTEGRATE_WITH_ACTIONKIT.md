@@ -33,7 +33,7 @@
 
 ## Note about Email Subscription Suppression
 
-- If you want to signup people for emails who've clicked yes, you'll need to add another column to your csv. Columns will be:
+- If you want to sign-up people for emails who've clicked yes, you'll need to add another column to your csv. Columns will be:
   * external_id (the actionkit user_id)
   * event_page
   * event_id
@@ -42,4 +42,4 @@
   * lastName
   * suppress_subscribe
 
-  In the suppress_subscribe column, all the row values should be equal to `0` (to denote false). If you do not include this column, it will automatically default to true which means folks who signup for an event will not be added to the mailable list. 
+  In the suppress_subscribe column, all the row values should be equal to `0` (to denote false). If you do not include this column, it will automatically default to true which means folks who sign-up for an event will not be added to the mailable list. 

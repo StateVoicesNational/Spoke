@@ -9,7 +9,7 @@ You will need to create a Twilio account in order to test outgoing and incoming 
 > If you are using these instructions for an Heroku instance or AWS Lambda instance, replace references to `<YOUR_APP_URL>` with your actual app url (i.e. examplespokeapp.herokuapp.com ), and skip step 1.
 
 1. If you are using these instructions for development (not Heroku), you can use [ngrok](https://ngrok.com/docs) to allow Twilio to communicate with Spoke. Follow the instructions in [this section](HOWTO_DEVELOPMENT_LOCAL_SETUP.md#ngrok) and use the ngrok external-facing app URL below to replace `<YOUR_APP_URL>`
-2. Create a Twilio acccount: https://www.twilio.com/ _If your organization is a non-profit organization, you may also apply for complementary twilio credits at [Twilio.org](https://www.twilio.org/application)_
+2. Create a Twilio account: https://www.twilio.com/ _If your organization is a non-profit organization, you may also apply for complementary twilio credits at [Twilio.org](https://www.twilio.org/application)_
 3. Click on `Programmable SMS` on the side panel
 4. Click on `Messaging Services`, and click `Create Messaging Service`
 5. Give your messaging service a Name then click `Create`
@@ -32,10 +32,10 @@ You will need to create a Twilio account in order to test outgoing and incoming 
   - To attach it to your project, go back to the Messaging Service you created and click `Sender Pool`. Click `Add Sender` and add the phone number you just bought.
 
 ## Multi-Org Twilio Setup
-If you follow the instructions above, every organization and campaign in your instance will use the same Twilio account and the same messaging service (phone number pool). If you want to use different twilio accounts and/or messaging services for each organization, you can basically follow the same instuctions with a couple of tweaks.
+If you follow the instructions above, every organization and campaign in your instance will use the same Twilio account and the same messaging service (phone number pool). If you want to use different twilio accounts and/or messaging services for each organization, you can basically follow the same instructions with a couple of tweaks.
 
 - In your .env file, set `TWILIO_MULTI_ORG` to `true`. This will enable an additional section on the organization settings page where you can set Twilio credentials for the organization.
 - For security, Twilio Auth Tokens are encrypted using the `SESSION_SECRET` environment variable before being stored in the database.
 - You can still set instance-wide credentials in the .env file (as described above). If you do, those credentials will be used as fallback if credentials aren't configured for an organization.
-- It is not required to configure all settings for all organizations. For example, to use a single site-wide Twilio account but with separate phone number pools for some organizations, follow the instuctions above and then set the Default Message Service SID (leaving the other fields blank) in the organizations settings for the orgs you want to override.
+- It is not required to configure all settings for all organizations. For example, to use a single site-wide Twilio account but with separate phone number pools for some organizations, follow the instructions above and then set the Default Message Service SID (leaving the other fields blank) in the organizations settings for the orgs you want to override.
 - When using multiple Twilio accounts you will need to change the Inbound Request URL for your messaging service in the Twilio console [step 7 above]. It should look like `https://<YOUR_APP_URL>/twilio/<ORG_ID>` and `https://<YOUR_APP_URL>/twilio-message-report/<ORG_ID>`. The correct URL to use will be displayed on the settings page after you save the Twilio credentials.

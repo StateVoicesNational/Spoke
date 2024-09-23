@@ -71,7 +71,7 @@ INSERT INTO user_organization (user_id, organization_id, role)
     VALUES ((SELECT id FROM "user" WHERE email = 'admin@spoke.test' LIMIT 1), (SELECT id FROM organization WHERE name = 'test_org' LIMIT 1), 'OWNER');
 ```
 
-Once the inital user is set up, follow these steps to authenticate users using the dev script:
+Once the initial user is set up, follow these steps to authenticate users using the dev script:
 
 1. Set up your .env variables with sensible defaults and pointing to the scripts output. Example:
 

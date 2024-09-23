@@ -51,7 +51,7 @@ There are three main "points" where a contact loader can hook into the applicati
 2. When a campaigner submits the contact-loader specific information to save the campaign -- here
    Spoke will pass the data to a processContactLoad method for the ingest method chosen.
 3. For sophisticated applications, the ingest method can add endpoints or otherwise change the
-   express app on-load of the function. This can allow asynchoronous server-to-server APIs if necessary.
+   express app on-load of the function. This can allow asynchronous server-to-server APIs if necessary.
 
 These three are represented in this graphic to outline the workflow:
 
@@ -87,7 +87,7 @@ security -- it's a powerful option, but also a dangerous one.
 * Start campaign links triggered from a different web site
 * A side-channel for very interactive steps in the react component with an api.
 
-Start your paths with either `/int*` (for integration) or `/sign*` (for signup) --
+Start your paths with either `/int*` (for integration) or `/sign*` (for sign-up) --
 using these starting points will ensure that your endpoints will not (nor in the future)
 conflict with application endpoints.  Also try to include your contact-loader's name
 somewhere in the endpoints so different contact loaders are unlikely to collide.

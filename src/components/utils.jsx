@@ -40,3 +40,8 @@ export function deepCopy(obj) {
     return obj;
   }
 }
+
+// Convert an array of strings to an array of integers
+export function convertToInt(array) {
+  return array.map(str => parseInt(str));
+}

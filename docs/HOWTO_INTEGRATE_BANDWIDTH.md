@@ -1,6 +1,6 @@
 # Bandwidth Integration
 
-Bandwidth.com is a telephone service API company. To use Bandwidth, set `DEFAULT_SERVICE=bandwidth`. The `sticky-sender` and `num-picker` service managers are required for the Bandwidth extension to work. `sticky-sender` must come before `numpicker-basic` in the `SERVICE_MANAGERS` environment variable.
+Bandwidth.com is a telephone service API company. To use Bandwidth, set `DEFAULT_SERVICE=bandwidth`. The `sticky-sender` and `numpicker-basic` service managers are required for the Bandwidth extension to work. `sticky-sender` must come before `numpicker-basic` in the `SERVICE_MANAGERS` environment variable.
 
 For setting up a development environment with Bandwidth, first read [this section](HOWTO_DEVELOPMENT_LOCAL_SETUP.md#ngrok).
 
@@ -33,7 +33,7 @@ For setting up a development environment with Bandwidth, first read [this sectio
     hmac.update(String(<ORGANIZATION_ID>));
     console.log(hmac.digest("base64"));
     ```
-12. Click the "Excecute" button in the top left corner. A value will be printed to the console on the right of the screen. Copy the value.
+12. Click the "Execute" button in the top left corner. A value will be printed to the console on the right of the screen. Copy the value.
 13. Go back to the Bandwidth application tab.
 14. Paste the value into the following "Callback password" field. This value being set as the callback password provides HMAC authentication for Bandwidth.
 15. Leave all other fields as their default value.
