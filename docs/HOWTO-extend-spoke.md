@@ -122,4 +122,4 @@ integrations.  Ideally we will consolidate these hooks into a src/extensions/log
 
 Currently, only encrypting locally in src/extensions/secret-manager/default-encrypt is implemented,
 but you can implement a different manager and set SECRET_MANAGER= to use it instead. We imagine (and need)
-implementations for Amazon Secrets Manager and Google's/Azure's secrets manangers.
+implementations for Amazon Secrets Manager and Google's/Azure's secrets managers.

@@ -27,11 +27,11 @@ Walking through all the different AWS resources and configuration that must be i
 
 Spoke needs a domain to run on. In order to configure the API Gateway with this domain we first need to create a certificate.
 
-Waiting for verification for a certificate may take a while so we will start that now. Go to the Certificate Manager service. Request a certificate. Select "public." Add a domain name `spoke.campaign.com`. Choose a validation method (generally the DNS method). Add the verification DNS records to your domain. Wait for the DNS update to propogate and continue with the setup.
+Waiting for verification for a certificate may take a while so we will start that now. Go to the Certificate Manager service. Request a certificate. Select "public." Add a domain name `spoke.campaign.com`. Choose a validation method (generally the DNS method). Add the verification DNS records to your domain. Wait for the DNS update to propagate and continue with the setup.
 
 ## S3
 
-Create a private S3 bucket by choosing all the default values as you go throuh the setup wizard. We will call this `textforcampaign`.
+Create a private S3 bucket by choosing all the default values as you go through the setup wizard. We will call this `textforcampaign`.
 
 ## VPC
 
@@ -173,12 +173,15 @@ you can manually run the migration (see below) rather than it accidentally trigg
 #### Environment variable maximum: 4K
 
 AWS Lambda has a maximum size limit for all environment variable data of 4K -- this should generally be harmless.
-However, some environment variables like GOOGLE_SECRET for script import can be quite large. In this case, create
+However, some environment variables like BASE64_GOOGLE_SECRET for script import can be quite large. In this case, create
 another file (does not have to be located in your Spoke project directory) in the same format as production-env.json
-with GOOGLE_SECRET as a top-level JSON key (currently, no other variables are supported from this file).
+with BASE64_GOOGLE_SECRET as a top-level JSON key (currently, no other variables are supported from this file).
 
 Then set the variable in production-env.json `CONFIG_FILE`: "/absolute/path/to/configfile.json" -- during deployment (below),
 this file will be copied into the lambda function zip file and get deployed with the rest of the code.
+
+DEVELOPER NOTE: Now that GOOGLE_SECRET is set in Base64, this may no longer be an issue. Please open a ticket
+if a problem occurs. 
 
 ## Deploy
 
@@ -207,7 +210,7 @@ After Claudia.js does an 'npm install' essentially of your directory (which will
 
 ### Seed Database
 
-Because seed calls are supressed, you will need to seed the database manually. The current best way to do this is to run Spoke locally using the RDS database credentials. In your `.env` file the relevant lines will look like:
+Because seed calls are suppressed, you will need to seed the database manually. The current best way to do this is to run Spoke locally using the RDS database credentials. In your `.env` file the relevant lines will look like:
 
 ```
 DB_HOST=spokeprod.xxxxxxxxxxxx.us-east-1.rds.amazonaws.com

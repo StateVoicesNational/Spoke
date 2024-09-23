@@ -3,6 +3,7 @@ export { bulkUpdateScript } from "./bulkUpdateScript";
 export { buyPhoneNumbers, deletePhoneNumbers } from "./buyPhoneNumbers";
 export { editOrganization } from "./editOrganization";
 export { findNewCampaignContact } from "./findNewCampaignContact";
+export { getOptOutMessage } from "./getOptOutMessage";
 export { joinOrganization } from "./joinOrganization";
 export { releaseContacts } from "./releaseContacts";
 export { sendMessage } from "./sendMessage";

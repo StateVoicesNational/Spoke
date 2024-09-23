@@ -5,19 +5,35 @@ import { compose, map, reduce, getOr, find, filter, has } from "lodash/fp";
 
 import { r, cacheableData } from "../../models";
 import { getConfig } from "./config";
+import { base64ToString } from "./utils";
 
 const textRegex = RegExp(".*[A-Za-z0-9]+.*");
 
 const getDocument = async documentId => {
-  const auth = google.auth.fromJSON(JSON.parse(getConfig("GOOGLE_SECRET")));
-  auth.scopes = ["https://www.googleapis.com/auth/documents"];
+  let result = null;
+  let base64Key = getConfig("BASE64_GOOGLE_SECRET");
+
+  if (!base64Key) {
+    throw new Error('The BASE64_GOOGLE_SECRET enviroment variable was not found!');
+  }
+
+  // decodes
+  let key = base64ToString(base64Key);
+
+  try {
+    key = JSON.parse(key);
+  } catch(err) {
+    throw new Error('BASE64_GOOGLE_SECRET failed to parse', err);
+  };
+
+  const auth = google.auth.fromJSON(key);
+  auth.scopes = ["https://www.googleapis.com/auth/documents.readonly"];
 
   const docs = google.docs({
     version: "v1",
     auth
   });
 
-  let result = null;
   try {
     result = await docs.documents.get({
       documentId

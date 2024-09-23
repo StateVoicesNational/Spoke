@@ -13,7 +13,7 @@ Dynamic assignment allows admin to use a link that once clicked gives texters ac
 
 You can configure which strategies are active by assigning a comma separated list to the `DYNAMICASSIGNMENT_BATCHES` environment variable.
 
-## Included Dynamic assignment strategiesf
+## Included Dynamic assignment strategies
 
 ### finished-replies (default)
 

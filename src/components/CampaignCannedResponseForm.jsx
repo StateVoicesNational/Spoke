@@ -186,14 +186,18 @@ export default class CannedResponseForm extends React.Component {
             fullWidth
             ref={this.autocompleteInput}
             options={
-              tags && tags.filter(t => this.state.tagIds.indexOf(t.id) === -1)
+              tags &&
+              tags.filter(t => this.state.tagIds.indexOf(parseInt(t.id)) === -1)
             }
             getOptionLabel={option => option.name}
             value={
-              tags && tags.filter(t => this.state.tagIds.indexOf(t.id) > -1)
+              tags &&
+              tags.filter(t => this.state.tagIds.indexOf(parseInt(t.id)) > -1)
             }
             onChange={(event, selectedTags) => {
-              this.setState({ tagIds: selectedTags.map(tag => tag.id) });
+              this.setState({
+                tagIds: selectedTags.map(tag => parseInt(tag.id))
+              });
             }}
             renderInput={params => {
               return <TextField {...params} label="Tags" />;

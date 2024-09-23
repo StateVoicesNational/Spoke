@@ -1,7 +1,28 @@
 import { hasConfig, getConfig } from "../api/lib/config";
 import { getProcessEnvTz, getProcessEnvDstReferenceTimezone } from "../../lib";
+import { base64ToString } from "../api/lib/utils";
 
-const canGoogleImport = hasConfig("GOOGLE_SECRET");
+const canGoogleImport = hasConfig("BASE64_GOOGLE_SECRET");
+
+const googleClientEmail = () => {
+  let output;
+  if (canGoogleImport) {
+    try {
+      const s_GOOGLE_SECRET = base64ToString(process.env.BASE64_GOOGLE_SECRET);
+      output = (JSON.parse((
+        s_GOOGLE_SECRET
+        .replace(/(\r\n|\n|\r)/gm, ""))) // new lines gum up parsing
+        .client_email)
+	      .replaceAll(" ", "");
+    } catch (err) {
+      console.error(`
+        Google API failed to load client email.
+        Please check your BASE64_GOOGLE_SECRET environment variable is intact: `,
+        err);
+    } 
+  }
+  return (output || "");
+};
 
 const rollbarScript = process.env.ROLLBAR_CLIENT_TOKEN
   ? `<script>
@@ -136,7 +157,11 @@ export default function renderIndex(html, css, assetMap) {
       )}';
       window.ASSIGNMENT_CONTACTS_SIDEBAR=${getConfig(
         "ASSIGNMENT_CONTACTS_SIDEBAR"
-      )}
+      )};
+      window.GOOGLE_CLIENT_EMAIL='${googleClientEmail()}';
+      window.OPT_OUT_PER_STATE=${getConfig("OPT_OUT_PER_STATE", null, {
+        truthy: true
+      })}
     </script>
     <script src="${assetMap["bundle.js"]}"></script>
   </body>
