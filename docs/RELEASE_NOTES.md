@@ -1,5 +1,97 @@
 # Release Notes
 
+## v14.1
+__September 2024:__ Version 14.1
+
+14.1 is minor release. This release worked on several aspects of the application, including UI, SQLite Reliability, and a new Dynamic Replies Feature (Thanks MoveOn!)
+
+#### Note on Twilio Toll Free and Short Code Support
+Toll Free and Short Code Support will come in the next version upgrade. We were unable to completely verify this new feature worked due to how difficult it is to come across Short Code numbers. Thank you for your ongoing patience and support.
+
+### Appreciations
+[Maureen Zitouni](https://github.com/mau11), [Ruby Engelhart](https://github.com/engelhartrueben), [Schuyler Duveen](https://github.com/schuyler1d), [Megan Brown](https://github.com/mabrownnyu), [Stefan Hayden](https://github.com/stefanhayden), [Jeff Mann](https://github.com/jeffm2001), [Mitchell Verter](https://github.com/mcverter), [Sophie Waldman](https://github.com/sjwmoveon), [MoveOn](https://github.com/MoveOnOrg)
+
+### Highlights
+- New UI for Google Docs Script Imports w/ Fix
+- New UI for Campaign Stats
+- A new Dynamic Replies Feature - Thanks MoveOn!
+- Improved Logging Clarity
+- Improved SQLite Reliability
+- Additional Documentation
+- Improved GitHub Integration
+- General Package Upgrades
+
+### Included PR's
+- #2408 - Group survey stats - @schuyler1d
+- #2375 - typo - @mau11
+- #2376 - improving logs - @engelhartrueben
+- #2377 - package upgrades - @engelhartrueben
+- #2378 - WSL documentation - @engelhartrueben
+- #2370 - upgrade dotenv - @stefanhayden
+- #2380 - fix deprecated github command - @engelhartrueben
+- #2415 - fix past contacts query - @schuyler1d
+- #2387 - fix typos found in documentation - @engelhartrueben
+- #2422 - update phone number button names - @mabrownnyu
+- #2389 - fix sqlite - @engelhartrueben & @schuyler1d
+- #2423 - Update MoveOn’s PR to work with Spoke v14 - @mau11 + MoveOn (@sjwmoveon, @crayolakat, @codygordon, @ibrand, @technicalex)
+- #2431 - Allow Org specific message handlers - @jeffm2001
+- #2432 - Google Docs UI - @engelhartrueben
+- #2371 - Upgrade cypress from 5.6.0 to 13.11.0 - @stefanhayden
+- #2417 - use relative paths for markdown links - @mcverter
+- #2416 - alphabetize organizations - @mcverter
+- #2451 - Update texter view styling to be more responsive - @mau11
+- #2452 - Fix type error when saving or deleting canned responses with tags - @mau11
+- #2455 - Google API, Base64 implementation - @engelhartrueben
+- #2459 - Remove attempted reassignment of read-only object, nextProps - @mau11
+
+### Package Upgrades
+| Package | Previous Version | New Version |
+| --- | --- | --- |
+| @apollo/client | ^3.9.8 | ^3.10.8 |
+| @apollo/server | ^4.10.1 | ^4.10.4 |
+| @aws-sdk/client-cloudwatch | ^3.535.0 | ^3.609.0 |
+| @aws-sdk/client-cloudwatch-events | ^3.535.0 | ^3.609.0 |
+| @aws-sdk/client-lambda | ^3.535.0 | ^3.609.0 |
+| @aws-sdk/client-s3 | ^3.535.0 | ^3.609.0 |
+| @aws-sdk/client-sqs | ^3.535.0 | ^3.609.0 |
+| @aws-sdk/s3-request-presigner | ^3.535.0 | ^3.609.0 |
+| @babel/cli | ^7.24.1 | ^7.24.7 |
+| @babel/core | ^7.24.1 | ^7.24.7 |
+| @bable/eslint-parser | ^7.24.1 | ^7.24.7 |
+| @babel/plugin-proposal-export-default-from | ^7.18.10 | ^7.24.7 |
+| @babel/plugin-syntax-flow | ^7.14.5 | ^7.24.7 |
+| @babel/plugin-transform-class-properties | ^7.23.3 | ^7.24.7 |
+| @babel/plugin-transform-nullish-coalescing-operator | ^7.23.4 | ^7.24.7 |
+| @babel/plugin-transform-optional-chaining | ^7.23.4 | ^7.24.7 |
+| @babel/plugin-transform-react-jsx | ^7.14.9 | ^7.24.7 |
+| @babel/plugin-transform-runtime | ^7.24.3 | ^7.24.7 |
+| @babel/preset-env | ^7.23.9 | ^7.24.7 |
+| @babel/preset-react | ^7.18.6 | ^7.24.7 |
+| @babel/preset-typescript | ^7.18.6 | ^7.24.7 |
+| @babel/register | ^7.23.7 | ^7.24.6 |
+| @bandwidth/numbers | ^1.7.0 | ^1.10.0 |
+| @graphql-tools/schema | ^10.0.3 | ^10.0.4 |
+| auto0-js | ^9.24.1 | ^9.26.1 |
+| aws-sdk | ^2.6.3 | ^2.1655.0 |
+| bandwidth-sdk | ^1.0.1 | ^1.0.2 |
+| eslint-plugin-jsx-a11y | ^6.6.1 | ^6.9.0 |
+| eslint-plugin-react | ^7.31.10 | ^7.34.3 |
+| eslint-plugin-react-hooks | ^4.3.0 | ^4.6.2 |
+| express | ^4.14.0 | ^4.19.2 |
+| google-libphonenumber | ^3.2.34 | ^3.2.35 |
+| googleapis | ^39.2.0 | ^144.0.0 |
+| graphql | ^16.8.1 | ^16.9.0 |
+| humps | ^1.1.0 | ** 2.0.1 |
+| nodemailer | ^6.9.9 | ^6.9.14 |
+| pg | ^8.11.3 | ^8.12.0 |
+| pg-connection-string | ^2.4.0 | ^2.6.4 |
+| pg-query-stream | ^4.5.3 | ^4.6.0 |
+| redis | ^4.6.13 | ^4.6.15 |
+| timezonecomplete | ^5.5.0 | ^5.13.1 |
+| webpack | ^5.90.2 | ^5.92.1 |
+
+** __`humps` is no longer maintained as of Oct 2023 - 2.0.1 is final verison. [Source](https://github.com/domchristie/humps)__
+
 ## v14.0.2
 _August 2024:_ Version 14.0.2
 
