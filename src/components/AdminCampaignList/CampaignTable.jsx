@@ -62,7 +62,10 @@ const CampaignTable = ({
       return (
         <IconButton
           tooltip="Unarchive"
-          onClick={async () => await unarchiveCampaign(campaign.id)}
+          onClick={async () => {
+            await unarchiveCampaign(campaign.id);
+            setCampaigns(campaigns.filter(e => e.id != campaign.id));
+          }}
         >
           <UnarchiveIcon />
         </IconButton>
@@ -71,7 +74,10 @@ const CampaignTable = ({
     return (
       <IconButton
         tooltip="Archive"
-        onClick={async () => await archiveCampaign(campaign.id)}
+        onClick={async () => {
+          await archiveCampaign(campaign.id);
+          setCampaigns(campaigns.filter(e => e.id != campaign.id));
+        }}
       >
         <ArchiveIcon />
       </IconButton>
