@@ -37,9 +37,10 @@ const CampaignTable = ({
   unarchiveCampaign
  }) => {
 
+  const [campaigns, setCampaigns] = useState(data.organization.campaigns.campaigns.map((campaign) => ({...campaign})));
+
   const [state, setState] = useState({
-    dataTableKey: "initial",
-    campaigns: [...data.organization.campaigns.campaigns]
+    dataTableKey: "initial"
   });
 
   const { limit, offset, total } = data.organization.campaigns.pageInfo;
@@ -284,7 +285,7 @@ const CampaignTable = ({
   }
 
   const getSelectedRowIndexes = () => {
-    const campaignIds = data.organization.campaigns.campaigns.map(
+    const campaignIds = campaigns.map(
       c => c.id
     );
     const indexes = campaignsToArchive.map(campaignId =>
@@ -305,7 +306,6 @@ const CampaignTable = ({
     // Terrible hack around buggy DataTables: we have to force the component
     // to remount if we want clear the "select all" status
     setState({
-      ...state,
       dataTableKey: new Date().getTime()
     });
   };
@@ -346,14 +346,14 @@ const CampaignTable = ({
           break;
         case "sort":
           clearCampaignSelection();
-          state.campaigns.sort(sortFunc(tableState.sortOrder.name));
+          campaigns.sort(sortFunc(tableState.sortOrder.name));
           if (tableState.sortOrder.direction === "desc") {
-            state.campaigns.reverse()
+            campaigns.reverse()
           }
           break;
         case "rowSelectionChange":
           const ids = tableState.selectedRows.data.map(({ index }) => {
-            return state.campaigns[index].id;
+            return campaigns[index].id;
           });
           handleChecked(ids);
           break;
@@ -365,17 +365,17 @@ const CampaignTable = ({
     }
   };
 
-  return state.campaigns.length === 0 ? (
+  return campaigns.length === 0 ? (
     <Empty title="No campaigns" icon={<SpeakerNotesIcon />} />
   ) : (
     <div>
       <br />
       <br />
       <MUIDataTable
-        data={state.campaigns}
+        data={campaigns}
         columns={prepareTableColumns(
           data.organization,
-          state.campaigns
+          campaigns
         )}
         options={options}
       />
