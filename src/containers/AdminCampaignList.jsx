@@ -138,7 +138,7 @@ const AdminCampaignList = ({
             style={{ marginRight: "20px" }}
           >
             <MenuItem value={false}>Current</MenuItem>
-            <MenuItem value>Archived</MenuItem>
+            <MenuItem value={true}>Archived</MenuItem>
           </Select>
           <SortBy onChange={changeSortBy} sortBy={state.sortBy} />
         </React.Fragment>
@@ -272,14 +272,15 @@ const AdminCampaignList = ({
   const changeFilter = async newFilter => {
     setState({
       ...state,
-      isLoading: true,
-      campaignsFilter: newFilter
+      campaignsFilter: newFilter,
+      isLoading: true
     });
     await data.refetch({
       campaignsFilter: newFilter
     });
     setState({ 
       ...state,
+      campaignsFilter: newFilter,
       isLoading: false 
     });
   };
