@@ -33,7 +33,6 @@ const styles = StyleSheet.create({
   }
 });
 
-const INITIAL_ROW_SIZE = 50;
 const INITIAL_SORT_BY = ID_DESC_SORT.value;
 
 const AdminCampaignList = ({
@@ -44,7 +43,7 @@ const AdminCampaignList = ({
   }) => {
 
   const [state, setState] = useState({
-    pageSize: INITIAL_ROW_SIZE,
+    pageSize: 50,
     page: 0,
     isLoading: false,
     campaignsFilter: {
