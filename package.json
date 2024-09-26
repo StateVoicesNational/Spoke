@@ -183,7 +183,7 @@
   "devDependencies": {
     "@babel/eslint-parser": "^7.24.7",
     "@testing-library/jest-dom": "^6.5.0",
-    "@testing-library/react": "^16.0.1",
+    "@testing-library/react": "^12.1.5",
     "babel-jest": "^29.3.1",
     "babel-preset-es2017": "^6.24.1",
     "cypress": "^13.11.0",
