@@ -35,7 +35,8 @@ const styles = StyleSheet.create({
 
 const INITIAL_SORT_BY = ID_DESC_SORT.value;
 
-const AdminCampaignList = ({
+// Exported for testing
+export const AdminCampaignList = ({
   params,
   mutations,
   router,
