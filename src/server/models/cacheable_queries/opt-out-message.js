@@ -6,7 +6,7 @@ const cacheKey = (orgId, state) =>
 const optOutMessageCache = {
   clearQuery: async ({ organizationId, state }) => {
     if (r.redis) {
-      await r.redis.delAsync(cacheKey(organizationId, state));
+      await r.redis.del(cacheKey(organizationId, state));
     }
   },
   query: async ({ organizationId, state }) => {
@@ -21,7 +21,7 @@ const optOutMessageCache = {
     }
     if (r.redis) {
       const key = cacheKey(organizationId, state);
-      let message = await r.redis.getAsync(key);
+      let message = await r.redis.get(key);
 
       if (message !== null) {
         return message;

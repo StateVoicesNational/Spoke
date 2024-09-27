@@ -20,7 +20,7 @@ const cacheKey = zip => `${process.env.CACHE_PREFIX || ""}state-of-${zip}`;
 const zipStateCache = {
   clearQuery: async ({ zip }) => {
     if (r.redis) {
-      await r.redis.delAsync(cacheKey(zip));
+      await r.redis.del(cacheKey(zip));
     }
   },
   query: async ({ zip }) => {
@@ -41,7 +41,7 @@ const zipStateCache = {
 
     if (r.redis) {
       const key = cacheKey(zip);
-      let state = await r.redis.getAsync(key);
+      let state = await r.redis.get(key);
 
       if (state !== null) {
         return state;
