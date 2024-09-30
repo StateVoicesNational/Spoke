@@ -3,14 +3,25 @@
  */
 import React from "react";
 import { mount } from "enzyme";
+import { render, screen, waitForElementToBeRemoved, waitFor, cleanup } from "@testing-library/react";
+import userEvent from "@testing-library/user-event"
 import { AdminCampaignList } from "../../src/containers/AdminCampaignList";
-import { TIMEZONE_SORT } from "../../src/components/AdminCampaignList/SortBy";
 import { StyleSheetTestUtils } from "aphrodite";
+import { act } from 'react-dom/test-utils';
+
+// https://github.com/Khan/aphrodite/issues/62#issuecomment-267026726
+beforeEach(() => {
+  StyleSheetTestUtils.suppressStyleInjection();
+});
+afterEach(() => {
+  StyleSheetTestUtils.clearBufferAndResumeStyleInjection();
+  cleanup()
+});
 
 describe("CampaignList", () => {
   const params = {
     adminPerms: true,
-    organizationId: 77
+    organizationId: '77'
   };
 
   const mutations = {
@@ -110,19 +121,21 @@ describe("CampaignList", () => {
 
   describe("Campaign list sorting", () => {
     const campaignWithCreator = {
-      id: 1,
+      id: '1',
+      title: 'test',
       creator: {
         displayName: "Lorem Ipsum"
       },
       completionStats: {},
       organization: {
         id: 1
-      }
+      },
+      timezone: "US/Eastern"
     };
 
     const data = {
       organization: {
-        id: 1,
+        id: '1',
         cacheable: 2,
         campaigns: {
           campaigns: [campaignWithCreator],
@@ -132,26 +145,46 @@ describe("CampaignList", () => {
             total: 1
           }
         }
-      }
+      },
+      refetch: () => {}
     };
 
-    test("Timezone column is displayed when timezone is current sort", () => {
+    test("Timezone column is displayed when timezone is current sort", async () => {
       StyleSheetTestUtils.suppressStyleInjection();
-      const wrapper = mount(
-        <AdminCampaignList data={data} mutations={mutations} params={params} />
-      );
-      wrapper.setState({
-        sortBy: TIMEZONE_SORT.value
-      });
-      expect(wrapper.containsMatchingElement("Timezone")).toBeTruthy();
+      act(() => {
+        render(
+          <AdminCampaignList data={data} mutations={mutations} params={params} />
+        );
+      })
+
+      act(() => {
+        userEvent.click(
+          screen.getByRole(
+            'button', 
+            {name: /sort: created, newest/i}
+          ), { skipHover: true });
+      })
+
+      act(() => {
+        userEvent.click(
+          screen.getByRole(
+            'option', 
+            {name: /sort: timezone/i}
+        ), { skipHover: true });
+      })
+
+      await waitFor(() => expect(screen.getByRole('columnheader', {name: /timezone/i})).toBeTruthy());
     });
 
     test("Timezone column is hidden when it isn't the current sort", () => {
       StyleSheetTestUtils.suppressStyleInjection();
-      const wrapper = mount(
-        <AdminCampaignList data={data} mutations={mutations} params={params} />
-      );
-      expect(wrapper.containsMatchingElement("Timezone")).toBeFalsy();
+      act(() => {
+        render(
+          <AdminCampaignList data={data} mutations={mutations} params={params} />
+        );
+      })
+      const timezoneButton = screen.queryByText('columnheader', { name: /timezone/i }); 
+      expect(timezoneButton).toBeNull();
     });
   });
 });
