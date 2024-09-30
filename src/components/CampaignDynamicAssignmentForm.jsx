@@ -2,7 +2,7 @@ import type from "prop-types";
 import React from "react";
 import GSForm from "../components/forms/GSForm";
 import GSSubmitButton from "../components/forms/GSSubmitButton";
-import GSIntegerField from "../components/forms/GSIntegerField"
+import GSIntegerField from "../components/forms/GSIntegerField";
 import GSTextField from "../components/forms/GSTextField";
 import * as yup from "yup";
 import Form from "react-formal";
@@ -54,7 +54,11 @@ class CampaignDynamicAssignmentForm extends React.Component {
 
   render() {
     const { joinToken, campaignId, organization } = this.props;
-    const { useDynamicAssignment, batchPolicies, useDynamicReplies } = this.state;
+    const {
+      useDynamicAssignment,
+      batchPolicies,
+      useDynamicReplies
+    } = this.state;
     const unselectedPolicies = organization.batchPolicies
       .filter(p => !batchPolicies.find(cur => cur === p))
       .map(p => ({ id: p, name: p }));
@@ -74,7 +78,7 @@ class CampaignDynamicAssignmentForm extends React.Component {
           label="Allow texters with a link to join and start texting when the campaign is started?"
           labelPlacement="start"
         />
-        <br/>
+        <br />
         <GSForm
           schema={this.formSchema}
           value={this.state}
@@ -126,8 +130,8 @@ class CampaignDynamicAssignmentForm extends React.Component {
               as={GSIntegerField}
               fullWidth
               name="responseWindow"
-              type="number"
               label="Expected Response Window (hours)"
+              inputProps={{ min: 0 }}
             />
             <p style={{ paddingLeft: "8px" }}>
               How long (in hours) before we should consider reassignment without
@@ -136,51 +140,49 @@ class CampaignDynamicAssignmentForm extends React.Component {
               hours for slower campaigns or 2 hours or less for GOTV campaigns.
             </p>
             <FormControlLabel
-          control={
-            <Switch
-              color="primary"
-              checked={useDynamicReplies || false}
-              onChange={(toggler, val) => {
-                console.log(toggler, val);
-                this.toggleChange("useDynamicReplies", val);
-              }}
+              control={
+                <Switch
+                  color="primary"
+                  checked={useDynamicReplies || false}
+                  onChange={(toggler, val) => {
+                    console.log(toggler, val);
+                    this.toggleChange("useDynamicReplies", val);
+                  }}
+                />
+              }
+              label="Allow texters with a link to dynamically get assigned replies?"
+              labelPlacement="start"
             />
-          }
-          label="Allow texters with a link to dynamically get assigned replies?"
-          labelPlacement="start"
-        />
 
-          {!useDynamicReplies ? null : (
-            <div>
-              <ul>
-                <li>
-                  {joinToken ? (
-                    <OrganizationReassignLink
-                      joinToken={joinToken}
-                      campaignId={campaignId}
-                    />
-                  ) : (
-                    "Please save the campaign and reload the page to get the reply link to share with texters."
-                  )}
-                </li>
-                <li>
-                  You can turn off dynamic assignment after starting a campaign
-                  to disallow more new texters to receive replies.
-                </li>
-              </ul>
+            {!useDynamicReplies ? null : (
+              <div>
+                <ul>
+                  <li>
+                    {joinToken ? (
+                      <OrganizationReassignLink
+                        joinToken={joinToken}
+                        campaignId={campaignId}
+                      />
+                    ) : (
+                      "Please save the campaign and reload the page to get the reply link to share with texters."
+                    )}
+                  </li>
+                  <li>
+                    You can turn off dynamic assignment after starting a
+                    campaign to disallow more new texters to receive replies.
+                  </li>
+                </ul>
 
-              <Form.Field
-                as={GSTextField}
-                fullWidth
-                name="replyBatchSize"
-                type="number"
-                label="How large should a batch of replies be?"
-                initialValue={200}
-              />  
-            </div>
-          )
-
-          }
+                <Form.Field
+                  as={GSTextField}
+                  fullWidth
+                  name="replyBatchSize"
+                  type="number"
+                  label="How large should a batch of replies be?"
+                  initialValue={200}
+                />
+              </div>
+            )}
             {organization.batchPolicies.length > 1 ? (
               <div>
                 <h3>Batch Strategy</h3>
