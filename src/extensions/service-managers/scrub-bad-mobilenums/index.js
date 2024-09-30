@@ -306,6 +306,7 @@ export async function nextBatchJobLookups({
       lastCount,
       steps
     );
+    console.log("scrub-bad-mobilenums error: ", err);
     await r
       .knex("job_request")
       .where("id", job.id)
