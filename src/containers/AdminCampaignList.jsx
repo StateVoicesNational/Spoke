@@ -297,7 +297,8 @@ export const AdminCampaignList = ({
     });
     setState({ 
       ...state,
-      isLoading: false 
+      isLoading: false,
+      sortBy: newSort
     });
   };
 
