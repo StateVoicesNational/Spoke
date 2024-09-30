@@ -633,10 +633,10 @@ export async function getContactInfo({
     return {};
   }
   const twilio = await exports.getTwilio(organization);
-  const types = ["carrier"];
+  const types = { fields: "line_type_intelligence" };
   if (lookupName) {
     // caller-name is more expensive
-    types.push("caller-name");
+    types.fields = ("line_type_intelligence,caller-name");
   }
   const contactInfo = {
     contact_number: contactNumber,
@@ -644,24 +644,26 @@ export async function getContactInfo({
     service: "twilio"
   };
   try {
-    const phoneNumber = await twilio.lookups.v1
+    const phoneNumber = await twilio.lookups.v2
       .phoneNumbers(contactNumber)
-      .fetch({ type: types });
+      .fetch(types);
 
-    if (phoneNumber.carrier) {
-      contactInfo.carrier = phoneNumber.carrier.name;
+    if (phoneNumber.lineTypeIntelligence.carrier_name) {
+      contactInfo.carrier = phoneNumber.lineTypeIntelligence.carrier_name;
     }
-    if (phoneNumber.carrier.error_code) {
+    if (phoneNumber.lineTypeIntelligence.error_code) {
       // e.g. 60600: Unprovisioned or Out of Coverage
       contactInfo.status_code = -2;
-      contactInfo.last_error_code = phoneNumber.carrier.error_code;
+      contactInfo.last_error_code = phoneNumber.lineTypeIntelligence.error_code;
     } else if (
-      phoneNumber.carrier.type &&
-      phoneNumber.carrier.type === "landline"
+      // mobile or landline
+      phoneNumber.lineTypeIntelligence.type &&
+      phoneNumber.lineTypeIntelligence.type === "landline"
     ) {
       // landline (not mobile or voip)
       contactInfo.status_code = -1;
     } else if (
+      // example: US
       phoneNumber.countryCode &&
       getConfig("PHONE_NUMBER_COUNTRY", organization) &&
       getConfig("PHONE_NUMBER_COUNTRY", organization) !==
@@ -669,8 +671,8 @@ export async function getContactInfo({
     ) {
       contactInfo.status_code = -3; // wrong country
     } else if (
-      phoneNumber.carrier.type &&
-      phoneNumber.carrier.type !== "landline"
+      phoneNumber.lineTypeIntelligence.type &&
+      phoneNumber.lineTypeIntelligence.type !== "landline"
     ) {
       // mobile, voip
       contactInfo.status_code = 1;
