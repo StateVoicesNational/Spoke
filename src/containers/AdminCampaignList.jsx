@@ -18,9 +18,7 @@ import LoadingIndicator from "../components/LoadingIndicator";
 import { dataTest } from "../lib/attributes";
 import loadData from "./hoc/load-data";
 import theme from "../styles/theme";
-import SortBy, {
-  ID_DESC_SORT
-} from "../components/AdminCampaignList/SortBy";
+import SortBy, { ID_DESC_SORT } from "../components/AdminCampaignList/SortBy";
 import Search from "../components/Search";
 import CampaignTable from "../components/AdminCampaignList/CampaignTable";
 
@@ -36,13 +34,7 @@ const styles = StyleSheet.create({
 const INITIAL_SORT_BY = ID_DESC_SORT.value;
 
 // Exported for testing
-export const AdminCampaignList = ({
-  params,
-  mutations,
-  router,
-  data
-  }) => {
-
+export const AdminCampaignList = ({ params, mutations, router, data }) => {
   const [state, setState] = useState({
     pageSize: 50,
     page: 0,
@@ -60,9 +52,9 @@ export const AdminCampaignList = ({
 
   const handleClickNewButton = async () => {
     const { organizationId } = params;
-    setState({ 
+    setState({
       ...state,
-      isLoading: true 
+      isLoading: true
     });
     const newCampaign = await mutations.createCampaign({
       title: "New Campaign",
@@ -87,9 +79,9 @@ export const AdminCampaignList = ({
 
   const handleClickArchiveMultipleButton = async keys => {
     if (keys.length) {
-      setState({ 
+      setState({
         ...state,
-        isLoading: true 
+        isLoading: true
       });
       await mutations.archiveCampaigns(keys);
       await data.refetch();
@@ -173,16 +165,16 @@ export const AdminCampaignList = ({
 
   const handleMenuClick = event => {
     console.log("event.target", event.target);
-    setState({ 
+    setState({
       ...state,
-      menuAnchorEl: event.target 
+      menuAnchorEl: event.target
     });
   };
 
   const handleMenuClose = () => {
-    setState({ 
+    setState({
       ...state,
-      menuAnchorEl: null 
+      menuAnchorEl: null
     });
   };
 
@@ -208,10 +200,7 @@ export const AdminCampaignList = ({
     return (
       <React.Fragment>
         {iconButton}
-        <Menu
-          open={state.archiveMultipleMenu}
-          anchorEl={state.menuAnchorEl}
-        >
+        <Menu open={state.archiveMultipleMenu} anchorEl={state.menuAnchorEl}>
           {state.archiveMultiple ? (
             <MenuItem
               onClick={() => {
@@ -240,14 +229,10 @@ export const AdminCampaignList = ({
         </Menu>
       </React.Fragment>
     );
-  }
+  };
 
   const changePage = (pageDelta, pageSize) => {
-    const {
-      limit,
-      offset,
-      total
-    } = data.organization.campaigns.pageInfo;
+    const { limit, offset, total } = data.organization.campaigns.pageInfo;
     const currentPage = Math.floor(offset / limit);
     const pageSizeAdjustedCurrentPage = Math.floor(
       (currentPage * limit) / pageSize
@@ -279,10 +264,10 @@ export const AdminCampaignList = ({
     await data.refetch({
       campaignsFilter: newFilter
     });
-    setState({ 
+    setState({
       ...state,
       campaignsFilter: newFilter,
-      isLoading: false 
+      isLoading: false
     });
   };
 
@@ -295,7 +280,7 @@ export const AdminCampaignList = ({
     await data.refetch({
       sortBy: newSort
     });
-    setState({ 
+    setState({
       ...state,
       isLoading: false,
       sortBy: newSort
@@ -322,9 +307,9 @@ export const AdminCampaignList = ({
   const changeCampaignStatus = async (campaignId, changeFn) => {
     setState({
       ...state,
-      campaignsWithChangingStatus: state.campaignsWithChangingStatus.concat(
-        [campaignId]
-      )
+      campaignsWithChangingStatus: state.campaignsWithChangingStatus.concat([
+        campaignId
+      ])
     });
     await changeFn(campaignId);
     await data.refetch();
@@ -343,10 +328,7 @@ export const AdminCampaignList = ({
   };
 
   const handleUnarchiveCampaign = async campaignId => {
-    await changeCampaignStatus(
-      campaignId,
-      mutations.unarchiveCampaign
-    );
+    await changeCampaignStatus(campaignId, mutations.unarchiveCampaign);
   };
 
   const renderActionButton = () => {
@@ -374,7 +356,7 @@ export const AdminCampaignList = ({
         <AddIcon />
       </Fab>
     );
-  }
+  };
   // don't think this is right
   return (
     <div>
@@ -402,7 +384,7 @@ export const AdminCampaignList = ({
       {params.adminPerms && renderActionButton()}
     </div>
   );
-}
+};
 
 const campaignInfoFragment = `
   id
@@ -543,13 +525,13 @@ const mutations = {
 
 AdminCampaignList.propTypes = {
   params: PropTypes.object,
-    mutations: PropTypes.exact({
-      createCampaign: PropTypes.func,
-      archiveCampaigns: PropTypes.func,
-      unarchiveCampaign: PropTypes.func
-    }),
+  mutations: PropTypes.exact({
+    createCampaign: PropTypes.func,
+    archiveCampaigns: PropTypes.func,
+    unarchiveCampaign: PropTypes.func
+  }),
   data: PropTypes.object,
   router: PropTypes.object
-}
+};
 
 export default loadData({ queries, mutations })(withRouter(AdminCampaignList));
