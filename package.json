@@ -124,7 +124,7 @@
     "dataloader": "^2.2.2",
     "dotenv": "^16.4.5",
     "eslint-plugin-react-hooks": "^4.6.2",
-    "express": "^4.19.2",
+    "express": "^4.20.0",
     "fs": "^0.0.2",
     "google-libphonenumber": "^3.2.35",
     "googleapis": "^144.0.0",
