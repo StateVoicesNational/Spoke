@@ -3,11 +3,17 @@
  */
 import React from "react";
 import { mount } from "enzyme";
-import { render, screen, waitForElementToBeRemoved, waitFor, cleanup } from "@testing-library/react";
-import userEvent from "@testing-library/user-event"
-import { AdminCampaignList } from "../../src/containers/AdminCampaignList";
+import { act } from "react-dom/test-utils";
+import {
+  render,
+  screen,
+  waitFor,
+  cleanup
+} from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { StyleSheetTestUtils } from "aphrodite";
-import { act } from 'react-dom/test-utils';
+
+import { AdminCampaignList } from "../../src/containers/AdminCampaignList";
 
 // https://github.com/Khan/aphrodite/issues/62#issuecomment-267026726
 beforeEach(() => {
@@ -15,13 +21,13 @@ beforeEach(() => {
 });
 afterEach(() => {
   StyleSheetTestUtils.clearBufferAndResumeStyleInjection();
-  cleanup()
+  cleanup();
 });
 
 describe("CampaignList", () => {
   const params = {
     adminPerms: true,
-    organizationId: '77'
+    organizationId: "77"
   };
 
   const mutations = {
@@ -121,8 +127,8 @@ describe("CampaignList", () => {
 
   describe("Campaign list sorting", () => {
     const campaignWithCreator = {
-      id: '1',
-      title: 'test',
+      id: "1",
+      title: "test",
       creator: {
         displayName: "Lorem Ipsum"
       },
@@ -135,7 +141,7 @@ describe("CampaignList", () => {
 
     const data = {
       organization: {
-        id: '1',
+        id: "1",
         cacheable: 2,
         campaigns: {
           campaigns: [campaignWithCreator],
@@ -153,37 +159,49 @@ describe("CampaignList", () => {
       StyleSheetTestUtils.suppressStyleInjection();
       act(() => {
         render(
-          <AdminCampaignList data={data} mutations={mutations} params={params} />
+          <AdminCampaignList
+            data={data}
+            mutations={mutations}
+            params={params}
+          />
         );
-      })
+      });
 
       act(() => {
         userEvent.click(
-          screen.getByRole(
-            'button', 
-            {name: /sort: created, newest/i}
-          ), { skipHover: true });
-      })
+          screen.getByRole("button", { name: /sort: created, newest/i }),
+          { skipHover: true }
+        );
+      });
 
       act(() => {
         userEvent.click(
-          screen.getByRole(
-            'option', 
-            {name: /sort: timezone/i}
-        ), { skipHover: true });
-      })
+          screen.getByRole("option", { name: /sort: timezone/i }),
+          { skipHover: true }
+        );
+      });
 
-      await waitFor(() => expect(screen.getByRole('columnheader', {name: /timezone/i})).toBeTruthy());
+      await waitFor(() =>
+        expect(
+          screen.getByRole("columnheader", { name: /timezone/i })
+        ).toBeTruthy()
+      );
     });
 
     test("Timezone column is hidden when it isn't the current sort", () => {
       StyleSheetTestUtils.suppressStyleInjection();
       act(() => {
         render(
-          <AdminCampaignList data={data} mutations={mutations} params={params} />
+          <AdminCampaignList
+            data={data}
+            mutations={mutations}
+            params={params}
+          />
         );
-      })
-      const timezoneButton = screen.queryByText('columnheader', { name: /timezone/i }); 
+      });
+      const timezoneButton = screen.queryByText("columnheader", {
+        name: /timezone/i
+      });
       expect(timezoneButton).toBeNull();
     });
   });
