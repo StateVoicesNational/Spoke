@@ -1,17 +1,37 @@
 # Release Notes
 
+## 14.1.1
+
+_October 2024_: Version 14.1.1
+
+14.1.1 is a patch release.
+
+# Bug Fixes
+
+- [#2471](https://github.com/StateVoicesNational/Spoke/pull/2471) - Fix Landline Scrubber - @engelhartrueben
+- [#2472](https://github.com/StateVoicesNational/Spoke/pull/2472) - Fix Redis Async Errors - @mau11
+- [#2473](https://github.com/StateVoicesNational/Spoke/pull/2473) - Fix Archive UI Bug - @engelhartrueben
+
+# Appreciations
+
+[Maureen Zitouni](https://github.com/mau11), [Ruby Engelhart](https://github.com/engelhartrueben)
+
 ## v14.1
-__September 2024:__ Version 14.1
+
+_September 2024:_ Version 14.1
 
 14.1 is minor release. This release worked on several aspects of the application, including UI, SQLite Reliability, and a new Dynamic Replies Feature (Thanks MoveOn!)
 
 #### Note on Twilio Toll Free and Short Code Support
+
 Toll Free and Short Code Support will come in the next version upgrade. We were unable to completely verify this new feature worked due to how difficult it is to come across Short Code numbers. Thank you for your ongoing patience and support.
 
 ### Appreciations
+
 [Maureen Zitouni](https://github.com/mau11), [Ruby Engelhart](https://github.com/engelhartrueben), [Schuyler Duveen](https://github.com/schuyler1d), [Megan Brown](https://github.com/mabrownnyu), [Stefan Hayden](https://github.com/stefanhayden), [Jeff Mann](https://github.com/jeffm2001), [Mitchell Verter](https://github.com/mcverter), [Sophie Waldman](https://github.com/sjwmoveon), [MoveOn](https://github.com/MoveOnOrg)
 
 ### Highlights
+
 - New UI for Google Docs Script Imports w/ Fix
 - New UI for Campaign Stats
 - A new Dynamic Replies Feature - Thanks MoveOn!
@@ -22,6 +42,7 @@ Toll Free and Short Code Support will come in the next version upgrade. We were 
 - General Package Upgrades
 
 ### Included PR's
+
 - #2408 - Group survey stats - @schuyler1d
 - #2375 - typo - @mau11
 - #2376 - improving logs - @engelhartrueben
@@ -45,80 +66,88 @@ Toll Free and Short Code Support will come in the next version upgrade. We were 
 - #2459 - Remove attempted reassignment of read-only object, nextProps - @mau11
 
 ### Package Upgrades
-| Package | Previous Version | New Version |
-| --- | --- | --- |
-| @apollo/client | ^3.9.8 | ^3.10.8 |
-| @apollo/server | ^4.10.1 | ^4.10.4 |
-| @aws-sdk/client-cloudwatch | ^3.535.0 | ^3.609.0 |
-| @aws-sdk/client-cloudwatch-events | ^3.535.0 | ^3.609.0 |
-| @aws-sdk/client-lambda | ^3.535.0 | ^3.609.0 |
-| @aws-sdk/client-s3 | ^3.535.0 | ^3.609.0 |
-| @aws-sdk/client-sqs | ^3.535.0 | ^3.609.0 |
-| @aws-sdk/s3-request-presigner | ^3.535.0 | ^3.609.0 |
-| @babel/cli | ^7.24.1 | ^7.24.7 |
-| @babel/core | ^7.24.1 | ^7.24.7 |
-| @bable/eslint-parser | ^7.24.1 | ^7.24.7 |
-| @babel/plugin-proposal-export-default-from | ^7.18.10 | ^7.24.7 |
-| @babel/plugin-syntax-flow | ^7.14.5 | ^7.24.7 |
-| @babel/plugin-transform-class-properties | ^7.23.3 | ^7.24.7 |
-| @babel/plugin-transform-nullish-coalescing-operator | ^7.23.4 | ^7.24.7 |
-| @babel/plugin-transform-optional-chaining | ^7.23.4 | ^7.24.7 |
-| @babel/plugin-transform-react-jsx | ^7.14.9 | ^7.24.7 |
-| @babel/plugin-transform-runtime | ^7.24.3 | ^7.24.7 |
-| @babel/preset-env | ^7.23.9 | ^7.24.7 |
-| @babel/preset-react | ^7.18.6 | ^7.24.7 |
-| @babel/preset-typescript | ^7.18.6 | ^7.24.7 |
-| @babel/register | ^7.23.7 | ^7.24.6 |
-| @bandwidth/numbers | ^1.7.0 | ^1.10.0 |
-| @graphql-tools/schema | ^10.0.3 | ^10.0.4 |
-| auto0-js | ^9.24.1 | ^9.26.1 |
-| aws-sdk | ^2.6.3 | ^2.1655.0 |
-| bandwidth-sdk | ^1.0.1 | ^1.0.2 |
-| eslint-plugin-jsx-a11y | ^6.6.1 | ^6.9.0 |
-| eslint-plugin-react | ^7.31.10 | ^7.34.3 |
-| eslint-plugin-react-hooks | ^4.3.0 | ^4.6.2 |
-| express | ^4.14.0 | ^4.19.2 |
-| google-libphonenumber | ^3.2.34 | ^3.2.35 |
-| googleapis | ^39.2.0 | ^144.0.0 |
-| graphql | ^16.8.1 | ^16.9.0 |
-| humps | ^1.1.0 | ** 2.0.1 |
-| nodemailer | ^6.9.9 | ^6.9.14 |
-| pg | ^8.11.3 | ^8.12.0 |
-| pg-connection-string | ^2.4.0 | ^2.6.4 |
-| pg-query-stream | ^4.5.3 | ^4.6.0 |
-| redis | ^4.6.13 | ^4.6.15 |
-| timezonecomplete | ^5.5.0 | ^5.13.1 |
-| webpack | ^5.90.2 | ^5.92.1 |
 
-** __`humps` is no longer maintained as of Oct 2023 - 2.0.1 is final verison. [Source](https://github.com/domchristie/humps)__
+| Package                                             | Previous Version | New Version |
+| --------------------------------------------------- | ---------------- | ----------- |
+| @apollo/client                                      | ^3.9.8           | ^3.10.8     |
+| @apollo/server                                      | ^4.10.1          | ^4.10.4     |
+| @aws-sdk/client-cloudwatch                          | ^3.535.0         | ^3.609.0    |
+| @aws-sdk/client-cloudwatch-events                   | ^3.535.0         | ^3.609.0    |
+| @aws-sdk/client-lambda                              | ^3.535.0         | ^3.609.0    |
+| @aws-sdk/client-s3                                  | ^3.535.0         | ^3.609.0    |
+| @aws-sdk/client-sqs                                 | ^3.535.0         | ^3.609.0    |
+| @aws-sdk/s3-request-presigner                       | ^3.535.0         | ^3.609.0    |
+| @babel/cli                                          | ^7.24.1          | ^7.24.7     |
+| @babel/core                                         | ^7.24.1          | ^7.24.7     |
+| @bable/eslint-parser                                | ^7.24.1          | ^7.24.7     |
+| @babel/plugin-proposal-export-default-from          | ^7.18.10         | ^7.24.7     |
+| @babel/plugin-syntax-flow                           | ^7.14.5          | ^7.24.7     |
+| @babel/plugin-transform-class-properties            | ^7.23.3          | ^7.24.7     |
+| @babel/plugin-transform-nullish-coalescing-operator | ^7.23.4          | ^7.24.7     |
+| @babel/plugin-transform-optional-chaining           | ^7.23.4          | ^7.24.7     |
+| @babel/plugin-transform-react-jsx                   | ^7.14.9          | ^7.24.7     |
+| @babel/plugin-transform-runtime                     | ^7.24.3          | ^7.24.7     |
+| @babel/preset-env                                   | ^7.23.9          | ^7.24.7     |
+| @babel/preset-react                                 | ^7.18.6          | ^7.24.7     |
+| @babel/preset-typescript                            | ^7.18.6          | ^7.24.7     |
+| @babel/register                                     | ^7.23.7          | ^7.24.6     |
+| @bandwidth/numbers                                  | ^1.7.0           | ^1.10.0     |
+| @graphql-tools/schema                               | ^10.0.3          | ^10.0.4     |
+| auto0-js                                            | ^9.24.1          | ^9.26.1     |
+| aws-sdk                                             | ^2.6.3           | ^2.1655.0   |
+| bandwidth-sdk                                       | ^1.0.1           | ^1.0.2      |
+| eslint-plugin-jsx-a11y                              | ^6.6.1           | ^6.9.0      |
+| eslint-plugin-react                                 | ^7.31.10         | ^7.34.3     |
+| eslint-plugin-react-hooks                           | ^4.3.0           | ^4.6.2      |
+| express                                             | ^4.14.0          | ^4.19.2     |
+| google-libphonenumber                               | ^3.2.34          | ^3.2.35     |
+| googleapis                                          | ^39.2.0          | ^144.0.0    |
+| graphql                                             | ^16.8.1          | ^16.9.0     |
+| humps                                               | ^1.1.0           | \*\* 2.0.1  |
+| nodemailer                                          | ^6.9.9           | ^6.9.14     |
+| pg                                                  | ^8.11.3          | ^8.12.0     |
+| pg-connection-string                                | ^2.4.0           | ^2.6.4      |
+| pg-query-stream                                     | ^4.5.3           | ^4.6.0      |
+| redis                                               | ^4.6.13          | ^4.6.15     |
+| timezonecomplete                                    | ^5.5.0           | ^5.13.1     |
+| webpack                                             | ^5.90.2          | ^5.92.1     |
+
+\*\* **`humps` is no longer maintained as of Oct 2023 - 2.0.1 is final verison. [Source](https://github.com/domchristie/humps)**
 
 ## v14.0.2
+
 _August 2024:_ Version 14.0.2
 
 14.0.2 is a patch release.
 
 ### Bug Fixes
-- [#2410](https://github.com/StateVoicesNational/Spoke/pull/2410) - Data exports bug 
-- [#2424](https://github.com/StateVoicesNational/Spoke/pull/2424) - Reset Password Bug 
-- [#2425](https://github.com/StateVoicesNational/Spoke/pull/2425) - Message Review Reassignment Bug 
+
+- [#2410](https://github.com/StateVoicesNational/Spoke/pull/2410) - Data exports bug
+- [#2424](https://github.com/StateVoicesNational/Spoke/pull/2424) - Reset Password Bug
+- [#2425](https://github.com/StateVoicesNational/Spoke/pull/2425) - Message Review Reassignment Bug
 
 ### Appreciations
+
 [Maureen Zitouni](https://github.com/mau11), [Ruby Engelhart](https://github.com/engelhartrueben)
 
 ## v14.0.1
+
 _July 2024:_ Version 14.0.1
 
 14.0.1 is a patch release.
 
 ### Bug Fixes
+
 - [#2384](https://github.com/StateVoicesNational/Spoke/pull/2384) - Fix white-screen-of-death when trying to sort the Admin Campaign List
 - [#2383](https://github.com/StateVoicesNational/Spoke/pull/2383) - Fix white-screen-of-death when trying to click "All Responses
-- [#2379](https://github.com/StateVoicesNational/Spoke/pull/2379) - Create `dependabot.yml` 
+- [#2379](https://github.com/StateVoicesNational/Spoke/pull/2379) - Create `dependabot.yml`
 
 ### Appreciations
+
 [Maureen Zitouni](https://github.com/mau11), [Ruby Engelhart](https://github.com/engelhartrueben), [Schuyler Duveen](https://github.com/schuyler1d)
 
 ## v14.0
+
 _July 2024:_ Version 14.0
 
 14.0 is a major release. This release upgrades Node 16 to Node 20. By upgrading to Node 20, Spoke is now stable and secure until Q1 of 2026.
@@ -126,6 +155,7 @@ _July 2024:_ Version 14.0
 As this is StateVoices's first major release, we would like to express our gratitude to all contributors, MoveOn and its previous Community Managers, and the Progressive Coders Network for their continued support and belief in open-source software and Movement Technology.
 
 ### Appreciations
+
 [Maureen Zitouni](https://github.com/mau11), [Ruby Engelhart](https://github.com/engelhartrueben), [Arique Aguilar](https://github.com/Arique1104), [Larry Person](https://github.com/lperson), [Schuyler Duveen](https://github.com/schuyler1d), [Megan Brown](https://github.com/mabrownnyu), [Daniel Bond](https://github.com/dwbond), [Ilona Brand](https://github.com/ibrand), [Kathy Nguyen](https://github.com/crayolakat)
 
 ### New Features
@@ -133,6 +163,7 @@ As this is StateVoices's first major release, we would like to express our grati
 There are no new features to this update. This update is purely for stability and security.
 
 ### Highlights
+
 - Upgraded Node 16 to Node 20
 - Updated apollo to use Apollo Client v3 and Apollo Server v4
 - Upgraded 48 and removed 15 packages
@@ -140,121 +171,132 @@ There are no new features to this update. This update is purely for stability an
 - Fixed Google Docs integration for script imports
 
 ### Packages:
-| Package | Prev. Version | New Version | Notes |
-| --- | --- | --- | --- |
-| @apollo/client | ** | ^3.9.8 | Apollo Client v3; replaced older Apollo packages |
-| @apolo/server | ** | ^4.10.1 | Apollo Server V4; replaced older Apollo packages |
-| @aws-* | ** | ^3.535.0 | All packages were upgraded/implemented via AWS codemod. These changes were in response to upgrading aws-sdk to V4. |
-| @babel/cli | ^7.19.3 | ^7.24.1 | *** |
-| @babel/core | ^7.19.6 | ^7.24.1 | *** |
-| @babel/plugin-syntax-flow | ** | ^7.14.5 | for unmet peer dependency :: react-scripts > eslint-config-react-app > eslint-plugin-flowtype@8.0.3 |
-| @babel/plugin-transform-class-properties | ** | ^7.23.3 | *** |
-| @babel/plugin-transform-nullish-coalescing-operator | ** | ^7.23.4 | *** |
-| @babel/plugin-transform-optional-chaining | ** | ^7.23.4 | *** |
-| @babel/plugin-transform-react-jsx | ** | ^7.14.9 | for unmet peer dependency :: react-scripts > eslint-config-react-app > eslint-plugin-flowtype@8.0.3 |
-| @babel/plugin-transform-runtime | ^7.19.6 | ^7.24.3 | *** |
-| @babel/preset-env | ^7.20.2 | ^7.23.9 | *** |
-| @babel/register | ^7.18.9 | ^7.23.7 | *** |
-| @babel/traverse | ** | 7.23.2 | *** |
-| @graphql-tools/graphql-file-loader | ** | ^8.0.1 | *** |
-| @graphql-tools/load | ** | ^8.0.2 | *** |
-| @graphql-tools/schema | ** | ^10.0.3 | *** |
-| auth0-js | ^9.14.3 | ^9.24.1 | *** |
-| babel-loader | ^9.1.0 | ^9.1.3 | *** |
-| bandwidth-sdk | ** | ^1.0.1 | Replaces @bandwidth/messaging |
-| cookie-session | ^2.0.0-alpha.1 | ^2.1.0 | *** |
-| dataloader | ^1.2.0 | ^2.2.2 | *** |
-| eslint-plugin-react-hooks | ** | ^4.3.0 | *** |
-| google-libphonenumber | ^3.0.0 | ^3.2.34 | *** |
-| graphql | ^0.13.2 | ^16.8.1 | *** |
-| graphql-type-json | ^0.1.4 | ^0.3.2 | *** |
-| isomorphic-fetch | ^2.2.1 | ^3.0.0 | *** |
-| knex | ^2.3.0 | ^3.1.0 | *** |
-| moment-timezone | ^0.5.14 | ^0.5.45 | *** |
-| nodemailer | ^6.4.16 | ^6.9.9 | *** |
-| pg | ^8.0.3 | ^8.11.3 | *** |
-| pg-query-stream | ^1.1.1 | ^4.5.3 | *** |
-| redis | 3 | ^4.6.13 | *** |
-| react-dnd | ** | 7.7.0 | *** |
-| rollbar | ^2.4.4 | ^2.26.4 | *** |
-| terser-webpack-plugin | 4 | ^5.3.10 | *** |
-| twilio | ^3.40.0 | ^4.23.0 | *** |
-| typescript | ** | ^3.2.1 | *** |
-| webpack | ^5.74.0 | ^5.90.2 | *** |
+
+| Package                                             | Prev. Version  | New Version | Notes                                                                                                              |
+| --------------------------------------------------- | -------------- | ----------- | ------------------------------------------------------------------------------------------------------------------ |
+| @apollo/client                                      | \*\*           | ^3.9.8      | Apollo Client v3; replaced older Apollo packages                                                                   |
+| @apolo/server                                       | \*\*           | ^4.10.1     | Apollo Server V4; replaced older Apollo packages                                                                   |
+| @aws-\*                                             | \*\*           | ^3.535.0    | All packages were upgraded/implemented via AWS codemod. These changes were in response to upgrading aws-sdk to V4. |
+| @babel/cli                                          | ^7.19.3        | ^7.24.1     | \*\*\*                                                                                                             |
+| @babel/core                                         | ^7.19.6        | ^7.24.1     | \*\*\*                                                                                                             |
+| @babel/plugin-syntax-flow                           | \*\*           | ^7.14.5     | for unmet peer dependency :: react-scripts > eslint-config-react-app > eslint-plugin-flowtype@8.0.3                |
+| @babel/plugin-transform-class-properties            | \*\*           | ^7.23.3     | \*\*\*                                                                                                             |
+| @babel/plugin-transform-nullish-coalescing-operator | \*\*           | ^7.23.4     | \*\*\*                                                                                                             |
+| @babel/plugin-transform-optional-chaining           | \*\*           | ^7.23.4     | \*\*\*                                                                                                             |
+| @babel/plugin-transform-react-jsx                   | \*\*           | ^7.14.9     | for unmet peer dependency :: react-scripts > eslint-config-react-app > eslint-plugin-flowtype@8.0.3                |
+| @babel/plugin-transform-runtime                     | ^7.19.6        | ^7.24.3     | \*\*\*                                                                                                             |
+| @babel/preset-env                                   | ^7.20.2        | ^7.23.9     | \*\*\*                                                                                                             |
+| @babel/register                                     | ^7.18.9        | ^7.23.7     | \*\*\*                                                                                                             |
+| @babel/traverse                                     | \*\*           | 7.23.2      | \*\*\*                                                                                                             |
+| @graphql-tools/graphql-file-loader                  | \*\*           | ^8.0.1      | \*\*\*                                                                                                             |
+| @graphql-tools/load                                 | \*\*           | ^8.0.2      | \*\*\*                                                                                                             |
+| @graphql-tools/schema                               | \*\*           | ^10.0.3     | \*\*\*                                                                                                             |
+| auth0-js                                            | ^9.14.3        | ^9.24.1     | \*\*\*                                                                                                             |
+| babel-loader                                        | ^9.1.0         | ^9.1.3      | \*\*\*                                                                                                             |
+| bandwidth-sdk                                       | \*\*           | ^1.0.1      | Replaces @bandwidth/messaging                                                                                      |
+| cookie-session                                      | ^2.0.0-alpha.1 | ^2.1.0      | \*\*\*                                                                                                             |
+| dataloader                                          | ^1.2.0         | ^2.2.2      | \*\*\*                                                                                                             |
+| eslint-plugin-react-hooks                           | \*\*           | ^4.3.0      | \*\*\*                                                                                                             |
+| google-libphonenumber                               | ^3.0.0         | ^3.2.34     | \*\*\*                                                                                                             |
+| graphql                                             | ^0.13.2        | ^16.8.1     | \*\*\*                                                                                                             |
+| graphql-type-json                                   | ^0.1.4         | ^0.3.2      | \*\*\*                                                                                                             |
+| isomorphic-fetch                                    | ^2.2.1         | ^3.0.0      | \*\*\*                                                                                                             |
+| knex                                                | ^2.3.0         | ^3.1.0      | \*\*\*                                                                                                             |
+| moment-timezone                                     | ^0.5.14        | ^0.5.45     | \*\*\*                                                                                                             |
+| nodemailer                                          | ^6.4.16        | ^6.9.9      | \*\*\*                                                                                                             |
+| pg                                                  | ^8.0.3         | ^8.11.3     | \*\*\*                                                                                                             |
+| pg-query-stream                                     | ^1.1.1         | ^4.5.3      | \*\*\*                                                                                                             |
+| redis                                               | 3              | ^4.6.13     | \*\*\*                                                                                                             |
+| react-dnd                                           | \*\*           | 7.7.0       | \*\*\*                                                                                                             |
+| rollbar                                             | ^2.4.4         | ^2.26.4     | \*\*\*                                                                                                             |
+| terser-webpack-plugin                               | 4              | ^5.3.10     | \*\*\*                                                                                                             |
+| twilio                                              | ^3.40.0        | ^4.23.0     | \*\*\*                                                                                                             |
+| typescript                                          | \*\*           | ^3.2.1      | \*\*\*                                                                                                             |
+| webpack                                             | ^5.74.0        | ^5.90.2     | \*\*\*                                                                                                             |
 
 ### Developer Packages
-| Package | Prev. Version | New Version | Notes |
-| --- | --- | --- | --- |
-| @babel/eslint-parser | ^7.19.1 | ^7.24.1 | *** |
-| enzyme-adapter-react-16 | ^1.15.6 | ^1.15.8 | *** |
-| eslint | ^8.26.0 | ^8.56.0 | *** |
-| eslint-plugin-import | ^2.26.0 | ^2.29.1 | *** |
-| jest-when | ^3.4.1 | ^3.6.0 | *** |
-| jest-environment-jsdom | ** | ^29.7.0 | *** |
-| nock | 11.9.1 | 13.5.4 | *** |
-| supertest | ^6.2.3 | ^6.3.4 | *** |
-| webpack-cli | ^4.7.2 | ^4.10.0 | *** |
 
-_** New package_</br>
-_*** Packages that were either upgraded due to a peer dependency conflict or because there was minimal to no changes to the code._
+| Package                 | Prev. Version | New Version | Notes  |
+| ----------------------- | ------------- | ----------- | ------ |
+| @babel/eslint-parser    | ^7.19.1       | ^7.24.1     | \*\*\* |
+| enzyme-adapter-react-16 | ^1.15.6       | ^1.15.8     | \*\*\* |
+| eslint                  | ^8.26.0       | ^8.56.0     | \*\*\* |
+| eslint-plugin-import    | ^2.26.0       | ^2.29.1     | \*\*\* |
+| jest-when               | ^3.4.1        | ^3.6.0      | \*\*\* |
+| jest-environment-jsdom  | \*\*          | ^29.7.0     | \*\*\* |
+| nock                    | 11.9.1        | 13.5.4      | \*\*\* |
+| supertest               | ^6.2.3        | ^6.3.4      | \*\*\* |
+| webpack-cli             | ^4.7.2        | ^4.10.0     | \*\*\* |
+
+_\*\* New package_</br>
+_\*\*\* Packages that were either upgraded due to a peer dependency conflict or because there was minimal to no changes to the code._
 
 ### Removed Packages
-| Package | Reason |
-| --- | --- |
-| @bandwidth/messaging | Deprecated. Replaced by bandwidth-sdk  |
+
+| Package               | Reason                                                                                                         |
+| --------------------- | -------------------------------------------------------------------------------------------------------------- |
+| @bandwidth/messaging  | Deprecated. Replaced by bandwidth-sdk                                                                          |
 | apollo-cache-inmemory | Removed to use Apollo Client v3 and Apollo Server v4 packages, @apollo/client and apollo/server in their place |
-| apollo-client | Removed to use Apollo Client v3 and Apollo Server v4 packages, @apollo/client and apollo/server in their place |
-| apollo-link | Removed to use Apollo Client v3 and Apollo Server v4 packages, @apollo/client and apollo/server in their place |
-| apollo-link-error | Removed to use Apollo Client v3 and Apollo Server v4 packages, @apollo/client and apollo/server in their place |
-| apollo-link-http | Removed to use Apollo Client v3 and Apollo Server v4 packages, @apollo/client and apollo/server in their place |
+| apollo-client         | Removed to use Apollo Client v3 and Apollo Server v4 packages, @apollo/client and apollo/server in their place |
+| apollo-link           | Removed to use Apollo Client v3 and Apollo Server v4 packages, @apollo/client and apollo/server in their place |
+| apollo-link-error     | Removed to use Apollo Client v3 and Apollo Server v4 packages, @apollo/client and apollo/server in their place |
+| apollo-link-http      | Removed to use Apollo Client v3 and Apollo Server v4 packages, @apollo/client and apollo/server in their place |
 | apollo-server-express | Removed to use Apollo Client v3 and Apollo Server v4 packages, @apollo/client and apollo/server in their place |
-| apollo-utilities | Removed to use Apollo Client v3 and Apollo Server v4 packages, @apollo/client and apollo/server in their place |
-| camelcase-keys | Deprecated. Replaced with already used package humps  |
-| graphql-tools | Replaced by @graphql-tools/schema |
-| node-abort-controller | Removed due to native support |
-| url-join | Removed due to native support |
-| react-apollo | Deprecated. Replaced with Apollo Client and flowRight from lodash |
-| recompose | Deprecated. Required major refactor of many exports. |
-| selenium-webdriver | Not used in the code base. |
+| apollo-utilities      | Removed to use Apollo Client v3 and Apollo Server v4 packages, @apollo/client and apollo/server in their place |
+| camelcase-keys        | Deprecated. Replaced with already used package humps                                                           |
+| graphql-tools         | Replaced by @graphql-tools/schema                                                                              |
+| node-abort-controller | Removed due to native support                                                                                  |
+| url-join              | Removed due to native support                                                                                  |
+| react-apollo          | Deprecated. Replaced with Apollo Client and flowRight from lodash                                              |
+| recompose             | Deprecated. Required major refactor of many exports.                                                           |
+| selenium-webdriver    | Not used in the code base.                                                                                     |
 
 ## v13.1.0
+
 _October 2023_ Version 13.1.0
 
 13.1.0 is a minor release.
 
 ### Bug Fixes
-* Upgrade Auth0 Lock
-* Fix Auth0 password reset issue
-* Update Heroku deployment
+
+- Upgrade Auth0 Lock
+- Fix Auth0 password reset issue
+- Update Heroku deployment
 
 ### Improvements
-* Remove required Twilio fields
-* Bump dependencies
-* Mobile-compatible texter UI
+
+- Remove required Twilio fields
+- Bump dependencies
+- Mobile-compatible texter UI
 
 ### New Features
-* Per-campaign bulk send
-* NGP VAN service manager
+
+- Per-campaign bulk send
+- NGP VAN service manager
 
 ### Appreciations
-* [Arique Aguilar](https://github.com/Arique1104), [Ilona Brand](https://github.com/ibrand), [Jeff Mann](https://github.com/jeffm2001), [Karim Al-Rashdan](https://github.com/KarimAl-Rashdan), [Kathy Nguyen](https://github.com/crayolakat), [Shibam Debnath](https://github.com/SshibamDebnathh), and Harold Travis for QA.
+
+- [Arique Aguilar](https://github.com/Arique1104), [Ilona Brand](https://github.com/ibrand), [Jeff Mann](https://github.com/jeffm2001), [Karim Al-Rashdan](https://github.com/KarimAl-Rashdan), [Kathy Nguyen](https://github.com/crayolakat), [Shibam Debnath](https://github.com/SshibamDebnathh), and Harold Travis for QA.
 
 ## v13.0.1
+
 _September 2023_ Version 13.0.1
 
 This is a patch release that has passing tests and updates docker file to node16.
 
 ### Appreciations
+
 [Arique Aguilar](https://github.com/Arique1104), [Kathy Nguyen](https://github.com/crayolakat)
 
 ## v13.0
+
 _February 2023:_ Version 13.0
 
-13.0 is a major release.  This release is a node upgrade from Node 12 to Node 16.
+13.0 is a major release. This release is a node upgrade from Node 12 to Node 16.
 
 ### Appreciations
-* [Arique Aguilar](https://github.com/Arique1104), [Ilona Brand](https://github.com/ibrand), [Kathy Nguyen](https://github.com/crayolakat), [Mark Kinsella](https://github.com/lastminutediorama) (our new Tech Lead -- welcome!), and Harold Travis and Mark Houghton for QA
 
+- [Arique Aguilar](https://github.com/Arique1104), [Ilona Brand](https://github.com/ibrand), [Kathy Nguyen](https://github.com/crayolakat), [Mark Kinsella](https://github.com/lastminutediorama) (our new Tech Lead -- welcome!), and Harold Travis and Mark Houghton for QA
 
 ## v12.3
 
@@ -263,20 +305,23 @@ _October 2022:_ Version 12.3
 12.3 is a minor release. This release includes JWT-powered Delegated Authentication, a new contact-notes section in the texter-sidebox, along with additional improvements and fixes seen below.
 
 ### Bug fixes
-* Fixes views for Demo Texting
-* Fixes auto-optout if Redis is not enabled
+
+- Fixes views for Demo Texting
+- Fixes auto-optout if Redis is not enabled
 
 ### Improvements
-* Add disabled prop to GSSelectField
-* Updates dependencies
+
+- Add disabled prop to GSSelectField
+- Updates dependencies
 
 ### New features
-* JWT-powered Delegated Authentication
-* Adds a new contact-notes Texter Sidebox
+
+- JWT-powered Delegated Authentication
+- Adds a new contact-notes Texter Sidebox
 
 ### Appreciations
-* [Arique Aguilar](https://github.com/Arique1104), [Cody Gordon](https://github.com/codygordon), [Ilona Brand](https://github.com/ibrand), [Kathy Nguyen](https://github.com/crayolakat), [Rey Rodrigues](https://github.com/reyattrestle), [Larry Person](https://github.com/lperson), [Sky Duveen](https://github.com/schuyler1d), [Sticks Stuff](https://github.com/sticks-stuff) and Harold Travis and Mark Houghton for QA
 
+- [Arique Aguilar](https://github.com/Arique1104), [Cody Gordon](https://github.com/codygordon), [Ilona Brand](https://github.com/ibrand), [Kathy Nguyen](https://github.com/crayolakat), [Rey Rodrigues](https://github.com/reyattrestle), [Larry Person](https://github.com/lperson), [Sky Duveen](https://github.com/schuyler1d), [Sticks Stuff](https://github.com/sticks-stuff) and Harold Travis and Mark Houghton for QA
 
 ## v12.2
 
@@ -285,22 +330,26 @@ _June 2022:_ Version 12.2
 12.2 is a minor release. This release includes the CiviCRM integration, a well-tested Bandwidth integration, as well as other minor bug fixes, improvements, and new features detailed below.
 
 ### Bug fixes
-* Fix CSV upload error messages
-* Fix Auth0 password reset behavior
-* Fix wrong counts in edge cases
-* Fix wrong service vendor error links
-* Fix modal going blank after clicking "Clear Response" button
+
+- Fix CSV upload error messages
+- Fix Auth0 password reset behavior
+- Fix wrong counts in edge cases
+- Fix wrong service vendor error links
+- Fix modal going blank after clicking "Clear Response" button
 
 ### Improvements
-* Update dependencies
+
+- Update dependencies
 
 ### New features
-* Send auto opt-out response
-* CiviCRM integration
-* Bandwidth integration
+
+- Send auto opt-out response
+- CiviCRM integration
+- Bandwidth integration
 
 ### Appreciations
-* [Adam Greenspan](https://github.com/agreenspan24), [Andrew Cormick-Dockery](https://github.com/andrew-cormick-dockery), [Anthony Blond](https://github.com/anthonyblond), [Arique Aguilar](https://github.com/Arique1104), [Chuck Morris](https://github.com/percworld), [Cody Gordon](https://github.com/codygordon), [Ilona Brand](https://github.com/ibrand), [John Twyman](https://github.com/johntwyman), [Kathy Nguyen](https://github.com/crayolakat), [Michael Walker](https://github.com/MichaelEWalker87), [Peter Murphy](https://github.com/peterkmurphy), and Harold Travis and Mark Houghton for QA
+
+- [Adam Greenspan](https://github.com/agreenspan24), [Andrew Cormick-Dockery](https://github.com/andrew-cormick-dockery), [Anthony Blond](https://github.com/anthonyblond), [Arique Aguilar](https://github.com/Arique1104), [Chuck Morris](https://github.com/percworld), [Cody Gordon](https://github.com/codygordon), [Ilona Brand](https://github.com/ibrand), [John Twyman](https://github.com/johntwyman), [Kathy Nguyen](https://github.com/crayolakat), [Michael Walker](https://github.com/MichaelEWalker87), [Peter Murphy](https://github.com/peterkmurphy), and Harold Travis and Mark Houghton for QA
 
 ## v12.1
 
@@ -309,97 +358,108 @@ _April 2022:_ Version 12.1
 12.1 is a minor release bundling many small bug fixes, feature implementations, and documentation updates.
 
 ### Bug-fixes
-* Fix action handler bugs
-* Delay seeding zip codes until database is created
-* Add error validation to canned responses
-* Fix documentation links and formatting
-* Fix bugs when viewing all messages
-* Fix wrong message sending in bulk send
-* Fix "Bulk Send" button display
+
+- Fix action handler bugs
+- Delay seeding zip codes until database is created
+- Add error validation to canned responses
+- Fix documentation links and formatting
+- Fix bugs when viewing all messages
+- Fix wrong message sending in bulk send
+- Fix "Bulk Send" button display
 
 ### Improvements
-* NGP Van user guide
-* Azure deployment documentation
-* Updates to onboarding and email configuration documentation
-* Automatic TexterTodoList updates (when we have Redis+Postgres)
-* Add GitHub workflow to automatically build Spoke images
-* Update dependency versions
-* Update migration instructions for Heroku
+
+- NGP Van user guide
+- Azure deployment documentation
+- Updates to onboarding and email configuration documentation
+- Automatic TexterTodoList updates (when we have Redis+Postgres)
+- Add GitHub workflow to automatically build Spoke images
+- Update dependency versions
+- Update migration instructions for Heroku
 
 ### New features
-* Ability to hide interactions workflow
-* Show duration of message assignment
-* Features to reduce messaging costs
-* Add Nation Builder event RSVP action handler
+
+- Ability to hide interactions workflow
+- Show duration of message assignment
+- Features to reduce messaging costs
+- Add Nation Builder event RSVP action handler
 
 ### Appreciations
-* [Adam Greenspan](https://github.com/agreenspan24), [Arique Aguilar](https://github.com/Arique110), [Chuck Morris](https://github.com/percworld), [Cody Gordon](https://github.com/codygordon), [Daniel Bond](https://github.com/dwbond), [DJ Hartman](https://github.com/dj), [Eric Mayefsky](https://github.com/mayefsky), [Ilona Brand](https://github.com/ibrand), [Joe McLaughlin](https://github.com/joemcl), [Kathy Nguyen](https://github.com/crayolakat), [Kwanele Gamedze](https://github.com/0Kwanele0), [Larry Person](https://github.com/lperson), [Michael Gratton](https://github.com/michael-gratton), [Noah Williams](https://github.com/noahsbwilliams), [Nolan Caine](https://github.com/n0land0), [Peter Murphy](https://github.com/peterkmurphy), [Schulyer Duveen](https://github.com/schuyler1d), and Harold Travis and Mark Houghton for QA
+
+- [Adam Greenspan](https://github.com/agreenspan24), [Arique Aguilar](https://github.com/Arique110), [Chuck Morris](https://github.com/percworld), [Cody Gordon](https://github.com/codygordon), [Daniel Bond](https://github.com/dwbond), [DJ Hartman](https://github.com/dj), [Eric Mayefsky](https://github.com/mayefsky), [Ilona Brand](https://github.com/ibrand), [Joe McLaughlin](https://github.com/joemcl), [Kathy Nguyen](https://github.com/crayolakat), [Kwanele Gamedze](https://github.com/0Kwanele0), [Larry Person](https://github.com/lperson), [Michael Gratton](https://github.com/michael-gratton), [Noah Williams](https://github.com/noahsbwilliams), [Nolan Caine](https://github.com/n0land0), [Peter Murphy](https://github.com/peterkmurphy), [Schulyer Duveen](https://github.com/schuyler1d), and Harold Travis and Mark Houghton for QA
 
 ## v12.0
 
 _February 2022:_ Version 12.0
 
 ### Migration Notes
+
 This is a major release and includes a schema change. This is a minor schema change, which you can run before/during deployment (either by leaving/disabling SUPPRESS_MIGRATIONS=false or for [AWS Lambda, see the db migration instructions](./HOWTO_DEPLOYING_AWS_LAMBDA.md#migrating-the-database). It includes adding nullable columns "answer_actions" and "answer_actions_data" to the canned_response table. If you are using Redis, you will need to clear the canned response cache keys after deployment.
 
 ### Bug-fixes
-* Fix failing GitHub Actions tests
-* Fix scrub landlines bug
-* Set default twilioDialogOpen value for Dialog open prop
-* Parse campaign timezone offsets
-* Fix service manager's "onOptOut" function
-* Fix outbound unassign behavior when Redis isn't configured
-* Fix need to click twice on save button after assigning contacts to texter
-* Fix TZ issue
+
+- Fix failing GitHub Actions tests
+- Fix scrub landlines bug
+- Set default twilioDialogOpen value for Dialog open prop
+- Parse campaign timezone offsets
+- Fix service manager's "onOptOut" function
+- Fix outbound unassign behavior when Redis isn't configured
+- Fix need to click twice on save button after assigning contacts to texter
+- Fix TZ issue
 
 ### Improvements
-* Implement Zapier response handling
-* Implement Canned Response CSV upload
-* Message review action for multi-change message status
-* Implement Assignment Contacts sidebar
-* Material UI Theming
-* Add auth/account hook to Twilio onMessageSend
-* Document --no-optional-dependencies for AWS Lambda
-* Document TEXTER_SIDEBOX_FIELDS environment variable
-* Update default auto optout documentation
-* Add per campaign Twilio account switching
+
+- Implement Zapier response handling
+- Implement Canned Response CSV upload
+- Message review action for multi-change message status
+- Implement Assignment Contacts sidebar
+- Material UI Theming
+- Add auth/account hook to Twilio onMessageSend
+- Document --no-optional-dependencies for AWS Lambda
+- Document TEXTER_SIDEBOX_FIELDS environment variable
+- Update default auto optout documentation
+- Add per campaign Twilio account switching
 
 ### Additional changes
-* Remove "Add All" button from Texters admin page
-* Dependency updates: moment, nodemailer
-* Remove unnecessary Twilio env variables
-* Remove old texting interface
+
+- Remove "Add All" button from Texters admin page
+- Dependency updates: moment, nodemailer
+- Remove unnecessary Twilio env variables
+- Remove old texting interface
 
 ### Appreciations
-* [Adam Greenspan](https://github.com/agreenspan24), [Arique Aguilar](https://github.com/Arique110), [Cody Gordon](https://github.com/codygordon), [Holden Green](https://github.com/holdengreen), [John Twyman](https://github.com/johntwyman), [Kathy Nguyen](https://github.com/crayolakat), [Larry Person](https://github.com/lperson), [Michael Gratton](https://github.com/michael-gratton), [Peter Murphy](https://github.com/peterkmurphy), [Preston Maness](https://github.com/aggroskater), [Schuyler Duveen](https://github.com/schuyler1d), [Stefan Hayden](https://github.com/stefanhayden), and Harold Travis and Mark Houghton for QA
+
+- [Adam Greenspan](https://github.com/agreenspan24), [Arique Aguilar](https://github.com/Arique110), [Cody Gordon](https://github.com/codygordon), [Holden Green](https://github.com/holdengreen), [John Twyman](https://github.com/johntwyman), [Kathy Nguyen](https://github.com/crayolakat), [Larry Person](https://github.com/lperson), [Michael Gratton](https://github.com/michael-gratton), [Peter Murphy](https://github.com/peterkmurphy), [Preston Maness](https://github.com/aggroskater), [Schuyler Duveen](https://github.com/schuyler1d), [Stefan Hayden](https://github.com/stefanhayden), and Harold Travis and Mark Houghton for QA
 
 ## v11.1
 
 _October 2021:_ Version 11.1
 
-11.1 is a bug-fix release.  After many changes in 11.0, there were a few problems that surfaced and with the help of reporting from the community (special shoutout to Karla Bradley at NYCET and Brendan, Daniel, and Amy at State Voices).
+11.1 is a bug-fix release. After many changes in 11.0, there were a few problems that surfaced and with the help of reporting from the community (special shoutout to Karla Bradley at NYCET and Brendan, Daniel, and Amy at State Voices).
 
 ### Bug-fixes
-* Campaign Admin: Texter manual changing/adding of assigned triggered app failure
-* Setting/Updating Twilio credentials in admin Settings failure
-* Buying numbers for an organization's message service failure
-* Clicking Re-open
-* minor additions/fixes to service-managers api
+
+- Campaign Admin: Texter manual changing/adding of assigned triggered app failure
+- Setting/Updating Twilio credentials in admin Settings failure
+- Buying numbers for an organization's message service failure
+- Clicking Re-open
+- minor additions/fixes to service-managers api
 
 ### Appreciations
 
-* [Arique Aguilar](https://github.com/Arique1104), [Larry Person](https://github.com/lperson), [Kathy Nguyen](https://github.com/crayolakat), [Schuyler Duveen](https://github.com/schuyler1d), Mark Houghton, everyone at NYCET and State Voices for bug reporting and testing.
+- [Arique Aguilar](https://github.com/Arique1104), [Larry Person](https://github.com/lperson), [Kathy Nguyen](https://github.com/crayolakat), [Schuyler Duveen](https://github.com/schuyler1d), Mark Houghton, everyone at NYCET and State Voices for bug reporting and testing.
 
 ## v11.0
 
 _August 2021:_ Version 11.0
 
-This major release upgrades several backend libraries and significantly extends and refactors the way vendors (e.g. Twilio) are connected.  First, Stefan Hayden has helped us upgrade our Material UI library -- so all components may look *slightly* different in style, but nothing should look unfamiliar. This will make future UI improvements much easier and for developer-contributors to use current documentation and resources (and less buggy!) for continuing UI evolution.
+This major release upgrades several backend libraries and significantly extends and refactors the way vendors (e.g. Twilio) are connected. First, Stefan Hayden has helped us upgrade our Material UI library -- so all components may look _slightly_ different in style, but nothing should look unfamiliar. This will make future UI improvements much easier and for developer-contributors to use current documentation and resources (and less buggy!) for continuing UI evolution.
 
 More details below for a few migration steps depending on your deployment:
-* There is a database migration for anyone upgrading -- instances with a very large message table have special instructions
-* AWS Lambda deployments have slightly different deployment commands now
-* Anyone using  EXPERIMENTAL_CAMPAIGN_PHONE_NUMBERS or EXPERIMENTAL_TWILIO_PER_CAMPAIGN_MESSAGING_SERVICE require setup changes (these *were* experimental features)
+
+- There is a database migration for anyone upgrading -- instances with a very large message table have special instructions
+- AWS Lambda deployments have slightly different deployment commands now
+- Anyone using EXPERIMENTAL_CAMPAIGN_PHONE_NUMBERS or EXPERIMENTAL_TWILIO_PER_CAMPAIGN_MESSAGING_SERVICE require setup changes (these _were_ experimental features)
 
 ### Improvements
 
@@ -409,63 +469,64 @@ Based on work from Larry Person, there is a large refactor of "service-vendors" 
 
 #### Additional changes
 
-* Redis upgrade -- please report any issues -- new Heroku installs support Redis 6 which requires a TLS connection
-* keyboard shortcuts for advancing left/right
-* service-managers: carrier-lookup, scrub-bad-mobilenums, and per-campaign-messageservices (replacing EXPERIMENTAL_TWILIO_PER_CAMPAIGN_MESSAGING_SERVICE)
-* NGPVAN updates and fixes to use their changed/most recent API
+- Redis upgrade -- please report any issues -- new Heroku installs support Redis 6 which requires a TLS connection
+- keyboard shortcuts for advancing left/right
+- service-managers: carrier-lookup, scrub-bad-mobilenums, and per-campaign-messageservices (replacing EXPERIMENTAL_TWILIO_PER_CAMPAIGN_MESSAGING_SERVICE)
+- NGPVAN updates and fixes to use their changed/most recent API
 
 ### Migration Steps
 
 #### Database upgrades
-* This is a major release and includes a schema change.
-* For small instances simply leave/set SUPPRESS_MIGRATIONS="" or for [AWS Lambda, see the db migration instructions](https://statevoicesnational.github.io/Spoke/#/HOWTO_DEPLOYING_AWS_LAMBDA?id=migrating-the-database).
-* If you are running Spoke on Heroku and updating to version 11 or later, either remove SUPPRESS_MIGRATIONS="" if it is set in config, *or* set SUPPRESS_MIGRATIONS=false
-* For instances with a large `message` table, we recommend setting NO_INDEX_CHANGES=1 before running the migration, and then manually running two commands:
-  * `CREATE INDEX CONCURRENTLY cell_msgsvc_user_number_idx ON message (contact_number, messageservice_sid, user_number);`
-  * `DROP INDEX cell_messageservice_sid_idx;`
+
+- This is a major release and includes a schema change.
+- For small instances simply leave/set SUPPRESS_MIGRATIONS="" or for [AWS Lambda, see the db migration instructions](https://statevoicesnational.github.io/Spoke/#/HOWTO_DEPLOYING_AWS_LAMBDA?id=migrating-the-database).
+- If you are running Spoke on Heroku and updating to version 11 or later, either remove SUPPRESS_MIGRATIONS="" if it is set in config, _or_ set SUPPRESS_MIGRATIONS=false
+- For instances with a large `message` table, we recommend setting NO_INDEX_CHANGES=1 before running the migration, and then manually running two commands:
+  - `CREATE INDEX CONCURRENTLY cell_msgsvc_user_number_idx ON message (contact_number, messageservice_sid, user_number);`
+  - `DROP INDEX cell_messageservice_sid_idx;`
 
 The schema changes include adding a new table `organization_contact` which will track contacts across campaigns in an organization -- for things like subscription_status (in future), whether the number is a landline or what number has been used to contact them in the past (for 'sticky' sending). We also add user_number at the end of already-indexed cell-messageservice, to make it easier to search for user_numbers (also for sticky sending features).
-
 
 #### AWS Deployment changes
 
 Instead of running a single 'claudia' command, You will need to tweak two things:
-* Add an environment variable `ASSETS_DIR_PREBUILT` and set it to the absolute directory of your deployment checkout directory + "/build/client" (or whatever you have your ASSETS_DIR var set to).  For example, on a Mac it might be something like "/Users/Sky/spoke/build/client"
-* Instead of a single deployment command, you will first need to run
+
+- Add an environment variable `ASSETS_DIR_PREBUILT` and set it to the absolute directory of your deployment checkout directory + "/build/client" (or whatever you have your ASSETS_DIR var set to). For example, on a Mac it might be something like "/Users/Sky/spoke/build/client"
+- Instead of a single deployment command, you will first need to run
   1. `ASSETS_DIR=./build/client/assets ASSETS_MAP_FILE=assets.json NODE_ENV=production yarn prod-build-client`
   2. and then for your `claudia update` command you need to include your usual command line parameters and ADD `--no-optional-dependencies`
 
-These steps remove the client-side libraries from the server-side build, which is necessary now that the client-side libraries are too large to 'fit' into an AWS Lambda server deploy file.  This is documented in the [AWS setup/deploy steps](https://github.com/StateVoicesNational/Spoke/compare/main...stage-main-11-0#diff-548e8f704ad84645a42f2efaf1332490f6844d0a0dd50e9ac6b931c198d213f3)
+These steps remove the client-side libraries from the server-side build, which is necessary now that the client-side libraries are too large to 'fit' into an AWS Lambda server deploy file. This is documented in the [AWS setup/deploy steps](https://github.com/StateVoicesNational/Spoke/compare/main...stage-main-11-0#diff-548e8f704ad84645a42f2efaf1332490f6844d0a0dd50e9ac6b931c198d213f3)
 
 #### Changes for Experimental Per-campaign phone numbers/message services
 
-For those that used the experimental feature EXPERIMENTAL_CAMPAIGN_PHONE_NUMBERS, it has been moved and refactored into a  or Service Manager extension -- for these experimental installs (ONLY!), change to setting SERVICE_MANAGERS=per-campaign-messageservices
+For those that used the experimental feature EXPERIMENTAL_CAMPAIGN_PHONE_NUMBERS, it has been moved and refactored into a or Service Manager extension -- for these experimental installs (ONLY!), change to setting SERVICE_MANAGERS=per-campaign-messageservices
 
-EXPERIMENTAL_TWILIO_PER_CAMPAIGN_MESSAGING_SERVICE is no longer supported.  Please create an issue if you still have a use-case for this -- there is tentative work to move its functionality into per-campaign-messageservices as well, but only if it still has users.
+EXPERIMENTAL_TWILIO_PER_CAMPAIGN_MESSAGING_SERVICE is no longer supported. Please create an issue if you still have a use-case for this -- there is tentative work to move its functionality into per-campaign-messageservices as well, but only if it still has users.
 
 ### Appreciations
-* [Adam Greenspan](agreenspan24), [Akash Jairam](https://github.com/Akash-Jairam), [Arique Aguilar](https://github.com/Arique1104) (our new Community Manager -- Welcome!), [Asha Sulaiman](https://github.com/asha15), [Cody Gordon](https://github.com/codygordon), [Fryda Guedes](https://github.com/Frydafly), [Kathy Nguyen](https://github.com/crayolakat), [Neely Kartha](https://github.com/nkartha2), [Schuyler Duveen](https://github.com/schuyler1d), [Stefan Hayden](https://github.com/stefanhayden),  and Mark Houghton and [Barbara Atkins](https://github.com/bdatkins) for QA
 
+- [Adam Greenspan](agreenspan24), [Akash Jairam](https://github.com/Akash-Jairam), [Arique Aguilar](https://github.com/Arique1104) (our new Community Manager -- Welcome!), [Asha Sulaiman](https://github.com/asha15), [Cody Gordon](https://github.com/codygordon), [Fryda Guedes](https://github.com/Frydafly), [Kathy Nguyen](https://github.com/crayolakat), [Neely Kartha](https://github.com/nkartha2), [Schuyler Duveen](https://github.com/schuyler1d), [Stefan Hayden](https://github.com/stefanhayden), and Mark Houghton and [Barbara Atkins](https://github.com/bdatkins) for QA
 
 ## v10.2
 
 _April 2021:_ Version 10.2
 
-This is another minor release bringing some small features while in the background we are doing some major plumbing work to support other message service vendors better.  Some small improvements/bugfixes:
+This is another minor release bringing some small features while in the background we are doing some major plumbing work to support other message service vendors better. Some small improvements/bugfixes:
 
 ### Improvements
 
-* Documentation improvements around some experimental service settings
-* Bulk Script Editor - Interaction Step / Canned Response (thanks to @bchrobot  from Politics Rewired branch)
-* Un-started Campaigns with the word 'template' in their title will have the "[Copy Campaign]" button on the edit page
-* Bugfix: Admin show/close menu improved
-* Bugfix: Fix graphql error responses within DEBUG/SHOW_SERVER_ERRORS
-* Experimental: You can now enable an environment variable HOLD_ENTER_KEY which means texters can hold the enter key down to text sequential contacts.
-* Experimental: A new dynamicassignment-batches strategy called `finished-replies-tz` - this will only assign contacts to texters with currently in-texting-hours timezones. Especially for campaign contact lists that have varied timezones and when texters will return to jumping in the campaign in later hours when new timezones are allowed, then this might be better than 'finished-replies' (please report experiences, good/bad)
+- Documentation improvements around some experimental service settings
+- Bulk Script Editor - Interaction Step / Canned Response (thanks to @bchrobot from Politics Rewired branch)
+- Un-started Campaigns with the word 'template' in their title will have the "[Copy Campaign]" button on the edit page
+- Bugfix: Admin show/close menu improved
+- Bugfix: Fix graphql error responses within DEBUG/SHOW_SERVER_ERRORS
+- Experimental: You can now enable an environment variable HOLD_ENTER_KEY which means texters can hold the enter key down to text sequential contacts.
+- Experimental: A new dynamicassignment-batches strategy called `finished-replies-tz` - this will only assign contacts to texters with currently in-texting-hours timezones. Especially for campaign contact lists that have varied timezones and when texters will return to jumping in the campaign in later hours when new timezones are allowed, then this might be better than 'finished-replies' (please report experiences, good/bad)
 
 ### Appreciations
-* [frydafly](https://github.com/Frydafly), [lperson](https://github.com/lperson), [oburbank](https://github.com/oburbank), [schuyler1d](https://github.com/schuyler1d)
 
+- [frydafly](https://github.com/Frydafly), [lperson](https://github.com/lperson), [oburbank](https://github.com/oburbank), [schuyler1d](https://github.com/schuyler1d)
 
 ## v10.1
 
@@ -477,25 +538,25 @@ Looking to version 11, our next planned release, we will be focusing on abstract
 
 ### Migration Notes
 
-This is a minor point release, and so has no database migrations or other required configuration changes.  If you deploy to AWS, we should note that we have tweaked the deploy code to use `aws` cli instead of `s3cmd` -- This is very likely to be installed already so nothing should need changing.  If not, then do install the aws command line CLI and configure your credentials that you used for s3cmd into ~/.aws/config
+This is a minor point release, and so has no database migrations or other required configuration changes. If you deploy to AWS, we should note that we have tweaked the deploy code to use `aws` cli instead of `s3cmd` -- This is very likely to be installed already so nothing should need changing. If not, then do install the aws command line CLI and configure your credentials that you used for s3cmd into ~/.aws/config
 
 ### Other Improvements
 
-* Performance improvements to the Texter Todos page
-* Feature: Add ability to suppress tags in Message Review
-* Bugfix: export contacts including those without assignment
-* Bugfix: Mobilize event shifter texter sidebox autofill
-* UI tweak: Remove yellow badges for 'skipped/past messages' to avoid texter confusion
-* UI fix: cursor position should go to end when editing existing scripts.
-* Allow passing of custom fields to mobilecommons-signup action handler (config w/ UMC_FIELDS)
-* UI: show contact loader load-info in campaign edit page after campaign starts (e.g. to see name of csv uploaded)
+- Performance improvements to the Texter Todos page
+- Feature: Add ability to suppress tags in Message Review
+- Bugfix: export contacts including those without assignment
+- Bugfix: Mobilize event shifter texter sidebox autofill
+- UI tweak: Remove yellow badges for 'skipped/past messages' to avoid texter confusion
+- UI fix: cursor position should go to end when editing existing scripts.
+- Allow passing of custom fields to mobilecommons-signup action handler (config w/ UMC_FIELDS)
+- UI: show contact loader load-info in campaign edit page after campaign starts (e.g. to see name of csv uploaded)
 
 See links and notes from the [10.1 pull request](https://github.com/StateVoicesNational/Spoke/pull/1942) for a list of all changes that were included.
 
 ### Appreciations
-* [codygordon](https://github.com/codygordon), [Frydafly](https://github.com/Frydafly), [lperson](https://github.com/lperson), [marzvrover](https://github.com/marzvrover), [schuyler1d](https://github.com/schuyler1d), [stefanhayden](https://github.com/stefanhayden)
-* Mark Houghton for QA and design help
 
+- [codygordon](https://github.com/codygordon), [Frydafly](https://github.com/Frydafly), [lperson](https://github.com/lperson), [marzvrover](https://github.com/marzvrover), [schuyler1d](https://github.com/schuyler1d), [stefanhayden](https://github.com/stefanhayden)
+- Mark Houghton for QA and design help
 
 ## v10.0
 
@@ -503,7 +564,7 @@ _January 2021:_ Version 10.0
 
 ### Post-election and License Change
 
-This is the first release since after the Nov 2020 election. Spoke was used by more than 500 organizations sending millions of text messages over the year. It was used in everything from Movement for Black Lives, to local volunteer-run groups, to senatorial races. In the primaries it was used by at least four presidential candidates.  This is a testament to the community that has built up here around progressive organizing.
+This is the first release since after the Nov 2020 election. Spoke was used by more than 500 organizations sending millions of text messages over the year. It was used in everything from Movement for Black Lives, to local volunteer-run groups, to senatorial races. In the primaries it was used by at least four presidential candidates. This is a testament to the community that has built up here around progressive organizing.
 
 Spoke is just one example of campaign and organizing software, and it's worth noting that open-source doesn't have to work on just one project -- open-source, or rather collaborative source, where organizations and volunteers believing in economic and racial justice can also collaborate around the code that helps run our organizations and communicate to our allies -- collaborative source is Organizing in code.
 
@@ -519,21 +580,21 @@ The universally agreed statement to include in a few places where texters can se
 
 As usual, we try to avoid as much backwards incompatibility as possible -- people still successfully upgrade from very old releases and we will continue that community commitment so it's always as easy as possible to upgrade and stay up-to-date.
 
-* This is a major release and includes a schema change. This is a minor schema change, which you can run before/during migration (either by leaving/disabling SUPPRESS_MIGRATIONS="" or for [AWS Lambda, see the db migration instructions](./HOWTO_DEPLOYING_AWS_LAMBDA.md#migrating-the-database). It includes adding a nullable "media" column to the message table, and adds a new table, "assignment_feedback"
-* Some timezone bugs were resolved, but part of the issue was found during an upgrade that we had incorrect defaults for the timezone -- if you have settings for either environment variable DST_REFERENCE_TIMEZONE or DEFAULT_TZ if it was e.g. ~"America/New_York"~ then you should change it to `US/Eastern` -- please lookup and adjust other timezones as appropriate. If you did not have these variables set, then you should keep them blank -- note that not including a DEFAULT_TZ (or TZ) will default to texting hours that most conservatively work for the continental US (12pm ET - 9pm ET)
+- This is a major release and includes a schema change. This is a minor schema change, which you can run before/during migration (either by leaving/disabling SUPPRESS_MIGRATIONS="" or for [AWS Lambda, see the db migration instructions](./HOWTO_DEPLOYING_AWS_LAMBDA.md#migrating-the-database). It includes adding a nullable "media" column to the message table, and adds a new table, "assignment_feedback"
+- Some timezone bugs were resolved, but part of the issue was found during an upgrade that we had incorrect defaults for the timezone -- if you have settings for either environment variable DST_REFERENCE_TIMEZONE or DEFAULT_TZ if it was e.g. ~"America/New_York"~ then you should change it to `US/Eastern` -- please lookup and adjust other timezones as appropriate. If you did not have these variables set, then you should keep them blank -- note that not including a DEFAULT_TZ (or TZ) will default to texting hours that most conservatively work for the continental US (12pm ET - 9pm ET)
 
 ### Major Improvements
 
 As the first release post-election, this mostly gathered together fixes and improvements that were made in the run-up to the election. While last year was a very active year, we have quite a bit planned for this year, as well.
 
-  * Media responses: Texters can now see if there is a media (image/video/audio) response from a contact and click to open and see it. While this can be useful, media responses often include offensive content from hostile responses and can affect texters. Thus we also include a [hide-media](./HOWTO-use-texter-sideboxes.md#hide-media) Texter Sidebox option you can enable organization-wide and/or set whether texters can see media per-campaign.
-  * Texter Feedback setup: If you add [texter-feedback](./HOWTO-use-texter-sideboxes.md#texter-feedback) to TEXTER_SIDEBOXES, when Admins click to 'review' a texter's campaign conversations, the admin can provide feedback on a number of axes -- this is great for training up new texters.
-  * Cypress test suite - additional tests to make sure bugs don't show up in our user-interface were added and organized. We hope to expand these in the future.
-  * Message Review: Unassigning -- it's been possible to assign conversations, but sometimes it's also useful to *unassign* conversations. This is especially useful when complemented with [vetted-takeconversations](./HOWTO-use-texter-sideboxes#take-conversations) Dynamic Assignment batch handler.
-  * Phone number inventory: Numbers are now deleteable
-  * Mobilize Event Shift texter sidebox: for integrations with [Mobilize](https://www.mobilize.us/)  (needs enabling by setting some environment variables documented in the code and adding it to TEXTER_SIDEBOXES environment variable)
-  * Canned Response search -- for larger lists of canned responses and survey responses, there's now a search bar on top for texters to narrow the list.
-  * Re-orderable interaction steps
+- Media responses: Texters can now see if there is a media (image/video/audio) response from a contact and click to open and see it. While this can be useful, media responses often include offensive content from hostile responses and can affect texters. Thus we also include a [hide-media](./HOWTO-use-texter-sideboxes.md#hide-media) Texter Sidebox option you can enable organization-wide and/or set whether texters can see media per-campaign.
+- Texter Feedback setup: If you add [texter-feedback](./HOWTO-use-texter-sideboxes.md#texter-feedback) to TEXTER_SIDEBOXES, when Admins click to 'review' a texter's campaign conversations, the admin can provide feedback on a number of axes -- this is great for training up new texters.
+- Cypress test suite - additional tests to make sure bugs don't show up in our user-interface were added and organized. We hope to expand these in the future.
+- Message Review: Unassigning -- it's been possible to assign conversations, but sometimes it's also useful to _unassign_ conversations. This is especially useful when complemented with [vetted-takeconversations](./HOWTO-use-texter-sideboxes#take-conversations) Dynamic Assignment batch handler.
+- Phone number inventory: Numbers are now deleteable
+- Mobilize Event Shift texter sidebox: for integrations with [Mobilize](https://www.mobilize.us/) (needs enabling by setting some environment variables documented in the code and adding it to TEXTER_SIDEBOXES environment variable)
+- Canned Response search -- for larger lists of canned responses and survey responses, there's now a search bar on top for texters to narrow the list.
+- Re-orderable interaction steps
 
 ## Bugfixes and Minor featuers
 
@@ -541,10 +602,9 @@ See links and notes from the [10.0 pull request](https://github.com/StateVoicesN
 
 ### Appreciations
 
-* [agreenspan24](https://github.com/agreenspan24), [asalant](https://github.com/asalant), [codygordon](https://github.com/codygordon), [ibrand](https://github.com/ibrand), [inorvig](https://github.com/inorvig), [jeffm2001](https://github.com/jeffm2001), [JeremyParker](https://github.com/JeremyParker), [lperson](https://github.com/lperson), [matteosb](https://github.com/matteosb), [mayefsky](https://github.com/mayefsky), [navinsivakumar](https://github.com/navinsivakumar), [oburbank](https://github.com/oburbank), [schuyler1d](https://github.com/schuyler1d)
-* Mark Houghton and [Arena Reed](https://github.com/arena) for QA and design help
-* Everyone that worked to make positive change this past year!
-
+- [agreenspan24](https://github.com/agreenspan24), [asalant](https://github.com/asalant), [codygordon](https://github.com/codygordon), [ibrand](https://github.com/ibrand), [inorvig](https://github.com/inorvig), [jeffm2001](https://github.com/jeffm2001), [JeremyParker](https://github.com/JeremyParker), [lperson](https://github.com/lperson), [matteosb](https://github.com/matteosb), [mayefsky](https://github.com/mayefsky), [navinsivakumar](https://github.com/navinsivakumar), [oburbank](https://github.com/oburbank), [schuyler1d](https://github.com/schuyler1d)
+- Mark Houghton and [Arena Reed](https://github.com/arena) for QA and design help
+- Everyone that worked to make positive change this past year!
 
 ## v9.2
 
@@ -559,28 +619,28 @@ The only releases before November 3rd, 2020 will be for security updates.
 We will also continue to merge additions to documentation and integration test PRs directly into our `main` branch.
 
 That said, other hosters and developers are continuing to make bug fixes and add important features for their
-own texting programs.  Normally, MoveOn's release process involves first gathering a release candidate, then
+own texting programs. Normally, MoveOn's release process involves first gathering a release candidate, then
 running QA on the changes, and finally running it in production for a day or two to shake out any bugs missed
-during QA and review and to evaluate the release 'at scale'.  Without this final step, we can't make a strong commitment
+during QA and review and to evaluate the release 'at scale'. Without this final step, we can't make a strong commitment
 to release readiness.
 
 However, we want to track these improvements, so we will be maintaining two 'experimental' PRs -- one more conservative
 with small changes and mostly bug fixes: [stage-main-postelection2020-stable](https://github.com/StateVoicesNational/Spoke/pull/1830).
-The other with larger changes but riskier to deploy before the election: [stage-main-postelection2020-unstable](https://github.com/StateVoicesNational/Spoke/pull/1831).  If a hosting partner steps up to
-run one of these at any time and affirms its stability, we will mark that.  Additionally, in the conservative PR,
+The other with larger changes but riskier to deploy before the election: [stage-main-postelection2020-unstable](https://github.com/StateVoicesNational/Spoke/pull/1831). If a hosting partner steps up to
+run one of these at any time and affirms its stability, we will mark that. Additionally, in the conservative PR,
 we will link to specific PRs that if you run into a particular bug in production you can cherry-pick that PR to fix that issue.
 
 After the election, I'm sure there will be a lot of changes and diverged branches from different organizations.
 We will be here to try to gather those changes, but we'd like to note that will be significant work and can't happen
 without those organizations also making an effort to separate their 'hacks' to make something work vs. changes that
-will be maintainable and support the long-term architecture and stability of Spoke for the community.  We recommend
+will be maintainable and support the long-term architecture and stability of Spoke for the community. We recommend
 whenever possible, opening a PR on specific small changes -- these are more likely to be mergeable after the election.
 If that's not possible due to time/development constraints, we ask that you at least open a 'organization dev' PR that
 just includes all your changes -- then post-election we can at least sort out the features and the community can
 have a place to see what was done.
 
 I'd like to take a moment to celebrate this amazing community -- so many progressive orgs and campaigns are using Spoke and
-contributing back to it -- along with a cadre of committed volunteer developers, designers and texters.  Good luck
+contributing back to it -- along with a cadre of committed volunteer developers, designers and texters. Good luck
 with all your campaigns -- let's win!
 
 ### New Features/Improvements
@@ -594,7 +654,7 @@ with all your campaigns -- let's win!
 ### Bug Fixes
 
 - Fixed a regression in 9.1 where /twilio-message-report Twilio validation would fail if TWILIO_MULTI_ORG=1 but
-  TWILIO_MESSAGE_CALLBACK_URL was NOT set.  We reverted that behavior, but recommend that you update your
+  TWILIO_MESSAGE_CALLBACK_URL was NOT set. We reverted that behavior, but recommend that you update your
   twilio config to `/twilio-message-report/<org id>` in this configuration and then set TWILIO_VALIDATION=1
 - Fixed a but in 9.1 on the superadmin organizations page where creating an organization did not work.
 - Fixed two minor security issues to restrict post-login redirect and hide errors on the front-end by-default.
@@ -610,11 +670,12 @@ Thanks to [jeffm2001](https://github.com/jeffm2001) and [schuyler1d](https://git
 
 _September 2020:_ Version 9.1
 
-* Regression notice: When TWILIO_MULTI_ORG=1 is set but TWILIO_MESSAGE_CALLBACK_URL is not, /twilio-message-report
-  fails.  There is a [fix](https://github.com/StateVoicesNational/Spoke/pull/1826) that is also available in 9.2 (above).
+- Regression notice: When TWILIO_MULTI_ORG=1 is set but TWILIO_MESSAGE_CALLBACK_URL is not, /twilio-message-report
+  fails. There is a [fix](https://github.com/StateVoicesNational/Spoke/pull/1826) that is also available in 9.2 (above).
 
 ### New Features/Improvements
-- **New UI for adding organizations to your instance:** There is now a page only accessible for users with `is_superadmin` set for adding orgs in a Spoke instance. You can access this screen through the user menu under "superadmin tools." We've gated this feature to only users with that privilege to keep any roles you already have on your instances from suddenly gaining the ability to add orgs. You can only change a user's `is_superadmin` status with a direct DB query at this time. *The first user on new instances will be a superadmin by default now*
+
+- **New UI for adding organizations to your instance:** There is now a page only accessible for users with `is_superadmin` set for adding orgs in a Spoke instance. You can access this screen through the user menu under "superadmin tools." We've gated this feature to only users with that privilege to keep any roles you already have on your instances from suddenly gaining the ability to add orgs. You can only change a user's `is_superadmin` status with a direct DB query at this time. _The first user on new instances will be a superadmin by default now_
 - **Past campaign contact loader:** Creates a contact loader that allows someone to select contacts from a past campaign and filter optionally for a particular question response (or no response) by entering a message review query into the contact loader. The contact loader has instructions inline.
 - **ActionNetwork action handler:** syncs TAGS and EVENT RSVPs back to ActionNetwork when linked to a question answer in an interaction script.
 - **Two new custom fields to track contact by id:** We're including `contactId` and `contactIdBase62` as custom fields to help with use cases around tracking link clicks. At MoveOn we have been using these fields as url params in our scripts for our data exports -- e.g. Hi will you rsvp to an event at someeventlink.com/source={contactIdBase62} the base62 variant is to keep the size of the text messages down.
@@ -627,6 +688,7 @@ _September 2020:_ Version 9.1
 - Speed up deduplication query
 
 ### Bug Fixes
+
 - Allow admins and supervols to see organization settings
 - fixes allContactsCount: it should not always be 1
 - datawarehouse contact-loaders fixes
@@ -645,7 +707,7 @@ We just (stealth) released 8.1 -- why the quick second release? Well, we deploye
 
 We will be upgrading this weekend and the great thing about Spoke is it scales "linearly" -- if you double the resources, then you can roughly double the contacts/texters-per-day metrics.
 
-But because of the timing it was ambiguous whether we 'just' hit scaling issues yesterday or whether there were bugs in Spoke 8.1. @schuyler1d spent the day tracking everything that went wrong and determined that it was scaling. This prompted some urgent improvements to make our queries more efficient with increased focus on more improvements so the application can do its part in keeping scaling costs as low as possible. But these last set are pretty impactful -- even without upgrading our system with almost the same texting volume as yesterday we are seeing *half the database load.*
+But because of the timing it was ambiguous whether we 'just' hit scaling issues yesterday or whether there were bugs in Spoke 8.1. @schuyler1d spent the day tracking everything that went wrong and determined that it was scaling. This prompted some urgent improvements to make our queries more efficient with increased focus on more improvements so the application can do its part in keeping scaling costs as low as possible. But these last set are pretty impactful -- even without upgrading our system with almost the same texting volume as yesterday we are seeing _half the database load._
 
 ### 9.0 Changes
 
@@ -654,17 +716,19 @@ But because of the timing it was ambiguous whether we 'just' hit scaling issues 
 - Removes some liability of thrashing with auto-optout updating.
 
 ### 8.1 Highlights
+
 8.1 still makes up the bulk of 9.0's featureset, so here's what to look out for and check out the [8.1 section](RELEASE_NOTES.md#v81) for the full list of awesome changes
 
 - **Tagging:** The tags feature is no longer experimental! This release includes a few adjustments to tags that finish the tagging story:
   - **Resolve tags:** tags can now be resolved in message review by clicking the 'x' in their upper right corner.
   - **Canned response tagging:** you can apply 1 or more tags to a canned response which will automatically apply that tags when a texter uses that canned response.
 - **Addressable message review queries:** message review now has "addressable urls" meaning that the url is changed whenever you make a query. This now allows you to directly link to a specific query. Because of this, there are now links in the texter stats section of the campaign page that link to a filter for that specific texter and a new "convos" button that takes you directly to a view that filters down to only messages within the campaign.
-- **Allow search terms to be _excluded_ from the campaign search:**  If a search starts with "-", it filters out campaigns that match the rest of the search term.
+- **Allow search terms to be _excluded_ from the campaign search:** If a search starts with "-", it filters out campaigns that match the rest of the search term.
 - **Documentation microsite:** our docs now exist on an [external microsite](https://statevoicesnational.github.io/Spoke) to help our docs
 - [Documentation now exists for all of the extensions!](HOWTO-extend-spoke.md)
 
 ### Appreciations
+
 Thanks for quick and impactful work from [schuyler1d](https://github.com/schuyler1d) to get 8.1 to a better more stable 9.0! Thank you so much to the **11** community contributors that made all the features and bug fixes possible: [inorvig](https://github.com/inorvig), [oburbank](https://github.com/oburbank), [aschneit](https://github.com/aschneit), [jeffm2001](https://github.com/jeffm2001), [lperson](https://github.com/lperson), [ibrand](https://github.com/ibrand), [bdatkins](https://github.com/bdatkins), [JeremyParker](https://github.com/JeremyParker), [tekkamanendless ](https://github.com/tekkamanendless), [sharonsolomon](https://github.com/sharonsolomon), [nke5ka](https://github.com/nke5ka)
 
 ## v8.1
@@ -674,17 +738,18 @@ _August 2020:_ Version 8.1
 **Note: we highly recommend upgrading to v9.0 if you're on v8.1 since 9.0 helps a lot with election time scaling**
 
 ### New Features/Improvements
+
 - **Tagging:** The tags feature is no longer experimental! This release includes a few adjustments to tags that finish the tagging story:
   - **Resolve tags:** tags can now be resolved in message review by clicking the 'x' in their upper right corner.
   - **Canned response tagging:** you can apply 1 or more tags to a canned response which will automatically apply that tags when a texter uses that canned response.
 - **Remove the Opt Outs sidebar menu:** this menu did not scale well and wasn't being used by many orgs. All it did was print a long list of all of the phone numbers that had opted out across the organization. You can easily query the database to get that same list of numbers.
 - **Addressable message review queries:** message review now has "addressable urls" meaning that the url is changed whenever you make a query. This now allows you to directly link to a specific query. Because of this, there are now links in the texter stats section of the campaign page that link to a filter for that specific texter and a new "convos" button that takes you directly to a view that filters down to only messages within the campaign.
 - UI button in the settings page for clearing the organization and extension cache. If an admin uses a SQL client to modify `organization.features` or metadata changes in an external resource, such as NGP VAN (the use cases in VAN is that a saved list was added or survey questions or activists code were modified; Spoke's VAN integration won't go back to VAN through the API if those metadata are present in the cache)
-- Allow search terms to be _excluded_ from the campaign search.  If a search starts with "-", it filters out campaigns that match the rest of the search term.
+- Allow search terms to be _excluded_ from the campaign search. If a search starts with "-", it filters out campaigns that match the rest of the search term.
 - Foundation for a documentation microsite to help our docs stay readable and accessible to devs and admin
 - New [Freshworks Freshdesk](https://freshdesk.com/) texter-sidebox for anyone using Freshdesk as a help hub for texters! Enable it by adding `freshworks-widget` to the texter-sideboxes env var list
 - Add support for Twilio error 21408 which happens when you try to send a message to a phone
-number outside of your "Geo-Permissions" settings
+  number outside of your "Geo-Permissions" settings
 - More clarity to the Redis docs
 - Receive Twilio messages from behind a proxy using TWILIO_MESSAGE_CALLBACK_URL
 - Dynamic Assignment Batch strategy can be chosen per-campaign
@@ -692,6 +757,7 @@ number outside of your "Geo-Permissions" settings
 - [Documentation now exists for all of the extensions!](HOWTO-extend-spoke.md)
 
 ### Bug Fixes
+
 - Copy all relevant campaign properties when copying a campaign (the whole campaign is now copied over and the interaction steps are copied in the right order)
 - Show a pop up when the copy campaign button is clicked to let you know it was copied
 - fix message sending where additional context info needs to be sent for service.sendMessage than previously -- e.g. for TWILIO auth, etc
@@ -712,6 +778,7 @@ _August 2020:_ Version 8.0
 This is a major release and therefore requires a schema change which you can run before/during migration (either by leaving/disabling SUPPRESS_MIGRATIONS="" or for [AWS Lambda, see the db migration instructions](DEPLOYING_AWS_LAMBDA.md#migrating-the-database). Anything marked as experimental has not yet been tested on a production texting campaign. We're marking this as a major version update 8.0 because there are several backwards-incompatible changes that we believe are important and valuable.
 
 ### Backwards incompatible Changes
+
 - **Dynamic Assignment is changing**: After a lot of feedback and some great inspiration from the [Warren Spoke](https://github.com/Elizabeth-Warren/Spoke) we're modifying dynamic assign. Texters will now request batch sizes instead of getting an endless stream of texts. The admin can customize the batch size and who is allowed to click request after their first batch. There is more documentation on this feature [here](https://github.com/StateVoicesNational/Spoke/blob/main/docs/HOWTO-use-dynamicassignment-batches.md).This feature is also optionally complemented by the new "release texts" feature which is mentioned under "New Features/Improvements"
 - **Old Texter UI is _no longer supported_**: We removed the `DEPRECATED_TEXTERUI` env variable and the old Texter UI is officially phased out
 - **Texter Sideboxes are now off by default**: You now need to enable options in organization Settings tab (they previously were just automatically enabled from the variable)
@@ -724,6 +791,7 @@ This is a major release and therefore requires a schema change which you can run
 - There is a small migration to the `campaign` table which needs to be run before/during migration (either by leaving/disabling SUPPRESS_MIGRATIONS="" or for [AWS Lambda, see the db migration instructions](https://github.com/StateVoicesNational/Spoke/blob/main/docs/DEPLOYING_AWS_LAMBDA.md#migrating-the-database)
 
 ### New Features/Improvements
+
 - Use of Spoke is subject to legal restrictions which each organization should review and understand, including recent guidance from an FCC ruling. We recommend system administrators review the settings outlined [here](https://github.com/StateVoicesNational/Spoke/blob/main/docs/REFERENCE-best-practices-conformance-messaging.md) along with consulting your own legal advice.
 - **_Experimental_ Phone number management for campaigns**: A much requested feature for scaling past the 400 phone numbers limit.
   - turn this on with `EXPERIMENTAL_CAMPAIGN_NUMBERS`
@@ -740,9 +808,10 @@ This is a major release and therefore requires a schema change which you can run
 - Additional organization settings available from the Settings section (If you have an existing instance, enable this with OWNER_CONFIGURABLE=ALL
 - Phone number buying and Twilio multi org enabled by default for new installs --
 - Phone number buying can purchase toll-free numbers with "800"
-- Campaign "response window" defaults to 48 hours and can be changed per campaign and then queries in Message Review to find who hasn't responded past the window.  A default can be set in Organization Settings page (overriding defaults)
+- Campaign "response window" defaults to 48 hours and can be changed per campaign and then queries in Message Review to find who hasn't responded past the window. A default can be set in Organization Settings page (overriding defaults)
 
 ### Bug Fixes
+
 - Fix VAN action handler with warehouse loader
 - Block blank message sending
 - Fixes needsResponseCount out of sync with optouts (auto and no message)
@@ -754,35 +823,37 @@ Thanks to [jasterix](https://github.com/jasterix), [ibrand](https://github.com/i
 
 ## v7.1
 
-_July 2020:_ Release 7.1 is a testament to the community working together -- several organizations using Spoke contributed features along with several open-source progressive volunteers (several as their first contribution)!  Thank you to all who contributed.  At the top in "Significant for deployments" there are top-lines for what to know before or during upgrade.  As usual, please let us know if you have any issues.
+_July 2020:_ Release 7.1 is a testament to the community working together -- several organizations using Spoke contributed features along with several open-source progressive volunteers (several as their first contribution)! Thank you to all who contributed. At the top in "Significant for deployments" there are top-lines for what to know before or during upgrade. As usual, please let us know if you have any issues.
 
 ### Significant for deployments:
 
-* After changing the texter send keyboard shortcut to Ctrl-X we have moved it (again) to Ctrl-Enter (to avoid conflict with OS 'cut' shortcuts)
-* There is a small migration to the user table which needs to be run before/during migration (either by leaving/disabling SUPPRESS_MIGRATIONS="" or for [AWS Lambda, see the db migration instructions](https://github.com/StateVoicesNational/Spoke/blob/main/docs/DEPLOYING_AWS_LAMBDA.md#migrating-the-database)
-* If you are running on lambda, you might consider setting JOB_RUNNER="lambda-async" for better scaling/performance
+- After changing the texter send keyboard shortcut to Ctrl-X we have moved it (again) to Ctrl-Enter (to avoid conflict with OS 'cut' shortcuts)
+- There is a small migration to the user table which needs to be run before/during migration (either by leaving/disabling SUPPRESS_MIGRATIONS="" or for [AWS Lambda, see the db migration instructions](https://github.com/StateVoicesNational/Spoke/blob/main/docs/DEPLOYING_AWS_LAMBDA.md#migrating-the-database)
+- If you are running on lambda, you might consider setting JOB_RUNNER="lambda-async" for better scaling/performance
 
 ### New Features
-* Suspending texters: marking a texter Suspended in the People page immediately stops them from being able to text - @JeremyParker
-* Zapier action handler support for triggering when contact tags are updated - @lperson (enable with adding `zapier-action` in your ACTION_HANDLERS env var)
-* Extra Profile Fields -- by setting an organization features variable in the database, additional profile fields can be added during signup, which can be required even for existing users to complete. - @jeffm2001
-* [Slack Authentication](./HOWTO_INTEGRATE_SLACK_AUTH.md) (alternative to Auth0 or local)  - @matteosb
-* Tag data in campaign export files - @jeffm2001
-* DataWarehouse contact loader bugfixes (actually works now) - @jeffm2001
-* Edit canned responses (you used to just be able to add/remove -- now you can edit) - @aschneit
-* Reduced 'flash' while sending initial text messages -- now the Send button just blinks instead of the whole screen for reduced visual strain - @eamouzou
-* Character and segment counts in the Script Editor - @hiemanshu
-* Timezone sorting on the Campaign Admin List - @alliejones
-* "Needs Response" count on Campaign Admin List, when [Redis is configured](./HOWTO_CONNECT_WITH_REDIS.md) - @schuyler1d
-* Improved NGP VAN cell selection from lists - @lperson
-* More experimental message-handler extensions: "auto-optout" allows automatic optout based on certain text coming in from a contact. and "profanity-tagger" gains an option to block a message on-send based on content. - @schuyler1d
-* An exciting new "dispatch" framework to send jobs and tasks asynchronously for tracking which can differ by framework -- especially supporting AWS Lambda, but there is also an experimental "bull" implementation using Redis that we may want to default on Heroku deployments.  Please tell us of your experience here.  This should resolve a large number of bugs and improve performance in many places. - @matteosb
-* Documenting Progressive Hacknight - @ibrand
+
+- Suspending texters: marking a texter Suspended in the People page immediately stops them from being able to text - @JeremyParker
+- Zapier action handler support for triggering when contact tags are updated - @lperson (enable with adding `zapier-action` in your ACTION_HANDLERS env var)
+- Extra Profile Fields -- by setting an organization features variable in the database, additional profile fields can be added during signup, which can be required even for existing users to complete. - @jeffm2001
+- [Slack Authentication](./HOWTO_INTEGRATE_SLACK_AUTH.md) (alternative to Auth0 or local) - @matteosb
+- Tag data in campaign export files - @jeffm2001
+- DataWarehouse contact loader bugfixes (actually works now) - @jeffm2001
+- Edit canned responses (you used to just be able to add/remove -- now you can edit) - @aschneit
+- Reduced 'flash' while sending initial text messages -- now the Send button just blinks instead of the whole screen for reduced visual strain - @eamouzou
+- Character and segment counts in the Script Editor - @hiemanshu
+- Timezone sorting on the Campaign Admin List - @alliejones
+- "Needs Response" count on Campaign Admin List, when [Redis is configured](./HOWTO_CONNECT_WITH_REDIS.md) - @schuyler1d
+- Improved NGP VAN cell selection from lists - @lperson
+- More experimental message-handler extensions: "auto-optout" allows automatic optout based on certain text coming in from a contact. and "profanity-tagger" gains an option to block a message on-send based on content. - @schuyler1d
+- An exciting new "dispatch" framework to send jobs and tasks asynchronously for tracking which can differ by framework -- especially supporting AWS Lambda, but there is also an experimental "bull" implementation using Redis that we may want to default on Heroku deployments. Please tell us of your experience here. This should resolve a large number of bugs and improve performance in many places. - @matteosb
+- Documenting Progressive Hacknight - @ibrand
 
 ### Bugs fixed
-* weird [Object object] when tabbing into canned response text issue - @eamouzou
-* simplified docker-compose file - @matteosb
-* fix action handler select menu in Campaign Admin Interactions section - @matteosb
+
+- weird [Object object] when tabbing into canned response text issue - @eamouzou
+- simplified docker-compose file - @matteosb
+- fix action handler select menu in Campaign Admin Interactions section - @matteosb
 
 ### Appreciations
 
@@ -794,43 +865,45 @@ Also to AFL-CIO, MoveOn, NYCET, Scale to Win, and Working Families Party for sen
 
 In our next release, we're hoping to have even more VAN support in message handlers, some timezone config flexibility, some changes and features related to the recent FCC court decision, and hopefully a new dynamic assignment model. -- of course, along with a whole lot more -- send us your changes now, so we can bring it in to the next version!
 
-
 ## v7.0
+
 _June 2020:_ Version 7.0 (or 6.19 in honor of Juneteenth!)
-**Note:** This is a major release and therefore requires a schema change. See the deploy steps section for details. Anything marked as *experimental* has not yet been tested on a production texting campaign.
+**Note:** This is a major release and therefore requires a schema change. See the deploy steps section for details. Anything marked as _experimental_ has not yet been tested on a production texting campaign.
 We're marking this as a major version update: 7.0 because there are several backwards-incompatible changes that we believe are important and valuable.
 
 ### Backwards incompatibilities:
 
-* This change has schema changes on the `campaign` table which you should make sure to update -- it should be a fast and painless upgrade (automatic if you have it setup). See the deploy steps section for details of how to migrate.
-* There are many Texter UI accessibility improvements, but they do come at the expense of changing how the Enter key behaves for texters.  You should communicate this to your texting team and update and training materials. (to revert this functionality, you can enable the env var HOLD_ENTER_KEY=1)
-* SuperVolunteer roles now have access to all MessageReview operations.
+- This change has schema changes on the `campaign` table which you should make sure to update -- it should be a fast and painless upgrade (automatic if you have it setup). See the deploy steps section for details of how to migrate.
+- There are many Texter UI accessibility improvements, but they do come at the expense of changing how the Enter key behaves for texters. You should communicate this to your texting team and update and training materials. (to revert this functionality, you can enable the env var HOLD_ENTER_KEY=1)
+- SuperVolunteer roles now have access to all MessageReview operations.
 
 ### Improvements
 
-* There is now further support for VAN -- a robust action handler that can be enabled by adding `ACTION_HANDLERS=ngpvan-action` to your environment variables will enable this.
-* We have a new framework for extending the Texter UI interface called ["sideboxes"](https://github.com/StateVoicesNational/Spoke/issues/1533).  Enabled with environment variable TEXTER_SIDEBOXES which works similarly to action handlers, where it should be a comma separated list of enabled sideboxes. Developers can add sidebox functionality, and admins can set defaults in the organization Settings section and changes per-campaign -- enabling/disabling sideboxes.  Two so-far are:
-  * `contact-reference` which is a link the texter can click and/or share with an admin for direct access to that conversation later
-  * `tag-contact` which if you have EXPERIMENTAL_TAGS=1 enabled and create tags, a texter will have an interface to mark them.  They can then be filtered for in Message Review.
+- There is now further support for VAN -- a robust action handler that can be enabled by adding `ACTION_HANDLERS=ngpvan-action` to your environment variables will enable this.
+- We have a new framework for extending the Texter UI interface called ["sideboxes"](https://github.com/StateVoicesNational/Spoke/issues/1533). Enabled with environment variable TEXTER_SIDEBOXES which works similarly to action handlers, where it should be a comma separated list of enabled sideboxes. Developers can add sidebox functionality, and admins can set defaults in the organization Settings section and changes per-campaign -- enabling/disabling sideboxes. Two so-far are:
+
+  - `contact-reference` which is a link the texter can click and/or share with an admin for direct access to that conversation later
+  - `tag-contact` which if you have EXPERIMENTAL_TAGS=1 enabled and create tags, a texter will have an interface to mark them. They can then be filtered for in Message Review.
 
   There will be more work here going forward -- feedback is welcome as this is still a feature in active development.
 
-* There is _another_ new experimental framework: Message Handlers which can intercept a message pre and post-save with a sample message handler that can tag profanity -- you can experiment with this by setting `MESSAGE_HANDLERS=profanity-tagger`
-* Texter UI Accessibility improvements -- previously we captured the Enter key to send a message. This was inaccessible because the Enter key is used when navigating with the keyboard in order to 'click' a button. Sending is now possible with `Ctrl-x` (and skip is `Ctrl-y`).
-* We have now disabled by default the ability to hold down the Enter key -- for sending you can now press any letter key (or Enter) to send a message. If you want this functionality back set HOLD_ENTER_KEY=1
-* There is now a campaign 'sending errors' report which summarizes how many sending errors have been reported by Twilio.  Carrier Violation error messages are especially useful (and important) to track.
-* A new contact-loader that allows upload into S3 to make larger uploads possible if you have deployed on AWS.
-* A new environment or organization.features variable MAX_TEXTERS_PER_CAMPAIGN which can block more texters from joining a campaign with dynamic assignment.
+- There is _another_ new experimental framework: Message Handlers which can intercept a message pre and post-save with a sample message handler that can tag profanity -- you can experiment with this by setting `MESSAGE_HANDLERS=profanity-tagger`
+- Texter UI Accessibility improvements -- previously we captured the Enter key to send a message. This was inaccessible because the Enter key is used when navigating with the keyboard in order to 'click' a button. Sending is now possible with `Ctrl-x` (and skip is `Ctrl-y`).
+- We have now disabled by default the ability to hold down the Enter key -- for sending you can now press any letter key (or Enter) to send a message. If you want this functionality back set HOLD_ENTER_KEY=1
+- There is now a campaign 'sending errors' report which summarizes how many sending errors have been reported by Twilio. Carrier Violation error messages are especially useful (and important) to track.
+- A new contact-loader that allows upload into S3 to make larger uploads possible if you have deployed on AWS.
+- A new environment or organization.features variable MAX_TEXTERS_PER_CAMPAIGN which can block more texters from joining a campaign with dynamic assignment.
 
 ### Bug fixes
 
 There are too many bug fixes to mention -- [please see the full list of linked changes](https://github.com/StateVoicesNational/Spoke/pull/1623)
 
 ### Deploy Steps:
+
 Instructions for migrating you database
 
-* Make sure SUPPRESS_MIGRATIONS="" (not 0!) in your environment
-* If you're using AWS Lambda, check out the [deploy instructions here](https://github.com/StateVoicesNational/Spoke/blob/main/docs/DEPLOYING_AWS_LAMBDA.md#migrating-the-database)
+- Make sure SUPPRESS_MIGRATIONS="" (not 0!) in your environment
+- If you're using AWS Lambda, check out the [deploy instructions here](https://github.com/StateVoicesNational/Spoke/blob/main/docs/DEPLOYING_AWS_LAMBDA.md#migrating-the-database)
 
 ### Appreciations!
 
@@ -840,27 +913,30 @@ Also special shout outs to [Working Families Party](https://workingfamilies.org/
 
 ### Onward
 
-Our next release, we're expecting some more great features -- ability to suspend texters, improving the dynamic assignment workflow, and more improvements around tags.  Devs and orgs, please send your PRs in now, so we can test your work out and get it in the next release.
-
+Our next release, we're expecting some more great features -- ability to suspend texters, improving the dynamic assignment workflow, and more improvements around tags. Devs and orgs, please send your PRs in now, so we can test your work out and get it in the next release.
 
 ## v6.1
+
 _June 2020:_ Version 6.1
 
 6.1 is mostly focused on technical improvements. We upgraded to the 2.x versions of apollo-client and react-apollo and removed the dependency on redux. This allowed us to fix some long-standing bugs and should improve the developer experience for Spoke contributors.
 
 **Improvements**
-* Data loading errors are displayed to the user rather than causing blank screens or infinite loading animations
-* Enhanced the action handler framework with better error handling and caching to improve performance, and added the ability for administrators to optionally select extra information on a per-question-response basis to be sent to the remote system when a texter selects the response.
+
+- Data loading errors are displayed to the user rather than causing blank screens or infinite loading animations
+- Enhanced the action handler framework with better error handling and caching to improve performance, and added the ability for administrators to optionally select extra information on a per-question-response basis to be sent to the remote system when a texter selects the response.
 
 **Changes**
-* Removed the threeClickEnabled organization feature
+
+- Removed the threeClickEnabled organization feature
 
 **Bug fixes**
-* Resolved numerous issues related to cache collisions in the Apollo store
-* Job progress updates more reliably on the campaign creation screen
-* Fixed select all on the campaign archive screen
-* Closing the user edit modal now takes you back to the person list
-* Fixed an issue that allowed campaigns to start before all jobs completed
+
+- Resolved numerous issues related to cache collisions in the Apollo store
+- Job progress updates more reliably on the campaign creation screen
+- Fixed select all on the campaign archive screen
+- Closing the user edit modal now takes you back to the person list
+- Fixed an issue that allowed campaigns to start before all jobs completed
 
 Thanks to all the contributors part of this release including:
 [ibrand](https://github.com/ibrand),
@@ -869,20 +945,21 @@ Thanks to all the contributors part of this release including:
 [schuyler1d](https://github.com/schuyler1d)
 
 ## v6.0
+
 _May 2020:_ Version 6.0
-**Note:** This is a major release and therefore requires a schema change. See the deploy steps section for details. Anything marked as *experimental* has not yet been tested on a production texting campaign.
+**Note:** This is a major release and therefore requires a schema change. See the deploy steps section for details. Anything marked as _experimental_ has not yet been tested on a production texting campaign.
 We're marking this as a major version update: 6.0 because there are several backwards-incompatible changes that we think you will love:
 
-- *Experimental* Phone number inventory management -- Adds functionality to buy Twilio phone numbers directly through the Admin interface. Organizations using their own Messaging Service, i.e. those that have TWILIO_MESSAGE_SERVICE set in organization features rather than through the global env var, can add the numbers directly to their Messaging Service and use them for texting. Additionally, phone numbers purchased through Spoke can be configured to use a custom voice response by setting the TWILIO_VOICE_URL setting. A typical use case would be to use TwiML Bins to re-route calls or to play a custom voicemails. To configure:
+- _Experimental_ Phone number inventory management -- Adds functionality to buy Twilio phone numbers directly through the Admin interface. Organizations using their own Messaging Service, i.e. those that have TWILIO_MESSAGE_SERVICE set in organization features rather than through the global env var, can add the numbers directly to their Messaging Service and use them for texting. Additionally, phone numbers purchased through Spoke can be configured to use a custom voice response by setting the TWILIO_VOICE_URL setting. A typical use case would be to use TwiML Bins to re-route calls or to play a custom voicemails. To configure:
   - Set EXPERIMENTAL_PHONE_INVENTORY to enable the feature
   - Set TWILIO_VOICE_URL for a custom voice response
-- *Experimental* Per-campaign Twilio Messaging Services -- This feature lays the foundation for scaling Spoke on Twilio by allowing campaigns to use their own Messaging Services. When enabled, the campaign edit screen will allow admins to either supply a Messaging Service for the campaign to use or to have Spoke create one for them. Note that numbers will have to be added to the Messaging Service manually. This feature will be integrated with the phone number inventory in a future release. To configure:
+- _Experimental_ Per-campaign Twilio Messaging Services -- This feature lays the foundation for scaling Spoke on Twilio by allowing campaigns to use their own Messaging Services. When enabled, the campaign edit screen will allow admins to either supply a Messaging Service for the campaign to use or to have Spoke create one for them. Note that numbers will have to be added to the Messaging Service manually. This feature will be integrated with the phone number inventory in a future release. To configure:
   - Set EXPERIMENTAL_TWILIO_PER_CAMPAIGN_MESSAGING_SERVICE to enable
   - Set TWILIO_BASE_CALLBACK_URL to configure webhooks for Messaging Services created by Spoke. Required if this feature is enabled.
 - New Texting UI -- in version 5.6 it was enableable with EXPERIMENTAL_TEXTERUI ahead of time. It is now the default! For this version, we allow you to preserve the old texter UI by setting the environment variable DEPRECATED_TEXTERUI=GONE_SOON. Also note that with the new UI we have removed user-created Canned Responses -- there's consensus that it causes more problems than it helps. We've also long had the Super Volunteer role which most campaigns use for a group of texters that can update canned responses when needed.
   - As part of this Texter UI, you can create [shortcut buttons](./REFERENCE-shortcut-rules.md) that will surface some of your question responses and canned responses as a row of buttons outside of a menu to speed up a texter's response flow. [Check out the docs to learn more!](./REFERENCE-shortcut-rules.md)
 - Action Handler developers: Through the great work of @lperson for improved VAN support, our action handler api used to return a true/false value for the available() call -- it should now return an object with two keys: { result: <boolean on available>, expiresSeconds: <how long to cache the result, 0 by default>}
-There are several schema changes -- only adding fields, so migration should be easy/fast. However, if you have SUPPRESS_MIGRATIONS enabled, then you will need to manually migrate the database ( Heroku, AWS Lambda )
+  There are several schema changes -- only adding fields, so migration should be easy/fast. However, if you have SUPPRESS_MIGRATIONS enabled, then you will need to manually migrate the database ( Heroku, AWS Lambda )
 
 In addition to those changes, we've improved the Admin People page (@lperson ) and made some tweaks to the Campaign Edit page (@matteosb , @higgyCodes ), and the Texter Todo list (@larkinds ).
 
@@ -903,7 +980,9 @@ Thanks to all the contributors part of this release including:
 [schuyler1d](https://github.com/schuyler1d)
 
 ## v5.5
+
 _May 2020:_ Version 5.5
+
 - Campaign List Admin changes (@lperson, @schuyler1d)
 - Twilio Auth per organization (@jeffm2001 ) -- Now if you enable TWILIO_MULTI_ORG environment variable, each organization can use a different Twilio account that they can setup in the Settings Admin tab. This also allows per-organization message services. There is more work coming to allow [message services per-campaign](https://github.com/StateVoicesNational/Spoke/issues/1495) and [in-app phone number management](https://github.com/StateVoicesNational/Spoke/issues/1518)
 - This release has several developing features -- you might say it's a 'preview' release of things to come. You can turn on these features with environment variables
@@ -924,17 +1003,17 @@ Thanks to all the contributors part of this release including:
 [tmc](https://github.com/tmc)
 
 ## v5.4
+
 _April 2020:_ Version 5.4
 This release includes the following improvements:
 
-- *Experimental* A new contact loader for loading contacts in straight from NGP VAN (not yet tested on a production campaign)
+- _Experimental_ A new contact loader for loading contacts in straight from NGP VAN (not yet tested on a production campaign)
 - Scaling improvements
 - Allow contact loaders to be toggled on a per-organization level
 - Improvements to the contact loaders framework
 - Upgrades node version to 10.x and twilio
 - Account view has a more streamlined UI
 - Various bug fixes
-
 
 Thanks to all the contributors part of this release including:
 [aschneit](https://github.com/aschneit),
@@ -943,6 +1022,7 @@ Thanks to all the contributors part of this release including:
 [ibrand](https://github.com/ibrand),
 
 ## v5.3
+
 _March 2020:_ Version 5.3
 This release includes the following improvements:
 
@@ -964,6 +1044,7 @@ Thanks to all the contributors part of this release including:
 [rahatarmanahmed](https://github.com/rahatarmanahmed)
 
 ## v5.2
+
 _February 2020:_ Version 5.2
 This release includes the following improvements:
 
@@ -978,6 +1059,7 @@ Thanks to all the contributors part of this release including:
 [ibrand](https://github.com/ibrand)
 
 ## v5.1
+
 _February 2020:_ Version 5.1
 This release includes the following improvements:
 
@@ -994,6 +1076,7 @@ Thanks to all the contributors part of this release including:
 [dannytatom](https://github.com/dannytatom)
 
 ## v5.0
+
 _January 2020:_ Version 5.0
 **Note:** This is a major release and therefore requires a schema change. See the deploy steps section for details.
 
