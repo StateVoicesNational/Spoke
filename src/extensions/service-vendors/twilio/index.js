@@ -636,7 +636,7 @@ export async function getContactInfo({
   const types = { fields: "line_type_intelligence" };
   if (lookupName) {
     // caller-name is more expensive
-    types.fields = ("line_type_intelligence,caller-name");
+    types.fields = "line_type_intelligence,caller-name";
   }
   const contactInfo = {
     contact_number: contactNumber,
