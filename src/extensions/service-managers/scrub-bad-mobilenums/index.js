@@ -99,7 +99,7 @@ export async function getCampaignData({
       "SCRUB_MOBILE_OPTIONAL",
       organization
     );
-    const sericeClient = getServiceFromOrganization(organization);
+    const serviceClient = getServiceFromOrganization(organization);
     const scrubBadMobileNumsGettable =
       typeof serviceClient.getContactInfo === "function";
     let scrubBadMobileNumsCount = null;
