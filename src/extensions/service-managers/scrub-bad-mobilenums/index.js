@@ -5,6 +5,7 @@ import { Jobs } from "../../../workers/job-processes";
 import { Tasks } from "../../../workers/tasks";
 import { jobRunner } from "../../job-runners";
 import { getServiceFromOrganization } from "../../service-vendors";
+import { log } from "../../../lib/log.js"
 // / All functions are OPTIONAL EXCEPT metadata() and const name=.
 // / DO NOT IMPLEMENT ANYTHING YOU WILL NOT USE -- the existence of a function adds behavior/UI (sometimes costly)
 
@@ -306,6 +307,7 @@ export async function nextBatchJobLookups({
       lastCount,
       steps
     );
+    log.error("scrub-bad-mobilenums error: ", err);
     await r
       .knex("job_request")
       .where("id", job.id)
