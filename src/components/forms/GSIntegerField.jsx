@@ -72,7 +72,7 @@ export default class GSIntegerField extends GSFormField {
       style
     };
     // can't be undefined or react throw uncontroled component error
-    if (!textFieldProps.value) {
+    if (textFieldProps.value !== 0 && !textFieldProps.value) {
       textFieldProps.value = "";
     }
     textFieldProps.style = Object.assign(
@@ -96,7 +96,7 @@ export default class GSIntegerField extends GSFormField {
         onChange={event => {
           onChange(Number(event.target.value));
         }}
-        type="number"
+        type="Number"
       />
     );
   }

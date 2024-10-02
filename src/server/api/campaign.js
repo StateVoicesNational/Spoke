@@ -352,7 +352,7 @@ export const resolvers = {
       const features = getFeatures(campaign);
       return features.USE_DYNAMIC_REPLIES ? features.USE_DYNAMIC_REPLIES : false;
     },
-    responseWindow: campaign => campaign.response_window || 48,
+    responseWindow: campaign => campaign.response_window != null ? campaign.response_window : 48,
     organization: async (campaign, _, { loaders }) =>
       campaign.organization ||
       loaders.organization.load(campaign.organization_id),

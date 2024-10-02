@@ -898,8 +898,9 @@ const rootMutations = {
           campaign.batch_size ||
           Number(getConfig("DEFAULT_BATCHSIZE", organization) || 300),
         response_window:
-          campaign.response_window ||
-          Number(getConfig("DEFAULT_RESPONSEWINDOW", organization) || 48),
+          campaign.response_window != null
+            ? campaign.response_window
+            : Number(getConfig("DEFAULT_RESPONSEWINDOW", organization) || 48),
         is_started: false,
         is_archived: false,
         join_token: uuidv4()
