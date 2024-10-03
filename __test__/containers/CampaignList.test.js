@@ -130,7 +130,6 @@ describe("CampaignList", () => {
           <AdminCampaignList data={data} mutations={mutations} params={params} />
         );
       });
-      
       const cells = screen.getAllByRole('cell');
 
       expect(cells.length).toBe(7);
