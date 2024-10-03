@@ -126,14 +126,17 @@ describe("CampaignList", () => {
     // when
     test("Renders for campaign with creator, includes created by", () => {
       StyleSheetTestUtils.suppressStyleInjection();
-      const wrapper = mount(
-        <AdminCampaignList data={data} mutations={mutations} params={params} />
-      );
-      expect(
-        wrapper.containsMatchingElement(
-          <span> &mdash; Created by Lorem Ipsum</span>
-        )
-      ).toBeTruthy();
+      act(() => {
+        render(
+          <AdminCampaignList data={data} mutations={mutations} params={params} />
+        );
+      });
+      
+      const cells = screen.getAllByRole('cell');
+
+      expect(cells.length).toBe(7);
+      // campaign info cell
+      expect(cells[2].textContent).toBe("Campaign — Created by Lorem Ipsum");
     });
   });
 
