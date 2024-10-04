@@ -1176,7 +1176,7 @@ export class AssignmentTexterContactControls extends React.Component {
     if (window.DOWNTIME_NO_INITIAL) {
       return [
         this.renderToolbar(enabledSideboxes),
-        <div>Sending intiial messages is currently paused. You can still respond to any incoming messages.</div>
+        <div>Sending initial messages is currently paused. You can still reply to any incoming messages.</div>
       ];
     }
     return [
