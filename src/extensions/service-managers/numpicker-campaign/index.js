@@ -1,5 +1,4 @@
 import { getFeatures } from "../../../server/api/lib/config";
-import log from "../../../server/log";
 import { r, cacheableData } from "../../../server/models";
 import _ from "lodash";
 
@@ -22,13 +21,12 @@ export async function onMessageSend({
   campaign,
   serviceManagerData
 }) {
-  log.info({
-    category: name,
-    event: 'onMessageSend',
-    messageId: message.id,
-    userNumber: message.user_number,
+  console.log(
+    "numpicker-campaign.onMessageSend",
+    message.id,
+    message.user_number,
     serviceManagerData
-  });
+  );
   if (
     message.user_number ||
     (serviceManagerData && serviceManagerData.user_number)
@@ -39,22 +37,18 @@ export async function onMessageSend({
   }
   const campaignNumbers = getFeatures(campaign).campaignNumbers || [];
   const selectedPhone = _.sample(campaignNumbers);
-  log.info({
-    category: name,
-    event: 'selectedPhone',
-    selectedPhone
-  });
+  console.log("numpicker-campaign.onMessageSend selectedPhone", selectedPhone);
   // TODO: caching
   // TODO: something better than pure rotation -- maybe with caching we use metrics
   //   based on sad deliveryreports
   if (selectedPhone) {
     return { user_number: selectedPhone };
   } else {
-    log.warn({
-      category: name,
-      event: 'onMessageSend',
-      orgId: organization.id,
-    }, "None found");
+    console.log(
+      "numpicker-campaign.onMessageSend none found",
+      serviceName,
+      organization.id
+    );
   }
 }
 
