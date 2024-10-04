@@ -355,10 +355,19 @@ const makeCannedResponsesList = cannedResponsesParagraphs => {
     ) {
       const textParagraph = cannedResponsesParagraphs.shift();
       if (textParagraph.isParagraphItalic) {
-        // Italic = tag.
+        // Italic = tag or action handler.
         const tagId = textParagraph.text.match(/^\d*\b/);
         if (tagId && !!tagId[0]) {
+          // Starting with a number = tag
           cannedResponse.tagIds.push(tagId[0]);
+        }
+        else {
+          // Statring with text = action handler
+          const handlerLabel = textParagraph.text.trim().toLowerCase();
+          const handler = actionHandlers[handlerLabel];
+          if (!handler) continue;
+          cannedResponse.answer_actions = handler.name;
+          cannedResponse.answer_actions_data = handler.data;
         }
       } else {
         // Regular text, add to response.
