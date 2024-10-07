@@ -2,7 +2,6 @@ import PropTypes from "prop-types";
 import React from "react";
 import Form from "react-formal";
 import { StyleSheet, css } from "aphrodite";
-import { GraphQLRequestError } from "../../network/errors";
 import { log } from "../../lib";
 import withMuiTheme from "../../containers/hoc/withMuiTheme";
 
@@ -41,9 +40,7 @@ class GSForm extends React.Component {
   }
 
   handleFormError(err) {
-    if (err instanceof GraphQLRequestError) {
-      this.setState({ globalErrorMessage: err.message });
-    } else if (err.message) {
+    if (err.message) {
       this.setState({ globalErrorMessage: err.message });
     } else {
       log.error(err);
