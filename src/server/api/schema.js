@@ -537,12 +537,7 @@ const rootMutations = {
         .limit(1);
 
       if (!lastMessage) {
-        const errorStatusAndMessage = {
-          status: 400,
-          message:
-            "Cannot fake a reply to a contact that has no existing thread yet"
-        };
-        throw new GraphQLError(errorStatusAndMessage);
+        throw new GraphQLError("Cannot fake a reply to a contact that has no existing thread yet");
       }
 
       const userNumber = lastMessage.user_number;
@@ -1455,20 +1450,23 @@ const rootMutations = {
         join_token: joinToken,
       })
       .first();
-      const INVALID_REASSIGN = () => {
-        const error = new GraphQLError("Invalid reassign request - organization not found");
-        error.code = "INVALID_REASSIGN";
-        return error;
-      };
       if (!campaign) {
-        throw INVALID_REASSIGN();
+        throw new GraphQLError("Invalid reassign request - campaign not found", {
+          extensions: {
+            code: 'INVALID_REASSIGN',
+          },
+        });
       }
       const organization = await cacheableData.organization.load(
         campaign.organization_id
       );
       if (!organization) {
-        throw INVALID_REASSIGN();
-      }      
+        throw new GraphQLError("Invalid reassign request - organization not found", {
+          extensions: {
+            code: 'INVALID_REASSIGN',
+          },
+        });
+      }
       const maxContacts = getConfig("MAX_REPLIES_PER_TEXTER", organization) ?? 200;
       let d = new Date();
       d.setHours(d.getHours() - 1);

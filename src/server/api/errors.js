@@ -3,7 +3,11 @@ import { r, cacheableData } from "../models";
 
 export function authRequired(user) {
   if (!user) {
-    throw new GraphQLError("You must login to access that resource.");
+    throw new GraphQLError("You must login to access that resource.", {
+      extensions: {
+        code: 'UNAUTHENTICATED',
+      },
+    });
   }
 }
 
@@ -27,11 +31,11 @@ export async function accessRequired(
     role
   );
   if (!hasRole) {
-    const error = new GraphQLError(
-      "You are not authorized to access that resource."
-    );
-    error.code = "UNAUTHORIZED";
-    throw error;
+    throw new GraphQLError("You are not authorized to access that resource.", {
+      extensions: {
+        code: 'UNAUTHORIZED',
+      },
+    });
   }
 }
 
@@ -73,11 +77,11 @@ export async function assignmentRequiredOrAdminRole(
     roleRequired
   );
   if (!hasPermission) {
-    const error = new GraphQLError(
-      "You are not authorized to access that resource."
-    );
-    error.code = "UNAUTHORIZED";
-    throw error;
+    throw new GraphQLError("You are not authorized to access that resource.", {
+      extensions: {
+        code: 'UNAUTHORIZED',
+      },
+    });
   }
   return userHasAssignment || true;
 }

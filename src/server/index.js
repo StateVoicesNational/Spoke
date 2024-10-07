@@ -70,21 +70,16 @@ const server = new ApolloServer({
   resolvers,
   introspection: true,
   plugins: [ApolloServerPluginDrainHttpServer({ httpServer })],
-  formatError: error => {
+  formatError: (formattedError, error) => {
     if (process.env.SHOW_SERVER_ERROR || process.env.DEBUG) {
-      if (error instanceof GraphQLError) {
-        return error;
-      }
-      return new GraphQLError(error.message);
+      return formattedError;
     }
 
-    return new GraphQLError(
-      error &&
-      error.originalError &&
-      error.originalError.code === "UNAUTHORIZED"
-        ? "UNAUTHORIZED"
-        : "Internal server error"
-    );
+    // Strip out stacktrace and other potentially sensative details.
+    return {
+      message: formattedError.message,
+      code: formattedError?.extensions?.code ?? 'INTERNAL_SERVER_ERROR',
+    };
   }
 });
 

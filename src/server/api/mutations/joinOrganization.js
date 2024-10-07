@@ -6,9 +6,11 @@ import { getConfig } from "../lib/config";
 import telemetry from "../../telemetry";
 
 const INVALID_JOIN = () => {
-  const error = new GraphQLError("Invalid join request");
-  error.code = "INVALID_JOIN";
-  return error;
+  return new GraphQLError("Invalid join request", {
+    extensions: {
+      code: 'INVALID_JOIN',
+    },
+  });
 };
 
 // eslint-disable-next-line import/prefer-default-export
@@ -43,11 +45,11 @@ export const joinOrganization = async (
           r.knex("assignment").where("campaign_id", campaignId)
         );
         if (campaignTexterCount >= maxTextersPerCampaign) {
-          const error = new GraphQLError(
-            "Sorry, this campaign has too many texters already"
-          );
-          error.code = "FAILEDJOIN_TOOMANYTEXTERS";
-          throw error;
+          throw new GraphQLError("Sorry, this campaign has too many texters already.", {
+            extensions: {
+              code: 'FAILEDJOIN_TOOMANYTEXTERS',
+            },
+          });
         }
       }
     } else {
