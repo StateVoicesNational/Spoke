@@ -71,6 +71,15 @@ const server = new ApolloServer({
   introspection: true,
   plugins: [ApolloServerPluginDrainHttpServer({ httpServer })],
   formatError: (formattedError, error) => {
+    log.error({
+      // TODO: request is no longer available in formatError, figure out
+      // another way to do this.
+      // userId: request.user && request.user.id,
+      code: error?.extensions?.code ?? 'INTERNAL_SERVER_ERROR',
+      error: formattedError,
+      msg: "GraphQL error"
+    });
+
     if (process.env.SHOW_SERVER_ERROR || process.env.DEBUG) {
       return formattedError;
     }
