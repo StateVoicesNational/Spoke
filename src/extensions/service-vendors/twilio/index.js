@@ -98,6 +98,7 @@ const headerValidator = url => {
 export const errorDescriptions = {
   12300: "Twilio is unable to process the Content-Type of the provided URL.",
   12400: "Internal (Twilio) Failure",
+  20404: "There is no deactivation file available for that date",
   20429: "Too Many Requests: Twilio queue is full. OK to retry",
   21211: "Invalid 'To' Phone Number",
   21408: "Attempt to send to disabled region",
@@ -115,7 +116,8 @@ export const errorDescriptions = {
   30005: "Unknown destination handset",
   30006: "Landline or unreachable carrier",
   30007: "Message Delivery - Carrier violation",
-  30008: "Message Delivery - Unknown error"
+  30008: "Message Delivery - Unknown error",
+  30115: "The date format you have used is incorrect"
 };
 
 export function costData(organization, userNumber) {
