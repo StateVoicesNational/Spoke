@@ -1455,3 +1455,46 @@ export async function deletePhoneNumbers(job) {
     await defensivelyDeleteJob(job);
   }
 }
+
+/**
+ * @param { object } job 
+ * @returns { array } - Array of deactivated numbers
+ */ 
+export const addDeactivatedPhoneNumbers = async (job) => {
+  const regex = new RegExp('\d{4}-\d{2}-\d{2}');
+  const { date } = JSON.parse(job.payload);
+  
+  let list;
+
+  if (typeof(date) == "string" && !regex.test(date)) {
+    log.error("fetchDeactivatedPhoneNumbers: BAD FORMAT (date)");
+    return [];
+  }
+
+  if (!job.organization_id) {
+    log.error("fetchDeactivatedPhoneNumbers: organization_id is required");
+    return [];
+  }
+
+  const { authToken, accountSid } = await getMessageServiceConfig(
+    "twilio",
+    job.organization_id
+  );
+
+  const client = twilio(accountSid, authToken);
+  try {
+    // gets link to AWS bucket : 2 min expiration
+    const url = await client.messaging.v1
+      .deactivations()
+      .fetch({ date: date });
+
+    // fetchs text file of deactivated numbers
+    const fetchTextList = fetch(url.redirectTo);
+
+    // returns array of deactivated numbers
+    list = (await (await fetchTextList).text()).split("\n");
+    log.info(`${job.id} - Gathered deactivated number(s) from ${job.data}`);
+  } catch (err) {
+    log.error(`fetchDeactivatedPhoneNumbers JOB ${job.id} FAILED: ${err}`);
+  }
+}
