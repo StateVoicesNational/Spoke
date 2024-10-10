@@ -138,6 +138,42 @@ export function errorDescription(errorCode) {
   };
 }
 
+export const addDeactivatedPhoneNumbers = async (
+  organization,
+  date
+) => {
+  const { accountSid, authToken } = await getMessageServiceConfig(
+    "twilio",
+    organization
+  );
+
+  const client = Twilio(accountSid, authToken);
+
+  const addDeactivatedNumberToDataBase = async number => {
+    return await r.knex("deactivated_numbers").insert({
+      date_deactivated: date,
+      phone_number: number
+    })
+  }
+
+  try {
+    // gets link to AWS bucket : 2 min expiration
+    const url = await client.messaging.v1
+      .deactivations()
+      .fetch({ date });
+
+    // fetchs text file of deactivated numbers
+    const textList = await fetch(url.redirectTo).split("\n");
+
+    // add each number to the db
+    textList.map(number => {
+      addDeactivatedNumberToDataBase(number);
+    });
+  } catch (err) {
+    throw Error(err);
+  }
+}
+
 export function addServerEndpoints(addPostRoute) {
   addPostRoute(
     "/twilio/:orgId?",
@@ -1208,6 +1244,7 @@ export const fullyConfigured = async (organization, serviceManagerData) => {
 
 export default {
   syncMessagePartProcessing: !!process.env.JOBS_SAME_PROCESS,
+  addDeactivatedPhoneNumbers,
   addServerEndpoints,
   headerValidator,
   convertMessagePartsToMessage,
