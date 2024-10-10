@@ -1,6 +1,7 @@
 import GraphQLDate from "graphql-date";
 import GraphQLJSON from "graphql-type-json";
 import { GraphQLError } from "graphql";
+import { SpokeError } from "./errors";
 import isUrl from "is-url";
 import _ from "lodash";
 import { gzip, makeTree, getHighestRole } from "../../lib";
@@ -537,12 +538,7 @@ const rootMutations = {
         .limit(1);
 
       if (!lastMessage) {
-        const errorStatusAndMessage = {
-          status: 400,
-          message:
-            "Cannot fake a reply to a contact that has no existing thread yet"
-        };
-        throw new GraphQLError(errorStatusAndMessage);
+        throw new SpokeError("Cannot fake a reply to a contact that has no existing thread yet");
       }
 
       const userNumber = lastMessage.user_number;
@@ -1073,7 +1069,7 @@ const rootMutations = {
         campaign.hasOwnProperty("contacts") &&
         campaign.contacts
       ) {
-        throw new GraphQLError(
+        throw new SpokeError(
           "Not allowed to add contacts after the campaign starts"
         );
       }
@@ -1129,7 +1125,7 @@ const rootMutations = {
       authRequired(user);
       const invite = await Invite.get(inviteId);
       if (!invite || !invite.is_valid) {
-        throw new GraphQLError("That invitation is no longer valid");
+        throw new SpokeError("That invitation is no longer valid");
       }
 
       const newOrganization = await Organization.save({
@@ -1455,20 +1451,23 @@ const rootMutations = {
         join_token: joinToken,
       })
       .first();
-      const INVALID_REASSIGN = () => {
-        const error = new GraphQLError("Invalid reassign request - organization not found");
-        error.code = "INVALID_REASSIGN";
-        return error;
-      };
       if (!campaign) {
-        throw INVALID_REASSIGN();
+        throw new GraphQLError("Invalid reassign request - campaign not found", {
+          extensions: {
+            code: 'INVALID_REASSIGN',
+          },
+        });
       }
       const organization = await cacheableData.organization.load(
         campaign.organization_id
       );
       if (!organization) {
-        throw INVALID_REASSIGN();
-      }      
+        throw new GraphQLError("Invalid reassign request - organization not found", {
+          extensions: {
+            code: 'INVALID_REASSIGN',
+          },
+        });
+      }
       const maxContacts = getConfig("MAX_REPLIES_PER_TEXTER", organization) ?? 200;
       let d = new Date();
       d.setHours(d.getHours() - 1);
@@ -1500,7 +1499,7 @@ const rootMutations = {
       const campaign = await cacheableData.campaign.load(campaignId);
       await accessRequired(user, campaign.organization_id, "ADMIN", true);
       if (campaign.is_started || campaign.is_archived) {
-        throw new GraphQLError(
+        throw new SpokeError(
           "Cannot import a campaign script for a campaign that is started or archived"
         );
       }

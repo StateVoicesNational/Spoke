@@ -1,4 +1,4 @@
-import { GraphQLError } from "graphql";
+import { SpokeError } from "../errors";
 import {
   getConfigKey,
   getService,
@@ -19,14 +19,14 @@ export const updateServiceVendorConfig = async (
   const organization = await orgCache.load(organizationId);
   const configuredServiceName = orgCache.getMessageService(organization);
   if (configuredServiceName !== serviceName) {
-    throw new GraphQLError(
+    throw new SpokeError(
       `Can't configure ${serviceName}. It's not the configured message service`
     );
   }
 
   const service = getService(serviceName);
   if (!service) {
-    throw new GraphQLError(`${serviceName} is not a valid message service`);
+    throw new SpokeError(`${serviceName} is not a valid message service`);
   }
 
   const serviceConfigFunction = tryGetFunctionFromService(
@@ -34,14 +34,14 @@ export const updateServiceVendorConfig = async (
     "updateConfig"
   );
   if (!serviceConfigFunction) {
-    throw new GraphQLError(`${serviceName} does not support configuration`);
+    throw new SpokeError(`${serviceName} does not support configuration`);
   }
 
   let configObject;
   try {
     configObject = JSON.parse(config);
   } catch (caught) {
-    throw new GraphQLError("Config is not valid JSON");
+    throw new SpokeError("Config is not valid JSON");
   }
 
   const configKey = getConfigKey(serviceName);
@@ -72,7 +72,7 @@ export const updateServiceVendorConfig = async (
     console.error(
       `Error updating config for ${serviceName}: ${JSON.stringify(caught)}`
     );
-    throw new GraphQLError(caught.message);
+    throw new SpokeError(caught.message);
   }
   // TODO: put this into a transaction (so read of features record doesn't get clobbered)
   const dbOrganization = await Organization.get(organizationId);

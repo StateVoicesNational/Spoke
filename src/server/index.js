@@ -19,12 +19,13 @@ import { setupUserNotificationObservers } from "./notifications";
 import { existsSync } from "fs";
 import { rawAllMethods } from "../extensions/contact-loaders";
 import herokuSslRedirect from "heroku-ssl-redirect";
-import { GraphQLError } from "graphql";
 import { ApolloServer } from "@apollo/server";
 import { expressMiddleware } from "@apollo/server/express4";
 import { ApolloServerPluginDrainHttpServer } from "@apollo/server/plugin/drainHttpServer";
 import http from "http";
 import cors from "cors";
+import { SpokeError } from "./api/errors";
+import { unwrapResolverError } from '@apollo/server/errors';
 
 process.on("uncaughtException", ex => {
   log.error(ex);
@@ -70,21 +71,29 @@ const server = new ApolloServer({
   resolvers,
   introspection: true,
   plugins: [ApolloServerPluginDrainHttpServer({ httpServer })],
-  formatError: error => {
+  formatError: (formattedError, error) => {
+    log.error({
+      // TODO: request is no longer available in formatError, figure out
+      // another way to do this.
+      // userId: request.user && request.user.id,
+      code: error?.extensions?.code ?? 'INTERNAL_SERVER_ERROR',
+      error: formattedError,
+      msg: "GraphQL error"
+    });
+
     if (process.env.SHOW_SERVER_ERROR || process.env.DEBUG) {
-      if (error instanceof GraphQLError) {
-        return error;
-      }
-      return new GraphQLError(error.message);
+      return formattedError;
     }
 
-    return new GraphQLError(
-      error &&
-      error.originalError &&
-      error.originalError.code === "UNAUTHORIZED"
-        ? "UNAUTHORIZED"
-        : "Internal server error"
-    );
+    // Only display error messages we throw ourselves and have deemed safe.
+    if (unwrapResolverError(error) instanceof SpokeError) {
+      return {
+        message: formattedError.message,
+        code: formattedError?.extensions?.code ?? 'INTERNAL_SERVER_ERROR',
+      };
+    }
+
+    return { message: 'Internal Server Error' };
   }
 });
 

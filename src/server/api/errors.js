@@ -1,9 +1,18 @@
 import { GraphQLError } from "graphql";
 import { r, cacheableData } from "../models";
 
+// Use this error class for errors with messages that are safe/useful
+// to display to users. BE CAREFUL! Revealing unnessecary error details
+// can reveal information that an attacker can exploit.
+export class SpokeError extends GraphQLError {}
+
 export function authRequired(user) {
   if (!user) {
-    throw new GraphQLError("You must login to access that resource.");
+    throw new SpokeError("You must login to access that resource.", {
+      extensions: {
+        code: 'UNAUTHENTICATED',
+      },
+    });
   }
 }
 
@@ -27,11 +36,11 @@ export async function accessRequired(
     role
   );
   if (!hasRole) {
-    const error = new GraphQLError(
-      "You are not authorized to access that resource."
-    );
-    error.code = "UNAUTHORIZED";
-    throw error;
+    throw new SpokeError("You are not authorized to access that resource.", {
+      extensions: {
+        code: 'UNAUTHORIZED',
+      },
+    });
   }
 }
 
@@ -73,11 +82,11 @@ export async function assignmentRequiredOrAdminRole(
     roleRequired
   );
   if (!hasPermission) {
-    const error = new GraphQLError(
-      "You are not authorized to access that resource."
-    );
-    error.code = "UNAUTHORIZED";
-    throw error;
+    throw new SpokeError("You are not authorized to access that resource.", {
+      extensions: {
+        code: 'UNAUTHORIZED',
+      },
+    });
   }
   return userHasAssignment || true;
 }
