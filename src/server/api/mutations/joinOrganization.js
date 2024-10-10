@@ -4,6 +4,7 @@ import { r, cacheableData } from "../../models";
 import { hasRole } from "../../../lib";
 import { getConfig } from "../lib/config";
 import telemetry from "../../telemetry";
+import { SpokeError } from "../errors";
 
 const INVALID_JOIN = () => {
   return new GraphQLError("Invalid join request", {
@@ -45,7 +46,7 @@ export const joinOrganization = async (
           r.knex("assignment").where("campaign_id", campaignId)
         );
         if (campaignTexterCount >= maxTextersPerCampaign) {
-          throw new GraphQLError("Sorry, this campaign has too many texters already.", {
+          throw new SpokeError("Sorry, this campaign has too many texters already.", {
             extensions: {
               code: 'FAILEDJOIN_TOOMANYTEXTERS',
             },

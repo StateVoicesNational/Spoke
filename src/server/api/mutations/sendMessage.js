@@ -1,4 +1,4 @@
-import { GraphQLError } from "graphql";
+import { SpokeError } from "../errors";
 
 import { Message, cacheableData } from "../../models";
 
@@ -16,7 +16,7 @@ const JOBS_SAME_PROCESS = !!(
 );
 
 const newError = (message, code, details = {}) => {
-  const err = new GraphQLError(message, {
+  const err = new SpokeError(message, {
     extensions: {
       code: code,
     },

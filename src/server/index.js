@@ -19,12 +19,13 @@ import { setupUserNotificationObservers } from "./notifications";
 import { existsSync } from "fs";
 import { rawAllMethods } from "../extensions/contact-loaders";
 import herokuSslRedirect from "heroku-ssl-redirect";
-import { GraphQLError } from "graphql";
 import { ApolloServer } from "@apollo/server";
 import { expressMiddleware } from "@apollo/server/express4";
 import { ApolloServerPluginDrainHttpServer } from "@apollo/server/plugin/drainHttpServer";
 import http from "http";
 import cors from "cors";
+import { SpokeError } from "./api/errors";
+import { unwrapResolverError } from '@apollo/server/errors';
 
 process.on("uncaughtException", ex => {
   log.error(ex);
@@ -84,11 +85,15 @@ const server = new ApolloServer({
       return formattedError;
     }
 
-    // Strip out stacktrace and other potentially sensative details.
-    return {
-      message: formattedError.message,
-      code: formattedError?.extensions?.code ?? 'INTERNAL_SERVER_ERROR',
-    };
+    // Only display error messages we throw ourselves and have deemed safe.
+    if (unwrapResolverError(error) instanceof SpokeError) {
+      return {
+        message: formattedError.message,
+        code: formattedError?.extensions?.code ?? 'INTERNAL_SERVER_ERROR',
+      };
+    }
+
+    return { message: 'Internal Server Error' };
   }
 });
 

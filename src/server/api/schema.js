@@ -1,6 +1,7 @@
 import GraphQLDate from "graphql-date";
 import GraphQLJSON from "graphql-type-json";
 import { GraphQLError } from "graphql";
+import { SpokeError } from "./errors";
 import isUrl from "is-url";
 import _ from "lodash";
 import { gzip, makeTree, getHighestRole } from "../../lib";
@@ -537,7 +538,7 @@ const rootMutations = {
         .limit(1);
 
       if (!lastMessage) {
-        throw new GraphQLError("Cannot fake a reply to a contact that has no existing thread yet");
+        throw new SpokeError("Cannot fake a reply to a contact that has no existing thread yet");
       }
 
       const userNumber = lastMessage.user_number;
@@ -1068,7 +1069,7 @@ const rootMutations = {
         campaign.hasOwnProperty("contacts") &&
         campaign.contacts
       ) {
-        throw new GraphQLError(
+        throw new SpokeError(
           "Not allowed to add contacts after the campaign starts"
         );
       }
@@ -1124,7 +1125,7 @@ const rootMutations = {
       authRequired(user);
       const invite = await Invite.get(inviteId);
       if (!invite || !invite.is_valid) {
-        throw new GraphQLError("That invitation is no longer valid");
+        throw new SpokeError("That invitation is no longer valid");
       }
 
       const newOrganization = await Organization.save({
@@ -1498,7 +1499,7 @@ const rootMutations = {
       const campaign = await cacheableData.campaign.load(campaignId);
       await accessRequired(user, campaign.organization_id, "ADMIN", true);
       if (campaign.is_started || campaign.is_archived) {
-        throw new GraphQLError(
+        throw new SpokeError(
           "Cannot import a campaign script for a campaign that is started or archived"
         );
       }
