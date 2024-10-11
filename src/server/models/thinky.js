@@ -3,6 +3,8 @@ import bluebird from "bluebird";
 import knex from "knex";
 import config from "../knex-connect";
 
+const { parse: pgDbUrlParser } = require("pg-connection-string");
+
 // Instantiate the rethink-knex-adapter using the config defined in
 // /src/server/knex.js.
 const knexConn = knex(config);
@@ -14,11 +16,18 @@ if (
 ) {
   const roConfig = {
     ...config,
-    connection: process.env.READONLY_DATABASE_URL || {
+    connection: {
       ...config.connection,
       host: process.env.DB_READONLY_HOST
     }
   };
+
+  if (process.env.READONLY_DATABASE_URL) {
+    roConfig.connection = pgDbUrlParser(process.env.READONLY_DATABASE_URL);
+    const useSSL = process.env.DB_USE_SSL === "1" || process.env.DB_USE_SSL.toLowerCase() === "true";
+    roConfig.connection.ssl = useSSL ? { rejectUnauthorized: false } : false;
+  }
+
   thinkyConn.r.knexReadOnly = knex(roConfig);
 } else {
   thinkyConn.r.knexReadOnly = thinkyConn.r.knex;
@@ -51,10 +60,9 @@ if (redisUrl) {
   if (/rediss/.test(redisSettings.url)) {
     // secure redis protocol for Redis 6.0+
     // https://devcenter.heroku.com/articles/securing-heroku-redis#using-node-js
-    redisSettings.tls = {
+    redisSettings.socket = {
+      tls: true,
       rejectUnauthorized: false,
-      requestCert: true,
-      agent: false
     };
   }
   if (process.env.REDIS_JSON) {
