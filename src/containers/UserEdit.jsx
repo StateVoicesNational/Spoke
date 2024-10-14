@@ -291,9 +291,12 @@ export class UserEditBase extends React.Component {
       router
     } = this.props;
     const onCancel = this.props.onCancel || (router && router.goBack);
-    const user = (this.state.editedUser && this.state.editedUser.user) || {};
+    let user = (this.state.editedUser && this.state.editedUser.user) || {};
     if (user && typeof user.extra === "string") {
-      user.extra = JSON.parse(user.extra);
+      user = {
+        ...user,
+        extra: JSON.parse(user.extra),
+      }
     }
     const org = this.state.currentOrg && this.state.currentOrg.organization;
     const formSchema = this.buildFormSchema(authType, org);
