@@ -276,7 +276,7 @@ const queries = {
         ownProps.location.query.review === "1"
           ? {
               messageStatus,
-              errorCode: ["0"],
+              errorCode: [0],
               ...(ownProps.params.reviewContactId && {
                 contactId: ownProps.params.reviewContactId
               })
