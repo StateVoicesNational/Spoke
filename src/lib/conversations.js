@@ -97,7 +97,7 @@ export const getConversationFiltersFromQuery = (query, organizationTags) => {
     filters.contactsFilter.messageStatus = query.messageStatus;
   }
   if (query.errorCode) {
-    filters.contactsFilter.errorCode = query.errorCode.split(",");
+    filters.contactsFilter.errorCode = query.errorCode.split(",").map(Number);
   }
   if (query.tags) {
     if (/^[a-z]/.test(query.tags)) {

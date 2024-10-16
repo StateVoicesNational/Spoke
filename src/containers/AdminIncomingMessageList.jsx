@@ -185,7 +185,7 @@ export class AdminIncomingMessageList extends Component {
   handleErrorCodeChange = async errorCode => {
     const contactsFilter = {
       ...this.state.contactsFilter,
-      errorCode: errorCode ? errorCode.split(",") : null
+      errorCode: errorCode ? errorCode.split(",").map(Number) : null
     };
     await this.setState({
       contactsFilter,
