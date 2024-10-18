@@ -1173,6 +1173,12 @@ export class AssignmentTexterContactControls extends React.Component {
 
   renderFirstMessage(enabledSideboxes) {
     const { contact } = this.props;
+    if (window.DOWNTIME_NO_INITIAL) {
+      return [
+        this.renderToolbar(enabledSideboxes),
+        <div>Sending initial messages is currently paused. You can still reply to any incoming messages.</div>
+      ];
+    }
     return [
       this.renderToolbar(enabledSideboxes),
       <ContactToolbar
