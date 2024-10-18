@@ -26,3 +26,4 @@ scratch/
 cypress/screenshots
 cypress/videos
 spoke-pm2.config.js
+longKeys.js
