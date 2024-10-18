@@ -119,6 +119,7 @@
     "bandwidth-sdk": "^1.0.2",
     "body-parser": "^1.15.2",
     "browserify": "^17.0.0",
+    "buffer": "^6.0.3",
     "color-difference": "^0.3.4",
     "cookie-session": "^2.1.0",
     "dataloader": "^2.2.2",
