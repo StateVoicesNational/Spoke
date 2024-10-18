@@ -1,3 +1,5 @@
+const longKeys = require('./longKeys');
+
 const env_production = {
   NODE_ENV:'production',
   SUPPRESS_SELF_INVITE:'',
