@@ -1,4 +1,4 @@
-import { Configuration, MessagesApiFp } from "bandwidth-sdk";
+import { Configuration, MessagesApi } from "bandwidth-sdk";
 import { log } from "../../../lib";
 import { getFormattedPhoneNumber } from "../../../lib/phone-format";
 import { getConfig } from "../../../server/api/lib/config";
@@ -38,7 +38,7 @@ export async function getBandwidthController(organization, config) {
     username: config.userName,
     password: config.password
   });
-  return new MessagesApiFp(client);
+  return new MessagesApi(client);
 }
 
 export async function sendMessage({
@@ -106,7 +106,6 @@ export async function sendMessage({
     bandwidthMessage.media = [parsedMessage.mediaUrl];
   }
 
-  let response;
   if (/bandwidthapitest/.test(message.text)) {
     let err;
     const response = {
@@ -131,15 +130,24 @@ export async function sendMessage({
       organization,
       config
     );
-    response = await messagingController.createMessage(
+    const { status, data } = await messagingController.createMessage(
       config.accountId,
       bandwidthMessage
     );
     console.log(
       "bandwidth.sendMessage createMessage response",
-      response && response.statusCode,
-      response && response.result
+      status,
+      data
     );
+    await postMessageSend({
+      status,
+      data,
+      message,
+      contact,
+      trx,
+      organization,
+      changes
+    });
   } catch (err) {
     console.log("bandwidth.sendMessage ERROR", err);
     await postMessageSend({
@@ -152,14 +160,6 @@ export async function sendMessage({
     });
     return;
   }
-  await postMessageSend({
-    response,
-    message,
-    contact,
-    trx,
-    organization,
-    changes
-  });
 }
 
 export async function postMessageSend({
@@ -167,7 +167,8 @@ export async function postMessageSend({
   contact,
   trx,
   err,
-  response,
+  status,
+  data,
   organization,
   changes
 }) {
@@ -181,10 +182,10 @@ export async function postMessageSend({
     organization_id: organization.id,
     service: "bandwidth"
   };
-  if (response && response.statusCode === 202 && response.result) {
-    changesToSave.service_id = response.result.id;
+  if (status && status === 202 && data) {
+    changesToSave.service_id = data.id;
     organizationContact.status_code = 1;
-    organizationContact.user_number = response.result.from;
+    organizationContact.user_number = data.from;
     cacheableData.campaignContact.updateStatus(
       contact,
       undefined,
@@ -193,8 +194,8 @@ export async function postMessageSend({
   } else {
     // ERROR
     changesToSave.send_status = "ERROR";
-    changesToSave.error_code = response.statusCode;
-    organizationContact.last_error_code = response.statusCode;
+    changesToSave.error_code = status;
+    organizationContact.last_error_code = status;
   }
   let updateQuery = r.knex("message").where("id", message.id);
   if (trx) {
