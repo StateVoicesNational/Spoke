@@ -263,9 +263,6 @@ class AdminPhoneNumberInventory extends React.Component {
   }
 
   renderBuyNumbersForm() {
-    const service = this.props.data.organization.serviceVendor;
-    const serviceName = service.name;
-    const serviceConfig = service.config || "{}";
     return (
       <GSForm
         schema={this.buyNumbersFormSchema()}
