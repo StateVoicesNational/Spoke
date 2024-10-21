@@ -2,7 +2,7 @@ version: 2
 updates:
   - package-ecosystem: "npm"
     directory: "/"
-    target-branch: "stage-main-14.1"
+    target-branch: "stage-main-14.2"
     schedule:
       interval: "weekly"
       day: "monday"

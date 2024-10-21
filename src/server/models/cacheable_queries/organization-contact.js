@@ -27,7 +27,7 @@ const organizationContactCache = {
     if (r.redis && organizationContact) {
       await r.redis
         .MULTI()
-        .SET(cachekey, json.stringify(organizationcontact))
+        .SET(cacheKey, JSON.stringify(organizationContact))
         .EXPIRE(cacheKey, 43200) // 12 hours
         .exec();
     }
