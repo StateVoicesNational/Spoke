@@ -16,6 +16,7 @@ _October 2024_: Version 14.1.2
 - [#2478](https://github.com/StateVoicesNational/Spoke/pull/2478) - Allow pausing of initial messages - @jeffm2001
 - [#2494](https://github.com/StateVoicesNational/Spoke/pull/2494) - Heroku Plan Update - @engelhartrueben
 - [#2498](https://github.com/StateVoicesNational/Spoke/pull/2498) - Remove unused variables causing /phone-numbers blank screen error for Admins - @mau11
+- [#2492](https://github.com/StateVoicesNational/Spoke/pull/2492) - Fix UserInputError GraphQL errors - @jeffm2001
 
 # Appreciations
 
