@@ -185,7 +185,7 @@ export class AdminIncomingMessageList extends Component {
   handleErrorCodeChange = async errorCode => {
     const contactsFilter = {
       ...this.state.contactsFilter,
-      errorCode: errorCode ? errorCode.split(",") : null
+      errorCode: errorCode ? errorCode.split(",").map(Number) : null
     };
     await this.setState({
       contactsFilter,
@@ -234,7 +234,7 @@ export class AdminIncomingMessageList extends Component {
   handleReassignAllMatchingRequested = async newTexterUserId => {
     await this.props.mutations.bulkReassignCampaignContacts(
       this.props.params.organizationId,
-      newTexterUserId,
+      newTexterUserId.toString(),
       this.state.campaignsFilter || {},
       this.state.assignmentsFilter || {},
       this.state.contactsFilter || {},
