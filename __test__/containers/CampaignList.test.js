@@ -2,7 +2,6 @@
  * @jest-environment jsdom
  */
 import React from "react";
-import { mount } from "enzyme";
 import { act } from "react-dom/test-utils";
 import {
   render,
@@ -31,9 +30,9 @@ describe("CampaignList", () => {
   };
 
   const mutations = {
-    createCampaign: () => {},
-    archiveCampaigns: () => {},
-    unarchiveCampaign: () => {}
+    createCampaign: () => { },
+    archiveCampaigns: () => { },
+    unarchiveCampaign: () => { }
   };
 
   describe("Campaign list for campaign with null creator", () => {
@@ -71,15 +70,27 @@ describe("CampaignList", () => {
     // when
     test("Renders for campaign with null creator, doesn't include created by", () => {
       StyleSheetTestUtils.suppressStyleInjection();
-      const wrapper = mount(
-        <AdminCampaignList data={data} mutations={mutations} params={params} />
-      );
-      const text = wrapper.text();
-      expect(text.includes("Created by")).toBeFalsy();
-      expect(text.includes("Yes on A")).toBeTruthy();
-      expect(text).toMatch(/Archive/);
-      expect(text).toMatch(/1202/);
-      expect(text).toMatch(/1101/);
+      act(() => {
+        render(
+          <AdminCampaignList data={data} mutations={mutations} params={params} />
+        );
+      });
+
+      const cells = screen.getAllByRole('cell');
+
+      expect(cells.length).toBe(7);
+      // campaign ID cell
+      expect(cells[1].textContent).toContain("1");
+      // campaign info cell
+      expect(cells[2].textContent).toContain("Yes on A");
+      // campaign info cell - lack of "created by" due to creator = null
+      expect(cells[2].textContent).not.toContain("Created by");
+      // unassigned contacts
+      expect(cells[3].textContent).toContain("1101");
+      // unmessaged contacts
+      expect(cells[4].textContent).toContain("1202");
+      // archive
+      expect(cells[5].textContent).toBe("Archive");
     });
   });
 
@@ -114,14 +125,16 @@ describe("CampaignList", () => {
     // when
     test("Renders for campaign with creator, includes created by", () => {
       StyleSheetTestUtils.suppressStyleInjection();
-      const wrapper = mount(
-        <AdminCampaignList data={data} mutations={mutations} params={params} />
-      );
-      expect(
-        wrapper.containsMatchingElement(
-          <span> &mdash; Created by Lorem Ipsum</span>
-        )
-      ).toBeTruthy();
+      act(() => {
+        render(
+          <AdminCampaignList data={data} mutations={mutations} params={params} />
+        );
+      });
+      const cells = screen.getAllByRole('cell');
+
+      expect(cells.length).toBe(7);
+      // campaign info cell
+      expect(cells[2].textContent).toBe("Campaign — Created by Lorem Ipsum");
     });
   });
 
@@ -152,7 +165,7 @@ describe("CampaignList", () => {
           }
         }
       },
-      refetch: () => {}
+      refetch: () => { }
     };
 
     test("Timezone column is displayed when timezone is current sort", async () => {
