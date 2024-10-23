@@ -6,7 +6,7 @@ _October 2024_: Version 14.1.2
 
 14.1.2 is a patch release.
 
-# Bug Fixes
+### Bug Fixes
 
 - [#2488](https://github.com/StateVoicesNational/Spoke/pull/2488) - Fix Redis and readonly DB certificate issues - @jeffm2001
 - [#2490](https://github.com/StateVoicesNational/Spoke/pull/2490) - Fix Bandwidth sending - @jeffm2001
@@ -18,7 +18,7 @@ _October 2024_: Version 14.1.2
 - [#2498](https://github.com/StateVoicesNational/Spoke/pull/2498) - Remove unused variables causing /phone-numbers blank screen error for Admins - @mau11
 - [#2492](https://github.com/StateVoicesNational/Spoke/pull/2492) - Fix UserInputError GraphQL errors - @jeffm2001
 
-# Appreciations
+### Appreciations
 
 [Jeff Mann](https://github.com/jeffm2001), [Maureen Zitouni](https://github.com/mau11), [Ruby Engelhart](https://github.com/engelhartrueben), [Sophie Waldman](https://github.com/sjwmoveon)
 
