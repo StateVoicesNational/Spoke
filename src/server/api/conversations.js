@@ -483,7 +483,7 @@ export async function reassignConversations(
 
         returnCampaignIdAssignmentIds.push({
           campaignId,
-          assignmentId: assignmentId.toString()
+          assignmentId: assignmentId?.toString()
         });
       }
     }

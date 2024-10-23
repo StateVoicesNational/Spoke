@@ -1,5 +1,27 @@
 # Release Notes
 
+## 14.1.2
+
+_October 2024_: Version 14.1.2
+
+14.1.2 is a patch release.
+
+### Bug Fixes
+
+- [#2488](https://github.com/StateVoicesNational/Spoke/pull/2488) - Fix Redis and readonly DB certificate issues - @jeffm2001
+- [#2490](https://github.com/StateVoicesNational/Spoke/pull/2490) - Fix Bandwidth sending - @jeffm2001
+- [#2491](https://github.com/StateVoicesNational/Spoke/pull/2491) - Avoid error on opt-out - @jeffm2001
+- [#2493](https://github.com/StateVoicesNational/Spoke/pull/2493) - Fix broken docker image build - @engelhartrueben
+- [#2442](https://github.com/StateVoicesNational/Spoke/pull/2442) - Add instructions for local postgres - @sjwmoveon
+- [#2478](https://github.com/StateVoicesNational/Spoke/pull/2478) - Allow pausing of initial messages - @jeffm2001
+- [#2494](https://github.com/StateVoicesNational/Spoke/pull/2494) - Heroku Plan Update - @engelhartrueben
+- [#2498](https://github.com/StateVoicesNational/Spoke/pull/2498) - Remove unused variables causing /phone-numbers blank screen error for Admins - @mau11
+- [#2492](https://github.com/StateVoicesNational/Spoke/pull/2492) - Fix UserInputError GraphQL errors - @jeffm2001
+
+### Appreciations
+
+[Jeff Mann](https://github.com/jeffm2001), [Maureen Zitouni](https://github.com/mau11), [Ruby Engelhart](https://github.com/engelhartrueben), [Sophie Waldman](https://github.com/sjwmoveon)
+
 ## 14.1.1
 
 _October 2024_: Version 14.1.1

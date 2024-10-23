@@ -412,7 +412,8 @@ class IncomingMessageFilter extends Component {
                   placeholder="Error code number"
                   label="Error codes"
                   value={this.state.errorCode}
-                  onChange={(_, errorCode) => {
+                  onChange={event => {
+                    const errorCode = event.target.value;
                     this.setState({ errorCode });
                   }}
                   onKeyPress={evt => {
