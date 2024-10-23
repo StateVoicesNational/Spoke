@@ -117,7 +117,7 @@
     "babel-polyfill": "^6.26.0",
     "babel-runtime": "^6.26.0",
     "bandwidth-sdk": "^1.0.2",
-    "body-parser": "^1.15.2",
+    "body-parser": "^1.20.3",
     "browserify": "^17.0.0",
     "color-difference": "^0.3.4",
     "cookie-session": "^2.1.0",
