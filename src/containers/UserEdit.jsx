@@ -59,8 +59,17 @@ const styles = StyleSheet.create({
   },
   cancel: {
     marginTop: 15
+  },
+  spokeVersion: {
+    position: "absolute",
+    left: -8,
+    bottom: -10,
+    fontSize: "smaller",
+    margin: 0
   }
 });
+
+const spokeVersion = "14.1.2";
 
 const fetchUser = async (organizationId, userId) => {
   try {
@@ -300,7 +309,7 @@ export class UserEditBase extends React.Component {
     const fieldsNeeded = router && !!router.location.query.fieldsNeeded;
 
     return (
-      <div style={{ padding: 20 }}>
+      <div style={{ padding: 20, position: "relative" }}>
         {userId ? <div style={{}}>User Id: {userId}</div> : null}
         <GSForm
           style={{}}
@@ -440,6 +449,7 @@ export class UserEditBase extends React.Component {
             racism, patriarchy, and militarism.
           </CardContent>
         </Card>
+        <p className={css(styles.spokeVersion)}>Spoke v{spokeVersion}</p>
       </div>
     );
   }
