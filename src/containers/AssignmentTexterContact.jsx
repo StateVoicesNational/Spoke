@@ -141,29 +141,32 @@ export class AssignmentTexterContact extends React.Component {
   };
 
   handleSendMessageError = e => {
-    // NOTE: status codes don't currently work so all errors will appear
-    // as "Something went wrong" keeping this code in here because
-    // we want to replace status codes with Apollo 2 error codes.
-    if (e.status === 402) {
-      this.goBackToTodos();
-    } else if (e.status === 400) {
-      const newState = {
-        snackbarError: e.message
-      };
-
-      if (e.message === "Your assignment has changed") {
-        newState.snackbarActionTitle = "Back to todos";
-        newState.snackbarOnClick = this.goBackToTodos;
-        this.setState(newState);
-      } else {
-        // opt out or send message Error
-        this.setState({
-          disabled: true,
-          disabledText: e.message
-        });
-        this.skipContact();
-      }
-    } else {
+    const error_code = e.graphQLErrors[0].code;
+    if (error_code === 'SENDERR_ASSIGNMENTCHANGED') {
+      this.setState({
+        snackbarError: e.message,
+        snackbarActionTitle: "Back to todos",
+        snackbarOnClick: this.goBackToTodos,
+      });
+    }
+    else if (error_code === 'SENDERR_OPTEDOUT') {
+      this.setState({
+        disabled: true,
+        disabledText: e.message,
+        snackbarError: e.message,
+      });
+      this.handleEditStatus('closed', false);
+      this.skipContact();
+    }
+    else if (error_code === 'SENDERR_OFFHOURS') {
+      this.setState({
+        disabled: true,
+        disabledText: e.message,
+        snackbarError: e.message,
+      });
+      this.skipContact();
+    }
+    else {
       console.error(e);
       this.setState({
         disabled: true,

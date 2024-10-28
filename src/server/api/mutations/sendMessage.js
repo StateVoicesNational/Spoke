@@ -1,4 +1,4 @@
-import { GraphQLError } from "graphql";
+import { SpokeError } from "../errors";
 
 import { Message, cacheableData } from "../../models";
 
@@ -16,8 +16,11 @@ const JOBS_SAME_PROCESS = !!(
 );
 
 const newError = (message, code, details = {}) => {
-  const err = new GraphQLError(message);
-  err.code = code;
+  const err = new SpokeError(message, {
+    extensions: {
+      code: code,
+    },
+  });
   if (process.env.DEBUGGING_EMAILS) {
     sendEmail({
       to: process.env.DEBUGGING_EMAILS.split(","),

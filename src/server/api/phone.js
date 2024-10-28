@@ -1,6 +1,7 @@
 import { GraphQLScalarType } from "graphql";
 import { GraphQLError } from "graphql";
 import { Kind } from "graphql/language";
+import { SpokeError } from "./errors";
 
 const identity = value => value;
 
@@ -20,7 +21,7 @@ export const GraphQLPhone = new GraphQLScalarType({
     }
 
     if (!pattern.test(ast.value)) {
-      throw new GraphQLError("Query error: Not a valid Phone");
+      throw new SpokeError("Query error: Not a valid Phone");
     }
 
     return ast.value;
