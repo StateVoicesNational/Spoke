@@ -132,6 +132,7 @@ const rootSchema = gql`
     cell: String!
     oldPassword: String
     newPassword: String
+    darkMode: Boolean
     extra: String
   }
 
