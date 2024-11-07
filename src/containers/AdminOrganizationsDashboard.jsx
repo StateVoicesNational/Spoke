@@ -1,5 +1,5 @@
 import PropTypes from "prop-types";
-import React from "react";
+import React, { useEffect } from "react";
 import TopNav from "../components/TopNav";
 import { gql } from "@apollo/client";
 import loadData from "./hoc/load-data";
@@ -27,31 +27,23 @@ const styles = StyleSheet.create({
   }
 });
 
-class AdminOrganizationsDashboard extends React.Component {
-  componentDidMount = () => {
-    const {
-      location: {
-        query: { nextUrl }
-      }
-    } = this.props;
-  };
-
-  handleCreateOrgClick = async e => {
+const AdminOrganizationsDashboard = ({ mutations, router, userData, data }) => {
+  const handleCreateOrgClick = async e => {
     e.preventDefault();
-    const newInvite = await this.props.mutations.createInvite({
+    const newInvite = await mutations.createInvite({
       is_valid: true
     });
     if (newInvite.errors) {
       alert("There was an error creating your invite");
       throw new Error(newInvite.errors);
     } else {
-      this.props.router.push(
+      router.push(
         `/addOrganization/${newInvite.data.createInvite.hash}`
       );
     }
   };
 
-  sortFunc(key) {
+  const sortFunc = (key) => {
     const sorts = {
       id: (a, b) => b.id - a.id,
       name: (a, b) => (b.name > a.name ? 1 : -1),
@@ -61,111 +53,110 @@ class AdminOrganizationsDashboard extends React.Component {
     return sorts[key];
   }
 
-  renderActionButton() {
+  const renderActionButton = () => {
     return (
       <Fab
         color="primary"
         style={theme.components.floatingButton}
-        onClick={this.handleCreateOrgClick}
+        onClick={handleCreateOrgClick}
       >
         <AddIcon />
       </Fab>
     );
   }
 
-  render() {
-    // Note: when adding new columns, make sure to update the sortFunc to include that column
-    var columns = [
-      {
-        key: "id",
-        name: "id",
-        label: "id",
-        sortable: true
-      },
-      {
-        key: "name",
-        name: "name",
-        label: "Name",
-        sortable: true,
-        options: {
-          customBodyRender: (value, tableMeta, updateValue) => {
-            const orgId = tableMeta.rowData[0];
-            return (
-              <div style={{ margin: "6px 0" }}>
-                <Link
-                  component={RouterLink}
-                  target="_blank"
-                  to={`/admin/${orgId}/campaigns`}
-                >
-                  {value}
-                </Link>
-              </div>
-            );
-          }
-        },
-        render: (columnKey, organizations) => {
+  // Note: when adding new columns, make sure to update the sortFunc to include that column
+  var columns = [
+    {
+      key: "id",
+      name: "id",
+      label: "id",
+      sortable: true
+    },
+    {
+      key: "name",
+      name: "name",
+      label: "Name",
+      sortable: true,
+      options: {
+        customBodyRender: (value, tableMeta, updateValue) => {
+          const orgId = tableMeta.rowData[0];
           return (
             <div style={{ margin: "6px 0" }}>
               <Link
                 component={RouterLink}
                 target="_blank"
-                to={`/admin/${organizations.id}/campaigns`}
+                to={`/admin/${orgId}/campaigns`}
               >
-                {columnKey}
+                {value}
               </Link>
             </div>
           );
         }
       },
-      // note that 'active' is defined as 'not archived'.
-      // campaigns that have not yet started are included here.
-      // is this what we want?
-      {
-        key: "campaignsCount",
-        name: "campaignsCount",
-        label: "Number of Active Campaigns",
-        sortable: true,
-        style: {
-          width: "5em"
-        }
+      render: (columnKey, organizations) => {
+        return (
+          <div style={{ margin: "6px 0" }}>
+            <Link
+              component={RouterLink}
+              target="_blank"
+              to={`/admin/${organizations.id}/campaigns`}
+            >
+              {columnKey}
+            </Link>
+          </div>
+        );
       }
-    ];
-
-    const options = {
-      filterType: "checkbox",
-      selectableRows: "none",
-      elevation: 0,
-      download: false,
-      print: false,
-      searchable: false,
-      filter: false,
-      sort: true,
-      search: false,
-      viewColumns: false,
-      responsive: "standard"
-    };
-
-    if (!this.props.userData.currentUser.is_superadmin) {
-      return (
-        <div>You do not have access to the Manage Organizations page.</div>
-      );
+    },
+    // note that 'active' is defined as 'not archived'.
+    // campaigns that have not yet started are included here.
+    // is this what we want?
+    {
+      key: "campaignsCount",
+      name: "campaignsCount",
+      label: "Number of Active Campaigns",
+      sortable: true,
+      style: {
+        width: "5em"
+      }
     }
+  ];
 
+  const options = {
+    filterType: "checkbox",
+    selectableRows: "none",
+    elevation: 0,
+    download: false,
+    print: false,
+    searchable: false,
+    filter: false,
+    sort: true,
+    search: false,
+    viewColumns: false,
+    responsive: "standard"
+  };
+
+  if (!userData.currentUser.is_superadmin) {
     return (
-      <div>
-        <TopNav title={"Manage Organizations"} />
-        <div className={css(styles.loginPage)}>
-          <MUIDataTable
-            className={css(styles.fullWidth)}
-            data={this.props.data.organizations}
-            columns={columns}
-            options={options}
-          />
-        </div>
-        {this.renderActionButton()}
-      </div>
+      <div>You do not have access to the Manage Organizations page.</div>
     );
   }
+
+  return (
+    <div>
+      <TopNav title={"Manage Organizations"} />
+      <div className={css(styles.loginPage)}>
+        <MUIDataTable
+          className={css(styles.fullWidth)}
+          data={data.organizations}
+          columns={columns}
+          options={options}
+        />
+      </div>
+      {renderActionButton()}
+    </div>
+  );
+    
 }
 
 const mutations = {
