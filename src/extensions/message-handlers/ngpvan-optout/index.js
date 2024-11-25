@@ -1,4 +1,4 @@
-import { hasConfig } from "../../../server/api/lib/config";
+import { hasConfig, getConfig } from "../../../server/api/lib/config";
 const Van = require("../../../extensions/action-handlers/ngpvan-action");
 
 export const serverAdministratorInstructions = () => {
@@ -8,9 +8,10 @@ export const serverAdministratorInstructions = () => {
             if and only if the internal Spoke auto-optout triggers.
         `,
         setupInstructions: `
-            This message handler is dependent on the ngpvan-action Action Handler.
-            Follow it's setup instructions. 
-            Additionally, "ngpvan-optout" must be adde dot the message handler
+            This message handler is dependent on the ngpvan-action Action Handler,
+            and the auto-optout Message Handler.
+            Follow their setup instructions. 
+            Additionally, "ngpvan-optout" must be added to the message handler
             environment variable. 
         `,
         environmentVariables: []
@@ -18,9 +19,10 @@ export const serverAdministratorInstructions = () => {
 }
 
 export const available = organization =>
-    (hasConfig("NGP_VAN_API_KEY", organization) ||
+        (hasConfig("NGP_VAN_API_KEY", organization) ||
         hasConfig("NGP_VAN_API_KEY_ENCRYPTED", organization)) &&
-    hasConfig("NGP_VAN_APP_NAME", organization);
+        hasConfig("NGP_VAN_APP_NAME", organization) &&
+        getConfig("MESSAGE_HANDLER").inlcudes("auto-optout");
 //
 
 /*  Sends a request to VAN to place an opt out tag to an individual.
