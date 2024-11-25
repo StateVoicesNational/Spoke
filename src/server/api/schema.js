@@ -6,7 +6,6 @@ import _ from "lodash";
 import { gzip, makeTree, getHighestRole } from "../../lib";
 import { capitalizeWord, groupCannedResponses } from "./lib/utils";
 import httpRequest from "../lib/http-request";
-import ownedPhoneNumber from "./lib/owned-phone-number";
 
 import { getIngestMethod } from "../../extensions/contact-loaders";
 import {
@@ -82,6 +81,7 @@ import { Jobs } from "../../workers/job-processes";
 import { Tasks } from "../../workers/tasks";
 
 const uuidv4 = require("uuid").v4;
+const Van = require("../../extensions/action-handlers/ngpvan-action.js");
 
 // This function determines whether a field was requested
 // in a graphql query. Each graphql resolver receives a fourth parameter,
@@ -1292,7 +1292,7 @@ const rootMutations = {
         }
       }
       return finalContacts;
-    },
+    }, //
     createOptOut: async (
       _,
       { optOut, campaignContactId, noReply },
@@ -1342,7 +1342,35 @@ const rootMutations = {
       const newContact = cacheableData.campaignContact.updateCacheForOptOut(
         contact
       );
-      return newContact;
+
+      if (!await Van.available(organization)) return newContact;
+
+      console.log(
+        "createOptOut VAN"
+      );
+
+      const body = {
+        "canvassContext": {
+        "inputTypeId": 11,
+        "phone": {
+            "dialingPrefix": "1",
+            "phoneNumber": contact.cell,
+            "smsOptInStatus": "O"
+            }
+        },
+        "resultCodeId": 205
+      }
+
+      try {
+        // I am assuming here that contact has vanID.
+        // will need to test
+        await Van.postCanvassResponse(contact, organization, body);
+        console.log(`canvasOptOut VAN success ${contact}`)
+      } catch (e) {
+        console.log(`Error opting out ${contact.cell}: ${e}`);
+      } finally {
+        return newContact;
+      }
     },
     deleteQuestionResponses: async (
       _,
