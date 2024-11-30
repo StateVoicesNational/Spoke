@@ -227,6 +227,7 @@ export class CampaignCannedResponsesForm extends React.Component {
               tags={this.props.data.organization.tags}
               availableActions={this.props.availableActions}
               muiTheme={this.props.muiTheme}
+              serviceManagerContext={this.props.serviceManagerContext}
             />
           </div>
         </div>
@@ -408,6 +409,7 @@ CampaignCannedResponsesForm.propTypes = {
   customFields: type.array,
   organizationId: type.string,
   data: type.object,
+  serviceManagerContext: type.object,
   availableActions: type.array
 };
 

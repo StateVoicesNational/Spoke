@@ -121,3 +121,18 @@ export const applyScript = ({ script, contact, customFields, texter }) => {
   }
   return appliedScript;
 };
+
+const mediaExtractor = new RegExp(/\[\s*(http[^\]\s]*)\s*\]/);
+
+export function parseMessageText(message) {
+  const text = message.text || "";
+  const params = {
+    body: text.replace(mediaExtractor, "")
+  };
+  // Image extraction
+  const results = text.match(mediaExtractor);
+  if (results) {
+    params.mediaUrl = results[1];
+  }
+  return params;
+}
