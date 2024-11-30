@@ -128,12 +128,10 @@ const ContactToolbar = function ContactToolbar(props) {
         title={global.ASSIGNMENT_CONTACTS_SIDEBAR ? "Toggle Contact List" : ""}
       >
         <IconButton
+          aria-label="Toggle Contact List"
           className={css(styles.contactToolbarIconButton)}
-          onClick={() => {
-            global.ASSIGNMENT_CONTACTS_SIDEBAR
-              ? props.toggleContactList()
-              : null;
-          }}
+          disabled={global.ASSIGNMENT_CONTACTS_SIDEBAR ? false : true}
+          onClick={props.toggleContactList}
         >
           <FaceIcon style={{ width: 42 }} htmlColor="white" />
         </IconButton>
@@ -157,6 +155,7 @@ const ContactToolbar = function ContactToolbar(props) {
            */}
           <span>
             <IconButton
+              aria-label="Previous Contact"
               onClick={navigationToolbarChildren.onPrevious}
               disabled={!navigationToolbarChildren.onPrevious}
               className={css(styles.contactToolbarIconButton)}
@@ -177,6 +176,7 @@ const ContactToolbar = function ContactToolbar(props) {
            */}
           <span>
             <IconButton
+              aria-label="Next Contact"
               onClick={navigationToolbarChildren.onNext}
               disabled={!navigationToolbarChildren.onNext}
               className={css(styles.contactToolbarIconButton)}
