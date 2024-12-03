@@ -435,9 +435,11 @@ export class UserEditBase extends React.Component {
         </div>
         <Card style={{ marginTop: "50px", maxWidth: "256px" }}>
           <CardContent style={{ fontSize: "90%" }}>
-            Spoke is developed and maintained by people committed to fighting
-            oppressive systems and structures, including economic injustice,
-            racism, patriarchy, and militarism.
+          Spoke is developed and supported by individuals dedicated to 
+          challenging oppressive systems and structures, including economic 
+          injustice, racism, patriarchy, and militarism.
+          <br></br><br></br>
+          Spoke is owned and maintained by State Voices.
           </CardContent>
         </Card>
       </div>
