@@ -22,13 +22,9 @@ export const available = organization =>
         (hasConfig("NGP_VAN_API_KEY", organization) ||
         hasConfig("NGP_VAN_API_KEY_ENCRYPTED", organization)) &&
         hasConfig("NGP_VAN_APP_NAME", organization) &&
-        getConfig("MESSAGE_HANDLER").inlcudes("auto-optout");
-//
+        getConfig("MESSAGE_HANDLERS").inlcudes("auto-optout");
 
 /*  Sends a request to VAN to place an opt out tag to an individual.
- *  Ideally, we would want to query VAN to see if anyone else is attached
- *  to the cell, but we are unable to do a blind query based soley on
- *  the number.
  */
 export const postMessageSave = async ({ 
     message, 
@@ -38,9 +34,15 @@ export const postMessageSave = async ({
 }) => {
     if (!exports.available(organization)) return {};
 
-    // TODO: Check VAN ID as well.
-    // Maybe be good to check that we also got this contact
-    // from a VAN upload?
+    // customFields is a JSON object
+    // Checking for vanID in contact
+    try {
+        const c = JSON.stringify(contact.customFields);
+        if ("vanId" in c) return {}
+    } catch (exception) {
+        console.log("message-handlers | ngpvan-optout ERROR", exception);
+    }
+
     if (
         message.is_from_contact || 
         !contact ||
