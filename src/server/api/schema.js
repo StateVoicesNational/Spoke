@@ -1345,6 +1345,15 @@ const rootMutations = {
 
       if (!await Van.available(organization)) return newContact;
 
+      // Checking that contact contains a vanId
+      // If not, return and skip next steps
+      try {
+        const c = JSON.stringify(contact.customFiels);
+        if (!"vanId" in c) return newContact;
+      } catch (exception) {
+        console.log(exception)
+      }
+
       console.log(
         "createOptOut VAN"
       );
