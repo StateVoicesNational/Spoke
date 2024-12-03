@@ -6,6 +6,7 @@ export const serverAdministratorInstructions = () => {
         description: `
             Update the contact in VAN with an opt out status
             if and only if the internal Spoke auto-optout triggers.
+            Manual opt outs are handled by a different process.
         `,
         setupInstructions: `
             This message handler is dependent on the ngpvan-action Action Handler,
