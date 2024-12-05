@@ -23,7 +23,7 @@ export const available = organization =>
         (hasConfig("NGP_VAN_API_KEY", organization) ||
         hasConfig("NGP_VAN_API_KEY_ENCRYPTED", organization)) &&
         hasConfig("NGP_VAN_APP_NAME", organization) &&
-        getConfig("MESSAGE_HANDLERS").inlcudes("auto-optout");
+        getConfig("MESSAGE_HANDLERS", organization).indexOf("auto-optout") !== -1;
 
 /*  Sends a request to VAN to place an opt out tag to an individual.
  */
@@ -39,7 +39,7 @@ export const postMessageSave = async ({
     // Checking for vanID in contact
     try {
         const c = JSON.stringify(contact.customFields);
-        if ("vanId" in c) return {}
+        if (c?.VanID === undefined) return {}
     } catch (exception) {
         console.log("message-handlers | ngpvan-optout ERROR", exception);
     }
