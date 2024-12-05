@@ -1349,13 +1349,14 @@ const rootMutations = {
       // If not, return and skip next steps
       try {
         const c = JSON.stringify(contact.customFiels);
-        if (!"vanId" in c) return newContact;
+        if (c?.VanID === undefined) return newContact;
       } catch (exception) {
-        console.log(exception)
+        console.log(exception);
+        return newContact;
       }
 
       console.log(
-        "createOptOut VAN"
+        `createOptOut VAN ${contact.cell}`
       );
 
       const body = {
@@ -1368,13 +1369,13 @@ const rootMutations = {
             }
         },
         "resultCodeId": 205
-      }
+      };
 
       try {
         // I am assuming here that contact has vanID.
         // will need to test
         await Van.postCanvassResponse(contact, organization, body);
-        console.log(`canvasOptOut VAN success ${contact}`)
+        console.log(`canvasOptOut VAN success ${contact.cell}`)
       } catch (e) {
         console.log(`Error opting out ${contact.cell}: ${e}`);
       } finally {
