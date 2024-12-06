@@ -28,24 +28,30 @@ export const available = organization =>
 /*  Sends a request to VAN to place an opt out tag to an individual.
  */
 export const postMessageSave = async ({ 
-    message, 
+    _, // message
     contact, 
     handlerContext, 
     organization 
 }) => {
     if (!exports.available(organization)) return {};
 
-    // customFields is a JSON object
+    let customField;
+    let vanId;
+
     // Checking for vanID in contact
+    // While Van.postCanvassResponse will check the customFields, 
+    // we don't want to call that function every time if a vanid
+    // was never provided in the first place. Example: CSV
     try {
-        const c = JSON.stringify(contact.customFields);
-        if (c?.VanID === undefined) return {}
+        customField = JSON.parse(contact.customFields);
+        vanId = customField.VanID || customField.vanid;
+        if (!vanId) return {}
     } catch (exception) {
         console.log("message-handlers | ngpvan-optout ERROR", exception);
+        return {};
     }
 
     if (
-        message.is_from_contact || 
         !contact ||
         !handlerContext.autoOptOutReason
     ) return {};

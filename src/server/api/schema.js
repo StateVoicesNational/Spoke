@@ -1348,8 +1348,9 @@ const rootMutations = {
       // Checking that contact contains a vanId
       // If not, return and skip next steps
       try {
-        const c = JSON.stringify(contact.customFiels);
-        if (c?.VanID === undefined) return newContact;
+        const c = JSON.parse(contact.customFields);
+        const vanId = c.VanId || c.vanid
+        if (!vanId) return newContact;
       } catch (exception) {
         console.log(exception);
         return newContact;
@@ -1359,25 +1360,24 @@ const rootMutations = {
         `createOptOut VAN ${contact.cell}`
       );
 
+      const cell = contact.cell.replace(/\D/g,'');
+
       const body = {
         "canvassContext": {
-        "inputTypeId": 11,
+        "inputTypeId": 11, // API Input
         "phone": {
             "dialingPrefix": "1",
-            "phoneNumber": contact.cell,
-            "smsOptInStatus": "O"
+            "phoneNumber": cell,
+            "smsOptInStatus": "O" // opt out status
             }
         },
         "resultCodeId": 205
       };
 
       try {
-        // I am assuming here that contact has vanID.
-        // will need to test
         await Van.postCanvassResponse(contact, organization, body);
-        console.log(`canvasOptOut VAN success ${contact.cell}`)
       } catch (e) {
-        console.log(`Error opting out ${contact.cell}: ${e}`);
+        console.log(`Error manually opting out ${contact.cell}: ${e}`);
       } finally {
         return newContact;
       }
