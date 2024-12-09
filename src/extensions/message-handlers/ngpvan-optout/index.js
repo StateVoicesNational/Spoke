@@ -28,7 +28,6 @@ export const available = organization =>
 /*  Sends a request to VAN to place an opt out tag to an individual.
  */
 export const postMessageSave = async ({ 
-    _, // message
     contact, 
     handlerContext, 
     organization 
@@ -37,6 +36,11 @@ export const postMessageSave = async ({
 
     let customField;
     let vanId;
+
+    if (
+        !contact ||
+        !handlerContext.autoOptOutReason
+    ) return {};
 
     // Checking for vanID in contact
     // While Van.postCanvassResponse will check the customFields, 
@@ -50,11 +54,6 @@ export const postMessageSave = async ({
         console.log("message-handlers | ngpvan-optout ERROR", exception);
         return {};
     }
-
-    if (
-        !contact ||
-        !handlerContext.autoOptOutReason
-    ) return {};
 
     // Testing shows that "-" , "(", and ")" break this request
     const cell = contact.cell.replace(/\D/g,'')
