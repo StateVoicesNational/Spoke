@@ -21,8 +21,8 @@ describe("extensions.message-handlers.ngpvan-optout", () => {
 
       contact = {
         message_status: "needsMessage",
-        customFields: '{"vanid": 12345}',
-        cell: "(123)-456-7891"
+        custom_fields: '{"vanid": 12345}',
+        cell: "123-456-7891"
       };
 
       organization = {
@@ -39,11 +39,11 @@ describe("extensions.message-handlers.ngpvan-optout", () => {
             "inputTypeId": 11, // API input
             "phone": {
                 "dialingPrefix": "1",
-                "phoneNumber": "1234567891",
+                "phoneNumber": "123-456-7891",
                 "smsOptInStatus": "O" // opt out status
             }
         },
-        "resultCodeId": 205
+        "resultCodeId": 130
     };
 
       jest.spyOn(Config, "getConfig").mockReturnValue(undefined);
@@ -102,7 +102,7 @@ describe("extensions.message-handlers.ngpvan-optout", () => {
       beforeEach(async () => {
         contact = {
           ...contact,
-          customFields: '{}'
+          custom_fields: '{}'
         };
       });
 

@@ -47,7 +47,7 @@ export const postMessageSave = async ({
     // we don't want to call that function every time if a vanid
     // was never provided in the first place. Example: CSV
     try {
-        customField = JSON.parse(contact.customFields);
+        customField = JSON.parse(contact.custom_fields);
         vanId = customField.VanID || customField.vanid;
         if (!vanId) return {}
     } catch (exception) {
@@ -55,20 +55,17 @@ export const postMessageSave = async ({
         return {};
     }
 
-    // Testing shows that "-" , "(", and ")" break this request
-    const cell = contact.cell.replace(/\D/g,'')
-
     // https://docs.ngpvan.com/reference/peoplevanidcanvassresponses
     const body = {
         "canvassContext": {
             "inputTypeId": 11, // API input
             "phone": {
                 "dialingPrefix": "1",
-                "phoneNumber": cell,
+                "phoneNumber": contact.cell,
                 "smsOptInStatus": "O" // opt out status
             }
         },
-        "resultCodeId": 205
+        "resultCodeId": 130 // Do Not Text result code
     };
 
     return Van.postCanvassResponse(contact, organization, body)
