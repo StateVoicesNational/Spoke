@@ -1,5 +1,6 @@
 import { hasConfig, getConfig } from "../../../server/api/lib/config";
 const Van = require("../../../extensions/action-handlers/ngpvan-action");
+import { r } from "../../../server/models";
 
 export const serverAdministratorInstructions = () => {
     return {
@@ -19,41 +20,50 @@ export const serverAdministratorInstructions = () => {
     };
 }
 
+const dbQuery = async (campaignContactId) => {
+    return await r
+        .knex("campaign_contact")
+        .select("custom_fields")
+        .where("id", campaignContactId)
+}
+
 export const available = organization =>
         (hasConfig("NGP_VAN_API_KEY", organization) ||
         hasConfig("NGP_VAN_API_KEY_ENCRYPTED", organization)) &&
         hasConfig("NGP_VAN_APP_NAME", organization) &&
         getConfig("MESSAGE_HANDLERS", organization).indexOf("auto-optout") !== -1;
 
-/*  Sends a request to VAN to place an opt out tag to an individual.
+/*  
+ * Sends a request to VAN to place an opt out tag to an individual.
  */
 export const postMessageSave = async ({ 
-    contact, 
     handlerContext, 
-    organization 
+    organization,
+    message
 }) => {
     if (!exports.available(organization)) return {};
 
+    let query;
     let customField;
     let vanId;
+    let cell;
 
+    // If no message or optOut, return
     if (
-        !contact ||
+        !message ||
         !handlerContext.autoOptOutReason
     ) return {};
 
-    // Checking for vanID in contact
-    // While Van.postCanvassResponse will check the customFields, 
-    // we don't want to call that function every time if a vanid
-    // was never provided in the first place. Example: CSV
-    try {
-        customField = JSON.parse(contact.custom_fields);
-        vanId = customField.VanID || customField.vanid;
-        if (!vanId) return {}
-    } catch (exception) {
-        console.log("message-handlers | ngpvan-optout ERROR", exception);
-        return {};
-    }
+    // Grabs van id and phone number
+    // While there may be multiple phone numbers,
+    // we want to use the # we originally texted
+    query = await dbQuery(message.campaign_campaign_id);
+    customField = JSON.parse(query[0]["custom_fields"] || "{}");
+    vanId = customField["VanID"] || customField["vanid"];
+    cell = message["contact_number"] || ""; // Phone number
+
+    // if no van id or cell #, return
+    if (!vanId || !cell) return {};
 
     // https://docs.ngpvan.com/reference/peoplevanidcanvassresponses
     const body = {
@@ -61,7 +71,7 @@ export const postMessageSave = async ({
             "inputTypeId": 11, // API input
             "phone": {
                 "dialingPrefix": "1",
-                "phoneNumber": contact.cell,
+                "phoneNumber": cell,
                 "smsOptInStatus": "O" // opt out status
             }
         },
