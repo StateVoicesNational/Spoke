@@ -1353,7 +1353,7 @@ const rootMutations = {
       // Reusing VAN opt out message-handler
       await optOutInVan({
         handlerContext: {
-          optOutReason: reason
+          optOutReason: "manual"
         },
         organization,
         message: {
