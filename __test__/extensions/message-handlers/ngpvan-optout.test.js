@@ -1,6 +1,6 @@
-const Config = require("../../../src/server/api/lib/config");
-const Van = require("../../../src/extensions/message-handlers/ngpvan-optout");
-const VanAction = require("../../../src/extensions/action-handlers/ngpvan-action");
+const VanOptOut = require("../../../src/extensions/message-handlers/ngpvan-optout");
+const VanUtil = require("../../../src/extensions/contact-loaders/ngpvan/util");
+const HttpRequest = require("../../../src/server/lib/http-request");
 
 describe("extensions.message-handlers.ngpvan-optout", () => {
   afterEach(async () => {
@@ -12,17 +12,12 @@ describe("extensions.message-handlers.ngpvan-optout", () => {
     let contact;
     let organization;
     let handlerContext;
-    let body;
 
     beforeEach(async () => {
       message = {
-        is_from_contact: false
-      };
-
-      contact = {
-        message_status: "needsMessage",
-        custom_fields: '{"vanid": 12345}',
-        cell: "123-456-7891"
+        campaign_contact_id: "1234",
+        contact_number: "(123)-456-7890",
+        is_from_contact: true
       };
 
       organization = {
@@ -33,111 +28,172 @@ describe("extensions.message-handlers.ngpvan-optout", () => {
         autoOptOutReason: "stop"
       }
 
-      // Custom body for this call - this is the expected structure
-      body = {
-        "canvassContext": {
-            "inputTypeId": 11, // API input
-            "phone": {
-                "dialingPrefix": "1",
-                "phoneNumber": "123-456-7891",
-                "smsOptInStatus": "O" // opt out status
-            }
-        },
-        "resultCodeId": 130
-    };
+      jest.spyOn(VanOptOut, "available").mockReturnValue(true);
+      jest.spyOn(VanOptOut, "dbQuery").mockReturnValue([{custom_fields: '{"VanID": 1234}'}]);
 
-      jest.spyOn(Config, "getConfig").mockReturnValue(undefined);
-      jest.spyOn(Van, "available").mockReturnValue(true);
+      jest.spyOn(VanUtil.default, "getAuth").mockReturnValue("*****");
 
-      jest.spyOn(VanAction, "postCanvassResponse").mockResolvedValue(null);
+      jest.spyOn(HttpRequest, "default").mockReturnValue(null);
     });
 
-    it("delegates to its dependencies and DOES call postCanvassResponse", async () => {
-      const result = await Van.postMessageSave({
-        contact,
+    it("delegates to its dependencies and DOES post to NGP VAN", async () => {
+      const result = await VanOptOut.postMessageSave({
         handlerContext,
-        organization
+        organization,
+        message
       });
 
       expect(result).toEqual({});
 
-      // This also verifies that postCanvassResponse was only called once
-      expect(VanAction.postCanvassResponse.mock.calls).toEqual([
+      expect(HttpRequest.default.mock.calls).toEqual(
         [
-          contact,
-          organization,
-          body
+          [
+            "https://api.securevan.com/v4/people/1234/canvassResponses",
+            {
+              "method": "POST",
+              "retries": 1,
+              "timeout": 32000,
+              "headers": {
+                "Authorization": "*****",
+                "accept": "text/plain",
+                "Content-Type": "application/json"
+              },
+              "body": `{"canvassContext":{"inputTypeId":11,"phone":{"dialingPrefix":"1"`+
+              `,"phoneNumber":"123-456-7890","smsOptInStatus":"O"}},"resultCodeId":130}`,
+              "validStatuses": [204],
+              "compress": false
+            }
+          ]
         ]
-      ]);
+      );
     });
 
     describe("when the handler is not available", () => {
       beforeEach(async () => {
-        Van.available.mockReturnValue(false);
+        VanOptOut.available.mockReturnValue(false);
       });
 
-      it("returns an empty object and DOES NOT call postCanvassResponse", async () => {
-        const result = await Van.postMessageSave({
-          message,
-          contact,
-          organization
+      it("returns an empty object and DOES NOT post to NGP VAN", async () => {
+        const result = await VanOptOut.postMessageSave({
+          handlerContext,
+          organization,
+          message
         });
+
         expect(result).toEqual({});
-        expect(VanAction.postCanvassResponse.mock.calls).toHaveLength(0);
+        expect(HttpRequest.default.mock.calls).toHaveLength(0);
       });
     });
 
-    describe("when contact is null or undefined", () => {
-      it("returns an empty object and DOES NOT call postCanvassResponse", async () => {
-        const result = await Van.postMessageSave({
-          message,
-          organization
+    describe("when message is null or undefined", () => {
+      beforeEach(async () => {
+        handlerContext = {}
+      });
+
+      it("returns an empty object and DOES NOT post to NGP VAN", async () => {
+        const result = await VanOptOut.postMessageSave({
+          handlerContext,
+          organization,
+          message
         });
+
         expect(result).toEqual({});
-        expect(VanAction.postCanvassResponse.mock.calls).toHaveLength(0);
+        expect(HttpRequest.default.mock.calls).toHaveLength(0);
       });
     });
 
     describe("when no VAN Id is inclued", () => {
       beforeEach(async () => {
-        contact = {
-          ...contact,
-          custom_fields: '{}'
-        };
+        VanOptOut.dbQuery.mockReturnValue({});
       });
 
-      it("returns an empty object and DOES NOT call postCanvassResponse", async () => {
-        const result = await Van.postMessageSave({
-          message,
-          contact,
+      it("returns an empty object and DOES NOT post to NGP VAN", async () => {
+        const result = await VanOptOut.postMessageSave({
+          handlerContext,
           organization,
-          handlerContext
+          message
         });
 
         expect(result).toEqual({});
-        expect(VanAction.postCanvassResponse.mock.calls).toHaveLength(0);
+        expect(HttpRequest.default.mock.calls).toHaveLength(0);
       })
     })
 
     describe("when alternate VAN ID is included", () => {
       beforeEach(async () => {
-        contact = {
-          ...contact,
-          customFields: '{"VanID": 54321}'
-        };
+        VanOptOut.dbQuery.mockReturnValue([{custom_fields: '{"vanid": 1234}'}])
       });
 
-      it("still works and DOES call postCanvassResponse", async () => {
-        const result = await Van.postMessageSave({
-          message,
-          contact,
+      it("still works and DOES post to NGP VAN", async () => {
+        const result = await VanOptOut.postMessageSave({
+          handlerContext,
           organization,
-          handlerContext
+          message
         });
 
         expect(result).toEqual({});
-        expect(VanAction.postCanvassResponse.mock.calls).toHaveLength(1);
+        expect(HttpRequest.default.mock.calls).toEqual(
+          [
+            [
+              "https://api.securevan.com/v4/people/1234/canvassResponses",
+              {
+                "method": "POST",
+                "retries": 1,
+                "timeout": 32000,
+                "headers": {
+                  "Authorization": "*****",
+                  "accept": "text/plain",
+                  "Content-Type": "application/json"
+                },
+                "body": `{"canvassContext":{"inputTypeId":11,"phone":{"dialingPrefix":"1"`+
+                `,"phoneNumber":"123-456-7890","smsOptInStatus":"O"}},"resultCodeId":130}`,
+                "validStatuses": [204],
+                "compress": false
+              }
+            ]
+          ]
+        );
       })
-    })
+    });
+
+    describe("when no contact number is included in the message object", () => {
+      beforeEach(async () => {
+        message = {
+          ...message,
+          contact_number: ""
+        };
+      });
+
+      it("returns an object and DOES NOT post to NGP VAN", async () => {
+        const result = await VanOptOut.postMessageSave({
+          handlerContext,
+          organization,
+          message
+        });
+
+        expect(result).toEqual({});
+        expect(HttpRequest.default.mock.calls).toHaveLength(0);
+      });
+    });
+
+    describe("when the message is not from the contact", () => {
+      beforeEach(async () => {
+        message = {
+          ...message,
+          is_from_contact: false
+        };
+      });
+
+      it("returns and empty obejct and DOES NOT post to NGP VAN", async () => {
+        const result = await VanOptOut.postMessageSave({
+          handlerContext,
+          organization,
+          message
+        });
+
+        expect(result).toEqual({});
+        expect(HttpRequest.default.mock.calls).toHaveLength(0);
+      });
+    });
   });
 });

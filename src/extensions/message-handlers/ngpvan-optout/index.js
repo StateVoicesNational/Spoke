@@ -26,7 +26,7 @@ export const serverAdministratorInstructions = () => {
     };
 }
 
-const dbQuery = async (campaignContactId) => {
+export const dbQuery = async campaignContactId => {
     return await r
         .knex("campaign_contact")
         .select("custom_fields")
@@ -60,12 +60,13 @@ export const postMessageSave = async ({
     // If no message or optOut, return
     if (
         !message ||
+        !message.is_from_contact ||
         !handlerContext.autoOptOutReason
     ) return {};
 
 
     try {
-        query = await dbQuery(message.campaign_contact_id);
+        query = await exports.dbQuery(message.campaign_contact_id);
         customField = JSON.parse(query[0]["custom_fields"] || "{}");
 
         vanId = customField["VanID"] || customField["vanid"];
@@ -100,10 +101,12 @@ export const postMessageSave = async ({
         "resultCodeId": 130
     };
 
-    return httpRequest(url, {
+    console.log(`ngpvan-optout.postMessageSave VAN ID : ${vanId}`);
+
+    await httpRequest(url, {
         method: "POST",
         retries: 1,
-        timeout: Van.getVanTimeout(organization),
+        timeout: Van.getNgpVanTimeout(organization),
         headers: {
             Authorization: await Van.getAuth(organization),
             "accept": "text/plain",
@@ -113,6 +116,8 @@ export const postMessageSave = async ({
         validStatuses: [204],
         compress: false
     })
+
+    return {};
 }
 
 
