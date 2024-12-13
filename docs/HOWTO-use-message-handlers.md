@@ -33,6 +33,14 @@ This is especially useful to auto-optout hostile contact replies so texters do n
 need to see them.  Additionally the JSON object can encode a "reason_code" that will
 be logged in the opt_out table record.
 
+### ngpvan-optout
+
+Sends a POST request to NGP VAN to update a record that they are now opted out from
+future campaigns. 
+
+Requires that the contact have `vanid` or `VanID` in their custom_feilds. 
+Requires auto-optout to be enabled. 
+
 ### profanity-tagger
 
 Before you enable a custom regular expression with auto-optout, we recommend strongly

@@ -6,7 +6,6 @@ import _ from "lodash";
 import { gzip, makeTree, getHighestRole } from "../../lib";
 import { capitalizeWord, groupCannedResponses } from "./lib/utils";
 import httpRequest from "../lib/http-request";
-import ownedPhoneNumber from "./lib/owned-phone-number";
 
 import { getIngestMethod } from "../../extensions/contact-loaders";
 import {
@@ -82,6 +81,12 @@ import { Jobs } from "../../workers/job-processes";
 import { Tasks } from "../../workers/tasks";
 
 const uuidv4 = require("uuid").v4;
+const Van = require("../../extensions/action-handlers/ngpvan-action.js");
+
+import {
+  available,
+  postMessageSave as optOutInVan
+} from "../../extensions/message-handlers/ngpvan-optout";
 
 // This function determines whether a field was requested
 // in a graphql query. Each graphql resolver receives a fourth parameter,
@@ -1292,7 +1297,7 @@ const rootMutations = {
         }
       }
       return finalContacts;
-    },
+    }, //
     createOptOut: async (
       _,
       { optOut, campaignContactId, noReply },
@@ -1342,6 +1347,21 @@ const rootMutations = {
       const newContact = cacheableData.campaignContact.updateCacheForOptOut(
         contact
       );
+
+      if (!available(organization)) return newContact;
+
+      // Reusing VAN opt out message-handler
+      await optOutInVan({
+        handlerContext: {
+          optOutReason: "manual"
+        },
+        organization,
+        message: {
+          campaign_contact_id: campaignContactId,
+          contact_number: contact.cell
+        }
+      })
+
       return newContact;
     },
     deleteQuestionResponses: async (
