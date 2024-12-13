@@ -1,6 +1,11 @@
 import { hasConfig, getConfig } from "../../../server/api/lib/config";
-const Van = require("../../../extensions/action-handlers/ngpvan-action");
 import { r } from "../../../server/models";
+import httpRequest from "../../../server/lib/http-request";
+import {
+    getCountryCode,
+    getDashedPhoneNumberDisplay
+} from "../../../lib/phone-format";
+import Van from "../../contact-loaders/ngpvan/util";
 
 export const serverAdministratorInstructions = () => {
     return {
@@ -16,6 +21,7 @@ export const serverAdministratorInstructions = () => {
             Additionally, "ngpvan-optout" must be added to the message handler
             environment variable. 
         `,
+        // Does this include NGP_VAN env variables and what not?
         environmentVariables: []
     };
 }
@@ -41,12 +47,15 @@ export const postMessageSave = async ({
     organization,
     message
 }) => {
+    // Redundent, but other message-handlers check this first as well
     if (!exports.available(organization)) return {};
 
-    let query;
+    let query;          // store custom_fields of the contact
     let customField;
-    let vanId;
-    let cell;
+    let vanId;          // vanid of contact
+    let cell;           // phone number that sent opt out message
+    let phoneCountry;   // The coutnry code
+    let url;            // url of VAN api
 
     // If no message or optOut, return
     if (
@@ -54,40 +63,56 @@ export const postMessageSave = async ({
         !handlerContext.autoOptOutReason
     ) return {};
 
-    // Grabs van id and phone number
-    // While there may be multiple phone numbers,
-    // we want to use the # we originally texted
-    query = await dbQuery(message.campaign_campaign_id);
-    customField = JSON.parse(query[0]["custom_fields"] || "{}");
-    vanId = customField["VanID"] || customField["vanid"];
-    cell = message["contact_number"] || ""; // Phone number
 
+    try {
+        query = await dbQuery(message.campaign_contact_id);
+        customField = JSON.parse(query[0]["custom_fields"] || "{}");
+
+        vanId = customField["VanID"] || customField["vanid"];
+        cell = message["contact_number"] || "";
+    } catch (exception) {
+        console.error(
+            `postMessageSave.ngpvan-optout ERROR finding contact or ` + 
+            `parsing custom fields for contact ${message.campaign_contact_id}`
+        )
+    }
+    
     // if no van id or cell #, return
     if (!vanId || !cell) return {};
+
+    phoneCountry = process.env.PHONE_NUMBER_COUNTRY || "US";
+    cell = getDashedPhoneNumberDisplay(cell, phoneCountry);
+
+    url = Van.makeUrl(`v4/people/${vanId}/canvassResponses`, organization);
 
     // https://docs.ngpvan.com/reference/peoplevanidcanvassresponses
     const body = {
         "canvassContext": {
             "inputTypeId": 11, // API input
             "phone": {
-                "dialingPrefix": "1",
+                "dialingPrefix": getCountryCode(cell, phoneCountry).toString(),
                 "phoneNumber": cell,
                 "smsOptInStatus": "O" // opt out status
             }
         },
-        "resultCodeId": 130 // Do Not Text result code
+        // Do Not Text result code
+        // Unsure if this is specfic to each VAN committe ?
+        "resultCodeId": 130
     };
 
-    return Van.postCanvassResponse(contact, organization, body)
-            .then(() => ({}))
-            .catch(caughtError => {
-                // eslint-disable-next-line no-console
-                console.log(
-                    "Encountered exception in ngpvan-optout.postMessageSave",
-                    caughtError
-                )
-                return {};
-            })
+    return httpRequest(url, {
+        method: "POST",
+        retries: 1,
+        timeout: Van.getVanTimeout(organization),
+        headers: {
+            Authorization: await Van.getAuth(organization),
+            "accept": "text/plain",
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify(body),
+        validStatuses: [204],
+        compress: false
+    })
 }
 
 
