@@ -191,28 +191,6 @@ describe("extensions.message-handlers.ngpvan-optout", () => {
         })
 
         expect(result).toEqual({});
-        expect(HttpRequest.default.mock.calls)
-      })
-    })
-
-    // Skipping as there is a world where we opt out someone
-    // even when the message is not from them originally
-    describe.skip("when the message is not from the contact", () => {
-      beforeEach(async () => {
-        message = {
-          ...message,
-          is_from_contact: false
-        };
-      });
-
-      it("returns and empty obejct and DOES NOT post to NGP VAN", async () => {
-        const result = await VanOptOut.postMessageSave({
-          handlerContext,
-          organization,
-          message
-        });
-
-        expect(result).toEqual({});
         expect(HttpRequest.default.mock.calls).toEqual(
           [
             [
@@ -234,6 +212,28 @@ describe("extensions.message-handlers.ngpvan-optout", () => {
             ]
           ]
         );
+      })
+    })
+
+    // Skipping as there is a world where we opt out someone
+    // even when the message is not from them originally
+    describe.skip("when the message is not from the contact", () => {
+      beforeEach(async () => {
+        message = {
+          ...message,
+          is_from_contact: false
+        };
+      });
+
+      it("returns and empty obejct and DOES NOT post to NGP VAN", async () => {
+        const result = await VanOptOut.postMessageSave({
+          handlerContext,
+          organization,
+          message
+        });
+
+        expect(result).toEqual({});
+        expect(HttpRequest.default.mock.calls).toHaveLength(0);
       });
     });
   });
