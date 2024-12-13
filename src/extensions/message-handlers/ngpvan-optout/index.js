@@ -60,8 +60,7 @@ export const postMessageSave = async ({
     // If no message or optOut, return
     if (
         !message ||
-        !message.is_from_contact ||
-        !handlerContext.autoOptOutReason
+        !(handlerContext.autoOptOutReason || handlerContext.optOutReason)
     ) return {};
 
 
@@ -101,7 +100,10 @@ export const postMessageSave = async ({
         "resultCodeId": 130
     };
 
-    console.log(`ngpvan-optout.postMessageSave VAN ID : ${vanId}`);
+    console.log(
+        `ngpvan-optout.postMessageSave VAN ID : ${vanId} ` +
+        `: ${handlerContext.autoOptOutReason || handlerContext.optOutReason}`
+    );
 
     await httpRequest(url, {
         method: "POST",

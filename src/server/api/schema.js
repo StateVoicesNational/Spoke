@@ -83,6 +83,11 @@ import { Tasks } from "../../workers/tasks";
 const uuidv4 = require("uuid").v4;
 const Van = require("../../extensions/action-handlers/ngpvan-action.js");
 
+import {
+  available,
+  postMessageSave as optOutInVan
+} from "../../extensions/message-handlers/ngpvan-optout";
+
 // This function determines whether a field was requested
 // in a graphql query. Each graphql resolver receives a fourth parameter,
 // which contains information about the current request and the execution
@@ -1343,44 +1348,21 @@ const rootMutations = {
         contact
       );
 
-      if (!await Van.available(organization)) return newContact;
+      if (!available(organization)) return newContact;
 
-      // Checking that contact contains a vanId
-      // If not, return and skip next steps
-      try {
-        const c = JSON.parse(contact.customFields);
-        const vanId = c.VanId || c.vanid
-        if (!vanId) return newContact;
-      } catch (exception) {
-        console.log(exception);
-        return newContact;
-      }
-
-      console.log(
-        `createOptOut VAN ${contact.cell}`
-      );
-
-      const cell = contact.cell.replace(/\D/g,'');
-
-      const body = {
-        "canvassContext": {
-        "inputTypeId": 11, // API Input
-        "phone": {
-            "dialingPrefix": "1",
-            "phoneNumber": cell,
-            "smsOptInStatus": "O" // opt out status
-            }
+      // Reusing VAN opt out message-handler
+      await optOutInVan({
+        handlerContext: {
+          optOutReason: reason
         },
-        "resultCodeId": 205
-      };
+        organization,
+        message: {
+          campaign_contact_id: campaignContactId,
+          contact_number: contact.cell
+        }
+      })
 
-      try {
-        await Van.postCanvassResponse(contact, organization, body);
-      } catch (e) {
-        console.log(`Error manually opting out ${contact.cell}: ${e}`);
-      } finally {
-        return newContact;
-      }
+      return newContact;
     },
     deleteQuestionResponses: async (
       _,
