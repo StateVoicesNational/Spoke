@@ -176,6 +176,25 @@ describe("extensions.message-handlers.ngpvan-optout", () => {
       });
     });
 
+    describe("when the alternate optOutReason is passed in the handlerContext object", () => {
+      beforeEach(async () => {
+        handlerContext = {
+          optOutReason: "manual"
+        }
+      });
+
+      it("returns an empty object and DOES post to NGP VAN", async () => {
+        const result = await VanOptOut.postMessageSave({
+          handlerContext,
+          organization,
+          message
+        })
+
+        expect(result).toEqual({});
+        expect(HttpRequest.default.mock.calls)
+      })
+    })
+
     // Skipping as there is a world where we opt out someone
     // even when the message is not from them originally
     describe.skip("when the message is not from the contact", () => {
@@ -194,7 +213,27 @@ describe("extensions.message-handlers.ngpvan-optout", () => {
         });
 
         expect(result).toEqual({});
-        expect(HttpRequest.default.mock.calls).toHaveLength(0);
+        expect(HttpRequest.default.mock.calls).toEqual(
+          [
+            [
+              "https://api.securevan.com/v4/people/1234/canvassResponses",
+              {
+                "method": "POST",
+                "retries": 1,
+                "timeout": 32000,
+                "headers": {
+                  "Authorization": "*****",
+                  "accept": "text/plain",
+                  "Content-Type": "application/json"
+                },
+                "body": `{"canvassContext":{"inputTypeId":11,"phone":{"dialingPrefix":"1"`+
+                `,"phoneNumber":"123-456-7890","smsOptInStatus":"O"}},"resultCodeId":130}`,
+                "validStatuses": [204],
+                "compress": false
+              }
+            ]
+          ]
+        );
       });
     });
   });
