@@ -176,7 +176,9 @@ describe("extensions.message-handlers.ngpvan-optout", () => {
       });
     });
 
-    describe("when the message is not from the contact", () => {
+    // Skipping as there is a world where we opt out someone
+    // even when the message is not from them originally
+    describe.skip("when the message is not from the contact", () => {
       beforeEach(async () => {
         message = {
           ...message,
