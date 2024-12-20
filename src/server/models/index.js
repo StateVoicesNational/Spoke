@@ -11,6 +11,7 @@ import CampaignContact from "./campaign-contact";
 import InteractionStep from "./interaction-step";
 import QuestionResponse from "./question-response";
 import OptOut from "./opt-out";
+import OptIn from "./opt-in";
 import JobRequest from "./job-request";
 import Invite from "./invite";
 import CannedResponse from "./canned-response";
@@ -64,6 +65,7 @@ const tableList = [
   "log",
   "message",
   "opt_out", // good candidate
+  "opt_in",
   "pending_message_part",
   "question_response",
   "tag",
@@ -131,6 +133,7 @@ const createLoaders = () => ({
   jobRequest: createLoader(JobRequest),
   message: createLoader(Message),
   optOut: createLoader(OptOut),
+  optIn: createLoader(OptIn),
   pendingMessagePart: createLoader(PendingMessagePart),
   questionResponse: createLoader(QuestionResponse),
   userCell: createLoader(UserCell),
@@ -165,6 +168,7 @@ export {
   JobRequest,
   Message,
   OptOut,
+  OptIn,
   Organization,
   PendingMessagePart,
   CannedResponse,
