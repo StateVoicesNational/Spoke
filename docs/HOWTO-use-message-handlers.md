@@ -33,6 +33,13 @@ This is especially useful to auto-optout hostile contact replies so texters do n
 need to see them.  Additionally the JSON object can encode a "reason_code" that will
 be logged in the opt_out table record.
 
+## auto-optin
+
+When a contact replies with "START" (case sensitive), they are added to a the opt_in
+table and marked as opted-in in the campaign_contact table. You may alter the opt-in
+language by adding AUTO_OPTIN_REGEX_LIST_BASE64 which should be a JSON object encoded
+in base64 following the structure: \`[{\"regex\": \"\",\"reason\": \"\"}]\`
+
 ### profanity-tagger
 
 Before you enable a custom regular expression with auto-optout, we recommend strongly

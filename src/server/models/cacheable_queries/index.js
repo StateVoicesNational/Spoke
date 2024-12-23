@@ -5,6 +5,7 @@ import cannedResponse from "./canned-response";
 import organizationContact from "./organization-contact";
 import message from "./message";
 import optOut from "./opt-out";
+import optIn from "./opt-in";
 import organization from "./organization";
 import questionResponse from "./question-response";
 import { tagCampaignContactCache as tagCampaignContact } from "./tag-campaign-contact";
@@ -18,6 +19,7 @@ const cacheableData = {
   organizationContact,
   message,
   optOut,
+  optIn,
   organization,
   questionResponse,
   tagCampaignContact,
