@@ -232,6 +232,9 @@ $ AWS_PROFILE=[your_profile_nickname] claudia add-scheduled-event \
     --event ./deploy/lambda-scheduled-event.json
 ```
 
+### Allowing Recursion
+After the Lambda is deployed, you will need to manually enable recursion.  Go to the Lambda page, then the Configuration tab and select the "Concurrency and recursion detection" subtab.  Edit the "Recursive loop detection" setting and set to "Allow recursive loops".
+
 ### Migrating the Database
 
 Migrations are created with knex[https://knexjs.org/#Migrations].
