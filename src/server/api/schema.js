@@ -882,7 +882,7 @@ const rootMutations = {
         creator_id: user.id,
         title: "COPY - " + campaign.title.replace(/\s*template\W*/i, ""),
         description: campaign.description,
-        due_by: campaign.due_by,
+        due_by: null,
         features: campaign.features,
         intro_html: campaign.intro_html,
         primary_color: campaign.primary_color,

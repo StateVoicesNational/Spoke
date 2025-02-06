@@ -639,9 +639,9 @@ describe("graphql test suite", () => {
           const parsedDate = new Date(copiedCampaign.due_by);
           expect(parsedDate).toEqual(campaign.due_by);
         } else if (isSqlite) {
-          expect(copiedCampaign.due_by.getTime()).toEqual(campaign.due_by);
+          expect(copiedCampaign.due_by).toEqual(null);
         } else {
-          expect(copiedCampaign.due_by).toEqual(campaign.due_by);
+          expect(copiedCampaign.due_by).toEqual(null);
         }
 
         if (
