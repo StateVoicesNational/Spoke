@@ -4,6 +4,7 @@ const Van = require("../../../extensions/action-handlers/ngpvan-action");
 import { getActionChoiceData } from "../../../extensions/action-handlers";
 
 export const DEFAULT_NGP_VAN_INITIAL_TEXT_CANVASS_RESULT = "Texted";
+export const DEFAULT_NGP_VAN_TEXT_BACK_CANVASS_RESULT = "Texted Back";
 
 export const serverAdministratorInstructions = () => {
   return {
@@ -25,7 +26,41 @@ export const available = organization =>
     hasConfig("NGP_VAN_API_KEY_ENCRYPTED", organization)) &&
   hasConfig("NGP_VAN_APP_NAME", organization);
 
-// export const preMessageSave = async () => {};
+export const preMessageSave = async ({ message, contact, organization }) => {
+  if (!message.is_from_contact){
+    return {};
+  }
+
+  const clientChoiceData = await getActionChoiceData(Van, organization);
+  const initialTextResult =
+    getConfig("NGP_VAN_TEXT_BACK_CANVASS_RESULT", organization) ||
+    DEFAULT_NGP_VAN_TEXT_BACK_CANVASS_RESULT;
+
+  const textback = clientChoiceData.find(ccd => ccd.name === initialTextResult);
+  if (!textback) {
+    // eslint-disable-next-line no-console
+    console.error(
+      `NGPVAN message handler -- not handling message because no action choice data found for ${initialTextResult}`
+    );
+
+    return {};
+  }
+
+  const body = JSON.parse(textback.details);
+
+  return Van.postCanvassResponse(contact, organization, body)
+    .then(() => ({}))
+    .catch(caughtError => {
+      // eslint-disable-next-line no-console
+      console.error(
+        "Encountered exception in ngpvan.preMessageSave",
+        caughtError
+      );
+      return {};
+    });
+
+
+};
 
 export const postMessageSave = async ({ message, contact, organization }) => {
   if (!exports.available(organization)) {
