@@ -652,7 +652,7 @@ const mutations = {
   }),
   bulkSendMessages: ownProps => assignmentId => ({
     mutation: gql`
-      mutation bulkSendMessages($assignmentId: Int!) {
+      mutation bulkSendMessages($assignmentId: String!) {
         bulkSendMessages(assignmentId: $assignmentId) {
           id
         }
