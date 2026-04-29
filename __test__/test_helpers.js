@@ -620,7 +620,7 @@ export async function sendMessage(campaignContactId, user, message) {
 
 export async function bulkSendMessages(assignmentId, user) {
   const query = `
-    mutation bulkSendMessage($assignmentId: Int!) {
+    mutation bulkSendMessage($assignmentId: String!) {
         bulkSendMessages(assignmentId: $assignmentId) {
           id
         }
