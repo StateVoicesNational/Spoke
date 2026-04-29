@@ -1005,7 +1005,7 @@ describe("Bulk Send", () => {
 
     // send some texts
     const bulkSendResult = await bulkSendMessages(
-      parseInt(assignmentId),
+      assignmentId,
       testTexterUser
     );
     resultTestFunction(bulkSendResult);
